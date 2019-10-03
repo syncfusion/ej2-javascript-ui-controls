@@ -500,6 +500,14 @@ export class DiagramEventHandler {
         }
     }
 
+    private isSwimlaneElements(obj: Node): boolean {
+        if (obj && (obj.isLane || obj.isPhase || obj.isHeader)) {
+            return false;
+        } else {
+            return true;
+        }
+    }
+    /* tslint:disable */
     /** @private */
     public mouseMove(e: PointerEvent | TouchEvent, touches: TouchList): void {
         this.focus = true;
@@ -534,7 +542,12 @@ export class DiagramEventHandler {
                             if (obj instanceof Node) {
                                 this.hoverNode = obj;
                             }
-                            this.hoverElement = obj;
+                            let canResetElement: boolean = true;
+                            if (!this.isSwimlaneElements(obj as Node)
+                                && (this.hoverElement && this.isSwimlaneElements(this.hoverElement as Node))) {
+                                canResetElement = false;
+                            }
+                            this.hoverElement = canResetElement ? obj : this.hoverElement
                             this.elementEnter(this.currentPosition, false);
                         } else if (!this.hoverElement && this.hoverElement === obj) {
                             this.elementEnter(this.currentPosition, true);
@@ -557,7 +570,8 @@ export class DiagramEventHandler {
                     this.updateCursor();
                     this.renderUmlHighLighter(this.eventArgs);
                     let isNode: boolean = false;
-                    if (!(this.hoverElement && (!(this.tool instanceof ZoomPanTool)) && obj instanceof Node &&
+                    if (!(this.hoverElement && (!(this.tool instanceof ZoomPanTool))
+                        && (obj instanceof Node && this.isSwimlaneElements(obj)) &&
                         (this.diagram.selectedItems.nodes.length === 0 || !isSelected(this.diagram, this.hoverElement)))) {
                         isNode = true;
                     }
@@ -596,6 +610,7 @@ export class DiagramEventHandler {
             }
         }
     }
+    /* tslint:enable */
 
     private getContent(): string | HTMLElement {
         let isPrivateTooltip: number = ((this.hoverElement instanceof Node) &&

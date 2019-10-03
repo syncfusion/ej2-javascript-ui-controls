@@ -9,7 +9,8 @@ import { Navigation } from './index';
 import { Magnification } from './index';
 import { Toolbar } from './index';
 import { ToolbarItem } from './index';
-import { LinkTarget, InteractionMode, AnnotationType, AnnotationToolbarItem, LineHeadStyle, ContextMenuAction } from './base/types';
+// tslint:disable-next-line:max-line-length
+import { LinkTarget, InteractionMode, AnnotationType, AnnotationToolbarItem, LineHeadStyle, ContextMenuAction, FontStyle, TextAlignment } from './base/types';
 import { Annotation } from './index';
 import { LinkAnnotation } from './index';
 import { ThumbnailView } from './index';
@@ -160,6 +161,19 @@ export class ServerActionSettings extends ChildProperty<ServerActionSettings> {
      */
     @Property('ExportAnnotations')
     public exportAnnotations: string;
+
+    /**
+     * specifies the imports action of PdfViewer.
+     */
+    @Property('ImportFormFields')
+    public importFormFields: string;
+
+    /**
+     * specifies the export action of PdfViewer.
+     */
+    @Property('ExportFormFields')
+    public exportFormFields: string;
+
 }
 
 /**
@@ -1058,6 +1072,24 @@ export class FreeTextSettings extends ChildProperty<FreeTextSettings> {
     @Property('Helvetica')
     public fontFamily: string;
 
+    /**
+     * setting the default text for annotation.
+     */
+    @Property('TypeHere')
+    public defaultText: string;
+
+    /**
+     * applying the font styles for the text.
+     */
+    @Property('None')
+    public fontStyle: FontStyle;
+
+    /**
+     * Aligning the text in the annotation.
+     */
+    @Property('Left')
+    public textAlignment: TextAlignment;
+
 }
 
 /**
@@ -1082,8 +1114,8 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
 
     /**
      * Returns the page count of the document loaded in the PdfViewer control.
-     * @asptype int
-     * @blazorType int
+
+
      */
     public get pageCount(): number {
         return this.viewerBase.pageCount;
@@ -1091,8 +1123,8 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
 
     /**
      * Checks whether the PDF document is edited.
-     * @asptype bool
-     * @blazorType bool
+
+
      */
     public get isDocumentEdited(): boolean {
         return this.viewerBase.isDocumentEdited;
@@ -1100,8 +1132,8 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
 
     /**
      * Returns the current page number of the document displayed in the PdfViewer control.
-     * @asptype int
-     * @blazorType int
+
+
      */
     public get currentPageNumber(): number {
         return this.viewerBase.currentPageNumber;
@@ -1115,8 +1147,8 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
 
     /**
      * Returns the current zoom percentage of the PdfViewer control.
-     * @asptype int
-     * @blazorType int
+
+
      */
     public get zoomPercentage(): number {
         return this.magnificationModule.zoomFactor * 100;
@@ -1129,98 +1161,98 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
 
     /**
      * Defines the scrollable height of the PdfViewer control.
-     * @default 'auto'
+
      */
     @Property('auto')
     public height: string | number;
 
     /**
      * Defines the scrollable width of the PdfViewer control.
-     * @default 'auto'
+
      */
     @Property('auto')
     public width: string | number;
 
     /**
      * Enable or disables the toolbar of PdfViewer.
-     * @default true
+
      */
     @Property(true)
     public enableToolbar: boolean;
 
     /**
      * Enable or disables the Navigation toolbar of PdfViewer.
-     * @default true
+
      */
     @Property(true)
     public enableNavigationToolbar: boolean;
 
     /**
      * Enable or disables the download option of PdfViewer.
-     * @default true
+
      */
     @Property(true)
     public enableDownload: boolean;
 
     /**
      * Enable or disables the print option of PdfViewer.
-     * @default true
+
      */
     @Property(true)
     public enablePrint: boolean;
 
     /**    
      * Enables or disables the thumbnail view in the PDF viewer
-     * @default true
+
      */
     @Property(true)
     public enableThumbnail: boolean;
 
     /**
      * Enables or disables the bookmark view in the PDF viewer
-     * @default true
+
      */
     @Property(true)
     public enableBookmark: boolean;
 
     /**
      * Enables or disables the hyperlinks in PDF document.
-     * @default true
+
      */
     @Property(true)
     public enableHyperlink: boolean;
 
     /**
      * Specifies the open state of the hyperlink in the PDF document.
-     * @default CurrentTab
+
      */
     @Property('CurrentTab')
     public hyperlinkOpenState: LinkTarget;
 
     /**
      * Specifies the state of the ContextMenu in the PDF document.
-     * @default RightClick
+
      */
     @Property('RightClick')
     public contextMenuOption: ContextMenuAction;
 
     /**
      * Enable or disables the Navigation module of PdfViewer.
-     * @default true
+
      */
     @Property(true)
     public enableNavigation: boolean;
 
     /**
      * Enable or disables the Magnification module of PdfViewer.
-     * @default true
+
      */
     @Property(true)
     public enableMagnification: boolean;
 
     /**
      * Enable or disables the Label for shapeAnnotations of PdfViewer.
-     * @default false
+
      */
     @Property(false)
     public enableShapeLabel: boolean;
@@ -1228,91 +1260,91 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
 
     /**
      * Enable or disables the Pinch zoom of PdfViewer.
-     * @default true
+
      */
     @Property(true)
     public enablePinchZoom: boolean;
 
     /**
      * Enable or disables the text selection in the PdfViewer.
-     * @default true
+
      */
     @Property(true)
     public enableTextSelection: boolean;
 
     /**
      * Enable or disables the text search in the PdfViewer.
-     * @default true
+
      */
     @Property(true)
     public enableTextSearch: boolean;
 
     /**
      * Enable or disable the annotation in the Pdfviewer.
-     * @default true
+
      */
     @Property(true)
     public enableAnnotation: boolean;
 
     /**
      * Enable or disable the form fields in the Pdfviewer.
-     * @default true
+
      */
     @Property(true)
     public enableFormFields: boolean;
 
     /**
      * Enable or disable the free text annotation in the Pdfviewer.
-     * @default true
+
      */
     @Property(true)
     public enableFreeText: boolean;
 
     /**
      * Enable or disables the text markup annotation in the PdfViewer.
-     * @default true
+
      */
     @Property(true)
     public enableTextMarkupAnnotation: boolean;
 
     /**
      * Enable or disables the shape annotation in the PdfViewer.
-     * @default true
+
      */
     @Property(true)
     public enableShapeAnnotation: boolean;
 
     /**
      * Enable or disables the calibrate annotation in the PdfViewer.
-     * @default true
+
      */
     @Property(true)
     public enableMeasureAnnotation: boolean;
 
     /**
      * Enables and disables the stamp annotations when the PDF viewer control is loaded initially.
-     * @default true
+
      */
     @Property(true)
     public enableStampAnnotations: boolean;
 
     /**
      * Enables and disables the stickyNotes annotations when the PDF viewer control is loaded initially.
-     * @default true
+
      */
     @Property(true)
     public enableStickyNotesAnnotation: boolean;
 
     /**
      * Opens the annotation toolbar when the PDF document is loaded in the PDF Viewer control initially.
-     * @default false
+
      */
     @Property(false)
     public enableAnnotationToolbar: boolean;
 
     /**
      * Sets the interaction mode of the PdfViewer
-     * @default TextSelection
+
      */
     @Property('TextSelection')
     public interactionMode: InteractionMode;
@@ -1350,7 +1382,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
      * Defines the settings of the PdfViewer service.
      */
     // tslint:disable-next-line:max-line-length
-    @Property({ load: 'Load', renderPages: 'RenderPdfPages', unload: 'Unload', download: 'Download', renderThumbnail: 'RenderThumbnailImages', print: 'PrintImages', renderComments: 'RenderAnnotationComments', importAnnotations: 'ImportAnnotations', exportAnnotations: 'ExportAnnotations' })
+    @Property({ load: 'Load', renderPages: 'RenderPdfPages', unload: 'Unload', download: 'Download', renderThumbnail: 'RenderThumbnailImages', print: 'PrintImages', renderComments: 'RenderAnnotationComments', importAnnotations: 'ImportAnnotations', exportAnnotations: 'ExportAnnotations', importFormFields: 'ImportFormFields', exportFormFields: 'ExportFormFields' })
     public serverActionSettings: ServerActionSettingsModel;
 
     /**
@@ -1471,7 +1503,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
      * Defines the settings of free text annotation.
      */
     // tslint:disable-next-line:max-line-length
-    @Property({ opacity: 1, fillColor: '#ffffff00', borderColor: '#ffffff00', author: 'Guest', subject: 'Text Box', modifiedDate: '', borderWidth: 1, width: 151, fontSize: 16, height: 24.6, fontColor: '#000', fontFamily: 'Helvetica' })
+    @Property({ opacity: 1, fillColor: '#ffffff00', borderColor: '#ffffff00', author: 'Guest', subject: 'Text Box', modifiedDate: '', borderWidth: 1, width: 151, fontSize: 16, height: 24.6, fontColor: '#000', fontFamily: 'Helvetica', defaultText: 'Type Here', textAlignment: 'Left', fontStyle: FontStyle.None })
     public freeTextSettings: FreeTextSettingsModel;
 
     /**
@@ -1493,7 +1525,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
      */
     /**
      * Defines the collection of selected items, size and position of the selector
-     * @default {}
+
      */
     @Complex<SelectorModel>({}, Selector)
     public selectedItems: SelectorModel;
@@ -1534,7 +1566,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
      * @private
      */
     public linkAnnotationModule: LinkAnnotation;
-    /** @hidden */
+
     public localeObj: L10n;
     /**
      * @private
@@ -1566,8 +1598,8 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
     public formFieldsModule: FormFields;
     /** 
      * Gets the bookmark view object of the pdf viewer.
-     * @asptype BookmarkView
-     * @blazorType BookmarkView
+
+
      * @returns { BookmarkView }
      */
     public get bookmark(): BookmarkView {
@@ -1576,8 +1608,8 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
 
     /** 
      * Gets the print object of the pdf viewer.
-     * @asptype Print 
-     * @blazorType Print
+
+
      * @returns { Print }
      */
     public get print(): Print {
@@ -1586,8 +1618,8 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
 
     /** 
      * Gets the magnification object of the pdf viewer.
-     * @asptype Magnification
-     * @blazorType Magnification
+
+
      * @returns { Magnification }
      */
     public get magnification(): Magnification {
@@ -1595,8 +1627,8 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
     }
     /** 
      * Gets the navigation object of the pdf viewer.
-     * @asptype Navigation
-     * @blazorType Navigation
+
+
      * @returns { Navigation }
      */
     public get navigation(): Navigation {
@@ -1605,8 +1637,8 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
 
     /** 
      * Gets the text search object of the pdf viewer.
-     * @asptype TextSearch
-     * @blazorType TextSearch
+
+
      * @returns { TextSearch }
      */
     public get textSearch(): TextSearch {
@@ -1615,8 +1647,8 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
 
     /** 
      * Gets the toolbar object of the pdf viewer.
-     * @asptype Toolbar
-     * @blazorType Toolbar
+
+
      * @returns { Toolbar }
      */
     public get toolbar(): Toolbar {
@@ -1625,8 +1657,8 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
 
     /** 
      * Gets the thumbnail-view object of the pdf viewer.
-     * @asptype ThumbnailView
-     * @blazorType ThumbnailView
+
+
      * @returns { ThumbnailView }
      */
     public get thumbnailView(): ThumbnailView {
@@ -1635,8 +1667,8 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
 
     /**
      * Gets the annotation object of the pdf viewer.
-     * @asptype Annotation
-     * @blazorType Annotation
+
+
      * @returns { Annotation }
      */
     public get annotation(): Annotation {
@@ -1646,7 +1678,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
     /**
      * Triggers while loading document into PdfViewer.
      * @event
-     * @blazorProperty 'DocumentLoaded'
+
      */
     @Event()
     public documentLoad: EmitType<LoadEventArgs>;
@@ -1654,7 +1686,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
     /**
      * Triggers while close the document
      * @event
-     * @blazorProperty 'DocumentUnloaded'
+
      */
     @Event()
     public documentUnload: EmitType<UnloadEventArgs>;
@@ -1662,7 +1694,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
     /**
      * Triggers while loading document got failed in PdfViewer.
      * @event
-     * @blazorProperty 'DocumentLoadFailed'
+
      */
     @Event()
     public documentLoadFailed: EmitType<LoadFailedEventArgs>;
@@ -1670,7 +1702,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
     /**
      * Triggers when the AJAX request is failed.
      * @event
-     * @blazorProperty 'AjaxRequestFailed'
+
      */
     @Event()
     public ajaxRequestFailed: EmitType<AjaxRequestFailureEventArgs>;
@@ -1678,7 +1710,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
     /**
      * Triggers when the mouse click is performed over the page of the PDF document.
      * @event
-     * @blazorProperty 'OnPageClick'
+
      */
     @Event()
     public pageClick: EmitType<PageClickEventArgs>;
@@ -1686,7 +1718,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
     /**
      * Triggers when there is change in current page number.
      * @event
-     * @blazorProperty 'PageChanged'
+
      */
     @Event()
     public pageChange: EmitType<PageChangeEventArgs>;
@@ -1694,7 +1726,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
     /**
      * Triggers when hyperlink in the PDF Document is clicked
      * @event
-     * @blazorProperty 'OnHyperlinkClick'
+
      */
     @Event()
     public hyperlinkClick: EmitType<HyperlinkClickEventArgs>;
@@ -1702,7 +1734,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
     /**
      * Triggers when hyperlink in the PDF Document is hovered
      * @event
-     * @blazorProperty 'OnHyperlinkMouseOver'
+
      */
     @Event()
     public hyperlinkMouseOver: EmitType<HyperlinkMouseOverArgs>;
@@ -1710,7 +1742,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
     /**
      * Triggers when there is change in the magnification value.
      * @event
-     * @blazorProperty 'ZoomChanged'
+
      */
     @Event()
     public zoomChange: EmitType<ZoomChangeEventArgs>;
@@ -1718,7 +1750,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
     /**
      * Triggers when an annotation is added over the page of the PDF document.
      * @event
-     * @blazorProperty 'AnnotationAdded'
+
      */
     @Event()
     public annotationAdd: EmitType<AnnotationAddEventArgs>;
@@ -1726,7 +1758,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
     /**
      * Triggers when an annotation is removed from the page of the PDF document.
      * @event 
-     * @blazorProperty 'AnnotationRemoved'
+
      */
     @Event()
     public annotationRemove: EmitType<AnnotationRemoveEventArgs>;
@@ -1734,7 +1766,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
     /**
      * Triggers when the property of the annotation is changed in the page of the PDF document.
      * @event
-     * @blazorProperty 'AnnotationPropertiesChanged'
+
      */
     @Event()
     public annotationPropertiesChange: EmitType<AnnotationPropertiesChangeEventArgs>;
@@ -1742,7 +1774,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
     /**
      * Triggers when an annotation is resized over the page of the PDF document.
      * @event
-     * @blazorProperty 'AnnotationResized'
+
      */
     @Event()
     public annotationResize: EmitType<AnnotationResizeEventArgs>;
@@ -1750,7 +1782,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
     /**
      * Triggers when an annotation is selected over the page of the PDF document.
      * @event
-     * @blazorProperty 'AnnotationSelected'
+
      */
     @Event()
     public annotationSelect: EmitType<AnnotationSelectEventArgs>;
@@ -1758,14 +1790,18 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
     /**
      * Triggers an event when the thumbnail is clicked in the thumbnail panel of PDF Viewer.
      * @event
-     * @blazorProperty 'OnThumbnailClick'
+
      */
     @Event()
     public thumbnailClick: EmitType<ThumbnailClickEventArgs>;
 
     /**
+     * @private
+     */
+    /**
      * Triggers when the property of the annotation is changed in the page of the PDF document.
      * @event
+     * @private
      */
     @Collection<PdfAnnotationBaseModel>([], PdfAnnotationBase)
     public annotations: PdfAnnotationBaseModel[];
@@ -1941,7 +1977,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
         }
         return modules;
     }
-    /** @hidden */
+
     public defaultLocale: Object = {
         'PdfViewer': 'PDF Viewer',
         'Cancel': 'Cancel',
@@ -2213,6 +2249,44 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
         if (this.annotationModule) {
             return new Promise((resolve: Function, reject: Function) => {
                 this.viewerBase.exportAnnotationsAsObject().then((value: object) => {
+                    resolve(value);
+                });
+            });
+        } else {
+            return null;
+        }
+    }
+
+    // tslint:disable-next-line
+    /**
+     * Perform  action in the PDF Viewer
+     * @returns void
+     */
+    // tslint:disable-next-line
+    public importFormFields(formFields: any): void {
+        if (this.formFieldsModule) {
+            this.viewerBase.importFormFields(formFields);
+        }
+    }
+
+    /**
+     * Perform export action in the PDF Viewer
+     * @returns void
+     */
+    public exportFormFields(): void {
+        if (this.formFieldsModule) {
+            this.viewerBase.exportFormFields();
+        }
+    }
+
+    /**
+     * Perform export annotations action in the PDF Viewer
+     * @returns Promise<object>
+     */
+    public exportFormFieldsAsObject(): Promise<object> {
+        if (this.formFieldsModule) {
+            return new Promise((resolve: Function, reject: Function) => {
+                this.viewerBase.exportFormFieldsAsObject().then((value: object) => {
                     resolve(value);
                 });
             });

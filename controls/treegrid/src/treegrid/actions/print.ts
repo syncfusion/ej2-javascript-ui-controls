@@ -6,7 +6,7 @@ import { addClass } from '@syncfusion/ej2-base';
 
 /**
  * TreeGrid Print module
- * @hidden
+
  */
 export class Print {
     private parent: TreeGrid;
@@ -29,7 +29,7 @@ export class Print {
     }
 
     /**
-     * @hidden
+
      */
     public addEventListener(): void {
       this.parent.grid.on(events.printGridInit, this.printTreeGrid, this);
@@ -54,7 +54,7 @@ export class Print {
     /**
      * To destroy the Print 
      * @return {void}
-     * @hidden
+
      */
     public destroy(): void {
       this.removeEventListener();

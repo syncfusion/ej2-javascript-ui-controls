@@ -19,26 +19,26 @@ import { DataModel } from '../datasource/adaptor-model';
 export class TooltipSettings extends ChildProperty<TooltipSettings> {
     /**
      * Custom template to format the ToolTip content.
-     * @default ''
+
      */
     @Property('')
     public template: string;
     /**
      * Specifies the color collection for heat map cell. 
-     * @default ''
+
      */
     @Property('')
     public fill: string;
     /**
      * Specifies the cell border style. 
-     * @default ''
+
      */
     @Complex<TooltipBorderModel>({}, TooltipBorder)
     public border: TooltipBorderModel;
 
     /**
      * Specifies the cell label style. 
-     * @default ''
+
      */
     @Complex<FontModel>(Theme.tooltipFont, Font)
     public textStyle: FontModel;

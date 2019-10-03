@@ -1,6 +1,6 @@
 import { BaseEventArgs } from '@syncfusion/ej2-base';
 import { ItemModel } from '@syncfusion/ej2-navigations';
-import { PopupType, ExcelFormat } from './type';
+import { PopupType, ExcelFormat, View } from './type';
 import { ResourcesModel, ViewsModel } from '../models/models';
 
 /**
@@ -11,7 +11,7 @@ export interface ActionEventArgs extends BaseEventArgs {
     requestType: string;
     /**
      * Defines the type of the event.
-     * @blazorType MouseEventArgs
+
      */
     event?: Event;
     /** Defines the cancel option for the action taking place. */
@@ -22,17 +22,17 @@ export interface ActionEventArgs extends BaseEventArgs {
     groupIndex?: number;
     /** 
      * Returns the appropriate added data based on the action.
-     * @isGenericType true
+
      */
     addedRecords?: Object[];
     /** 
      * Returns the appropriate changed data based on the action.
-     * @isGenericType true
+
      */
     changedRecords?: Object[];
     /** 
      * Returns the appropriate deleted data based on the action.
-     * @isGenericType true
+
      */
     deletedRecords?: Object[];
 }
@@ -52,18 +52,42 @@ export interface CellClickEventArgs extends BaseEventArgs {
     /** Returns true or false, based on whether the clicked cell is all-day or not. */
     isAllDay: boolean;
     /** Returns the single or collection of HTML element(s).
-     * @blazorType DOM
+
      */
     element?: HTMLElement | HTMLElement[];
     /** Defines the cancel option. */
     cancel?: boolean;
     /**
      * Defines the type of the event.
-     * @blazorType MouseEventArgs
+
      */
     event?: Event;
     /** Returns the group index of the cell. */
     groupIndex?: number;
+}
+
+export interface MoreEventsClickArgs extends BaseEventArgs {
+    /** Returns the start time of the cell. */
+    startTime: Date;
+    /** Returns the end time of the cell. */
+    endTime: Date;
+    /** Returns the single or collection of HTML element(s).
+
+     */
+    element: Element;
+    /** Defines the cancel option. */
+    cancel: boolean;
+    /**
+     * Defines the type of the event.
+
+     */
+    event: Event;
+    /** Returns the group index of the cell. */
+    groupIndex?: number;
+    /** Defines the option to show/hide the popup. */
+    isPopupOpen: boolean;
+    /** Defines the option to navigate the particular view */
+    viewName: View;
 }
 
 export interface SelectEventArgs extends BaseEventArgs {
@@ -71,7 +95,7 @@ export interface SelectEventArgs extends BaseEventArgs {
     requestType: string;
     /** 
      * Defines the type of the event.
-     * @blazorType MouseEventArgs
+
      */
     event?: Event;
     /** Returns the single or collection of HTML element(s). */
@@ -82,7 +106,7 @@ export interface SelectEventArgs extends BaseEventArgs {
     allowMultipleRow?: boolean;
     /**
      * Return the appropriate cell or event data based on the action.
-     * @isGenericType true
+
      */
     data?: { [key: string]: Object } | { [key: string]: Object }[];
     /** Returns the clicked resource row index. */
@@ -90,14 +114,14 @@ export interface SelectEventArgs extends BaseEventArgs {
 }
 
 export interface EventClickArgs extends BaseEventArgs {
-     /**
-      * Returns the date of the event.
-      * @deprecated
-      */
+    /**
+     * Returns the date of the event.
+
+     */
     date?: Date;
     /**
      * Returns a single or collection of selected or clicked events.
-     * @isGenericType true
+
      */
     event: { [key: string]: Object } | { [key: string]: Object }[];
     /** Returns the single or collection of HTML element(s). */
@@ -116,7 +140,7 @@ export interface HoverEventArgs extends BaseEventArgs {
 export interface EventRenderedArgs extends BaseEventArgs {
     /**
      * Returns the event data.
-     * @isGenericType true
+
      */
     data: { [key: string]: Object };
     /** Returns the event element which is currently being rendered on the UI. */
@@ -132,7 +156,7 @@ export interface PopupOpenEventArgs extends BaseEventArgs {
     type: PopupType;
     /**
      * Returns the cell or event data.
-     * @isGenericType true
+
      */
     data?: Object;
     /** Returns the target element on which the popup is getting opened. */
@@ -153,7 +177,7 @@ export interface PopupCloseEventArgs extends BaseEventArgs {
     type: PopupType;
     /**
      * Returns the cell or event data.
-     * @isGenericType true
+
      */
     data?: Object;
     /** Returns the target element on which the popup is getting opened. */
@@ -195,12 +219,12 @@ export interface ResizeEventArgs extends BaseEventArgs {
     element: HTMLElement;
     /**
      * Returns the resize event data.
-     * @isGenericType true
+
      */
     data: { [key: string]: Object };
     /**
      * Returns the mouse event.
-     * @blazorType MouseEventArgs
+
      */
     event: MouseEvent;
     /** Defines the cancel option. */
@@ -222,12 +246,12 @@ export interface DragEventArgs extends BaseEventArgs {
     element: HTMLElement;
     /**
      * Returns the dragged event data.
-     * @isGenericType true
+
      */
     data: { [key: string]: Object };
     /**
      * Returns the mouse event.
-     * @blazorType MouseEventArgs
+
      */
     event: MouseEvent;
     /** Defines the cancel option. */
@@ -266,7 +290,7 @@ export interface ScrollOptions {
     timeDelay: number;
 }
 
-/** @hidden */
+
 export interface TdData {
     date?: Date;
     renderDates?: Date[];
@@ -286,14 +310,14 @@ export interface TdData {
     template?: NodeList | Element[];
 }
 
-/** @hidden */
+
 export interface TimeSlotData extends TdData {
     first: boolean;
     middle: boolean;
     last: boolean;
 }
 
-/** @hidden */
+
 export interface KeyEventArgs {
     element: HTMLTableElement;
     rowIndex: number;
@@ -301,7 +325,7 @@ export interface KeyEventArgs {
     maxIndex: number;
 }
 
-/** @hidden */
+
 export interface CellTemplateArgs {
     date: Date;
     type: string;
@@ -313,20 +337,20 @@ export interface ResourceDetails {
     resource: ResourcesModel;
     /**
      * Returns the child resource data.
-     * @isGenericType true
+
      */
     resourceData: { [key: string]: Object };
     /** Returns the respective resource fields data. */
     groupData?: { [key: string]: Object };
 }
 
-/** @hidden */
+
 export interface CrudArgs extends ActionEventArgs {
     promise?: Promise<Object>;
     editParms?: SaveChanges;
 }
 
-/** @hidden */
+
 export interface IRenderer {
     element: HTMLElement;
     renderDates: Date[];
@@ -363,18 +387,18 @@ export interface IRenderer {
     resetColWidth(): void;
 }
 
-/** @hidden */
+
 export interface EJ2Instance extends HTMLElement {
     ej2_instances: Object[];
 }
 
-/** @hidden */
+
 export interface ScrollCss {
     padding?: string;
     border?: string;
 }
 
-/** @hidden */
+
 export interface NotifyEventArgs {
     module?: string;
     cssProperties?: ScrollCss;
@@ -383,13 +407,13 @@ export interface NotifyEventArgs {
     scrollPosition?: { [key: string]: Object };
 }
 
-/** @hidden */
+
 export interface LayoutData {
     element: HTMLElement;
     selectedDate: Date;
 }
 
-/** @hidden */
+
 export interface PopupEventArgs {
     classList?: string[];
     data?: string[] | { [key: string]: Object }[];
@@ -398,7 +422,7 @@ export interface PopupEventArgs {
     l10n?: { [key: string]: Object };
 }
 
-/** @hidden */
+
 export interface EventFieldsMapping {
     id?: string;
     isBlock?: string;
@@ -417,7 +441,7 @@ export interface EventFieldsMapping {
     followingID?: string;
 }
 
-/** @hidden */
+
 export interface ElementData {
     index: number;
     left: string;
@@ -428,14 +452,14 @@ export interface ElementData {
     resource: number;
 }
 
-/** @hidden */
+
 export interface SaveChanges {
     addedRecords: Object[];
     changedRecords: Object[];
     deletedRecords: Object[];
 }
 
-/** @hidden */
+
 export interface UIStateArgs {
     expand?: boolean;
     isInitial?: boolean;
@@ -449,14 +473,14 @@ export interface UIStateArgs {
     viewIndex?: number;
 }
 
-/** @hidden */
+
 export interface TreeViewArgs {
     resourceChild?: TreeViewArgs[];
     resourceId?: string;
     resourceName?: string;
 }
 
-/** @hidden */
+
 export interface ResizeEdges {
     left: boolean;
     right: boolean;
@@ -464,7 +488,7 @@ export interface ResizeEdges {
     bottom: boolean;
 }
 
-/** @hidden */
+
 export interface ActionBaseArgs {
     X?: number;
     Y?: number;
@@ -496,7 +520,7 @@ export interface ActionBaseArgs {
     navigation?: NavigateOptions;
 }
 
-/** @hidden */
+
 export interface StateArgs {
     isRefresh: boolean;
     isResource: boolean;
@@ -539,7 +563,7 @@ export interface ViewsData extends ViewsModel {
 export interface DataBoundEventArgs extends BaseEventArgs {
     /**
      * Returns the result data.
-     * @isGenericType true
+
      */
     result: Object[];
     count?: number;
@@ -549,7 +573,7 @@ export interface DataBoundEventArgs extends BaseEventArgs {
 export interface DataBindingEventArgs extends BaseEventArgs {
     /**
      * Returns the result data.
-     * @isGenericType true
+
      */
     result: Object[];
     count?: number;

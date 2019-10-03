@@ -8,7 +8,7 @@ import { isEditable, addRemoveActiveClasses, getComplexFieldID, getObject } from
 
 /**
  * `BooleanEditCell` is used to handle boolean cell type editing.
- * @hidden
+
  */
 export class BooleanEditCell implements IEditCell {
     private parent: IGrid;

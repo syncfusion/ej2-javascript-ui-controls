@@ -27,7 +27,7 @@ import { getUid, getPrintGridModel } from '../base/util';
 
 /**
  * `PDF Export` module is used to handle the exportToPDF action.
- * @hidden
+
  */
 export class PdfExport {
     private parent: IGrid;
@@ -48,7 +48,7 @@ export class PdfExport {
 
     /**
      * Constructor for the Grid PDF Export module
-     * @hidden
+
      */
     constructor(parent?: IGrid) {
         this.parent = parent;
@@ -560,7 +560,7 @@ export class PdfExport {
         let value: string = content.value.toString();
         let x: number = content.position.x * 0.75;
         let y: number = content.position.y * 0.75;
-        let format: PdfStringFormat;
+        let format: PdfStringFormat = new PdfStringFormat();
         let result: { format: PdfStringFormat, size: SizeF } = this.setContentFormat(content, format);
         if (result !== null && !isNullOrUndefined(result.format) && !isNullOrUndefined(result.size)) {
             pageTemplate.graphics.drawString(value, font, pen, brush, x, y, result.size.width, result.size.height, result.format);
@@ -1033,8 +1033,8 @@ export class PdfExport {
 
     /* tslint:disable-next-line:no-any */
     private getFont(content: any): PdfFont {
-        if (content.style.font) {
-            return content.style.font;
+        if (content.font) {
+            return content.font;
         }
         let fontSize: number = (!isNullOrUndefined(content.style.fontSize)) ? (content.style.fontSize * 0.75) : 9.75;
 
@@ -1255,7 +1255,7 @@ export class PdfExport {
     /**
      * To destroy the pdf export
      * @return {void}
-     * @hidden
+
      */
     public destroy(): void {
         //destroy for exporting
@@ -1267,7 +1267,7 @@ interface SummaryData {
 }
 
 /**
- * @hidden
+
  */
 interface IThemeStyles {
     fontColor?: string;

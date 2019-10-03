@@ -3,7 +3,7 @@ import { setAttributeSvg, createSvgElement } from '@syncfusion/ej2-drawings';
 import { PdfViewer } from '../pdfviewer';
 
 /**
- * @hidden
+
  */
 export function renderAdornerLayer(
     bounds: ClientRect, commonStyle: string, cavas: HTMLElement, index: number, pdfViewer: PdfViewer): void {
@@ -28,7 +28,7 @@ export function renderAdornerLayer(
 }
 
 /**
- * @hidden
+
  */
 export function createSvg(id: string, width: string | Number, height: string | Number): SVGElement {
     let svgObj: SVGElement = document.createElementNS('http://www.w3.org/2000/svg', 'svg');

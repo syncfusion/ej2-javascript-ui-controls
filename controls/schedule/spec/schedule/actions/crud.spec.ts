@@ -879,7 +879,7 @@ describe('Schedule CRUD', () => {
                 expect(dataObj[0].Subject).toEqual('recurrence event');
                 expect(dataObj[0].RecurrenceException as string)
                     .toEqual('20171018T100000Z');
-                expect(dataObj[1].Id).toEqual(20);
+                expect(dataObj[1].Id).toEqual(11);
                 expect(dataObj[1].RecurrenceID).toEqual(10);
                 expect(dataObj[1].Subject).toEqual('2nd occurrence edited');
                 done();
@@ -887,8 +887,8 @@ describe('Schedule CRUD', () => {
             expect(schObj.eventsData.length).toEqual(1);
             let data: { [key: string]: Object } = extend({}, schObj.eventsProcessed[2], null, true) as { [key: string]: Object };
             data.Subject = '2nd occurrence edited';
-            data.Id = 20;
-            schObj.saveEvent(data, "EditOccurrence");
+            data.Id = 11;
+            schObj.saveEvent(data, 'EditOccurrence');
             schObj.dataBound = dataBound;
         });
 
@@ -898,7 +898,7 @@ describe('Schedule CRUD', () => {
                 let dataObj: { [key: string]: Object }[] = schObj.eventsData as { [key: string]: Object }[];
                 expect((<string>dataObj[0].RecurrenceException).split(',').length).toEqual(1);
                 expect(dataObj[0].Subject).toEqual('recurrence event');
-                expect(dataObj[1].Id).toEqual(20);
+                expect(dataObj[1].Id).toEqual(11);
                 expect(dataObj[1].RecurrenceID).toEqual(10);
                 expect(dataObj[1].Subject).toEqual('2nd occurrence edited twice');
                 done();
@@ -914,22 +914,18 @@ describe('Schedule CRUD', () => {
                 expect(schObj.currentAction).toEqual('EditFollowingEvents');
                 expect(schObj.eventsData.length).toEqual(3);
                 let dataObj: { [key: string]: Object }[] = schObj.eventsProcessed as { [key: string]: Object }[];
-                let exDate: string = <string>dataObj[0].RecurrenceException;
-                expect(exDate.split(',').length).toEqual(1);
-                expect(dataObj[3].Id).toEqual(21);
-                expect(dataObj[3].FollowingID).toEqual(10);
+                expect(dataObj[3].Id).toEqual(12);
                 expect(dataObj[3].Subject).toEqual('future event edit parent');
                 expect(dataObj[3].RecurrenceRule as string)
                     .toEqual('FREQ=DAILY;INTERVAL=1;UNTIL=20171030T100000Z;');
-                expect(dataObj[0].RecurrenceException as string).toEqual('20171018T100000Z');
                 expect(dataObj[0].RecurrenceRule as string).toEqual('FREQ=DAILY;INTERVAL=1;UNTIL=20171018T100000Z;');
                 done();
             };
             let data: { [key: string]: Object } = extend({}, schObj.eventsProcessed[3], null, true) as { [key: string]: Object };
-            data.Id = 21;
+            data.Id = 12;
             data.FollowingID = 10;
             data.Subject = 'future event edit parent';
-            schObj.saveEvent(data, "EditFollowingEvents");
+            schObj.saveEvent(data, 'EditFollowingEvents');
             schObj.dataBound = dataBound;
         });
         it('test edit with future occurrences only option on existing edited future occurrences', (done: Function) => {
@@ -937,23 +933,21 @@ describe('Schedule CRUD', () => {
                 expect(schObj.currentAction).toEqual('EditFollowingEvents');
                 expect(schObj.eventsData.length).toEqual(4);
                 let dataObj: { [key: string]: Object }[] = schObj.eventsProcessed as { [key: string]: Object }[];
-                let exDate: string = <string>dataObj[0].RecurrenceException;
-                expect(exDate.split(',').length).toEqual(1);
-                expect(dataObj[5].Id).toEqual(22);
-                expect(dataObj[5].FollowingID).toEqual(21);
-                expect(dataObj[5].Subject).toEqual('future event edit child1');
-                expect(dataObj[5].RecurrenceRule).toEqual('FREQ=DAILY;INTERVAL=1;UNTIL=20171030T100000Z;');
-                expect(dataObj[0].RecurrenceException as string).toEqual('20171018T100000Z');
+                let eventObj: { [key: string]: Object }[] = schObj.eventsData as { [key: string]: Object }[];
+                expect(eventObj[3].Id).toEqual(13);
+                expect(eventObj[3].FollowingID).toEqual(12);
+                expect(eventObj[3].Subject).toEqual('future event edit child1');
+                expect(eventObj[3].RecurrenceRule).toEqual('FREQ=DAILY;INTERVAL=1;UNTIL=20171030T100000Z;');
                 expect(dataObj[0].RecurrenceRule as string).toEqual('FREQ=DAILY;INTERVAL=1;UNTIL=20171018T100000Z;');
                 expect(dataObj[3].Subject).toEqual('future event edit parent');
                 expect(dataObj[3].RecurrenceRule as string).toEqual('FREQ=DAILY;INTERVAL=1;UNTIL=20171020T100000Z;');
                 done();
             };
             let data: { [key: string]: Object } = extend({}, schObj.eventsProcessed[5], null, true) as { [key: string]: Object };
-            data.Id = 22;
-            data.FollowingID = 21;
+            data.Id = 13;
+            data.FollowingID = 12;
             data.Subject = 'future event edit child1';
-            schObj.saveEvent(data, "EditFollowingEvents");
+            schObj.saveEvent(data, 'EditFollowingEvents');
             schObj.dataBound = dataBound;
         });
         it('test edit occurrence on already edited occurrences with future occurence option ', (done: Function) => {
@@ -962,41 +956,36 @@ describe('Schedule CRUD', () => {
                 expect(schObj.eventsData.length).toEqual(5);
                 let dataObj: { [key: string]: Object }[] = schObj.eventsProcessed as { [key: string]: Object }[];
                 let eventData: { [key: string]: Object }[] = schObj.eventsData as { [key: string]: Object }[];
-                let exDate: string = eventData[3].RecurrenceException as string;
-                expect(exDate.split(',').length).toEqual(1);
-                expect(dataObj[5].Id).toEqual(23);
-                expect(dataObj[5].RecurrenceID).toEqual(22);
+                expect(dataObj[5].Id).toEqual(14);
+                expect(dataObj[5].RecurrenceID).toEqual(13);
                 expect(dataObj[5].Subject).toEqual('Edit occurence on future edited event');
                 expect(dataObj[5].RecurrenceRule as string).toEqual('FREQ=DAILY;INTERVAL=1;UNTIL=20171030T100000Z;');
-                expect(eventData[3].RecurrenceException as string).toEqual('20171021T100000Z');
                 expect(eventData[3].RecurrenceRule as string).toEqual('FREQ=DAILY;INTERVAL=1;UNTIL=20171030T100000Z;');
                 done();
             };
             let data: { [key: string]: Object } = extend({}, schObj.eventsProcessed[5], null, true) as { [key: string]: Object };
-            data.Id = 23;
-            data.RecurrenceID = 22;
+            data.Id = 14;
+            data.RecurrenceID = 13;
             delete (data.FollowingID);
             data.Subject = 'Edit occurence on future edited event';
-            schObj.saveEvent(data, "EditOccurrence");
+            schObj.saveEvent(data, 'EditOccurrence');
             schObj.dataBound = dataBound;
         });
         it('test edit future occurrences after edit single occurrence ', (done: Function) => {
             let dataBound: (args: Object) => void = (args: Object) => {
                 expect(schObj.currentAction).toEqual('EditFollowingEvents');
-                expect(schObj.eventsData.length).toEqual(3);
+                expect(schObj.eventsData.length).toEqual(4);
                 let dataObj: { [key: string]: Object }[] = schObj.eventsProcessed as { [key: string]: Object }[];
-                expect(dataObj[3].Id).toEqual(21);
-                expect(dataObj[3].FollowingID).toEqual(10);
+                expect(dataObj[3].Id).toEqual(15);
                 expect(dataObj[3].Subject).toEqual('Edit future edited occurence');
                 expect(dataObj[3].RecurrenceRule as string).toEqual('FREQ=DAILY;INTERVAL=1;UNTIL=20171030T100000Z;');
-                expect(dataObj[3].RecurrenceException).toEqual(null);
                 done();
             };
             let data: { [key: string]: Object } = extend({}, schObj.eventsProcessed[3], null, true) as { [key: string]: Object };
-            data.Id = 24;
-            data.FollowingID = 10;
+            data.Id = 15;
+            data.FollowingID = 12;
             data.Subject = 'Edit future edited occurence';
-            schObj.saveEvent(data, "EditFollowingEvents");
+            schObj.saveEvent(data, 'EditFollowingEvents');
             schObj.dataBound = dataBound;
         });
         it('test edit series', (done: Function) => {
@@ -1006,84 +995,69 @@ describe('Schedule CRUD', () => {
                 let dataObj: { [key: string]: Object }[] = schObj.eventsProcessed as { [key: string]: Object }[];
                 expect(dataObj[0].Id).toEqual(10);
                 expect(dataObj[0].Subject).toEqual('Edit entire series');
-                expect(dataObj[0].RecurrenceRule as string).toEqual('FREQ=DAILY;INTERVAL=1;UNTIL=20171030T100000Z;');
+                expect(dataObj[0].RecurrenceRule as string).toEqual('FREQ=DAILY;INTERVAL=1;UNTIL=20171030T043000Z;');
                 done();
             };
             let data: { [key: string]: Object } = extend({}, schObj.eventsProcessed[0], null, true) as { [key: string]: Object };
             data.Subject = 'Edit entire series';
-            schObj.saveEvent(data, "EditSeries");
+            data.RecurrenceRule = 'FREQ=DAILY;INTERVAL=1;UNTIL=20171030T043000Z;';
+            schObj.saveEvent(data, 'EditSeries');
             schObj.dataBound = dataBound;
         });
         it('test edit following events', (done: Function) => {
             let dataBound: (args: Object) => void = (args: Object) => {
-                expect(schObj.eventsData.length).toEqual(1);
+                expect(schObj.eventsData.length).toEqual(2);
                 let dataObj: { [key: string]: Object }[] = schObj.eventsProcessed as { [key: string]: Object }[];
-                expect(dataObj[0].Id).toEqual(10);
+                expect(dataObj[0].Id).toEqual(11);
                 expect(dataObj[0].Subject).toEqual('Edit following events');
-                expect(dataObj[0].RecurrenceRule as string).toEqual('FREQ=DAILY;INTERVAL=1;UNTIL=20171030T100000Z;');
+                expect(dataObj[0].RecurrenceRule as string).toEqual('FREQ=DAILY;INTERVAL=1;UNTIL=20171029T100000Z;');
                 done();
             };
             let data: { [key: string]: Object } = extend({}, schObj.eventsProcessed[0], null, true) as { [key: string]: Object };
             data.Subject = 'Edit following events';
-            schObj.saveEvent(data, "EditFollowingEvents");
+            data.Id = 11;
+            data.FollowingID = 10;
+            schObj.saveEvent(data, 'EditFollowingEvents');
             schObj.dataBound = dataBound;
         });
 
         it('test edit occurrence to Ensure Ignore edited occurrence', (done: Function) => {
             let dataBound: (args: Object) => void = (args: Object) => {
-                expect(schObj.eventsData.length).toEqual(2);
+                expect(schObj.eventsData.length).toEqual(3);
                 let dataObj: { [key: string]: Object }[] = schObj.eventsData as { [key: string]: Object }[];
-                expect((<string>dataObj[0].RecurrenceException).split(',').length).toEqual(1);
-                expect(dataObj[1].Subject).toEqual('occurrence edited');
-                expect(dataObj[0].RecurrenceException as string).toEqual('20171018T100000Z');
+                expect((<string>dataObj[1].RecurrenceException).split(',').length).toEqual(1);
+                expect(dataObj[2].Subject).toEqual('occurrence edited');
+                expect(dataObj[1].RecurrenceException as string).toEqual('20171018T100000Z');
                 done();
             };
-            expect(schObj.eventsData.length).toEqual(1);
+            expect(schObj.eventsData.length).toEqual(2);
             let data: { [key: string]: Object } = extend({}, schObj.eventsProcessed[2], null, true) as { [key: string]: Object };
             data.Subject = 'occurrence edited';
-            data.Id = 20;
-            schObj.saveEvent(data, "EditOccurrence");
+            data.Id = 12;
+            schObj.saveEvent(data, 'EditOccurrence');
             schObj.dataBound = dataBound;
         });
 
         it('test edit future occurrences with Ignore edited occurrence ', (done: Function) => {
             let dataBound: (args: Object) => void = (args: Object) => {
                 expect(schObj.currentAction).toEqual('EditFollowingEvents');
-                expect(schObj.eventsData.length).toEqual(3);
                 let dataObj: { [key: string]: Object }[] = schObj.eventsProcessed as { [key: string]: Object }[];
-                expect(dataObj[1].Id).toEqual(25);
-                expect(dataObj[1].FollowingID).toEqual(10);
+                let eventObj: { [key: string]: Object }[] = schObj.eventsData as { [key: string]: Object }[];
+                expect(eventObj.length).toEqual(4);
+                expect(eventObj[3].FollowingID).toEqual(11);
+                expect(dataObj[1].Id).toEqual(13);
                 expect(dataObj[1].Subject).toEqual('Edit future edited occurence');
-                expect(dataObj[1].RecurrenceException).toEqual('20171018T100000Z');
-                expect(dataObj[1].RecurrenceRule as string).toEqual('FREQ=DAILY;INTERVAL=1;UNTIL=20171030T100000Z;');
+                expect(dataObj[1].RecurrenceRule as string).toEqual('FREQ=DAILY;INTERVAL=1;UNTIL=20171029T100000Z;');
                 done();
             };
             let data: { [key: string]: Object } = extend({}, schObj.eventsProcessed[1], null, true) as { [key: string]: Object };
-            data.Id = 25;
-            data.FollowingID = 10;
+            data.Id = 13;
+            data.FollowingID = 11;
+            data.RecurrenceException = '20171018T100000Z';
+            delete data.RecurrenceID;
             schObj.uiStateValues.isIgnoreOccurrence = true;
             data.Subject = 'Edit future edited occurence';
-            schObj.saveEvent(data, "EditFollowingEvents");
-            schObj.dataBound = dataBound;
-        });
-
-        it('test edit series with Ignore edited occurrence ', (done: Function) => {
-            let dataBound: (args: Object) => void = (args: Object) => {
-                expect(schObj.currentAction).toEqual('EditSeries');
-                expect(schObj.eventsData.length).toEqual(2);
-                let dataObj: { [key: string]: Object }[] = schObj.eventsProcessed as { [key: string]: Object }[];
-                expect(dataObj[1].Id).toEqual(10);
-                expect(dataObj[1].FollowingID).toEqual(undefined);
-                expect(dataObj[1].Subject).toEqual('Edit Series');
-                expect(dataObj[1].RecurrenceException).toEqual('20171018T100000Z');
-                expect(dataObj[1].RecurrenceRule as string).toEqual('FREQ=DAILY;INTERVAL=1;UNTIL=20171030T100000Z;');
-                done();
-            };
-            let data: { [key: string]: Object } = extend({}, schObj.eventsProcessed[0], null, true) as { [key: string]: Object };
-            data.Id = 26;
-            schObj.uiStateValues.isIgnoreOccurrence = true;
-            data.Subject = 'Edit Series';
-            schObj.saveEvent(data, "EditSeries");
+            schObj.saveEvent(data, 'EditFollowingEvents');
             schObj.dataBound = dataBound;
         });
 
@@ -1095,16 +1069,13 @@ describe('Schedule CRUD', () => {
                 expect(dataObj[1].Id).toEqual(10);
                 expect(dataObj[1].FollowingID).toEqual(undefined);
                 expect(dataObj[1].Subject).toEqual('Edit Series');
-                expect(dataObj[1].RecurrenceException).toEqual(null);
                 expect(dataObj[1].RecurrenceRule as string).toEqual('FREQ=DAILY;');
                 done();
             };
             let data: { [key: string]: Object } = extend({}, schObj.eventsProcessed[0], null, true) as { [key: string]: Object };
-            data.Id = 27;
-            schObj.uiStateValues.isIgnoreOccurrence = false;
             data.Subject = 'Edit Series';
             data.RecurrenceRule = 'FREQ=DAILY;';
-            schObj.saveEvent(data, "EditSeries");
+            schObj.saveEvent(data, 'EditSeries');
             schObj.dataBound = dataBound;
         });
     });
@@ -1125,7 +1096,7 @@ describe('Schedule CRUD', () => {
             let eventSettingOption: EventSettingsModel = {
                 editFollowingEvents: true,
                 dataSource: cloneDataSource(events)
-            }
+            };
             let schOptions: ScheduleModel = {
                 height: '500px',
                 selectedDate: new Date(2017, 9, 16),
@@ -1158,7 +1129,7 @@ describe('Schedule CRUD', () => {
             let data: { [key: string]: Object } = extend({}, schObj.eventsProcessed[2], null, true) as { [key: string]: Object };
             data.Subject = '2nd occurrence edited';
             data.Id = 20;
-            schObj.saveEvent(data, "EditOccurrence");
+            schObj.saveEvent(data, 'EditOccurrence');
             schObj.dataBound = dataBound;
         });
         it('test edit with future occurrences only option', (done: Function) => {
@@ -1166,13 +1137,11 @@ describe('Schedule CRUD', () => {
                 expect(schObj.currentAction).toEqual('EditFollowingEvents');
                 expect(schObj.eventsData.length).toEqual(3);
                 let dataObj: { [key: string]: Object }[] = schObj.eventsProcessed as { [key: string]: Object }[];
-                let exDate: string = <string>dataObj[0].RecurrenceException;
-                expect(exDate.split(',').length).toEqual(1);
+                let eventObj: { [key: string]: Object }[] = schObj.eventsData as { [key: string]: Object }[];
+                expect(eventObj[0].RecurrenceException).toEqual('20171018T100000Z');
                 expect(dataObj[3].Id).toEqual(21);
-                expect(dataObj[3].FollowingID).toEqual(10);
                 expect(dataObj[3].Subject).toEqual('future event edit parent');
                 expect(dataObj[3].RecurrenceRule as string).toEqual('FREQ=DAILY;INTERVAL=1;UNTIL=20171030T100000Z;');
-                expect(dataObj[0].RecurrenceException as string).toEqual('20171018T100000Z');
                 expect(dataObj[0].RecurrenceRule as string).toEqual('FREQ=DAILY;INTERVAL=1;UNTIL=20171018T100000Z;');
                 done();
             };
@@ -1183,7 +1152,7 @@ describe('Schedule CRUD', () => {
             data.FollowingID = 10;
             data.Subject = 'future event edit parent';
             data.StartTime = timezone.removeLocalOffset(new Date(2017, 9, 19, 10, 0));
-            schObj.saveEvent(data, "EditFollowingEvents");
+            schObj.saveEvent(data, 'EditFollowingEvents');
             schObj.dataBound = dataBound;
         });
         it('test edit with future occurrences only option on existing edited future occurrences', (done: Function) => {
@@ -1191,13 +1160,9 @@ describe('Schedule CRUD', () => {
                 expect(schObj.currentAction).toEqual('EditFollowingEvents');
                 expect(schObj.eventsData.length).toEqual(4);
                 let dataObj: { [key: string]: Object }[] = schObj.eventsProcessed as { [key: string]: Object }[];
-                let exDate: string = <string>dataObj[0].RecurrenceException;
-                expect(exDate.split(',').length).toEqual(1);
                 expect(dataObj[5].Id).toEqual(22);
-                expect(dataObj[5].FollowingID).toEqual(21);
                 expect(dataObj[5].Subject).toEqual('future event edit child1');
                 expect(dataObj[5].RecurrenceRule as string).toEqual('FREQ=DAILY;INTERVAL=1;UNTIL=20171030T100000Z;');
-                expect(dataObj[0].RecurrenceException as string).toEqual('20171018T100000Z');
                 expect(dataObj[3].RecurrenceRule).toEqual('FREQ=DAILY;INTERVAL=1;UNTIL=20171020T100000Z;');
                 done();
             };
@@ -1205,7 +1170,7 @@ describe('Schedule CRUD', () => {
             data.Id = 22;
             data.Subject = 'future event edit child1';
             data.FollowingID = 21;
-            schObj.saveEvent(data, "EditFollowingEvents");
+            schObj.saveEvent(data, 'EditFollowingEvents');
             schObj.dataBound = dataBound;
         });
         it('test edit occurrence on already edited occurrences with future occurence option ', (done: Function) => {
@@ -1262,7 +1227,7 @@ describe('Schedule CRUD', () => {
             schObj.dataBound = dataBound;
         });
     });
-	
+
     describe('Delete Events with Future Occurences', () => {
 
         let schObj: Schedule;
@@ -1321,7 +1286,7 @@ describe('Schedule CRUD', () => {
             let eventSettingOption: EventSettingsModel = {
                 editFollowingEvents: true,
                 dataSource: cloneDataSource(testData)
-            }
+            };
             let schOptions: ScheduleModel = {
                 height: '500px',
                 selectedDate: new Date(2017, 9, 16),
@@ -1339,7 +1304,7 @@ describe('Schedule CRUD', () => {
 
         it('test normal appointment, delete using object', (done: Function) => {
             let dataBound: (args: Object) => void = (args: Object) => {
-                expect(schObj.eventsData.length).toEqual(7);
+                expect(schObj.eventsData.length).toEqual(6);
                 done();
             };
             let occurence: { [key: string]: Object } = {
@@ -1350,8 +1315,6 @@ describe('Schedule CRUD', () => {
                 StartTime: new Date(2017, 9, 19, 10, 0),
                 EndTime: new Date(2017, 9, 19, 11, 0),
             };
-            let eventElements: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
-            eventElements[6].click();
             let data: { [key: string]: Object } = extend({}, schObj.eventsProcessed[6], null, true) as { [key: string]: Object };
             occurence.Guid = data.Guid;
             schObj.deleteEvent(occurence, 'DeleteFollowingEvents');
@@ -1359,8 +1322,8 @@ describe('Schedule CRUD', () => {
         });
         it('test recurrence appointment delete series', (done: Function) => {
             let dataBound: (args: Object) => void = (args: Object) => {
-                expect(schObj.eventsData.length).toEqual(6);
-                expect(schObj.element.querySelectorAll('.e-appointment').length).toEqual(6);
+                expect(schObj.eventsData.length).toEqual(5);
+                expect(schObj.element.querySelectorAll('.e-appointment').length).toEqual(4);
                 done();
             };
             let data: { [key: string]: Object } = extend({}, schObj.eventsProcessed[0], null, true) as { [key: string]: Object };
@@ -1371,12 +1334,12 @@ describe('Schedule CRUD', () => {
 
         it('test add recurrence event', (done: Function) => {
             let dataBound: (args: Object) => void = (args: Object) => {
-                expect(schObj.eventsData.length).toEqual(7);
-                expect(schObj.element.querySelectorAll('.e-appointment').length).toEqual(10);
+                expect(schObj.eventsData.length).toEqual(6);
+                expect(schObj.element.querySelectorAll('.e-appointment').length).toEqual(8);
                 done();
             };
             let data: { [key: string]: Object }[] = [{
-                Id: 10,
+                Id: 16,
                 Subject: 'daily recurrence',
                 StartTime: new Date(2017, 9, 18, 10, 0),
                 EndTime: new Date(2017, 9, 18, 11, 0),
@@ -1386,7 +1349,7 @@ describe('Schedule CRUD', () => {
             schObj.addEvent(data);
             schObj.dataBound = dataBound;
         });
-    });    
+    });
 
     it('memory leak', () => {
         profile.sample();

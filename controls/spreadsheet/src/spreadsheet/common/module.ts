@@ -14,6 +14,7 @@ export function getRequiredModules(context: Spreadsheet): ModuleDeclaration[] {
     return modules;
 }
 
+ // tslint:disable-next-line:max-func-body-length
 function pushBasicModules(context: Spreadsheet, modules: ModuleDeclaration[]): void {
     modules.push({ member: 'basic', args: [] });
     modules.push({ member: 'all', args: [] });
@@ -104,6 +105,16 @@ function pushBasicModules(context: Spreadsheet, modules: ModuleDeclaration[]): v
     if (context.allowCellFormatting) {
         modules.push({
             member: 'cellformat',
+            args: [context]
+        });
+    }
+    if (context.allowSorting) {
+        modules.push({ member: 'sort', args: [context] });
+        modules.push({ member: 'workbookSort', args: [context] });
+    }
+    if (context.allowResizing) {
+        modules.push({
+            member: 'resize',
             args: [context]
         });
     }

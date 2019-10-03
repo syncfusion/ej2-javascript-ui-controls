@@ -818,7 +818,7 @@ export class Legend {
 
     private getLegendAlignment(map: Maps, width: number, height: number, legend: LegendSettingsModel): void {
         let x: number; let y: number;
-        let spacing: number = 20;let totalRect: Rect;
+        let spacing: number = 10;let totalRect: Rect;
         totalRect = extend({}, map.mapAreaRect, totalRect, true) as Rect;
         let areaX: number = totalRect.x;
         let areaY: number = totalRect.y;
@@ -834,7 +834,7 @@ export class Legend {
                 case 'Bottom':
                     totalRect.height = (areaHeight - height);
                     x = (totalWidth / 2) - (width / 2);
-                    y = (legend.position === 'Top') ? areaY : (areaY + totalRect.height) - spacing;
+                    y = (legend.position === 'Top') ? areaY : (areaY + totalRect.height);
                     totalRect.y = (legend.position === 'Top') ? areaY + height + spacing : areaY;
                     break;
                 case 'Left':
@@ -861,7 +861,11 @@ export class Legend {
                     }
                     break;
             }
-            map.totalRect = totalRect;
+            if(legend.height && legend.width && legend.mode !== 'Interactive') {
+                map.totalRect = totalRect;
+            } else {
+                map.mapAreaRect = totalRect;
+            }
             this.translate = new Point(x, y);
         }
     }

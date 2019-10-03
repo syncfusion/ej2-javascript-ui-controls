@@ -40,7 +40,7 @@ export class Slider implements IComponent {
      * Destroys the slider module.
      * @method destroy
      * @return {void}
-     * @hidden
+
      */
     public destroy(): void {
         this.base.destroy();

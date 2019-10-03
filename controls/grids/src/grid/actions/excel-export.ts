@@ -21,7 +21,7 @@ import { L10n } from '@syncfusion/ej2-base';
 import { ServiceLocator } from '../services/service-locator';
 
 /**
- * @hidden
+
  * `ExcelExport` module is used to handle the Excel export action.
  */
 export class ExcelExport {
@@ -54,7 +54,7 @@ export class ExcelExport {
 
     /**
      * Constructor for the Grid Excel Export module.
-     * @hidden
+
      */
     constructor(parent?: IGrid, locator?: ServiceLocator) {
         this.parent = parent;
@@ -931,7 +931,7 @@ export class ExcelExport {
     /**
      * To destroy the excel export
      * @return {void}
-     * @hidden
+
      */
     public destroy(): void {
         //destroy for exporting

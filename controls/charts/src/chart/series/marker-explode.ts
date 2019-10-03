@@ -30,7 +30,7 @@ export class MarkerExplode extends ChartData {
     }
 
     /**
-     * @hidden
+
      */
     public addEventListener(): void {
         if (this.chart.isDestroyed) { return; }
@@ -39,7 +39,7 @@ export class MarkerExplode extends ChartData {
 
     }
     /**
-     * @hidden
+
      */
     public removeEventListener(): void {
         if (this.chart.isDestroyed) { return; }
@@ -48,7 +48,7 @@ export class MarkerExplode extends ChartData {
     }
 
     /**
-     * @hidden
+
      */
     private mouseUpHandler(): void {
         let chart: Chart = this.chart;
@@ -58,7 +58,7 @@ export class MarkerExplode extends ChartData {
     }
 
     /**
-     * @hidden
+
      */
     private mouseMoveHandler(): void {
         let chart: Chart = this.chart;
@@ -186,7 +186,7 @@ export class MarkerExplode extends ChartData {
     }
 
     /**
-     * @hidden
+
      */
     public removeHighlightedMarker(): void {
         let elements: HTMLCollectionOf<Element> = document.getElementsByClassName('EJ2-Trackball');

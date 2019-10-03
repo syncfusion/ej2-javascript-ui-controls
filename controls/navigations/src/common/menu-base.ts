@@ -65,49 +65,49 @@ export class FieldSettings extends ChildProperty<FieldSettings> {
 
     /**
      * Specifies the itemId field for Menu item.
-     * @default 'id'
+
      */
     @Property('id')
     public itemId: string | string[];
 
     /**
      * Specifies the parentId field for Menu item.
-     * @default 'parentId'
+
      */
     @Property('parentId')
     public parentId: string | string[];
 
     /**
      * Specifies the text field for Menu item.
-     * @default 'text'
+
      */
     @Property('text')
     public text: string | string[];
 
     /**
      * Specifies the css icon field for Menu item.
-     * @default 'iconCss'
+
      */
     @Property('iconCss')
     public iconCss: string | string[];
 
     /**     
      * Specifies the Url field for Menu item.
-     * @default 'url'
+
      */
     @Property('url')
     public url: string | string[];
 
     /**     
      * Specifies the separator field for Menu item.
-     * @default 'separator'
+
      */
     @Property('separator')
     public separator: string | string[];
 
     /**
      * Specifies the children field for Menu item. 
-     * @default 'items'
+
      */
     @Property('items')
     public children: string | string[];
@@ -120,42 +120,42 @@ export class MenuItem extends ChildProperty<MenuItem> {
     /**
      * Defines class/multiple classes separated by a space for the menu Item that is used to include an icon.
      * Menu Item can include font icon and sprite image.
-     * @default null
+
      */
     @Property(null)
     public iconCss: string;
 
     /**
      * Specifies the id for menu item.
-     * @default ''
+
      */
     @Property('')
     public id: string;
 
     /**
      * Specifies separator between the menu items. Separator are either horizontal or vertical lines used to group menu items.
-     * @default false
+
      */
     @Property(false)
     public separator: boolean;
 
     /**
      * Specifies the sub menu items that is the array of MenuItem model.
-     * @default []
+
      */
     @Collection<MenuItemModel>([], MenuItem)
     public items: MenuItemModel[];
 
     /**
      * Specifies text for menu item.
-     * @default ''
+
      */
     @Property('')
     public text: string;
 
     /**
      * Specifies url for menu item that creates the anchor link to navigate to the url provided.
-     * @default ''
+
      */
     @Property('')
     public url: string;
@@ -172,22 +172,22 @@ export class MenuAnimationSettings extends ChildProperty<MenuAnimationSettings> 
      * * SlideDown: Specifies the sub menu transform with slide down effect.
      * * ZoomIn: Specifies the sub menu transform with zoom in effect.
      * * FadeIn: Specifies the sub menu transform with fade in effect.
-     * @default 'SlideDown'
-     * @aspType Syncfusion.EJ2.Navigations.MenuEffect
-     * @blazorType Syncfusion.EJ2.Navigations.MenuEffect
-     * @isEnumeration true
+
+
+
+
      */
     @Property('SlideDown')
     public effect: MenuEffect;
     /**
      * Specifies the time duration to transform object.
-     * @default 400
+
      */
     @Property(400)
     public duration: number;
     /**
      * Specifies the easing effect applied while transform.
-     * @default 'ease'
+
      */
     @Property('ease')
     public easing: string;
@@ -233,7 +233,7 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
     /**
      * Triggers while rendering each menu item.
      * @event
-     * @blazorProperty 'OnItemRender'
+
      */
     @Event()
     public beforeItemRender: EmitType<MenuEventArgs>;
@@ -241,7 +241,7 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
     /**
      * Triggers before opening the menu item.
      * @event
-     * @blazorProperty 'OnOpen'
+
      */
     @Event()
     public beforeOpen: EmitType<BeforeOpenCloseMenuEventArgs>;
@@ -249,7 +249,7 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
     /**
      * Triggers while opening the menu item.
      * @event
-     * @blazorProperty 'Opened'
+
      */
     @Event()
     public onOpen: EmitType<OpenCloseMenuEventArgs>;
@@ -257,7 +257,7 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
     /**
      * Triggers before closing the menu.
      * @event
-     * @blazorProperty 'OnClose'
+
      */
     @Event()
     public beforeClose: EmitType<BeforeOpenCloseMenuEventArgs>;
@@ -265,7 +265,7 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
     /**
      * Triggers while closing the menu.
      * @event
-     * @blazorProperty 'Closed'
+
      */
     @Event()
     public onClose: EmitType<OpenCloseMenuEventArgs>;
@@ -273,7 +273,7 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
     /**
      * Triggers while selecting menu item.
      * @event
-     * @blazorProperty 'ItemSelected'
+
      */
     @Event()
     public select: EmitType<MenuEventArgs>;
@@ -281,14 +281,14 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
     /**
      * Triggers once the component rendering is completed.
      * @event
-     * @blazorProperty 'Created'
+
      */
     @Event()
     public created: EmitType<Event>;
 
     /**
      * Defines class/multiple classes separated by a space in the Menu wrapper.
-     * @default ''
+
      */
     @Property('')
     public cssClass: string;
@@ -296,7 +296,7 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
     /**
      * Specifies whether to show the sub menu or not on click.
      * When set to true, the sub menu will open only on mouse click.
-     * @default false
+
      */
     @Property(false)
     public showItemOnClick: boolean;
@@ -304,7 +304,7 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
     /**
      * Specifies target element selector in which the ContextMenu should be opened.
      * Specifies target element to open/close Menu while click in Hamburger mode.
-     * @default ''
+
      * @private
      */
     @Property('')
@@ -313,7 +313,7 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
     /**
      * Specifies the filter selector for elements inside the target in that the context menu will be opened.
      * Not applicable to Menu component.
-     * @default ''
+
      * @private
      */
     @Property('')
@@ -322,7 +322,7 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
     /**
      * Specifies the template for Menu item.
      * Not applicable to ContextMenu component.
-     * @default null
+
      * @private
      */
     @Property(null)
@@ -331,7 +331,7 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
     /**
      * Specifies whether to enable / disable the scrollable option in Menu.
      * Not applicable to ContextMenu component.
-     * @default false
+
      * @private
      */
     @Property(false)
@@ -340,7 +340,7 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
     /**
      * Specifies mapping fields from the dataSource.
      * Not applicable to ContextMenu component.
-     * @default { itemId: "id", text: "text", parentId: "parentId", iconCss: "iconCss", url: "url", separator: "separator",
+
      * children: "items" }
      * @private
      */
@@ -349,14 +349,14 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
 
     /**
      * Specifies menu items with its properties which will be rendered as Menu.
-     * @default []
+
      */
     @Collection<MenuItemModel>([], MenuItem)
     public items: MenuItemModel[] | { [key: string]: Object }[];
 
     /**
      * Specifies the animation settings for the sub menu open.
-     * @default { duration: 400, easing: 'ease', effect: 'SlideDown' }
+
      */
     @Complex<MenuAnimationSettingsModel>({}, MenuAnimationSettings)
     public animationSettings: MenuAnimationSettingsModel;
@@ -1415,7 +1415,7 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
         if (this.showSubMenu) {
             let idx: number[] = this.navIdx.concat(this.cliIdx);
             let item: MenuItemModel = this.getItem(idx);
-            if ((<objColl>(<obj>item)[this.getField('children', idx.length - 1)]) &&
+            if (item && (<objColl>(<obj>item)[this.getField('children', idx.length - 1)]) &&
                 (<objColl>(<obj>item)[this.getField('children', idx.length - 1)]).length) {
                 if (e.type === 'mouseover' || (Browser.isDevice && this.isMenu)) {
                     this.setLISelected(this.cli);
@@ -1464,6 +1464,14 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
             items = (<obj>items[navIdx[i]])[this.getField('children', i)] as objColl;
         }
         return items;
+    }
+
+    private setItems(newItems: objColl, navIdx: number[]): void {
+        let items: objColl = this.getItems(navIdx);
+        items.splice(0, items.length);
+        for (let i: number = 0; i < newItems.length; i++) {
+            items.splice(i, 0, newItems[i]);
+        }
     }
 
     private getIdx(ul: Element, li: Element, skipHdr: boolean = true): number {
@@ -1573,8 +1581,8 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
                                 idx = navIdx.pop();
                                 item = this.getItems(navIdx);
                                 this.insertAfter([item[idx]], item[idx].text);
-                                item = this.getItems(navIdx);
                                 this.removeItem(item, navIdx, idx);
+                                this.setItems(item as objColl, navIdx);
                             }
                             navIdx.length = 0;
                         }

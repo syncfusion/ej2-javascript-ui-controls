@@ -346,7 +346,7 @@ export class NumberFormatting implements IAction {
     /**
      * To add event listener.
      * @returns void
-     * @hidden
+
      */
     public addEventListener(): void {
         if (this.parent.isDestroyed) { return; }
@@ -356,7 +356,7 @@ export class NumberFormatting implements IAction {
     /**
      * To remove event listener.
      * @returns void
-     * @hidden
+
      */
     public removeEventListener(): void {
         if (this.parent.isDestroyed) { return; }
@@ -366,7 +366,7 @@ export class NumberFormatting implements IAction {
     /**
      * To destroy the calculated field dialog
      * @returns void
-     * @hidden
+
      */
     public destroy(): void {
         if (this.dialog && !this.dialog.isDestroyed) {

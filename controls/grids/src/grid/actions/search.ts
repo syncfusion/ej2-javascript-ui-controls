@@ -18,7 +18,7 @@ export class Search implements IAction {
 
     /**
      * Constructor for Grid search module.
-     * @hidden
+
      */
     constructor(parent?: IGrid) {
         this.parent = parent;
@@ -47,7 +47,7 @@ export class Search implements IAction {
         }
     }
     /**
-     * @hidden
+
      */
     public addEventListener(): void {
         if (this.parent.isDestroyed) { return; }
@@ -59,7 +59,7 @@ export class Search implements IAction {
         this.parent.on(events.cancelBegin, this.cancelBeginEvent, this);
     }
     /**
-     * @hidden
+
      */
     public removeEventListener(): void {
         if (this.parent.isDestroyed) { return; }
@@ -73,13 +73,13 @@ export class Search implements IAction {
     /**
      * To destroy the print 
      * @return {void}
-     * @hidden
+
      */
     public destroy(): void {
         this.removeEventListener();
     }
     /**
-     * @hidden
+
      */
     public onPropertyChanged(e: NotifyArgs): void {
         if (e.module !== this.getModuleName()) {
@@ -99,7 +99,7 @@ export class Search implements IAction {
     /**
      * The function used to trigger onActionComplete
      * @return {void}
-     * @hidden
+
      */
     public onSearchComplete(e: NotifyArgs): void {
         this.parent.trigger(events.actionComplete, extend(e, {

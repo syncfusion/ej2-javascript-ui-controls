@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 17.3.14 (2019-10-03)
+
+### Gantt
+
+#### Bug Fixes
+
+- `F147755` - Chart part disappearing issue when splitter position value greater than control width has been fixed.
+
 ## 17.3.9-beta (2019-09-20)
 
 ### Gantt
@@ -12,6 +20,8 @@
 - `F145725` - Issue with cell editing on newly added record has been fixed.
 - `#246761` - Issue while providing date field value with empty string value and invalid date values has been fixed.
 - `#247124` - Issue while loading Gantt SB samples in Mobile devices has been fixed.
+- `F147329` - Issue in progress calculation with unscheduled tasks has been fixed.
+- `F147380` - Issue with prevent edit dialog has been fixed.
 
 #### New Features
 

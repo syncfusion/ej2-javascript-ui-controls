@@ -76,11 +76,11 @@ export class KeyGesture extends ChildProperty<KeyGesture> {
      * * The Minus
      * * The Plus
      * * The Star
-     * @aspDefaultValueIgnore
-     * @blazorDefaultValueIgnore
-     * @aspNumberEnum
-     * @blazorNumberEnum
-     * @default undefined
+
+
+
+
+
      */
     @Property()
     public key: Keys;
@@ -91,11 +91,11 @@ export class KeyGesture extends ChildProperty<KeyGesture> {
      * * Meta - meta key im mac
      * * Alt - alt key
      * * Shift - shift key
-     * @aspDefaultValueIgnore
-     * @blazorDefaultValueIgnore
-     * @aspNumberEnum
-     * @blazorNumberEnum
-     * @default undefined
+
+
+
+
+
      */
     @Property()
     public keyModifiers: KeyModifiers;
@@ -108,26 +108,26 @@ export class Command extends ChildProperty<Command> {
 
     /**
      * Defines the name of the command
-     * @default ''
+
      */
     @Property('')
     public name: string;
 
     /**
      * Check the command is executable at the moment or not
-     * @aspDefaultValueIgnore
-     * @blazorDefaultValueIgnore
-     * @default undefined
-     * @deprecated
+
+
+
+
      */
     @Property()
     public canExecute: Function | string;
     /**
      * Defines what to be executed when the key combination is recognized
-     * @aspDefaultValueIgnore
-     * @blazorDefaultValueIgnore
-     * @default undefined
-     * @deprecated
+
+
+
+
      */
     @Property()
     public execute: Function | string;
@@ -173,14 +173,14 @@ export class Command extends ChildProperty<Command> {
      * });
      * diagram.appendTo('#diagram');
      * ```
-     * @default {}
+
      */
     @Complex<KeyGestureModel>({}, KeyGesture)
     public gesture: KeyGestureModel;
 
     /** 
      * Defines any additional parameters that are required at runtime
-     * @default ''
+
      */
     @Property('')
     public parameter: string;
@@ -201,7 +201,7 @@ export class Command extends ChildProperty<Command> {
 export class CommandManager extends ChildProperty<CommandManager> {
     /**
      * Stores the multiple command names with the corresponding command objects
-     * @default []
+
      */
     @Collection<CommandModel>([], Command)
     public commands: CommandModel[];
@@ -213,18 +213,18 @@ export class CommandManager extends ChildProperty<CommandManager> {
 export class ContextMenuSettings extends ChildProperty<ContextMenuSettings> {
     /**
      * Enables/Disables the context menu items
-     * @aspDefaultValueIgnore
-     * @blazorDefaultValueIgnore
-     * @default undefined
+
+
+
      */
     @Property()
     public show: boolean;
 
     /**
      * Shows only the custom context menu items
-     * @aspDefaultValueIgnore
-     * @blazorDefaultValueIgnore
-     * @default undefined
+
+
+
      */
     @Property()
     public showCustomMenuOnly: boolean;
@@ -246,9 +246,9 @@ export class ContextMenuSettings extends ChildProperty<ContextMenuSettings> {
      * });
      * diagram.appendTo('#diagram');
      * ```
-     * @aspDefaultValueIgnore
-     * @blazorDefaultValueIgnore
-     * @default undefined
+
+
+
      */
     @Property()
     public items: ContextMenuItemModel[];

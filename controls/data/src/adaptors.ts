@@ -6,12 +6,12 @@ import { Query, Predicate, QueryOptions, QueryList, ParamOption } from './query'
 /**
  * Adaptors are specific data source type aware interfaces that are used by DataManager to communicate with DataSource.
  * This is the base adaptor class that other adaptors can extend.
- * @hidden
+
  */
 export class Adaptor {
     /**
      * Specifies the datasource option.
-     * @default null
+
      */
     public dataSource: DataOptions;
 
@@ -21,15 +21,15 @@ export class Adaptor {
 
     /**
      * It contains the datamanager operations list like group, searches, etc.,
-     * @default null
-     * @hidden
+
+
      */
     public pvt: PvtOptions;
 
     /**
      * Constructor for Adaptor class
      * @param  {DataOptions} ds?
-     * @hidden
+
      * @returns aggregates
      */
     constructor(ds?: DataOptions) {
@@ -66,14 +66,14 @@ export class Adaptor {
 
     /**
      * Specifies the type of adaptor.
-     * @default Adaptor
+
      */
     public type: Object = Adaptor;
 }
 
 /**
  * JsonAdaptor is used to process JSON data. It contains methods to process the given JSON data based on the queries.
- * @hidden
+
  */
 export class JsonAdaptor extends Adaptor {
 
@@ -350,7 +350,7 @@ export class JsonAdaptor extends Adaptor {
 /**
  * URL Adaptor of DataManager can be used when you are required to use remote service to retrieve data. 
  * It interacts with server-side for all DataManager Queries and CRUD operations.
- * @hidden
+
  */
 export class UrlAdaptor extends Adaptor {
 
@@ -445,7 +445,7 @@ export class UrlAdaptor extends Adaptor {
         this.pvt = {};
         if (this.options.requestType === 'json') {
             return {
-                data: JSON.stringify(req),
+                data: JSON.stringify(req, DataUtil.parse.jsonDateReplacer),
                 url: url,
                 pvtData: p,
                 type: 'POST',
@@ -517,7 +517,12 @@ export class UrlAdaptor extends Adaptor {
         data: DataResult, ds?: DataOptions, query?: Query, xhr?: XMLHttpRequest, request?: Object, changes?: CrudOptions): DataResult {
         if (xhr && xhr.getResponseHeader('Content-Type') &&
             xhr.getResponseHeader('Content-Type').indexOf('application/json') !== -1) {
+            let handleTimeZone: boolean = DataUtil.timeZoneHandling;
+            if (ds && !ds.timeZoneHandling) {
+                DataUtil.timeZoneHandling = false;
+            }
             data = DataUtil.parse.parseJson(data);
+            DataUtil.timeZoneHandling = handleTimeZone;
         }
         let requests: { pvtData?: Object, data?: string } = request;
         let pvt: PvtOptions = requests.pvtData || {};
@@ -661,7 +666,7 @@ export class UrlAdaptor extends Adaptor {
      * To generate the predicate based on the filtered query.
      * @param  {Object[]|string[]|number[]} data
      * @param  {Query} query
-     * @hidden
+
      */
     public getFiltersFrom(data: Object[] | string[] | number[], query: Query): Predicate {
         let key: string = query.fKey;
@@ -748,7 +753,7 @@ export class UrlAdaptor extends Adaptor {
 
 /**
  * OData Adaptor that is extended from URL Adaptor, is used for consuming data through OData Service. 
- * @hidden
+
  */
 export class ODataAdaptor extends UrlAdaptor {
 
@@ -758,15 +763,15 @@ export class ODataAdaptor extends UrlAdaptor {
 
     /**
      * Specifies the root url of the provided odata url.
-     * @hidden
-     * @default null
+
+
      */
     public rootUrl: string;
 
     /**
      * Specifies the resource name of the provided odata table.
-     * @hidden
-     * @default null
+
+
      */
     public resourceTableName: string;
 
@@ -1223,7 +1228,17 @@ export class ODataAdaptor extends UrlAdaptor {
 
         let stat: { method: string, url: Function, data: Function } = {
             'method': 'DELETE ',
-            'url': (data: Object[], i: number, key: string): string => '(' + data[i][key] as string + ')',
+            'url': (data: Object[], i: number, key: string): string => {
+                let url: object = DataUtil.getObject(key, data[i]);
+                if (typeof url === 'number' || DataUtil.parse.isGuid(url)) {
+                    return '(' + url as string + ')';
+                } else if (url instanceof Date) {
+                    let dateTime: Date = data[i][key];
+                    return '(' + dateTime.toJSON() + ')';
+                } else {
+                    return `('${url}')`;
+                }
+            },
             'data': (data: Object[], i: number): string => ''
         };
         req = this.generateBodyContent(arr, e, stat, dm);
@@ -1266,7 +1281,16 @@ export class ODataAdaptor extends UrlAdaptor {
         );
         let stat: { method: string, url: Function, data: Function } = {
             'method': this.options.updateType + ' ',
-            'url': (data: Object[], i: number, key: string): string => '(' + data[i][key] as string + ')',
+            'url': (data: Object[], i: number, key: string): string => {
+                if (typeof data[i][key] === 'number' || DataUtil.parse.isGuid(data[i][key])) {
+                    return '(' + data[i][key] as string + ')';
+                } else if (data[i][key] instanceof Date) {
+                    let date: Date = data[i][key];
+                    return '(' + date.toJSON() + ')';
+                } else {
+                    return `('${data[i][key]}')`;
+                }
+            },
             'data': (data: Object[], i: number): string => JSON.stringify(data[i]) + '\n\n'
         };
         req = this.generateBodyContent(arr, e, stat, dm);
@@ -1365,12 +1389,12 @@ export class ODataAdaptor extends UrlAdaptor {
 /**
  * The OData v4 is an improved version of OData protocols.
  * The DataManager uses the ODataV4Adaptor to consume OData v4 services.
- * @hidden
+
  */
 export class ODataV4Adaptor extends ODataAdaptor {
 
     /**
-     * @hidden
+
      */
     protected getModuleName(): string {
         return 'ODataV4Adaptor';
@@ -1429,6 +1453,9 @@ export class ODataV4Adaptor extends ODataAdaptor {
 
         if (isDate) {
             returnValue = returnValue.replace(/datetime'(.*)'$/, '$1');
+        }
+        if (DataUtil.parse.isGuid(val)) {
+            returnValue = returnValue.replace('guid', '').replace(/'/g, '');
         }
         return returnValue;
     }
@@ -1561,7 +1588,7 @@ export class ODataV4Adaptor extends ODataAdaptor {
  * The Web API is a programmatic interface to define the request and response messages system that is mostly exposed in JSON or XML. 
  * The DataManager uses the WebApiAdaptor to consume Web API.
  * Since this adaptor is targeted to interact with Web API created using OData endpoint, it is extended from ODataAdaptor
- * @hidden
+
  */
 export class WebApiAdaptor extends ODataAdaptor {
 
@@ -1613,6 +1640,80 @@ export class WebApiAdaptor extends ODataAdaptor {
         };
     }
 
+    public batchRequest(dm: DataManager, changes: CrudOptions, e: RemoteArgs): Object {
+        let initialGuid: string = e.guid = DataUtil.getGuid(this.options.batchPre);
+        let url: string = dm.dataSource.url.replace(/\/*$/, '/' + this.options.batch);
+        e.url = this.resourceTableName ? this.resourceTableName : e.url;
+        let req: string[] = [];
+        //insertion
+        for (let i: number = 0, x: number = changes.addedRecords.length; i < x; i++) {
+            changes.addedRecords.forEach((j: number, d: number) => {
+                let stat: { method: string, url: Function, data: Function } = {
+                    'method': 'POST ',
+                    'url': (data: Object[], i: number, key: string): string => '',
+                    'data': (data: Object[], i: number): string => JSON.stringify(data[i]) + '\n\n'
+                };
+                req.push('--' + initialGuid);
+                req.push('Content-Type: application/http; msgtype=request', '');
+                req.push('POST ' + '/api/' + (dm.dataSource.insertUrl || dm.dataSource.crudUrl || e.url)
+                    + stat.url(changes.addedRecords, i, e.key) + ' HTTP/1.1');
+                req.push('Content-Type: ' + 'application/json; charset=utf-8');
+                req.push('Host: ' + location.host);
+                req.push('', j ? JSON.stringify(j) : '');
+            });
+        }
+        //updation 
+        for (let i: number = 0, x: number = changes.changedRecords.length; i < x; i++) {
+            changes.changedRecords.forEach((j: number, d: number) => {
+                let stat: { method: string, url: Function, data: Function } = {
+                    'method': this.options.updateType + ' ',
+                    'url': (data: Object[], i: number, key: string): string => '',
+                    'data': (data: Object[], i: number): string => JSON.stringify(data[i]) + '\n\n'
+                };
+                req.push('--' + initialGuid);
+                req.push('Content-Type: application/http; msgtype=request', '');
+                req.push('PUT ' + '/api/' + (dm.dataSource.updateUrl || dm.dataSource.crudUrl || e.url)
+                    + stat.url(changes.changedRecords, i, e.key) + ' HTTP/1.1');
+                req.push('Content-Type: ' + 'application/json; charset=utf-8');
+                req.push('Host: ' + location.host);
+                req.push('', j ? JSON.stringify(j) : '');
+            });
+        }
+        //deletion
+        for (let i: number = 0, x: number = changes.deletedRecords.length; i < x; i++) {
+            changes.deletedRecords.forEach((j: number, d: number) => {
+                let state: { mtd: string, url: Function, data: Function } = {
+                    'mtd': 'DELETE ',
+                    'url': (data: Object[], i: number, key: string): string => {
+                        let url: object = DataUtil.getObject(key, data[i]);
+                        if (typeof url === 'number' || DataUtil.parse.isGuid(url)) {
+                            return '/' + url as string;
+                        } else if (url instanceof Date) {
+                            let datTime: Date = data[i][key];
+                            return '/' + datTime.toJSON();
+                        } else {
+                            return `/'${url}'`;
+                        }
+                    },
+                    'data': (data: Object[], i: number): string => ''
+                };
+                req.push('--' + initialGuid);
+                req.push('Content-Type: application/http; msgtype=request', '');
+                req.push('DELETE ' + '/api/' + (dm.dataSource.removeUrl || dm.dataSource.crudUrl || e.url)
+                    + state.url(changes.deletedRecords, i, e.key) + ' HTTP/1.1');
+                req.push('Content-Type: ' + 'application/json; charset=utf-8');
+                req.push('Host: ' + location.host);
+                req.push('', j ? JSON.stringify(j) : '');
+            });
+        }
+        req.push('--' + initialGuid + '--', '');
+        return {
+            type: 'POST',
+            url: url,
+            contentType: 'multipart/mixed; boundary=' + initialGuid,
+            data: req.join('\r\n')
+        };
+    }
     /**
      * Method will trigger before send the request to server side. 
      * Used to set the custom header or modify the request options.
@@ -1664,7 +1765,7 @@ export class WebApiAdaptor extends ODataAdaptor {
 
 /**
  * WebMethodAdaptor can be used by DataManager to interact with web method.
- * @hidden
+
  */
 export class WebMethodAdaptor extends UrlAdaptor {
 
@@ -1706,11 +1807,11 @@ export class WebMethodAdaptor extends UrlAdaptor {
 /**
  * RemoteSaveAdaptor, extended from JsonAdaptor and it is used for binding local data and performs all DataManager queries in client-side. 
  * It interacts with server-side only for CRUD operations.
- * @hidden
+
  */
 export class RemoteSaveAdaptor extends JsonAdaptor {
     /**
-     * @hidden
+
      */
     constructor() {
         super();
@@ -1819,7 +1920,7 @@ export class RemoteSaveAdaptor extends JsonAdaptor {
 /**
  * Cache Adaptor is used to cache the data of the visited pages. It prevents new requests for the previously visited pages.
  * You can configure cache page size and duration of caching by using cachingPageSize and timeTillExpiration properties of the DataManager
- * @hidden
+
  */
 export class CacheAdaptor extends UrlAdaptor {
     private cacheAdaptor: CacheAdaptor;
@@ -1833,7 +1934,7 @@ export class CacheAdaptor extends UrlAdaptor {
      * @param  {CacheAdaptor} adaptor?
      * @param  {number} timeStamp?
      * @param  {number} pageSize?
-     * @hidden
+
      */
     constructor(adaptor?: CacheAdaptor, timeStamp?: number, pageSize?: number) {
         super();
@@ -1874,7 +1975,7 @@ export class CacheAdaptor extends UrlAdaptor {
      * It will generate the key based on the URL when we send a request to server.
      * @param  {string} url
      * @param  {Query} query?
-     * @hidden
+
      */
     public generateKey(url: string, query: Query): string {
         let queries: Requests = this.getQueryRequest(query);
@@ -1970,7 +2071,8 @@ export class CacheAdaptor extends UrlAdaptor {
      * @param  {Ajax} settings?
      */
     public beforeSend(dm: DataManager, request: XMLHttpRequest, settings?: Ajax): void {
-        if (DataUtil.endsWith(settings.url, this.cacheAdaptor.options.batch) && settings.type.toLowerCase() === 'post') {
+        if (!isNullOrUndefined(this.cacheAdaptor.options.batch) && DataUtil.endsWith(settings.url, this.cacheAdaptor.options.batch)
+            && settings.type.toLowerCase() === 'post') {
             request.setRequestHeader('Accept', this.cacheAdaptor.options.multipartAccept);
         }
 
@@ -2027,7 +2129,7 @@ export class CacheAdaptor extends UrlAdaptor {
 }
 
 /**
- * @hidden
+
  */
 export interface CrudOptions {
     changedRecords?: Object[];
@@ -2042,7 +2144,7 @@ export interface CrudOptions {
 }
 
 /**
- * @hidden
+
  */
 export interface PvtOptions {
     groups?: QueryOptions[];
@@ -2054,7 +2156,7 @@ export interface PvtOptions {
 }
 
 /**
- * @hidden
+
  */
 export interface DataResult {
     nodeType?: number;
@@ -2073,7 +2175,7 @@ export interface DataResult {
 }
 
 /**
- * @hidden
+
  */
 export interface Requests {
     sorts: QueryOptions[];
@@ -2084,7 +2186,7 @@ export interface Requests {
 }
 
 /**
- * @hidden
+
  */
 export interface RemoteArgs {
     guid?: string;
@@ -2095,7 +2197,7 @@ export interface RemoteArgs {
 }
 
 /**
- * @hidden
+
  */
 export interface RemoteOptions {
     from?: string;
@@ -2125,7 +2227,7 @@ export interface RemoteOptions {
 }
 
 /**
- * @hidden
+
  */
 interface TempOptions {
     pageIndex?: number;

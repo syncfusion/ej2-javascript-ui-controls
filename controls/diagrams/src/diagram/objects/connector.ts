@@ -71,14 +71,14 @@ let getSegmentType: Function = (obj: Connector): Object => {
 export class Decorator extends ChildProperty<Decorator> {
     /**
      * Sets the width of the decorator
-     * @default 10
+
      */
     @Property(10)
     public width: number;
 
     /**
      * Sets the height of the decorator
-     * @default 10
+
      */
     @Property(10)
     public height: number;
@@ -97,7 +97,7 @@ export class Decorator extends ChildProperty<Decorator> {
      * * IndentedArrow - Sets the decorator shape as Indented Arrow
      * * OutdentedArrow - Sets the decorator shape as Outdented Arrow
      * * DoubleArrow - Sets the decorator shape as DoubleArrow
-     * @default 'Arrow'
+
      */
     /**
      * ```html
@@ -128,7 +128,7 @@ export class Decorator extends ChildProperty<Decorator> {
 
     /**
      * Defines the appearance of the decorator
-     * @default new ShapeStyle()
+
      */
     @Complex<ShapeStyleModel>({ fill: 'black', strokeColor: 'black', strokeWidth: 1 }, ShapeStyle)
     public style: ShapeStyleModel;
@@ -141,7 +141,7 @@ export class Decorator extends ChildProperty<Decorator> {
 
     /**
      * Defines the geometry of the decorator shape
-     * @default ''
+
      */
     @Property('')
     public pathData: string;
@@ -153,14 +153,14 @@ export class Decorator extends ChildProperty<Decorator> {
 export class Vector extends ChildProperty<Vector> {
     /**
      * Defines the angle between the connector end point and control point of the bezier segment
-     * @default 0
+
      */
     @Property(0)
     public angle: number;
 
     /**
      * Defines the distance between the connector end point and control point of the bezier segment
-     * @default 0
+
      */
     @Property(0)
     public distance: number;
@@ -175,7 +175,7 @@ export class ConnectorShape extends ChildProperty<ConnectorShape> {
     /**
      * Defines the application specific type of connector
      * * Bpmn - Sets the type of the connection shape as Bpmn
-     * @default 'None'
+
      */
     @Property('None')
     public type: ConnectionShapes;
@@ -190,7 +190,7 @@ export class ActivityFlow extends ConnectorShape {
      * Object - Sets the type of the UMLActivity Flow as Object
      * Control - Sets the type of the UMLActivity Flow as Control
      * Exception - Sets the type of the UMLActivity Flow as Exception
-     * @default 'Object'
+
      * @IgnoreSingular
      */
     @Property('Object')
@@ -198,7 +198,7 @@ export class ActivityFlow extends ConnectorShape {
 
     /**
      * Defines the height of the exception flow.
-     * @default '50'
+
      */
     @Property(30)
     public exceptionFlowHeight: number;
@@ -213,7 +213,7 @@ export class BpmnFlow extends ConnectorShape {
      * * Sequence - Sets the type of the Bpmn Flow as Sequence
      * * Association - Sets the type of the Bpmn Flow as Association
      * * Message - Sets the type of the Bpmn Flow as Message
-     * @default 'Sequence'
+
      */
     @Property('Sequence')
     public flow: BpmnFlows;
@@ -222,7 +222,7 @@ export class BpmnFlow extends ConnectorShape {
      * * Default - Sets the type of the sequence flow as Default
      * * Normal - Sets the type of the sequence flow as Normal
      * * Conditional - Sets the type of the sequence flow as Conditional
-     * @default 'Normal'
+
      */
     @Property('Normal')
     public sequence: BpmnSequenceFlows;
@@ -232,7 +232,7 @@ export class BpmnFlow extends ConnectorShape {
      * * Default - Sets the type of the Message flow as Default
      * * InitiatingMessage - Sets the type of the Message flow as InitiatingMessage
      * * NonInitiatingMessage - Sets the type of the Message flow as NonInitiatingMessage
-     * @default ''
+
      */
     /**
      * ```html
@@ -268,7 +268,7 @@ export class BpmnFlow extends ConnectorShape {
      * * Default - Sets the type of Association flow as Default
      * * Directional - Sets the type of Association flow as Directional
      * * BiDirectional - Sets the type of Association flow as BiDirectional
-     * * @default 'Default'
+
      */
     @Property('Default')
     public association: BpmnAssociationFlows;
@@ -284,14 +284,14 @@ export class ConnectorSegment extends ChildProperty<ConnectorSegment> {
      * * Straight - Sets the segment type as Straight
      * * Orthogonal - Sets the segment type as Orthogonal
      * * Bezier - Sets the segment type as Bezier
-     * @default 'Straight'
+
      */
     @Property('Straight')
     public type: Segments;
 
     /**
      * Defines the segment to be drag or not
-     * @default true
+
      */
     @Property(true)
     public allowDrag: boolean;
@@ -320,7 +320,7 @@ export class StraightSegment extends ConnectorSegment {
 
     /**
      * Sets the end point of the connector segment
-     * @default new Point(0,0)
+
      */
     @Complex<PointModel>({ x: 0, y: 0 }, Point)
     public point: PointModel;
@@ -353,28 +353,28 @@ export class BezierSegment extends StraightSegment {
 
     /**
      * Sets the first control point of the connector
-     * @default {}
+
      */
     @Complex<PointModel>({ x: 0, y: 0 }, Point)
     public point1: PointModel;
 
     /**
      * Sets the second control point of the connector
-     * @default {}
+
      */
     @Complex<PointModel>({ x: 0, y: 0 }, Point)
     public point2: PointModel;
 
     /**
      * Defines the length and angle between the source point and the first control point of the diagram
-     * @default {}
+
      */
     @Complex<VectorModel>({ angle: 0, distance: 0 }, Vector)
     public vector1: VectorModel;
 
     /**
      * Defines the length and angle between the target point and the second control point of the diagram
-     * @default {}
+
      */
     @Complex<VectorModel>({ angle: 0, distance: 0 }, Vector)
     public vector2: VectorModel;
@@ -419,7 +419,7 @@ export class OrthogonalSegment extends ConnectorSegment {
      * });
      * diagram.appendTo('#diagram');
      * ```
-     * @default 0
+
      */
     @Property(null)
     public length: number;
@@ -430,7 +430,7 @@ export class OrthogonalSegment extends ConnectorSegment {
      * * Right - Sets the direction type as Right
      * * Top - Sets the direction type as Top
      * * Bottom - Sets the direction type as Bottom
-     * @default null
+
      */
     @Property(null)
     public direction: Direction;
@@ -575,21 +575,21 @@ export function bezierPoints(
 export class MultiplicityLabel extends ChildProperty<MultiplicityLabel>  {
     /**
      * Defines the type of the Classifier Multiplicity
-     * @default true
+
      * @IgnoreSingular
      */
     @Property(true)
     public optional: boolean;
     /**
      * Defines the type of the Classifier Multiplicity
-     * @default ''
+
      * @IgnoreSingular
      */
     @Property(undefined)
     public lowerBounds: string;
     /**
      * Defines the type of the Classifier Multiplicity
-     * @default ''
+
      * @IgnoreSingular
      */
     @Property(undefined)
@@ -601,21 +601,21 @@ export class MultiplicityLabel extends ChildProperty<MultiplicityLabel>  {
 export class ClassifierMultiplicity extends ChildProperty<ClassifierMultiplicity>  {
     /**
      * Defines the type of the Classifier Multiplicity
-     * @default 'OneToOne'
+
      * @IgnoreSingular
      */
     @Property('OneToOne')
     public type: Multiplicity;
     /**
      * Defines the type of the Classifier Multiplicity
-     * @default ''
+
      * @IgnoreSingular
      */
     @Complex<MultiplicityLabelModel>({}, MultiplicityLabel)
     public target: MultiplicityLabelModel;
     /**
      * Defines the type of the Classifier Multiplicity
-     * @default ''
+
      * @IgnoreSingular
      */
     @Complex<MultiplicityLabelModel>({}, MultiplicityLabel)
@@ -627,28 +627,28 @@ export class ClassifierMultiplicity extends ChildProperty<ClassifierMultiplicity
 export class RelationShip extends ConnectorShape {
     /**
      * Defines the type of the  UMLConnector
-     * @default 'None'
+
      * @IgnoreSingular
      */
     @Property('UmlClassifier')
     public type: ConnectionShapes;
     /**
      * Defines the association direction
-     * @default 'Aggregation'
+
      * @IgnoreSingular
      */
     @Property('Aggregation')
     public relationship: ClassifierShape;
     /**
      * Defines the association direction
-     * @default 'Directional'
+
      * @IgnoreSingular
      */
     @Property('Directional')
     public associationType: AssociationFlow;
     /**
      * Defines the type of the Classifier Multiplicity
-     * @default ''
+
      * @IgnoreSingular
      */
     @Complex<ClassifierMultiplicityModel>({}, ClassifierMultiplicity)
@@ -662,8 +662,8 @@ export class Connector extends NodeBase implements IElement {
 
     /**
      * Defines the shape of the connector
-     * @default 'Bpmn'
-     * @aspType object
+
+
      */
     @ComplexFactory(getConnectorType)
     public shape: ConnectorShapeModel | BpmnFlowModel | RelationShipModel;
@@ -685,24 +685,24 @@ export class Connector extends NodeBase implements IElement {
      * * InheritToolTip - Displays a tooltip for the connectors.
      * * Interaction - Features of the connector used for interaction.
      * * ReadOnly - Enables ReadOnly
-     * @default 'None'
-     * @aspNumberEnum
-     * @blazorNumberEnum
+
+
+
      */
     @Property(ConnectorConstraints.Default)
     public constraints: ConnectorConstraints;
     /**
      * Defines the bridgeSpace of connector
-     * @default 10
+
      */
     @Property(10)
     public bridgeSpace: number;
 
     /**
      * Defines the collection of textual annotations of connectors
-     * @aspDefaultValueIgnore
-     * @blazorDefaultValueIgnore
-     * @default undefined
+
+
+
      */
 
     /**
@@ -727,44 +727,44 @@ export class Connector extends NodeBase implements IElement {
 
     /**
      * Sets the beginning point of the connector
-     * @default new Point(0,0)
+
      */
     @Complex<PointModel>({}, Point)
     public sourcePoint: PointModel;
 
     /**
      * Sets the end point of the connector
-     * @default new Point(0,0)
+
      */
     @Complex<PointModel>({}, Point)
     public targetPoint: PointModel;
 
     /**
      * Defines the segments
-     * @default []
-     * @aspType object
-     * @blazorType object
+
+
+
      */
     @CollectionFactory(getSegmentType)
     public segments: (OrthogonalSegmentModel | StraightSegmentModel | BezierSegmentModel)[];
 
     /**
      * Sets the source node/connector object of the connector
-     * @default null
+
      */
     @Property('')
     public sourceID: string;
 
     /**
      * Sets the target node/connector object of the connector
-     * @default null
+
      */
     @Property('')
     public targetID: string;
 
     /**
      * Sets the connector padding value
-     * @default 10
+
      */
     @Property(10)
     public hitPadding: number;
@@ -775,75 +775,75 @@ export class Connector extends NodeBase implements IElement {
      * * Straight - Sets the segment type as Straight
      * * Orthogonal - Sets the segment type as Orthogonal
      * * Bezier - Sets the segment type as Bezier
-     * @default 'Straight'
-     * @aspType Syncfusion.EJ2.Diagrams.Segments
-     * @blazorDefaultValueIgnore
-     * @blazorDefaultValue  Syncfusion.EJ2.Blazor.Diagrams.Segments.Straight
+
+
+
+
      */
     @Property('Straight')
     public type: Segments;
 
     /**
      * Sets the corner radius of the connector
-     * @default 0
+
      */
     @Property(0)
     public cornerRadius: number;
 
     /**
      * Defines the source decorator of the connector
-     * @default new Decorator()
+
      */
     @Complex<DecoratorModel>({ shape: 'None' }, Decorator)
     public sourceDecorator: DecoratorModel;
 
     /**
      * Defines the target decorator of the connector
-     * @default new Decorator()
+
      */
     @Complex<DecoratorModel>({ shape: 'Arrow' }, Decorator)
     public targetDecorator: DecoratorModel;
 
     /** 
      * defines the tooltip for the connector
-     * @default new DiagramToolTip();
+
      */
     @Complex<DiagramTooltipModel>({}, DiagramTooltip)
     public tooltip: DiagramTooltipModel;
 
     /**
      * Sets the unique id of the source port of the connector
-     * @default ''
+
      */
     @Property('')
     public sourcePortID: string;
 
     /**
      * Sets the unique id of the target port of the connector
-     * @default ''
+
      */
     @Property('')
     public targetPortID: string;
 
     /**
      * Sets the source padding of the connector
-     * @default 0
-     * @isBlazorNullableType true
+
+
      */
     @Property(0)
     public sourcePadding: number;
 
     /**
      * Sets the target padding of the connector
-     * @default 0
-     * @isBlazorNullableType true
+
+
      */
     @Property(0)
     public targetPadding: number;
 
     /**
      * Defines the appearance of the connection path
-     * @default ''
+
      */
     @Complex<StrokeStyleModel>({ strokeWidth: 1, strokeColor: 'black' }, StrokeStyle)
     public style: StrokeStyleModel;
@@ -853,7 +853,7 @@ export class Connector extends NodeBase implements IElement {
 
     /**
      * Defines the UI of the connector
-     * @default null
+
      */
     @Property(null)
     public wrapper: Container;
@@ -1533,7 +1533,7 @@ export class Connector extends NodeBase implements IElement {
         element.offsetY = pt.y;
     }
 
-    /** @hidden */
+
     public scale(sw: number, sh: number, width: number, height: number, refObject?: DiagramElement): PointModel {
         let tx: number = 0;
         let ty: number = 0;

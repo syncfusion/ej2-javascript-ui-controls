@@ -2,7 +2,7 @@ import { Grid, CommandColumn as Command } from '@syncfusion/ej2-grids';
 import { TreeGrid } from '../base';
 /**
  * Command Column Module for TreeGrid 
- * @hidden
+
  */
 export class CommandColumn {
     private parent: TreeGrid;

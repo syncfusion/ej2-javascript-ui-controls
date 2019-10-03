@@ -35,7 +35,7 @@ export class SplitButton extends DropDownButton implements INotifyPropertyChange
 
     /**
      * Defines the content of the SplitButton primary action button can either be a text or HTML elements.
-     * @default ""
+
      */
     @Property('')
     public content: string;
@@ -43,14 +43,14 @@ export class SplitButton extends DropDownButton implements INotifyPropertyChange
     /**
      * Defines class/multiple classes separated by a space in the SplitButton element. The SplitButton
      * size and styles can be customized by using this.
-     * @default ""
+
      */
     @Property('')
     public cssClass: string;
 
     /**
      * Specifies a value that indicates whether the SplitButton is disabled or not.
-     * @default false.
+
      */
     @Property(false)
     public disabled: boolean;
@@ -58,7 +58,7 @@ export class SplitButton extends DropDownButton implements INotifyPropertyChange
     /**
      * Defines class/multiple classes separated by a space for the SplitButton that is used to include an 
      * icon. SplitButton can also include font icon and sprite image.
-     * @default ""
+
      */
     @Property('')
     public iconCss: string;
@@ -67,21 +67,21 @@ export class SplitButton extends DropDownButton implements INotifyPropertyChange
      * Positions the icon before/top of the text content in the SplitButton. The possible values are
      * * Left: The icon will be positioned to the left of the text content.
      * * Top: The icon will be positioned to the top of the text content.
-     * @default "Left"
+
      */
     @Property('Left')
     public iconPosition: SplitButtonIconPosition;
 
     /**
      * Specifies action items with its properties which will be rendered as SplitButton secondary button popup.
-     * @default []
+
      */
     @Collection<ItemModel>([], Item)
     public items: ItemModel[];
 
     /**
      * Allows to specify the SplitButton popup item element.
-     * @default ""
+
      */
     @Property('')
     public target: string | Element;
@@ -89,7 +89,7 @@ export class SplitButton extends DropDownButton implements INotifyPropertyChange
     /**
      * Triggers while rendering each Popup item of SplitButton.
      * @event
-     * @blazorProperty 'OnItemRender'
+
      */
     @Event()
     public beforeItemRender: EmitType<MenuEventArgs>;
@@ -97,7 +97,7 @@ export class SplitButton extends DropDownButton implements INotifyPropertyChange
     /**
      * Triggers before opening the SplitButton popup.
      * @event
-     * @blazorProperty 'OnOpen'
+
      */
     @Event()
     public beforeOpen: EmitType<BeforeOpenCloseMenuEventArgs>;
@@ -105,7 +105,7 @@ export class SplitButton extends DropDownButton implements INotifyPropertyChange
     /**
      * Triggers before closing the SplitButton popup.
      * @event
-     * @blazorProperty 'OnClose'
+
      */
     @Event()
     public beforeClose: EmitType<BeforeOpenCloseMenuEventArgs>;
@@ -113,7 +113,7 @@ export class SplitButton extends DropDownButton implements INotifyPropertyChange
     /**
      * Triggers when the primary button of SplitButton has been clicked.
      * @event
-     * @blazorProperty 'Clicked'
+
      */
     @Event()
     public click: EmitType<ClickEventArgs>;
@@ -121,7 +121,7 @@ export class SplitButton extends DropDownButton implements INotifyPropertyChange
     /**
      * Triggers while closing the SplitButton popup.
      * @event
-     * @blazorProperty 'Closed'
+
      */
     @Event()
     public close: EmitType<OpenCloseMenuEventArgs>;
@@ -129,7 +129,7 @@ export class SplitButton extends DropDownButton implements INotifyPropertyChange
     /**
      * Triggers while opening the SplitButton popup.
      * @event
-     * @blazorProperty 'Opened'
+
      */
     @Event()
     public open: EmitType<OpenCloseMenuEventArgs>;
@@ -137,7 +137,7 @@ export class SplitButton extends DropDownButton implements INotifyPropertyChange
     /**
      * Triggers while selecting action item of SplitButton popup.
      * @event
-     * @blazorProperty 'ItemSelected'
+
      */
     @Event()
     public select: EmitType<MenuEventArgs>;
@@ -145,7 +145,7 @@ export class SplitButton extends DropDownButton implements INotifyPropertyChange
     /**
      * Triggers once the component rendering is completed.
      * @event
-     * @blazorProperty 'Created'
+
      */
     @Event()
     public created: EmitType<Event>;

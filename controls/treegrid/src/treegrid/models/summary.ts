@@ -25,8 +25,8 @@ export class AggregateColumn extends ChildProperty<AggregateColumn> {
    * * truecount
    * * custom  
    * > Specify the `type` value as `custom` to use custom aggregation.
-   * @aspType string
-   * @default null
+
+
    */
   @Property()
   public type: AggregateType | AggregateType[] | string;
@@ -35,13 +35,13 @@ export class AggregateColumn extends ChildProperty<AggregateColumn> {
    * The `type` name should be used to access aggregate values inside the template.
    * 
    * {% codeBlock src="grid/footer-template-api/index.ts" %}{% endcodeBlock %}
-   * @default null
+
    */
   @Property()
   public footerTemplate: string;
   /**
    * Defines the column name to perform aggregation.
-   * @default null
+
    */
   @Property()
   public field: string;
@@ -50,16 +50,16 @@ export class AggregateColumn extends ChildProperty<AggregateColumn> {
    * Gets the format from the user, which can be standard or custom
    * [`number`](../../../common/internationalization/#supported-format-string)
    * and [`date`](../../../common/internationalization/#supported-format-string-1) formats.
-   * @aspType string
-   * @blazorType string
-   * @default null    
+
+
+
    */
   @Property()
     public format: string | NumberFormatOptions | DateFormatOptions;
   /**
    * Defines the column name to display the aggregate value. If `columnName` is not defined,
    * then `field` name value will be assigned to the `columnName` property.
-   * @default null
+
    */
   @Property()
   public columnName: string;
@@ -69,13 +69,13 @@ export class AggregateColumn extends ChildProperty<AggregateColumn> {
    * **Total aggregation**: The custom function will be called with the whole data and the current `AggregateColumn` object.
    * **Group aggregation**: This will be called with the current group details and the `AggregateColumn` object.
    * 
-   * @default null
+
    */
    @Property()
    public customAggregate: CustomSummaryType | string;
 
    /**
-    * @hidden
+
     */
    public setFormatter(cultureName: string): void {
      if (this.format && ((<DateFormatOptions>this.format).skeleton || (<DateFormatOptions>this.format).format)) {
@@ -84,7 +84,7 @@ export class AggregateColumn extends ChildProperty<AggregateColumn> {
    }
 
   /**
-   * @hidden
+
    */
    public getFormatFunction(format: NumberFormatOptions | DateFormatOptions): Function {
      if ((<DateFormatOptions>format).type) {
@@ -95,14 +95,14 @@ export class AggregateColumn extends ChildProperty<AggregateColumn> {
   }
 
 /**
- * @hidden
+
  */
    public getFormatter(): Function {
      return this.formatFn;
    }
 
    /**
-    * @hidden
+
     */
    public setTemplate(helper: Object = {}): void {
     if (this.footerTemplate !== undefined) {
@@ -112,14 +112,14 @@ export class AggregateColumn extends ChildProperty<AggregateColumn> {
     }
   }
   /**
-   * @hidden
+
    */
   public getTemplate(type: CellType): { fn: Function, property: string } {
     return this.templateFn[getEnumValue(CellType, type)];
   }
 
   /**
-   * @hidden
+
    */
   public setPropertiesSilent(prop: Object): void {
     this.setProperties(prop, true);
@@ -132,7 +132,7 @@ export class AggregateRow extends ChildProperty<AggregateRow> {
 
   /**
    * Configures the aggregate columns. 
-   * @default []
+
    */
   @Collection<AggregateColumnModel>([], AggregateColumn)
   public columns: AggregateColumnModel[];

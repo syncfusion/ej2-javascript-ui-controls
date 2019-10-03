@@ -4,7 +4,7 @@ import { IGrid } from '../base/interface';
 
 /**
  * Row
- * @hidden
+
  */
 export class Row<T> {
 

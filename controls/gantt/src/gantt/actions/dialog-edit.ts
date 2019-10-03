@@ -289,7 +289,7 @@ export class DialogEdit {
      */
     public openEditDialog(taskId: number | string | Object): void {
         let ganttObj: Gantt = this.parent;
-        if (typeof taskId === 'object') {
+        if (typeof taskId === 'object' && !isNullOrUndefined(taskId)) {
             this.rowIndex = this.parent.currentViewData.indexOf(taskId);
             if (this.rowIndex > -1) {
                 this.rowData = taskId;
@@ -304,8 +304,10 @@ export class DialogEdit {
             this.rowIndex = ganttObj.selectedRowIndex;
         }
         this.isEdit = true;
-        this.editedRecord = extend({}, {}, this.rowData, true);
-        this.createDialog();
+        if (Object.keys(this.rowData).length !== 0) {
+            this.editedRecord = extend({}, {}, this.rowData, true);
+            this.createDialog();
+        }
     }
 
     private createDialog(): void {
@@ -315,8 +317,9 @@ export class DialogEdit {
         this.beforeOpenArgs.rowData = this.editedRecord;
         this.beforeOpenArgs.rowIndex = this.rowIndex;
         let dialogMaxWidth: string = this.parent.isAdaptive ? '' : '600px';
-        this.dialog = this.parent.createElement('div', { id: ganttObj.element.id + '_dialog', styles: 'max-width:' + dialogMaxWidth });
-        ganttObj.element.appendChild(this.dialog);
+        let dialog: HTMLElement = this.parent.createElement(
+            'div', { id: ganttObj.element.id + '_dialog', styles: 'max-width:' + dialogMaxWidth });
+        ganttObj.element.appendChild(dialog);
         dialogModel.animationSettings = { effect: 'None' };
         dialogModel.header = this.localeObj.getConstant(this.isEdit ? 'editDialogTitle' : 'addDialogTitle');
         dialogModel.isModal = true;
@@ -353,7 +356,7 @@ export class DialogEdit {
             buttonModel: { cssClass: 'e-flat', content: this.localeObj.getConstant('cancel') },
             click: this.buttonClick.bind(this)
         }];
-        this.createTab(dialogModel);
+        this.createTab(dialogModel, dialog);
     }
 
     private buttonClick(e: MouseEvent): void {
@@ -445,6 +448,7 @@ export class DialogEdit {
             return;
         }
         this.parent.off('chartDblClick', this.dblClickHandler);
+        this.parent.editModule.dialogModule = undefined;
     }
     /**
      * Method to get current edit dialog fields value
@@ -458,7 +462,7 @@ export class DialogEdit {
         }
     }
     /* tslint:disable-next-line:max-func-body-length */
-    private createTab(dialogModel: DialogModel): void {
+    private createTab(dialogModel: DialogModel, dialog: HTMLElement): void {
         let ganttObj: Gantt = this.parent;
         let tabModel: TabModel = {}; let tabItems: TabItemModel[] = [];
         let dialogSettings: AddDialogFieldSettingsModel[] = this.getEditFields();
@@ -542,6 +546,7 @@ export class DialogEdit {
                 tabElement = this.parent.createElement('div', { id: ganttObj.element.id + '_Tab' });
                 this.tabObj.appendTo(tabElement);
                 dialogModel.content = tabElement;
+                this.dialog = dialog;
                 this.dialogObj = new Dialog(dialogModel);
                 this.dialogObj.isStringTemplate = true;
                 this.dialogObj.appendTo(this.dialog);
@@ -1100,7 +1105,7 @@ export class DialogEdit {
     }
 
     private updateResourceCollection(args: RowSelectEventArgs, resourceGridId: string): void {
-        if (!isNullOrUndefined(args.data)) {
+        if (!isNullOrUndefined(args.data) && Object.keys(args.data).length) {
             let ganttObj: Gantt = this.parent;
             let resourceGrid: Grid = <Grid>(<EJ2Instance>ganttObj.element.querySelector('#' + resourceGridId)).ej2_instances[0];
             if (!isNullOrUndefined(resourceGrid) && resourceGrid.selectionModule.getSelectedRecords().length > 0) {

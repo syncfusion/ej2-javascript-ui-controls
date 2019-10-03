@@ -235,7 +235,9 @@ let Toast = class Toast extends Component {
             return;
         }
         if (isNullOrUndefined(element)) {
-            element = (this.newestOnTop ? this.toastContainer.lastElementChild : this.toastContainer.firstElementChild);
+            element = (this.newestOnTop ? this.toastContainer.lastElementChild.classList.contains('blazor-template') ?
+                this.toastContainer.lastElementChild.previousSibling : this.toastContainer.lastElementChild :
+                this.toastContainer.firstElementChild);
         }
         this.destroyToast(element);
     }
@@ -562,7 +564,9 @@ let Toast = class Toast extends Component {
         });
     }
     clickHandler(e) {
-        e.stopPropagation();
+        if (!isBlazor()) {
+            e.stopPropagation();
+        }
         let target = e.target;
         let toastEle = closest(target, '.' + ROOT);
         let clickArgs = isBlazor() ? {

@@ -12,7 +12,8 @@ import { DefineName, CellStyle, updateUsedRange } from '../common/index';
 import * as events from '../common/event';
 import { CellStyleModel } from '../common/index';
 import { setCellFormat, sheetCreated } from '../common/index';
-import { BeforeSaveEventArgs, SaveCompleteEventArgs, BeforeCellFormatArgs, SaveOptions } from '../common/interface';
+import { BeforeSaveEventArgs, SaveCompleteEventArgs, BeforeCellFormatArgs, SaveOptions, SortOptions } from '../common/interface';
+import { BeforeSortEventArgs, SortEventArgs } from '../common/interface';
 import { getCell, skipDefaultValue } from './cell';
 
 /**
@@ -137,6 +138,13 @@ export class Workbook extends Component<HTMLElement> implements INotifyPropertyC
      */
     @Property(true)
     public allowSave: boolean;
+
+    /**
+     * It allows to enable/disable sort and its functionalities.
+     * @default true
+     */
+    @Property(true)
+    public allowSorting: boolean;
 
     /**
      * It allows formatting a raw number into different types of formats (number, currency, accounting, percentage, short date,
@@ -273,6 +281,40 @@ export class Workbook extends Component<HTMLElement> implements INotifyPropertyC
     public saveComplete: EmitType<SaveCompleteEventArgs>;
 
     /**
+     * Triggers before sorting the specified range.
+     * ```html
+     * <div id='Spreadsheet'></div>
+     * ```
+     * ```typescript
+     * new Spreadsheet({
+     *       beforeSort: (args: BeforeSortEventArgs) => {
+     *       }
+     *      ...
+     *  }, '#Spreadsheet');
+     * ```
+     * @event
+     */
+    @Event()
+    public beforeSort: EmitType<BeforeSortEventArgs>;
+
+    /**
+     * Triggers after sorting action is completed.
+     * ```html
+     * <div id='Spreadsheet'></div>
+     * ```
+     * ```typescript
+     * new Spreadsheet({
+     *       sortComplete: (args: SortEventArgs) => {
+     *       }
+     *      ...
+     *  }, '#Spreadsheet');
+     * ```
+     * @event
+     */
+    @Event()
+    public sortComplete: EmitType<SortEventArgs>;
+
+    /**
      * Triggers before the cell format applied to the cell.
      * ```html
      * <div id='Spreadsheet'></div>
@@ -349,7 +391,6 @@ export class Workbook extends Component<HTMLElement> implements INotifyPropertyC
     public getPersistData(): string {
         return this.addOnPersist([]);
     }
-
 
     /**
      * Applies the style (font family, font weight, background color, etc...) to the specified range of cells.
@@ -564,6 +605,23 @@ export class Workbook extends Component<HTMLElement> implements INotifyPropertyC
                     });
             }
         }
+    }
+
+    /**
+     * Sorts the range of cells in the active Spreadsheet.
+     * @param sortOptions - options for sorting.
+     * @param range - address of the data range.
+     */
+    public sort(sortOptions?: SortOptions, range?: string): void {
+        if (!this.allowSorting) {
+            return;
+        }
+        let eventArgs: BeforeSortEventArgs = {
+            range: range,
+            sortOptions : sortOptions,
+            cancel: false
+        };
+        this.notify(events.initiateSort, eventArgs);
     }
 
     /**

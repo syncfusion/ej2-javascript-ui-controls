@@ -185,20 +185,20 @@
   }
 
   label.e-float-text,
-  .e-float-input:not(.e-error) input:not(:focus):valid ~ label.e-float-text.e-label-bottom,
-  .e-float-input.e-control-wrapper:not(.e-error) input:not(:focus):valid ~ label.e-float-text.e-label-bottom,
-  .e-float-input.e-bigger:not(.e-error) input:not(:focus):valid ~ label.e-float-text.e-label-bottom,
-  .e-float-input.e-control-wrapper.e-bigger:not(.e-error) input:not(:focus):valid ~ label.e-float-text.e-label-bottom,
-  .e-bigger .e-float-input:not(.e-error) input:not(:focus):valid ~ label.e-float-text.e-label-bottom,
-  .e-bigger .e-float-input.e-control-wrapper:not(.e-error) input:not(:focus):valid ~ label.e-float-text.e-label-bottom,
-  .e-float-input.e-small:not(.e-error) input:not(:focus):valid ~ label.e-float-text.e-label-bottom,
-  .e-float-input.e-control-wrapper.e-small:not(.e-error) input:not(:focus):valid ~ label.e-float-text.e-label-bottom,
-  .e-small .e-float-input:not(.e-error) input:not(:focus):valid ~ label.e-float-text.e-label-bottom,
-  .e-small .e-float-input.e-control-wrapper:not(.e-error) input:not(:focus):valid ~ label.e-float-text.e-label-bottom,
-  .e-float-input.e-small.e-bigger:not(.e-error) input:not(:focus):valid ~ label.e-float-text.e-label-bottom,
-  .e-float-input.e-control-wrapper.e-small.e-bigger:not(.e-error) input:not(:focus):valid ~ label.e-float-text.e-label-bottom,
-  .e-bigger .e-float-input.e-small:not(.e-error) input:not(:focus):valid ~ label.e-float-text.e-label-bottom,
-  .e-bigger .e-float-input.e-control-wrapper.e-small:not(.e-error) input:not(:focus):valid ~ label.e-float-text.e-label-bottom {
+  .e-float-input:not(.e-error):not(.e-input-focus) input:not(:focus):valid ~ label.e-float-text.e-label-bottom,
+  .e-float-input.e-control-wrapper:not(.e-error):not(.e-input-focus) input:not(:focus):valid ~ label.e-float-text.e-label-bottom,
+  .e-float-input.e-bigger:not(.e-error):not(.e-input-focus) input:not(:focus):valid ~ label.e-float-text.e-label-bottom,
+  .e-float-input.e-control-wrapper.e-bigger:not(.e-error):not(.e-input-focus) input:not(:focus):valid ~ label.e-float-text.e-label-bottom,
+  .e-bigger .e-float-input:not(.e-error):not(.e-input-focus) input:not(:focus):valid ~ label.e-float-text.e-label-bottom,
+  .e-bigger .e-float-input.e-control-wrapper:not(.e-error):not(.e-input-focus) input:not(:focus):valid ~ label.e-float-text.e-label-bottom,
+  .e-float-input.e-small:not(.e-error):not(.e-input-focus) input:not(:focus):valid ~ label.e-float-text.e-label-bottom,
+  .e-float-input.e-control-wrapper.e-small:not(.e-error):not(.e-input-focus) input:not(:focus):valid ~ label.e-float-text.e-label-bottom,
+  .e-small .e-float-input:not(.e-error):not(.e-input-focus) input:not(:focus):valid ~ label.e-float-text.e-label-bottom,
+  .e-small .e-float-input.e-control-wrapper:not(.e-error):not(.e-input-focus) input:not(:focus):valid ~ label.e-float-text.e-label-bottom,
+  .e-float-input.e-small.e-bigger:not(.e-error):not(.e-input-focus) input:not(:focus):valid ~ label.e-float-text.e-label-bottom,
+  .e-float-input.e-control-wrapper.e-small.e-bigger:not(.e-error):not(.e-input-focus) input:not(:focus):valid ~ label.e-float-text.e-label-bottom,
+  .e-bigger .e-float-input.e-small:not(.e-error):not(.e-input-focus) input:not(:focus):valid ~ label.e-float-text.e-label-bottom,
+  .e-bigger .e-float-input.e-control-wrapper.e-small:not(.e-error):not(.e-input-focus) input:not(:focus):valid ~ label.e-float-text.e-label-bottom {
     color: $input-header-font-color;
     @if $input-skin-name == 'highcontrast' {
       color: $input-placeholder;
@@ -209,6 +209,8 @@
   .e-float-input.e-control-wrapper.e-error label.e-float-text,
   .e-float-input.e-error input:focus ~ label.e-float-text,
   .e-float-input.e-control-wrapper.e-error input:focus ~ label.e-float-text,
+  .e-float-input.e-error.e-input-focus input ~ label.e-float-text,
+  .e-float-input.e-control-wrapper.e-error.e-input-focus input ~ label.e-float-text,
   .e-float-input.e-error textarea:focus ~ label.e-float-text,
   .e-float-input.e-control-wrapper.e-error textarea:focus ~ label.e-float-text {
     color: $input-error-color;
@@ -248,8 +250,8 @@
   label.e-float-text,
   .e-float-input label.e-float-text,
   .e-float-input.e-control-wrapper label.e-float-text,
-  .e-float-input input:not(:focus):valid ~ label.e-float-text.e-label-bottom,
-  .e-float-input.e-control-wrapper input:not(:focus):valid ~ label.e-float-text.e-label-bottom,
+  .e-float-input:not(.e-input-focus) input:not(:focus):valid ~ label.e-float-text.e-label-bottom,
+  .e-float-input.e-control-wrapper:not(.e-input-focus) input:not(:focus):valid ~ label.e-float-text.e-label-bottom,
   .e-float-input textarea:not(:focus):valid ~ label.e-float-text.e-label-bottom,
   .e-float-input.e-control-wrapper textarea:not(:focus):valid ~ label.e-float-text.e-label-bottom {
     @if $input-skin-name == 'highcontrast' {
@@ -273,26 +275,26 @@
   label.e-float-text,
   .e-float-input label.e-float-text,
   .e-float-input.e-control-wrapper  label.e-float-text,
-  .e-float-input input:not(:focus):valid ~ label.e-float-text.e-label-bottom,
-  .e-float-input.e-bigger input:not(:focus):valid ~ label.e-float-text.e-label-bottom,
-  .e-bigger .e-float-input input:not(:focus):valid ~ label.e-float-text.e-label-bottom,
-  .e-float-input.e-small input:not(:focus):valid ~ label.e-float-text.e-label-bottom,
-  .e-small .e-float-input input:not(:focus):valid ~ label.e-float-text.e-label-bottom,
-  .e-bigger .e-float-input.e-small input:not(:focus):valid ~ label.e-float-text.e-label-bottom,
-  .e-small .e-float-input.e-bigger input:not(:focus):valid ~ label.e-float-text.e-label-bottom,
-  .e-float-input.e-bigger.e-small input:not(:focus):valid ~ label.e-float-text.e-label-bottom,
-  .e-bigger.e-small .e-float-input input:not(:focus):valid ~ label.e-float-text.e-label-bottom,
-  .e-float-input.e-bigger.e-small input:not(:focus):valid ~ label.e-float-text.e-label-bottom,
-  .e-float-input.e-control-wrapper input:not(:focus):valid ~ label.e-float-text.e-label-bottom,
-  .e-float-input.e-control-wrapper.e-bigger input:not(:focus):valid ~ label.e-float-text.e-label-bottom,
-  .e-bigger .e-float-input.e-control-wrapper input:not(:focus):valid ~ label.e-float-text.e-label-bottom,
-  .e-float-input.e-control-wrapper.e-small input:not(:focus):valid ~ label.e-float-text.e-label-bottom,
-  .e-small .e-float-input.e-control-wrapper input:not(:focus):valid ~ label.e-float-text.e-label-bottom,
-  .e-bigger .e-float-input.e-control-wrapper.e-small input:not(:focus):valid ~ label.e-float-text.e-label-bottom,
-  .e-small .e-float-input.e-control-wrapper.e-bigger input:not(:focus):valid ~ label.e-float-text.e-label-bottom,
-  .e-float-input.e-control-wrapper.e-bigger.e-small input:not(:focus):valid ~ label.e-float-text.e-label-bottom,
-  .e-bigger.e-small .e-float-input.e-control-wrapper input:not(:focus):valid ~ label.e-float-text.e-label-bottom,
-  .e-float-input.e-control-wrapper.e-bigger.e-small input:not(:focus):valid ~ label.e-float-text.e-label-bottom  {
+  .e-float-input:not(.e-input-focus) input:not(:focus):valid ~ label.e-float-text.e-label-bottom,
+  .e-float-input.e-bigger:not(.e-input-focus) input:not(:focus):valid ~ label.e-float-text.e-label-bottom,
+  .e-bigger .e-float-input:not(.e-input-focus) input:not(:focus):valid ~ label.e-float-text.e-label-bottom,
+  .e-float-input.e-small:not(.e-input-focus) input:not(:focus):valid ~ label.e-float-text.e-label-bottom,
+  .e-small .e-float-input:not(.e-input-focus) input:not(:focus):valid ~ label.e-float-text.e-label-bottom,
+  .e-bigger .e-float-input.e-small:not(.e-input-focus) input:not(:focus):valid ~ label.e-float-text.e-label-bottom,
+  .e-small .e-float-input.e-bigger:not(.e-input-focus) input:not(:focus):valid ~ label.e-float-text.e-label-bottom,
+  .e-float-input.e-bigger.e-small:not(.e-input-focus) input:not(:focus):valid ~ label.e-float-text.e-label-bottom,
+  .e-bigger.e-small .e-float-input:not(.e-input-focus) input:not(:focus):valid ~ label.e-float-text.e-label-bottom,
+  .e-float-input.e-bigger.e-small:not(.e-input-focus) input:not(:focus):valid ~ label.e-float-text.e-label-bottom,
+  .e-float-input.e-control-wrapper:not(.e-input-focus) input:not(:focus):valid ~ label.e-float-text.e-label-bottom,
+  .e-float-input.e-control-wrapper.e-bigger:not(.e-input-focus) input:not(:focus):valid ~ label.e-float-text.e-label-bottom,
+  .e-bigger .e-float-input.e-control-wrapper:not(.e-input-focus) input:not(:focus):valid ~ label.e-float-text.e-label-bottom,
+  .e-float-input.e-control-wrapper.e-small:not(.e-input-focus) input:not(:focus):valid ~ label.e-float-text.e-label-bottom,
+  .e-small .e-float-input.e-control-wrapper:not(.e-input-focus) input:not(:focus):valid ~ label.e-float-text.e-label-bottom,
+  .e-bigger .e-float-input.e-control-wrapper.e-small:not(.e-input-focus) input:not(:focus):valid ~ label.e-float-text.e-label-bottom,
+  .e-small .e-float-input.e-control-wrapper.e-bigger:not(.e-input-focus) input:not(:focus):valid ~ label.e-float-text.e-label-bottom,
+  .e-float-input.e-control-wrapper.e-bigger.e-small:not(.e-input-focus) input:not(:focus):valid ~ label.e-float-text.e-label-bottom,
+  .e-bigger.e-small .e-float-input.e-control-wrapper:not(.e-input-focus) input:not(:focus):valid ~ label.e-float-text.e-label-bottom,
+  .e-float-input.e-control-wrapper.e-bigger.e-small:not(.e-input-focus) input:not(:focus):valid ~ label.e-float-text.e-label-bottom  {
     @if $input-skin-name == 'highcontrast' {
       color: $content-font-alt;
     }
@@ -826,7 +828,9 @@
   .e-float-input:not(.e-success):not(.e-warning):not(.e-error):not(.e-input-group) input:focus,
   .e-float-input:not(.e-success):not(.e-warning):not(.e-error):not(.e-input-group) textarea:focus,
   .e-float-input.e-control-wrapper:not(.e-success):not(.e-warning):not(.e-error):not(.e-input-group) input:focus,
-  .e-float-input.e-control-wrapper:not(.e-success):not(.e-warning):not(.e-error):not(.e-input-group) textarea:focus {
+  .e-float-input.e-control-wrapper:not(.e-success):not(.e-warning):not(.e-error):not(.e-input-group) textarea:focus,
+  .e-float-input:not(.e-success):not(.e-warning):not(.e-error):not(.e-input-group).e-input-focus input,
+  .e-float-input.e-control-wrapper:not(.e-success):not(.e-warning):not(.e-error):not(.e-input-group).e-input-focus input {
     border-color: $input-active-border-color;
     @if $input-skin-name == 'bootstrap' or $input-skin-name == 'bootstrap4'  {
       -webkit-box-shadow: $input-border-shadow;
@@ -842,7 +846,9 @@
   .e-float-input:not(.e-success):not(.e-warning).e-error:not(.e-input-group) input:focus,
   .e-float-input:not(.e-success):not(.e-warning).e-error:not(.e-input-group) textarea:focus,
   .e-float-input.e-control-wrapper:not(.e-success):not(.e-warning).e-error:not(.e-input-group) input:focus,
-  .e-float-input.e-control-wrapper:not(.e-success):not(.e-warning).e-error:not(.e-input-group) textarea:focus  {
+  .e-float-input.e-control-wrapper:not(.e-success):not(.e-warning).e-error:not(.e-input-group) textarea:focus,
+  .e-float-input:not(.e-success):not(.e-warning).e-error:not(.e-input-group).e-input-focus input,
+  .e-float-input.e-control-wrapper:not(.e-success):not(.e-warning).e-error:not(.e-input-group).e-input-focus input {
     @if $input-skin-name == 'bootstrap' or $input-skin-name == 'bootstrap4'  {
       -webkit-box-shadow: $input-error-border-shadow;
       box-shadow: $input-error-border-shadow;
@@ -854,7 +860,9 @@
   .e-float-input:not(.e-error):not(.e-warning).e-success:not(.e-input-group) input:focus,
   .e-float-input:not(.e-error):not(.e-warning).e-success:not(.e-input-group) textarea:focus,
   .e-float-input.e-control-wrapper:not(.e-error):not(.e-warning).e-success:not(.e-input-group) input:focus,
-  .e-float-input.e-control-wrapper:not(.e-error):not(.e-warning).e-success:not(.e-input-group) textarea:focus  {
+  .e-float-input.e-control-wrapper:not(.e-error):not(.e-warning).e-success:not(.e-input-group) textarea:focus,
+  .e-float-input:not(.e-error):not(.e-warning).e-success:not(.e-input-group).e-input-focus input,
+  .e-float-input.e-control-wrapper:not(.e-error):not(.e-warning).e-success:not(.e-input-group).e-input-focus input {
     @if $input-skin-name == 'bootstrap' or $input-skin-name == 'bootstrap4'  {
       -webkit-box-shadow: $input-success-border-shadow;
       box-shadow: $input-success-border-shadow;
@@ -866,7 +874,9 @@
   .e-float-input:not(.e-success):not(.e-error).e-warning:not(.e-input-group) input:focus,
   .e-float-input:not(.e-success):not(.e-error).e-warning:not(.e-input-group) textarea:focus,
   .e-float-input.e-control-wrapper:not(.e-success):not(.e-error).e-warning:not(.e-input-group) input:focus,
-  .e-float-input.e-control-wrapper:not(.e-success):not(.e-error).e-warning:not(.e-input-group) textarea:focus  {
+  .e-float-input.e-control-wrapper:not(.e-success):not(.e-error).e-warning:not(.e-input-group) textarea:focus,
+  .e-float-input:not(.e-success):not(.e-error).e-warning:not(.e-input-group).e-input-focus input,
+  .e-float-input.e-control-wrapper:not(.e-success):not(.e-error).e-warning:not(.e-input-group).e-input-focus input {
     @if $input-skin-name == 'bootstrap' or $input-skin-name == 'bootstrap4'  {
       -webkit-box-shadow: $input-warning-border-shadow;
       box-shadow: $input-warning-border-shadow;
@@ -876,7 +886,11 @@
   .e-input-group:not(.e-float-input):not(.e-float-icon-left) .e-input:focus:not(.e-success):not(.e-warning):not(.e-error),
   .e-input-group.e-float-icon-left:not(.e-float-input) .e-input-in-wrap .e-input:focus:not(.e-success):not(.e-warning):not(.e-error),
   .e-input-group.e-control-wrapper:not(.e-float-input):not(.e-float-icon-left) .e-input:focus:not(.e-success):not(.e-warning):not(.e-error),
-  .e-input-group.e-control-wrapper.e-float-icon-left:not(.e-float-input) .e-input-in-wrap .e-input:focus:not(.e-success):not(.e-warning):not(.e-error) {
+  .e-input-group.e-control-wrapper.e-float-icon-left:not(.e-float-input) .e-input-in-wrap .e-input:focus:not(.e-success):not(.e-warning):not(.e-error),
+  .e-input-group:not(.e-float-input):not(.e-float-icon-left).e-input-focus .e-input:not(.e-success):not(.e-warning):not(.e-error),
+  .e-input-group.e-float-icon-left:not(.e-float-input).e-input-focus .e-input-in-wrap .e-input:not(.e-success):not(.e-warning):not(.e-error),
+  .e-input-group.e-control-wrapper:not(.e-float-input):not(.e-float-icon-left).e-input-focus .e-input:not(.e-success):not(.e-warning):not(.e-error),
+  .e-input-group.e-control-wrapper.e-float-icon-left:not(.e-float-input).e-input-focus .e-input-in-wrap .e-input:not(.e-success):not(.e-warning):not(.e-error) {
     @if $input-skin-name == 'bootstrap' or $input-skin-name == 'bootstrap4'  {
       box-shadow: none;
     }
@@ -884,6 +898,8 @@
 
   .e-input-group:not(.e-success):not(.e-warning):not(.e-error) input.e-input:focus,
   .e-input-group.e-control-wrapper:not(.e-success):not(.e-warning):not(.e-error) input.e-input:focus,
+  .e-input-group:not(.e-success):not(.e-warning):not(.e-error).e-input-focus input.e-input,
+  .e-input-group.e-control-wrapper:not(.e-success):not(.e-warning):not(.e-error).e-input-focus input.e-input,
   .e-input-group:not(.e-success):not(.e-warning):not(.e-error) textarea.e-input:focus,
   .e-input-group.e-control-wrapper:not(.e-success):not(.e-warning):not(.e-error) textarea.e-input:focus {
     border-color: $input-group-active-border-color;
@@ -939,7 +955,9 @@
   }
 
   .e-input-group.e-input-focus:not(.e-success):not(.e-warning):not(.e-error) .e-input:focus,
-  .e-input-group.e-control-wrapper.e-input-focus:not(.e-success):not(.e-warning):not(.e-error) .e-input:focus {
+  .e-input-group.e-control-wrapper.e-input-focus:not(.e-success):not(.e-warning):not(.e-error) .e-input:focus,
+  .e-input-group.e-input-focus:not(.e-success):not(.e-warning):not(.e-error) .e-input,
+  .e-input-group.e-control-wrapper.e-input-focus:not(.e-success):not(.e-warning):not(.e-error) .e-input {
     border-color: $input-box-border-color;
   }
 
@@ -1047,7 +1065,11 @@
   .e-input-group.e-input-focus:not(.e-success):not(.e-warning):not(.e-error):not(.e-float-icon-left) .e-input:focus,
   .e-input-group.e-float-icon-left.e-input-focus:not(.e-success):not(.e-warning):not(.e-error) .e-input:focus,
   .e-input-group.e-control-wrapper.e-input-focus:not(.e-success):not(.e-warning):not(.e-error):not(.e-float-icon-left) .e-input:focus,
-  .e-input-group.e-control-wrapper.e-float-icon-left.e-input-focus:not(.e-success):not(.e-warning):not(.e-error) .e-input:focus {
+  .e-input-group.e-control-wrapper.e-float-icon-left.e-input-focus:not(.e-success):not(.e-warning):not(.e-error) .e-input:focus,
+  .e-input-group.e-input-focus:not(.e-success):not(.e-warning):not(.e-error):not(.e-float-icon-left) .e-input,
+  .e-input-group.e-float-icon-left.e-input-focus:not(.e-success):not(.e-warning):not(.e-error)  .e-input,
+  .e-input-group.e-control-wrapper.e-input-focus:not(.e-success):not(.e-warning):not(.e-error):not(.e-float-icon-left)  .e-input,
+  .e-input-group.e-control-wrapper.e-float-icon-left.e-input-focus:not(.e-success):not(.e-warning):not(.e-error)  .e-input {
     @if $input-skin-name == 'material' {
       border-bottom-color: transparent;
       border-top-color: transparent;
@@ -1055,7 +1077,9 @@
   }
 
   .e-input-group.e-input-focus:not(.e-success):not(.e-warning):not(.e-error) .e-input:focus,
-  .e-input-group.e-control-wrapper.e-input-focus:not(.e-success):not(.e-warning):not(.e-error) .e-input:focus {
+  .e-input-group.e-control-wrapper.e-input-focus:not(.e-success):not(.e-warning):not(.e-error) .e-input:focus,
+  .e-input-group.e-input-focus:not(.e-success):not(.e-warning):not(.e-error) .e-input,
+  .e-input-group.e-control-wrapper.e-input-focus:not(.e-success):not(.e-warning):not(.e-error) .e-input {
     @if $input-skin-name != 'material' {
       border-bottom-color: transparent;
       border-top-color: transparent;
@@ -1168,7 +1192,10 @@
   .e-bigger .e-float-input:not(.e-error) input:valid ~ label.e-float-text,
   .e-bigger .e-float-input:not(.e-error) input ~ label.e-label-top.e-float-text,
   .e-bigger .e-float-input:not(.e-error) input[readonly] ~ label.e-label-top.e-float-text,
-  .e-bigger .e-float-input:not(.e-error) input[disabled] ~ label.e-label-top.e-float-text {
+  .e-bigger .e-float-input:not(.e-error) input[disabled] ~ label.e-label-top.e-float-text,
+  .e-float-input:not(.e-error).e-input-focus input ~ label.e-float-text,
+  .e-float-input.e-bigger:not(.e-error).e-input-focus input ~ label.e-float-text,
+  .e-bigger .e-float-input:not(.e-error).e-input-focus input ~ label.e-float-text {
     color: $float-label-font-color;
   }
 
@@ -1187,7 +1214,10 @@
   .e-bigger .e-float-input.e-control-wrapper:not(.e-error) input:valid ~ label.e-float-text,
   .e-bigger .e-float-input.e-control-wrapper:not(.e-error) input ~ label.e-label-top.e-float-text,
   .e-bigger .e-float-input.e-control-wrapper:not(.e-error) input[readonly] ~ label.e-label-top.e-float-text,
-  .e-bigger .e-float-input.e-control-wrapper:not(.e-error) input[disabled] ~ label.e-label-top.e-float-text {
+  .e-bigger .e-float-input.e-control-wrapper:not(.e-error) input[disabled] ~ label.e-label-top.e-float-text,
+  .e-float-input.e-control-wrapper:not(.e-error).e-input-focus input ~ label.e-float-text,
+  .e-float-input.e-control-wrapper.e-bigger:not(.e-error).e-input-focus input ~ label.e-float-text,
+  .e-bigger .e-float-input.e-control-wrapper:not(.e-error).e-input-focus input ~ label.e-float-text {
     color: $float-label-font-color;
   }
 
@@ -1210,7 +1240,11 @@
   .e-bigger .e-float-input.e-small:not(.e-error) input:valid ~ label.e-float-text,
   .e-bigger .e-float-input.e-small:not(.e-error) input ~ label.e-label-top.e-float-text,
   .e-bigger .e-float-input.e-small:not(.e-error) input[readonly] ~ label.e-label-top.e-float-text,
-  .e-bigger .e-float-input.e-small:not(.e-error) input[disabled] ~ label.e-label-top.e-float-text {
+  .e-bigger .e-float-input.e-small:not(.e-error) input[disabled] ~ label.e-label-top.e-float-text,
+  .e-float-input.e-small:not(.e-error).e-input-focus input ~ label.e-float-text,
+  .e-small .e-float-input:not(.e-error).e-input-focus input ~ label.e-float-text,
+  .e-float-input.e-small.e-bigger:not(.e-error).e-input-focus input ~ label.e-float-text,
+  .e-bigger .e-float-input.e-small:not(.e-error).e-input-focus input ~ label.e-float-text {
     color: $float-label-font-color;
   }
 
@@ -1233,7 +1267,11 @@
   .e-bigger .e-float-input.e-control-wrapper.e-small:not(.e-error) input:valid ~ label.e-float-text,
   .e-bigger .e-float-input.e-control-wrapper.e-small:not(.e-error) input ~ label.e-label-top.e-float-text,
   .e-bigger .e-float-input.e-control-wrapper.e-small:not(.e-error) input[readonly] ~ label.e-label-top.e-float-text,
-  .e-bigger .e-float-input.e-control-wrapper.e-small:not(.e-error) input[disabled] ~ label.e-label-top.e-float-text {
+  .e-bigger .e-float-input.e-control-wrapper.e-small:not(.e-error) input[disabled] ~ label.e-label-top.e-float-text,
+  .e-float-input.e-control-wrapper.e-small:not(.e-error).e-input-focus input ~ label.e-float-text,
+  .e-small .e-float-input.e-control-wrapper:not(.e-error).e-input-focus input ~ label.e-float-text,
+  .e-float-input.e-control-wrapper.e-small.e-bigger:not(.e-error).e-input-focus input ~ label.e-float-text,
+  .e-bigger .e-float-input.e-control-wrapper.e-small:not(.e-error).e-input-focus input ~ label.e-float-text {
     color: $float-label-font-color;
   }
 
@@ -1433,6 +1471,62 @@
   .e-bigger .e-float-input:not(.e-error) input:focus ~ label.e-float-text,
   .e-float-input.e-small:not(.e-error) input:focus ~ label.e-float-text,
   .e-small .e-float-input:not(.e-error) input:focus ~ label.e-float-text,
+  .e-float-input:not(.e-error) input[readonly]:focus ~ label.e-label-top.e-float-text,
+  .e-float-input.e-bigger:not(.e-error) input[readonly]:focus ~ label.e-label-top.e-float-text,
+  .e-bigger .e-float-input:not(.e-error) input[readonly]:focus ~ label.e-label-top.e-float-text,
+  .e-float-input.e-control-wrapper:not(.e-error) input[readonly]:focus ~ label.e-label-top.e-float-text,
+  .e-float-input.e-control-wrapper.e-bigger:not(.e-error) input[readonly]:focus ~ label.e-label-top.e-float-text,
+  .e-bigger .e-float-input.e-control-wrapper:not(.e-error) input[readonly]:focus ~ label.e-label-top.e-float-text,
+  .e-float-input.e-small:not(.e-error) input[readonly]:focus ~ label.e-float-text,
+  .e-small .e-float-input:not(.e-error) input[readonly]:focus ~ label.e-float-text.e-label-top,
+  .e-float-input.e-small.e-bigger:not(.e-error) input[readonly]:focus ~ label.e-label-top.e-float-text,
+  .e-bigger .e-float-input.e-small:not(.e-error) input[readonly]:focus ~ label.e-label-top.e-float-text,
+  .e-float-input.e-control-wrapper.e-small:not(.e-error) input[readonly]:focus ~ label.e-float-text,
+  .e-small .e-float-input.e-control-wrapper:not(.e-error) input[readonly]:focus ~ label.e-float-text.e-label-top,
+  .e-float-input.e-control-wrapper.e-small.e-bigger:not(.e-error) input[readonly]:focus ~ label.e-label-top.e-float-text,
+  .e-bigger .e-float-input.e-control-wrapper.e-small:not(.e-error) input[readonly]:focus ~ label.e-label-top.e-float-text,
+  .e-float-input:not(.e-error).e-input-focus input[readonly] ~ label.e-label-top.e-float-text,
+  .e-float-input.e-bigger:not(.e-error).e-input-focus input[readonly] ~ label.e-label-top.e-float-text,
+  .e-bigger .e-float-input:not(.e-error).e-input-focus input[readonly] ~ label.e-label-top.e-float-text,
+  .e-float-input.e-control-wrapper:not(.e-error).e-input-focus input[readonly] ~ label.e-label-top.e-float-text,
+  .e-float-input.e-control-wrapper.e-bigger:not(.e-error).e-input-focus input[readonly] ~ label.e-label-top.e-float-text,
+  .e-bigger .e-float-input.e-control-wrapper:not(.e-error).e-input-focus input[readonly] ~ label.e-label-top.e-float-text,
+  .e-float-input.e-small:not(.e-error).e-input-focus input[readonly] ~ label.e-float-text,
+  .e-small .e-float-input:not(.e-error).e-input-focus input[readonly] ~ label.e-float-text.e-label-top,
+  .e-float-input.e-small.e-bigger:not(.e-error).e-input-focus input[readonly] ~ label.e-label-top.e-float-text,
+  .e-bigger .e-float-input.e-small:not(.e-error).e-input-focus input[readonly] ~ label.e-label-top.e-float-text,
+  .e-float-input.e-control-wrapper.e-small:not(.e-error).e-input-focus input[readonly] ~ label.e-float-text,
+  .e-small .e-float-input.e-control-wrapper:not(.e-error).e-input-focus input[readonly] ~ label.e-float-text.e-label-top,
+  .e-float-input.e-control-wrapper.e-small.e-bigger:not(.e-error).e-input-focus input[readonly] ~ label.e-label-top.e-float-text,
+  .e-bigger .e-float-input.e-control-wrapper.e-small:not(.e-error).e-input-focus input[readonly] ~ label.e-label-top.e-float-text,
+  .e-float-input:not(.e-error) textarea[readonly]:focus ~ label.e-label-top.e-float-text,
+  .e-float-input.e-bigger:not(.e-error) textarea[readonly]:focus ~ label.e-label-top.e-float-text,
+  .e-bigger .e-float-input:not(.e-error) textarea[readonly]:focus ~ label.e-label-top.e-float-text,
+  .e-float-input.e-control-wrapper:not(.e-error) textarea[readonly]:focus ~ label.e-label-top.e-float-text,
+  .e-float-input.e-control-wrapper.e-bigger:not(.e-error) textarea[readonly]:focus ~ label.e-label-top.e-float-text,
+  .e-bigger .e-float-input.e-control-wrapper:not(.e-error) textarea[readonly]:focus ~ label.e-label-top.e-float-text,
+  .e-float-input.e-small:not(.e-error) textarea[readonly]:focus ~ label.e-float-text,
+  .e-small .e-float-input:not(.e-error) textarea[readonly]:focus ~ label.e-float-text.e-label-top,
+  .e-float-input.e-small.e-bigger:not(.e-error) textarea[readonly]:focus ~ label.e-label-top.e-float-text,
+  .e-bigger .e-float-input.e-small:not(.e-error) textarea[readonly]:focus ~ label.e-label-top.e-float-text
+  .e-float-input.e-control-wrapper.e-small:not(.e-error) textarea[readonly]:focus ~ label.e-float-text,
+  .e-small .e-float-input.e-control-wrapper:not(.e-error) textarea[readonly]:focus ~ label.e-float-text.e-label-top,
+  .e-float-input.e-control-wrapper.e-small.e-bigger:not(.e-error) textarea[readonly]:focus ~ label.e-label-top.e-float-text,
+  .e-bigger .e-float-input.e-control-wrapper.e-small:not(.e-error) textarea[readonly]:focus ~ label.e-label-top.e-float-text,
+  .e-float-input:not(.e-error).e-input-focus textarea[readonly] ~ label.e-label-top.e-float-text,
+  .e-float-input.e-bigger:not(.e-error).e-input-focus textarea[readonly] ~ label.e-label-top.e-float-text,
+  .e-bigger .e-float-input:not(.e-error).e-input-focus textarea[readonly] ~ label.e-label-top.e-float-text,
+  .e-float-input.e-control-wrapper:not(.e-error).e-input-focus textarea[readonly] ~ label.e-label-top.e-float-text,
+  .e-float-input.e-control-wrapper.e-bigger:not(.e-error).e-input-focus textarea[readonly] ~ label.e-label-top.e-float-text,
+  .e-bigger .e-float-input.e-control-wrapper:not(.e-error).e-input-focus textarea[readonly] ~ label.e-label-top.e-float-text,
+  .e-float-input.e-small:not(.e-error).e-input-focus textarea[readonly] ~ label.e-float-text,
+  .e-small .e-float-input:not(.e-error).e-input-focus textarea[readonly] ~ label.e-float-text.e-label-top,
+  .e-float-input.e-small.e-bigger:not(.e-error).e-input-focus textarea[readonly] ~ label.e-label-top.e-float-text,
+  .e-bigger .e-float-input.e-small:not(.e-error).e-input-focus textarea[readonly] ~ label.e-label-top.e-float-text
+  .e-float-input.e-control-wrapper.e-small:not(.e-error).e-input-focus textarea[readonly] ~ label.e-float-text,
+  .e-small .e-float-input.e-control-wrapper:not(.e-error).e-input-focus textarea[readonly] ~ label.e-float-text.e-label-top,
+  .e-float-input.e-control-wrapper.e-small.e-bigger:not(.e-error).e-input-focus textarea[readonly] ~ label.e-label-top.e-float-text,
+  .e-bigger .e-float-input.e-control-wrapper.e-small:not(.e-error).e-input-focus textarea[readonly] ~ label.e-label-top.e-float-text,
   .e-float-input.e-small.e-bigger:not(.e-error) input:focus ~ label.e-float-text,
   .e-bigger .e-float-input.e-small:not(.e-error) input:focus ~ label.e-float-text,
   .e-float-input:not(.e-error) textarea:focus ~ label.e-float-text,
@@ -1455,7 +1549,21 @@
   .e-float-input.e-control-wrapper.e-small:not(.e-error) textarea:focus ~ label.e-float-text,
   .e-small .e-float-input.e-control-wrapper:not(.e-error) textarea:focus ~ label.e-float-text,
   .e-float-input.e-control-wrapper.e-small.e-bigger:not(.e-error) textarea:focus ~ label.e-float-text,
-  .e-bigger .e-float-input.e-control-wrapper.e-small:not(.e-error) textarea:focus ~ label.e-float-text {
+  .e-bigger .e-float-input.e-control-wrapper.e-small:not(.e-error) textarea:focus ~ label.e-float-text,
+  .e-float-input:not(.e-error).e-input-focus input ~ label.e-float-text,
+  .e-float-input.e-bigger:not(.e-error).e-input-focus input ~ label.e-float-text,
+  .e-bigger .e-float-input:not(.e-error).e-input-focus input ~ label.e-float-text,
+  .e-float-input.e-small:not(.e-error).e-input-focus input ~ label.e-float-text,
+  .e-small .e-float-input:not(.e-error).e-input-focus input ~ label.e-float-text,
+  .e-float-input.e-small.e-bigger:not(.e-error).e-input-focus input ~ label.e-float-text,
+  .e-bigger .e-float-input.e-small:not(.e-error).e-input-focus input ~ label.e-float-text,
+  .e-float-input.e-control-wrapper:not(.e-error).e-input-focus input ~ label.e-float-text,
+  .e-float-input.e-control-wrapper.e-bigger:not(.e-error).e-input-focus input ~ label.e-float-text,
+  .e-bigger .e-float-input.e-control-wrapper:not(.e-error).e-input-focus input ~ label.e-float-text,
+  .e-float-input.e-control-wrapper.e-small:not(.e-error).e-input-focus input ~ label.e-float-text,
+  .e-small .e-float-input.e-control-wrapper:not(.e-error).e-input-focus input ~ label.e-float-text,
+  .e-float-input.e-control-wrapper.e-small.e-bigger:not(.e-error).e-input-focus input ~ label.e-float-text,
+  .e-bigger .e-float-input.e-control-wrapper.e-small:not(.e-error).e-input-focus input ~ label.e-float-text {
     @if $input-skin-name == 'material' {
       color: $input-active-accent-color;
     }
@@ -1583,22 +1691,22 @@
     }
   }
 
-  .e-float-input:not(.e-error) input:not(:focus):-webkit-autofill~label.e-float-text,
-  .e-bigger .e-float-input:not(.e-error) input:not(:focus):-webkit-autofill~label.e-float-text,
-  .e-bigger.e-float-input:not(.e-error) input:not(:focus):-webkit-autofill~label.e-float-text,
-  .e-small .e-float-input:not(.e-error) input:not(:focus):-webkit-autofill~label.e-float-text,
-  .e-small.e-float-input:not(.e-error) input:not(:focus):-webkit-autofill~label.e-float-text,
-  .e-bigger .e-float-input.e-small:not(.e-error) input:not(:focus):-webkit-autofill~label.e-float-text,
-  .e-bigger.e-small .e-float-input:not(.e-error) input:not(:focus):-webkit-autofill~label.e-float-text,
-  .e-float-input.e-bigger.e-small:not(.e-error) input:not(:focus):-webkit-autofill~label.e-float-text,
-  .e-float-input.e-control-wrapper.e-autofill:not(.e-error) input:not(:focus):-webkit-autofill~label.e-float-text,
-  .e-bigger .e-float-input.e-control-wrapper.e-autofill:not(.e-error) input:not(:focus):-webkit-autofill~label.e-float-text,
-  .e-bigger.e-float-input.e-control-wrapper.e-autofill:not(.e-error) input:not(:focus):-webkit-autofill~label.e-float-text,
-  .e-small .e-float-input.e-control-wrapper.e-autofill:not(.e-error) input:not(:focus):-webkit-autofill~label.e-float-text,
-  .e-small.e-float-input.e-control-wrapper.e-autofill:not(.e-error) input:not(:focus):-webkit-autofill~label.e-float-text,
-  .e-bigger .e-float-input.e-small.e-control-wrapper.e-autofill:not(.e-error) input:not(:focus):-webkit-autofill~label.e-float-text,
-  .e-bigger.e-small .e-float-input.e-control-wrapper.e-autofill:not(.e-error) input:not(:focus):-webkit-autofill~label.e-float-text,
-  .e-float-input.e-bigger.e-small.e-control-wrapper.e-autofill:not(.e-error) input:not(:focus):-webkit-autofill~label.e-float-text {
+  .e-float-input:not(.e-error):not(.e-input-focus) input:not(:focus):-webkit-autofill~label.e-float-text,
+  .e-bigger .e-float-input:not(.e-error):not(.e-input-focus) input:not(:focus):-webkit-autofill~label.e-float-text,
+  .e-bigger.e-float-input:not(.e-error):not(.e-input-focus) input:not(:focus):-webkit-autofill~label.e-float-text,
+  .e-small .e-float-input:not(.e-error):not(.e-input-focus) input:not(:focus):-webkit-autofill~label.e-float-text,
+  .e-small.e-float-input:not(.e-error):not(.e-input-focus) input:not(:focus):-webkit-autofill~label.e-float-text,
+  .e-bigger .e-float-input.e-small:not(.e-error):not(.e-input-focus) input:not(:focus):-webkit-autofill~label.e-float-text,
+  .e-bigger.e-small .e-float-input:not(.e-error):not(.e-input-focus) input:not(:focus):-webkit-autofill~label.e-float-text,
+  .e-float-input.e-bigger.e-small:not(.e-error):not(.e-input-focus) input:not(:focus):-webkit-autofill~label.e-float-text,
+  .e-float-input.e-control-wrapper.e-autofill:not(.e-error):not(.e-input-focus) input:not(:focus):-webkit-autofill~label.e-float-text,
+  .e-bigger .e-float-input.e-control-wrapper.e-autofill:not(.e-error):not(.e-input-focus) input:not(:focus):-webkit-autofill~label.e-float-text,
+  .e-bigger.e-float-input.e-control-wrapper.e-autofill:not(.e-error):not(.e-input-focus) input:not(:focus):-webkit-autofill~label.e-float-text,
+  .e-small .e-float-input.e-control-wrapper.e-autofill:not(.e-error):not(.e-input-focus) input:not(:focus):-webkit-autofill~label.e-float-text,
+  .e-small.e-float-input.e-control-wrapper.e-autofill:not(.e-error):not(.e-input-focus) input:not(:focus):-webkit-autofill~label.e-float-text,
+  .e-bigger .e-float-input.e-small.e-control-wrapper.e-autofill:not(.e-error):not(.e-input-focus) input:not(:focus):-webkit-autofill~label.e-float-text,
+  .e-bigger.e-small .e-float-input.e-control-wrapper.e-autofill:not(.e-error):not(.e-input-focus) input:not(:focus):-webkit-autofill~label.e-float-text,
+  .e-float-input.e-bigger.e-small.e-control-wrapper.e-autofill:not(.e-error):not(.e-input-focus) input:not(:focus):-webkit-autofill~label.e-float-text {
     color: $float-label-font-color;
   }
 
@@ -1842,7 +1950,21 @@
   .e-outline.e-float-input.e-valid-input.e-success:not(.e-input-focus) input:valid ~ label.e-float-text.e-label-top,
   .e-outline.e-float-input.e-control-wrapper.e-valid-input.e-success:not(.e-input-focus) input:focus ~ label.e-float-text.e-label-top,
   .e-outline.e-float-input.e-valid-input.e-success:not(.e-input-focus) textarea:valid ~ label.e-float-text.e-label-top,
-  .e-outline.e-float-input.e-control-wrapper.e-valid-input.e-success:not(.e-input-focus) textarea:focus ~ label.e-float-text.e-label-top {
+  .e-outline.e-float-input.e-control-wrapper.e-valid-input.e-success:not(.e-input-focus) textarea:focus ~ label.e-float-text.e-label-top,
+  .e-outline.e-float-input.e-success.e-input-focus input ~ label.e-float-text,
+  .e-outline.e-float-input.e-bigger.e-success.e-input-focus input ~ label.e-float-text,
+  .e-bigger .e-outline.e-float-input.e-success.e-input-focus input ~ label.e-float-text,
+  .e-outline.e-float-input.e-small.e-success.e-input-focus input ~ label.e-float-text,
+  .e-small .e-outline.e-float-input.e-success.e-input-focus input ~ label.e-float-text,
+  .e-outline.e-float-input.e-small.e-bigger.e-success.e-input-focus input ~ label.e-float-text,
+  .e-bigger .e-outline.e-float-input.e-small:not(.e-success).e-input-focus input ~ label.e-float-text,
+  .e-outline.e-float-input.e-control-wrapper.e-success.e-input-focus input ~ label.e-float-text,
+  .e-outline.e-float-input.e-control-wrapper.e-bigger.e-success.e-input-focus input ~ label.e-float-text,
+  .e-bigger .e-outline.e-float-input.e-control-wrapper.e-success.e-input-focus input ~ label.e-float-text,
+  .e-outline.e-float-input.e-control-wrapper.e-small.e-success.e-input-focus input ~ label.e-float-text,
+  .e-small .e-outline.e-float-input.e-control-wrapper.e-success.e-input-focus input ~ label.e-float-text,
+  .e-outline.e-float-input.e-control-wrapper.e-small.e-bigger.e-success.e-input-focus input ~ label.e-float-text,
+  .e-bigger .e-outline.e-float-input.e-control-wrapper.e-small.e-success.e-input-focus input ~ label.e-float-text {
     @if $skin-name == 'material' {
       color: $input-success-color;
     }
@@ -1883,7 +2005,21 @@
   .e-outline.e-float-input.e-valid-input.e-error:not(.e-input-focus) input:valid ~ label.e-float-text.e-label-top,
   .e-outline.e-float-input.e-control-wrapper.e-valid-input.e-error:not(.e-input-focus) input:focus ~ label.e-float-text.e-label-top,
   .e-outline.e-float-input.e-valid-input.e-error:not(.e-input-focus) textarea:valid ~ label.e-float-text.e-label-top,
-  .e-outline.e-float-input.e-control-wrapper.e-valid-input.e-error:not(.e-input-focus) textarea:focus ~ label.e-float-text.e-label-top {
+  .e-outline.e-float-input.e-control-wrapper.e-valid-input.e-error:not(.e-input-focus) textarea:focus ~ label.e-float-text.e-label-top,
+  .e-outline.e-float-input.e-error.e-input-focus input ~ label.e-float-text,
+  .e-outline.e-float-input.e-bigger.e-error.e-input-focus input ~ label.e-float-text,
+  .e-bigger .e-outline.e-float-input.e-error.e-input-focus input ~ label.e-float-text,
+  .e-outline.e-float-input.e-small.e-error.e-input-focus input ~ label.e-float-text,
+  .e-small .e-outline.e-float-input.e-error.e-input-focus input ~ label.e-float-text,
+  .e-outline.e-float-input.e-small.e-bigger.e-error.e-input-focus input ~ label.e-float-text,
+  .e-bigger .e-outline.e-float-input.e-small:not(.e-error).e-input-focus input ~ label.e-float-text,
+  .e-outline.e-float-input.e-control-wrapper.e-error.e-input-focus input ~ label.e-float-text,
+  .e-outline.e-float-input.e-control-wrapper.e-bigger.e-error.e-input-focus input ~ label.e-float-text,
+  .e-bigger .e-outline.e-float-input.e-control-wrapper.e-error.e-input-focus input ~ label.e-float-text,
+  .e-outline.e-float-input.e-control-wrapper.e-small.e-error.e-input-focus input ~ label.e-float-text,
+  .e-small .e-outline.e-float-input.e-control-wrapper.e-error.e-input-focus input ~ label.e-float-text,
+  .e-outline.e-float-input.e-control-wrapper.e-small.e-bigger.e-error.e-input-focus input ~ label.e-float-text,
+  .e-bigger .e-outline.e-float-input.e-control-wrapper.e-small.e-error.e-input-focus input ~ label.e-float-text {
     @if $skin-name == 'material' {
       color: $input-error-color;
     }
@@ -1924,7 +2060,21 @@
   .e-outline.e-float-input.e-valid-input.e-warning:not(.e-input-focus) input:valid ~ label.e-float-text.e-label-top,
   .e-outline.e-float-input.e-control-wrapper.e-valid-input.e-warning:not(.e-input-focus) input:focus ~ label.e-float-text.e-label-top,
   .e-outline.e-float-input.e-valid-input.e-warning:not(.e-input-focus) textarea:valid ~ label.e-float-text.e-label-top,
-  .e-outline.e-float-input.e-control-wrapper.e-valid-input.e-warning:not(.e-input-focus) textarea:focus ~ label.e-float-text.e-label-top {
+  .e-outline.e-float-input.e-control-wrapper.e-valid-input.e-warning:not(.e-input-focus) textarea:focus ~ label.e-float-text.e-label-top,
+  .e-outline.e-float-input.e-warning.e-input-focus input ~ label.e-float-text,
+  .e-outline.e-float-input.e-bigger.e-warning.e-input-focus input ~ label.e-float-text,
+  .e-bigger .e-outline.e-float-input.e-warning.e-input-focus input ~ label.e-float-text,
+  .e-outline.e-float-input.e-small.e-warning.e-input-focus input ~ label.e-float-text,
+  .e-small .e-outline.e-float-input.e-warning.e-input-focus input ~ label.e-float-text,
+  .e-outline.e-float-input.e-small.e-bigger.e-warning.e-input-focus input ~ label.e-float-text,
+  .e-bigger .e-outline.e-float-input.e-small:not(.e-warning).e-input-focus input ~ label.e-float-text,
+  .e-outline.e-float-input.e-control-wrapper.e-warning.e-input-focus input ~ label.e-float-text,
+  .e-outline.e-float-input.e-control-wrapper.e-bigger.e-warning.e-input-focus input ~ label.e-float-text,
+  .e-bigger .e-outline.e-float-input.e-control-wrapper.e-warning.e-input-focus input ~ label.e-float-text,
+  .e-outline.e-float-input.e-control-wrapper.e-small.e-warning.e-input-focus input ~ label.e-float-text,
+  .e-small .e-outline.e-float-input.e-control-wrapper.e-warning.e-input-focus input ~ label.e-float-text,
+  .e-outline.e-float-input.e-control-wrapper.e-small.e-bigger.e-warning.e-input-focus input ~ label.e-float-text,
+  .e-bigger .e-outline.e-float-input.e-control-wrapper.e-small.e-warning.e-input-focus input ~ label.e-float-text {
     @if $skin-name == 'material' {
       color: $input-warning-color;
     }
@@ -2129,20 +2279,20 @@
   // Filled input floating label color configuration 
 
   .e-filled label.e-float-text,
-  .e-filled.e-float-input:not(.e-error) input:not(:focus):valid ~ label.e-float-text.e-label-bottom,
-  .e-filled.e-float-input.e-control-wrapper:not(.e-error) input:not(:focus):valid ~ label.e-float-text.e-label-bottom,
-  .e-filled.e-float-input.e-bigger:not(.e-error) input:not(:focus):valid ~ label.e-float-text.e-label-bottom,
-  .e-filled.e-float-input.e-control-wrapper.e-bigger:not(.e-error) input:not(:focus):valid ~ label.e-float-text.e-label-bottom,
-  .e-bigger .e-filled.e-float-input:not(.e-error) input:not(:focus):valid ~ label.e-float-text.e-label-bottom,
-  .e-bigger .e-filled.e-float-input.e-control-wrapper:not(.e-error) input:not(:focus):valid ~ label.e-float-text.e-label-bottom,
-  .e-filled.e-float-input.e-small:not(.e-error) input:not(:focus):valid ~ label.e-float-text.e-label-bottom,
-  .e-filled.e-float-input.e-control-wrapper.e-small:not(.e-error) input:not(:focus):valid ~ label.e-float-text.e-label-bottom,
-  .e-small .e-filled.e-float-input:not(.e-error) input:not(:focus):valid ~ label.e-float-text.e-label-bottom,
-  .e-small .e-filled.e-float-input.e-control-wrapper:not(.e-error) input:not(:focus):valid ~ label.e-float-text.e-label-bottom,
-  .e-filled.e-float-input.e-small.e-bigger:not(.e-error) input:not(:focus):valid ~ label.e-float-text.e-label-bottom,
-  .e-filled.e-float-input.e-control-wrapper.e-small.e-bigger:not(.e-error) input:not(:focus):valid ~ label.e-float-text.e-label-bottom,
-  .e-bigger .e-filled.e-float-input.e-small:not(.e-error) input:not(:focus):valid ~ label.e-float-text.e-label-bottom,
-  .e-bigger .e-filled.e-float-input.e-control-wrapper.e-small:not(.e-error) input:not(:focus):valid ~ label.e-float-text.e-label-bottom {
+  .e-filled.e-float-input:not(.e-error):not(.e-input-focus) input:not(:focus):valid ~ label.e-float-text.e-label-bottom,
+  .e-filled.e-float-input.e-control-wrapper:not(.e-error):not(.e-input-focus) input:not(:focus):valid ~ label.e-float-text.e-label-bottom,
+  .e-filled.e-float-input.e-bigger:not(.e-error):not(.e-input-focus) input:not(:focus):valid ~ label.e-float-text.e-label-bottom,
+  .e-filled.e-float-input.e-control-wrapper.e-bigger:not(.e-error):not(.e-input-focus) input:not(:focus):valid ~ label.e-float-text.e-label-bottom,
+  .e-bigger .e-filled.e-float-input:not(.e-error):not(.e-input-focus) input:not(:focus):valid ~ label.e-float-text.e-label-bottom,
+  .e-bigger .e-filled.e-float-input.e-control-wrapper:not(.e-error):not(.e-input-focus) input:not(:focus):valid ~ label.e-float-text.e-label-bottom,
+  .e-filled.e-float-input.e-small:not(.e-error):not(.e-input-focus) input:not(:focus):valid ~ label.e-float-text.e-label-bottom,
+  .e-filled.e-float-input.e-control-wrapper.e-small:not(.e-error):not(.e-input-focus) input:not(:focus):valid ~ label.e-float-text.e-label-bottom,
+  .e-small .e-filled.e-float-input:not(.e-error):not(.e-input-focus) input:not(:focus):valid ~ label.e-float-text.e-label-bottom,
+  .e-small .e-filled.e-float-input.e-control-wrapper:not(.e-error):not(.e-input-focus) input:not(:focus):valid ~ label.e-float-text.e-label-bottom,
+  .e-filled.e-float-input.e-small.e-bigger:not(.e-error):not(.e-input-focus) input:not(:focus):valid ~ label.e-float-text.e-label-bottom,
+  .e-filled.e-float-input.e-control-wrapper.e-small.e-bigger:not(.e-error):not(.e-input-focus) input:not(:focus):valid ~ label.e-float-text.e-label-bottom,
+  .e-bigger .e-filled.e-float-input.e-small:not(.e-error):not(.e-input-focus) input:not(:focus):valid ~ label.e-float-text.e-label-bottom,
+  .e-bigger .e-filled.e-float-input.e-control-wrapper.e-small:not(.e-error):not(.e-input-focus) input:not(:focus):valid ~ label.e-float-text.e-label-bottom {
     @if $input-skin-name == 'material' {
       color: $filled-input-float-label-color;
     }
@@ -2153,7 +2303,9 @@
   .e-filled.e-float-input.e-error input:focus ~ label.e-float-text,
   .e-filled.e-float-input.e-control-wrapper.e-error input:focus ~ label.e-float-text,
   .e-filled.e-float-input.e-error textarea:focus ~ label.e-float-text,
-  .e-filled.e-float-input.e-control-wrapper.e-error textarea:focus ~ label.e-float-text {
+  .e-filled.e-float-input.e-control-wrapper.e-error textarea:focus ~ label.e-float-text,
+  .e-filled.e-float-input.e-error.e-input-focus input ~ label.e-float-text,
+  .e-filled.e-float-input.e-control-wrapper.e-error.e-input-focus input ~ label.e-float-text {
     @if $input-skin-name == 'material' {
       color: $input-error-color;
     }
@@ -2164,7 +2316,9 @@
   .e-filled.e-float-input.e-success input:focus ~ label.e-float-text,
   .e-filled.e-float-input.e-control-wrapper.e-success input:focus ~ label.e-float-text,
   .e-filled.e-float-input.e-success textarea:focus ~ label.e-float-text,
-  .e-filled.e-float-input.e-control-wrapper.e-success textarea:focus ~ label.e-float-text {
+  .e-filled.e-float-input.e-control-wrapper.e-success textarea:focus ~ label.e-float-text,
+  .e-filled.e-float-input.e-success.e-input-focus input ~ label.e-float-text,
+  .e-filled.e-float-input.e-control-wrapper.e-success.e-input-focus input ~ label.e-float-text {
     @if $input-skin-name == 'material' {
       color: $input-success-color;
     }
@@ -2175,7 +2329,9 @@
   .e-filled.e-float-input.e-warning input:focus ~ label.e-float-text,
   .e-filled.e-float-input.e-control-wrapper.e-warning input:focus ~ label.e-float-text,
   .e-filled.e-float-input.e-warning textarea:focus ~ label.e-float-text,
-  .e-filled.e-float-input.e-control-wrapper.e-warning textarea:focus ~ label.e-float-text {
+  .e-filled.e-float-input.e-control-wrapper.e-warning textarea:focus ~ label.e-float-text,
+  .e-filled.e-float-input.e-warning.e-input-focus input ~ label.e-float-text,
+  .e-filled.e-float-input.e-control-wrapper.e-warning.e-input-focus input ~ label.e-float-text {
     @if $input-skin-name == 'material' {
       color: $input-warning-color;
     }
@@ -2196,7 +2352,10 @@
   .e-bigger .e-filled.e-float-input:not(.e-error) input:valid ~ label.e-float-text,
   .e-bigger .e-filled.e-float-input:not(.e-error) input ~ label.e-label-top.e-float-text,
   .e-bigger .e-filled.e-float-input:not(.e-error) input[readonly] ~ label.e-label-top.e-float-text,
-  .e-bigger .e-filled.e-float-input:not(.e-error) input[disabled] ~ label.e-label-top.e-float-text {
+  .e-bigger .e-filled.e-float-input:not(.e-error) input[disabled] ~ label.e-label-top.e-float-text,
+  .e-filled.e-float-input:not(.e-error).e-input-focus input ~ label.e-float-text,
+  .e-filled.e-float-input.e-bigger:not(.e-error).e-input-focus input ~ label.e-float-text,
+  .e-bigger .e-filled.e-float-input:not(.e-error).e-input-focus input ~ label.e-float-text {
     @if $input-skin-name == 'material' {
       color: $filled-input-float-label-color;
     }
@@ -2217,7 +2376,10 @@
   .e-bigger .e-filled.e-float-input:not(.e-error) input:valid ~ label.e-float-text,
   .e-bigger .e-filled.e-float-input:not(.e-error) input ~ label.e-label-top.e-float-text,
   .e-bigger .e-filled.e-float-input:not(.e-error) input[readonly] ~ label.e-label-top.e-float-text,
-  .e-bigger .e-filled.e-float-input:not(.e-error) input[disabled] ~ label.e-label-top.e-float-text {
+  .e-bigger .e-filled.e-float-input:not(.e-error) input[disabled] ~ label.e-label-top.e-float-text,
+  .e-filled.e-float-input:not(.e-error).e-input-focus input ~ label.e-float-text,
+  .e-filled.e-float-input.e-bigger:not(.e-error).e-input-focus input ~ label.e-float-text,
+  .e-bigger .e-filled.e-float-input:not(.e-error).e-input-focus input ~ label.e-float-text {
     @if $input-skin-name == 'material' {
       color: $filled-input-float-label-color;
     }
@@ -2238,7 +2400,10 @@
   .e-bigger .e-filled.e-float-input.e-control-wrapper:not(.e-error) input:valid ~ label.e-float-text,
   .e-bigger .e-filled.e-float-input.e-control-wrapper:not(.e-error) input ~ label.e-label-top.e-float-text,
   .e-bigger .e-filled.e-float-input.e-control-wrapper:not(.e-error) input[readonly] ~ label.e-label-top.e-float-text,
-  .e-bigger .e-filled.e-float-input.e-control-wrapper:not(.e-error) input[disabled] ~ label.e-label-top.e-float-text {
+  .e-bigger .e-filled.e-float-input.e-control-wrapper:not(.e-error) input[disabled] ~ label.e-label-top.e-float-text,
+  .e-filled.e-float-input.e-control-wrapper:not(.e-error).e-input-focus input ~ label.e-float-text,
+  .e-filled.e-float-input.e-control-wrapper.e-bigger:not(.e-error).e-input-focus input ~ label.e-float-text,
+  .e-bigger .e-filled.e-float-input.e-control-wrapper:not(.e-error).e-input-focus input ~ label.e-float-text {
     @if $input-skin-name == 'material' {
       color: $filled-input-float-label-color;
     }
@@ -2263,7 +2428,11 @@
   .e-bigger .e-filled.e-float-input.e-small:not(.e-error) input:valid ~ label.e-float-text,
   .e-bigger .e-filled.e-float-input.e-small:not(.e-error) input ~ label.e-label-top.e-float-text,
   .e-bigger .e-filled.e-float-input.e-small:not(.e-error) input[readonly] ~ label.e-label-top.e-float-text,
-  .e-bigger .e-filled.e-float-input.e-small:not(.e-error) input[disabled] ~ label.e-label-top.e-float-text {
+  .e-bigger .e-filled.e-float-input.e-small:not(.e-error) input[disabled] ~ label.e-label-top.e-float-text,
+  .e-filled.e-float-input.e-small:not(.e-error).e-input-focus input ~ label.e-float-text,
+  .e-small .e-filled.e-float-input:not(.e-error).e-input-focus input ~ label.e-float-text,
+  .e-filled.e-float-input.e-small.e-bigger:not(.e-error).e-input-focus input ~ label.e-float-text,
+  .e-bigger .e-filled.e-float-input.e-small:not(.e-error).e-input-focus input ~ label.e-float-text {
     @if $input-skin-name == 'material' {
       color: $filled-input-float-label-color;
     }
@@ -2288,7 +2457,11 @@
   .e-bigger .e-filled.e-float-input.e-control-wrapper.e-small:not(.e-error) input:valid ~ label.e-float-text,
   .e-bigger .e-filled.e-float-input.e-control-wrapper.e-small:not(.e-error) input ~ label.e-label-top.e-float-text,
   .e-bigger .e-filled.e-float-input.e-control-wrapper.e-small:not(.e-error) input[readonly] ~ label.e-label-top.e-float-text,
-  .e-bigger .e-filled.e-float-input.e-control-wrapper.e-small:not(.e-error) input[disabled] ~ label.e-label-top.e-float-text {
+  .e-bigger .e-filled.e-float-input.e-control-wrapper.e-small:not(.e-error) input[disabled] ~ label.e-label-top.e-float-text,
+  .e-filled.e-float-input.e-control-wrapper.e-small:not(.e-error).e-input-focus input ~ label.e-float-text,
+  .e-small .e-filled.e-float-input.e-control-wrapper:not(.e-error).e-input-focus input ~ label.e-float-text,
+  .e-filled.e-float-input.e-control-wrapper.e-small.e-bigger:not(.e-error).e-input-focus input ~ label.e-float-text,
+  .e-bigger .e-filled.e-float-input.e-control-wrapper.e-small:not(.e-error).e-input-focus input ~ label.e-float-text {
     @if $input-skin-name == 'material' {
       color: $filled-input-float-label-color;
     }
@@ -2420,6 +2593,62 @@
   .e-small .e-filled.e-float-input:not(.e-error) input:focus ~ label.e-float-text,
   .e-filled.e-float-input.e-small.e-bigger:not(.e-error) input:focus ~ label.e-float-text,
   .e-bigger .e-filled.e-float-input.e-small:not(.e-error) input:focus ~ label.e-float-text,
+  .e-filled.e-float-input:not(.e-error) input[readonly]:focus ~ label.e-label-top.e-float-text,
+  .e-filled.e-float-input.e-bigger:not(.e-error) input[readonly]:focus ~ label.e-label-top.e-float-text,
+  .e-bigger .e-filled.e-float-input:not(.e-error) input[readonly]:focus ~ label.e-label-top.e-float-text,
+  .e-filled.e-float-input.e-control-wrapper:not(.e-error) input[readonly]:focus ~ label.e-label-top.e-float-text,
+  .e-filled.e-float-input.e-control-wrapper.e-bigger:not(.e-error) input[readonly]:focus ~ label.e-label-top.e-float-text,
+  .e-bigger .e-filled.e-float-input.e-control-wrapper:not(.e-error) input[readonly]:focus ~ label.e-label-top.e-float-text,
+  .e-filled.e-float-input.e-small:not(.e-error) input[readonly]:focus ~ label.e-float-text,
+  .e-small .e-filled.e-float-input:not(.e-error) input[readonly]:focus ~ label.e-float-text.e-label-top,
+  .e-filled.e-float-input.e-small.e-bigger:not(.e-error) input[readonly]:focus ~ label.e-label-top.e-float-text,
+  .e-bigger .e-filled.e-float-input.e-small:not(.e-error) input[readonly]:focus ~ label.e-label-top.e-float-text,
+  .e-filled.e-float-input.e-control-wrapper.e-small:not(.e-error) input[readonly]:focus ~ label.e-float-text,
+  .e-small .e-float-input.e-control-wrapper:not(.e-error) input[readonly]:focus ~ label.e-float-text.e-label-top,
+  .e-filled.e-float-input.e-control-wrapper.e-small.e-bigger:not(.e-error) input[readonly]:focus ~ label.e-label-top.e-float-text,
+  .e-bigger .e-filled.e-float-input.e-control-wrapper.e-small:not(.e-error) input[readonly]:focus ~ label.e-label-top.e-float-text,
+  .e-filled.e-float-input:not(.e-error).e-input-focus input[readonly] ~ label.e-label-top.e-float-text,
+  .e-filled.e-float-input.e-bigger:not(.e-error).e-input-focus input[readonly] ~ label.e-label-top.e-float-text,
+  .e-bigger .e-filled.e-float-input:not(.e-error).e-input-focus input[readonly] ~ label.e-label-top.e-float-text,
+  .e-filled.e-float-input.e-control-wrapper:not(.e-error).e-input-focus input[readonly] ~ label.e-label-top.e-float-text,
+  .e-filled.e-float-input.e-control-wrapper.e-bigger:not(.e-error).e-input-focus input[readonly] ~ label.e-label-top.e-float-text,
+  .e-bigger .e-filled.e-float-input.e-control-wrapper:not(.e-error).e-input-focus input[readonly] ~ label.e-label-top.e-float-text,
+  .e-filled.e-float-input.e-small:not(.e-error).e-input-focus input[readonly] ~ label.e-float-text,
+  .e-small .e-filled.e-float-input:not(.e-error).e-input-focus input[readonly] ~ label.e-float-text.e-label-top,
+  .e-filled.e-float-input.e-small.e-bigger:not(.e-error).e-input-focus input[readonly] ~ label.e-label-top.e-float-text,
+  .e-bigger .e-filled.e-float-input.e-small:not(.e-error).e-input-focus input[readonly] ~ label.e-label-top.e-float-text,
+  .e-filled.e-float-input.e-control-wrapper.e-small:not(.e-error).e-input-focus input[readonly] ~ label.e-float-text,
+  .e-small .e-filled.e-float-input.e-control-wrapper:not(.e-error).e-input-focus input[readonly] ~ label.e-float-text.e-label-top,
+  .e-filled.e-float-input.e-control-wrapper.e-small.e-bigger:not(.e-error).e-input-focus input[readonly] ~ label.e-label-top.e-float-text,
+  .e-bigger .e-filled.e-float-input.e-control-wrapper.e-small:not(.e-error).e-input-focus input[readonly] ~ label.e-label-top.e-float-text,
+  .e-filled.e-float-input:not(.e-error) textarea[readonly]:focus ~ label.e-label-top.e-float-text,
+  .e-filled.e-float-input.e-bigger:not(.e-error) textarea[readonly]:focus ~ label.e-label-top.e-float-text,
+  .e-bigger .e-filled.e-float-input:not(.e-error) textarea[readonly]:focus ~ label.e-label-top.e-float-text,
+  .e-filled.e-float-input.e-control-wrapper:not(.e-error) textarea[readonly]:focus ~ label.e-label-top.e-float-text,
+  .e-filled.e-float-input.e-control-wrapper.e-bigger:not(.e-error) textarea[readonly]:focus ~ label.e-label-top.e-float-text,
+  .e-bigger .e-filled.e-float-input.e-control-wrapper:not(.e-error) textarea[readonly]:focus ~ label.e-label-top.e-float-text,
+  .e-filled.e-float-input.e-small:not(.e-error) textarea[readonly]:focus ~ label.e-float-text,
+  .e-small .e-filled.e-float-input:not(.e-error) textarea[readonly]:focus ~ label.e-float-text.e-label-top,
+  .e-filled.e-float-input.e-small.e-bigger:not(.e-error) textarea[readonly]:focus ~ label.e-label-top.e-float-text,
+  .e-bigger .e-filled.e-float-input.e-small:not(.e-error) textarea[readonly]:focus ~ label.e-label-top.e-float-text
+  .e-filled.e-float-input.e-control-wrapper.e-small:not(.e-error) textarea[readonly]:focus ~ label.e-float-text,
+  .e-small .e-filled.e-float-input.e-control-wrapper:not(.e-error) textarea[readonly]:focus ~ label.e-float-text.e-label-top,
+  .e-filled.e-float-input.e-control-wrapper.e-small.e-bigger:not(.e-error) textarea[readonly]:focus ~ label.e-label-top.e-float-text,
+  .e-bigger .e-filled.e-float-input.e-control-wrapper.e-small:not(.e-error) textarea[readonly]:focus ~ label.e-label-top.e-float-text,
+  .e-filled.e-float-input:not(.e-error).e-input-focus textarea[readonly] ~ label.e-label-top.e-float-text,
+  .e-filled.e-float-input.e-bigger:not(.e-error).e-input-focus textarea[readonly] ~ label.e-label-top.e-float-text,
+  .e-bigger .e-filled.e-float-input:not(.e-error).e-input-focus textarea[readonly] ~ label.e-label-top.e-float-text,
+  .e-filled.e-float-input.e-control-wrapper:not(.e-error).e-input-focus textarea[readonly] ~ label.e-label-top.e-float-text,
+  .e-filled.e-float-input.e-control-wrapper.e-bigger:not(.e-error).e-input-focus textarea[readonly] ~ label.e-label-top.e-float-text,
+  .e-bigger .e-filled.e-float-input.e-control-wrapper:not(.e-error).e-input-focus textarea[readonly] ~ label.e-label-top.e-float-text,
+  .e-filled.e-float-input.e-small:not(.e-error).e-input-focus textarea[readonly] ~ label.e-float-text,
+  .e-small .e-filled.e-float-input:not(.e-error).e-input-focus textarea[readonly] ~ label.e-float-text.e-label-top,
+  .e-filled.e-float-input.e-small.e-bigger:not(.e-error).e-input-focus textarea[readonly] ~ label.e-label-top.e-float-text,
+  .e-bigger .e-filled.e-float-input.e-small:not(.e-error).e-input-focus textarea[readonly] ~ label.e-label-top.e-float-text
+  .e-filled.e-float-input.e-control-wrapper.e-small:not(.e-error).e-input-focus textarea[readonly] ~ label.e-float-text,
+  .e-small .e-filled.e-float-input.e-control-wrapper:not(.e-error).e-input-focus textarea[readonly] ~ label.e-float-text.e-label-top,
+  .e-filled.e-float-input.e-control-wrapper.e-small.e-bigger:not(.e-error).e-input-focus textarea[readonly] ~ label.e-label-top.e-float-text,
+  .e-bigger .e-filled.e-float-input.e-control-wrapper.e-small:not(.e-error).e-input-focus textarea[readonly] ~ label.e-label-top.e-float-text,
   .e-filled.e-float-input:not(.e-error) textarea:focus ~ label.e-float-text,
   .e-filled.e-float-input.e-bigger:not(.e-error) textarea:focus ~ label.e-float-text,
   .e-bigger .e-filled.e-float-input:not(.e-error) textarea:focus ~ label.e-float-text,
@@ -2440,28 +2669,42 @@
   .e-filled.e-float-input.e-control-wrapper.e-small:not(.e-error) textarea:focus ~ label.e-float-text,
   .e-small .e-filled.e-float-input.e-control-wrapper:not(.e-error) textarea:focus ~ label.e-float-text,
   .e-filled.e-float-input.e-control-wrapper.e-small.e-bigger:not(.e-error) textarea:focus ~ label.e-float-text,
-  .e-bigger .e-filled.e-float-input.e-control-wrapper.e-small:not(.e-error) textarea:focus ~ label.e-float-text {
+  .e-bigger .e-filled.e-float-input.e-control-wrapper.e-small:not(.e-error) textarea:focus ~ label.e-float-text,
+  .e-filled.e-float-input:not(.e-error).e-input-focus input ~ label.e-float-text,
+  .e-filled.e-float-input.e-bigger:not(.e-error).e-input-focus input ~ label.e-float-text,
+  .e-bigger .e-filled.e-float-input:not(.e-error).e-input-focus input ~ label.e-float-text,
+  .e-filled.e-float-input.e-small:not(.e-error).e-input-focus input ~ label.e-float-text,
+  .e-small .e-filled.e-float-input:not(.e-error).e-input-focus input ~ label.e-float-text,
+  .e-filled.e-float-input.e-small.e-bigger:not(.e-error).e-input-focus input ~ label.e-float-text,
+  .e-bigger .e-filled.e-float-input.e-small:not(.e-error).e-input-focus input ~ label.e-float-text,
+  .e-filled.e-float-input.e-control-wrapper:not(.e-error).e-input-focus input ~ label.e-float-text,
+  .e-filled.e-float-input.e-control-wrapper.e-bigger:not(.e-error).e-input-focus input ~ label.e-float-text,
+  .e-bigger .e-filled.e-float-input.e-control-wrapper:not(.e-error).e-input-focus input ~ label.e-float-text,
+  .e-filled.e-float-input.e-control-wrapper.e-small:not(.e-error).e-input-focus input ~ label.e-float-text,
+  .e-small .e-filled.e-float-input.e-control-wrapper:not(.e-error).e-input-focus input ~ label.e-float-text,
+  .e-filled.e-float-input.e-control-wrapper.e-small.e-bigger:not(.e-error).e-input-focus input ~ label.e-float-text,
+  .e-bigger .e-filled.e-float-input.e-control-wrapper.e-small:not(.e-error).e-input-focus input ~ label.e-float-text {
     @if $input-skin-name == 'material' {
       color: $input-active-accent-color;
     }
   }
 
-  .e-filled.e-float-input:not(.e-error) input:not(:focus):-webkit-autofill~label.e-float-text,
-  .e-bigger .e-filled.e-float-input:not(.e-error) input:not(:focus):-webkit-autofill~label.e-float-text,
-  .e-bigger.e-filled.e-float-input:not(.e-error) input:not(:focus):-webkit-autofill~label.e-float-text,
-  .e-small .e-filled.e-float-input:not(.e-error) input:not(:focus):-webkit-autofill~label.e-float-text,
-  .e-small.e-filled.e-float-input:not(.e-error) input:not(:focus):-webkit-autofill~label.e-float-text,
-  .e-bigger .e-filled.e-float-input.e-small:not(.e-error) input:not(:focus):-webkit-autofill~label.e-float-text,
-  .e-bigger.e-small .e-filled.e-float-input:not(.e-error) input:not(:focus):-webkit-autofill~label.e-float-text,
-  .e-filled.e-float-input.e-bigger.e-small:not(.e-error) input:not(:focus):-webkit-autofill~label.e-float-text,
-  .e-filled.e-float-input.e-control-wrapper.e-autofill:not(.e-error) input:not(:focus):-webkit-autofill~label.e-float-text,
-  .e-bigger .e-filled.e-float-input.e-control-wrapper.e-autofill:not(.e-error) input:not(:focus):-webkit-autofill~label.e-float-text,
-  .e-bigger.e-filled.e-float-input.e-control-wrapper.e-autofill:not(.e-error) input:not(:focus):-webkit-autofill~label.e-float-text,
-  .e-small .e-filled.e-float-input.e-control-wrapper.e-autofill:not(.e-error) input:not(:focus):-webkit-autofill~label.e-float-text,
-  .e-small.e-filled.e-float-input.e-control-wrapper.e-autofill:not(.e-error) input:not(:focus):-webkit-autofill~label.e-float-text,
-  .e-bigger .e-filled.e-float-input.e-small.e-control-wrapper.e-autofill:not(.e-error) input:not(:focus):-webkit-autofill~label.e-float-text,
-  .e-bigger.e-small .e-filled.e-float-input.e-control-wrapper.e-autofill:not(.e-error) input:not(:focus):-webkit-autofill~label.e-float-text,
-  .e-filled.e-float-input.e-bigger.e-small.e-control-wrapper.e-autofill:not(.e-error) input:not(:focus):-webkit-autofill~label.e-float-text {
+  .e-filled.e-float-input:not(.e-error):not(.e-input-focus) input:not(:focus):-webkit-autofill~label.e-float-text,
+  .e-bigger .e-filled.e-float-input:not(.e-error):not(.e-input-focus) input:not(:focus):-webkit-autofill~label.e-float-text,
+  .e-bigger.e-filled.e-float-input:not(.e-error):not(.e-input-focus) input:not(:focus):-webkit-autofill~label.e-float-text,
+  .e-small .e-filled.e-float-input:not(.e-error):not(.e-input-focus) input:not(:focus):-webkit-autofill~label.e-float-text,
+  .e-small.e-filled.e-float-input:not(.e-error):not(.e-input-focus) input:not(:focus):-webkit-autofill~label.e-float-text,
+  .e-bigger .e-filled.e-float-input.e-small:not(.e-error):not(.e-input-focus) input:not(:focus):-webkit-autofill~label.e-float-text,
+  .e-bigger.e-small .e-filled.e-float-input:not(.e-error):not(.e-input-focus) input:not(:focus):-webkit-autofill~label.e-float-text,
+  .e-filled.e-float-input.e-bigger.e-small:not(.e-error):not(.e-input-focus) input:not(:focus):-webkit-autofill~label.e-float-text,
+  .e-filled.e-float-input.e-control-wrapper.e-autofill:not(.e-error):not(.e-input-focus) input:not(:focus):-webkit-autofill~label.e-float-text,
+  .e-bigger .e-filled.e-float-input.e-control-wrapper.e-autofill:not(.e-error):not(.e-input-focus) input:not(:focus):-webkit-autofill~label.e-float-text,
+  .e-bigger.e-filled.e-float-input.e-control-wrapper.e-autofill:not(.e-error):not(.e-input-focus) input:not(:focus):-webkit-autofill~label.e-float-text,
+  .e-small .e-filled.e-float-input.e-control-wrapper.e-autofill:not(.e-error):not(.e-input-focus) input:not(:focus):-webkit-autofill~label.e-float-text,
+  .e-small.e-filled.e-float-input.e-control-wrapper.e-autofill:not(.e-error):not(.e-input-focus) input:not(:focus):-webkit-autofill~label.e-float-text,
+  .e-bigger .e-filled.e-float-input.e-small.e-control-wrapper.e-autofill:not(.e-error):not(.e-input-focus) input:not(:focus):-webkit-autofill~label.e-float-text,
+  .e-bigger.e-small .e-filled.e-float-input.e-control-wrapper.e-autofill:not(.e-error):not(.e-input-focus) input:not(:focus):-webkit-autofill~label.e-float-text,
+  .e-filled.e-float-input.e-bigger.e-small.e-control-wrapper.e-autofill:not(.e-error):not(.e-input-focus) input:not(:focus):-webkit-autofill~label.e-float-text {
     @if $input-skin-name == 'material' {
       color: $filled-input-float-label-color;
     }
@@ -3139,12 +3382,6 @@
     }
   }
 
-
-
-
-
-
-
   .e-filled.e-float-input.e-success input:focus ~ label.e-float-text,
   .e-filled.e-float-input.e-success input:valid ~ label.e-float-text,
   .e-filled.e-float-input.e-success input ~ label.e-label-top.e-float-text,
@@ -3160,7 +3397,10 @@
   .e-bigger .e-filled.e-float-input.e-success input:valid ~ label.e-float-text,
   .e-bigger .e-filled.e-float-input.e-success input ~ label.e-label-top.e-float-text,
   .e-bigger .e-filled.e-float-input.e-success input[readonly] ~ label.e-label-top.e-float-text,
-  .e-bigger .e-filled.e-float-input.e-success input[disabled] ~ label.e-label-top.e-float-text {
+  .e-bigger .e-filled.e-float-input.e-success input[disabled] ~ label.e-label-top.e-float-text,
+  .e-filled.e-float-input.e-success.e-input-focus input ~ label.e-float-text,
+  .e-filled.e-float-input.e-bigger.e-success.e-input-focus input ~ label.e-float-text,
+  .e-bigger .e-filled.e-float-input.e-success.e-input-focus input ~ label.e-float-text {
     @if $input-skin-name == 'material' {
       color: $input-success-color;
     }
@@ -3181,7 +3421,10 @@
   .e-bigger .e-filled.e-float-input.e-warning input:valid ~ label.e-float-text,
   .e-bigger .e-filled.e-float-input.e-warning input ~ label.e-label-top.e-float-text,
   .e-bigger .e-filled.e-float-input.e-warning input[readonly] ~ label.e-label-top.e-float-text,
-  .e-bigger .e-filled.e-float-input.e-warning input[disabled] ~ label.e-label-top.e-float-text {
+  .e-bigger .e-filled.e-float-input.e-warning input[disabled] ~ label.e-label-top.e-float-text,
+  .e-filled.e-float-input.e-warning.e-input-focus input ~ label.e-float-text,
+  .e-filled.e-float-input.e-bigger.e-warning.e-input-focus input ~ label.e-float-text,
+  .e-bigger .e-filled.e-float-input.e-warning.e-input-focus input ~ label.e-float-text {
     @if $input-skin-name == 'material' {
       color: $input-warning-color;
     }
@@ -3202,7 +3445,10 @@
   .e-bigger .e-filled.e-float-input.e-success input:valid ~ label.e-float-text,
   .e-bigger .e-filled.e-float-input.e-success input ~ label.e-label-top.e-float-text,
   .e-bigger .e-filled.e-float-input.e-success input[readonly] ~ label.e-label-top.e-float-text,
-  .e-bigger .e-filled.e-float-input.e-success input[disabled] ~ label.e-label-top.e-float-text {
+  .e-bigger .e-filled.e-float-input.e-success input[disabled] ~ label.e-label-top.e-float-text,
+  .e-filled.e-float-input.e-success.e-input-focus input ~ label.e-float-text,
+  .e-filled.e-float-input.e-bigger.e-success.e-input-focus input ~ label.e-float-text,
+  .e-bigger .e-filled.e-float-input.e-success.e-input-focus input ~ label.e-float-text {
     @if $input-skin-name == 'material' {
       color: $input-success-color;
     }
@@ -3223,7 +3469,10 @@
   .e-bigger .e-filled.e-float-input.e-warning input:valid ~ label.e-float-text,
   .e-bigger .e-filled.e-float-input.e-warning input ~ label.e-label-top.e-float-text,
   .e-bigger .e-filled.e-float-input.e-warning input[readonly] ~ label.e-label-top.e-float-text,
-  .e-bigger .e-filled.e-float-input.e-warning input[disabled] ~ label.e-label-top.e-float-text {
+  .e-bigger .e-filled.e-float-input.e-warning input[disabled] ~ label.e-label-top.e-float-text,
+  .e-filled.e-float-input.e-warning.e-input-focus input ~ label.e-float-text,
+  .e-filled.e-float-input.e-bigger.e-warning.e-input-focus input ~ label.e-float-text,
+  .e-bigger .e-filled.e-float-input.e-warning.e-input-focus input ~ label.e-float-text {
     @if $input-skin-name == 'material' {
       color: $input-warning-color;
     }
@@ -3244,7 +3493,10 @@
   .e-bigger .e-filled.e-float-input.e-control-wrapper.e-success input:valid ~ label.e-float-text,
   .e-bigger .e-filled.e-float-input.e-control-wrapper.e-success input ~ label.e-label-top.e-float-text,
   .e-bigger .e-filled.e-float-input.e-control-wrapper.e-success input[readonly] ~ label.e-label-top.e-float-text,
-  .e-bigger .e-filled.e-float-input.e-control-wrapper.e-success input[disabled] ~ label.e-label-top.e-float-text {
+  .e-bigger .e-filled.e-float-input.e-control-wrapper.e-success input[disabled] ~ label.e-label-top.e-float-text,
+  .e-filled.e-float-input.e-control-wrapper.e-success.e-input-focus input ~ label.e-float-text,
+  .e-filled.e-float-input.e-control-wrapper.e-bigger.e-success.e-input-focus input ~ label.e-float-text,
+  .e-bigger .e-filled.e-float-input.e-control-wrapper.e-success.e-input-focus input ~ label.e-float-text {
     @if $input-skin-name == 'material' {
       color: $input-success-color;
     }
@@ -3269,7 +3521,11 @@
   .e-bigger .e-filled.e-float-input.e-small.e-success input:valid ~ label.e-float-text,
   .e-bigger .e-filled.e-float-input.e-small.e-success input ~ label.e-label-top.e-float-text,
   .e-bigger .e-filled.e-float-input.e-small.e-success input[readonly] ~ label.e-label-top.e-float-text,
-  .e-bigger .e-filled.e-float-input.e-small.e-success input[disabled] ~ label.e-label-top.e-float-text {
+  .e-bigger .e-filled.e-float-input.e-small.e-success input[disabled] ~ label.e-label-top.e-float-text,
+  .e-filled.e-float-input.e-small.e-success.e-input-focus input ~ label.e-float-text,
+  .e-small .e-filled.e-float-input.e-success.e-input-focus input ~ label.e-float-text,
+  .e-filled.e-float-input.e-small.e-bigger.e-success.e-input-focus input ~ label.e-float-text,
+  .e-bigger .e-filled.e-float-input.e-small.e-success.e-input-focus input ~ label.e-float-text {
     @if $input-skin-name == 'material' {
       color: $input-success-color;
     }
@@ -3294,7 +3550,11 @@
   .e-bigger .e-filled.e-float-input.e-control-wrapper.e-small.e-success input:valid ~ label.e-float-text,
   .e-bigger .e-filled.e-float-input.e-control-wrapper.e-small.e-success input ~ label.e-label-top.e-float-text,
   .e-bigger .e-filled.e-float-input.e-control-wrapper.e-small.e-success input[readonly] ~ label.e-label-top.e-float-text,
-  .e-bigger .e-filled.e-float-input.e-control-wrapper.e-small.e-success input[disabled] ~ label.e-label-top.e-float-text {
+  .e-bigger .e-filled.e-float-input.e-control-wrapper.e-small.e-success input[disabled] ~ label.e-label-top.e-float-text,
+  .e-filled.e-float-input.e-control-wrapper.e-small.e-success.e-input-focus input ~ label.e-float-text,
+  .e-small .e-filled.e-float-input.e-control-wrapper.e-success.e-input-focus input ~ label.e-float-text,
+  .e-filled.e-float-input.e-control-wrapper.e-small.e-bigger.e-success.e-input-focus input ~ label.e-float-text,
+  .e-bigger .e-filled.e-float-input.e-control-wrapper.e-small.e-success.e-input-focus input ~ label.e-float-text {
     @if $input-skin-name == 'material' {
       color: $input-success-color;
     }
@@ -3438,28 +3698,42 @@
   .e-filled.e-float-input.e-control-wrapper.e-small.e-success textarea:focus ~ label.e-float-text,
   .e-small .e-filled.e-float-input.e-control-wrapper.e-success textarea:focus ~ label.e-float-text,
   .e-filled.e-float-input.e-control-wrapper.e-small.e-bigger.e-success textarea:focus ~ label.e-float-text,
-  .e-bigger .e-filled.e-float-input.e-control-wrapper.e-small.e-success textarea:focus ~ label.e-float-text {
+  .e-bigger .e-filled.e-float-input.e-control-wrapper.e-small.e-success textarea:focus ~ label.e-float-text,
+  .e-filled.e-float-input.e-success.e-input-focus input ~ label.e-float-text,
+  .e-filled.e-float-input.e-bigger.e-success.e-input-focus input ~ label.e-float-text,
+  .e-bigger .e-filled.e-float-input.e-success.e-input-focus input ~ label.e-float-text,
+  .e-filled.e-float-input.e-small.e-success.e-input-focus input ~ label.e-float-text,
+  .e-small .e-filled.e-float-input.e-success.e-input-focus input ~ label.e-float-text,
+  .e-filled.e-float-input.e-small.e-bigger.e-success.e-input-focus input ~ label.e-float-text,
+  .e-bigger .e-filled.e-float-input.e-small.e-success.e-input-focus input ~ label.e-float-text,
+  .e-filled.e-float-input.e-control-wrapper.e-success.e-input-focus input ~ label.e-float-text,
+  .e-filled.e-float-input.e-control-wrapper.e-bigger.e-success.e-input-focus input ~ label.e-float-text,
+  .e-bigger .e-filled.e-float-input.e-control-wrapper.e-success.e-input-focus input ~ label.e-float-text,
+  .e-filled.e-float-input.e-control-wrapper.e-small.e-success.e-input-focus input ~ label.e-float-text,
+  .e-small .e-filled.e-float-input.e-control-wrapper.e-success.e-input-focus input ~ label.e-float-text,
+  .e-filled.e-float-input.e-control-wrapper.e-small.e-bigger.e-success.e-input-focus input ~ label.e-float-text,
+  .e-bigger .e-filled.e-float-input.e-control-wrapper.e-small.e-success.e-input-focus input ~ label.e-float-text {
     @if $input-skin-name == 'material' {
       color: $input-success-color;
     }
   }
 
-  .e-filled.e-float-input.e-success input:not(:focus):-webkit-autofill~label.e-float-text,
-  .e-bigger .e-filled.e-float-input.e-success input:not(:focus):-webkit-autofill~label.e-float-text,
-  .e-bigger.e-filled.e-float-input.e-success input:not(:focus):-webkit-autofill~label.e-float-text,
-  .e-small .e-filled.e-float-input.e-success input:not(:focus):-webkit-autofill~label.e-float-text,
-  .e-small.e-filled.e-float-input.e-success input:not(:focus):-webkit-autofill~label.e-float-text,
-  .e-bigger .e-filled.e-float-input.e-small.e-success input:not(:focus):-webkit-autofill~label.e-float-text,
-  .e-bigger.e-small .e-filled.e-float-input.e-success input:not(:focus):-webkit-autofill~label.e-float-text,
-  .e-filled.e-float-input.e-bigger.e-small.e-success input:not(:focus):-webkit-autofill~label.e-float-text,
-  .e-filled.e-float-input.e-control-wrapper.e-autofill.e-success input:not(:focus):-webkit-autofill~label.e-float-text,
-  .e-bigger .e-filled.e-float-input.e-control-wrapper.e-autofill.e-success input:not(:focus):-webkit-autofill~label.e-float-text,
-  .e-bigger.e-filled.e-float-input.e-control-wrapper.e-autofill.e-success input:not(:focus):-webkit-autofill~label.e-float-text,
-  .e-small .e-filled.e-float-input.e-control-wrapper.e-autofill.e-success input:not(:focus):-webkit-autofill~label.e-float-text,
-  .e-small.e-filled.e-float-input.e-control-wrapper.e-autofill.e-success input:not(:focus):-webkit-autofill~label.e-float-text,
-  .e-bigger .e-filled.e-float-input.e-small.e-control-wrapper.e-autofill.e-success input:not(:focus):-webkit-autofill~label.e-float-text,
-  .e-bigger.e-small .e-filled.e-float-input.e-control-wrapper.e-autofill.e-success input:not(:focus):-webkit-autofill~label.e-float-text,
-  .e-filled.e-float-input.e-bigger.e-small.e-control-wrapper.e-autofill.e-success input:not(:focus):-webkit-autofill~label.e-float-text {
+  .e-filled.e-float-input.e-success:not(.e-input-focus) input:not(:focus):-webkit-autofill~label.e-float-text,
+  .e-bigger .e-filled.e-float-input.e-success:not(.e-input-focus) input:not(:focus):-webkit-autofill~label.e-float-text,
+  .e-bigger.e-filled.e-float-input.e-success:not(.e-input-focus) input:not(:focus):-webkit-autofill~label.e-float-text,
+  .e-small .e-filled.e-float-input.e-success:not(.e-input-focus) input:not(:focus):-webkit-autofill~label.e-float-text,
+  .e-small.e-filled.e-float-input.e-success:not(.e-input-focus) input:not(:focus):-webkit-autofill~label.e-float-text,
+  .e-bigger .e-filled.e-float-input.e-small.e-success:not(.e-input-focus) input:not(:focus):-webkit-autofill~label.e-float-text,
+  .e-bigger.e-small .e-filled.e-float-input.e-success:not(.e-input-focus) input:not(:focus):-webkit-autofill~label.e-float-text,
+  .e-filled.e-float-input.e-bigger.e-small.e-success:not(.e-input-focus) input:not(:focus):-webkit-autofill~label.e-float-text,
+  .e-filled.e-float-input.e-control-wrapper.e-autofill.e-success:not(.e-input-focus) input:not(:focus):-webkit-autofill~label.e-float-text,
+  .e-bigger .e-filled.e-float-input.e-control-wrapper.e-autofill.e-success:not(.e-input-focus) input:not(:focus):-webkit-autofill~label.e-float-text,
+  .e-bigger.e-filled.e-float-input.e-control-wrapper.e-autofill.e-success:not(.e-input-focus) input:not(:focus):-webkit-autofill~label.e-float-text,
+  .e-small .e-filled.e-float-input.e-control-wrapper.e-autofill.e-success:not(.e-input-focus) input:not(:focus):-webkit-autofill~label.e-float-text,
+  .e-small.e-filled.e-float-input.e-control-wrapper.e-autofill.e-success:not(.e-input-focus) input:not(:focus):-webkit-autofill~label.e-float-text,
+  .e-bigger .e-filled.e-float-input.e-small.e-control-wrapper.e-autofill.e-success:not(.e-input-focus) input:not(:focus):-webkit-autofill~label.e-float-text,
+  .e-bigger.e-small .e-filled.e-float-input.e-control-wrapper.e-autofill.e-success:not(.e-input-focus) input:not(:focus):-webkit-autofill~label.e-float-text,
+  .e-filled.e-float-input.e-bigger.e-small.e-control-wrapper.e-autofill.e-success:not(.e-input-focus) input:not(:focus):-webkit-autofill~label.e-float-text {
     @if $input-skin-name == 'material' {
       color: $input-success-color;
     }
@@ -3501,7 +3775,10 @@
   .e-bigger .e-filled.e-float-input.e-control-wrapper.e-warning input:valid ~ label.e-float-text,
   .e-bigger .e-filled.e-float-input.e-control-wrapper.e-warning input ~ label.e-label-top.e-float-text,
   .e-bigger .e-filled.e-float-input.e-control-wrapper.e-warning input[readonly] ~ label.e-label-top.e-float-text,
-  .e-bigger .e-filled.e-float-input.e-control-wrapper.e-warning input[disabled] ~ label.e-label-top.e-float-text {
+  .e-bigger .e-filled.e-float-input.e-control-wrapper.e-warning input[disabled] ~ label.e-label-top.e-float-text,
+  .e-filled.e-float-input.e-control-wrapper.e-warning.e-input-focus input ~ label.e-float-text,
+  .e-filled.e-float-input.e-control-wrapper.e-bigger.e-warning.e-input-focus input ~ label.e-float-text,
+  .e-bigger .e-filled.e-float-input.e-control-wrapper.e-warning.e-input-focus input ~ label.e-float-text {
     @if $input-skin-name == 'material' {
       color: $input-warning-color;
     }
@@ -3526,7 +3803,11 @@
   .e-bigger .e-filled.e-float-input.e-small.e-warning input:valid ~ label.e-float-text,
   .e-bigger .e-filled.e-float-input.e-small.e-warning input ~ label.e-label-top.e-float-text,
   .e-bigger .e-filled.e-float-input.e-small.e-warning input[readonly] ~ label.e-label-top.e-float-text,
-  .e-bigger .e-filled.e-float-input.e-small.e-warning input[disabled] ~ label.e-label-top.e-float-text {
+  .e-bigger .e-filled.e-float-input.e-small.e-warning input[disabled] ~ label.e-label-top.e-float-text,
+  .e-filled.e-float-input.e-small.e-warning.e-input-focus input ~ label.e-float-text,
+  .e-small .e-filled.e-float-input.e-warning.e-input-focus input ~ label.e-float-text,
+  .e-filled.e-float-input.e-small.e-bigger.e-warning.e-input-focus input ~ label.e-float-text,
+  .e-bigger .e-filled.e-float-input.e-small.e-warning.e-input-focus input ~ label.e-float-text {
     @if $input-skin-name == 'material' {
       color: $input-warning-color;
     }
@@ -3551,7 +3832,11 @@
   .e-bigger .e-filled.e-float-input.e-control-wrapper.e-small.e-warning input:valid ~ label.e-float-text,
   .e-bigger .e-filled.e-float-input.e-control-wrapper.e-small.e-warning input ~ label.e-label-top.e-float-text,
   .e-bigger .e-filled.e-float-input.e-control-wrapper.e-small.e-warning input[readonly] ~ label.e-label-top.e-float-text,
-  .e-bigger .e-filled.e-float-input.e-control-wrapper.e-small.e-warning input[disabled] ~ label.e-label-top.e-float-text {
+  .e-bigger .e-filled.e-float-input.e-control-wrapper.e-small.e-warning input[disabled] ~ label.e-label-top.e-float-text,
+  .e-filled.e-float-input.e-control-wrapper.e-small.e-warning.e-input-focus input ~ label.e-float-text,
+  .e-small .e-filled.e-float-input.e-control-wrapper.e-warning.e-input-focus input ~ label.e-float-text,
+  .e-filled.e-float-input.e-control-wrapper.e-small.e-bigger.e-warning.e-input-focus input ~ label.e-float-text,
+  .e-bigger .e-filled.e-float-input.e-control-wrapper.e-small.e-warning.e-input-focus input ~ label.e-float-text {
     @if $input-skin-name == 'material' {
       color: $input-warning-color;
     }
@@ -3695,28 +3980,42 @@
   .e-filled.e-float-input.e-control-wrapper.e-small.e-warning textarea:focus ~ label.e-float-text,
   .e-small .e-filled.e-float-input.e-control-wrapper.e-warning textarea:focus ~ label.e-float-text,
   .e-filled.e-float-input.e-control-wrapper.e-small.e-bigger.e-warning textarea:focus ~ label.e-float-text,
-  .e-bigger .e-filled.e-float-input.e-control-wrapper.e-small.e-warning textarea:focus ~ label.e-float-text {
+  .e-bigger .e-filled.e-float-input.e-control-wrapper.e-small.e-warning textarea:focus ~ label.e-float-text,
+  .e-filled.e-float-input.e-warning.e-input-focus input ~ label.e-float-text,
+  .e-filled.e-float-input.e-bigger.e-warning.e-input-focus input ~ label.e-float-text,
+  .e-bigger .e-filled.e-float-input.e-warning.e-input-focus input ~ label.e-float-text,
+  .e-filled.e-float-input.e-small.e-warning.e-input-focus input ~ label.e-float-text,
+  .e-small .e-filled.e-float-input.e-warning.e-input-focus input ~ label.e-float-text,
+  .e-filled.e-float-input.e-small.e-bigger.e-warning.e-input-focus input ~ label.e-float-text,
+  .e-bigger .e-filled.e-float-input.e-small.e-warning.e-input-focus input ~ label.e-float-text,
+  .e-filled.e-float-input.e-control-wrapper.e-warning.e-input-focus inputs ~ label.e-float-text,
+  .e-filled.e-float-input.e-control-wrapper.e-bigger.e-warning.e-input-focus input ~ label.e-float-text,
+  .e-bigger .e-filled.e-float-input.e-control-wrapper.e-warning.e-input-focus input ~ label.e-float-text,
+  .e-filled.e-float-input.e-control-wrapper.e-small.e-warning.e-input-focus input ~ label.e-float-text,
+  .e-small .e-filled.e-float-input.e-control-wrapper.e-warning.e-input-focus input ~ label.e-float-text,
+  .e-filled.e-float-input.e-control-wrapper.e-small.e-bigger.e-warning.e-input-focus input ~ label.e-float-text,
+  .e-bigger .e-filled.e-float-input.e-control-wrapper.e-small.e-warning.e-input-focus input ~ label.e-float-text {
     @if $input-skin-name == 'material' {
       color: $input-warning-color;
     }
   }
 
-  .e-filled.e-float-input.e-warning input:not(:focus):-webkit-autofill~label.e-float-text,
-  .e-bigger .e-filled.e-float-input.e-warning input:not(:focus):-webkit-autofill~label.e-float-text,
-  .e-bigger.e-filled.e-float-input.e-warning input:not(:focus):-webkit-autofill~label.e-float-text,
-  .e-small .e-filled.e-float-input.e-warning input:not(:focus):-webkit-autofill~label.e-float-text,
-  .e-small.e-filled.e-float-input.e-warning input:not(:focus):-webkit-autofill~label.e-float-text,
-  .e-bigger .e-filled.e-float-input.e-small.e-warning input:not(:focus):-webkit-autofill~label.e-float-text,
-  .e-bigger.e-small .e-filled.e-float-input.e-warning input:not(:focus):-webkit-autofill~label.e-float-text,
-  .e-filled.e-float-input.e-bigger.e-small.e-warning input:not(:focus):-webkit-autofill~label.e-float-text,
-  .e-filled.e-float-input.e-control-wrapper.e-autofill.e-warning input:not(:focus):-webkit-autofill~label.e-float-text,
-  .e-bigger .e-filled.e-float-input.e-control-wrapper.e-autofill.e-warning input:not(:focus):-webkit-autofill~label.e-float-text,
-  .e-bigger.e-filled.e-float-input.e-control-wrapper.e-autofill.e-warning input:not(:focus):-webkit-autofill~label.e-float-text,
-  .e-small .e-filled.e-float-input.e-control-wrapper.e-autofill.e-warning input:not(:focus):-webkit-autofill~label.e-float-text,
-  .e-small.e-filled.e-float-input.e-control-wrapper.e-autofill.e-warning input:not(:focus):-webkit-autofill~label.e-float-text,
-  .e-bigger .e-filled.e-float-input.e-small.e-control-wrapper.e-autofill.e-warning input:not(:focus):-webkit-autofill~label.e-float-text,
-  .e-bigger.e-small .e-filled.e-float-input.e-control-wrapper.e-autofill.e-warning input:not(:focus):-webkit-autofill~label.e-float-text,
-  .e-filled.e-float-input.e-bigger.e-small.e-control-wrapper.e-autofill.e-warning input:not(:focus):-webkit-autofill~label.e-float-text {
+  .e-filled.e-float-input.e-warning:not(.e-input-focus) input:not(:focus):-webkit-autofill~label.e-float-text,
+  .e-bigger .e-filled.e-float-input.e-warning:not(.e-input-focus) input:not(:focus):-webkit-autofill~label.e-float-text,
+  .e-bigger.e-filled.e-float-input.e-warning:not(.e-input-focus) input:not(:focus):-webkit-autofill~label.e-float-text,
+  .e-small .e-filled.e-float-input.e-warning:not(.e-input-focus) input:not(:focus):-webkit-autofill~label.e-float-text,
+  .e-small.e-filled.e-float-input.e-warning:not(.e-input-focus) input:not(:focus):-webkit-autofill~label.e-float-text,
+  .e-bigger .e-filled.e-float-input.e-small.e-warning:not(.e-input-focus) input:not(:focus):-webkit-autofill~label.e-float-text,
+  .e-bigger.e-small .e-filled.e-float-input.e-warning:not(.e-input-focus) input:not(:focus):-webkit-autofill~label.e-float-text,
+  .e-filled.e-float-input.e-bigger.e-small.e-warning:not(.e-input-focus) input:not(:focus):-webkit-autofill~label.e-float-text,
+  .e-filled.e-float-input.e-control-wrapper.e-autofill.e-warning:not(.e-input-focus) input:not(:focus):-webkit-autofill~label.e-float-text,
+  .e-bigger .e-filled.e-float-input.e-control-wrapper.e-autofill.e-warning:not(.e-input-focus) input:not(:focus):-webkit-autofill~label.e-float-text,
+  .e-bigger.e-filled.e-float-input.e-control-wrapper.e-autofill.e-warning:not(.e-input-focus) input:not(:focus):-webkit-autofill~label.e-float-text,
+  .e-small .e-filled.e-float-input.e-control-wrapper.e-autofill.e-warning:not(.e-input-focus) input:not(:focus):-webkit-autofill~label.e-float-text,
+  .e-small.e-filled.e-float-input.e-control-wrapper.e-autofill.e-warning:not(.e-input-focus) input:not(:focus):-webkit-autofill~label.e-float-text,
+  .e-bigger .e-filled.e-float-input.e-small.e-control-wrapper.e-autofill.e-warning:not(.e-input-focus) input:not(:focus):-webkit-autofill~label.e-float-text,
+  .e-bigger.e-small .e-filled.e-float-input.e-control-wrapper.e-autofill.e-warning:not(.e-input-focus) input:not(:focus):-webkit-autofill~label.e-float-text,
+  .e-filled.e-float-input.e-bigger.e-small.e-control-wrapper.e-autofill.e-warning:not(.e-input-focus) input:not(:focus):-webkit-autofill~label.e-float-text {
     @if $input-skin-name == 'material' {
       color: $input-warning-color;
     }

@@ -14,7 +14,7 @@ import { Button, CheckBox, RadioButton } from '@syncfusion/ej2-buttons';
 
 /**
  * This is a file to perform common utility for OLAP and Relational datasource
- * @hidden
+
  */
 var PivotUtil = /** @__PURE__ @class */ (function () {
     function PivotUtil() {
@@ -85,48 +85,107 @@ var PivotUtil = /** @__PURE__ @class */ (function () {
         }
         return -1;
     };
+    PivotUtil.getClonedDataSourceSettings = function (dataSourceSettings) {
+        var clonesDataSource = {
+            catalog: dataSourceSettings.catalog,
+            cube: dataSourceSettings.cube,
+            providerType: dataSourceSettings.providerType,
+            url: dataSourceSettings.url,
+            localeIdentifier: dataSourceSettings.localeIdentifier,
+            excludeFields: isNullOrUndefined(dataSourceSettings.excludeFields) ? [] : dataSourceSettings.excludeFields.slice(),
+            expandAll: dataSourceSettings.expandAll,
+            allowLabelFilter: dataSourceSettings.allowLabelFilter,
+            allowValueFilter: dataSourceSettings.allowValueFilter,
+            enableSorting: dataSourceSettings.enableSorting ? true : false,
+            rows: extend([], dataSourceSettings.rows, null, true),
+            columns: extend([], dataSourceSettings.columns, null, true),
+            filters: extend([], dataSourceSettings.filters, null, true),
+            filterSettings: extend([], dataSourceSettings.filterSettings, null, true),
+            sortSettings: extend([], dataSourceSettings.sortSettings, null, true),
+            drilledMembers: extend([], dataSourceSettings.drilledMembers, null, true),
+            valueSortSettings: extend({}, dataSourceSettings.valueSortSettings, null, true),
+            valueAxis: dataSourceSettings.valueAxis,
+            formatSettings: extend([], dataSourceSettings.formatSettings, null, true),
+            calculatedFieldSettings: extend([], dataSourceSettings.calculatedFieldSettings, null, true),
+            showSubTotals: dataSourceSettings.showSubTotals,
+            showRowSubTotals: dataSourceSettings.showRowSubTotals,
+            showColumnSubTotals: dataSourceSettings.showColumnSubTotals,
+            showGrandTotals: dataSourceSettings.showGrandTotals,
+            showRowGrandTotals: dataSourceSettings.showRowGrandTotals,
+            showColumnGrandTotals: dataSourceSettings.showColumnGrandTotals,
+            showHeaderWhenEmpty: dataSourceSettings.showHeaderWhenEmpty,
+            alwaysShowValueHeader: dataSourceSettings.alwaysShowValueHeader,
+            conditionalFormatSettings: extend([], dataSourceSettings.conditionalFormatSettings, null, true),
+            emptyCellsTextContent: dataSourceSettings.emptyCellsTextContent,
+            groupSettings: extend([], dataSourceSettings.groupSettings, null, true)
+        };
+        return clonesDataSource;
+    };
+    PivotUtil.updateDataSourceSettings = function (control, dataSourceSettings) {
+        if (control) {
+            /* tslint:disable */
+            control.setProperties({
+                dataSourceSettings: {
+                    catalog: dataSourceSettings.catalog,
+                    cube: dataSourceSettings.cube,
+                    providerType: dataSourceSettings.providerType,
+                    url: dataSourceSettings.url,
+                    localeIdentifier: dataSourceSettings.localeIdentifier,
+                    excludeFields: isNullOrUndefined(dataSourceSettings.excludeFields) ? [] : dataSourceSettings.excludeFields,
+                    expandAll: dataSourceSettings.expandAll,
+                    allowLabelFilter: dataSourceSettings.allowLabelFilter,
+                    allowValueFilter: dataSourceSettings.allowValueFilter,
+                    enableSorting: dataSourceSettings.enableSorting ? true : false,
+                    rows: dataSourceSettings.rows,
+                    columns: dataSourceSettings.columns,
+                    filters: dataSourceSettings.filters,
+                    filterSettings: dataSourceSettings.filterSettings,
+                    sortSettings: dataSourceSettings.sortSettings,
+                    drilledMembers: dataSourceSettings.drilledMembers,
+                    valueSortSettings: dataSourceSettings.valueSortSettings,
+                    valueAxis: dataSourceSettings.valueAxis,
+                    formatSettings: dataSourceSettings.formatSettings,
+                    calculatedFieldSettings: dataSourceSettings.calculatedFieldSettings,
+                    showSubTotals: dataSourceSettings.showSubTotals,
+                    showRowSubTotals: dataSourceSettings.showRowSubTotals,
+                    showColumnSubTotals: dataSourceSettings.showColumnSubTotals,
+                    showGrandTotals: dataSourceSettings.showGrandTotals,
+                    showRowGrandTotals: dataSourceSettings.showRowGrandTotals,
+                    showColumnGrandTotals: dataSourceSettings.showColumnGrandTotals,
+                    showHeaderWhenEmpty: dataSourceSettings.showHeaderWhenEmpty,
+                    alwaysShowValueHeader: dataSourceSettings.alwaysShowValueHeader,
+                    conditionalFormatSettings: dataSourceSettings.conditionalFormatSettings,
+                    emptyCellsTextContent: dataSourceSettings.emptyCellsTextContent,
+                    groupSettings: dataSourceSettings.groupSettings
+                }
+            }, true);
+        }
+    };
     return PivotUtil;
 }());
 
 /**
  * PivotEngine is used to manipulate the relational or Multi-Dimensional data as pivoting values.
  */
-/** @hidden */
 var PivotEngine = /** @__PURE__ @class */ (function () {
     function PivotEngine() {
-        /** @hidden */
+        this.aggregatedValueMatrix = [];
         this.valueContent = [];
-        /** @hidden */
         this.formatFields = {};
-        /** @hidden */
         this.dateFormatFunction = {};
-        /** @hidden */
         this.calculatedFields = {};
-        /** @hidden */
         this.calculatedFormulas = {};
-        /** @hidden */
         this.valueAxis = 0;
-        /** @hidden */
         this.saveDataHeaders = {};
-        /** @hidden */
         this.columnCount = 0;
-        /** @hidden */
         this.rowCount = 0;
-        /** @hidden */
         this.colFirstLvl = 0;
-        /** @hidden */
         this.rowFirstLvl = 0;
-        /** @hidden */
         this.rowStartPos = 0;
-        /** @hidden */
         this.colStartPos = 0;
-        /** @hidden */
         this.enableValueSorting = false;
-        /** @hidden */
         this.headerCollection = { rowHeaders: [], columnHeaders: [], rowHeadersCount: 0, columnHeadersCount: 0 };
-        /** @hidden */
         this.rMembers = [];
-        /** @hidden */
         this.cMembers = [];
         this.valueMatrix = [];
         this.indexMatrix = [];
@@ -143,7 +202,6 @@ var PivotEngine = /** @__PURE__ @class */ (function () {
         this.selectedHeaders = { selectedHeader: [], values: [] };
         this.rawIndexObject = {};
         this.isEditing = false;
-        /** @hidden */
         this.data = [];
         this.frameHeaderObjectsCollection = false;
         this.headerObjectsCollection = {};
@@ -179,6 +237,7 @@ var PivotEngine = /** @__PURE__ @class */ (function () {
         this.headerCollection = { rowHeaders: [], columnHeaders: [], rowHeadersCount: 0, columnHeadersCount: 0 };
         this.valueMatrix = [];
         this.indexMatrix = [];
+        this.aggregatedValueMatrix = [];
         this.rMembers = [];
         this.cMembers = [];
         this.memberCnt = -1;
@@ -607,6 +666,7 @@ var PivotEngine = /** @__PURE__ @class */ (function () {
                     this.fieldList[key].isSelected = false;
                     this.fieldList[key].index = len;
                     this.fieldList[key].filter = [];
+                    this.fieldList[key].sort = isSort ? 'Ascending' : 'None';
                     this.fieldList[key].isExcelFilter = false;
                     this.fieldList[key].filterType = '';
                     if (this.isValueFiltersAvail && isValueFilteringEnabled) {
@@ -1458,7 +1518,6 @@ var PivotEngine = /** @__PURE__ @class */ (function () {
             this.isEmptyData = true;
         }
     };
-    /** @hidden */
     PivotEngine.prototype.updateGridData = function (dataSource) {
         this.data = dataSource.dataSource;
         this.indexMatrix = [];
@@ -1641,7 +1700,6 @@ var PivotEngine = /** @__PURE__ @class */ (function () {
     /* tslint:enable */
     /* tslint:disable:no-string-literal */
     /* tslint:disable:typedef */
-    /** @hidden */
     PivotEngine.prototype.onDrill = function (drilledItem) {
         this.frameDrillObject();
         var headersInfo = this.getHeadersInfo(drilledItem.fieldName, drilledItem.axis);
@@ -1656,14 +1714,12 @@ var PivotEngine = /** @__PURE__ @class */ (function () {
         }
         this.updateEngine();
     };
-    /** @hidden */
     PivotEngine.prototype.onSort = function (sortItem) {
         var headersInfo = this.getHeadersInfo(sortItem.name, '');
         this.fieldList[sortItem.name].sort = sortItem.order;
         this.performSortOperation(headersInfo.headers, sortItem, headersInfo, 0);
         this.updateEngine();
     };
-    /** @hidden */
     PivotEngine.prototype.onFilter = function (filterItem, dataSource) {
         var headersInfo = this.getHeadersInfo(filterItem.name, '');
         if (filterItem.type === 'Include' && filterItem.items.length === this.fieldList[filterItem.name].dateMember.length) {
@@ -1704,14 +1760,12 @@ var PivotEngine = /** @__PURE__ @class */ (function () {
         this.headerObjectsCollection = {};
         this.updateEngine();
     };
-    /** @hidden */
     PivotEngine.prototype.onAggregation = function (field) {
         this.fieldList[field.name].aggregateType = field.type;
         this.rMembers = this.headerCollection.rowHeaders;
         this.cMembers = this.headerCollection.columnHeaders;
         this.updateEngine();
     };
-    /** @hidden */
     PivotEngine.prototype.onCalcOperation = function (field) {
         this.rMembers = this.headerCollection.rowHeaders;
         this.cMembers = this.headerCollection.columnHeaders;
@@ -1932,7 +1986,6 @@ var PivotEngine = /** @__PURE__ @class */ (function () {
         }
         return { axis: axis, fields: fields, headers: headers, position: position };
     };
-    /** @hidden */
     PivotEngine.prototype.updateEngine = function () {
         this.removeCount = 0;
         this.calculatePagingValues();
@@ -2027,7 +2080,6 @@ var PivotEngine = /** @__PURE__ @class */ (function () {
                     headers;
         }
     };
-    /** @hidden */
     PivotEngine.prototype.applyValueSorting = function (rMembers, cMembers) {
         var isNullArgument = false;
         if (rMembers === undefined || cMembers === undefined) {
@@ -2941,6 +2993,7 @@ var PivotEngine = /** @__PURE__ @class */ (function () {
         return headerData;
     };
     PivotEngine.prototype.applyAdvancedAggregate = function (rowheads, colheads, data) {
+        this.aggregatedValueMatrix = [];
         if (this.selectedHeaders.values.length > 0) {
             var pivotIndex = {};
             var colIndex = [];
@@ -2972,6 +3025,10 @@ var PivotEngine = /** @__PURE__ @class */ (function () {
                 var currentSet = data[pivotIndex[index][0]][pivotIndex[index][1]];
                 // currentSet.formattedText = '0';
                 currentSet.formattedText = (this.selectedHeaders.selectedHeader.length > 0 ? this.emptyCellTextContent : '#N/A');
+                if (!this.aggregatedValueMatrix[pivotIndex[index][0]]) {
+                    this.aggregatedValueMatrix[pivotIndex[index][0]] = [];
+                }
+                this.aggregatedValueMatrix[pivotIndex[index][0]][pivotIndex[index][1]] = 0;
             }
         }
         else {
@@ -3105,12 +3162,17 @@ var PivotEngine = /** @__PURE__ @class */ (function () {
                                 var currentSet = data[index[0]][index[1]];
                                 var cVal = currentSet.value - selectedRowValues[index[1]].value;
                                 cVal = isNaN(cVal) ? 0 : cVal;
+                                if (!this.aggregatedValueMatrix[index[0]]) {
+                                    this.aggregatedValueMatrix[index[0]] = [];
+                                }
                                 if (aggregateType === 'DifferenceFrom') {
+                                    this.aggregatedValueMatrix[index[0]][index[1]] = cVal;
                                     currentSet.formattedText = cVal === 0 ? this.emptyCellTextContent : this.getFormattedValue(cVal, name_2).formattedText;
                                 }
                                 else {
                                     cVal = (selectedRowValues[index[1]].value === 0 ?
                                         0 : (cVal / selectedRowValues[index[1]].value));
+                                    this.aggregatedValueMatrix[index[0]][index[1]] = cVal;
                                     currentSet.formattedText = (cVal !== 0 ? this.globalize.formatNumber(cVal, { format: 'P', maximumFractionDigits: 2 }) : this.emptyCellTextContent);
                                 }
                             }
@@ -3173,13 +3235,18 @@ var PivotEngine = /** @__PURE__ @class */ (function () {
                                 var currentSet = data[index[0]][index[1]];
                                 var cVal = currentSet.value - selectedColumnValues[index[0]].value;
                                 cVal = isNaN(cVal) ? 0 : cVal;
+                                if (!this.aggregatedValueMatrix[index[0]]) {
+                                    this.aggregatedValueMatrix[index[0]] = [];
+                                }
                                 if (aggregateType === 'DifferenceFrom') {
                                     currentSet.formattedText = cVal === 0 ? this.emptyCellTextContent : this.getFormattedValue(cVal, name_2).formattedText;
+                                    this.aggregatedValueMatrix[index[0]][index[1]] = cVal;
                                 }
                                 else {
                                     cVal = (selectedColumnValues[index[0]].value === 0 ?
                                         0 : (cVal / selectedColumnValues[index[0]].value));
                                     currentSet.formattedText = (cVal !== 0 ? this.globalize.formatNumber(cVal, { format: 'P', maximumFractionDigits: 2 }) : this.emptyCellTextContent);
+                                    this.aggregatedValueMatrix[index[0]][index[1]] = cVal;
                                 }
                             }
                         }
@@ -3219,6 +3286,10 @@ var PivotEngine = /** @__PURE__ @class */ (function () {
                                 var cVal = currentSet.value / selectedRowValues[i[1]].value;
                                 cVal = isNaN(cVal) ? 0 : cVal;
                                 currentSet.formattedText = (cVal !== 0 ? this.globalize.formatNumber(cVal, { format: 'P', maximumFractionDigits: 2 }) : this.emptyCellTextContent);
+                                if (!this.aggregatedValueMatrix[i[0]]) {
+                                    this.aggregatedValueMatrix[i[0]] = [];
+                                }
+                                this.aggregatedValueMatrix[i[0]][i[1]] = cVal;
                             }
                         }
                         else {
@@ -3251,6 +3322,10 @@ var PivotEngine = /** @__PURE__ @class */ (function () {
                                 var val = currentSet.value / selectedColumnValues[i[0]].value;
                                 val = isNaN(val) ? 0 : val;
                                 currentSet.formattedText = (val !== 0 ? this.globalize.formatNumber(val, { format: 'P', maximumFractionDigits: 2 }) : this.emptyCellTextContent);
+                                if (!this.aggregatedValueMatrix[i[0]]) {
+                                    this.aggregatedValueMatrix[i[0]] = [];
+                                }
+                                this.aggregatedValueMatrix[i[0]][i[1]] = val;
                             }
                         }
                     }
@@ -3272,6 +3347,10 @@ var PivotEngine = /** @__PURE__ @class */ (function () {
                                                 if (rowheads[rlen].type !== 'grand sum') {
                                                     cVal += currentSet.value;
                                                     currentSet.formattedText = this.getFormattedValue(cVal, name_2).formattedText;
+                                                    if (!this.aggregatedValueMatrix[rlen + valueCount]) {
+                                                        this.aggregatedValueMatrix[rlen + valueCount] = [];
+                                                    }
+                                                    this.aggregatedValueMatrix[rlen + valueCount][index] = cVal;
                                                 }
                                                 if (pivotIndex[rlen + valueCount + ',' + index]) {
                                                     delete pivotIndex[rlen + valueCount + ',' + index];
@@ -3297,6 +3376,10 @@ var PivotEngine = /** @__PURE__ @class */ (function () {
                                                 if (activeColumn[cln].type !== 'grand sum') {
                                                     cVal += currentSet.value;
                                                     currentSet.formattedText = this.getFormattedValue(cVal, name_2).formattedText;
+                                                    if (!this.aggregatedValueMatrix[rln + valueCount]) {
+                                                        this.aggregatedValueMatrix[rln + valueCount] = [];
+                                                    }
+                                                    this.aggregatedValueMatrix[rln + valueCount][cln] = cVal;
                                                 }
                                                 if (pivotIndex[rln + valueCount + ',' + cln]) {
                                                     delete pivotIndex[rln + valueCount + ',' + cln];
@@ -3783,763 +3866,393 @@ var PivotEngine = /** @__PURE__ @class */ (function () {
 
 /**
  * Specifies pivot external events
- * @hidden
+
  */
-/** @hidden */
 var load = 'load';
-/** @hidden */
 var enginePopulating = 'enginePopulating';
-/** @hidden */
 var enginePopulated = 'enginePopulated';
-/** @hidden */
 var onFieldDropped = 'onFieldDropped';
-/** @hidden */
 var beforePivotTableRender = 'beforePivotTableRender';
-/** @hidden */
 var afterPivotTableRender = 'afterPivotTableRender';
-/** @hidden */
 var beforeExport = 'beforeExport';
-/** @hidden */
 var excelHeaderQueryCellInfo = 'excelHeaderQueryCellInfo';
-/** @hidden */
 var pdfHeaderQueryCellInfo = 'pdfHeaderQueryCellInfo';
-/** @hidden */
 var excelQueryCellInfo = 'excelQueryCellInfo';
-/** @hidden */
 var pdfQueryCellInfo = 'pdfQueryCellInfo';
-/** @hidden */
 var onPdfCellRender = 'onPdfCellRender';
-/** @hidden */
 var dataBound = 'dataBound';
-/** @hidden */
 var queryCellInfo = 'queryCellInfo';
-/** @hidden */
 var headerCellInfo = 'headerCellInfo';
-/** @hidden */
 var hyperlinkCellClick = 'hyperlinkCellClick';
-/** @hidden */
 var resizing = 'resizing';
-/** @hidden */
 var resizeStop = 'resizeStop';
-/** @hidden */
 var cellClick = 'cellClick';
-/** @hidden */
 var drillThrough = 'drillThrough';
-/** @hidden */
 var beforeColumnsRender = 'beforeColumnsRender';
-/** @hidden */
 var selected = 'selected';
-/** @hidden */
 var cellSelecting = 'cellSelecting';
-/** @hidden */
 var drill = 'drill';
-/** @hidden */
 var cellSelected = 'cellSelected';
-/** @hidden */
 var cellDeselected = 'cellDeselected';
-/** @hidden */
 var rowSelected = 'rowSelected';
-/** @hidden */
 var rowDeselected = 'rowDeselected';
-/** @hidden */
 var beginDrillThrough = 'beginDrillThrough';
-/** @hidden */
 var saveReport = 'saveReport';
-/** @hidden */
 var fetchReport = 'fetchReport';
-/** @hidden */
 var loadReport = 'loadReport';
-/** @hidden */
 var renameReport = 'renameReport';
-/** @hidden */
 var removeReport = 'removeReport';
-/** @hidden */
 var newReport = 'newReport';
-/** @hidden */
 var toolbarRender = 'toolbarRender';
-/** @hidden */
 var toolbarClick = 'toolbarClick';
-/** @hidden */
 var chartTooltipRender = 'chartTooltipRender';
-/** @hidden */
 var chartLoaded = 'chartLoaded';
-/** @hidden */
 var chartLoad = 'chartLoad';
-/** @hidden */
 var chartResized = 'chartResized';
-/** @hidden */
 var chartAxisLabelRender = 'chartAxisLabelRender';
-/** @hidden */
 var chartSeriesCreated = 'chartSeriesCreated';
-/** @hidden */
 var aggregateCellInfo = 'aggregateCellInfo';
-/** @hidden */
 var contextMenuClick = 'contextMenuClick';
-/** @hidden */
 var contextMenuOpen = 'contextMenuOpen';
-/** @hidden */
 var fieldListRefreshed = 'fieldListRefreshed';
-/** @hidden */
 var conditionalFormatting = 'conditionalFormatting';
 /**
  * Specifies pivot internal events
  */
-/** @hidden */
 var initialLoad = 'initial-load';
-/** @hidden */
 var uiUpdate = 'ui-update';
-/** @hidden */
 var scroll = 'scroll';
-/** @hidden */
 var contentReady = 'content-ready';
-/** @hidden */
 var dataReady = 'data-ready';
-/** @hidden */
 var initSubComponent = 'init-groupingbar';
-/** @hidden */
 var treeViewUpdate = 'tree-view-update';
-/** @hidden */
 var pivotButtonUpdate = 'pivot-button-update';
-/** @hidden */
 var initCalculatedField = 'init-calculatedfield';
-/** @hidden */
 var click = 'click';
-/** @hidden */
 var initToolbar = 'init-toolbar';
-/** @hidden */
 var initFormatting = 'init-formatting';
 
 /**
  * CSS Constants
- * @hidden
+
  */
-/** @hidden */
 var ROOT = 'e-pivotfieldlist';
-/** @hidden */
 var RTL = 'e-rtl';
-/** @hidden */
 var PIVOTCHART_LTR = 'e-ltr';
-/** @hidden */
 var DEVICE = 'e-device';
-/** @hidden */
 var ICON = 'e-icons';
-/** @hidden */
 var ICON_DISABLE = 'e-disable';
-/** @hidden */
 var ICON_HIDDEN = 'e-hide';
-/** @hidden */
 var AXISFIELD_ICON_CLASS = 'e-dropdown-icon';
-/** @hidden */
 var WRAPPER_CLASS = 'e-pivotfieldlist-wrapper';
-/** @hidden */
 var OLAP_WRAPPER_CLASS = 'e-olapfieldlist-wrapper';
-/** @hidden */
 var CONTAINER_CLASS = 'e-field-list-container';
-/** @hidden */
 var TOGGLE_FIELD_LIST_CLASS = 'e-toggle-field-list';
-/** @hidden */
 var STATIC_FIELD_LIST_CLASS = 'e-static';
-/** @hidden */
 var TOGGLE_SELECT_CLASS = 'e-select-table';
-/** @hidden */
 var FIELD_TABLE_CLASS = 'e-field-table';
-/** @hidden */
 var OLAP_FIELD_TABLE_CLASS = 'e-olap-field-table';
-/** @hidden */
 var FIELD_LIST_CLASS = 'e-field-list';
-/** @hidden */
 var OLAP_FIELD_LIST_CLASS = 'e-olap-field-list-tree';
-/** @hidden */
 var FIELD_LIST_TREE_CLASS = 'e-field-list-tree';
-/** @hidden */
 var FIELD_HEADER_CLASS = 'e-field-header';
-/** @hidden */
 var FIELD_LIST_TITLE_CLASS = 'e-field-list-title';
-/** @hidden */
 var FIELD_LIST_TITLE_CONTENT_CLASS = 'e-title-content';
-/** @hidden */
 var FIELD_LIST_FOOTER_CLASS = 'e-field-list-footer';
-/** @hidden */
 var CALCULATED_FIELD_CLASS = 'e-calculated-field';
-/** @hidden */
 var FLAT_CLASS = 'e-flat e-primary';
-/** @hidden */
 var OUTLINE_CLASS = 'e-outline';
-/** @hidden */
 var AXIS_TABLE_CLASS = 'e-axis-table';
-/** @hidden */
 var OLAP_AXIS_TABLE_CLASS = 'e-olap-axis-table';
-/** @hidden */
 var LEFT_AXIS_PANEL_CLASS = 'e-left-axis-fields';
-/** @hidden */
 var RIGHT_AXIS_PANEL_CLASS = 'e-right-axis-fields';
-/** @hidden */
 var AXIS_HEADER_CLASS = 'e-axis-header';
-/** @hidden */
 var AXIS_CONTENT_CLASS = 'e-axis-content';
-/** @hidden */
 var AXIS_PROMPT_CLASS = 'e-draggable-prompt';
-/** @hidden */
 var PIVOT_BUTTON_WRAPPER_CLASS = 'e-pvt-btn-div';
-/** @hidden */
 var PIVOT_BUTTON_CLASS = 'e-pivot-button';
-/** @hidden */
 var PIVOT_BUTTON_CONTENT_CLASS = 'e-content';
-/** @hidden */
 var DRAG_CLONE_CLASS = 'e-button-drag-clone';
-/** @hidden */
 var SORT_CLASS = 'e-sort';
-/** @hidden */
 var SORT_DESCEND_CLASS = 'e-descend';
-/** @hidden */
 var FILTER_COMMON_CLASS = 'e-btn-filter';
-/** @hidden */
 var FILTER_CLASS = 'e-pv-filter';
-/** @hidden */
 var FILTERED_CLASS = 'e-pv-filtered';
-/** @hidden */
 var REMOVE_CLASS = 'e-remove';
-/** @hidden */
 var DRAG_CLASS = 'e-drag';
-/** @hidden */
 var DROP_INDICATOR_CLASS = 'e-drop-indicator';
-/** @hidden */
 var INDICATOR_HOVER_CLASS = 'e-drop-hover';
-/** @hidden */
 var MEMBER_EDITOR_DIALOG_CLASS = 'e-member-editor-dialog';
-/** @hidden */
 var EDITOR_TREE_WRAPPER_CLASS = 'e-member-editor-wrapper';
-/** @hidden */
 var EDITOR_TREE_CONTAINER_CLASS = 'e-member-editor-container';
-/** @hidden */
 var DRILLTHROUGH_GRID_CLASS = 'e-drillthrough-grid';
-/** @hidden */
 var DRILLTHROUGH_BODY_CLASS = 'e-drillthrough-body';
-/** @hidden */
 var DRILLTHROUGH_BODY_HEADER_CONTAINER_CLASS = 'e-drillthrough-body-header-container';
-/** @hidden */
 var DRILLTHROUGH_BODY_HEADER_CLASS = 'e-drillthrough-body-header';
-/** @hidden */
 var DRILLTHROUGH_BODY_HEADER_COMMON_CLASS = 'e-drillthrough-body-header-common';
-/** @hidden */
 var DRILLTHROUGH_BODY_HEADER_VALUE_CLASS = 'e-drillthrough-body-header-value';
-/** @hidden */
 var DRILLTHROUGH_DIALOG = 'e-drillthrough-dialog';
-/** @hidden */
 var EDITOR_LABEL_WRAPPER_CLASS = 'e-editor-label-wrapper';
-/** @hidden */
 var EDITOR_LABEL_CLASS = 'e-editor-label';
-/** @hidden */
 var CHECK_BOX_FRAME_CLASS = 'e-frame';
-/** @hidden */
 var NODE_CHECK_CLASS = 'e-check';
-/** @hidden */
 var NODE_STOP_CLASS = 'e-stop';
-/** @hidden */
 var OK_BUTTON_CLASS = 'e-ok-btn';
-/** @hidden */
 var CANCEL_BUTTON_CLASS = 'e-cancel-btn';
-/** @hidden */
 var ERROR_DIALOG_CLASS = 'e-pivot-error-dialog';
-/** @hidden */
 var DROPPABLE_CLASS = 'e-droppable';
-/** @hidden */
 var ROW_AXIS_CLASS = 'e-rows';
-/** @hidden */
 var COLUMN_AXIS_CLASS = 'e-columns';
-/** @hidden */
 var VALUE_AXIS_CLASS = 'e-values';
-/** @hidden */
 var FILTER_AXIS_CLASS = 'e-filters';
-/** @hidden */
 var GROUPING_BAR_CLASS = 'e-grouping-bar';
-/** @hidden */
 
-/** @hidden */
 var GROUP_ROW_CLASS = 'e-group-rows';
-/** @hidden */
 var GROUP_COLUMN_CLASS = 'e-group-columns';
-/** @hidden */
 
-/** @hidden */
 var GROUP_VALUE_CLASS = 'e-group-values';
-/** @hidden */
 var GROUP_FILTER_CLASS = 'e-group-filters';
-/** @hidden */
 
-/** @hidden */
 var NO_DRAG_CLASS = 'e-drag-restrict';
-/** @hidden */
 var SELECTED_NODE_CLASS = 'e-list-selected';
-/** @hidden */
 var TITLE_HEADER_CLASS = 'e-title-header';
-/** @hidden */
 var TITLE_CONTENT_CLASS = 'e-title-content';
-/** @hidden */
 var TEXT_CONTENT_CLASS = 'e-text-content';
-/** @hidden */
 var FOOTER_CONTENT_CLASS = 'e-footer-content';
-/** @hidden */
 var ADAPTIVE_CONTAINER_CLASS = 'e-adaptive-container';
-/** @hidden */
 var ADAPTIVE_FIELD_LIST_BUTTON_CLASS = 'e-field-list-btn';
-/** @hidden */
 var ADAPTIVE_CALCULATED_FIELD_BUTTON_CLASS = 'e-calculated-field-btn';
-/** @hidden */
 var BUTTON_SMALL_CLASS = 'e-small';
-/** @hidden */
 var BUTTON_ROUND_CLASS = 'e-round';
-/** @hidden */
 var ADD_ICON_CLASS = 'e-add-icon';
-/** @hidden */
 var BUTTON_FLAT_CLASS = 'e-flat';
-/** @hidden */
 var STATIC_CENTER_DIV_CLASS = 'e-center-div';
-/** @hidden */
 var STATIC_CENTER_HEADER_CLASS = 'e-center-title';
-/** @hidden */
 var ADAPTIVE_FIELD_LIST_DIALOG_CLASS = 'e-adaptive-field-list-dialog';
-/** @hidden */
 var LIST_TEXT_CLASS = 'e-list-text';
-/** @hidden */
 var LIST_SELECT_CLASS = 'e-selected-node';
-/** @hidden */
 
-/** @hidden */
 
-/** @hidden */
 
-/** @hidden */
 
-/** @hidden */
 
-/** @hidden */
 
-/** @hidden */
 
-/** @hidden */
 
-/** @hidden */
 
-/** @hidden */
 var SELECTED_OPTION_ICON_CLASS = 'e-selected-option-icon';
-/** @hidden */
 var SELECTED_LEVEL_ICON_CLASS = 'e-selected-level-icon';
-/** @hidden */
 var FILTER_DIV_CONTENT_CLASS = 'e-filter-div-content';
-/** @hidden */
 var FILTER_TEXT_DIV_CLASS = 'e-filter-text-div';
-/** @hidden */
 var BETWEEN_TEXT_DIV_CLASS = 'e-between-text-div';
-/** @hidden */
 var SEPARATOR_DIV_CLASS = 'e-separator-div';
-/** @hidden */
 var FILTER_OPTION_WRAPPER_1_CLASS = 'e-filter-option-wrapper-1';
-/** @hidden */
 var FILTER_OPTION_WRAPPER_2_CLASS = 'e-filter-option-wrapper-2';
-/** @hidden */
 var FILTER_INPUT_DIV_1_CLASS = 'e-filter-input-div-1';
-/** @hidden */
 var FILTER_INPUT_DIV_2_CLASS = 'e-filter-input-div-2';
-/** @hidden */
 var VALUE_OPTIONS_CLASS = 'e-value-options';
-/** @hidden */
 var LEVEL_OPTIONS_CLASS = 'e-level-options';
-/** @hidden */
 var FILTER_OPERATOR_CLASS = 'e-filter-operator';
-/** @hidden */
 var COLLAPSE = 'e-collapse';
-/** @hidden */
 var EXPAND = 'e-expand';
-/** @hidden */
 var TABLE = 'e-table';
-/** @hidden */
 
-/** @hidden */
 
-/** @hidden */
 var COLUMNSHEADER = 'e-columnsheader';
-/** @hidden */
 var ROWSHEADER = 'e-rowsheader';
-/** @hidden */
 var VALUESCONTENT = 'e-valuescontent';
-/** @hidden */
 
-/** @hidden */
 
-/** @hidden */
 
-/** @hidden */
 
-/** @hidden */
 
-/** @hidden */
 var SUMMARY = 'e-summary';
-/** @hidden */
 var CELLVALUE = 'e-cellvalue';
-/** @hidden */
 
-/** @hidden */
 var PIVOTTOOLTIP = 'e-pivottooltip';
-/** @hidden */
 var TOOLTIP_HEADER = 'e-tooltipheader';
-/** @hidden */
 var TOOLTIP_CONTENT = 'e-tooltipcontent';
-/** @hidden */
 var NEXTSPAN = 'e-nextspan';
-/** @hidden */
 var LASTSPAN = 'e-lastspan';
-/** @hidden */
 var EDITOR_SEARCH_WRAPPER_CLASS = 'e-editor-search-wrapper';
-/** @hidden */
 var EDITOR_SEARCH_CLASS = 'e-editor-search';
-/** @hidden */
 var SELECT_ALL_WRAPPER_CLASS = 'e-select-all-wrapper';
-/** @hidden */
 var SELECT_ALL_CLASS = 'e-select-all';
-/** @hidden */
 var PIVOTCALC = 'e-pivot-calc';
-/** @hidden */
 var CALCDIALOG = 'e-pivot-calc-dialog-div';
-/** @hidden */
 var OLAP_CALCDIALOG = 'e-olap-calc-dialog-div';
-/** @hidden */
 var CALCRADIO = 'e-pivot-calc-radio';
-/** @hidden */
 var CALCCHECK = 'e-pivot-calc-check';
-/** @hidden */
 var CALCINPUT = 'e-pivot-calc-input';
-/** @hidden */
 var CALC_FORMAT_INPUT = 'e-custom-format-input';
-/** @hidden */
 var CALCINPUTDIV = 'e-pivot-calc-input-div';
-/** @hidden */
 var CALC_CUSTOM_FORMAT_INPUTDIV = 'e-olap-calc-custom-format-div';
-/** @hidden */
 var CALC_HIERARCHY_LIST_DIV = 'e-olap-calc-hierarchy-list-div';
-/** @hidden */
 var CALC_FORMAT_TYPE_DIV = 'e-olap-calc-format-type-div';
-/** @hidden */
 var CALC_MEMBER_TYPE_DIV = 'e-olap-calc-member-type-div';
-/** @hidden */
 var MEMBER_OPTIONS_CLASS = 'e-member-options';
-/** @hidden */
 
-/** @hidden */
 
-/** @hidden */
 
-/** @hidden */
 var CALCOUTERDIV = 'e-pivot-calc-outer-div';
-/** @hidden */
 var OLAP_CALCOUTERDIV = 'e-olap-calc-outer-div';
-/** @hidden */
 var FLAT = 'e-flat';
-/** @hidden */
 var FORMAT = 'e-format';
-/** @hidden */
 var FORMULA = 'e-pivot-formula';
-/** @hidden */
 var TREEVIEW = 'e-pivot-treeview';
-/** @hidden */
 var TREEVIEWOUTER = 'e-pivot-treeview-outer';
-/** @hidden */
 var CALCCANCELBTN = 'e-pivot-cancel-button';
-/** @hidden */
 var CALCADDBTN = 'e-pivot-add-button';
-/** @hidden */
 var CALCOKBTN = 'e-pivot-ok-button';
-/** @hidden */
 var CALCACCORD = 'e-pivot-accord';
-/** @hidden */
 var CALCBUTTONDIV = 'e-pivot-button-div';
-/** @hidden */
 var AXIS_ICON_CLASS = 'e-axis';
-/** @hidden */
 var AXIS_ROW_CLASS = 'e-axis-row';
-/** @hidden */
 var AXIS_COLUMN_CLASS = 'e-axis-column';
-/** @hidden */
 var AXIS_VALUE_CLASS = 'e-axis-value';
-/** @hidden */
 var AXIS_FILTER_CLASS = 'e-axis-filter';
-/** @hidden */
 
-/** @hidden */
 
-/** @hidden */
 
-/** @hidden */
 
-/** @hidden */
 
-/** @hidden */
 var GRID_CLASS = 'e-grid';
-/** @hidden */
 var PIVOT_VIEW_CLASS = 'e-pivotview';
-/** @hidden */
 var PIVOT_ALL_FIELD_TITLE_CLASS = 'e-pivot-all-field-title';
-/** @hidden */
 var PIVOT_FIELD_TITLE_CLASS = 'e-pivot-field-name-title';
-/** @hidden */
 var PIVOT_FORMULA_TITLE_CLASS = 'e-pivot-formula-title';
-/** @hidden */
 var OLAP_HIERARCHY_TITLE_CLASS = 'e-olap-hierarchy-title';
-/** @hidden */
 var OLAP_FORMAT_TITLE_CLASS = 'e-olap-format-title';
-/** @hidden */
 var OLAP_MEMBER_TITLE_CLASS = 'e-olap-member-title';
-/** @hidden */
 var PIVOT_CONTEXT_MENU_CLASS = 'e-pivot-context-menu';
-/** @hidden */
 var MENU_DISABLE = 'e-disabled';
-/** @hidden */
 var MENU_HIDE = 'e-menu-hide';
-/** @hidden */
 var EMPTY_MEMBER_CLASS = 'e-member-prompt';
-/** @hidden */
 var CALC_EDIT = 'e-edit';
-/** @hidden */
 var CALC_EDITED = 'e-edited';
-/** @hidden */
 var CALC_INFO = 'e-info';
-/** @hidden */
 var EMPTY_FIELD = 'e-empty-field';
-/** @hidden */
 var FORMAT_DIALOG = 'e-pivot-formatting-dialog';
-/** @hidden */
 var FORMAT_CONDITION_BUTTON = 'e-format-condition-button';
-/** @hidden */
 var FORMAT_NEW = 'e-new-format';
-/** @hidden */
 var FORMAT_OUTER = 'e-format-outer-div';
-/** @hidden */
 var FORMAT_INNER = 'e-format-inner-div';
-/** @hidden */
 var FORMAT_TABLE = 'e-format-table';
-/** @hidden */
 var FORMAT_VALUE_LABEL = 'e-format-value-label';
-/** @hidden */
 var FORMAT_LABEL = 'e-format-label';
-/** @hidden */
 var INPUT = 'e-input';
-/** @hidden */
 var FORMAT_VALUE1 = 'e-format-value1';
-/** @hidden */
 var FORMAT_VALUE2 = 'e-format-value2';
-/** @hidden */
 var FORMAT_VALUE_SPAN = 'e-format-value-span';
-/** @hidden */
 var FORMAT_FONT_COLOR = 'e-format-font-color';
-/** @hidden */
 var FORMAT_BACK_COLOR = 'e-format-back-color';
-/** @hidden */
 var FORMAT_VALUE_PREVIEW = 'e-format-value-preview';
-/** @hidden */
 var FORMAT_COLOR_PICKER = 'e-format-color-picker';
-/** @hidden */
 var FORMAT_DELETE_ICON = 'e-format-delete-icon';
-/** @hidden */
 var FORMAT_DELETE_BUTTON = 'e-format-delete-button';
-/** @hidden */
 var SELECTED_COLOR = 'e-selected-color';
-/** @hidden */
 var DIALOG_HEADER = 'e-dlg-header';
-/** @hidden */
 var FORMAT_APPLY_BUTTON = 'e-format-apply-button';
-/** @hidden */
 var FORMAT_CANCEL_BUTTON = 'e-format-cancel-button';
-/** @hidden */
 var FORMAT_ROUND_BUTTON = 'e-small e-round';
-/** @hidden */
 var VIRTUALTRACK_DIV = 'e-virtualtrack';
-/** @hidden */
 var MOVABLECONTENT_DIV = 'e-movablecontent';
-/** @hidden */
 var FROZENCONTENT_DIV = 'e-frozencontent';
-/** @hidden */
 var MOVABLEHEADER_DIV = 'e-movableheader';
-/** @hidden */
 
-/** @hidden */
 var DEFER_APPLY_BUTTON = 'e-defer-apply-button';
-/** @hidden */
 var DEFER_CANCEL_BUTTON = 'e-defer-cancel-button';
-/** @hidden */
 var LAYOUT_FOOTER = 'e-layout-footer';
-/** @hidden */
 var CELL_SELECTED_BGCOLOR = 'e-cellselectionbackground';
-/** @hidden */
 var SELECTED_BGCOLOR = 'e-selectionbackground';
-/** @hidden */
 var BUTTON_LAYOUT = 'e-button-layout';
-/** @hidden */
 var CHECKBOX_LAYOUT = 'e-checkbox-layout';
-/** @hidden */
 var DEFER_UPDATE_BUTTON = 'e-defer-update-btn';
-/** @hidden */
 var HEADERCONTENT = 'e-headercontent';
-/** @hidden */
 var BACK_ICON = 'e-field-list-back-icon';
-/** @hidden */
 var TITLE_MOBILE_HEADER = 'e-title-mobile-header';
-/** @hidden */
 var TITLE_MOBILE_CONTENT = 'e-title-mobile-content';
-/** @hidden */
 var ROW_CELL_CLASS = 'e-rowcell';
-/** @hidden */
 var CELL_ACTIVE_BGCOLOR = 'e-active';
-/** @hidden */
 var SPAN_CLICKED = 'e-spanclicked';
-/** @hidden */
 var ROW_SELECT = 'e-rowselect';
-/** @hidden */
 var GRID_HEADER = 'e-gridheader';
-/** @hidden */
 
-/** @hidden */
 var GRID_EXPORT = 'e-export';
-/** @hidden */
 var PIVOTVIEW_EXPORT = 'e-pivotview-export';
-/** @hidden */
 var PIVOTVIEW_GRID = 'e-pivotview-grid';
-/** @hidden */
 var PIVOTVIEW_EXPAND = 'e-pivotview-expand';
-/** @hidden */
 var PIVOTVIEW_COLLAPSE = 'e-pivotview-collapse';
-/** @hidden */
 var GRID_PDF_EXPORT = 'e-pivotview-pdf-export';
-/** @hidden */
 var GRID_EXCEL_EXPORT = 'e-pivotview-excel-export';
-/** @hidden */
 var GRID_CSV_EXPORT = 'e-pivotview-csv-export';
-/** @hidden */
 var GRID_PNG_EXPORT = 'e-pivotview-png-export';
-/** @hidden */
 var GRID_JPEG_EXPORT = 'e-pivotview-jpeg-export';
-/** @hidden */
 var GRID_SVG_EXPORT = 'e-pivotview-svg-export';
-/** @hidden */
 var GRID_LOAD = 'e-load-report';
-/** @hidden */
 var GRID_NEW = 'e-new-report';
-/** @hidden */
 var GRID_RENAME = 'e-rename-report';
-/** @hidden */
 var GRID_REMOVE = 'e-remove-report';
-/** @hidden */
 var GRID_SAVEAS = 'e-saveas-report';
-/** @hidden */
 var GRID_SAVE = 'e-save-report';
-/** @hidden */
 var GRID_SUB_TOTAL = 'e-sub-total';
-/** @hidden */
 var GRID_GRAND_TOTAL = 'e-grand-total';
-/** @hidden */
 var GRID_FORMATTING = 'e-toolbar-formatting';
-/** @hidden */
 var GRID_TOOLBAR = 'e-pivot-toolbar';
-/** @hidden */
 var GRID_REPORT_LABEL = 'e-pivotview-report-label';
-/** @hidden */
 var GRID_REPORT_INPUT = 'e-pivotview-report-input';
-/** @hidden */
 var GRID_REPORT_OUTER = 'e-report-outer';
-/** @hidden */
 var GRID_REPORT_DIALOG = 'e-pivotview-report-dialog';
-/** @hidden */
 var TOOLBAR_FIELDLIST = 'e-toolbar-fieldlist';
-/** @hidden */
 var TOOLBAR_GRID = 'e-toolbar-grid';
-/** @hidden */
 var TOOLBAR_CHART = 'e-toolbar-chart';
-/** @hidden */
 var REPORT_LIST_DROP = 'e-reportlist-drop';
-/** @hidden */
 var PIVOTCHART = 'e-pivotchart';
-/** @hidden */
 var GROUP_CHART_ROW = 'e-group-chart-rows';
-/** @hidden */
 var GROUP_CHART_COLUMN = 'e-group-chart-columns';
-/** @hidden */
 var GROUP_CHART_VALUE = 'e-group-chart-values';
-/** @hidden */
 var GROUP_CHART_MULTI_VALUE = 'e-group-chart-multi-values';
-/** @hidden */
 var GROUP_CHART_FILTER = 'e-group-chart-filters';
-/** @hidden */
 var GROUP_CHART_VALUE_DROPDOWN_DIV = 'e-group-chart-values-drodown-div';
-/** @hidden */
 var GROUP_CHART_VALUE_DROPDOWN = 'e-group-chart-values-drodown';
-/** @hidden */
 var CHART_GROUPING_BAR_CLASS = 'e-chart-grouping-bar';
-/** @hidden */
 var PIVOT_DISABLE_ICON = 'e-pivotview-disable-icon';
-/** @hidden */
 var PIVOT_SELECT_ICON = 'e-pivotview-select-icon';
-/** @hidden */
 var VALUESHEADER = 'e-valuesheader';
-/** @hidden */
 var ICON_ASC = 'e-icon-ascending';
-/** @hidden */
 var ICON_DESC = 'e-icon-descending';
-/** @hidden */
 var GRID_GROUPING_BAR_CLASS = 'e-pivot-grouping-bar';
-/** @hidden */
 var MDX_QUERY = 'e-mdx-query';
-/** @hidden */
 var MDX_QUERY_CONTENT = 'e-mdx-query-content';
-/** @hidden */
 var GRID_MDX_DIALOG = 'e-pivotview-mdx-dialog';
-/** @hidden */
 var GRID_MDX = 'e-mdx';
-/** @hidden */
 var FORMATTING_DIALOG = 'e-pivot-format-dialog';
-/** @hidden */
 var FORMATTING_DIALOG_OUTER = 'e-pivot-format-dialog-outer';
-/** @hidden */
 var FORMATTING_VALUE_LABLE = 'e-pivot-format-value-lable';
-/** @hidden */
 var FORMATTING_VALUE_DROP = 'e-pivot-format-value-drop';
-/** @hidden */
 var FORMATTING_FORMAT_LABLE = 'e-pivot-format-lable';
-/** @hidden */
 var FORMATTING_FORMAT_DROP = 'e-pivot-format-drop';
-/** @hidden */
 var FORMATTING_CUSTOM_LABLE = 'e-pivot-format-custom-lable';
-/** @hidden */
 var FORMATTING_CUSTOM_TEXT = 'e-pivot-format-custom-text';
-/** @hidden */
 
-/** @hidden */
 
-/** @hidden */
 var FORMATTING_GROUPING_LABLE = 'e-pivot-format-grouping-lable';
-/** @hidden */
 var FORMATTING_GROUPING_DROP = 'e-pivot-format-grouping-drop';
-/** @hidden */
 var FORMATTING_DECIMAL_LABLE = 'e-pivot-format-decimal-lable';
-/** @hidden */
 var FORMATTING_DECIMAL_DROP = 'e-pivot-format-decimal-drop';
-/** @hidden */
 var FORMATTING_TOOLBAR = 'e-pivot-format-toolbar';
-/** @hidden */
 var FORMATTING_TABLE = 'e-pivot-format-table';
-/** @hidden */
 var FORMATTING_MENU = 'e-pivot-format-menu';
-/** @hidden */
 var NUMBER_FORMATTING_MENU = 'e-pivot-number-format-menu';
-/** @hidden */
 var CONDITIONAL_FORMATTING_MENU = 'e-pivot-conditional-format-menu';
 
 /**
  * `AggregateMenu` module to create aggregate type popup.
  */
-/** @hidden */
 var AggregateMenu = /** @__PURE__ @class */ (function () {
     /**
      * Constructor for the rener action.
-     * @hidden
+
      */
     function AggregateMenu(parent) {
         this.parent = parent;
@@ -4599,7 +4312,6 @@ var AggregateMenu = /** @__PURE__ @class */ (function () {
         args.element.style.zIndex = (this.menuInfo.element.style.zIndex + 3).toString();
         args.element.style.display = 'inline';
     };
-    /** @hidden */
     AggregateMenu.prototype.createValueSettingsDialog = function (target, parentElement) {
         var _this = this;
         this.parentElement = parentElement;
@@ -4686,7 +4398,7 @@ var AggregateMenu = /** @__PURE__ @class */ (function () {
             var text = (field.caption ? field.caption : field.name);
             fieldDataSource.push({ value: value, text: text });
         }
-        baseField = (baseField && baseField.toString() !== 'undefined' && 'null' ? baseField : fieldDataSource[0].value);
+        baseField = (baseField && (baseField.toString() !== 'undefined' && baseField.toString() !== 'null') ? baseField : fieldDataSource[0].value);
         fieldItemDataSource = Object.keys(this.parent.engineModule.fieldList[(baseField.toString() !== 'undefined' ?
             baseField : fieldDataSource[0].value)].formattedMembers);
         baseItem = (baseItem.toString() !== 'undefined' ? baseItem : fieldItemDataSource[0]);
@@ -4889,7 +4601,7 @@ var AggregateMenu = /** @__PURE__ @class */ (function () {
     /**
      * To destroy the pivot button event listener
      * @return {void}
-     * @hidden
+
      */
     AggregateMenu.prototype.destroy = function () {
         if (this.parent.isDestroyed) {
@@ -4908,11 +4620,9 @@ var AggregateMenu = /** @__PURE__ @class */ (function () {
 /**
  * Module to render PivotGrid control
  */
-/** @hidden */
 var Render = /** @__PURE__ @class */ (function () {
     /** Constructor for render module */
     function Render(parent) {
-        /** @hidden */
         this.indentCollection = {};
         this.colPos = 0;
         this.lastSpan = 0;
@@ -4933,7 +4643,6 @@ var Render = /** @__PURE__ @class */ (function () {
         this.formatList = this.getFormatList();
         this.aggMenu = new AggregateMenu(this.parent);
     }
-    /** @hidden */
     /* tslint:disable */
     Render.prototype.render = function () {
         var parent = this.parent;
@@ -5010,7 +4719,6 @@ var Render = /** @__PURE__ @class */ (function () {
             mHdr.scrollLeft = mCont.scrollLeft;
         }
     };
-    /** @hidden */
     Render.prototype.bindGrid = function (parent, isEmpty) {
         this.injectGridModules(parent);
         this.parent.grid = new Grid({
@@ -5467,7 +5175,6 @@ var Render = /** @__PURE__ @class */ (function () {
             Grid.Inject(ContextMenu);
         }
     };
-    /** @hidden */
     Render.prototype.updateGridSettings = function () {
         this.injectGridModules(this.parent);
         this.parent.grid.allowResizing = this.gridSettings.allowResizing;
@@ -5579,7 +5286,6 @@ var Render = /** @__PURE__ @class */ (function () {
         this.parent.trigger(args.e.type === 'touchend' || args.e.type === 'mouseup' ? resizeStop : resizing, args);
     };
     /* tslint:disable */
-    /** @hidden */
     Render.prototype.selected = function () {
         clearTimeout(this.timeOutObj);
         this.timeOutObj = setTimeout(this.onSelect.bind(this), 300);
@@ -5759,22 +5465,17 @@ var Render = /** @__PURE__ @class */ (function () {
                 if (cell.memberType === 3 && rowMeasurePos === fieldSep.length) {
                     fieldSep.push(cell.actualText.toString());
                 }
-                var nxtIndextCount = rowMeasurePos > 0 ? -2 : -1;
-                var lastIndextCount = rowMeasurePos === 0 ? -1 : 0;
-                var firstMemberAvailChild = void 0;
+                var nxtIndextCount = -1;
+                var lastIndextCount = 0;
+                var prevHasChild = false;
                 for (var fPos = 0; fPos < fieldSep.length; fPos++) {
                     var fieldMembers = fieldSep[fPos];
                     var membersCount = fieldMembers.split('~~').length;
-                    nxtIndextCount += membersCount + ((rowMeasurePos > fPos && (rowMeasurePos === 1 ? true : fPos > 0))
-                        ? membersCount : 0);
+                    nxtIndextCount += membersCount;
                     var hasChild = Number(tupInfo.members[fPos].querySelector('CHILDREN_CARDINALITY').textContent) > 0;
-                    firstMemberAvailChild = (!firstMemberAvailChild && fPos === 0 && rowMeasurePos !== 0) ? hasChild :
-                        firstMemberAvailChild;
-                    lastIndextCount += !hasChild ? 1 : 0;
+                    lastIndextCount += (fPos > 0 && prevHasChild && !hasChild) ? 1 : 0;
+                    prevHasChild = hasChild;
                 }
-                lastIndextCount -= firstMemberAvailChild ? 1 : 0;
-                nxtIndextCount = (nxtIndextCount === 1 && rowMeasurePos === fieldSep.length && fieldSep.length === 1) ?
-                    0 : nxtIndextCount;
                 var indent = 0;
                 for (var iPos = 0; iPos < nxtIndextCount; iPos++) {
                     tCell.appendChild(createElement('span', {
@@ -5969,7 +5670,6 @@ var Render = /** @__PURE__ @class */ (function () {
     };
     Render.prototype.onOlapColumnCellBoundEvent = function (tCell, cell) {
         tCell.setAttribute('fieldname', cell.memberType === 3 ? cell.actualText.toString() : cell.hierarchy);
-        //if (cell.memberType === 3 || cell.type === 'grand sum') {
         var prevCell = this.engine.headerContent[cell.rowIndex] ?
             this.engine.headerContent[cell.rowIndex][cell.colIndex - 1] : undefined;
         if (prevCell && prevCell.actualText === cell.actualText && prevCell.type === cell.type &&
@@ -5980,8 +5680,25 @@ var Render = /** @__PURE__ @class */ (function () {
             tCell.setAttribute('colspan', cell.colSpan.toString());
             tCell.setAttribute('aria-colspan', cell.colSpan.toString());
         }
-        //}
+        if (cell.rowIndex === (this.engine.headerContent.length - 1) && cell.memberType === 2) {
+            tCell.style.display = this.isSpannedCell(this.engine.headerContent.length, cell) ? 'none' : tCell.style.display;
+        }
         return tCell;
+    };
+    Render.prototype.isSpannedCell = function (colLength, currCell) {
+        var prevCell = this.engine.headerContent[currCell.rowIndex - 1] ?
+            this.engine.headerContent[currCell.rowIndex - 1][currCell.colIndex] : undefined;
+        var parentCellSpan;
+        var parentCellPos;
+        while (prevCell && ((prevCell.memberType === currCell.memberType) || (prevCell.type && currCell.type))) {
+            if (prevCell.rowSpan > 0) {
+                parentCellSpan = prevCell.rowSpan;
+                parentCellPos = prevCell.rowIndex;
+            }
+            prevCell = this.engine.headerContent[prevCell.rowIndex - 1] ?
+                this.engine.headerContent[prevCell.rowIndex - 1][currCell.colIndex] : undefined;
+        }
+        return (parentCellPos + parentCellSpan) >= colLength;
     };
     Render.prototype.onHyperCellClick = function (e) {
         var cell = e.target.parentElement.parentElement;
@@ -6041,7 +5758,6 @@ var Render = /** @__PURE__ @class */ (function () {
         }
         return dataContent;
     };
-    /** @hidden */
     /* tslint:disable-next-line */
     Render.prototype.frameEmptyData = function () {
         /* tslint:disable-next-line */
@@ -6086,7 +5802,6 @@ var Render = /** @__PURE__ @class */ (function () {
         }
         return parWidth;
     };
-    /** @hidden */
     Render.prototype.calculateGridHeight = function (elementCreated) {
         var gridHeight = this.parent.height;
         var parHeight = this.parent.getHeightAsNumber();
@@ -6231,12 +5946,10 @@ var Render = /** @__PURE__ @class */ (function () {
         this.parent.triggerColumnRenderEvent(integrateModel);
         return integrateModel;
     };
-    /** @hidden */
     Render.prototype.setSavedWidth = function (column, width) {
         width = this.parent.resizeInfo[column] ? this.parent.resizeInfo[column] : width;
         return width;
     };
-    /** @hidden */
     Render.prototype.frameEmptyColumns = function () {
         var columns = [];
         var colWidth = this.calculateColWidth(2);
@@ -6245,7 +5958,6 @@ var Render = /** @__PURE__ @class */ (function () {
         columns.push({ field: '1.formattedText', headerText: this.parent.localeObj.getConstant('grandTotal'), minWidth: 30, width: colWidth });
         return columns;
     };
-    /** @hidden */
     Render.prototype.getFormatList = function () {
         var formatArray = {};
         for (var vCnt = 0; vCnt < this.parent.dataSourceSettings.values.length; vCnt++) {
@@ -6978,13 +6690,13 @@ var GridSettings = /** @__PURE__ @class */ (function (_super) {
 }(ChildProperty));
 
 /**
- * @hidden
+
  * `ExcelExport` module is used to handle the Excel export action.
  */
 var ExcelExport$1 = /** @__PURE__ @class */ (function () {
     /**
      * Constructor for the PivotGrid Excel Export module.
-     * @hidden
+
      */
     function ExcelExport$$1(parent) {
         this.parent = parent;
@@ -6999,7 +6711,7 @@ var ExcelExport$1 = /** @__PURE__ @class */ (function () {
     /* tslint:disable:max-func-body-length */
     /**
      * Method to perform excel export.
-     * @hidden
+
      */
     ExcelExport$$1.prototype.exportToExcel = function (type) {
         this.engine = this.parent.dataType === 'olap' ? this.parent.olapEngineModule : this.parent.engineModule;
@@ -7125,7 +6837,7 @@ var ExcelExport$1 = /** @__PURE__ @class */ (function () {
     /**
      * To destroy the excel export module
      * @returns void
-     * @hidden
+
      */
     /* tslint:disable:no-empty */
     ExcelExport$$1.prototype.destroy = function () {
@@ -7134,13 +6846,13 @@ var ExcelExport$1 = /** @__PURE__ @class */ (function () {
 }());
 
 /**
- * @hidden
+
  * `PDFExport` module is used to handle the PDF export action.
  */
 var PDFExport = /** @__PURE__ @class */ (function () {
     /**
      * Constructor for the PivotGrid PDF Export module.
-     * @hidden
+
      */
     function PDFExport(parent) {
         this.parent = parent;
@@ -7286,7 +6998,7 @@ var PDFExport = /** @__PURE__ @class */ (function () {
     };
     /**
      * Method to perform pdf export.
-     * @hidden
+
      */
     /* tslint:disable:max-func-body-length */
     PDFExport.prototype.exportToPDF = function () {
@@ -7553,7 +7265,7 @@ var PDFExport = /** @__PURE__ @class */ (function () {
     /**
      * To destroy the pdf export module
      * @returns void
-     * @hidden
+
      */
     /* tslint:disable:no-empty */
     PDFExport.prototype.destroy = function () {
@@ -7564,7 +7276,6 @@ var PDFExport = /** @__PURE__ @class */ (function () {
 /**
  * PivotView Keyboard interaction
  */
-/** @hidden */
 var KeyboardInteraction = /** @__PURE__ @class */ (function () {
     /**
      * Constructor
@@ -7787,7 +7498,6 @@ var KeyboardInteraction = /** @__PURE__ @class */ (function () {
 /**
  * Module to render Pivot button
  */
-/** @hidden */
 var PivotContextMenu = /** @__PURE__ @class */ (function () {
     /** Constructor for render module */
     function PivotContextMenu(parent) {
@@ -7871,7 +7581,7 @@ var PivotContextMenu = /** @__PURE__ @class */ (function () {
     /**
      * To destroy the pivot button event listener
      * @return {void}
-     * @hidden
+
      */
     PivotContextMenu.prototype.destroy = function () {
         if (!this.parent.isDestroyed) {
@@ -7893,7 +7603,7 @@ var PivotContextMenu = /** @__PURE__ @class */ (function () {
 var VirtualScroll$1 = /** @__PURE__ @class */ (function () {
     /**
      * Constructor for PivotView scrolling.
-     * @hidden
+
      */
     function VirtualScroll$$1(parent) {
         this.previousValues = { top: 0, left: 0 };
@@ -7906,7 +7616,7 @@ var VirtualScroll$1 = /** @__PURE__ @class */ (function () {
     /**
      * It returns the Module name.
      * @returns string
-     * @hidden
+
      */
     VirtualScroll$$1.prototype.getModuleName = function () {
         return 'virtualscroll';
@@ -8224,7 +7934,7 @@ var VirtualScroll$1 = /** @__PURE__ @class */ (function () {
         };
     };
     /**
-     * @hidden
+
      */
     VirtualScroll$$1.prototype.removeInternalEvents = function () {
         if (this.parent.isDestroyed) {
@@ -8235,7 +7945,7 @@ var VirtualScroll$1 = /** @__PURE__ @class */ (function () {
     /**
      * To destroy the virtualscrolling event listener
      * @return {void}
-     * @hidden
+
      */
     VirtualScroll$$1.prototype.destroy = function () {
         this.removeInternalEvents();
@@ -8246,11 +7956,10 @@ var VirtualScroll$1 = /** @__PURE__ @class */ (function () {
 /**
  * `DrillThroughDialog` module to create drill-through dialog.
  */
-/** @hidden */
 var DrillThroughDialog = /** @__PURE__ @class */ (function () {
     /**
      * Constructor for the dialog action.
-     * @hidden
+
      */
     function DrillThroughDialog(parent) {
         this.isUpdated = false;
@@ -8259,7 +7968,6 @@ var DrillThroughDialog = /** @__PURE__ @class */ (function () {
         this.parent = parent;
         this.engine = this.parent.dataType === 'olap' ? this.parent.olapEngineModule : this.parent.engineModule;
     }
-    /** @hidden */
     DrillThroughDialog.prototype.showDrillThroughDialog = function (eventArgs) {
         var _this = this;
         this.gridData = eventArgs.rawData;
@@ -8555,7 +8263,7 @@ var DrillThroughDialog = /** @__PURE__ @class */ (function () {
 var DrillThrough = /** @__PURE__ @class */ (function () {
     /**
      * Constructor.
-     * @hidden
+
      */
     function DrillThrough(parent) {
         this.parent = parent;
@@ -8565,7 +8273,7 @@ var DrillThrough = /** @__PURE__ @class */ (function () {
     /**
      * It returns the Module name.
      * @returns string
-     * @hidden
+
      */
     DrillThrough.prototype.getModuleName = function () {
         return 'drillthrough';
@@ -8607,9 +8315,16 @@ var DrillThrough = /** @__PURE__ @class */ (function () {
         var valueCaption = '';
         var aggType = '';
         var rawData = [];
-        if (pivotValue.rowHeaders !== undefined && pivotValue.columnHeaders !== undefined && pivotValue.value !== undefined) {
+        if (pivotValue.rowHeaders !== undefined && pivotValue.columnHeaders !== undefined && !isNullOrUndefined(pivotValue.value)) {
             if (this.parent.dataType === 'olap') {
-                var measureName = pivotValue.actualText;
+                var tupleInfo = void 0;
+                if (this.parent.dataSourceSettings.valueAxis === 'row') {
+                    tupleInfo = engine.tupRowInfo[pivotValue.rowOrdinal];
+                }
+                else {
+                    tupleInfo = engine.tupColumnInfo[pivotValue.colOrdinal];
+                }
+                var measureName = tupleInfo ? tupleInfo.measureName : pivotValue.actualText;
                 if (engine.fieldList[measureName] && engine.fieldList[measureName].isCalculatedField) {
                     this.parent.pivotCommon.errorDialog.createErrorDialog(this.parent.localeObj.getConstant('error'), this.parent.localeObj.getConstant('drillError'));
                     return;
@@ -8664,6 +8379,7 @@ var PivotChart = /** @__PURE__ @class */ (function () {
         this.columnGroupObject = {};
         this.fieldPosition = [];
         this.measurePos = -1;
+        this.measuresNames = {};
     }
     /**
      * Get component name.
@@ -8676,6 +8392,7 @@ var PivotChart = /** @__PURE__ @class */ (function () {
     /* tslint:disable */
     PivotChart.prototype.loadChart = function (parent, chartSettings) {
         this.parent = parent;
+        this.measuresNames = {};
         this.engineModule = this.parent.dataType === 'olap' ? this.parent.olapEngineModule : this.parent.engineModule;
         this.dataSourceSettings = this.parent.dataSourceSettings;
         this.chartSettings = chartSettings;
@@ -8689,6 +8406,12 @@ var PivotChart = /** @__PURE__ @class */ (function () {
             }
             else {
                 this.measureList = [chartSettings.value === '' ? this.dataSourceSettings.values[0].name : chartSettings.value];
+            }
+            for (var _i = 0, _a = this.dataSourceSettings.values; _i < _a.length; _i++) {
+                var field = _a[_i];
+                var fieldName = field.name.replace(/[^A-Z0-9]+/ig, '_');
+                this.measuresNames[field.name] = fieldName;
+                this.measuresNames[fieldName] = field.name;
             }
         }
         else if (this.parent.chart) {
@@ -8707,6 +8430,7 @@ var PivotChart = /** @__PURE__ @class */ (function () {
         }
         else {
             this.parent.notify(contentReady, {});
+            this.parent.chart.refresh();
             return;
         }
         this.columnGroupObject = {};
@@ -8735,8 +8459,8 @@ var PivotChart = /** @__PURE__ @class */ (function () {
             lastDimension = (this.measurePos === (this.fieldPosition.length - 1) && this.fieldPosition.length > 1) ?
                 this.fieldPosition[this.fieldPosition.length - 2] : lastHierarchy;
         }
-        for (var _i = 0, rKeys_1 = rKeys; _i < rKeys_1.length; _i++) {
-            var rKey = rKeys_1[_i];
+        for (var _b = 0, rKeys_1 = rKeys; _b < rKeys_1.length; _b++) {
+            var rKey = rKeys_1[_b];
             var rowIndex = Number(rKey);
             if (pivotValues[rowIndex][0] && pivotValues[rowIndex][0].axis === 'row' &&
                 (this.dataSourceSettings.rows.length === 0 ? true : pivotValues[rowIndex][0].type !== 'grand sum')) {
@@ -8773,7 +8497,8 @@ var PivotChart = /** @__PURE__ @class */ (function () {
                 this.maxLevel = currrentLevel > this.maxLevel ? currrentLevel : this.maxLevel;
                 var name_1 = this.parent.dataType === 'olap' ? firstRowCell.formattedText :
                     (firstRowCell.actualText ? firstRowCell.actualText.toString() : firstRowCell.formattedText.toString());
-                var caption = firstRowCell.hasChild ? ((firstRowCell.isDrilled ? ' - ' : ' + ') + name_1) : name_1;
+                var caption = (firstRowCell.hasChild && !firstRowCell.isNamedSet) ?
+                    ((firstRowCell.isDrilled ? ' - ' : ' + ') + name_1) : name_1;
                 var levelName = tupInfo ? tupInfo.uNameCollection : firstRowCell.valueSort['levelName'].toString();
                 var cellInfo = {
                     name: name_1,
@@ -8805,8 +8530,8 @@ var PivotChart = /** @__PURE__ @class */ (function () {
                 else {
                     memberCell = firstRowCell.type !== 'value' ? firstRowCell : memberCell;
                 }
-                for (var _a = 0, cKeys_1 = cKeys; _a < cKeys_1.length; _a++) {
-                    var cKey = cKeys_1[_a];
+                for (var _c = 0, cKeys_1 = cKeys; _c < cKeys_1.length; _c++) {
+                    var cKey = cKeys_1[_c];
                     var cellIndex = Number(cKey);
                     var cell = pivotValues[rowIndex][cellIndex];
                     var measureAllow = cell.rowHeaders === '' ? this.dataSourceSettings.rows.length === 0 : true;
@@ -8826,16 +8551,19 @@ var PivotChart = /** @__PURE__ @class */ (function () {
                         var rowHeaders = this.parent.dataType === 'olap' ? cell.rowHeaders.toString().split(/~~|::/).join(' - ')
                             : cell.rowHeaders.toString().split('.').join(' - ');
                         var columnSeries = colHeaders + ' | ' + actualText;
+                        var yValue = (this.parent.dataType === 'pivot' ? (this.engineModule.aggregatedValueMatrix[rowIndex] &&
+                            !isNullOrUndefined(this.engineModule.aggregatedValueMatrix[rowIndex][cellIndex])) ?
+                            Number(this.engineModule.aggregatedValueMatrix[rowIndex][cellIndex]) : Number(cell.value) : Number(cell.value));
                         if (this.columnGroupObject[columnSeries]) {
                             this.columnGroupObject[columnSeries].push({
                                 x: this.dataSourceSettings.rows.length === 0 ? firstRowCell.formattedText : rowHeaders,
-                                y: Number(cell.value)
+                                y: yValue
                             });
                         }
                         else {
                             this.columnGroupObject[columnSeries] = [{
                                     x: this.dataSourceSettings.rows.length === 0 ? firstRowCell.formattedText : rowHeaders,
-                                    y: Number(cell.value)
+                                    y: yValue
                                 }];
                         }
                     }
@@ -8862,7 +8590,8 @@ var PivotChart = /** @__PURE__ @class */ (function () {
             currentSeries.yName = 'y';
             currentSeries.name = this.chartSettings.enableMultiAxis ? key : key.split(' | ')[0];
             if (!(this.chartSettings.chartSeries.type === 'Polar' || this.chartSettings.chartSeries.type === 'Radar')) {
-                currentSeries.yAxisName = key.split(' | ')[1];
+                var measure = key.split(' | ')[1];
+                currentSeries.yAxisName = this.measuresNames[measure] ? this.measuresNames[measure] : measure;
             }
             this.chartSeries = this.chartSeries.concat(currentSeries);
         }
@@ -9018,6 +8747,8 @@ var PivotChart = /** @__PURE__ @class */ (function () {
         var percentChart = this.persistSettings.chartSeries && (this.persistSettings.chartSeries.type === 'StackingColumn100' ||
             this.persistSettings.chartSeries.type === 'StackingBar100' ||
             this.persistSettings.chartSeries.type === 'StackingArea100');
+        var percentAggregateTypes = ['PercentageOfGrandTotal', 'PercentageOfColumnTotal', 'PercentageOfRowTotal',
+            'PercentageOfDifferenceFrom', 'PercentageOfParentRowTotal', 'PercentageOfParentColumnTotal', 'PercentageOfParentTotal'];
         if (this.chartSettings.enableMultiAxis) {
             var valCnt = 0;
             var divider = (100 / this.dataSourceSettings.values.length) + '%';
@@ -9037,8 +8768,8 @@ var PivotChart = /** @__PURE__ @class */ (function () {
                         break;
                     }
                 }
-                var format = (formatSetting ? formatSetting.format :
-                    this.parent.dataType === 'olap' ? this.getFormat(measureField.formatString) : 'N');
+                var format = PivotUtil.inArray(measureField.aggregateType, percentAggregateTypes) !== -1 ? 'P2' : (formatSetting ?
+                    formatSetting.format : this.parent.dataType === 'olap' ? this.getFormat(measureField.formatString) : 'N');
                 var resFormat = (this.chartSettings.chartSeries.type === 'Polar' || this.chartSettings.chartSeries.type === 'Radar') ? true : false;
                 var currentYAxis = {};
                 currentYAxis = this.persistSettings.primaryYAxis ?
@@ -9052,7 +8783,7 @@ var PivotChart = /** @__PURE__ @class */ (function () {
                 currentYAxis.rowIndex = valCnt;
                 currentYAxis.columnIndex = valCnt;
                 if (!resFormat) {
-                    currentYAxis.name = item.name;
+                    currentYAxis.name = this.measuresNames[item.name] ? this.measuresNames[item.name] : item.name;
                 }
                 axes = axes.concat(currentYAxis);
                 rows.push({ height: divider });
@@ -9077,13 +8808,13 @@ var PivotChart = /** @__PURE__ @class */ (function () {
                 }
             }
             var currentYAxis = {};
-            var format = (formatSetting ? formatSetting.format :
-                this.parent.dataType === 'olap' ? this.getFormat(measureField.formatString) : 'N');
+            var format = PivotUtil.inArray(measureField.aggregateType, percentAggregateTypes) !== -1 ? 'P2' : (formatSetting ?
+                formatSetting.format : this.parent.dataType === 'olap' ? this.getFormat(measureField.formatString) : 'N');
             currentYAxis = this.persistSettings.primaryYAxis ? this.frameObjectWithKeys(this.persistSettings.primaryYAxis) : currentYAxis;
             currentYAxis.rowIndex = 0;
             currentYAxis.columnIndex = 0;
             if (!(this.chartSettings.chartSeries.type === 'Polar' || this.chartSettings.chartSeries.type === 'Radar')) {
-                currentYAxis.name = this.currentMeasure;
+                currentYAxis.name = this.measuresNames[this.currentMeasure] ? this.measuresNames[this.currentMeasure] : this.currentMeasure;
             }
             currentYAxis.labelFormat = currentYAxis.labelFormat ? currentYAxis.labelFormat : (percentChart ? '' : format);
             currentYAxis.title = currentYAxis.title ? currentYAxis.title : measureAggregatedName;
@@ -9296,8 +9027,10 @@ var PivotChart = /** @__PURE__ @class */ (function () {
         return zoomSettings;
     };
     PivotChart.prototype.tooltipRender = function (args) {
-        var measureField = this.engineModule.fieldList[args.series.yAxisName ? (args.series.yAxisName.split('_CumulativeAxis')[0]) :
-            (this.chartSettings.enableMultiAxis ? args.series.name.split(' | ')[1] : this.currentMeasure)];
+        var measure = args.series.yAxisName ? (args.series.yAxisName.split('_CumulativeAxis')[0]) :
+            (this.chartSettings.enableMultiAxis ? args.series.name.split(' | ')[1] : this.measuresNames[this.currentMeasure] ?
+                this.measuresNames[this.currentMeasure] : this.currentMeasure);
+        var measureField = this.engineModule.fieldList[this.measuresNames[measure] ? this.measuresNames[measure] : measure];
         var measureAggregatedName = (this.parent.dataType === 'olap' ? '' : (this.parent.localeObj.getConstant(measureField.aggregateType) + ' ' +
             this.parent.localeObj.getConstant('of') + ' ')) + measureField.caption;
         var formattedText = args.text.split('<b>')[1].split('</b>')[0];
@@ -9338,7 +9071,7 @@ var PivotChart = /** @__PURE__ @class */ (function () {
         this.parent.trigger(chartAxisLabelRender, args);
     };
     PivotChart.prototype.multiLevelLabelClick = function (args) {
-        if (args.customAttributes && args.customAttributes.hasChild) {
+        if (args.customAttributes && args.customAttributes.hasChild && !args.customAttributes.cell.isNamedSet) {
             if (this.parent.dataType === 'olap') {
                 this.parent.onDrill(undefined, args.customAttributes);
             }
@@ -9347,7 +9080,6 @@ var PivotChart = /** @__PURE__ @class */ (function () {
             }
         }
     };
-    /** @hidden */
     PivotChart.prototype.onDrill = function (args) {
         var labelInfo = args.customAttributes;
         var delimiter = (this.dataSourceSettings.drilledMembers[0] && this.dataSourceSettings.drilledMembers[0].delimiter) ?
@@ -9423,10 +9155,19 @@ var PivotChart = /** @__PURE__ @class */ (function () {
     /**
      * To destroy the chart module
      * @returns void
-     * @hidden
+
      */
     /* tslint:disable:no-empty */
     PivotChart.prototype.destroy = function () {
+        if (this.parent.isDestroyed) {
+            return;
+        }
+        if (this.parent.chart && !this.parent.chart.isDestroyed) {
+            this.parent.chart.destroy();
+        }
+        else {
+            return;
+        }
     };
     return PivotChart;
 }());
@@ -9434,7 +9175,6 @@ var PivotChart = /** @__PURE__ @class */ (function () {
 /**
  * Base export
  */
-/** @hidden */
 
 var __extends$3 = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -10425,10 +10165,9 @@ var ChartSettings = /** @__PURE__ @class */ (function (_super) {
 
 /**
  * This is a file to create MDX query for the provided OLAP datasource
- * @hidden
+
  */
 /* tslint:disable:all */
-/** @hidden */
 var MDXQuery = /** @__PURE__ @class */ (function () {
     function MDXQuery() {
     }
@@ -10458,12 +10197,12 @@ var MDXQuery = /** @__PURE__ @class */ (function () {
         var measureQuery = this.getMeasuresQuery(this.values);
         var rowQuery = this.getDimensionsQuery(this.rows, measureQuery, 'rows', drillInfo).replace(/\&/g, '&amp;');
         var columnQuery = this.getDimensionsQuery(this.columns, measureQuery, 'columns', drillInfo).replace(/\&/g, '&amp;');
-        if (this.isPaging && refPaging && this.pageSettings !== undefined && rowQuery !== '' && columnQuery !== '') {
+        if (this.isPaging && refPaging && this.pageSettings !== undefined) {
             var pagingQuery = this.getPagingQuery(rowQuery, columnQuery);
             rowQuery = pagingQuery.rowQuery;
             columnQuery = pagingQuery.columnQuery;
         }
-        else if (this.isPaging && !refPaging && this.pageSettings !== undefined && rowQuery !== '' && columnQuery !== '') {
+        else if (this.isPaging && !refPaging && this.pageSettings !== undefined) {
             var pagingQuery = this.getPagingCountQuery(rowQuery, columnQuery);
             rowQuery = pagingQuery.rowQuery;
             columnQuery = pagingQuery.columnQuery;
@@ -10817,6 +10556,7 @@ var MDXQuery = /** @__PURE__ @class */ (function () {
                     rowFilter.push(filters[field.name]);
                 }
                 else {
+                    filters[field.name][1] = filters[field.name][0].type;
                     advancedFilters.push(filters[field.name]);
                     delete filters[field.name];
                 }
@@ -10829,6 +10569,9 @@ var MDXQuery = /** @__PURE__ @class */ (function () {
                     columnFilter.push(filters[field.name]);
                 }
                 else {
+                    /* tslint:disable */
+                    var filter = filters[field.name];
+                    filter[1] = filter[0].type;
                     advancedFilters.push(filters[field.name]);
                     delete filters[field.name];
                 }
@@ -10857,12 +10600,16 @@ var MDXQuery = /** @__PURE__ @class */ (function () {
                 }
             }
         }
-        if (this.allowLabelFilter || this.allowValueFilter) {
-            for (var _k = 0, advancedFilters_1 = advancedFilters; _k < advancedFilters_1.length; _k++) {
-                var filterItems = advancedFilters_1[_k];
-                for (var _l = 0, filterItems_1 = filterItems; _l < filterItems_1.length; _l++) {
-                    var item = filterItems_1[_l];
-                    advancedFilterQuery.push(this.getAdvancedFilterQuery(item, filterQuery, 'COLUMNS'));
+        if ((this.allowLabelFilter || this.allowValueFilter) && advancedFilters.length > 0) {
+            var axes = ['Value', 'Label'];
+            for (var _k = 0, axes_1 = axes; _k < axes_1.length; _k++) {
+                var axis = axes_1[_k];
+                for (var _l = 0, advancedFilters_1 = advancedFilters; _l < advancedFilters_1.length; _l++) {
+                    var filterItems = advancedFilters_1[_l];
+                    if (filterItems && filterItems.length === 2 &&
+                        typeof filterItems[1] === 'string' && filterItems[1] === axis) {
+                        advancedFilterQuery.push(this.getAdvancedFilterQuery(filterItems[0], filterQuery, 'COLUMNS'));
+                    }
                 }
             }
         }
@@ -10880,8 +10627,9 @@ var MDXQuery = /** @__PURE__ @class */ (function () {
             filterQuery + ') ON COLUMNS ' : filterQuery;
         var updatedFilterQuery = '';
         if (advancedFilterQuery.length > 0) {
-            updatedFilterQuery = ((columnFilter.length > 0 || rowFilter.length > 0) ? filterQuery : '') +
-                ' ' + advancedFilterQuery.join(' ') + ' ' + query + Array(advancedFilterQuery.length + 1 +
+            updatedFilterQuery = advancedFilterQuery.join(' ') + ' ' +
+                ((columnFilter.length > 0 || rowFilter.length > 0) ? filterQuery : '') + ' '
+                + query + Array(advancedFilterQuery.length + 1 +
                 ((columnFilter.length > 0 || rowFilter.length > 0) ? 1 : 0)).join(')');
         }
         query = (columnFilter.length === 0 && rowFilter.length === 0) ? query : filterQuery + query + ')';
@@ -10964,53 +10712,32 @@ var MDXQuery = /** @__PURE__ @class */ (function () {
 /**
  * OlapEngine is used to manipulate the olap or Multi-Dimensional data as pivoting values.
  */
-/** @hidden */
 var OlapEngine = /** @__PURE__ @class */ (function () {
     function OlapEngine() {
-        /** @hidden */
         this.fieldList = {};
-        /** @hidden */
         this.columnCount = 0;
-        /** @hidden */
         this.rowCount = 0;
-        /** @hidden */
         this.colFirstLvl = 0;
-        /** @hidden */
         this.rowFirstLvl = 0;
-        /** @hidden */
         this.pageColStartPos = 0;
-        /** @hidden */
         this.enableSort = false;
-        /** @hidden */
         this.enableValueSorting = false;
-        /** @hidden */
         this.dataFields = {};
-        /** @hidden */
         this.formatFields = {};
-        /** @hidden */
         this.filterMembers = {};
-        /** @hidden */
         this.drilledSets = {};
+        this.aggregatedValueMatrix = [];
         /* tslint:disable-next-line:max-line-length */
         this.customRegex = /^(('[^']+'|''|[^*#@0,.])*)(\*.)?((([0#,]*[0,]*[0#]*)(\.[0#]*)?)|([#,]*@+#*))(E\+?0+)?(('[^']+'|''|[^*#@0,.E])*)$/;
         this.formatRegex = /(^[ncpae]{1})([0-1]?[0-9]|20)?$/i;
-        /** @hidden */
         this.pivotValues = [];
-        /** @hidden */
         this.valueContent = [];
-        /** @hidden */
         this.headerContent = [];
-        /** @hidden */
         this.rowStartPos = 0;
-        /** @hidden */
         this.pageRowStartPos = 0;
-        /** @hidden */
         this.tupColumnInfo = [];
-        /** @hidden */
         this.tupRowInfo = [];
-        /** @hidden */
         this.gridJSON = '';
-        /** @hidden */
         this.namedSetsPosition = {};
         this.colDepth = 0;
         this.totalCollection = [];
@@ -11032,6 +10759,7 @@ var OlapEngine = /** @__PURE__ @class */ (function () {
         this.allowLabelFilter = false;
         this.allowValueFilter = false;
         this.isMondrian = false;
+        this.aggregatedValueMatrix = [];
         this.measureReportItems = [];
         this.calcChildMembers = [];
         this.selectedItems = [];
@@ -11048,7 +10776,6 @@ var OlapEngine = /** @__PURE__ @class */ (function () {
         this.pageColStartPos = 0;
         this.enableValueSorting = false;
         this.sortObject = {};
-        this.drilledSets = {};
         this.globalize = new Internationalization();
         /* tslint:disable */
         this.locale = this.globalize.getCulture();
@@ -11097,7 +10824,13 @@ var OlapEngine = /** @__PURE__ @class */ (function () {
     OlapEngine.prototype.generateGridData = function (dataSourceSettings, action) {
         var refPaging = (action && action === 'navPaging' &&
             this.isPaging && this.pageSettings !== undefined ? true : false);
-        MDXQuery.getCellSets(dataSourceSettings, this, refPaging);
+        if (this.rows.length > 0 || this.columns.length > 0 || this.values.length > 0 || this.filters.length > 0) {
+            MDXQuery.getCellSets(dataSourceSettings, this, refPaging);
+        }
+        else {
+            MDXQuery.getCellSets(dataSourceSettings, this, true, undefined, true);
+            this.generateEngine(undefined, undefined, { dataSourceSettings: dataSourceSettings, action: 'loadTableElements' });
+        }
     };
     OlapEngine.prototype.generatePagingData = function (xmlDoc, request, customArgs) {
         var xmlaCellSet = [].slice.call(xmlDoc.querySelectorAll('Axes, CellData'));
@@ -11131,7 +10864,7 @@ var OlapEngine = /** @__PURE__ @class */ (function () {
             this.rowMeasurePos = undefined;
             this.rowStartPos = -1;
         }
-        this.xmlDoc = xmlDoc.cloneNode(true);
+        this.xmlDoc = xmlDoc ? xmlDoc.cloneNode(true) : undefined;
         this.request = request;
         this.customArgs = customArgs;
         this.totalCollection = [];
@@ -11139,12 +10872,12 @@ var OlapEngine = /** @__PURE__ @class */ (function () {
         this.curDrillEndPos = -1;
         this.onDemandDrillEngine = [];
         this.getSubTotalsVisibility();
-        this.xmlaCellSet = xmlDoc.querySelectorAll('Axes, CellData');
-        var columnTuples = this.xmlaCellSet.length > 0 ?
+        this.xmlaCellSet = xmlDoc ? xmlDoc.querySelectorAll('Axes, CellData') : undefined;
+        var columnTuples = this.xmlaCellSet && this.xmlaCellSet.length > 0 ?
             [].slice.call(this.xmlaCellSet[0].querySelectorAll('Axis[name|="Axis0"] Tuple')) : [];
-        var rowTuples = this.xmlaCellSet.length > 0 ?
+        var rowTuples = this.xmlaCellSet && this.xmlaCellSet.length > 0 ?
             [].slice.call(this.xmlaCellSet[0].querySelectorAll('Axis[name|="Axis1"] Tuple')) : [];
-        var valCollection = this.xmlaCellSet.length > 1 ?
+        var valCollection = this.xmlaCellSet && this.xmlaCellSet.length > 1 ?
             [].slice.call(this.xmlaCellSet[1].querySelectorAll('Cell')) : [];
         if (this.drilledMembers.length > 0) {
             // let st1: number = new Date().getTime();
@@ -11176,7 +10909,7 @@ var OlapEngine = /** @__PURE__ @class */ (function () {
         }
         this.frameValues(valCollection, columnTuples.length);
         this.performColumnSpanning();
-        if (this.dataSourceSettings.sortSettings.length > 0 && !this.isPaging) {
+        if (!this.isPaging && this.enableSort) {
             for (var i = 0; i < this.headerContent.length; i++) {
                 this.headerContent[i] = this.pivotValues[i];
             }
@@ -11300,8 +11033,9 @@ var OlapEngine = /** @__PURE__ @class */ (function () {
                     else {
                         minLevel[memPos] = Number(firstTupMembers[memPos].querySelector('LNum').textContent);
                     }
-                    if (firstTupMembers[memPos].querySelector('MEMBER_TYPE').textContent === '1' &&
-                        (this.isPaging || Number(firstTupMembers[memPos].querySelector('LNum').textContent) === 0)) {
+                    // if (firstTupMembers[memPos].querySelector('MEMBER_TYPE').textContent === '1' &&
+                    //   (this.isPaging || Number(firstTupMembers[memPos].querySelector('LNum').textContent) === 0)) {
+                    if (firstTupMembers[memPos].querySelector('MEMBER_TYPE').textContent === '1') {
                         allType[memPos] = 0;
                         withoutAllStartPos = withoutAllStartPos === -1 ? memPos : withoutAllStartPos;
                         withoutAllEndPos = memPos;
@@ -11358,10 +11092,12 @@ var OlapEngine = /** @__PURE__ @class */ (function () {
                     var lastPos = position;
                     var lastMemPos = memPos;
                     prevParent = {};
+                    var withoutAllDrilled = false;
                     while (memPos < members.length && pagingAllowFlag) {
                         var member = members[memPos];
                         if (member.querySelector('UName').textContent !== prevUNArray[memPos] && typeColl[memPos] !== '2'
-                            && ((prevParent && prevParent.isDrilled) ? (typeColl[memPos] === '3' && allType[memPos - 1]) : true)) {
+                            && ((Object.keys(prevParent).length > 0 ? prevParent.isDrilled : withoutAllDrilled) ?
+                                (typeColl[memPos] === '3' && (allType[memPos - 1] && allType[memPos + 1] !== 0)) : true)) {
                             /* tslint:disable-next-line:max-line-length */
                             var lvl = Number(member.querySelector('LNum').textContent) -
                                 ((allType[memPos] && typeColl[memPos] !== '3') ? 1 : minLevel[memPos]);
@@ -11410,6 +11146,11 @@ var OlapEngine = /** @__PURE__ @class */ (function () {
                         }
                         else if (typeColl[memPos] === '2') {
                             lastMemPos = memPos;
+                        }
+                        else {
+                            if (this.tupRowInfo[tupPos].drillInfo[memPos].isDrilled && allType[memPos] === 0) {
+                                withoutAllDrilled = true;
+                            }
                         }
                         if (this.tupRowInfo[tupPos].drillInfo[memPos].isDrilled && this.tupRowInfo[tupPos].showTotals) {
                             this.tupRowInfo[tupPos].showTotals = !this.showRowSubTotals ? false :
@@ -11483,6 +11224,10 @@ var OlapEngine = /** @__PURE__ @class */ (function () {
                 (Number(member.querySelector('MEMBER_TYPE').textContent) > 3 ? '1' : member.querySelector('MEMBER_TYPE').textContent);
             /* tslint:enable */
             var memberCaption = member.querySelector('Caption').textContent;
+            if (this.fieldList[memberCaption] && this.fieldList[memberCaption].type === 'CalculatedField') {
+                memberCaption = this.fieldList[memberCaption].caption;
+                member.querySelector('Caption').textContent = memberCaption;
+            }
             var hierarchy = member.getAttribute('Hierarchy');
             /* tslint:disable-next-line:max-line-length */
             var parentUName = member.querySelector('PARENT_UNIQUE_NAME') ? member.querySelector('PARENT_UNIQUE_NAME').textContent : '';
@@ -11591,6 +11336,10 @@ var OlapEngine = /** @__PURE__ @class */ (function () {
             var measurePosition = tuple.uNameCollection.split(/[~~,::]+/g).indexOf(tuple.measureName);
             var captionCollectionArray = tuple.captionCollection.split(/[~~,::]+/g);
             captionCollectionArray.splice(measurePosition, 0, measureName);
+            captionColection = captionCollectionArray.join('.');
+        }
+        else {
+            var captionCollectionArray = tuple.captionCollection.split(/[~~,::]+/g);
             captionColection = captionCollectionArray.join('.');
         }
         return captionColection;
@@ -12002,10 +11751,8 @@ var OlapEngine = /** @__PURE__ @class */ (function () {
                     if (memberType !== '2') {
                         colMembers[member.querySelector('UName').textContent] = member.querySelector('Caption').textContent;
                     }
-                    var delimiter = this.valueSortSettings && this.dataSourceSettings.valueSortSettings.headerDelimiter ?
-                        this.dataSourceSettings.valueSortSettings.headerDelimiter : '~~';
                     /* tslint:disable */
-                    var levelName = Object.values(colMembers).join(delimiter);
+                    var levelName = Object.values(colMembers).join('.');
                     var isNamedSet = this.namedSetsPosition['column'][memPos] ? true : false;
                     this.pivotValues[spanMemPos][position] = {
                         axis: 'column',
@@ -12075,7 +11822,6 @@ var OlapEngine = /** @__PURE__ @class */ (function () {
             }
         }
     };
-    /************************************Below temporary method should be removed*************************************************/
     /* tslint:disable */
     OlapEngine.prototype.performRowSorting = function () {
         var _a;
@@ -12119,7 +11865,9 @@ var OlapEngine = /** @__PURE__ @class */ (function () {
                 }
             }
             var isMeasureAvail = Object.keys(measureObjects).length > 0 && this.tupRowInfo[0].measurePosition > 0;
-            var levels = Object.keys(lvlGrouping).map(function (item) { return Number(item); }).sort();
+            var levels = Object.keys(lvlGrouping).map(function (item) {
+                return Number(item);
+            }).sort(function (a, b) { return (a > b) ? 1 : ((b > a) ? -1 : 0); });
             var sortLvlGrouping = {};
             for (var lPos = levels.length - 1; lPos >= 0; lPos--) {
                 var parentGrouping = {};
@@ -12237,85 +11985,87 @@ var OlapEngine = /** @__PURE__ @class */ (function () {
                     var header = this.pivotValues[j];
                     var key = void 0;
                     var keys = void 0;
-                    var temp = [];
+                    var arrange = {};
                     var value = 1;
                     grandTotal[index] = [];
                     temporary[index] = [];
                     var k = 1;
                     for (k = k; k < header.length; k++) {
-                        if (header[k].memberType != 2 && header[k].actualText.split(".")[0]
-                            != '[Measures]' && header[k].level != -1) {
-                            isNullOrUndefined(temp[header[k].formattedText]) ?
-                                temp[header[k].formattedText] = [] : temp[k];
-                            temp[header[k].formattedText][header[k].colIndex] = header[k];
-                        }
-                        else if (Object.keys(temp).length > 0) {
-                            grandTotal[index][grandTotal[index].length + value] = header[k];
-                            key = Object.keys(temp);
-                            /* tslint:disable:typedef */
-                            key = this.sortColumnHeaders(key, this.sortObject[header[k].levelUniqueName] ||
-                                this.sortObject[header[k].hierarchy]);
-                            isNullOrUndefined(temporary[index]) ? temporary[index] = [] : temporary[index];
-                            for (var l = 0; l < key.length; l++) {
-                                var length_1 = Object.keys(temp[key[l]]).length;
-                                for (var q = 0; q < length_1; q++) {
-                                    value = temporary[index].length == 0 ? 1 : 0;
-                                    temporary[index][temporary[index].length + value] =
-                                        temp[key[l]][Object.keys(temp[key[l]])[q]];
+                        if (!header[k].isNamedSet) {
+                            if (header[k].memberType != 2 && header[k].hierarchy
+                                != '[Measures]' && header[k].level != -1) {
+                                isNullOrUndefined(arrange[header[k].formattedText]) ?
+                                    arrange[header[k].formattedText] = [] : arrange[k];
+                                arrange[header[k].formattedText][header[k].colIndex] = header[k];
+                            }
+                            else if (Object.keys(arrange).length > 0) {
+                                grandTotal[index][grandTotal[index].length + value] = header[k];
+                                key = Object.keys(arrange);
+                                /* tslint:disable:typedef */
+                                key = this.sortColumnHeaders(key, this.sortObject[header[k - 1].levelUniqueName] ||
+                                    this.sortObject[header[k].hierarchy]);
+                                isNullOrUndefined(temporary[index]) ? temporary[index] = [] : temporary[index];
+                                for (var l = 0; l < key.length; l++) {
+                                    var length_1 = Object.keys(arrange[key[l]]).length;
+                                    for (var q = 0; q < length_1; q++) {
+                                        value = temporary[index].length == 0 ? 1 : 0;
+                                        temporary[index][temporary[index].length + value] =
+                                            arrange[key[l]][Number(Object.keys(arrange[key[l]])[q])];
+                                    }
                                 }
                             }
-                        }
-                        else if (header[k].level === -1 && Object.keys(temp).length >= 0 &&
-                            header[k].actualText.split(".")[0] != '[Measures]') {
-                            grandTotal[index][grandTotal[index].length + value] = header[k];
-                        }
-                        if (header[k].level != -1 && Object.keys(temp).length === 1 &&
-                            header[k].actualText.split(".")[0] !=
-                                '[Measures]' && !isNullOrUndefined(header[k + 1]) && header[k + 1].level === -1) {
-                            var height = Object.keys(temp[header[k].formattedText]).length;
-                            var weight = Object.keys(temp[header[k].formattedText]);
-                            if (height > 1) {
-                                for (var hgt = 0; hgt < height; hgt++) {
-                                    value = grandTotal[index].length == 0 ? 1 : 0;
-                                    grandTotal[index][grandTotal[index].length + value] =
-                                        temp[header[k].formattedText][weight[hgt]];
-                                }
-                            }
-                            else {
+                            else if ((header[k].level === -1 || header[k].level === 0) &&
+                                Object.keys(arrange).length >= 0 && header[k].hierarchy != '[Measures]') {
                                 grandTotal[index][grandTotal[index].length + value] = header[k];
                             }
-                        }
-                        if (Object.keys(grandTotal[index]).length > 0) {
-                            value = temporary[index].length == 0 ? 1 : 0;
-                            var height1 = grandTotal[index].length;
-                            if (height1 > 2) {
-                                for (var hgt1 = 1; hgt1 < height1; hgt1++) {
-                                    value = temporary[index].length == 0 ? 1 : 0;
-                                    temporary[index][temporary[index].length + value] =
-                                        grandTotal[index][hgt1];
+                            if (header[k].level != -1 && Object.keys(arrange).length === 1 &&
+                                header[k].hierarchy != '[Measures]' && !isNullOrUndefined(header[k + 1]) &&
+                                header[k + 1].level === -1) {
+                                var height = Object.keys(arrange[header[k].formattedText]).length;
+                                var weight = Object.keys(arrange[header[k].formattedText]);
+                                if (height > 1) {
+                                    for (var hgt = 0; hgt < height; hgt++) {
+                                        value = grandTotal[index].length == 0 ? 1 : 0;
+                                        grandTotal[index][grandTotal[index].length + value] =
+                                            arrange[header[k].formattedText][Number(weight[hgt])];
+                                    }
+                                }
+                                else {
+                                    grandTotal[index][grandTotal[index].length + value] = header[k];
                                 }
                             }
-                            else {
-                                temporary[index][temporary[index].length + value] =
-                                    grandTotal[index][1] || grandTotal[index][0];
+                            if (Object.keys(grandTotal[index]).length > 0) {
+                                value = temporary[index].length == 0 ? 1 : 0;
+                                var height1 = grandTotal[index].length;
+                                if (height1 > 2) {
+                                    for (var hgt1 = 1; hgt1 < height1; hgt1++) {
+                                        value = temporary[index].length == 0 ? 1 : 0;
+                                        temporary[index][temporary[index].length + value] =
+                                            grandTotal[index][hgt1];
+                                    }
+                                }
+                                else {
+                                    temporary[index][temporary[index].length + value] =
+                                        grandTotal[index][1] || grandTotal[index][0];
+                                }
+                                arrange = {};
+                                grandTotal[index] = [];
                             }
-                            temp = {};
-                            grandTotal[index] = [];
                         }
                     }
-                    if (Object.keys(temp).length > 0) {
+                    if (Object.keys(arrange).length > 0) {
                         grandTotal[index][grandTotal[index].length + value] = header[k];
-                        keys = Object.keys(temp);
+                        keys = Object.keys(arrange);
                         /* tslint:disable:typedef */
-                        var order = this.sortObject[header[k].levelUniqueName] || this.sortObject[header[k].hierarchy];
-                        key = this.sortColumnHeaders(key, order);
+                        var order = this.sortObject[header[k - 1].levelUniqueName] || this.sortObject[header[k - 1].hierarchy];
+                        key = this.sortColumnHeaders(keys, order);
                         isNullOrUndefined(temporary[index]) ? temporary[index] = [] : temporary[index];
                         for (var len = 0; len < keys.length; len++) {
-                            var leng = Object.keys(temp[keys[len]]).length;
+                            var leng = Object.keys(arrange[keys[len]]).length;
                             for (var q = 0; q < leng; q++) {
                                 value = temporary[index].length == 0 ? 1 : 0;
                                 temporary[index][temporary[index].length + value] =
-                                    temp[key[len]][Object.keys(temp[keys[len]])[q]];
+                                    arrange[key[len]][Number(Object.keys(arrange[keys[len]])[q])];
                             }
                         }
                     }
@@ -12336,7 +12086,7 @@ var OlapEngine = /** @__PURE__ @class */ (function () {
                         }
                     }
                     index++;
-                    temp = {};
+                    arrange = {};
                 }
                 for (var i_1 = 0; i_1 < this.pivotValues.length; i_1++) {
                     var header = this.pivotValues[i_1];
@@ -12356,7 +12106,7 @@ var OlapEngine = /** @__PURE__ @class */ (function () {
         return uniqueName;
     };
     OlapEngine.prototype.sortRowHeaders = function (headers) {
-        if (headers.length > 0 && headers[0].memberType !== 3) {
+        if (headers.length > 0 && headers[0].memberType !== 3 && !headers[0].isNamedSet) {
             var order = (this.sortObject[headers[0].hierarchy] || this.sortObject[headers[0].levelUniqueName]);
             if (order === 'Ascending' || order === undefined) {
                 headers == headers.sort(function (a, b) { return (a.formattedText > b.formattedText) ? 1 :
@@ -12443,10 +12193,12 @@ var OlapEngine = /** @__PURE__ @class */ (function () {
                 var isSubTot = tupColInfo.allStartPos > (tupColInfo.typeCollection[0] === '3' ? 1 : 0);
                 if (nextRowCell && nextColCell && ((currCell.memberType === 2 || currCell.level === -1) ?
                     (nextColCell.actualText === currCell.actualText) :
-                    (nextColCell.valueSort.levelName === currCell.valueSort.levelName))) {
+                    ((currCell.memberType === 3 && currCell.actualText === nextColCell.actualText) ||
+                        nextColCell.valueSort.levelName === currCell.valueSort.levelName))) {
                     if (currCell.memberType === 2) {
                         if (isSubTot ? nextColCell.type === 'sum' : true) {
-                            currCell.colSpan = (nextColCell.colSpan + 1) > colMeasureCount ? 1 : (nextColCell.colSpan + 1);
+                            currCell.colSpan = (nextColCell.colSpan + 1) >
+                                (tupColInfo.measurePosition > rowPos ? colMeasureCount : 0) ? 1 : (nextColCell.colSpan + 1);
                         }
                         else {
                             currCell.colSpan = 1;
@@ -12470,7 +12222,7 @@ var OlapEngine = /** @__PURE__ @class */ (function () {
                     else {
                         var levelName = 'Grand Total';
                         if (nextRowCell && colMeasureCount > 0) {
-                            levelName = nextRowCell.memberType === 3 ? ('Grand Total.' + nextRowCell.actualText) :
+                            levelName = nextRowCell.memberType === 3 ? ('Grand Total.' + nextRowCell.formattedText) :
                                 nextRowCell.valueSort.levelName;
                         }
                         currCell.type = 'grand sum';
@@ -12551,8 +12303,6 @@ var OlapEngine = /** @__PURE__ @class */ (function () {
             var rowOrdinal = columns[0].ordinal;
             for (var colPos = 1; colPos < this.pivotValues[0].length; colPos++) {
                 var colOrdinal = this.pivotValues[this.colDepth - 1][colPos].ordinal;
-                var isSum = columns[0].hasChild || columns[0].hasChild ||
-                    columns[0].type === 'grand sum' || columns[0].type === 'grand sum';
                 var lastColCell = this.pivotValues[this.colDepth - 1][colPos];
                 var measure = columns[0].memberType === 3 ? columns[0].actualText.toString() :
                     ((this.tupColumnInfo[lastColCell.ordinal] && this.tupColumnInfo[lastColCell.ordinal].measure) ?
@@ -12591,8 +12341,10 @@ var OlapEngine = /** @__PURE__ @class */ (function () {
                     formattedText = showTotals && !isNullOrUndefined(value) ?
                         this.getFormattedValue(Number(value), measureName, (formattedText !== '' ? formattedText : value)) :
                         formattedText;
-                    var isSum_1 = (this.tupColumnInfo[colOrdinal] ? this.tupColumnInfo[colOrdinal].allCount > 0 : true) ||
-                        (this.tupRowInfo[rowOrdinal] ? this.tupRowInfo[rowOrdinal].allCount > 0 : true);
+                    var isSum = (this.tupColumnInfo[colOrdinal] ? (this.tupColumnInfo[colOrdinal].allCount > 0 ||
+                        this.tupColumnInfo[colOrdinal].drillStartPos > -1) : true) ||
+                        (this.tupRowInfo[rowOrdinal] ? (this.tupRowInfo[rowOrdinal].allCount > 0 ||
+                            this.tupRowInfo[rowOrdinal].drillStartPos > -1) : true);
                     columns[colPos] = {
                         axis: 'value',
                         actualText: measureName,
@@ -12604,7 +12356,7 @@ var OlapEngine = /** @__PURE__ @class */ (function () {
                         value: !isNullOrUndefined(value) ? Number(value) : null,
                         colIndex: colPos,
                         rowIndex: rowPos,
-                        isSum: isSum_1
+                        isSum: isSum
                     };
                 }
                 this.valueContent[rowPos - this.rowStartPos][colPos] = columns[colPos];
@@ -12956,7 +12708,9 @@ var OlapEngine = /** @__PURE__ @class */ (function () {
                     this.savedFieldListData[i].isSelected = false;
                 }
             }
-            if (this.savedFieldList[fieldName] && this.savedFieldList[fieldName].isCalculatedField) {
+            if ((this.savedFieldList[fieldName] && this.savedFieldList[fieldName].isCalculatedField) ||
+                fieldName.toLowerCase() === '[calculated members].[_0]') {
+                var isAvail = false;
                 for (var _i = 0, _a = this.calculatedFieldSettings; _i < _a.length; _i++) {
                     var field = _a[_i];
                     if (fieldName === field.name) {
@@ -12969,6 +12723,15 @@ var OlapEngine = /** @__PURE__ @class */ (function () {
                         this.savedFieldList[fieldName].formula = expression;
                         this.savedFieldList[fieldName].formatString = formatString;
                         this.savedFieldList[fieldName].parentHierarchy = this.savedFieldListData[i].parentHierarchy;
+                        isAvail = true;
+                    }
+                }
+                if (!isAvail || (fieldName.toLowerCase() === '[calculated members].[_0]' &&
+                    this.calculatedFieldSettings.length === 0)) {
+                    this.savedFieldListData.splice(i, 1);
+                    i--;
+                    if (this.savedFieldList[fieldName]) {
+                        delete this.savedFieldList[fieldName];
                     }
                 }
             }
@@ -13205,7 +12968,7 @@ var OlapEngine = /** @__PURE__ @class */ (function () {
     // { dataSourceSettings: dataSourceSettings, action: 'fetchAllMembers' });
     // }
     /**
-     * @hidden
+
      */
     OlapEngine.prototype.getDrillThroughData = function (pivotValue, maxRows) {
         var column = this.tupColumnInfo[pivotValue.colOrdinal] &&
@@ -14279,21 +14042,13 @@ var PivotView = /** @__PURE__ @class */ (function (_super) {
      */
     function PivotView(options, element) {
         var _this_1 = _super.call(this, options, element) || this;
-        /** @hidden */
         _this_1.verticalScrollScale = 1;
-        /** @hidden */
         _this_1.horizontalScrollScale = 1;
-        /** @hidden */
         _this_1.scrollerBrowserLimit = 500000;
-        /** @hidden */
         _this_1.lastSortInfo = {};
-        /** @hidden */
         _this_1.lastFilterInfo = {};
-        /** @hidden */
         _this_1.lastAggregationInfo = {};
-        /** @hidden */
         _this_1.lastCalcFieldInfo = {};
-        /** @hidden */
         _this_1.isScrolling = false;
         _this_1.shiftLockedPos = [];
         _this_1.savedSelectedCellsPos = [];
@@ -14303,26 +14058,17 @@ var PivotView = /** @__PURE__ @class */ (function (_super) {
         _this_1.fieldsType = {};
         _this_1.defaultItems = {};
         _this_1.isCellBoxMultiSelection = false;
-        /** @hidden */
         _this_1.gridHeaderCellInfo = [];
-        /** @hidden */
         _this_1.gridCellCollection = {};
-        /** @hidden */
         _this_1.rowRangeSelection = { enable: false, startIndex: 0, endIndex: 0 };
-        /** @hidden */
         _this_1.resizeInfo = {};
-        /** @hidden */
         _this_1.scrollPosObject = {
             vertical: 0, horizontal: 0, verticalSection: 0,
             horizontalSection: 0, top: 0, left: 0, scrollDirection: { direction: '', position: 0 }
         };
-        /** @hidden */
         _this_1.pivotColumns = [];
-        /** @hidden */
         _this_1.totColWidth = 0;
-        /** @hidden */
         _this_1.posCount = 0;
-        /** @hidden */
         _this_1.isModified = false;
         _this_1.needsID = true;
         _this_1.pivotRefresh = Component.prototype.refresh;
@@ -14333,7 +14079,7 @@ var PivotView = /** @__PURE__ @class */ (function (_super) {
     /**
      * To provide the array of modules needed for control rendering
      * @return {ModuleDeclaration[]}
-     * @hidden
+
      */
     PivotView.prototype.requiredModules = function () {
         var modules = [];
@@ -14646,7 +14392,6 @@ var PivotView = /** @__PURE__ @class */ (function (_super) {
             this.tooltip.destroy();
         }
     };
-    /** @hidden */
     PivotView.prototype.renderContextMenu = function () {
         if (this.gridSettings.contextMenuItems) {
             var conmenuItems = [];
@@ -14840,7 +14585,7 @@ var PivotView = /** @__PURE__ @class */ (function (_super) {
             this.displayOption.primary : this.displayOption.view);
     };
     /**
-     * @hidden
+
      */
     PivotView.prototype.updatePageSettings = function (isInit) {
         if (this.enableVirtualization) {
@@ -14870,7 +14615,7 @@ var PivotView = /** @__PURE__ @class */ (function (_super) {
     /**
      * Initialize the control rendering
      * @returns void
-     * @hidden
+
      */
     PivotView.prototype.render = function () {
         var _this_1 = this;
@@ -14907,7 +14652,7 @@ var PivotView = /** @__PURE__ @class */ (function (_super) {
     /**
      * Register the internal events.
      * @returns void
-     * @hidden
+
      */
     PivotView.prototype.addInternalEvents = function () {
         this.on(initialLoad, this.generateData, this);
@@ -14917,7 +14662,7 @@ var PivotView = /** @__PURE__ @class */ (function (_super) {
     /**
      * De-Register the internal events.
      * @returns void
-     * @hidden
+
      */
     PivotView.prototype.removeInternalEvents = function () {
         this.off(initialLoad, this.generateData);
@@ -14938,18 +14683,43 @@ var PivotView = /** @__PURE__ @class */ (function (_super) {
      * @returns {void}
      */
     PivotView.prototype.loadPersistData = function (persistData) {
-        var pivotData = JSON.parse(persistData);
+        var pivotData;
+        /* tslint:disable */
+        if (isBlazor()) {
+            pivotData = persistData;
+            pivotData.dataSourceSettings.dataSource = this.dataSourceSettings.dataSource;
+        }
+        else {
+            pivotData = JSON.parse(persistData);
+        }
         this.setProperties({
             gridSettings: pivotData.gridSettings,
             pivotValues: pivotData.pivotValues,
             chartSettings: pivotData.chartSettings
         }, true);
+        /* tslint:enable */
         this.dataSourceSettings = pivotData.dataSourceSettings;
+    };
+    /**
+     * Method to open conditional formatting dialog
+     */
+    PivotView.prototype.showConditionalFormattingDialog = function () {
+        if (this.conditionalFormattingModule) {
+            this.conditionalFormattingModule.showConditionalFormattingDialog();
+        }
+    };
+    /**
+     * Method to open calculated field dialog
+     */
+    PivotView.prototype.createCalculatedFieldDialog = function () {
+        if (this.calculatedFieldModule) {
+            this.calculatedFieldModule.createCalculatedFieldDialog();
+        }
     };
     /**
      * It returns the Module name.
      * @returns string
-     * @hidden
+
      */
     PivotView.prototype.getModuleName = function () {
         return 'pivotview';
@@ -14958,7 +14728,7 @@ var PivotView = /** @__PURE__ @class */ (function (_super) {
      * Copy the selected rows or cells data into clipboard.
      * @param {boolean} withHeader - Specifies whether the column header text needs to be copied along with rows or cells.
      * @returns {void}
-     * @hidden
+
      */
     PivotView.prototype.copy = function (withHeader) {
         this.grid.copy(withHeader);
@@ -14968,7 +14738,7 @@ var PivotView = /** @__PURE__ @class */ (function (_super) {
      * > You can customize print options using the
      * [`printMode`](./api-pivotgrid.html#printmode-string).
      * @returns {void}
-     * @hidden
+
      */
     // public print(): void {
     //     this.grid.print();
@@ -14976,7 +14746,7 @@ var PivotView = /** @__PURE__ @class */ (function (_super) {
     /**
      * Called internally if any of the property value changed.
      * @returns void
-     * @hidden
+
      */
     PivotView.prototype.onPropertyChanged = function (newProp, oldProp) {
         for (var _i = 0, _a = Object.keys(newProp); _i < _a.length; _i++) {
@@ -15005,6 +14775,33 @@ var PivotView = /** @__PURE__ @class */ (function (_super) {
                 case 'displayOption':
                 case 'height':
                 case 'width':
+                    if (!this.showToolbar && newProp.displayOption && Object.keys(newProp.displayOption).length === 1 &&
+                        newProp.displayOption.view) {
+                        this.currentView = (newProp.displayOption.view === 'Both' ?
+                            this.displayOption.primary : newProp.displayOption.view);
+                        if (this.showGroupingBar || this.showFieldList) {
+                            if (this.showFieldList && this.pivotFieldListModule) {
+                                this.pivotFieldListModule.destroy();
+                            }
+                            if (this.showGroupingBar && this.groupingBarModule) {
+                                this.groupingBarModule.destroy();
+                            }
+                            this.notify(initSubComponent, this);
+                        }
+                        if (!this.grid && newProp.displayOption.view !== 'Chart') {
+                            this.renderEmptyGrid();
+                            if (newProp.displayOption.view === 'Table') {
+                                if (this.chartModule) {
+                                    this.chartModule.destroy();
+                                    this.chart = undefined;
+                                    this.chartModule = undefined;
+                                }
+                            }
+                        }
+                        else if (!this.chartModule && this.displayOption.view !== 'Table') {
+                            this.chartModule = new PivotChart();
+                        }
+                    }
                     this.notify(dataReady, {});
                     break;
                 case 'gridSettings':
@@ -15069,7 +14866,7 @@ var PivotView = /** @__PURE__ @class */ (function (_super) {
     /**
      * Render the UI section of PivotView.
      * @returns void
-     * @hidden
+
      */
     PivotView.prototype.renderPivotGrid = function () {
         if (this.currentView === 'Table') {
@@ -15121,6 +14918,14 @@ var PivotView = /** @__PURE__ @class */ (function (_super) {
         }
         if (this.showToolbar) {
             if (this.displayOption.view === 'Both' && this.chart && this.grid) {
+                if (this.showGroupingBar && this.groupingBarModule && this.element.querySelector('.' + GROUPING_BAR_CLASS)) {
+                    this.groupingBarModule.refreshUI();
+                }
+                if (this.toolbarModule && this.toolbarModule.toolbar) {
+                    this.toolbarModule.toolbar.width = this.getGridWidthAsNumber() - 2;
+                }
+                this.chart.element.style.width = formatUnit(this.getGridWidthAsNumber());
+                this.chart.width = formatUnit(this.getGridWidthAsNumber());
                 if (this.currentView === 'Table') {
                     this.grid.element.style.display = '';
                     this.chart.element.style.display = 'none';
@@ -15144,11 +14949,12 @@ var PivotView = /** @__PURE__ @class */ (function (_super) {
             }
         }
     };
+    /* tslint:disable:max-func-body-length */
     /**
      * Updates the PivotEngine using dataSource from Pivot View component.
      * @method updateDataSource
      * @return {void}
-     * @hidden
+
      */
     PivotView.prototype.updateDataSource = function (isRefreshGrid) {
         showSpinner(this.element);
@@ -15159,88 +14965,101 @@ var PivotView = /** @__PURE__ @class */ (function (_super) {
         var isFiltered = Object.keys(pivot.lastFilterInfo).length > 0 ? true : false;
         var isAggChange = Object.keys(pivot.lastAggregationInfo).length > 0 ? true : false;
         var isCalcChange = Object.keys(pivot.lastCalcFieldInfo).length > 0 ? true : false;
-        pivot.updatePageSettings(false);
-        if (pivot.dataType === 'pivot' && pivot.enableVirtualization && (isSorted || isFiltered || isAggChange || isCalcChange)) {
-            if (isSorted) {
-                pivot.setProperties({ dataSourceSettings: { valueSortSettings: { headerText: '' } } }, true);
-                pivot.engineModule.onSort(pivot.lastSortInfo);
-                pivot.lastSortInfo = {};
+        var args = {
+            dataSourceSettings: PivotUtil.getClonedDataSourceSettings(pivot.dataSourceSettings)
+        };
+        pivot.trigger(enginePopulating, args, function (observedArgs) {
+            if (!(pivot.enableVirtualization && (isSorted || isFiltered || isAggChange || isCalcChange))) {
+                PivotUtil.updateDataSourceSettings(pivot, observedArgs.dataSourceSettings);
             }
-            if (isAggChange) {
-                pivot.engineModule.onAggregation(pivot.lastAggregationInfo);
-                pivot.lastAggregationInfo = {};
+            pivot.updatePageSettings(false);
+            if (pivot.dataType === 'pivot' && pivot.enableVirtualization && (isSorted || isFiltered || isAggChange || isCalcChange)) {
+                if (isSorted) {
+                    pivot.setProperties({ dataSourceSettings: { valueSortSettings: { headerText: '' } } }, true);
+                    pivot.engineModule.onSort(pivot.lastSortInfo);
+                    pivot.lastSortInfo = {};
+                }
+                if (isAggChange) {
+                    pivot.engineModule.onAggregation(pivot.lastAggregationInfo);
+                    pivot.lastAggregationInfo = {};
+                }
+                if (isCalcChange) {
+                    pivot.engineModule.onCalcOperation(pivot.lastCalcFieldInfo);
+                    pivot.lastCalcFieldInfo = {};
+                }
+                if (isFiltered) {
+                    pivot.engineModule.onFilter(pivot.lastFilterInfo, pivot.dataSourceSettings);
+                    pivot.lastFilterInfo = {};
+                }
+                pivot.setProperties({ pivotValues: pivot.engineModule.pivotValues }, true);
             }
-            if (isCalcChange) {
-                pivot.engineModule.onCalcOperation(pivot.lastCalcFieldInfo);
-                pivot.lastCalcFieldInfo = {};
-            }
-            if (isFiltered) {
-                pivot.engineModule.onFilter(pivot.lastFilterInfo, pivot.dataSourceSettings);
-                pivot.lastFilterInfo = {};
-            }
-            pivot.setProperties({ pivotValues: pivot.engineModule.pivotValues }, true);
-        }
-        else {
-            if (pivot.dataType === 'olap') {
-                /* tslint:disable:align */
-                var customProperties = {
-                    mode: '',
-                    savedFieldList: pivot.olapEngineModule.fieldList,
-                    savedFieldListData: pivot.olapEngineModule.fieldListData,
-                    pageSettings: pivot.pageSettings,
-                    enableValueSorting: pivot.enableValueSorting,
-                    isDrillThrough: (pivot.allowDrillThrough || pivot.editSettings.allowEditing),
-                    localeObj: pivot.localeObj
-                };
-                if (isCalcChange || isSorted) {
-                    pivot.olapEngineModule.savedFieldList = pivot.olapEngineModule.fieldList;
-                    pivot.olapEngineModule.savedFieldListData = pivot.olapEngineModule.fieldListData;
-                    if (isCalcChange) {
-                        pivot.olapEngineModule.updateCalcFields(pivot.dataSourceSettings, pivot.lastCalcFieldInfo);
-                        pivot.lastCalcFieldInfo = {};
+            else {
+                if (pivot.dataType === 'olap') {
+                    /* tslint:disable:align */
+                    var customProperties = {
+                        mode: '',
+                        savedFieldList: pivot.olapEngineModule.fieldList,
+                        savedFieldListData: pivot.olapEngineModule.fieldListData,
+                        pageSettings: pivot.pageSettings,
+                        enableValueSorting: pivot.enableValueSorting,
+                        isDrillThrough: (pivot.allowDrillThrough || pivot.editSettings.allowEditing),
+                        localeObj: pivot.localeObj
+                    };
+                    if (isCalcChange || isSorted) {
+                        pivot.olapEngineModule.savedFieldList = pivot.olapEngineModule.fieldList;
+                        pivot.olapEngineModule.savedFieldListData = pivot.olapEngineModule.fieldListData;
+                        if (isCalcChange) {
+                            pivot.olapEngineModule.updateCalcFields(pivot.dataSourceSettings, pivot.lastCalcFieldInfo);
+                            pivot.lastCalcFieldInfo = {};
+                        }
+                        else {
+                            pivot.olapEngineModule.onSort(pivot.dataSourceSettings);
+                            pivot.lastSortInfo = {};
+                        }
                     }
                     else {
-                        pivot.olapEngineModule.onSort(pivot.dataSourceSettings);
-                        pivot.lastSortInfo = {};
+                        pivot.olapEngineModule.renderEngine(pivot.dataSourceSettings, customProperties);
                     }
+                    pivot.setProperties({ pivotValues: pivot.olapEngineModule.pivotValues }, true);
                 }
                 else {
-                    pivot.olapEngineModule.renderEngine(pivot.dataSourceSettings, customProperties);
+                    /* tslint:disable:align */
+                    var customProperties = {
+                        mode: '',
+                        savedFieldList: pivot.engineModule.fieldList,
+                        pageSettings: pivot.pageSettings,
+                        enableValueSorting: pivot.enableValueSorting,
+                        isDrillThrough: (pivot.allowDrillThrough || pivot.editSettings.allowEditing),
+                        localeObj: pivot.localeObj,
+                        fieldsType: pivot.fieldsType
+                    };
+                    pivot.engineModule.renderEngine(pivot.dataSourceSettings, customProperties, pivot.getValueCellInfo.bind(pivot));
+                    pivot.setProperties({ pivotValues: pivot.engineModule.pivotValues }, true);
                 }
-                pivot.setProperties({ pivotValues: pivot.olapEngineModule.pivotValues }, true);
             }
-            else {
-                /* tslint:disable:align */
-                var customProperties = {
-                    mode: '',
-                    savedFieldList: pivot.engineModule.fieldList,
-                    pageSettings: pivot.pageSettings,
-                    enableValueSorting: pivot.enableValueSorting,
-                    isDrillThrough: (pivot.allowDrillThrough || pivot.editSettings.allowEditing),
-                    localeObj: pivot.localeObj,
-                    fieldsType: pivot.fieldsType
-                };
-                pivot.engineModule.renderEngine(pivot.dataSourceSettings, customProperties, pivot.getValueCellInfo.bind(pivot));
-                pivot.setProperties({ pivotValues: pivot.engineModule.pivotValues }, true);
-            }
-        }
-        var eventArgs = {
-            dataSourceSettings: pivot.dataSourceSettings,
-            pivotValues: isBlazor() ? pivot.engineModule.pivotValues : pivot.pivotValues
-        };
-        pivot.trigger(enginePopulated, eventArgs, function (observedArgs) {
-            pivot.dataSourceSettings = observedArgs.dataSourceSettings;
-            if (pivot.dataType === 'olap') {
-                pivot.olapEngineModule.pivotValues = observedArgs.pivotValues;
-                pivot.setProperties({ pivotValues: pivot.olapEngineModule.pivotValues }, true);
-            }
-            else {
-                pivot.engineModule.pivotValues = observedArgs.pivotValues;
-                pivot.setProperties({ pivotValues: pivot.engineModule.pivotValues }, true);
-            }
-            pivot.pivotCommon.engineModule = pivot.dataType === 'olap' ? pivot.olapEngineModule : pivot.engineModule;
-            pivot.pivotCommon.dataSourceSettings = pivot.dataSourceSettings;
-            pivot.renderPivotGrid();
+            var eventArgs = {
+                dataSourceSettings: pivot.dataSourceSettings,
+                pivotValues: isBlazor() ? pivot.dataType === 'olap' ? pivot.olapEngineModule.pivotValues :
+                    pivot.engineModule.pivotValues : pivot.pivotValues
+            };
+            pivot.trigger(enginePopulated, eventArgs, function (observedArgs) {
+                var dataSource = pivot.dataSourceSettings.dataSource;
+                if (isBlazor() && observedArgs.dataSourceSettings.dataSource instanceof Object) {
+                    observedArgs.dataSourceSettings.dataSource = dataSource;
+                }
+                pivot.dataSourceSettings = observedArgs.dataSourceSettings;
+                if (pivot.dataType === 'olap') {
+                    pivot.olapEngineModule.pivotValues = isBlazor() ? pivot.olapEngineModule.pivotValues : observedArgs.pivotValues;
+                    pivot.setProperties({ pivotValues: pivot.olapEngineModule.pivotValues }, true);
+                }
+                else {
+                    pivot.engineModule.pivotValues = isBlazor() ? pivot.engineModule.pivotValues : observedArgs.pivotValues;
+                    pivot.setProperties({ pivotValues: pivot.engineModule.pivotValues }, true);
+                }
+                pivot.pivotCommon.engineModule = pivot.dataType === 'olap' ? pivot.olapEngineModule : pivot.engineModule;
+                pivot.pivotCommon.dataSourceSettings = pivot.dataSourceSettings;
+                pivot.renderPivotGrid();
+            });
         });
         //});
     };
@@ -15315,7 +15134,6 @@ var PivotView = /** @__PURE__ @class */ (function (_super) {
             this.chart.print();
         }
     };
-    /** @hidden */
     /* tslint:disable:max-func-body-length */
     PivotView.prototype.onDrill = function (target, chartDrillInfo) {
         var delimiter = (this.dataSourceSettings.drilledMembers[0] && this.dataSourceSettings.drilledMembers[0].delimiter) ?
@@ -15858,7 +15676,6 @@ var PivotView = /** @__PURE__ @class */ (function (_super) {
             }
         }
     };
-    /** @hidden */
     PivotView.prototype.setGridColumns = function (gridcolumns) {
         if (this.element.offsetWidth < this.totColWidth) {
             for (var _i = 0, gridcolumns_2 = gridcolumns; _i < gridcolumns_2.length; _i++) {
@@ -15898,7 +15715,6 @@ var PivotView = /** @__PURE__ @class */ (function (_super) {
             /* tslint:enable */
         }
     };
-    /** @hidden */
     PivotView.prototype.fillGridColumns = function (gridcolumns) {
         for (var _i = 0, gridcolumns_3 = gridcolumns; _i < gridcolumns_3.length; _i++) {
             var column = gridcolumns_3[_i];
@@ -15910,7 +15726,6 @@ var PivotView = /** @__PURE__ @class */ (function (_super) {
             }
         }
     };
-    /** @hidden */
     PivotView.prototype.triggerColumnRenderEvent = function (gridcolumns) {
         this.pivotColumns = [];
         this.totColWidth = 0;
@@ -15927,7 +15742,6 @@ var PivotView = /** @__PURE__ @class */ (function (_super) {
         this.posCount = 0;
         this.setGridColumns(gridcolumns);
     };
-    /** @hidden */
     PivotView.prototype.setCommonColumnsWidth = function (columns, width) {
         for (var _i = 0, columns_1 = columns; _i < columns_1.length; _i++) {
             var column = columns_1[_i];
@@ -15949,7 +15763,6 @@ var PivotView = /** @__PURE__ @class */ (function (_super) {
             }
         }
     };
-    /** @hidden */
     PivotView.prototype.getHeightAsNumber = function () {
         var height;
         if (isNaN(this.height)) {
@@ -15968,7 +15781,6 @@ var PivotView = /** @__PURE__ @class */ (function (_super) {
         }
         return height;
     };
-    /** @hidden */
     PivotView.prototype.getWidthAsNumber = function () {
         var width;
         if (isNaN(this.width)) {
@@ -15990,7 +15802,6 @@ var PivotView = /** @__PURE__ @class */ (function (_super) {
         }
         return width;
     };
-    /** @hidden */
     PivotView.prototype.getGridWidthAsNumber = function () {
         var width;
         if (isNaN(this.grid.width)) {
@@ -16009,7 +15820,6 @@ var PivotView = /** @__PURE__ @class */ (function (_super) {
         }
         return width;
     };
-    /** @hidden */
     PivotView.prototype.onWindowResize = function () {
         /* tslint:disable */
         clearTimeout(this.timeOutObj);
@@ -16017,7 +15827,7 @@ var PivotView = /** @__PURE__ @class */ (function (_super) {
         /* tslint:enable */
     };
     /**
-     * Refreshes the Pivot Table for blazor layourRefresh is called for other base refresh is called
+     * Refreshes the Pivot Table for blazor layoutRefresh is called for other base refresh is called
      */
     PivotView.prototype.refresh = function () {
         if (isBlazor()) {
@@ -16027,7 +15837,6 @@ var PivotView = /** @__PURE__ @class */ (function (_super) {
             this.pivotRefresh();
         }
     };
-    /** @hidden */
     PivotView.prototype.layoutRefresh = function () {
         if (this.element && this.element.classList.contains('e-pivotview') &&
             (this.dataType === 'olap' ? (this.olapEngineModule && this.olapEngineModule.pivotValues) :
@@ -16055,12 +15864,16 @@ var PivotView = /** @__PURE__ @class */ (function (_super) {
                     this.groupingBarModule.setGridRowWidth();
                 }
             }
-            if (this.showToolbar && this.toolbarModule) {
+            if (this.showToolbar && this.toolbarModule && this.toolbarModule.toolbar) {
                 this.toolbarModule.toolbar.width = this.grid ? (this.getGridWidthAsNumber() - 2) : (this.getWidthAsNumber() - 2);
             }
             if (this.chart) {
                 this.chart.width = (this.showToolbar && this.grid) ? this.getGridWidthAsNumber().toString() :
                     this.getWidthAsNumber().toString();
+                if (this.displayOption.view === 'Chart' && this.showGroupingBar && this.groupingBarModule &&
+                    this.element.querySelector('.' + CHART_GROUPING_BAR_CLASS)) {
+                    this.groupingBarModule.refreshUI();
+                }
             }
         }
     };
@@ -16123,7 +15936,6 @@ var PivotView = /** @__PURE__ @class */ (function (_super) {
             });
         }
     };
-    /** @hidden */
     PivotView.prototype.clearSelection = function (ele, e, colIndex, rowIndex) {
         if ((!e.shiftKey && !e.ctrlKey) || this.gridSettings.selectionSettings.type === 'Single') {
             if (this.gridSettings.selectionSettings.mode === 'Cell') {
@@ -16156,7 +15968,6 @@ var PivotView = /** @__PURE__ @class */ (function (_super) {
             }
         }
     };
-    /** @hidden */
     PivotView.prototype.applyRowSelection = function (colIndex, rowIndex, e) {
         var pivotValue = this.engineModule.pivotValues[rowIndex][colIndex];
         if (!e.ctrlKey && !e.shiftKey && pivotValue && pivotValue.members && pivotValue.members.length > 0) {
@@ -16180,7 +15991,6 @@ var PivotView = /** @__PURE__ @class */ (function (_super) {
             }
         }
     };
-    /** @hidden */
     PivotView.prototype.applyColumnSelection = function (e, target, colStart, colEnd, rowStart) {
         if (!target.classList.contains(ROWSHEADER) &&
             (this.gridSettings.selectionSettings.mode === 'Cell' ? target.classList.contains(COLUMNSHEADER) : true)) {
@@ -16320,8 +16130,11 @@ var PivotView = /** @__PURE__ @class */ (function (_super) {
     /* tslint:disable */
     PivotView.prototype.initEngine = function () {
         var _this_1 = this;
-        this.trigger(enginePopulating, { dataSourceSettings: this.dataSourceSettings }, function (observedArgs) {
-            _this_1.dataSourceSettings = observedArgs.dataSourceSettings;
+        var args = {
+            dataSourceSettings: PivotUtil.getClonedDataSourceSettings(this.dataSourceSettings)
+        };
+        this.trigger(enginePopulating, args, function (observedArgs) {
+            PivotUtil.updateDataSourceSettings(_this_1, observedArgs.dataSourceSettings);
             _this_1.updatePageSettings(false);
             /* tslint:disable:align */
             var customProperties = {
@@ -16345,7 +16158,8 @@ var PivotView = /** @__PURE__ @class */ (function (_super) {
                 _this_1.setProperties({ pivotValues: _this_1.engineModule.pivotValues }, true);
             }
             else if (_this_1.dataSourceSettings.providerType === 'SSAS' && _this_1.dataType === 'olap') {
-                customProperties.savedFieldListData = undefined;
+                customProperties.savedFieldList = _this_1.olapEngineModule.fieldList;
+                customProperties.savedFieldListData = _this_1.olapEngineModule.fieldListData;
                 _this_1.olapEngineModule.renderEngine(_this_1.dataSourceSettings, customProperties);
                 _this_1.setProperties({ pivotValues: _this_1.olapEngineModule.pivotValues }, true);
             }
@@ -16366,9 +16180,6 @@ var PivotView = /** @__PURE__ @class */ (function (_super) {
     };
     /* tslint:enable */
     PivotView.prototype.generateData = function () {
-        if (this.dataType === 'olap') {
-            this.dataSourceSettings.enableSorting = false;
-        }
         if (this.displayOption.view !== 'Chart') {
             this.renderEmptyGrid();
         }
@@ -16405,7 +16216,7 @@ var PivotView = /** @__PURE__ @class */ (function (_super) {
     /**
      * De-Register the internal events.
      * @returns void
-     * @hidden
+
      */
     PivotView.prototype.bindTriggerEvents = function (args) {
         this.trigger(getObject('name', args), args);
@@ -16423,7 +16234,6 @@ var PivotView = /** @__PURE__ @class */ (function (_super) {
         pivot.initEngine();
         //});
     };
-    /** @hidden */
     PivotView.prototype.applyFormatting = function (pivotValues) {
         if (pivotValues) {
             var colIndex = [];
@@ -16923,7 +16733,6 @@ var PivotView = /** @__PURE__ @class */ (function (_super) {
 /**
  * Keyboard interaction
  */
-/** @hidden */
 var CommonKeyboardInteraction = /** @__PURE__ @class */ (function () {
     /**
      * Constructor
@@ -17012,11 +16821,10 @@ var CommonKeyboardInteraction = /** @__PURE__ @class */ (function () {
 /**
  * `EventBase` for active fields action.
  */
-/** @hidden */
 var EventBase = /** @__PURE__ @class */ (function () {
     /**
      * Constructor for the dialog action.
-     * @hidden
+
      */
     function EventBase(parent) {
         this.parent = parent;
@@ -17026,7 +16834,7 @@ var EventBase = /** @__PURE__ @class */ (function () {
      * @method updateSorting
      * @param  {Event} args - Contains clicked element information to update dataSource.
      * @return {void}
-     * @hidden
+
      */
     EventBase.prototype.updateSorting = function (args) {
         if (!(args.target.classList.contains(FILTER_COMMON_CLASS)) &&
@@ -17092,7 +16900,7 @@ var EventBase = /** @__PURE__ @class */ (function () {
      * @method updateFiltering
      * @param  {Event} args - Contains clicked element information to update dataSource.
      * @return {void}
-     * @hidden
+
      */
     EventBase.prototype.updateFiltering = function (args) {
         var target = args.target;
@@ -17180,7 +16988,7 @@ var EventBase = /** @__PURE__ @class */ (function () {
      * @method sortFilterData
      * @param  {{ [key: string]: Object }[]} treeData - Gets filter members for the given field name.
      * @return {{ [key: string]: Object }[]}
-     * @hidden
+
      */
     EventBase.prototype.sortOlapFilterData = function (treeData, order) {
         if (treeData.length > 0) {
@@ -17199,7 +17007,7 @@ var EventBase = /** @__PURE__ @class */ (function () {
      * @method getSortItemByName
      * @param  {string} fieldName - Gets sort settings for the given field name.
      * @return {ISort}
-     * @hidden
+
      */
     EventBase.prototype.getSortItemByName = function (fieldName) {
         var sortObjects = this.parent.dataSourceSettings.sortSettings;
@@ -17210,7 +17018,7 @@ var EventBase = /** @__PURE__ @class */ (function () {
      * @method getFilterItemByName
      * @param  {string} fieldName - Gets filter settings for the given field name.
      * @return {IFilter}
-     * @hidden
+
      */
     EventBase.prototype.getFilterItemByName = function (fieldName) {
         var filterObjects = this.parent.dataSourceSettings.filterSettings;
@@ -17225,7 +17033,7 @@ var EventBase = /** @__PURE__ @class */ (function () {
      * @method getFieldByName
      * @param  {string} fieldName - Gets filter settings for the given field name.
      * @return {Sort}
-     * @hidden
+
      */
     EventBase.prototype.getFieldByName = function (fieldName, fields) {
         return new DataManager({ json: fields }).executeLocal(new Query().where('name', 'equal', fieldName))[0];
@@ -17235,7 +17043,7 @@ var EventBase = /** @__PURE__ @class */ (function () {
      * @method getFilterItemByName
      * @param  {string} fieldName - Gets format settings for the given field name.
      * @return {IFormatSettings}
-     * @hidden
+
      */
     EventBase.prototype.getFormatItemByName = function (fieldName) {
         var formatObjects = this.parent.dataSourceSettings.formatSettings;
@@ -17275,7 +17083,7 @@ var EventBase = /** @__PURE__ @class */ (function () {
     };
     /**
      * show tree nodes using search text.
-     * @hidden
+
      */
     /* tslint:disable:max-func-body-length */
     EventBase.prototype.searchTreeNodes = function (args, treeObj, isFieldCollection, isHierarchy) {
@@ -17517,6 +17325,10 @@ var EventBase = /** @__PURE__ @class */ (function () {
             }
         }
     };
+    /**
+     * get the parent node of particular filter members.
+
+     */
     EventBase.prototype.getParentNode = function (fieldName, item, filterObj) {
         var members = this.parent.engineModule.fieldList[fieldName].members;
         if (members[item].parent && item !== members[item].parent) {
@@ -17565,11 +17377,10 @@ var EventBase = /** @__PURE__ @class */ (function () {
 /**
  * `DialogAction` module is used to handle field list dialog related behaviour.
  */
-/** @hidden */
 var NodeStateModified = /** @__PURE__ @class */ (function () {
     /**
      * Constructor for the dialog action.
-     * @hidden
+
      */
     function NodeStateModified(parent) {
         this.parent = parent;
@@ -17580,7 +17391,7 @@ var NodeStateModified = /** @__PURE__ @class */ (function () {
      * @param  {DragEventArgs & DragAndDropEventArgs} args -  Contains both pivot button and field list drag and drop information.
      * @param  {string} fieldName - Defines dropped field name to update dataSource.
      * @return {void}
-     * @hidden
+
      */
     NodeStateModified.prototype.onStateModified = function (args, fieldName) {
         var droppedClass = '';
@@ -17691,11 +17502,10 @@ var NodeStateModified = /** @__PURE__ @class */ (function () {
 /**
  * `DataSourceUpdate` module is used to update the dataSource.
  */
-/** @hidden */
 var DataSourceUpdate = /** @__PURE__ @class */ (function () {
     /**
      * Constructor for the dialog action.
-     * @hidden
+
      */
     function DataSourceUpdate(parent) {
         this.parent = parent;
@@ -17707,9 +17517,10 @@ var DataSourceUpdate = /** @__PURE__ @class */ (function () {
      * @param  {number} fieldCaption - Defines dropped position to the axis based on field position.
      * @method updateDataSource
      * @return {void}
-     * @hidden
+
      */
     DataSourceUpdate.prototype.updateDataSource = function (fieldName, droppedClass, droppedPosition) {
+        var _this = this;
         var dataSourceItem;
         if (this.control && this.btnElement && this.btnElement.getAttribute('isvalue') === 'true') {
             switch (droppedClass) {
@@ -17742,50 +17553,68 @@ var DataSourceUpdate = /** @__PURE__ @class */ (function () {
             }
         }
         if (this.control) {
-            var eventArgs = {
+            var eventArgs_1 = {
                 'droppedField': dataSourceItem, 'dataSourceSettings': this.parent.dataSourceSettings, 'droppedAxis': droppedClass
             };
-            this.control.trigger(onFieldDropped, eventArgs);
-        }
-        if (dataSourceItem) {
-            switch (droppedClass) {
-                case 'filters':
-                    droppedPosition !== -1 ?
-                        this.parent.dataSourceSettings.filters.splice(droppedPosition, 0, dataSourceItem) :
-                        this.parent.dataSourceSettings.filters.push(dataSourceItem);
-                    break;
-                case 'rows':
-                    droppedPosition !== -1 ?
-                        this.parent.dataSourceSettings.rows.splice(droppedPosition, 0, dataSourceItem) :
-                        this.parent.dataSourceSettings.rows.push(dataSourceItem);
-                    break;
-                case 'columns':
-                    droppedPosition !== -1 ?
-                        this.parent.dataSourceSettings.columns.splice(droppedPosition, 0, dataSourceItem) :
-                        this.parent.dataSourceSettings.columns.push(dataSourceItem);
-                    break;
-                case 'values':
-                    droppedPosition !== -1 ?
-                        this.parent.dataSourceSettings.values.splice(droppedPosition, 0, dataSourceItem) :
-                        this.parent.dataSourceSettings.values.push(dataSourceItem);
-                    if (this.parent.dataType === 'olap' && !this.parent.engineModule.isMeasureAvail) {
-                        var measureField = {
-                            name: '[Measures]', caption: 'Measures', baseField: undefined, baseItem: undefined
-                        };
-                        var fieldAxis = this.parent.dataSourceSettings.valueAxis === 'row' ?
-                            this.parent.dataSourceSettings.rows : this.parent.dataSourceSettings.columns;
-                        fieldAxis.push(measureField);
+            /* tslint:disable */
+            var dataSourceUpdate_1 = this;
+            this.control.trigger(onFieldDropped, eventArgs_1, function (observedArgs) {
+                eventArgs_1 = observedArgs;
+                if (dataSourceItem) {
+                    dataSourceItem = observedArgs.droppedField;
+                    switch (droppedClass) {
+                        case 'filters':
+                            droppedPosition !== -1 ?
+                                (isBlazor() ? dataSourceUpdate_1.parent.dataSourceSettings.filters.splice(droppedPosition, 0, dataSourceItem) : _this.parent.dataSourceSettings.filters.splice(droppedPosition, 0, dataSourceItem)) :
+                                (isBlazor() ? dataSourceUpdate_1.parent.dataSourceSettings.filters.push(dataSourceItem) : _this.parent.dataSourceSettings.filters.push(dataSourceItem));
+                            break;
+                        case 'rows':
+                            droppedPosition !== -1 ?
+                                (isBlazor() ? dataSourceUpdate_1.parent.dataSourceSettings.rows.splice(droppedPosition, 0, dataSourceItem) : _this.parent.dataSourceSettings.rows.splice(droppedPosition, 0, dataSourceItem)) :
+                                (isBlazor() ? dataSourceUpdate_1.parent.dataSourceSettings.rows.push(dataSourceItem) : _this.parent.dataSourceSettings.rows.push(dataSourceItem));
+                            break;
+                        case 'columns':
+                            droppedPosition !== -1 ?
+                                (isBlazor() ? dataSourceUpdate_1.parent.dataSourceSettings.columns.splice(droppedPosition, 0, dataSourceItem) : _this.parent.dataSourceSettings.columns.splice(droppedPosition, 0, dataSourceItem)) :
+                                (isBlazor() ? dataSourceUpdate_1.parent.dataSourceSettings.columns.push(dataSourceItem) : _this.parent.dataSourceSettings.columns.push(dataSourceItem));
+                            break;
+                        case 'values':
+                            droppedPosition !== -1 ?
+                                (isBlazor() ? dataSourceUpdate_1.parent.dataSourceSettings.values.splice(droppedPosition, 0, dataSourceItem) : _this.parent.dataSourceSettings.values.splice(droppedPosition, 0, dataSourceItem)) :
+                                (isBlazor() ? dataSourceUpdate_1.parent.dataSourceSettings.values.push(dataSourceItem) : _this.parent.dataSourceSettings.values.push(dataSourceItem));
+                            if (isBlazor()) {
+                                if (dataSourceUpdate_1.parent.dataType === 'olap' && !dataSourceUpdate_1.parent.engineModule.isMeasureAvail) {
+                                    var measureField = {
+                                        name: '[Measures]', caption: 'Measures', baseField: undefined, baseItem: undefined
+                                    };
+                                    var fieldAxis = dataSourceUpdate_1.parent.dataSourceSettings.valueAxis === 'row' ?
+                                        dataSourceUpdate_1.parent.dataSourceSettings.rows : dataSourceUpdate_1.parent.dataSourceSettings.columns;
+                                    fieldAxis.push(measureField);
+                                }
+                            }
+                            else {
+                                if (_this.parent.dataType === 'olap' && !_this.parent.engineModule.isMeasureAvail) {
+                                    var measureField = {
+                                        name: '[Measures]', caption: 'Measures', baseField: undefined, baseItem: undefined
+                                    };
+                                    var fieldAxis = _this.parent.dataSourceSettings.valueAxis === 'row' ?
+                                        _this.parent.dataSourceSettings.rows : _this.parent.dataSourceSettings.columns;
+                                    fieldAxis.push(measureField);
+                                }
+                            }
+                            break;
                     }
-                    break;
-            }
+                }
+            });
         }
     };
+    /* tslint:enable */
     /**
      * Updates the dataSource by removing the given field from the dataSource.
      * @param  {string} fieldName - Defines dropped field name to remove dataSource.
      * @method removeFieldFromReport
      * @return {void}
-     * @hidden
+
      */
     DataSourceUpdate.prototype.removeFieldFromReport = function (fieldName) {
         var dataSourceItem;
@@ -17810,8 +17639,6 @@ var DataSourceUpdate = /** @__PURE__ @class */ (function () {
                             var engineModule = this.parent.engineModule;
                             if (engineModule && engineModule.fieldList[fieldName]) {
                                 engineModule.fieldList[fieldName].currrentMembers = {};
-                                engineModule.fieldList[fieldName].members = {};
-                                engineModule.fieldList[fieldName].filterMembers = [];
                                 engineModule.fieldList[fieldName].searchMembers = [];
                             }
                         }
@@ -17828,7 +17655,7 @@ var DataSourceUpdate = /** @__PURE__ @class */ (function () {
      * @param  {string} fieldName - Defines dropped field name to add dataSource.
      * @method getNewField
      * @return {void}
-     * @hidden
+
      */
     DataSourceUpdate.prototype.getNewField = function (fieldName) {
         var newField;
@@ -17863,11 +17690,10 @@ var DataSourceUpdate = /** @__PURE__ @class */ (function () {
 /**
  * `ErrorDialog` module to create error dialog.
  */
-/** @hidden */
 var ErrorDialog = /** @__PURE__ @class */ (function () {
     /**
      * Constructor for the dialog action.
-     * @hidden
+
      */
     function ErrorDialog(parent) {
         this.parent = parent;
@@ -17876,7 +17702,7 @@ var ErrorDialog = /** @__PURE__ @class */ (function () {
      * Creates the error dialog for the unexpected action done.
      * @method createErrorDialog
      * @return {void}
-     * @hidden
+
      */
     ErrorDialog.prototype.createErrorDialog = function (title, description, target) {
         var errorDialog = createElement('div', {
@@ -17930,11 +17756,10 @@ var ErrorDialog = /** @__PURE__ @class */ (function () {
 /**
  * `FilterDialog` module to create filter dialog.
  */
-/** @hidden */
 var FilterDialog = /** @__PURE__ @class */ (function () {
     /**
      * Constructor for the dialog action.
-     * @hidden
+
      */
     function FilterDialog(parent) {
         this.parent = parent;
@@ -17943,7 +17768,7 @@ var FilterDialog = /** @__PURE__ @class */ (function () {
      * Creates the member filter dialog for the selected field.
      * @method createFilterDialog
      * @return {void}
-     * @hidden
+
      */
     FilterDialog.prototype.createFilterDialog = function (treeData, fieldName, fieldCaption, target) {
         var editorDialog = createElement('div', {
@@ -18395,7 +18220,19 @@ var FilterDialog = /** @__PURE__ @class */ (function () {
             var engineModule = this.parent.engineModule;
             var levels = engineModule.fieldList[fieldName].levels;
             if (this.parent.engineModule.fieldList[fieldName].isHierarchy) {
-                levelOptions.push({ value: fieldName, text: engineModule.fieldList[fieldName].name });
+                var levelObj = void 0;
+                var fieldlistData = this.parent.engineModule.fieldListData;
+                for (var _a = 0, fieldlistData_1 = fieldlistData; _a < fieldlistData_1.length; _a++) {
+                    var item = fieldlistData_1[_a];
+                    if (item && item.pid === fieldName) {
+                        levelObj = item;
+                        break;
+                    }
+                }
+                levelOptions.push({
+                    value: levelObj ? levelObj.id : fieldName,
+                    text: levelObj ? levelObj.caption : engineModule.fieldList[fieldName].name
+                });
                 selectedLevelIndex = 0;
                 if (filterObject && filterObject.name === fieldName && filterObject.type.toLowerCase() === type) {
                     levelOptions[levelOptions.length - 1]['iconClass'] = ICON + ' ' + SELECTED_LEVEL_ICON_CLASS;
@@ -18406,8 +18243,8 @@ var FilterDialog = /** @__PURE__ @class */ (function () {
                     selectedLevelIndex = (filterObject &&
                         filterObject.selectedField === levels[i].id ? i : selectedLevelIndex);
                     levelOptions.push({ value: levels[i].id, text: levels[i].name });
-                    for (var _a = 0, _b = this.parent.dataSourceSettings.filterSettings; _a < _b.length; _a++) {
-                        var field = _b[_a];
+                    for (var _b = 0, _c = this.parent.dataSourceSettings.filterSettings; _b < _c.length; _b++) {
+                        var field = _c[_b];
                         if (field.name === fieldName && field.selectedField === levels[i].id && field.type.toLowerCase() === type) {
                             levelOptions[levelOptions.length - 1]['iconClass'] = ICON + ' ' + SELECTED_LEVEL_ICON_CLASS;
                             break;
@@ -18748,7 +18585,7 @@ var FilterDialog = /** @__PURE__ @class */ (function () {
     };
     /**
      * Update filter state while Member check/uncheck.
-     * @hidden
+
      */
     FilterDialog.prototype.updateCheckedState = function (fieldCaption) {
         var filterDialog = this.dialogPopUp.element;
@@ -18853,7 +18690,7 @@ var FilterDialog = /** @__PURE__ @class */ (function () {
     };
     /**
      * To close filter dialog.
-     * @hidden
+
      */
     FilterDialog.prototype.closeFilterDialog = function () {
         if (this.allowExcelLikeFilter) {
@@ -18882,27 +18719,20 @@ var FilterDialog = /** @__PURE__ @class */ (function () {
 
 /**
  * PivotCommon is used to manipulate the relational or Multi-Dimensional public methods by using their dataSource
- * @hidden
+
  */
-/** @hidden */
 var PivotCommon = /** @__PURE__ @class */ (function () {
     /**
      * Constructor for Pivot Common class
      * @param  {CommonArgs} control?
-     * @hidden
+
      */
     function PivotCommon(control) {
-        /** @hidden */
         this.currentTreeItems = [];
-        /** @hidden */
         this.savedTreeFilterPos = {};
-        /** @hidden */
         this.currentTreeItemsPos = {};
-        /** @hidden */
         this.searchTreeItems = [];
-        /** @hidden */
         this.isDataOverflow = false;
-        /** @hidden */
         this.isDateField = false;
         this.element = control.element;
         this.moduleName = control.moduleName;
@@ -18925,7 +18755,7 @@ var PivotCommon = /** @__PURE__ @class */ (function () {
     /**
      * To destroy the groupingbar
      * @return {void}
-     * @hidden
+
      */
     PivotCommon.prototype.destroy = function () {
         if (this.keyboardModule) {
@@ -18938,7 +18768,6 @@ var PivotCommon = /** @__PURE__ @class */ (function () {
 /**
  * Module to render Pivot Field List Dialog
  */
-/** @hidden */
 var DialogRenderer = /** @__PURE__ @class */ (function () {
     /** Constructor for render module */
     function DialogRenderer(parent) {
@@ -19216,7 +19045,7 @@ var DialogRenderer = /** @__PURE__ @class */ (function () {
     };
     /**
      * Called internally if any of the field added to axis.
-     * @hidden
+
      */
     DialogRenderer.prototype.updateDataSource = function (selectedNodes) {
         var axis = ['filters', 'columns', 'rows', 'values'];
@@ -19447,7 +19276,6 @@ var DialogRenderer = /** @__PURE__ @class */ (function () {
 /**
  * Module to render Field List
  */
-/** @hidden */
 var TreeViewRenderer = /** @__PURE__ @class */ (function () {
     /** Constructor for render module */
     function TreeViewRenderer(parent) {
@@ -19676,6 +19504,7 @@ var TreeViewRenderer = /** @__PURE__ @class */ (function () {
         });
         var editorSearch = createElement('input', { attrs: { 'type': 'text' } });
         searchWrapper.appendChild(editorSearch);
+        var treeOuterDiv = createElement('div', { className: EDITOR_TREE_CONTAINER_CLASS + '-outer-div' });
         var treeViewContainer = createElement('div', {
             className: EDITOR_TREE_CONTAINER_CLASS + ' ' + (this.parent.dataType === 'olap' ? 'e-olap-field-list-tree' : '')
         });
@@ -19694,7 +19523,8 @@ var TreeViewRenderer = /** @__PURE__ @class */ (function () {
             innerHTML: this.parent.localeObj.getConstant('noMatches')
         });
         editorTreeWrapper.appendChild(promptDiv);
-        editorTreeWrapper.appendChild(treeViewContainer);
+        treeOuterDiv.appendChild(treeViewContainer);
+        editorTreeWrapper.appendChild(treeOuterDiv);
         this.fieldTable = new TreeView({
             /* tslint:disable-next-line:max-line-length */
             fields: { dataSource: treeData, id: 'id', text: 'caption', isChecked: 'isSelected', parentID: 'pid', iconCss: 'spriteCssClass' },
@@ -20000,7 +19830,9 @@ var TreeViewRenderer = /** @__PURE__ @class */ (function () {
                 if (axis === 3) {
                     if (item.id.toLowerCase() !== '[measures]' &&
                         (item.id.toLowerCase().indexOf('[measures]') === 0 ||
-                            (item.spriteCssClass && item.spriteCssClass.indexOf('e-measureCDB') !== -1))) {
+                            (item.spriteCssClass && item.spriteCssClass.indexOf('e-measureCDB') !== -1)) ||
+                        (item.id.toLowerCase() === '[calculated members].[_0]' ||
+                            (item.spriteCssClass && item.spriteCssClass.indexOf('e-calc-measure-icon') !== -1))) {
                         framedSet = {
                             id: item.id, caption: item.caption, hasChildren: item.hasChildren,
                             type: item.type, aggregateType: item.aggregateType,
@@ -20023,7 +19855,8 @@ var TreeViewRenderer = /** @__PURE__ @class */ (function () {
                 }
                 else {
                     if (!(item.id.toLowerCase().indexOf('[measures]') === 0) &&
-                        !(item.spriteCssClass && item.spriteCssClass.indexOf('e-measureCDB') !== -1)) {
+                        !(item.spriteCssClass && item.spriteCssClass.indexOf('e-measureCDB') !== -1) &&
+                        !(item.spriteCssClass && item.spriteCssClass.indexOf('e-calc-measure-icon') !== -1)) {
                         framedSet = {
                             id: item.id, caption: item.caption, hasChildren: item.hasChildren,
                             type: item.type, aggregateType: item.aggregateType,
@@ -20152,13 +19985,13 @@ var TreeViewRenderer = /** @__PURE__ @class */ (function () {
         EventHandler.remove(element, 'click', this.updateSorting);
     };
     /**
-     * @hidden
+
      */
     TreeViewRenderer.prototype.addEventListener = function () {
         this.parent.on(treeViewUpdate, this.refreshTreeView, this);
     };
     /**
-     * @hidden
+
      */
     TreeViewRenderer.prototype.removeEventListener = function () {
         if (this.parent.isDestroyed) {
@@ -20169,7 +20002,7 @@ var TreeViewRenderer = /** @__PURE__ @class */ (function () {
     /**
      * To destroy the tree view event listener
      * @return {void}
-     * @hidden
+
      */
     TreeViewRenderer.prototype.destroy = function () {
         this.removeEventListener();
@@ -20180,7 +20013,6 @@ var TreeViewRenderer = /** @__PURE__ @class */ (function () {
 /**
  * Module to render Axis Field Table
  */
-/** @hidden */
 var AxisTableRenderer = /** @__PURE__ @class */ (function () {
     /** Constructor for render module */
     function AxisTableRenderer(parent) {
@@ -20296,7 +20128,6 @@ var AxisTableRenderer = /** @__PURE__ @class */ (function () {
 /**
  * Module to render Pivot button
  */
-/** @hidden */
 var PivotButton = /** @__PURE__ @class */ (function () {
     /** Constructor for render module */
     function PivotButton(parent) {
@@ -20445,7 +20276,7 @@ var PivotButton = /** @__PURE__ @class */ (function () {
                 }
                 if (axis === 'values') {
                     var _loop_1 = function (element) {
-                        if (element.classList.contains(GROUP_CHART_VALUE)) {
+                        if (element.classList.contains(GROUP_CHART_VALUE) && this_1.parent.chartModule) {
                             var valueData = field.map(function (item) { return { text: item.caption ? item.caption : item.name, value: item.name }; });
                             var parent_1 = this_1.parent;
                             if (this_1.valueFiedDropDownList && element.querySelector('.' + GROUP_CHART_VALUE_DROPDOWN_DIV)) {
@@ -20752,31 +20583,28 @@ var PivotButton = /** @__PURE__ @class */ (function () {
         var filterItems = engineModule.fieldList[fieldName].actualFilter;
         if (filterItems.length > 0) {
             var cMembers = engineModule.fieldList[fieldName].members;
-            var sMembers = engineModule.fieldList[fieldName].currrentMembers;
-            var updatedFilterItems = [];
-            if (engineModule.fieldList[fieldName].searchMembers.length > 0) {
+            var actualFilterItems = [];
+            if (engineModule.fieldList[fieldName].filterMembers.length > 0) {
+                var dummyfilterItems = {};
                 for (var _i = 0, filterItems_1 = filterItems; _i < filterItems_1.length; _i++) {
                     var item = filterItems_1[_i];
-                    if (sMembers[item].isSelected) {
-                        if (!(sMembers[item].parent && sMembers[sMembers[item].parent].isSelected)) {
-                            updatedFilterItems.push(item);
-                        }
+                    dummyfilterItems[item] = item;
+                    if (cMembers[item]) {
+                        dummyfilterItems = this.parent.pivotCommon.eventBase.getParentNode(fieldName, item, dummyfilterItems);
                     }
                 }
-                firstNode = updatedFilterItems.length === 1 ? sMembers[updatedFilterItems[0]].caption : firstNode;
-            }
-            else if (engineModule.fieldList[fieldName].filterMembers.length > 0) {
-                for (var _a = 0, filterItems_2 = filterItems; _a < filterItems_2.length; _a++) {
-                    var item = filterItems_2[_a];
+                var updatedFilterItems = dummyfilterItems ? Object.keys(dummyfilterItems) : [];
+                for (var _a = 0, updatedFilterItems_1 = updatedFilterItems; _a < updatedFilterItems_1.length; _a++) {
+                    var item = updatedFilterItems_1[_a];
                     if (cMembers[item].isSelected) {
                         if (!(cMembers[item].parent && cMembers[cMembers[item].parent].isSelected)) {
-                            updatedFilterItems.push(item);
+                            actualFilterItems.push(item);
                         }
                     }
                 }
-                firstNode = updatedFilterItems.length === 1 ? cMembers[updatedFilterItems[0]].caption : firstNode;
+                firstNode = actualFilterItems.length === 1 ? cMembers[actualFilterItems[0]].caption : firstNode;
             }
-            filterCount = updatedFilterItems.length === 0 ? filterCount : updatedFilterItems.length;
+            filterCount = actualFilterItems.length === 0 ? filterCount : actualFilterItems.length;
         }
         if (filterCount === 0) {
             filterMem = (engineModule.fieldList[fieldName].allMember ?
@@ -21056,8 +20884,8 @@ var PivotButton = /** @__PURE__ @class */ (function () {
             filterItem.selectedField = levelName;
             this.removeDataSourceSettings(fieldName, levelName, type);
             var filterItems = this.parent.dataSourceSettings.filterSettings;
-            for (var _i = 0, filterItems_3 = filterItems; _i < filterItems_3.length; _i++) {
-                var item = filterItems_3[_i];
+            for (var _i = 0, filterItems_2 = filterItems; _i < filterItems_2.length; _i++) {
+                var item = filterItems_2[_i];
                 if (item.name === fieldName && item.selectedField === levelName) {
                     filterObject = item;
                 }
@@ -21260,13 +21088,13 @@ var PivotButton = /** @__PURE__ @class */ (function () {
                 isNodeUnChecked = cNodeLength === sNodeLength && cNodeLength === filterItem.items.length ? false : true;
             }
             var filterItems = filterItem.items;
-            for (var _i = 0, filterItems_4 = filterItems; _i < filterItems_4.length; _i++) {
-                var node = filterItems_4[_i];
-                if (cMembers[node]) {
-                    cMembers[node].isSelected = true;
-                }
-                if (sMembers[node]) {
+            for (var _i = 0, filterItems_3 = filterItems; _i < filterItems_3.length; _i++) {
+                var node = filterItems_3[_i];
+                if (engineModule.fieldList[fieldName].searchMembers.length > 0 && sMembers[node]) {
                     sMembers[node].isSelected = true;
+                }
+                else if (cMembers[node]) {
+                    cMembers[node].isSelected = true;
                 }
             }
         }
@@ -21403,7 +21231,7 @@ var PivotButton = /** @__PURE__ @class */ (function () {
         EventHandler.remove(element.querySelector('.' + REMOVE_CLASS), 'click', this.removeButton);
     };
     /**
-     * @hidden
+
      */
     PivotButton.prototype.addEventListener = function () {
         this.handlers = {
@@ -21415,7 +21243,7 @@ var PivotButton = /** @__PURE__ @class */ (function () {
         this.parent.on(pivotButtonUpdate, this.handlers.load, this);
     };
     /**
-     * @hidden
+
      */
     PivotButton.prototype.removeEventListener = function () {
         if (this.parent.isDestroyed) {
@@ -21426,7 +21254,7 @@ var PivotButton = /** @__PURE__ @class */ (function () {
     /**
      * To destroy the pivot button event listener
      * @return {void}
-     * @hidden
+
      */
     PivotButton.prototype.destroy = function () {
         this.menuOption.destroy();
@@ -21438,7 +21266,6 @@ var PivotButton = /** @__PURE__ @class */ (function () {
 /**
  * Module to render Axis Fields
  */
-/** @hidden */
 var AxisFieldRenderer = /** @__PURE__ @class */ (function () {
     /** Constructor for render module */
     function AxisFieldRenderer(parent) {
@@ -21489,7 +21316,6 @@ var AxisFieldRenderer = /** @__PURE__ @class */ (function () {
 /**
  * Module to render Pivot Table component
  */
-/** @hidden */
 var Render$1 = /** @__PURE__ @class */ (function () {
     /** Constructor for render module */
     function Render(parent) {
@@ -21553,20 +21379,16 @@ var PivotFieldList = /** @__PURE__ @class */ (function (_super) {
     function PivotFieldList(options, element) {
         var _this = _super.call(this, options, element) || this;
         _this.isRequiredUpdate = true;
-        /** @hidden */
         _this.lastSortInfo = {};
-        /** @hidden */
         _this.lastFilterInfo = {};
-        /** @hidden */
         _this.lastAggregationInfo = {};
-        /** @hidden */
         _this.lastCalcFieldInfo = {};
         return _this;
     }
     /**
      * To provide the array of modules needed for control rendering
      * @return {ModuleDeclaration[]}
-     * @hidden
+
      */
     PivotFieldList.prototype.requiredModules = function () {
         var modules = [];
@@ -21808,7 +21630,7 @@ var PivotFieldList = /** @__PURE__ @class */ (function (_super) {
     };
     /**
      * Binding events to the Pivot Field List element.
-     * @hidden
+
      */
     PivotFieldList.prototype.wireEvent = function () {
         this.on(initialLoad, this.generateData, this);
@@ -21816,7 +21638,7 @@ var PivotFieldList = /** @__PURE__ @class */ (function (_super) {
     };
     /**
      * Unbinding events from the element on widget destroy.
-     * @hidden
+
      */
     PivotFieldList.prototype.unWireEvent = function () {
         if (this.pivotGridModule && this.pivotGridModule.isDestroyed) {
@@ -21843,7 +21665,7 @@ var PivotFieldList = /** @__PURE__ @class */ (function (_super) {
     };
     /**
      * Called internally if any of the property value changed.
-     * @hidden
+
      */
     PivotFieldList.prototype.onPropertyChanged = function (newProp, oldProp) {
         var requireRefresh = false;
@@ -21871,8 +21693,11 @@ var PivotFieldList = /** @__PURE__ @class */ (function (_super) {
     /* tslint:disable */
     PivotFieldList.prototype.initEngine = function () {
         var _this = this;
-        this.trigger(enginePopulating, { dataSourceSettings: this.dataSourceSettings }, function (observedArgs) {
-            _this.dataSourceSettings = observedArgs.dataSourceSettings;
+        var args = {
+            dataSourceSettings: PivotUtil.getClonedDataSourceSettings(this.dataSourceSettings)
+        };
+        this.trigger(enginePopulating, args, function (observedArgs) {
+            PivotUtil.updateDataSourceSettings(_this, observedArgs.dataSourceSettings);
             if (isBlazor()) {
                 _this.dataSourceSettings.dataSource = _this.engineModule.data;
             }
@@ -21905,7 +21730,7 @@ var PivotFieldList = /** @__PURE__ @class */ (function (_super) {
                 });
             }
             else if (_this.dataType === 'olap') {
-                _this.olapEngineModule.renderEngine(_this.dataSourceSettings, _this.frameCustomProperties());
+                _this.olapEngineModule.renderEngine(_this.dataSourceSettings, _this.frameCustomProperties(_this.olapEngineModule.fieldListData, _this.olapEngineModule.fieldList));
                 _this.pivotFieldList = _this.olapEngineModule.fieldList;
                 var eventArgs = {
                     pivotFieldList: _this.pivotFieldList,
@@ -22020,12 +21845,12 @@ var PivotFieldList = /** @__PURE__ @class */ (function (_super) {
         /* tslint:disable-next-line:max-line-length */
         this.captionData = [dataSourceSettings.rows, dataSourceSettings.columns, dataSourceSettings.values, dataSourceSettings.filters];
     };
-    /* tslint:disable */
+    /* tslint:disable:max-func-body-length */
     /**
      * Updates the PivotEngine using dataSource from Pivot Field List component.
      * @method updateDataSource
      * @return {void}
-     * @hidden
+
      */
     PivotFieldList.prototype.updateDataSource = function (isTreeViewRefresh, isEngineRefresh) {
         if (this.pivotGridModule) {
@@ -22035,122 +21860,133 @@ var PivotFieldList = /** @__PURE__ @class */ (function (_super) {
         var pivot = this;
         //setTimeout(() => {
         var isOlapDataRefreshed = false;
-        if (isNullOrUndefined(isEngineRefresh)) {
-            var pageSettings = pivot.pivotGridModule ? pivot.pivotGridModule.pageSettings : undefined;
-            var isCalcChange = Object.keys(pivot.lastCalcFieldInfo).length > 0 ? true : false;
-            var isSorted = void 0;
-            if (pivot.dataType === 'pivot') {
-                var customProperties = pivot.frameCustomProperties();
-                customProperties.savedFieldList = pivot.pivotFieldList;
-                var lastSortInfo = pivot.pivotGridModule ? pivot.pivotGridModule.lastSortInfo : pivot.lastSortInfo;
-                if (pivot.pivotGridModule) {
-                    pivot.pivotGridModule.lastSortInfo = {};
-                }
-                pivot.lastSortInfo = {};
-                var isAggChange = Object.keys(pivot.lastAggregationInfo).length > 0 ? true : false;
-                isSorted = Object.keys(lastSortInfo).length > 0 ? true : false;
-                var isFiltered = Object.keys(pivot.lastFilterInfo).length > 0 ? true : false;
-                if (pageSettings && (isSorted || isFiltered || isAggChange || isCalcChange)) {
-                    if (isSorted) {
-                        pivot.pivotGridModule.setProperties({ dataSourceSettings: { valueSortSettings: { headerText: '' } } }, true);
-                        pivot.engineModule.onSort(lastSortInfo);
+        var pageSettings = pivot.pivotGridModule && pivot.pivotGridModule.enableVirtualization ?
+            pivot.pivotGridModule.pageSettings : undefined;
+        var isCalcChange = Object.keys(pivot.lastCalcFieldInfo).length > 0 ? true : false;
+        var isSorted = Object.keys(pivot.lastSortInfo).length > 0 ? true : false;
+        var lastSortInfo = pivot.lastSortInfo;
+        if (pivot.pivotGridModule && pivot.dataType === 'pivot') {
+            pivot.pivotGridModule.lastSortInfo = {};
+        }
+        pivot.lastSortInfo = {};
+        var isAggChange = Object.keys(pivot.lastAggregationInfo).length > 0 ? true : false;
+        var isFiltered = Object.keys(pivot.lastFilterInfo).length > 0 ? true : false;
+        var args = {
+            dataSourceSettings: PivotUtil.getClonedDataSourceSettings(pivot.dataSourceSettings)
+        };
+        pivot.trigger(enginePopulating, args, function (observedArgs) {
+            if (!(pageSettings && (isSorted || isFiltered || isAggChange || isCalcChange))) {
+                PivotUtil.updateDataSourceSettings(pivot, observedArgs.dataSourceSettings);
+                PivotUtil.updateDataSourceSettings(pivot.pivotGridModule, observedArgs.dataSourceSettings);
+            }
+            if (isNullOrUndefined(isEngineRefresh)) {
+                if (pivot.dataType === 'pivot') {
+                    var customProperties = pivot.frameCustomProperties();
+                    customProperties.savedFieldList = pivot.pivotFieldList;
+                    if (pageSettings && (isSorted || isFiltered || isAggChange || isCalcChange)) {
+                        if (isSorted) {
+                            pivot.pivotGridModule.setProperties({ dataSourceSettings: { valueSortSettings: { headerText: '' } } }, true);
+                            pivot.engineModule.onSort(lastSortInfo);
+                        }
+                        if (isFiltered) {
+                            pivot.engineModule.onFilter(pivot.lastFilterInfo, pivot.dataSourceSettings);
+                            pivot.lastFilterInfo = {};
+                        }
+                        if (isAggChange) {
+                            pivot.engineModule.onAggregation(pivot.lastAggregationInfo);
+                            pivot.lastAggregationInfo = {};
+                        }
+                        if (isCalcChange) {
+                            pivot.engineModule.onCalcOperation(pivot.lastCalcFieldInfo);
+                            pivot.lastCalcFieldInfo = {};
+                        }
                     }
-                    if (isFiltered) {
-                        pivot.engineModule.onFilter(pivot.lastFilterInfo, pivot.dataSourceSettings);
-                        pivot.lastFilterInfo = {};
-                    }
-                    if (isAggChange) {
-                        pivot.engineModule.onAggregation(pivot.lastAggregationInfo);
-                        pivot.lastAggregationInfo = {};
-                    }
-                    if (isCalcChange) {
-                        pivot.engineModule.onCalcOperation(pivot.lastCalcFieldInfo);
-                        pivot.lastCalcFieldInfo = {};
+                    else {
+                        /* tslint:disable-next-line:max-line-length */
+                        pivot.engineModule.renderEngine(pivot.dataSourceSettings, customProperties, pivot.getValueCellInfo.bind(pivot));
                     }
                 }
                 else {
-                    /* tslint:disable-next-line:max-line-length */
-                    pivot.engineModule.renderEngine(pivot.dataSourceSettings, customProperties, pivot.getValueCellInfo.bind(pivot));
+                    isOlapDataRefreshed = pivot.updateOlapDataSource(pivot, isSorted, isCalcChange, isOlapDataRefreshed);
                 }
+                pivot.getFieldCaption(pivot.dataSourceSettings);
             }
             else {
-                isOlapDataRefreshed = pivot.updateOlapDataSource(isSorted, isCalcChange, isOlapDataRefreshed);
+                pivot.axisFieldModule.render();
+                pivot.isRequiredUpdate = false;
             }
-            pivot.getFieldCaption(pivot.dataSourceSettings);
-        }
-        else {
-            pivot.axisFieldModule.render();
-            pivot.isRequiredUpdate = false;
-        }
-        var eventArgs = {
-            dataSourceSettings: pivot.dataSourceSettings,
-            pivotFieldList: pivot.dataType === 'pivot' ? pivot.engineModule.fieldList : pivot.olapEngineModule.fieldList,
-            pivotValues: pivot.dataType === 'pivot' ? pivot.engineModule.pivotValues : pivot.olapEngineModule.pivotValues
-        };
-        pivot.trigger(enginePopulated, eventArgs, function (observedArgs) {
-            pivot.dataSourceSettings = observedArgs.dataSourceSettings;
-            pivot.pivotCommon.dataSourceSettings = pivot.dataSourceSettings;
-            pivot.pivotFieldList = observedArgs.pivotFieldList;
-            if (pivot.dataType === 'olap') {
-                pivot.olapEngineModule.pivotValues = isBlazor() ? pivot.olapEngineModule.pivotValues : observedArgs.pivotValues;
-                pivot.pivotCommon.engineModule = pivot.olapEngineModule;
-            }
-            else {
-                pivot.engineModule.pivotValues = isBlazor() ? pivot.engineModule.pivotValues : observedArgs.pivotValues;
-                pivot.pivotCommon.engineModule = pivot.engineModule;
-            }
-            if (!isTreeViewRefresh && pivot.treeViewModule.fieldTable && !pivot.isAdaptive) {
-                pivot.notify(treeViewUpdate, {});
-            }
-            if (pivot.isRequiredUpdate) {
-                if (pivot.allowDeferLayoutUpdate) {
-                    pivot.clonedDataSource = extend({}, pivot.dataSourceSettings, null, true);
-                    pivot.clonedFieldList = extend({}, pivot.pivotFieldList, null, true);
+            var eventArgs = {
+                dataSourceSettings: pivot.dataSourceSettings,
+                pivotFieldList: pivot.dataType === 'pivot' ? pivot.engineModule.fieldList : pivot.olapEngineModule.fieldList,
+                pivotValues: pivot.dataType === 'pivot' ? pivot.engineModule.pivotValues : pivot.olapEngineModule.pivotValues
+            };
+            pivot.trigger(enginePopulated, eventArgs, function (observedArgs) {
+                var dataSource = pivot.dataSourceSettings.dataSource;
+                if (isBlazor() && observedArgs.dataSourceSettings.dataSource instanceof Object) {
+                    observedArgs.dataSourceSettings.dataSource = dataSource;
                 }
-                pivot.updateView(pivot.pivotGridModule);
-            }
-            else if (pivot.renderMode === 'Popup' && pivot.allowDeferLayoutUpdate) {
-                pivot.pivotGridModule.engineModule = pivot.engineModule;
-                /* tslint:disable:align */
-                pivot.pivotGridModule.setProperties({
-                    dataSourceSettings: pivot.dataSourceSettings.properties
-                }, true);
-                pivot.pivotGridModule.notify(uiUpdate, pivot);
-                hideSpinner(pivot.fieldListSpinnerElement);
-            }
-            pivot.isRequiredUpdate = true;
-            if (!pivot.pivotGridModule || isOlapDataRefreshed) {
-                hideSpinner(pivot.fieldListSpinnerElement);
-            }
-            else {
-                pivot.pivotGridModule.fieldListSpinnerElement = pivot.fieldListSpinnerElement;
-            }
+                pivot.dataSourceSettings = observedArgs.dataSourceSettings;
+                pivot.pivotCommon.dataSourceSettings = pivot.dataSourceSettings;
+                pivot.pivotFieldList = observedArgs.pivotFieldList;
+                if (pivot.dataType === 'olap') {
+                    pivot.olapEngineModule.pivotValues = isBlazor() ? pivot.olapEngineModule.pivotValues : observedArgs.pivotValues;
+                    pivot.pivotCommon.engineModule = pivot.olapEngineModule;
+                }
+                else {
+                    pivot.engineModule.pivotValues = isBlazor() ? pivot.engineModule.pivotValues : observedArgs.pivotValues;
+                    pivot.pivotCommon.engineModule = pivot.engineModule;
+                }
+                if (!isTreeViewRefresh && pivot.treeViewModule.fieldTable && !pivot.isAdaptive) {
+                    pivot.notify(treeViewUpdate, {});
+                }
+                if (pivot.isRequiredUpdate) {
+                    if (pivot.allowDeferLayoutUpdate) {
+                        pivot.clonedDataSource = extend({}, pivot.dataSourceSettings, null, true);
+                        pivot.clonedFieldList = extend({}, pivot.pivotFieldList, null, true);
+                    }
+                    pivot.updateView(pivot.pivotGridModule);
+                }
+                else if (pivot.renderMode === 'Popup' && pivot.allowDeferLayoutUpdate) {
+                    pivot.pivotGridModule.engineModule = pivot.engineModule;
+                    /* tslint:disable:align */
+                    pivot.pivotGridModule.setProperties({
+                        dataSourceSettings: pivot.dataSourceSettings.properties
+                    }, true);
+                    pivot.pivotGridModule.notify(uiUpdate, pivot);
+                    hideSpinner(pivot.fieldListSpinnerElement);
+                }
+                pivot.isRequiredUpdate = true;
+                if (!pivot.pivotGridModule || isOlapDataRefreshed) {
+                    hideSpinner(pivot.fieldListSpinnerElement);
+                }
+                else {
+                    pivot.pivotGridModule.fieldListSpinnerElement = pivot.fieldListSpinnerElement;
+                }
+            });
         });
         //});
     };
     /* tslint:enable */
-    PivotFieldList.prototype.updateOlapDataSource = function (isSorted, isCalcChange, isOlapDataRefreshed) {
-        var customProperties = this.frameCustomProperties(this.olapEngineModule.fieldListData, this.olapEngineModule.fieldList);
-        customProperties.savedFieldList = this.pivotFieldList;
-        isSorted = Object.keys(this.lastSortInfo).length > 0 ? true : false;
+    PivotFieldList.prototype.updateOlapDataSource = function (pivot, isSorted, isCalcChange, isOlapDataRefreshed) {
+        var customProperties = pivot.frameCustomProperties(pivot.olapEngineModule.fieldListData, pivot.olapEngineModule.fieldList);
+        customProperties.savedFieldList = pivot.pivotFieldList;
         if (isCalcChange || isSorted) {
-            this.olapEngineModule.savedFieldList = this.pivotFieldList;
-            this.olapEngineModule.savedFieldListData = this.olapEngineModule.fieldListData;
+            pivot.olapEngineModule.savedFieldList = pivot.pivotFieldList;
+            pivot.olapEngineModule.savedFieldListData = pivot.olapEngineModule.fieldListData;
             if (isCalcChange) {
-                this.olapEngineModule.updateCalcFields(this.dataSourceSettings, this.lastCalcFieldInfo);
-                this.lastCalcFieldInfo = {};
-                isOlapDataRefreshed = this.olapEngineModule.dataFields[this.lastCalcFieldInfo.name] ? false : true;
-                if (this.pivotGridModule && this.isAdaptive) {
-                    hideSpinner(this.pivotGridModule.element);
+                pivot.olapEngineModule.updateCalcFields(pivot.dataSourceSettings, pivot.lastCalcFieldInfo);
+                pivot.lastCalcFieldInfo = {};
+                isOlapDataRefreshed = pivot.olapEngineModule.dataFields[pivot.lastCalcFieldInfo.name] ? false : true;
+                if (pivot.pivotGridModule) {
+                    hideSpinner(pivot.pivotGridModule.element);
                 }
             }
             else {
-                this.olapEngineModule.onSort(this.dataSourceSettings);
-                this.lastSortInfo = {};
+                pivot.olapEngineModule.onSort(pivot.dataSourceSettings);
             }
         }
         else {
-            this.olapEngineModule.renderEngine(this.dataSourceSettings, customProperties);
+            pivot.olapEngineModule.renderEngine(pivot.dataSourceSettings, customProperties);
         }
         return isOlapDataRefreshed;
     };
@@ -22221,7 +22057,7 @@ var PivotFieldList = /** @__PURE__ @class */ (function (_super) {
     };
     /**
      * Called internally to trigger populate event.
-     * @hidden
+
      */
     PivotFieldList.prototype.triggerPopulateEvent = function () {
         var _this = this;
@@ -22335,17 +22171,14 @@ var PivotFieldList = /** @__PURE__ @class */ (function (_super) {
 /**
  * Base export
  */
-/** @hidden */
 
 /**
  * Models
  */
-/** @hidden */
 
 /**
  * PivotGrid component exported items
  */
-/** @hidden */
 
 /**
  * Module to render Calculated Field Dialog
@@ -22363,11 +22196,9 @@ var VAR = 'SampleVar';
 var VARP = 'PopulationVar';
 var CALC = 'CalculatedField';
 var AGRTYPE = 'AggregateType';
-/** @hidden */
 var CalculatedField = /** @__PURE__ @class */ (function () {
     /** Constructor for calculatedfield module */
     function CalculatedField(parent) {
-        /** @hidden */
         this.isFormula = false;
         this.parent = parent;
         this.existingReport = null;
@@ -22796,7 +22627,6 @@ var CalculatedField = /** @__PURE__ @class */ (function () {
             this.showError();
         }
     };
-    /** @hidden */
     CalculatedField.prototype.showError = function () {
         if (this.parent.engineModule.fieldList[this.field]) {
             delete this.parent.engineModule.fieldList[this.field];
@@ -23664,7 +23494,7 @@ var CalculatedField = /** @__PURE__ @class */ (function () {
     /**
      * To create calculated field dialog elements.
      * @returns void
-     * @hidden
+
      */
     CalculatedField.prototype.createCalculatedFieldDialog = function () {
         if (this.parent.isAdaptive && this.parent.getModuleName() === 'pivotfieldlist') {
@@ -23706,7 +23536,7 @@ var CalculatedField = /** @__PURE__ @class */ (function () {
      * Creates the error dialog for the unexpected action done.
      * @method createConfirmDialog
      * @return {void}
-     * @hidden
+
      */
     CalculatedField.prototype.createConfirmDialog = function (title, description) {
         var errorDialog = createElement('div', {
@@ -23797,7 +23627,7 @@ var CalculatedField = /** @__PURE__ @class */ (function () {
     /**
      * To add event listener.
      * @returns void
-     * @hidden
+
      */
     CalculatedField.prototype.addEventListener = function () {
         if (this.parent.isDestroyed) {
@@ -23808,7 +23638,7 @@ var CalculatedField = /** @__PURE__ @class */ (function () {
     /**
      * To remove event listener.
      * @returns void
-     * @hidden
+
      */
     CalculatedField.prototype.removeEventListener = function () {
         if (this.parent.isDestroyed) {
@@ -23819,7 +23649,7 @@ var CalculatedField = /** @__PURE__ @class */ (function () {
     /**
      * To destroy the calculated field dialog
      * @returns void
-     * @hidden
+
      */
     CalculatedField.prototype.destroy = function () {
         this.removeEventListener();
@@ -23831,7 +23661,6 @@ PivotFieldList.Inject(CalculatedField);
 /**
  * Module for Field List rendering
  */
-/** @hidden */
 var FieldList = /** @__PURE__ @class */ (function () {
     /** Constructor for Field List module */
     function FieldList(parent) {
@@ -23871,7 +23700,10 @@ var FieldList = /** @__PURE__ @class */ (function () {
             locale: this.parent.locale,
             target: this.parent.element.parentElement,
             maxNodeLimitInMemberEditor: this.parent.maxNodeLimitInMemberEditor,
-            aggregateCellInfo: this.parent.bindTriggerEvents.bind(this.parent)
+            aggregateCellInfo: this.parent.bindTriggerEvents.bind(this.parent),
+            enginePopulating: this.parent.bindTriggerEvents.bind(this.parent),
+            enginePopulated: this.parent.bindTriggerEvents.bind(this.parent),
+            onFieldDropped: this.parent.bindTriggerEvents.bind(this.parent)
         });
         this.parent.pivotFieldListModule.appendTo('#' + this.element.id);
     };
@@ -23926,7 +23758,7 @@ var FieldList = /** @__PURE__ @class */ (function () {
         }
     };
     /**
-     * @hidden
+
      */
     FieldList.prototype.addEventListener = function () {
         this.handlers = {
@@ -23940,7 +23772,7 @@ var FieldList = /** @__PURE__ @class */ (function () {
         this.parent.on(uiUpdate, this.handlers.update, this);
     };
     /**
-     * @hidden
+
      */
     FieldList.prototype.removeEventListener = function () {
         if (this.parent.isDestroyed) {
@@ -23952,7 +23784,7 @@ var FieldList = /** @__PURE__ @class */ (function () {
     /**
      * To destroy the Field List
      * @return {void}
-     * @hidden
+
      */
     FieldList.prototype.destroy = function () {
         this.removeEventListener();
@@ -23969,7 +23801,6 @@ var FieldList = /** @__PURE__ @class */ (function () {
 /**
  * Module for PivotCommon rendering
  */
-/** @hidden */
 var Common = /** @__PURE__ @class */ (function () {
     /** Constructor for Common module */
     function Common(parent) {
@@ -24018,7 +23849,7 @@ var Common = /** @__PURE__ @class */ (function () {
         this.parent.pivotCommon.control = this.parent;
     };
     /**
-     * @hidden
+
      */
     Common.prototype.addEventListener = function () {
         this.handlers = {
@@ -24035,7 +23866,7 @@ var Common = /** @__PURE__ @class */ (function () {
         this.parent.on(uiUpdate, this.handlers.load, this);
     };
     /**
-     * @hidden
+
      */
     Common.prototype.removeEventListener = function () {
         if (this.parent.isDestroyed) {
@@ -24046,7 +23877,7 @@ var Common = /** @__PURE__ @class */ (function () {
     /**
      * To destroy the groupingbar
      * @return {void}
-     * @hidden
+
      */
     Common.prototype.destroy = function () {
         this.removeEventListener();
@@ -24060,7 +23891,6 @@ var Common = /** @__PURE__ @class */ (function () {
 /**
  * Module to render Axis Fields
  */
-/** @hidden */
 var AxisFields = /** @__PURE__ @class */ (function () {
     /** Constructor for render module */
     function AxisFields(parent) {
@@ -24120,7 +23950,6 @@ PivotView.Inject(Common);
 /**
  * Module for GroupingBar rendering
  */
-/** @hidden */
 var GroupingBar = /** @__PURE__ @class */ (function () {
     /** Constructor for GroupingBar module */
     function GroupingBar(parent) {
@@ -24204,6 +24033,7 @@ var GroupingBar = /** @__PURE__ @class */ (function () {
             this.groupingTable = undefined;
         }
     };
+    /* tslint:disable:max-func-body-length */
     GroupingBar.prototype.appendToElement = function () {
         if (this.parent.element.querySelector('.' + GRID_CLASS) || this.parent.element.querySelector('.' + PIVOTCHART)) {
             if (this.parent.showGroupingBar) {
@@ -24216,7 +24046,9 @@ var GroupingBar = /** @__PURE__ @class */ (function () {
                 }
                 if (this.groupingChartTable) {
                     if (this.parent.element.querySelector('#' + this.parent.element.id + '_chart')) {
-                        setStyleAttribute(this.groupingChartTable, { width: formatUnit(this.parent.chart.width) });
+                        setStyleAttribute(this.groupingChartTable, {
+                            width: formatUnit(this.parent.grid ? this.parent.getGridWidthAsNumber() : this.parent.getWidthAsNumber())
+                        });
                         this.parent.element.insertBefore(this.groupingChartTable, this.parent.element.querySelector('#' + this.parent.element.id + '_chart'));
                     }
                     else {
@@ -24243,7 +24075,7 @@ var GroupingBar = /** @__PURE__ @class */ (function () {
                     else {
                         emptyRowCount = Object.keys(this.parent.engineModule.headerContent).length;
                     }
-                    if (emptyRowCount) {
+                    if (!isNullOrUndefined(emptyRowCount)) {
                         var emptyHeader = this.parent.element.querySelector('.e-frozenheader').querySelector('.e-columnheader');
                         addClass([emptyHeader], 'e-row');
                         emptyHeader.removeAttribute('style');
@@ -24253,7 +24085,9 @@ var GroupingBar = /** @__PURE__ @class */ (function () {
                         emptyHeader.querySelector('.e-group-row').querySelector('.e-sortfilterdiv').style.display = 'none';
                     }
                     this.parent.element.insertBefore(this.groupingTable, this.parent.element.querySelector('.' + GRID_CLASS));
-                    setStyleAttribute(this.groupingTable, { width: formatUnit(this.parent.getGridWidthAsNumber()) });
+                    setStyleAttribute(this.groupingTable, {
+                        width: formatUnit(this.parent.grid ? this.parent.getGridWidthAsNumber() : this.parent.getWidthAsNumber())
+                    });
                     this.groupingTable.style.minWidth = '400px';
                     this.parent.axisFieldModule.render();
                     this.setGridRowWidth();
@@ -24304,58 +24138,66 @@ var GroupingBar = /** @__PURE__ @class */ (function () {
         }
     };
     /**
-     * @hidden
+
      */
     GroupingBar.prototype.refreshUI = function () {
-        setStyleAttribute(this.groupingTable, { width: formatUnit(this.parent.getGridWidthAsNumber()) });
-        this.groupingTable.style.minWidth = '400px';
-        var colGroupElement = this.parent.element.querySelector('.e-frozenheader').querySelector('colgroup').children[0];
-        var rightAxisWidth = formatUnit(this.groupingTable.offsetWidth - parseInt(colGroupElement.style.width, 10));
-        setStyleAttribute(this.valuePanel, { width: colGroupElement.style.width });
-        setStyleAttribute(this.rightAxisPanel, { width: rightAxisWidth });
-        if (this.parent.showFieldList && this.parent.pivotFieldListModule && this.parent.pivotFieldListModule.element) {
-            clearTimeout(this.timeOutObj);
-            this.timeOutObj = setTimeout(this.alignIcon.bind(this));
+        if (this.groupingChartTable) {
+            setStyleAttribute(this.groupingChartTable, {
+                width: formatUnit(this.parent.grid ? this.parent.getGridWidthAsNumber() : this.parent.getWidthAsNumber())
+            });
         }
-        if (!this.parent.grid.element.querySelector('.e-group-row')) {
-            var emptyRowHeader = this.parent.element.querySelector('.e-frozenheader').querySelector('.e-columnheader');
-            addClass([emptyRowHeader], 'e-row');
-            addClass([emptyRowHeader.querySelector('.e-headercell')], 'e-group-row');
-            setStyleAttribute(this.rowPanel, {
-                height: this.parent.element.querySelector('.e-headercontent').offsetHeight + 'px'
+        if (this.groupingTable) {
+            setStyleAttribute(this.groupingTable, {
+                width: formatUnit(this.parent.grid ? this.parent.getGridWidthAsNumber() : this.parent.getWidthAsNumber())
             });
-            emptyRowHeader.querySelector('.e-group-row').appendChild(this.rowAxisPanel);
-            setStyleAttribute(emptyRowHeader.querySelector('.e-group-row').querySelector('.e-headercelldiv'), {
-                display: 'none'
-            });
-            setStyleAttribute(emptyRowHeader.querySelector('.e-group-row').querySelector('.e-sortfilterdiv'), {
-                display: 'none'
-            });
-            var groupHeight = this.parent.element.querySelector('.e-headercontent').offsetHeight;
-            setStyleAttribute(this.rowPanel, {
-                height: groupHeight + 'px'
-            });
-            if (this.parent.element.querySelector('.e-frozenheader').querySelector('.e-rhandler')) {
-                this.parent.element.querySelector('.e-frozenheader').querySelector('.e-rhandler').style.height =
-                    groupHeight + 'px';
+            this.groupingTable.style.minWidth = '400px';
+            var colGroupElement = this.parent.element.querySelector('.e-frozenheader').querySelector('colgroup').children[0];
+            var rightAxisWidth = formatUnit(this.groupingTable.offsetWidth - parseInt(colGroupElement.style.width, 10));
+            setStyleAttribute(this.valuePanel, { width: colGroupElement.style.width });
+            setStyleAttribute(this.rightAxisPanel, { width: rightAxisWidth });
+            if (this.parent.showFieldList && this.parent.pivotFieldListModule && this.parent.pivotFieldListModule.element) {
+                clearTimeout(this.timeOutObj);
+                this.timeOutObj = setTimeout(this.alignIcon.bind(this));
             }
-            var colRowElements = [].slice.call(this.parent.element.querySelector('.e-movableheader').querySelector('thead').querySelectorAll('tr'));
-            var columnRows = colRowElements.filter(function (trCell) {
-                return (trCell.childNodes.length > 0);
-            });
-            var colHeight = groupHeight / columnRows.length;
-            for (var _i = 0, columnRows_2 = columnRows; _i < columnRows_2.length; _i++) {
-                var element = columnRows_2[_i];
-                setStyleAttribute(element, { 'height': colHeight + 'px' });
-                var rowHeader = [].slice.call(element.querySelectorAll('.e-rhandler'));
-                for (var _a = 0, rowHeader_2 = rowHeader; _a < rowHeader_2.length; _a++) {
-                    var handlerElement = rowHeader_2[_a];
-                    setStyleAttribute(handlerElement, { 'height': colHeight + 'px' });
+            if (!this.parent.grid.element.querySelector('.e-group-row')) {
+                var emptyRowHeader = this.parent.element.querySelector('.e-frozenheader').querySelector('.e-columnheader');
+                addClass([emptyRowHeader], 'e-row');
+                addClass([emptyRowHeader.querySelector('.e-headercell')], 'e-group-row');
+                setStyleAttribute(this.rowPanel, {
+                    height: this.parent.element.querySelector('.e-headercontent').offsetHeight + 'px'
+                });
+                emptyRowHeader.querySelector('.e-group-row').appendChild(this.rowAxisPanel);
+                setStyleAttribute(emptyRowHeader.querySelector('.e-group-row').querySelector('.e-headercelldiv'), {
+                    display: 'none'
+                });
+                setStyleAttribute(emptyRowHeader.querySelector('.e-group-row').querySelector('.e-sortfilterdiv'), {
+                    display: 'none'
+                });
+                var groupHeight = this.parent.element.querySelector('.e-headercontent').offsetHeight;
+                setStyleAttribute(this.rowPanel, {
+                    height: groupHeight + 'px'
+                });
+                if (this.parent.element.querySelector('.e-frozenheader').querySelector('.e-rhandler')) {
+                    this.parent.element.querySelector('.e-frozenheader').querySelector('.e-rhandler').style.height =
+                        groupHeight + 'px';
+                }
+                var colRowElements = [].slice.call(this.parent.element.querySelector('.e-movableheader').querySelector('thead').querySelectorAll('tr'));
+                var columnRows = colRowElements.filter(function (trCell) {
+                    return (trCell.childNodes.length > 0);
+                });
+                var colHeight = groupHeight / columnRows.length;
+                for (var _i = 0, columnRows_2 = columnRows; _i < columnRows_2.length; _i++) {
+                    var element = columnRows_2[_i];
+                    setStyleAttribute(element, { 'height': colHeight + 'px' });
+                    var rowHeader = [].slice.call(element.querySelectorAll('.e-rhandler'));
+                    for (var _a = 0, rowHeader_2 = rowHeader; _a < rowHeader_2.length; _a++) {
+                        var handlerElement = rowHeader_2[_a];
+                        setStyleAttribute(handlerElement, { 'height': colHeight + 'px' });
+                    }
                 }
             }
         }
     };
-    /** @hidden */
     GroupingBar.prototype.alignIcon = function () {
         var element = this.parent.pivotFieldListModule.element;
         var currentWidth;
@@ -24377,7 +24219,7 @@ var GroupingBar = /** @__PURE__ @class */ (function () {
         }
     };
     /**
-     * @hidden
+
      */
     GroupingBar.prototype.setGridRowWidth = function () {
         var colGroupElement = this.parent.element.querySelector('.e-frozenheader').querySelector('colgroup').children[0];
@@ -24401,8 +24243,7 @@ var GroupingBar = /** @__PURE__ @class */ (function () {
                 }
                 var valueColWidth = void 0;
                 if (this.parent.dataType === 'olap') {
-                    valueColWidth = this.parent.renderModule.calculateColWidth((this.parent.dataSourceSettings.values.length > 0 &&
-                        this.parent.olapEngineModule.pivotValues.length > 0) ?
+                    valueColWidth = this.parent.renderModule.calculateColWidth(this.parent.olapEngineModule.pivotValues.length > 0 ?
                         this.parent.olapEngineModule.pivotValues[0].length : 2);
                 }
                 else {
@@ -24497,7 +24338,7 @@ var GroupingBar = /** @__PURE__ @class */ (function () {
         }
     };
     /**
-     * @hidden
+
      */
     GroupingBar.prototype.addEventListener = function () {
         this.handlers = {
@@ -24511,7 +24352,7 @@ var GroupingBar = /** @__PURE__ @class */ (function () {
         this.parent.on(uiUpdate, this.handlers.end, this);
     };
     /**
-     * @hidden
+
      */
     GroupingBar.prototype.removeEventListener = function () {
         if (this.parent.isDestroyed) {
@@ -24523,7 +24364,7 @@ var GroupingBar = /** @__PURE__ @class */ (function () {
     /**
      * To destroy the groupingbar
      * @return {void}
-     * @hidden
+
      */
     GroupingBar.prototype.destroy = function () {
         this.removeEventListener();
@@ -24543,7 +24384,6 @@ var GroupingBar = /** @__PURE__ @class */ (function () {
 /**
  * Module to render Conditional Formatting Dialog
  */
-/** @hidden */
 var ConditionalFormatting = /** @__PURE__ @class */ (function () {
     /** Constructor for conditionalformatting module */
     function ConditionalFormatting(parent) {
@@ -24968,7 +24808,7 @@ var ConditionalFormatting = /** @__PURE__ @class */ (function () {
     /**
      * To check is Hex or not.
      * @returns boolean
-     * @hidden
+
      */
     ConditionalFormatting.prototype.isHex = function (h) {
         var a = parseInt(h, 16);
@@ -24980,7 +24820,7 @@ var ConditionalFormatting = /** @__PURE__ @class */ (function () {
     /**
      * To convert hex to RGB.
      * @returns { r: number, g: number, b: number } | null
-     * @hidden
+
      */
     ConditionalFormatting.prototype.hexToRgb = function (hex) {
         var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
@@ -24993,7 +24833,7 @@ var ConditionalFormatting = /** @__PURE__ @class */ (function () {
     /**
      * To convert color to hex.
      * @returns string
-     * @hidden
+
      */
     ConditionalFormatting.prototype.colourNameToHex = function (colour) {
         var colours = {
@@ -25057,7 +24897,7 @@ var ConditionalFormatting = /** @__PURE__ @class */ (function () {
     /**
      * To destroy the Conditional Formatting dialog
      * @returns void
-     * @hidden
+
      */
     ConditionalFormatting.prototype.destroy = function () {
         if (this.dialog && !this.dialog.isDestroyed) {
@@ -25083,7 +24923,6 @@ PivotView.Inject(Common);
 /**
  * Module for Toolbar
  */
-/** @hidden */
 var Toolbar$2 = /** @__PURE__ @class */ (function () {
     function Toolbar$$1(parent) {
         this.currentReport = '';
@@ -25094,7 +24933,7 @@ var Toolbar$2 = /** @__PURE__ @class */ (function () {
     /**
      * It returns the Module name.
      * @returns string
-     * @hidden
+
      */
     Toolbar$$1.prototype.getModuleName = function () {
         return 'toolbar';
@@ -25130,6 +24969,10 @@ var Toolbar$2 = /** @__PURE__ @class */ (function () {
         if (this.parent.chart) {
             this.parent.chart.width = this.parent.grid ? this.parent.getGridWidthAsNumber().toString() :
                 this.parent.getWidthAsNumber().toString();
+        }
+        if (this.parent.showGroupingBar && this.parent.groupingBarModule &&
+            this.parent.element.querySelector('.' + GROUPING_BAR_CLASS)) {
+            this.parent.groupingBarModule.refreshUI();
         }
     };
     Toolbar$$1.prototype.fetchReports = function () {
@@ -25910,6 +25753,8 @@ var Toolbar$2 = /** @__PURE__ @class */ (function () {
                         this.parent.grid.element.style.display = 'none';
                         this.parent.chart.element.style.display = '';
                         this.parent.currentView = 'Chart';
+                        this.parent.chart.element.style.width = formatUnit(this.parent.grid ? this.parent.getGridWidthAsNumber() : this.parent.getWidthAsNumber());
+                        this.parent.chart.width = formatUnit(this.parent.grid ? this.parent.getGridWidthAsNumber() : this.parent.getWidthAsNumber());
                         if (this.parent.showGroupingBar) {
                             this.parent.element.querySelector('.e-pivot-grouping-bar').style.display = "none";
                             this.parent.element.querySelector('.e-chart-grouping-bar').style.display = "";
@@ -26008,7 +25853,7 @@ var Toolbar$2 = /** @__PURE__ @class */ (function () {
         }
     };
     /**
-     * @hidden
+
      */
     Toolbar$$1.prototype.addEventListener = function () {
         if (this.parent.isDestroyed) {
@@ -26019,13 +25864,13 @@ var Toolbar$2 = /** @__PURE__ @class */ (function () {
     /**
      * To refresh the toolbar
      * @return {void}
-     * @hidden
+
      */
     Toolbar$$1.prototype.refreshToolbar = function () {
         this.createToolbar();
     };
     /**
-     * @hidden
+
      */
     Toolbar$$1.prototype.removeEventListener = function () {
         if (this.parent.isDestroyed) {
@@ -26036,7 +25881,7 @@ var Toolbar$2 = /** @__PURE__ @class */ (function () {
     /**
      * To destroy the toolbar
      * @return {void}
-     * @hidden
+
      */
     Toolbar$$1.prototype.destroy = function () {
         this.removeEventListener();
@@ -26400,7 +26245,7 @@ var NumberFormatting = /** @__PURE__ @class */ (function () {
     /**
      * To add event listener.
      * @returns void
-     * @hidden
+
      */
     NumberFormatting.prototype.addEventListener = function () {
         if (this.parent.isDestroyed) {
@@ -26411,7 +26256,7 @@ var NumberFormatting = /** @__PURE__ @class */ (function () {
     /**
      * To remove event listener.
      * @returns void
-     * @hidden
+
      */
     NumberFormatting.prototype.removeEventListener = function () {
         if (this.parent.isDestroyed) {
@@ -26422,7 +26267,7 @@ var NumberFormatting = /** @__PURE__ @class */ (function () {
     /**
      * To destroy the calculated field dialog
      * @returns void
-     * @hidden
+
      */
     NumberFormatting.prototype.destroy = function () {
         if (this.dialog && !this.dialog.isDestroyed) {
@@ -26444,7 +26289,6 @@ var NumberFormatting = /** @__PURE__ @class */ (function () {
 /**
  * Data modules
  */
-/** @hidden */
 
 /**
  * Export PivotGrid components

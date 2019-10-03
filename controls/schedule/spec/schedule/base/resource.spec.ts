@@ -519,7 +519,7 @@ describe('Schedule Resources', () => {
             schObj.dataBind();
         });
     });
-    
+
     describe('Keyboard interactions with multiple resource grouping', () => {
         let schObj: Schedule;
         // tslint:disable-next-line:no-any
@@ -736,6 +736,53 @@ describe('Schedule Resources', () => {
             expect(schObj.getWorkCellElements().length).toEqual(7);
             let emptyCell: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-work-cells'));
             expect(isNullOrUndefined(emptyCell[126])).toEqual(true);
+        });
+    });
+
+    describe('Event Color by resources for timeline view', () => {
+        let schObj: Schedule;
+        beforeAll((done: Function) => {
+            let model: ScheduleModel = {
+                width: '100%',
+                height: '550px',
+                views: ['TimelineWeek'],
+                selectedDate: new Date(2018, 3, 1),
+                group: { resources: ['Rooms', 'Owners'] },
+                resources: [{
+                    field: 'RoomId', name: 'Rooms',
+                    dataSource: [
+                        { Text: 'Room 1', Id: 1, Color: '#cb6bb2' },
+                        { Text: 'Room 2', Id: 2, Color: '#56ca85' }
+                    ]
+                }, {
+                    field: 'OwnerId', name: 'Owners',
+                    dataSource: [
+                        { Text: 'Nancy', Id: 1, GroupID: 1, Color: '#ffaa00' },
+                        { Text: 'Steven', Id: 2, GroupID: 2, Color: '#f8a398' },
+                        { Text: 'Michael', Id: 3, GroupID: 1, Color: '#7499e1' }
+                    ]
+                }],
+                eventSettings: { resourceColorField: 'Owners', dataSource: resourceData }
+            };
+            schObj = util.createSchedule(model, [], done);
+        });
+        afterAll(() => {
+            util.destroy(schObj);
+        });
+
+        it('event color by owner', () => {
+            let eventBg: string = (schObj.element.querySelector('.e-appointment') as HTMLElement).style.backgroundColor;
+            expect(eventBg).toEqual('rgb(255, 170, 0)');
+        });
+
+        it('event color by rooms', (done: Function) => {
+            schObj.dataBound = () => {
+                let eventBg: string = (schObj.element.querySelector('.e-appointment') as HTMLElement).style.backgroundColor;
+                expect(eventBg).toEqual('rgb(203, 107, 178)');
+                done();
+            };
+            schObj.eventSettings.resourceColorField = 'Rooms';
+            schObj.dataBind();
         });
     });
 

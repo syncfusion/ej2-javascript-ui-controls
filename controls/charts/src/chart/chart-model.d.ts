@@ -8,13 +8,13 @@ export interface CrosshairSettingsModel {
 
     /**
      * If set to true, crosshair line becomes visible.
-     * @default false
+
      */
     enable?: boolean;
 
     /**
      * DashArray for crosshair.
-     * @default ''
+
      */
     dashArray?: string;
 
@@ -29,7 +29,7 @@ export interface CrosshairSettingsModel {
      * * Both: Shows both vertical and horizontal crosshair lines.
      * * Vertical: Shows the vertical line.
      * * Horizontal: Shows the horizontal line.
-     * @default Both
+
      */
     lineType?: LineType;
 
@@ -42,21 +42,21 @@ export interface ZoomSettingsModel {
 
     /**
      * If set to true, chart can be zoomed by a rectangular selecting region on the plot area.
-     * @default false
+
      */
 
     enableSelectionZooming?: boolean;
 
     /**
      * If to true, chart can be pinched to zoom in / zoom out.
-     * @default false
+
      */
 
     enablePinchZooming?: boolean;
 
     /**
      * If set to true, chart can be zoomed by using mouse wheel.
-     * @default false
+
      */
 
     enableMouseWheelZooming?: boolean;
@@ -77,7 +77,7 @@ export interface ZoomSettingsModel {
      * });
      * chart.appendTo('#Chart');
      * ```
-     * @default true
+
      */
 
     enableDeferredZooming?: boolean;
@@ -102,7 +102,7 @@ export interface ZoomSettingsModel {
      * });
      * chart.appendTo('#Chart');
      * ```
-     * @default 'XY'
+
      */
     mode?: ZoomMode;
 
@@ -113,21 +113,21 @@ export interface ZoomSettingsModel {
      * * ZoomOut
      * * Pan
      * * Reset
-     * @default '["Zoom", "ZoomIn", "ZoomOut", "Pan", "Reset"]'
+
      */
 
     toolbarItems?: ToolbarItems[];
 
     /**
      * Specifies whether chart needs to be panned by default.
-     * @default false.
+
      */
 
     enablePan?: boolean;
 
     /**
      * Specifies whether axis needs to have scrollbar.
-     * @default false.
+
      */
 
     enableScrollbar?: boolean;
@@ -142,7 +142,7 @@ export interface ChartModel extends ComponentModel{
     /**
      * The width of the chart as a string accepts input as both like '100px' or '100%'.
      * If specified as '100%, chart renders to the full width of its parent element.
-     * @default null
+
      */
 
     width?: string;
@@ -150,14 +150,14 @@ export interface ChartModel extends ComponentModel{
     /**
      * The height of the chart as a string accepts input both as '100px' or '100%'.
      * If specified as '100%, chart renders to the full height of its parent element.
-     * @default null
+
      */
 
     height?: string;
 
     /**
      * Title of the chart
-     * @default ''
+
      */
 
     title?: string;
@@ -184,7 +184,7 @@ export interface ChartModel extends ComponentModel{
      * });
      * chart.appendTo('#Chart');
      * ```
-     * @default ''
+
      */
 
     dataSource?: Object | DataManager;
@@ -197,7 +197,7 @@ export interface ChartModel extends ComponentModel{
 
     /**
      * SubTitle of the chart
-     * @default ''
+
      */
 
     subTitle?: string;
@@ -222,7 +222,7 @@ export interface ChartModel extends ComponentModel{
 
     /**
      * The background color of the chart that accepts value in hex and rgba as a valid CSS color string.
-     * @default null
+
      */
     background?: string;
 
@@ -278,13 +278,13 @@ export interface ChartModel extends ComponentModel{
 
     /**
      * Palette for the chart series.
-     * @default []
+
      */
     palettes?: string[];
 
     /**
      * Specifies the theme for the chart.
-     * @default 'Material'
+
      */
     theme?: ChartTheme;
 
@@ -319,25 +319,25 @@ export interface ChartModel extends ComponentModel{
      * * dragX: selects points by dragging with respect to horizontal axis.
      * * dragY: selects points by dragging with respect to vertical axis.
      * * lasso: selects points by dragging with respect to free form.
-     * @default None
+
      */
     selectionMode?: SelectionMode;
 
     /**
      * If set true, enables the multi selection in chart. It requires `selectionMode` to be `Point` | `Series` | or `Cluster`.
-     * @default false
+
      */
     isMultiSelect?: boolean;
 
     /**
      * If set true, enables the multi drag selection in chart. It requires `selectionMode` to be `Dragx` | `DragY` | or `DragXY`.
-     * @default false
+
      */
     allowMultiSelection?: boolean;
 
     /**
      * To enable export feature in chart.
-     * @default true
+
      */
     enableExport?: boolean;
 
@@ -357,25 +357,25 @@ export interface ChartModel extends ComponentModel{
      * });
      * chart.appendTo('#Chart');
      * ```
-     * @default []
+
      */
     selectedDataIndexes?: IndexesModel[];
 
     /**
      * Specifies whether a grouping separator should be used for a number.
-     * @default false
+
      */
     useGroupingSeparator?: boolean;
 
     /**
      * It specifies whether the chart should be render in transposed manner or not.
-     * @default false
+
      */
     isTransposed?: boolean;
 
     /**
       * It specifies whether the chart should be rendered in canvas mode
-      * @default false
+
       */
     enableCanvas?: boolean;
 
@@ -386,39 +386,39 @@ export interface ChartModel extends ComponentModel{
 
     /**
      * If set true, Animation process will be executed.
-     * @default true
+
      */
     enableAnimation?: boolean;
 
     /**
      * Description for chart.
-     * @default null
+
      */
     description?: string;
 
     /**
      * TabIndex value for the chart.
-     * @default 1
+
      */
     tabIndex?: number;
 
     /**
      * To enable the side by side placing the points for column type series.
-     * @default true
+
      */
     enableSideBySidePlacement?: boolean;
 
     /**
      * Triggers after resizing of chart
      * @event
-     * @blazorProperty 'Resized'
+
      */
     resized?: EmitType<IResizeEventArgs>;
 
     /**
      * Triggers before the annotation gets rendered.
      * @event
-     * @deprecated
+
      */
 
     annotationRender?: EmitType<IAnnotationRenderEventArgs>;
@@ -426,7 +426,7 @@ export interface ChartModel extends ComponentModel{
     /**
      * Triggers before the prints gets started.
      * @event
-     * @blazorProperty 'OnPrint'
+
      */
 
     beforePrint?: EmitType<IPrintEventArgs>;
@@ -434,35 +434,35 @@ export interface ChartModel extends ComponentModel{
     /**
      * Triggers after chart load.
      * @event
-     * @blazorProperty 'Loaded'
+
      */
     loaded?: EmitType<ILoadedEventArgs>;
 
     /**
      * Triggers before chart load.
      * @event
-     * @deprecated
+
      */
     load?: EmitType<ILoadedEventArgs>;
 
     /**
      * Triggers after animation is completed for the series.
      * @event
-     * @blazorProperty 'OnAnimationComplete'
+
      */
     animationComplete?: EmitType<IAnimationCompleteEventArgs>;
 
     /**
      * Triggers before the legend is rendered.
      * @event
-     * @deprecated
+
      */
     legendRender?: EmitType<ILegendRenderEventArgs>;
 
     /**
      * Triggers before the data label for series is rendered.
      * @event
-     * @deprecated
+
      */
 
     textRender?: EmitType<ITextRenderEventArgs>;
@@ -470,7 +470,7 @@ export interface ChartModel extends ComponentModel{
     /**
      * Triggers before each points for the series is rendered.
      * @event
-     * @deprecated
+
      */
 
     pointRender?: EmitType<IPointRenderEventArgs>;
@@ -478,7 +478,7 @@ export interface ChartModel extends ComponentModel{
     /**
      * Triggers before the series is rendered.
      * @event
-     * @deprecated
+
      */
 
     seriesRender?: EmitType<ISeriesRenderEventArgs>;
@@ -486,21 +486,21 @@ export interface ChartModel extends ComponentModel{
     /**
      * Triggers before each axis label is rendered.
      * @event
-     * @deprecated
+
      */
     axisLabelRender?: EmitType<IAxisLabelRenderEventArgs>;
 
     /**
      * Triggers before each axis range is rendered.
      * @event
-     * @deprecated
+
      */
     axisRangeCalculated?: EmitType<IAxisRangeCalculatedEventArgs>;
 
     /**
      * Triggers before each axis multi label is rendered.
      * @event
-     * @deprecated
+
      */
     axisMultiLabelRender?: EmitType<IAxisMultiLabelRenderEventArgs>;
 
@@ -526,7 +526,7 @@ export interface ChartModel extends ComponentModel{
     /**
      * Triggers on hovering the chart.
      * @event
-     * @blazorProperty 'OnChartMouseMove'
+
      */
 
     chartMouseMove?: EmitType<IMouseEventArgs>;
@@ -534,7 +534,7 @@ export interface ChartModel extends ComponentModel{
     /**
      * Triggers on clicking the chart.
      * @event
-     * @blazorProperty 'OnChartMouseClick'
+
      */
 
     chartMouseClick?: EmitType<IMouseEventArgs>;
@@ -542,7 +542,7 @@ export interface ChartModel extends ComponentModel{
     /**
      * Triggers on point click.
      * @event
-     * @blazorProperty 'OnPointClick'
+
      */
 
     pointClick?: EmitType<IPointEventArgs>;
@@ -550,7 +550,7 @@ export interface ChartModel extends ComponentModel{
     /**
      * Triggers on point move.
      * @event
-     * @blazorProperty 'PointMoved'
+
      */
 
     pointMove?: EmitType<IPointEventArgs>;
@@ -558,7 +558,7 @@ export interface ChartModel extends ComponentModel{
     /**
      * Triggers when cursor leaves the chart.
      * @event
-     * @blazorProperty 'OnChartMouseLeave'
+
      */
 
     chartMouseLeave?: EmitType<IMouseEventArgs>;
@@ -566,7 +566,7 @@ export interface ChartModel extends ComponentModel{
     /**
      * Triggers on mouse down.
      * @event
-     * @blazorProperty 'OnChartMouseDown'
+
      */
 
     chartMouseDown?: EmitType<IMouseEventArgs>;
@@ -574,7 +574,7 @@ export interface ChartModel extends ComponentModel{
     /**
      * Triggers on mouse up.
      * @event
-     * @blazorProperty 'OnChartMouseUp'
+
      */
 
     chartMouseUp?: EmitType<IMouseEventArgs>;
@@ -582,7 +582,7 @@ export interface ChartModel extends ComponentModel{
     /**
      * Triggers after the drag selection is completed.
      * @event
-     * @blazorProperty 'OnDragComplete'
+
      */
 
     dragComplete?: EmitType<IDragCompleteEventArgs>;
@@ -590,7 +590,7 @@ export interface ChartModel extends ComponentModel{
     /**
      * Triggers after the selection is completed.
      * @event
-     * @blazorProperty 'OnSelectionComplete'
+
      */
 
     selectionComplete?: EmitType<ISelectionCompleteEventArgs>;
@@ -598,7 +598,7 @@ export interface ChartModel extends ComponentModel{
     /**
      * Triggers after the zoom selection is completed.
      * @event
-     * @deprecated
+
      */
 
     zoomComplete?: EmitType<IZoomCompleteEventArgs>;
@@ -606,21 +606,21 @@ export interface ChartModel extends ComponentModel{
     /**
      * Triggers when start the scroll.
      * @event
-     * @blazorProperty 'OnScrollStart'
+
      */
     scrollStart?: EmitType<IScrollEventArgs>;
 
     /**
      * Triggers after the scroll end.
      * @event
-     * @blazorProperty 'OnScrollEnd'
+
      */
     scrollEnd?: EmitType<IScrollEventArgs>;
 
     /**
      * Triggers when change the scroll.
      * @event
-     * @blazorProperty 'ScrollChanged'
+
      */
     scrollChanged?: EmitType<IScrollEventArgs>;
 
@@ -645,7 +645,7 @@ export interface ChartModel extends ComponentModel{
     /**
      * Defines the currencyCode format of the chart
      * @private
-     * @aspType string
+
      */
     currencyCode?: string;
 

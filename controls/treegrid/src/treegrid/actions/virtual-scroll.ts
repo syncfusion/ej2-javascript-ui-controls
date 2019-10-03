@@ -10,7 +10,7 @@ import { VirtualTreeContentRenderer } from '../renderer/virtual-tree-content-ren
 
 /**
  * TreeGrid Virtual Scroll module will handle Virtualization
- * @hidden
+
  */
 export class VirtualScroll {
     private parent: TreeGrid;
@@ -39,14 +39,14 @@ export class VirtualScroll {
         return 'virtualScroll';
     }
     /**
-     * @hidden
+
      */
     public addEventListener(): void {
         this.parent.on(events.localPagedExpandCollapse, this.collapseExpandVirtualchilds, this);
         this.parent.on(events.pagingActions, this.virtualPageAction, this);
       }
       /**
-       * @hidden
+
        */
       public removeEventListener(): void {
         if (this.parent.isDestroyed) { return; }
@@ -125,7 +125,7 @@ export class VirtualScroll {
     /**
      * To destroy the virtualScroll module 
      * @return {void}
-     * @hidden
+
      */
     public destroy(): void {
         this.removeEventListener();

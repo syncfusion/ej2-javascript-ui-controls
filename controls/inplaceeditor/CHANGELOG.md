@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 17.3.14 (2019-10-03)
+
+### In-place Editor
+
+#### Bug Fixes
+
+- `#247721` - The issue with rendering the MultiSelect type of In-place editor while configuring remote data source has been resolved.
+
 ## 17.3.9-beta (2019-09-20)
 
 ### In-place Editor

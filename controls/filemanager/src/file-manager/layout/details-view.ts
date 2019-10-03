@@ -56,7 +56,7 @@ export class DetailsView {
 
     /**
      * Constructor for the GridView module
-     * @hidden
+
      */
     constructor(parent?: FileManager) {
         Grid.Inject(Resize, ContextMenu, Sort, VirtualScroll);
@@ -559,7 +559,7 @@ export class DetailsView {
             createDeniedDialog(this.parent, data);
             return;
         }
-        let eventArgs: FileOpenEventArgs = { cancel: false, fileDetails: data };
+        let eventArgs: FileOpenEventArgs = { cancel: false, fileDetails: data, module: 'DetailsView' };
         this.parent.trigger('fileOpen', eventArgs, (fileOpenArgs: FileOpenEventArgs) => {
             if (!fileOpenArgs.cancel) {
                 let name: string = getValue('name', data);

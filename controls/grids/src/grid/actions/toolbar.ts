@@ -11,7 +11,7 @@ import { SearchBox } from '../services/focus-strategy';
 
 /**
  * The `Toolbar` module is used to handle ToolBar actions.
- * @hidden
+
  */
 export class Toolbar {
     //internal variables
@@ -67,7 +67,7 @@ export class Toolbar {
     /**
      * Gets the toolbar of the Grid.
      * @return {Element}
-     * @hidden
+
      */
     public getToolbar(): Element {
         return this.toolbar.element;
@@ -209,7 +209,7 @@ export class Toolbar {
      * @param {string[]} items - Defines the collection of itemID of ToolBar items.
      * @param {boolean} isEnable - Defines the items to be enabled or disabled.
      * @return {void}
-     * @hidden
+
      */
     public enableItems(items: string[], isEnable: boolean): void {
         for (let item of items) {

@@ -10,7 +10,7 @@ import { appendChildren } from '../base/util';
 
 /**
  * Edit render module is used to render grid edit row.
- * @hidden
+
  */
 export class DialogEditRender {
     //Internal variables              

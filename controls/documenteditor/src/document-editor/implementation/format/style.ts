@@ -20,12 +20,12 @@ export abstract class WStyle {
 export class WParagraphStyle extends WStyle {
     /**
      * Specifies the paragraph format
-     * @default undefined
+
      */
     public paragraphFormat: WParagraphFormat;
     /**
      * Specifies the character format
-     * @default undefined
+
      */
     public characterFormat: WCharacterFormat;
     constructor(node?: Object) {
@@ -55,7 +55,7 @@ export class WParagraphStyle extends WStyle {
 export class WCharacterStyle extends WStyle {
     /**
      * Specifies the character format
-     * @default undefined
+
      */
     public characterFormat: WCharacterFormat;
     constructor(node?: Object) {

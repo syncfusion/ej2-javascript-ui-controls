@@ -4,7 +4,7 @@ import { PdfViewer, PdfViewerBase } from '../index';
 
 /**
  * TextLayer module is used to handle the text content on the control.
- * @hidden
+
  */
 export class TextLayer {
 

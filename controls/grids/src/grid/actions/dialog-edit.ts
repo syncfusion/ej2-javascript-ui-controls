@@ -5,7 +5,7 @@ import { NormalEdit } from './normal-edit';
 
 /**
  * `DialogEdit` module is used to handle dialog editing actions.
- * @hidden
+
  */
 export class DialogEdit extends NormalEdit {
 

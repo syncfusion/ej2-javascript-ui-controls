@@ -18,90 +18,90 @@ import { FlipDirection } from '../enum/enum';
 export abstract class NodeBase extends ChildProperty<NodeBase> {
     /**
      * Represents the unique id of nodes/connectors
-     * @default ''
+
      */
     @Property('')
     public id: string;
 
     /**
      * Defines the visual order of the node/connector in DOM
-     * @default -1
+
      */
     @Property(-1)
     public zIndex: number;
 
     /**
      * Defines the space to be left between the node and its immediate parent
-     * @default {}
+
      */
     @Complex<MarginModel>({}, Margin)
     public margin: MarginModel;
 
     /**
      * Sets the visibility of the node/connector
-     * @default true
+
      */
     @Property(true)
     public visible: boolean;
 
     /**
      * Defines the collection of connection points of nodes/connectors
-     * @aspDefaultValueIgnore
-     * @blazorDefaultValueIgnore
-     * @default undefined
+
+
+
      */
     @Collection<PointPortModel>([], PointPort)
     public ports: PointPortModel[];
 
     /**
      * Defines whether the node is expanded or not
-     * @default true
+
      */
     @Property(true)
     public isExpanded: boolean;
 
     /** 
      * defines the tooltip for the node
-     * @default {}
+
      */
     @Complex<DiagramTooltipModel>({}, DiagramTooltip)
     public tooltip: DiagramTooltipModel;
 
     /**
      * Defines the expanded state of a node
-     * @default {}
+
      */
     @Complex<IconShapeModel>({}, IconShape)
     public expandIcon: IconShapeModel;
 
     /**
      * Defines the collapsed state of a node
-     * @default {}
+
      */
     @Complex<IconShapeModel>({}, IconShape)
     public collapseIcon: IconShapeModel;
 
     /**
      * Defines whether the node should be automatically positioned or not. Applicable, if layout option is enabled.
-     * @default false
+
      */
     @Property(false)
     public excludeFromLayout: boolean;
 
     /**
      * Allows the user to save custom information/data about a node/connector
-     * @aspDefaultValueIgnore
-     * @blazorDefaultValueIgnore
-     * @default undefined
+
+
+
      */
     @Property()
     public addInfo: Object;
 
     /**
      * Flip the element in Horizontal/Vertical directions
-     * @aspDefaultValueIgnore
-     * @blazorDefaultValueIgnore
-     * @default None
+
+
+
      */
     @Property('None')
     public flip: FlipDirection;

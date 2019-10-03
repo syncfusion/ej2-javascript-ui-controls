@@ -6,6 +6,7 @@ import { InPlaceEditor } from '../../src/inplace-editor/base/index';
 import * as classes from '../../src/inplace-editor/base/classes';
 import { renderEditor, destroy, triggerKeyBoardEvent, safariMobileUA } from './../render.spec';
 import { profile, inMB, getMemoryProfile } from './../common.spec';
+import { DataManager, WebApiAdaptor, Query } from '@syncfusion/ej2-data';
 
 describe('CR ISSUE InPlace-Editor Control', () => {
 
@@ -49,4 +50,188 @@ describe('CR ISSUE InPlace-Editor Control', () => {
             },200);
         })
     })
+
+    describe('EJ2-31305: In-place Editor - Type as MultiSelect with data not binded, when use remote data binding through model property.', () => {
+        let editorObj: any;
+        let ele: HTMLElement;
+        let valueEle: HTMLElement;
+        beforeAll((done: Function): void => {
+            editorObj = renderEditor({
+                mode: 'Inline',
+                type: 'MultiSelect',
+                model: {
+                    dataSource: new DataManager({
+                        url: 'https://ej2services.syncfusion.com/production/web-services/api/Employees',
+                        adaptor: new WebApiAdaptor,
+                        crossDomain: true
+                    }),
+                    query: new Query().select(['FirstName', 'EmployeeID']).take(10).requiresCount(),
+                    fields: { text: 'FirstName', value: 'EmployeeID' },
+                    mode: 'Box',
+                    value: [1]
+                }
+            });
+            ele = editorObj.element;
+            done();
+        });
+        afterAll((): void => {
+            destroy(editorObj);
+        });
+        it('Check whether the popup is loaded with data', (done) => {
+            expect(editorObj.mode).toEqual('Inline');
+            valueEle = <HTMLElement>select('.' + classes.VALUE, ele);
+            valueEle.click();
+            setTimeout(() => {
+                expect(document.querySelectorAll('.e-list-item').length).toEqual(9);
+                done()
+            },1500);
+        });
+    });
+
+    describe('EJ2-31305: In-place Editor - Type as MultiSelect with no initial value', () => {
+        let editorObj: any;
+        let ele: HTMLElement;
+        let valueEle: HTMLElement;
+        beforeAll((done: Function): void => {
+            editorObj = renderEditor({
+                mode: 'Inline',
+                type: 'MultiSelect',
+                model: {
+                    dataSource: new DataManager({
+                        url: 'https://ej2services.syncfusion.com/production/web-services/api/Employees',
+                        adaptor: new WebApiAdaptor,
+                        crossDomain: true
+                    }),
+                    query: new Query().select(['FirstName', 'EmployeeID']).take(10).requiresCount(),
+                    fields: { text: 'FirstName', value: 'EmployeeID' },
+                    mode: 'Box'
+                }
+            });
+            ele = editorObj.element;
+            done();
+        });
+        afterAll((): void => {
+            destroy(editorObj);
+        });
+        it('Check whether the input is focused and popup is loaded with data', (done) => {
+            expect(editorObj.mode).toEqual('Inline');
+            valueEle = <HTMLElement>select('.' + classes.VALUE, ele);
+            valueEle.click();
+            setTimeout(() => {
+                expect(document.querySelector('.e-multiselect.e-input-group').classList.contains('e-input-focus')).toEqual(true);
+                expect(document.querySelectorAll('.e-list-item').length).toEqual(9);
+                done()
+            },1500);
+        });
+    });
+
+    describe('EJ2-31305: In-place Editor - Type as DropDownList with initial value', () => {
+        let editorObj: any;
+        let ele: HTMLElement;
+        let valueEle: HTMLElement;
+        beforeAll((done: Function): void => {
+            editorObj = renderEditor({
+                mode: 'Inline',
+                type: 'DropDownList',
+                model: {
+                    dataSource: new DataManager({
+                        url: 'https://ej2services.syncfusion.com/production/web-services/api/Employees',
+                        adaptor: new WebApiAdaptor,
+                        crossDomain: true
+                    }),
+                    query: new Query().select(['FirstName', 'EmployeeID']).take(10).requiresCount(),
+                    fields: { text: 'FirstName', value: 'EmployeeID' },
+                    value: 1,
+                }
+            });
+            ele = editorObj.element;
+            done();
+        });
+        afterAll((): void => {
+            destroy(editorObj);
+        });
+        it('Check whether the popup is loaded with data', (done) => {
+            expect(editorObj.mode).toEqual('Inline');
+            valueEle = <HTMLElement>select('.' + classes.VALUE, ele);
+            valueEle.click();
+            setTimeout(() => {
+                expect(document.querySelector('.e-ddl.e-input-group').classList.contains('e-input-focus')).toEqual(true);
+                expect(document.querySelectorAll('.e-list-item').length).toEqual(9);
+                done()
+            },1500);
+        });
+    });
+
+    describe('EJ2-31305: In-place Editor - Type as ComboBox with initial value', () => {
+        let editorObj: any;
+        let ele: HTMLElement;
+        let valueEle: HTMLElement;
+        beforeAll((done: Function): void => {
+            editorObj = renderEditor({
+                mode: 'Inline',
+                type: 'ComboBox',
+                model: {
+                    dataSource: new DataManager({
+                        url: 'https://ej2services.syncfusion.com/production/web-services/api/Employees',
+                        adaptor: new WebApiAdaptor,
+                        crossDomain: true
+                    }),
+                    query: new Query().select(['FirstName', 'EmployeeID']).take(10).requiresCount(),
+                    fields: { text: 'FirstName', value: 'EmployeeID' },
+                    value: 1,
+                }
+            });
+            ele = editorObj.element;
+            done();
+        });
+        afterAll((): void => {
+            destroy(editorObj);
+        });
+        it('Check whether the popup is loaded with data', (done) => {
+            expect(editorObj.mode).toEqual('Inline');
+            valueEle = <HTMLElement>select('.' + classes.VALUE, ele);
+            valueEle.click();
+            setTimeout(() => {
+                expect(document.querySelector('.e-ddl.e-input-group').classList.contains('e-input-focus')).toEqual(true);
+                expect(document.querySelectorAll('.e-list-item').length).toEqual(9);
+                done()
+            },1500);
+        });
+    });
+
+    describe('EJ2-31305: In-place Editor - Type as AutoComplete with initial value', () => {
+        let editorObj: any;
+        let ele: HTMLElement;
+        let valueEle: HTMLElement;
+        beforeAll((done: Function): void => {
+            editorObj = renderEditor({
+                mode: 'Inline',
+                type: 'AutoComplete',
+                model: {
+                    dataSource: new DataManager({
+                        url: 'https://ej2services.syncfusion.com/production/web-services/api/Employees',
+                        adaptor: new WebApiAdaptor,
+                        crossDomain: true
+                    }),
+                    query: new Query().select(['FirstName', 'EmployeeID']).take(10).requiresCount(),
+                    fields: { value: 'FirstName' },
+                    value: 'Andrew Fuller',
+                }
+            });
+            ele = editorObj.element;
+            done();
+        });
+        afterAll((): void => {
+            destroy(editorObj);
+        });
+        it('Check whether popup is loaded with data', (done) => {
+            expect(editorObj.mode).toEqual('Inline');
+            valueEle = <HTMLElement>select('.' + classes.VALUE, ele);
+            valueEle.click();
+            setTimeout(() => {
+                expect(document.querySelector('.e-ddl.e-input-group').classList.contains('e-input-focus')).toEqual(true);
+                done()
+            },1500);
+        });
+    });
 })

@@ -2938,6 +2938,10 @@ class Series {
                 }
                 else if (!isNullOrUndefined(this.text) && (cellSetting.bubbleType === 'Size' || cellSetting.bubbleType === 'SizeAndColor')
                     && this.text.toString() !== '') { // Bubble by same color and different size Series
+                    if (this.heatMap.paletteSettings.colorGradientMode !== 'Table' && this.heatMap.paletteSettings.type === 'Gradient') {
+                        this.heatMap.minColorValue = this.heatMap.dataSourceMinValue;
+                        this.heatMap.maxColorValue = this.heatMap.dataSourceMaxValue;
+                    }
                     let tempCircleRadius = this.getRadiusBypercentage(parseFloat(this.text.toString()), heatMap.dataSourceMinValue, heatMap.dataSourceMaxValue, circleRadius);
                     this.renderBubbleCell(rectPosition, tempBorder, x, this.color, borderColor, tempCircleRadius);
                     this.updateLabelVisibleStatus((tempCircleRadius * 2) - 12, (tempCircleRadius * 2) - 6, displayText);
@@ -3662,6 +3666,9 @@ class TwoDimensional {
         this.heatMap.maxColorValue = null;
         this.heatMap.dataMax = [];
         this.heatMap.dataMin = [];
+        if (this.heatMap.paletteSettings.colorGradientMode === 'Column' && xLength < yLength) {
+            xLength = yLength;
+        }
         for (let z = axis[1].valueType === 'Category' ? axis[1].min : 0; z < (this.heatMap.paletteSettings.colorGradientMode === 'Column' ? xLength : yLength); z++) {
             let tempIndex = axis[0].valueType === 'Category' ? axis[0].min : 0;
             this.completeDataSource.push([]);
@@ -3674,7 +3681,7 @@ class TwoDimensional {
             if (this.heatMap.paletteSettings.colorGradientMode === 'Column' && this.heatMap.paletteSettings.type === 'Gradient') {
                 tempVariable = extend([], tempCloneData[cloneDataIndex], null, true);
                 for (let i = 0; i < tempVariable.length; i++) {
-                    if (typeof (tempVariable[i]) === 'object') {
+                    if (typeof (tempVariable[i]) === 'object' && (tempVariable[i]) !== null || undefined || '') {
                         tempVariable[i] = tempVariable[i][0];
                     }
                 }
@@ -3788,6 +3795,9 @@ class TwoDimensional {
     getMinMaxValue(minVal, maxVal, tempVariable) {
         let minMaxValue = [];
         if (this.heatMap.bubbleSizeWithColor) {
+            if (this.heatMap.paletteSettings.colorGradientMode !== 'Table' && this.heatMap.paletteSettings.type === 'Gradient') {
+                this.tempSizeArray = tempVariable;
+            }
             minMaxValue.push(this.getMinValue(minVal, this.tempSizeArray));
             minMaxValue.push(this.getMaxValue(maxVal, this.tempSizeArray));
             this.heatMap.minColorValue = this.getMinValue(this.heatMap.minColorValue, this.tempColorArray);
@@ -5536,7 +5546,7 @@ let HeatMap = class HeatMap extends Component {
         /**
          * The width of the heatmap as a string accepts input as both like '100px' or '100%'.
          * If specified as '100%, heatmap renders to the full width of its parent element.
-         * @default null
+    
          */
         super(...arguments);
         /** @private */

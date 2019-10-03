@@ -14,68 +14,68 @@ import { OlapEngine } from '../../base/olap/engine';
 
 /**
  * PivotCommon is used to manipulate the relational or Multi-Dimensional public methods by using their dataSource
- * @hidden
+
  */
-/** @hidden */
+
 export class PivotCommon {
-    /** @hidden */
+
     public globalize: Internationalization;
-    /** @hidden */
+
     public localeObj: L10n;
-    /** @hidden */
+
     public engineModule: PivotEngine | OlapEngine;
-    /** @hidden */
+
     public dataSourceSettings: IDataOptions;
-    /** @hidden */
+
     public element: HTMLElement;
-    /** @hidden */
+
     public moduleName: string;
-    /** @hidden */
+
     public enableRtl: boolean;
-    /** @hidden */
+
     public isAdaptive: boolean;
-    /** @hidden */
+
     public renderMode: Mode;
-    /** @hidden */
+
     public parentID: string;
-    /** @hidden */
+
     public control: PivotView | PivotFieldList;
-    /** @hidden */
+
     public currentTreeItems: { [key: string]: Object }[] = [];
-    /** @hidden */
+
     public savedTreeFilterPos: { [key: number]: string } = {};
-    /** @hidden */
+
     public currentTreeItemsPos: { [key: string]: number } = {};
-    /** @hidden */
+
     public searchTreeItems: { [key: string]: Object }[] = [];
-    /** @hidden */
+
     public editorLabelElement: HTMLLabelElement;
-    /** @hidden */
+
     public isDataOverflow: boolean = false;
-    /** @hidden */
+
     public isDateField: boolean = false;
-    /** @hidden */
+
     public dataType: string;
 
 
     //Module Declarations
-    /** @hidden */
+
     public nodeStateModified: NodeStateModified;
-    /** @hidden */
+
     public dataSourceUpdate: DataSourceUpdate;
-    /** @hidden */
+
     public eventBase: EventBase;
-    /** @hidden */
+
     public errorDialog: ErrorDialog;
-    /** @hidden */
+
     public filterDialog: FilterDialog;
-    /** @hidden */
+
     public keyboardModule: CommonKeyboardInteraction;
 
     /**
      * Constructor for Pivot Common class
      * @param  {CommonArgs} control?
-     * @hidden
+
      */
     constructor(control: CommonArgs) {
         this.element = control.element;
@@ -100,7 +100,7 @@ export class PivotCommon {
     /**
      * To destroy the groupingbar 
      * @return {void}
-     * @hidden
+
      */
     public destroy(): void {
         if (this.keyboardModule) { this.keyboardModule.destroy(); }

@@ -27,7 +27,7 @@ export interface ResizeClasses {
 
 /**
  * `Resize` module is used to handle Resize to fit for columns.
- * @hidden
+
  * @private
  */
 export class Resize implements IAction {
@@ -49,7 +49,7 @@ export class Resize implements IAction {
 
     /**
      * Constructor for the Grid resize module
-     * @hidden
+
      */
     constructor(parent?: IGrid) {
         this.parent = parent;
@@ -195,7 +195,7 @@ export class Resize implements IAction {
     /**
      * To destroy the resize 
      * @return {void}
-     * @hidden
+
      */
     public destroy(): void {
         let gridElement: Element = this.parent.element;
@@ -222,7 +222,7 @@ export class Resize implements IAction {
     }
     /**
      * To create table for autofit 
-     * @hidden
+
      */
     protected createTable(table: Element, text: Element[], tag: string): number {
         let myTableDiv: HTMLDivElement = this.parent.createElement('div') as HTMLDivElement;
@@ -249,7 +249,7 @@ export class Resize implements IAction {
         return Math.ceil(offsetWidthValue);
     }
     /**
-     * @hidden
+
      */
     public addEventListener(): void {
         if (this.parent.isDestroyed) {
@@ -260,7 +260,7 @@ export class Resize implements IAction {
         this.parent.on(events.contentReady, this.autoFit, this);
     }
     /**
-     * @hidden
+
      */
     public removeEventListener(): void {
         if (this.parent.isDestroyed) {
@@ -270,7 +270,7 @@ export class Resize implements IAction {
         this.parent.off(events.initialEnd, this.wireEvents);
     }
     /**
-     * @hidden
+
      */
     public render(): void {
         this.unwireEvents();

@@ -8,13 +8,13 @@ export interface QRCodeGeneratorModel extends ComponentModel{
 
     /**
      * Defines the height of the QR code model.
-     * @default '100%'
+
      */
     height?: string | number;
 
     /**
      * Defines the width of the QR code model.
-     * @default '100%'
+
      */
     width?: string | number;
 
@@ -22,7 +22,7 @@ export interface QRCodeGeneratorModel extends ComponentModel{
      * Defines the QR code rendering mode.
      * * SVG - Renders the bar-code objects as SVG elements
      * * Canvas - Renders the bar-code in a canvas
-     * @default 'SVG'
+
      */
     mode?: RenderingMode;
 
@@ -33,23 +33,23 @@ export interface QRCodeGeneratorModel extends ComponentModel{
 
     /**
      * Defines the error correction level of the QR code.
-     * @blazorDefaultValueIgnore
-     * @aspDefaultValueIgnore
-     * @aspNumberEnum 
-     * @blazorNumberEnum
-     * @default undefined
+
+
+
+
+
      */
     errorCorrectionLevel?: ErrorCorrectionLevel;
 
     /**
      * Defines the margin properties for the QR code.
-     * @default ''
+
      */
     margin?: MarginModel;
 
     /**
      * Defines the background color of the QR code.
-     * @default 'white'
+
      */
     backgroundColor?: string;
 
@@ -61,29 +61,29 @@ export interface QRCodeGeneratorModel extends ComponentModel{
 
     /**
      * Defines the forecolor of the QR code.
-     * @default 'black'
+
      */
     foreColor?: string;
 
     /**
      * Defines the text properties for the QR code.
-     * @default ''
+
      */
     displayText?: DisplayTextModel;
 
     /**
      * * Defines the version of the QR code.
-     * @aspDefaultValueIgnore
-     * @blazorNumberEnum
-     * @blazorDefaultValueIgnore
-     * @aspNumberEnum 
-     * @default undefined
+
+
+
+
+
      */
     version?: QRCodeVersion;
 
     /**
      * Defines the type of barcode to be rendered.
-     * @default undefined
+
      */
     value?: string;
 

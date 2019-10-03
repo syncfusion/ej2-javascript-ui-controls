@@ -94,7 +94,7 @@ export interface PopupEventArgs {
     cancel?: boolean;
     /** 
      * Defines the TimePicker popup object. 
-     * @deprecated
+
      */
     popup?: Popup;
     /**
@@ -188,14 +188,14 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
     private timeOptions : TimePickerModel;
     /**
      * Gets or sets the width of the TimePicker component. The width of the popup is based on the width of the component.
-     * @default null
+
      */
     @Property(null)
     public width: string | number;
     /**
      * Specifies the root CSS class of the TimePicker that allows to
      * customize the appearance by overriding the styles.
-     * @default null
+
      */
     @Property(null)
     public cssClass: string;
@@ -204,7 +204,7 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
      * resets to previous value. By default, strictMode is in false.
      * > For more details refer to 
      * [`Strict Mode`](../../timepicker/strict-mode/) documentation.
-     * @default false
+
      */
     @Property(false)
     public strictMode: boolean;
@@ -263,8 +263,8 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
      * alt+uparrow<br/></td></tr> 
      * </table>
      * 
-     * @default null
-     * @blazorType object 
+
+
      */
     @Property(null)
     public keyConfigs: { [key: string]: string };
@@ -273,28 +273,28 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
      * based on the culture. 
      * > For more details refer to 
      * [`Format`](../../timepicker/getting-started#setting-the-time-format) documentation.
-     * @default null
-     * @aspType string
-     * @blazorType string
+
+
+
      */
     @Property(null)
     public format: string | TimeFormatObject;
     /**
      * Specifies whether the component to be disabled or not.
-     * @default true
+
      */
     @Property(true)
     public enabled: boolean;
     /**
      * Specifies the component in readonly state. 
-     * @default false
+
      */
     @Property(false)
     public readonly: boolean;
     /**
      * You can add the additional html attributes such as disabled, value etc., to the element.
      * If you configured both property and equivalent html attribute then the component considers the property value.
-     * @default {}
+
      */
     @Property({})
     public htmlAttributes: { [key: string]: string; };
@@ -304,37 +304,37 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
      * Never: The label will never float in the input when the placeholder is available.
      * Always: The floating label will always float above the input.
      * Auto: The floating label will float above the input after focusing or entering a value in the input.
-     * @default Syncfusion.EJ2.Inputs.FloatLabelType.Never
-     * @aspType Syncfusion.EJ2.Inputs.FloatLabelType
-     * @blazorType Syncfusion.EJ2.Inputs.FloatLabelType
-     * @isEnumeration true
+
+
+
+
      */
     @Property('Never')
     public floatLabelType: FloatLabelType | string;
     /**
      * Specifies the placeholder text that is displayed in textbox.
-     * @default null
+
      */
     @Property(null)
     public placeholder: string;
     /**
      * specifies the z-index value of the timePicker popup element.
-     * @default 1000
-     * @aspType int
-     * @blazorType int
+
+
+
      */
     @Property(1000)
     public zIndex: number;
     /** 
      * Enable or disable the persisting component's state between the page reloads. If enabled, following list of states will be persisted.
      * 1. Value
-     * @default false
+
      */
     @Property(false)
     public enablePersistence: boolean;
     /**
      * Specifies whether to show or hide the clear icon.
-     * @default true
+
      */
     @Property(true)
     public showClearButton: boolean;
@@ -342,8 +342,8 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
      * Specifies the time interval between the two adjacent time values in the popup list. 
      * > For more details refer to 
      * [`Format`](../../timepicker/getting-started#setting-the-time-format)documentation.
-     * @default 30
-     * @blazorType int
+
+
      * 
      */
     @Property(30)
@@ -353,15 +353,15 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
      *  the given value is not present in the popup list.
      * > For more details refer to 
      * [`Time Duration`](https://ej2.syncfusion.com/demos/#/material/timepicker/list-formatting.html) sample. 
-     * @default null
-     * @isBlazorNullableType true
+
+
      */
     @Property(null)
     public scrollTo: Date;
     /**
      * Gets or sets the value of the component. The value is parsed based on the culture specific time format.
-     * @default null
-     * @isBlazorNullableType true
+
+
      */
     @Property(null)
     public value: Date;
@@ -369,8 +369,8 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
      * Gets or sets the minimum time value that can be allowed to select in TimePicker.
      * > For more details refer to 
      * [`Time Range`](../../timepicker/time-range/) documentation.
-     * @default 00:00
-     * @blazorDefaultValue new DateTime(1900, 01, 01, 00, 00, 00)
+
+
      */
     @Property(null)
     public min: Date;
@@ -378,8 +378,8 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
      * Gets or sets the maximum time value that can be allowed to select in TimePicker.
      * > For more details refer to 
      * [`Time Range`](../../timepicker/time-range/) documentation.
-     * @default 00:00
-     * @blazorDefaultValue new DateTime(2099, 12, 31, 23, 59, 59)
+
+
      */
     @Property(null)
     public max: Date;
@@ -389,14 +389,14 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
      * 
      * Specifies whether the input textbox is editable or not. Here the user can select the value from the 
      * popup and cannot edit in the input textbox.
-     * @default true
+
      */
     @Property(true)
     public allowEdit: boolean;
     /**
      * Triggers when the value is changed.
      * @event  
-     * @blazorProperty 'ValueChange'
+
      */
     @Event()
     public change: EmitType<ChangeEventArgs>;
@@ -404,7 +404,7 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
     /**
      * Triggers when the component is created.
      * @event
-     * @blazorProperty 'Created'
+
      */
     @Event()
     public created: EmitType<Object>;
@@ -412,28 +412,28 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
     /**
      * Triggers when the component is destroyed.
      * @event
-     * @blazorProperty 'Destroyed'
+
      */
     @Event()
     public destroyed: EmitType<Object>;
     /**
      * Triggers when the popup is opened.
      * @event
-     * @blazorProperty 'OnOpen'
+
      */
     @Event()
     public open: EmitType<PopupEventArgs>;
     /**
      * Triggers while rendering the each popup list item.
      * @event
-     * @blazorProperty 'OnItemRender'
+
      */
     @Event()
     public itemRender: EmitType<ItemEventArgs>;
     /**
      * Triggers when the popup is closed.
      * @event
-     * @blazorProperty 'OnClose'
+
      */
     @Event()
     public close: EmitType<PopupEventArgs>;

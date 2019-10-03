@@ -548,7 +548,7 @@ export class QuickPopups {
         let headerTemplate: HTMLElement = createElement('div', { className: cls.POPUP_HEADER_CLASS });
         if (this.isQuickTemplate(headerType) && this.parent.quickInfoTemplates.header) {
             let headerArgs: Object = extend({}, headerData, { elementType: headerType.toLowerCase() }, true);
-            let templateId: string = this.parent.element.id + '_';
+            let templateId: string = this.parent.element.id;
             let headerTemp: NodeList =
                 this.parent.getQuickInfoTemplatesHeader()(headerArgs, this.parent, 'header', templateId + '_headerTemplate', false);
             append([].slice.call(headerTemp), headerTemplate);
@@ -579,7 +579,7 @@ export class QuickPopups {
         let contentTemplate: HTMLElement = createElement('div', { className: cls.POPUP_CONTENT_CLASS });
         if (this.isQuickTemplate(type) && this.parent.quickInfoTemplates.content) {
             let contentArgs: Object = extend({}, data, { elementType: type.toLowerCase() }, true);
-            let templateId: string = this.parent.element.id + '_';
+            let templateId: string = this.parent.element.id;
             let contentTemp: NodeList =
                 this.parent.getQuickInfoTemplatesContent()(contentArgs, this.parent, 'content', templateId + '_contentTemplate', false);
             append([].slice.call(contentTemp), contentTemplate);
@@ -600,24 +600,34 @@ export class QuickPopups {
                     break;
                 case 'Event':
                     let args: { [key: string]: Object } = this.getFormattedString(data);
-                    content = `<div class="${cls.DATE_TIME_CLASS}">` +
-                        `<div class="${cls.DATE_TIME_ICON_CLASS} ${cls.ICON}"></div><div class="${cls.DATE_TIME_WRAPPER_CLASS} ` +
-                        `${cls.TEXT_ELLIPSIS}"><div class="${cls.DATE_TIME_DETAILS_CLASS} ${cls.TEXT_ELLIPSIS}">${args.details}</div>` +
-                        `${data[this.parent.eventFields.recurrenceRule] ? `<div class="${cls.RECURRENCE_SUMMARY_CLASS} ` +
-                            `${cls.TEXT_ELLIPSIS}">${this.getRecurrenceSummary(data)}</div>` : ''}</div></div>` +
-                        `${data[this.parent.eventFields.location] ? `<div class="${cls.LOCATION_CLASS}"><div class="` +
-                            `${cls.LOCATION_ICON_CLASS} ${cls.ICON}"></div>` +
-                            `<div class="${cls.LOCATION_DETAILS_CLASS} ${cls.TEXT_ELLIPSIS}">` +
-                            `${data[this.parent.eventFields.location]}</div></div>` : ''}` +
-                        `${data[this.parent.eventFields.startTimezone] || data[this.parent.eventFields.endTimezone] ? +
-                            `<div class="${cls.TIME_ZONE_CLASS}"><div class="${cls.TIME_ZONE_ICON_CLASS} ${cls.ICON}"></div><div class=` +
-                            `"${cls.TIME_ZONE_DETAILS_CLASS} ${cls.TEXT_ELLIPSIS}">${this.getTimezone(data)} </div></div>` : ''}` +
-                        `${data[this.parent.eventFields.description] ? `<div class="${cls.DESCRIPTION_CLASS}"><div class="` +
-                            `${cls.DESCRIPTION_ICON_CLASS} ${cls.ICON}"></div><div class="${cls.DESCRIPTION_DETAILS_CLASS} ` +
-                            `${cls.TEXT_ELLIPSIS}">${data[this.parent.eventFields.description]}</div></div>` : ''}` +
-                        `${this.parent.resourceCollection.length > 0 ? `<div class="${cls.RESOURCE_CLASS}"><div class="` +
-                            `${cls.RESOURCE_ICON_CLASS} ${cls.ICON}"></div>` +
-                            `<div class="${cls.RESOURCE_DETAILS_CLASS} ${cls.TEXT_ELLIPSIS}">${resourceText}</div></div>` : ''}`;
+                    content = '<div class="' + cls.DATE_TIME_CLASS + '"><div class="' + cls.DATE_TIME_ICON_CLASS + ' ' + cls.ICON +
+                        '"></div><div class="' + cls.DATE_TIME_WRAPPER_CLASS + ' ' + cls.TEXT_ELLIPSIS + '"><div class="' +
+                        cls.DATE_TIME_DETAILS_CLASS + ' ' + cls.TEXT_ELLIPSIS + '">' + args.details + '</div>';
+                    if (data[this.parent.eventFields.recurrenceRule]) {
+                        content += '<div class="' + cls.RECURRENCE_SUMMARY_CLASS + ' ' + cls.TEXT_ELLIPSIS + '">' +
+                            this.getRecurrenceSummary(data) + '</div>';
+                    }
+                    content += '</div></div>';
+                    if (data[this.parent.eventFields.location]) {
+                        content += '<div class="' + cls.LOCATION_CLASS + '"><div class="' + cls.LOCATION_ICON_CLASS + ' ' +
+                            cls.ICON + '"></div><div class="' + cls.LOCATION_DETAILS_CLASS + ' ' + cls.TEXT_ELLIPSIS + '">' +
+                            data[this.parent.eventFields.location] + '</div></div>';
+                    }
+                    if (data[this.parent.eventFields.startTimezone] || data[this.parent.eventFields.endTimezone]) {
+                        content += '<div class="' + cls.TIME_ZONE_CLASS + '"><div class="' + cls.TIME_ZONE_ICON_CLASS + ' ' + cls.ICON +
+                            '"></div><div class="' + cls.TIME_ZONE_DETAILS_CLASS + ' ' + cls.TEXT_ELLIPSIS + '">' +
+                            this.getTimezone(data) + '</div></div>';
+                    }
+                    if (data[this.parent.eventFields.description]) {
+                        content += '<div class="' + cls.DESCRIPTION_CLASS + '"><div class="' + cls.DESCRIPTION_ICON_CLASS + ' ' + cls.ICON +
+                            '"></div><div class="' + cls.DESCRIPTION_DETAILS_CLASS + ' ' + cls.TEXT_ELLIPSIS + '">' +
+                            data[this.parent.eventFields.description] + '</div></div>';
+                    }
+                    if (this.parent.resourceCollection.length > 0) {
+                        content += '<div class="' + cls.RESOURCE_CLASS + '"><div class="' + cls.RESOURCE_ICON_CLASS + ' ' + cls.ICON +
+                            '"></div><div class="' + cls.RESOURCE_DETAILS_CLASS + ' ' + cls.TEXT_ELLIPSIS + '">' +
+                            resourceText + '</div></div>';
+                    }
                     break;
             }
             let templateWrapper: HTMLElement = createElement('div', { innerHTML: content });
@@ -630,7 +640,7 @@ export class QuickPopups {
         let footerTemplate: HTMLElement = createElement('div', { className: cls.POPUP_FOOTER_CLASS });
         if (this.isQuickTemplate(footerType) && this.parent.quickInfoTemplates.footer) {
             let footerArgs: Object = extend({}, footerData, { elementType: footerType.toLowerCase() }, true);
-            let templateId: string = this.parent.element.id + '_';
+            let templateId: string = this.parent.element.id;
             let footerTemp: NodeList =
                 this.parent.getQuickInfoTemplatesFooter()(footerArgs, this.parent, 'footer', templateId + '_footerTemplate', false);
             append([].slice.call(footerTemp), footerTemplate);
@@ -896,15 +906,7 @@ export class QuickPopups {
             this.parent.currentAction = (this.parent.currentAction === 'Delete') ? 'DeleteSeries' : 'EditSeries';
             switch (this.parent.currentAction) {
                 case 'EditSeries':
-                    let parentEvent: { [key: string]: Object };
-                    let fields: EventFieldsMapping = this.parent.eventFields;
-                    if (this.parent.eventSettings.editFollowingEvents && (!isNullOrUndefined(eventData[fields.followingID]) ||
-                        (!isNullOrUndefined(eventData[fields.recurrenceID]) && eventData[fields.recurrenceID] !== eventData[fields.id]))) {
-                        parentEvent = this.parent.eventBase.getParentEvent(eventData);
-                    } else {
-                        parentEvent = this.parent.eventBase.getRecurrenceEvent(eventData);
-                    }
-                    this.parent.eventWindow.openEditor(parentEvent, this.parent.currentAction);
+                    this.parent.eventWindow.openEditor(this.parent.eventBase.getParentEvent(eventData, true), this.parent.currentAction);
                     break;
                 case 'DeleteSeries':
                     this.parent.crudModule.deleteEvent(eventData, this.parent.currentAction);
@@ -1163,7 +1165,7 @@ export class QuickPopups {
     private documentClick(e: { event: Event }): void {
         let target: Element = e.event.target as Element;
         let classNames: string = '.' + cls.POPUP_WRAPPER_CLASS + ',.' + cls.HEADER_CELLS_CLASS + ',.' + cls.ALLDAY_CELLS_CLASS +
-            ',.' + cls.WORK_CELLS_CLASS + ',.' + cls.APPOINTMENT_CLASS;
+            ',.' + cls.WORK_CELLS_CLASS + ',.' + cls.APPOINTMENT_CLASS + ',.e-popup';
         if (closest(target, '.' + cls.APPOINTMENT_CLASS + ',.' + cls.HEADER_CELLS_CLASS)) {
             this.parent.removeNewEventElement();
         }

@@ -16,7 +16,7 @@ import * as events from '../../common/base/constant';
 /**
  * `AggregateMenu` module to create aggregate type popup.
  */
-/** @hidden */
+
 export class AggregateMenu {
     public parent: PivotView | PivotFieldList;
     private menuInfo: Menu;
@@ -26,7 +26,7 @@ export class AggregateMenu {
 
     /**
      * Constructor for the rener action.
-     * @hidden
+
      */
     constructor(parent?: PivotView | PivotFieldList) {
         this.parent = parent;
@@ -85,7 +85,7 @@ export class AggregateMenu {
         args.element.style.zIndex = (this.menuInfo.element.style.zIndex + 3).toString();
         args.element.style.display = 'inline';
     }
-    /** @hidden */
+
     public createValueSettingsDialog(target: HTMLElement, parentElement: HTMLElement): void {
         this.parentElement = parentElement;
         let valueDialog: HTMLElement = createElement('div', {
@@ -170,7 +170,7 @@ export class AggregateMenu {
             let text: string = (field.caption ? field.caption : field.name);
             fieldDataSource.push({ value: value, text: text });
         }
-        baseField = (baseField && baseField.toString() !== 'undefined' && 'null' ? baseField : fieldDataSource[0].value as string);
+        baseField = (baseField && (baseField.toString() !== 'undefined' && baseField.toString() !== 'null') ? baseField : fieldDataSource[0].value as string);
         fieldItemDataSource = Object.keys(this.parent.engineModule.fieldList[(baseField.toString() !== 'undefined' ?
             baseField : fieldDataSource[0].value as string)].formattedMembers);
         baseItem = (baseItem.toString() !== 'undefined' ? baseItem : fieldItemDataSource[0]);
@@ -372,7 +372,7 @@ export class AggregateMenu {
     /**
      * To destroy the pivot button event listener
      * @return {void}
-     * @hidden
+
      */
     public destroy(): void {
         if (this.parent.isDestroyed) { return; }

@@ -89,30 +89,30 @@ export class DateTimePicker extends DatePicker {
 
     /**
      * Specifies the format of the time value that to be displayed in time popup list.
-     * @default null
+
      */
     @Property(null)
     public timeFormat: string;
     /**
      * Specifies the time interval between the two adjacent time values in the time popup list . 
-     * @default 30
-     * @blazorType int
+
+
      */
     @Property(30)
     public step: number;
     /**
      * Specifies the scroll bar position if there is no value is selected in the timepicker popup list or
      * the given value is not present in the timepicker popup list.
-     * @default null
-     * @isBlazorNullableType true
+
+
      */
     @Property(null)
     public scrollTo: Date;
     /**
      * specifies the z-index value of the popup element.
-     * @default 1000
-     * @aspType int
-     * @blazorType int
+
+
+
      */
     @Property(1000)
     public zIndex: number;
@@ -249,22 +249,22 @@ export class DateTimePicker extends DatePicker {
      * rightarrow<br/></td></tr> 
      * </table>
      * 
-     * @default null
-     * @blazorType object 
+
+
      */
     @Property(null)
     public keyConfigs: { [key: string]: string };
     /**
      * You can add the additional html attributes such as disabled, value etc., to the element.
      * If you configured both property and equivalent html attribute then the component considers the property value.
-     * @default {}
+
      */
     @Property({})
     public htmlAttributes: { [key: string]: string; };
     /** 
      * Enable or disable persisting component's state between page reloads. If enabled, following list of states will be persisted.
      * 1. value
-     * @default false
+
      */
     @Property(false)
     public enablePersistence: boolean;
@@ -274,33 +274,33 @@ export class DateTimePicker extends DatePicker {
      * 
      * Specifies whether the input textbox is editable or not. Here the user can select the value from the 
      * popup and cannot edit in the input textbox.
-     * @default true
+
      */
     @Property(true)
     public allowEdit: boolean;
     /**
      * Specifies the option to enable the multiple dates selection of the calendar.
-     * @default false
+
      * @private
      */
     @Property(false)
     public isMultiSelection: boolean;
     /**
      * Gets or sets multiple selected dates of the calendar.
-     * @default null
+
      * @private
      */
     @Property(null)
     public values: Date[];
     /**
      * Specifies whether to show or hide the clear icon in textbox.
-     * @default true
+
      */
     @Property(true)
     public showClearButton: boolean;
     /**
      * Specifies the placeholder text that to be is displayed in textbox.
-     * @default null
+
      */
     @Property(null)
     public placeholder: string;
@@ -309,7 +309,7 @@ export class DateTimePicker extends DatePicker {
      * date and time value within a specified range or else it 
      * will resets to previous value. By default, strictMode is in false.
      * it allows invalid or out-of-range value with highlighted error class.
-     * @default false
+
      * > For more details refer to 
      * [`Strict Mode`](../../datetimepicker/strict-mode/) documentation.
      */
@@ -318,16 +318,16 @@ export class DateTimePicker extends DatePicker {
     /** 
      * Triggers when popup is opened.
      * @event 
-     * @blazorProperty 'OnOpen'
-     * @blazorType PopupObjectArgs
+
+
      */
     @Event()
     public open: EmitType<Object>;
     /** 
      * Triggers when popup is closed.
      * @event 
-     * @blazorProperty 'OnClose'
-     * @blazorType PopupObjectArgs
+
+
      */
     @Event()
     public close: EmitType<Object>;
@@ -346,14 +346,14 @@ export class DateTimePicker extends DatePicker {
     /** 
      * Triggers when DateTimePicker is created.
      * @event 
-     * @blazorProperty 'Created'
+
      */
     @Event()
     public created: EmitType<Object>;
     /** 
      * Triggers when DateTimePicker is destroyed.
      * @event 
-     * @blazorProperty 'Destroyed'
+
      */
     @Event()
     public destroyed: EmitType<Object>;

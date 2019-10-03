@@ -12,7 +12,7 @@ export class PaletteSettings extends ChildProperty<PaletteSettings> {
 
     /**
      * Specifies the color collection for heat map cell.
-     * @default ''
+
      */
     @Collection<PaletteCollectionModel>([{}], PaletteCollection)
     public palette: PaletteCollectionModel[];
@@ -21,20 +21,20 @@ export class PaletteSettings extends ChildProperty<PaletteSettings> {
      * Specifies the color style
      * * Gradient - Render a HeatMap cells with linear gradient color.
      * * Fixed - Render a HeatMap cells with fixed color.
-     * @default 'Gradient'
+
      */
     @Property('Gradient')
     public type: PaletteType;
 
     /**
      * Specifies the color for empty points in Heatmap.
-     * @default ''
+
      */
     @Property('')
     public emptyPointColor: string;
     /**
      * Specifies the colorGradientMode in Heatmap.
-     * @default 'Table'
+
      */
     @Property('Table')
     public colorGradientMode: ColorGradientMode;

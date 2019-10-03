@@ -435,13 +435,13 @@ class Ajax {
     constructor(options, type, async, contentType) {
         /**
          * A boolean value indicating whether the request should be sent asynchronous or not.
-         * @default true
+    
          */
         this.mode = true;
         /**
          * A boolean value indicating whether to ignore the promise reject.
          * @private
-         * @default true
+    
          */
         this.emitError = true;
         this.options = {};
@@ -5037,7 +5037,7 @@ function enableRtl(status = true) {
 /**
  * To get the numeric CLDR object for given culture
  * @param {string} locale - Specifies the locale for which numericObject to be returned.
- * @ignore
+
  * @private
  */
 function getNumericObject(locale, type) {
@@ -5053,7 +5053,7 @@ function getNumericObject(locale, type) {
  * To get the numeric CLDR  number base object for given culture
  * @param {string} locale - Specifies the locale for which numericObject to be returned.
  * @param {string} currency - Specifies the currency for which numericObject to be returned.
- * @ignore
+
  * @private
  */
 function getNumberDependable(locale, currency) {
@@ -5062,7 +5062,7 @@ function getNumberDependable(locale, currency) {
 }
 /**
  * To get the default date CLDR object.
- * @ignore
+
  * @private
  */
 function getDefaultDateObject(mode) {
@@ -5588,7 +5588,7 @@ let Draggable = Draggable_1 = class Draggable extends Base {
             }
         }
         this.offset = this.calculateParentPosition(element);
-        this.position = this.getMousePosition(evt);
+        this.position = this.getMousePosition(evt, this.isDragScroll);
         let x = this.initialPosition.x - intCordinate.pageX;
         let y = this.initialPosition.y - intCordinate.pageY;
         let distance = Math.sqrt((x * x) + (y * y));
@@ -5684,7 +5684,7 @@ let Draggable = Draggable_1 = class Draggable extends Base {
         }
         let left;
         let top;
-        this.position = this.getMousePosition(evt);
+        this.position = this.getMousePosition(evt, this.isDragScroll);
         let docHeight = this.getDocumentWidthHeight('Height');
         if (docHeight < this.position.top) {
             this.position.top = docHeight;
@@ -5723,10 +5723,10 @@ let Draggable = Draggable_1 = class Draggable extends Base {
             if (this.pageX !== pagex || this.skipDistanceCheck) {
                 let helperWidth = helperElement.offsetWidth + (parseFloat(styles.marginLeft)
                     + parseFloat(styles.marginRight));
-                if (this.dragLimit.left + window.pageXOffset > dLeft) {
+                if (this.dragLimit.left + window.pageXOffset > dLeft && dLeft > 0) {
                     left = this.dragLimit.left;
                 }
-                else if (this.dragLimit.right + window.pageXOffset < dLeft + helperWidth) {
+                else if (this.dragLimit.right + window.pageXOffset < dLeft + helperWidth && dLeft > 0) {
                     left = dLeft - (dLeft - this.dragLimit.right) + window.pageXOffset - helperWidth;
                 }
                 else {
@@ -5736,10 +5736,10 @@ let Draggable = Draggable_1 = class Draggable extends Base {
             if (this.pageY !== pagey || this.skipDistanceCheck) {
                 let helperHeight = helperElement.offsetHeight + (parseFloat(styles.marginTop)
                     + parseFloat(styles.marginBottom));
-                if (this.dragLimit.top + window.pageYOffset > dTop) {
+                if (this.dragLimit.top + window.pageYOffset > dTop && dTop > 0) {
                     top = this.dragLimit.top;
                 }
-                else if (this.dragLimit.bottom + window.pageYOffset < dTop + helperHeight) {
+                else if (this.dragLimit.bottom + window.pageYOffset < dTop + helperHeight && dTop > 0) {
                     top = dTop - (dTop - this.dragLimit.bottom) + window.pageYOffset - helperHeight;
                 }
                 else {
@@ -5849,8 +5849,8 @@ let Draggable = Draggable_1 = class Draggable extends Base {
         }
         if (ele) {
             let elementArea = ele.getBoundingClientRect();
-            eleWidthBound = elementArea.width ? elementArea.width : elementArea.right - elementArea.left;
-            eleHeightBound = elementArea.height ? elementArea.height : elementArea.bottom - elementArea.top;
+            eleWidthBound = ele.scrollWidth ? ele.scrollWidth : elementArea.right - elementArea.left;
+            eleHeightBound = ele.scrollHeight ? ele.scrollHeight : elementArea.bottom - elementArea.top;
             let keys = ['Top', 'Left', 'Bottom', 'Right'];
             let styles = getComputedStyle(ele);
             for (let i = 0; i < keys.length; i++) {
@@ -5883,10 +5883,22 @@ let Draggable = Draggable_1 = class Draggable extends Base {
         }
         return ele;
     }
-    getMousePosition(evt) {
+    getMousePosition(evt, isdragscroll) {
+        /* tslint:disable no-any */
+        let dragEle = evt.srcElement;
         let intCoord = this.getCoordinates(evt);
-        let pageX = this.clone ? intCoord.pageX : (intCoord.clientX + window.pageXOffset) - this.relativeXPosition;
-        let pageY = this.clone ? intCoord.pageY : (intCoord.clientY + window.pageYOffset) - this.relativeYPosition;
+        let pageX;
+        let pageY;
+        if (isdragscroll) {
+            pageX = this.clone ? intCoord.pageX :
+                (intCoord.pageX + dragEle.offsetParent.scrollLeft) - this.relativeXPosition;
+            pageY = this.clone ? intCoord.pageY :
+                (intCoord.pageY + dragEle.offsetParent.scrollTop) - this.relativeYPosition;
+        }
+        else {
+            pageX = this.clone ? intCoord.pageX : (intCoord.pageX + window.pageXOffset) - this.relativeXPosition;
+            pageY = this.clone ? intCoord.pageY : (intCoord.pageY + window.pageYOffset) - this.relativeYPosition;
+        }
         return {
             left: pageX - (this.margin.left + this.cursorAt.left),
             top: pageY - (this.margin.top + this.cursorAt.top)
@@ -5960,6 +5972,9 @@ __decorate$2([
 __decorate$2([
     Property()
 ], Draggable.prototype, "dragArea", void 0);
+__decorate$2([
+    Property()
+], Draggable.prototype, "isDragScroll", void 0);
 __decorate$2([
     Event()
 ], Draggable.prototype, "drag", void 0);

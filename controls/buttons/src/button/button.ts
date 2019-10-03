@@ -32,7 +32,7 @@ export class Button extends Component<HTMLButtonElement> implements INotifyPrope
      * The possible values are:
      * * Left: The icon will be positioned to the left of the text content.
      * * Right: The icon will be positioned to the right of the text content.
-     * @default "left"
+
      */
     @Property('Left')
     public iconPosition: IconPosition;
@@ -40,21 +40,21 @@ export class Button extends Component<HTMLButtonElement> implements INotifyPrope
     /**
      * Defines class/multiple classes separated by a space for the Button that is used to include an icon.
      * Buttons can also include font icon and sprite image.
-     * @default ""
+
      */
     @Property('')
     public iconCss: string;
 
     /**
      * Specifies a value that indicates whether the Button is `disabled` or not.
-     * @default false.
+
      */
     @Property(false)
     public disabled: boolean;
 
     /**
      * Allows the appearance of the Button to be enhanced and visually appealing when set to `true`.
-     * @default false
+
      */
     @Property(false)
     public isPrimary: boolean;
@@ -63,21 +63,21 @@ export class Button extends Component<HTMLButtonElement> implements INotifyPrope
      * Defines class/multiple classes separated by a space in the Button element. The Button types, styles, and
      * size can be defined by using
      * [`this`](http://ej2.syncfusion.com/documentation/button/howto.html?lang=typescript#create-a-block-button).
-     * @default ""
+
      */
     @Property('')
     public cssClass: string;
 
     /**
      * Defines the text `content` of the Button element.
-     * @default ""
+
      */
     @Property('')
     public content: string;
 
     /**
      * Makes the Button toggle, when set to `true`. When you click it, the state changes from normal to active.
-     * @default false
+
      */
     @Property(false)
     public isToggle: boolean;
@@ -92,7 +92,7 @@ export class Button extends Component<HTMLButtonElement> implements INotifyPrope
     /**
      * Triggers once the component rendering is completed.
      * @event
-     * @blazorProperty 'Created'
+
      */
     @Event()
     public created: EmitType<Event>;

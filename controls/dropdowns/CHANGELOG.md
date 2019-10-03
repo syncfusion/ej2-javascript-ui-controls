@@ -2,6 +2,20 @@
 
 ## [Unreleased]
 
+## 17.3.14 (2019-10-03)
+
+### AutoComplete
+
+#### Bug Fixes
+
+- `#248193` - Issue with "once autocomplete popup open is prevented by setting args.cancel as true in beforeOpen event then you can't remove the prevent a popup opening using beforeOpen event" has been resolved.
+
+### MultiSelect
+
+#### Bug Fixes
+
+- `#248288` - Issue with "console error thrown when set the openOnClick property as false in checkbox mode" has been resolved.
+
 ## 17.2.49 (2019-09-04)
 
 ### MultiSelect

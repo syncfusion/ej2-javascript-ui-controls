@@ -10,7 +10,7 @@ import { InputArgs }  from '@syncfusion/ej2-inputs';
 
 /**
  * FilterCellRenderer class which responsible for building filter cell.
- * @hidden 
+
  */
 export class FilterCellRenderer extends CellRenderer implements ICellRenderer<Column> {
 

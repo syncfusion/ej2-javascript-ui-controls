@@ -39,7 +39,8 @@ export class SfdtReader {
      */
     public convertJsonToDocument(json: string): BodyWidget[] {
         let sections: BodyWidget[] = [];
-        let jsonObject: any = JSON.parse(json);
+        let jsonObject: any = json;
+        jsonObject = (jsonObject instanceof Object) ? jsonObject : JSON.parse(jsonObject);
         let characterFormat: any = isNullOrUndefined(jsonObject.characterFormat) ?
             this.viewer.owner.characterFormat : jsonObject.characterFormat;
         this.parseCharacterFormat(characterFormat, this.viewer.characterFormat);
@@ -1070,6 +1071,12 @@ export class SfdtReader {
         }
         if (!isNullOrUndefined(data.bidi)) {
             sectionFormat.bidi = data.bidi;
+        }
+        if (!isNullOrUndefined(data.restartPageNumbering)) {
+            sectionFormat.restartPageNumbering = data.restartPageNumbering;
+        }
+        if (!isNullOrUndefined(data.pageStartingNumber)) {
+            sectionFormat.pageStartingNumber = data.pageStartingNumber;
         }
     }
 

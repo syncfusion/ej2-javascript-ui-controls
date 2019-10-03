@@ -9,7 +9,7 @@ export interface LinearGaugeModel extends ComponentModel{
     /**
      * The width of the Linear gauge as a string in order to provide input as both like '100px' or '100%'.
      * If specified as '100%, gauge will render to the full width of its parent element.
-     * @default null
+
      */
 
     width?: string;
@@ -17,14 +17,14 @@ export interface LinearGaugeModel extends ComponentModel{
     /**
      * The height of the Linear gauge as a string in order to provide input as both like '100px' or '100%'.
      * If specified as '100%, gauge will render to the full height of its parent element.
-     * @default null
+
      */
 
     height?: string;
 
     /**
      * Specifies the gauge will rendered either horizontal or vertical orientation.
-     * @default Vertical
+
      */
     orientation?: Orientation;
 
@@ -42,7 +42,7 @@ export interface LinearGaugeModel extends ComponentModel{
 
     /**
      * The background color of the gauge, which accepts value in hex, rgba as a valid CSS color string.
-     * @default 'transparent'
+
      */
     background?: string;
 
@@ -83,81 +83,81 @@ export interface LinearGaugeModel extends ComponentModel{
 
     /**
      * Specifies color palette for axis ranges.
-     * @default []
+
      */
     rangePalettes?: string[];
 
     /**
      * Specifies whether a grouping separator should be used for a number.
-     * @default false
+
      */
     useGroupingSeparator?: boolean;
 
     /**
      * Specifies the description for linear gauge.
-     * @default null
+
      */
     description?: string;
 
     /**
      * TabIndex value for the gauge.
-     * @default 1
+
      */
     tabIndex?: number;
 
     /**
      * To apply internationalization for gauge
-     * @default null
+
      */
     format?: string;
 
     /**
      * Specifies the theme for the maps.
-     * @default Material
+
      */
     theme?: LinearGaugeTheme;
 
     /**
      * Triggers after gauge loaded.
      * @event
-     * @blazorProperty 'Loaded'
+
      */
     loaded?: EmitType<ILoadedEventArgs>;
 
     /**
      * Triggers before gauge load.
      * @event
-     * @blazorProperty 'OnLoad'
+
      */
     load?: EmitType<ILoadEventArgs>;
 
     /**
      * Triggers after complete the animation for pointer.
      * @event
-     * @blazorProperty 'AnimationCompleted'
+
      */
     animationComplete?: EmitType<IAnimationCompleteEventArgs>;
 
     /**
      * Triggers before each axis label gets rendered.
      * @event
-     * @deprecated
-     * @blazorProperty 'AxisLabelRendering'
+
+
      */
     axisLabelRender?: EmitType<IAxisLabelRenderEventArgs>;
 
     /**
      * Triggers before each annotation gets rendered.
      * @event
-     * @blazorProperty 'AnnotationRendering'
+
      */
     annotationRender?: EmitType<IAnnotationRenderEventArgs>;
 
     /**
      * Triggers before the tooltip get rendered.
      * @event
-     * @deprecated
-     * @blazorProperty 'TooltipRendering'
+
+
      */
 
     tooltipRender?: EmitType<ITooltipRenderEventArgs>;
@@ -165,7 +165,7 @@ export interface LinearGaugeModel extends ComponentModel{
     /**
      * Triggers when mouse move on gauge area.
      * @event
-     * @blazorProperty 'OnGaugeMouseMove'
+
      */
 
     gaugeMouseMove?: EmitType<IMouseEventArgs>;
@@ -173,7 +173,7 @@ export interface LinearGaugeModel extends ComponentModel{
     /**
      * Triggers when mouse leave from the gauge area .
      * @event
-     * @blazorProperty 'OnGaugeMouseLeave'
+
      */
 
     gaugeMouseLeave?: EmitType<IMouseEventArgs>;
@@ -181,7 +181,7 @@ export interface LinearGaugeModel extends ComponentModel{
     /**
      * Triggers when mouse down on gauge area.
      * @event
-     * @blazorProperty 'OnGaugeMouseDown'
+
      */
 
     gaugeMouseDown?: EmitType<IMouseEventArgs>;
@@ -189,7 +189,7 @@ export interface LinearGaugeModel extends ComponentModel{
     /**
      * Triggers when mouse up on gauge area.
      * @event
-     * @blazorProperty 'OnGaugeMouseUp'
+
      */
 
     gaugeMouseUp?: EmitType<IMouseEventArgs>;
@@ -197,8 +197,8 @@ export interface LinearGaugeModel extends ComponentModel{
     /**
      * Triggers while drag the pointer.
      * @event
-     * @deprecated
-     * @blazorProperty 'ValueChange'
+
+
      */
 
     valueChange?: EmitType<IValueChangeEventArgs>;
@@ -206,7 +206,7 @@ export interface LinearGaugeModel extends ComponentModel{
     /**
      * Triggers after window resize.
      * @event
-     * @blazorProperty 'Resizing'
+
      */
 
     resized?: EmitType<IResizeEventArgs>;

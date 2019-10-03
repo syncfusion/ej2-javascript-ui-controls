@@ -89,7 +89,7 @@ export class GanttChart {
             className: cls.chartScrollElement + ' ' + cls.scrollContent, styles: 'position:relative;'
         });
         this.chartBodyContainer.appendChild(this.scrollElement);
-        this.chartBodyContent = createElement('div', { className: cls.chartBodyContent });
+        this.chartBodyContent = createElement('div', { className: cls.chartBodyContent, styles: 'position:relative; overflow: hidden;' });
         this.scrollElement.appendChild(this.chartBodyContent);
         // this.parent.chartRowsModule.createChartTable();
         this.scrollObject = new ChartScroll(this.parent);
@@ -126,6 +126,7 @@ export class GanttChart {
             if (this.chartBodyContent.clientHeight < this.chartBodyContainer.clientHeight) {
                 if (lastRow) {
                     addClass(lastRow.querySelectorAll('td'), 'e-lastrow');
+                    this.chartBodyContent.style.height = formatUnit(this.parent.contentHeight + 1);
                 }
             }
         }
@@ -243,7 +244,7 @@ export class GanttChart {
      */
     private ganttChartMove(e: PointerEvent): void {
         this.parent.notify('chartMouseMove', e);
-        if (!isNullOrUndefined(this.parent.taskFields.dependency)) {
+        if (!isNullOrUndefined(this.parent.taskFields.dependency) && this.parent.connectorLineEditModule) {
             this.parent.connectorLineEditModule.updateConnectorLineEditElement(e);
         }
     }

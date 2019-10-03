@@ -9,7 +9,7 @@ export interface StockChartModel extends ComponentModel{
     /**
      * The width of the stockChart as a string accepts input as both like '100px' or '100%'.
      * If specified as '100%, stockChart renders to the full width of its parent element.
-     * @default null
+
      */
 
     width?: string;
@@ -17,7 +17,7 @@ export interface StockChartModel extends ComponentModel{
     /**
      * The height of the stockChart as a string accepts input both as '100px' or '100%'.
      * If specified as '100%, stockChart renders to the full height of its parent element.
-     * @default null
+
      */
 
     height?: string;
@@ -44,7 +44,7 @@ export interface StockChartModel extends ComponentModel{
      * });
      * financial.appendTo('#financial');
      * ```
-     * @default ''
+
      */
 
     dataSource?: Object | DataManager;
@@ -63,13 +63,13 @@ export interface StockChartModel extends ComponentModel{
 
     /**
      * The background color of the stockChart that accepts value in hex and rgba as a valid CSS color string.
-     * @default null
+
      */
     background?: string;
 
     /**
      * Specifies the theme for the stockChart.
-     * @default 'Material'
+
      */
 
     theme?: ChartTheme;
@@ -119,13 +119,13 @@ export interface StockChartModel extends ComponentModel{
 
     /**
      * It specifies whether the stockChart should be render in transposed manner or not.
-     * @default false
+
      */
     isTransposed?: boolean;
 
     /**
      * Title of the chart
-     * @default ''
+
      */
 
     title?: string;
@@ -160,25 +160,25 @@ export interface StockChartModel extends ComponentModel{
 
     /**
      * It specifies whether the periodSelector to be rendered in financial chart
-     * @default true
+
      */
     enablePeriodSelector?: boolean;
 
     /**
      * Custom Range
-     * @default true
+
      */
     enableCustomRange?: boolean;
 
     /**
      * If set true, enables the animation in chart.
-     * @default false
+
      */
     isSelect?: boolean;
 
     /**
      * It specifies whether the range navigator to be rendered in financial chart
-     * @default true
+
      */
     enableSelector?: boolean;
 
@@ -196,14 +196,14 @@ export interface StockChartModel extends ComponentModel{
     /**
      * Triggers before render the selector
      * @event
-     * @deprecated
+
      */
     selectorRender?: EmitType<IRangeSelectorRenderEventArgs>;
 
     /**
      * Triggers on hovering the stock chart.
      * @event
-     * @blazorProperty 'OnStockChartMouseMove'
+
      */
 
     stockChartMouseMove?: EmitType<IMouseEventArgs>;
@@ -211,7 +211,7 @@ export interface StockChartModel extends ComponentModel{
     /**
      * Triggers when cursor leaves the chart.
      * @event
-     * @blazorProperty 'OnStockChartMouseLeave'
+
      */
 
     stockChartMouseLeave?: EmitType<IMouseEventArgs>;
@@ -219,7 +219,7 @@ export interface StockChartModel extends ComponentModel{
     /**
      * Triggers on mouse down.
      * @event
-     * @blazorProperty 'OnStockChartMouseDown'
+
      */
 
     stockChartMouseDown?: EmitType<IMouseEventArgs>;
@@ -227,7 +227,7 @@ export interface StockChartModel extends ComponentModel{
     /**
      * Triggers on mouse up.
      * @event
-     * @blazorProperty 'OnStockChartMouseUp'
+
      */
 
     stockChartMouseUp?: EmitType<IMouseEventArgs>;
@@ -235,7 +235,7 @@ export interface StockChartModel extends ComponentModel{
     /**
      * Triggers on clicking the stock chart.
      * @event
-     * @blazorProperty 'OnStockChartMouseClick'
+
      */
 
     stockChartMouseClick?: EmitType<IMouseEventArgs>;
@@ -243,7 +243,7 @@ export interface StockChartModel extends ComponentModel{
     /**
      * Triggers on point click.
      * @event
-     * @blazorProperty 'OnPointClick'
+
      */
 
     pointClick?: EmitType<IPointEventArgs>;
@@ -251,7 +251,7 @@ export interface StockChartModel extends ComponentModel{
     /**
      * Triggers on point move.
      * @event
-     * @blazorProperty 'PointMoved'
+
      */
 
     pointMove?: EmitType<IPointEventArgs>;
@@ -265,48 +265,48 @@ export interface StockChartModel extends ComponentModel{
      * * dragXY: selects points by dragging with respect to both horizontal and vertical axes
      * * dragX: selects points by dragging with respect to horizontal axis.
      * * dragY: selects points by dragging with respect to vertical axis.
-     * @default None
+
      */
     selectionMode?: SelectionMode;
 
     /**
      * If set true, enables the multi selection in chart. It requires `selectionMode` to be `Point` | `Series` | or `Cluster`.
-     * @default false
+
      */
     isMultiSelect?: boolean;
 
     /**
      * Triggers before the range navigator rendering
      * @event
-     * @deprecated
+
      */
     load?: EmitType<IStockChartEventArgs>;
 
     /**
      * Triggers after the range navigator rendering
      * @event
-     * @blazorProperty 'Loaded'
+
      */
     loaded?: EmitType<IStockChartEventArgs>;
 
     /**
      * Triggers if the range is changed
      * @event
-     * @blazorProperty 'RangeChange'
+
      */
     rangeChange?: EmitType<IRangeChangeEventArgs>;
 
     /**
      * Triggers before each axis label is rendered.
      * @event
-     * @deprecated
+
      */
     axisLabelRender?: EmitType<IAxisLabelRenderEventArgs>;
 
     /**
      * Triggers before the tooltip for series is rendered.
      * @event
-     * @deprecated
+
      */
 
     tooltipRender?: EmitType<ITooltipRenderEventArgs>;
@@ -314,7 +314,7 @@ export interface StockChartModel extends ComponentModel{
     /**
      * Triggers before the series is rendered.
      * @event
-     * @deprecated
+
      */
 
     seriesRender?: EmitType<ISeriesRenderEventArgs>;
@@ -322,7 +322,7 @@ export interface StockChartModel extends ComponentModel{
     /**
      * Triggers before the series is rendered.
      * @event
-     * @deprecated
+
      */
     stockEventRender?: EmitType<IStockEventRenderArgs>;
 
@@ -342,7 +342,7 @@ export interface StockChartModel extends ComponentModel{
      * });
      * chart.appendTo('#Chart');
      * ```
-     * @default []
+
      */
     selectedDataIndexes?: StockChartIndexesModel[];
 

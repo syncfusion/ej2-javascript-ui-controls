@@ -9,43 +9,43 @@ export interface FieldSettingsModel {
 
     /**
      * Specifies the itemId field for Menu item.
-     * @default 'id'
+
      */
     itemId?: string | string[];
 
     /**
      * Specifies the parentId field for Menu item.
-     * @default 'parentId'
+
      */
     parentId?: string | string[];
 
     /**
      * Specifies the text field for Menu item.
-     * @default 'text'
+
      */
     text?: string | string[];
 
     /**
      * Specifies the css icon field for Menu item.
-     * @default 'iconCss'
+
      */
     iconCss?: string | string[];
 
     /**
      * Specifies the Url field for Menu item.
-     * @default 'url'
+
      */
     url?: string | string[];
 
     /**
      * Specifies the separator field for Menu item.
-     * @default 'separator'
+
      */
     separator?: string | string[];
 
     /**
      * Specifies the children field for Menu item. 
-     * @default 'items'
+
      */
     children?: string | string[];
 
@@ -59,37 +59,37 @@ export interface MenuItemModel {
     /**
      * Defines class/multiple classes separated by a space for the menu Item that is used to include an icon.
      * Menu Item can include font icon and sprite image.
-     * @default null
+
      */
     iconCss?: string;
 
     /**
      * Specifies the id for menu item.
-     * @default ''
+
      */
     id?: string;
 
     /**
      * Specifies separator between the menu items. Separator are either horizontal or vertical lines used to group menu items.
-     * @default false
+
      */
     separator?: boolean;
 
     /**
      * Specifies the sub menu items that is the array of MenuItem model.
-     * @default []
+
      */
     items?: MenuItemModel[];
 
     /**
      * Specifies text for menu item.
-     * @default ''
+
      */
     text?: string;
 
     /**
      * Specifies url for menu item that creates the anchor link to navigate to the url provided.
-     * @default ''
+
      */
     url?: string;
 
@@ -107,22 +107,22 @@ export interface MenuAnimationSettingsModel {
      * * SlideDown: Specifies the sub menu transform with slide down effect.
      * * ZoomIn: Specifies the sub menu transform with zoom in effect.
      * * FadeIn: Specifies the sub menu transform with fade in effect.
-     * @default 'SlideDown'
-     * @aspType Syncfusion.EJ2.Navigations.MenuEffect
-     * @blazorType Syncfusion.EJ2.Navigations.MenuEffect
-     * @isEnumeration true
+
+
+
+
      */
     effect?: MenuEffect;
 
     /**
      * Specifies the time duration to transform object.
-     * @default 400
+
      */
     duration?: number;
 
     /**
      * Specifies the easing effect applied while transform.
-     * @default 'ease'
+
      */
     easing?: string;
 
@@ -137,69 +137,69 @@ export interface MenuBaseModel extends ComponentModel{
     /**
      * Triggers while rendering each menu item.
      * @event
-     * @blazorProperty 'OnItemRender'
+
      */
     beforeItemRender?: EmitType<MenuEventArgs>;
 
     /**
      * Triggers before opening the menu item.
      * @event
-     * @blazorProperty 'OnOpen'
+
      */
     beforeOpen?: EmitType<BeforeOpenCloseMenuEventArgs>;
 
     /**
      * Triggers while opening the menu item.
      * @event
-     * @blazorProperty 'Opened'
+
      */
     onOpen?: EmitType<OpenCloseMenuEventArgs>;
 
     /**
      * Triggers before closing the menu.
      * @event
-     * @blazorProperty 'OnClose'
+
      */
     beforeClose?: EmitType<BeforeOpenCloseMenuEventArgs>;
 
     /**
      * Triggers while closing the menu.
      * @event
-     * @blazorProperty 'Closed'
+
      */
     onClose?: EmitType<OpenCloseMenuEventArgs>;
 
     /**
      * Triggers while selecting menu item.
      * @event
-     * @blazorProperty 'ItemSelected'
+
      */
     select?: EmitType<MenuEventArgs>;
 
     /**
      * Triggers once the component rendering is completed.
      * @event
-     * @blazorProperty 'Created'
+
      */
     created?: EmitType<Event>;
 
     /**
      * Defines class/multiple classes separated by a space in the Menu wrapper.
-     * @default ''
+
      */
     cssClass?: string;
 
     /**
      * Specifies whether to show the sub menu or not on click.
      * When set to true, the sub menu will open only on mouse click.
-     * @default false
+
      */
     showItemOnClick?: boolean;
 
     /**
      * Specifies target element selector in which the ContextMenu should be opened.
      * Specifies target element to open/close Menu while click in Hamburger mode.
-     * @default ''
+
      * @private
      */
     target?: string;
@@ -207,7 +207,7 @@ export interface MenuBaseModel extends ComponentModel{
     /**
      * Specifies the filter selector for elements inside the target in that the context menu will be opened.
      * Not applicable to Menu component.
-     * @default ''
+
      * @private
      */
     filter?: string;
@@ -215,7 +215,7 @@ export interface MenuBaseModel extends ComponentModel{
     /**
      * Specifies the template for Menu item.
      * Not applicable to ContextMenu component.
-     * @default null
+
      * @private
      */
     template?: string;
@@ -223,7 +223,7 @@ export interface MenuBaseModel extends ComponentModel{
     /**
      * Specifies whether to enable / disable the scrollable option in Menu.
      * Not applicable to ContextMenu component.
-     * @default false
+
      * @private
      */
     enableScrolling?: boolean;
@@ -231,7 +231,7 @@ export interface MenuBaseModel extends ComponentModel{
     /**
      * Specifies mapping fields from the dataSource.
      * Not applicable to ContextMenu component.
-     * @default { itemId: "id", text: "text", parentId: "parentId", iconCss: "iconCss", url: "url", separator: "separator",
+
      * children: "items" }
      * @private
      */
@@ -239,13 +239,13 @@ export interface MenuBaseModel extends ComponentModel{
 
     /**
      * Specifies menu items with its properties which will be rendered as Menu.
-     * @default []
+
      */
     items?: MenuItemModel[] | { [key: string]: Object }[];
 
     /**
      * Specifies the animation settings for the sub menu open.
-     * @default { duration: 400, easing: 'ease', effect: 'SlideDown' }
+
      */
     animationSettings?: MenuAnimationSettingsModel;
 

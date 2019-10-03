@@ -179,12 +179,20 @@ export class WParagraphFormat {
         this.tabs = [];
     }
     private getListFormatParagraphFormat(property: string): object {
+        let paragraphFormat: WParagraphFormat = this.getListPargaraphFormat(property);
+        if (!isNullOrUndefined(paragraphFormat)) {
+            // tslint:disable-next-line:max-line-length
+            return paragraphFormat.uniqueParagraphFormat.propertiesHash.get(WUniqueFormat.getPropertyType(WParagraphFormat.uniqueFormatType, property));
+        }
+        return undefined;
+    }
+    private getListPargaraphFormat(property: string): WParagraphFormat {
         if (this.listFormat.listId > -1 && this.listFormat.listLevelNumber > -1) {
             let level: WListLevel = this.listFormat.listLevel;
             let propertyType: number = WUniqueFormat.getPropertyType(WParagraphFormat.uniqueFormatType, property);
-            // tslint:disable-next-line:max-line-length
-            if (!isNullOrUndefined(level) && !isNullOrUndefined(level.paragraphFormat.uniqueParagraphFormat) && level.paragraphFormat.uniqueParagraphFormat.propertiesHash.containsKey(propertyType)) {
-                return level.paragraphFormat.uniqueParagraphFormat.propertiesHash.get(propertyType);
+            if (!isNullOrUndefined(level) && !isNullOrUndefined(level.paragraphFormat.uniqueParagraphFormat) &&
+                level.paragraphFormat.uniqueParagraphFormat.propertiesHash.containsKey(propertyType)) {
+                return level.paragraphFormat;
             } else {
                 return undefined;
             }
@@ -194,29 +202,35 @@ export class WParagraphFormat {
 
     public getPropertyValue(property: string): Object {
         if (!this.hasValue(property)) {
-            let ifListFormat: object = this.getListFormatParagraphFormat(property);
+            let formatInList: object = this.getListFormatParagraphFormat(property);
             if (this.baseStyle instanceof WParagraphStyle) {
+                let currentFormat: WParagraphFormat = this;
                 /* tslint:disable-next-line:no-any */
                 let baseStyle: any = this.baseStyle;
                 while (!isNullOrUndefined(baseStyle)) {
+                    let listParaFormat: WParagraphFormat = baseStyle.paragraphFormat.getListPargaraphFormat(property);
                     if (baseStyle.paragraphFormat.hasValue(property)) {
+                        currentFormat = baseStyle.paragraphFormat;
+                        break;
+                    } else if (!isNullOrUndefined(listParaFormat) && listParaFormat.hasValue(property)) {
+                        currentFormat = listParaFormat;
                         break;
                     } else {
                         baseStyle = baseStyle.basedOn;
                     }
                 }
                 if (!isNullOrUndefined(baseStyle)) {
-                    if (!isNullOrUndefined(ifListFormat) && this.listFormat.listId !== -1
-                        && baseStyle.paragraphFormat.listFormat.listId === -1
-                        || !isNullOrUndefined(ifListFormat) && this.listFormat.listId !== baseStyle.paragraphFormat.listFormat.listId) {
-                        return ifListFormat;
+                    if (!isNullOrUndefined(formatInList) && this.listFormat.listId !== -1
+                        && currentFormat.listFormat.listId === -1
+                        || !isNullOrUndefined(formatInList) && this.listFormat.listId !== currentFormat.listFormat.listId) {
+                        return formatInList;
                     }
                     let propertyType: number = WUniqueFormat.getPropertyType(WParagraphFormat.uniqueFormatType, property);
-                    return baseStyle.paragraphFormat.uniqueParagraphFormat.propertiesHash.get(propertyType);
+                    return currentFormat.uniqueParagraphFormat.propertiesHash.get(propertyType);
                 }
             }
-            if (!isNullOrUndefined(ifListFormat)) {
-                return ifListFormat;
+            if (!isNullOrUndefined(formatInList)) {
+                return formatInList;
             }
         } else {
             let propertyType: number = WUniqueFormat.getPropertyType(WParagraphFormat.uniqueFormatType, property);
@@ -243,7 +257,8 @@ export class WParagraphFormat {
     private documentParagraphFormat(): WParagraphFormat {
         let docParagraphFormat: WParagraphFormat;
         if (!isNullOrUndefined(this.ownerBase)) {
-            if (!isNullOrUndefined((this.ownerBase as ParagraphWidget).bodyWidget)) {
+            // tslint:disable-next-line:max-line-length
+            if (!isNullOrUndefined((this.ownerBase as ParagraphWidget).bodyWidget) && !isNullOrUndefined((this.ownerBase as ParagraphWidget).bodyWidget.page)) {
                 docParagraphFormat = (this.ownerBase as ParagraphWidget).bodyWidget.page.viewer.paragraphFormat;
             }
         }

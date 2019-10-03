@@ -12,3 +12,4 @@ export * from './toolbar';
 export * from './day-markers';
 export * from './context-menu';
 export * from './excel-export';
+export * from './column-menu';

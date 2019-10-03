@@ -47,7 +47,7 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
     /**
      * The width of the Linear gauge as a string in order to provide input as both like '100px' or '100%'.
      * If specified as '100%, gauge will render to the full width of its parent element.
-     * @default null
+
      */
 
     @Property(null)
@@ -56,7 +56,7 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
     /**
      * The height of the Linear gauge as a string in order to provide input as both like '100px' or '100%'.
      * If specified as '100%, gauge will render to the full height of its parent element.
-     * @default null
+
      */
 
     @Property(null)
@@ -64,7 +64,7 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
 
     /**
      * Specifies the gauge will rendered either horizontal or vertical orientation.
-     * @default Vertical
+
      */
     @Property('Vertical')
     public orientation: Orientation;
@@ -85,7 +85,7 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
 
     /**
      * The background color of the gauge, which accepts value in hex, rgba as a valid CSS color string.
-     * @default 'transparent'
+
      */
     @Property(null)
     public background: string;
@@ -133,41 +133,41 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
 
     /**
      * Specifies color palette for axis ranges.
-     * @default []
+
      */
     @Property([])
     public rangePalettes: string[];
 
     /**
      * Specifies whether a grouping separator should be used for a number.
-     * @default false
+
      */
     @Property(false)
     public useGroupingSeparator: boolean;
 
     /**
      * Specifies the description for linear gauge.
-     * @default null
+
      */
     @Property(null)
     public description: string;
 
     /**
      * TabIndex value for the gauge.
-     * @default 1
+
      */
     @Property(1)
     public tabIndex: number;
     /**
      * To apply internationalization for gauge
-     * @default null
+
      */
     @Property(null)
     public format: string;
 
     /**
      * Specifies the theme for the maps.
-     * @default Material
+
      */
     @Property('Material')
     public theme: LinearGaugeTheme;
@@ -175,7 +175,7 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
     /**
      * Triggers after gauge loaded.
      * @event
-     * @blazorProperty 'Loaded'
+
      */
     @Event()
     public loaded: EmitType<ILoadedEventArgs>;
@@ -183,7 +183,7 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
     /**
      * Triggers before gauge load.
      * @event
-     * @blazorProperty 'OnLoad'
+
      */
     @Event()
     public load: EmitType<ILoadEventArgs>;
@@ -191,7 +191,7 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
     /**
      * Triggers after complete the animation for pointer.
      * @event
-     * @blazorProperty 'AnimationCompleted'
+
      */
     @Event()
     public animationComplete: EmitType<IAnimationCompleteEventArgs>;
@@ -199,8 +199,8 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
     /**
      * Triggers before each axis label gets rendered.
      * @event
-     * @deprecated
-     * @blazorProperty 'AxisLabelRendering'
+
+
      */
     @Event()
     public axisLabelRender: EmitType<IAxisLabelRenderEventArgs>;
@@ -208,7 +208,7 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
     /**
      * Triggers before each annotation gets rendered.
      * @event
-     * @blazorProperty 'AnnotationRendering'
+
      */
     @Event()
     public annotationRender: EmitType<IAnnotationRenderEventArgs>;
@@ -216,8 +216,8 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
     /**
      * Triggers before the tooltip get rendered.
      * @event
-     * @deprecated
-     * @blazorProperty 'TooltipRendering'
+
+
      */
 
     @Event()
@@ -226,7 +226,7 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
     /**
      * Triggers when mouse move on gauge area.
      * @event
-     * @blazorProperty 'OnGaugeMouseMove'
+
      */
 
     @Event()
@@ -236,7 +236,7 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
     /**
      * Triggers when mouse leave from the gauge area .
      * @event
-     * @blazorProperty 'OnGaugeMouseLeave'
+
      */
 
     @Event()
@@ -245,7 +245,7 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
     /**
      * Triggers when mouse down on gauge area.
      * @event
-     * @blazorProperty 'OnGaugeMouseDown'
+
      */
 
     @Event()
@@ -254,7 +254,7 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
     /**
      * Triggers when mouse up on gauge area.
      * @event
-     * @blazorProperty 'OnGaugeMouseUp'
+
      */
 
     @Event()
@@ -263,8 +263,8 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
     /**
      * Triggers while drag the pointer.
      * @event
-     * @deprecated
-     * @blazorProperty 'ValueChange'
+
+
      */
 
     @Event()
@@ -273,7 +273,7 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
     /**
      * Triggers after window resize.
      * @event
-     * @blazorProperty 'Resizing'
+
      */
 
     @Event()
@@ -295,13 +295,13 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
     /**
      * @private
      * Calculate the axes bounds for gauge.
-     * @hidden
+
      */
     public gaugeAxisLayoutPanel: AxisLayoutPanel;
     /**
      * @private
      * Render the axis elements for gauge.
-     * @hidden
+
      */
     public axisRenderer: AxisRenderer;
 
@@ -343,7 +343,7 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
     /**
      * @private
      * Constructor for creating the widget
-     * @hidden
+
      */
 
     constructor(options?: LinearGaugeModel, element?: string | HTMLElement) {
@@ -521,7 +521,6 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
         height = (this.availableSize.height - y - this.margin.bottom);
         width = (this.availableSize.width - this.margin.left - this.margin.right);
         this.actualRect = { x: x, y: y, width: width, height: height };
-        this.renderArea();
         if (this.title) {
             this.titleStyle.fontFamily = this.themeStyle.fontFamily || this.titleStyle.fontFamily;
             this.titleStyle.size = this.themeStyle.fontSize || this.titleStyle.size;

@@ -20,14 +20,14 @@ import { Range } from '../axes/axis';
 export class Location extends ChildProperty<Location>  {
     /**
      * X coordinate of the legend in pixels.
-     * @default 0
+
      */
     @Property(0)
     public x: number;
 
     /**
      * Y coordinate of the legend in pixels.
-     * @default 0
+
      */
     @Property(0)
     public y: number;
@@ -39,13 +39,13 @@ export class LegendSettings extends ChildProperty<LegendSettings> {
 
     /**
      * If set to true, legend will be visible.
-     * @default false
+
      */
     @Property(false)
     public visible: boolean;
     /**
      * If set to true, series' visibility collapses based on the legend visibility.
-     * @default true
+
      */
     @Property(true)
     public toggleVisibility: boolean;
@@ -54,7 +54,7 @@ export class LegendSettings extends ChildProperty<LegendSettings> {
      * * Near: Aligns the legend to the left of the chart.
      * * Center: Aligns the legend to the center of the chart.
      * * Far: Aligns the legend to the right of the chart.
-     * @default 'Center'
+
      */
     @Property('Center')
     public alignment: Alignment;
@@ -71,13 +71,13 @@ export class LegendSettings extends ChildProperty<LegendSettings> {
     public shapeBorder: BorderModel;
     /**
      * Option to customize the padding between legend items.
-     * @default 8
+
      */
     @Property(8)
     public padding: number;
     /**
      * Opacity of the legend.
-     * @default 1
+
      */
     @Property(1)
     public opacity: number;
@@ -88,25 +88,25 @@ export class LegendSettings extends ChildProperty<LegendSettings> {
      * * Left: Displays the legend at the left of the circular this.gauge.
      * * Bottom: Displays the legend at the bottom of the circular this.gauge.
      * * Right: Displays the legend at the right of the circular this.gauge.
-     * @default 'Auto'
+
      */
     @Property('Auto')
     public position: LegendPosition;
     /**
      * Customize the legend shape of the maps.
-     * @default Circle
+
      */
     @Property('Circle')
     public shape: GaugeShape;
     /**
      * The height of the legend in pixels.
-     * @default null
+
      */
     @Property(null)
     public height: string;
     /**
      * The width of the legend in pixels.
-     * @default null
+
      */
     @Property(null)
     public width: string;
@@ -117,19 +117,19 @@ export class LegendSettings extends ChildProperty<LegendSettings> {
     public textStyle: FontModel;
     /**
      * Height of the shape
-     * @default 10
+
      */
     @Property(10)
     public shapeHeight: number;
     /**
      * Width of the shape
-     * @default 10
+
      */
     @Property(10)
     public shapeWidth: number;
     /**
      * Padding for the shape
-     * @default 5
+
      */
     @Property(5)
     public shapePadding: number;
@@ -156,7 +156,7 @@ export class LegendSettings extends ChildProperty<LegendSettings> {
     public location: LocationModel;
     /**
      * Options to customize the legend background
-     * @default 'transparent'
+
      */
     @Property('transparent')
     public background: string;

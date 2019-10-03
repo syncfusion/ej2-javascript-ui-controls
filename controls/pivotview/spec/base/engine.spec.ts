@@ -2145,7 +2145,7 @@ describe('PivotView spec', () => {
                 isDrillThrough: undefined,
                 localeObj: undefined
             };
-            let pivotEngine: PivotEngine = new PivotEngine(); pivotEngine.renderEngine(dataSourceSettings,customProperties);
+            let pivotEngine: PivotEngine = new PivotEngine(); pivotEngine.renderEngine(dataSourceSettings, customProperties);
             it("Ensure initial rendering", () => {
                 expect((pivotEngine.pivotValues[3][0] as IDataSet).formattedText).toBe("Canada");
                 customProperties = {
@@ -2160,7 +2160,7 @@ describe('PivotView spec', () => {
                     headerDelimiter: '##',
                     sortOrder: 'Ascending'
                 };
-                pivotEngine = new PivotEngine(); pivotEngine.renderEngine(dataSourceSettings,customProperties);
+                pivotEngine = new PivotEngine(); pivotEngine.renderEngine(dataSourceSettings, customProperties);
             });
             it("With value sorting - Ascending", () => {
                 expect((pivotEngine.pivotValues[3][0] as IDataSet).actualText).toBe("United Kingdom");
@@ -2169,24 +2169,24 @@ describe('PivotView spec', () => {
                     headerDelimiter: '##',
                     sortOrder: 'Descending'
                 };
-                pivotEngine = new PivotEngine(); pivotEngine.renderEngine(dataSourceSettings,customProperties);
+                pivotEngine = new PivotEngine(); pivotEngine.renderEngine(dataSourceSettings, customProperties);
             });
             it("With value sorting - Descending", () => {
                 expect((pivotEngine.pivotValues[3][0] as IDataSet).formattedText).toBe("United States");
                 dataSourceSettings.expandAll = true;
-                pivotEngine = new PivotEngine(); pivotEngine.renderEngine(dataSourceSettings,customProperties);
+                pivotEngine = new PivotEngine(); pivotEngine.renderEngine(dataSourceSettings, customProperties);
             });
             it("Expand All", () => {
                 expect((pivotEngine.pivotValues[23][0] as IDataSet).hasChild).toBeFalsy;
-                dataSourceSettings.excludeFields = ['State','Date'];
-                pivotEngine = new PivotEngine(); pivotEngine.renderEngine(dataSourceSettings,customProperties);
+                dataSourceSettings.excludeFields = ['State', 'Date'];
+                pivotEngine = new PivotEngine(); pivotEngine.renderEngine(dataSourceSettings, customProperties);
             });
             it("Exclude Fields", () => {
                 expect((pivotEngine.pivotValues[3][0] as IDataSet).hasChild).toBeFalsy;
                 dataSourceSettings.excludeFields = [];
                 dataSourceSettings.calculatedFieldSettings = [{ name: 'Total', formula: '"Sum(Amount)"+"Sum(Quantity)"' }];
                 dataSourceSettings.values = [{ name: 'Amount' }, { name: 'Quantity' }, { name: 'Total' }];
-                pivotEngine = new PivotEngine(); pivotEngine.renderEngine(dataSourceSettings,customProperties);
+                pivotEngine = new PivotEngine(); pivotEngine.renderEngine(dataSourceSettings, customProperties);
             });
             it("Calculated Field", () => {
                 expect((pivotEngine.pivotValues[3][0] as IDataSet).hasChild).toBeFalsy;

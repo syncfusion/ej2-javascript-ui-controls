@@ -9,6 +9,7 @@ import { ElementInfo, HelperMethods, Point, WidthInfo } from '../editor/editor-h
 import { HeaderFooterType, TabLeader } from '../../base/types';
 import { TextPosition } from '..';
 import { ChartComponent } from '@syncfusion/ej2-office-chart';
+import { TextHelper } from './text-helper';
 /** 
  * @private
  */
@@ -3335,15 +3336,20 @@ export class LineWidget implements IWidget {
         let line: LineWidget = inline.line as LineWidget;
         let lineIndex: number = inline.line.paragraph.childWidgets.indexOf(inline.line);
         let bidi: boolean = line.paragraph.bidi;
-        for (let i: number = !bidi ? 0 : line.children.length - 1; i > -1 && i < line.children.length; bidi ? i-- : i++) {
-            let inlineElement: ElementBox = line.children[i] as ElementBox;
-            if (inline === inlineElement) {
-                break;
+        if (!bidi) {
+            for (let i: number = 0; i < line.children.length; i++) {
+                let inlineElement: ElementBox = line.children[i] as ElementBox;
+                if (inline === inlineElement) {
+                    break;
+                }
+                if (inlineElement instanceof ListTextElementBox) {
+                    continue;
+                }
+                textIndex += inlineElement.length;
             }
-            if (inlineElement instanceof ListTextElementBox) {
-                continue;
-            }
-            textIndex += inlineElement.length;
+        } else {
+            let elementInfo: ElementInfo = this.getInlineForOffset(textIndex, true, inline);
+            textIndex = elementInfo.index;
         }
         return textIndex;
     }
@@ -3353,23 +3359,114 @@ export class LineWidget implements IWidget {
     public getEndOffset(): number {
         let startOffset: number = 0;
         let count: number = 0;
-        for (let i: number = 0; i < this.children.length; i++) {
-            let inlineElement: ElementBox = this.children[i] as ElementBox;
-            if (inlineElement.length === 0) {
-                continue;
+        // let line: LineWidget = this.line as LineWidget;
+        // let lineIndex: number = thtis.line.paragraph.childWidgets.indexOf(inline.line);
+        let bidi: boolean = this.paragraph.bidi;
+        if (!bidi) {
+            for (let i: number = 0; i < this.children.length; i++) {
+                let inlineElement: ElementBox = this.children[i] as ElementBox;
+                if (inlineElement.length === 0) {
+                    continue;
+                }
+                if (inlineElement instanceof ListTextElementBox) {
+                    continue;
+                }
+                if (inlineElement instanceof TextElementBox || inlineElement instanceof EditRangeStartElementBox
+                    || inlineElement instanceof ImageElementBox || inlineElement instanceof EditRangeEndElementBox
+                    || inlineElement instanceof BookmarkElementBox || (inlineElement instanceof FieldElementBox
+                        && HelperMethods.isLinkedFieldCharacter((inlineElement as FieldElementBox)))) {
+                    startOffset = count + inlineElement.length;
+                }
+                count += inlineElement.length;
             }
-            if (inlineElement instanceof ListTextElementBox) {
-                continue;
-            }
-            if (inlineElement instanceof TextElementBox || inlineElement instanceof EditRangeStartElementBox
-                || inlineElement instanceof ImageElementBox || inlineElement instanceof EditRangeEndElementBox
-                || inlineElement instanceof BookmarkElementBox || (inlineElement instanceof FieldElementBox
-                    && HelperMethods.isLinkedFieldCharacter((inlineElement as FieldElementBox)))) {
-                startOffset = count + inlineElement.length;
-            }
-            count += inlineElement.length;
+        } else {
+            let elementInfo: ElementInfo = this.getInlineForOffset(startOffset, false, this.children[0], true);
+            startOffset = elementInfo.index;
         }
         return startOffset;
+    }
+    private getBodyWidget(): BodyWidget {
+        let cntrWidget: Widget = this.paragraph.containerWidget;
+        while (!(cntrWidget instanceof BodyWidget)) {
+            cntrWidget = cntrWidget.containerWidget;
+        }
+        return cntrWidget;
+    }
+    private getInlineForOffset(offset: number, isOffset?: boolean, inline?: ElementBox, isEndOffset?: boolean): ElementInfo {
+        let startElement: ElementBox = this.children[this.children.length - 1] as ElementBox;
+        let endElement: ElementBox;
+        let element: ElementBox = startElement;
+        let viewer: LayoutViewer = this.getBodyWidget().page.viewer;
+        let textHelper: TextHelper = viewer.textHelper;
+        let isApplied: boolean = false;
+        let count: number = 0;
+        let lineLength: number = viewer.selection.getLineLength(this);
+        while (element) {
+            if (!endElement && !(element instanceof TabElementBox && element.text === '\t') &&
+                (element instanceof TextElementBox && !textHelper.isRTLText(element.text)
+                    || !(element instanceof TextElementBox))) {
+                while (element.previousElement && (element.previousElement instanceof TextElementBox
+                    && !textHelper.isRTLText(element.previousElement.text) || element.previousElement instanceof FieldElementBox
+                    || element.previousElement instanceof ListTextElementBox || element instanceof BookmarkElementBox
+                    || element instanceof ImageElementBox)) {
+                    isApplied = true;
+                    element = element.previousElement;
+                    continue;
+                }
+                if (element.previousElement && (isApplied
+                    || (element.previousElement instanceof TextElementBox && textHelper.isRTLText(element.previousElement.text)))) {
+                    endElement = element.previousElement;
+                } else if (!element.previousElement) {
+                    if (element instanceof ListTextElementBox) {
+                        break;
+                    }
+                    endElement = element;
+                }
+                if (element instanceof ListTextElementBox && endElement) {
+                    element = endElement;
+                    endElement = undefined;
+                }
+            }
+            if (isOffset && !isNullOrUndefined(inline)) {
+                if (inline === element) {
+                    return { 'element': element, 'index': offset };
+                }
+                offset += element.length;
+            }
+            else if (isEndOffset) {
+                offset += element.length;
+                if (offset === lineLength) {
+                    return { 'element': element, 'index': offset };
+                }
+            }
+            else {
+                if (offset <= count + element.length) {
+                    return { 'element': element, 'index': offset - count };
+                }
+                count += element.length;
+            }
+            if (element instanceof TextElementBox && textHelper.isRTLText(element.text) ||
+                (element instanceof TabElementBox && element.text === '\t')) {
+                if ((offset === count + 1 || offset > count + 1) && count === lineLength && !element.previousElement) {
+                    break;
+                }
+                element = element.previousElement;
+            }
+            else {
+                if (endElement && (!element.nextElement || element === startElement || element.nextElement instanceof TextElementBox
+                    && textHelper.isRTLText(element.nextElement.text) || element.nextElement instanceof ListTextElementBox)) {
+                    if (offset === count + 1 && count === lineLength) {
+                        break;
+                    }
+                    element = endElement;
+                    endElement = undefined;
+                    isApplied = false;
+                } else {
+                    element = element.nextElement;
+                }
+            }
+        }
+        return { 'element': element, 'index': isEndOffset ? offset : 0 };
     }
     /**
      * @private
@@ -3389,39 +3486,46 @@ export class LineWidget implements IWidget {
                 }
             }
         }
-        for (let i: number = !bidi ? 0 : this.children.length - 1; bidi ? i > -1 : i < this.children.length; bidi ? i-- : i++) {
-            inlineElement = this.children[i] as ElementBox;
-            if (inlineElement instanceof ListTextElementBox) {
-                continue;
-            }
-            if (!isStarted && (inlineElement instanceof TextElementBox || inlineElement instanceof ImageElementBox
-                || inlineElement instanceof BookmarkElementBox || inlineElement instanceof EditRangeEndElementBox
-                || inlineElement instanceof EditRangeStartElementBox
-                || inlineElement instanceof FieldElementBox && HelperMethods.isLinkedFieldCharacter(inlineElement as FieldElementBox))) {
-                isStarted = true;
-            }
-            if (isStarted && offset <= count + inlineElement.length) {
-                // if (inlineElement instanceof BookmarkElementBox) {
-                //     offset += inlineElement.length;
-                //     count += inlineElement.length;
-                //     continue;
-                // }
-                // tslint:disable-next-line:max-line-length
-                if (inlineElement instanceof TextElementBox && ((inlineElement as TextElementBox).text === ' ' && isInsert)) {
-                    let currentElement: ElementBox = this.getNextTextElement(this, i + 1);
-                    inlineElement = !isNullOrUndefined(currentElement) ? currentElement : inlineElement;
-                    indexInInline = isNullOrUndefined(currentElement) ? (offset - count) : 0;
+        if (!bidi) {
+            for (let i: number = 0; i < this.children.length; i++) {
+                inlineElement = this.children[i] as ElementBox;
+                if (inlineElement instanceof ListTextElementBox) {
+                    continue;
+                }
+                if (!isStarted && (inlineElement instanceof TextElementBox || inlineElement instanceof ImageElementBox
+                    || inlineElement instanceof BookmarkElementBox || inlineElement instanceof EditRangeEndElementBox
+                    || inlineElement instanceof EditRangeStartElementBox
+                    || inlineElement instanceof FieldElementBox
+                    && HelperMethods.isLinkedFieldCharacter(inlineElement as FieldElementBox))) {
+                    isStarted = true;
+                }
+                if (isStarted && offset <= count + inlineElement.length) {
+                    // if (inlineElement instanceof BookmarkElementBox) {
+                    //     offset += inlineElement.length;
+                    //     count += inlineElement.length;
+                    //     continue;
+                    // }
+                    // tslint:disable-next-line:max-line-length
+                    if (inlineElement instanceof TextElementBox && ((inlineElement as TextElementBox).text === ' ' && isInsert)) {
+                        let currentElement: ElementBox = this.getNextTextElement(this, i + 1);
+                        inlineElement = !isNullOrUndefined(currentElement) ? currentElement : inlineElement;
+                        indexInInline = isNullOrUndefined(currentElement) ? (offset - count) : 0;
+                        return { 'element': inlineElement, 'index': indexInInline };
+                    }
+                    else {
+                        indexInInline = (offset - count);
+                    }
                     return { 'element': inlineElement, 'index': indexInInline };
                 }
-                else {
-                    indexInInline = (offset - count);
-                }
-                return { 'element': inlineElement, 'index': indexInInline };
+                count += inlineElement.length;
             }
-            count += inlineElement.length;
-        }
-        if (offset > count) {
-            indexInInline = isNullOrUndefined(inlineElement) ? offset : inlineElement.length;
+            if (offset > count) {
+                indexInInline = isNullOrUndefined(inlineElement) ? offset : inlineElement.length;
+            }
+        } else {
+            let elementInfo: ElementInfo = this.getInlineForOffset(offset);
+            inlineElement = elementInfo.element;
+            indexInInline = elementInfo.index;
         }
         return { 'element': inlineElement, 'index': indexInInline };
     }
@@ -3533,9 +3637,9 @@ export abstract class ElementBox {
      * @private
      */
     public ischangeDetected: boolean = false;
-     /**
-      * @private
-      */
+    /**
+     * @private
+     */
     public isVisible: boolean = false;
     /**
      * @private
@@ -3627,7 +3731,8 @@ export abstract class ElementBox {
         }
         if (line.previousLine) {
             this.linkFieldTraversingBackward(line.previousLine, fieldEnd, this);
-        } else if (line.paragraph.previousRenderedWidget instanceof ParagraphWidget) {
+        } else if (line.paragraph.previousRenderedWidget instanceof ParagraphWidget
+            && line.paragraph.previousRenderedWidget.childWidgets.length > 0) {
             let prevParagraph: ParagraphWidget = line.paragraph.previousRenderedWidget as ParagraphWidget;
             // tslint:disable-next-line:max-line-length
             this.linkFieldTraversingBackward(prevParagraph.childWidgets[prevParagraph.childWidgets.length - 1] as LineWidget, fieldEnd, this);
@@ -3669,7 +3774,8 @@ export abstract class ElementBox {
         }
         if (line.nextLine) {
             this.linkFieldTraversingForward(line.nextLine, fieldBegin, this);
-        } else if (line.paragraph.nextRenderedWidget instanceof ParagraphWidget) {
+        } else if (line.paragraph.nextRenderedWidget instanceof ParagraphWidget
+            && line.paragraph.nextRenderedWidget.childWidgets.length > 0) {
             this.linkFieldTraversingForward(line.paragraph.nextRenderedWidget.childWidgets[0] as LineWidget, fieldBegin, this);
         }
         return true;
@@ -3695,7 +3801,8 @@ export abstract class ElementBox {
         }
         if (line.previousLine) {
             this.linkFieldTraversingBackwardSeparator(line.previousLine, fieldSeparator, this);
-        } else if (line.paragraph.nextRenderedWidget instanceof ParagraphWidget) {
+        } else if (line.paragraph.previousRenderedWidget instanceof ParagraphWidget
+            && line.paragraph.previousRenderedWidget.childWidgets.length > 0) {
             // tslint:disable-next-line:max-line-length
             line = line.paragraph.previousRenderedWidget.childWidgets[line.paragraph.previousRenderedWidget.childWidgets.length - 1] as LineWidget;
             this.linkFieldTraversingBackwardSeparator(line, fieldSeparator, this);
@@ -5959,7 +6066,7 @@ export class Page {
     public repeatHeaderRowTableWidget: boolean = false;
     /**
      * Specifies the bodyWidgets
-     * @default []
+
      * @private
      */
     public bodyWidgets: BodyWidget[] = [];
@@ -5971,6 +6078,10 @@ export class Page {
      * @private
      */
     public footerWidget: HeaderFooterWidget = undefined;
+    /**
+     * @private
+     */
+    public currentPageNum: number = 0;
     /**
      * @private
      */

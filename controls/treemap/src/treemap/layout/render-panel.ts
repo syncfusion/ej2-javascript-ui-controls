@@ -465,7 +465,7 @@ export class LayoutPanel {
                 !item['isDrilled'] ? treeMap.enableRtl ? renderText + ' [+]' : '[+] ' + renderText :
                     treeMap.enableRtl ? renderText + ' [-]' : '[-] ' + renderText : renderText;
             textStyle = (isLeafItem ? leaf.labelStyle : levels[index].headerStyle) as Font;
-            textStyle.fontFamily = textStyle.fontFamily || this.treemap.themeStyle.labelFontFamily;
+            textStyle.fontFamily = this.treemap.themeStyle.labelFontFamily || textStyle.fontFamily;
             border = isLeafItem ? leaf.border : levels[index].border;
             position = !isLeafItem ? (levels[index].headerAlignment) === 'Near' ? 'TopLeft' : (levels[index].headerAlignment) === 'Center' ?
                 'TopCenter' : 'TopRight' : leaf.labelPosition;

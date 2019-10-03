@@ -14,13 +14,13 @@ import { flip, fit, isCollide , CollisionCoordinates } from '../common/collision
 export class PositionData extends ChildProperty<PositionData> {
     /**
      * specify the offset left value
-     * @blazorType string
+
      */
     @Property('left')
     public X: string | number;
     /**
      * specify the offset top value.
-     * @blazorType string
+
      */
     @Property('top')
     public Y: string | number;
@@ -29,12 +29,12 @@ export class PositionData extends ChildProperty<PositionData> {
 export interface CollisionAxis {
     /**
      * specify the collision handler for a X-Axis.
-     * @default "none"
+
      */
     X? : CollisionType;
     /**
      * specify the collision handler for a Y-Axis.
-     * @default "none"
+
      */
     Y? : CollisionType;
 }
@@ -92,74 +92,74 @@ export class Popup extends Component<HTMLElement> implements INotifyPropertyChan
     //Popup Options
     /**
      * Specifies the height of the popup element. 
-     * @default 'auto'
+
      */
     @Property('auto')
     public height: string | number;
     /**
      * Specifies the height of the popup element.
-     * @default 'auto'
+
      */
     @Property('auto')
     public width: string | number;
     /**
      * Specifies the content of the popup element, it can be string or HTMLElement.
-     * @default null
+
      */
     @Property(null)
     public content: string | HTMLElement;
     /**
      * Specifies the relative element type of the component.
-     * @default 'container'
+
      */
     @Property('container')
     public targetType: TargetType;
     /**
      * Specifies the collision detectable container element of the component.
-     * @default null
+
      */
     @Property(null)
     public viewPortElement: HTMLElement;
     /**
      * Specifies the collision handler settings of the component.
-     * @default { X: 'none',Y: 'none' } 
+
      */
     @Property({X: 'none', Y: 'none'})
     public collision: CollisionAxis;
     /**
      * Specifies the relative container element of the popup element.Based on the relative element, popup element will be positioned.
      * 
-     * @default 'body'
+
      */
     @Property('')
     public relateTo: HTMLElement | string;
     /**
      * Specifies the popup element position, respective to the relative element.
-     * @default {X:"left", Y:"top"}
+
      */
     @Complex<PositionDataModel>({}, PositionData)
     public position: PositionDataModel;
     /**
      * specifies the popup element offset-x value, respective to the relative element.
-     * @default 0
+
      */
     @Property(0)
     public offsetX: number;
     /**
      * specifies the popup element offset-y value, respective to the relative element.
-     * @default 0
+
      */
     @Property(0)
     public offsetY: number;
     /**
      * specifies the z-index value of the popup element.
-     * @default 1000
+
      */
     @Property(1000)
     public zIndex: number;
     /**
      * specifies the rtl direction state of the popup element.
-     * @default false
+
      */
     @Property(false)
     public enableRtl: boolean;
@@ -168,19 +168,19 @@ export class Popup extends Component<HTMLElement> implements INotifyPropertyChan
      * This property should define either `reposition` or `hide`. 
      * when set `reposition` to this property, the popup position will refresh when scroll any parent container.
      * when set `hide` to this property, the popup will be closed when scroll any parent container. 
-     * @default 'reposition'
+
      */
     @Property('reposition')
     public actionOnScroll: ActionOnScrollType;
     /**
      * specifies the animation that should happen when popup open.
-     * @default 'null'
+
      */
     @Property(null)
     public showAnimation: AnimationModel;
     /**
      * specifies the animation that should happen when popup closes.
-     * @default 'null'
+
      */
     @Property(null)
     public hideAnimation: AnimationModel;

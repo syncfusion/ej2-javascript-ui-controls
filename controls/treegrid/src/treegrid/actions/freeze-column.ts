@@ -7,7 +7,7 @@ import { addClass } from '@syncfusion/ej2-base';
 
 /**
  * TreeGrid Freeze module
- * @hidden
+
  */
 export class Freeze {
     private parent: TreeGrid;
@@ -34,16 +34,36 @@ export class Freeze {
         this.parent.grid.off('dblclick', this.dblClickHandler);
       }
 
-  private rowExpandCollapse(args: { frozenrows: HTMLTableRowElement, action: string,
+  private rowExpandCollapse(args: { detailrows: HTMLTableRowElement[], action: string,
     record?: ITreeData, row?: HTMLTableRowElement }): void {
     let movableRows: HTMLTableRowElement[] = <HTMLTableRowElement[]>this.parent.getMovableDataRows();
-    let frozenrows: HTMLTableRowElement[] = movableRows.filter(
-      (e: HTMLTableRowElement) =>
-        e.classList.contains(
-          'e-gridrowindex' + args.record.index + 'level' + (args.record.level + 1)
-        ));
-    for (let i: number = 0; i < frozenrows.length; i++) {
-      frozenrows[i].style.display = args.action;
+    let frozenrows: HTMLTableRowElement[] = this.parent.getRows();
+    let rows: HTMLTableRowElement[];
+    if (!args.detailrows.length) {
+      rows = movableRows.filter(
+        (e: HTMLTableRowElement) =>
+          e.classList.contains(
+            'e-gridrowindex' + args.record.index + 'level' + (args.record.level + 1)
+          ));
+    } else {
+      rows = args.detailrows;
+    }
+    for (let i: number = 0; i < rows.length; i++) {
+      let rData: ITreeData = this.parent.grid.getRowObjectFromUID(rows[i].getAttribute('data-Uid')).data;
+      rows[i].style.display = args.action;
+      let queryselector: string = args.action === 'none' ? '.e-treecolumn-container .e-treegridcollapse'
+        : '.e-treecolumn-container .e-treegridexpand';
+      if (frozenrows[rows[i].rowIndex].querySelector(queryselector)) {
+        let cRow: HTMLTableRowElement[] = [];
+        for (let i: number = 0; i < movableRows.length; i++) {
+          if (movableRows[i].classList.contains('e-gridrowindex' + rData.index + 'level' + (rData.level + 1))) {
+            cRow.push(movableRows[i]);
+          }
+        }
+        if (cRow.length) {
+          this.rowExpandCollapse({ detailrows: cRow, action: args.action });
+        }
+      }
     }
   }
   private dblClickHandler(e: MouseEvent): void {

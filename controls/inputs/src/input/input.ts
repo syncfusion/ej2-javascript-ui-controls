@@ -102,8 +102,10 @@ export namespace Input {
 
     function _focusFn (): void {
       let label: HTMLElement = <HTMLElement> getParentNode(this).getElementsByClassName('e-float-text')[0];
-      addClass ([label], CLASSNAMES.LABELTOP);
-      if (label.classList.contains(CLASSNAMES.LABELBOTTOM)) { removeClass([label], CLASSNAMES.LABELBOTTOM); }
+      if (!isNullOrUndefined(label)) {
+        addClass ([label], CLASSNAMES.LABELTOP);
+        if (label.classList.contains(CLASSNAMES.LABELBOTTOM)) { removeClass([label], CLASSNAMES.LABELBOTTOM); }
+      }
     }
 
     function _blurFn (): void {
@@ -111,8 +113,10 @@ export namespace Input {
       if ((parent.getElementsByTagName('textarea')[0]) ? parent.getElementsByTagName('textarea')[0].value === '' :
         parent.getElementsByTagName('input')[0].value === '') {
         let label: HTMLElement = <HTMLElement> parent.getElementsByClassName('e-float-text')[0];
-        if (label.classList.contains(CLASSNAMES.LABELTOP)) { removeClass([label], CLASSNAMES.LABELTOP); }
-        addClass([label], CLASSNAMES.LABELBOTTOM); }
+        if (!isNullOrUndefined(label)) {
+            if (label.classList.contains(CLASSNAMES.LABELTOP)) { removeClass([label], CLASSNAMES.LABELTOP); }
+            addClass([label], CLASSNAMES.LABELBOTTOM); }
+        }
     }
 
     function wireFloatingEvents(element: HTMLInputElement | HTMLTextAreaElement): void {

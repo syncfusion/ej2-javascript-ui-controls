@@ -3780,7 +3780,10 @@ var LayerPanel = /** @__PURE__ @class */ (function () {
     LayerPanel.prototype.renderTileLayer = function (panel, layer, layerIndex, bing) {
         var center = new Point(panel.mapObject.centerPosition.longitude, panel.mapObject.centerPosition.latitude);
         panel.currentFactor = panel.calculateFactor(layer);
-        if (isNullOrUndefined(panel.mapObject.tileZoomLevel) || panel.mapObject.tileZoomLevel >= 1) {
+        if (isNullOrUndefined(panel.mapObject.tileZoomLevel)) {
+            panel.mapObject.tileZoomLevel = panel.mapObject.zoomSettings.zoomFactor;
+        }
+        else if (panel.mapObject.zoomSettings.zoomFactor !== 1) {
             panel.mapObject.tileZoomLevel = panel.mapObject.zoomSettings.zoomFactor;
             if (!isNullOrUndefined(panel.mapObject.tileTranslatePoint)) {
                 panel.mapObject.tileTranslatePoint.x = 0;
@@ -7447,7 +7450,7 @@ var Legend = /** @__PURE__ @class */ (function () {
     Legend.prototype.getLegendAlignment = function (map, width, height, legend) {
         var x;
         var y;
-        var spacing = 20;
+        var spacing = 10;
         var totalRect;
         totalRect = extend({}, map.mapAreaRect, totalRect, true);
         var areaX = totalRect.x;
@@ -7465,7 +7468,7 @@ var Legend = /** @__PURE__ @class */ (function () {
                 case 'Bottom':
                     totalRect.height = (areaHeight - height);
                     x = (totalWidth / 2) - (width / 2);
-                    y = (legend.position === 'Top') ? areaY : (areaY + totalRect.height) - spacing;
+                    y = (legend.position === 'Top') ? areaY : (areaY + totalRect.height);
                     totalRect.y = (legend.position === 'Top') ? areaY + height + spacing : areaY;
                     break;
                 case 'Left':
@@ -7494,7 +7497,12 @@ var Legend = /** @__PURE__ @class */ (function () {
                     }
                     break;
             }
-            map.totalRect = totalRect;
+            if (legend.height && legend.width && legend.mode !== 'Interactive') {
+                map.totalRect = totalRect;
+            }
+            else {
+                map.mapAreaRect = totalRect;
+            }
             this.translate = new Point(x, y);
         }
     };

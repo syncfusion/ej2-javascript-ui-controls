@@ -9,7 +9,7 @@ import { FilterHierarchyMode } from '../enum';
 export class Predicate extends ChildProperty<Predicate> {
   /**  
    * Defines the field name of the filter column.
-   * @default ''
+
    */
   @Property()
   public field: string;
@@ -68,16 +68,16 @@ export class Predicate extends ChildProperty<Predicate> {
    * Checks whether the value is less than or equal to the specified value.<br/><br/></td><td colspan=1 rowspan=1> 
    * <br/>Number | Date<br/></td></tr> 
    * </table> 
-   * @default null
-   * @blazorType Syncfusion.EJ2.Blazor.Operator
-   * @blazorDefaultValue Syncfusion.EJ2.Blazor.Operator.None
+
+
+
    */
   @Property()
   public operator: string;
 
   /**  
    * Defines the value used to filter records. 
-   * @default ''
+
    */
   @Property()
   public value: string | number | Date | boolean;
@@ -85,62 +85,62 @@ export class Predicate extends ChildProperty<Predicate> {
   /**  
    * If match case set to true, then filter records with exact match or else  
    * filter records with case insensitive(uppercase and lowercase letters treated as same).  
-   * @default null
+
    */
   @Property()
   public matchCase: boolean;
 
   /**
    * If ignoreAccent is set to true, then filter ignores the diacritic characters or accents while filtering.
-   * @default false
+
    */
   @Property()
   public ignoreAccent: boolean;
 
   /**   
    * Defines the relationship between one filter query and another by using AND or OR predicate.   
-   * @default null
+
    */
   @Property()
   public predicate: string;
 
   /**  
-   * @hidden 
+
    * Defines the actual filter value for the filter column.  
    */
   @Property({})
   public actualFilterValue: Object;
 
   /**  
-   * @hidden 
+
    * Defines the actual filter operator for the filter column.  
    */
   @Property({})
   public actualOperator: Object;
 
   /**
-   * @hidden 
+
    * Defines the type of the filter column.  
    */
   @Property()
   public type: string;
 
   /**  
-   * @hidden 
+
    * Defines the predicate of filter column.  
    */
   @Property()
   public ejpredicate: Object;
 
   /**  
-   * @hidden 
+
    * Defines the UID of filter column.  
    */
   @Property()
   public uid: string;
 
   /**  
-   * @hidden 
+
    * Defines the foreignKey availability in filtered columns.
    */
   @Property()
@@ -154,7 +154,7 @@ export class Predicate extends ChildProperty<Predicate> {
 export class FilterSettings extends ChildProperty<FilterSettings> {
     /**
      * Specifies the columns to be filtered at initial rendering of the TreeGrid. You can also get the columns that were currently filtered.
-     * @default []
+
      */
     @Collection<PredicateModel[]>([], Predicate)
     public columns: PredicateModel[];
@@ -162,7 +162,7 @@ export class FilterSettings extends ChildProperty<FilterSettings> {
      * Defines options for filtering type. The available options are
      * * `Menu` - Specifies the filter type as menu.
      * * `FilterBar` - Specifies the filter type as filterbar.
-     * @default FilterBar
+
      */
     @Property('FilterBar')
     public type: FilterType;
@@ -170,22 +170,22 @@ export class FilterSettings extends ChildProperty<FilterSettings> {
      * Defines the filter bar modes. The available options are,
      * * `OnEnter`: Initiates filter operation after Enter key is pressed.
      * * `Immediate`: Initiates filter operation after a certain time interval. By default, time interval is 1500 ms.
-     * @default Syncfusion.EJ2.Grids.FilterBarMode.OnEnter
-     * @isEnumeration true
-     * @aspType Syncfusion.EJ2.Grids.FilterBarMode
-     * @blazorType Syncfusion.EJ2.Blazor.Grids.FilterBarMode
+
+
+
+
      */
     @Property()
     public mode: FilterBarMode;
     /**
      * Shows or hides the filtered status message on the pager.
-     * @default true
+
      */
     @Property(true)
     public showFilterBarStatus: boolean;
     /**
      * Defines the time delay (in milliseconds) in filtering records when the `Immediate` mode of filter bar is set.
-     * @default 1500
+
      */
     @Property(1500)
     public immediateModeDelay: number;
@@ -194,7 +194,7 @@ export class FilterSettings extends ChildProperty<FilterSettings> {
      * (string, number, date and boolean). Based on the column type, this customize operator list will render in filter menu.
      *
      * > Check the `Filter Menu Operator` customization.
-     * @default null
+
      */
     @Property()
     public operators: ICustomOptr;
@@ -202,7 +202,7 @@ export class FilterSettings extends ChildProperty<FilterSettings> {
      * If ignoreAccent set to true, then filter ignores the diacritic characters or accents while filtering.
      *
      * > Check the [`Diacritics`](../filtering/#diacritics) filtering.
-     * @default false
+
      */
     @Property(false)
     public ignoreAccent: boolean;
@@ -212,7 +212,7 @@ export class FilterSettings extends ChildProperty<FilterSettings> {
      * `Child`: Shows the filtered record with child record. 
      * `Both` : shows the filtered record with both parent and child record.
      * `None` : Shows only filtered record.
-     * @default Parent
+
      */
     @Property('Parent')
     public hierarchyMode: FilterHierarchyMode;

@@ -62,7 +62,7 @@ export class Filter implements IAction {
 
     /**
      * Constructor for Grid filtering module
-     * @hidden
+
      */
     constructor(parent?: IGrid, filterSettings?: FilterSettings, serviceLocator?: ServiceLocator) {
         this.parent = parent;
@@ -74,7 +74,7 @@ export class Filter implements IAction {
     /** 
      * To render filter bar when filtering enabled. 
      * @return {void}  
-     * @hidden
+
      */
     public render(e?: NotifyArgs): void {
         if (DataUtil.getObject('args.isFrozen', e)) { return; }
@@ -118,7 +118,7 @@ export class Filter implements IAction {
     /** 
      * To destroy the filter bar. 
      * @return {void} 
-     * @hidden
+
      */
     public destroy(): void {
         let gridElement: Element = this.parent.element;
@@ -185,7 +185,7 @@ export class Filter implements IAction {
     /** 
      * To update filterSettings when applying filter. 
      * @return {void}
-     * @hidden
+
      */
     public updateModel(): void {
         let col: Column = this.parent.getColumnByField(this.fieldName);
@@ -219,7 +219,7 @@ export class Filter implements IAction {
     /** 
      * To trigger action complete event. 
      * @return {void} 
-     * @hidden
+
      */
     public onActionComplete(e: NotifyArgs): void {
         let args: Object = !this.isRemove ? {
@@ -269,7 +269,7 @@ export class Filter implements IAction {
         }
     }
     /**
-     * @hidden
+
      */
     public addEventListener(): void {
         if (this.parent.isDestroyed) { return; }
@@ -286,7 +286,7 @@ export class Filter implements IAction {
         this.parent.on(events.click, this.filterIconClickHandler, this);
     }
     /**
-     * @hidden
+
      */
     public removeEventListener(): void {
         EventHandler.remove(document, 'click', this.clickHandler);
@@ -556,7 +556,7 @@ export class Filter implements IAction {
      * @param  {string} field - Defines column field name to remove filter.
      * @param  {boolean} isClearFilterBar -  Specifies whether the filter bar value needs to be cleared.
      * @return {void}
-     * @hidden
+
      */
     public removeFilteredColsByField(field: string, isClearFilterBar?: boolean): void {
         let fCell: HTMLInputElement;

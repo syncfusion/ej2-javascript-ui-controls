@@ -1,5 +1,5 @@
 import { Toolbar as tool, ClickEventArgs, MenuItemModel, Menu, ItemModel, BeforeOpenCloseMenuEventArgs } from '@syncfusion/ej2-navigations';
-import { remove, createElement } from '@syncfusion/ej2-base';
+import { remove, createElement, formatUnit } from '@syncfusion/ej2-base';
 import * as events from '../../common/base/constant';
 import { Dialog } from '@syncfusion/ej2-popups';
 import { SaveReportArgs, FetchReportArgs, LoadReportArgs, RemoveReportArgs, RenameReportArgs, ToolbarArgs } from '../base/interface';
@@ -13,11 +13,11 @@ PivotView.Inject(Common);
 /**
  * Module for Toolbar
  */
-/** @hidden */
+
 export class Toolbar {
-    /** @hidden */
+
     public action: string;
-    /** @hidden */
+
     public toolbar: tool;
 
     private parent: PivotView;
@@ -42,7 +42,7 @@ export class Toolbar {
     /**
      * It returns the Module name.
      * @returns string
-     * @hidden
+
      */
     public getModuleName(): string {
         return 'toolbar';
@@ -81,6 +81,10 @@ export class Toolbar {
         if (this.parent.chart) {
             this.parent.chart.width = this.parent.grid ? this.parent.getGridWidthAsNumber().toString() :
                 this.parent.getWidthAsNumber().toString();
+        }
+        if (this.parent.showGroupingBar && this.parent.groupingBarModule &&
+            this.parent.element.querySelector('.' + cls.GROUPING_BAR_CLASS)) {
+            this.parent.groupingBarModule.refreshUI();
         }
     }
 
@@ -876,6 +880,8 @@ export class Toolbar {
                         this.parent.grid.element.style.display = 'none';
                         this.parent.chart.element.style.display = '';
                         this.parent.currentView = 'Chart';
+                        this.parent.chart.element.style.width = formatUnit(this.parent.grid ? this.parent.getGridWidthAsNumber() : this.parent.getWidthAsNumber());
+                        this.parent.chart.width = formatUnit(this.parent.grid ? this.parent.getGridWidthAsNumber() : this.parent.getWidthAsNumber());
                         if (this.parent.showGroupingBar) {
                             (this.parent.element.querySelector('.e-pivot-grouping-bar') as HTMLElement).style.display = "none";
                             (this.parent.element.querySelector('.e-chart-grouping-bar') as HTMLElement).style.display = "";
@@ -972,7 +978,7 @@ export class Toolbar {
     }
 
     /**
-     * @hidden
+
      */
     public addEventListener(): void {
         if (this.parent.isDestroyed) { return; }
@@ -982,14 +988,14 @@ export class Toolbar {
     /**
      * To refresh the toolbar 
      * @return {void}
-     * @hidden
+
      */
     public refreshToolbar(): void {
         this.createToolbar();
     }
 
     /**
-     * @hidden
+
      */
     public removeEventListener(): void {
         if (this.parent.isDestroyed) { return; }
@@ -999,7 +1005,7 @@ export class Toolbar {
     /**
      * To destroy the toolbar 
      * @return {void}
-     * @hidden
+
      */
     public destroy(): void {
         this.removeEventListener();

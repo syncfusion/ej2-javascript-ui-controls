@@ -2,6 +2,15 @@
 
 ## [Unreleased]
 
+## 17.3.14 (2019-10-03)
+
+### Chart
+
+#### New Features
+
+- Trim support have been provided for axis title in chart.
+- Axis padding at desired position has been provided.
+
 ## 17.3.9-beta (2019-09-20)
 
 ### Accumulation Chart

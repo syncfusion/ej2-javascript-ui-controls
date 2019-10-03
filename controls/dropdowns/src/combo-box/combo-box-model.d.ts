@@ -9,13 +9,13 @@ export interface ComboBoxModel extends DropDownListModel{
 
     /**
      * Specifies whether suggest a first matched item in input when searching. No action happens when no matches found.
-     * @default false
+
      */
     autofill?: boolean;
 
     /**
      * Specifies whether the component allows user defined value which does not exist in data source.    
-     * @default true
+
      */
     allowCustom?: boolean;
 
@@ -26,7 +26,7 @@ export interface ComboBoxModel extends DropDownListModel{
      * {% codeBlock src="combobox/html-attributes-api/index.ts" %}{% endcodeBlock %}
      * 
      * {% codeBlock src="combobox/html-attributes-api/index.html" %}{% endcodeBlock %}
-     * @default {}
+
      */
     htmlAttributes?: { [key: string]: string; };
 
@@ -39,7 +39,7 @@ export interface ComboBoxModel extends DropDownListModel{
      * {% codeBlock src="combobox/allow-filtering-api/index.ts" %}{% endcodeBlock %}
      * 
      * {% codeBlock src="combobox/allow-filtering-api/index.html" %}{% endcodeBlock %}
-     * @default false
+
      */
     allowFiltering?: boolean;
 
@@ -50,7 +50,7 @@ export interface ComboBoxModel extends DropDownListModel{
      * {% codeBlock src="combobox/query-api/index.ts" %}{% endcodeBlock %}
      * 
      * {% codeBlock src="combobox/query-api/index.html" %}{% endcodeBlock %}
-     * @default null
+
      */
     query?: Query;
 
@@ -61,16 +61,16 @@ export interface ComboBoxModel extends DropDownListModel{
      * 
      * {% codeBlock src="combobox/index-api/index.html" %}{% endcodeBlock %}
      * 
-     * @default null
-     * @blazorType int
-     * @isBlazorNullableType true
+
+
+
      */
     index?: number;
 
     /**
      * Specifies whether to show or hide the clear button. 
      * When the clear button is clicked, `value`, `text`, and `index` properties are reset to null.
-     * @default true
+
      */
     showClearButton?: boolean;
 
@@ -78,7 +78,7 @@ export interface ComboBoxModel extends DropDownListModel{
      * Triggers on set a 
      * [`custom value`](../../combo-box/getting-started#custom-values) to this component.
      * @event
-     * @blazorProperty 'CustomValueSpecifier'
+
      */
     customValueSpecifier?: EmitType<CustomValueSpecifierEventArgs>;
 
@@ -86,13 +86,13 @@ export interface ComboBoxModel extends DropDownListModel{
      * Triggers on typing a character in the component.
      * > For more details about the filtering refer to [`Filtering`](../../combo-box/filtering) documentation.
      * @event
-     * @blazorProperty 'Filtering'
+
      */
     filtering?: EmitType<FilteringEventArgs>;
 
     /**
      * Not applicable to this component.
-     * @default null
+
      * @private
      */
     valueTemplate?: string;
@@ -108,16 +108,16 @@ export interface ComboBoxModel extends DropDownListModel{
      * 
      * {% codeBlock src="combobox/float-label-type-api/index.html" %}{% endcodeBlock %}
      * 
-     * @default Syncfusion.EJ2.Inputs.FloatLabelType.Never
-     * @aspType Syncfusion.EJ2.Inputs.FloatLabelType
-     * @isEnumeration true
-     * @blazorType Syncfusion.EJ2.Inputs.FloatLabelType
+
+
+
+
      */
     floatLabelType?: FloatLabelType;
 
     /**
      * Not applicable to this component.
-     * @default null
+
      * @private
      */
     filterBarPlaceholder?: string;

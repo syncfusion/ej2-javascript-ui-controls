@@ -1,4 +1,41 @@
 @include export-module('dropdownbase-theme') {
+  .e-rtl {
+    & .e-dropdownbase {
+      & .e-list-item {
+        padding-left: $ddl-list-rtl-padding-left;
+        padding-right: $ddl-list-rtl-padding-right;
+      }
+    }
+  }
+
+  // Rtl small size
+
+  .e-small.e-rtl,
+  .e-small .e-rtl,
+  .e-rtl .e-small {
+    & .e-dropdownbase {
+      & .e-list-item {
+        padding-left: $ddl-list-rtl-padding-left;
+        padding-right: $ddl-list-rtl-padding-right;
+      }
+    }
+  }
+
+  // Rtl bigger small size
+
+  .e-small.e-bigger.e-rtl,
+  .e-small.e-bigger .e-rtl,
+  .e-rtl .e-small.e-bigger,
+  .e-small .e-rtl.e-bigger,
+  .e-bigger .e-rtl.e-small {
+    & .e-dropdownbase {
+      & .e-list-item {
+        padding-left: $ddl-list-rtl-padding-left;
+        padding-right: $ddl-list-rtl-padding-right;
+      }
+    }
+  }
+
   .e-dropdownbase {
     border-color: $ddl-list-border-color;
     @at-root {

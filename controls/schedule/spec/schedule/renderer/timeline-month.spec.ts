@@ -690,6 +690,27 @@ describe('Schedule Timeline Month view', () => {
             expect(eventName).toEqual('select');
         });
 
+        it('validate start and end time on multi cell select', () => {
+            let eventName: string;
+            let model: ScheduleModel = {
+                select: (args: SelectEventArgs) => eventName = args.name,
+                currentView: 'TimelineMonth', views: ['TimelineMonth'], selectedDate: new Date(2018, 5, 5),
+            };
+            schObj = util.createSchedule(model, []);
+            let workCells: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-work-cells'));
+            expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(0);
+            util.triggerMouseEvent(workCells[3], 'mousedown');
+            util.triggerMouseEvent(workCells[5], 'mousemove');
+            util.triggerMouseEvent(workCells[5], 'mouseup');
+            let focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
+            expect(focuesdEle.classList).toContain('e-selected-cell');
+            expect(focuesdEle.getAttribute('aria-selected')).toEqual('true');
+            expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(3);
+            expect(schObj.activeCellsData.startTime).toEqual(new Date(2018, 5, 4, 0, 0, 0));
+            expect(schObj.activeCellsData.endTime).toEqual(new Date(2018, 5, 7, 0, 0, 0));
+            expect(eventName).toEqual('select');
+        });
+
         it('cell click', () => {
             let cellStartTime: number;
             let cellEndTime: number;
@@ -3725,6 +3746,29 @@ describe('Schedule Timeline Month view', () => {
             expect(event[1].children[0].children[1].innerHTML).toEqual('(Start date : 12.10) - (End date : 12.11)');
             expect(event[2].getAttribute('data-id')).toEqual('Appointment_3');
             expect(event[2].children[1].children[0].innerHTML).toEqual('(Start date : 12.11) - (End date : 12.12)');
+        });
+    });
+
+    describe('Ensure Scroll Left for Selected Date', () => {
+        let schObj: Schedule;
+        beforeAll((done: Function) => {
+            let model: ScheduleModel = {
+                width: '500px', height: '500px', currentView: 'TimelineMonth', selectedDate: new Date(2017, 8, 24),
+                views: ['Day', 'Week', 'TimelineMonth', 'Month']
+            };
+            schObj = util.createSchedule(model, timelineData, done);
+        });
+        afterAll(() => {
+            util.destroy(schObj);
+        });
+
+        it('horizontal scroll', (done: Function) => { 
+            let contentArea: HTMLElement = schObj.element.querySelector('.e-content-wrap') as HTMLElement;
+            // tslint:disable-next-line:no-any
+            (schObj.activeView as any).onContentScroll({ target: contentArea });
+           
+            expect(contentArea.scrollLeft).toEqual(1602);
+            done();
         });
     });
 

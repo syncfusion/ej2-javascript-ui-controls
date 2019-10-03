@@ -690,6 +690,22 @@ describe('Overview', () => {
             }, 450);
 
         });
+        it('Overview Visibility as Hidden- For window resize', (done: Function) => {
+            diagram.width = '900px';
+            diagram.height = '500px';
+            diagram.dataBind();
+            let overviewelement: HTMLElement = document.getElementById(overview.element.id);
+            overviewelement.hidden = true;
+            let resize = 'windowResize';
+            overview[resize](<Event>{});
+            setTimeout(() => {
+                let bounds: ClientRect = overviewelement.getBoundingClientRect();
+                expect(bounds.width == 0);
+                expect(bounds.height == 0);
+                done();
+                overviewelement.hidden = false;
+            }, 450);
+        });
         it('memory leak', () => {
             profile.sample();
             let average: any = inMB(profile.averageChange)

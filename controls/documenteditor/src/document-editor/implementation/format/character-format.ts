@@ -167,7 +167,8 @@ export class WCharacterFormat {
     private documentCharacterFormat(): WCharacterFormat {
         let docCharacterFormat: WCharacterFormat;
         if (!isNullOrUndefined(this.ownerBase)) {
-            if (!isNullOrUndefined((this.ownerBase as TextElementBox).paragraph)) {
+            // tslint:disable-next-line:max-line-length
+            if (!isNullOrUndefined((this.ownerBase as TextElementBox).paragraph) && !isNullOrUndefined((this.ownerBase as TextElementBox).paragraph.bodyWidget)) {
                 docCharacterFormat = (this.ownerBase as TextElementBox).paragraph.bodyWidget.page.viewer.characterFormat;
             } else {
                 if (!isNullOrUndefined((this.ownerBase as ParagraphWidget).bodyWidget)) {
@@ -346,7 +347,10 @@ export class WCharacterFormat {
         format.baseCharStyle = this.baseCharStyle;
         return format;
     }
-    private hasValue(property: string): boolean {
+    /**
+     * @private
+     */
+    public hasValue(property: string): boolean {
         if (!isNullOrUndefined(this.uniqueCharacterFormat) && !isNullOrUndefined(this.uniqueCharacterFormat.propertiesHash)) {
             let propertyType: number = WUniqueFormat.getPropertyType(this.uniqueCharacterFormat.uniqueFormatType, property);
             return this.uniqueCharacterFormat.propertiesHash.containsKey(propertyType);

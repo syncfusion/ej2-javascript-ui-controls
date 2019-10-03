@@ -1,6 +1,6 @@
-import { append, prepend, createElement, extend, EventHandler, closest, addClass } from '@syncfusion/ej2-base';
+import { append, prepend, createElement, extend, EventHandler, closest, addClass, isBlazor, getElement } from '@syncfusion/ej2-base';
 import { isNullOrUndefined, setStyleAttribute, remove } from '@syncfusion/ej2-base';
-import { EventFieldsMapping, EventClickArgs, EventRenderedArgs, TdData, NotifyEventArgs } from '../base/interface';
+import { EventFieldsMapping, EventClickArgs, EventRenderedArgs, TdData, NotifyEventArgs, MoreEventsClickArgs } from '../base/interface';
 import { Schedule } from '../base/schedule';
 import { EventBase } from './event-base';
 import * as cls from '../base/css-constant';
@@ -474,16 +474,32 @@ export class MonthEvent extends EventBase {
     public moreIndicatorClick(event: Event): void {
         let target: Element = closest((event.target as Element), '.' + cls.MORE_INDICATOR_CLASS);
         let startDate: Date = new Date(parseInt(target.getAttribute('data-start-date'), 10));
-        if (!isNullOrUndefined(startDate) && !this.parent.isMorePopup) {
-            this.parent.setProperties({ selectedDate: startDate }, true);
-            this.parent.changeView(this.parent.getNavigateView(), event);
-        } else {
-            let endDate: Date = new Date(parseInt(target.getAttribute('data-end-date'), 10));
-            let groupIndex: string = target.getAttribute('data-group-index');
-            let filteredEvents: Object[] = this.getFilteredEvents(startDate, endDate, groupIndex);
-            let moreEventArgs: EventClickArgs = { date: startDate, event: filteredEvents, element: event.target } as EventClickArgs;
-            this.parent.quickPopup.moreEventClick(moreEventArgs, endDate, groupIndex);
+        let endDate: Date = new Date(parseInt(target.getAttribute('data-end-date'), 10));
+        let groupIndex: string = target.getAttribute('data-group-index');
+        let moreArgs: MoreEventsClickArgs = {
+            cancel: false, event: event, element: target, isPopupOpen: true,
+            startTime: startDate, endTime: endDate, viewName: this.parent.getNavigateView()
+        };
+        if (groupIndex) {
+            moreArgs.groupIndex = parseInt(groupIndex, 10);
         }
+        this.parent.trigger(events.moreEventsClick, moreArgs, (clickArgs: MoreEventsClickArgs) => {
+            if (isBlazor()) {
+                clickArgs.startTime = new Date('' + clickArgs.startTime);
+                clickArgs.endTime = new Date('' + clickArgs.endTime);
+                clickArgs.element = getElement(clickArgs.element);
+            }
+            if (!clickArgs.cancel) {
+                if (clickArgs.isPopupOpen) {
+                    let filteredEvents: Object[] = this.getFilteredEvents(startDate, endDate, groupIndex);
+                    let moreEventArgs: EventClickArgs = { date: startDate, event: filteredEvents, element: event.target } as EventClickArgs;
+                    this.parent.quickPopup.moreEventClick(moreEventArgs, endDate, groupIndex);
+                } else {
+                    this.parent.setProperties({ selectedDate: startDate }, true);
+                    this.parent.changeView(clickArgs.viewName, event);
+                }
+            }
+        });
     }
 
     public renderEventElement(event: { [key: string]: Object }, appointmentElement: HTMLElement, cellTd: Element): void {

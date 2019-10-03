@@ -8,13 +8,13 @@ export interface DecoratorModel {
 
     /**
      * Sets the width of the decorator
-     * @default 10
+
      */
     width?: number;
 
     /**
      * Sets the height of the decorator
-     * @default 10
+
      */
     height?: number;
 
@@ -46,7 +46,7 @@ export interface DecoratorModel {
 
     /**
      * Defines the appearance of the decorator
-     * @default new ShapeStyle()
+
      */
     style?: ShapeStyleModel;
 
@@ -57,7 +57,7 @@ export interface DecoratorModel {
 
     /**
      * Defines the geometry of the decorator shape
-     * @default ''
+
      */
     pathData?: string;
 
@@ -70,13 +70,13 @@ export interface VectorModel {
 
     /**
      * Defines the angle between the connector end point and control point of the bezier segment
-     * @default 0
+
      */
     angle?: number;
 
     /**
      * Defines the distance between the connector end point and control point of the bezier segment
-     * @default 0
+
      */
     distance?: number;
 
@@ -90,7 +90,7 @@ export interface ConnectorShapeModel {
     /**
      * Defines the application specific type of connector
      * * Bpmn - Sets the type of the connection shape as Bpmn
-     * @default 'None'
+
      */
     type?: ConnectionShapes;
 
@@ -106,14 +106,14 @@ export interface ActivityFlowModel extends ConnectorShapeModel{
      * Object - Sets the type of the UMLActivity Flow as Object
      * Control - Sets the type of the UMLActivity Flow as Control
      * Exception - Sets the type of the UMLActivity Flow as Exception
-     * @default 'Object'
+
      * @IgnoreSingular
      */
     flow?: UmlActivityFlows;
 
     /**
      * Defines the height of the exception flow.
-     * @default '50'
+
      */
     exceptionFlowHeight?: number;
 
@@ -129,7 +129,7 @@ export interface BpmnFlowModel extends ConnectorShapeModel{
      * * Sequence - Sets the type of the Bpmn Flow as Sequence
      * * Association - Sets the type of the Bpmn Flow as Association
      * * Message - Sets the type of the Bpmn Flow as Message
-     * @default 'Sequence'
+
      */
     flow?: BpmnFlows;
 
@@ -138,7 +138,7 @@ export interface BpmnFlowModel extends ConnectorShapeModel{
      * * Default - Sets the type of the sequence flow as Default
      * * Normal - Sets the type of the sequence flow as Normal
      * * Conditional - Sets the type of the sequence flow as Conditional
-     * @default 'Normal'
+
      */
     sequence?: BpmnSequenceFlows;
 
@@ -175,7 +175,7 @@ export interface BpmnFlowModel extends ConnectorShapeModel{
      * * Default - Sets the type of Association flow as Default
      * * Directional - Sets the type of Association flow as Directional
      * * BiDirectional - Sets the type of Association flow as BiDirectional
-     * * @default 'Default'
+
      */
     association?: BpmnAssociationFlows;
 
@@ -191,13 +191,13 @@ export interface ConnectorSegmentModel {
      * * Straight - Sets the segment type as Straight
      * * Orthogonal - Sets the segment type as Orthogonal
      * * Bezier - Sets the segment type as Bezier
-     * @default 'Straight'
+
      */
     type?: Segments;
 
     /**
      * Defines the segment to be drag or not
-     * @default true
+
      */
     allowDrag?: boolean;
 
@@ -210,7 +210,7 @@ export interface StraightSegmentModel extends ConnectorSegmentModel{
 
     /**
      * Sets the end point of the connector segment
-     * @default new Point(0,0)
+
      */
     point?: PointModel;
 
@@ -223,25 +223,25 @@ export interface BezierSegmentModel extends StraightSegmentModel{
 
     /**
      * Sets the first control point of the connector
-     * @default {}
+
      */
     point1?: PointModel;
 
     /**
      * Sets the second control point of the connector
-     * @default {}
+
      */
     point2?: PointModel;
 
     /**
      * Defines the length and angle between the source point and the first control point of the diagram
-     * @default {}
+
      */
     vector1?: VectorModel;
 
     /**
      * Defines the length and angle between the target point and the second control point of the diagram
-     * @default {}
+
      */
     vector2?: VectorModel;
 
@@ -277,7 +277,7 @@ export interface OrthogonalSegmentModel extends ConnectorSegmentModel{
      * });
      * diagram.appendTo('#diagram');
      * ```
-     * @default 0
+
      */
     length?: number;
 
@@ -287,7 +287,7 @@ export interface OrthogonalSegmentModel extends ConnectorSegmentModel{
      * * Right - Sets the direction type as Right
      * * Top - Sets the direction type as Top
      * * Bottom - Sets the direction type as Bottom
-     * @default null
+
      */
     direction?: Direction;
 
@@ -300,21 +300,21 @@ export interface MultiplicityLabelModel {
 
     /**
      * Defines the type of the Classifier Multiplicity
-     * @default true
+
      * @IgnoreSingular
      */
     optional?: boolean;
 
     /**
      * Defines the type of the Classifier Multiplicity
-     * @default ''
+
      * @IgnoreSingular
      */
     lowerBounds?: string;
 
     /**
      * Defines the type of the Classifier Multiplicity
-     * @default ''
+
      * @IgnoreSingular
      */
     upperBounds?: string;
@@ -328,21 +328,21 @@ export interface ClassifierMultiplicityModel {
 
     /**
      * Defines the type of the Classifier Multiplicity
-     * @default 'OneToOne'
+
      * @IgnoreSingular
      */
     type?: Multiplicity;
 
     /**
      * Defines the type of the Classifier Multiplicity
-     * @default ''
+
      * @IgnoreSingular
      */
     target?: MultiplicityLabelModel;
 
     /**
      * Defines the type of the Classifier Multiplicity
-     * @default ''
+
      * @IgnoreSingular
      */
     source?: MultiplicityLabelModel;
@@ -356,28 +356,28 @@ export interface RelationShipModel extends ConnectorShapeModel{
 
     /**
      * Defines the type of the  UMLConnector
-     * @default 'None'
+
      * @IgnoreSingular
      */
     type?: ConnectionShapes;
 
     /**
      * Defines the association direction
-     * @default 'Aggregation'
+
      * @IgnoreSingular
      */
     relationship?: ClassifierShape;
 
     /**
      * Defines the association direction
-     * @default 'Directional'
+
      * @IgnoreSingular
      */
     associationType?: AssociationFlow;
 
     /**
      * Defines the type of the Classifier Multiplicity
-     * @default ''
+
      * @IgnoreSingular
      */
     multiplicity?: ClassifierMultiplicityModel;
@@ -391,8 +391,8 @@ export interface ConnectorModel extends NodeBaseModel{
 
     /**
      * Defines the shape of the connector
-     * @default 'Bpmn'
-     * @aspType object
+
+
      */
     shape?: ConnectorShapeModel | BpmnFlowModel | RelationShipModel;
 
@@ -413,15 +413,15 @@ export interface ConnectorModel extends NodeBaseModel{
      * * InheritToolTip - Displays a tooltip for the connectors.
      * * Interaction - Features of the connector used for interaction.
      * * ReadOnly - Enables ReadOnly
-     * @default 'None'
-     * @aspNumberEnum
-     * @blazorNumberEnum
+
+
+
      */
     constraints?: ConnectorConstraints;
 
     /**
      * Defines the bridgeSpace of connector
-     * @default 10
+
      */
     bridgeSpace?: number;
 
@@ -446,39 +446,39 @@ export interface ConnectorModel extends NodeBaseModel{
 
     /**
      * Sets the beginning point of the connector
-     * @default new Point(0,0)
+
      */
     sourcePoint?: PointModel;
 
     /**
      * Sets the end point of the connector
-     * @default new Point(0,0)
+
      */
     targetPoint?: PointModel;
 
     /**
      * Defines the segments
-     * @default []
-     * @aspType object
-     * @blazorType object
+
+
+
      */
     segments?: (OrthogonalSegmentModel | StraightSegmentModel | BezierSegmentModel)[];
 
     /**
      * Sets the source node/connector object of the connector
-     * @default null
+
      */
     sourceID?: string;
 
     /**
      * Sets the target node/connector object of the connector
-     * @default null
+
      */
     targetID?: string;
 
     /**
      * Sets the connector padding value
-     * @default 10
+
      */
     hitPadding?: number;
 
@@ -487,72 +487,72 @@ export interface ConnectorModel extends NodeBaseModel{
      * * Straight - Sets the segment type as Straight
      * * Orthogonal - Sets the segment type as Orthogonal
      * * Bezier - Sets the segment type as Bezier
-     * @default 'Straight'
-     * @aspType Syncfusion.EJ2.Diagrams.Segments
-     * @blazorDefaultValueIgnore
-     * @blazorDefaultValue  Syncfusion.EJ2.Blazor.Diagrams.Segments.Straight
+
+
+
+
      */
     type?: Segments;
 
     /**
      * Sets the corner radius of the connector
-     * @default 0
+
      */
     cornerRadius?: number;
 
     /**
      * Defines the source decorator of the connector
-     * @default new Decorator()
+
      */
     sourceDecorator?: DecoratorModel;
 
     /**
      * Defines the target decorator of the connector
-     * @default new Decorator()
+
      */
     targetDecorator?: DecoratorModel;
 
     /**
      * defines the tooltip for the connector
-     * @default new DiagramToolTip();
+
      */
     tooltip?: DiagramTooltipModel;
 
     /**
      * Sets the unique id of the source port of the connector
-     * @default ''
+
      */
     sourcePortID?: string;
 
     /**
      * Sets the unique id of the target port of the connector
-     * @default ''
+
      */
     targetPortID?: string;
 
     /**
      * Sets the source padding of the connector
-     * @default 0
-     * @isBlazorNullableType true
+
+
      */
     sourcePadding?: number;
 
     /**
      * Sets the target padding of the connector
-     * @default 0
-     * @isBlazorNullableType true
+
+
      */
     targetPadding?: number;
 
     /**
      * Defines the appearance of the connection path
-     * @default ''
+
      */
     style?: StrokeStyleModel;
 
     /**
      * Defines the UI of the connector
-     * @default null
+
      */
     wrapper?: Container;
 

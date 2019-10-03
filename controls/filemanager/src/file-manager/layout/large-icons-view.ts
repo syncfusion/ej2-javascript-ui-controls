@@ -48,7 +48,7 @@ export class LargeIconsView {
 
     /**
      * Constructor for the LargeIcons module
-     * @hidden
+
      */
     constructor(parent?: IFileManager) {
         this.parent = parent;
@@ -749,7 +749,7 @@ export class LargeIconsView {
         this.doSelection(target, e.originalEvent);
         this.parent.activeModule = 'largeiconsview';
     }
-    /** @hidden */
+
     public doSelection(target: Element, e: TouchEventArgs | MouseEventArgs | KeyboardEventArgs): void {
         let item: Element = closest(target, '.' + CLS.LIST_ITEM);
         let cList: DOMTokenList = target.classList;
@@ -829,7 +829,7 @@ export class LargeIconsView {
                 createDeniedDialog(this.parent, details);
                 return;
             }
-            let eventArgs: FileOpenEventArgs = { cancel: false, fileDetails: details };
+            let eventArgs: FileOpenEventArgs = { cancel: false, fileDetails: details, module: 'LargeIconsView' };
             this.parent.trigger('fileOpen', eventArgs, (fileOpenArgs: FileOpenEventArgs) => {
                 if (!fileOpenArgs.cancel) {
                     let text: string = getValue('name', details);

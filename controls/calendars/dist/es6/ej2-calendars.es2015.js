@@ -6772,7 +6772,7 @@ let DateRangePicker = class DateRangePicker extends CalendarBase {
      * Gets the current view of the Calendar.
      * @returns string
      * @private
-     * @hidden
+
      */
     currentView() {
         return super.currentView();
@@ -7835,7 +7835,7 @@ let DateRangePicker = class DateRangePicker extends CalendarBase {
      * @param  {string} view - Specifies the view of the Calendar.
      * @param  {Date} date - Specifies the focused date in a view.
      * @returns void
-     * @hidden
+
      */
     navigateTo(view, date) {
         if (this.isPopupOpen()) {

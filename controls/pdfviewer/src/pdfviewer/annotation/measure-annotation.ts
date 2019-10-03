@@ -11,7 +11,7 @@ import { ICommentsCollection, IReviewCollection } from './sticky-notes-annotatio
 import { LineHeadStyle, CalibrationUnit } from '../base';
 
 /**
- * @hidden
+
  */
 export interface IMeasureShapeAnnotation {
     shapeAnnotationType: string;
@@ -56,7 +56,7 @@ export interface IMeasureShapeAnnotation {
 }
 
 /**
- * @hidden
+
  */
 export interface IMeasure {
     ratio: string;
@@ -70,7 +70,7 @@ export interface IMeasure {
 }
 
 /**
- * @hidden
+
  */
 export interface INumberFormat {
     unit: string;
@@ -81,7 +81,7 @@ export interface INumberFormat {
 }
 
 /**
- * @hidden
+
  */
 export class MeasureAnnotation {
     private pdfViewer: PdfViewer;
@@ -244,8 +244,8 @@ export class MeasureAnnotation {
         this.volumeStrokeColor = this.pdfViewer.volumeSettings.strokeColor ? this.pdfViewer.volumeSettings.strokeColor : '#ff0000';
         this.volumeOpacity = this.pdfViewer.volumeSettings.opacity ? this.pdfViewer.volumeSettings.opacity : 1;
         this.volumeThickness = this.pdfViewer.volumeSettings.thickness ? this.pdfViewer.volumeSettings.thickness : 1;
-        this.unit = this.pdfViewer.measurementSettings.conversionUnit;
-        this.displayUnit = this.pdfViewer.measurementSettings.displayUnit;
+        this.unit = this.pdfViewer.measurementSettings.conversionUnit.toLowerCase() as CalibrationUnit;
+        this.displayUnit = this.pdfViewer.measurementSettings.displayUnit.toLowerCase() as CalibrationUnit;
         this.ratio = this.pdfViewer.measurementSettings.scaleRatio;
         this.volumeDepth = this.pdfViewer.measurementSettings.depth;
         this.scaleRatioString = '1 ' + this.unit + ' = ' + '1 ' + this.displayUnit;
@@ -285,7 +285,7 @@ export class MeasureAnnotation {
                         if (annotation.Bounds && annotation.EnableShapeLabel === true) {
                             // tslint:disable-next-line:max-line-length
                             annotation.LabelBounds = this.pdfViewer.annotationModule.inputElementModule.calculateLabelBoundsFromLoadedDocument(annotation.Bounds);
-                            annotation.labelBorderColor = annotation.LabelBorderColor ? annotation.LabelBorderColor : annotation.StrokeColor;
+                            annotation.LabelBorderColor = annotation.LabelBorderColor ? annotation.LabelBorderColor : annotation.StrokeColor;
                             annotation.FontColor = annotation.FontColor ? annotation.FontColor : annotation.StrokeColor;
                             annotation.LabelFillColor = annotation.LabelFillColor ? annotation.LabelFillColor : annotation.FillColor;
                             annotation.FontSize = annotation.FontSize ? annotation.FontSize : 16;
@@ -888,6 +888,9 @@ export class MeasureAnnotation {
                         pageAnnotations[i].note = annotationBase.notes;
                         let date: Date = new Date();
                         pageAnnotations[i].modifiedDate = date.toLocaleString();
+                        if (pageAnnotations[i].enableShapeLabel === true) {
+                            pageAnnotations[i].labelContent = annotationBase.notes;
+                        }
                     } else if (property === 'delete') {
                         currentAnnotObject = pageAnnotations.splice(i, 1)[0];
                         break;
@@ -897,6 +900,8 @@ export class MeasureAnnotation {
                         let date: Date = new Date();
                         pageAnnotations[i].modifiedDate = date.toLocaleString();
                         break;
+                    } else if (property === 'fontColor') {
+                        pageAnnotations[i].fontColor = annotationBase.fontColor;
                     }
                 }
             }
@@ -1153,6 +1158,14 @@ export class MeasureAnnotation {
         if (annotation.Calibrate.Depth) {
             measureObject.depth = annotation.Calibrate.Depth;
         }
+        if (annotation.Bounds && annotation.EnableShapeLabel === true) {
+            // tslint:disable-next-line:max-line-length
+            annotation.LabelBounds = this.pdfViewer.annotationModule.inputElementModule.calculateLabelBoundsFromLoadedDocument(annotation.Bounds);
+            annotation.LabelBorderColor = annotation.LabelBorderColor ? annotation.LabelBorderColor : annotation.StrokeColor;
+            annotation.FontColor = annotation.FontColor ? annotation.FontColor : annotation.StrokeColor;
+            annotation.LabelFillColor = annotation.LabelFillColor ? annotation.LabelFillColor : annotation.FillColor;
+            annotation.FontSize = annotation.FontSize ? annotation.FontSize : 16;
+        }
         annotation.Author = this.pdfViewer.annotationModule.updateAnnotationAuthor('measure', annotation.Subject);
         annotationObject = {
             // tslint:disable-next-line:max-line-length
@@ -1167,9 +1180,9 @@ export class MeasureAnnotation {
             // tslint:disable-next-line:max-line-length
             leaderLineOffset: annotation.LeaderLineOffset, indent: annotation.Indent, annotName: annotation.AnnotName, comments: this.pdfViewer.annotationModule.getAnnotationComments(annotation.Comments, annotation, annotation.Author),
             review: {state: annotation.State, stateModel: annotation.StateModel, modifiedDate: annotation.ModifiedDate, author: annotation.Author},
-            labelContent: annotation.labelContent, enableShapeLabel: annotation.enableShapeLabel, labelFillColor: annotation.labelFillColor,
-            labelBorderColor: annotation.labelBorderColor, fontColor: annotation.fontColor, fontSize: annotation.fontSize,
-            labelBounds: annotation.labelBounds
+            labelContent: annotation.LabelContent, enableShapeLabel: annotation.EnableShapeLabel, labelFillColor: annotation.LabelFillColor,
+            labelBorderColor: annotation.LabelBorderColor, fontColor: annotation.FontColor, fontSize: annotation.FontSize,
+            labelBounds: annotation.LabelBounds
         };
         this.pdfViewer.annotationModule.storeAnnotations(pageNumber, annotationObject, '_annotations_shape_measure');
     }

@@ -9,7 +9,7 @@ export interface AccumulationChartModel extends ComponentModel{
     /**
      * The width of the chart as a string in order to provide input as both like '100px' or '100%'.
      * If specified as '100%, chart will render to the full width of its parent element.
-     * @default null
+
      */
 
     width?: string;
@@ -17,14 +17,14 @@ export interface AccumulationChartModel extends ComponentModel{
     /**
      * The height of the chart as a string in order to provide input as both like '100px' or '100%'.
      * If specified as '100%, chart will render to the full height of its parent element.
-     * @default null
+
      */
 
     height?: string;
 
     /**
      * Title for accumulation chart
-     * @default null
+
      */
     title?: string;
 
@@ -55,7 +55,7 @@ export interface AccumulationChartModel extends ComponentModel{
     * });
     * pie.appendTo('#Pie');
     * ```
-    * @default ''
+
     */
 
     dataSource?: Object | DataManager;
@@ -68,7 +68,7 @@ export interface AccumulationChartModel extends ComponentModel{
 
     /**
      * SubTitle for accumulation chart
-     * @default null
+
      */
     subTitle?: string;
 
@@ -91,19 +91,19 @@ export interface AccumulationChartModel extends ComponentModel{
 
     /**
      * Specifies whether point has to get selected or not. Takes value either 'None 'or 'Point'
-     * @default None
+
      */
     selectionMode?: AccumulationSelectionMode;
 
     /**
      * If set true, enables the multi selection in accumulation chart. It requires `selectionMode` to be `Point`.
-     * @default false
+
      */
     isMultiSelect?: boolean;
 
     /**
      * If set true, enables the animation for both chart and accumulation.
-     * @default true
+
      */
     enableAnimation?: boolean;
 
@@ -123,7 +123,7 @@ export interface AccumulationChartModel extends ComponentModel{
      * });
      * pie.appendTo('#Pie');
      * ```
-     * @default []
+
      */
     selectedDataIndexes?: IndexesModel[];
 
@@ -135,7 +135,7 @@ export interface AccumulationChartModel extends ComponentModel{
 
     /**
      * If set true, labels for the point will be placed smartly without overlapping.
-     * @default true
+
      */
     enableSmartLabels?: boolean;
 
@@ -147,7 +147,7 @@ export interface AccumulationChartModel extends ComponentModel{
 
     /**
      * The background color of the chart, which accepts value in hex, rgba as a valid CSS color string.
-     * @default null
+
      */
     background?: string;
 
@@ -165,54 +165,54 @@ export interface AccumulationChartModel extends ComponentModel{
 
     /**
      * Specifies the theme for accumulation chart.
-     * @default 'Material'
+
      */
     theme?: AccumulationTheme;
 
     /**
      * Specifies whether a grouping separator should be used for a number.
-     * @default false
+
      */
     useGroupingSeparator?: boolean;
 
     /**
      * To enable export feature in chart.
-     * @default true
+
      */
     enableExport?: boolean;
 
     /**
      * Triggers after accumulation chart loaded.
      * @event
-     * @blazorProperty 'Loaded'
+
      */
     loaded?: EmitType<IAccLoadedEventArgs>;
 
     /**
      * Triggers before accumulation chart load.
      * @event
-     * @deprecated
+
      */
     load?: EmitType<IAccLoadedEventArgs>;
 
     /**
      * Triggers before the series gets rendered.
      * @event
-     * @deprecated
+
      */
     seriesRender?: EmitType<IAccSeriesRenderEventArgs>;
 
     /**
      * Triggers before the legend gets rendered.
      * @event
-     * @deprecated
+
      */
     legendRender?: EmitType<ILegendRenderEventArgs>;
 
     /**
      * Triggers before the data label for series gets rendered.
      * @event
-     * @deprecated
+
      */
     textRender?: EmitType<IAccTextRenderEventArgs>;
 
@@ -225,7 +225,7 @@ export interface AccumulationChartModel extends ComponentModel{
     /**
      * Triggers before each points for series gets rendered.
      * @event
-     * @deprecated
+
      */
 
     pointRender?: EmitType<IAccPointRenderEventArgs>;
@@ -233,7 +233,7 @@ export interface AccumulationChartModel extends ComponentModel{
     /**
      * Triggers before the annotation gets rendered.
      * @event
-     * @deprecated
+
      */
 
     annotationRender?: EmitType<IAnnotationRenderEventArgs>;
@@ -241,7 +241,7 @@ export interface AccumulationChartModel extends ComponentModel{
     /**
      * Triggers before the prints gets started.
      * @event
-     * @blazorProperty 'OnPrint'
+
      */
 
     beforePrint?: EmitType<IPrintEventArgs>;
@@ -249,7 +249,7 @@ export interface AccumulationChartModel extends ComponentModel{
     /**
      * Triggers on hovering the accumulation chart.
      * @event
-     * @blazorProperty 'OnChartMouseMove'
+
      */
 
     chartMouseMove?: EmitType<IMouseEventArgs>;
@@ -257,7 +257,7 @@ export interface AccumulationChartModel extends ComponentModel{
     /**
      * Triggers on clicking the accumulation chart.
      * @event
-     * @blazorProperty 'OnChartMouseClick'
+
      */
 
     chartMouseClick?: EmitType<IMouseEventArgs>;
@@ -265,7 +265,7 @@ export interface AccumulationChartModel extends ComponentModel{
     /**
      * Triggers on point click.
      * @event
-     * @blazorProperty 'OnPointClick'
+
      */
 
     pointClick?: EmitType<IPointEventArgs>;
@@ -273,7 +273,7 @@ export interface AccumulationChartModel extends ComponentModel{
     /**
      * Triggers on point move.
      * @event
-     * @blazorProperty 'PointMoved'
+
      */
 
     pointMove?: EmitType<IPointEventArgs>;
@@ -281,14 +281,14 @@ export interface AccumulationChartModel extends ComponentModel{
     /**
      * Triggers after animation gets completed for series.
      * @event
-     * @blazorProperty 'OnAnimationComplete'
+
      */
     animationComplete?: EmitType<IAccAnimationCompleteEventArgs>;
 
     /**
      * Triggers on mouse down.
      * @event
-     * @blazorProperty 'OnChartMouseDown'
+
      */
 
     chartMouseDown?: EmitType<IMouseEventArgs>;
@@ -296,7 +296,7 @@ export interface AccumulationChartModel extends ComponentModel{
     /**
      * Triggers while cursor leaves the accumulation chart.
      * @event
-     * @blazorProperty 'OnChartMouseLeave'
+
      */
 
     chartMouseLeave?: EmitType<IMouseEventArgs>;
@@ -304,7 +304,7 @@ export interface AccumulationChartModel extends ComponentModel{
     /**
      * Triggers on mouse up.
      * @event
-     * @blazorProperty 'OnChartMouseUp'
+
      */
 
     chartMouseUp?: EmitType<IMouseEventArgs>;
@@ -312,7 +312,7 @@ export interface AccumulationChartModel extends ComponentModel{
     /**
      * Triggers after window resize.
      * @event
-     * @blazorProperty 'Resized'
+
      */
 
     resized?: EmitType<IAccResizeEventArgs>;
@@ -320,7 +320,7 @@ export interface AccumulationChartModel extends ComponentModel{
     /**
      * Defines the currencyCode format of the accumulation chart
      * @private
-     * @aspType string
+
      */
 
     currencyCode?: string;

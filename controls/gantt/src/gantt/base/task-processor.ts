@@ -202,7 +202,7 @@ export class TaskProcessor extends DateProcessor {
         } else {
             this.parent.setRecordValue('hasChildRecords', false, ganttData);
         }
-        this.parent.setRecordValue('expanded', this.parent.collapseAllParentTasks ? false : true, ganttData);
+        this.parent.setRecordValue('expanded', (ganttData.hasChildRecords && this.parent.collapseAllParentTasks) ? false : true, ganttData);
         this.updateExpandStateMappingValue(ganttData, data);
         if (!isLoad) {
             this.parent.setRecordValue('width', this.calculateWidth(ganttProperties), ganttProperties, true);
@@ -911,7 +911,7 @@ export class TaskProcessor extends DateProcessor {
             } else {
                 taskCount = childLength - milestoneCount;
             }
-            let parentProgress: number = taskCount > 0 ? (totalProgress / totalDuration) : 0;
+            let parentProgress: number = (taskCount > 0 && totalDuration > 0) ? (totalProgress / totalDuration) : 0;
             this.calculateDuration(parentData);
             let parentProp: ITaskData = parentData.ganttProperties;
             this.parent.setRecordValue('progress', Math.floor(parentProgress), parentProp, true);
@@ -921,7 +921,7 @@ export class TaskProcessor extends DateProcessor {
             this.updateTaskData(parentData);
         }
         if (parentData.childRecords.length === 1 && parentData.ganttProperties.duration === 0) {
-            this.parent.setRecordValue('isMilestone', true, parentData.ganttProperties, true);
+            this.parent.setRecordValue('isMilestone', false, parentData.ganttProperties, true);
             this.updateWidthLeft(parentData);
             this.updateTaskData(parentData);
         }

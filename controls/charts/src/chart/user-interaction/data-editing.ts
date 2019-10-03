@@ -16,6 +16,11 @@ export class DataEditing {
     private chart: Chart;
     private seriesIndex: number;
     private pointIndex: number;
+    /**
+     * @private
+     * It is used to identify point is dragging for data editing in other modules.
+     */
+    public isPointDragging: boolean = false;
 
     /**
      * Constructor for DataEditing module.
@@ -121,6 +126,7 @@ export class DataEditing {
             }
             series.yMin = Math.min.apply(null, yValueArray);
             series.yMax = Math.max.apply(null, yValueArray);
+            this.isPointDragging = true;
             chart.refreshBound();
             chart.trigger(drag, {
                 seriesIndex: si, pointIndex: pi, series: series, point: series.points[pi],
@@ -145,6 +151,7 @@ export class DataEditing {
                 chart.visibleSeries[this.seriesIndex].points[this.pointIndex].y =
                 chart.visibleSeries[this.seriesIndex].points[this.pointIndex].yValue;
                 chart.isPointMouseDown = false;
+                this.isPointDragging = false;
                 this.seriesIndex = this.pointIndex = undefined;
             }
         }

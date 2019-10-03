@@ -19,7 +19,7 @@ import { Grid } from '../base/grid';
 
 /**
  * Content module is used to render grid content
- * @hidden
+
  */
 export class ContentRender implements IRenderer {
     //Internal variables             
@@ -133,7 +133,7 @@ export class ContentRender implements IRenderer {
     /**
      * The function is used to create content table elements
      * @return {Element} 
-     * @hidden
+
      */
     public createContentTable(id: String): Element {
         let innerDiv: Element = <Element>this.getPanel().firstChild;
@@ -521,7 +521,7 @@ export class ContentRender implements IRenderer {
     }
 
     /** 
-     * @hidden
+
      */
     public setDisplayNone(tr: Object, idx: number, displayVal: string, rows: Row<Column>[]): void {
         Object.keys(tr).forEach((i: string) => {
@@ -537,7 +537,8 @@ export class ContentRender implements IRenderer {
 
     private colGroupRefresh(): void {
         if (this.getColGroup()) {
-            let colGroup: Element = <Element>this.parent.element.querySelector('.e-gridheader').querySelector('colgroup').cloneNode(true);
+            let colGroup: Element = isBlazor() ? <Element>this.parent.getHeaderTable().querySelector('colgroup').cloneNode(true) :
+                <Element>this.parent.element.querySelector('.e-gridheader').querySelector('colgroup').cloneNode(true);
             this.getTable().replaceChild(colGroup, this.getColGroup());
             this.setColGroup(colGroup);
         }

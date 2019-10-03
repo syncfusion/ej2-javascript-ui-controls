@@ -219,6 +219,7 @@ export class ImageCommand {
             removeClass([selectNode.parentElement], classes.CLASS_IMAGE_LEFT);
             removeClass([selectNode.parentElement], classes.CLASS_IMAGE_RIGHT);
             addClass([selectNode.parentElement], classes.CLASS_IMAGE_CENTER);
+            addClass([selectNode], classes.CLASS_IMAGE_CENTER);
         } else {
             addClass([selectNode], classes.CLASS_IMAGE_CENTER);
         }

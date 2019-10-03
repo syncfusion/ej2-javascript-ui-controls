@@ -7,20 +7,20 @@ import { TooltipModel } from '@syncfusion/ej2-popups';
 export class PopupSettings extends ChildProperty<PopupSettings> {
     /**
      * Specifies title for the editor popup.
-     * @default ''
+
      */
     @Property('')
     public title: string;
     /**
      * Specifies model for editor popup customization like position, animation,etc.
-     * @default null
+
      */
     @Property(null)
     public model: TooltipModel;
 }
 
 /**
- * @hidden
+
  */
 export let modulesList: { [key: string]: string } = {
     'AutoComplete': 'auto-complete',
@@ -34,7 +34,7 @@ export let modulesList: { [key: string]: string } = {
 };
 
 /**
- * @hidden
+
  */
 export let localeConstant: { [key: string]: object } = {
     'Click': { 'editAreaClick': 'Click to edit' },

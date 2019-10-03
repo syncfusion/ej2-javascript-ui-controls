@@ -3,7 +3,7 @@ import { Grid, Resize as GridResize } from '@syncfusion/ej2-grids';
 
 /**
  * TreeGrid Resize module
- * @hidden
+
  */
 export class Resize {
     private parent: TreeGrid;

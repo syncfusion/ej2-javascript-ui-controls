@@ -152,7 +152,7 @@ export class ContextMenu {
                 break;
             case 'Save':
                 this.parent.editModule.cellEditModule.isCellEdit = false;
-                this.parent.treeGrid.endEdit();
+                this.parent.treeGrid.grid.saveCell();
                 break;
             case 'Dependency' + index:
                 this.parent.connectorLineEditModule.removePredecessorByIndex(this.rowData, index);
@@ -204,7 +204,7 @@ export class ContextMenu {
         let editForm: Element = closest(args.event.target as Element, cons.editForm);
         if (!editForm && this.parent.editModule && this.parent.editModule.cellEditModule
             && this.parent.editModule.cellEditModule.isCellEdit) {
-            this.parent.treeGrid.endEdit();
+            this.parent.treeGrid.grid.saveCell();
             this.parent.editModule.cellEditModule.isCellEdit = false;
         }
         if ((isNullOrUndefined(args.gridRow) && isNullOrUndefined(args.chartRow)) || this.contentMenuItems.length === 0) {

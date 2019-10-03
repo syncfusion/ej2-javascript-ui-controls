@@ -5,6 +5,7 @@ import { Schedule } from '../base/schedule';
 import { CurrentAction } from '../base/type';
 import * as cls from '../base/css-constant';
 import { MonthEvent } from '../event-renderer/month';
+import { VerticalEvent } from '../event-renderer/vertical-view';
 import * as util from '../base/util';
 
 /**
@@ -18,6 +19,7 @@ export class ActionBase {
     public scrollArgs: ActionBaseArgs;
     public scrollEdges: ResizeEdges;
     public monthEvent: MonthEvent;
+    public verticalEvent: VerticalEvent;
     public daysVariation: number = 0;
 
     constructor(parent: Schedule) {

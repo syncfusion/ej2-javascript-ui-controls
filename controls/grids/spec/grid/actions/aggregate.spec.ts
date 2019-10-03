@@ -1201,4 +1201,57 @@ describe('Aggregates Functionality testing', () => {
             grid = rows = null;
         });
     });
+    
+    describe('Reactive aggregates in footer with batch editing and frozen columns', () => {
+        let grid: Grid;
+        beforeAll((done: Function) => {
+            grid = createGrid(
+                {
+                    editSettings: { allowEditing: true, allowAdding: true, allowDeleting: true, mode: 'Batch', showConfirmDialog: true, showDeleteConfirmDialog: false },
+                    toolbar: ['Add', 'Edit', 'Delete', 'Update', 'Cancel'],
+                    allowPaging: true,
+                    pageSettings: { pageSize: 8 },
+                    frozenRows: 2,
+                    frozenColumns: 2,
+                    columns: [
+                        {
+                            field: 'OrderID', headerText: 'Order ID', headerTextAlign: 'Right', isPrimaryKey: true,
+                            textAlign: 'Right'
+                        },
+                        { field: 'CustomerID', headerText: 'Customer ID', textAlign: 'Right' },
+                        { field: 'Freight', format: 'C1' },
+                        { field: 'OrderDate', format: 'yMd', type: 'datetime' },
+                        { field: 'EmployeeID', headerText: 'Employee ID', textAlign: 'Right' }
+                    ],
+
+                    aggregates: [{
+                        columns: [{
+                            type: 'Sum',
+                            field: 'Freight',
+                            footerTemplate: 'Sum: ${Sum}'
+                        }]
+
+                    }
+                    ]
+
+                },
+                done
+            );
+        });
+
+        it('Add a new row with data in footer', (done: Function) => {
+            expect((grid.aggregateModule as any).footerRenderer.aggregates.aggregates["Freight - sum"].toFixed(2)).toBe('696.45');
+            let batchAdd = (args?: any): void => {
+                expect((grid.aggregateModule as any).footerRenderer.aggregates.aggregates["Freight - sum"].toFixed(2)).toBe('706.45');
+                grid.batchAdd = null;
+                done();
+            };
+            grid.batchAdd = batchAdd;
+            grid.addRecord({ OrderID: 10242, CustomerID: 'HANAR', Freight: 10 });
+        });
+        afterAll(() => {
+            destroy(grid);
+            grid = null;
+        });
+    });
 });

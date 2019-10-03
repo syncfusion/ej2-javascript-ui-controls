@@ -43,7 +43,7 @@ import { Scroll } from '../actions/scroll';
 
 /**
  * Specifies grid interfaces.
- * @hidden
+
  */
 export interface IGrid extends Component<HTMLElement> {
 
@@ -52,55 +52,55 @@ export interface IGrid extends Component<HTMLElement> {
 
     /**
      * Specifies the columns for Grid.
-     * @default []
+
      */
     columns?: Column[] | string[] | ColumnModel[];
 
     /**
      * Specifies whether the enableAltRow is enable or not.
-     * @default null
+
      */
     enableAltRow?: boolean;
 
     /**
      * Specifies whether the enable row hover is enable or not.
-     * @default null
+
      */
     enableHover?: boolean;
 
     /**
      * Specifies the allowKeyboard Navigation for the Grid.
-     * @default null
+
      */
     allowKeyboard?: boolean;
 
     /**
      * Specifies whether the allowTextWrap is enabled or not.
-     * @default null
+
      */
     allowTextWrap?: boolean;
 
     /**
      * Specifies the 'textWrapSettings' for Grid.
-     * @default []
+
      */
     textWrapSettings?: TextWrapSettingsModel;
 
     /**
      * Specifies whether the paging is enable or not.
-     * @default null
+
      */
     allowPaging?: boolean;
 
     /**
      * Specifies the 'enableAutoFill' for Grid.
-     * @default []
+
      */
     enableAutoFill?: boolean;
 
     /**
      * Specifies the pageSettings for Grid.
-     * @default PageSettings
+
      */
     pageSettings?: PageSettingsModel;
 
@@ -110,144 +110,144 @@ export interface IGrid extends Component<HTMLElement> {
 
     /**
      * Specifies whether the sorting is enable or not.
-     * @default null
+
      */
     allowSorting?: boolean;
 
     /**
      * Specifies whether the multi-sorting is enable or not.
-     * @default null
+
      */
     allowMultiSorting?: boolean;
 
     /**
      * Specifies the sortSettings for Grid.
-     * @default []
+
      */
     sortSettings?: SortSettingsModel;
 
     /**
      * Specifies whether the Excel exporting is enable or not.
-     * @default null
+
      */
     allowExcelExport?: boolean;
     /**
      * Specifies whether the Pdf exporting is enable or not.
-     * @default null
+
      */
     allowPdfExport?: boolean;
 
     /**
      * Specifies whether the selection is enable or not.
-     * @default null
+
      */
     allowSelection?: boolean;
 
     /**   
      * It is used to select the row while initializing the grid.
-     * @default -1       
+
      */
     selectedRowIndex?: number;
 
     /**
      * Specifies the selectionSettings for Grid.
-     * @default []
+
      */
     selectionSettings?: SelectionSettingsModel;
 
     /**
      * Specifies whether the reordering is enable or not.
-     * @default null
+
      */
     allowReordering?: boolean;
 
     /**    
      * If `allowResizing` set to true, then the Grid columns can be resized.      
-     * @default false    
+
      */
     allowResizing?: boolean;
 
     /**
      * Specifies whether the filtering is enable or not.
-     * @default null
+
      */
     allowFiltering?: boolean;
 
     /**
      * Specifies the filterSettings for Grid.
-     * @default []
+
      */
     filterSettings?: FilterSettingsModel;
 
     /**
      * Specifies whether the grouping is enable or not.
-     * @default null
+
      */
     allowGrouping?: boolean;
 
     /**
      * Specifies whether the column menu is show or not.
-     * @default null
+
      */
     showColumnMenu?: boolean;
 
     /**
      * Specifies the groupSettings for Grid.
-     * @default []
+
      */
     groupSettings?: GroupSettingsModel;
 
     /**
      * if showColumnChooser is true, then column chooser will be enabled in Grid.
-     * @default false
+
      */
     showColumnChooser?: boolean;
 
     /**
      * Specifies the editSettings for Grid.
-     * @default []
+
      */
     editSettings?: EditSettingsModel;
 
     /**
      * Specifies the summaryRows for Grid.
-     * @default []
+
      */
     aggregates?: AggregateRowModel[];
 
 
     /**
      * Specifies scrollable height of the grid content.
-     * @default 'auto'
+
      */
     height?: string | number;
     /**
      * Specifies scrollable width of the grid content.
-     * @default 'auto'
+
      */
     width?: string | number;
 
     /**
      * Specifies the searchSettings for Grid.
-     * @default []
+
      */
     searchSettings?: SearchSettingsModel;
 
     /**
      * Specifies the rowDropSettings for Grid.
-     * @default []
+
      */
     rowDropSettings?: RowDropSettingsModel;
 
     /**
      * Specifies whether the allowRowDragAndDrop is enable or not.
-     * @default false
+
      */
     allowRowDragAndDrop?: boolean;
 
     /**
      * Specifies whether the gridLines mode
-     * @default null
+
      */
     gridLines?: GridLine;
 
@@ -281,113 +281,113 @@ export interface IGrid extends Component<HTMLElement> {
 
     /**
      * Specifies the dataSource for Grid.
-     * @default []
+
      */
     dataSource?: Object | DataManager;
 
     /**
      * Defines the row height for Grid rows.
-     * @default null
+
      */
     rowHeight?: number;
 
     /**
      * Specifies the query for Grid.
-     * @default []
+
      */
     query?: Query;
 
     /**
-     * @hidden
+
      * `columnQueryMode`provides options to retrive data from the datasource.
-     * @default All
+
      */
     columnQueryMode?: ColumnQueryModeType;
 
     /**
-     * @hidden
+
      * `vGroupOffsets`provides options to store the whole data objects block heights.
-     * @default false
+
      */
     isVirtualAdaptive?: boolean;
 
 
     /**
-     * @hidden
+
      * `vGroupOffsets`provides options to store the whole data objects block heights.
-     * @default {}
+
      */
     vGroupOffsets?: { [x: number]: number };
 
     /**
-     * @hidden
+
      * `vRows`provides options to store the whole row objects from the datasource.
-     * @default []
+
      */
     vRows?: Row<Column>[];
 
     /**
-     * @hidden
+
      * `vcRows`provides options to store the whole row objects from the datasource.
-     * @default []
+
      */
     vcRows?: Row<Column>[];
 
     /**
-     * @hidden
+
      * Specifies the toolbar for Grid.
-     * @default null
+
      */
     toolbar?: (ToolbarItems | string | ItemModel | ToolbarItem)[];
 
     /**
      * Specifies the context menu items for Grid.
-     * @default null
+
      */
     contextMenuItems?: ContextMenuItem[] | ContextMenuItemModel[];
 
     /**
      * Specifies the column menu items for Grid.
-     * @default null
+
      */
     columnMenuItems?: string[] | ContextMenuItemModel[];
 
     /**
-     * @hidden
+
      * It used to render toolbar template
-     * @default null
+
      */
     toolbarTemplate?: string;
 
     /**
-     * @hidden
+
      * It used to render pager template
-     * @default null
+
      */
     pagerTemplate?: string;
 
     /**
-     * @hidden
+
      * It used to indicate initial loading
-     * @default false
+
      */
     isInitialLoad?: boolean;
 
     /**
      * Defines the frozen rows for the grid content
-     * @default 0
+
      */
     frozenRows?: number;
 
     /**
      * Defines the frozen columns for the grid content
-     * @default 0
+
      */
     frozenColumns?: number;
 
     /**
      * Specifies whether the Searching for columns is enable or not.
-     * @default true
+
      */
     allowSearching?: boolean;
 
@@ -556,7 +556,7 @@ export interface IGrid extends Component<HTMLElement> {
     dataStateChange?: EmitType<DataStateChangeEventArgs>;
 }
 
-/** @hidden */
+
 
 export interface IExpandedRow {
     index?: number;
@@ -564,7 +564,7 @@ export interface IExpandedRow {
     isExpand?: boolean;
 }
 
-/** @hidden */
+
 export interface IRenderer {
     renderPanel(): void;
     renderTable(): void;
@@ -593,7 +593,7 @@ export interface IRenderer {
 
 /**
  * IAction interface
- * @hidden
+
  */
 export interface IAction {
     updateModel?(): void;
@@ -603,7 +603,7 @@ export interface IAction {
     removeEventListener?(): void;
 }
 /**
- * @hidden
+
  */
 export interface IDataProcessor {
     generateQuery(): Query;
@@ -611,7 +611,7 @@ export interface IDataProcessor {
     processData?(): void;
 }
 /**
- * @hidden
+
  */
 export interface IValueFormatter {
     fromView(value: string, format: Function, target?: string): string | number | Date;
@@ -621,7 +621,7 @@ export interface IValueFormatter {
     getParserFunction?(format: NumberFormatOptions | DateFormatOptions): Function;
 }
 /**
- * @hidden
+
  */
 export interface ITemplateRender {
     compiled: { [x: string]: Function };
@@ -629,7 +629,7 @@ export interface ITemplateRender {
     render(key: string, data: Object, params?: { [p: string]: Object }): string;
 }
 /**
- * @hidden
+
  */
 export interface IEditCell {
     create?: Element | Function | string;
@@ -641,13 +641,13 @@ export interface IEditCell {
     destroy?: Function | string;
 }
 /**
- * @hidden
+
  */
 export interface IDialogUI {
     params?: DialogModel;
 }
 /**
- * @hidden
+
  */
 export interface IFilterUI {
     create?: Element | Function | string;
@@ -655,7 +655,7 @@ export interface IFilterUI {
     write?: void | Function | string;
 }
 /**
- * @hidden
+
  */
 export interface IFilterMUI {
     create?: void | Function | string;
@@ -664,7 +664,7 @@ export interface IFilterMUI {
 }
 
 /**
- * @hidden
+
  */
 export interface ICustomOptr {
     stringOperator?: { [key: string]: Object }[];
@@ -674,7 +674,7 @@ export interface ICustomOptr {
     booleanOperator?: { [key: string]: Object }[];
 }
 /**
- * @hidden
+
  */
 export interface ICellRenderer<T> {
     element?: Element;
@@ -687,7 +687,7 @@ export interface ICellRenderer<T> {
     refresh?(cell: Cell<T>, node: Element): Element;
 }
 /**
- * @hidden
+
  */
 export interface IRowRenderer<T> {
     element?: Element;
@@ -695,20 +695,20 @@ export interface IRowRenderer<T> {
 }
 
 /**
- * @hidden
+
  */
 export interface ICellFormatter {
     getValue(column: Column, data: Object): Object;
 }
 /**
- * @hidden
+
  */
 export interface IIndex {
     rowIndex?: number;
     cellIndex?: number;
 }
 /**
- * @hidden
+
  */
 export interface ISelectedCell {
     rowIndex: number;
@@ -716,7 +716,7 @@ export interface ISelectedCell {
 }
 
 /**
- * @hidden
+
  */
 export interface IFilterOperator {
     contains: string;
@@ -749,7 +749,7 @@ export interface NotifyArgs {
 }
 
 /**
- * @hidden
+
  */
 export interface ICell<T> {
     colSpan?: number;
@@ -781,7 +781,7 @@ export interface ICell<T> {
     foreignKeyData?: Object;
 }
 /**
- * @hidden
+
  */
 export interface IRow<T> {
     uid?: string;
@@ -821,7 +821,7 @@ export interface IRow<T> {
     foreignKeyData?: Object;
 }
 /**
- * @hidden
+
  */
 export interface IModelGenerator<T> {
     generateRows(data: Object, args?: Object): Row<T>[];
@@ -906,7 +906,7 @@ export interface DetailDataBoundEventArgs {
     /** Defines the details row element. */
     detailElement?: Element;
     /** Defines the selected row data. 
-     * @isGenericType true
+
      */
     data?: Object;
 }
@@ -924,7 +924,7 @@ export interface ColumnChooserEventArgs {
 
 export interface RowDeselectEventArgs {
     /** Defines the current selected/deselected row data. 
-     * @isGenericType true
+
      */
     data?: Object;
     /** Defines the selected/deselected row index. */
@@ -966,7 +966,7 @@ export interface RecordDoubleClickEventArgs {
     /** Defines the row element. */
     row?: Element;
     /** Defines the current row data.
-     * @isGenericType true
+
      */
     rowData?: Object;
     /** Defines the row index. */
@@ -984,7 +984,7 @@ export interface RowSelectingEventArgs extends RowSelectEventArgs {
 
 export interface CellDeselectEventArgs {
     /** Defines the currently selected/deselected row data. 
-     * @isGenericType true
+
      */
     data?: Object;
     /** Defines the indexes of the current selected/deselected cells. */
@@ -1024,7 +1024,7 @@ export interface ColumnDragEventArgs {
 
 export interface RowDataBoundEventArgs {
     /** Defines the current row data.
-     * @isGenericType true
+
      */
     data?: Object;
     /** Defines the row element. */
@@ -1042,7 +1042,7 @@ export interface HeaderCellInfoEventArgs {
 
 export interface QueryCellInfoEventArgs {
     /** Defines the row data associated with this cell.
-     * @isGenericType true
+
      */
     data?: Object;
     /** Defines the cell element. */
@@ -1070,7 +1070,7 @@ export interface PdfQueryCellInfoEventArgs {
     /** Defines the no. of columns to be spanned */
     colSpan?: number;
     /** Defines the data of the cell
-     * @isGenericType true
+
      */
     data?: Object;
     /** Defines the current PDF cell */
@@ -1100,7 +1100,7 @@ export interface PdfHeaderQueryCellInfoEventArgs {
 
 export interface ExcelQueryCellInfoEventArgs {
     /** Defines the row data associated with this cell.
-     * @isGenericType true
+
      */
     data?: Object;
     /** Defines the column of the current cell. */
@@ -1302,11 +1302,11 @@ export interface RowDragEventArgs {
     /** Defines the target element from which drag starts. */
     target?: Element;
     /** Defines the type of the element to be dragged.
-     * @hidden
+
      */
     draggableType?: string;
     /** Defines the selected row data.
-     * @isGenericType true
+
      */
     data?: Object[];
     /** Defines the drag element from index. */
@@ -1320,14 +1320,14 @@ export interface RowDragEventArgs {
 }
 
 /**
- * @hidden
+
  */
 export interface EJ2Intance extends HTMLElement {
     ej2_instances: Object | Object[];
 }
 
 /**
- * @hidden
+
  */
 export interface IPosition {
     x: number;
@@ -1335,7 +1335,7 @@ export interface IPosition {
 }
 
 /**
- * @hidden
+
  */
 export interface ParentDetails {
     parentID?: string;
@@ -1346,7 +1346,7 @@ export interface ParentDetails {
 }
 
 /**
- * @hidden
+
  */
 export interface ScrollPositionType {
     top?: number;
@@ -1354,7 +1354,7 @@ export interface ScrollPositionType {
 }
 
 /**
- * @hidden
+
  */
 export interface VirtualInfo {
     data?: boolean;
@@ -1373,7 +1373,7 @@ export interface VirtualInfo {
     offsets?: Offsets;
 }
 /**
- * @hidden
+
  */
 export interface InterSection {
     container?: HTMLElement;
@@ -1383,7 +1383,7 @@ export interface InterSection {
 }
 
 /**
- * @hidden
+
  */
 export interface ICancel {
     /** Defines the cancel option value. */
@@ -1391,7 +1391,7 @@ export interface ICancel {
 }
 
 /**
- * @hidden
+
  */
 export interface IPrimaryKey {
     /** Defines the primaryKey. */
@@ -1400,14 +1400,14 @@ export interface IPrimaryKey {
 
 export interface BeforeBatchAddArgs extends ICancel, IPrimaryKey {
     /** Defines the default data object. 
-     * @isGenericType true
+
      */
     defaultData?: Object;
 
 }
 
 /**
- * @hidden
+
  */
 export interface BatchCancelArgs {
     /** Defines the rows. */
@@ -1417,11 +1417,11 @@ export interface BatchCancelArgs {
 }
 
 /**
- * @hidden
+
  */
 export interface BatchDeleteArgs extends IPrimaryKey {
     /** Defines the deleted data. 
-     * @isGenericType true
+
      */
     rowData?: Object;
     /** Defines the row index. */
@@ -1439,7 +1439,7 @@ export interface BeforeBatchSaveArgs extends ICancel {
 }
 
 /**
- * @hidden
+
  */
 export interface ResizeArgs extends ICancel {
     /** Event argument of point or touch action. */
@@ -1449,11 +1449,11 @@ export interface ResizeArgs extends ICancel {
 }
 
 /**
- * @hidden
+
  */
 export interface BatchAddArgs extends ICancel, IPrimaryKey {
     /** Defines the added data.
-     * @isGenericType true
+
      */
     defaultData?: Object;
     /** Defines the column index. */
@@ -1468,7 +1468,7 @@ export interface BatchAddArgs extends ICancel, IPrimaryKey {
 
 export interface BeginEditArgs extends ICancel, IPrimaryKey {
     /** Defines the edited data. 
-     * @isGenericType true
+
      */
     rowData?: Object;
     /** Defines the edited row index. */
@@ -1486,10 +1486,10 @@ export interface DeleteEventArgs {
     cancel?: boolean;
     /** Defines the request type. */
     requestType?: string;
-    /** Defines the foreign key record object (JSON). @hidden */
+
     foreignKeyData?: Object;
     /** Defines the record objects.
-     * @isGenericType true
+
      */
     data?: Object[];
     /** Defines the selected rows for delete. */
@@ -1504,11 +1504,11 @@ export interface AddEventArgs {
     /** Defines the request type. */
     requestType?: string;
     /** Defines the foreign key record object. 
-     * @hidden 
+
      */
     foreignKeyData?: Object;
     /** Defines the record objects.
-     * @isGenericType true
+
      */
     data?: Object;
     /** Defines the event name. */
@@ -1520,7 +1520,7 @@ export interface AddEventArgs {
     /** Added row index */
     index?: number;
     /** 
-     * @hidden 
+
      * Defines the record objects.
      */
     rowData?: Object;
@@ -1530,7 +1530,7 @@ export interface AddEventArgs {
 
 export interface SaveEventArgs extends AddEventArgs {
     /** Defines the previous data.
-     * @isGenericType true
+
      */
     previousData?: Object;
     /** Defines the selected row index. */
@@ -1564,11 +1564,11 @@ export interface DialogEditEventArgs extends EditEventArgs {
 
 
 /**
- * @hidden
+
  */
 export interface CellEditSameArgs extends ICancel {
     /** Defines the row data object.
-     * @isGenericType true
+
      */
     rowData?: Object;
     /** Defines the column name. */
@@ -1603,7 +1603,7 @@ export interface CommandClickEventArgs {
     /** Defines the current command column . */
     commandColumn?: CommandModel;
     /** returns particular row data 
-     * @isGenericType true
+
      */
     rowData?: Object;
 }
@@ -1623,7 +1623,7 @@ export interface CellSaveArgs extends CellEditSameArgs {
 
 export interface BeforeDataBoundArgs {
     /** Defines the data.
-     * @isGenericType true
+
      */
     result?: Object[];
     /** Defines the data count. */
@@ -1633,7 +1633,7 @@ export interface BeforeDataBoundArgs {
 }
 
 /**
- * @hidden
+
  */
 export interface IEdit {
     formObj?: FormValidator;
@@ -1660,7 +1660,7 @@ export interface IEdit {
 }
 
 /**
- * @hidden
+
  */
 export interface CheckBoxChangeEventArgs extends ICancel {
     /** Defines the checked state. */
@@ -1672,7 +1672,7 @@ export interface CheckBoxChangeEventArgs extends ICancel {
 }
 
 /**
- * @hidden
+
  */
 export interface BeforeCopyEventArgs extends ICancel {
     /** Defines the grid copied data. */
@@ -1705,7 +1705,7 @@ export interface CommandModel {
     title?: string;
     /**
      * Define the command Button type
-     * @blazorDefaultValue none
+
      */
     type?: CommandButtonType;
     /**
@@ -1786,7 +1786,7 @@ export interface DataSourceChangedEventArgs {
     /** Defines the state of the performed action */
     state?: DataStateChangeEventArgs;
     /** Defines the selected row data. 
-     * @isGenericType true
+
      */
     data?: Object | Object[];
     /** Defines the primary key value */
@@ -1804,7 +1804,7 @@ export interface DataSourceChangedEventArgs {
 }
 
 /**
- * @hidden
+
  */
 export interface CheckBoxChangeEventArgs extends ICancel {
     /** Defines the checked state. */
@@ -1816,7 +1816,7 @@ export interface CheckBoxChangeEventArgs extends ICancel {
 }
 
 /**
- * @hidden
+
  */
 export interface BeforeCopyEventArgs extends ICancel {
     /** Defines the grid copied data. */
@@ -1824,7 +1824,7 @@ export interface BeforeCopyEventArgs extends ICancel {
 }
 
 /**
- * @hidden
+
  */
 export interface IFocus {
     matrix: Matrix;
@@ -1842,7 +1842,7 @@ export interface IFocus {
     preventDefault?: (e: KeyboardEventArgs, info: FocusInfo) => void;
 }
 /**
- * @hidden
+
  */
 export interface FocusInfo {
     element?: HTMLElement;
@@ -1853,7 +1853,7 @@ export interface FocusInfo {
     uid?: string;
 }
 /**
- * @hidden
+
  */
 export interface CellFocusArgs {
     element?: HTMLElement;
@@ -1869,7 +1869,7 @@ export interface CellFocusArgs {
     cancel?: boolean;
 }
 /**
- * @hidden
+
  */
 export interface FocusedContainer {
     isContent?: boolean;
@@ -1882,7 +1882,7 @@ export interface FocusedContainer {
 }
 
 /**
- * @hidden
+
  */
 export interface SwapInfo {
     swap?: boolean;
@@ -1892,14 +1892,14 @@ export interface SwapInfo {
 }
 
 /**
- * @hidden
+
  */
 export interface KeyboardEventArgs extends KeyboardEvent {
     cancel?: boolean;
 }
 
 /**
- * @hidden
+
  */
 export interface SwapInfo {
     swap?: boolean;
@@ -1913,7 +1913,7 @@ export interface ContextMenuItemModel extends MenuItemModel {
 }
 
 /**
- * @hidden
+
  */
 export interface IFilter {
     type?: string;
@@ -1926,7 +1926,7 @@ export interface IFilter {
 }
 
 /**
- * @hidden
+
  */
 export interface IFilterArgs {
     type?: string;
@@ -2148,7 +2148,7 @@ export interface SelectionNotifyArgs extends NotifyArgs {
 }
 
 /**
- * @hidden
+
  */
 export interface DataResult {
     result: Object[] | Group[];

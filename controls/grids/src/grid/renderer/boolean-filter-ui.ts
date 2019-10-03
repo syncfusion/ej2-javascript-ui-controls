@@ -12,7 +12,7 @@ import { FlMenuOptrUI } from './filter-menu-operator';
 import { Dialog, Popup } from '@syncfusion/ej2-popups';
 /**
  * `boolfilterui` render boolean column.
- * @hidden
+
  */
 
 export class BooleanFilterUI implements IFilterMUI {

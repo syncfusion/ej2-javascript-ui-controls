@@ -21,21 +21,21 @@ export class CellRenderer implements ICellRenderer {
     }
     public renderColHeader(index: number): Element {
         let headerCell: Element = this.th.cloneNode() as Element;
-        attributes(headerCell, { 'role': 'columnheader', 'columnheader': index.toString(), 'tabindex': '-1' });
+        attributes(headerCell, { 'role': 'columnheader', 'aria-colindex': (index + 1).toString(), 'tabindex': '-1' });
         headerCell.innerHTML = getColumnHeaderText(index + 1);
         return headerCell;
     }
     public renderRowHeader(index: number): Element {
         let headerCell: Element = this.element.cloneNode() as Element;
-        attributes(headerCell, { 'role': 'rowheader', 'tabindex': '-1' });
         addClass([headerCell], 'e-header-cell');
+        attributes(headerCell, { 'role': 'rowheader', 'tabindex': '-1' });
         headerCell.innerHTML = (index + 1).toString();
         return headerCell;
     }
     public render(args: CellRenderArgs): Element {
         let td: HTMLElement = this.element.cloneNode() as HTMLElement;
         td.className = 'e-cell';
-        td.setAttribute('aria-colindex', args.colIdx.toString());
+        attributes(td, { 'role': 'gridcell', 'aria-colindex': (args.colIdx + 1).toString(), 'tabindex': '-1' });
         let eventArgs: CellRenderEventArgs = { cell: args.cell, element: td, address: args.address };
         this.parent.trigger('beforeCellRender', eventArgs);
         this.updateCell(
@@ -44,11 +44,11 @@ export class CellRenderer implements ICellRenderer {
     }
     private updateCell(
         rowIdx: number, colIdx: number, td: Element, cell: CellModel,
-        eventArgs?: { cell: CellModel, element: Element }, lastCell?: boolean, row?: HTMLElement, hRow?: HTMLElement,
+        eventArgs?: { cell: CellModel, element: HTMLElement }, lastCell?: boolean, row?: HTMLElement, hRow?: HTMLElement,
         isHeightCheckNeeded?: boolean, isRefresh?: boolean
     ): void {
         if (!eventArgs) {
-            eventArgs = { cell: cell, element: td };
+            eventArgs = { cell: cell, element: td as HTMLElement };
         }
         if (cell && cell.formula && !cell.value) {
             let isFormula: boolean = checkIsFormula(cell.formula);
@@ -87,6 +87,7 @@ export class CellRenderer implements ICellRenderer {
         }
         if (Object.keys(style).length || Object.keys(this.parent.commonCellStyle).length || lastCell) {
             if (isRefresh) {
+                this.removeStyle(eventArgs.element);
                 this.parent.notify(setCellFormat, { style: style, range: getCellAddress(rowIdx, colIdx) });
             } else {
                 this.parent.notify(applyCellFormat, <CellFormatArgs>{
@@ -94,7 +95,12 @@ export class CellRenderer implements ICellRenderer {
                     lastCell: lastCell, row: row, hRow: hRow, isHeightCheckNeeded: isHeightCheckNeeded, manualUpdate: false
                 });
             }
+        } else {
+            if (isRefresh) { this.removeStyle(eventArgs.element); }
         }
+    }
+    private removeStyle(element: HTMLElement): void {
+        if (element.style.length) { element.removeAttribute('style'); }
     }
     /** @hidden */
     public refreshRange(range: number[]): void {

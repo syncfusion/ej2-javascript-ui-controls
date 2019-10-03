@@ -724,6 +724,28 @@ describe('Schedule Timeline Week view', () => {
             expect(eventName).toEqual('select');
         });
 
+        it('validate start and end time on multi cell select', () => {
+
+            let eventName: string;
+            let model: ScheduleModel = {
+                select: (args: SelectEventArgs) => eventName = args.name,
+                currentView: 'TimelineWeek', views: ['TimelineWeek'], selectedDate: new Date(2018, 5, 5)
+            };
+            schObj = util.createSchedule(model, []);
+            let workCells: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-work-cells'));
+            expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(0);
+            util.triggerMouseEvent(workCells[3], 'mousedown');
+            util.triggerMouseEvent(workCells[5], 'mousemove');
+            util.triggerMouseEvent(workCells[5], 'mouseup');
+            let focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
+            expect(focuesdEle.classList).toContain('e-selected-cell');
+            expect(focuesdEle.getAttribute('aria-selected')).toEqual('true');
+            expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(3);
+            expect(schObj.activeCellsData.startTime).toEqual(new Date(2018, 5, 3, 1, 30, 0));
+            expect(schObj.activeCellsData.endTime).toEqual(new Date(2018, 5, 3, 3, 0, 0));
+            expect(eventName).toEqual('select');
+        });
+
         it('cell click', () => {
             let cellStartTime: number;
             let cellEndTime: number;

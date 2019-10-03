@@ -103,88 +103,88 @@ export class InPlaceEditor extends Component<HTMLElement> implements INotifyProp
     private afterOpenEvent: EmitType<TooltipEventArgs>;
 
     /**
-     * @hidden
+
      */
     public printValue: string;
     /**
-     * @hidden
+
      */
     public needsID: boolean = true;
     /**
-     * @hidden
+
      */
     public atcModule: AutoComplete;
     /**
-     * @hidden
+
      */
     public colorModule: ColorPicker;
     /**
-     * @hidden
+
      */
     public comboBoxModule: ComboBox;
     /**
-     * @hidden
+
      */
     public dateRangeModule: DateRangePicker;
     /**
-     * @hidden
+
      */
     public multiSelectModule: MultiSelect;
     /**
-     * @hidden
+
      */
     public rteModule: Rte;
     /**
-     * @hidden
+
      */
     public sliderModule: Slider;
     /**
-     * @hidden
+
      */
     public timeModule: TimePicker;
 
     /**
      * * Specifies the name of the field which is used to map data to the server. 
      * If name is not given, then component ID is taken as mapping field name.
-     * @default ''
+
      */
     @Property('')
     public name: string;
     /**
      * Specifies the display value for input when original input value is empty.
-     * @default null
-     * @isGenericType true
+
+
      */
     @Property(null)
     public value: string | number | Date | string[] | Date[] | number[];
     /**
      * Specifies the HTML element ID as a string that can be added as a editable field.
-     * @default ''
-     * @blazorType string
+
+
      */
     @Property('')
     public template: string | HTMLElement;
     /**
      * Defines single/multiple classes (separated by space) to be used for customization of In-place editor.
-     * @default ''
+
      */
     @Property('')
     public cssClass: string;
     /**
      * Defines the unique primary key of editable field which can be used for saving data in data-base.
-     * @default ''
+
      */
     @Property('')
     public primaryKey: string | number;
     /**
      * Sets the text to be shown when an element has 'Empty' value.
-     * @default 'Empty'
+
      */
     @Property('Empty')
     public emptyText: string;
     /**
      * Gets the url for server submit action.
-     * @default ''
+
      */
     @Property('')
     public url: string;
@@ -193,7 +193,7 @@ export class InPlaceEditor extends Component<HTMLElement> implements INotifyProp
      * 
      * - `Inline`: Editable content is displayed as inline text and ok/cancel buttons are displayed at right bottom corner of input.
      * - `Popup`: Editable content and ok/cancel buttons are displayed inside popup while editing.
-     * @default 'Popup'
+
      */
     @Property('Popup')
     public mode: RenderMode;
@@ -203,13 +203,13 @@ export class InPlaceEditor extends Component<HTMLElement> implements INotifyProp
      * - `UrlAdaptor`: Base adaptor for interacting with remote data services.
      * - `ODataV4Adaptor`: Used to interact with ODataV4 service.
      * - `WebApiAdaptor`: Used to interact with Web api created with OData endpoint.
-     * @default 'UrlAdaptor'
+
      */
     @Property('UrlAdaptor')
     public adaptor: AdaptorType;
     /**
      * Specifies the type of components that integrated with In-place editor to make it as editable.
-     * @default 'Text'
+
      */
     @Property('Text')
     public type: InputType;
@@ -219,7 +219,7 @@ export class InPlaceEditor extends Component<HTMLElement> implements INotifyProp
      * - `Click`: Do the single click action on input to enter into the edit mode.
      * - `DblClick`: Do the single double click action on input to enter into the edit mode.
      * - `EditIconClick`: Disables the editing of event action of input and allows user to edit only through edit icon.
-     * @default 'Click'
+
      */
     @Property('Click')
     public editableOn: EditableType;
@@ -230,105 +230,105 @@ export class InPlaceEditor extends Component<HTMLElement> implements INotifyProp
      * - `Cancel`: Cancel's the editing and resets the old content.
      * - `Submit`: Submit the edited content to the server.
      * - `Ignore`: No action is perform with this type and allows to have many containers open.
-     * @default 'Submit'
+
      */
     @Property('Submit')
     public actionOnBlur: ActionBlur;
     /**
      * Enable or disable persisting component's state between page reloads. If enabled, following list of states will be persisted.
      * 1. value
-     * @default false
+
      */
     @Property(false)
     public enablePersistence: boolean;
     /**
      * Specifies whether to enable editing mode or not.
-     * @default false
+
      */
     @Property(false)
     public disabled: boolean;
     /**
      * Used to show/hide the ok/cancel buttons of In-place editor.
-     * @default true
+
      */
     @Property(true)
     public showButtons: boolean;
     /**
      * Specifies to show/hide the editing mode.
-     * @default false
+
      */
     @Property(false)
     public enableEditMode: boolean;
     /**
      * Sets to trigger the submit action with enter key pressing of input.
-     * @default true
+
      */
     @Property(true)
     public submitOnEnter: boolean;
     /**
      * Specifies the object to customize popup display settings like positions, animation etc.
-     * @default {}
+
      */
     @Complex<PopupSettingsModel>({}, PopupSettings)
     public popupSettings: PopupSettingsModel;
     // tslint:disable
     /**
      * Specifies the model object configuration for the integrated components like AutoComplete, DatePicker,NumericTextBox, etc.
-     * @default null
+
      */
     @Property(null)
     public model: AutoCompleteModel | ColorPickerModel | ComboBoxModel | DatePickerModel | DateRangePickerModel | DateTimePickerModel | DropDownListModel | MaskedTextBoxModel | MultiSelectModel | NumericTextBoxModel | RichTextEditorModel | SliderModel | TextBoxModel | TimePickerModel;
     // tslint:enable
     /**
      * Used to customize the "Save" button UI appearance by defining Button model configuration.
-     * @default { iconCss: 'e-icons e-save-icon' }
+
      */
     @Property({ iconCss: 'e-icons e-save-icon' })
     public saveButton: ButtonModel;
     /**
      * Used to customize the "Cancel" button UI appearance by defining Button model configuration.
-     * @default { iconCss: 'e-icons e-cancel-icon' }
+
      */
     @Property({ iconCss: 'e-icons e-cancel-icon' })
     public cancelButton: ButtonModel;
     /**
      * Maps the validation rules for the input.
-     * @default null
+
      */
     @Property(null)
     public validationRules: { [name: string]: { [rule: string]: Object } };
     /**
      * The event will be fired once the component rendering is completed.
      * @event
-     * @blazorProperty 'Created'
+
      */
     @Event()
     public created: EmitType<Event>;
     /**
      * The event will be fired before the data submitted to the server.
      * @event
-     * @blazorProperty 'OnActionBegin'
+
      */
     @Event()
     public actionBegin: EmitType<ActionBeginEventArgs>;
     /**
      * The event will be fired when data submitted successfully to the server.
      * @event
-     * @blazorProperty 'OnActionSuccess'
+
      */
     @Event()
     public actionSuccess: EmitType<ActionEventArgs>;
     /**
      * The event will be fired when data submission failed.
      * @event
-     * @blazorProperty 'OnActionFailure'
+
      */
     @Event()
     public actionFailure: EmitType<ActionEventArgs>;
     /**
      * The event will be fired while validating current value.
      * @event
-     * @blazorProperty 'Validating'
+
      */
     @Event()
     public validating: EmitType<ValidateEventArgs>;
@@ -341,7 +341,7 @@ export class InPlaceEditor extends Component<HTMLElement> implements INotifyProp
     /**
      * The event will be fired when the component gets destroyed.
      * @event
-     * @blazorProperty 'Destroyed'
+
      */
     @Event()
     public destroyed: EmitType<Event>;
@@ -419,8 +419,11 @@ export class InPlaceEditor extends Component<HTMLElement> implements INotifyProp
             addClass([this.valueWrap], [classes.HIDE]);
             this.inlineWrapper = this.createElement('div', { className: classes.INLINE });
             this.element.appendChild(this.inlineWrapper);
-            this.renderControl(this.inlineWrapper);
-            this.afterOpenHandler(null);
+            if (['AutoComplete', 'ComboBox', 'DropDownList', 'MultiSelect'].indexOf(this.type) > -1) {
+                this.checkRemoteData(this.model as AutoCompleteModel | ComboBoxModel | DropDownListModel | MultiSelectModel);
+            } else {
+                this.renderAndOpen();
+            }
         } else {
             if (!isNullOrUndefined(this.popupSettings.model) && this.popupSettings.model.afterOpen) {
                 this.popupSettings.model.afterOpen = this.afterOpenHandler.bind(this);
@@ -448,6 +451,34 @@ export class InPlaceEditor extends Component<HTMLElement> implements INotifyProp
         addClass([this.valueWrap], [classes.OPEN]);
         this.setProperties({ enableEditMode: true }, true);
     }
+
+    private renderAndOpen(): void {
+        this.renderControl(this.inlineWrapper);
+        this.afterOpenHandler(null);
+    }
+
+    private checkRemoteData(model: AutoCompleteModel | ComboBoxModel | DropDownListModel | MultiSelectModel): void {
+        if (model.dataSource instanceof DataManager) {
+            model.dataBound = () => {
+                this.afterOpenHandler(null);
+            };
+            this.renderControl(this.inlineWrapper);
+            if ((isNOU(model.value) && isNOU(this.value)) || (model.value === this.value
+                && (model.value as string[] | number[]).length === 0)) {
+                this.showDropDownPopup();
+            }
+        } else { this.renderAndOpen(); }
+    }
+
+    private showDropDownPopup(): void {
+        if (this.type === 'DropDownList') {
+            (this.componentObj as DropDownList).focusIn();
+            (this.componentObj as DropDownList).showPopup();
+        } else {
+            if (this.isExtModule) { this.notify(events.showPopup, {}); }
+        }
+    }
+
     private setAttribute(ele: HTMLElement, attr: string[]): void {
         let value: string = this.name && this.name.length !== 0 ? this.name : this.element.id;
         attr.forEach((val: string) => {
@@ -992,7 +1023,13 @@ export class InPlaceEditor extends Component<HTMLElement> implements INotifyProp
         let eventArgs: BeginEditEventArgs = { mode: this.mode, cancelFocus: false };
         this.trigger('beginEdit', eventArgs);
         if (!eventArgs.cancelFocus) {
-            this.setFocus();
+            if (this.mode === 'Inline' && (['AutoComplete', 'ComboBox', 'DropDownList', 'MultiSelect'].indexOf(this.type) > -1)
+                && (this.model as AutoCompleteModel | ComboBoxModel | DropDownListModel
+                    | MultiSelectModel).dataSource instanceof DataManager) {
+                this.showDropDownPopup();
+            } else {
+                this.setFocus();
+            }
         }
         if (this.afterOpenEvent) {
             this.tipObj.setProperties({ afterOpen: this.afterOpenEvent }, true);
@@ -1150,7 +1187,7 @@ export class InPlaceEditor extends Component<HTMLElement> implements INotifyProp
     /**
      * To provide the array of modules needed for component rendering
      * @return {ModuleDeclaration[]}
-     * @hidden
+
      */
     public requiredModules(): ModuleDeclaration[] {
         let modules: ModuleDeclaration[] = [];

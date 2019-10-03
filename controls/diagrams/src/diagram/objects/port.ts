@@ -13,7 +13,7 @@ export abstract class Port extends ChildProperty<Port> {
 
     /** 
      * Defines the unique id of the port
-     * @default ''
+
      */
     @Property('')
     public id: string;
@@ -25,7 +25,7 @@ export abstract class Port extends ChildProperty<Port> {
      * * Right - Aligns the diagram element at the right of its immediate parent
      * * Center - Aligns the diagram element at the center of its immediate parent
      * * Auto - Aligns the diagram element based on the characteristics of its immediate parent
-     * @default 'Center'
+
      */
     @Property('Center')
     public horizontalAlignment: HorizontalAlignment;
@@ -37,28 +37,28 @@ export abstract class Port extends ChildProperty<Port> {
      * * Bottom - Aligns the diagram element at the bottom of its immediate parent
      * * Center - Aligns the diagram element at the center of its immediate parent
      * * Auto - Aligns the diagram element based on the characteristics of its immediate parent
-     * @default 'Center'
+
      */
     @Property('Center')
     public verticalAlignment: VerticalAlignment;
 
     /**
      * Defines the space that the port has to be moved from its actual position
-     * @default new Margin(0,0,0,0)
+
      */
     @Complex<MarginModel>({}, Margin)
     public margin: MarginModel;
 
     /**
      * Sets the width of the port
-     * @default 12
+
      */
     @Property(12)
     public width: number;
 
     /**
      * Sets the height of the port
-     * @default 12
+
      */
     @Property(12)
     public height: number;
@@ -81,7 +81,7 @@ export abstract class Port extends ChildProperty<Port> {
      * });
      * diagram.appendTo('#diagram');
      * ```
-     * @default {}
+
      */
     @Complex<ShapeStyleModel>({}, ShapeStyle)
     public style: ShapeStyleModel;
@@ -92,7 +92,7 @@ export abstract class Port extends ChildProperty<Port> {
      * * Circle - Sets the decorator shape as Circle
      * * Square - Sets the decorator shape as Square
      * * Custom - Sets the decorator shape as Custom
-     * @default 'Square'
+
      */
     @Property('Square')
     public shape: PortShapes;
@@ -103,34 +103,34 @@ export abstract class Port extends ChildProperty<Port> {
      * * Hidden - Always hides the port
      * * Hover - Shows the port when the mouse hovers over a node
      * * Connect - Shows the port when a connection end point is dragged over a node
-     * @default 'Connect'
-     * @aspNumberEnum
-     * @blazorNumberEnum
+
+
+
      */
     @Property(PortVisibility.Connect)
     public visibility: PortVisibility;
 
     /**
      * Defines the geometry of the port
-     * @default ''
+
      */
     @Property('')
     public pathData: string;
 
     /**
      * Defines the constraints of port
-     * @default 'Default'
-     * @aspNumberEnum
-     * @blazorNumberEnum
+
+
+
      */
     @Property(PortConstraints.Default)
     public constraints: PortConstraints;
 
     /**
      * Allows the user to save custom information/data about a port
-     * @aspDefaultValueIgnore
-     * @blazorDefaultValueIgnore
-     * @default undefined
+
+
+
      */
     @Property()
     public addInfo: Object;
@@ -142,7 +142,7 @@ export abstract class Port extends ChildProperty<Port> {
 export class PointPort extends Port {
     /**
      * Defines the position of the port with respect to the boundaries of nodes/connector
-     * @default new Point(0.5,0.5)
+
      */
     @Complex<PointModel>({ x: 0.5, y: 0.5 }, Point)
     public offset: PointModel;

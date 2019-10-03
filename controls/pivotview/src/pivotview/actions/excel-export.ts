@@ -9,7 +9,7 @@ import { isNullOrUndefined } from '@syncfusion/ej2-base';
 import { PivotUtil } from '../../base/util';
 
 /**
- * @hidden
+
  * `ExcelExport` module is used to handle the Excel export action.
  */
 export class ExcelExport {
@@ -18,7 +18,7 @@ export class ExcelExport {
 
     /**
      * Constructor for the PivotGrid Excel Export module.
-     * @hidden
+
      */
     constructor(parent?: PivotView) {
         this.parent = parent;
@@ -35,7 +35,7 @@ export class ExcelExport {
     /* tslint:disable:max-func-body-length */
     /**
      * Method to perform excel export.
-     * @hidden
+
      */
     public exportToExcel(type: string): void {
         this.engine = this.parent.dataType === 'olap' ? this.parent.olapEngineModule : this.parent.engineModule;
@@ -149,7 +149,7 @@ export class ExcelExport {
     /**
      * To destroy the excel export module
      * @returns void
-     * @hidden
+
      */
     /* tslint:disable:no-empty */
     public destroy(): void {

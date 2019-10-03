@@ -596,6 +596,79 @@ describe('DDList', () => {
         });
 
     });
+
+    //Multiple cssClass
+    describe('Add multiple cssClass', () => {
+        let listObj: any;
+        let popupObj: any;
+        let element: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'dropdownlist' });
+        beforeAll(() => {
+            document.body.appendChild(element);
+        });
+        afterAll(() => {
+            if (element) {
+                element.remove();
+                document.body.innerHTML = '';
+            }
+        });
+        it('Dynamically change multiple cssClass', () => {
+            listObj = new DropDownList({ dataSource: datasource2, cssClass: 'sample' });
+            listObj.appendTo(element);
+            listObj.showPopup();
+            expect(listObj.element.parentElement.classList.contains('sample')).toBe(true);
+            expect(listObj.popupObj.element.classList.contains('sample')).toEqual(true);
+            listObj.cssClass = 'test highlight';
+            listObj.dataBind();
+            expect(listObj.element.parentElement.classList.contains('test')).toBe(true);
+            expect(listObj.element.parentElement.classList.contains('highlight')).toBe(true);
+            expect(listObj.popupObj.element.classList.contains('test')).toEqual(true);
+            expect(listObj.popupObj.element.classList.contains('highlight')).toEqual(true);
+        });
+        it('Initially render multiple cssClass', () => {
+            listObj = new DropDownList({ dataSource: datasource2, cssClass: 'sample highlight' });
+            listObj.appendTo(element);
+            listObj.showPopup();
+            expect(listObj.element.parentElement.classList.contains('sample')).toBe(true);
+            expect(listObj.element.parentElement.classList.contains('highlight')).toBe(true);
+            expect(listObj.popupObj.element.classList.contains('sample')).toEqual(true);
+            expect(listObj.popupObj.element.classList.contains('highlight')).toEqual(true);
+            listObj.cssClass = 'test';
+            listObj.dataBind();
+            expect(listObj.element.parentElement.classList.contains('test')).toBe(true);
+            expect(listObj.popupObj.element.classList.contains('test')).toEqual(true);
+        });
+        it('Dynamically change cssClass as null', () => {
+            listObj = new DropDownList({ dataSource: datasource2, cssClass: 'test highlight' });
+            listObj.appendTo(element);
+            listObj.showPopup();
+            expect(listObj.element.parentElement.classList.contains('test')).toBe(true);
+            expect(listObj.element.parentElement.classList.contains('highlight')).toBe(true);
+            expect(listObj.popupObj.element.classList.contains('test')).toEqual(true);
+            expect(listObj.popupObj.element.classList.contains('highlight')).toEqual(true);
+            listObj.cssClass = null;
+            listObj.dataBind();
+            expect(listObj.element.parentElement.classList.contains('test')).toBe(false);
+            expect(listObj.element.parentElement.classList.contains('highlight')).toBe(false);
+            expect(listObj.popupObj.element.classList.contains('test')).toEqual(false);
+            expect(listObj.popupObj.element.classList.contains('highlight')).toEqual(false);
+        });
+        it('Dynamically change cssClass as empty', () => {
+            listObj = new DropDownList({ dataSource: datasource2, cssClass: 'test highlight' });
+            listObj.appendTo(element);
+            listObj.showPopup();
+            expect(listObj.element.parentElement.classList.contains('test')).toBe(true);
+            expect(listObj.element.parentElement.classList.contains('highlight')).toBe(true);
+            expect(listObj.popupObj.element.classList.contains('test')).toEqual(true);
+            expect(listObj.popupObj.element.classList.contains('highlight')).toEqual(true);
+            listObj.cssClass = '';
+            listObj.dataBind();
+            expect(listObj.element.parentElement.classList.contains('test')).toBe(false);
+            expect(listObj.element.parentElement.classList.contains('highlight')).toBe(false);
+            expect(listObj.popupObj.element.classList.contains('test')).toEqual(false);
+            expect(listObj.popupObj.element.classList.contains('highlight')).toEqual(false);
+        });
+    });
+
     // dynamic property changes
     describe('Dynamic property changes', () => {
         let listObj: any;
@@ -2033,6 +2106,54 @@ describe('DDList', () => {
             expect(list.list.scrollTop !== 120).toBe(true);
         });
     });
+
+    describe('Check popup opens after BeforeOpen event set as true', () => {
+        let mouseEventArgs: any = { preventDefault: function () { }, target: null };
+        let list: any;
+        let count: number = 0;
+        let ele: HTMLElement;
+        beforeAll(() => {
+            ele = createElement('input', { id: 'DropDownList' });
+            document.body.appendChild(ele);
+        });
+        afterAll((done) => {
+            setTimeout(() => {
+                list.destroy();
+                ele.remove();
+                done();
+            }, 450)
+        });
+        it('BeforeOpen event set as true', (done) => {
+            list = new DropDownList({
+                dataSource: datasource2, fields: { text: 'text', value: 'id' },
+                index: 4,
+                allowFiltering: true,
+                beforeOpen: function(e: any){
+                    if (count === 2) {
+                        e.cancel = true;
+                    }
+                },
+            });
+            list.appendTo(ele);
+            setTimeout(() => {
+            count++;
+            list.showPopup();
+            expect(list.beforePopupOpen).toBe(true);
+            list.hidePopup();
+            expect(list.beforePopupOpen).toBe(false);
+            count++;
+            list.showPopup();
+            expect(list.beforePopupOpen).toBe(false);
+            count++;
+            list.showPopup();
+            expect(list.beforePopupOpen).toBe(true);
+            list.hidePopup();
+            expect(list.beforePopupOpen).toBe(false);
+                done();
+        }, 450)
+        });
+    });
+    
     // Mouse Events
     describe('mouse events', () => {
         let mouseEventArgs: any = {

@@ -16,7 +16,7 @@ import { AriaService } from '../services/aria-service';
 
 /**
  * Content module is used to render grid content
- * @hidden
+
  */
 export class HeaderRender implements IRenderer {
     //Internal variables             
@@ -233,7 +233,7 @@ export class HeaderRender implements IRenderer {
     /**
      * The function is used to create header table elements
      * @return {Element} 
-     * @hidden
+
      */
     private createHeaderTable(): Element {
         let table: Element = this.createTable();
@@ -243,7 +243,7 @@ export class HeaderRender implements IRenderer {
     }
 
     /**
-     * @hidden
+
      */
     public createTable(): Element {
         let gObj: IGrid = this.parent;

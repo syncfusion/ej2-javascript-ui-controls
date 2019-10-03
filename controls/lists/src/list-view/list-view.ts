@@ -233,7 +233,7 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
     /**
      * This cssClass property helps to use custom skinning option for ListView component,
      *  by adding the mentioned class name into root element of ListView.
-     * @default ''
+
      */
     @Property('')
     public cssClass: string;
@@ -241,21 +241,21 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
     /**
      * It enables UI virtualization which will increase ListView performance on loading large number of data.
      *
-     * @default false
+
      */
     @Property(false)
     public enableVirtualization: boolean;
 
     /**
      * Defines the HTML attributes such as id, class, etc., for the ListView.
-     * @default {}
+
      */
     @Property({})
     public htmlAttributes: { [key: string]: string; };
 
     /**
      * It specifies enabled state of ListView component.
-     * @default true
+
      */
     @Property(true)
     public enable: boolean;
@@ -263,9 +263,9 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
     /**
      * It provides the data to render the ListView component which is mapped
      *  with the fields of ListView.
-     * @isGenericType true
+
      * {% codeBlock src="listview/datasource-api/index.ts" %}{% endcodeBlock %}
-     * @default []
+
      */
     @Property([])
     public dataSource: { [key: string]: Object }[] | string[] | number[] | DataManager;
@@ -277,7 +277,7 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
      *  to know more about this property with demo.
      *
      * {% codeBlock src="listview/query-api/index.ts" %}{% endcodeBlock %}
-     * @default null
+
      */
     @Property()
     public query: Query;
@@ -287,14 +287,14 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
      *  with specified mapped with the column fields to render the ListView.
      *
      * {% codeBlock src="listview/fields-api/index.ts" %}{% endcodeBlock %}
-     * @default ListBase.defaultMappedFields
+
      */
     @Complex<FieldSettingsModel>(ListBase.defaultMappedFields, FieldSettings)
     public fields: FieldSettingsModel;
 
     /**
      * It is used to apply the animation to sub list navigation of list items.
-     * @default { effect: 'SlideLeft', duration: 400, easing: 'ease' }
+
      */
     @Property<AnimationSettings>({ effect: 'SlideLeft', duration: 400, easing: 'ease' })
     public animation: AnimationSettings;
@@ -303,7 +303,7 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
      * It is used to enable the sorting of list items to be ascending or descending.
      *
      * {% codeBlock src="listview/sortorder-api/index.ts" %}{% endcodeBlock %}
-     * @default 'None'
+
      */
     @Property<SortOrder>('None')
     public sortOrder: SortOrder;
@@ -312,7 +312,7 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
      * Using this property, we can show or hide the icon of list item.
      *
      * {% codeBlock src="listview/showicon-api/index.ts" %}{% endcodeBlock %}
-     * @default false
+
      */
     @Property<boolean>(false)
     public showIcon: boolean;
@@ -321,14 +321,14 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
      * Using this property, we can show or hide the `checkbox`.
      *
      * {% codeBlock src="listview/showcheckbox-api/index.ts" %}{% endcodeBlock %}
-     * @default false
+
      */
     @Property<boolean>(false)
     public showCheckBox: boolean;
 
     /**
      * It is used to set the position of check box in an item.
-     * @default 'Left'
+
      */
     @Property<string>('Left')
     public checkBoxPosition: checkBoxPosition;
@@ -337,7 +337,7 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
      * It is used to set the title of ListView component.
      *
      * {% codeBlock src="listview/fields-api/index.ts" %}{% endcodeBlock %}
-     * @default ""
+
      */
     @Property<string>('')
     public headerTitle: string;
@@ -346,21 +346,21 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
      * Using this property, we can show or hide the header of ListView component.
      *
      * {% codeBlock src="listview/fields-api/index.ts" %}{% endcodeBlock %}
-     * @default false
+
      */
     @Property<boolean>(false)
     public showHeader: boolean;
 
     /**
      * It is used to set the height of the ListView component.
-     * @default ''
+
      */
     @Property('')
     public height: number | string;
 
     /**
      * It sets the width to the ListView component.
-     * @default ''
+
      */
     @Property('')
     public width: number | string;
@@ -371,7 +371,7 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
      *  to know more about this property with demo.
      *
      * {% codeBlock src="listview/template-api/index.ts" %}{% endcodeBlock %}
-     * @default null
+
      */
     @Property(null)
     public template: string;
@@ -383,7 +383,7 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
      *  to know more about this property with demo.
      *
      * {% codeBlock src="listview/headertemplate-api/index.ts" %}{% endcodeBlock %}
-     * @default null
+
      */
     @Property(null)
     public headerTemplate: string;
@@ -395,7 +395,7 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
      *  to know more about this property with demo.
      *
      * {% codeBlock src="listview/grouptemplate-api/index.ts" %}{% endcodeBlock %}
-     * @default null
+
      */
     @Property(null)
     public groupTemplate: string;
@@ -403,7 +403,7 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
     /**
      * We can trigger the `select` event when we select the list item in the component.
      * @event
-     * @blazorProperty 'Selected'
+
      */
     @Event()
     public select: EmitType<SelectEventArgs>;
@@ -411,7 +411,7 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
     /**
      * We can trigger `actionBegin` event before every ListView action starts.
      * @event
-     * @blazorProperty 'OnActionBegin'
+
      */
     @Event()
     public actionBegin: EmitType<Object>;
@@ -420,7 +420,7 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
      * We can trigger `actionComplete` event for every ListView action success event
      *  with the dataSource parameter.
      * @event
-     * @blazorProperty 'OnActionComplete'
+
      */
     @Event()
     public actionComplete: EmitType<Object>;
@@ -429,7 +429,7 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
      * We can trigger `actionFailure` event for every ListView action failure event
      *  with the dataSource parameter.
      * @event
-     * @blazorProperty 'OnActionFailure'
+
      */
     @Event()
     public actionFailure: EmitType<Object>;
@@ -1658,7 +1658,7 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
     /**
      * It is used to get the currently [here](./api-selectedItem)
      *  item details from the list items.
-     * @blazorType ListSelectedItem<TValue>
+
      */
     public getSelectedItems(): SelectedItem | SelectedCollection | UISelectedItem | NestedListData {
         // tslint:disable-next-line:no-any
@@ -1783,7 +1783,7 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
     /**
      * It is used to find out an item details from the current list.
      * @param  {Fields | HTMLElement | Element} obj - We can pass element Object or Fields as Object with ID and Text fields.
-     * @blazorType TValue
+
      */
     public findItem(obj: Fields | HTMLElement | Element): SelectedItem {
         return <SelectedItem & DataSource>this.getItemData(obj);
@@ -1870,7 +1870,7 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
      * For example fields: { text: 'Name', tooltip: 'Name', id:'id'}
      * @param  {{[key:string]:Object}[]} data - JSON Array Data that need to add.
      * @param  {Fields} fields - Target item to add the given data as its children (can be null).
-     * @blazorArgsType data|List<TValue>,fields|TValue
+
      */
     public addItem(data: { [key: string]: Object }[], fields: Fields = undefined): void {
         const dataSource: DataSource[] = this.dataSource instanceof DataManager
@@ -2159,8 +2159,8 @@ export interface ClassNames {
 export interface ListSelectedItem {
     /**
      * Selected Item dataSource collection.
-     * @isGenericType true
-     * @blazorType List<T>
+
+
      */
     data?: object[];
     /**
@@ -2187,13 +2187,13 @@ export interface SelectedItem {
 
     /**
      * It denotes the Selected Item list element.
-     * @blazorType DOM
+
      */
     item: HTMLElement | Element;
 
     /**
      * It denotes the Selected Item dataSource JSON object.
-     * @isGenericType true
+
      */
     data: { [key: string]: Object } | string[] | number[];
 
@@ -2212,7 +2212,7 @@ export interface SelectedCollection {
 
     /**
      * It denotes the Selected Item dataSource JSON object or object collection.
-     * @isGenericType true
+
      */
     data: { [key: string]: Object } | { [key: string]: Object }[] | string[] | number[];
 }
@@ -2230,7 +2230,7 @@ export interface UISelectedItem {
 
     /**
      * It denotes the Selected Item dataSource JSON object or object collection.
-     * @isGenericType true
+
      */
     data: { [key: string]: Object } | { [key: string]: Object }[] | string | number | string[] | number[];
     /**
@@ -2246,7 +2246,7 @@ export interface UISelectedItem {
 export interface DataAndParent {
     /**
      * It denotes the Selected Item dataSource JSON object or object collection.
-     * @isGenericType true
+
      */
     data: { [key: string]: Object } | { [key: string]: Object }[] | string[];
     /**

@@ -1341,6 +1341,77 @@ describe('Dialog max-height testing', () => {
     });
 });
 
+describe('Dialog focus testing', () => {
+    let dialog: Dialog;
+    beforeEach((): void => {
+        dialog = undefined;
+        let ele: HTMLElement = createElement('div', { id: 'dialog' });
+        document.body.appendChild(ele);
+    });
+    afterEach((): void => {
+        if (dialog) {
+            dialog.destroy();
+        }
+        document.body.innerHTML = '';
+    });
+    it('If the Dialog is normal dialog with buttons', () => {
+        let dlgcontent: HTMLElement = createElement("div");
+        let dialog = new Dialog({
+            content: dlgcontent,
+            open: onOpen, 
+            buttons: [{
+                buttonModel: { isPrimary: true, content: 'Confirm' } }, 
+                { buttonModel: { content: 'Close' } }
+            ]
+        }, '#dialog');
+        function onOpen(args: any) {
+            args.preventFocus = true;
+        }
+        dialog.show();
+        expect(document.activeElement).toEqual(document.body);
+    });
+    it('If the Dialog is modal dialog with buttons', () => {
+        let dlgcontent: HTMLElement = createElement("div");
+        let dialog = new Dialog({
+            content: dlgcontent, isModal: true,
+            open: onOpen,
+            buttons: [{
+                buttonModel: { isPrimary: true, content: 'Confirm' } }, 
+                { buttonModel: { content: 'Close' } }
+            ]
+        }, '#dialog');
+        function onOpen(args: any) {
+            args.preventFocus = true;
+        }
+        dialog.show();
+        expect(document.activeElement).toEqual(document.body);
+    });
+    it('If the Dialog is modal dialog', () => {
+        let dlgcontent: HTMLElement = createElement("div");
+        let dialog = new Dialog({
+            content: dlgcontent,
+            open: onOpen, showCloseIcon: true
+        }, '#dialog');
+        function onOpen(args: any) {
+            args.preventFocus = true;
+        }
+        dialog.show();
+        expect(document.activeElement).toEqual(document.body);
+    });
+    it('If the Dialog is modal dialog', () => {
+        let dlgcontent: HTMLElement = createElement("div");
+        let dialog = new Dialog({
+            content: dlgcontent, isModal: true,
+            open: onOpen, showCloseIcon: true
+        }, '#dialog');
+        function onOpen(args: any) {
+            args.preventFocus = true;
+        }
+        dialog.show();
+        expect(document.activeElement).toEqual(document.body);
+    });            
+});
+
 describe('Isprimary Button Action while focus on form element', () => {
     describe('Application side ', () => {
         let events: any;

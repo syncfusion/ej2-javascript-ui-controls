@@ -4,7 +4,7 @@ import { editOperation, formulaBarOperation } from '../common/event';
 import { workbookFormulaOperation } from '../../workbook/common/event';
 import { AutoComplete } from '@syncfusion/ej2-dropdowns';
 import { PopupEventArgs, SelectEventArgs, AutoCompleteModel } from '@syncfusion/ej2-dropdowns';
-import { KeyboardEventArgs, L10n, detach } from '@syncfusion/ej2-base';
+import { KeyboardEventArgs, L10n, detach, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { checkIsFormula, getSheet, SheetModel, getSheetName, DefineNameModel } from '../../workbook/index';
 import { Dialog } from '../services/index';
 import { dialog, locale } from '../common/index';
@@ -113,6 +113,16 @@ export class Formula {
             case 'isFormulaEditing':
                 args.isFormulaEdit = this.isFormula;
                 break;
+            case 'isCircularReference':
+                let l10n: L10n = this.parent.serviceLocator.getService(locale);
+                let dialogInst: Dialog = (this.parent.serviceLocator.getService(dialog) as Dialog);
+                dialogInst.show({
+                    height: 180, width: 400, isModal: true, showCloseIcon: true,
+                    content: l10n.getConstant('CircularReference'),
+                });
+                args.argValue = '0';
+                break;
+
         }
     }
 
@@ -386,7 +396,14 @@ export class Formula {
     private addDefinedName(definedName: DefineNameModel): boolean {
         if (!definedName.refersTo) {
             let sheet: SheetModel = getSheet(this.parent, this.parent.activeSheetTab - 1);
-            definedName.refersTo = getSheetName(this.parent) + '!' + sheet.selectedRange;
+            let selectRange: string = sheet.selectedRange;
+            if (!isNullOrUndefined(selectRange)) {
+                let colIndex: number = selectRange.indexOf(':');
+                let left: string = selectRange.substr(0, colIndex);
+                let right: string = selectRange.substr(colIndex + 1, selectRange.length);
+                selectRange = left === right ? left : selectRange;
+            }
+            definedName.refersTo = getSheetName(this.parent) + '!' + selectRange;
         }
         let eventArgs: { [key: string]: Object } = {
             action: 'addDefinedName', definedName: definedName, isAdded: false

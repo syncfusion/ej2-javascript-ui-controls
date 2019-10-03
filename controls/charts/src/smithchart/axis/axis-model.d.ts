@@ -7,34 +7,34 @@ export interface SmithchartMajorGridLinesModel {
 
     /**
     * width of the major grid lines
-    * @default 1
+
     */
     width?: number;
 
     /**
      * The dash array of the major grid lines.
-     * @default ''
+
      */
 
     dashArray?: string;
 
     /**
      * visibility of  major grid lines.
-     * @default true
+
      */
 
     visible?: boolean;
 
     /**
      * option for customizing the majorGridLine color
-     * @default null
+
      */
 
     color?: string;
 
     /**
      * opacity of  major grid lines.
-     * @default 1
+
      */
 
     opacity?: number;
@@ -48,34 +48,34 @@ export interface SmithchartMinorGridLinesModel {
 
     /**
      * width of the minor grid lines
-     * @default 1
+
      */
     width?: number;
 
     /**
      * The dash array of the minor grid lines.
-     * @default ''
+
      */
 
     dashArray?: string;
 
     /**
      * visibility of  minor grid lines.
-     * @default false
+
      */
 
     visible?: boolean;
 
     /**
      * option for customizing the minorGridLine color
-     * @default null
+
      */
 
     color?: string;
 
     /**
      * count of  minor grid lines.
-     * @default 8
+
      */
     count?: number;
 
@@ -88,26 +88,26 @@ export interface SmithchartAxisLineModel {
 
     /**
      * visibility of  axis line.
-     * @default true
+
      */
     visible?: boolean;
 
     /**
     * width of the axis lines
-    * @default 1
+
     */
     width?: number;
 
     /**
      * option for customizing the axisLine color
-     * @default null
+
      */
 
     color?: string;
 
     /**
      * The dash array of the axis line.
-     * @default ''
+
      */
 
     dashArray?: string;
@@ -121,20 +121,20 @@ export interface SmithchartAxisModel {
 
     /**
      * visibility of  axis.
-     * @default true
+
      */
     visible?: boolean;
 
     /**
      * position of  axis line.
-     * @default Outside
+
      */
 
     labelPosition?: AxisLabelPosition;
 
     /**
      * axis labels will be hide when overlap with each other.
-     * @default Hide
+
      */
     labelIntersectAction?: SmithchartLabelIntersectAction;
 

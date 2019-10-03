@@ -12,7 +12,7 @@ import * as cls from '../base/css-constant';
  * Vertical view appointment rendering
  */
 export class VerticalEvent extends EventBase {
-    private dateRender: Date[][] = [];
+    public dateRender: Date[][] = [];
     private renderedEvents: Object[][] = [];
     private renderedAllDayEvents: Object[][] = [];
     private overlapEvents: Object[][] = [];
@@ -27,7 +27,7 @@ export class VerticalEvent extends EventBase {
     private element: HTMLElement;
     private allDayElement: Element[];
     private animation: Animation;
-    private fields: EventFieldsMapping;
+    public fields: EventFieldsMapping;
     private cellHeight: number;
     private resources: TdData[];
     /**
@@ -73,7 +73,7 @@ export class VerticalEvent extends EventBase {
         addClass(this.allDayElement, cls.ALLDAY_ROW_ANIMATE_CLASS);
     }
 
-    private initializeValues(): void {
+    public initializeValues(): void {
         this.resources = (this.parent.activeViewOptions.group.resources.length > 0) ? this.parent.uiStateValues.isGroupAdaptive ?
             [this.parent.resourceBase.lastResourceLevel[this.parent.uiStateValues.groupIndex]] :
             this.parent.resourceBase.lastResourceLevel : [];
@@ -92,7 +92,7 @@ export class VerticalEvent extends EventBase {
         return isHourRange || isSameRange;
     }
 
-    private getHeight(start: Date, end: Date): number {
+    public getHeight(start: Date, end: Date): number {
         let appHeight: number = (end.getTime() - start.getTime()) / (60 * 1000) * (this.cellHeight * this.slotCount) / this.interval;
         appHeight = (appHeight < this.cellHeight) ? this.cellHeight : appHeight;
         return appHeight;
@@ -347,7 +347,7 @@ export class VerticalEvent extends EventBase {
         }
     }
 
-    private isSpannedEvent(record: { [key: string]: Object }, day: number, resource: number): { [key: string]: Object } {
+    public isSpannedEvent(record: { [key: string]: Object }, day: number, resource: number): { [key: string]: Object } {
         let currentDate: Date = util.resetTime(this.dateRender[resource][day]);
         let fieldMapping: EventFieldsMapping = this.parent.eventFields;
         let startEndHours: { [key: string]: Date } = util.getStartEndHours(currentDate, this.startHour, this.endHour);
@@ -496,7 +496,7 @@ export class VerticalEvent extends EventBase {
         return (tempLeft > 99 ? 99 : tempLeft) + '%';
     }
 
-    private getTopValue(date: Date, day: number, resource: number): number {
+    public getTopValue(date: Date, day: number, resource: number): number {
         let startEndHours: { [key: string]: Date } =
             util.getStartEndHours(util.resetTime(this.dateRender[resource][day]), this.startHour, this.endHour);
         let startHour: Date = startEndHours.startHour;

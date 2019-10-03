@@ -15,7 +15,7 @@ type modelType = AutoCompleteModel | ColorPickerModel | ComboBoxModel | DatePick
     DropDownListModel | MaskedTextBoxModel | MultiSelectModel | NumericTextBoxModel | RichTextEditorModel | SliderModel | TextBoxModel |
     TimePickerModel;
 /**
- * @hidden
+
  */
 export function parseValue(type: string, val: valueType, model: modelType): string {
     if (isNOU(val) || val === '') { return ''; }

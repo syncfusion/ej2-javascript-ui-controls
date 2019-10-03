@@ -13,14 +13,14 @@ export interface LineModel {
 
     /**
      * Height of the axis line.
-     * @aspDefaultValueIgnore
-     * @blazorDefaultValueIgnore
+
+
      */
     height?: number;
 
     /**
      * Width of the axis line.
-     * @default 2
+
      */
     width?: number;
 
@@ -31,7 +31,7 @@ export interface LineModel {
 
     /**
      * Specifies to move the axis line.
-     * @blazorDefaultValue 0
+
      */
     offset?: number;
 
@@ -50,7 +50,7 @@ export interface LabelModel {
 
     /**
      * The color of the label, based on range color.
-     * @default false
+
      */
 
     useRangeColor?: boolean;
@@ -64,7 +64,7 @@ export interface LabelModel {
 
     /**
      * To move the axis labels.
-     * @default 0
+
      */
     offset?: number;
 
@@ -77,19 +77,19 @@ export interface RangeModel {
 
     /**
      * Start of the axis range.
-     * @default 0
+
      */
     start?: number;
 
     /**
      * End of the axis range.
-     * @default 0
+
      */
     end?: number;
 
     /**
      * Specifies to position the axis range.
-     * @default Outside
+
      */
     position?: Position;
 
@@ -100,19 +100,19 @@ export interface RangeModel {
 
     /**
      * Starting width of axis range.
-     * @default 10
+
      */
     startWidth?: number;
 
     /**
      * Ending width of axis range.
-     * @default 10
+
      */
     endWidth?: number;
 
     /**
      * Specifies to move the axis range.
-     * @default 0
+
      */
     offset?: number;
 
@@ -135,13 +135,13 @@ export interface TickModel {
 
     /**
      * Width of the tick line. 
-     * @default 2
+
      */
     width?: number;
 
     /**
      * Specifies the interval for ticks.
-     * @aspDefaultValueIgnore
+
      */
     interval?: number;
 
@@ -153,7 +153,7 @@ export interface TickModel {
 
     /**
      * Specifies to move the axis ticks.
-     * @aspDefaultValueIgnore
+
      */
     offset?: number;
 
@@ -166,27 +166,27 @@ export interface PointerModel {
 
     /**
      * Specifies the type of pointer.
-     * @default Marker
+
      */
     type?: Point;
 
     /**
      * Specifies value of the pointer.
-     * @blazorDefaultValue 0
-     * @default null
+
+
      */
 
     value?: number;
 
     /**
      * Specifies the marker shape in pointer.
-     * @default InvertedTriangle
+
      */
     markerType?: MarkerType;
 
     /**
      * Specifies the path of image.
-     * @default null
+
      */
     imageUrl?: string;
 
@@ -197,25 +197,25 @@ export interface PointerModel {
 
     /**
      * Specifies the corner radius for rounded rectangle.
-     * @default 10
+
      */
     roundedCornerRadius?: number;
 
     /**
      * Specifies the place of the pointer.
-     * @default Far
+
      */
     placement?: Placement;
 
     /**
      * Specifies the height of pointer.
-     * @default 20
+
      */
     height?: number;
 
     /**
      * Specifies the width of pointer.
-     * @default 20
+
      */
     width?: number;
 
@@ -226,31 +226,31 @@ export interface PointerModel {
 
     /**
      * Specifies the opacity for pointer.
-     * @default 1
+
      */
     opacity?: number;
 
     /**
      * Specifies the animating duration of pointer in milliseconds.
-     * @default 0
+
      */
     animationDuration?: number;
 
     /**
      * Specifies the enable or disable the pointer drag.
-     * @default false
+
      */
     enableDrag?: boolean;
 
     /**
      * Specifies to move the pointer.
-     * @default 0
+
      */
     offset?: number;
 
     /**
      * Description of the pointer.
-     * @default null
+
      */
     description?: string;
 
@@ -263,14 +263,14 @@ export interface AxisModel {
 
     /**
      * Specifies the minimum value of an axis.
-     * @default 0
+
      */
 
     minimum?: number;
 
     /**
      * Specifies the maximum value of an axis.
-     * @default 100
+
      */
 
     maximum?: number;

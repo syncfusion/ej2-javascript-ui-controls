@@ -530,7 +530,7 @@ export class Renderer {
         this.pageContext.textBaseline = 'alphabetic';
         let bold: string = '';
         let italic: string = '';
-        let fontFamily: string = format.fontFamily === 'Verdana' ? breakCharacterFormat.fontFamily : format.fontFamily;
+        let fontFamily: string = format.hasValue('fontFamily') ? format.fontFamily : breakCharacterFormat.fontFamily;
         let fontSize: number = format.fontSize === 11 ? breakCharacterFormat.fontSize : format.fontSize;
         // tslint:disable-next-line:max-line-length
         let baselineAlignment: BaselineAlignment = format.baselineAlignment === 'Normal' ? breakCharacterFormat.baselineAlignment : format.baselineAlignment;

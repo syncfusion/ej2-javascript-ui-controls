@@ -64,3 +64,19 @@ export type CalibrationUnit = 'pt' | 'in' | 'mm' | 'cm' | 'p' | 'ft';
  * Enum unit for ContextMenu Actions
  */
 export type ContextMenuAction = 'None' | 'MouseUp' | 'RightClick';
+
+/**
+ * Enum for font styles
+ */
+export enum FontStyle {
+    None = 0,
+    Bold = 1,
+    Italic = 2,
+    Underline = 4,
+    Strikethrough = 8,
+}
+
+/**
+ * Enum unit for text alignment
+ */
+export type TextAlignment = 'Left' | 'Right' | 'Center' | 'Justify';

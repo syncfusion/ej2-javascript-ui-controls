@@ -6,49 +6,49 @@ import { Operators, FilterType } from '../types';
 
 /**
  * This is a file to create MDX query for the provided OLAP datasource
- * @hidden
+
  */
 
 /* tslint:disable:all */
-/** @hidden */
+
 export class MDXQuery {
-    /** @hidden */
+
     private static engine: OlapEngine;
-    /** @hidden */
+
     private static rows: IFieldOptions[];
-    /** @hidden */
+
     private static columns: IFieldOptions[];
-    /** @hidden */
+
     private static values: IFieldOptions[];
-    /** @hidden */
+
     private static filters: IFieldOptions[];
-    /** @hidden */
+
     private static calculatedFieldSettings: ICalculatedFieldSettings[];
-    /** @hidden */
+
     private static valueSortSettings: IValueSortSettings;
-    /** @hidden */
+
     public static drilledMembers: IDrillOptions[];
-    /** @hidden */
+
     private static filterMembers: { [key: string]: string[] | IFilter[] };
-    /** @hidden */
+
     private static fieldDataObj: FieldData;
-    /** @hidden */
+
     private static fieldList: IOlapFieldListOptions;
-    /** @hidden */
+
     private static valueAxis: string;
-    /** @hidden */
+
     private static cellSetInfo: string;
-    /** @hidden */
+
     private static isMeasureAvail: boolean;
-    /** @hidden */
+
     private static isMondrian: boolean;
-    /** @hidden */
+
     private static isPaging: boolean;
-    /** @hidden */
+
     private static pageSettings: IPageSettings;
-    /** @hidden */
+
     private static allowLabelFilter: boolean;
-    /** @hidden */
+
     private static allowValueFilter: boolean;
 
     public static getCellSets(dataSourceSettings: IDataOptions, olapEngine: OlapEngine, refPaging?: boolean, drillInfo?: IDrilledItem, isQueryUpdate?: boolean): any {
@@ -77,12 +77,12 @@ export class MDXQuery {
         let measureQuery: string = this.getMeasuresQuery(this.values);
         let rowQuery: string = this.getDimensionsQuery(this.rows, measureQuery, 'rows', drillInfo).replace(/\&/g, '&amp;');
         let columnQuery: string = this.getDimensionsQuery(this.columns, measureQuery, 'columns', drillInfo).replace(/\&/g, '&amp;');
-        if (this.isPaging && refPaging && this.pageSettings !== undefined && rowQuery !== '' && columnQuery !== '') {
-            let pagingQuery: pagingQuery = this.getPagingQuery(rowQuery, columnQuery);
+        if (this.isPaging && refPaging && this.pageSettings !== undefined) {
+            let pagingQuery: PagingQuery = this.getPagingQuery(rowQuery, columnQuery);
             rowQuery = pagingQuery.rowQuery;
             columnQuery = pagingQuery.columnQuery;
-        } else if (this.isPaging && !refPaging && this.pageSettings !== undefined && rowQuery !== '' && columnQuery !== '') {
-            let pagingQuery: pagingQuery = this.getPagingCountQuery(rowQuery, columnQuery);
+        } else if (this.isPaging && !refPaging && this.pageSettings !== undefined) {
+            let pagingQuery: PagingQuery = this.getPagingCountQuery(rowQuery, columnQuery);
             rowQuery = pagingQuery.rowQuery;
             columnQuery = pagingQuery.columnQuery;
         }
@@ -131,7 +131,7 @@ export class MDXQuery {
             filterQuery + slicerQuery + '\nCELL PROPERTIES VALUE, FORMAT_STRING, FORMATTED_VALUE\n';
         return query;
     }
-    private static getPagingQuery(rowQuery: string, columnQuery: string): pagingQuery {
+    private static getPagingQuery(rowQuery: string, columnQuery: string): PagingQuery {
         // let colCurrentPage: number = (Math.ceil(this.engine.columnCount / this.pageSettings.columnSize) < this.pageSettings.columnCurrentPage || this.pageSettings.columnCurrentPage === 0) ? ((Math.ceil(this.engine.columnCount / this.pageSettings.columnSize) < this.pageSettings.columnCurrentPage && this.engine.columnCount > 0) ? Math.ceil(this.engine.columnCount / this.pageSettings.columnSize) : this.pageSettings.columnCurrentPage) : this.pageSettings.columnCurrentPage;
         // let rowCurrentPage: number = (Math.ceil(this.engine.rowCount / this.pageSettings.rowSize) < this.pageSettings.rowCurrentPage || this.pageSettings.rowCurrentPage === 0) ? ((Math.ceil(this.engine.rowCount / this.pageSettings.rowSize) < this.pageSettings.rowCurrentPage && this.engine.rowCount > 0) ? Math.ceil(this.engine.rowCount / this.pageSettings.rowSize) : this.pageSettings.rowSize) : this.pageSettings.rowCurrentPage;
         rowQuery = rowQuery.replace('NON EMPTY ( ', '').slice(0, -1);
@@ -151,19 +151,19 @@ export class MDXQuery {
         calColPage = (this.engine.columnCount < (calColPage + calColumnSize)) ?
             (this.engine.columnCount > calColumnSize ? (this.engine.columnCount - calColumnSize) : 0) : calColPage;
         this.engine.pageColStartPos = calColPage;
-        let axisQuery: pagingQuery = {
+        let axisQuery: PagingQuery = {
             rowQuery: rowQuery !== '' ? ('\nSUBSET ({ ' + (this.isMondrian ? '' : 'NONEMPTY') + ' (' + rowQuery + (!this.isMondrian && columnQuery !== '' ? ',' + columnQuery : '') + ')},' + (calRowPage) + ',' + calRowSize + ')') : '',
             columnQuery: columnQuery !== '' ? ('\nSUBSET ({ ' + (this.isMondrian ? '' : 'NONEMPTY') + ' (' + columnQuery + (!this.isMondrian && rowQueryCpy !== '' ? ',' + rowQueryCpy : '') + ')},' + (calColPage) + ',' + calColumnSize + ')') : ''
         }
         return axisQuery;
     }
-    private static getPagingCountQuery(rowQuery: string, columnQuery: string): pagingQuery {
+    private static getPagingCountQuery(rowQuery: string, columnQuery: string): PagingQuery {
         rowQuery = rowQuery.replace('NON EMPTY ( ', '').slice(0, -1);
         columnQuery = columnQuery.replace('NON EMPTY ( ', '').slice(0, -1);
         let rowQueryCpy: string = rowQuery;
         'WITH  SET [e16a30d0-2174-4874-8dae-a5085a75a3e2] as'
         'SET [d1876d2b-e50e-4547-85fe-5b8ed9d629de] as'
-        let axisQuery: pagingQuery = {
+        let axisQuery: PagingQuery = {
             rowQuery: rowQuery !== '' ? ('\SET [d1876d2b-e50e-4547-85fe-5b8ed9d629de] as ' + (this.isMondrian ? '' : 'NONEMPTY') + ' (' + rowQuery + (!this.isMondrian && columnQuery !== '' ? ',' + columnQuery : '') + ')\n') : '',
             columnQuery: columnQuery !== '' ? ('\nSET [e16a30d0-2174-4874-8dae-a5085a75a3e2] as ' + (this.isMondrian ? '' : 'NONEMPTY') + ' (' + columnQuery + (!this.isMondrian && rowQueryCpy !== '' ? ',' + rowQueryCpy : '') + ')\n') : ''
         }
@@ -411,6 +411,7 @@ export class MDXQuery {
                 if (typeof filters[field.name][0] === 'string') {
                     rowFilter.push(filters[field.name] as string[]);
                 } else {
+                    filters[field.name][1] = (filters[field.name][0] as IFilter).type;
                     advancedFilters.push(filters[field.name] as IFilter[]);
                     delete filters[field.name];
                 }
@@ -421,6 +422,9 @@ export class MDXQuery {
                 if (typeof filters[field.name][0] === 'string') {
                     columnFilter.push(filters[field.name] as string[]);
                 } else {
+                    /* tslint:disable */
+                    let filter: any = filters[field.name];
+                    filter[1] = (filter[0] as IFilter).type;
                     advancedFilters.push(filters[field.name] as IFilter[]);
                     delete filters[field.name];
                 }
@@ -446,10 +450,14 @@ export class MDXQuery {
                 }
             }
         }
-        if (this.allowLabelFilter || this.allowValueFilter) {
-            for (let filterItems of advancedFilters) {
-                for (let item of filterItems) {
-                    advancedFilterQuery.push(this.getAdvancedFilterQuery(item, filterQuery, 'COLUMNS'));
+        if ((this.allowLabelFilter || this.allowValueFilter) && advancedFilters.length > 0) {
+            let axes: string[] = ['Value', 'Label'];
+            for (let axis of axes) {
+                for (let filterItems of advancedFilters) {
+                    if (filterItems && filterItems.length === 2 &&
+                        typeof filterItems[1] === 'string' && filterItems[1] === axis) {
+                        advancedFilterQuery.push(this.getAdvancedFilterQuery(filterItems[0], filterQuery, 'COLUMNS'));
+                    }
                 }
             }
         }
@@ -467,8 +475,9 @@ export class MDXQuery {
                 filterQuery + ') ON COLUMNS ' : filterQuery;
         let updatedFilterQuery: string = '';
         if (advancedFilterQuery.length > 0) {
-            updatedFilterQuery = ((columnFilter.length > 0 || rowFilter.length > 0) ? filterQuery : '') +
-                ' ' + advancedFilterQuery.join(' ') + ' ' + query + Array(advancedFilterQuery.length + 1 +
+            updatedFilterQuery = advancedFilterQuery.join(' ') + ' ' +
+                ((columnFilter.length > 0 || rowFilter.length > 0) ? filterQuery : '') + ' '
+                + query + Array(advancedFilterQuery.length + 1 +
                     ((columnFilter.length > 0 || rowFilter.length > 0) ? 1 : 0)).join(')');
         }
         query = (columnFilter.length === 0 && rowFilter.length === 0) ? query : filterQuery + query + ')';
@@ -547,9 +556,9 @@ export class MDXQuery {
 }
 
 /**
- * @hidden
+
  */
-export interface pagingQuery {
+export interface PagingQuery {
     rowQuery: string;
     columnQuery: string
 }

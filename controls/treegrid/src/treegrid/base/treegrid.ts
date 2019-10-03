@@ -105,20 +105,20 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
   private isCollapseAll: boolean;
   private isExpandRefresh: boolean;
   private gridSettings: GridModel;
-  /** @hidden */
+
   public initialRender: boolean;
-  /** @hidden */
+
   public flatData: Object[];
-  /** @hidden */
+
   public isLocalData: boolean;
-  /** @hidden */
+
   public parentData: Object[];
   // module Declarations
   /**
-   * @hidden
+
    */
   public renderModule: Render;
-    /** @hidden */
+
   public summaryModule: Aggregate;
   /**
    * The `reorderModule` is used to manipulate reordering in TreeGrid.
@@ -138,31 +138,31 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
   public contextMenuModule: ContextMenu;
   /**
    * `detailRowModule` is used to handle detail rows rendering in the TreeGrid.
-   * @hidden
+
    */
   public detailRowModule: DetailRow;
   /**
    * `freezeModule` is used to freeze the rows and columns in the TreeGrid.
-   * @hidden
+
    */
   public freezeModule: Freeze;
   /**
    * Gets or sets the number of frozen rows.
-   * @default 0
+
    */
   @Property(0)
   public frozenRows: number;
 
   /**
    * Gets or sets the number of frozen columns.
-   * @default 0
+
    */
   @Property(0)
   public frozenColumns: number;
 
   /**
    * `resizeModule` is used to manipulate resizing in the TreeGrid.
-   * @hidden
+
    */
   public resizeModule: Resize;
   /**
@@ -175,91 +175,91 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
   public printModule: Print;
 
   private keyConfigs: { [key: string]: string };
-  /** @hidden */
+
   public filterModule: Filter;
   public excelExportModule: ExcelExport;
   public pdfExportModule: PdfExport;
   public selectionModule: TreeGridSelection;
-  /** @hidden */
 
-    /** @hidden */
+
+
   public grid: Grid;
   /**     
    * Defines the schema of dataSource. 
    * If the `columns` declaration is empty or undefined then the `columns` are automatically generated from data source.     
-   * @default []
+
    */
   @Property([])
   public columns: ColumnModel[] | string[] | Column[];
   /**
    * Specifies the mapping property path for sub tasks in data source
-   * @default null
+
    */
   @Property(null)
   public childMapping: string;
   /**
    * Specifies whether record is parent or not for the remote data binding
-   * @default null
+
    */
   @Property(null)
   public hasChildMapping: string;
   /**
    * Specifies the index of the column that needs to have the expander button.
-   * @default 0
+
    */
   @Property(0)
   public treeColumnIndex: number;
   /**
    * Specifies the name of the field in the dataSource, which contains the id of that row.
-   * @default null
+
    */
   @Property(null)
   public idMapping: string;
   /**
    * Specifies the name of the field in the dataSource, which contains the parent’s id
-   * @default null
+
    */
   @Property(null)
   public parentIdMapping: string;
 
   /**
    * Specifies whether to load all the rows in collapsed state when the TreeGrid is rendered for the first time.
-   * @default false
+
    */
   @Property(false)
   public enableCollapseAll: boolean;
 
   /**
    * Specifies the mapping property path for the expand status of a record in data source.
-   * @default null
+
    */
   @Property(null)
   public expandStateMapping: string;
 
   /**
    * Specifies the mapping property path for the expand status of a record in data source
-   * @default false
+
    */
   @Property(false)
   public allowRowDragAndDrop: boolean;
 
   /**
    * It is used to render TreeGrid table rows.
-   * @default []
-   * @isGenericType true
-   * @isDataSource true
+
+
+
    */
   @Property([])
   public dataSource: Object | DataManager;
   /**    
    * Defines the external [`Query`](../../data/query/) 
    * that will be executed along with data processing.    
-   * @default null    
+
    */
   @Property()
   public query: Query;
  /**    
-  * @hidden
+
   */
  @Property()
  public cloneQuery: Query;
@@ -267,22 +267,22 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
   * Defines the print modes. The available print modes are   
   * * `AllPages`: Prints all pages of the TreeGrid. 
   * * `CurrentPage`: Prints the current page of the TreeGrid.
-  * @default Syncfusion.EJ2.Grids.PrintMode.AllPages
-  * @isEnumeration true
-  * @aspType Syncfusion.EJ2.Grids.PrintMode
-  * @blazorType Syncfusion.EJ2.Blazor.Grids.PrintMode
+
+
+
+
   */
  @Property('AllPages')
  public printMode: PrintMode;
   /**
    * If `allowPaging` is set to true, pager renders.
-   * @default false
+
    */
   @Property(false)
  public allowPaging: boolean;
   /**
    * If `loadChildOnDemand` is enabled, parent records are render in expanded state.
-   * @default false
+
    */
   @Property(false)
  public loadChildOnDemand: boolean;
@@ -290,13 +290,13 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
 /**   
  * If `allowTextWrap` set to true,  
  * then text content will wrap to the next line when its text content exceeds the width of the Column Cells. 
- * @default false     
+
  */
   @Property(false)
  public allowTextWrap: boolean;
  /**     
   * Configures the text wrap in the TreeGrid.  
-  * @default {wrapMode:"Both"}     
+
   */
  @Complex<TextWrapSettingsModel>({}, TextWrapSettings)
  public textWrapSettings: TextWrapSettingsModel;
@@ -304,25 +304,25 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
   * If `allowReordering` is set to true, TreeGrid columns can be reordered. 
   * Reordering can be done by drag and drop of a particular column from one index to another index.  
   * > If TreeGrid is rendered with stacked headers, reordering is allowed only at the same level as the column headers.
-  * @default false    
+
   */
 @Property(false)
 public allowReordering: boolean;
 /**    
  * If `allowResizing` is set to true, TreeGrid columns can be resized.      
- * @default false    
+
  */
 @Property(false)
 public allowResizing: boolean;
 /**    
  * If `autoCheckHierarchy` is set to true, hierarchy checkbox selection has been enabled in TreeGrid.      
- * @default false    
+
  */
 @Property(false)
 public autoCheckHierarchy: boolean;
   /**     
    * Configures the pager in the TreeGrid.  
-   * @default {currentPage: 1, pageSize: 12, pageCount: 8, enableQueryString: false, pageSizes: false, template: null}     
+
    */
 @Complex<PageSettingsModel>({}, PageSettings)
 public pageSettings: PageSettingsModel;
@@ -334,9 +334,9 @@ public pageSettings: PageSettingsModel;
 public rowDropSettings: RowDropSettingsModel;
 
 /**
- * @hidden
+
  * It used to render pager template
- * @default null
+
  */
 @Property()
 public pagerTemplate: string;
@@ -344,46 +344,46 @@ public pagerTemplate: string;
    * If `showColumnMenu` set to true, then it will enable the column menu options in each columns.
    * 
    * > Check the [`Column menu`](./columns.html#column-menu) for its configuration.
-   * @default false    
+
    */
   @Property(false)
   public showColumnMenu: boolean;
   /**
    * If `allowSorting` is set to true, it allows sorting of treegrid records when column header is clicked.
-   * @default false
+
    */
   @Property(false)
   public allowSorting: boolean;
   /**
    * If `allowMultiSorting` set to true, then it will allow the user to sort multiple column in the treegrid.
    * > `allowSorting` should be true.
-   * @default true
+
    */
   @Property(true)
   public allowMultiSorting: boolean;
   /**
    * Configures the sort settings of the TreeGrid.
-   * @default {columns:[]}
+
    */
   @Complex<SortSettingsModel>({}, SortSettings)
   public sortSettings: SortSettingsModel;
   /**
    * Configures the TreeGrid aggregate rows.
    * > Check the [`Aggregates`](./aggregates.html) for its configuration.
-   * @default []
+
    */
   @Collection<AggregateRowModel>([], AggregateRow)
   public aggregates: AggregateRowModel[];
     /**    
      * Configures the edit settings. 
-     * @default { allowAdding: false, allowEditing: false, allowDeleting: false, mode:'Normal',
+
      * allowEditOnDblClick: true, showConfirmDialog: true, showDeleteConfirmDialog: false }    
      */
     @Complex<EditSettingsModel>({}, EditSettings)
     public editSettings: EditSettingsModel;
   /**
    * If `allowFiltering` is set to true, pager renders.
-   * @default false
+
    */
   @Property(false)
   public allowFiltering: boolean;
@@ -397,13 +397,13 @@ public pagerTemplate: string;
   public detailTemplate: string;
   /**
    * Configures the filter settings of the TreeGrid.
-   * @default {columns: [], type: 'FilterBar', mode: 'Immediate', showFilterBarStatus: true, immediateModeDelay: 1500 , operators: {}}
+
    */
   @Complex<FilterSettingsModel>({}, FilterSettings)
   public filterSettings: FilterSettingsModel;
   /**
    * Configures the search settings of the TreeGrid.
-   * @default {search: [] , operators: {}}
+
    */
   @Complex<SearchSettingsModel>({}, SearchSettings)
   public searchSettings: SearchSettingsModel;
@@ -422,14 +422,14 @@ public pagerTemplate: string;
      * * PdfExport - Export the TreeGrid to PDF(pdfExport() method manually to make export.)
      * * CsvExport - Export the TreeGrid to CSV(csvExport() method manually to make export.)<br><br>
      * The following code example implements the custom toolbar items.
-     * @default null
+
      */
     @Property()
     public toolbar: (ToolbarItems | string| ItemModel | ToolbarItem)[];
     /**
-     * @hidden
+
      * It used to render toolbar template
-     * @default null
+
      */
     @Property()
     public toolbarTemplate: string;
@@ -440,10 +440,10 @@ public pagerTemplate: string;
    * * `Horizontal`: Displays the horizontal TreeGrid lines only. 
    * * `Vertical`: Displays the vertical TreeGrid lines only.
    * * `Default`: Displays TreeGrid lines based on the theme.
-   * @default Syncfusion.EJ2.Grids.GridLine.Default
-   * @isEnumeration true
-   * @aspType Syncfusion.EJ2.Grids.GridLine
-   * @blazorType Syncfusion.EJ2.Blazor.Grids.GridLine
+
+
+
+
    */
   @Property('Default')
   public gridLines: GridLine;
@@ -467,7 +467,7 @@ public pagerTemplate: string;
      * * `LastPage` - Go to the last page.
      * * `NextPage` - Go to the next page.
      * 
-     * @default null
+
      */
     @Property()
     public contextMenuItems: ContextMenuItem[] | ContextMenuItemModel[];
@@ -480,7 +480,7 @@ public pagerTemplate: string;
      * * `SortAscending` - Sort the current column in ascending order.
      * * `SortDescending` - Sort the current column in descending order.
      * * `Filter` - Filter options will show based on filterSettings property like filterbar, menu filter.
-     * @default null
+
      */
     @Property()
     public columnMenuItems: ColumnMenuItem[] | ColumnMenuItemModel[];
@@ -497,47 +497,47 @@ public pagerTemplate: string;
 
   /**
    * Defines the height of TreeGrid rows.
-   * @default null
+
    */
   @Property(null)
   public rowHeight: number;
   /**     
    * If `enableAltRow` is set to true, the TreeGrid will render with `e-altrow` CSS class to the alternative tr elements.    
    * > Check the [`AltRow`](./row.html#styling-alternate-rows) to customize the styles of alternative rows.
-   * @default true 
+
    */
   @Property(true)
   public enableAltRow: boolean;
   /**
    * Enables or disables the key board interaction of TreeGrid.          
-   * @hidden 
-   * @default true     
+
+
    */
   @Property(true)
   public allowKeyboard: boolean;
   /**     
    * If `enableHover` is set to true, the row hover is enabled in the TreeGrid.
-   * @default false 
+
    */
   @Property(false)
   public enableHover: boolean;
   /**    
    * Defines the scrollable height of the TreeGrid content.    
-   * @default 'auto'    
+
    */
   @Property('auto')
   public height: string | number;
 
   /**    
    * Defines the TreeGrid width.    
-   * @default 'auto'    
+
    */
   @Property('auto')
   public width: string | number;
   /**
    * If `enableVirtualization` set to true, then the TreeGrid will render only the rows visible within the view-port
    * and load subsequent rows on vertical scrolling. This helps to load large dataset in TreeGrid.
-   * @default false
+
    */
   @Property(false)
   public enableVirtualization: boolean;
@@ -546,57 +546,57 @@ public pagerTemplate: string;
      * * `All`: It retrieves whole data source.
      * * `Schema`: retrieves data for all the defined columns in TreeGrid from the data source. 
      * * `ExcludeHidden`: retrieves data only for visible columns of TreeGrid from the data Source. 
-     * @default All
+
      */
     @Property('All')
     public columnQueryMode: ColumnQueryModeType;
   /**
    * Triggers when the component is created.
    * @event
-   * @blazorproperty 'Created'
+
    */
   @Event()
   public created: EmitType<Object>;
   /**
    * This event allows customization of TreeGrid properties before rendering.
    * @event
-   * @blazorproperty 'OnLoad'
+
    */
   @Event()
   public load: EmitType<Object>;
   /**
    * Triggers while expanding the TreeGrid record
    * @event
-   * @blazorproperty 'Expanding'
+
    */
   @Event()
   public expanding: EmitType<RowExpandingEventArgs>;
   /**
    * Triggers after expand the record
    * @event
-   * @blazorproperty 'Expanded'
+
    */
   @Event()
   public expanded: EmitType<RowExpandedEventArgs>;
   /**
    * Triggers while collapsing the TreeGrid record
    * @event
-   * @blazorproperty 'Collapsing'
+
    */
   @Event()
   public collapsing: EmitType<RowExpandingEventArgs>;
   /**
    * Triggers after collapse the TreeGrid record
    * @event
-   * @blazorproperty 'Collapsed'
+
    */
   @Event()
   public collapsed: EmitType<RowExpandingEventArgs>;
   /**
    * Triggers when cell is saved.
    * @event
-   * @blazorproperty 'OnCellSave'
-   * @blazorType Syncfusion.EJ2.Blazor.Grids.CellSaveArgs<TValue>
+
+
    */
   @Event()
   public cellSave: EmitType<CellSaveArgs>;
@@ -604,8 +604,8 @@ public pagerTemplate: string;
   /**
    * Triggers when TreeGrid actions such as sorting, filtering, paging etc., starts.
    * @event
-   * @blazorproperty 'OnActionBegin'
-   * @blazorType Syncfusion.EJ2.Blazor.Grids.ActionEventArgs<TValue>
+
+
    */
   @Event()
   public actionBegin: EmitType<PageEventArgs | FilterEventArgs | SortEventArgs | SearchEventArgs | AddEventArgs | SaveEventArgs | EditEventArgs | DeleteEventArgs>;
@@ -613,8 +613,8 @@ public pagerTemplate: string;
   /**
    * Triggers when TreeGrid actions such as sorting, filtering, paging etc. are completed.
    * @event
-   * @blazorproperty 'OnActionComplete'
-   * @blazorType Syncfusion.EJ2.Blazor.Grids.ActionEventArgs<TValue>
+
+
    */
 
   @Event()
@@ -623,16 +623,16 @@ public pagerTemplate: string;
   /** 
    * Triggers before the record is to be edit.
    * @event
-   * @blazorproperty 'OnBeginEdit'
-   * @blazorType Syncfusion.EJ2.Blazor.Grids.BeginEditArgs<TValue>
+
+
    */
   @Event()
   public beginEdit: EmitType<BeginEditArgs>;
   /** 
    * Triggers when the cell is being edited.
    * @event
-   * @blazorproperty 'OnCellEdit'
-   * @blazorType Syncfusion.EJ2.Blazor.Grids.CellEditArgs<TValue>
+
+
    */
     @Event()
     public cellEdit: EmitType<CellEditArgs>;
@@ -640,15 +640,15 @@ public pagerTemplate: string;
   /**
    * Triggers when any TreeGrid action failed to achieve the desired results.
    * @event
-   * @blazorproperty 'OnActionFailure'
-   * @blazorType Syncfusion.EJ2.Blazor.Grids.FailureEventArgs
+
+
    */
   @Event()
   public actionFailure: EmitType<FailureEventArgs>;
   /**
    * Triggers when data source is populated in the TreeGrid.
    * @event
-   * @blazorproperty 'DataBound'
+
    */
   @Event()
   public dataBound: EmitType<Object>;
@@ -657,9 +657,9 @@ public pagerTemplate: string;
    * Triggers when the TreeGrid data is added, deleted and updated.
    * Invoke the done method from the argument to start render after edit operation.
    * @event
-   * @deprecated
-   * @blazorProperty 'dataSourceUpdated'
-   * @blazorType Syncfusion.EJ2.Blazor.Grids.DataSourceChangedEventArgs
+
+
+
    */
   @Event()
   public dataSourceChanged: EmitType<DataSourceChangedEventArgs>;
@@ -668,8 +668,8 @@ public pagerTemplate: string;
    * Triggers when the TreeGrid actions such as Sorting, Paging etc., are done.
    * In this event,the current view data and total record count should be assigned to the `dataSource` based on the action performed.
    * @event
-   * @deprecated
-   * @blazorType Syncfusion.EJ2.Blazor.Grids.DataStateChangeEventArgs
+
+
    */
   @Event()
   public dataStateChange: EmitType<DataStateChangeEventArgs>;
@@ -677,8 +677,8 @@ public pagerTemplate: string;
   /** 
    * Triggers when record is double clicked.
    * @event
-   * @blazorproperty 'OnRecordDoubleClick'
-   * @blazorType Syncfusion.EJ2.Blazor.Grids.RecordDoubleClickEventArgs<TValue>
+
+
    */
   @Event()
   public recordDoubleClick: EmitType<RecordDoubleClickEventArgs>;
@@ -687,8 +687,8 @@ public pagerTemplate: string;
    * Triggered every time a request is made to access row information, element, or data.
    * This will be triggered before the row element is appended to the TreeGrid element.
    * @event
-   * @blazorproperty 'RowDataBound'
-   * @blazorType Syncfusion.EJ2.Blazor.Grids.RowDataBoundEventArgs<TValue>
+
+
    */
   @Event()
   public rowDataBound: EmitType<RowDataBoundEventArgs>;
@@ -696,8 +696,8 @@ public pagerTemplate: string;
    * Triggers after detail row expands.
    * > This event triggers at initial expand.  
    * @event
-   * @blazorproperty 'DetailDataBound'
-   * @blazorType Syncfusion.EJ2.Blazor.Grids.DetailDataBoundEventArgs<TValue>
+
+
    */
   @Event()
   public detailDataBound: EmitType<DetailDataBoundEventArgs>;
@@ -705,22 +705,22 @@ public pagerTemplate: string;
    * Triggered every time a request is made to access cell information, element, or data.
    * This will be triggered before the cell element is appended to the TreeGrid element.
    * @event
-   * @blazorproperty 'QueryCellInfo'
-   * @blazorType Syncfusion.EJ2.Blazor.Grids.QueryCellInfoEventArgs<TValue>
+
+
    */
   @Event()
   public queryCellInfo: EmitType<QueryCellInfoEventArgs>;
   /**
    * If `allowSelection` is set to true, it allows selection of (highlight row) TreeGrid records by clicking it.  
-   * @default true
+
    */
   @Property(true)
   public allowSelection: boolean;
     /**
      * Triggers before row selection occurs.
      * @event
-     * @blazorproperty 'RowSelecting'
-     * @blazorType Syncfusion.EJ2.Blazor.Grids.RowSelectingEventArgs<TValue>
+
+
      */
   @Event()
   public rowSelecting: EmitType<RowSelectingEventArgs>;
@@ -728,8 +728,8 @@ public pagerTemplate: string;
     /**
      * Triggers after a row is selected.
      * @event
-     * @blazorproperty 'RowSelected'
-     * @blazorType Syncfusion.EJ2.Blazor.Grids.RowSelectEventArgs<TValue>
+
+
      */
   @Event()
   public rowSelected: EmitType<RowSelectEventArgs>;
@@ -737,8 +737,8 @@ public pagerTemplate: string;
     /**
      * Triggers before deselecting the selected row.
      * @event
-     * @deprecated
-     * @blazorType Syncfusion.EJ2.Blazor.Grids.RowDeselectEventArgs<TValue>
+
+
      */
   @Event()
   public rowDeselecting: EmitType<RowDeselectEventArgs>;
@@ -746,16 +746,16 @@ public pagerTemplate: string;
     /**
      * Triggers when a selected row is deselected.
      * @event
-     * @blazorproperty 'RowDeselected'
-     * @blazorType Syncfusion.EJ2.Blazor.Grids.RowDeselectEventArgs<TValue>
+
+
      */
   @Event()
   public rowDeselected: EmitType<RowDeselectEventArgs>;
     /** 
      * Triggered for stacked header.
      * @event
-     * @blazorproperty 'HeaderCellInfo'
-     * @blazorType Syncfusion.EJ2.Blazor.Grids.HeaderCellInfoEventArgs 
+
+
      */
   @Event()
   public headerCellInfo: EmitType<HeaderCellInfoEventArgs>;
@@ -763,24 +763,24 @@ public pagerTemplate: string;
       /**
        * Triggers before any cell selection occurs.
        * @event
-       * @blazorproperty 'CellSelecting'
-       * @blazorType Syncfusion.EJ2.Blazor.Grids.CellSelectingEventArgs<TValue>
+
+
        */
   @Event()
   public cellSelecting: EmitType<CellSelectingEventArgs>;
     /** 
      * Triggers before column menu opens.
      * @event
-     * @deprecated
-     * @blazorType Syncfusion.EJ2.Blazor.Grids.ColumnMenuOpenEventArgs
+
+
      */
     @Event()
   public columnMenuOpen: EmitType<ColumnMenuOpenEventArgs>;
     /** 
      * Triggers when click on column menu.
      * @event
-     * @blazorproperty 'ColumnMenuItemClicked'
-     * @blazorType Syncfusion.EJ2.Blazor.Navigations.MenuEventArgs
+
+
      */
     @Event()
   public columnMenuClick: EmitType<MenuEventArgs>;
@@ -789,8 +789,8 @@ public pagerTemplate: string;
     /**
      * Triggers after a cell is selected.
      * @event 
-     * @blazorproperty 'CellSelected'
-     * @blazorType Syncfusion.EJ2.Blazor.Grids.CellSelectEventArgs<TValue>
+
+
      */
   @Event()
   public cellSelected: EmitType<CellSelectEventArgs>;
@@ -798,8 +798,8 @@ public pagerTemplate: string;
     /**
      * Triggers before the selected cell is deselecting.
      * @event 
-     * @deprecated
-     * @blazorType Syncfusion.EJ2.Blazor.Grids.CellDeselectEventArgs
+
+
      */
   @Event()
   public cellDeselecting: EmitType<CellDeselectEventArgs>;
@@ -807,8 +807,8 @@ public pagerTemplate: string;
   /**
    * Triggers when a particular selected cell is deselected.
    * @event 
-   * @deprecated
-   * @blazorType Syncfusion.EJ2.Blazor.Grids.CellDeselectEventArgs
+
+
    */
   @Event()
   public cellDeselected: EmitType<CellDeselectEventArgs>;
@@ -816,7 +816,7 @@ public pagerTemplate: string;
   /** 
    * Triggers when column resize starts.
    * @event
-   * @deprecated
+
    */
   @Event()
   public resizeStart: EmitType<ResizeArgs>;
@@ -824,7 +824,7 @@ public pagerTemplate: string;
   /** 
    * Triggers on column resizing.
    * @event
-   * @deprecated
+
    */
   @Event()
   public resizing: EmitType<ResizeArgs>;
@@ -832,7 +832,7 @@ public pagerTemplate: string;
   /** 
    * Triggers when column resize ends.
    * @event
-   * @deprecated
+
    */
   @Event()
   public resizeStop: EmitType<ResizeArgs>;
@@ -840,8 +840,8 @@ public pagerTemplate: string;
   /**  
    * Triggers when column header element drag (move) starts. 
    * @event  
-   * @deprecated
-   * @blazorType Syncfusion.EJ2.Blazor.Grids.ColumnDragEventArgs
+
+
    */
   @Event()
   public columnDragStart: EmitType<ColumnDragEventArgs>;
@@ -849,8 +849,8 @@ public pagerTemplate: string;
   /**  
    * Triggers when column header element is dragged (moved) continuously. 
    * @event  
-   * @deprecated
-   * @blazorType Syncfusion.EJ2.Blazor.Grids.ColumnDragEventArgs
+
+
    */
   @Event()
   public columnDrag: EmitType<ColumnDragEventArgs>;
@@ -858,15 +858,15 @@ public pagerTemplate: string;
  /**  
   * Triggers when a column header element is dropped on the target column. 
   * @event  
-  * @deprecated
-  * @blazorType Syncfusion.EJ2.Blazor.Grids.ColumnDragEventArgs
+
+
   */
   @Event()
   public columnDrop: EmitType<ColumnDragEventArgs>;
   /** 
    * Triggers when the check box state change in checkbox column.
    * @event
-   * @deprecated
+
    */
   @Event()
   public checkboxChange: EmitType<CheckBoxChangeEventArgs>;
@@ -874,40 +874,40 @@ public pagerTemplate: string;
  /** 
   * Triggers after print action is completed.  
   * @event 
-  * @deprecated
-  * @blazorType Syncfusion.EJ2.Blazor.Grids.PrintEventArgs
+
+
   */
   @Event()
   public printComplete: EmitType<PrintEventArgs>;
  /** 
   * Triggers before the print action starts.  
   * @event 
-  * @deprecated
-  * @blazorType Syncfusion.EJ2.Blazor.Grids.PrintEventArgs
+
+
   */
   @Event()
   public beforePrint: EmitType<PrintEventArgs>;
   /**      
    * Triggers when toolbar item is clicked.
    * @event
-   * @blazorproperty 'OnToolbarClick'
-   * @blazorType Syncfusion.EJ2.Blazor.Navigations.ClickEventArgs
+
+
    */
   @Event()
   public toolbarClick: EmitType<ClickEventArgs>;
   /**
    * Triggers when a particular selected cell is deselected.
    * @event 
-   * @blazorproperty 'OnDataBound'
-   * @blazorType Syncfusion.EJ2.Blazor.Grids.BeforeDataBoundArgs<TValue>
+
+
    */
 @Event()
 public beforeDataBound: EmitType<BeforeDataBoundArgs>;
   /**
    * Triggers before context menu opens.
    * @event
-   * @deprecated
-   * @blazorType Syncfusion.EJ2.Blazor.Navigations.BeforeOpenCloseMenuEventArgs
+
+
    */
   @Event()
   public contextMenuOpen: EmitType<BeforeOpenCloseMenuEventArgs>;
@@ -915,36 +915,36 @@ public beforeDataBound: EmitType<BeforeDataBoundArgs>;
   /**
    * Triggers when click on context menu.
    * @event
-   * @blazorproperty 'ContextMenuItemClicked'
-   * @blazorType Syncfusion.EJ2.Blazor.Navigations.MenuEventArgs
+
+
    */
   @Event()
   public contextMenuClick: EmitType<MenuEventArgs>;
   /**
    * Triggers when row elements are dragged (moved) continuously.
    * @event
-   * @deprecated
+
    */
   @Event()
   public rowDrag: EmitType<RowDragEventArgs>;
   /**
    * Triggers when row element’s drag(move) starts.
    * @event
-   * @deprecated
+
    */
   @Event()
   public rowDragStart: EmitType<RowDragEventArgs>;
   /**
    * Triggers when row element’s before drag(move).
    * @event
-   * @deprecated
+
    */
   @Event()
   public rowDragStartHelper: EmitType<RowDragEventArgs>;
   /**
    * Triggers when row elements are dropped on the target row.
    * @event
-   * @deprecated
+
    */
   @Event()
   public rowDrop: EmitType<RowDragEventArgs>;
@@ -952,14 +952,14 @@ public beforeDataBound: EmitType<BeforeDataBoundArgs>;
   /**
    * The `selectedRowIndex` allows you to select a row at initial rendering. 
    * You can also get the currently selected row index.
-   * @default -1
+
    */
   @Property(-1)
   public selectedRowIndex: number;
 
   /**
    * Configures the selection settings.
-   * @default {mode: 'Row', cellSelectionMode: 'Flow', type: 'Single'}
+
    */
   @Complex<SelectionSettingsModel>({}, SelectionSettings)
   public selectionSettings: SelectionSettingsModel;
@@ -968,7 +968,7 @@ public beforeDataBound: EmitType<BeforeDataBoundArgs>;
    * If `allowExcelExport` set to true, then it will allow the user to export treegrid to Excel file.
    * 
    * > Check the [`ExcelExport`](./excel-exporting.html) to configure exporting document.
-   * @default false    
+
    */
   @Property(false)
   public allowExcelExport: boolean;
@@ -976,7 +976,7 @@ public beforeDataBound: EmitType<BeforeDataBoundArgs>;
    * If `allowPdfExport` set to true, then it will allow the user to export treegrid to Pdf file.
    * 
    * > Check the [`Pdfexport`](./pdf-exporting.html) to configure the exporting document.
-   * @default false    
+
    */
   @Property(false)
   public allowPdfExport: boolean;
@@ -984,8 +984,8 @@ public beforeDataBound: EmitType<BeforeDataBoundArgs>;
      * Triggers before exporting each cell to PDF document. 
      * You can also customize the PDF cells.
      * @event 
-     * @deprecated
-     * @blazorType Syncfusion.EJ2.Blazor.Grids.PdfQueryCellInfoEventArgs
+
+
      */
 @Event()
 public pdfQueryCellInfo: EmitType<PdfQueryCellInfoEventArgs>;
@@ -994,8 +994,8 @@ public pdfQueryCellInfo: EmitType<PdfQueryCellInfoEventArgs>;
  * Triggers before exporting each header cell to PDF document. 
  * You can also customize the PDF cells.
  * @event 
- * @deprecated
- * @blazorType Syncfusion.EJ2.Blazor.Grids.PdfHeaderQueryCellInfoEventArgs
+
+
  */
 @Event()
 public pdfHeaderQueryCellInfo: EmitType<PdfHeaderQueryCellInfoEventArgs>;
@@ -1004,8 +1004,8 @@ public pdfHeaderQueryCellInfo: EmitType<PdfHeaderQueryCellInfoEventArgs>;
  * Triggers before exporting each cell to Excel file.
  * You can also customize the Excel cells.
  * @event
- * @deprecated
- * @blazorType Syncfusion.EJ2.Blazor.Grids.ExcelQueryCellInfoEventArgs
+
+
  */
 @Event()
 public excelQueryCellInfo: EmitType<ExcelQueryCellInfoEventArgs>;
@@ -1014,8 +1014,8 @@ public excelQueryCellInfo: EmitType<ExcelQueryCellInfoEventArgs>;
  * Triggers before exporting each header cell to Excel file.
  * You can also customize the Excel cells.
  * @event
- * @deprecated
- * @blazorType Syncfusion.EJ2.Blazor.Grids.ExcelHeaderQueryCellInfoEventArgs
+
+
  */
 @Event()
 public excelHeaderQueryCellInfo: EmitType<ExcelHeaderQueryCellInfoEventArgs>;
@@ -1023,7 +1023,7 @@ public excelHeaderQueryCellInfo: EmitType<ExcelHeaderQueryCellInfoEventArgs>;
 /**
  * Triggers before TreeGrid data is exported to Excel file.
  * @event
- * @blazorproperty 'OnExcelExport'
+
  */
 @Event()
 public beforeExcelExport: EmitType<Object>;
@@ -1031,8 +1031,8 @@ public beforeExcelExport: EmitType<Object>;
 /**
  * Triggers after TreeGrid data is exported to Excel file.
  * @event
- * @deprecated
- * @blazorType Syncfusion.EJ2.Blazor.Grids.ExcelExportCompleteArgs
+
+
  */
 @Event()
 public excelExportComplete: EmitType<ExcelExportCompleteArgs>;
@@ -1040,7 +1040,7 @@ public excelExportComplete: EmitType<ExcelExportCompleteArgs>;
 /**
  * Triggers before TreeGrid data is exported to PDF document.
  * @event
- * @blazorproperty 'OnPdfExport'
+
  */
 @Event()
 public beforePdfExport: EmitType<Object>;
@@ -1048,8 +1048,8 @@ public beforePdfExport: EmitType<Object>;
 /**
  * Triggers after TreeGrid data is exported to PDF document.
  * @event
- * @deprecated
- * @blazorType Syncfusion.EJ2.Blazor.Grids.PdfExportCompleteArgs
+
+
  */
 @Event()
 public pdfExportComplete: EmitType<PdfExportCompleteArgs>;
@@ -1153,7 +1153,7 @@ public pdfExportComplete: EmitType<PdfExportCompleteArgs>;
    * Remove sorted column by field name. 
    * @param {string} field - Defines the column field name to remove sort.  
    * @return {void} 
-   * @hidden
+
    */
   public removeSortColumn(field: string): void {
     this.sortModule.removeSortColumn(field);
@@ -1314,7 +1314,7 @@ public pdfExportComplete: EmitType<PdfExportCompleteArgs>;
 
   /**
    * Binding events to the element while component creation.
-   * @hidden
+
    */
   public wireEvents(): void {
     EventHandler.add(this.element, 'click', this.mouseClickHandler, this);
@@ -1334,7 +1334,7 @@ public pdfExportComplete: EmitType<PdfExportCompleteArgs>;
     /**
      * To provide the array of modules needed for component rendering
      * @return {ModuleDeclaration[]}
-     * @hidden
+
      */
     public requiredModules(): ModuleDeclaration[] {
       let modules: ModuleDeclaration[] = [];
@@ -1447,7 +1447,7 @@ public pdfExportComplete: EmitType<PdfExportCompleteArgs>;
     }
     /**
      * Unbinding events from the element while component destroy.
-     * @hidden
+
      */
     public unwireEvents(): void {
         EventHandler.remove(this.element, 'click', this.mouseClickHandler);
@@ -1930,7 +1930,7 @@ public pdfExportComplete: EmitType<PdfExportCompleteArgs>;
 
   /**
    * AutoGenerate TreeGrid columns from first record
-   * @hidden
+
    */
   private autoGenerateColumns(): void {
     if (!this.columns.length && (!this.dataModule.isRemote() && Object.keys(this.dataSource).length)) {
@@ -1977,7 +1977,7 @@ private getGridEditSettings(): GridEditModel {
 
   /**
    * Defines grid toolbar from treegrid toolbar model
-   * @hidden
+
    */
   private getContextMenu(): Object[] {
     if (this.contextMenuItems) {
@@ -2002,7 +2002,7 @@ private getGridEditSettings(): GridEditModel {
 
   /**
    * Defines grid toolbar from treegrid toolbar model
-   * @hidden
+
    */
   private getGridToolbar(): Object[] {
     if (this.toolbar) {
@@ -2059,7 +2059,7 @@ private getGridEditSettings(): GridEditModel {
 
   /**
    * Convert TreeGrid ColumnModel to Grid Column
-   * @hidden
+
    */
   private getGridColumns(columns: Column[]): GridColumnModel[] {
     let column: Column[] | ColumnModel[] | string[] = columns;
@@ -2088,7 +2088,7 @@ private getGridEditSettings(): GridEditModel {
 
   /**
    * Called internally if any of the property value changed.
-   * @hidden
+
    */
 
   /* tslint:disable-next-line:max-line-length */
@@ -2263,7 +2263,7 @@ private getGridEditSettings(): GridEditModel {
   /**
    * Get the properties to be maintained in the persisted state.
    * @return {string}
-   * @hidden
+
    */
   public getPersistData(): string {
     let keyEntity: string[] = ['pageSettings', 'sortSettings',
@@ -2643,7 +2643,7 @@ private getGridEditSettings(): GridEditModel {
     /** 
      * Get current visible data of TreeGrid.
      * @return {Object[]}
-     * @isGenericType true
+
      */
     public getCurrentViewRecords(): Object[] {
       return this.grid.currentViewData;
@@ -2728,7 +2728,7 @@ private getGridEditSettings(): GridEditModel {
   /** 
    * Get the records of checked rows.
    * @return {Object[]}
-   * @isGenericType true
+
    */
 
     public getCheckedRecords(): Object[] {
@@ -2770,7 +2770,7 @@ private getGridEditSettings(): GridEditModel {
   /**
    * Expands or collapse child records
    * @return {string}
-   * @hidden
+
    */
   private expandCollapseRequest(target: HTMLElement): void {
     if (this.rowTemplate) {
@@ -2955,6 +2955,7 @@ private getGridEditSettings(): GridEditModel {
         displayAction = 'table-row';
         if (!isChild) {
           record.expanded = true;
+          this.uniqueIDCollection[record.uniqueID].expanded = record.expanded;
         }
         let targetEle: Element = row.getElementsByClassName('e-treegridcollapse')[0];
         if (isNullOrUndefined(targetEle)) {
@@ -2966,6 +2967,7 @@ private getGridEditSettings(): GridEditModel {
           displayAction = 'none';
           if (!isChild) {
             record.expanded = false;
+            this.uniqueIDCollection[record.uniqueID].expanded = record.expanded;
           }
           let targetEle: Element = row.getElementsByClassName('e-treegridexpand')[0];
           if (isNullOrUndefined(targetEle)) {
@@ -3174,7 +3176,7 @@ private getGridEditSettings(): GridEditModel {
     }
   }
     /**
-     * @hidden
+
      */
     public addListener(): void {
       this.on('updateResults', this.updateResultModel, this);
@@ -3183,7 +3185,7 @@ private getGridEditSettings(): GridEditModel {
       this.dataResults = <ReturnOption>returnResult;
     }
     /**
-     * @hidden
+
      */
     private removeListener(): void {
       if (this.isDestroyed) { return; }
@@ -3223,7 +3225,7 @@ private getGridEditSettings(): GridEditModel {
    * @param  {string} field - Defines column field name to remove filter. 
    * @param  {boolean} isClearFilterBar -  Specifies whether the filter bar value needs to be cleared.     
    * @return {void} 
-   * @hidden
+
    */
   public removeFilteredColsByField(field: string, isClearFilterBar?: boolean): void {
       this.grid.removeFilteredColsByField(field, isClearFilterBar);
@@ -3308,7 +3310,7 @@ private getGridEditSettings(): GridEditModel {
   }
 
   /**
-   * @hidden
+
    */
   public getFrozenColumns(): number {
     return this.getFrozenCount(this.columns as Column[], 0);
@@ -3345,7 +3347,7 @@ private getGridEditSettings(): GridEditModel {
 
   /**
    * Gets the collection of selected records.
-   * @isGenericType true
+
    * @return {Object[]}
    */
   public getSelectedRecords(): Object[] {

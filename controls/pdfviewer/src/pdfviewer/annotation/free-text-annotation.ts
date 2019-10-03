@@ -1,5 +1,5 @@
 import {
-    PdfViewer, PdfViewerBase, IPageAnnotations, IPoint, AnnotationType as AnnotType
+    PdfViewer, PdfViewerBase, IPageAnnotations, IPoint, AnnotationType as AnnotType, ICommentsCollection, IReviewCollection
 } from '../..';
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
 import { ColorPicker } from '@syncfusion/ej2-inputs';
@@ -8,7 +8,7 @@ import { PdfAnnotationBase } from '../../diagram/pdf-annotation';
 import { PdfAnnotationBaseModel } from '../../diagram/pdf-annotation-model';
 
 /**
- * @hidden
+
  */
 export interface IFreeTextAnnotation {
     shapeAnnotationType: string;
@@ -36,10 +36,12 @@ export interface IFreeTextAnnotation {
     textAlign: string;
     // tslint:disable-next-line
     font: any;
+    comments: ICommentsCollection[];
+    review: IReviewCollection;
 }
 
 /**
- * @hidden
+
  */
 export class FreeTextAnnotation {
     private pdfViewer: PdfViewer;
@@ -144,24 +146,19 @@ export class FreeTextAnnotation {
     public isTextSelected: boolean = false;
     private selectionStart: number = 0;
     private selectionEnd: number = 0;
-
+    private isBold: boolean = false;
+    private isItalic: boolean = false;
+    private isUnderline: boolean = false;
+    private isStrikethrough: boolean = false;
+    private textAlign: string;
+    private defaultText: string;
 
 
 
     constructor(pdfviewer: PdfViewer, pdfViewerBase: PdfViewerBase) {
         this.pdfViewer = pdfviewer;
         this.pdfViewerBase = pdfViewerBase;
-        this.defautWidth = this.pdfViewer.freeTextSettings.width ? this.pdfViewer.freeTextSettings.width : 151;
-        this.defaultHeight = this.pdfViewer.freeTextSettings.height ? this.pdfViewer.freeTextSettings.height : 24.6;
-        this.borderColor = this.pdfViewer.freeTextSettings.borderColor ? this.pdfViewer.freeTextSettings.borderColor : '#ffffff00';
-        this.fillColor = this.pdfViewer.freeTextSettings.fillColor ? this.pdfViewer.freeTextSettings.fillColor : '#fff';
-        this.borderStyle = this.pdfViewer.freeTextSettings.borderStyle ? this.pdfViewer.freeTextSettings.borderStyle : 'solid';
-        this.borderWidth = this.pdfViewer.freeTextSettings.borderWidth ? this.pdfViewer.freeTextSettings.borderWidth : 1;
-        this.fontSize = this.pdfViewer.freeTextSettings.fontSize ? this.pdfViewer.freeTextSettings.fontSize : 16;
-        this.opacity = this.pdfViewer.freeTextSettings.opacity ? this.pdfViewer.freeTextSettings.opacity : 1;
-        this.fontColor = this.pdfViewer.freeTextSettings.fontColor ? this.pdfViewer.freeTextSettings.fontColor : '#000';
-        this.author = this.pdfViewer.freeTextSettings.author;
-        this.fontFamily = this.pdfViewer.freeTextSettings.fontFamily ? this.pdfViewer.freeTextSettings.fontFamily : 'Helvetica';
+        this.updateTextProperties();
         this.inputBoxElement = document.createElement('textarea');
         this.inputBoxElement.style.position = 'absolute';
         this.inputBoxElement.style.Width = this.defautWidth;
@@ -188,16 +185,66 @@ export class FreeTextAnnotation {
         this.freeTextPageNumbers = [];
     }
 
+    private updateTextProperties(): void {
+        this.defautWidth = this.pdfViewer.freeTextSettings.width ? this.pdfViewer.freeTextSettings.width : 151;
+        this.defaultHeight = this.pdfViewer.freeTextSettings.height ? this.pdfViewer.freeTextSettings.height : 24.6;
+        this.borderColor = this.pdfViewer.freeTextSettings.borderColor ? this.pdfViewer.freeTextSettings.borderColor : '#ffffff00';
+        this.fillColor = this.pdfViewer.freeTextSettings.fillColor ? this.pdfViewer.freeTextSettings.fillColor : '#fff';
+        this.borderStyle = this.pdfViewer.freeTextSettings.borderStyle ? this.pdfViewer.freeTextSettings.borderStyle : 'solid';
+        this.borderWidth = this.pdfViewer.freeTextSettings.borderWidth ? this.pdfViewer.freeTextSettings.borderWidth : 1;
+        this.fontSize = this.pdfViewer.freeTextSettings.fontSize ? this.pdfViewer.freeTextSettings.fontSize : 16;
+        this.opacity = this.pdfViewer.freeTextSettings.opacity ? this.pdfViewer.freeTextSettings.opacity : 1;
+        this.fontColor = this.pdfViewer.freeTextSettings.fontColor ? this.pdfViewer.freeTextSettings.fontColor : '#000';
+        this.author = this.pdfViewer.freeTextSettings.author ? this.pdfViewer.freeTextSettings.author : 'Guest';
+        this.fontFamily = this.pdfViewer.freeTextSettings.fontFamily ? this.pdfViewer.freeTextSettings.fontFamily : 'Helvetica';
+        this.textAlign = this.pdfViewer.freeTextSettings.textAlignment ? this.pdfViewer.freeTextSettings.textAlignment : 'Left';
+        this.defaultText = this.pdfViewer.freeTextSettings.defaultText ? this.pdfViewer.freeTextSettings.defaultText : 'Type here';
+        if (this.pdfViewer.freeTextSettings.fontStyle === 1) {
+            this.isBold = true;
+        } else if (this.pdfViewer.freeTextSettings.fontStyle === 2) {
+            this.isItalic = true;
+        } else if (this.pdfViewer.freeTextSettings.fontStyle === 4) {
+            this.isUnderline = true;
+        } else if (this.pdfViewer.freeTextSettings.fontStyle === 8) {
+            this.isStrikethrough = true;
+        } else if (3 === this.pdfViewer.freeTextSettings.fontStyle) {
+            this.isBold = true;
+            this.isItalic = true;
+        } else if (5 === this.pdfViewer.freeTextSettings.fontStyle) {
+            this.isBold = true;
+            this.isUnderline = true;
+        } else if (9 === this.pdfViewer.freeTextSettings.fontStyle) {
+            this.isBold = true;
+            this.isStrikethrough = true;
+        } else if (7 === this.pdfViewer.freeTextSettings.fontStyle) {
+            this.isBold = true;
+            this.isItalic = true;
+            this.isUnderline = true;
+        } else if (11 === this.pdfViewer.freeTextSettings.fontStyle) {
+            this.isBold = true;
+            this.isItalic = true;
+            this.isStrikethrough = true;
+        } else if (14 === this.pdfViewer.freeTextSettings.fontStyle) {
+            this.isBold = true;
+            this.isUnderline = true;
+            this.isStrikethrough = true;
+        } else if (6 === this.pdfViewer.freeTextSettings.fontStyle) {
+            this.isUnderline = true;
+            this.isItalic = true;
+        }
+    }
     /**
      * @private
      */
     // tslint:disable-next-line
-    public renderFreeTextAnnotations(shapeAnnotations: any, pageNumber: number): void {
+    public renderFreeTextAnnotations(shapeAnnotations: any, pageNumber: number, isImportAction?: boolean): void {
         let isFreeTextAdded: boolean = false;
-        for (let p: number = 0; p < this.freeTextPageNumbers.length; p++) {
-            if (this.freeTextPageNumbers[p] === pageNumber) {
-                isFreeTextAdded = true;
-                break;
+        if (!isImportAction) {
+            for (let p: number = 0; p < this.freeTextPageNumbers.length; p++) {
+                if (this.freeTextPageNumbers[p] === pageNumber) {
+                    isFreeTextAdded = true;
+                    break;
+                }
             }
         }
         if (shapeAnnotations && !isFreeTextAdded) {
@@ -230,8 +277,14 @@ export class FreeTextAnnotation {
                             pageIndex: pageNumber, opacity: annotation.Opacity, fontColor: annotation.FontColor, fontSize: annotation.FontSize,
                             fontFamily: annotation.FontFamily, notes: annotation.MarkupText,
                             // tslint:disable-next-line
-                            comments: this.pdfViewer.annotationModule.getAnnotationComments(annotation.Comments, annotation, annotation.Author)
+                            comments: this.pdfViewer.annotationModule.getAnnotationComments(annotation.Comments, annotation, annotation.Author),
+                            review: { state: annotation.State, stateModel: annotation.StateModel, modifiedDate: annotation.ModifiedDate, author: annotation.Author},
+                            // tslint:disable-next-line:max-line-length
+                            font: { isBold: annotation.Font.Bold, isItalic: annotation.Font.Italic, isStrikeout: annotation.Font.Strikeout, isUnderline: annotation.Font.Underline }
                         };
+                        if (isImportAction) {
+                            annot.id = annotation.Name;
+                        }
                         let addedAnnot: PdfAnnotationBaseModel = this.pdfViewer.add(annot as PdfAnnotationBase);
                         this.pdfViewer.annotationModule.storeAnnotations(pageNumber, annot, '_annotations_freetext');
                         this.pdfViewer.annotation.freeTextAnnotationModule.isFreeTextValueChange = true;
@@ -252,13 +305,15 @@ export class FreeTextAnnotation {
         switch (type) {
             case 'FreeText':
                 this.currentAnnotationMode = 'FreeText';
+                this.updateTextProperties();
                 // tslint:disable-next-line:max-line-length
                 let modifiedDateRect: string = this.pdfViewer.freeTextSettings.modifiedDate ? this.pdfViewer.freeTextSettings.modifiedDate : date.toLocaleString();
                 this.pdfViewer.drawingObject = {
                     shapeAnnotationType: 'FreeText', strokeColor: this.borderColor,
-                    fillColor: this.borderColor, opacity: this.opacity, notes: '',
-                    thickness: 1, borderDashArray: '0', modifiedDate: modifiedDateRect,
-                    author: this.pdfViewer.freeTextSettings.author, subject: this.pdfViewer.freeTextSettings.subject
+                    fillColor: this.fillColor, opacity: this.opacity, notes: '',
+                    thickness: this.borderWidth, borderDashArray: '0', modifiedDate: modifiedDateRect,
+                    // tslint:disable-next-line:max-line-length
+                    author: this.pdfViewer.freeTextSettings.author, subject: this.pdfViewer.freeTextSettings.subject, font: { isBold: this.isBold, isItalic: this.isItalic, isStrikeout: this.isStrikethrough, isUnderline: this.isUnderline }, textAlign: this.textAlign
                 };
                 this.pdfViewer.tool = 'Select';
                 break;
@@ -478,7 +533,8 @@ export class FreeTextAnnotation {
                     }, annotName: annotationName,
                     shapeAnnotationType: 'FreeText', pageIndex: pageIndex, fontColor: this.fontColor, fontSize: this.fontSize,
                     fontFamily: this.fontFamily, opacity: this.opacity, comments: [], textAlign: 'Left',
-                    font: { isBold: false, isItalic: false, isStrikeout: false, isUnderline: false }
+                    font: { isBold: false, isItalic: false, isStrikeout: false, isUnderline: false },
+                    review: { state: 'Unmarked', stateModel: 'None', modifiedDate: currentDateString, author: this.author }
                 };
                 let annotation: PdfAnnotationBaseModel = this.pdfViewer.add(annot as PdfAnnotationBase);
                 // tslint:disable-next-line
@@ -519,7 +575,9 @@ export class FreeTextAnnotation {
             }
             this.isNewFreeTextAnnot = false;
             if (this.inputBoxElement.parentElement) {
-                pageDiv.removeChild(this.inputBoxElement);
+                if (pageDiv) {
+                    pageDiv.removeChild(this.inputBoxElement);
+                }
             }
             let canvass: HTMLElement = document.getElementById(this.pdfViewer.element.id + '_annotationCanvas_' + pageIndex);
             // tslint:disable-next-line
@@ -594,17 +652,31 @@ export class FreeTextAnnotation {
         let pageIndex: number = this.pdfViewerBase.currentPageNumber - 1;
         let pageDiv: HTMLElement = this.pdfViewerBase.getElement('_pageDiv_' + (pageIndex));
         let zoomFactor: number = this.pdfViewerBase.getZoomFactor();
-        this.inputBoxElement.value = (annotation && annotation.dynamicText) ? annotation.dynamicText : 'Type here';
+        this.inputBoxElement.value = (annotation && annotation.dynamicText) ? annotation.dynamicText : this.defaultText;
         this.inputBoxElement.style.left = ((currentPosition.x)) + 'px';
         this.inputBoxElement.style.top = ((currentPosition.y)) + 'px';
         this.inputBoxElement.style.height = (this.defaultHeight * zoomFactor) + 'px';
         this.inputBoxElement.style.width = (this.defautWidth * zoomFactor) + 'px';
         this.inputBoxElement.style.borderWidth = (this.borderWidth * zoomFactor) + 'px';
         this.inputBoxElement.style.fontSize = (this.fontSize * zoomFactor) + 'px';
-        this.inputBoxElement.style.fontWeight = 'normal';
-        this.inputBoxElement.style.fontStyle = 'normal';
+        if (this.isBold) {
+            this.inputBoxElement.style.fontWeight = 'bold';
+        } else {
+            this.inputBoxElement.style.fontWeight = 'normal';
+        }
+        if (this.isItalic) {
+            this.inputBoxElement.style.fontStyle = 'italic';
+        } else {
+            this.inputBoxElement.style.fontStyle = 'normal';
+        }
         this.inputBoxElement.style.textDecoration = 'none';
-        this.inputBoxElement.style.textAlign = 'left';
+        if (this.isUnderline) {
+            this.inputBoxElement.style.textDecoration = 'underline';
+        }
+        if (this.isStrikethrough) {
+            this.inputBoxElement.style.textDecoration = 'line-through';
+        }
+        this.inputBoxElement.style.textAlign = this.textAlign.toLowerCase();
         this.inputBoxElement.style.borderColor = this.borderColor;
         this.inputBoxElement.style.color = this.fontColor;
         this.inputBoxElement.style.background = this.fillColor;
@@ -643,7 +715,7 @@ export class FreeTextAnnotation {
                 this.inputBoxElement.style.textDecoration = 'line-through';
             }
             if (this.selectedAnnotation.textAlign) {
-                this.inputBoxElement.style.textAlign = this.selectedAnnotation.textAlign.toLowerCase();
+                this.inputBoxElement.style.textAlign = this.selectedAnnotation.textAlign;
             }
             this.inputBoxElement.style.fontSize = (this.selectedAnnotation.fontSize * zoomFactor) + 'px';
             this.inputBoxElement.style.fontFamily = this.selectedAnnotation.fontFamily;
@@ -658,7 +730,7 @@ export class FreeTextAnnotation {
         }
         this.isInuptBoxInFocus = true;
         this.inputBoxElement.focus();
-        if (this.isNewFreeTextAnnot === true || this.inputBoxElement.value === 'Type here') {
+        if (this.isNewFreeTextAnnot === true || this.inputBoxElement.value === this.defaultText) {
             this.inputBoxElement.select();
         }
     }
@@ -726,6 +798,44 @@ export class FreeTextAnnotation {
                     document.body.removeChild(textArea);
                 }
             }
+        }
+    }
+
+    /**
+     * @private
+     */
+    // tslint:disable-next-line
+    public saveImportedFreeTextAnnotations(shapeAnnotations: any, pageNumber: number): void {
+        // tslint:disable-next-line
+        let annotation: any = shapeAnnotations;
+        if (annotation.AnnotType) {
+            let vertexPoints: IPoint[] = null;
+            if (annotation.VertexPoints) {
+                vertexPoints = [];
+                for (let j: number = 0; j < annotation.VertexPoints.length; j++) {
+                    let point: IPoint = { x: annotation.VertexPoints[j].X, y: annotation.VertexPoints[j].Y };
+                    vertexPoints.push(point);
+                }
+            }
+            let annot: PdfAnnotationBaseModel;
+            // tslint:disable-next-line
+            annot = {
+                author: annotation.Author, modifiedDate: annotation.ModifiedDate, subject: annotation.Subject, id: 'freetext',
+                rotateAngle: annotation.Rotate, dynamicText: annotation.MarkupText, strokeColor: annotation.StrokeColor,
+                thickness: annotation.Thickness, fillColor: annotation.FillColor,
+                bounds: {
+                    x: annotation.Bounds.X, y: annotation.Bounds.Y, left: annotation.Bounds.X, top: annotation.Bounds.Y,
+                    width: annotation.Bounds.Width, height: annotation.Bounds.Height, right: annotation.Bounds.Right,
+                    bottom: annotation.Bounds.Bottom
+                }, annotName: annotation.Name, shapeAnnotationType: 'FreeText',
+                // tslint:disable-next-line
+                pageIndex: pageNumber, opacity: annotation.Opacity, fontColor: annotation.FontColor, fontSize: annotation.FontSize,
+                fontFamily: annotation.FontFamily, notes: annotation.MarkupText,
+                // tslint:disable-next-line
+                comments: this.pdfViewer.annotationModule.getAnnotationComments(annotation.Comments, annotation, annotation.Author), review: { state: annotation.State, stateModel: annotation.StateModel, modifiedDate: annotation.ModifiedDate, author: annotation.Author },
+                font: { isBold: annotation.Font.Bold, isItalic: annotation.Font.Italic, isStrikeout: annotation.Font.Strikeout, isUnderline: annotation.Font.Underline }
+            };
+            this.pdfViewer.annotationModule.storeAnnotations(pageNumber, annot, '_annotations_freetext');
         }
     }
 }

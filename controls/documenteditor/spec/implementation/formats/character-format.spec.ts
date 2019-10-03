@@ -120,3 +120,39 @@ describe('TOC Hyperlink Character Style Validation', () => {
         expect(editor.selection.start.paragraph.paragraphFormat.baseStyle.name).toBe('TOC Heading');
     });
 });
+
+describe('Default Character Format API Validation', () => {
+    let editor: DocumentEditor = undefined;
+    beforeAll(() => {
+        let ele: HTMLElement = createElement('div', { id: 'container' });
+        let defaultCharacterFormat: object = {
+            bold: true,
+            italic: false,
+            baselineAlignment: 'Normal',
+            underline: 'Single',
+            fontColor: "#000000",
+            fontFamily: 'Times New Roman',
+            fontSize: 8
+        }
+        document.body.appendChild(ele);
+        editor = new DocumentEditor({ enableEditor: true, isReadOnly: false });
+        DocumentEditor.Inject(Editor, Selection, EditorHistory);
+        editor.enableEditorHistory = true;
+        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        //setDefaultCharacterFormat API
+        editor.setDefaultCharacterFormat(defaultCharacterFormat);
+        editor.appendTo('#container');
+    });
+    afterAll(() => {
+        editor.destroy();
+        document.body.removeChild(document.getElementById('container'));
+        editor = undefined;
+    });
+
+    it('Check bold is true', () => {
+        expect(editor.selection.start.paragraph.characterFormat.bold).toBe(true);
+    });
+});

@@ -42,7 +42,7 @@ export class AutoComplete extends ComboBox {
      * * groupBy - Group the list items with it's related items by mapping groupBy field
      * 
      * > For more details about the field mapping refer to [`Data binding`](../../auto-complete/data-binding) documentation.
-     * @default { value: null, iconCss: null, groupBy: null}
+
      */
     @Complex<FieldSettingsModel>({ value: null, iconCss: null, groupBy: null }, FieldSettings)
     public fields: FieldSettingsModel;
@@ -50,28 +50,28 @@ export class AutoComplete extends ComboBox {
      * When set to ‘false’, consider the [`case-sensitive`](../../auto-complete/filtering/#case-sensitive-filtering)
      * on performing the search to find suggestions.
      * By default consider the casing.
-     * @default true
+
      */
     @Property(true)
     public ignoreCase: boolean;
     /**
      * Allows you to either show or hide the popup button on the component.
-     * @default false
+
      */
     @Property(false)
     public showPopupButton: boolean;
     /**
      * When set to ‘true’, highlight the searched characters on suggested list items.
      * > For more details about the highlight refer to [`Custom highlight search`](../../auto-complete/how-to/custom-search) documentation.
-     * @default false
+
      */
     @Property(false)
     public highlight: boolean;
     /**
      * Supports the [`specified number`](../../auto-complete/filtering#filter-item-count)
      * of list items on the suggestion popup.
-     * @default 20
-     * @blazorType int
+
+
      */
     @Property(20)
     public suggestionCount: number;
@@ -82,7 +82,7 @@ export class AutoComplete extends ComboBox {
      * {% codeBlock src="autocomplete/html-attributes-api/index.ts" %}{% endcodeBlock %}
      * 
      * {% codeBlock src="autocomplete/html-attributes-api/index.html" %}{% endcodeBlock %}
-     * @default {}
+
      */
     @Property({})
     public htmlAttributes: { [key: string]: string; };
@@ -93,7 +93,7 @@ export class AutoComplete extends ComboBox {
      * {% codeBlock src="autocomplete/query-api/index.ts" %}{% endcodeBlock %}
      * 
      * {% codeBlock src="autocomplete/query-api/index.html" %}{% endcodeBlock %}
-     * @default null
+
      */
     @Property(null)
     public query: Query;
@@ -101,8 +101,8 @@ export class AutoComplete extends ComboBox {
      * Allows you to set [`the minimum search character length']
      * (../../auto-complete/filtering#limit-the-minimum-filter-character),
      * the search action will perform after typed minimum characters.
-     * @default 1
-     * @blazorType int
+
+
      */
     @Property(1)
     public minLength: number;
@@ -139,23 +139,23 @@ export class AutoComplete extends ComboBox {
      * {% codeBlock src="autocomplete/filter-type-api/index.html" %}{% endcodeBlock %}
      * 
      * The default value set to `Contains`, all the suggestion items which contain typed characters to listed in the suggestion popup.
-     * @default 'Contains'
+
      */
     @Property('Contains')
     public filterType: FilterType;
     /**
      * Triggers on typing a character in the component.
      * @event
-     * @blazorProperty 'Filtering'
+
      */
     @Event()
     public filtering: EmitType<FilteringEventArgs>;
     /**
      * Not applicable to this component.
-     * @default null
+
      * @private
-     * @blazorType int
-     * @isBlazorNullableType true
+
+
      */
     @Property(null)
     public index: number;
@@ -170,37 +170,37 @@ export class AutoComplete extends ComboBox {
      * 
      * {% codeBlock src="autocomplete/float-label-type-api/index.html" %}{% endcodeBlock %}
      * 
-     * @default Syncfusion.EJ2.Inputs.FloatLabelType.Never
-     * @aspType Syncfusion.EJ2.Inputs.FloatLabelType
-     * @isEnumeration true
-     * @blazorType Syncfusion.EJ2.Inputs.FloatLabelType
+
+
+
+
      */
     @Property('Never')
     public floatLabelType: FloatLabelType;
     /**
      * Not applicable to this component.
-     * @default null
+
      * @private
      */
     @Property(null)
     public valueTemplate: string;
     /**
      * Not applicable to this component.
-     * @default null
+
      * @private
      */
     @Property(null)
     public filterBarPlaceholder: string;
     /**
      * Not applicable to this component. 
-     * @default false
+
      * @private
      */
     @Property(false)
     public allowFiltering: boolean;
     /**
      * Not applicable to this component. 
-     * @default null
+
      * @private
      */
     @Property(null)
@@ -280,6 +280,20 @@ export class AutoComplete extends ComboBox {
                 this.filterAction(this.dataSource, null, this.fields);
             }
         });
+    }
+
+    /**
+     * To filter the data from given data source by using query
+     * @param  {Object[] | DataManager } dataSource - Set the data source to filter.
+     * @param  {Query} query - Specify the query to filter the data.
+     * @param  {FieldSettingsModel} fields - Specify the fields to map the column in the data table.
+     * @return {void}.
+     */
+    public filter(
+        dataSource: { [key: string]: Object }[] | DataManager | string[] | number[] | boolean[],
+        query?: Query, fields?: FieldSettingsModel): void {
+        this.isFiltered = true;
+        this.filterAction(dataSource, query, fields);
     }
 
     private filterAction(

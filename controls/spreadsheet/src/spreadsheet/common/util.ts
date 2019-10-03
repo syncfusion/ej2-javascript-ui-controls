@@ -124,17 +124,16 @@ export function inView(context: Spreadsheet, range: number[], isModify?: boolean
  * Position element with given range
  * @hidden
  */
-export function locateElem(ele: Element, range: number[], sheet: SheetModel): void {
+export function locateElem(ele: Element, range: number[], sheet: SheetModel, isRtl?: boolean): void {
     let swapRange: number[] = getSwapRange(range);
     let cellPosition: { top: number, left: number } = getCellPosition(sheet, swapRange);
-    setStyleAttribute([{
-        element: ele, attrs: {
-            'top': swapRange[0] === 0 ? cellPosition.top : cellPosition.top - 1 + 'px',
-            'left': swapRange[1] === 0 ? cellPosition.left : cellPosition.left - 1 + 'px',
-            'height': getRowsHeight(sheet, range[0], range[2]) + (swapRange[0] === 0 ? 0 : 1) + 'px',
-            'width': getColumnsWidth(sheet, range[1], range[3]) + (swapRange[1] === 0 ? 0 : 1) + 'px'
-        }
-    }]);
+    let attrs: { [key: string]: string } = {
+        'top': (swapRange[0] === 0 ? cellPosition.top : cellPosition.top - 1) + 'px',
+        'height': getRowsHeight(sheet, range[0], range[2]) + (swapRange[0] === 0 ? 0 : 1) + 'px',
+        'width': getColumnsWidth(sheet, range[1], range[3]) + (swapRange[1] === 0 ? 0 : 1) + 'px'
+    };
+    attrs[isRtl ? 'right' : 'left'] = (swapRange[1] === 0 ? cellPosition.left : cellPosition.left - 1) + 'px';
+    setStyleAttribute([{ element: ele, attrs: attrs }]);
 }
 
 /**
@@ -174,14 +173,14 @@ export function getEndEvent(): string {
  * @hidden
  */
 export function isTouchStart(e: Event): boolean {
-    return e.type === 'touchstart' || (e.type === 'pointerdown'  && (e as PointerEvent).pointerType === 'touch');
+    return e.type === 'touchstart' || (e.type === 'pointerdown' && (e as PointerEvent).pointerType === 'touch');
 }
 
 /**
  * @hidden
  */
 export function isTouchMove(e: Event): boolean {
-    return e.type === 'touchmove' || (e.type === 'pointermove'  && (e as PointerEvent).pointerType === 'touch');
+    return e.type === 'touchmove' || (e.type === 'pointermove' && (e as PointerEvent).pointerType === 'touch');
 }
 
 /**

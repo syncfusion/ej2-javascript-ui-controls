@@ -9,7 +9,7 @@ export interface CircularGaugeModel extends ComponentModel{
     /**
      * The width of the circular gauge as a string in order to provide input as both like '100px' or '100%'.
      * If specified as '100%, gauge will render to the full width of its parent element.
-     * @default null
+
      */
 
     width?: string;
@@ -17,7 +17,7 @@ export interface CircularGaugeModel extends ComponentModel{
     /**
      * The height of the circular gauge as a string in order to provide input as both like '100px' or '100%'.
      * If specified as '100%, gauge will render to the full height of its parent element.
-     * @default null
+
      */
 
     height?: string;
@@ -30,13 +30,13 @@ export interface CircularGaugeModel extends ComponentModel{
 
     /**
      * The background color of the gauge, which accepts value in hex, rgba as a valid CSS color string.
-     * @default null
+
      */
     background?: string;
 
     /**
      * Title for gauge
-     * @default ''
+
      */
 
     title?: string;
@@ -67,27 +67,27 @@ export interface CircularGaugeModel extends ComponentModel{
 
     /**
      * If set true, pointers can able to drag on interaction.
-     * @default false
+
      */
     enablePointerDrag?: boolean;
 
     /**
      * X coordinate of the circular gauge center point, which takes values either in pixels or in percentage.
-     * @default null
+
      */
 
     centerX?: string;
 
     /**
      * Y coordinate of the circular gauge center point, which takes values either in pixels or in percentage.
-     * @default null
+
      */
 
     centerY?: string;
 
     /**
      * To place the half or quarter circle in center position, if values not specified for centerX and centerY.
-     * @default false
+
      */
     moveToCenter?: boolean;
 
@@ -95,25 +95,25 @@ export interface CircularGaugeModel extends ComponentModel{
      * Specifies the theme for circular gauge.
      * * Material - Gauge render with material theme.
      * * Fabric - Gauge render with fabric theme.
-     * @default Material
+
      */
     theme?: GaugeTheme;
 
     /**
      * Specifies whether a grouping separator should be used for a number.
-     * @default false
+
      */
     useGroupingSeparator?: boolean;
 
     /**
      * Information about gauge for assistive technology.
-     * @default null
+
      */
     description?: string;
 
     /**
      * TabIndex value for the gauge.
-     * @default 1
+
      */
     tabIndex?: number;
 
@@ -125,58 +125,58 @@ export interface CircularGaugeModel extends ComponentModel{
     /**
      * Triggers after gauge loaded.
      * @event
-     * @blazorProperty 'Loaded'
+
      */
     loaded?: EmitType<ILoadedEventArgs>;
 
     /**
      * Triggers before gauge load.
      * @event
-     * @blazorProperty 'OnLoad'
+
      */
     load?: EmitType<ILoadedEventArgs>;
 
     /**
      * Triggers after animation gets completed for pointers.
      * @event
-     * @blazorProperty 'AnimationCompleted'
+
      */
     animationComplete?: EmitType<IAnimationCompleteEventArgs>;
 
     /**
      * Triggers before each axis label gets rendered.
      * @event
-     * @deprecated
-     * @blazorProperty 'AxisLabelRendering'
+
+
      */
     axisLabelRender?: EmitType<IAxisLabelRenderEventArgs>;
 
     /**
      * Triggers before the radius gets rendered
      * @event
-     * @blazorProperty 'OnRadiusCalculate'
+
      */
     radiusCalculate?: EmitType<IRadiusCalculateEventArgs>;
 
     /**
      * Triggers before each annotation gets rendered.
      * @event
-     * @blazorProperty 'AnnotationRendering'
+
      */
     annotationRender?: EmitType<IAnnotationRenderEventArgs>;
 
     /**
      * Triggers before each legend gets rendered.
      * @event
-     * @deprecated
-     * @blazorProperty 'legendRender'
+
+
      */
     legendRender?: EmitType<ILegendRenderEventArgs>;
 
     /**
      * Triggers before the tooltip for pointer gets rendered.
      * @event
-     * @blazorProperty 'TooltipRendering'
+
      */
 
     tooltipRender?: EmitType<ITooltipRenderEventArgs>;
@@ -184,7 +184,7 @@ export interface CircularGaugeModel extends ComponentModel{
     /**
      * Triggers before the pointer is dragged.
      * @event
-     * @blazorProperty 'OnDragStart'
+
      */
 
     dragStart?: EmitType<IPointerDragEventArgs>;
@@ -192,7 +192,7 @@ export interface CircularGaugeModel extends ComponentModel{
     /**
      * Triggers while dragging the pointers.
      * @event
-     * @blazorProperty 'OnDragMove'
+
      */
 
     dragMove?: EmitType<IPointerDragEventArgs>;
@@ -200,7 +200,7 @@ export interface CircularGaugeModel extends ComponentModel{
     /**
      * Triggers after the pointer is dragged.
      * @event
-     * @blazorProperty 'OnDragEnd'
+
      */
 
     dragEnd?: EmitType<IPointerDragEventArgs>;
@@ -208,7 +208,7 @@ export interface CircularGaugeModel extends ComponentModel{
     /**
      * Triggers on hovering the circular gauge.
      * @event
-     * @blazorProperty 'OnGaugeMouseMove'
+
      */
 
     gaugeMouseMove?: EmitType<IMouseEventArgs>;
@@ -216,7 +216,7 @@ export interface CircularGaugeModel extends ComponentModel{
     /**
      * Triggers while cursor leaves the circular gauge.
      * @event
-     * @blazorProperty 'OnGaugeMouseLeave'
+
      */
 
     gaugeMouseLeave?: EmitType<IMouseEventArgs>;
@@ -224,7 +224,7 @@ export interface CircularGaugeModel extends ComponentModel{
     /**
      * Triggers on mouse down.
      * @event
-     * @blazorProperty 'OnGaugeMouseDown'
+
      */
 
     gaugeMouseDown?: EmitType<IMouseEventArgs>;
@@ -232,7 +232,7 @@ export interface CircularGaugeModel extends ComponentModel{
     /**
      * Triggers on mouse up.
      * @event
-     * @blazorProperty 'OnGaugeMouseUp'
+
      */
 
     gaugeMouseUp?: EmitType<IMouseEventArgs>;
@@ -240,7 +240,7 @@ export interface CircularGaugeModel extends ComponentModel{
     /**
      * Triggers after window resize.
      * @event
-     * @blazorProperty 'Resizing'
+
      */
 
     resized?: EmitType<IResizeEventArgs>;

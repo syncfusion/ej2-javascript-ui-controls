@@ -48,7 +48,7 @@ export interface IAnimationCompleteEventArgs extends ICircularGaugeEventArgs {
 
 /**
  * Specifies AxisLabelRender event arguments for circular gauge.
- * @deprecated
+
  */
 export interface IAxisLabelRenderEventArgs extends ICircularGaugeEventArgs {
     /**
@@ -67,7 +67,6 @@ export interface IAxisLabelRenderEventArgs extends ICircularGaugeEventArgs {
 
 /**
  * Specifies radiusRender event arguments for circular gauge
- * @deprecated
  */
 export interface IRadiusCalculateEventArgs extends ICircularGaugeEventArgs {
     /**
@@ -90,7 +89,6 @@ export interface IRadiusCalculateEventArgs extends ICircularGaugeEventArgs {
 
 /**
  * Specifies TooltipRender event arguments for circular gauge.
- * @deprecated
  */
 export interface ITooltipRenderEventArgs extends ICircularGaugeEventArgs {
     /**
@@ -138,7 +136,6 @@ export interface ITooltipRenderEventArgs extends ICircularGaugeEventArgs {
 
 /**
  * Specifies AnnotationRender event arguments for circular gauge.
- * @deprecated
  */
 export interface IAnnotationRenderEventArgs extends ICircularGaugeEventArgs {
     /**
@@ -217,7 +214,6 @@ export interface IResizeEventArgs {
 
 /**
  * Specifies Mouse events arguments for circular gauge.
- * @deprecated
  */
 export interface IMouseEventArgs extends ICircularGaugeEventArgs {
     /**

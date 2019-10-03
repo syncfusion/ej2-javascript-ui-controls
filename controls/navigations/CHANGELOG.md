@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 17.3.14 (2019-10-03)
+
+### TreeView
+
+#### Bug Fixes
+
+- #246937 - The unchecking checkbox performance issue has been resolved.
+
 ## 17.3.9-beta (2019-09-20)
 
 ### Tab

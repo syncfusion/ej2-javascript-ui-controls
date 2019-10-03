@@ -1,5 +1,5 @@
 import { createElement, L10n, isNullOrUndefined, addClass, remove, EventHandler, extend, append, EmitType } from '@syncfusion/ej2-base';
-import { cldrData, removeClass, getValue, getDefaultDateObject, closest } from '@syncfusion/ej2-base';
+import { cldrData, removeClass, getValue, getDefaultDateObject, closest, getElement } from '@syncfusion/ej2-base';
 import { updateBlazorTemplate, resetBlazorTemplate, isBlazor } from '@syncfusion/ej2-base';
 import { DataManager, Query, Deferred } from '@syncfusion/ej2-data';
 import { CheckBox, ChangeEventArgs, Button } from '@syncfusion/ej2-buttons';
@@ -49,6 +49,7 @@ export class EventWindow {
     private cellClickAction: boolean;
     private duration: number;
     private isCrudAction: boolean;
+    private eventWindowTime: { [key: string]: Date };
 
     /**
      * Constructor for event window
@@ -57,6 +58,7 @@ export class EventWindow {
         this.parent = parent;
         this.l10n = this.parent.localeObj;
         this.fields = this.parent.eventFields;
+        this.eventWindowTime = { startTime: new Date(), endTime: new Date() };
         this.fieldValidator = new FieldValidator();
         this.renderEventWindow();
     }
@@ -144,8 +146,28 @@ export class EventWindow {
     }
 
     public openEditor(data: Object, type: CurrentAction, isEventData?: boolean, repeatType?: number): void {
+        this.parent.currentAction = type;
         this.parent.removeNewEventElement();
         this.parent.quickPopup.quickPopupHide(true);
+        if (type === 'Add') {
+            let eventObj: { [key: string]: Object } = {};
+            this.cellClickAction = !isEventData;
+            this.parent.activeCellsData = data as CellClickEventArgs;
+            let event: { [key: string]: Object } = data as { [key: string]: Object };
+            if (this.cellClickAction) {
+                this.convertToEventData(event, eventObj);
+            } else {
+                this.parent.activeCellsData = {
+                    startTime: <Date>(event.startTime || event[this.fields.startTime]),
+                    endTime: <Date>(event.endTime || event[this.fields.endTime]),
+                    isAllDay: <boolean>(event.isAllDay || event[this.fields.isAllDay]),
+                    element: <HTMLElement>event.element,
+                    groupIndex: <number>event.groupIndex
+                };
+                eventObj = event;
+            }
+            data = eventObj as { [key: string]: Object };
+        }
         if (!isNullOrUndefined(this.parent.editorTemplate)) {
             this.renderFormElements(this.element.querySelector('.e-schedule-form'), data);
             this.updateEditorTemplate();
@@ -158,8 +180,6 @@ export class EventWindow {
         }
         switch (type) {
             case 'Add':
-                this.cellClickAction = !isEventData;
-                this.parent.activeCellsData = data as CellClickEventArgs;
                 this.onCellDetailsUpdate(data as { [key: string]: Object }, repeatType);
                 break;
             case 'Save':
@@ -223,6 +243,9 @@ export class EventWindow {
     }
 
     private onBeforeClose(args: BeforeCloseEventArgs): Deferred {
+        if (args.isInteracted) {
+            this.isCrudAction = false;
+        }
         let eventProp: PopupCloseEventArgs = {
             type: 'Editor',
             data: this.eventCrudData,
@@ -232,6 +255,20 @@ export class EventWindow {
         };
         let callBackPromise: Deferred = new Deferred();
         this.parent.trigger(event.popupClose, eventProp, (popupArgs: PopupCloseEventArgs) => {
+            if (isBlazor()) {
+                let eventFields: EventFieldsMapping = this.parent.eventFields;
+                if (popupArgs.data) {
+                    let eventObj: { [key: string]: Date } = popupArgs.data as { [key: string]: Date };
+                    eventObj[eventFields.startTime] = this.parent.getDateTime(eventObj[eventFields.startTime]);
+                    eventObj[eventFields.endTime] = this.parent.getDateTime(eventObj[eventFields.endTime]);
+                }
+                if (popupArgs.element) {
+                    popupArgs.element = getElement(popupArgs.element);
+                }
+                if (popupArgs.target) {
+                    popupArgs.target = getElement(popupArgs.target);
+                }
+            }
             args.cancel = popupArgs.cancel;
             if (!popupArgs.cancel) {
                 if (this.isCrudAction) {
@@ -399,10 +436,15 @@ export class EventWindow {
             let duration: number = 0;
             if (this.cellClickAction) {
                 duration = util.MS_PER_MINUTE * this.duration;
+                this.eventWindowTime.startTime = startObj.value;
             } else {
                 duration = (<Date>this.eventData[this.fields.endTime]).getTime() - (<Date>this.eventData[this.fields.startTime]).getTime();
             }
-            endObj.value = new Date(startObj.value.getTime() + duration);
+            let endDate: Date = new Date(startObj.value.getTime() + duration);
+            if (this.cellClickAction) {
+                this.eventWindowTime.endTime = endDate;
+            }
+            endObj.value = endDate;
             endObj.dataBind();
         }
     }
@@ -760,25 +802,12 @@ export class EventWindow {
         this.repeatTempRule = this.recurrenceEditor.getRecurrenceRule();
     }
 
-    private onCellDetailsUpdate(event: { [key: string]: Object }, repeatType: number): void {
+    private onCellDetailsUpdate(eventObj: { [key: string]: Object }, repeatType: number): void {
         if (!this.parent.eventSettings.allowAdding) {
             return;
         }
         this.element.querySelector('.' + cls.FORM_CLASS).removeAttribute('data-id');
         this.element.querySelector('.' + cls.EVENT_WINDOW_TITLE_TEXT_CLASS).innerHTML = this.l10n.getConstant('newEvent');
-        let eventObj: { [key: string]: Object } = {};
-        if (this.cellClickAction) {
-            this.convertToEventData(event, eventObj);
-        } else {
-            this.parent.activeCellsData = {
-                startTime: <Date>(event.startTime || event[this.fields.startTime]),
-                endTime: <Date>(event.endTime || event[this.fields.endTime]),
-                isAllDay: <boolean>(event.isAllDay || event[this.fields.isAllDay]),
-                element: <HTMLElement>event.element,
-                groupIndex: <number>event.groupIndex
-            };
-            eventObj = event;
-        }
         eventObj.Timezone = false;
         this.repeatStartDate = <Date>eventObj[this.fields.startTime];
         this.repeatRule = '';
@@ -920,24 +949,28 @@ export class EventWindow {
     private updateDateTime(allDayStatus: boolean, startObj: DateTimePicker, endObj: DateTimePicker): void {
         let startDate: Date; let endDate: Date;
         if (allDayStatus) {
-            startDate = util.resetTime(new Date(this.parent.activeCellsData.startTime.getTime()));
+            startDate = util.resetTime(new Date(this.eventWindowTime.startTime.getTime()));
             if (this.parent.activeCellsData.isAllDay) {
-                let temp: number = util.addDays(new Date((<Date>this.parent.activeCellsData.endTime).getTime()), -1).getTime();
-                endDate = (+this.parent.activeCellsData.startTime > temp) ? this.parent.activeCellsData.endTime : new Date(temp);
+                let temp: number = util.addDays(new Date((<Date>this.eventWindowTime.endTime).getTime()), -1).getTime();
+                endDate = (+this.eventWindowTime.startTime > temp) ? this.eventWindowTime.endTime : new Date(temp);
             } else {
-                endDate = util.resetTime(new Date(this.parent.activeCellsData.endTime.getTime()));
+                endDate = util.resetTime(new Date(this.eventWindowTime.endTime.getTime()));
             }
         } else {
-            startDate = new Date(this.parent.activeCellsData.startTime.getTime());
+            let start: Date = this.parent.activeCellsData.startTime;
+            startDate = new Date(this.eventWindowTime.startTime.getTime());
+            startDate.setHours(start.getHours(), start.getMinutes(), start.getSeconds());
             if (this.parent.activeCellsData.isAllDay) {
                 let startHour: Date = this.parent.getStartEndTime(this.parent.workHours.start);
                 startDate.setHours(startHour.getHours(), startHour.getMinutes(), startHour.getSeconds());
                 endDate = new Date(startDate.getTime());
                 endDate.setMilliseconds(util.MS_PER_MINUTE * this.getSlotDuration());
             } else {
-                endDate = new Date(this.parent.activeCellsData.endTime.getTime());
+                endDate = new Date(startDate.getTime());
+                endDate.setMilliseconds(this.parent.activeCellsData.endTime.getTime() - this.parent.activeCellsData.startTime.getTime());
             }
         }
+        this.eventWindowTime = { startTime: new Date(startDate.getTime()), endTime: new Date(endDate.getTime()) };
         startObj.value = startDate;
         endObj.value = endDate;
         startObj.dataBind();
@@ -1529,6 +1562,11 @@ export class EventWindow {
             instance.dataBind();
         } else if (element.classList.contains('e-datetimepicker')) {
             let instance: DateTimePicker = (element as EJ2Instance).ej2_instances[0] as DateTimePicker;
+            if (instance.element.classList.contains(cls.EVENT_WINDOW_START_CLASS)) {
+                this.eventWindowTime.startTime = new Date('' + value);
+            } else {
+                this.eventWindowTime.endTime = new Date('' + value);
+            }
             instance.value = <Date>value;
             instance.dataBind();
         } else if (element.classList.contains('e-dropdownlist')) {
@@ -1560,7 +1598,9 @@ export class EventWindow {
             instance.dataBind();
         } else if (element.classList.contains('e-datetimepicker')) {
             let instance: DateTimePicker = (element as EJ2Instance).ej2_instances[0] as DateTimePicker;
-            instance.value = this.parent.getCurrentTime();
+            let dateValue: Date = this.parent.getCurrentTime();
+            this.eventWindowTime = { startTime: dateValue, endTime: dateValue };
+            instance.value = dateValue;
             instance.dataBind();
         } else if (element.classList.contains('e-dropdownlist')) {
             let instance: DropDownList = (element as EJ2Instance).ej2_instances[0] as DropDownList;
@@ -1600,6 +1640,9 @@ export class EventWindow {
                 break;
             case 'EditSeries':
                 this.parent.currentAction = 'DeleteSeries';
+                break;
+            case 'Save':
+                this.parent.currentAction = 'Delete';
                 break;
         }
         this.isCrudAction = false;

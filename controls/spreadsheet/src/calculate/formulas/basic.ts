@@ -98,6 +98,9 @@ export class BasicFormulas {
         {
             formulaName: 'MATCH', category: 'Lookup & Reference',
             description: 'Returns the relative position of an checked item in range that matches a specified value in a specified order'
+        },
+        {
+            formulaName: 'RANDBETWEEN', category: 'Math & Trig', description: 'Returns an integer random number in a specified range.'
         }
     ];
     private isConcat: boolean = false;
@@ -674,7 +677,10 @@ export class BasicFormulas {
 
     /** @hidden */
     public ComputeRAND(...args: string[]): string {
-        if (isNullOrUndefined(args) || (args.length === 1 && args[0] === '')) {
+        if (args.length === 1 && args[0] === '') {
+            args.length = 0;
+        }
+        if (args.length > 0) {
             return this.parent.formulaErrorStrings[FormulasErrorsStrings.wrong_number_arguments];
         }
         return Math.random().toString();
@@ -1151,6 +1157,53 @@ export class BasicFormulas {
             }
         }
         return result;
+    }
+
+    /** @hidden */
+    public ComputeRANDBETWEEN(...range: string[]): string | number {
+        let argsLength: number = range.length;
+        let min: number;
+        let max: number;
+        let argVal: number;
+        if (argsLength !== 2) {
+            return this.parent.formulaErrorStrings[FormulasErrorsStrings.wrong_number_arguments];
+        }
+        for (let i: number = 0; i < argsLength; i++) {
+            if (range[i] === '') {
+                return this.parent.getErrorStrings()[CommonErrors.na];
+            }
+            if (range[i].indexOf(this.parent.tic) > -1) {
+                if (isNaN(parseFloat(range[i].split(this.parent.tic).join('')))) {
+                    return this.parent.getErrorStrings()[CommonErrors.value];
+                } else {
+                    range[i] = range[i].split(this.parent.tic).join('');
+                }
+            }
+            argVal = parseFloat(this.parent.getValueFromArg(range[i]));
+            if (!this.parent.isCellReference(range[i])) {
+                if (isNaN(argVal)) {
+                    return this.parent.getErrorStrings()[CommonErrors.name];
+                }
+                i === 0 ? min = argVal : max = argVal;
+            } else {
+                argVal = this.parent.getValueFromArg(range[i]) === '' ? 0 : argVal;
+                i === 0 ? min = argVal : max = argVal;
+                if (min === 0 && max === 0) {
+                    return '0';
+                }
+                if (isNaN(argVal)) {
+                    return this.parent.getErrorStrings()[CommonErrors.value];
+                }
+            }
+        }
+        if (max < min) {
+            return this.parent.getErrorStrings()[CommonErrors.num];
+        }
+        if (min === 0) {
+            return Math.floor(Math.random() * (max - (min - 1))) + min;
+        } else {
+            return max - min === 1 ? Math.round((Math.random() * (max - min)) + min) : Math.floor(Math.random() * (max - (min - 1))) + min;
+        }
     }
 
     protected getModuleName(): string {

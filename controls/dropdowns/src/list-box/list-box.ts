@@ -1,11 +1,11 @@
 /// <reference path='../drop-down-base/drop-down-base-model.d.ts'/>
 import { Input, InputObject } from '@syncfusion/ej2-inputs';
-import { DropDownBase, dropDownBaseClasses, FilteringEventArgs, SelectEventArgs, FilterType } from '../drop-down-base/drop-down-base';
+import { DropDownBase, dropDownBaseClasses, FilteringEventArgs, SelectEventArgs } from '../drop-down-base/drop-down-base';
 import { FieldSettingsModel } from '../drop-down-base/drop-down-base-model';
 import { EventHandler, closest, removeClass, addClass, Complex, Property, ChildProperty, BaseEventArgs, L10n } from '@syncfusion/ej2-base';
 import { ModuleDeclaration, NotifyPropertyChanges, getComponent, EmitType, Event, extend, detach, attributes } from '@syncfusion/ej2-base';
-import { getUniqueID, Browser, formatUnit, isNullOrUndefined } from '@syncfusion/ej2-base';
-import { prepend, append } from '@syncfusion/ej2-base';
+import { getUniqueID, Browser, formatUnit, isNullOrUndefined, getValue } from '@syncfusion/ej2-base';
+import { prepend, append , isBlazor, BlazorDragEventArgs, resetBlazorTemplate} from '@syncfusion/ej2-base';
 import { cssClass, Sortable, moveTo } from '@syncfusion/ej2-lists';
 import { SelectionSettingsModel, ListBoxModel, ToolbarSettingsModel } from './list-box-model';
 import { Button } from '@syncfusion/ej2-buttons';
@@ -20,34 +20,35 @@ export type CheckBoxPosition = 'Left' | 'Right';
 
 type dataType = { [key: string]: object } | string | boolean | number;
 type obj = { [key: string]: object };
+const ITEMTEMPLATE_PROPERTY: string = 'ItemTemplate';
 
 export class SelectionSettings extends ChildProperty<SelectionSettings> {
     /**
      * Specifies the selection modes. The possible values are
      * * `Single`: Allows you to select a single item in the ListBox.
      * * `Multiple`: Allows you to select more than one item in the ListBox.
-     * @default 'Multiple'
+
      */
     @Property('Multiple')
     public mode: SelectionMode;
 
     /**
      * If 'showCheckbox' is set to true, then 'checkbox' will be visualized in the list item.
-     * @default false
+
      */
     @Property(false)
     public showCheckbox: boolean;
 
     /**
      * Allows you to either show or hide the selectAll option on the component.
-     * @default false
+
      */
     @Property(false)
     public showSelectAll: boolean;
 
     /**
      * Set the position of the checkbox.
-     * @default 'Left'
+
      */
     @Property('Left')
     public checkboxPosition: CheckBoxPosition;
@@ -57,7 +58,7 @@ export class ToolbarSettings extends ChildProperty<ToolbarSettings> {
     /** 
      * Specifies the list of tools for dual ListBox.
      * The predefined tools are 'moveUp', 'moveDown', 'moveTo', 'moveFrom', 'moveAllTo', and 'moveAllFrom'.
-     * @default []
+
      */
     @Property([])
     public items: string[];
@@ -67,7 +68,7 @@ export class ToolbarSettings extends ChildProperty<ToolbarSettings> {
      * The possible values are:
      * * Left: The toolbar will be positioned to the left of the ListBox.
      * * Right: The toolbar will be positioned to the right of the ListBox.
-     * @default 'Right'
+
      */
     @Property('Right')
     public position: ToolBarPosition;
@@ -114,27 +115,29 @@ export class ListBox extends DropDownBase {
     private mainList: HTMLElement;
     private remoteCustomValue: boolean;
     private filterParent: HTMLElement;
-
+    protected inputString: string;
+    protected filterInput: HTMLInputElement;
+    protected isCustomFiltering: boolean;
     /**
      * Sets the CSS classes to root element of this component, which helps to customize the
      * complete styles.
-     * @default ''
+
      */
     @Property('')
     public cssClass: string;
 
     /**
      * Sets the specified item to the selected state or gets the selected item in the ListBox.
-     * @default []
-     * @aspType object
-     * @isGenericType true
+
+
+
      */
     @Property([])
     public value: string[] | number[] | boolean[];
 
     /**
      * Sets the height of the ListBox component.
-     * @default ''
+
      */
     @Property('')
     public height: number | string;
@@ -142,7 +145,7 @@ export class ListBox extends DropDownBase {
     /**
      * If 'allowDragAndDrop' is set to true, then you can perform drag and drop of the list item.
      * ListBox contains same 'scope' property enables drag and drop between multiple ListBox.
-     * @default false
+
      */
     @Property(false)
     public allowDragAndDrop: boolean;
@@ -150,7 +153,7 @@ export class ListBox extends DropDownBase {
     /**
      * Sets limitation to the value selection.
      * based on the limitation, list selection will be prevented.
-     * @default 1000
+
      */
     @Property(1000)
     public maximumSelectionLength: number;
@@ -159,7 +162,7 @@ export class ListBox extends DropDownBase {
      * To enable the filtering option in this component. 
      * Filter action performs when type in search box and collect the matched item through `filtering` event.
      * If searching character does not match, `noRecordsTemplate` property value will be shown.
-     * @default false
+
      */
     @Property(false)
     public allowFiltering: boolean;
@@ -167,25 +170,15 @@ export class ListBox extends DropDownBase {
     /**
      * Defines the scope value to group sets of draggable and droppable ListBox.
      * A draggable with the same scope value will be accepted by the droppable.
-     * @default ''
+
      */
     @Property('')
     public scope: string;
 
-    /**   
-     * Determines on which filter type, the component needs to be considered on search action. 
-     * The `FilterType` and its supported data types are 
-     * The default value set to `StartsWith`, all the suggestion items which contain typed characters to listed in the suggestion popup.
-     * @default 'StartsWith'
-     * @private
-     */
-    @Property('StartsWith')
-    public filterType: FilterType;
-
     /**
      * When set to ‘false’, consider the `case-sensitive` on performing the search to find suggestions.
      * By default consider the casing.
-     * @default true
+
      * @private
      */
     @Property(true)
@@ -194,7 +187,7 @@ export class ListBox extends DropDownBase {
     /**
      * Triggers while rendering each list item.
      * @event
-     * @blazorProperty 'OnItemRender'
+
      */
     @Event()
     public beforeItemRender: EmitType<BeforeItemRenderEventArgs>;
@@ -202,7 +195,7 @@ export class ListBox extends DropDownBase {
     /**
      * Triggers on typing a character in the component.
      * @event
-     * @blazorProperty 'ItemSelected'
+
      */
     @Event()
     public filtering: EmitType<FilteringEventArgs>;
@@ -232,7 +225,7 @@ export class ListBox extends DropDownBase {
     /**
      * Triggers while select / unselect the list item.
      * @event
-     * @blazorProperty 'ValueChange'
+
      */
     @Event()
     public change: EmitType<ListBoxChangeEventArgs>;
@@ -240,7 +233,7 @@ export class ListBox extends DropDownBase {
     /**
      * Triggers after dragging the list item.
      * @event
-     * @blazorProperty 'DragStart'
+
      */
     @Event()
     public dragStart: EmitType<DragEventArgs>;
@@ -248,7 +241,7 @@ export class ListBox extends DropDownBase {
     /**
      * Triggers while dragging the list item.
      * @event
-     * @blazorProperty 'Dragging'
+
      */
     @Event()
     public drag: EmitType<DragEventArgs>;
@@ -256,7 +249,7 @@ export class ListBox extends DropDownBase {
     /**
      * Triggers before dropping the list item on another list item.
      * @event
-     * @blazorProperty 'Dropped'
+
      */
     @Event()
     public drop: EmitType<DragEventArgs>;
@@ -271,7 +264,7 @@ export class ListBox extends DropDownBase {
 
     /**
      * Accepts the template design and assigns it to the group headers present in the list.
-     * @default null
+
      * @private
      */
     @Property(null)
@@ -279,7 +272,7 @@ export class ListBox extends DropDownBase {
     /**
      * Accepts the template design and assigns it to list of component
      * when no data is available on the component.
-     * @default 'No Records Found'
+
      * @private
      */
     @Property('No Records Found')
@@ -287,7 +280,7 @@ export class ListBox extends DropDownBase {
     /**
      * Accepts the template and assigns it to the list content of the component
      * when the data fetch request from the remote server fails.
-     * @default 'The Request Failed'
+
      * @private
      */
     @Property('The Request Failed')
@@ -295,7 +288,7 @@ export class ListBox extends DropDownBase {
 
     /**
      * specifies the z-index value of the component popup element.
-     * @default 1000
+
      * @private
      */
     @Property(1000)
@@ -309,14 +302,14 @@ export class ListBox extends DropDownBase {
 
     /**
      * Specifies the toolbar items and its position.
-     * @default { items: [], position: 'Right' }
+
      */
     @Complex<ToolbarSettingsModel>({}, ToolbarSettings)
     public toolbarSettings: ToolbarSettingsModel;
 
     /**
      * Specifies the selection mode and its type.
-     * @default { mode: 'Multiple', type: 'Default' }
+
      */
     @Complex<SelectionSettingsModel>({}, SelectionSettings)
     public selectionSettings: SelectionSettingsModel;
@@ -333,7 +326,9 @@ export class ListBox extends DropDownBase {
      * @private
      */
     public render(): void {
+        this.inputString = '';
         this.initLoad = true;
+        this.isCustomFiltering = false;
         this.initialSelectedOptions = this.value;
         super.render();
         this.renderComplete();
@@ -530,15 +525,19 @@ export class ListBox extends DropDownBase {
         this.initWrapper();
         this.setSelection();
         this.initDraggable();
+        this.mainList = this.ulElement;
         if (this.initLoad) {
             this.initToolbarAndStyles();
             this.wireEvents();
-            this.mainList = this.ulElement;
             if (this.showCheckbox) {
                 this.setCheckboxPosition();
             }
             if (this.allowFiltering) {
                 this.setFiltering();
+            }
+        } else {
+            if (this.allowFiltering) {
+                (this.list.getElementsByClassName('e-input-filter')[0] as HTMLElement).focus();
             }
         }
         this.initLoad = false;
@@ -551,23 +550,27 @@ export class ListBox extends DropDownBase {
         this.setHeight();
     }
 
-    private triggerDragStart(args: DragEventArgs): void {
+    private triggerDragStart(args: DragEventArgs & BlazorDragEventArgs): void {
         let badge: Element;
-        args = extend(this.getDragArgs(args), { dragSelected: true }) as DragEventArgs;
+        args = extend(this.getDragArgs(args), { dragSelected: true }) as DragEventArgs & BlazorDragEventArgs;
         if (Browser.isIos) {
             this.list.style.overflow = 'hidden';
         }
-        this.trigger('dragStart', args, (args: DragEventArgs) => {
-            this.allowDragAll = args.dragSelected;
+        this.trigger('dragStart', args, (dragEventArgs: DragEventArgs) => {
+            this.allowDragAll = dragEventArgs.dragSelected;
             if (!this.allowDragAll) {
                 badge = this.ulElement.getElementsByClassName('e-list-badge')[0];
                 if (badge) { detach(badge); }
             }
+            if (isBlazor()) {
+                args.bindEvents(args.dragElement);
+            }
+
         });
     }
 
     private triggerDrag(args: DragEventArgs): void {
-        this.trigger('drag', this.getDragArgs(args));
+        this.trigger('drag', this.getDragArgs(args as DragEventArgs & BlazorDragEventArgs));
         let listObj: ListBox = this.getComponent(args.target);
         if (listObj && listObj.listData.length === 0) {
             listObj.ulElement.innerHTML = '';
@@ -580,8 +583,8 @@ export class ListBox extends DropDownBase {
         let dropValue: string | number | boolean = this.getFormattedValue(args.droppedElement.getAttribute('data-value'));
         let droppedData: dataType;
         let listObj: ListBox = this.getComponent(args.droppedElement);
-        let dragArgs: Object
-            = extend({}, this.getDragArgs({ target: args.droppedElement } as DragEventArgs, true), { target: args.target });
+        let getArgs: Object = this.getDragArgs({ target: args.droppedElement } as DragEventArgs & BlazorDragEventArgs, true);
+        let dragArgs: Object = extend({}, getArgs, { target: args.target });
         if (Browser.isIos) {
             this.list.style.overflow = '';
         }
@@ -745,7 +748,68 @@ export class ListBox extends DropDownBase {
     public addItems(items: obj[] | obj, itemIndex?: number): void {
         super.addItem(items, itemIndex);
     }
-
+    /**
+     * Removes a item from the list. By default, removed the last item in the list,
+     * but you can remove based on the index parameter.
+     * @param  { Object[] } items - Specifies an array of JSON data or a JSON data.
+     * @param { number } itemIndex - Specifies the index to remove the item from the list.
+     * @returns {void}.
+     */
+    public removeItems(items?: obj[] | obj, itemIndex?: number): void {
+        this.removeItem(items, itemIndex);
+    }
+    /**
+     * Removes a item from the list. By default, removed the last item in the list,
+     * but you can remove based on the index parameter.
+     * @param  { Object[] } items - Specifies an array of JSON data or a JSON data.
+     * @param { number } itemIndex - Specifies the index to remove the item from the list.
+     * @returns {void}.
+     */
+    public removeItem(
+        items?: { [key: string]: Object }[] | { [key: string]: Object } | string | boolean | number | string[] | boolean[] | number[],
+        itemIndex?: number): void {
+        let liCollections: HTMLElement[] = [];
+        let liElement: HTMLElement[] | NodeListOf<HTMLLIElement> = this.list.querySelectorAll('.' + dropDownBaseClasses.li);
+        if (items) {
+            items = (items instanceof Array ? items : [items]) as { [key: string]: Object }[] | string[] | boolean[] | number[];
+            let fields: FieldSettingsModel = this.fields; let dataValue: string; let objValue: string;
+            let dupData: {[key: string]: Object }[] = []; let itemIdx: number;
+            extend(dupData, [], this.listData as { [key: string]: Object }[]);
+            for (let j: number = 0; j < items.length; j++) {
+                if (items[j] instanceof Object) {
+                    dataValue = getValue(fields.value, items[j]);
+                } else {
+                    dataValue = items[j].toString();
+                }
+                for (let i: number = 0, len: number = dupData.length; i < len; i++) {
+                    if (dupData[i] instanceof Object) {
+                        objValue = getValue(fields.value, dupData[i]);
+                    } else {
+                        objValue = dupData[i].toString();
+                    }
+                    if (objValue === dataValue) {
+                        itemIdx = this.getIndexByValue(dataValue);
+                        liCollections.push(liElement[itemIdx]);
+                        (this.listData as { [key: string]: Object }[]).splice(i, 1);
+                        this.updateLiCollection(itemIdx);
+                    }
+                }
+            }
+        } else {
+            itemIndex = itemIndex ? itemIndex : 0;
+            liCollections.push(liElement[itemIndex]);
+            (this.listData as { [key: string]: Object }[]).splice(itemIndex, 1);
+            this.updateLiCollection(itemIndex);
+        }
+        for (let i: number = 0; i < liCollections.length; i++) {
+            this.ulElement.removeChild(liCollections[i]);
+        }
+    }
+    private updateLiCollection(index: number): void {
+        let tempLi: HTMLElement[] = [].slice.call(this.liCollections);
+        tempLi.splice(index, 1);
+        this.liCollections = tempLi;
+    }
     private selectAllItems(state: boolean, event?: MouseEvent): void {
         [].slice.call(this.getItems()).forEach((li: Element) => {
             if (!li.classList.contains(cssClass.disabled)) {
@@ -871,25 +935,42 @@ export class ListBox extends DropDownBase {
         }
     }
 
+    protected getQuery(query: Query): Query {
+        let filterQuery: Query = query ? query.clone() : this.query ? this.query.clone() : new Query();
+        if (this.allowFiltering) {
+            let filterType: string = this.inputString === '' ? 'contains' : this.filterType;
+            let dataType: string = <string>this.typeOfData(this.dataSource as { [key: string]: Object; }[]).typeof;
+            if (!(this.dataSource instanceof DataManager) && dataType === 'string' || dataType === 'number') {
+                filterQuery.where('', filterType, this.inputString, this.ignoreCase, this.ignoreAccent);
+            } else {
+                let fields: string = (this.fields.text) ? this.fields.text : '';
+                filterQuery.where(fields, filterType, this.inputString, this.ignoreCase, this.ignoreAccent);
+            }
+        } else {
+            filterQuery = query ? query : this.query ? this.query : new Query();
+        }
+        return filterQuery;
+    }
+
     private setFiltering(): InputObject | void {
         if (isNullOrUndefined(this.filterParent)) {
             this.filterParent = this.createElement('span', {
                 className: 'e-filter-parent'
             });
-            let filterInput: HTMLInputElement = <HTMLInputElement>this.createElement('input', {
+            this.filterInput = <HTMLInputElement>this.createElement('input', {
                 attrs: { type: 'text' },
                 className: 'e-input-filter'
             });
-            this.element.parentNode.insertBefore(filterInput, this.element);
+            this.element.parentNode.insertBefore(this.filterInput, this.element);
             let filterInputObj: InputObject = Input.createInput(
                 {
-                    element: filterInput
+                    element: this.filterInput
                 },
                 this.createElement
             );
             append([filterInputObj.container], this.filterParent);
             prepend([this.filterParent], this.list);
-            attributes(filterInput, {
+            attributes(this.filterInput, {
                 'aria-disabled': 'false',
                 'aria-owns': this.element.id + '_options',
                 'role': 'listbox',
@@ -899,9 +980,10 @@ export class ListBox extends DropDownBase {
                 'autocapitalize': 'off',
                 'spellcheck': 'false'
             });
-            EventHandler.add(filterInput, 'input', this.onInput, this);
-            EventHandler.add(filterInput, 'keyup', this.KeyUp, this);
-            EventHandler.add(filterInput, 'keydown', this.onKeyDown, this);
+            this.inputString = this.filterInput.value;
+            EventHandler.add(this.filterInput, 'input', this.onInput, this);
+            EventHandler.add(this.filterInput, 'keyup', this.KeyUp, this);
+            EventHandler.add(this.filterInput, 'keydown', this.onKeyDown, this);
             return filterInputObj;
         }
     }
@@ -944,8 +1026,8 @@ export class ListBox extends DropDownBase {
                 this.list.setAttribute('aria-activedescendant', li.id);
             }
             if (!isKey && (this.maximumSelectionLength > (this.value && this.value.length) || !isSelect) &&
-                (this.maximumSelectionLength >= this.value.length || !isSelect) &&
-                !(this.maximumSelectionLength < this.value.length)) {
+                (this.maximumSelectionLength >= (this.value && this.value.length) || !isSelect) &&
+                !(this.maximumSelectionLength < (this.value && this.value.length))) {
                 this.notify('updatelist', { li: li, e: e });
             }
             if (this.allowFiltering && !isKey) {
@@ -1241,7 +1323,7 @@ export class ListBox extends DropDownBase {
         return listObj;
     }
 
-    private getDragArgs(args: DragEventArgs, isDragEnd?: boolean): DragEventArgs {
+    private getDragArgs(args: DragEventArgs & BlazorDragEventArgs, isDragEnd?: boolean): DragEventArgs & BlazorDragEventArgs {
         let elems: Element[] = this.getSelectedItems();
         if (elems.length) {
             elems.pop();
@@ -1251,11 +1333,17 @@ export class ListBox extends DropDownBase {
         } else {
             elems = [args.target];
         }
-        return { elements: elems, items: this.getDataByElems(elems) };
+        if (isBlazor()) {
+            return { elements: elems, items: this.getDataByElems(elems), bindEvents: args.bindEvents,
+                dragElement: args.dragElement };
+        } else {
+            return { elements: elems, items: this.getDataByElems(elems) } as DragEventArgs & BlazorDragEventArgs;
+        }
     }
 
     private onKeyDown(e: KeyboardEvent): void {
         this.keyDownHandler(e);
+        event.stopPropagation();
     }
 
     private keyDownStatus: boolean = false;
@@ -1280,6 +1368,10 @@ export class ListBox extends DropDownBase {
                     e.shiftKey ? this.moveAllData(listObj, this, true) : this.moveData(listObj, this, true);
                 }
             } else if (e.keyCode !== 37 && e.keyCode !== 39) {
+                this.upDownKeyHandler(e);
+            }
+        } else if (this.allowFiltering) {
+            if (e.keyCode === 40 || e.keyCode === 38) {
                 this.upDownKeyHandler(e);
             }
         }
@@ -1342,16 +1434,43 @@ export class ListBox extends DropDownBase {
                             event: e,
                             cancel: false
                         };
-                        this.trigger('filtering', eventArgsData);
-                        if (eventArgsData.cancel) { return; }
-                        if (!this.isFiltered && !eventArgsData.preventDefaultAction) {
-                            this.dataUpdater(this.dataSource, null, this.fields);
-                        }
-                        (this.list.getElementsByClassName('e-input-filter')[0] as HTMLElement).focus();
+                        this.trigger('filtering', eventArgsData, (args: FilteringEventArgs) => {
+                            this.isDataFetched = false;
+                            if (eventArgsData.cancel || (this.filterInput.value !== '' && this.isFiltered)) {
+                                return;
+                            }
+                            if (!eventArgsData.cancel && !this.isCustomFiltering && !eventArgsData.preventDefaultAction) {
+                                this.inputString = this.filterInput.value;
+                                this.filteringAction(this.dataSource, null, this.fields);
+                            }
+                            if (!this.isFiltered && !this.isCustomFiltering && !eventArgsData.preventDefaultAction) {
+                                this.dataUpdater(this.dataSource, null, this.fields);
+                            }
+                        });
                     }
             }
         }
     }
+    /**
+     * To filter the data from given data source by using query
+     * @param  {Object[] | DataManager } dataSource - Set the data source to filter.
+     * @param  {Query} query - Specify the query to filter the data.
+     * @param  {FieldSettingsModel} fields - Specify the fields to map the column in the data table.
+     * @return {void}.
+     */
+    public filter(
+        dataSource: { [key: string]: Object }[] | DataManager | string[] | number[] | boolean[],
+        query?: Query, fields?: FieldSettingsModel): void {
+        this.isCustomFiltering = true;
+        this.filteringAction(dataSource, query, fields);
+    }
+
+    private filteringAction(
+        dataSource: { [key: string]: Object }[] | DataManager | string[] | number[] | boolean[],
+        query?: Query, fields?: FieldSettingsModel): void {
+            this.resetList(dataSource, fields, query);
+    }
+
 
     protected targetElement(): string {
         this.targetInputElement = this.list.getElementsByClassName('e-input-filter')[0] as HTMLInputElement;
@@ -1591,6 +1710,9 @@ export class ListBox extends DropDownBase {
     };
 
     public destroy(): void {
+        if (this.itemTemplate) {
+            resetBlazorTemplate(`${this.element.id}${ITEMTEMPLATE_PROPERTY}`, ITEMTEMPLATE_PROPERTY);
+        }
         this.unwireEvents();
         if (this.element.tagName === 'EJS-LISTBOX') {
             this.element.innerHTML = '';

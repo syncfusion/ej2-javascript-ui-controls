@@ -4,7 +4,7 @@ import { getObject, Grid, Reorder as GridReorder } from '@syncfusion/ej2-grids';
 
 /**
  * TreeGrid Reorder module
- * @hidden
+
  */
 export class Reorder {
     private parent: TreeGrid;
@@ -27,7 +27,7 @@ export class Reorder {
     }
 
     /**
-     * @hidden
+
      */
     public addEventListener(): void {
       this.parent.on('getColumnIndex', this.getTreeColumn, this);
@@ -40,7 +40,7 @@ export class Reorder {
     /**
      * To destroy the Reorder 
      * @return {void}
-     * @hidden
+
      */
     public destroy(): void {
       this.removeEventListener();

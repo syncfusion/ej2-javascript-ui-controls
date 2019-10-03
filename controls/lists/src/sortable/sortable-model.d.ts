@@ -7,13 +7,13 @@ export interface SortableModel {
 
     /**
      * It is used to enable or disable the built-in animations. The default value is `false`
-     * @default false
+
      */
     enableAnimation?: boolean;
 
     /**
      * Specifies the sortable item class.
-     * @default null
+
      */
     itemClass?: string;
 

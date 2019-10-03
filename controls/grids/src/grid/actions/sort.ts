@@ -38,7 +38,7 @@ export class Sort implements IAction {
 
     /**
      * Constructor for Grid sorting module
-     * @hidden
+
      */
     constructor(parent?: IGrid, sortSettings?: SortSettings, sortedColumns?: string[], locator?: ServiceLocator) {
         this.parent = parent;
@@ -51,7 +51,7 @@ export class Sort implements IAction {
     /**
      * The function used to update sortSettings 
      * @return {void}
-     * @hidden
+
      */
     public updateModel(): void {
         let sortedColumn: SortDescriptorModel = { field: this.columnName, direction: this.direction };
@@ -93,7 +93,7 @@ export class Sort implements IAction {
     /**
      * The function used to trigger onActionComplete
      * @return {void}
-     * @hidden
+
      */
     public onActionComplete(e: NotifyArgs): void {
         let args: Object = !this.isRemove ? {
@@ -172,7 +172,7 @@ export class Sort implements IAction {
     }
 
     /**
-     * @hidden
+
      */
     public onPropertyChanged(e: NotifyArgs): void {
         if (e.module !== this.getModuleName()) {
@@ -225,7 +225,7 @@ export class Sort implements IAction {
      * Remove sorted column by field name. 
      * @param {string} field - Defines the column field name to remove sort.  
      * @return {void} 
-     * @hidden
+
      */
     public removeSortColumn(field: string): void {
         let gObj: IGrid = this.parent;
@@ -292,7 +292,7 @@ export class Sort implements IAction {
         }
     }
     /**
-     * @hidden
+
      */
     public addEventListener(): void {
         if (this.parent.isDestroyed) { return; }
@@ -305,7 +305,7 @@ export class Sort implements IAction {
         this.parent.on(events.cancelBegin, this.cancelBeginEvent, this);
     }
     /**
-     * @hidden
+
      */
     public removeEventListener(): void {
         if (this.parent.isDestroyed) { return; }
@@ -320,7 +320,7 @@ export class Sort implements IAction {
     /**
      * To destroy the sorting 
      * @return {void}
-     * @hidden
+
      */
     public destroy(): void {
         this.isModelChanged = false;

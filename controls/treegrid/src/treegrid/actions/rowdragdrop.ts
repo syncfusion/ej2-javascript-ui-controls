@@ -9,25 +9,25 @@ import { editAction } from './crud-actions';
 import { getParentData, findChildrenRecords, isRemoteData } from '../utils';
 /**
  * TreeGrid RowDragAndDrop module
- * @hidden
+
  */
 export class RowDD {
     private parent: TreeGrid;
-    /** @hidden */
+
     private dropPosition: string;
-    /** @hidden */
+
     private draggedRecord: ITreeData;
-    /** @hidden */
+
     private droppedRecord: ITreeData;
-    /** @hidden */
+
     private treeGridData: ITreeData[];
-    /** @hidden */
+
     private canDrop: boolean = true;
-    /** @hidden */
+
     private isDraggedWithChild: boolean = false;
-    /** @hidden */
+
     public isMultipleGrid: string;
-    /** @hidden */
+
     public isaddtoBottom: boolean = false;
     /**
      * 
@@ -56,7 +56,7 @@ export class RowDD {
     }
 
     /**
-     * @hidden
+
      */
     private addEventListener(): void {
         this.parent.on(events.rowdraging, this.Rowdraging, this);
@@ -912,7 +912,7 @@ export class RowDD {
     }
 
     /**
-     * @hidden
+
      */
     public removeEventListener(): void {
       if (this.parent.isDestroyed) { return; }

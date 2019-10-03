@@ -94,6 +94,7 @@ export class NumericTextBox extends Component<HTMLInputElement> implements INoti
      * @default null
      * @aspType object
      * @isGenericType true
+     * @blazorDefaultValue EjsBase.GetNumericValue<TValue>("MinValue")
      */
     @Property(-(Number.MAX_VALUE))
     public min: number;
@@ -105,6 +106,7 @@ export class NumericTextBox extends Component<HTMLInputElement> implements INoti
      * @default null
      * @aspType object
      * @isGenericType true
+     * @blazorDefaultValue EjsBase.GetNumericValue<TValue>("MaxValue")
      */
     @Property(Number.MAX_VALUE)
     public max: number;
@@ -115,6 +117,7 @@ export class NumericTextBox extends Component<HTMLInputElement> implements INoti
      * [step](../../numerictextbox/getting-started/#range-validation).
      * @default 1
      * @isGenericType true
+     * @blazorDefaultValue EjsBase.GetNumericValue<TValue>("Step")
      */
     @Property(1)
     public step: number;

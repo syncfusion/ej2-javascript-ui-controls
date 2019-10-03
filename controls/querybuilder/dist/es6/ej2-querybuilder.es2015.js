@@ -2300,7 +2300,7 @@ let QueryBuilder = class QueryBuilder extends Component {
     /**
      * return the Query from current rules collection.
      * @returns Promise.
-     * @blazorType object
+
      */
     getFilteredRecords() {
         let predicate = this.getPredicate(this.getValidRules(this.rule));

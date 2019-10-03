@@ -3,7 +3,7 @@ import { PdfViewer, PdfViewerBase } from '../index';
 
 /**
  * The `IRectangle` module is used to handle rectangle property of PDF viewer.
- * @hidden
+
  */
 export interface IRectangle {
     bottom: number;
@@ -16,7 +16,7 @@ export interface IRectangle {
 
 /**
  * The `ISelection` module is used to handle selection property of PDF viewer.
- * @hidden
+
  */
 export interface ISelection {
     isBackward: boolean;
@@ -31,7 +31,7 @@ export interface ISelection {
 }
 /**
  * The `TextSelection` module is used to handle the text selection of PDF viewer.
- * @hidden
+
  */
 export class TextSelection {
 

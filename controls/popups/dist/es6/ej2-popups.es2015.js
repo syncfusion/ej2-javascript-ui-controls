@@ -1588,7 +1588,7 @@ const DLG_RESTRICT_WIDTH_VALUE = 'e-resize-viewport';
 let Dialog = class Dialog extends Component {
     /**
      * Constructor for creating the widget
-     * @hidden
+
      */
     constructor(options, element) {
         super(options, element);
@@ -1851,16 +1851,20 @@ let Dialog = class Dialog extends Component {
             relateTo: this.target,
             actionOnScroll: 'none',
             open: (event) => {
-                this.focusContent();
                 let eventArgs = {
                     container: this.isModal ? this.dlgContainer : this.element,
                     element: this.element,
-                    target: this.target
+                    target: this.target,
+                    preventFocus: false
                 };
                 if (this.enableResize) {
                     this.getMinHeight();
                 }
-                this.trigger('open', eventArgs);
+                this.trigger('open', eventArgs, (openEventArgs) => {
+                    if (!openEventArgs.preventFocus) {
+                        this.focusContent();
+                    }
+                });
             },
             close: (event) => {
                 if (this.isModal) {
@@ -2452,7 +2456,7 @@ let Dialog = class Dialog extends Component {
     }
     /**
      * Binding event to the element while widget creation
-     * @hidden
+
      */
     wireEvents() {
         if (this.showCloseIcon) {
@@ -2464,7 +2468,7 @@ let Dialog = class Dialog extends Component {
     }
     /**
      * Unbinding event to the element while widget destroy
-     * @hidden
+
      */
     unWireEvents() {
         if (this.showCloseIcon) {
@@ -3645,7 +3649,7 @@ let Tooltip = class Tooltip extends Component {
     }
     /**
      * Binding events to the Tooltip element.
-     * @hidden
+
      */
     wireEvents(trigger) {
         let triggerList = this.getTriggerList(trigger);
@@ -3710,7 +3714,7 @@ let Tooltip = class Tooltip extends Component {
     }
     /**
      * Unbinding events from the element on widget destroy.
-     * @hidden
+
      */
     unwireEvents(trigger) {
         let triggerList = this.getTriggerList(trigger);

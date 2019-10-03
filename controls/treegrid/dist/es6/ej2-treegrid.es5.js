@@ -12,42 +12,42 @@ var Column = /** @__PURE__ @class */ (function () {
         /**
          * If `allowEditing` set to false, then it disables editing of a particular column.
          * By default all columns are editable.
-         * @default true
+    
          */
         this.allowEditing = true;
         /**
          * Defines the `IEditCell` object to customize default edit cell.
-         * @default {}
+    
          */
         this.edit = {};
         /**
          * If `allowReordering` set to false, then it disables reorder of a particular column.
          * By default all columns can be reorder.
-         * @default true
+    
          */
         this.allowReordering = true;
         /**
          * If `showColumnMenu` set to false, then it disable the column menu of a particular column.
          * By default column menu will show for all columns
-         * @default true
+    
          */
         this.showColumnMenu = true;
         /**
          * If `allowFiltering` set to false, then it disables filtering option and filter bar element of a particular column.
          * By default all columns are filterable.
-         * @default true
+    
          */
         this.allowFiltering = true;
         /**
          * If `allowSorting` set to false, then it disables sorting option of a particular column.
          * By default all columns are sortable.
-         * @default true
+    
          */
         this.allowSorting = true;
         /**
          * If `allowResizing` is set to false, it disables resize option of a particular column.
          * By default all the columns can be resized.
-         * @default true
+    
          */
         this.allowResizing = true;
         /**
@@ -58,7 +58,7 @@ var Column = /** @__PURE__ @class */ (function () {
          * * ui.read -  It is used for read the value from the component.
          * * ui.write - It is used to apply component model as dynamically.
          *
-         *  @default null
+    
          */
         this.filter = {};
         merge(this, options);
@@ -200,124 +200,66 @@ var TextWrapSettings = /** @__PURE__ @class */ (function (_super) {
 }(ChildProperty));
 
 /**
- *  @hidden
+
  */
 var load = 'load';
-/** @hidden */
 var rowDataBound = 'rowDataBound';
-/** @hidden */
 var dataBound = 'dataBound';
-/** @hidden */
 var queryCellInfo = 'queryCellInfo';
-/** @hidden */
 var beforeDataBound = 'beforeDataBound';
-/** @hidden */
 var actionBegin = 'actionBegin';
-/** @hidden */
 var dataStateChange = 'dataStateChange';
-/** @hidden */
 var actionComplete = 'actionComplete';
-/** @hidden */
 var rowSelecting = 'rowSelecting';
-/** @hidden */
 var rowSelected = 'rowSelected';
-/** @hidden */
 var checkboxChange = 'checkboxChange';
-/** @hidden */
 var rowDeselected = 'rowDeselected';
-/** @hidden */
 var toolbarClick = 'toolbarClick';
-/** @hidden */
 var beforeExcelExport = 'beforeExcelExport';
-/** @hidden */
 var beforePdfExport = 'beforePdfExport';
-/** @hidden */
 var resizeStop = 'resizeStop';
-/** @hidden */
 var expanded = 'expanded';
-/** @hidden */
 var expanding = 'expanding';
-/** @hidden */
 var collapsed = 'collapsed';
-/** @hidden */
 var collapsing = 'collapsing';
-/** @hidden */
 var remoteExpand = 'remoteExpand';
-/** @hidden */
 var localPagedExpandCollapse = 'localPagedExpandCollapse';
-/** @hidden */
 var pagingActions = 'pagingActions';
-/** @hidden */
 var printGridInit = 'printGrid-Init';
-/** @hidden */
 var contextMenuOpen = 'contextMenuOpen';
-/** @hidden */
 var contextMenuClick = 'contextMenuClick';
-/** @hidden */
 var savePreviousRowPosition = 'savePreviousRowPosition';
-/** @hidden */
 var crudAction = 'crudAction';
-/** @hidden */
 var beginEdit = 'beginEdit';
-/** @hidden */
 var beginAdd = 'beginAdd';
-/** @hidden */
 var recordDoubleClick = 'recordDoubleClick';
-/** @hidden */
 var cellSave = 'cellSave';
-/** @hidden */
 var cellSaved = 'cellSaved';
-/** @hidden */
 var cellEdit = 'cellEdit';
-/** @hidden */
 var batchDelete = 'batchDelete';
-/** @hidden */
 var batchCancel = 'batchCancel';
-/** @hidden */
 var batchAdd = 'batchAdd';
-/** @hidden */
 var beforeBatchAdd = 'beforeBatchAdd';
-/** @hidden */
 var beforeBatchSave = 'beforeBatchSave';
-/** @hidden */
 var batchSave = 'batchSave';
-/** @hidden */
 var keyPressed = 'key-pressed';
-/** @hidden */
 var updateData = 'update-data';
-/** @hidden */
 var doubleTap = 'double-tap';
-/** @hidden */
 var virtualColumnIndex = 'virtualColumnIndex';
-/** @hidden */
 var virtualActionArgs = 'virtual-action-args';
-/** @hidden */
 var dataListener = 'data-listener';
-/** @hidden */
 var indexModifier = 'index-modifier';
-/** @hidden */
 var beforeStartEdit = 'edit-form';
-/** @hidden */
 var beforeBatchCancel = 'before-batch-cancel';
-/** @hidden */
 var batchEditFormRendered = 'batcheditform-rendered';
-/** @hidden */
 var detailDataBound = 'detailDataBound';
-/** @hidden */
 var rowDrag = 'rowDrag';
-/** @hidden */
 var rowDragStartHelper = 'rowDragStartHelper';
-/** @hidden */
 var rowDrop = 'rowDrop';
-/** @hidden */
 var rowDragStart = 'rowDragStart';
-/** @hidden */
 var rowsAdd = 'rows-add';
-/** @hidden */
 var rowsRemove = 'rows-remove';
-/** @hidden */
 var rowdraging = 'row-draging';
-/** @hidden */
 var rowDropped = 'row-dropped';
 
 function isRemoteData(parent) {
@@ -345,7 +287,7 @@ function isFilterChildHierarchy(parent) {
     return false;
 }
 /**
- * @hidden
+
  */
 function findParentRecords(records) {
     var datas;
@@ -360,7 +302,7 @@ function findParentRecords(records) {
     return datas;
 }
 /**
- * @hidden
+
  */
 function getExpandStatus(parent, record, parents) {
     var parentRecord = isNullOrUndefined(record.parentItem) ? null :
@@ -399,7 +341,7 @@ function getExpandStatus(parent, record, parents) {
     }
 }
 /**
- * @hidden
+
  */
 function findChildrenRecords(records) {
     var datas = [];
@@ -459,7 +401,7 @@ function getParentData(parent, value, requireFilter) {
 
 /**
  * TreeGrid Selection module
- * @hidden
+
  */
 var Selection = /** @__PURE__ @class */ (function () {
     /**
@@ -496,7 +438,7 @@ var Selection = /** @__PURE__ @class */ (function () {
     /**
      * To destroy the Selection
      * @return {void}
-     * @hidden
+  
      */
     Selection.prototype.destroy = function () {
         this.removeEventListener();
@@ -658,13 +600,21 @@ var Selection = /** @__PURE__ @class */ (function () {
         var indeter = 0;
         var checkChildRecords = 0;
         if (!isNullOrUndefined(record)) {
-            for (var i = 0; i < childRecords.length; i++) {
-                if (childRecords[i].checkboxState === 'indeterminate') {
+            var _loop_1 = function (i) {
+                var childRecord = this_1.parent.getCurrentViewRecords().filter(function (e) {
+                    return e.uniqueID === childRecords[i].uniqueID;
+                });
+                var checkBoxRecord = isBlazor() ? childRecord[0] : childRecords[i];
+                if (checkBoxRecord.checkboxState === 'indeterminate') {
                     indeter++;
                 }
-                else if (childRecords[i].checkboxState === 'check') {
+                else if (checkBoxRecord.checkboxState === 'check') {
                     checkChildRecords++;
                 }
+            };
+            var this_1 = this;
+            for (var i = 0; i < childRecords.length; i++) {
+                _loop_1(i);
             }
             if (indeter > 0 || (checkChildRecords > 0 && checkChildRecords !== length)) {
                 record.checkboxState = 'indeterminate';
@@ -729,6 +679,7 @@ var Selection = /** @__PURE__ @class */ (function () {
             return e.uniqueID === currentRecord.uniqueID;
         });
         var recordIndex = this.parent.getCurrentViewRecords().indexOf(record[0]);
+        var checkboxRecord = isBlazor() ? record[0] : currentRecord;
         var checkbox;
         if (recordIndex > -1) {
             var tr = this.parent.getRows()[recordIndex];
@@ -742,25 +693,25 @@ var Selection = /** @__PURE__ @class */ (function () {
                 removeClass([checkbox], ['e-check', 'e-stop', 'e-uncheck']);
             }
         }
-        currentRecord.checkboxState = checkState;
+        checkboxRecord.checkboxState = checkState;
         if (checkState === 'check' && isNullOrUndefined(currentRecord.isSummaryRow)) {
             if (recordIndex !== -1 && this.selectedIndexes.indexOf(recordIndex) === -1) {
                 this.selectedIndexes.push(recordIndex);
             }
-            if (this.selectedItems.indexOf(currentRecord) === -1 && (recordIndex !== -1 &&
+            if (this.selectedItems.indexOf(checkboxRecord) === -1 && (recordIndex !== -1 &&
                 (!isNullOrUndefined(this.parent.filterModule) && this.parent.filterModule.filteredResult.length > 0))) {
-                this.selectedItems.push(currentRecord);
+                this.selectedItems.push(checkboxRecord);
             }
-            if (this.selectedItems.indexOf(currentRecord) === -1 && (!isNullOrUndefined(this.parent.filterModule) &&
+            if (this.selectedItems.indexOf(checkboxRecord) === -1 && (!isNullOrUndefined(this.parent.filterModule) &&
                 this.parent.filterModule.filteredResult.length === 0)) {
-                this.selectedItems.push(currentRecord);
+                this.selectedItems.push(checkboxRecord);
             }
-            if (this.selectedItems.indexOf(currentRecord) === -1 && isNullOrUndefined(this.parent.filterModule)) {
-                this.selectedItems.push(currentRecord);
+            if (this.selectedItems.indexOf(checkboxRecord) === -1 && isNullOrUndefined(this.parent.filterModule)) {
+                this.selectedItems.push(checkboxRecord);
             }
         }
         else if ((checkState === 'uncheck' || checkState === 'indeterminate') && isNullOrUndefined(currentRecord.isSummaryRow)) {
-            var index = this.selectedItems.indexOf(currentRecord);
+            var index = this.selectedItems.indexOf(checkboxRecord);
             if (index !== -1) {
                 this.selectedItems.splice(index, 1);
             }
@@ -841,7 +792,7 @@ var Selection = /** @__PURE__ @class */ (function () {
 
 /**
  * TreeGrid Print module
- * @hidden
+
  */
 var Print$1 = /** @__PURE__ @class */ (function () {
     /**
@@ -860,7 +811,7 @@ var Print$1 = /** @__PURE__ @class */ (function () {
         return 'print';
     };
     /**
-     * @hidden
+
      */
     Print$$1.prototype.addEventListener = function () {
         this.parent.grid.on(printGridInit, this.printTreeGrid, this);
@@ -882,7 +833,7 @@ var Print$1 = /** @__PURE__ @class */ (function () {
     /**
      * To destroy the Print
      * @return {void}
-     * @hidden
+
      */
     Print$$1.prototype.destroy = function () {
         this.removeEventListener();
@@ -985,7 +936,7 @@ var SelectionSettings = /** @__PURE__ @class */ (function (_super) {
 
 /**
  * TreeGrid render module
- * @hidden
+
  */
 var Render = /** @__PURE__ @class */ (function () {
     /**
@@ -1176,7 +1127,7 @@ var Render = /** @__PURE__ @class */ (function () {
 
 /**
  * Internal dataoperations for tree grid
- * @hidden
+
  */
 var DataManipulation = /** @__PURE__ @class */ (function () {
     function DataManipulation(grid) {
@@ -1192,7 +1143,7 @@ var DataManipulation = /** @__PURE__ @class */ (function () {
         this.isSelfReference = !isNullOrUndefined(this.parent.parentIdMapping);
     }
     /**
-     * @hidden
+
      */
     DataManipulation.prototype.addEventListener = function () {
         this.parent.on('updateRemoteLevel', this.updateParentRemoteData, this);
@@ -1202,7 +1153,7 @@ var DataManipulation = /** @__PURE__ @class */ (function () {
         this.parent.on('dataProcessor', this.dataProcessor, this);
     };
     /**
-     * @hidden
+
      */
     DataManipulation.prototype.removeEventListener = function () {
         if (this.parent.isDestroyed) {
@@ -1217,12 +1168,11 @@ var DataManipulation = /** @__PURE__ @class */ (function () {
     /**
      * To destroy the dataModule
      * @return {void}
-     * @hidden
+
      */
     DataManipulation.prototype.destroy = function () {
         this.removeEventListener();
     };
-    /** @hidden */
     DataManipulation.prototype.isRemote = function () {
         if (!(this.parent.dataSource instanceof DataManager)) {
             return false;
@@ -1233,7 +1183,7 @@ var DataManipulation = /** @__PURE__ @class */ (function () {
     };
     /**
      * Function to manipulate datasource
-     * @hidden
+    
      */
     DataManipulation.prototype.convertToFlatData = function (data) {
         var _this = this;
@@ -1342,7 +1292,7 @@ var DataManipulation = /** @__PURE__ @class */ (function () {
     };
     /**
      * Function to update the zeroth level parent records in remote binding
-     * @hidden
+  
      */
     DataManipulation.prototype.updateParentRemoteData = function (args) {
         var records = args.result;
@@ -1375,7 +1325,7 @@ var DataManipulation = /** @__PURE__ @class */ (function () {
     };
     /**
      * Function to manipulate datasource
-     * @hidden
+  
      */
     DataManipulation.prototype.collectExpandingRecs = function (rowDetails) {
         var _this = this;
@@ -1510,7 +1460,7 @@ var DataManipulation = /** @__PURE__ @class */ (function () {
     };
     /**
      * Function to perform filtering/sorting action for local data
-     * @hidden
+  
      */
     DataManipulation.prototype.dataProcessor = function (args) {
         var isExport = getObject('isExport', args);
@@ -1645,7 +1595,7 @@ var DataManipulation = /** @__PURE__ @class */ (function () {
 
 /**
  * Defines Predefined toolbar items.
- * @hidden
+
  */
 var ToolbarItem;
 (function (ToolbarItem) {
@@ -1666,7 +1616,7 @@ var ToolbarItem;
 })(ToolbarItem || (ToolbarItem = {}));
 /**
  * Defines predefined contextmenu items.
- * @hidden
+
  */
 var ContextMenuItems;
 (function (ContextMenuItems) {
@@ -1773,7 +1723,7 @@ var AggregateColumn = /** @__PURE__ @class */ (function (_super) {
         return _this;
     }
     /**
-     * @hidden
+ 
      */
     AggregateColumn.prototype.setFormatter = function (cultureName) {
         if (this.format && (this.format.skeleton || this.format.format)) {
@@ -1781,7 +1731,7 @@ var AggregateColumn = /** @__PURE__ @class */ (function (_super) {
         }
     };
     /**
-     * @hidden
+  
      */
     AggregateColumn.prototype.getFormatFunction = function (format) {
         if (format.type) {
@@ -1792,13 +1742,13 @@ var AggregateColumn = /** @__PURE__ @class */ (function (_super) {
         }
     };
     /**
-     * @hidden
+    
      */
     AggregateColumn.prototype.getFormatter = function () {
         return this.formatFn;
     };
     /**
-     * @hidden
+ 
      */
     AggregateColumn.prototype.setTemplate = function (helper) {
         if (helper === void 0) { helper = {}; }
@@ -1808,13 +1758,13 @@ var AggregateColumn = /** @__PURE__ @class */ (function (_super) {
         }
     };
     /**
-     * @hidden
+  
      */
     AggregateColumn.prototype.getTemplate = function (type) {
         return this.templateFn[getEnumValue(CellType, type)];
     };
     /**
-     * @hidden
+  
      */
     AggregateColumn.prototype.setPropertiesSilent = function (prop) {
         this.setProperties(prop, true);
@@ -2098,7 +2048,7 @@ var TreeGrid = /** @__PURE__ @class */ (function (_super) {
      * Remove sorted column by field name.
      * @param {string} field - Defines the column field name to remove sort.
      * @return {void}
-     * @hidden
+  
      */
     TreeGrid.prototype.removeSortColumn = function (field) {
         this.sortModule.removeSortColumn(field);
@@ -2252,7 +2202,7 @@ var TreeGrid = /** @__PURE__ @class */ (function (_super) {
     };
     /**
      * Binding events to the element while component creation.
-     * @hidden
+  
      */
     TreeGrid.prototype.wireEvents = function () {
         EventHandler.add(this.element, 'click', this.mouseClickHandler, this);
@@ -2269,7 +2219,7 @@ var TreeGrid = /** @__PURE__ @class */ (function (_super) {
     /**
      * To provide the array of modules needed for component rendering
      * @return {ModuleDeclaration[]}
-     * @hidden
+
      */
     TreeGrid.prototype.requiredModules = function () {
         var modules = [];
@@ -2385,7 +2335,7 @@ var TreeGrid = /** @__PURE__ @class */ (function (_super) {
     };
     /**
      * Unbinding events from the element while component destroy.
-     * @hidden
+
      */
     TreeGrid.prototype.unwireEvents = function () {
         EventHandler.remove(this.element, 'click', this.mouseClickHandler);
@@ -2878,7 +2828,7 @@ var TreeGrid = /** @__PURE__ @class */ (function (_super) {
     };
     /**
      * AutoGenerate TreeGrid columns from first record
-     * @hidden
+  
      */
     TreeGrid.prototype.autoGenerateColumns = function () {
         if (!this.columns.length && (!this.dataModule.isRemote() && Object.keys(this.dataSource).length)) {
@@ -2925,7 +2875,7 @@ var TreeGrid = /** @__PURE__ @class */ (function (_super) {
     };
     /**
      * Defines grid toolbar from treegrid toolbar model
-     * @hidden
+  
      */
     TreeGrid.prototype.getContextMenu = function () {
         if (this.contextMenuItems) {
@@ -2949,7 +2899,7 @@ var TreeGrid = /** @__PURE__ @class */ (function (_super) {
     };
     /**
      * Defines grid toolbar from treegrid toolbar model
-     * @hidden
+  
      */
     TreeGrid.prototype.getGridToolbar = function () {
         if (this.toolbar) {
@@ -3006,7 +2956,7 @@ var TreeGrid = /** @__PURE__ @class */ (function (_super) {
     };
     /**
      * Convert TreeGrid ColumnModel to Grid Column
-     * @hidden
+  
      */
     TreeGrid.prototype.getGridColumns = function (columns) {
         var column = columns;
@@ -3038,7 +2988,7 @@ var TreeGrid = /** @__PURE__ @class */ (function (_super) {
     };
     /**
      * Called internally if any of the property value changed.
-     * @hidden
+  
      */
     /* tslint:disable-next-line:max-line-length */
     // tslint:disable-next-line:max-func-body-length
@@ -3250,7 +3200,7 @@ var TreeGrid = /** @__PURE__ @class */ (function (_super) {
     /**
      * Get the properties to be maintained in the persisted state.
      * @return {string}
-     * @hidden
+  
      */
     TreeGrid.prototype.getPersistData = function () {
         var _this = this;
@@ -3599,7 +3549,7 @@ var TreeGrid = /** @__PURE__ @class */ (function (_super) {
     /**
      * Get current visible data of TreeGrid.
      * @return {Object[]}
-     * @isGenericType true
+
      */
     TreeGrid.prototype.getCurrentViewRecords = function () {
         return this.grid.currentViewData;
@@ -3677,7 +3627,7 @@ var TreeGrid = /** @__PURE__ @class */ (function (_super) {
     /**
      * Get the records of checked rows.
      * @return {Object[]}
-     * @isGenericType true
+  
      */
     TreeGrid.prototype.getCheckedRecords = function () {
         return this.selectionModule.getCheckedrecords();
@@ -3711,7 +3661,7 @@ var TreeGrid = /** @__PURE__ @class */ (function (_super) {
     /**
      * Expands or collapse child records
      * @return {string}
-     * @hidden
+  
      */
     TreeGrid.prototype.expandCollapseRequest = function (target) {
         if (this.rowTemplate) {
@@ -3905,6 +3855,7 @@ var TreeGrid = /** @__PURE__ @class */ (function (_super) {
                 displayAction = 'table-row';
                 if (!isChild) {
                     record.expanded = true;
+                    this.uniqueIDCollection[record.uniqueID].expanded = record.expanded;
                 }
                 var targetEle = row.getElementsByClassName('e-treegridcollapse')[0];
                 if (isNullOrUndefined(targetEle)) {
@@ -3917,6 +3868,7 @@ var TreeGrid = /** @__PURE__ @class */ (function (_super) {
                 displayAction = 'none';
                 if (!isChild) {
                     record.expanded = false;
+                    this.uniqueIDCollection[record.uniqueID].expanded = record.expanded;
                 }
                 var targetEle = row.getElementsByClassName('e-treegridexpand')[0];
                 if (isNullOrUndefined(targetEle)) {
@@ -4118,7 +4070,7 @@ var TreeGrid = /** @__PURE__ @class */ (function (_super) {
         }
     };
     /**
-     * @hidden
+
      */
     TreeGrid.prototype.addListener = function () {
         this.on('updateResults', this.updateResultModel, this);
@@ -4127,7 +4079,7 @@ var TreeGrid = /** @__PURE__ @class */ (function (_super) {
         this.dataResults = returnResult;
     };
     /**
-     * @hidden
+
      */
     TreeGrid.prototype.removeListener = function () {
         if (this.isDestroyed) {
@@ -4164,7 +4116,7 @@ var TreeGrid = /** @__PURE__ @class */ (function (_super) {
      * @param  {string} field - Defines column field name to remove filter.
      * @param  {boolean} isClearFilterBar -  Specifies whether the filter bar value needs to be cleared.
      * @return {void}
-     * @hidden
+  
      */
     TreeGrid.prototype.removeFilteredColsByField = function (field, isClearFilterBar) {
         this.grid.removeFilteredColsByField(field, isClearFilterBar);
@@ -4241,7 +4193,7 @@ var TreeGrid = /** @__PURE__ @class */ (function (_super) {
         return this.grid.getMovableRows();
     };
     /**
-     * @hidden
+  
      */
     TreeGrid.prototype.getFrozenColumns = function () {
         return this.getFrozenCount(this.columns, 0);
@@ -4275,7 +4227,7 @@ var TreeGrid = /** @__PURE__ @class */ (function (_super) {
     };
     /**
      * Gets the collection of selected records.
-     * @isGenericType true
+  
      * @return {Object[]}
      */
     TreeGrid.prototype.getSelectedRecords = function () {
@@ -4630,7 +4582,7 @@ var TreeGrid = /** @__PURE__ @class */ (function (_super) {
 
 /**
  * TreeGrid Reorder module
- * @hidden
+
  */
 var Reorder$1 = /** @__PURE__ @class */ (function () {
     /**
@@ -4649,7 +4601,7 @@ var Reorder$1 = /** @__PURE__ @class */ (function () {
         return 'reorder';
     };
     /**
-     * @hidden
+
      */
     Reorder$$1.prototype.addEventListener = function () {
         this.parent.on('getColumnIndex', this.getTreeColumn, this);
@@ -4663,7 +4615,7 @@ var Reorder$1 = /** @__PURE__ @class */ (function () {
     /**
      * To destroy the Reorder
      * @return {void}
-     * @hidden
+
      */
     Reorder$$1.prototype.destroy = function () {
         this.removeEventListener();
@@ -4687,7 +4639,7 @@ var Reorder$1 = /** @__PURE__ @class */ (function () {
 
 /**
  * TreeGrid Resize module
- * @hidden
+
  */
 var Resize$1 = /** @__PURE__ @class */ (function () {
     /**
@@ -5002,7 +4954,7 @@ function updateParentRow(key, record, action, control, isSelfReference, child) {
 
 /**
  * TreeGrid RowDragAndDrop module
- * @hidden
+
  */
 var RowDD$1 = /** @__PURE__ @class */ (function () {
     /**
@@ -5010,11 +4962,8 @@ var RowDD$1 = /** @__PURE__ @class */ (function () {
      * Constructor for render module
      */
     function RowDD$$1(parent) {
-        /** @hidden */
         this.canDrop = true;
-        /** @hidden */
         this.isDraggedWithChild = false;
-        /** @hidden */
         this.isaddtoBottom = false;
         Grid.Inject(RowDD);
         this.parent = parent;
@@ -5036,7 +4985,7 @@ var RowDD$1 = /** @__PURE__ @class */ (function () {
         return record;
     };
     /**
-     * @hidden
+
      */
     RowDD$$1.prototype.addEventListener = function () {
         this.parent.on(rowdraging, this.Rowdraging, this);
@@ -5879,7 +5828,7 @@ var RowDD$1 = /** @__PURE__ @class */ (function () {
         this.removeEventListener();
     };
     /**
-     * @hidden
+
      */
     RowDD$$1.prototype.removeEventListener = function () {
         if (this.parent.isDestroyed) {
@@ -5926,7 +5875,7 @@ var __extends$9 = (undefined && undefined.__extends) || (function () {
 })();
 /**
  * RowModelGenerator is used to generate grid data rows.
- * @hidden
+
  */
 var TreeVirtualRowModelGenerator = /** @__PURE__ @class */ (function (_super) {
     __extends$9(TreeVirtualRowModelGenerator, _super);
@@ -5970,7 +5919,7 @@ var TreeVirtualRowModelGenerator = /** @__PURE__ @class */ (function (_super) {
 
 /**
  * TreeGrid Filter module will handle filtering action
- * @hidden
+
  */
 var Filter$1 = /** @__PURE__ @class */ (function () {
     /**
@@ -5995,20 +5944,20 @@ var Filter$1 = /** @__PURE__ @class */ (function () {
     /**
      * To destroy the Filter module
      * @return {void}
-     * @hidden
+
      */
     Filter$$1.prototype.destroy = function () {
         this.removeEventListener();
     };
     /**
-     * @hidden
+
      */
     Filter$$1.prototype.addEventListener = function () {
         this.parent.on('updateFilterRecs', this.updatedFilteredRecord, this);
         this.parent.on('clearFilters', this.clearFilterLevel, this);
     };
     /**
-     * @hidden
+
      */
     Filter$$1.prototype.removeEventListener = function () {
         if (this.parent.isDestroyed) {
@@ -6019,7 +5968,7 @@ var Filter$1 = /** @__PURE__ @class */ (function () {
     };
     /**
      * Function to update filtered records
-     *  @hidden
+
      */
     Filter$$1.prototype.updatedFilteredRecord = function (dataDetails) {
         setValue('uniqueIDFilterCollection', {}, this.parent);
@@ -6172,7 +6121,7 @@ var Filter$1 = /** @__PURE__ @class */ (function () {
 
 /**
  * TreeGrid Excel Export module
- * @hidden
+
  */
 var ExcelExport$1 = /** @__PURE__ @class */ (function () {
     /**
@@ -6192,7 +6141,7 @@ var ExcelExport$1 = /** @__PURE__ @class */ (function () {
         return 'ExcelExport';
     };
     /**
-     * @hidden
+
      */
     ExcelExport$$1.prototype.addEventListener = function () {
         this.parent.on('updateResults', this.updateExcelResultModel, this);
@@ -6201,13 +6150,13 @@ var ExcelExport$1 = /** @__PURE__ @class */ (function () {
     /**
      * To destroy the Excel Export
      * @return {void}
-     * @hidden
+
      */
     ExcelExport$$1.prototype.destroy = function () {
         this.removeEventListener();
     };
     /**
-     * @hidden
+
      */
     ExcelExport$$1.prototype.removeEventListener = function () {
         if (this.parent.isDestroyed) {
@@ -6299,7 +6248,7 @@ var ExcelExport$1 = /** @__PURE__ @class */ (function () {
     };
     /**
      * TreeGrid Excel Export cell modifier
-     * @hidden
+
      */
     ExcelExport$$1.prototype.excelQueryCellInfo = function (args) {
         if (this.parent.grid.getColumnIndexByUid(args.column.uid) === this.parent.treeColumnIndex) {
@@ -6321,7 +6270,7 @@ var ExcelExport$1 = /** @__PURE__ @class */ (function () {
 
 /**
  * TreeGrid PDF Export module
- * @hidden
+
  */
 var PdfExport$1 = /** @__PURE__ @class */ (function () {
     /**
@@ -6341,14 +6290,14 @@ var PdfExport$1 = /** @__PURE__ @class */ (function () {
         return 'PdfExport';
     };
     /**
-     * @hidden
+
      */
     PdfExport$$1.prototype.addEventListener = function () {
         this.parent.on('pdfCellInfo', this.pdfQueryCellInfo, this);
         this.parent.on('updateResults', this.updatePdfResultModel, this);
     };
     /**
-     * @hidden
+
      */
     PdfExport$$1.prototype.removeEventListener = function () {
         if (this.parent.isDestroyed) {
@@ -6360,7 +6309,7 @@ var PdfExport$1 = /** @__PURE__ @class */ (function () {
     /**
      * To destroy the PDF Export
      * @return {void}
-     * @hidden
+
      */
     PdfExport$$1.prototype.destroy = function () {
         this.removeEventListener();
@@ -6449,7 +6398,7 @@ var PdfExport$1 = /** @__PURE__ @class */ (function () {
     };
     /**
      * TreeGrid PDF Export cell modifier
-     * @hidden
+
      */
     PdfExport$$1.prototype.pdfQueryCellInfo = function (args) {
         if (this.parent.grid.getColumnIndexByUid(args.column.uid) === this.parent.treeColumnIndex) {
@@ -6468,7 +6417,7 @@ var PdfExport$1 = /** @__PURE__ @class */ (function () {
 
 /**
  * The `Page` module is used to render pager and handle paging action.
- * @hidden
+
  */
 var Page$1 = /** @__PURE__ @class */ (function () {
     function Page$$1(parent) {
@@ -6477,14 +6426,14 @@ var Page$1 = /** @__PURE__ @class */ (function () {
         this.addEventListener();
     }
     /**
-     * @hidden
+
      */
     Page$$1.prototype.addEventListener = function () {
         this.parent.on(localPagedExpandCollapse, this.collapseExpandPagedchilds, this);
         this.parent.on(pagingActions, this.pageAction, this);
     };
     /**
-     * @hidden
+
      */
     Page$$1.prototype.removeEventListener = function () {
         if (this.parent.isDestroyed) {
@@ -6510,7 +6459,7 @@ var Page$1 = /** @__PURE__ @class */ (function () {
     /**
      * To destroy the pager
      * @return {void}
-     * @hidden
+
      */
     Page$$1.prototype.destroy = function () {
         this.removeEventListener();
@@ -6532,7 +6481,7 @@ var Page$1 = /** @__PURE__ @class */ (function () {
         this.parent.grid.pagerModule.updateExternalMessage(message);
     };
     /**
-     * @hidden
+
      */
     Page$$1.prototype.collapseExpandPagedchilds = function (rowDetails) {
         rowDetails.record.expanded = rowDetails.action === 'collapse' ? false : true;
@@ -6621,7 +6570,7 @@ var Page$1 = /** @__PURE__ @class */ (function () {
 
 /**
  * Toolbar Module for TreeGrid
- * @hidden
+
  */
 var Toolbar$1 = /** @__PURE__ @class */ (function () {
     function Toolbar$$1(parent) {
@@ -6637,14 +6586,14 @@ var Toolbar$1 = /** @__PURE__ @class */ (function () {
         return 'toolbar';
     };
     /**
-     * @hidden
+
      */
     Toolbar$$1.prototype.addEventListener = function () {
         this.parent.on(rowSelected, this.refreshToolbar, this);
         this.parent.on(toolbarClick, this.toolbarClickHandler, this);
     };
     /**
-     * @hidden
+
      */
     Toolbar$$1.prototype.removeEventListener = function () {
         if (this.parent.isDestroyed) {
@@ -6724,7 +6673,7 @@ var Toolbar$1 = /** @__PURE__ @class */ (function () {
     /**
      * Gets the toolbar of the TreeGrid.
      * @return {Element}
-     * @hidden
+
      */
     Toolbar$$1.prototype.getToolbar = function () {
         return this.parent.grid.toolbarModule.getToolbar();
@@ -6734,7 +6683,7 @@ var Toolbar$1 = /** @__PURE__ @class */ (function () {
      * @param {string[]} items - Defines the collection of itemID of ToolBar items.
      * @param {boolean} isEnable - Defines the items to be enabled or disabled.
      * @return {void}
-     * @hidden
+
      */
     Toolbar$$1.prototype.enableItems = function (items, isEnable) {
         this.parent.grid.toolbarModule.enableItems(items, isEnable);
@@ -6752,7 +6701,7 @@ var Toolbar$1 = /** @__PURE__ @class */ (function () {
 
 /**
  * TreeGrid Aggregate module
- * @hidden
+
  */
 var Aggregate$1 = /** @__PURE__ @class */ (function () {
     /**
@@ -6778,7 +6727,7 @@ var Aggregate$1 = /** @__PURE__ @class */ (function () {
     };
     /**
      * Function to calculate summary values
-     *  @hidden
+
      */
     Aggregate$$1.prototype.calculateSummaryValue = function (summaryQuery, filteredData, isSort) {
         this.summaryQuery = summaryQuery;
@@ -6949,7 +6898,7 @@ var Aggregate$1 = /** @__PURE__ @class */ (function () {
     /**
      * To destroy the Aggregate module
      * @return {void}
-     * @hidden
+
      */
     Aggregate$$1.prototype.destroy = function () {
         this.removeEventListener();
@@ -6959,7 +6908,7 @@ var Aggregate$1 = /** @__PURE__ @class */ (function () {
 
 /**
  * Internal dataoperations for TreeGrid
- * @hidden
+
  */
 var Sort$1 = /** @__PURE__ @class */ (function () {
     function Sort$$1(grid) {
@@ -6979,14 +6928,14 @@ var Sort$1 = /** @__PURE__ @class */ (function () {
         return 'sort';
     };
     /**
-     * @hidden
+  
      */
     Sort$$1.prototype.addEventListener = function () {
         this.parent.on('updateModel', this.updateModel, this);
         this.parent.on('createSort', this.createdSortedRecords, this);
     };
     /**
-     * @hidden
+  
      */
     Sort$$1.prototype.removeEventListener = function () {
         if (this.parent.isDestroyed) {
@@ -7037,7 +6986,7 @@ var Sort$1 = /** @__PURE__ @class */ (function () {
     /**
      * The function used to update sortSettings of TreeGrid.
      * @return {void}
-     * @hidden
+  
      */
     Sort$$1.prototype.updateModel = function () {
         this.parent.setProperties({ sortSettings: getActualProperties(this.parent.grid.sortSettings) }, true);
@@ -7063,7 +7012,7 @@ var Sort$1 = /** @__PURE__ @class */ (function () {
 
 /**
  * TreeGrid ColumnMenu module
- * @hidden
+
  */
 var ColumnMenu$1 = /** @__PURE__ @class */ (function () {
     /**
@@ -7091,7 +7040,7 @@ var ColumnMenu$1 = /** @__PURE__ @class */ (function () {
 
 /**
  * ContextMenu Module for TreeGrid
- * @hidden
+
  */
 var ContextMenu$1 = /** @__PURE__ @class */ (function () {
     function ContextMenu$$1(parent) {
@@ -7100,14 +7049,14 @@ var ContextMenu$1 = /** @__PURE__ @class */ (function () {
         this.addEventListener();
     }
     /**
-     * @hidden
+
      */
     ContextMenu$$1.prototype.addEventListener = function () {
         this.parent.on('contextMenuOpen', this.contextMenuOpen, this);
         this.parent.on('contextMenuClick', this.contextMenuClick, this);
     };
     /**
-     * @hidden
+
      */
     ContextMenu$$1.prototype.removeEventListener = function () {
         if (this.parent.isDestroyed) {
@@ -7190,7 +7139,7 @@ var Edit$1 = /** @__PURE__ @class */ (function () {
         return 'edit';
     };
     /**
-     * @hidden
+
      */
     Edit$$1.prototype.addEventListener = function () {
         this.parent.on(crudAction, this.crudAction, this);
@@ -7205,6 +7154,8 @@ var Edit$1 = /** @__PURE__ @class */ (function () {
         this.parent.on('actionBegin', this.editActionEvents, this);
         this.parent.on('actionComplete', this.editActionEvents, this);
         this.parent.grid.on(doubleTap, this.recordDoubleClick, this);
+        this.parent.grid.on('dblclick', this.gridDblClick, this);
+        this.parent.grid.on('click', this.gridSingleClick, this);
         this.parent.on('savePreviousRowPosition', this.savePreviousRowPosition, this);
         // this.parent.on(events.beforeDataBound, this.beforeDataBound, this);
         // this.parent.on(events.cellSaved, this.cellSaved, this);
@@ -7217,6 +7168,17 @@ var Edit$1 = /** @__PURE__ @class */ (function () {
         this.parent.grid.on(beforeBatchCancel, this.beforeBatchCancel, this);
         //this.parent.grid.on(events.batchEditFormRendered, this.batchEditFormRendered, this);
     };
+    Edit$$1.prototype.gridDblClick = function (e) {
+        this.doubleClickTarget = e.target;
+    };
+    Edit$$1.prototype.gridSingleClick = function (e) {
+        var targetElement = e.target;
+        if (targetElement && this.parent.grid.isEdit && (targetElement.classList.contains('e-treegridexpand') ||
+            targetElement.classList.contains('e-treegridcollapse'))) {
+            this.parent.grid.closeEdit();
+            return;
+        }
+    };
     Edit$$1.prototype.beforeStartEdit = function (args) {
         this.parent.trigger(actionBegin, args);
     };
@@ -7227,7 +7189,7 @@ var Edit$1 = /** @__PURE__ @class */ (function () {
       this.parent.trigger(events.actionComplete, args);
     }*/
     /**
-     * @hidden
+
      */
     Edit$$1.prototype.removeEventListener = function () {
         if (this.parent.isDestroyed) {
@@ -7248,18 +7210,20 @@ var Edit$1 = /** @__PURE__ @class */ (function () {
         this.parent.off('savePreviousRowPosition', this.savePreviousRowPosition);
         this.parent.grid.off(beforeStartEdit, this.beforeStartEdit);
         this.parent.grid.off(beforeBatchCancel, this.beforeBatchCancel);
+        this.parent.grid.off('dblclick', this.gridDblClick);
+        this.parent.grid.off('click', this.gridSingleClick);
         //this.parent.grid.off(events.batchEditFormRendered, this.batchEditFormRendered);
     };
     /**
      * To destroy the editModule
      * @return {void}
-     * @hidden
+
      */
     Edit$$1.prototype.destroy = function () {
         this.removeEventListener();
     };
     /**
-     * @hidden
+
      */
     Edit$$1.prototype.applyFormValidation = function (cols) {
         this.parent.grid.editModule.applyFormValidation(cols);
@@ -7291,7 +7255,6 @@ var Edit$1 = /** @__PURE__ @class */ (function () {
     };
     Edit$$1.prototype.recordDoubleClick = function (args) {
         var target = args.target;
-        this.doubleClickTarget = target;
         if (isNullOrUndefined(target.closest('td.e-rowcell'))) {
             return;
         }
@@ -7763,7 +7726,7 @@ var Edit$1 = /** @__PURE__ @class */ (function () {
         return this.parent.grid.editModule.editFormValidate();
     };
     /**
-     * @hidden
+
      */
     Edit$$1.prototype.destroyForm = function () {
         this.parent.grid.editModule.destroyForm();
@@ -7793,7 +7756,7 @@ var Edit$1 = /** @__PURE__ @class */ (function () {
 
 /**
  * Command Column Module for TreeGrid
- * @hidden
+
  */
 var CommandColumn$1 = /** @__PURE__ @class */ (function () {
     function CommandColumn$$1(parent) {
@@ -7820,7 +7783,7 @@ var CommandColumn$1 = /** @__PURE__ @class */ (function () {
 
 /**
  * TreeGrid Detail Row module
- * @hidden
+
  */
 var DetailRow$1 = /** @__PURE__ @class */ (function () {
     function DetailRow$$1(parent) {
@@ -7829,7 +7792,7 @@ var DetailRow$1 = /** @__PURE__ @class */ (function () {
         this.addEventListener();
     }
     /**
-     * @hidden
+  
      */
     /**
      * For internal use only - Get the module name.
@@ -7846,7 +7809,7 @@ var DetailRow$1 = /** @__PURE__ @class */ (function () {
         this.parent.on('actioncomplete', this.actioncomplete, this);
     };
     /**
-     * @hidden
+  
      */
     DetailRow$$1.prototype.removeEventListener = function () {
         if (this.parent.isDestroyed) {
@@ -8149,7 +8112,7 @@ var __extends$10 = (undefined && undefined.__extends) || (function () {
 })();
 /**
  * TreeGrid Virtual Scroll module will handle Virtualization
- * @hidden
+
  */
 var VirtualScroll$1 = /** @__PURE__ @class */ (function () {
     /**
@@ -8173,14 +8136,14 @@ var VirtualScroll$1 = /** @__PURE__ @class */ (function () {
         return 'virtualScroll';
     };
     /**
-     * @hidden
+
      */
     VirtualScroll$$1.prototype.addEventListener = function () {
         this.parent.on(localPagedExpandCollapse, this.collapseExpandVirtualchilds, this);
         this.parent.on(pagingActions, this.virtualPageAction, this);
     };
     /**
-     * @hidden
+
      */
     VirtualScroll$$1.prototype.removeEventListener = function () {
         if (this.parent.isDestroyed) {
@@ -8263,7 +8226,7 @@ var VirtualScroll$1 = /** @__PURE__ @class */ (function () {
     /**
      * To destroy the virtualScroll module
      * @return {void}
-     * @hidden
+
      */
     VirtualScroll$$1.prototype.destroy = function () {
         this.removeEventListener();
@@ -8301,7 +8264,7 @@ var TreeVirtual = /** @__PURE__ @class */ (function (_super) {
 
 /**
  * TreeGrid Freeze module
- * @hidden
+
  */
 var Freeze$1 = /** @__PURE__ @class */ (function () {
     /**
@@ -8327,11 +8290,32 @@ var Freeze$1 = /** @__PURE__ @class */ (function () {
     };
     Freeze$$1.prototype.rowExpandCollapse = function (args) {
         var movableRows = this.parent.getMovableDataRows();
-        var frozenrows = movableRows.filter(function (e) {
-            return e.classList.contains('e-gridrowindex' + args.record.index + 'level' + (args.record.level + 1));
-        });
-        for (var i = 0; i < frozenrows.length; i++) {
-            frozenrows[i].style.display = args.action;
+        var frozenrows = this.parent.getRows();
+        var rows;
+        if (!args.detailrows.length) {
+            rows = movableRows.filter(function (e) {
+                return e.classList.contains('e-gridrowindex' + args.record.index + 'level' + (args.record.level + 1));
+            });
+        }
+        else {
+            rows = args.detailrows;
+        }
+        for (var i = 0; i < rows.length; i++) {
+            var rData = this.parent.grid.getRowObjectFromUID(rows[i].getAttribute('data-Uid')).data;
+            rows[i].style.display = args.action;
+            var queryselector = args.action === 'none' ? '.e-treecolumn-container .e-treegridcollapse'
+                : '.e-treecolumn-container .e-treegridexpand';
+            if (frozenrows[rows[i].rowIndex].querySelector(queryselector)) {
+                var cRow = [];
+                for (var i_1 = 0; i_1 < movableRows.length; i_1++) {
+                    if (movableRows[i_1].classList.contains('e-gridrowindex' + rData.index + 'level' + (rData.level + 1))) {
+                        cRow.push(movableRows[i_1]);
+                    }
+                }
+                if (cRow.length) {
+                    this.rowExpandCollapse({ detailrows: cRow, action: args.action });
+                }
+            }
         }
     };
     Freeze$$1.prototype.dblClickHandler = function (e) {

@@ -377,7 +377,7 @@ var Axis = /** @__PURE__ @class */ (function (_super) {
     function Axis() {
         /**
          * Specifies the minimum value of an axis.
-         * @default 0
+    
          */
         var _this = _super !== null && _super.apply(this, arguments) || this;
         /** @private */
@@ -2120,8 +2120,7 @@ var GaugeTooltip = /** @__PURE__ @class */ (function () {
             });
         }
         else {
-            clearTimeout(this.clearTimeout);
-            this.clearTimeout = setTimeout(this.removeTooltip.bind(this), 2000);
+            this.removeTooltip();
         }
     };
     GaugeTooltip.prototype.getTooltipPosition = function () {
@@ -2325,7 +2324,7 @@ var LinearGauge = /** @__PURE__ @class */ (function (_super) {
     /**
      * @private
      * Constructor for creating the widget
-     * @hidden
+
      */
     function LinearGauge(options, element) {
         var _this = _super.call(this, options, element) || this;
@@ -2486,7 +2485,6 @@ var LinearGauge = /** @__PURE__ @class */ (function (_super) {
         height = (this.availableSize.height - y - this.margin.bottom);
         width = (this.availableSize.width - this.margin.left - this.margin.right);
         this.actualRect = { x: x, y: y, width: width, height: height };
-        this.renderArea();
         if (this.title) {
             this.titleStyle.fontFamily = this.themeStyle.fontFamily || this.titleStyle.fontFamily;
             this.titleStyle.size = this.themeStyle.fontSize || this.titleStyle.size;

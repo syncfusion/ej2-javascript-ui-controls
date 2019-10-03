@@ -33,7 +33,7 @@ export class RadioButton extends Component<HTMLInputElement> implements INotifyP
     /**
      * Event trigger when the RadioButton state has been changed by user interaction.
      * @event
-     * @blazorProperty 'ValueChange'
+
      */
     @Event()
     public change: EmitType<ChangeArgs>;
@@ -41,7 +41,7 @@ export class RadioButton extends Component<HTMLInputElement> implements INotifyP
     /**
      * Triggers once the component rendering is completed.
      * @event
-     * @blazorProperty 'Created'
+
      */
     @Event()
     public created: EmitType<Event>;
@@ -49,7 +49,7 @@ export class RadioButton extends Component<HTMLInputElement> implements INotifyP
     /**
      * Specifies a value that indicates whether the RadioButton is `checked` or not.
      * When set to `true`, the RadioButton will be in `checked` state.
-     * @default false
+
      */
     @Property(false)
     public checked: boolean;
@@ -57,7 +57,7 @@ export class RadioButton extends Component<HTMLInputElement> implements INotifyP
     /**
      * Defines class/multiple classes separated by a space in the RadioButton element.
      * You can add custom styles to the RadioButton by using this property.
-     * @default ''
+
      */
     @Property('')
     public cssClass: string;
@@ -65,14 +65,14 @@ export class RadioButton extends Component<HTMLInputElement> implements INotifyP
     /**
      * Specifies a value that indicates whether the RadioButton is `disabled` or not.
      * When set to `true`, the RadioButton will be in `disabled` state.
-     * @default false
+
      */
     @Property(false)
     public disabled: boolean;
 
     /**
      * Defines the caption for the RadioButton, that describes the purpose of the RadioButton.
-     * @default ''
+
      */
     @Property('')
     public label: string;
@@ -82,7 +82,7 @@ export class RadioButton extends Component<HTMLInputElement> implements INotifyP
      * The possible values are:
      * * Before: The label is positioned to left of the RadioButton.
      * * After: The label is positioned to right of the RadioButton.
-     * @default 'After'
+
      */
     @Property('After')
     public labelPosition: RadioLabelPosition;
@@ -90,7 +90,7 @@ export class RadioButton extends Component<HTMLInputElement> implements INotifyP
     /**
      * Defines `name` attribute for the RadioButton.
      * It is used to reference form data (RadioButton value) after a form is submitted.
-     * @default ''
+
      */
     @Property('')
     public name: string;
@@ -98,7 +98,7 @@ export class RadioButton extends Component<HTMLInputElement> implements INotifyP
     /**
      * Defines `value` attribute for the RadioButton.
      * It is a form data passed to the server when submitting the form.
-     * @default ''
+
      */
     @Property('')
     public value: string;

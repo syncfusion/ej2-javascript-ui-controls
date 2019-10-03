@@ -1775,7 +1775,6 @@ var DashboardLayout = /** @__PURE__ @class */ (function (_super) {
         this.dimensions = [];
         this.allItems = [];
         this.oldRowCol = {};
-        this.isDynamicallyUpdated = false;
         this.availableClasses = [];
         this.setOldRowCol();
         this.calculateCellSize();
@@ -3508,6 +3507,7 @@ var DashboardLayout = /** @__PURE__ @class */ (function (_super) {
                     preventDefault: false,
                     clone: false,
                     dragArea: this.element,
+                    isDragScroll: true,
                     handle: this.draggableHandle ? this.draggableHandle : '.e-panel',
                     abort: '.e-resize',
                     dragStart: this.onDraggingStart.bind(this),
@@ -4200,24 +4200,16 @@ var DashboardLayout = /** @__PURE__ @class */ (function (_super) {
                     this.setProperties({ allowPushing: newProp.allowPushing }, true);
                     break;
                 case 'panels':
-                    if (!this.isDynamicallyUpdated) {
+                    if (!newProp.columns) {
                         this.isRenderComplete = false;
                         this.updatePanelsDynamically(newProp.panels);
                         this.isRenderComplete = true;
-                        this.isDynamicallyUpdated = true;
-                    }
-                    else {
-                        this.isDynamicallyUpdated = false;
                     }
                     break;
                 case 'columns':
                     this.isRenderComplete = false;
-                    if (newProp.panels && !this.isDynamicallyUpdated) {
+                    if (newProp.panels) {
                         this.updatePanelsDynamically(newProp.panels);
-                        this.isDynamicallyUpdated = true;
-                    }
-                    else {
-                        this.isDynamicallyUpdated = false;
                     }
                     this.setProperties({ columns: newProp.columns }, true);
                     this.panelCollection = [];

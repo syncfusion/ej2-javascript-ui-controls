@@ -15,7 +15,7 @@ export class ExternalMessage implements IRender {
      * Constructor for externalMessage module
      * @param  {Pager} pagerModule?
      * @returns defaultType
-     * @hidden
+
      */
     constructor(pagerModule?: Pager) {
         this.pagerModule = pagerModule;
@@ -31,7 +31,7 @@ export class ExternalMessage implements IRender {
 
     /**
      * The function is used to render pager externalMessage
-     * @hidden
+
      */
     public render(): void {
         this.element = createElement('div', { className: 'e-pagerexternalmsg', attrs: { 'aria-label': 'Pager external message' } });
@@ -71,7 +71,7 @@ export class ExternalMessage implements IRender {
      * To destroy the PagerMessage
      * @method destroy
      * @return {void} 
-     * @hidden 
+
      */
     public destroy(): void {
         remove(this.element);

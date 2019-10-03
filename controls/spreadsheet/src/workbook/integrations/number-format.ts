@@ -1,10 +1,9 @@
 import { Spreadsheet } from '../../spreadsheet/index';
-import { getRangeIndexes, BeforeCellFormatArgs } from '../common/index';
+import { getRangeIndexes, BeforeCellFormatArgs, NumberFormatType } from '../common/index';
 import { CellModel, SheetModel, getCell, getSheet, setCell } from '../base/index';
 import { Internationalization, getNumberDependable, getNumericObject, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { isNumber, toFraction, intToDate, toDate, dateToInt, ToDateArgs } from '../common/math';
 import { applyNumberFormatting, getFormattedCellObject, refreshCellElement, checkDateFormat, getFormattedBarText } from '../common/event';
-import { NumberFormatType } from '../common/enum';
 /**
  * Specifies number format.
  */
@@ -58,7 +57,7 @@ export class WorkbookNumberFormat {
             range: range, format: <string>args.format, requestType: 'numberFormat', value: <string>args.value
         };
         this.parent.trigger('beforeCellFormat', eventArgs);
-        if (args.format === '' || args.format === NumberFormatType.General) {
+        if (args.format === '' || args.format === 'General') {
             cell = cell ? cell : {};
             let dateEventArgs: { [key: string]: string | number | boolean } = {
                 value: <string>args.value, rowIndex: range[0], colIndex: range[1], sheetIndex: this.parent.activeSheetTab,
@@ -68,14 +67,14 @@ export class WorkbookNumberFormat {
             if (dateEventArgs.isDate) {
                 rightAlign = true;
                 cell.value = args.value = <string>dateEventArgs.updatedVal;
-                cell.format = args.format = getFormatFromType(NumberFormatType.ShortDate);
+                cell.format = args.format = getFormatFromType('ShortDate');
             } else if (dateEventArgs.isTime) {
                 rightAlign = true;
                 cell.value = args.value = <string>dateEventArgs.updatedVal;
-                cell.format = args.format = getFormatFromType(NumberFormatType.Time);
+                cell.format = args.format = getFormatFromType('Time');
             }
         }
-        args.type = args.format ? getTypeFromFormat(args.format as string) : NumberFormatType.General;
+        args.type = args.format ? getTypeFromFormat(args.format as string) : 'General';
         let result: { [key: string]: string | boolean } = this.processFormats(args, fResult, rightAlign, cell);
         if (!args.onLoad) {
             this.parent.notify(refreshCellElement, {
@@ -100,10 +99,10 @@ export class WorkbookNumberFormat {
         let intl: Internationalization = new Internationalization();
         let currencySymbol: string = getNumberDependable(this.parent.locale, 'USD');
         let result: { [key: string]: string | boolean };
-        args.format = args.format ? args.format : NumberFormatType.General;
+        args.format = args.format ? args.format : 'General';
         if (fResult !== '') {
             switch (args.type) {
-                case NumberFormatType.General:
+                case 'General':
                     result = this.autoDetectGeneralFormat({
                         args: args, currencySymbol: currencySymbol, fResult: fResult, intl: intl,
                         isRightAlign: isRightAlign, curCode: 'USD', cell: cell
@@ -111,55 +110,55 @@ export class WorkbookNumberFormat {
                     fResult = result.fResult as string;
                     isRightAlign = result.isRightAlign as boolean;
                     break;
-                case NumberFormatType.Number:
+                case 'Number':
                     if (isNumber(fResult)) {
                         fResult = this.applyNumberFormat(args, intl);
                         isRightAlign = true;
                     }
                     break;
-                case NumberFormatType.Currency:
+                case 'Currency':
                     if (isNumber(fResult)) {
                         fResult = this.currencyFormat(args, intl);
                         isRightAlign = true;
                     }
                     break;
-                case NumberFormatType.Percentage:
+                case 'Percentage':
                     if (isNumber(fResult)) {
                         fResult = this.percentageFormat(args, intl);
                         isRightAlign = true;
                     }
                     break;
-                case NumberFormatType.Accounting:
+                case 'Accounting':
                     if (isNumber(fResult)) {
                         fResult = this.accountingFormat(args, intl);
                         isRightAlign = true;
                     }
                     break;
-                case NumberFormatType.ShortDate:
+                case 'ShortDate':
                     fResult = this.shortDateFormat(args, intl);
                     isRightAlign = fResult ? true : false;
                     break;
-                case NumberFormatType.LongDate:
+                case 'LongDate':
                     fResult = this.longDateFormat(args, intl);
                     isRightAlign = fResult ? true : false;
                     break;
-                case NumberFormatType.Time:
+                case 'Time':
                     fResult = this.timeFormat(args, intl);
                     isRightAlign = fResult ? true : false;
                     break;
-                case NumberFormatType.Fraction:
+                case 'Fraction':
                     if (isNumber(fResult)) {
                         fResult = this.fractionFormat(args);
                         isRightAlign = true;
                     }
                     break;
-                case NumberFormatType.Scientific:
+                case 'Scientific':
                     if (isNumber(fResult)) {
                         fResult = this.scientificFormat(args);
                         isRightAlign = true;
                     }
                     break;
-                case NumberFormatType.Text:
+                case 'Text':
                     isRightAlign = false;
                     break;
             }
@@ -188,14 +187,14 @@ export class WorkbookNumberFormat {
             if (res.indexOf('%') > -1 && res.split('%')[0] !== '' && res.split('%')[1].trim() === '' &&
                 Number(res.split('%')[0].split(this.groupSep).join('')).toString() !== 'NaN') {
                 options.args.value = Number(res.split('%')[0].split(this.groupSep).join(''));
-                options.cell.format = options.args.format = getFormatFromType(NumberFormatType.Percentage);
+                options.cell.format = options.args.format = getFormatFromType('Percentage');
                 options.fResult = this.percentageFormat(options.args, options.intl);
                 options.cell.value = options.args.value.toString();
                 options.isRightAlign = true;
             } else if (res.indexOf(options.currencySymbol) > -1 && res.split(options.currencySymbol)[1] !== '' &&
                 Number(res.split(options.currencySymbol)[1].split(this.groupSep).join('')).toString() !== 'NaN') {
                 options.args.value = Number(res.split(options.currencySymbol)[1].split(this.groupSep).join(''));
-                options.cell.format = options.args.format = getFormatFromType(NumberFormatType.Currency);
+                options.cell.format = options.args.format = getFormatFromType('Currency');
                 options.fResult = this.currencyFormat(options.args, options.intl);
                 options.cell.value = options.args.value.toString();
                 options.isRightAlign = true;
@@ -212,7 +211,7 @@ export class WorkbookNumberFormat {
     }
 
     private applyNumberFormat(args: { [key: string]: string | number | boolean | CellModel }, intl: Internationalization): string {
-        args.format = args.format === '' ? getFormatFromType(NumberFormatType.Number) : args.format;
+        args.format = args.format === '' ? getFormatFromType('Number') : args.format;
         args.format = args.format.toString().split('_)').join(' ').split('_(').join(' ').split('[Red]').join('');
         let formatArr: string[] = args.format.toString().split(';');
         if (Number(args.value) >= 0) {
@@ -226,7 +225,7 @@ export class WorkbookNumberFormat {
     }
 
     private currencyFormat(args: { [key: string]: string | number | boolean | CellModel }, intl: Internationalization): string {
-        args.format = args.format === '' ? getFormatFromType(NumberFormatType.Currency) : args.format;
+        args.format = args.format === '' ? getFormatFromType('Currency') : args.format;
         args.format = args.format.toString().split('_(').join(' ').split('_)').join(' ').split('[Red]').join('');
         let formatArr: string[] = args.format.toString().split(';');
         if (Number(args.value) >= 0) {
@@ -241,14 +240,14 @@ export class WorkbookNumberFormat {
     }
 
     private percentageFormat(args: { [key: string]: string | number | boolean | CellModel }, intl: Internationalization): string {
-        args.format = args.format === '' ? getFormatFromType(NumberFormatType.Percentage) : args.format;
+        args.format = args.format === '' ? getFormatFromType('Percentage') : args.format;
         return intl.formatNumber(Number(args.value), {
             format: args.format as string
         });
     }
 
     private accountingFormat(args: { [key: string]: string | number | boolean | CellModel }, intl: Internationalization): string {
-        args.format = args.format === '' ? getFormatFromType(NumberFormatType.Accounting) : args.format;
+        args.format = args.format === '' ? getFormatFromType('Accounting') : args.format;
         args.format = (args.format as string).split('_(').join(' ').split('_)').join(' ').split('[Red]').join('');
         let currencySymbol: string = getNumberDependable(this.parent.locale, 'USD');
         let formatArr: string[] = (args.format as string).split(';');
@@ -269,10 +268,10 @@ export class WorkbookNumberFormat {
 
     private shortDateFormat(args: { [key: string]: string | number | boolean | CellModel }, intl: Internationalization): string {
         let shortDate: Date = intToDate(args.value as number);
-        let code: string = (args.format === '' || args.format === 'General') ? getFormatFromType(NumberFormatType.ShortDate)
+        let code: string = (args.format === '' || args.format === 'General') ? getFormatFromType('ShortDate')
             : args.format.toString();
         let dateObj: Object;
-        if (code === getFormatFromType(NumberFormatType.ShortDate)) {
+        if (code === getFormatFromType('ShortDate')) {
             code = 'M/d/yy';
             dateObj = {
                 type: 'date',
@@ -289,9 +288,9 @@ export class WorkbookNumberFormat {
 
     private longDateFormat(args: { [key: string]: string | number | boolean | CellModel }, intl: Internationalization): string {
         let longDate: Date = intToDate(args.value as number);
-        let code: string = (args.format === '' || args.format === 'General') ? getFormatFromType(NumberFormatType.LongDate)
+        let code: string = (args.format === '' || args.format === 'General') ? getFormatFromType('LongDate')
             : args.format.toString();
-        if (code === getFormatFromType(NumberFormatType.LongDate)) {
+        if (code === getFormatFromType('LongDate')) {
             code = 'EEEE, MMMM d, y';
         }
         return intl.formatDate(longDate, {
@@ -301,13 +300,13 @@ export class WorkbookNumberFormat {
     }
 
     private timeFormat(args: { [key: string]: string | number | boolean | CellModel }, intl: Internationalization): string {
-        if (!isNullOrUndefined((args.value as string).split(this.decimalSep)[1])) {
+        if (!isNullOrUndefined(args.value.toString().split(this.decimalSep)[1])) {
             args.value = parseFloat('1' + this.decimalSep + (args.value as string).split(this.decimalSep)[1]) || args.value;
         }
         let time: Date = intToDate(args.value as number);
-        let code: string = (args.format === '' || args.format === 'General') ? getFormatFromType(NumberFormatType.Time)
+        let code: string = (args.format === '' || args.format === 'General') ? getFormatFromType('Time')
             : args.format.toString();
-        if (code === getFormatFromType(NumberFormatType.Time)) {
+        if (code === getFormatFromType('Time')) {
             code = 'h:mm:ss a';
         }
         return intl.formatDate(time, {
@@ -318,7 +317,7 @@ export class WorkbookNumberFormat {
     }
 
     private scientificFormat(args: { [key: string]: string | number | boolean | CellModel }): string {
-        args.format = args.format === '' ? getFormatFromType(NumberFormatType.Scientific) : args.format;
+        args.format = args.format === '' ? getFormatFromType('Scientific') : args.format;
         let zeros: string = (args.format as string).split('+')[1];
         let prefix: number = this.findDecimalPlaces(args.format as string, 'Scientific');
         let fResult: string = Number(args.value).toExponential(prefix);
@@ -331,7 +330,7 @@ export class WorkbookNumberFormat {
     }
 
     private fractionFormat(args: { [key: string]: string | number | boolean | CellModel }): string {
-        args.format = args.format === '' ? getFormatFromType(NumberFormatType.Fraction) : args.format;
+        args.format = args.format === '' ? getFormatFromType('Fraction') : args.format;
         let suffix: string = '';
         let fractionResult: string;
         if (args.value.toString().indexOf(this.decimalSep) > -1 && isNumber(args.value as string)) {
@@ -357,7 +356,6 @@ export class WorkbookNumberFormat {
     public checkDateFormat(args: { [key: string]: string | number | boolean | CellModel }): void {
         let dateObj: ToDateArgs;
         let intl: Internationalization = new Internationalization();
-        let fCode: string;
         let value: string = !isNullOrUndefined(args.value) ? args.value.toString() : '';
         let cell: CellModel = getCell(
             <number>args.rowIndex, <number>args.colIndex,
@@ -367,12 +365,11 @@ export class WorkbookNumberFormat {
             if (!isNullOrUndefined(dateObj.dateObj) && dateObj.dateObj.toString() !== 'Invalid Date') {
                 cell = cell ? cell : {};
                 value = dateToInt(dateObj.dateObj, value.indexOf(':') > -1).toString();
-                fCode = 'short';
                 if (!cell.format || cell.format === '') {
                     if (dateObj.type === 'time') {
-                        cell.format = getFormatFromType(NumberFormatType.Time);
+                        cell.format = getFormatFromType('Time');
                     } else {
-                        cell.format = getFormatFromType(NumberFormatType.ShortDate);
+                        cell.format = getFormatFromType('ShortDate');
                     }
                 }
                 this.parent.setProperties({ 'sheets': this.parent.sheets }, true);
@@ -387,14 +384,14 @@ export class WorkbookNumberFormat {
         let type: string = getTypeFromFormat((<CellModel>args.cell) ? (<CellModel>args.cell).format : '');
         let intl: Internationalization = new Internationalization();
         let beforeText: string = <string>args.value;
-        let date: string = getFormatFromType(NumberFormatType.ShortDate);
-        let time: string = getFormatFromType(NumberFormatType.Time);
+        let date: string = getFormatFromType('ShortDate');
+        let time: string = getFormatFromType('Time');
         switch (type) {
-            case NumberFormatType.ShortDate:
-            case NumberFormatType.LongDate:
+            case 'ShortDate':
+            case 'LongDate':
                 args.value = this.shortDateFormat({ type: type, value: <string>args.value, format: date }, intl);
                 break;
-            case NumberFormatType.Time:
+            case 'Time':
                 args.value = this.shortDateFormat({ type: type, value: <string>args.value, format: date }, intl) + ' ' +
                     this.timeFormat({ type: type, value: <string>args.value, format: time }, intl);
                 break;
@@ -447,37 +444,37 @@ export class WorkbookNumberFormat {
  * To Get the number built-in format code from the number format type.
  * @param {string} type - Specifies the type of the number formatting. 
  */
-export function getFormatFromType(type: string): string {
-    let code: string = NumberFormatType.General;
+export function getFormatFromType(type: NumberFormatType): string {
+    let code: string = 'General';
     switch (type.split(' ').join('')) {
-        case NumberFormatType.Number:
+        case 'Number':
             code = '0.00';
             break;
-        case NumberFormatType.Currency:
+        case 'Currency':
             code = '$#,##0.00';
             break;
-        case NumberFormatType.Accounting:
+        case 'Accounting':
             code = '_($* #,##0.00_);_($* (#,##0.00);_($* "-"??_);_(@_)';
             break;
-        case NumberFormatType.ShortDate:
+        case 'ShortDate':
             code = 'mm-dd-yyyy';
             break;
-        case NumberFormatType.LongDate:
+        case 'LongDate':
             code = 'dddd, mmmm dd, yyyy';
             break;
-        case NumberFormatType.Time:
+        case 'Time':
             code = 'h:mm:ss AM/PM';
             break;
-        case NumberFormatType.Percentage:
+        case 'Percentage':
             code = '0.00%';
             break;
-        case NumberFormatType.Fraction:
+        case 'Fraction':
             code = '# ?/?';
             break;
-        case NumberFormatType.Scientific:
+        case 'Scientific':
             code = '0.00E+00';
             break;
-        case NumberFormatType.Text:
+        case 'Text':
             code = '@';
             break;
     }
@@ -488,49 +485,49 @@ export function getFormatFromType(type: string): string {
  * @hidden
  */
 export function getTypeFromFormat(format: string): string {
-    let code: string = NumberFormatType.General;
+    let code: string = 'General';
     switch (format) {
         case '0.00':
-            code = NumberFormatType.Number;
+            code = 'Number';
             break;
         case '$#,##0.00':
         case '$#,##0_);[Red]($#,##0)':
         case '$#,##0.00_);[Red]($#,##0.00)':
         case '$#,##0.00_);($#,##0.00)':
         case '$#,##0_);($#,##0)':
-            code = NumberFormatType.Currency;
+            code = 'Currency';
             break;
         case '_($*#,##0.00_);_($*(#,##0.00);_($*"-"??_);_(@_)':
         case '_($*#,##0.00_);_($* (#,##0.00);_($*"-"??_);_(@_)':
         case '_($* #,##0.00_);_($* (#,##0.00);_($* "-"??_);_(@_)':
-            code = NumberFormatType.Accounting;
+            code = 'Accounting';
             break;
         case 'mm-dd-yyyy':
         case 'dd-mm-yyyy':
         case 'dd-mm-yy':
         case 'mm-dd-yy':
-            code = NumberFormatType.ShortDate;
+            code = 'ShortDate';
             break;
         case 'dddd, mmmm dd, yyyy':
-            code = NumberFormatType.LongDate;
+            code = 'LongDate';
             break;
         case 'h:mm:ss AM/PM':
-            code = NumberFormatType.Time;
+            code = 'Time';
             break;
         case '0.00%':
         case '0%':
-            code = NumberFormatType.Percentage;
+            code = 'Percentage';
             break;
         case '# ?/?':
         case '# ??/??':
         case '# ???/???':
-            code = NumberFormatType.Fraction;
+            code = 'Fraction';
             break;
         case '0.00E+00':
-            code = NumberFormatType.Scientific;
+            code = 'Scientific';
             break;
         case '@':
-            code = NumberFormatType.Text;
+            code = 'Text';
             break;
     }
     return code;

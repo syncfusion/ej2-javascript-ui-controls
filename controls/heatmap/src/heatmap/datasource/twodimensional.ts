@@ -43,7 +43,9 @@ export class TwoDimensional {
         this.heatMap.maxColorValue = null;
         this.heatMap.dataMax = [];
         this.heatMap.dataMin = [];
-
+        if (this.heatMap.paletteSettings.colorGradientMode === 'Column' && xLength < yLength ) {
+            xLength = yLength;
+        }
         for (let z: number = axis[1].valueType === 'Category' ? axis[1].min : 0; z < (
             this.heatMap.paletteSettings.colorGradientMode === 'Column' ? xLength : yLength); z++) {
             let tempIndex: number = axis[0].valueType === 'Category' ? axis[0].min : 0;
@@ -57,7 +59,7 @@ export class TwoDimensional {
             if (this.heatMap.paletteSettings.colorGradientMode === 'Column' && this.heatMap.paletteSettings.type === 'Gradient') {
                 tempVariable = <number[]>extend([], tempCloneData[cloneDataIndex], null, true);
                 for (let i: number = 0; i < tempVariable.length; i++) {
-                    if (typeof (tempVariable[i]) === 'object') {
+                    if (typeof (tempVariable[i]) === 'object' && (tempVariable[i]) !== null || undefined || '') {
                         tempVariable[i] = tempVariable[i][0];
                     }
                 }
@@ -165,6 +167,9 @@ export class TwoDimensional {
     private getMinMaxValue(minVal: number, maxVal: number, tempVariable: number[]): number[] {
         let minMaxValue: number[] = [];
         if (this.heatMap.bubbleSizeWithColor) {
+            if (this.heatMap.paletteSettings.colorGradientMode !== 'Table' && this.heatMap.paletteSettings.type === 'Gradient') {
+                this.tempSizeArray = tempVariable;
+            }
             minMaxValue.push(this.getMinValue(minVal, this.tempSizeArray));
             minMaxValue.push(this.getMaxValue(maxVal, this.tempSizeArray));
             this.heatMap.minColorValue = this.getMinValue(this.heatMap.minColorValue, this.tempColorArray);

@@ -6,7 +6,7 @@ import { isEditable, getComplexFieldID, getObject } from '../base/util';
 
 /**
  * `MaskedTextBoxCellEdit` is used to handle masked input cell type editing.
- * @hidden
+
  */
 export class MaskedTextBoxCellEdit implements IEditCell {
 

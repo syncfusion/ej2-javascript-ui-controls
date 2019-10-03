@@ -18,33 +18,33 @@ const defaultType: string = 'GET';
 export class Ajax {
     /**		
      * Specifies the URL to which request to be sent.
-     * @default null		
+
      */
     public url: string;
     /**		
      * Specifies which HTTP request method to be used. For ex., GET, POST
-     * @default GET
+
      */
     public type: string;
     /**		
      * Specifies the data to be sent.
-     * @default null		
+
      */
     public data: string | Object;
     /**		 
      * A boolean value indicating whether the request should be sent asynchronous or not.
-     * @default true
+
      */
     public mode: boolean = true;
     /**		 
      * Specifies the callback for creating the XMLHttpRequest object.
-     * @default null
+
      */
     public httpRequest: XMLHttpRequest;
     /**		 
      * A boolean value indicating whether to ignore the promise reject.
      * @private
-     * @default true
+
      */
     public emitError: boolean = true;
 

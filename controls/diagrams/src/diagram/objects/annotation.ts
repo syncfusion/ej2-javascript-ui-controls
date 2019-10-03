@@ -14,20 +14,20 @@ import { randomId } from '../utility/base-util';
 export class Hyperlink extends ChildProperty<Hyperlink> {
     /**
      * Sets the fill color of the hyperlink
-     * @default 'blue'
+
      */
     @Property('blue')
     public color: string;
 
     /**
      * Defines the content for hyperlink
-     * @default ''
+
      */
     @Property('')
     public content: string;
     /**
      * Defines the link for hyperlink
-     * @default ''
+
      */
     @Property('')
     public link: string;
@@ -38,7 +38,7 @@ export class Hyperlink extends ChildProperty<Hyperlink> {
      * * Underline - Decorates the text with an underline
      * * LineThrough - Decorates the text by striking it with a line
      * * None - Text will not have any specific decoration
-     * @default 'None'
+
      */
     @Property('None')
     public textDecoration: TextDecoration;
@@ -49,21 +49,21 @@ export class Hyperlink extends ChildProperty<Hyperlink> {
 export class Annotation extends ChildProperty<Annotation> {
     /**
      * Sets the textual description of the node/connector
-     * @default ''
+
      */
     @Property('')
     public content: string;
 
     /**
      * Sets the textual description of the node/connector
-     * @default 'undefined'
+
      */
     @Property(undefined)
     public template: string | HTMLElement;
 
     /**
      * Defines the visibility of the label
-     * @default true
+
      */
     @Property(true)
     public visibility: boolean;
@@ -72,9 +72,9 @@ export class Annotation extends ChildProperty<Annotation> {
      * Enables or disables the default behaviors of the label.
      * * ReadOnly - Enables/Disables the ReadOnly Constraints
      * * InheritReadOnly - Enables/Disables the InheritReadOnly Constraints
-     * @default 'InheritReadOnly'
-     * @aspNumberEnum
-     * @blazorNumberEnum
+
+
+
      */
     @Property(AnnotationConstraints.InheritReadOnly)
     public constraints: AnnotationConstraints;
@@ -100,48 +100,48 @@ export class Annotation extends ChildProperty<Annotation> {
      * });
      * diagram.appendTo('#diagram');
      * ```
-     * @aspDefaultValueIgnore
-     * @blazorDefaultValueIgnore
-     * @default undefined
+
+
+
      */
     @Complex<HyperlinkModel>(undefined, Hyperlink)
     public hyperlink: HyperlinkModel;
 
     /**
      * Defines the unique id of the annotation
-     * @default ''
+
      */
     @Property('')
     public id: string;
 
     /**
      * Sets the width of the text
-     * @aspDefaultValueIgnore
-     * @blazorDefaultValueIgnore
-     * @default undefined
+
+
+
      */
     @Property()
     public width: number;
 
     /**
      * Sets the height of the text
-     * @aspDefaultValueIgnore
-     * @blazorDefaultValueIgnore
-     * @default undefined
+
+
+
      */
     @Property()
     public height: number;
 
     /**
      * Sets the rotate angle of the text
-     * @default 0
+
      */
     @Property(0)
     public rotateAngle: number;
 
     /**
      * Defines the appearance of the text
-     * @default new TextStyle()
+
      */
     @Complex<TextStyleModel>({ strokeWidth: 0, strokeColor: 'transparent', fill: 'transparent' }, TextStyle)
     public style: TextStyleModel;
@@ -153,7 +153,7 @@ export class Annotation extends ChildProperty<Annotation> {
      * * Right - Aligns the diagram element at the right of its immediate parent
      * * Center - Aligns the diagram element at the center of its immediate parent
      * * Auto - Aligns the diagram element based on the characteristics of its immediate parent
-     * @default 'Center'
+
      */
     @Property('Center')
     public horizontalAlignment: HorizontalAlignment;
@@ -165,21 +165,21 @@ export class Annotation extends ChildProperty<Annotation> {
      * * Bottom - Aligns the diagram element at the bottom of its immediate parent
      * * Center - Aligns the diagram element at the center of its immediate parent
      * * Auto - Aligns the diagram element based on the characteristics of its immediate parent
-     * @default 'Center'
+
      */
     @Property('Center')
     public verticalAlignment: VerticalAlignment;
 
     /**
      * Sets the space to be left between an annotation and its parent node/connector
-     * @default new Margin(0,0,0,0)
+
      */
     @Complex<MarginModel>({}, Margin)
     public margin: MarginModel;
 
     /**
      * Sets the space to be left between an annotation and its parent node/connector
-     * @default new Margin(20,20,20,20)
+
      */
     @Complex<MarginModel>({ top: undefined, bottom: undefined, left: undefined, right: undefined }, Margin)
     public dragLimit: MarginModel;
@@ -188,7 +188,7 @@ export class Annotation extends ChildProperty<Annotation> {
      * Sets the type of the annotation
      *  * Shape - Sets the annotation type as Shape
      *  * Path - Sets the annotation type as Path
-     * @default 'Shape'
+
      */
     @Property('Shape')
     public type: AnnotationTypes;
@@ -213,9 +213,9 @@ export class Annotation extends ChildProperty<Annotation> {
      * });
      * diagram.appendTo('#diagram');
      * ```
-     * @aspDefaultValueIgnore
-     * @blazorDefaultValueIgnore
-     * @default undefined
+
+
+
      */
     @Property()
     public addInfo: Object;
@@ -240,7 +240,7 @@ export class Annotation extends ChildProperty<Annotation> {
 export class ShapeAnnotation extends Annotation {
     /**
      * Sets the position of the annotation with respect to its parent bounds
-     * @default { x: 0.5, y: 0.5 }
+
      */
     @Complex<PointModel>({ x: 0.5, y: 0.5 }, Point)
     public offset: PointModel;
@@ -264,15 +264,15 @@ export class ShapeAnnotation extends Annotation {
 export class PathAnnotation extends Annotation {
     /**
      * Sets the segment offset of annotation
-     * @default 0.5
+
      */
     @Property(0.5)
     public offset: number;
     /**
      * Sets the displacement of an annotation from its actual position
-     * @aspDefaultValueIgnore
-     * @blazorDefaultValueIgnore
-     * @default undefined
+
+
+
      */
     @Complex<PointModel>({ x: 0, y: 0 }, Point)
     public displacement: PointModel;
@@ -282,14 +282,14 @@ export class PathAnnotation extends Annotation {
      *  * Center - Aligns the annotation at the center of a connector segment
      *  * Before - Aligns the annotation before a connector segment
      *  * After - Aligns the annotation after a connector segment
-     * @default Center
+
      */
     @Property('Center')
     public alignment: AnnotationAlignment;
 
     /**
      * Enable/Disable the angle based on the connector segment
-     * @default false
+
      */
     @Property(false)
     public segmentAngle: boolean;

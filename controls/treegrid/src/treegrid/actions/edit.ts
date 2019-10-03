@@ -58,7 +58,7 @@ export class Edit {
     }
 
     /**
-     * @hidden
+
      */
     public addEventListener(): void {
         this.parent.on(events.crudAction, this.crudAction, this);
@@ -73,6 +73,8 @@ export class Edit {
         this.parent.on('actionBegin', this.editActionEvents, this);
         this.parent.on('actionComplete', this.editActionEvents, this);
         this.parent.grid.on(events.doubleTap, this.recordDoubleClick, this);
+        this.parent.grid.on('dblclick', this.gridDblClick, this);
+        this.parent.grid.on('click', this.gridSingleClick, this);
         this.parent.on('savePreviousRowPosition', this.savePreviousRowPosition, this);
         // this.parent.on(events.beforeDataBound, this.beforeDataBound, this);
         // this.parent.on(events.cellSaved, this.cellSaved, this);
@@ -85,6 +87,17 @@ export class Edit {
         this.parent.grid.on(events.beforeBatchCancel, this.beforeBatchCancel, this);
         //this.parent.grid.on(events.batchEditFormRendered, this.batchEditFormRendered, this);
       }
+      private gridDblClick(e: MouseEvent): void {
+        this.doubleClickTarget = e.target as HTMLElement;
+      }
+      private gridSingleClick(e: MouseEvent): void {
+        let targetElement: Element = e.target as HTMLElement;
+        if (targetElement && this.parent.grid.isEdit && (targetElement.classList.contains('e-treegridexpand') ||
+          targetElement.classList.contains('e-treegridcollapse'))) {
+          this.parent.grid.closeEdit();
+          return;
+        }
+      }
       private beforeStartEdit(args: Object) : void {
         this.parent.trigger(events.actionBegin, args);
       }
@@ -95,7 +108,7 @@ export class Edit {
         this.parent.trigger(events.actionComplete, args);
       }*/
       /**
-       * @hidden
+
        */
     public removeEventListener(): void {
         if (this.parent.isDestroyed) { return; }
@@ -114,19 +127,21 @@ export class Edit {
         this.parent.off('savePreviousRowPosition', this.savePreviousRowPosition);
         this.parent.grid.off(events.beforeStartEdit, this.beforeStartEdit);
         this.parent.grid.off(events.beforeBatchCancel, this.beforeBatchCancel);
+        this.parent.grid.off('dblclick', this.gridDblClick);
+        this.parent.grid.off('click', this.gridSingleClick);
         //this.parent.grid.off(events.batchEditFormRendered, this.batchEditFormRendered);
       }
       /**
        * To destroy the editModule 
        * @return {void}
-       * @hidden
+
        */
       public destroy(): void {
         this.removeEventListener();
       }
 
     /**
-     * @hidden
+
      */
     public applyFormValidation(cols?: Column[]): void {
       this.parent.grid.editModule.applyFormValidation(cols);
@@ -157,7 +172,6 @@ export class Edit {
     }
     private recordDoubleClick(args: RecordDoubleClickEventArgs): void {
       let target: HTMLElement = <HTMLElement>args.target;
-      this.doubleClickTarget = target;
       if (isNullOrUndefined(target.closest('td.e-rowcell'))) {
         return;
       }
@@ -613,7 +627,7 @@ export class Edit {
     }
 
     /**
-     * @hidden
+
      */
     public destroyForm(): void {
       this.parent.grid.editModule.destroyForm();

@@ -19,56 +19,56 @@ import { ILegendRenderEventArgs } from '../model/interface';
 export class LegendSettings extends ChildProperty<LegendSettings> {
     /**
      * Specifies the height of Legend.
-     * @default ''
+
      */
     @Property('')
     public height: string;
 
     /**
      * Specifies the width of Legend.
-     * @default ''
+
      */
     @Property('')
     public width: string;
 
     /**
      * Specifies the position of Legend to render.
-     * @default 'Right'
+
      */
     @Property('Right')
     public position: LegendPosition;
 
     /**
      * Specifies whether the Legend should be visible or not.
-     * @default true
+
      */
     @Property(true)
     public visible: boolean;
 
     /**
      * Specifies the alignment of the legend
-     * @default 'Center'
+
      */
     @Property('Center')
     public alignment: Alignment;
 
     /**
      * Specifies whether the label should be visible or not.
-     * @default true
+
      */
     @Property(true)
     public showLabel: boolean;
 
     /**
      * Specifies whether the gradient pointer should be visible or not.
-     * @default true
+
      */
     @Property(true)
     public showGradientPointer: boolean;
 
     /**
      * Specifies whether smart legend should be displayed or not when palette type is fixed.
-     * @default false
+
      */
     @Property(false)
     public enableSmartLegend: boolean;
@@ -78,21 +78,21 @@ export class LegendSettings extends ChildProperty<LegendSettings> {
      * * All:  All labels are displayed.
      * * Edge: Labels will be displayed only at the edges of the legend.
      * * None: No labels are displayed.
-     * @default 'All'
+
      */
     @Property('All')
     public labelDisplayType: LabelDisplayType;
 
     /**
      * Specifies the legend label style.
-     * @default ''
+
      */
     @Complex<FontModel>(Theme.legendLabelFont, Font)
     public textStyle: FontModel;
 
     /**
      * Specifies the formatting options for the legend label.
-     * @default ''
+
      */
 
     @Property('')
@@ -100,7 +100,7 @@ export class LegendSettings extends ChildProperty<LegendSettings> {
 
     /**
      * To toggle the visibility of heatmap cells based on legend range selection
-     * @default true
+
      */
     @Property(true)
     public toggleVisibility: boolean;

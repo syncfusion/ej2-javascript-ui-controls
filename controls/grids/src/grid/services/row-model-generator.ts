@@ -9,7 +9,7 @@ import { getForeignData } from '../../grid/base/util';
 
 /**
  * RowModelGenerator is used to generate grid data rows.
- * @hidden
+
  */
 export class RowModelGenerator implements IModelGenerator<Column> {
 

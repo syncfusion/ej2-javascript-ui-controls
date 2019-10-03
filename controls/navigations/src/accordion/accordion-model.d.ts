@@ -9,21 +9,21 @@ export interface AccordionActionSettingsModel {
 
     /**
    * Specifies the type of animation.
-   * @default 'SlideDown'
-   * @aspType string
-   * @blazorType string
+
+
+
    */
     effect?: 'None' | Effect;
 
     /**
    * Specifies the duration to animate.
-   * @default 400
+
    */
     duration?: number;
 
     /**
    * Specifies the animation timing function.
-   * @default 'linear'
+
    */
     easing?: string;
 
@@ -36,13 +36,13 @@ export interface AccordionAnimationSettingsModel {
 
     /**
    * Specifies the animation to appear while collapsing the Accordion item.
-   * @default { effect: 'SlideDown', duration: 400, easing: 'linear' }
+
    */
     collapse?: AccordionActionSettingsModel;
 
     /**
    * Specifies the animation to appear while expanding the Accordion item.
-   * @default { effect: 'SlideDown', duration: 400, easing: 'linear' }
+
    */
     expand?: AccordionActionSettingsModel;
 
@@ -66,7 +66,7 @@ export interface AccordionItemModel {
      *        });
      *   accordionObj.appendTo('#accordion');
      * ```
-     * @default null
+
      */
     content?: string;
 
@@ -83,13 +83,13 @@ export interface AccordionItemModel {
      *        });
      *   accordionObj.appendTo('#accordion');
      * ```
-     * @default null
+
      */
     header?: string;
 
     /**
      * Defines single/multiple classes (separated by a space) are to be used for Accordion item customization.
-     * @default null
+
      */
     cssClass?: string;
 
@@ -109,13 +109,13 @@ export interface AccordionItemModel {
      *   content: "\e710";
      * }
      * ```
-     * @default null
+
      */
     iconCss?: string;
 
     /**
      * Sets the expand (true) or collapse (false) state of the Accordion item. By default, all the items are in a collapsed state.
-     * @default false
+
      */
     expanded?: Boolean;
 
@@ -135,38 +135,38 @@ export interface AccordionModel extends ComponentModel{
      *        });
      *   accordionObj.appendTo('#accordion');
      * ```
-     * @default []
+
      */
     items?: AccordionItemModel[];
 
     /**
      * Specifies the datasource for the accordion items.
-     * @isdatamanager false
-     * @default []
+
+
      */
     dataSource?: Object[];
 
     /**
      * Specifies the template option for accordion items.
-     * @default null
+
      */
     itemTemplate?: string;
 
     /**
      * Specifies the header title template option for accordion items.
-     * @default null
+
      */
     headerTemplate?: string;
 
     /**
      * Specifies the width of the Accordion in pixels/number/percentage. Number value is considered as pixels.
-     * @default '100%'
+
      */
     width?: string | number;
 
     /**
      * Specifies the height of the Accordion in pixels/number/percentage. Number value is considered as pixels.
-     * @default 'auto'
+
      */
     height?: string | number;
 
@@ -175,13 +175,13 @@ export interface AccordionModel extends ComponentModel{
      * The possible values are:
      * - Single: Sets to expand only one Accordion item at a time.
      * - Multiple: Sets to expand more than one Accordion item at a time.
-     * @default 'Multiple'
+
      */
     expandMode?: ExpandMode;
 
     /**
      * Specifies the animation configuration settings for expanding and collapsing the panel.
-     * @default { expand: { effect: 'SlideDown', duration: 400, easing: 'linear' },
+
      * collapse: { effect: 'SlideUp', duration: 400, easing: 'linear' }}
      */
     animation?: AccordionAnimationSettingsModel;
@@ -189,35 +189,35 @@ export interface AccordionModel extends ComponentModel{
     /**
      * The event will be fired while clicking anywhere within the Accordion.
      * @event
-     * @blazorProperty 'Clicked'
+
      */
     clicked?: EmitType<AccordionClickArgs>;
 
     /**
      * The event will be fired before the item gets collapsed/expanded.
      * @event
-     * @blazorProperty 'Expanding'
+
      */
     expanding?: EmitType<ExpandEventArgs>;
 
     /**
      * The event will be fired after the item gets collapsed/expanded.
      * @event
-     * @blazorProperty 'Expanded'
+
      */
     expanded?: EmitType<ExpandedEventArgs>;
 
     /**
      * The event will be fired once the control rendering is completed.
      * @event
-     * @blazorProperty 'Created'
+
      */
     created?: EmitType<Event>;
 
     /**
      * The event will be fired when the control gets destroyed.
      * @event
-     * @blazorProperty 'Destroyed'
+
      */
     destroyed?: EmitType<Event>;
 

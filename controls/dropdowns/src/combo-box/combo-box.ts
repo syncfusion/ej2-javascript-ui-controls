@@ -39,13 +39,13 @@ let inputObject: InputObject = {
 export class ComboBox extends DropDownList {
     /**
      * Specifies whether suggest a first matched item in input when searching. No action happens when no matches found.
-     * @default false
+
      */
     @Property(false)
     public autofill: boolean;
     /**
      * Specifies whether the component allows user defined value which does not exist in data source.    
-     * @default true
+
      */
     @Property(true)
     public allowCustom: boolean;
@@ -56,7 +56,7 @@ export class ComboBox extends DropDownList {
      * {% codeBlock src="combobox/html-attributes-api/index.ts" %}{% endcodeBlock %}
      * 
      * {% codeBlock src="combobox/html-attributes-api/index.html" %}{% endcodeBlock %}
-     * @default {}
+
      */
     @Property({})
     public htmlAttributes: { [key: string]: string; };
@@ -69,7 +69,7 @@ export class ComboBox extends DropDownList {
      * {% codeBlock src="combobox/allow-filtering-api/index.ts" %}{% endcodeBlock %}
      * 
      * {% codeBlock src="combobox/allow-filtering-api/index.html" %}{% endcodeBlock %}
-     * @default false
+
      */
     @Property(false)
     public allowFiltering: boolean;
@@ -80,7 +80,7 @@ export class ComboBox extends DropDownList {
      * {% codeBlock src="combobox/query-api/index.ts" %}{% endcodeBlock %}
      * 
      * {% codeBlock src="combobox/query-api/index.html" %}{% endcodeBlock %}
-     * @default null
+
      */
     @Property(null)
     public query: Query;
@@ -91,16 +91,16 @@ export class ComboBox extends DropDownList {
      * 
      * {% codeBlock src="combobox/index-api/index.html" %}{% endcodeBlock %}
      * 
-     * @default null
-     * @blazorType int
-     * @isBlazorNullableType true
+
+
+
      */
     @Property(null)
     public index: number;
     /**
      * Specifies whether to show or hide the clear button. 
      * When the clear button is clicked, `value`, `text`, and `index` properties are reset to null.
-     * @default true
+
      */
     @Property(true)
     public showClearButton: boolean;
@@ -108,7 +108,7 @@ export class ComboBox extends DropDownList {
      * Triggers on set a 
      * [`custom value`](../../combo-box/getting-started#custom-values) to this component.
      * @event
-     * @blazorProperty 'CustomValueSpecifier'
+
      */
     @Event()
     public customValueSpecifier: EmitType<CustomValueSpecifierEventArgs>;
@@ -117,14 +117,14 @@ export class ComboBox extends DropDownList {
      * Triggers on typing a character in the component.
      * > For more details about the filtering refer to [`Filtering`](../../combo-box/filtering) documentation.
      * @event
-     * @blazorProperty 'Filtering'
+
      */
     @Event()
     public filtering: EmitType<FilteringEventArgs>;
 
     /**
      * Not applicable to this component.
-     * @default null
+
      * @private
      */
     @Property(null)
@@ -140,16 +140,16 @@ export class ComboBox extends DropDownList {
      * 
      * {% codeBlock src="combobox/float-label-type-api/index.html" %}{% endcodeBlock %}
      * 
-     * @default Syncfusion.EJ2.Inputs.FloatLabelType.Never
-     * @aspType Syncfusion.EJ2.Inputs.FloatLabelType
-     * @isEnumeration true
-     * @blazorType Syncfusion.EJ2.Inputs.FloatLabelType
+
+
+
+
      */
     @Property('Never')
     public floatLabelType: FloatLabelType;
     /**
      * Not applicable to this component.
-     * @default null
+
      * @private
      */
     @Property(null)
@@ -764,7 +764,7 @@ export interface CustomValueSpecifierEventArgs {
     text: string;
     /**
      * Sets the text custom format data for set a `value` and `text`.
-     * @blazorType object
+
      */
     item: { [key: string]: string | Object };
 }

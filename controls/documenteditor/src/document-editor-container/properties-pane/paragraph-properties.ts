@@ -408,7 +408,6 @@ export class Paragraph {
             fields: { text: 'StyleName', value: 'StyleName' },
             open: this.updateOptions,
             change: this.selectStyleValue,
-            close: this.closeStyleValue,
             itemTemplate: '<span style="${Style}">${StyleName}</span>',
             footerTemplate: '<span class="e-de-ctnr-dropdown-ftr">' + this.localObj.getConstant('Manage Styles') + '</span>'
         });
@@ -426,12 +425,6 @@ export class Paragraph {
         this.style.dataSource = this.constructStyleDropItems(this.documentEditor.getStyles('Paragraph'));
         this.style.dataBind();
         this.onSelectionChange();
-    }
-    private closeStyleValue = (args: any): void => {
-        if (!isNullOrUndefined(this.styleName)) {
-            this.style.value = this.styleName;
-            this.style.dataBind();
-        }
     }
     private createStyle = (): void => {
         this.style.hidePopup();

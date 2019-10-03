@@ -597,6 +597,40 @@ describe('MultiSelect', () => {
             }, 2000);
         });
     });
+
+    describe('openOnClick property in mulitselect with checkbox mode', () => {
+        let ele: HTMLElement = document.createElement('input');
+        ele.id = 'newlist';
+        let multiObj: any;
+        beforeAll(() => {
+            document.body.appendChild(ele);
+            document.body.appendChild(ele);
+        });
+        afterAll(() => {
+            if (ele) {
+                ele.remove();
+            }
+        })
+        it('openOnClick property', (done) => {
+            let multiObj = new MultiSelect({
+                dataSource: datasource2, openOnClick: false, mode: 'CheckBox', fields: { value: 'text', text: 'text' }
+            });
+            multiObj.appendTo('#newlist');
+            multiObj.showPopup();
+            setTimeout(function () {
+                mouseEventArgs.type = 'click';
+                mouseEventArgs.target = (<any>multiObj).overAllWrapper;
+                (<any>multiObj).wrapperClick(mouseEventArgs);
+                expect(document.body.contains((<any>multiObj).popupObj.element)).toBe(false);
+                keyboardEventArgs.keyCode = 70;
+                (<any>multiObj).keyDownStatus = true;
+                (<any>multiObj).KeyUp(keyboardEventArgs);
+                expect(document.body.contains((<any>multiObj).popupObj.element)).toBe(true);
+                done();
+            }, 500);
+        });
+    });
+
     // multiselect all property with checkbox.
 
     describe('Property validation on initial render', () => {

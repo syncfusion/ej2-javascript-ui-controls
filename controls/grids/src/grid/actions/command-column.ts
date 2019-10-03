@@ -12,7 +12,7 @@ import { getUid } from '../base/util';
 
 /**
  * `CommandColumn` used to handle the command column actions.
- * @hidden
+
  */
 export class CommandColumn {
 

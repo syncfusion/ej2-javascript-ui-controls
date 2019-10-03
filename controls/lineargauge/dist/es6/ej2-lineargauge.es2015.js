@@ -297,7 +297,7 @@ class Axis extends ChildProperty {
     constructor() {
         /**
          * Specifies the minimum value of an axis.
-         * @default 0
+    
          */
         super(...arguments);
         /** @private */
@@ -1979,8 +1979,7 @@ class GaugeTooltip {
             });
         }
         else {
-            clearTimeout(this.clearTimeout);
-            this.clearTimeout = setTimeout(this.removeTooltip.bind(this), 2000);
+            this.removeTooltip();
         }
     }
     getTooltipPosition() {
@@ -2169,7 +2168,7 @@ let LinearGauge = class LinearGauge extends Component {
     /**
      * @private
      * Constructor for creating the widget
-     * @hidden
+
      */
     constructor(options, element) {
         super(options, element);
@@ -2329,7 +2328,6 @@ let LinearGauge = class LinearGauge extends Component {
         height = (this.availableSize.height - y - this.margin.bottom);
         width = (this.availableSize.width - this.margin.left - this.margin.right);
         this.actualRect = { x: x, y: y, width: width, height: height };
-        this.renderArea();
         if (this.title) {
             this.titleStyle.fontFamily = this.themeStyle.fontFamily || this.titleStyle.fontFamily;
             this.titleStyle.size = this.themeStyle.fontSize || this.titleStyle.size;

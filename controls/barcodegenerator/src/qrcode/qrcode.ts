@@ -25,13 +25,13 @@ export class QRCodeGenerator extends Component<HTMLElement> implements INotifyPr
 
     /**
      * Defines the height of the QR code model.
-     * @default '100%'
+
      */
     @Property('100%')
     public height: string | number;
     /**
      * Defines the width of the QR code model.
-     * @default '100%'
+
      */
     @Property('100%')
     public width: string | number;
@@ -40,7 +40,7 @@ export class QRCodeGenerator extends Component<HTMLElement> implements INotifyPr
      * Defines the QR code rendering mode.
      * * SVG - Renders the bar-code objects as SVG elements
      * * Canvas - Renders the bar-code in a canvas
-     * @default 'SVG'
+
      */
     @Property('SVG')
     public mode: RenderingMode;
@@ -53,18 +53,18 @@ export class QRCodeGenerator extends Component<HTMLElement> implements INotifyPr
 
     /**
      * Defines the error correction level of the QR code.
-     * @blazorDefaultValueIgnore
-     * @aspDefaultValueIgnore
-     * @aspNumberEnum 
-     * @blazorNumberEnum
-     * @default undefined
+
+
+
+
+
      */
     @Property()
     public errorCorrectionLevel: ErrorCorrectionLevel;
 
     /**
      * Defines the margin properties for the QR code.
-     * @default ''
+
      */
     @Complex<MarginModel>({}, Margin)
     public margin: MarginModel;
@@ -72,7 +72,7 @@ export class QRCodeGenerator extends Component<HTMLElement> implements INotifyPr
 
     /**
      * Defines the background color of the QR code.
-     * @default 'white'
+
      */
     @Property('white')
     public backgroundColor: string;
@@ -86,25 +86,25 @@ export class QRCodeGenerator extends Component<HTMLElement> implements INotifyPr
 
     /**
      * Defines the forecolor of the QR code.
-     * @default 'black'
+
      */
     @Property('black')
     public foreColor: string;
 
     /**
      * Defines the text properties for the QR code.
-     * @default ''
+
      */
     @Complex<DisplayTextModel>({}, DisplayText)
     public displayText: DisplayTextModel;
 
     /**
      * * Defines the version of the QR code.
-     * @aspDefaultValueIgnore
-     * @blazorNumberEnum
-     * @blazorDefaultValueIgnore
-     * @aspNumberEnum 
-     * @default undefined
+
+
+
+
+
      */
     @Property()
     public version: QRCodeVersion;
@@ -122,7 +122,7 @@ export class QRCodeGenerator extends Component<HTMLElement> implements INotifyPr
 
     /**
      * Defines the type of barcode to be rendered.
-     * @default undefined
+
      */
     @Property(undefined)
     public value: string;

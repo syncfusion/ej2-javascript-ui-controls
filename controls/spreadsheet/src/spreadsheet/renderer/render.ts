@@ -69,7 +69,7 @@ export class Render {
             address = this.parent.scrollSettings.enableVirtualization ? this.getAddress(args.rowIndex, args.colIndex) :
                 `A1:${getCellAddress(sheet.rowCount - 1, sheet.colCount - 1)}`;
         }
-        this.parent.trigger(beforeDataBound, {});
+        if (args.refresh === 'All') { this.parent.trigger(beforeDataBound, {}); }
         setAriaOptions(this.parent.getMainContent() as HTMLElement, { busy: true });
         this.parent.getData(`${sheetName}!${address}`).then((values: Map<string, CellModel>): void => {
             let lastCellIdx: number = getCellIndexes(address.split(':')[1])[1];

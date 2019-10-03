@@ -4,7 +4,7 @@ import { Column } from '../models/column';
 
 /**
  * Edit render module is used to render grid edit row.
- * @hidden
+
  */
 export class BatchEditRender {
     //Internal variables              

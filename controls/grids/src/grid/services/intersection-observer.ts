@@ -5,7 +5,7 @@ import { InterSection } from '../base/interface';
 export type ScrollDirection = 'up' | 'down' | 'right' | 'left';
 /**
  * InterSectionObserver - class watch whether it enters the viewport.
- * @hidden
+
  */
 export class InterSectionObserver {
     private containerRect: ClientRect;

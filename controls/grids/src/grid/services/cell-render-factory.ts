@@ -5,7 +5,7 @@ import { CellType } from '../base/enum';
 
 /**
  * CellRendererFactory
- * @hidden
+
  */
 export class CellRendererFactory {
 

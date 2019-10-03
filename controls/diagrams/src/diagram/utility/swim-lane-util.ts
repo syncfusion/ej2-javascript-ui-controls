@@ -27,6 +27,9 @@ import { ClipBoardObject } from '../interaction/command-manager';
 
 /** @private */
 export function initSwimLane(grid: GridPanel, diagram: Diagram, node: NodeModel): void {
+    if (!node.width && (node.shape as SwimLane).phases.length === 0) {
+        node.width = 100;
+    }
     let row: RowDefinition[] = []; let columns: ColumnDefinition[] = [];
     let index: number = 0; let shape: SwimLaneModel = node.shape as SwimLaneModel;
     let orientation: boolean = shape.orientation === 'Horizontal' ? true : false;
@@ -292,6 +295,10 @@ export function initGridColumns(columns: ColumnDefinition[], orientation: boolea
             if (k === shape.lanes.length - 1 && totalWidth < object.width) {
                 cols.width += object.width - totalWidth;
             }
+            columns.push(cols);
+        }
+        if ((shape.phases.length === 0 || shape.lanes.length === 0)) {
+            cols = createColumn(object.width);
             columns.push(cols);
         }
     } else {

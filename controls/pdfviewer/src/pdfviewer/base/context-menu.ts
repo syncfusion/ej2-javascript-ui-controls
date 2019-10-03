@@ -4,7 +4,7 @@ import { PdfViewer, PdfViewerBase } from '../index';
 
 /**
  * ContextMenu module is used to handle the context menus used in the control.
- * @hidden
+
  */
 export class ContextMenu {
 
@@ -84,7 +84,7 @@ export class ContextMenu {
         let target: HTMLElement = args.event.target as HTMLElement;
         this.currentTarget = target;
         // tslint:disable-next-line:max-line-length
-        if (this.pdfViewer.annotationModule.freeTextAnnotationModule && this.pdfViewer.annotationModule.freeTextAnnotationModule.isInuptBoxInFocus && target.className === 'free-text-input' && target.tagName === 'TEXTAREA') {
+        if (this.pdfViewer.annotationModule && this.pdfViewer.annotationModule.freeTextAnnotationModule && this.pdfViewer.annotationModule.freeTextAnnotationModule.isInuptBoxInFocus && target.className === 'free-text-input' && target.tagName === 'TEXTAREA') {
             this.pdfViewerBase.isFreeTextContextMenu = true;
         }
         // tslint:disable-next-line:max-line-length

@@ -1,9 +1,9 @@
-import { Base, Browser, ChildProperty, Collection, Complex, Component, Event as Event$1, EventHandler, Internationalization, L10n, NotifyPropertyChanges, Property, addClass, attributes, closest, detach, extend, formatUnit, getComponent, getDefaultDateObject, getNumberDependable, getNumericObject, getValue, isNullOrUndefined, isUndefined, merge, remove, removeClass, rippleEffect, setStyleAttribute } from '@syncfusion/ej2-base';
-import { DataManager, Deferred, Query } from '@syncfusion/ej2-data';
+import { Base, Browser, ChildProperty, Collection, Complex, Component, Event as Event$1, EventHandler, Internationalization, L10n, NotifyPropertyChanges, Property, addClass, attributes, closest, detach, enableRipple, extend, formatUnit, getComponent, getDefaultDateObject, getNumberDependable, getNumericObject, getUniqueID, getValue, isNullOrUndefined, isUndefined, merge, remove, removeClass, rippleEffect, setStyleAttribute } from '@syncfusion/ej2-base';
+import { DataManager, DataUtil, Deferred, Query } from '@syncfusion/ej2-data';
 import { ContextMenu, Header, Item, Menu, MenuItem, Tab, Toolbar } from '@syncfusion/ej2-navigations';
 import { DropDownButton, SplitButton } from '@syncfusion/ej2-splitbuttons';
 import { Dialog, calculatePosition, createSpinner, hideSpinner, isCollide, showSpinner } from '@syncfusion/ej2-popups';
-import { Button } from '@syncfusion/ej2-buttons';
+import { Button, CheckBox, RadioButton } from '@syncfusion/ej2-buttons';
 import { ColorPicker } from '@syncfusion/ej2-inputs';
 import { AutoComplete, ComboBox, DropDownList } from '@syncfusion/ej2-dropdowns';
 import { ListView } from '@syncfusion/ej2-lists';
@@ -249,6 +249,16 @@ const openFailure = 'openFailure';
 const sheetCreated = 'sheetCreated';
 /** @hidden */
 const sheetsDestroyed = 'sheetsDestroyed';
+/** @hidden */
+const aggregateComputation = 'aggregateComputation';
+/** @hidden */
+const beforeSort = 'beforeSort';
+/** @hidden */
+const initiateSort = 'initiateSort';
+/** @hidden */
+const sortComplete = 'sortComplete';
+/** @hidden */
+const validateSortRange = 'validateSortRange';
 
 /**
  * @hidden
@@ -352,24 +362,6 @@ function toDate(text, intl) {
 }
 
 /**
- * Specifies the number format types in Spreadsheet.
- */
-var NumberFormatType;
-(function (NumberFormatType) {
-    NumberFormatType["General"] = "General";
-    NumberFormatType["Number"] = "Number";
-    NumberFormatType["Currency"] = "Currency";
-    NumberFormatType["Accounting"] = "Accounting";
-    NumberFormatType["ShortDate"] = "ShortDate";
-    NumberFormatType["LongDate"] = "LongDate";
-    NumberFormatType["Time"] = "Time";
-    NumberFormatType["Percentage"] = "Percentage";
-    NumberFormatType["Fraction"] = "Fraction";
-    NumberFormatType["Scientific"] = "Scientific";
-    NumberFormatType["Text"] = "Text";
-})(NumberFormatType || (NumberFormatType = {}));
-
-/**
  * Specifies number format.
  */
 class WorkbookNumberFormat {
@@ -416,7 +408,7 @@ class WorkbookNumberFormat {
             range: range, format: args.format, requestType: 'numberFormat', value: args.value
         };
         this.parent.trigger('beforeCellFormat', eventArgs);
-        if (args.format === '' || args.format === NumberFormatType.General) {
+        if (args.format === '' || args.format === 'General') {
             cell = cell ? cell : {};
             let dateEventArgs = {
                 value: args.value, rowIndex: range[0], colIndex: range[1], sheetIndex: this.parent.activeSheetTab,
@@ -426,15 +418,15 @@ class WorkbookNumberFormat {
             if (dateEventArgs.isDate) {
                 rightAlign = true;
                 cell.value = args.value = dateEventArgs.updatedVal;
-                cell.format = args.format = getFormatFromType(NumberFormatType.ShortDate);
+                cell.format = args.format = getFormatFromType('ShortDate');
             }
             else if (dateEventArgs.isTime) {
                 rightAlign = true;
                 cell.value = args.value = dateEventArgs.updatedVal;
-                cell.format = args.format = getFormatFromType(NumberFormatType.Time);
+                cell.format = args.format = getFormatFromType('Time');
             }
         }
-        args.type = args.format ? getTypeFromFormat(args.format) : NumberFormatType.General;
+        args.type = args.format ? getTypeFromFormat(args.format) : 'General';
         let result = this.processFormats(args, fResult, rightAlign, cell);
         if (!args.onLoad) {
             this.parent.notify(refreshCellElement, {
@@ -456,10 +448,10 @@ class WorkbookNumberFormat {
         let intl = new Internationalization();
         let currencySymbol = getNumberDependable(this.parent.locale, 'USD');
         let result;
-        args.format = args.format ? args.format : NumberFormatType.General;
+        args.format = args.format ? args.format : 'General';
         if (fResult !== '') {
             switch (args.type) {
-                case NumberFormatType.General:
+                case 'General':
                     result = this.autoDetectGeneralFormat({
                         args: args, currencySymbol: currencySymbol, fResult: fResult, intl: intl,
                         isRightAlign: isRightAlign, curCode: 'USD', cell: cell
@@ -467,55 +459,55 @@ class WorkbookNumberFormat {
                     fResult = result.fResult;
                     isRightAlign = result.isRightAlign;
                     break;
-                case NumberFormatType.Number:
+                case 'Number':
                     if (isNumber(fResult)) {
                         fResult = this.applyNumberFormat(args, intl);
                         isRightAlign = true;
                     }
                     break;
-                case NumberFormatType.Currency:
+                case 'Currency':
                     if (isNumber(fResult)) {
                         fResult = this.currencyFormat(args, intl);
                         isRightAlign = true;
                     }
                     break;
-                case NumberFormatType.Percentage:
+                case 'Percentage':
                     if (isNumber(fResult)) {
                         fResult = this.percentageFormat(args, intl);
                         isRightAlign = true;
                     }
                     break;
-                case NumberFormatType.Accounting:
+                case 'Accounting':
                     if (isNumber(fResult)) {
                         fResult = this.accountingFormat(args, intl);
                         isRightAlign = true;
                     }
                     break;
-                case NumberFormatType.ShortDate:
+                case 'ShortDate':
                     fResult = this.shortDateFormat(args, intl);
                     isRightAlign = fResult ? true : false;
                     break;
-                case NumberFormatType.LongDate:
+                case 'LongDate':
                     fResult = this.longDateFormat(args, intl);
                     isRightAlign = fResult ? true : false;
                     break;
-                case NumberFormatType.Time:
+                case 'Time':
                     fResult = this.timeFormat(args, intl);
                     isRightAlign = fResult ? true : false;
                     break;
-                case NumberFormatType.Fraction:
+                case 'Fraction':
                     if (isNumber(fResult)) {
                         fResult = this.fractionFormat(args);
                         isRightAlign = true;
                     }
                     break;
-                case NumberFormatType.Scientific:
+                case 'Scientific':
                     if (isNumber(fResult)) {
                         fResult = this.scientificFormat(args);
                         isRightAlign = true;
                     }
                     break;
-                case NumberFormatType.Text:
+                case 'Text':
                     isRightAlign = false;
                     break;
             }
@@ -545,7 +537,7 @@ class WorkbookNumberFormat {
             if (res.indexOf('%') > -1 && res.split('%')[0] !== '' && res.split('%')[1].trim() === '' &&
                 Number(res.split('%')[0].split(this.groupSep).join('')).toString() !== 'NaN') {
                 options.args.value = Number(res.split('%')[0].split(this.groupSep).join(''));
-                options.cell.format = options.args.format = getFormatFromType(NumberFormatType.Percentage);
+                options.cell.format = options.args.format = getFormatFromType('Percentage');
                 options.fResult = this.percentageFormat(options.args, options.intl);
                 options.cell.value = options.args.value.toString();
                 options.isRightAlign = true;
@@ -553,7 +545,7 @@ class WorkbookNumberFormat {
             else if (res.indexOf(options.currencySymbol) > -1 && res.split(options.currencySymbol)[1] !== '' &&
                 Number(res.split(options.currencySymbol)[1].split(this.groupSep).join('')).toString() !== 'NaN') {
                 options.args.value = Number(res.split(options.currencySymbol)[1].split(this.groupSep).join(''));
-                options.cell.format = options.args.format = getFormatFromType(NumberFormatType.Currency);
+                options.cell.format = options.args.format = getFormatFromType('Currency');
                 options.fResult = this.currencyFormat(options.args, options.intl);
                 options.cell.value = options.args.value.toString();
                 options.isRightAlign = true;
@@ -568,7 +560,7 @@ class WorkbookNumberFormat {
         return zeros.substr(0, suffixLen < 0 ? 0 : suffixLen) + resultSuffix;
     }
     applyNumberFormat(args, intl) {
-        args.format = args.format === '' ? getFormatFromType(NumberFormatType.Number) : args.format;
+        args.format = args.format === '' ? getFormatFromType('Number') : args.format;
         args.format = args.format.toString().split('_)').join(' ').split('_(').join(' ').split('[Red]').join('');
         let formatArr = args.format.toString().split(';');
         if (Number(args.value) >= 0) {
@@ -582,7 +574,7 @@ class WorkbookNumberFormat {
         });
     }
     currencyFormat(args, intl) {
-        args.format = args.format === '' ? getFormatFromType(NumberFormatType.Currency) : args.format;
+        args.format = args.format === '' ? getFormatFromType('Currency') : args.format;
         args.format = args.format.toString().split('_(').join(' ').split('_)').join(' ').split('[Red]').join('');
         let formatArr = args.format.toString().split(';');
         if (Number(args.value) >= 0) {
@@ -597,13 +589,13 @@ class WorkbookNumberFormat {
         });
     }
     percentageFormat(args, intl) {
-        args.format = args.format === '' ? getFormatFromType(NumberFormatType.Percentage) : args.format;
+        args.format = args.format === '' ? getFormatFromType('Percentage') : args.format;
         return intl.formatNumber(Number(args.value), {
             format: args.format
         });
     }
     accountingFormat(args, intl) {
-        args.format = args.format === '' ? getFormatFromType(NumberFormatType.Accounting) : args.format;
+        args.format = args.format === '' ? getFormatFromType('Accounting') : args.format;
         args.format = args.format.split('_(').join(' ').split('_)').join(' ').split('[Red]').join('');
         let currencySymbol = getNumberDependable(this.parent.locale, 'USD');
         let formatArr = args.format.split(';');
@@ -625,10 +617,10 @@ class WorkbookNumberFormat {
     }
     shortDateFormat(args, intl) {
         let shortDate = intToDate(args.value);
-        let code = (args.format === '' || args.format === 'General') ? getFormatFromType(NumberFormatType.ShortDate)
+        let code = (args.format === '' || args.format === 'General') ? getFormatFromType('ShortDate')
             : args.format.toString();
         let dateObj;
-        if (code === getFormatFromType(NumberFormatType.ShortDate)) {
+        if (code === getFormatFromType('ShortDate')) {
             code = 'M/d/yy';
             dateObj = {
                 type: 'date',
@@ -645,9 +637,9 @@ class WorkbookNumberFormat {
     }
     longDateFormat(args, intl) {
         let longDate = intToDate(args.value);
-        let code = (args.format === '' || args.format === 'General') ? getFormatFromType(NumberFormatType.LongDate)
+        let code = (args.format === '' || args.format === 'General') ? getFormatFromType('LongDate')
             : args.format.toString();
-        if (code === getFormatFromType(NumberFormatType.LongDate)) {
+        if (code === getFormatFromType('LongDate')) {
             code = 'EEEE, MMMM d, y';
         }
         return intl.formatDate(longDate, {
@@ -656,13 +648,13 @@ class WorkbookNumberFormat {
         });
     }
     timeFormat(args, intl) {
-        if (!isNullOrUndefined(args.value.split(this.decimalSep)[1])) {
+        if (!isNullOrUndefined(args.value.toString().split(this.decimalSep)[1])) {
             args.value = parseFloat('1' + this.decimalSep + args.value.split(this.decimalSep)[1]) || args.value;
         }
         let time = intToDate(args.value);
-        let code = (args.format === '' || args.format === 'General') ? getFormatFromType(NumberFormatType.Time)
+        let code = (args.format === '' || args.format === 'General') ? getFormatFromType('Time')
             : args.format.toString();
-        if (code === getFormatFromType(NumberFormatType.Time)) {
+        if (code === getFormatFromType('Time')) {
             code = 'h:mm:ss a';
         }
         return intl.formatDate(time, {
@@ -672,7 +664,7 @@ class WorkbookNumberFormat {
         });
     }
     scientificFormat(args) {
-        args.format = args.format === '' ? getFormatFromType(NumberFormatType.Scientific) : args.format;
+        args.format = args.format === '' ? getFormatFromType('Scientific') : args.format;
         let zeros = args.format.split('+')[1];
         let prefix = this.findDecimalPlaces(args.format, 'Scientific');
         let fResult = Number(args.value).toExponential(prefix);
@@ -685,7 +677,7 @@ class WorkbookNumberFormat {
         return fResult;
     }
     fractionFormat(args) {
-        args.format = args.format === '' ? getFormatFromType(NumberFormatType.Fraction) : args.format;
+        args.format = args.format === '' ? getFormatFromType('Fraction') : args.format;
         let suffix = '';
         let fractionResult;
         if (args.value.toString().indexOf(this.decimalSep) > -1 && isNumber(args.value)) {
@@ -718,10 +710,10 @@ class WorkbookNumberFormat {
                 value = dateToInt(dateObj.dateObj, value.indexOf(':') > -1).toString();
                 if (!cell.format || cell.format === '') {
                     if (dateObj.type === 'time') {
-                        cell.format = getFormatFromType(NumberFormatType.Time);
+                        cell.format = getFormatFromType('Time');
                     }
                     else {
-                        cell.format = getFormatFromType(NumberFormatType.ShortDate);
+                        cell.format = getFormatFromType('ShortDate');
                     }
                 }
                 this.parent.setProperties({ 'sheets': this.parent.sheets }, true);
@@ -735,14 +727,14 @@ class WorkbookNumberFormat {
         let type = getTypeFromFormat(args.cell ? args.cell.format : '');
         let intl = new Internationalization();
         let beforeText = args.value;
-        let date = getFormatFromType(NumberFormatType.ShortDate);
-        let time = getFormatFromType(NumberFormatType.Time);
+        let date = getFormatFromType('ShortDate');
+        let time = getFormatFromType('Time');
         switch (type) {
-            case NumberFormatType.ShortDate:
-            case NumberFormatType.LongDate:
+            case 'ShortDate':
+            case 'LongDate':
                 args.value = this.shortDateFormat({ type: type, value: args.value, format: date }, intl);
                 break;
-            case NumberFormatType.Time:
+            case 'Time':
                 args.value = this.shortDateFormat({ type: type, value: args.value, format: date }, intl) + ' ' +
                     this.timeFormat({ type: type, value: args.value, format: time }, intl);
                 break;
@@ -790,36 +782,36 @@ class WorkbookNumberFormat {
  * @param {string} type - Specifies the type of the number formatting.
  */
 function getFormatFromType(type) {
-    let code = NumberFormatType.General;
+    let code = 'General';
     switch (type.split(' ').join('')) {
-        case NumberFormatType.Number:
+        case 'Number':
             code = '0.00';
             break;
-        case NumberFormatType.Currency:
+        case 'Currency':
             code = '$#,##0.00';
             break;
-        case NumberFormatType.Accounting:
+        case 'Accounting':
             code = '_($* #,##0.00_);_($* (#,##0.00);_($* "-"??_);_(@_)';
             break;
-        case NumberFormatType.ShortDate:
+        case 'ShortDate':
             code = 'mm-dd-yyyy';
             break;
-        case NumberFormatType.LongDate:
+        case 'LongDate':
             code = 'dddd, mmmm dd, yyyy';
             break;
-        case NumberFormatType.Time:
+        case 'Time':
             code = 'h:mm:ss AM/PM';
             break;
-        case NumberFormatType.Percentage:
+        case 'Percentage':
             code = '0.00%';
             break;
-        case NumberFormatType.Fraction:
+        case 'Fraction':
             code = '# ?/?';
             break;
-        case NumberFormatType.Scientific:
+        case 'Scientific':
             code = '0.00E+00';
             break;
-        case NumberFormatType.Text:
+        case 'Text':
             code = '@';
             break;
     }
@@ -829,49 +821,49 @@ function getFormatFromType(type) {
  * @hidden
  */
 function getTypeFromFormat(format) {
-    let code = NumberFormatType.General;
+    let code = 'General';
     switch (format) {
         case '0.00':
-            code = NumberFormatType.Number;
+            code = 'Number';
             break;
         case '$#,##0.00':
         case '$#,##0_);[Red]($#,##0)':
         case '$#,##0.00_);[Red]($#,##0.00)':
         case '$#,##0.00_);($#,##0.00)':
         case '$#,##0_);($#,##0)':
-            code = NumberFormatType.Currency;
+            code = 'Currency';
             break;
         case '_($*#,##0.00_);_($*(#,##0.00);_($*"-"??_);_(@_)':
         case '_($*#,##0.00_);_($* (#,##0.00);_($*"-"??_);_(@_)':
         case '_($* #,##0.00_);_($* (#,##0.00);_($* "-"??_);_(@_)':
-            code = NumberFormatType.Accounting;
+            code = 'Accounting';
             break;
         case 'mm-dd-yyyy':
         case 'dd-mm-yyyy':
         case 'dd-mm-yy':
         case 'mm-dd-yy':
-            code = NumberFormatType.ShortDate;
+            code = 'ShortDate';
             break;
         case 'dddd, mmmm dd, yyyy':
-            code = NumberFormatType.LongDate;
+            code = 'LongDate';
             break;
         case 'h:mm:ss AM/PM':
-            code = NumberFormatType.Time;
+            code = 'Time';
             break;
         case '0.00%':
         case '0%':
-            code = NumberFormatType.Percentage;
+            code = 'Percentage';
             break;
         case '# ?/?':
         case '# ??/??':
         case '# ???/???':
-            code = NumberFormatType.Fraction;
+            code = 'Fraction';
             break;
         case '0.00E+00':
-            code = NumberFormatType.Scientific;
+            code = 'Scientific';
             break;
         case '@':
-            code = NumberFormatType.Text;
+            code = 'Text';
             break;
     }
     return code;
@@ -1065,24 +1057,24 @@ class DataBind {
             this.parent.notify(checkDateFormat, dateEventArgs);
             if (dateEventArgs.isDate) {
                 if (args.cell) {
-                    args.cell.format = getFormatFromType(NumberFormatType.ShortDate);
+                    args.cell.format = getFormatFromType('ShortDate');
                     args.cell.value = dateEventArgs.updatedVal;
                 }
                 else {
                     args.args.sheet.rows[args.rowIndex]
-                        .cells[args.colIndex].format = getFormatFromType(NumberFormatType.ShortDate);
+                        .cells[args.colIndex].format = getFormatFromType('ShortDate');
                     args.args.sheet.rows[args.rowIndex]
                         .cells[args.colIndex].value = dateEventArgs.updatedVal;
                 }
             }
             else if (dateEventArgs.isTime) {
                 if (args.cell) {
-                    args.cell.format = getFormatFromType(NumberFormatType.Time);
+                    args.cell.format = getFormatFromType('Time');
                     args.cell.value = dateEventArgs.updatedVal;
                 }
                 else {
                     args.args.sheet.rows[args.rowIndex]
-                        .cells[args.colIndex].format = getFormatFromType(NumberFormatType.Time);
+                        .cells[args.colIndex].format = getFormatFromType('Time');
                     args.args.sheet.rows[args.rowIndex]
                         .cells[args.colIndex].value = dateEventArgs.updatedVal;
                 }
@@ -1435,8 +1427,8 @@ class WorkbookSave extends SaveWorker {
     updateBasicSettings() {
         let jsonStr = this.getStringifyObject(this.parent, ['sheets', '_isScalar', 'observers', 'closed', 'isStopped', 'hasError',
             '__isAsync', 'beforeCellFormat', 'beforeCellRender', 'beforeDataBound', 'beforeOpen', 'beforeSave', 'beforeSelect',
-            'cellEdit', 'cellEditing', 'cellSave', 'contextMenuBeforeClose', 'contextMenuBeforeOpen', 'created', 'dataBound',
-            'fileItemSelect', 'fileMenuBeforeClose', 'fileMenuBeforeOpen', 'openFailure', 'saveComplete', 'select']);
+            'cellEdit', 'cellEditing', 'cellSave', 'contextMenuItemSelect', 'contextMenuBeforeClose', 'contextMenuBeforeOpen', 'created',
+            'dataBound', 'fileItemSelect', 'fileMenuBeforeClose', 'fileMenuBeforeOpen', 'openFailure', 'saveComplete', 'select']);
         let basicSettings = JSON.parse(jsonStr);
         let sheetCount = this.parent.sheets.length;
         if (sheetCount) {
@@ -1942,6 +1934,9 @@ class BasicFormulas {
             {
                 formulaName: 'MATCH', category: 'Lookup & Reference',
                 description: 'Returns the relative position of an checked item in range that matches a specified value in a specified order'
+            },
+            {
+                formulaName: 'RANDBETWEEN', category: 'Math & Trig', description: 'Returns an integer random number in a specified range.'
             }
         ];
         this.isConcat = false;
@@ -2508,7 +2503,10 @@ class BasicFormulas {
     }
     /** @hidden */
     ComputeRAND(...args) {
-        if (isNullOrUndefined(args) || (args.length === 1 && args[0] === '')) {
+        if (args.length === 1 && args[0] === '') {
+            args.length = 0;
+        }
+        if (args.length > 0) {
             return this.parent.formulaErrorStrings[FormulasErrorsStrings.wrong_number_arguments];
         }
         return Math.random().toString();
@@ -2989,6 +2987,55 @@ class BasicFormulas {
         }
         return result;
     }
+    /** @hidden */
+    ComputeRANDBETWEEN(...range) {
+        let argsLength = range.length;
+        let min;
+        let max;
+        let argVal;
+        if (argsLength !== 2) {
+            return this.parent.formulaErrorStrings[FormulasErrorsStrings.wrong_number_arguments];
+        }
+        for (let i = 0; i < argsLength; i++) {
+            if (range[i] === '') {
+                return this.parent.getErrorStrings()[CommonErrors.na];
+            }
+            if (range[i].indexOf(this.parent.tic) > -1) {
+                if (isNaN(parseFloat(range[i].split(this.parent.tic).join('')))) {
+                    return this.parent.getErrorStrings()[CommonErrors.value];
+                }
+                else {
+                    range[i] = range[i].split(this.parent.tic).join('');
+                }
+            }
+            argVal = parseFloat(this.parent.getValueFromArg(range[i]));
+            if (!this.parent.isCellReference(range[i])) {
+                if (isNaN(argVal)) {
+                    return this.parent.getErrorStrings()[CommonErrors.name];
+                }
+                i === 0 ? min = argVal : max = argVal;
+            }
+            else {
+                argVal = this.parent.getValueFromArg(range[i]) === '' ? 0 : argVal;
+                i === 0 ? min = argVal : max = argVal;
+                if (min === 0 && max === 0) {
+                    return '0';
+                }
+                if (isNaN(argVal)) {
+                    return this.parent.getErrorStrings()[CommonErrors.value];
+                }
+            }
+        }
+        if (max < min) {
+            return this.parent.getErrorStrings()[CommonErrors.num];
+        }
+        if (min === 0) {
+            return Math.floor(Math.random() * (max - (min - 1))) + min;
+        }
+        else {
+            return max - min === 1 ? Math.round((Math.random() * (max - min)) + min) : Math.floor(Math.random() * (max - (min - 1))) + min;
+        }
+    }
     getModuleName() {
         return 'basic-formulas';
     }
@@ -3281,7 +3328,7 @@ class Parser {
                     }
                     if (formula[i] === '-') {
                         form = form + formula[i];
-                        form = form.split('--').join('+').split('++').join('+').split('+-').join('-').split('-').join('-');
+                        form = form.split('++').join('+').split('+-').join('-').split('-').join('-');
                     }
                     i = i + 1;
                 }
@@ -3313,10 +3360,20 @@ class Parser {
         }
         sheet.sheetNameToToken.forEach((value, key) => {
             if (sheet.sheetNameToToken.get(key).toString() === token) {
+                let s = this.emptyStr;
                 this.parent.namedRanges.forEach((value, key) => {
-                    scopedRange = (this.parent.namedRanges.get(key)).toUpperCase();
-                    b = text.toUpperCase().replace(key.toUpperCase(), scopedRange);
-                    return b;
+                    /* tslint:disable-next-line:no-any */
+                    if (!isNullOrUndefined(this.parent.parentObject)) {
+                        /* tslint:disable-next-line:no-any */
+                        s = (this.parent.parentObject.getActiveSheet().name + this.sheetToken + text).toUpperCase();
+                    }
+                    else {
+                        s = sheet.sheetNameToToken.get(key).toUpperCase();
+                    }
+                    if (this.parent.getNamedRanges().has(s)) {
+                        scopedRange = (this.parent.getNamedRanges().get(s)).toUpperCase();
+                        b = scopedRange;
+                    }
                 });
             }
         });
@@ -4141,23 +4198,25 @@ class Parser {
                 text = 'A' + this.parent.colIndex(text);
             }
             if (this.parent.namedRanges.size > 0 && this.parent.namedRanges.has(text.toUpperCase())) {
-                // if (!isNullOrUndefined(this.parentObject) && this.parentObject.pluginName == "ejSpreadsheet") {
-                //     text = this.parse(this.namedRanges.get(text.toUpperCase()));
-                // }
-                //else {
-                text = this.parse(this.parent.namedRanges.get(text.toUpperCase()));
-                text = this.parent.setTokensForSheets(text);
-                if (text.indexOf(this.fixedReference) > -1) {
-                    text.split(this.fixedReference).join(this.emptyStr);
+                /* tslint:disable-next-line:no-any */
+                if (!isNullOrUndefined(this.parent.parentObject)) {
+                    text = this.parse(this.parent.namedRanges.get(text.toUpperCase()));
+                }
+                else {
+                    text = this.parse(this.parent.namedRanges.get(text.toUpperCase()));
+                    text = this.parent.setTokensForSheets(text);
+                    if (text.indexOf(this.fixedReference) > -1) {
+                        text.split(this.fixedReference).join(this.emptyStr);
+                    }
+                    this.findNamedRange = true;
                 }
             }
-            this.findNamedRange = true;
-        }
-        if (this.findNamedRange) {
-            if (text[0] !== '!' && text[0] !== 'q' && text[0] !== 'bq') {
-                text = this.parent.setTokensForSheets(text);
-                if (text.indexOf(this.fixedReference) > -1) {
-                    text = text.split(this.fixedReference).join(this.emptyStr);
+            if (this.findNamedRange) {
+                if (text[0] !== '!' && text[0] !== 'q' && text[0] !== 'bq') {
+                    text = this.parent.setTokensForSheets(text);
+                    if (text.indexOf(this.fixedReference) > -1) {
+                        text = text.split(this.fixedReference).join(this.emptyStr);
+                    }
                 }
             }
         }
@@ -4222,6 +4281,7 @@ let Calculate = Calculate_1 = class Calculate extends Base {
         this.rightBracket = String.fromCharCode(161);
         /** @hidden */
         this.leftBracket = String.fromCharCode(162);
+        /** @hidden */
         this.sheetToken = '!';
         this.emptyString = '';
         this.leftBrace = '{';
@@ -4247,6 +4307,15 @@ let Calculate = Calculate_1 = class Calculate extends Base {
         this.minValue = Number.MIN_SAFE_INTEGER;
         this.maxValue = Number.MAX_SAFE_INTEGER;
         this.categoryCollection = ['All'];
+        this.dependencyLevel = 0;
+        this.refreshedCells = new Map();
+        this.computedValues = null;
+        /** @hidden */
+        this.randomValues = new Map();
+        /** @hidden */
+        this.isRandomVal = false;
+        /** @hidden */
+        this.randCollection = [];
         /**
          * @hidden
          */
@@ -4773,6 +4842,9 @@ let Calculate = Calculate_1 = class Calculate extends Base {
         else {
             return this.emptyString;
         }
+    }
+    getNamedRanges() {
+        return this.namedRanges;
     }
     /**
      * Adds a named range to the NamedRanges collection.
@@ -5545,7 +5617,7 @@ let Calculate = Calculate_1 = class Calculate extends Base {
             }
         }
         catch (ex) {
-            if (this.getErrorStrings().indexOf(ex) > -1) {
+            if (this.getErrorStrings().indexOf(ex) > -1 || this.formulaErrorStrings.indexOf(ex) > -1) {
                 throw ex;
             }
             throw new FormulaError(this.formulaErrorStrings[FormulasErrorsStrings.invalid_expression]);
@@ -6145,6 +6217,9 @@ let Calculate = Calculate_1 = class Calculate extends Base {
         }
         let saveCell = (this.cell === '' || this.cell === null) ? '' : this.cell;
         this.cell = val;
+        if (saveCell === this.cell) {
+            throw this.formulaErrorStrings[FormulasErrorsStrings.circular_reference];
+        }
         let cValue = this.getParentCellValue(row, col, this.grid);
         this.grid = grid;
         this.cell = saveCell;
@@ -6209,13 +6284,39 @@ let Calculate = Calculate_1 = class Calculate extends Base {
     valueChanged(grid, changeArgs, isCalculate) {
         let pgrid = grid;
         this.grid = grid;
-        let isComputedValueChanged = false;
+        let isComputedValueChanged = true;
         let isCompute = true;
         let calcFamily = this.getSheetFamilyItem(pgrid);
         let cellTxt = getAlphalabel(changeArgs.getColIndex()) + changeArgs.getRowIndex().toString();
         if (calcFamily.sheetNameToParentObject !== null && calcFamily.sheetNameToParentObject.size > 0) {
             let token = calcFamily.parentObjectToToken.get(pgrid);
             cellTxt = token + cellTxt;
+        }
+        let argVal = changeArgs.getValue().toUpperCase();
+        if (argVal.indexOf('=RAND()') > -1 || argVal.indexOf('RAND()') > -1 || argVal.indexOf('=RANDBETWEEN(') > -1 ||
+            argVal.indexOf('RANDBETWEEN(') > -1 || this.randomValues.has(cellTxt)) {
+            let randStrVal = this.randCollection.toString();
+            if (!this.randomValues.has(cellTxt)) {
+                this.randomValues.set(cellTxt, changeArgs.getValue());
+                this.randCollection.push(cellTxt);
+                this.isRandomVal = true;
+            }
+            else if (this.randomValues.has(cellTxt)) {
+                if (argVal.indexOf('=RAND()') > -1 || argVal.indexOf('RAND()') > -1 || argVal.indexOf('=RANDBETWEEN(') > -1 ||
+                    argVal.indexOf('RANDBETWEEN(') > -1) {
+                    this.randomValues.set(cellTxt, changeArgs.getValue());
+                }
+                else if (changeArgs.getValue().toUpperCase() !== this.randomValues.get(cellTxt.toUpperCase())) {
+                    this.randomValues.delete(cellTxt);
+                    randStrVal = randStrVal.split(cellTxt + this.parseArgumentSeparator).join('').split(this.parseArgumentSeparator + cellTxt).join('').split(cellTxt).join('');
+                    this.randCollection = randStrVal.split(this.parseArgumentSeparator);
+                }
+                if (this.randomValues.size === 0 && this.randCollection.length) {
+                    this.isRandomVal = false;
+                    this.randomValues.clear();
+                    this.randCollection = [];
+                }
+            }
         }
         if (changeArgs.getValue() && changeArgs.getValue()[0] === this.getFormulaCharacter()) {
             this.cell = cellTxt;
@@ -6285,10 +6386,18 @@ let Calculate = Calculate_1 = class Calculate extends Base {
                 this.clearFormulaDependentCells(cellTxt);
             }
         }
-        if (isCompute && isComputedValueChanged && this.getDependentCells().has(cellTxt)) {
-            // this.getComputedValue().clear();
-            // this.refresh(cellTxt);
+        if (isCompute && isComputedValueChanged && this.getDependentCells().has(cellTxt) &&
+            this.getDependentCells().get(cellTxt).toString() !== cellTxt) {
+            this.getComputedValue().clear();
+            this.refresh(cellTxt);
         }
+    }
+    /** @hidden */
+    getComputedValue() {
+        if (this.computedValues === null) {
+            this.computedValues = new Map();
+        }
+        return this.computedValues;
     }
     /**
      * @hidden
@@ -6498,9 +6607,47 @@ let Calculate = Calculate_1 = class Calculate extends Base {
         // this.sheetFamiliesList.clear();
         this.lFormulas.clear();
     }
+    refreshRandValues(cellRef) {
+        let rowIdx;
+        let colIdx;
+        let value;
+        let tokenRef = '';
+        let stringCollection = this.randCollection.toString();
+        let family;
+        if (this.randomValues.has(cellRef)) {
+            this.randomValues.delete(cellRef);
+            stringCollection = stringCollection.split(cellRef + this.parseArgumentSeparator).join('').split(this.parseArgumentSeparator + cellRef).join('').split(cellRef).join('');
+            if (this.randomValues.size === 0 && stringCollection === '') {
+                this.randomValues.clear();
+                this.randCollection = [];
+            }
+            else {
+                this.randCollection = stringCollection.split(this.parseArgumentSeparator);
+            }
+        }
+        for (let i = 0; i < this.randomValues.size; i++) {
+            rowIdx = this.rowIndex(this.randCollection[i]);
+            colIdx = this.colIndex(this.randCollection[i]);
+            tokenRef = (parseFloat(this.getSheetToken(this.randCollection[i]).split(this.sheetToken).join('')) + 1).toString();
+            family = this.getSheetFamilyItem(tokenRef);
+            this.grid = family.sheetNameToParentObject.get(tokenRef);
+            value = this.randomValues.get(this.randCollection[i]);
+            value = this.computeFormula(value);
+            if (this.parentObject.setValueRowCol === undefined) {
+                this.setValueRowCol(this.getSheetID(this.grid) + 1, value, rowIdx, colIdx);
+            }
+            else {
+                this.parentObject.setValueRowCol(this.getSheetID(this.grid) + 1, value, rowIdx, colIdx);
+            }
+        }
+    }
     refresh(cellRef) {
+        if (this.dependencyLevel === 0) {
+            this.refreshedCells.clear();
+        }
         if (this.getDependentCells().has(cellRef) && this.getDependentCells().get(cellRef) !== null) {
             let family = this.getSheetFamilyItem(this.grid);
+            this.dependencyLevel = this.dependencyLevel + 1;
             try {
                 let dependentCells = this.getDependentCells().get(cellRef);
                 let i;
@@ -6514,9 +6661,16 @@ let Calculate = Calculate_1 = class Calculate extends Base {
                         let rowIdx = this.rowIndex(dCell);
                         let colIdx = this.colIndex(dCell);
                         let formulaInfo = this.getFormulaInfoTable().get(dCell);
+                        let result;
                         if (formulaInfo) {
                             this.cell = dCell;
-                            let result = this.computeFormula(formulaInfo.getFormulaText());
+                            if (!this.getComputedValue().has(dCell)) {
+                                result = this.computeFormula(formulaInfo.getFormulaText());
+                                this.computedValues.set(dCell, result);
+                            }
+                            else {
+                                result = this.getComputedValue().get(dCell);
+                            }
                             formulaInfo.setFormulaValue(result);
                         }
                         if (this.parentObject.setValueRowCol === undefined) {
@@ -6524,6 +6678,10 @@ let Calculate = Calculate_1 = class Calculate extends Base {
                         }
                         else {
                             this.parentObject.setValueRowCol(this.getSheetID(this.grid) + 1, formulaInfo.getFormulaValue(), rowIdx, colIdx);
+                        }
+                        if (!this.refreshedCells.has(dCell)) {
+                            this.refreshedCells.set(dCell, []);
+                            this.refresh(dCell);
                         }
                     }
                     catch (ex) {
@@ -6533,6 +6691,10 @@ let Calculate = Calculate_1 = class Calculate extends Base {
             }
             finally {
                 this.grid = family.tokenToParentObject.get(this.getSheetToken(cellRef));
+                this.dependencyLevel--;
+                if (this.dependencyLevel === 0) {
+                    this.refreshedCells.clear();
+                }
             }
         }
     }
@@ -6724,10 +6886,12 @@ class WorkbookFormula {
     }
     addEventListener() {
         this.parent.on(workbookFormulaOperation, this.performFormulaOperation, this);
+        this.parent.on(aggregateComputation, this.aggregateComputation, this);
     }
     removeEventListener() {
         if (!this.parent.isDestroyed) {
             this.parent.off(workbookFormulaOperation, this.performFormulaOperation);
+            this.parent.off(aggregateComputation, this.aggregateComputation);
         }
     }
     /**
@@ -6742,6 +6906,7 @@ class WorkbookFormula {
         this.calculateInstance = new Calculate(this.parent);
         this.calcID = this.calculateInstance.createSheetFamilyID();
         this.calculateInstance.setTreatEmptyStringAsZero(true);
+        this.calculateInstance.grid = this.parent.getActiveSheet().id.toString();
     }
     performFormulaOperation(args) {
         let action = args.action;
@@ -6824,6 +6989,23 @@ class WorkbookFormula {
         if (isFormula) {
             let cellArgs = new ValueChangedArgs(rowIdx + 1, colIdx + 1, value);
             this.calculateInstance.valueChanged(sheetName, cellArgs, true);
+            let referenceCollection = this.calculateInstance.randCollection;
+            if (this.calculateInstance.isRandomVal === true) {
+                let rowId;
+                let colId;
+                let refValue = '';
+                if (this.calculateInstance.randomValues.size > 1 && this.calculateInstance.randomValues.size ===
+                    referenceCollection.length) {
+                    for (let i = 0; i < this.calculateInstance.randomValues.size; i++) {
+                        rowId = this.calculateInstance.rowIndex(referenceCollection[i]);
+                        colId = this.calculateInstance.colIndex(referenceCollection[i]);
+                        refValue = this.calculateInstance.randomValues.get(referenceCollection[i]);
+                        sheetName = (parseFloat(this.calculateInstance.getSheetToken(referenceCollection[i]).split(this.calculateInstance.sheetToken).join('')) + 1).toString();
+                        let tempArgs = new ValueChangedArgs(rowId, colId, refValue);
+                        this.calculateInstance.valueChanged(sheetName, tempArgs, true);
+                    }
+                }
+            }
         }
         else {
             let family = this.calculateInstance.getSheetFamilyItem(sheetName);
@@ -6837,7 +7019,9 @@ class WorkbookFormula {
                     this.calculateInstance.clearFormulaDependentCells(cellRef);
                 }
             }
+            this.calculateInstance.getComputedValue().clear();
             this.calculateInstance.refresh(cellRef);
+            this.calculateInstance.refreshRandValues(cellRef);
         }
     }
     autoCorrectFormula(formula) {
@@ -6928,6 +7112,206 @@ class WorkbookFormula {
             }
         });
         return index;
+    }
+    toFixed(value) {
+        let num = Number(value);
+        if (Math.round(num) !== num) {
+            value = num.toFixed(2);
+        }
+        return value;
+    }
+    aggregateComputation(args) {
+        let sheet = this.parent.getActiveSheet();
+        let range = sheet.selectedRange;
+        let indexes = getRangeIndexes(range.split(':')[1]);
+        if (indexes[0] + 1 === sheet.rowCount && indexes[1] + 1 === sheet.colCount) {
+            range = `A1:${getCellAddress(sheet.usedRange.rowIndex, sheet.usedRange.colIndex)}`;
+        }
+        args.Count = this.calculateInstance.getFunction('COUNTA')(range);
+        if (!args.Count) {
+            return;
+        }
+        args.Sum = this.toFixed(this.calculateInstance.getFunction('SUM')(range));
+        args.Avg = this.toFixed(this.calculateInstance.getFunction('AVERAGE')(range));
+        args.Min = this.toFixed(this.calculateInstance.getFunction('MIN')(range));
+        args.Max = this.toFixed(this.calculateInstance.getFunction('MAX')(range));
+    }
+}
+
+/**
+ * The `WorkbookSort` module is used to handle sort action in Spreadsheet.
+ */
+class WorkbookSort {
+    /**
+     * Constructor for WorkbookSort module.
+     */
+    constructor(parent) {
+        this.parent = parent;
+        this.addEventListener();
+    }
+    /**
+     * To destroy the sort module.
+     */
+    destroy() {
+        this.removeEventListener();
+        this.parent = null;
+    }
+    addEventListener() {
+        this.parent.on(initiateSort, this.initiateSortHandler, this);
+    }
+    removeEventListener() {
+        if (!this.parent.isDestroyed) {
+            this.parent.off(initiateSort, this.initiateSortHandler);
+        }
+    }
+    /**
+     * Sorts range of cells in the sheet.
+     * @param args - arguments for sorting.
+     */
+    initiateSortHandler(args) {
+        let validateArgs = {
+            range: args.range,
+            isValid: true
+        };
+        let isSingleCell = false;
+        this.parent.notify(validateSortRange, validateArgs);
+        if (!validateArgs.isValid) {
+            return;
+        }
+        let sheet = this.parent.getActiveSheet();
+        let address = args.range || sheet.selectedRange;
+        let range = getSwapRange(getIndexesFromAddress(address));
+        let sortOptions = args.sortOptions || { sortDescriptors: {}, containsHeader: true };
+        let containsHeader = sortOptions.containsHeader;
+        if (range[0] === range[2] && (range[2] - range[0]) === 0) { //if selected range is a single cell 
+            range[0] = 0;
+            range[1] = 0;
+            range[2] = sheet.usedRange.rowIndex - 1;
+            range[3] = sheet.usedRange.colIndex;
+            isSingleCell = true;
+            containsHeader = isNullOrUndefined(sortOptions.containsHeader) ? true : sortOptions.containsHeader;
+        }
+        let sRIdx = containsHeader ? range[0] + 1 : range[0];
+        if ((isNullOrUndefined(args.sortOptions) || isNullOrUndefined(args.sortOptions.containsHeader)) && !isSingleCell) {
+            if (!isNullOrUndefined(getCell(range[0], range[1], sheet)) && !isNullOrUndefined(getCell(range[0] + 1, range[1], sheet))) {
+                if (typeof getCell(range[0], range[1], sheet).value === typeof getCell(range[0] + 1, range[1], sheet).value) {
+                    sRIdx = range[0];
+                    containsHeader = false;
+                }
+                else {
+                    sRIdx = range[0] + 1;
+                    containsHeader = true;
+                }
+            }
+        }
+        let sCIdx;
+        let eCIdx;
+        let cell = getCellIndexes(sheet.activeCell);
+        let header = 'Column ' + getColumnHeaderText(cell[1] + 1);
+        let sortDescriptors = sortOptions.sortDescriptors;
+        this.getDataRange(range, sheet, containsHeader).then((jsonData) => {
+            let dataManager = new DataManager(jsonData);
+            let query = new Query();
+            if (Array.isArray(sortDescriptors)) { //multi-column sorting.
+                if (!sortDescriptors || sortDescriptors.length === 0) {
+                    sortDescriptors = [{ field: header }];
+                }
+                for (let length = sortDescriptors.length, i = length - 1; i > -1; i--) {
+                    if (!sortDescriptors[length - 1].field) {
+                        sortDescriptors[length - 1].field = header;
+                    }
+                    if (!sortDescriptors[i].field) {
+                        continue;
+                    }
+                    let comparerFn = sortDescriptors[i].sortComparer || this.sortComparer.bind(this, sortDescriptors[i]);
+                    query.sortBy(sortDescriptors[i].field, comparerFn);
+                }
+            }
+            else { //single column sorting.
+                if (!sortDescriptors) {
+                    sortDescriptors = { field: header };
+                }
+                if (!sortDescriptors.field) {
+                    sortDescriptors.field = header;
+                }
+                let comparerFn = sortDescriptors.sortComparer || this.sortComparer.bind(this, sortDescriptors);
+                query.sortBy(sortDescriptors.field, comparerFn);
+            }
+            dataManager.executeQuery(query).then((e) => {
+                let colName;
+                let cell = {};
+                Array.prototype.forEach.call(e.result, (data) => {
+                    sCIdx = range[1];
+                    eCIdx = range[3];
+                    for (sCIdx; sCIdx <= eCIdx; sCIdx++) {
+                        colName = 'Column ' + getColumnHeaderText(sCIdx + 1);
+                        cell = data[colName];
+                        setCell(sRIdx, sCIdx, sheet, cell);
+                    }
+                    sRIdx++;
+                });
+                let eventArgs = {
+                    range: getRangeAddress(range),
+                    sortOptions: sortOptions
+                };
+                this.parent.trigger('sortComplete', eventArgs);
+                this.parent.notify(sortComplete, eventArgs);
+            });
+        });
+    }
+    /**
+     * Compares the two cells for sorting.
+     * @param sortDescriptor - protocol for sorting.
+     * @param x - first cell
+     * @param y - second cell
+     */
+    sortComparer(sortDescriptor, x, y) {
+        let direction = sortDescriptor.order || '';
+        let comparer = DataUtil.fnSort(direction);
+        return comparer(x ? x.value : x, y ? y.value : y);
+    }
+    ;
+    /**
+     * Converts the range of cells to json data.
+     * @param range - range array
+     * @param sheet - model of the sheet
+     */
+    getDataRange(range, sheet, containsHeader) {
+        let jsonData = [];
+        let sRIdx = containsHeader ? range[0] + 1 : range[0];
+        let eRIdx = range[2];
+        let sCIdx;
+        let eCIdx;
+        let rowNum = 0;
+        let sheetEx = sheet;
+        let option = {
+            sheet: sheetEx, indexes: [0, 0, sheet.rowCount - 1, sheet.colCount - 1], promise: new Promise((resolve, reject) => { resolve((() => { })()); })
+        };
+        if (sheetEx.isLocalData && (range[0] === 0 || range[0] === 1) && range[2] === (sheet.rowCount - 1)) {
+            this.parent.notify('updateSheetFromDataSource', option);
+        }
+        return option.promise.then(() => {
+            for (sRIdx; sRIdx <= eRIdx; sRIdx++) {
+                sCIdx = range[1];
+                eCIdx = range[3];
+                let cells = {};
+                let colName = '';
+                for (sCIdx; sCIdx <= eCIdx; sCIdx++) {
+                    colName = 'Column ' + getColumnHeaderText(sCIdx + 1);
+                    cells[colName] = getCell(sRIdx, sCIdx, sheet);
+                    jsonData[rowNum.toString()] = cells;
+                }
+                rowNum++;
+            }
+            return jsonData;
+        });
+    }
+    /**
+     * Gets the module name.
+     * @returns string
+     */
+    getModuleName() {
+        return 'workbookSort';
     }
 }
 
@@ -7062,6 +7446,9 @@ class WorkbookEdit {
      */
     constructor(workbook) {
         this.parent = workbook;
+        this.localeObj = getNumericObject(this.parent.locale);
+        /* tslint:disable:no-any */
+        this.decimalSep = this.localeObj.decimal;
         this.addEventListener();
     }
     /**
@@ -7096,6 +7483,15 @@ class WorkbookEdit {
                 this.updateCellValue(args.address, args.value, args.sheetIndex, args.isValueOnly);
                 break;
         }
+    }
+    checkDecimalPoint(value) {
+        if (Number(value)) {
+            let decIndex = value.toString().indexOf(this.decimalSep) + 1;
+            let checkDec = value.toString().substr(decIndex).length <= 6;
+            value = checkDec ? decIndex < 7 ? value : (parseFloat(value)).toFixed(0) : decIndex > 7 ? (parseFloat(value)).toFixed(0) :
+                (parseFloat(value)).toFixed(6 - decIndex + 2);
+        }
+        return value;
     }
     updateCellValue(address, value, sheetIdx, isValueOnly = false) {
         if (!sheetIdx) {
@@ -7150,9 +7546,13 @@ class WorkbookEdit {
             }
         }
         else {
+            if (value.toString().indexOf(this.decimalSep) > -1) {
+                value = this.checkDecimalPoint(value);
+            }
             cell.value = value;
             this.parent.setProperties({ 'sheets': this.parent.sheets }, true);
         }
+        this.parent.setUsedRange(range[0], range[1]);
     }
 }
 
@@ -7170,7 +7570,7 @@ class WorkbookBasicModule {
      * @private
      */
     constructor() {
-        Workbook.Inject(DataBind, WorkbookSave, WorkbookOpen, WorkbookNumberFormat, WorkbookCellFormat, WorkbookEdit, WorkbookFormula);
+        Workbook.Inject(DataBind, WorkbookSave, WorkbookOpen, WorkbookNumberFormat, WorkbookCellFormat, WorkbookEdit, WorkbookFormula, WorkbookSort);
     }
     /**
      * For internal use only - Get the module name.
@@ -7198,7 +7598,7 @@ class WorkbookAllModule {
      * @private
      */
     constructor() {
-        Workbook.Inject(DataBind, WorkbookSave, WorkbookNumberFormat, WorkbookCellFormat, WorkbookEdit, WorkbookFormula, WorkbookOpen);
+        Workbook.Inject(DataBind, WorkbookSave, WorkbookNumberFormat, WorkbookCellFormat, WorkbookEdit, WorkbookFormula, WorkbookOpen, WorkbookSort);
     }
     /**
      * For internal use only - Get the module name.
@@ -7462,17 +7862,34 @@ __decorate$2([
 __decorate$2([
     Property(20)
 ], Row.prototype, "height", void 0);
+__decorate$2([
+    Property(false)
+], Row.prototype, "customHeight", void 0);
 /**
  * @hidden
  */
 function getRow(sheet, rowIndex) {
     return sheet.rows[rowIndex];
 }
+/** @hidden */
+function setRow(sheet, rowIndex, row) {
+    if (!sheet.rows[rowIndex]) {
+        sheet.rows[rowIndex] = {};
+    }
+    Object.keys(row).forEach((key) => {
+        sheet.rows[rowIndex][key] = row[key];
+    });
+}
 /**
  * @hidden
  */
 function getRowHeight(sheet, rowIndex) {
-    return (sheet && sheet.rows && sheet.rows[rowIndex] && sheet.rows[rowIndex].height) || 20;
+    if (sheet && sheet.rows && sheet.rows[rowIndex] && (sheet.rows[rowIndex].height || sheet.rows[rowIndex].customHeight)) {
+        return sheet.rows[rowIndex].height;
+    }
+    else {
+        return 20;
+    }
 }
 /**
  * @hidden
@@ -7519,6 +7936,9 @@ __decorate$6([
 __decorate$6([
     Property(64)
 ], Column.prototype, "width", void 0);
+__decorate$6([
+    Property(false)
+], Column.prototype, "customWidth", void 0);
 /**
  * @hidden
  */
@@ -7538,7 +7958,12 @@ function getColumn(sheet, colIndex) {
  * @hidden
  */
 function getColumnWidth(sheet, index) {
-    return (sheet && sheet.columns && sheet.columns[index] && sheet.columns[index].width) || 64;
+    if (sheet && sheet.columns && sheet.columns[index] && (sheet.columns[index].width || sheet.columns[index].customWidth)) {
+        return sheet.columns[index].width;
+    }
+    else {
+        return 64;
+    }
 }
 /**
  * @hidden
@@ -8151,6 +8576,22 @@ let Workbook = class Workbook extends Component {
         }
     }
     /**
+     * Sorts the range of cells in the active Spreadsheet.
+     * @param sortOptions - options for sorting.
+     * @param range - address of the data range.
+     */
+    sort(sortOptions, range) {
+        if (!this.allowSorting) {
+            return;
+        }
+        let eventArgs = {
+            range: range,
+            sortOptions: sortOptions,
+            cancel: false
+        };
+        this.notify(initiateSort, eventArgs);
+    }
+    /**
      * Adds the defined name to the Spreadsheet.
      * @param {DefineNameModel} definedName - Specifies the name.
      * @return {boolean} - Return the added status of the defined name.
@@ -8219,6 +8660,9 @@ __decorate([
 ], Workbook.prototype, "allowSave", void 0);
 __decorate([
     Property(true)
+], Workbook.prototype, "allowSorting", void 0);
+__decorate([
+    Property(true)
 ], Workbook.prototype, "allowNumberFormatting", void 0);
 __decorate([
     Property(true)
@@ -8249,6 +8693,12 @@ __decorate([
 ], Workbook.prototype, "saveComplete", void 0);
 __decorate([
     Event$1()
+], Workbook.prototype, "beforeSort", void 0);
+__decorate([
+    Event$1()
+], Workbook.prototype, "sortComplete", void 0);
+__decorate([
+    Event$1()
 ], Workbook.prototype, "beforeCellFormat", void 0);
 Workbook = __decorate([
     NotifyPropertyChanges
@@ -8273,6 +8723,7 @@ function getRequiredModules(context) {
     getWorkbookRequiredModules(context, modules);
     return modules;
 }
+// tslint:disable-next-line:max-func-body-length
 function pushBasicModules(context, modules) {
     modules.push({ member: 'basic', args: [] });
     modules.push({ member: 'all', args: [] });
@@ -8363,6 +8814,16 @@ function pushBasicModules(context, modules) {
     if (context.allowCellFormatting) {
         modules.push({
             member: 'cellformat',
+            args: [context]
+        });
+    }
+    if (context.allowSorting) {
+        modules.push({ member: 'sort', args: [context] });
+        modules.push({ member: 'workbookSort', args: [context] });
+    }
+    if (context.allowResizing) {
+        modules.push({
+            member: 'resize',
             args: [context]
         });
     }
@@ -8464,6 +8925,8 @@ const beforeRibbonCreate = 'beforeRibbonCreate';
 /** @hidden */
 const rowHeightChanged = 'rowHeightChanged';
 /** @hidden */
+const colWidthChanged = 'colWidthChanged';
+/** @hidden */
 const beforeHeaderLoaded = 'beforeHeaderLoaded';
 /** @hidden */
 const onContentScroll = 'onContentScroll';
@@ -8475,6 +8938,8 @@ const activeSheetChanged = 'activeSheetChanged';
 const renameSheet = 'renameSheet';
 /** @hidden */
 const enableToolbar = 'enableToolbar';
+/** @hidden */
+const initiateCustomSort = 'initiateCustomSort';
 
 /**
  * The function used to update Dom using requestAnimationFrame.
@@ -8594,17 +9059,16 @@ function inView(context, range, isModify) {
  * Position element with given range
  * @hidden
  */
-function locateElem(ele, range, sheet) {
+function locateElem(ele, range, sheet, isRtl) {
     let swapRange = getSwapRange(range);
     let cellPosition = getCellPosition(sheet, swapRange);
-    setStyleAttribute$1([{
-            element: ele, attrs: {
-                'top': swapRange[0] === 0 ? cellPosition.top : cellPosition.top - 1 + 'px',
-                'left': swapRange[1] === 0 ? cellPosition.left : cellPosition.left - 1 + 'px',
-                'height': getRowsHeight(sheet, range[0], range[2]) + (swapRange[0] === 0 ? 0 : 1) + 'px',
-                'width': getColumnsWidth(sheet, range[1], range[3]) + (swapRange[1] === 0 ? 0 : 1) + 'px'
-            }
-        }]);
+    let attrs = {
+        'top': (swapRange[0] === 0 ? cellPosition.top : cellPosition.top - 1) + 'px',
+        'height': getRowsHeight(sheet, range[0], range[2]) + (swapRange[0] === 0 ? 0 : 1) + 'px',
+        'width': getColumnsWidth(sheet, range[1], range[3]) + (swapRange[1] === 0 ? 0 : 1) + 'px'
+    };
+    attrs[isRtl ? 'right' : 'left'] = (swapRange[1] === 0 ? cellPosition.left : cellPosition.left - 1) + 'px';
+    setStyleAttribute$1([{ element: ele, attrs: attrs }]);
 }
 /**
  * To update element styles using request animation frame
@@ -8757,7 +9221,8 @@ class Clipboard {
     }
     cMenuBeforeOpenHandler(e) {
         if (e.target === 'Content' || e.target === 'Header') {
-            this.parent.enableContextMenuItems(['Paste', 'Paste Special'], this.copiedInfo ? true : false);
+            let l10n = this.parent.serviceLocator.getService(locale);
+            this.parent.enableContextMenuItems([l10n.getConstant('Paste'), l10n.getConstant('PasteSpecial')], this.copiedInfo ? true : false);
         }
     }
     rowHeightChanged(args) {
@@ -8838,6 +9303,7 @@ class Clipboard {
                 }
                 rowIdx++;
             }
+            this.parent.setUsedRange(rfshRange[2], rfshRange[3]);
             if (cSIdx === this.parent.activeSheetTab - 1) {
                 this.parent.serviceLocator.getService('cell').refreshRange(rfshRange);
                 this.parent.notify(selectRange, rfshRange);
@@ -8941,6 +9407,10 @@ class Clipboard {
     initCopyIndicator() {
         if (this.copiedInfo && this.parent.getActiveSheet().id === this.copiedInfo.sId) {
             let copyIndicator = this.parent.createElement('div', { className: 'e-copy-indicator' });
+            copyIndicator.appendChild(this.parent.createElement('div', { className: 'e-top' }));
+            copyIndicator.appendChild(this.parent.createElement('div', { className: 'e-bottom' }));
+            copyIndicator.appendChild(this.parent.createElement('div', { className: 'e-left' }));
+            copyIndicator.appendChild(this.parent.createElement('div', { className: 'e-right' }));
             locateElem(copyIndicator, this.copiedInfo.range, this.parent.getActiveSheet());
             this.parent.getMainContent().appendChild(copyIndicator);
         }
@@ -9346,7 +9816,7 @@ class Edit {
             let trgtElem = e.target;
             this.isCellEdit = trgtElem.classList.contains('e-spreadsheet-edit');
             if (trgtElem.classList.contains('e-cell') || trgtElem.classList.contains('e-header-cell') ||
-                trgtElem.classList.contains('e-virtualtrack') || trgtElem.classList.contains('e-selectall')) {
+                trgtElem.classList.contains('e-selectall') || closest(trgtElem, '.e-toolbar-item.e-active')) {
                 this.endEdit();
             }
         }
@@ -9445,9 +9915,8 @@ class Edit {
         let mainContElement = this.parent.getMainContent();
         let editWidth = mainContElement.offsetWidth - left - 28;
         //let editHeight: number = mainContElement.offsetHeight - top - 28;
-        let inlineStyles = 'display:block;top:' + top + 'px;left:' + left + 'px;' +
-            'min-width:' + minWidth + 'px;max-width:' + editWidth + 'px;height:' +
-            minHeight + 'px;';
+        let inlineStyles = 'display:block;top:' + top + 'px;' + (this.parent.enableRtl ? 'right:' : 'left:') + left + 'px;' +
+            'min-width:' + minWidth + 'px;max-width:' + editWidth + 'px;height:' + minHeight + 'px;';
         inlineStyles += tdElem.style.cssText;
         this.editorElem.setAttribute('style', inlineStyles);
         if (tdElem.classList.contains('e-right-align')) {
@@ -9458,7 +9927,10 @@ class Edit {
         }
     }
     updateEditedValue(tdRefresh = true) {
-        if (this.editCellData.oldValue !== this.editCellData.value) {
+        let oldCellValue = this.editCellData.oldValue;
+        let oldValue = oldCellValue.toString().toUpperCase();
+        if (oldCellValue !== this.editCellData.value || oldValue.indexOf('=RAND()') > -1 || oldValue.indexOf('RAND()') > -1 ||
+            oldValue.indexOf('=RANDBETWEEN(') > -1 || oldValue.indexOf('RANDBETWEEN(') > -1) {
             let cellIndex = getRangeIndexes(this.parent.getActiveSheet().activeCell);
             this.parent.notify(workbookEditOperation, { action: 'updateCellValue', address: this.editCellData.addr, value: this.editCellData.value });
             let cell = getCell(cellIndex[0], cellIndex[1], this.parent.getActiveSheet(), true);
@@ -9490,7 +9962,7 @@ class Edit {
         let fCode = (cell && cell.format) ? cell.format : '';
         let eventArgs = {
             value: cell.value, format: fCode, onLoad: true,
-            formattedText: '', isRightAlign: false, type: NumberFormatType.General
+            formattedText: '', isRightAlign: false, type: 'General'
         };
         let args;
         this.parent.notify(getFormattedCellObject, eventArgs);
@@ -9596,6 +10068,7 @@ class Selection {
         this.parent.on(cellNavigate, this.cellNavigateHandler, this);
         this.parent.on(selectRange, this.selectRange, this);
         this.parent.on(rowHeightChanged, this.rowHeightChanged, this);
+        this.parent.on(colWidthChanged, this.colWidthChanged, this);
     }
     removeEventListener() {
         if (!this.parent.isDestroyed) {
@@ -9605,17 +10078,54 @@ class Selection {
             this.parent.off(cellNavigate, this.cellNavigateHandler);
             this.parent.off(selectRange, this.selectRange);
             this.parent.off(rowHeightChanged, this.rowHeightChanged);
+            this.parent.off(colWidthChanged, this.colWidthChanged);
         }
     }
     rowHeightChanged(args) {
         getUpdateUsingRaf(() => {
             let ele = this.getActiveCell();
-            if (getCellIndexes(this.parent.getActiveSheet().activeCell)[0] === args.rowIdx && ele) {
+            let cellIndex = getCellIndexes(this.parent.getActiveSheet().activeCell)[0];
+            if (cellIndex === args.rowIdx && ele) {
                 ele.style.height = `${parseInt(ele.style.height, 10) + args.threshold}px`;
+            }
+            else if (cellIndex > args.rowIdx && ele) {
+                ele.style.top = `${parseInt(ele.style.top, 10) + args.threshold}px`;
             }
             ele = this.getSelectionElement();
             if (ele) {
-                ele.style.height = `${parseInt(ele.style.height, 10) + args.threshold}px`;
+                let selectedRange = getRangeIndexes(this.parent.getActiveSheet().selectedRange);
+                let sRange = getSwapRange(selectedRange);
+                let rowStart = sRange[0];
+                let rowEnd = sRange[2];
+                if (rowStart <= args.rowIdx && rowEnd >= args.rowIdx && ele) {
+                    ele.style.height = `${parseInt(ele.style.height, 10) + args.threshold}px`;
+                }
+                else if (rowStart > args.rowIdx && ele) {
+                    ele.style.top = `${parseInt(ele.style.top, 10) + args.threshold}px`;
+                }
+            }
+        });
+    }
+    colWidthChanged(args) {
+        getUpdateUsingRaf(() => {
+            let ele = this.getActiveCell();
+            let cellIndex = getCellIndexes(this.parent.getActiveSheet().activeCell)[1];
+            if (cellIndex === args.colIdx && ele) {
+                ele.style.width = `${parseInt(ele.style.width, 10) + args.threshold}px`;
+            }
+            else if (cellIndex > args.colIdx && ele) {
+                ele.style.left = `${parseInt(ele.style.left, 10) + args.threshold}px`;
+            }
+            ele = this.getSelectionElement();
+            let selectedRange = getRangeIndexes(this.parent.getActiveSheet().selectedRange);
+            let sRange = getSwapRange(selectedRange);
+            let colStart = sRange[1];
+            let colEnd = sRange[3];
+            if (colStart <= args.colIdx && colEnd >= args.colIdx && ele) {
+                ele.style.width = `${parseInt(ele.style.width, 10) + args.threshold}px`;
+            }
+            else if (colStart > args.colIdx && ele) {
+                ele.style.left = `${parseInt(ele.style.left, 10) + args.threshold}px`;
             }
         });
     }
@@ -9640,7 +10150,8 @@ class Selection {
     }
     mouseDownHandler(e) {
         if (!this.parent.isEdit) {
-            if (this.getSheetElement().contains(e.target)) {
+            if (this.getSheetElement().contains(e.target) && !e.target.classList.contains('e-colresize')
+                && !e.target.classList.contains('e-rowresize')) {
                 let sheet = this.parent.getActiveSheet();
                 let mode = this.parent.selectionSettings.mode;
                 let rowIdx = this.getRowIdxFromClientY(getClientY(e));
@@ -9757,7 +10268,7 @@ class Selection {
         this.parent.notify(mouseUpAfterSelection, e);
     }
     isSelected(rowIdx, colIdx) {
-        let indexes = getRangeIndexes(this.parent.getActiveSheet().selectedRange);
+        let indexes = getSwapRange(getRangeIndexes(this.parent.getActiveSheet().selectedRange));
         return indexes[0] <= rowIdx && rowIdx <= indexes[2] && indexes[1] <= colIdx && colIdx <= indexes[3];
     }
     virtualContentLoadedHandler() {
@@ -9783,14 +10294,17 @@ class Selection {
     getScrollContent() {
         return this.parent.getMainContent();
     }
+    getScrollLeft() {
+        return this.parent.scrollModule ? this.parent.scrollModule.prevScroll.scrollLeft : 0;
+    }
     cellNavigateHandler(args) {
         this.selectRangeByIdx(args.range.concat(args.range));
     }
     getColIdxFromClientX(clientX) {
         let width = 0;
         let sheet = this.parent.getActiveSheet();
-        let left = (clientX - this.parent.getMainContent().getBoundingClientRect().left)
-            + this.parent.getMainContent().scrollLeft;
+        let cliRect = this.parent.getMainContent().getBoundingClientRect();
+        let left = (this.parent.enableRtl ? (cliRect.right - clientX) : (clientX - cliRect.left)) + this.getScrollLeft();
         for (let i = 0;; i++) {
             width += getColumnsWidth(sheet, i);
             if (left < width) {
@@ -9823,7 +10337,7 @@ class Selection {
         }
         else {
             ele.classList.remove('e-hide');
-            locateElem(ele, range, sheet);
+            locateElem(ele, range, sheet, this.parent.enableRtl);
         }
         updateSelectedRange(this.parent, getRangeAddress(range), sheet);
         this.UpdateRowColSelected(range);
@@ -9848,7 +10362,7 @@ class Selection {
         let colIdx = this.isRowSelected ? topLeftIdx[1] : range[1];
         sheet.activeCell = getCellAddress(rowIdx, colIdx);
         this.parent.setProperties({ 'sheets': this.parent.sheets }, true);
-        locateElem(this.getActiveCell(), getRangeIndexes(sheet.activeCell), sheet);
+        locateElem(this.getActiveCell(), getRangeIndexes(sheet.activeCell), sheet, this.parent.enableRtl);
         this.parent.notify(activeCellChanged, [rowIdx, colIdx]);
     }
     getSelectionElement() {
@@ -10432,7 +10946,7 @@ class VirtualScroll {
             let translateX = this.parent.enableRtl ? -this.translateX : this.translateX;
             this.content.style.transform = `translate(${translateX}px, ${this.translateY}px)`;
             if (sheet.showHeaders) {
-                this.colHeader.style.transform = `translate(${this.translateX}px, 0px)`;
+                this.colHeader.style.transform = `translate(${translateX}px, 0px)`;
             }
         }
     }
@@ -10501,6 +11015,18 @@ class VirtualScroll {
             this.updateVTrack(this.rowHeader, this.getVTrackHeight('height') + args.threshold, 'height');
         }
     }
+    updateVTrackWidth(args) {
+        if (args.colIdx < this.parent.getActiveSheet().colCount) {
+            let hdrVTrack = this.parent.getColumnHeaderContent().getElementsByClassName('e-virtualtrack')[0];
+            hdrVTrack.style.width = parseInt(hdrVTrack.style.width, 10) + args.threshold + 'px';
+            let cntVTrack = this.parent.getMainContent().getElementsByClassName('e-virtualtrack')[0];
+            cntVTrack.style.width = parseInt(cntVTrack.style.width, 10) + args.threshold + 'px';
+            let hdrColumn = this.parent.getColumnHeaderContent().getElementsByClassName('e-virtualable')[0];
+            hdrColumn.style.width = parseInt(hdrColumn.style.width, 10) + args.threshold + 'px';
+            let cntColumn = this.parent.getMainContent().getElementsByClassName('e-virtualable')[0];
+            cntColumn.style.width = parseInt(cntColumn.style.width, 10) + args.threshold + 'px';
+        }
+    }
     updateVTrack(header, size, sizeStr) {
         if (this.parent.getActiveSheet().showHeaders) {
             header.nextElementSibling.style[sizeStr] = `${size}px`;
@@ -10537,6 +11063,7 @@ class VirtualScroll {
         this.parent.on(onHorizontalScroll, this.onHorizontalScroll, this);
         this.parent.on(updateUsedRange, this.updateUsedRange, this);
         this.parent.on(rowHeightChanged, this.updateVTrackHeight, this);
+        this.parent.on(colWidthChanged, this.updateVTrackWidth, this);
         this.parent.on(beforeHeaderLoaded, this.createHeaderElement, this);
         this.parent.on(deInitProperties, this.deInitProps, this);
         this.parent.on(sheetsDestroyed, this.sliceScrollProps, this);
@@ -10562,6 +11089,7 @@ class VirtualScroll {
             this.parent.off(onHorizontalScroll, this.onHorizontalScroll);
             this.parent.off(updateUsedRange, this.updateUsedRange);
             this.parent.off(rowHeightChanged, this.updateVTrackHeight);
+            this.parent.off(colWidthChanged, this.updateVTrackWidth);
             this.parent.off(beforeHeaderLoaded, this.createHeaderElement);
             this.parent.off(sheetsDestroyed, this.sliceScrollProps);
             this.parent.off(sheetCreated, this.updateScrollProps);
@@ -10841,10 +11369,20 @@ class CellFormat {
                     }
                 }
                 else {
+                    let idx;
+                    if (this.parent.scrollSettings.enableVirtualization) {
+                        idx = args.rowIdx - this.parent.viewport.topIndex;
+                    }
                     if (!this.checkHeight) {
                         this.checkHeight = this.isHeightCheckNeeded(args.style, args.onActionUpdate);
                     }
-                    this.updateRowHeight(cell, args.rowIdx, args.lastCell, args.onActionUpdate);
+                    if (isNullOrUndefined(this.parent.getActiveSheet().rows[idx]) ||
+                        isNullOrUndefined(this.parent.getActiveSheet().rows[idx].customHeight)) {
+                        this.updateRowHeight(cell, args.rowIdx, args.lastCell, args.onActionUpdate);
+                    }
+                    else {
+                        cell.parentElement.style.lineHeight = parseInt(cell.parentElement.style.height, 10) - 1 + 'px';
+                    }
                 }
             }
         }
@@ -10925,6 +11463,708 @@ class CellFormat {
      */
     getModuleName() {
         return 'cellformat';
+    }
+}
+
+/**
+ * The `Resize` module is used to handle the resizing functionalities in Spreadsheet.
+ */
+class Resize {
+    /**
+     * Constructor for resize module in Spreadsheet.
+     * @private
+     */
+    constructor(parent) {
+        this.parent = parent;
+        this.addEventListener();
+    }
+    addEventListener() {
+        this.parent.on(contentLoaded, this.wireEvents, this);
+    }
+    wireEvents() {
+        let rowHeader = this.parent.getRowHeaderContent();
+        let colHeader = this.parent.getColumnHeaderContent();
+        EventHandler.add(colHeader, 'dblclick', this.dblClickHandler, this);
+        EventHandler.add(rowHeader, 'dblclick', this.dblClickHandler, this);
+        EventHandler.add(this.parent.getColumnHeaderContent(), 'mousedown', this.mouseDownHandler, this);
+        EventHandler.add(this.parent.getRowHeaderContent(), 'mousedown', this.mouseDownHandler, this);
+        this.wireResizeCursorEvent(rowHeader, colHeader);
+    }
+    wireResizeCursorEvent(rowHeader, colHeader) {
+        EventHandler.add(rowHeader, 'mousemove', this.setTarget, this);
+        EventHandler.add(colHeader, 'mousemove', this.setTarget, this);
+    }
+    unWireResizeCursorEvent() {
+        EventHandler.remove(this.parent.getRowHeaderContent(), 'mousemove', this.setTarget);
+        EventHandler.remove(this.parent.getColumnHeaderContent(), 'mousemove', this.setTarget);
+    }
+    unwireEvents() {
+        EventHandler.remove(this.parent.getColumnHeaderContent(), 'dblclick', this.dblClickHandler);
+        EventHandler.remove(this.parent.getRowHeaderContent(), 'dblclick', this.dblClickHandler);
+        EventHandler.remove(this.parent.getColumnHeaderContent(), 'mousedown', this.mouseDownHandler);
+        EventHandler.remove(this.parent.getRowHeaderContent(), 'mousedown', this.mouseDownHandler);
+        this.unWireResizeCursorEvent();
+    }
+    removeEventListener() {
+        if (!this.parent.isDestroyed) {
+            this.parent.off(contentLoaded, this.wireEvents);
+        }
+    }
+    mouseMoveHandler(e) {
+        let sheetPanel = this.parent.element.getElementsByClassName('e-sheet-panel')[0];
+        let colResizeHandler = this.parent.element.getElementsByClassName('e-colresize-handler')[0];
+        let rowResizeHandler = this.parent.element.getElementsByClassName('e-rowresize-handler')[0];
+        if (colResizeHandler || rowResizeHandler) {
+            if (colResizeHandler) {
+                if (e.x > this.trgtEle.parentElement.firstChild.getBoundingClientRect().left) {
+                    colResizeHandler.style.left = e.clientX - this.parent.element.getBoundingClientRect().left + 'px';
+                }
+            }
+            else if (rowResizeHandler) {
+                if (e.y >= this.trgtEle.parentElement.parentElement.firstChild.getBoundingClientRect().top) {
+                    rowResizeHandler.style.top = e.clientY - sheetPanel.getBoundingClientRect().top + 'px';
+                }
+            }
+        }
+    }
+    mouseDownHandler(e) {
+        this.event = e;
+        this.trgtEle = e.target;
+        this.updateTarget(e, this.trgtEle);
+        let trgt = this.trgtEle;
+        let className = trgt.classList.contains('e-colresize') ? 'e-colresize-handler' :
+            trgt.classList.contains('e-rowresize') ? 'e-rowresize-handler' : '';
+        this.createResizeHandler(trgt, className);
+        this.unWireResizeCursorEvent();
+        EventHandler.add(this.parent.element, 'mousemove', this.mouseMoveHandler, this);
+        EventHandler.add(document, 'mouseup', this.mouseUpHandler, this);
+    }
+    mouseUpHandler(e) {
+        let colResizeHandler = this.parent.element.getElementsByClassName('e-colresize-handler')[0];
+        let rowResizeHandler = this.parent.element.getElementsByClassName('e-rowresize-handler')[0];
+        this.resizeOn(e);
+        let resizeHandler = colResizeHandler ? colResizeHandler : rowResizeHandler;
+        if (resizeHandler) {
+            this.parent.element.getElementsByClassName('e-sheet-panel')[0].removeChild(resizeHandler);
+            this.updateCursor(e);
+        }
+        EventHandler.remove(document, 'mouseup', this.mouseUpHandler);
+        EventHandler.remove(this.parent.element, 'mousemove', this.mouseMoveHandler);
+        this.wireResizeCursorEvent(this.parent.getRowHeaderContent(), this.parent.getColumnHeaderContent());
+    }
+    dblClickHandler(e) {
+        this.trgtEle = e.target;
+        this.updateTarget(e, this.trgtEle);
+        let trgt = this.trgtEle;
+        if (trgt.classList.contains('e-colresize') || trgt.classList.contains('e-rowresize')) {
+            let colIndx = parseInt(trgt.getAttribute('aria-colindex'), 10) - 1;
+            let rowIndx = parseInt(this.trgtEle.parentElement.getAttribute('aria-rowindex'), 10) - 1;
+            if (trgt.classList.contains('e-colresize')) {
+                this.setAutofit(colIndx, true);
+            }
+            else if (trgt.classList.contains('e-rowresize')) {
+                this.setAutofit(rowIndx, false);
+            }
+        }
+    }
+    setTarget(e) {
+        let trgt = e.target;
+        let newTrgt;
+        let tOffsetV;
+        let eOffsetV;
+        let tClass;
+        if (closest(trgt, '.e-header-row')) {
+            eOffsetV = e.offsetX;
+            tOffsetV = trgt.offsetWidth;
+            tClass = 'e-colresize';
+            if (!isNullOrUndefined(trgt.previousElementSibling)) {
+                newTrgt = trgt.previousElementSibling;
+            }
+        }
+        else if (closest(trgt, '.e-row')) {
+            eOffsetV = e.offsetY;
+            tOffsetV = trgt.offsetHeight;
+            tClass = 'e-rowresize';
+            if (!isNullOrUndefined(trgt.parentElement.previousElementSibling)) {
+                newTrgt =
+                    trgt.parentElement.previousElementSibling.firstElementChild;
+            }
+        }
+        if (tOffsetV - 2 < 8 && eOffsetV !== Math.ceil((tOffsetV - 2) / 2)) {
+            if (eOffsetV < Math.ceil((tOffsetV - 2) / 2)) {
+                trgt.classList.add(tClass);
+                newTrgt.classList.add(tClass);
+            }
+            else if (eOffsetV > Math.ceil((tOffsetV - 2) / 2)) {
+                trgt.classList.add(tClass);
+            }
+        }
+        else if (tOffsetV - 5 < eOffsetV && eOffsetV <= tOffsetV && tOffsetV >= 10) {
+            trgt.classList.add(tClass);
+        }
+        else if (eOffsetV < 5 && newTrgt && tOffsetV >= 10) {
+            trgt.classList.add(tClass);
+            newTrgt.classList.add(tClass);
+        }
+        else {
+            let resEle = (tClass === 'e-colresize' ? trgt.parentElement.getElementsByClassName(tClass)
+                : this.parent.getRowHeaderTable().getElementsByClassName(tClass));
+            for (let index = 0; index < resEle.length; index++) {
+                resEle[index].classList.remove(tClass);
+            }
+        }
+    }
+    updateTarget(e, trgt) {
+        if (closest(trgt, '.e-header-row')) {
+            if ((trgt.offsetWidth < 10 && e.offsetX < Math.ceil((trgt.offsetWidth - 2) / 2)) || (e.offsetX < 5 &&
+                trgt.offsetWidth >= 10) && trgt.classList.contains('e-colresize') && trgt.previousElementSibling) {
+                this.trgtEle = trgt.previousElementSibling;
+            }
+        }
+        else if (closest(trgt, '.e-row')) {
+            if ((trgt.offsetHeight < 10 && e.offsetY < Math.ceil((trgt.offsetHeight - 2) / 2)) || (e.offsetY < 5 &&
+                trgt.offsetHeight >= 10) && trgt.classList.contains('e-rowresize') && trgt.parentElement.previousElementSibling) {
+                this.trgtEle = trgt.parentElement.previousElementSibling.getElementsByClassName('e-header-cell')[0];
+            }
+        }
+    }
+    setAutofit(idx, isCol) {
+        let index;
+        let oldIdx = idx;
+        if (this.parent.scrollSettings.enableVirtualization) {
+            idx = isCol ? idx - this.parent.viewport.leftIndex : idx - this.parent.viewport.topIndex;
+        }
+        let sheet = this.parent.getActiveSheet();
+        let mainContent = this.parent.getMainContent();
+        let oldValue = isCol ?
+            mainContent.getElementsByTagName('col')[idx].style.width : mainContent.getElementsByTagName('tr')[idx].style.height;
+        let headerTable = isCol ? this.parent.getColHeaderTable() : this.parent.getRowHeaderTable();
+        let contentRow = mainContent.getElementsByClassName('e-row');
+        let contentClone = [];
+        let contentTable = mainContent.getElementsByClassName('e-content-table')[0];
+        let headerRow = headerTable.getElementsByTagName('tr');
+        let headerText;
+        if (isCol) {
+            headerText = headerRow[0].getElementsByClassName('e-header-cell')[idx].cloneNode(true);
+            for (index = 0; index < contentRow.length; index++) {
+                contentClone[index] = contentRow[index].getElementsByTagName('td')[idx].cloneNode(true);
+            }
+        }
+        else {
+            headerText = headerRow[idx].getElementsByClassName('e-header-cell')[0].cloneNode(true);
+            for (index = 0; index < contentRow[idx].getElementsByTagName('td').length; index++) {
+                contentClone[index] = contentRow[idx].getElementsByTagName('td')[index].cloneNode(true);
+            }
+        }
+        let headerFit = this.findMaxValue(headerTable, [headerText], isCol);
+        let contentFit = this.findMaxValue(contentTable, contentClone, isCol);
+        let autofitValue = headerFit < contentFit ? contentFit : headerFit;
+        let threshold = parseInt(oldValue, 10) > autofitValue ?
+            -(parseInt(oldValue, 10) - autofitValue) : autofitValue - parseInt(oldValue, 10);
+        if (isCol) {
+            getColumn(sheet, idx).width = autofitValue > 0 ? autofitValue : 0;
+            this.parent.notify(colWidthChanged, { threshold, colIdx: oldIdx });
+        }
+        else {
+            setRowHeight(sheet, idx, autofitValue > 0 ? autofitValue : 0);
+            this.parent.notify(rowHeightChanged, { threshold: threshold, rowIdx: oldIdx });
+        }
+        this.setResize(idx, autofitValue + 'px', isCol);
+    }
+    findMaxValue(table, text, isCol) {
+        let myTableDiv = this.parent.createElement('div', { className: this.parent.element.className });
+        let myTable = this.parent.createElement('table', {
+            className: table.className + 'e-resizetable',
+            styles: 'width: auto;height: auto'
+        });
+        let myTr = this.parent.createElement('tr');
+        if (isCol) {
+            text.forEach((element) => {
+                let tr = myTr.cloneNode();
+                tr.appendChild(element);
+                myTable.appendChild(tr);
+            });
+        }
+        else {
+            text.forEach((element) => {
+                myTr.appendChild(element.cloneNode(true));
+            });
+            myTable.appendChild(myTr);
+        }
+        myTableDiv.appendChild(myTable);
+        document.body.appendChild(myTableDiv);
+        let offsetWidthValue = myTable.getBoundingClientRect().width;
+        let offsetHeightValue = myTable.getBoundingClientRect().height;
+        document.body.removeChild(myTableDiv);
+        if (isCol) {
+            return Math.ceil(offsetWidthValue);
+        }
+        else {
+            return Math.ceil(offsetHeightValue);
+        }
+    }
+    createResizeHandler(trgt, className) {
+        let editor = this.parent.createElement('div', { className: className });
+        if (trgt.classList.contains('e-colresize')) {
+            editor.style.height = this.parent.getMainContent().clientHeight + trgt.offsetHeight + 'px';
+            editor.style.left = this.event.clientX - this.parent.element.getBoundingClientRect().left + 'px';
+            editor.style.top = '0px';
+        }
+        else if (trgt.classList.contains('e-rowresize')) {
+            editor.style.width = this.parent.getMainContent().clientWidth + trgt.offsetWidth + 'px';
+            editor.style.left = '0px';
+            editor.style.top = this.event.clientY
+                - this.parent.element.getElementsByClassName('e-sheet-panel')[0].getBoundingClientRect().top + 'px';
+        }
+        this.parent.element.getElementsByClassName('e-sheet-panel')[0].appendChild(editor);
+        this.updateCursor(this.event);
+    }
+    setColWidth(index, width) {
+        let sheet = this.parent.getActiveSheet();
+        let eleWidth = parseInt(this.parent.getMainContent().getElementsByTagName('col')[index].style.width, 10);
+        let colWidth = width;
+        let threshold = parseInt(colWidth, 10) - eleWidth;
+        if (threshold < 0 && eleWidth < -(threshold)) {
+            threshold = -eleWidth;
+        }
+        let oldIdx = parseInt(this.trgtEle.getAttribute('aria-colindex'), 10) - 1;
+        this.parent.notify(colWidthChanged, { threshold, colIdx: oldIdx });
+        this.setResize(index, colWidth, true);
+        getColumn(sheet, index).width = parseInt(colWidth, 10) > 0 ? parseInt(colWidth, 10) : 0;
+        sheet.columns[index].customWidth = true;
+        this.parent.setProperties({ sheets: this.parent.sheets }, true);
+    }
+    setRowHeight(index, height) {
+        let eleHeight = parseInt(this.parent.getMainContent().getElementsByTagName('tr')[index].style.height, 10);
+        let rowHeight = height;
+        let threshold = parseInt(rowHeight, 10) - eleHeight;
+        if (threshold < 0 && eleHeight < -(threshold)) {
+            threshold = -eleHeight;
+        }
+        let oldIdx = parseInt(this.trgtEle.parentElement.getAttribute('aria-rowindex'), 10) - 1;
+        this.parent.notify(rowHeightChanged, { threshold, rowIdx: oldIdx });
+        this.setResize(index, rowHeight, false);
+        setRowHeight(this.parent.getActiveSheet(), index, parseInt(rowHeight, 10) > 0 ? parseInt(rowHeight, 10) : 0);
+        this.parent.getActiveSheet().rows[index].customHeight = true;
+        this.parent.setProperties({ sheets: this.parent.sheets }, true);
+    }
+    resizeOn(e) {
+        let idx;
+        if (this.trgtEle.classList.contains('e-rowresize')) {
+            idx = parseInt(this.trgtEle.parentElement.getAttribute('aria-rowindex'), 10) - 1;
+            if (this.parent.scrollSettings.enableVirtualization) {
+                idx = idx - this.parent.viewport.topIndex;
+            }
+            let rowHeight = e.clientY - this.event.clientY +
+                parseInt(this.parent.getMainContent().getElementsByClassName('e-row')[idx].style.height, 10) + 'px';
+            this.setRowHeight(idx, rowHeight);
+        }
+        else if (this.trgtEle.classList.contains('e-colresize')) {
+            idx = parseInt(this.trgtEle.getAttribute('aria-colindex'), 10) - 1;
+            if (this.parent.scrollSettings.enableVirtualization) {
+                idx = idx - this.parent.viewport.leftIndex;
+            }
+            let colWidth = e.clientX - this.event.clientX +
+                parseInt(this.parent.getMainContent().getElementsByTagName('col')[idx].style.width, 10) + 'px';
+            this.setColWidth(idx, colWidth);
+        }
+    }
+    setWidthAndHeight(trgt, value, isCol) {
+        if (isCol) {
+            trgt.style.width = parseInt(trgt.style.width, 10) + value + 'px';
+        }
+        else {
+            trgt.style.height = parseInt(trgt.style.height, 10) + value + 'px';
+        }
+    }
+    // tslint:disable-next-line:max-func-body-length
+    setResize(index, value, isCol) {
+        let curEle;
+        let curEleH;
+        let curEleC;
+        let preEle;
+        let preEleH;
+        let preEleC;
+        let nxtEle;
+        let nxtEleH;
+        let nxtEleC;
+        let sheet = this.parent.getActiveSheet();
+        if (isCol) {
+            curEle = this.parent.element.getElementsByClassName('e-column-header')[0].getElementsByTagName('th')[index];
+            curEleH = this.parent.element.getElementsByClassName('e-column-header')[0].getElementsByTagName('col')[index];
+            curEleC = this.parent.element.getElementsByClassName('e-main-content')[0].getElementsByTagName('col')[index];
+        }
+        else {
+            curEle = this.parent.element.getElementsByClassName('e-row-header')[0].getElementsByTagName('tr')[index];
+            curEleH = this.parent.element.getElementsByClassName('e-row-header')[0].getElementsByTagName('tr')[index];
+            curEleC = this.parent.element.getElementsByClassName('e-main-content')[0].getElementsByTagName('tr')[index];
+            curEleH.style.height = parseInt(value, 10) > 0 ? value : '2px';
+            curEleC.style.height = parseInt(value, 10) > 0 ? value : '0px';
+            let hdrRow = this.parent.getRowHeaderContent().getElementsByClassName('e-row');
+            let hdrClone = [];
+            hdrClone[0] = hdrRow[index].getElementsByTagName('td')[0].cloneNode(true);
+            let hdrFntSize = this.findMaxValue(this.parent.getRowHeaderTable(), hdrClone, false) + 1;
+            let contentRow = this.parent.getMainContent().getElementsByClassName('e-row');
+            let contentClone = [];
+            for (let idx = 0; idx < contentRow[index].getElementsByTagName('td').length; idx++) {
+                contentClone[idx] = contentRow[index].getElementsByTagName('td')[idx].cloneNode(true);
+            }
+            let cntFntSize = this.findMaxValue(this.parent.getContentTable(), contentClone, false) + 1;
+            let fntSize = hdrFntSize >= cntFntSize ? hdrFntSize : cntFntSize;
+            if (parseInt(curEleC.style.height, 10) < fntSize ||
+                (curEle.classList.contains('e-reach-fntsize') && parseInt(curEleC.style.height, 10) === fntSize)) {
+                curEle.classList.add('e-reach-fntsize');
+                curEleH.style.lineHeight = parseInt(value, 10) >= 4 ? ((parseInt(value, 10)) - 4) + 'px' :
+                    parseInt(value, 10) > 0 ? ((parseInt(value, 10)) - 1) + 'px' : '0px';
+                curEleC.style.lineHeight = parseInt(value, 10) > 0 ? ((parseInt(value, 10)) - 1) + 'px' : '0px';
+            }
+            else {
+                curEleH.style.removeProperty('line-height');
+                curEleC.style.removeProperty('line-height');
+                if (curEle.classList.contains('e-reach-fntsize')) {
+                    curEle.classList.remove('e-reach-fntsize');
+                }
+            }
+        }
+        preEle = curEle.previousElementSibling;
+        nxtEle = curEle.nextElementSibling;
+        if (preEle) {
+            preEle = curEle.previousElementSibling;
+            preEleH = curEleH.previousElementSibling;
+            preEleC = curEleC.previousElementSibling;
+        }
+        if (nxtEle) {
+            nxtEle = curEle.nextElementSibling;
+            nxtEleH = curEleH.nextElementSibling;
+            nxtEleC = curEleC.nextElementSibling;
+        }
+        if (parseInt(value, 10) <= 0 && !(curEle.classList.contains('e-zero') || curEle.classList.contains('e-zero-start'))) {
+            if (preEle && nxtEle) {
+                if (isCol) {
+                    curEleH.style.width = '2px';
+                    curEleC.style.width = '0px';
+                }
+                else {
+                    curEleH.style.height = '2px';
+                    curEleC.style.height = '0px';
+                }
+                if (preEle.classList.contains('e-zero-start')) {
+                    curEle.classList.add('e-zero-start');
+                    curEleC.classList.add('e-zero-start');
+                }
+                else {
+                    curEle.classList.add('e-zero');
+                    curEleC.classList.add('e-zero');
+                }
+                if (!nxtEle.classList.contains('e-zero') && !nxtEle.classList.contains('e-zero-last')) {
+                    curEle.classList.add('e-zero-last');
+                    curEleC.classList.add('e-zero-last');
+                }
+                if (preEle.classList.contains('e-zero-last')) {
+                    preEle.classList.remove('e-zero-last');
+                    preEleC.classList.remove('e-zero-last');
+                }
+                if (preEle.classList.contains('e-zero')) {
+                    if (curEle.classList.contains('e-zero-end')) {
+                        this.setWidthAndHeight(preEleH, -2, isCol);
+                    }
+                    else {
+                        this.setWidthAndHeight(preEleH, -2, isCol);
+                    }
+                }
+                else {
+                    this.setWidthAndHeight(preEleH, -1, isCol);
+                }
+                if (preEle.classList.contains('e-zero-start')) {
+                    this.setWidthAndHeight(curEleH, -1, isCol);
+                }
+                if (nxtEle.classList.contains('e-zero')) {
+                    if (curEle.classList.contains('e-zero-start')) {
+                        while (nxtEle) {
+                            if (nxtEle.classList.contains('e-zero') && (parseInt(nxtEleH.style.height, 10) !== 0 && !isCol) ||
+                                (parseInt(nxtEleH.style.width, 10) !== 0 && isCol)) {
+                                if (isCol) {
+                                    curEleH.style.width = parseInt(curEleH.style.width, 10) - 1 + 'px';
+                                    nxtEleH.style.width = parseInt(nxtEleH.style.width, 10) - 1 + 'px';
+                                }
+                                else {
+                                    curEleH.style.height = parseInt(curEleH.style.height, 10) - 1 + 'px';
+                                    nxtEleH.style.height = parseInt(nxtEleH.style.height, 10) - 1 + 'px';
+                                }
+                                nxtEle.classList.remove('e-zero');
+                                nxtEle.classList.add('e-zero-start');
+                                break;
+                            }
+                            else {
+                                let nxtIndex;
+                                nxtEle.classList.remove('e-zero');
+                                nxtEle.classList.add('e-zero-start');
+                                if (isCol) {
+                                    nxtIndex = parseInt(nxtEle.getAttribute('aria-colindex'), 10) - 1;
+                                    nxtEle = this.parent.getColHeaderTable().getElementsByTagName('th')[nxtIndex + 1];
+                                    nxtEleH = this.parent.getColHeaderTable().getElementsByTagName('col')[nxtIndex + 1];
+                                }
+                                else {
+                                    nxtIndex = parseInt(nxtEle.getAttribute('aria-rowindex'), 10) - 1;
+                                    nxtEle = this.parent.getRowHeaderTable().getElementsByTagName('tr')[nxtIndex + 1];
+                                    nxtEleH = this.parent.getRowHeaderTable().getElementsByTagName('tr')[nxtIndex + 1];
+                                }
+                            }
+                        }
+                    }
+                    else {
+                        this.setWidthAndHeight(curEleH, -2, isCol);
+                    }
+                }
+                else {
+                    if (nxtEle.classList.contains('e-zero-end')) {
+                        if (isCol) {
+                            curEleH.style.width = '0px';
+                        }
+                        else {
+                            curEleH.style.height = '0px';
+                        }
+                    }
+                    else {
+                        this.setWidthAndHeight(nxtEleH, -1, isCol);
+                    }
+                }
+            }
+            else if (preEle) {
+                if (isCol) {
+                    curEleH.style.width = '1px';
+                    curEleC.style.width = '0px';
+                }
+                else {
+                    curEleH.style.height = '1px';
+                    curEleC.style.height = '0px';
+                }
+                curEle.classList.add('e-zero-end');
+                curEleC.classList.add('e-zero-end');
+                curEle.classList.add('e-zero-last');
+                curEleC.classList.add('e-zero-last');
+                if (preEle.classList.contains('e-zero')) {
+                    this.setWidthAndHeight(preEleH, -2, isCol);
+                }
+                else {
+                    this.setWidthAndHeight(preEleH, -1, isCol);
+                }
+            }
+            else if (nxtEle) {
+                curEle.classList.add('e-zero-start');
+                curEleC.classList.add('e-zero-start');
+                if (!nxtEle.classList.contains('e-zero')) {
+                    curEle.classList.add('e-zero-last');
+                    curEleC.classList.add('e-zero-last');
+                }
+                if (isCol) {
+                    curEleH.style.width = '1px';
+                    curEleC.style.width = '0px';
+                }
+                else {
+                    curEleH.style.height = '1px';
+                    curEleC.style.height = '0px';
+                }
+                if (nxtEle.classList.contains('e-zero')) {
+                    while (nxtEle) {
+                        if (nxtEle.classList.contains('e-zero') && (parseInt(nxtEleH.style.width, 10) !== 0
+                            && isCol) || (parseInt(nxtEleH.style.height, 10) !== 0 && !isCol)) {
+                            if (isCol) {
+                                nxtEleH.style.width = parseInt(nxtEleH.style.width, 10) - 1 + 'px';
+                                curEleH.style.width = parseInt(curEleH.style.width, 10) - 1 + 'px';
+                            }
+                            else {
+                                nxtEleH.style.height = parseInt(nxtEleH.style.height, 10) - 1 + 'px';
+                                curEleH.style.height = parseInt(curEleH.style.height, 10) - 1 + 'px';
+                            }
+                            nxtEle.classList.add('e-zero-start');
+                            nxtEle.classList.remove('e-zero');
+                            break;
+                        }
+                        else {
+                            let nxtIndex;
+                            nxtEle.classList.add('e-zero-start');
+                            nxtEle.classList.remove('e-zero');
+                            if (isCol) {
+                                nxtIndex = parseInt(nxtEle.getAttribute('aria-colindex'), 10) - 1;
+                                nxtEleH = this.parent.getColHeaderTable().getElementsByTagName('col')[nxtIndex + 1];
+                                nxtEle = this.parent.getColHeaderTable().getElementsByTagName('th')[nxtIndex + 1];
+                            }
+                            else {
+                                nxtIndex = parseInt(nxtEle.getAttribute('aria-rowindex'), 10) - 1;
+                                nxtEleH = this.parent.getRowHeaderTable().getElementsByTagName('tr')[nxtIndex + 1];
+                                nxtEle = this.parent.getRowHeaderTable().getElementsByTagName('tr')[nxtIndex + 1];
+                            }
+                        }
+                    }
+                }
+                else {
+                    this.setWidthAndHeight(nxtEleH, -1, isCol);
+                }
+            }
+        }
+        else if (parseInt(value, 10) > 0) {
+            if (isCol) {
+                curEleH.style.width = value;
+                curEleC.style.width = value;
+            }
+            else {
+                curEleH.style.height = value;
+                curEleC.style.height = value;
+            }
+            if (preEle && nxtEle) {
+                if (preEle.classList.contains('e-zero')) {
+                    if (curEle.classList.contains('e-zero')) {
+                        if (isCol) {
+                            preEleH.style.width = parseInt(preEleH.style.width, 10) + 2 + 'px';
+                            curEleH.style.width = parseInt(curEleH.style.width, 10) - 1 + 'px';
+                        }
+                        else {
+                            preEleH.style.height = parseInt(preEleH.style.height, 10) + 2 + 'px';
+                            curEleH.style.height = parseInt(curEleH.style.height, 10) - 1 + 'px';
+                        }
+                    }
+                    else {
+                        this.setWidthAndHeight(curEleH, -1, isCol);
+                    }
+                }
+                else {
+                    if (curEle.classList.contains('e-zero')) {
+                        this.setWidthAndHeight(preEleH, 1, isCol);
+                    }
+                    else {
+                        if (curEle.classList.contains('e-zero-start')) {
+                            if (isCol) {
+                                preEleH.style.width = parseInt(preEleH.style.width, 10) + 1 + 'px';
+                                curEleH.style.width = parseInt(curEleH.style.width, 10) - 1 + 'px';
+                            }
+                            else {
+                                preEleH.style.height = parseInt(preEleH.style.height, 10) + 1 + 'px';
+                                curEleH.style.height = parseInt(curEleH.style.height, 10) - 1 + 'px';
+                            }
+                        }
+                    }
+                }
+                if (nxtEle.classList.contains('e-zero')) {
+                    this.setWidthAndHeight(curEleH, -1, isCol);
+                }
+                else {
+                    if (curEle.classList.contains('e-zero') || curEle.classList.contains('e-zero-start')) {
+                        this.setWidthAndHeight(nxtEleH, 1, isCol);
+                    }
+                }
+                if (curEle.classList.contains('e-zero')) {
+                    curEle.classList.remove('e-zero');
+                }
+                if (curEle.classList.contains('e-zero-start')) {
+                    curEle.classList.remove('e-zero-start');
+                }
+                if (curEleC.classList.contains('e-zero')) {
+                    curEleC.classList.remove('e-zero');
+                }
+                if (curEleC.classList.contains('e-zero-start')) {
+                    curEleC.classList.remove('e-zero-start');
+                }
+                if (curEle.classList.contains('e-zero-last')) {
+                    curEle.classList.remove('e-zero-last');
+                }
+                if (curEleC.classList.contains('e-zero-last')) {
+                    curEleC.classList.remove('e-zero-last');
+                }
+                if (preEle.classList.contains('e-zero') || preEle.classList.contains('e-zero-start')) {
+                    preEle.classList.add('e-zero-last');
+                    preEleC.classList.add('e-zero-last');
+                }
+            }
+            else if (preEle) {
+                if (preEle.classList.contains('e-zero')) {
+                    if (curEle.classList.contains('e-zero')) {
+                        if (isCol) {
+                            curEleH.style.width = parseInt(curEleH.style.width, 10) - 1 + 'px';
+                            preEleH.style.width = parseInt(preEleH.style.width, 10) + 2 + 'px';
+                        }
+                        else {
+                            curEleH.style.height = parseInt(curEleH.style.height, 10) - 1 + 'px';
+                            preEleH.style.height = parseInt(preEleH.style.height, 10) + 2 + 'px';
+                        }
+                    }
+                    else {
+                        this.setWidthAndHeight(curEleH, -1, isCol);
+                    }
+                }
+                else {
+                    if (curEle.classList.contains('e-zero')) {
+                        this.setWidthAndHeight(preEleH, 1, isCol);
+                    }
+                    else {
+                        this.setWidthAndHeight(curEleH, -1, isCol);
+                    }
+                }
+                if (curEle.classList.contains('e-zero')) {
+                    curEle.classList.remove('e-zero');
+                }
+                if (curEle.classList.contains('e-zero-end')) {
+                    curEle.classList.remove('e-zero-end');
+                }
+                if (curEleC.classList.contains('e-zero')) {
+                    curEleC.classList.remove('e-zero');
+                }
+                if (curEleC.classList.contains('e-zero-end')) {
+                    curEleC.classList.remove('e-zero-end');
+                }
+            }
+            else if (nxtEle) {
+                if (nxtEle.classList.contains('e-zero')) {
+                    this.setWidthAndHeight(curEleH, -1, isCol);
+                }
+                else if (curEle.classList.contains('e-zero-start')) {
+                    this.setWidthAndHeight(nxtEleH, 1, isCol);
+                    curEle.classList.remove('e-zero-start');
+                }
+                if (curEle.classList.contains('e-zero')) {
+                    curEle.classList.remove('e-zero');
+                }
+                if (curEleC.classList.contains('e-zero')) {
+                    curEleC.classList.remove('e-zero');
+                }
+                if (curEle.classList.contains('e-zero-start')) {
+                    curEle.classList.remove('e-zero-start');
+                }
+                if (curEleC.classList.contains('e-zero-start')) {
+                    curEleC.classList.remove('e-zero-start');
+                }
+            }
+        }
+    }
+    updateCursor(e) {
+        if (this.parent.element.getElementsByClassName('e-colresize-handler')[0]) {
+            this.parent.element.classList.add('e-col-resizing');
+        }
+        else if (this.parent.element.classList.contains('e-col-resizing')) {
+            this.parent.element.classList.remove('e-col-resizing');
+        }
+        if (this.parent.element.getElementsByClassName('e-rowresize-handler')[0]) {
+            this.parent.element.classList.add('e-row-resizing');
+        }
+        else if (this.parent.element.classList.contains('e-row-resizing')) {
+            this.parent.element.classList.remove('e-row-resizing');
+        }
+    }
+    /**
+     * To destroy the resize module.
+     * @return {void}
+     */
+    destroy() {
+        this.unwireEvents();
+        this.removeEventListener();
+        this.parent = null;
+    }
+    /**
+     * Get the module name.
+     * @returns string
+     */
+    getModuleName() {
+        return 'resize';
     }
 }
 
@@ -11049,6 +12289,9 @@ let Ribbon$1 = class Ribbon extends Component {
                 if (!args.parentItem || args.parentItem.text === menuItems[0].text) {
                     requestAnimationFrame(() => menuObj.setProperties({ showItemOnClick: true }, true));
                 }
+            },
+            beforeItemRender: (args) => {
+                this.trigger('beforeFileItemRender', args);
             }
         });
         menuObj.createElement = this.createElement;
@@ -11077,7 +12320,7 @@ let Ribbon$1 = class Ribbon extends Component {
                     this.toolbarObj.items = this.items[args.selectingIndex].content;
                     this.toolbarObj.dataBind();
                     if (this.element.classList.contains('e-collapsed')) {
-                        EventHandler.remove(this.tabObj.element.querySelector('.e-tab-header .e-toolbar-item.e-active'), 'click', this.ribbonExpandCollapse);
+                        EventHandler.remove(args.selectedItem, 'click', this.ribbonExpandCollapse);
                     }
                 }
                 this.trigger('selecting', args);
@@ -11101,15 +12344,19 @@ let Ribbon$1 = class Ribbon extends Component {
     }
     ribbonExpandCollapse(e) {
         let eventArgs = { element: this.toolbarObj.element, expanded: true };
-        let activeTab = this.tabObj.element.querySelector('.e-tab-header .e-toolbar-item.e-active');
+        let activeTab;
         if (this.element.classList.contains('e-collapsed')) {
+            activeTab = this.tabObj.element.querySelector('.e-tab-header').getElementsByClassName('e-toolbar-item')[this.tabObj.selectedItem];
             this.element.classList.remove('e-collapsed');
+            activeTab.classList.add('e-active');
             EventHandler.remove(activeTab, 'click', this.ribbonExpandCollapse);
             this.trigger('expandCollapse', eventArgs);
         }
         else {
+            activeTab = this.tabObj.element.querySelector('.e-tab-header .e-toolbar-item.e-active');
             this.element.classList.add('e-collapsed');
             eventArgs.expanded = false;
+            activeTab.classList.remove('e-active');
             EventHandler.add(activeTab, 'click', this.ribbonExpandCollapse, this);
             this.trigger('expandCollapse', eventArgs);
         }
@@ -11176,6 +12423,9 @@ __decorate$7([
 __decorate$7([
     Event$1()
 ], Ribbon$1.prototype, "fileItemSelect", void 0);
+__decorate$7([
+    Event$1()
+], Ribbon$1.prototype, "beforeFileItemRender", void 0);
 __decorate$7([
     Event$1()
 ], Ribbon$1.prototype, "beforeOpen", void 0);
@@ -11381,29 +12631,20 @@ class Ribbon$$1 {
                 content: [
                     { prefixIcon: 'e-cut-icon', tooltipText: `${l10n.getConstant('Cut')} (Ctrl+X)`, id: id + '_cut' },
                     { prefixIcon: 'e-copy-icon', tooltipText: `${l10n.getConstant('Copy')} (Ctrl+C)`, id: id + '_copy' },
-                    { tooltipText: `${l10n.getConstant('Paste')} (Ctrl+V)`, template: this.getPasteBtn() },
+                    { tooltipText: `${l10n.getConstant('Paste')} (Ctrl+V)`, template: this.getPasteBtn(id) },
                     { type: 'Separator' },
-                    { template: this.parent.createElement('button', { id: id + '_number_format' }),
-                        tooltipText: l10n.getConstant('NumberFormat') }, { type: 'Separator' },
-                    { template: this.parent.createElement('button', { id: id + '_font_name' }),
-                        tooltipText: l10n.getConstant('Font') }, { type: 'Separator' },
-                    { template: this.parent.createElement('button', { id: id + '_font_size' }),
-                        tooltipText: l10n.getConstant('FontSize') }, { type: 'Separator' },
-                    { template: this.parent.createElement('button', { id: id + '_bold' }),
-                        tooltipText: `${l10n.getConstant('Bold')} (Ctrl+B)` },
-                    { template: this.parent.createElement('button', { id: id + '_italic' }),
-                        tooltipText: `${l10n.getConstant('Italic')} (Ctrl+I)` },
-                    { template: this.parent.createElement('button', { id: id + '_line-through' }),
-                        tooltipText: `${l10n.getConstant('Strikethrough')} (Ctrl+5)` },
-                    { template: this.parent.createElement('button', { id: id + '_underline' }),
-                        tooltipText: `${l10n.getConstant('Underline')} (Ctrl+U)` },
+                    { template: this.getNumFormatDDB(id), tooltipText: l10n.getConstant('NumberFormat') }, { type: 'Separator' },
+                    { template: this.getFontNameDDB(id), tooltipText: l10n.getConstant('Font') }, { type: 'Separator' },
+                    { template: this.getFontSizeDDB(id), tooltipText: l10n.getConstant('FontSize') }, { type: 'Separator' },
+                    { template: this.getBtn(id, 'bold'), tooltipText: `${l10n.getConstant('Bold')} (Ctrl+B)` },
+                    { template: this.getBtn(id, 'italic'), tooltipText: `${l10n.getConstant('Italic')} (Ctrl+I)` },
+                    { template: this.getBtn(id, 'line-through'), tooltipText: `${l10n.getConstant('Strikethrough')} (Ctrl+5)` },
+                    { template: this.getBtn(id, 'underline'), tooltipText: `${l10n.getConstant('Underline')} (Ctrl+U)` },
                     { template: document.getElementById(`${id}_font_color_picker`), tooltipText: l10n.getConstant('TextColor') },
                     { type: 'Separator' },
                     { template: document.getElementById(`${id}_fill_color_picker`), tooltipText: l10n.getConstant('FillColor') },
-                    { type: 'Separator' }, { template: this.parent.createElement('button', { id: id + '_text_align' }),
-                        tooltipText: l10n.getConstant('HorizontalAlignment') },
-                    { template: this.parent.createElement('button', { id: id + '_vertical_align' }),
-                        tooltipText: l10n.getConstant('VerticalAlignment') }
+                    { type: 'Separator' }, { template: this.getTextAlignDDB(id), tooltipText: l10n.getConstant('HorizontalAlignment') },
+                    { template: this.getVerticalAlignDDB(id), tooltipText: l10n.getConstant('VerticalAlignment') }
                 ]
             },
             {
@@ -11418,10 +12659,15 @@ class Ribbon$$1 {
                 ]
             }
         ];
+        if (this.parent.allowSorting) {
+            items.find((x) => x.header && x.header.text === l10n.getConstant('Home')).content.push({ type: 'Separator' }, {
+                template: this.getSortingDDB(id), tooltipText: l10n.getConstant('Sort')
+            });
+        }
         return items;
     }
-    getPasteBtn() {
-        let btn = this.parent.element.appendChild(this.parent.createElement('button', { id: this.parent.element.id + '_paste' }));
+    getPasteBtn(id) {
+        let btn = this.parent.element.appendChild(this.parent.createElement('button', { id: id + '_paste' }));
         let l10n = this.parent.serviceLocator.getService(locale);
         let pasteSplitBtn = new SplitButton({
             iconCss: 'e-icons e-paste-icon',
@@ -11469,7 +12715,8 @@ class Ribbon$$1 {
             clicked: this.toolbarClicked.bind(this),
             created: this.ribbonCreated.bind(this),
             selecting: this.tabSelecting.bind(this),
-            expandCollapse: this.expandCollapseHandler.bind(this)
+            expandCollapse: this.expandCollapseHandler.bind(this),
+            beforeFileItemRender: this.beforeRenderHandler.bind(this)
         });
         this.ribbon.createElement = this.parent.createElement;
         if (args && args.uiUpdate) {
@@ -11489,13 +12736,20 @@ class Ribbon$$1 {
             this.parent.notify(tabSwitch, { idx: args.selectingIndex });
         }
     }
-    ribbonCreated() {
-        let id = this.parent.element.id;
+    beforeRenderHandler(args) {
         let l10n = this.parent.serviceLocator.getService(locale);
-        let numFormatBtn = document.getElementById(id + '_number_format');
+        if (args.item.text === l10n.getConstant('Open') && (!this.parent.openUrl || !this.parent.allowOpen)) {
+            args.element.classList.add('e-disabled');
+        }
+        if (args.item.text === l10n.getConstant('SaveAs') && (!this.parent.saveUrl || !this.parent.allowSave)) {
+            args.element.classList.add('e-disabled');
+        }
+    }
+    getNumFormatDDB(id) {
+        let numFormatBtn = this.parent.createElement('button', { id: id + '_number_format' });
         numFormatBtn.appendChild(this.parent.createElement('span', { className: 'e-tbar-btn-text', innerHTML: 'General' }));
         this.numFormatDDB = new DropDownButton({
-            items: this.getNumFormatDdbItems(l10n, id),
+            items: this.getNumFormatDdbItems(id),
             content: '',
             select: (args) => this.numDDBSelect(args),
             open: (args) => this.numDDBOpen(args),
@@ -11506,9 +12760,9 @@ class Ribbon$$1 {
         });
         this.numFormatDDB.createElement = this.parent.createElement;
         this.numFormatDDB.appendTo(numFormatBtn);
-        if (this.parent.enableClipboard) {
-            this.enableRibbonItems({ id: id + '_paste', isEnable: false });
-        }
+        return numFormatBtn;
+    }
+    getFontSizeDDB(id) {
         this.fontSizeDdb = new DropDownButton({
             cssClass: 'e-font-size-ddb',
             content: '11',
@@ -11527,8 +12781,11 @@ class Ribbon$$1 {
             close: () => this.parent.element.focus()
         });
         this.fontSizeDdb.createElement = this.parent.createElement;
-        this.fontSizeDdb.appendTo('#' + id + '_font_size');
-        let fontNameBtn = document.getElementById(id + '_font_name');
+        this.fontSizeDdb.appendTo(this.parent.createElement('button', { id: id + '_font_size' }));
+        return this.fontSizeDdb.element;
+    }
+    getFontNameDDB(id) {
+        let fontNameBtn = this.parent.createElement('button', { id: id + '_font_name' });
         fontNameBtn.appendChild(this.parent.createElement('span', { className: 'e-tbar-btn-text', innerHTML: 'Calibri' }));
         this.fontNameDdb = new DropDownButton({
             cssClass: 'e-font-family',
@@ -11542,6 +12799,16 @@ class Ribbon$$1 {
         });
         this.fontNameDdb.createElement = this.parent.createElement;
         this.fontNameDdb.appendTo(fontNameBtn);
+        return fontNameBtn;
+    }
+    getBtn(id, name) {
+        let btnObj = new Button({ iconCss: `e-icons e-${name}-icon`, isToggle: true });
+        btnObj.createElement = this.parent.createElement;
+        btnObj.appendTo(this.parent.createElement('button', { id: `${id}_${name}` }));
+        btnObj.element.addEventListener('click', this.toggleBtnClicked.bind(this));
+        return btnObj.element;
+    }
+    getTextAlignDDB(id) {
         this.textAlignDdb = new DropDownButton({
             cssClass: 'e-align-ddb',
             iconCss: 'e-icons e-left-icon',
@@ -11560,7 +12827,10 @@ class Ribbon$$1 {
             close: () => this.parent.element.focus()
         });
         this.textAlignDdb.createElement = this.parent.createElement;
-        this.textAlignDdb.appendTo('#' + id + '_text_align');
+        this.textAlignDdb.appendTo(this.parent.createElement('button', { id: id + '_text_align' }));
+        return this.textAlignDdb.element;
+    }
+    getVerticalAlignDDB(id) {
         this.verticalAlignDdb = new DropDownButton({
             cssClass: 'e-align-ddb',
             iconCss: 'e-icons e-bottom-icon',
@@ -11579,16 +12849,46 @@ class Ribbon$$1 {
             close: () => this.parent.element.focus()
         });
         this.verticalAlignDdb.createElement = this.parent.createElement;
-        this.verticalAlignDdb.appendTo('#' + id + '_vertical_align');
-        let btn;
-        ['bold', 'italic', 'line-through', 'underline'].forEach((name) => {
-            let btnObj = new Button({ iconCss: `e-icons e-${name}-icon`, isToggle: true });
-            btnObj.createElement = this.parent.createElement;
-            btn = document.getElementById(`${id}_${name}`);
-            btnObj.appendTo(btn);
-            btnObj.element.addEventListener('click', this.toggleBtnClicked.bind(this));
+        this.verticalAlignDdb.appendTo(this.parent.createElement('button', { id: id + '_vertical_align' }));
+        return this.verticalAlignDdb.element;
+    }
+    getSortingDDB(id) {
+        let l10n = this.parent.serviceLocator.getService(locale);
+        this.sortingDdb = new DropDownButton({
+            cssClass: 'e-sort-ddb',
+            iconCss: 'e-icons e-sort-icon',
+            items: [
+                { text: l10n.getConstant('SortAscending'), iconCss: 'e-icons e-sort-asc' },
+                { text: l10n.getConstant('SortDescending'), iconCss: 'e-icons e-sort-desc' },
+                { text: l10n.getConstant('CustomSort') + '...', iconCss: 'e-icons e-sort-custom' }
+            ],
+            // beforeItemRender: this.alignItemRender.bind(this),
+            beforeOpen: (args) => {
+                this.refreshSelected(this.sortingDdb, args.element, 'iconCss');
+            },
+            select: (args) => {
+                if (args.item.text === l10n.getConstant('CustomSort') + '...') {
+                    this.parent.notify(initiateCustomSort, null);
+                }
+                else {
+                    let direction = args.item.text === l10n.getConstant('SortAscending') ? 'Ascending' : 'Descending';
+                    this.sortingDdb.iconCss = args.item.iconCss;
+                    this.sortingDdb.dataBind();
+                    this.parent.sort({ sortDescriptors: { order: direction } });
+                }
+            },
+            close: () => this.parent.element.focus()
         });
-        this.ribbon.element.querySelector('.e-drop-icon').title = l10n.getConstant('CollapseToolbar');
+        this.sortingDdb.createElement = this.parent.createElement;
+        this.sortingDdb.appendTo(this.parent.createElement('button', { id: id + '_sorting' }));
+        return this.sortingDdb.element;
+    }
+    ribbonCreated() {
+        if (this.parent.enableClipboard) {
+            this.enableRibbonItems({ id: this.parent.element.id + '_paste', isEnable: false });
+        }
+        this.ribbon.element.querySelector('.e-drop-icon').title
+            = this.parent.serviceLocator.getService(locale).getConstant('CollapseToolbar');
     }
     alignItemRender(args) {
         let text = args.item.iconCss.split(' e-')[1].split('-icon')[0];
@@ -11661,19 +12961,20 @@ class Ribbon$$1 {
         }
         this.parent.setPanelSize();
     }
-    getNumFormatDdbItems(l10n, id) {
+    getNumFormatDdbItems(id) {
+        let l10n = this.parent.serviceLocator.getService(locale);
         return [
-            { id: id + 'item1', text: l10n.getConstant(NumberFormatType.General) },
-            { id: id + 'item2', text: l10n.getConstant(NumberFormatType.Number) },
-            { id: id + 'item3', text: l10n.getConstant(NumberFormatType.Currency) },
-            { id: id + 'item4', text: l10n.getConstant(NumberFormatType.Accounting) },
-            { id: id + 'item5', text: l10n.getConstant(NumberFormatType.ShortDate) },
-            { id: id + 'item6', text: l10n.getConstant(NumberFormatType.LongDate) },
-            { id: id + 'item7', text: l10n.getConstant(NumberFormatType.Time) },
-            { id: id + 'item8', text: l10n.getConstant(NumberFormatType.Percentage) },
-            { id: id + 'item9', text: l10n.getConstant(NumberFormatType.Fraction) },
-            { id: id + 'item10', text: l10n.getConstant(NumberFormatType.Scientific) },
-            { id: id + 'item11', text: l10n.getConstant(NumberFormatType.Text) }
+            { id: id + 'item1', text: l10n.getConstant('General') },
+            { id: id + 'item2', text: l10n.getConstant('Number') },
+            { id: id + 'item3', text: l10n.getConstant('Currency') },
+            { id: id + 'item4', text: l10n.getConstant('Accounting') },
+            { id: id + 'item5', text: l10n.getConstant('ShortDate') },
+            { id: id + 'item6', text: l10n.getConstant('LongDate') },
+            { id: id + 'item7', text: l10n.getConstant('Time') },
+            { id: id + 'item8', text: l10n.getConstant('Percentage') },
+            { id: id + 'item9', text: l10n.getConstant('Fraction') },
+            { id: id + 'item10', text: l10n.getConstant('Scientific') },
+            { id: id + 'item11', text: l10n.getConstant('Text') }
         ];
     }
     getFontFamilyItems() {
@@ -11760,7 +13061,7 @@ class Ribbon$$1 {
         let l10n = this.parent.serviceLocator.getService(locale);
         let cell = getCell(actCell[0], actCell[1], this.parent.getActiveSheet(), true);
         cell = cell ? cell : {};
-        let type = getTypeFromFormat(cell.format ? cell.format : NumberFormatType.General);
+        let type = getTypeFromFormat(cell.format ? cell.format : 'General');
         if (this.numFormatDDB) {
             this.refreshNumFormatSelection(l10n.getConstant(type));
         }
@@ -12066,6 +13367,7 @@ class Ribbon$$1 {
         destroyComponent(parentElem.querySelector('#' + id + '_font_name'), DropDownButton);
         destroyComponent(parentElem.querySelector('#' + id + '_text_align'), DropDownButton);
         destroyComponent(parentElem.querySelector('#' + id + '_vertical_align'), DropDownButton);
+        destroyComponent(parentElem.querySelector('#' + id + '_sorting'), DropDownButton);
         ['bold', 'italic', 'line-through', 'underline'].forEach((name) => {
             destroyComponent(parentElem.querySelector('#' + `${id}_${name}`), Button);
         });
@@ -12630,6 +13932,15 @@ class Formula {
             case 'isFormulaEditing':
                 args.isFormulaEdit = this.isFormula;
                 break;
+            case 'isCircularReference':
+                let l10n = this.parent.serviceLocator.getService(locale);
+                let dialogInst = this.parent.serviceLocator.getService(dialog);
+                dialogInst.show({
+                    height: 180, width: 400, isModal: true, showCloseIcon: true,
+                    content: l10n.getConstant('CircularReference'),
+                });
+                args.argValue = '0';
+                break;
         }
     }
     renderAutoComplete() {
@@ -12885,7 +14196,14 @@ class Formula {
     addDefinedName(definedName) {
         if (!definedName.refersTo) {
             let sheet = getSheet(this.parent, this.parent.activeSheetTab - 1);
-            definedName.refersTo = getSheetName(this.parent) + '!' + sheet.selectedRange;
+            let selectRange$$1 = sheet.selectedRange;
+            if (!isNullOrUndefined(selectRange$$1)) {
+                let colIndex = selectRange$$1.indexOf(':');
+                let left = selectRange$$1.substr(0, colIndex);
+                let right = selectRange$$1.substr(colIndex + 1, selectRange$$1.length);
+                selectRange$$1 = left === right ? left : selectRange$$1;
+            }
+            definedName.refersTo = getSheetName(this.parent) + '!' + selectRange$$1;
         }
         let eventArgs = {
             action: 'addDefinedName', definedName: definedName, isAdded: false
@@ -12906,6 +14224,7 @@ class Formula {
  */
 class SheetTabs {
     constructor(parent) {
+        this.aggregateContent = '';
         this.parent = parent;
         this.addEventListener();
     }
@@ -12936,8 +14255,8 @@ class SheetTabs {
             iconCss: 'e-icons',
             items: items.ddbItems,
             select: (args) => this.updateSheetTab({ idx: this.dropDownInstance.items.indexOf(args.item) }),
-            beforeOpen: this.beforeOpenHandler.bind(this),
-            open: this.openHandler.bind(this),
+            beforeOpen: (args) => this.beforeOpenHandler(this.dropDownInstance, args.element),
+            open: (args) => this.openHandler(this.dropDownInstance, args.element, 'left'),
             cssClass: 'e-sheets-list e-flat e-caret-hide',
             close: () => this.parent.element.focus()
         });
@@ -12948,6 +14267,7 @@ class SheetTabs {
             selectedItem: 0,
             overflowMode: 'Scrollable',
             items: items.tabItems,
+            scrollStep: 250,
             selecting: (args) => {
                 /** */
             },
@@ -12979,23 +14299,26 @@ class SheetTabs {
         this.dropDownInstance.items[curIdx].iconCss = 'e-selected-icon e-icons';
         this.dropDownInstance.setProperties({ 'items': this.dropDownInstance.items }, true);
     }
-    beforeOpenHandler(args) {
+    beforeOpenHandler(instance, element) {
         let viewportHeight = this.parent.viewport.height;
-        let actualHeight = (parseInt(getComputedStyle(args.element.firstElementChild).height, 10) *
-            this.dropDownInstance.items.length) + (parseInt(getComputedStyle(args.element).paddingTop, 10) * 2);
+        let actualHeight = (parseInt(getComputedStyle(element.firstElementChild).height, 10) *
+            instance.items.length) + (parseInt(getComputedStyle(element).paddingTop, 10) * 2);
         if (actualHeight > viewportHeight) {
-            args.element.style.height = `${viewportHeight}px`;
-            args.element.style.overflowY = 'auto';
+            element.style.height = `${viewportHeight}px`;
+            element.style.overflowY = 'auto';
         }
-        args.element.parentElement.style.visibility = 'hidden';
+        element.parentElement.style.visibility = 'hidden';
     }
-    openHandler(args) {
-        let wrapper = args.element.parentElement;
+    openHandler(instance, element, positionX) {
+        let wrapper = element.parentElement;
         let height;
         let collide = isCollide(wrapper);
         if (collide.indexOf('bottom') === -1) {
-            height = args.element.style.overflowY === 'auto' ? this.parent.viewport.height : wrapper.getBoundingClientRect().height;
-            let offset = calculatePosition(this.dropDownInstance.element, 'left', 'top');
+            height = element.style.overflowY === 'auto' ? this.parent.viewport.height : wrapper.getBoundingClientRect().height;
+            let offset = calculatePosition(instance.element, positionX, 'top');
+            if (positionX === 'right') {
+                offset.left -= wrapper.getBoundingClientRect().width;
+            }
             wrapper.style.left = `${offset.left}px`;
             wrapper.style.top = `${offset.top - height}px`;
         }
@@ -13068,7 +14391,7 @@ class SheetTabs {
             });
             target.firstElementChild.style.display = 'none';
             target.appendChild(input);
-            EventHandler.add(document, 'click', this.renameInputFocusOut, this);
+            EventHandler.add(document, 'mousedown touchstart', this.renameInputFocusOut, this);
             EventHandler.add(input, 'input', this.updateWidth, this);
             input.focus();
             input.setSelectionRange(0, value.length);
@@ -13088,7 +14411,8 @@ class SheetTabs {
     }
     renameInputFocusOut(e) {
         let target = e.target;
-        if (e.type === 'click' && (target.classList.contains('e-sheet-rename') || closest(target, '.e-dlg-container'))) {
+        if ((e.type === 'mousedown' || e.type === 'touchstart') && (target.classList.contains('e-sheet-rename') ||
+            closest(target, '.e-dlg-container'))) {
             return;
         }
         target = document.getElementById(this.parent.element.id + '_rename_input');
@@ -13142,7 +14466,7 @@ class SheetTabs {
         let textEle = target.parentElement.querySelector('.e-tab-text');
         let sheetItems = closest(target, '.e-toolbar-items');
         EventHandler.add(sheetItems, 'dblclick', this.renameSheetTab, this);
-        EventHandler.remove(document, 'click', this.renameInputFocusOut);
+        EventHandler.remove(document, 'mousedown touchstart', this.renameInputFocusOut);
         EventHandler.remove(target, 'input', this.updateWidth);
         remove(target);
         textEle.style.display = '';
@@ -13211,6 +14535,66 @@ class SheetTabs {
         this.updateDropDownItems(this.tabInstance.selectedItem);
         this.parent.element.focus();
     }
+    showAggregate() {
+        if (isSingleCell(getRangeIndexes(this.parent.getActiveSheet().selectedRange))) {
+            return;
+        }
+        getUpdateUsingRaf(() => {
+            let eventArgs = { Count: 0, Sum: '0', Avg: '0', Min: '0', Max: '0' };
+            this.parent.notify(aggregateComputation, eventArgs);
+            if (eventArgs.Count) {
+                if (!this.aggregateContent) {
+                    this.aggregateContent = eventArgs.Sum ? 'Sum' : 'Count';
+                }
+                let key = this.aggregateContent;
+                let content = `${key}: ${eventArgs[key]}`;
+                if (!this.aggregateDropDown) {
+                    let aggregateEle = this.parent.createElement('button');
+                    document.getElementById(`${this.parent.element.id}_sheet_tab_panel`).appendChild(aggregateEle);
+                    this.aggregateDropDown = new DropDownButton({
+                        content: content,
+                        items: this.getAggregateItems(eventArgs),
+                        select: (args) => this.updateAggregateContent(args.item.text, eventArgs),
+                        beforeOpen: (args) => this.beforeOpenHandler(this.aggregateDropDown, args.element),
+                        open: (args) => this.openHandler(this.aggregateDropDown, args.element, 'right'),
+                        close: () => this.parent.element.focus(),
+                        cssClass: 'e-aggregate-list e-flat'
+                    });
+                    this.aggregateDropDown.createElement = this.parent.createElement;
+                    this.aggregateDropDown.appendTo(aggregateEle);
+                }
+                else {
+                    this.updateAggregateContent(content, eventArgs);
+                }
+            }
+        });
+    }
+    getAggregateItems(args) {
+        let items = [];
+        let text;
+        let iconCss;
+        Object.keys(args).forEach((key) => {
+            if (args[key] !== aggregateComputation) {
+                text = `${key}: ${args[key]}`;
+                iconCss = key === this.aggregateContent ? 'e-selected-icon e-icons' : '';
+                items.push({ text: text, iconCss: iconCss });
+            }
+        });
+        return items;
+    }
+    updateAggregateContent(text, eventArgs) {
+        this.aggregateContent = text.split(': ')[0];
+        this.aggregateDropDown.content = text;
+        this.aggregateDropDown.dataBind();
+        this.aggregateDropDown.setProperties({ 'items': this.getAggregateItems(eventArgs) }, true);
+    }
+    removeAggregate() {
+        if (this.aggregateDropDown && isSingleCell(getRangeIndexes(this.parent.getActiveSheet().selectedRange))) {
+            this.aggregateDropDown.destroy();
+            remove(this.aggregateDropDown.element);
+            this.aggregateDropDown = null;
+        }
+    }
     addEventListener() {
         this.parent.on(sheetTabs, this.createSheetTabs, this);
         this.parent.on(refreshSheetTabs, this.refreshSheetTab, this);
@@ -13220,6 +14604,7 @@ class SheetTabs {
         this.parent.on(cMenuBeforeOpen, this.switchSheetTab, this);
         this.parent.on(activeSheetChanged, this.updateSheetTab, this);
         this.parent.on(renameSheet, this.renameInputFocusOut, this);
+        this.parent.on(activeCellChanged, this.removeAggregate, this);
         this.parent.on(onVerticalScroll, this.focusRenameInput, this);
         this.parent.on(onHorizontalScroll, this.focusRenameInput, this);
     }
@@ -13229,9 +14614,11 @@ class SheetTabs {
         this.dropDownInstance = null;
         this.tabInstance.destroy();
         this.tabInstance = null;
+        this.aggregateDropDown = null;
+        this.aggregateContent = null;
         this.addBtnRipple();
         this.addBtnRipple = null;
-        EventHandler.remove(document, 'click', this.renameInputFocusOut);
+        EventHandler.remove(document, 'mousedown touchstart', this.renameInputFocusOut);
         let ele = document.getElementById(this.parent.element.id + '_sheet_tab_panel');
         if (ele) {
             remove(ele);
@@ -13248,6 +14635,7 @@ class SheetTabs {
             this.parent.off(cMenuBeforeOpen, this.switchSheetTab);
             this.parent.off(activeSheetChanged, this.updateSheetTab);
             this.parent.off(renameSheet, this.renameInputFocusOut);
+            this.parent.off(activeCellChanged, this.removeAggregate);
             this.parent.off(onVerticalScroll, this.focusRenameInput);
             this.parent.off(onHorizontalScroll, this.focusRenameInput);
         }
@@ -13450,33 +14838,40 @@ class ContextMenu$1 {
         let selectArgs = extend({ cancel: false }, args);
         this.parent.trigger('contextMenuItemSelect', selectArgs);
         if (!selectArgs.cancel) {
+            let l10n = this.parent.serviceLocator.getService(locale);
             switch (args.item.text) {
-                case 'Dialog':
-                    // Dialog functionality goes here
-                    break;
-                case 'Cut':
+                case l10n.getConstant('Cut'):
                     this.parent.notify(cut, { isClick: true });
                     break;
-                case 'Copy':
+                case l10n.getConstant('Copy'):
                     this.parent.notify(copy, { isClick: true });
                     break;
-                case 'Paste':
+                case l10n.getConstant('Paste'):
                     this.parent.notify(paste, { isClick: true });
                     break;
-                case 'Values':
+                case l10n.getConstant('Values'):
                     this.parent.notify(paste, { type: 'Values' });
                     break;
-                case 'Formats':
+                case l10n.getConstant('Formats'):
                     this.parent.notify(paste, { type: 'Formats' });
                     break;
-                case 'Rename':
+                case l10n.getConstant('Rename'):
                     this.parent.notify(renameSheetTab, {});
                     break;
-                case 'Delete':
+                case l10n.getConstant('Delete'):
                     this.parent.notify(removeSheetTab, {});
                     break;
-                case 'Insert':
-                    this.parent.notify(addSheetTab, { text: args.item.text });
+                case l10n.getConstant('Insert'):
+                    this.parent.notify(addSheetTab, { text: 'Insert' });
+                    break;
+                case l10n.getConstant('SortAscending'):
+                    this.parent.sort();
+                    break;
+                case l10n.getConstant('SortDescending'):
+                    this.parent.sort({ sortDescriptors: { order: 'Descending' } });
+                    break;
+                case l10n.getConstant('CustomSort') + '...':
+                    this.parent.notify(initiateCustomSort, null);
                     break;
                 default:
                 // Rename functionality goes here
@@ -13500,14 +14895,20 @@ class ContextMenu$1 {
      * To get target area based on right click.
      */
     getTarget(target) {
-        if (closest(target, '.e-row-header') || closest(target, '.e-header-panel')) {
-            return 'Header';
-        }
-        else if (closest(target, '.e-main-content')) {
+        if (closest(target, '.e-main-content')) {
             return 'Content';
+        }
+        else if (closest(target, '.e-column-header')) {
+            return 'ColumnHeader';
+        }
+        else if (closest(target, '.e-row-header')) {
+            return 'RowHeader';
         }
         else if (closest(target, '.e-sheet-tabs-items')) {
             return 'Footer';
+        }
+        else if (closest(target, '.e-selectall-container')) {
+            return 'SelectAll';
         }
         else {
             return '';
@@ -13517,46 +14918,72 @@ class ContextMenu$1 {
      * To populate context menu items based on target area.
      */
     getDataSource(target) {
+        let l10n = this.parent.serviceLocator.getService(locale);
         let items = [];
-        if (target === 'Header') {
-            this.setClipboardData(items);
+        if (target === 'Content') {
+            this.setClipboardData(items, l10n);
+            //push sort items here
+            this.setSortItems(items);
         }
-        else if (target === 'Content') {
-            this.setClipboardData(items);
+        else if (target === 'RowHeader') {
+            this.setClipboardData(items, l10n);
+        }
+        else if (target === 'ColumnHeader') {
+            this.setClipboardData(items, l10n);
+        }
+        else if (target === 'SelectAll') {
+            this.setClipboardData(items, l10n);
+            this.setSortItems(items);
         }
         else if (target === 'Footer') {
             items.push({
-                text: 'Insert'
+                text: l10n.getConstant('Insert')
             });
             items.push({
-                text: 'Delete', iconCss: 'e-icons e-delete'
+                text: l10n.getConstant('Delete'), iconCss: 'e-icons e-delete'
             });
             items.push({
-                text: 'Rename'
+                text: l10n.getConstant('Rename')
             });
         }
         return items;
     }
-    setClipboardData(items) {
+    /**
+     * Sets sorting related items to the context menu.
+     */
+    setSortItems(items) {
+        let l10n = this.parent.serviceLocator.getService(locale);
+        if (this.parent.allowSorting) {
+            items.push({
+                text: l10n.getConstant('Sort'),
+                iconCss: 'e-icons e-sort-icon',
+                items: [
+                    { text: l10n.getConstant('SortAscending'), iconCss: 'e-icons e-sort-asc' },
+                    { text: l10n.getConstant('SortDescending'), iconCss: 'e-icons e-sort-desc' },
+                    { text: l10n.getConstant('CustomSort') + '...', iconCss: 'e-icons e-sort-custom' }
+                ]
+            });
+        }
+    }
+    setClipboardData(items, l10n) {
         if (this.parent.enableClipboard) {
             items.push({
-                text: 'Cut',
+                text: l10n.getConstant('Cut'),
                 iconCss: 'e-icons e-cut-icon'
             });
             items.push({
-                text: 'Copy',
+                text: l10n.getConstant('Copy'),
                 iconCss: 'e-icons e-copy-icon'
             });
             items.push({
-                text: 'Paste',
+                text: l10n.getConstant('Paste'),
                 iconCss: 'e-icons e-paste-icon'
             });
             items.push({
-                text: 'Paste Special',
-                iconCss: 'e-icons e-paste-icon',
+                text: l10n.getConstant('PasteSpecial'),
                 items: [
-                    { text: 'Values' },
-                    { text: 'Formats' }
+                    { text: l10n.getConstant('Values') },
+                    { text: l10n.getConstant('Formats') }
                 ]
             });
         }
@@ -13669,6 +15096,409 @@ class NumberFormat {
 }
 
 /**
+ * `Sort` module is used to handle the sort action in Spreadsheet.
+ */
+class Sort {
+    /**
+     * Constructor for sort module.
+     */
+    constructor(parent) {
+        this.parent = parent;
+        this.addEventListener();
+    }
+    /**
+     * To destroy the sort module.
+     * @return {void}
+     */
+    destroy() {
+        this.removeEventListener();
+        this.parent = null;
+    }
+    addEventListener() {
+        this.parent.on(validateSortRange, this.validateSortRange, this);
+        this.parent.on(beforeSort, this.beforeSortHandler, this);
+        this.parent.on(sortComplete, this.sortComplete, this);
+        this.parent.on(initiateCustomSort, this.initiateCustomSort, this);
+    }
+    removeEventListener() {
+        if (!this.parent.isDestroyed) {
+            this.parent.off(validateSortRange, this.validateSortRange);
+            this.parent.off(beforeSort, this.beforeSortHandler);
+            this.parent.off(sortComplete, this.sortComplete);
+            this.parent.off(initiateCustomSort, this.initiateCustomSort);
+        }
+    }
+    /**
+     * Gets the module name.
+     * @returns string
+     */
+    getModuleName() {
+        return 'sort';
+    }
+    /**
+     * Validates the range to be sorted.
+     */
+    validateSortRange(args) {
+        args.isValid = this.showRangeAlert(args.range);
+    }
+    /**
+     * Validates the range and shows the alert dialog and return true when invalid.
+     * @param address - range address.
+     */
+    showRangeAlert(address) {
+        let l10n = this.parent.serviceLocator.getService(locale);
+        let sheet = this.parent.getActiveSheet();
+        let rangeStr = address || sheet.selectedRange;
+        let range = getSwapRange(getIndexesFromAddress(rangeStr));
+        if (range[0] > sheet.usedRange.rowIndex - 1 || range[1] > sheet.usedRange.colIndex) {
+            this.parent.serviceLocator.getService(dialog).show({
+                height: 180, width: 400, isModal: true, showCloseIcon: true,
+                content: l10n.getConstant('SortOutOfRangeError')
+            });
+            this.parent.hideSpinner();
+            return false;
+        }
+        return true;
+    }
+    /**
+     * Initiates sort process.
+     */
+    beforeSortHandler(args) {
+        this.parent.showSpinner();
+    }
+    /**
+     * Invoked when the sort action is completed.
+     */
+    sortComplete(args) {
+        let range = getIndexesFromAddress(args.range);
+        this.parent.serviceLocator.getService('cell').refreshRange(range);
+        this.parent.hideSpinner();
+    }
+    /**
+     * Initiates the custom sort dialog.
+     */
+    initiateCustomSort() {
+        let l10n = this.parent.serviceLocator.getService(locale);
+        if (!this.showRangeAlert()) {
+            return;
+        }
+        let dialogInst = this.parent.serviceLocator.getService(dialog);
+        dialogInst.show({
+            height: 400, width: 560, isModal: true, showCloseIcon: true, cssClass: 'e-customsort-dlg',
+            header: l10n.getConstant('CustomSort'),
+            beforeOpen: () => {
+                dialogInst.dialogInstance.content = this.customSortContent();
+                dialogInst.dialogInstance.dataBind();
+                this.parent.element.focus();
+            },
+            buttons: [{
+                    buttonModel: {
+                        content: this.parent.serviceLocator.getService(locale).getConstant('Ok'), isPrimary: true
+                    },
+                    click: () => {
+                        let element = dialogInst.dialogInstance.content;
+                        let list = element.getElementsByClassName('e-list-sort e-listview e-lib')[0];
+                        let listview = getComponent(list, 'listview');
+                        let data = listview.dataSource;
+                        this.clearError();
+                        let errorElem = element.getElementsByClassName('e-sort-error')[0];
+                        errorElem.style.display = 'block';
+                        if (!this.validateError(data, element, errorElem)) {
+                            dialogInst.hide();
+                            let headercheck = element.getElementsByClassName('e-sort-checkheader')[0];
+                            let headerCheckbox = getComponent(headercheck, 'checkbox');
+                            let hasHeader = headerCheckbox.checked;
+                            this.parent.sort({ sortDescriptors: data, containsHeader: hasHeader });
+                        }
+                    }
+                }]
+        });
+    }
+    /**
+     * Validates the errors of the sort criteria and displays the error.
+     * @param json - listview datasource.
+     * @param dialogElem - dialog content element.
+     * @param errorElem - element to display error.
+     */
+    validateError(json, dialogElem, errorElem) {
+        //1. All sort criteria must have a column specified. Check the selected sort criteria and try again.
+        //2. Column B is being sorted by values more than once. Delete the duplicate sort criteria and try again.
+        let l10n = this.parent.serviceLocator.getService(locale);
+        let hasEmpty = json.some((element) => element.field.toString() === '');
+        if (hasEmpty) {
+            Array.prototype.some.call(dialogElem.getElementsByClassName('e-sort-field'), (dropDown) => {
+                let hasError = !getComponent(dropDown, 'dropdownlist').value;
+                if (hasError) {
+                    dropDown.parentElement.classList.add('e-error');
+                }
+                return hasError; //breaks the loop if only one error added.
+            });
+            errorElem.innerText = l10n.getConstant('SortEmptyFieldError');
+            return true;
+        }
+        let temp = new Set();
+        let duplicateField = '';
+        let hasDuplicate = json.some((element) => {
+            duplicateField = element.field.toString();
+            return temp.size === temp.add(element.field).size;
+        });
+        let errorField = '';
+        if (hasDuplicate) {
+            let count = 0;
+            Array.prototype.some.call(dialogElem.getElementsByClassName('e-sort-field'), (dropDown) => {
+                let dropDownList = getComponent(dropDown, 'dropdownlist');
+                if (dropDownList.value === duplicateField) {
+                    dropDown.parentElement.classList.add('e-error');
+                    errorField = dropDownList.text;
+                    count++;
+                }
+                return count === 2; //breaks the loop when 2 errors added.
+            });
+            errorElem.innerHTML = '<strong>' + errorField + '</strong>' + l10n.getConstant('SortDuplicateFieldError');
+            return true;
+        }
+        return false;
+    }
+    /**
+     * Creates all the elements and generates the dialog content element.
+     */
+    customSortContent() {
+        let dialogElem = this.parent.createElement('div', { className: 'e-sort-dialog' });
+        let fields = this.getFields();
+        let listId = getUniqueID('customSort');
+        let listviewObj = this.getCustomListview(listId);
+        this.setHeaderTab(dialogElem, listviewObj, fields);
+        let contentElem = this.parent.createElement('div', {
+            className: 'e-sort-listsection',
+            styles: ''
+        });
+        dialogElem.appendChild(contentElem);
+        let listview = this.parent.createElement('div', { className: 'e-list-sort', styles: '' });
+        contentElem.appendChild(listview);
+        listviewObj.createElement = this.parent.createElement;
+        listviewObj.appendTo(listview);
+        this.renderListItem(listId, listviewObj, true, fields);
+        let errorElem = this.parent.createElement('div', { className: 'e-sort-error' });
+        dialogElem.appendChild(errorElem);
+        return dialogElem;
+    }
+    /**
+     * Gets the fields data from the selected range.
+     */
+    getFields() {
+        let sheet = this.parent.getActiveSheet();
+        let range = getSwapRange(getIndexesFromAddress(sheet.selectedRange));
+        if (range[0] === range[2] && (range[2] - range[0]) === 0) { //for entire range
+            range[0] = 0;
+            range[1] = 0;
+            range[3] = sheet.usedRange.colIndex;
+        }
+        let fields = [];
+        let fieldName;
+        for (range[1]; range[1] <= range[3]; range[1]++) {
+            let cell = getCell(range[0], range[1], sheet);
+            if (cell && cell.value) {
+                let eventArgs = {
+                    formattedText: cell.value,
+                    value: cell.value,
+                    format: cell.format,
+                    onLoad: true
+                };
+                if (cell.format) {
+                    this.parent.notify(getFormattedCellObject, eventArgs);
+                }
+                fieldName = eventArgs.formattedText;
+            }
+            else {
+                fieldName = 'Column ' + getColumnHeaderText(range[1] + 1);
+            }
+            fields.push({ text: fieldName, value: 'Column ' + getColumnHeaderText(range[1] + 1) });
+        }
+        return fields;
+    }
+    /**
+     * Creates the header tab for the custom sort dialog.
+     * @param dialogElem - dialog content element.
+     * @param listviewObj - listview instance.
+     * @param fields - fields data.
+     */
+    setHeaderTab(dialogElem, listviewObj, fields) {
+        let l10n = this.parent.serviceLocator.getService(locale);
+        let headerTabElement = this.parent.createElement('div', {
+            className: 'e-sort-header',
+            styles: '',
+            innerHTML: ''
+        });
+        dialogElem.appendChild(headerTabElement);
+        let addButton = this.parent.createElement('button', {
+            className: 'e-btn e-sort-addbtn e-flat',
+            innerHTML: l10n.getConstant('AddColumn')
+        });
+        let footer = this.parent.element.querySelector('.e-customsort-dlg .e-footer-content');
+        footer.insertBefore(addButton, footer.firstElementChild);
+        addButton.addEventListener('click', () => {
+            if (listviewObj) {
+                let listId = getUniqueID('customSort');
+                listviewObj.addItem([{ id: listId, text: l10n.getConstant('ThenBy'), field: '', order: 'ascending' }]);
+                this.renderListItem(listId, listviewObj, checkHeaderObj.checked, fields, true);
+            }
+        });
+        let checkHeaderObj = new CheckBox({
+            label: l10n.getConstant('ContainsHeader'),
+            checked: true,
+            change: (args) => {
+                let fieldsMap = args.checked ? { text: 'text', value: 'value' } : { text: 'value' };
+                Array.prototype.forEach.call(dialogElem.getElementsByClassName('e-sort-field e-dropdownlist e-lib'), (dropDown) => {
+                    let dropDownListObj = getComponent(dropDown, 'dropdownlist');
+                    dropDownListObj.dataSource = null; //reset datasource.
+                    dropDownListObj.dataSource = fields;
+                    dropDownListObj.fields = fieldsMap;
+                    dropDownListObj.dataBind();
+                });
+            },
+            cssClass: 'e-sort-headercheckbox'
+        });
+        let headerCheckbox = this.parent.createElement('input', {
+            className: 'e-sort-checkheader', attrs: { type: 'checkbox' }
+        });
+        headerTabElement.appendChild(headerCheckbox);
+        checkHeaderObj.createElement = this.parent.createElement;
+        checkHeaderObj.appendTo(headerCheckbox);
+    }
+    /**
+     * Creates a listview instance.
+     * @param listId - unique id of the list item.
+     */
+    getCustomListview(listId) {
+        let l10n = this.parent.serviceLocator.getService(locale);
+        let data = [{ id: listId, text: l10n.getConstant('SortBy'), field: '', order: 'ascending' }];
+        enableRipple(false);
+        let listviewObj = new ListView({
+            dataSource: data,
+            fields: { id: 'id' },
+            height: '100%',
+            template: '<div class="e-sort-listwrapper">' +
+                '<span class="text">${text}</span>' +
+                '<div class="e-sort-row"><div class="e-sort-field"></div>' +
+                '<div class="e-sort-order">' +
+                '<span class="e-sort-ordertxt" style="display:none;">${order}</span></div>' +
+                '<span class="e-icons e-sort-delete"></span></div>',
+            cssClass: 'e-sort-template',
+        });
+        return listviewObj;
+    }
+    /**
+     * Triggers the click event for delete icon.
+     * @param element - current list item element.
+     * @param listviewObj - listview instance.
+     */
+    deleteHandler(element, listviewObj) {
+        let iconEle = element.getElementsByClassName('e-sort-delete')[0];
+        //Event handler to bind the click event for delete icon
+        iconEle.addEventListener('click', () => {
+            if (element) {
+                listviewObj.removeItem(element);
+            }
+        });
+    }
+    /**
+     * Renders the dropdown and radio button components inside list item.
+     * @param id - unique id of the list item.
+     * @param listviewObj - listview instance.
+     * @param containsHeader - data contains header.
+     * @param fields - fields data.
+     */
+    renderListItem(id, lvObj, containsHeader, fields, btn) {
+        let l10n = this.parent.serviceLocator.getService(locale);
+        let element = lvObj.element.querySelector('li[data-uid=' + id + ']');
+        let fieldsMap = containsHeader ? { text: 'text', value: 'value' } : { text: 'value' };
+        let dropDown = element.getElementsByClassName('e-sort-field')[0];
+        let dropDownListObj = new DropDownList({
+            dataSource: fields,
+            width: 'auto',
+            fields: fieldsMap,
+            placeholder: l10n.getConstant('SelectAColumn'),
+            change: (args) => {
+                if (!args.value) {
+                    return;
+                }
+                Array.prototype.some.call(lvObj.dataSource, (item) => {
+                    if (item.id === id) {
+                        item.field = args.value;
+                    }
+                    return item.id === id; //breaks the loop when proper id found
+                });
+                this.clearError();
+            }
+        });
+        dropDownListObj.createElement = this.parent.createElement;
+        dropDownListObj.appendTo(dropDown);
+        if (!btn) {
+            dropDownListObj.index = 0;
+        }
+        /* sort ascending radio button */
+        let orderRadio = element.getElementsByClassName('e-sort-order')[0];
+        let ordertxtElem = orderRadio.getElementsByClassName('e-sort-ordertxt')[0];
+        let isAscending = ordertxtElem.innerText.toLocaleLowerCase() === 'ascending';
+        let radiobutton = new RadioButton({
+            label: l10n.getConstant('SortAscending'),
+            name: 'sortAZ_' + id, value: 'ascending', checked: isAscending, cssClass: 'e-sort-radiobutton',
+            change: (args) => { this.setRadioBtnValue(lvObj, id, args.value); }
+        });
+        let radio = this.parent.createElement('input', {
+            id: 'orderAsc_' + id, className: 'e-sort-radioasc', styles: '', attrs: { type: 'radio' }
+        });
+        orderRadio.appendChild(radio);
+        radiobutton.createElement = this.parent.createElement;
+        radiobutton.appendTo(radio);
+        /* sort descending radio button */
+        let radiobutton2 = new RadioButton({
+            label: l10n.getConstant('SortDescending'),
+            name: 'sortAZ_' + id, value: 'descending', checked: !isAscending, cssClass: 'e-sort-radiobutton',
+            change: (args) => { this.setRadioBtnValue(lvObj, id, args.value); }
+        });
+        let radio2 = this.parent.createElement('input', {
+            id: 'orderDesc_' + id, className: 'e-sort-radiodesc', styles: '', attrs: { type: 'radio' }
+        });
+        orderRadio.appendChild(radio2);
+        radiobutton2.createElement = this.parent.createElement;
+        radiobutton2.appendTo(radio2);
+        this.deleteHandler(element, lvObj);
+    }
+    /**
+     * Sets the new value of the radio button.
+     * @param listviewObj - listview instance.
+     * @param id - unique id of the list item.
+     * @param value - new value.
+     */
+    setRadioBtnValue(listviewObj, id, value) {
+        if (!value) {
+            return;
+        }
+        Array.prototype.some.call(listviewObj.dataSource, (item) => {
+            if (item.id === id) {
+                item.order = value;
+            }
+            return item.id === id; //breaks the loop when proper id found
+        });
+    }
+    /**
+     * Clears the error from the dialog.
+     * @param dialogElem - dialog content element.
+     */
+    clearError() {
+        let dialogElem = document.getElementsByClassName('e-sort-dialog')[0];
+        let errorElem = dialogElem.getElementsByClassName('e-sort-error')[0];
+        if (errorElem.style.display !== 'none' && errorElem.innerHTML !== '') {
+            errorElem.style.display = 'none';
+            Array.prototype.forEach.call(dialogElem.getElementsByClassName('e-error'), (element) => {
+                element.classList.remove('e-error');
+            });
+        }
+    }
+}
+
+/**
  * Export Spreadsheet integration modules
  */
 
@@ -13682,7 +15512,7 @@ class BasicModule {
      * @private
      */
     constructor() {
-        Spreadsheet.Inject(Ribbon$$1, FormulaBar, SheetTabs, Selection, Edit, KeyboardNavigation, KeyboardShortcut, Clipboard, DataBind, Open, ContextMenu$1, Save, NumberFormat, CellFormat, Formula);
+        Spreadsheet.Inject(Ribbon$$1, FormulaBar, SheetTabs, Selection, Edit, KeyboardNavigation, KeyboardShortcut, Clipboard, DataBind, Open, ContextMenu$1, Save, NumberFormat, CellFormat, Formula, Sort);
     }
     /**
      * For internal use only - Get the module name.
@@ -13710,7 +15540,7 @@ class AllModule {
      * @private
      */
     constructor() {
-        Spreadsheet.Inject(Ribbon$$1, FormulaBar, SheetTabs, Selection, Edit, KeyboardNavigation, KeyboardShortcut, Clipboard, DataBind, Open, Save, NumberFormat, CellFormat, Formula);
+        Spreadsheet.Inject(Ribbon$$1, FormulaBar, SheetTabs, Selection, Edit, KeyboardNavigation, KeyboardShortcut, Clipboard, DataBind, Open, Save, NumberFormat, CellFormat, Formula, Sort);
     }
     /**
      * For internal use only - Get the module name.
@@ -13790,6 +15620,7 @@ let defaultLocale = {
     Cut: 'Cut',
     Copy: 'Copy',
     Paste: 'Paste',
+    PasteSpecial: 'Paste Special',
     All: 'All',
     Values: 'Values',
     Formats: 'Formats',
@@ -13810,6 +15641,11 @@ let defaultLocale = {
     AlignMiddle: 'Align Middle',
     AlignBottom: 'Align Bottom',
     InsertFunction: 'Insert Function',
+    Insert: 'Insert',
+    Delete: 'Delete',
+    Rename: 'Rename',
+    Hide: 'Hide',
+    Unhide: 'Unhide',
     NameBox: 'Name Box',
     ShowHeaders: 'Show Headers',
     HideHeaders: 'Hide Headers',
@@ -13833,6 +15669,19 @@ let defaultLocale = {
     ExcelXls: 'Microsoft Excel 97-2003',
     CSV: 'Comma-separated values',
     FormulaBar: 'Formula Bar',
+    Sort: 'Sort',
+    SortAscending: 'Ascending',
+    SortDescending: 'Descending',
+    CustomSort: 'Custom Sort',
+    AddColumn: 'Add Column',
+    ContainsHeader: 'Data contains header',
+    CaseSensitive: 'Case sensitive',
+    SortBy: 'Sort by',
+    ThenBy: 'Then by',
+    SelectAColumn: 'Select a column',
+    SortEmptyFieldError: 'All sort criteria must have a column specified. Check the selected sort criteria and try again.',
+    SortDuplicateFieldError: ' is being sorted by values more than once. Delete the duplicate sort criteria and try again.',
+    SortOutOfRangeError: 'Select a cell or range inside the used range and try again.',
     Ok: 'Ok',
     Close: 'Close',
     Cancel: 'Cancel',
@@ -13852,8 +15701,8 @@ let defaultLocale = {
     Text: 'Text',
     MobileFormulaBarPlaceHolder: 'Enter value or Formula',
     NumberFormat: 'Number Format',
-    PasteAlert: 'You can\'t paste this here because the copy area and paste area aren\'t in the same size.' +
-        '</br></br>Select just one cell in the paste area or an area that\'s the same size, and try pasting again.',
+    PasteAlert: 'You can\'t paste this here, because the copy area and paste area aren\'t in the same size. ' +
+        'Please try pasting in a different range.',
     DestroyAlert: 'Are you sure you want to destroy the current workbook without saving and create a new workbook?',
     SheetRenameInvalidAlert: 'Sheet name contains invalid character.',
     SheetRenameEmptyAlert: 'Sheet name cannot be empty.',
@@ -13863,42 +15712,44 @@ let defaultLocale = {
     PickACategory: 'Pick a category',
     Description: 'Description',
     UnsupportedFile: 'Unsupported File',
-    InvalidUrl: 'Invalid Url',
-    SUM: 'Sums all values, cell references or ranges.',
-    SUMIFS: 'Sums the cells specified by a given set of conditions or criteria.',
-    ABS: 'Returns the absolute value of a number.',
-    RAND: 'Return a random number between 0 and 1.',
-    FLOOR: 'Returns the round a number down to the nearest multiple of significance.',
-    CEILING: 'Returns a number rounded up to a nearest multiple of significance.',
-    SUMIF: 'It will sum up cells that meet the given criteria.',
-    PRODUCT: 'Multiplies all the numbers given as arguments and returns the product.',
-    AVERAGE: 'The sum of the numbers divided by how many numbers are being averaged.',
-    AVERAGEIF: 'Computes the average of the numbers in a range that meet the supplied criteria.',
-    COUNT: 'Counts the numbers in the list of arguments, exclude text entries.',
-    COUNTA: 'Counts the non-empty values in the list of arguments.',
-    COUNTIF: 'Counts the number of cells in a range that meet a specified condition.',
-    COUNTIFS: 'Counts the number of times each cells in all the ranges that meet the specific conditions.',
-    AVERAGEA: 'Calculates the average of values in the list of arguments.Arguments can be numbers, names, arrays or references.',
-    AVERAGEIFS: 'Conditionally returns the average of the contents of cells for the set of ranges.',
-    MIN: 'Returns the smaller number in set of arguments.',
-    MAX: 'Returns the largest number in set of arguments.',
-    DATE: 'Returns the date, given the year, month and day of the month.',
-    DAY: 'Returns the day of a given date.',
+    InvalidUrl: 'Invalid URL',
+    SUM: 'Adds a series of numbers and/or cells.',
+    SUMIF: 'Adds the cells based on specified condition.',
+    SUMIFS: 'Adds the cells based on specified conditions.',
+    ABS: 'Returns the value of a number without its sign.',
+    RAND: 'Returns a random number between 0 and 1.',
+    RANDBETWEEN: 'Returns a random integer based on specified values.',
+    FLOOR: 'Rounds a number down to the nearest multiple of a given factor.',
+    CEILING: 'Rounds a number up to the nearest multiple of a given factor.',
+    PRODUCT: 'Multiplies a series of numbers and/or cells.',
+    AVERAGE: 'Calculates average for the series of numbers and/or cells excluding text.',
+    AVERAGEIF: 'Calculates average for the cells based on specified criterion.',
+    AVERAGEIFS: 'Calculates average for the cells based on specified conditions.',
+    AVERAGEA: 'Calculates the average for the cells evaluating TRUE as 1, text and FALSE as 0.',
+    COUNT: 'Counts the cells that contain numeric values in a range.',
+    COUNTIF: 'Counts the cells based on specified condition.',
+    COUNTIFS: 'Counts the cells based on specified conditions.',
+    COUNTA: 'Counts the cells that contains values in a range.',
+    MIN: 'Returns the smallest number of the given arguments.',
+    MAX: 'Returns the largest number of the given arguments.',
+    DATE: 'Returns the date based on given year, month, and day.',
+    DAY: 'Returns the day from the given date.',
     DAYS: 'Returns the number of days between two dates.',
-    IF: 'Returns one value if a logical expression is TRUE and another if it is FALSE',
-    AND: 'Returns TRUE if all the arguments are considered TRUE, and FALSE otherwise.',
-    IFS: 'Checks multiple conditions and returns a value corresponding to the first TRUE result.',
-    IFERROR: 'Returns a value you specify if a formula evaluates to an error; otherwise, it returns the result of the formula.',
-    CHOOSE: 'Returns a value from a list, given an index number.',
-    INDEX: 'Returns a value from a table, given a row and column number.',
-    FIND: 'Returns the position of a string of text within another string.',
-    CONCATENATE: 'Used to join two or more strings together.',
-    CONCAT: 'Concatenates a list or range of text strings.',
-    SUBTOTAL: 'Returns a subtotal in a list or database.',
-    RADIANS: 'Converts degrees in to radians.',
-    OR: 'Returns TRUE if any arguments considered TRUE, and all the arguments are FALSE it will return FALSE.',
-    MATCH: 'Returns the relative position of an checked item in range that matches a specified value in a specified order.',
-    DefineNameExists: 'This name is already exists, try different name.'
+    IF: 'Returns value based on the given expression.',
+    IFS: 'Returns value based on the given multiple expressions.',
+    AND: 'Returns TRUE if all the arguments are TRUE, otherwise returns FALSE.',
+    OR: 'Returns TRUE if any of the arguments are TRUE, otherwise returns FALSE.',
+    IFERROR: 'Returns value if no error found else it will return specified value.',
+    CHOOSE: 'Returns a value from list of values, based on index number.',
+    INDEX: 'Returns a value of the cell in a given range based on row and column number.',
+    FIND: 'Returns the position of a string within another string, which is case sensitive',
+    CONCATENATE: 'Combines two or more strings together.',
+    CONCAT: 'Concatenates a list or a range of text strings.',
+    SUBTOTAL: 'Returns subtotal for a range using the given function number.',
+    RADIANS: 'Converts degrees into radians.',
+    MATCH: 'Returns the relative position of a specified value in given range.',
+    DefineNameExists: 'This name already exists, try different name.',
+    CircularReference: 'When a formula refers to one or more circular references, this may result in an incorrect calculation.'
 };
 
 /**
@@ -13922,7 +15773,7 @@ class SheetRender {
         let cell;
         if (this.freezePane) {
             let tHead = this.getSelectAllTable().querySelector('thead');
-            let row = this.rowRenderer.render(true);
+            let row = this.rowRenderer.render();
             tHead.appendChild(row);
             cell = this.parent.createElement('th', { className: 'e-select-all-cell' });
             row.appendChild(cell);
@@ -13934,13 +15785,14 @@ class SheetRender {
         cell.appendChild(this.parent.createElement('button', { className: 'e-selectall e-icons',
             id: `${this.parent.element.id}_select_all` }));
     }
-    updateLeftColGroup(width, table) {
+    updateLeftColGroup(width, rowHdr) {
         if (width) {
             this.colGroupWidth = width;
         }
-        if (!table) {
-            table = this.getRowHeaderTable();
+        if (!rowHdr) {
+            rowHdr = this.getRowHeaderPanel();
         }
+        let table = rowHdr.querySelector('table');
         this.detachColGroup(table);
         let colGrp = this.parent.createElement('colgroup');
         let colGrpWidth = `${this.colGroupWidth}px`;
@@ -13948,6 +15800,7 @@ class SheetRender {
         col.style.width = colGrpWidth;
         colGrp.appendChild(col);
         table.insertBefore(colGrp, table.querySelector('tbody'));
+        rowHdr.style.width = colGrpWidth;
         if (this.freezePane) {
             table = this.getSelectAllTable();
             this.detachColGroup(table);
@@ -14005,7 +15858,7 @@ class SheetRender {
         }
         this.updateTable('thead', 'colhdr', this.headerPanel.querySelector('.e-column-header'));
         this.updateTable('tbody', 'rowhdr', rowHdrEle);
-        this.updateLeftColGroup(null, rowHdrEle.querySelector('table'));
+        this.updateLeftColGroup(null, rowHdrEle);
     }
     updateTable(tagName, name, appendTo) {
         let table = this.parent.createElement('table', { className: 'e-table', attrs: { 'role': 'grid' } });
@@ -14033,11 +15886,18 @@ class SheetRender {
             rHdrTBody = this.contentPanel.querySelector('.e-row-header tbody');
             cHdrTHead = this.headerPanel.querySelector('.e-column-header thead');
             this.getColHeaderTable().insertBefore(colGrp, cHdrTHead);
-            cHdrRow = this.rowRenderer.render(true);
+            cHdrRow = this.rowRenderer.render();
             cHdrTHead.appendChild(cHdrRow);
         }
         frag.appendChild(this.contentPanel);
         this.parent.notify(beforeContentLoaded, { startColIdx: colIdx });
+        let colCount = sheet.colCount.toString();
+        let rowCount = sheet.colCount.toString();
+        if (sheet.showHeaders) {
+            this.parent.getColHeaderTable().setAttribute('aria-colcount', colCount);
+            this.parent.getRowHeaderTable().setAttribute('aria-rowcount', rowCount);
+        }
+        attributes(this.parent.getContentTable(), { 'aria-rowcount': rowCount, 'aria-colcount': colCount });
         cells.forEach((value, key) => {
             indexes = getRangeIndexes(key);
             if (indexes[0] === rowIdx) {
@@ -14048,11 +15908,11 @@ class SheetRender {
             }
             if (indexes[1] === colIdx) {
                 if (sheet.showHeaders) {
-                    row = this.rowRenderer.render(false, indexes[0]);
+                    row = this.rowRenderer.render(indexes[0], true);
                     rHdrTBody.appendChild(row);
                     row.appendChild(this.cellRenderer.renderRowHeader(indexes[0]));
                 }
-                row = this.rowRenderer.render(false, indexes[0]);
+                row = this.rowRenderer.render(indexes[0]);
                 cTBody.appendChild(row);
             }
             row.appendChild(this.cellRenderer.render({ colIdx: indexes[1], rowIdx: indexes[0], cell: value,
@@ -14163,12 +16023,12 @@ class SheetRender {
             indexes = getRangeIndexes(key);
             if (indexes[1] === startIndex) {
                 if (sheet.showHeaders) {
-                    hRow = this.rowRenderer.render(false, indexes[0]);
+                    hRow = this.rowRenderer.render(indexes[0], true);
                     hTBody.appendChild(hRow);
                     hRow.appendChild(this.cellRenderer.renderRowHeader(indexes[0]));
                     colGroupWidth = getColGroupWidth(indexes[0] + 1);
                 }
-                row = this.rowRenderer.render(false, indexes[0]);
+                row = this.rowRenderer.render(indexes[0]);
                 tBody.appendChild(row);
             }
             row.appendChild(this.cellRenderer.render({ rowIdx: indexes[0], colIdx: indexes[1], cell: value, address: key,
@@ -14295,7 +16155,7 @@ class SheetRender {
             indexes = getRangeIndexes(cKey);
             if (indexes[1] === startIndex) {
                 if (sheet.showHeaders) {
-                    hRow = this.rowRenderer.render(false, indexes[0]);
+                    hRow = this.rowRenderer.render(indexes[0], true);
                     rFrag.appendChild(hRow);
                     hRow.appendChild(this.cellRenderer.renderRowHeader(indexes[0]));
                     colGroupWidth = getColGroupWidth(indexes[0] + 1);
@@ -14304,7 +16164,7 @@ class SheetRender {
                         detach(rTBody[direction + 'ElementChild']);
                     }
                 }
-                row = this.rowRenderer.render(false, indexes[0]);
+                row = this.rowRenderer.render(indexes[0]);
                 frag.appendChild(row);
                 if (this.parent.scrollSettings.enableVirtualization) {
                     // tslint:disable-next-line:no-any
@@ -14376,7 +16236,7 @@ class SheetRender {
         this.refreshSelectALLContent();
         let rTBody = rowHdrEle.querySelector('tbody');
         let cTHead = this.headerPanel.querySelector('.e-column-header thead');
-        let cRow = this.rowRenderer.render(true);
+        let cRow = this.rowRenderer.render();
         cTHead.appendChild(cRow);
         let row;
         for (let i = colIndexes[0]; i <= colIndexes[1]; i++) {
@@ -14384,10 +16244,10 @@ class SheetRender {
         }
         let colGroupWidth = getColGroupWidth(rowIndexes[1]);
         if (this.colGroupWidth !== colGroupWidth) {
-            this.updateLeftColGroup(colGroupWidth);
+            this.updateLeftColGroup(colGroupWidth, rowHdrEle);
         }
         for (let i = rowIndexes[0]; i <= rowIndexes[1]; i++) {
-            row = this.rowRenderer.render(false, i);
+            row = this.rowRenderer.render(i, true);
             row.appendChild(this.cellRenderer.renderRowHeader(i));
             rTBody.appendChild(row);
         }
@@ -14472,17 +16332,18 @@ class SheetRender {
 class RowRenderer {
     constructor(parent) {
         this.parent = parent;
-        this.element = this.parent.createElement('tr');
+        this.element = this.parent.createElement('tr', { attrs: { 'role': 'row' } });
     }
-    render(isHeader, index) {
+    render(index, isRowHeader) {
         let row = this.element.cloneNode();
-        if (isHeader) {
+        if (index === undefined) {
             row.classList.add('e-header-row');
             return row;
         }
         row.classList.add('e-row');
-        attributes(row, { 'role': 'row', 'aria-rowindex': index.toString() });
-        row.style.height = `${getRowHeight(this.parent.getActiveSheet(), index)}px`;
+        let sheet = this.parent.getActiveSheet();
+        attributes(row, { 'aria-rowindex': (index + 1).toString() });
+        row.style.height = `${getRowHeight(sheet, index)}px`;
         return row;
     }
 }
@@ -14499,21 +16360,21 @@ class CellRenderer {
     }
     renderColHeader(index) {
         let headerCell = this.th.cloneNode();
-        attributes(headerCell, { 'role': 'columnheader', 'columnheader': index.toString(), 'tabindex': '-1' });
+        attributes(headerCell, { 'role': 'columnheader', 'aria-colindex': (index + 1).toString(), 'tabindex': '-1' });
         headerCell.innerHTML = getColumnHeaderText(index + 1);
         return headerCell;
     }
     renderRowHeader(index) {
         let headerCell = this.element.cloneNode();
-        attributes(headerCell, { 'role': 'rowheader', 'tabindex': '-1' });
         addClass([headerCell], 'e-header-cell');
+        attributes(headerCell, { 'role': 'rowheader', 'tabindex': '-1' });
         headerCell.innerHTML = (index + 1).toString();
         return headerCell;
     }
     render(args) {
         let td = this.element.cloneNode();
         td.className = 'e-cell';
-        td.setAttribute('aria-colindex', args.colIdx.toString());
+        attributes(td, { 'role': 'gridcell', 'aria-colindex': (args.colIdx + 1).toString(), 'tabindex': '-1' });
         let eventArgs = { cell: args.cell, element: td, address: args.address };
         this.parent.trigger('beforeCellRender', eventArgs);
         this.updateCell(args.rowIdx, args.colIdx, td, args.cell, eventArgs, args.lastCell, args.row, args.hRow, args.isHeightCheckNeeded);
@@ -14561,6 +16422,7 @@ class CellRenderer {
         }
         if (Object.keys(style).length || Object.keys(this.parent.commonCellStyle).length || lastCell) {
             if (isRefresh) {
+                this.removeStyle(eventArgs.element);
                 this.parent.notify(setCellFormat, { style: style, range: getCellAddress(rowIdx, colIdx) });
             }
             else {
@@ -14569,6 +16431,16 @@ class CellRenderer {
                     lastCell: lastCell, row: row, hRow: hRow, isHeightCheckNeeded: isHeightCheckNeeded, manualUpdate: false
                 });
             }
+        }
+        else {
+            if (isRefresh) {
+                this.removeStyle(eventArgs.element);
+            }
+        }
+    }
+    removeStyle(element) {
+        if (element.style.length) {
+            element.removeAttribute('style');
         }
     }
     /** @hidden */
@@ -14649,7 +16521,9 @@ class Render {
             address = this.parent.scrollSettings.enableVirtualization ? this.getAddress(args.rowIndex, args.colIndex) :
                 `A1:${getCellAddress(sheet.rowCount - 1, sheet.colCount - 1)}`;
         }
-        this.parent.trigger(beforeDataBound, {});
+        if (args.refresh === 'All') {
+            this.parent.trigger(beforeDataBound, {});
+        }
         setAriaOptions(this.parent.getMainContent(), { busy: true });
         this.parent.getData(`${sheetName}!${address}`).then((values) => {
             let lastCellIdx = getCellIndexes(address.split(':')[1])[1];
@@ -14868,7 +16742,7 @@ let Spreadsheet = Spreadsheet_1 = class Spreadsheet extends Workbook {
         /** @hidden */
         this.viewport = { rowCount: 0, colCount: 0, height: 0, topIndex: 0, leftIndex: 0, width: 0 };
         this.needsID = true;
-        Spreadsheet_1.Inject(Ribbon$$1, FormulaBar, SheetTabs, Selection, Edit, KeyboardNavigation, KeyboardShortcut, Clipboard, DataBind, Open, ContextMenu$1, Save, NumberFormat, CellFormat, Formula, WorkbookEdit, WorkbookOpen, WorkbookSave, WorkbookCellFormat, WorkbookNumberFormat, WorkbookFormula);
+        Spreadsheet_1.Inject(Ribbon$$1, FormulaBar, SheetTabs, Selection, Edit, KeyboardNavigation, KeyboardShortcut, Clipboard, DataBind, Open, ContextMenu$1, Save, NumberFormat, CellFormat, Formula, WorkbookEdit, WorkbookOpen, WorkbookSave, WorkbookCellFormat, WorkbookNumberFormat, WorkbookFormula, Sort, WorkbookSort, Resize);
         if (element) {
             this.appendTo(element);
         }
@@ -14919,7 +16793,6 @@ let Spreadsheet = Spreadsheet_1 = class Spreadsheet extends Workbook {
     render() {
         super.render();
         this.element.setAttribute('tabindex', '0');
-        this.element.focus();
         setAriaOptions(this.element, { role: 'grid' });
         this.renderModule = new Render(this);
         this.notify(initialLoad, null);
@@ -15089,14 +16962,6 @@ let Spreadsheet = Spreadsheet_1 = class Spreadsheet extends Workbook {
         return this.sheetModule.getColHeaderTable();
     }
     /**
-     * Gets the Cell index in the Spreadsheet.
-     * @return {Element}
-     * @hidden
-     */
-    getCellIndex(cell) {
-        return [parseInt(cell.parentElement.getAttribute('aria-rowindex'), 10), parseInt(cell.getAttribute('aria-colindex'), 10)];
-    }
-    /**
      * To get the backup element count for row and column virtualization.
      * @hidden
      */
@@ -15114,8 +16979,33 @@ let Spreadsheet = Spreadsheet_1 = class Spreadsheet extends Workbook {
         let val = super.getValueRowCol(sheetIndex, rowIndex, colIndex);
         return val;
     }
+    /**
+     * Sorts the range of cells in the active sheet.
+     * @param sortOptions - options for sorting.
+     * @param range - address of the data range.
+     */
+    sort(sortOptions, range) {
+        if (!range) {
+            range = this.getActiveSheet().selectedRange;
+        }
+        sortOptions = sortOptions || { sortDescriptors: {} };
+        let args = { range: range, sortOptions: sortOptions, cancel: false };
+        this.trigger(beforeSort, args);
+        if (args.cancel) {
+            return;
+        }
+        this.notify(beforeSort, args);
+        super.sort(args.sortOptions, range);
+    }
     /** @hidden */
     setValueRowCol(sheetIndex, value, rowIndex, colIndex) {
+        if (value === 'circular reference: ') {
+            let circularArgs = {
+                action: 'isCircularReference', argValue: value
+            };
+            this.notify(formulaOperation, circularArgs);
+            value = circularArgs.argValue;
+        }
         super.setValueRowCol(sheetIndex, value, rowIndex, colIndex);
         sheetIndex = getSheetIndexFromId(this, sheetIndex);
         this.notify(editOperation, {
@@ -15367,6 +17257,9 @@ __decorate$9([
 ], Spreadsheet.prototype, "allowScrolling", void 0);
 __decorate$9([
     Property(true)
+], Spreadsheet.prototype, "allowResizing", void 0);
+__decorate$9([
+    Property(true)
 ], Spreadsheet.prototype, "enableClipboard", void 0);
 __decorate$9([
     Property(true)
@@ -15444,5 +17337,5 @@ Spreadsheet = Spreadsheet_1 = __decorate$9([
  * Export Spreadsheet modules
  */
 
-export { Workbook, RangeSetting, UsedRange, Sheet, getSheetIndex, getSheetIndexFromId, getSheetNameFromAddress, updateSelectedRange, getSelectedRange, getSheet, getSheetNameCount, getMaxSheetId, initSheet, getSheetName, Row, getRow, getRowHeight, setRowHeight, getRowsHeight, Column, getColumn, getColumnWidth, getColumnsWidth, Cell, getCell, setCell, getCellPosition, skipDefaultValue, getData, getModel, processIdx, clearRange, getRangeIndexes, getCellIndexes, getCellAddress, getRangeAddress, getColumnHeaderText, getIndexesFromAddress, getRangeFromAddress, getSwapRange, isSingleCell, executeTaskAsync, WorkbookBasicModule, WorkbookAllModule, getWorkbookRequiredModules, CellStyle, DefineName, NumberFormatType, workbookDestroyed, workbookOpen, beginSave, saveCompleted, applyNumberFormatting, getFormattedCellObject, refreshCellElement, setCellFormat, textDecorationUpdate, applyCellFormat, updateUsedRange, workbookFormulaOperation, workbookEditOperation, checkDateFormat, getFormattedBarText, activeCellChanged, openSuccess, openFailure, sheetCreated, sheetsDestroyed, checkIsFormula, DataBind, WorkbookOpen, WorkbookSave, WorkbookFormula, WorkbookNumberFormat, getFormatFromType, getTypeFromFormat, WorkbookCellFormat, WorkbookEdit, getRequiredModules, ribbon, formulaBar, sheetTabs, refreshSheetTabs, dataRefresh, initialLoad, contentLoaded, mouseDown, spreadsheetDestroyed, editOperation, formulaOperation, formulaBarOperation, click, keyUp, keyDown, formulaKeyUp, formulaBarUpdate, onVerticalScroll, onHorizontalScroll, beforeContentLoaded, beforeVirtualContentLoaded, virtualContentLoaded, contextMenuOpen, cellNavigate, mouseUpAfterSelection, selectionComplete, cMenuBeforeOpen, addSheetTab, removeSheetTab, renameSheetTab, ribbonClick, refreshRibbon, enableRibbonItems, tabSwitch, selectRange, cut, copy, paste, clearCopy, dataBound, beforeDataBound, addContextMenuItems, removeContextMenuItems, enableContextMenuItems, beforeRibbonCreate, rowHeightChanged, beforeHeaderLoaded, onContentScroll, deInitProperties, activeSheetChanged, renameSheet, enableToolbar, getUpdateUsingRaf, removeAllChildren, getColGroupWidth, getScrollBarWidth, getSiblingsHeight, inView, locateElem, setStyleAttribute$1 as setStyleAttribute, getStartEvent, getMoveEvent, getEndEvent, isTouchStart, isTouchMove, isTouchEnd, getClientX, getClientY, setAriaOptions, destroyComponent, BasicModule, AllModule, ScrollSettings, SelectionSettings, DISABLED, locale, dialog, fontColor, fillColor, defaultLocale, Spreadsheet, Clipboard, Edit, Selection, Scroll, VirtualScroll, KeyboardNavigation, KeyboardShortcut, CellFormat, Ribbon$$1 as Ribbon, FormulaBar, Formula, SheetTabs, Open, Save, ContextMenu$1 as ContextMenu, NumberFormat, Render, SheetRender, RowRenderer, CellRenderer, Calculate, FormulaError, FormulaInfo, CalcSheetFamilyItem, getAlphalabel, ValueChangedArgs, Parser, CalculateCommon, isUndefined$1 as isUndefined, getModules, getValue$1 as getValue, setValue, ModuleLoader, CommonErrors, FormulasErrorsStrings, BasicFormulas };
+export { Workbook, RangeSetting, UsedRange, Sheet, getSheetIndex, getSheetIndexFromId, getSheetNameFromAddress, updateSelectedRange, getSelectedRange, getSheet, getSheetNameCount, getMaxSheetId, initSheet, getSheetName, Row, getRow, setRow, getRowHeight, setRowHeight, getRowsHeight, Column, getColumn, getColumnWidth, getColumnsWidth, Cell, getCell, setCell, getCellPosition, skipDefaultValue, getData, getModel, processIdx, clearRange, getRangeIndexes, getCellIndexes, getCellAddress, getRangeAddress, getColumnHeaderText, getIndexesFromAddress, getRangeFromAddress, getSwapRange, isSingleCell, executeTaskAsync, WorkbookBasicModule, WorkbookAllModule, getWorkbookRequiredModules, CellStyle, DefineName, workbookDestroyed, workbookOpen, beginSave, saveCompleted, applyNumberFormatting, getFormattedCellObject, refreshCellElement, setCellFormat, textDecorationUpdate, applyCellFormat, updateUsedRange, workbookFormulaOperation, workbookEditOperation, checkDateFormat, getFormattedBarText, activeCellChanged, openSuccess, openFailure, sheetCreated, sheetsDestroyed, aggregateComputation, beforeSort, initiateSort, sortComplete, validateSortRange, checkIsFormula, toFraction, getGcd, intToDate, dateToInt, isDateTime, isNumber, toDate, DataBind, WorkbookOpen, WorkbookSave, WorkbookFormula, WorkbookNumberFormat, getFormatFromType, getTypeFromFormat, WorkbookSort, WorkbookCellFormat, WorkbookEdit, getRequiredModules, ribbon, formulaBar, sheetTabs, refreshSheetTabs, dataRefresh, initialLoad, contentLoaded, mouseDown, spreadsheetDestroyed, editOperation, formulaOperation, formulaBarOperation, click, keyUp, keyDown, formulaKeyUp, formulaBarUpdate, onVerticalScroll, onHorizontalScroll, beforeContentLoaded, beforeVirtualContentLoaded, virtualContentLoaded, contextMenuOpen, cellNavigate, mouseUpAfterSelection, selectionComplete, cMenuBeforeOpen, addSheetTab, removeSheetTab, renameSheetTab, ribbonClick, refreshRibbon, enableRibbonItems, tabSwitch, selectRange, cut, copy, paste, clearCopy, dataBound, beforeDataBound, addContextMenuItems, removeContextMenuItems, enableContextMenuItems, beforeRibbonCreate, rowHeightChanged, colWidthChanged, beforeHeaderLoaded, onContentScroll, deInitProperties, activeSheetChanged, renameSheet, enableToolbar, initiateCustomSort, getUpdateUsingRaf, removeAllChildren, getColGroupWidth, getScrollBarWidth, getSiblingsHeight, inView, locateElem, setStyleAttribute$1 as setStyleAttribute, getStartEvent, getMoveEvent, getEndEvent, isTouchStart, isTouchMove, isTouchEnd, getClientX, getClientY, setAriaOptions, destroyComponent, BasicModule, AllModule, ScrollSettings, SelectionSettings, DISABLED, locale, dialog, fontColor, fillColor, defaultLocale, Spreadsheet, Clipboard, Edit, Selection, Scroll, VirtualScroll, KeyboardNavigation, KeyboardShortcut, CellFormat, Resize, Ribbon$$1 as Ribbon, FormulaBar, Formula, SheetTabs, Open, Save, ContextMenu$1 as ContextMenu, NumberFormat, Sort, Render, SheetRender, RowRenderer, CellRenderer, Calculate, FormulaError, FormulaInfo, CalcSheetFamilyItem, getAlphalabel, ValueChangedArgs, Parser, CalculateCommon, isUndefined$1 as isUndefined, getModules, getValue$1 as getValue, setValue, ModuleLoader, CommonErrors, FormulasErrorsStrings, BasicFormulas };
 //# sourceMappingURL=ej2-spreadsheet.es2015.js.map

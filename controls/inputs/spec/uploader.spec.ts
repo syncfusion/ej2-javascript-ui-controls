@@ -837,6 +837,41 @@ describe('Uploader Control', () => {
             uploadObj.onSelectFiles(eventArgs);
         });
     });
+    describe('Check spinner hided after upload canceled', () => {
+        let uploadObj: any;
+        beforeEach((): void => {
+            let element: HTMLElement = createElement('input', {id: 'upload'});            
+            document.body.appendChild(element);
+            element.setAttribute('type', 'file');
+        })
+        afterEach((): void => {
+            document.body.innerHTML = '';
+        });
+        it('Cancel uploading', function (done) {
+            var item1 = createElement('span', { id: 'item1', className: 'cancel' });
+            document.body.appendChild(item1);
+            uploadObj = new Uploader({ autoUpload: false, buttons: {
+                    browse: document.getElementById('item1') },
+                    asyncSettings: {
+                        saveUrl: 'https://aspnetmvc.syncfusion.com/services/api/uploadbox/Save',
+                        removeUrl: 'https://aspnetmvc.syncfusion.com/services/api/uploadbox/Remove'
+                    },
+                    uploading: function(e: any) { e.cancel = true }
+            });
+            uploadObj.appendTo(document.getElementById('upload'));
+            expect(uploadObj.buttons.browse.classList.contains('cancel')).toBe(true);
+            var fileObj = new File(["Nice One"], "last.txt", { lastModified: 0, type: "overide/mimetype" });
+            var eventArgs = { type: 'click', target: { files: [fileObj] }, preventDefault: function () { } };
+            uploadObj.onSelectFiles(eventArgs);
+            expect(uploadObj.fileList.length).toEqual(1);
+            uploadObj.browseButtonClick();
+            uploadObj.uploadButtonClick();
+            setTimeout(function () {
+                expect(uploadObj.getFilesData()[0].statusCode).toBe('5');
+                done();
+            }, 1500);
+        });
+    });
     describe('Event canceling ', () => {
         let uploadObj: any;
         beforeEach((): void => {

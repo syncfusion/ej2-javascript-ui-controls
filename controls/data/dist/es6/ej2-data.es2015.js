@@ -7,14 +7,11 @@ class Query {
     /**
      * Constructor for Query class.
      * @param  {string|string[]} from?
-     * @hidden
+
      */
     constructor(from) {
-        /** @hidden */
         this.subQuery = null;
-        /** @hidden */
         this.isChild = false;
-        /** @hidden */
         this.distincts = [];
         this.queries = [];
         this.key = '';
@@ -126,7 +123,7 @@ class Query {
         return this;
     }
     /**
-     * @hidden
+
      */
     distinct(fields) {
         if (typeof fields === 'string') {
@@ -379,7 +376,7 @@ class Query {
      * Pass array of filterColumn query for performing filter operation.
      * @param  {QueryOptions[]} queries
      * @param  {string} name
-     * @hidden
+
      */
     static filterQueries(queries, name) {
         return queries.filter((q) => {
@@ -390,7 +387,7 @@ class Query {
      * To get the list of queries which is already filtered in current data source.
      * @param  {Object[]} queries
      * @param  {string[]} singles
-     * @hidden
+
      */
     static filterQueryLists(queries, singles) {
         let filtered = queries.filter((q) => {
@@ -416,12 +413,10 @@ class Predicate {
      * @param  {string} operator
      * @param  {string|number|boolean|Predicate|Predicate[]} value
      * @param  {boolean=false} ignoreCase
-     * @hidden
+
      */
     constructor(field, operator, value, ignoreCase = false, ignoreAccent) {
-        /** @hidden */
         this.ignoreAccent = false;
-        /** @hidden */
         this.isComplex = false;
         if (typeof field === 'string') {
             this.field = field;
@@ -587,7 +582,7 @@ class Predicate {
 const consts = { GroupGuid: '{271bbba0-1ee7}' };
 /**
  * Data manager common utility methods.
- * @hidden
+
  */
 class DataUtil {
     /**
@@ -595,7 +590,7 @@ class DataUtil {
      * If the paramater is not of type function then it will be returned as it is.
      * @param  {Function|string|string[]|number} value
      * @param  {Object} inst?
-     * @hidden
+
      */
     static getValue(value, inst) {
         if (typeof value === 'function') {
@@ -622,7 +617,7 @@ class DataUtil {
     /**
      * To return the sorting function based on the string.
      * @param  {string} order
-     * @hidden
+
      */
     static fnSort(order) {
         order = order ? DataUtil.toLowerCase(order) : 'ascending';
@@ -776,7 +771,7 @@ class DataUtil {
      * @param  {Object[]} source
      * @param  {Group} lookup?
      * @param  {string} pKey?
-     * @hidden
+
      */
     static buildHierarchy(fKey, from, source, lookup, pKey) {
         let i;
@@ -803,7 +798,7 @@ class DataUtil {
      * @param  {Object} obj
      * @param  {string[]} fields?
      * @param  {string} prefix?
-     * @hidden
+
      */
     static getFieldList(obj, fields, prefix) {
         if (prefix === undefined) {
@@ -856,7 +851,7 @@ class DataUtil {
      * @param {Object} value - Value that you need to set.
      * @param {Object} obj - Object to get the inner object value.
      * @return { [key: string]: Object; } | Object
-     * @hidden
+
      */
     static setValue(nameSpace, value, obj) {
         let keys = nameSpace.toString().split('.');
@@ -908,7 +903,7 @@ class DataUtil {
         while (left.length > 0 || right.length > 0) {
             if (left.length > 0 && right.length > 0) {
                 if (comparer) {
-                    current = comparer(this.getVal(left, 0, fieldName), this.getVal(right, 0, fieldName)) <= 0 ? left : right;
+                    current = comparer(this.getVal(left, 0, fieldName), this.getVal(right, 0, fieldName), left[0], right[0]) <= 0 ? left : right;
                 }
                 else {
                     current = left[0][fieldName] < left[0][fieldName] ? left : right;
@@ -933,7 +928,7 @@ class DataUtil {
      * @param  {string} fnName
      * @param  {Object} param1?
      * @param  {Object} param2?
-     * @hidden
+
      */
     static callAdaptorFunction(adaptor, fnName, param1, param2) {
         if (fnName in adaptor) {
@@ -1008,7 +1003,7 @@ class DataUtil {
      * @param  {string} field
      * @param  {Function} comparer
      * @returns Object
-     * @hidden
+
      */
     static getItemFromComparer(array, field, comparer) {
         let keyVal;
@@ -1045,7 +1040,7 @@ class DataUtil {
      * @param  {boolean} requiresCompleteRecord
      * @returns Object[]
      * * distinct array of objects is return when requiresCompleteRecord set as true.
-     * @hidden
+
      */
     static distinct(json, fieldName, requiresCompleteRecord) {
         requiresCompleteRecord = isNullOrUndefined(requiresCompleteRecord) ? false : requiresCompleteRecord;
@@ -1064,9 +1059,14 @@ class DataUtil {
 }
 /**
  * Specifies the value which will be used to adjust the date value to server timezone.
- * @default null
+
  */
 DataUtil.serverTimezoneOffset = null;
+/**
+ * Species whether are not to be parsed with serverTimezoneOffset value.
+
+ */
+DataUtil.timeZoneHandling = true;
 /**
  * Throw error with the given string as message.
  * @param  {string} er
@@ -2206,7 +2206,7 @@ DataUtil.fnOperators = {
     /**
      * It will return the filter operator based on the filter symbol.
      * @param  {string} operator
-     * @hidden
+
      */
     processSymbols: (operator) => {
         let fnName = DataUtil.operatorSymbols[operator];
@@ -2219,7 +2219,7 @@ DataUtil.fnOperators = {
     /**
      * It will return the valid filter operator based on the specified operators.
      * @param  {string} operator
-     * @hidden
+
      */
     processOperator: (operator) => {
         let fn = DataUtil.fnOperators[operator];
@@ -2252,7 +2252,7 @@ DataUtil.parse = {
     /**
      * It will perform on array of values.
      * @param  {string[]|Object[]} array
-     * @hidden
+
      */
     iterateAndReviveArray: (array) => {
         for (let i = 0; i < array.length; i++) {
@@ -2270,7 +2270,7 @@ DataUtil.parse = {
     /**
      * It will perform on JSON values
      * @param  {JSON} json
-     * @hidden
+
      */
     iterateAndReviveJson: (json) => {
         let value;
@@ -2297,19 +2297,41 @@ DataUtil.parse = {
      * It will perform on JSON values
      * @param  {string} field
      * @param  {string|Date} value
-     * @hidden
+
      */
     jsonReviver: (field, value) => {
-        let dupValue = value;
         if (typeof value === 'string') {
             let ms = /^\/Date\(([+-]?[0-9]+)([+-][0-9]{4})?\)\/$/.exec(value);
+            let offSet = DataUtil.timeZoneHandling ? DataUtil.serverTimezoneOffset : null;
             if (ms) {
-                return DataUtil.dateParse.toTimeZone(new Date(parseInt(ms[1], 10)), DataUtil.serverTimezoneOffset, true);
+                return DataUtil.dateParse.toTimeZone(new Date(parseInt(ms[1], 10)), offSet, true);
             }
             else if (/^(\d{4}\-\d\d\-\d\d([tT][\d:\.]*){1})([zZ]|([+\-])(\d\d):?(\d\d))?$/.test(value)) {
-                let arr = dupValue.split(/[^0-9]/);
-                value = DataUtil.dateParse
-                    .toTimeZone(new Date(parseInt(arr[0], 10), parseInt(arr[1], 10) - 1, parseInt(arr[2], 10), parseInt(arr[3], 10), parseInt(arr[4], 10), parseInt(arr[5], 10)), DataUtil.serverTimezoneOffset, true);
+                let isUTC = value.indexOf('Z') > -1 || value.indexOf('z') > -1;
+                let arr = value.split(/[^0-9]/);
+                if (isUTC) {
+                    value = DataUtil.dateParse
+                        .toTimeZone(new Date(parseInt(arr[0], 10), parseInt(arr[1], 10) - 1, parseInt(arr[2], 10), parseInt(arr[3], 10), parseInt(arr[4], 10), parseInt(arr[5], 10)), DataUtil.serverTimezoneOffset, false);
+                }
+                else {
+                    let utcFormat = new Date(parseInt(arr[0], 10), parseInt(arr[1], 10) - 1, parseInt(arr[2], 10), parseInt(arr[3], 10), parseInt(arr[4], 10), parseInt(arr[5], 10));
+                    let hrs = parseInt(arr[6], 10);
+                    let mins = parseInt(arr[7], 10);
+                    if (isNaN(hrs) && isNaN(mins)) {
+                        return utcFormat;
+                    }
+                    if (value.indexOf('+') > -1) {
+                        utcFormat.setHours(utcFormat.getHours() - hrs, utcFormat.getMinutes() - mins);
+                    }
+                    else {
+                        utcFormat.setHours(utcFormat.getHours() + hrs, utcFormat.getMinutes() + mins);
+                    }
+                    value = DataUtil.dateParse
+                        .toTimeZone(utcFormat, DataUtil.serverTimezoneOffset, false);
+                }
+                if (DataUtil.serverTimezoneOffset == null) {
+                    value = DataUtil.dateParse.addSelfOffset(value);
+                }
             }
         }
         return value;
@@ -2337,7 +2359,7 @@ DataUtil.parse = {
      * The method used to replace the value based on the type.
      * @param  {Object} value
      * @param  {boolean} stringify
-     * @hidden
+
      */
     replacer: (value, stringify) => {
         if (DataUtil.isPlainObject(value)) {
@@ -2355,7 +2377,7 @@ DataUtil.parse = {
      * It will replace the JSON value.
      * @param  {string} key
      * @param  {Object} val
-     * @hidden
+
      */
     jsonReplacer: (val, stringify) => {
         let value;
@@ -2366,7 +2388,13 @@ DataUtil.parse = {
                 continue;
             }
             let d = value;
-            val[prop] = DataUtil.dateParse.toTimeZone(DataUtil.dateParse.addSelfOffset(d), DataUtil.serverTimezoneOffset).toJSON();
+            if (DataUtil.serverTimezoneOffset == null) {
+                val[prop] = DataUtil.dateParse.toTimeZone(d, null).toJSON();
+            }
+            else {
+                d = new Date(+d + DataUtil.serverTimezoneOffset * 3600000);
+                val[prop] = DataUtil.dateParse.toTimeZone(DataUtil.dateParse.addSelfOffset(d), null).toJSON();
+            }
         }
         return val;
     },
@@ -2374,7 +2402,7 @@ DataUtil.parse = {
      * It will replace the Array of value.
      * @param  {string} key
      * @param  {Object[]} val
-     * @hidden
+
      */
     arrayReplacer: (val) => {
         for (let i = 0; i < val.length; i++) {
@@ -2386,10 +2414,44 @@ DataUtil.parse = {
             }
         }
         return val;
+    },
+    /**
+     * It will replace the Date object with respective to UTC format value.
+     * @param  {string} key
+     * @param  {any} value
+
+     */
+    /* tslint:disable-next-line:no-any */
+    jsonDateReplacer: (key, value) => {
+        if (key === 'value' && value) {
+            if (typeof value === 'string') {
+                let ms = /^\/Date\(([+-]?[0-9]+)([+-][0-9]{4})?\)\/$/.exec(value);
+                if (ms) {
+                    value = DataUtil.dateParse.toTimeZone(new Date(parseInt(ms[1], 10)), null, true);
+                }
+                else if (/^(\d{4}\-\d\d\-\d\d([tT][\d:\.]*){1})([zZ]|([+\-])(\d\d):?(\d\d))?$/.test(value)) {
+                    let arr = value.split(/[^0-9]/);
+                    value = DataUtil.dateParse
+                        .toTimeZone(new Date(parseInt(arr[0], 10), parseInt(arr[1], 10) - 1, parseInt(arr[2], 10), parseInt(arr[3], 10), parseInt(arr[4], 10), parseInt(arr[5], 10)), null, true);
+                }
+            }
+            if (value instanceof Date) {
+                value = DataUtil.dateParse.addSelfOffset(value);
+                if (DataUtil.serverTimezoneOffset === null) {
+                    return DataUtil.dateParse.toTimeZone(DataUtil.dateParse.addSelfOffset(value), null).toJSON();
+                }
+                else {
+                    value = DataUtil.dateParse.toTimeZone(value, (((value.getTimezoneOffset() / 60) * 2)
+                        - DataUtil.serverTimezoneOffset), false);
+                    return value.toJSON();
+                }
+            }
+        }
+        return value;
     }
 };
 /**
- * @hidden
+
  */
 DataUtil.dateParse = {
     addSelfOffset: (input) => {
@@ -2426,13 +2488,13 @@ DataUtil.dateParse = {
 /**
  * Adaptors are specific data source type aware interfaces that are used by DataManager to communicate with DataSource.
  * This is the base adaptor class that other adaptors can extend.
- * @hidden
+
  */
 class Adaptor {
     /**
      * Constructor for Adaptor class
      * @param  {DataOptions} ds?
-     * @hidden
+
      * @returns aggregates
      */
     constructor(ds) {
@@ -2452,7 +2514,7 @@ class Adaptor {
         };
         /**
          * Specifies the type of adaptor.
-         * @default Adaptor
+    
          */
         this.type = Adaptor;
         this.dataSource = ds;
@@ -2472,7 +2534,7 @@ class Adaptor {
 }
 /**
  * JsonAdaptor is used to process JSON data. It contains methods to process the given JSON data based on the queries.
- * @hidden
+
  */
 class JsonAdaptor extends Adaptor {
     /**
@@ -2754,7 +2816,7 @@ class JsonAdaptor extends Adaptor {
 /**
  * URL Adaptor of DataManager can be used when you are required to use remote service to retrieve data.
  * It interacts with server-side for all DataManager Queries and CRUD operations.
- * @hidden
+
  */
 class UrlAdaptor extends Adaptor {
     /**
@@ -2846,7 +2908,7 @@ class UrlAdaptor extends Adaptor {
         this.pvt = {};
         if (this.options.requestType === 'json') {
             return {
-                data: JSON.stringify(req),
+                data: JSON.stringify(req, DataUtil.parse.jsonDateReplacer),
                 url: url,
                 pvtData: p,
                 type: 'POST',
@@ -2908,7 +2970,12 @@ class UrlAdaptor extends Adaptor {
     processResponse(data, ds, query, xhr, request, changes) {
         if (xhr && xhr.getResponseHeader('Content-Type') &&
             xhr.getResponseHeader('Content-Type').indexOf('application/json') !== -1) {
+            let handleTimeZone = DataUtil.timeZoneHandling;
+            if (ds && !ds.timeZoneHandling) {
+                DataUtil.timeZoneHandling = false;
+            }
             data = DataUtil.parse.parseJson(data);
+            DataUtil.timeZoneHandling = handleTimeZone;
         }
         let requests = request;
         let pvt = requests.pvtData || {};
@@ -3044,7 +3111,7 @@ class UrlAdaptor extends Adaptor {
      * To generate the predicate based on the filtered query.
      * @param  {Object[]|string[]|number[]} data
      * @param  {Query} query
-     * @hidden
+
      */
     getFiltersFrom(data, query) {
         let key = query.fKey;
@@ -3129,7 +3196,7 @@ class UrlAdaptor extends Adaptor {
 }
 /**
  * OData Adaptor that is extended from URL Adaptor, is used for consuming data through OData Service.
- * @hidden
+
  */
 class ODataAdaptor extends UrlAdaptor {
     constructor(props) {
@@ -3561,7 +3628,19 @@ class ODataAdaptor extends UrlAdaptor {
         let req = '';
         let stat = {
             'method': 'DELETE ',
-            'url': (data, i, key) => '(' + data[i][key] + ')',
+            'url': (data, i, key) => {
+                let url = DataUtil.getObject(key, data[i]);
+                if (typeof url === 'number' || DataUtil.parse.isGuid(url)) {
+                    return '(' + url + ')';
+                }
+                else if (url instanceof Date) {
+                    let dateTime = data[i][key];
+                    return '(' + dateTime.toJSON() + ')';
+                }
+                else {
+                    return `('${url}')`;
+                }
+            },
             'data': (data, i) => ''
         };
         req = this.generateBodyContent(arr, e, stat, dm);
@@ -3600,7 +3679,18 @@ class ODataAdaptor extends UrlAdaptor {
         arr.forEach((change) => change = this.compareAndRemove(change, org.filter((o) => DataUtil.getObject(e.key, o) === DataUtil.getObject(e.key, change))[0], e.key));
         let stat = {
             'method': this.options.updateType + ' ',
-            'url': (data, i, key) => '(' + data[i][key] + ')',
+            'url': (data, i, key) => {
+                if (typeof data[i][key] === 'number' || DataUtil.parse.isGuid(data[i][key])) {
+                    return '(' + data[i][key] + ')';
+                }
+                else if (data[i][key] instanceof Date) {
+                    let date = data[i][key];
+                    return '(' + date.toJSON() + ')';
+                }
+                else {
+                    return `('${data[i][key]}')`;
+                }
+            },
             'data': (data, i) => JSON.stringify(data[i]) + '\n\n'
         };
         req = this.generateBodyContent(arr, e, stat, dm);
@@ -3700,7 +3790,7 @@ class ODataAdaptor extends UrlAdaptor {
 /**
  * The OData v4 is an improved version of OData protocols.
  * The DataManager uses the ODataV4Adaptor to consume OData v4 services.
- * @hidden
+
  */
 class ODataV4Adaptor extends ODataAdaptor {
     constructor(props) {
@@ -3732,7 +3822,7 @@ class ODataV4Adaptor extends ODataAdaptor {
         extend(this.options, props || {});
     }
     /**
-     * @hidden
+
      */
     getModuleName() {
         return 'ODataV4Adaptor';
@@ -3757,6 +3847,9 @@ class ODataV4Adaptor extends ODataAdaptor {
         returnValue = super.onPredicate.call(this, predicate, query, requiresCast);
         if (isDate) {
             returnValue = returnValue.replace(/datetime'(.*)'$/, '$1');
+        }
+        if (DataUtil.parse.isGuid(val)) {
+            returnValue = returnValue.replace('guid', '').replace(/'/g, '');
         }
         return returnValue;
     }
@@ -3879,7 +3972,7 @@ class ODataV4Adaptor extends ODataAdaptor {
  * The Web API is a programmatic interface to define the request and response messages system that is mostly exposed in JSON or XML.
  * The DataManager uses the WebApiAdaptor to consume Web API.
  * Since this adaptor is targeted to interact with Web API created using OData endpoint, it is extended from ODataAdaptor
- * @hidden
+
  */
 class WebApiAdaptor extends ODataAdaptor {
     getModuleName() {
@@ -3924,6 +4017,82 @@ class WebApiAdaptor extends ODataAdaptor {
             type: 'PUT',
             url: dm.dataSource.url,
             data: JSON.stringify(value)
+        };
+    }
+    batchRequest(dm, changes, e) {
+        let initialGuid = e.guid = DataUtil.getGuid(this.options.batchPre);
+        let url = dm.dataSource.url.replace(/\/*$/, '/' + this.options.batch);
+        e.url = this.resourceTableName ? this.resourceTableName : e.url;
+        let req = [];
+        //insertion
+        for (let i = 0, x = changes.addedRecords.length; i < x; i++) {
+            changes.addedRecords.forEach((j, d) => {
+                let stat = {
+                    'method': 'POST ',
+                    'url': (data, i, key) => '',
+                    'data': (data, i) => JSON.stringify(data[i]) + '\n\n'
+                };
+                req.push('--' + initialGuid);
+                req.push('Content-Type: application/http; msgtype=request', '');
+                req.push('POST ' + '/api/' + (dm.dataSource.insertUrl || dm.dataSource.crudUrl || e.url)
+                    + stat.url(changes.addedRecords, i, e.key) + ' HTTP/1.1');
+                req.push('Content-Type: ' + 'application/json; charset=utf-8');
+                req.push('Host: ' + location.host);
+                req.push('', j ? JSON.stringify(j) : '');
+            });
+        }
+        //updation 
+        for (let i = 0, x = changes.changedRecords.length; i < x; i++) {
+            changes.changedRecords.forEach((j, d) => {
+                let stat = {
+                    'method': this.options.updateType + ' ',
+                    'url': (data, i, key) => '',
+                    'data': (data, i) => JSON.stringify(data[i]) + '\n\n'
+                };
+                req.push('--' + initialGuid);
+                req.push('Content-Type: application/http; msgtype=request', '');
+                req.push('PUT ' + '/api/' + (dm.dataSource.updateUrl || dm.dataSource.crudUrl || e.url)
+                    + stat.url(changes.changedRecords, i, e.key) + ' HTTP/1.1');
+                req.push('Content-Type: ' + 'application/json; charset=utf-8');
+                req.push('Host: ' + location.host);
+                req.push('', j ? JSON.stringify(j) : '');
+            });
+        }
+        //deletion
+        for (let i = 0, x = changes.deletedRecords.length; i < x; i++) {
+            changes.deletedRecords.forEach((j, d) => {
+                let state = {
+                    'mtd': 'DELETE ',
+                    'url': (data, i, key) => {
+                        let url = DataUtil.getObject(key, data[i]);
+                        if (typeof url === 'number' || DataUtil.parse.isGuid(url)) {
+                            return '/' + url;
+                        }
+                        else if (url instanceof Date) {
+                            let datTime = data[i][key];
+                            return '/' + datTime.toJSON();
+                        }
+                        else {
+                            return `/'${url}'`;
+                        }
+                    },
+                    'data': (data, i) => ''
+                };
+                req.push('--' + initialGuid);
+                req.push('Content-Type: application/http; msgtype=request', '');
+                req.push('DELETE ' + '/api/' + (dm.dataSource.removeUrl || dm.dataSource.crudUrl || e.url)
+                    + state.url(changes.deletedRecords, i, e.key) + ' HTTP/1.1');
+                req.push('Content-Type: ' + 'application/json; charset=utf-8');
+                req.push('Host: ' + location.host);
+                req.push('', j ? JSON.stringify(j) : '');
+            });
+        }
+        req.push('--' + initialGuid + '--', '');
+        return {
+            type: 'POST',
+            url: url,
+            contentType: 'multipart/mixed; boundary=' + initialGuid,
+            data: req.join('\r\n')
         };
     }
     /**
@@ -3973,7 +4142,7 @@ class WebApiAdaptor extends ODataAdaptor {
 }
 /**
  * WebMethodAdaptor can be used by DataManager to interact with web method.
- * @hidden
+
  */
 class WebMethodAdaptor extends UrlAdaptor {
     /**
@@ -4012,11 +4181,11 @@ class WebMethodAdaptor extends UrlAdaptor {
 /**
  * RemoteSaveAdaptor, extended from JsonAdaptor and it is used for binding local data and performs all DataManager queries in client-side.
  * It interacts with server-side only for CRUD operations.
- * @hidden
+
  */
 class RemoteSaveAdaptor extends JsonAdaptor {
     /**
-     * @hidden
+
      */
     constructor() {
         super();
@@ -4120,7 +4289,7 @@ class RemoteSaveAdaptor extends JsonAdaptor {
 /**
  * Cache Adaptor is used to cache the data of the visited pages. It prevents new requests for the previously visited pages.
  * You can configure cache page size and duration of caching by using cachingPageSize and timeTillExpiration properties of the DataManager
- * @hidden
+
  */
 class CacheAdaptor extends UrlAdaptor {
     /**
@@ -4128,7 +4297,7 @@ class CacheAdaptor extends UrlAdaptor {
      * @param  {CacheAdaptor} adaptor?
      * @param  {number} timeStamp?
      * @param  {number} pageSize?
-     * @hidden
+
      */
     constructor(adaptor, timeStamp, pageSize) {
         super();
@@ -4168,7 +4337,7 @@ class CacheAdaptor extends UrlAdaptor {
      * It will generate the key based on the URL when we send a request to server.
      * @param  {string} url
      * @param  {Query} query?
-     * @hidden
+
      */
     generateKey(url, query) {
         let queries = this.getQueryRequest(query);
@@ -4261,7 +4430,8 @@ class CacheAdaptor extends UrlAdaptor {
      * @param  {Ajax} settings?
      */
     beforeSend(dm, request, settings) {
-        if (DataUtil.endsWith(settings.url, this.cacheAdaptor.options.batch) && settings.type.toLowerCase() === 'post') {
+        if (!isNullOrUndefined(this.cacheAdaptor.options.batch) && DataUtil.endsWith(settings.url, this.cacheAdaptor.options.batch)
+            && settings.type.toLowerCase() === 'post') {
             request.setRequestHeader('Accept', this.cacheAdaptor.options.multipartAccept);
         }
         if (!dm.dataSource.crossDomain) {
@@ -4321,16 +4491,19 @@ class DataManager {
      * @param  {DataOptions|JSON[]} dataSource?
      * @param  {Query} query?
      * @param  {AdaptorOptions|string} adaptor?
-     * @hidden
+
      */
     constructor(dataSource, query, adaptor) {
-        /** @hidden */
         this.dateParse = true;
+        this.timeZoneHandling = true;
         this.requests = [];
         if (!dataSource && !this.dataSource) {
             dataSource = [];
         }
         adaptor = adaptor || dataSource.adaptor;
+        if (dataSource && dataSource.timeZoneHandling === false) {
+            this.timeZoneHandling = dataSource.timeZoneHandling;
+        }
         let data;
         if (dataSource instanceof Array) {
             data = {
@@ -4469,8 +4642,12 @@ class DataManager {
             if (!isNullOrUndefined(this.adaptor[makeRequest])) {
                 this.adaptor[makeRequest](result, deffered, args, query);
             }
-            else {
+            else if (!isNullOrUndefined(result.url)) {
                 this.makeRequest(result, deffered, args, query);
+            }
+            else {
+                args = DataManager.getDeferedArgs(query, result, args);
+                deffered.resolve(args);
             }
         }
         else {

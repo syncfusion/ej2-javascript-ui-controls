@@ -34,7 +34,7 @@ export class Row extends ChildProperty<Row> {
     /**
      * The height of the row as a string accept input both as '100px' and '100%'.
      * If specified as '100%, row renders to the full height of its chart.
-     * @default '100%'
+
      */
 
     @Property('100%')
@@ -86,7 +86,7 @@ export class Column extends ChildProperty<Column> {
     /**
      * The width of the column as a string accepts input both as like '100px' or '100%'.
      * If specified as '100%, column renders to the full width of its chart.
-     * @default '100%'
+
      */
 
     @Property('100%')
@@ -138,7 +138,7 @@ export class MajorGridLines extends ChildProperty<MajorGridLines> {
 
     /**
      * The width of the line in pixels.
-     * @default 1
+
      */
 
     @Property(1)
@@ -146,7 +146,7 @@ export class MajorGridLines extends ChildProperty<MajorGridLines> {
 
     /**
      * The dash array of the grid lines.
-     * @default ''
+
      */
 
     @Property('')
@@ -154,7 +154,7 @@ export class MajorGridLines extends ChildProperty<MajorGridLines> {
 
     /**
      * The color of the major grid line that accepts value in hex and rgba as a valid CSS color string.
-     * @default null
+
      */
 
     @Property(null)
@@ -167,7 +167,7 @@ export class MinorGridLines extends ChildProperty<MinorGridLines> {
 
     /**
      * The width of the line in pixels.
-     * @default 0.7
+
      */
 
     @Property(0.7)
@@ -175,7 +175,7 @@ export class MinorGridLines extends ChildProperty<MinorGridLines> {
 
     /**
      * The dash array of grid lines.
-     * @default ''
+
      */
 
     @Property('')
@@ -183,7 +183,7 @@ export class MinorGridLines extends ChildProperty<MinorGridLines> {
 
     /**
      * The color of the minor grid line that accepts value in hex and rgba as a valid CSS color string.
-     * @default null
+
      */
 
     @Property(null)
@@ -196,7 +196,7 @@ export class AxisLine extends ChildProperty<AxisLine> {
 
     /**
      * The width of the line in pixels.
-     * @default 1
+
      */
 
     @Property(1)
@@ -204,7 +204,7 @@ export class AxisLine extends ChildProperty<AxisLine> {
 
     /**
      * The dash array of the axis line.
-     * @default ''
+
      */
 
     @Property('')
@@ -212,7 +212,7 @@ export class AxisLine extends ChildProperty<AxisLine> {
 
     /**
      * The color of the axis line that accepts value in hex and rgba as a valid CSS color string.
-     * @default null
+
      */
 
     @Property(null)
@@ -225,7 +225,7 @@ export class MajorTickLines extends ChildProperty<MajorTickLines> {
 
     /**
      * The width of the tick lines in pixels.
-     * @default 1
+
      */
 
     @Property(1)
@@ -233,7 +233,7 @@ export class MajorTickLines extends ChildProperty<MajorTickLines> {
 
     /**
      * The height of the ticks in pixels.
-     * @default 5
+
      */
 
     @Property(5)
@@ -241,7 +241,7 @@ export class MajorTickLines extends ChildProperty<MajorTickLines> {
 
     /**
      * The color of the major tick line that accepts value in hex and rgba as a valid CSS color string.
-     * @default null
+
      */
 
     @Property(null)
@@ -254,7 +254,7 @@ export class MinorTickLines extends ChildProperty<MinorTickLines> {
 
     /**
      * The width of the tick line in pixels.
-     * @default 0.7
+
      */
 
     @Property(0.7)
@@ -262,14 +262,14 @@ export class MinorTickLines extends ChildProperty<MinorTickLines> {
 
     /**
      * The height of the ticks in pixels.
-     * @default 5
+
      */
 
     @Property(5)
     public height: number;
     /**
      * The color of the minor tick line that accepts value in hex and rgba as a valid CSS color string.
-     * @default null
+
      */
 
     @Property(null)
@@ -282,7 +282,7 @@ export class CrosshairTooltip extends ChildProperty<CrosshairTooltip> {
 
     /**
      * If set to true, crosshair ToolTip will be visible.
-     *  @default false
+
      */
 
     @Property(false)
@@ -290,7 +290,7 @@ export class CrosshairTooltip extends ChildProperty<CrosshairTooltip> {
 
     /**
      * The fill color of the ToolTip accepts value in hex and rgba as a valid CSS color string.
-     * @default null
+
      */
 
     @Property(null)
@@ -327,7 +327,7 @@ export class Axis extends ChildProperty<Axis> {
 
     /**
      * Specifies the title of an axis.
-     * @default ''
+
      */
 
     @Property('')
@@ -343,7 +343,7 @@ export class Axis extends ChildProperty<Axis> {
     /**
      * Used to format the axis label that accepts any global string format like 'C', 'n1', 'P' etc.
      * It also accepts placeholder like '{value}°C' in which value represent the axis label, e.g, 20°C.
-     * @default ''
+
      */
 
     @Property('')
@@ -351,7 +351,7 @@ export class Axis extends ChildProperty<Axis> {
 
     /**
      * Specifies the skeleton format in which the dateTime format will process.
-     * @default ''
+
      */
 
     @Property('')
@@ -359,7 +359,7 @@ export class Axis extends ChildProperty<Axis> {
 
     /**
      * It specifies the type of format to be used in dateTime format process.
-     * @default 'DateTime'
+
      */
 
     @Property('DateTime')
@@ -367,15 +367,46 @@ export class Axis extends ChildProperty<Axis> {
 
     /**
      * Left and right padding for the plot area in pixels.
-     * @default 0
+
      */
 
     @Property(0)
     public plotOffset: number;
 
     /**
+     * Left padding for the plot area in pixels.
+
+     */
+
+    @Property(null)
+    public plotOffsetLeft: number;
+
+    /**
+     * Top padding for the plot area in pixels.
+
+     */
+
+    @Property(null)
+    public plotOffsetTop: number;
+
+    /**
+     * Right padding for the plot area in pixels.
+
+     */
+
+    @Property(null)
+    public plotOffsetRight: number;
+
+    /**
+     * Bottom padding for the plot area in pixels.
+
+     */
+
+    @Property(null)
+    public plotOffsetBottom: number;
+    /**
      * Specifies indexed category  axis.
-     * @default false
+
      */
 
     @Property(false)
@@ -383,7 +414,7 @@ export class Axis extends ChildProperty<Axis> {
 
     /**
      * The base value for logarithmic axis. It requires `valueType` to be `Logarithmic`.
-     * @default 10
+
      */
     @Property(10)
     public logBase: number;
@@ -407,7 +438,7 @@ export class Axis extends ChildProperty<Axis> {
      * });
      * chart.appendTo('#Chart');
      * ```
-     * @default 0
+
      */
 
     @Property(0)
@@ -431,7 +462,7 @@ export class Axis extends ChildProperty<Axis> {
      * });
      * chart.appendTo('#Chart');
      * ```
-     * @default 0
+
      */
 
     @Property(0)
@@ -440,7 +471,7 @@ export class Axis extends ChildProperty<Axis> {
 
     /**
      * Specifies the number of `columns` or `rows` an axis has to span horizontally or vertically.
-     * @default 1
+
      */
 
     @Property(1)
@@ -448,8 +479,8 @@ export class Axis extends ChildProperty<Axis> {
 
     /**
      * With this property, you can request axis to calculate intervals approximately equal to your specified interval.
-     * @default null
-     * @aspDefaultValueIgnore
+
+
      */
 
     @Property(null)
@@ -457,7 +488,7 @@ export class Axis extends ChildProperty<Axis> {
 
     /**
      * The maximum number of label count per 100 pixels with respect to the axis length.
-     * @default 3
+
      */
 
     @Property(3)
@@ -465,7 +496,7 @@ export class Axis extends ChildProperty<Axis> {
 
     /**
      * The axis is scaled by this factor. When zoomFactor is 0.5, the chart is scaled by 200% along this axis. Value ranges from 0 to 1.
-     * @default 1
+
      */
 
     @Property(1)
@@ -473,7 +504,7 @@ export class Axis extends ChildProperty<Axis> {
 
     /**
      * Position of the zoomed axis. Value ranges from 0 to 1.
-     * @default 0
+
      */
 
     @Property(0)
@@ -481,7 +512,7 @@ export class Axis extends ChildProperty<Axis> {
 
     /**
      * If set to true, the axis will render at the opposite side of its default position.
-     * @default false
+
      */
 
     @Property(false)
@@ -489,7 +520,7 @@ export class Axis extends ChildProperty<Axis> {
 
     /**
      * If set to true, axis interval will be calculated automatically with respect to the zoomed range.
-     * @default true
+
      */
 
     @Property(true)
@@ -501,7 +532,7 @@ export class Axis extends ChildProperty<Axis> {
      * * normal: Padding is applied to the axis based on the range calculation.
      * * additional: Interval of the axis is added as padding to the minimum and maximum values of the range.
      * * round: Axis range is rounded to the nearest possible value divided by the interval.
-     * @default 'Auto'
+
      */
 
     @Property('Auto')
@@ -513,9 +544,9 @@ export class Axis extends ChildProperty<Axis> {
      * * DateTime: Renders a dateTime axis.
      * * Category: Renders a category axis.
      * * Logarithmic: Renders a log axis.
-     * @default 'Double'
-     * @blazorType Syncfusion.EJ2.Blazor.Charts.ValueType
-     * @isEnumeration true
+
+
+
      */
 
     @Property('Double')
@@ -527,7 +558,7 @@ export class Axis extends ChildProperty<Axis> {
      * * None: No action will be performed.
      * * Hide: Edge label will be hidden.
      * * Shift: Shifts the edge labels.
-     * @default 'None'
+
      */
 
     @Property('None')
@@ -541,7 +572,7 @@ export class Axis extends ChildProperty<Axis> {
      * * Days: Defines the interval of the axis in days.
      * * Hours: Defines the interval of the axis in hours.
      * * Minutes: Defines the interval of the axis in minutes.
-     * @default 'Auto'
+
      */
 
     @Property('Auto')
@@ -551,7 +582,7 @@ export class Axis extends ChildProperty<Axis> {
      * Specifies the placement of a label for category axis. They are,
      * * betweenTicks: Renders the label between the ticks.
      * * onTicks: Renders the label on the ticks.
-     * @default 'BetweenTicks'
+
      */
 
     @Property('BetweenTicks')
@@ -560,7 +591,7 @@ export class Axis extends ChildProperty<Axis> {
      * Specifies the placement of a ticks to the axis line. They are,
      * * inside: Renders the ticks inside to the axis line.
      * * outside: Renders the ticks outside to the axis line.
-     * @default 'Outside'
+
      */
 
     @Property('Outside')
@@ -570,7 +601,7 @@ export class Axis extends ChildProperty<Axis> {
      * Specifies the placement of a labels to the axis line. They are,
      * * inside: Renders the labels inside to the axis line.
      * * outside: Renders the labels outside to the axis line.
-     * @default 'Outside'
+
      */
 
     @Property('Outside')
@@ -578,7 +609,7 @@ export class Axis extends ChildProperty<Axis> {
     /**
      * Unique identifier of an axis.
      * To associate an axis with the series, set this name to the xAxisName/yAxisName properties of the series.
-     * @default ''
+
      */
 
     @Property('')
@@ -586,7 +617,7 @@ export class Axis extends ChildProperty<Axis> {
 
     /**
      * If set to true, axis label will be visible.
-     * @default true
+
      */
 
     @Property(true)
@@ -594,7 +625,7 @@ export class Axis extends ChildProperty<Axis> {
 
     /**
      * Specifies the number of minor ticks per interval.
-     * @default 0
+
      */
 
     @Property(0)
@@ -602,7 +633,7 @@ export class Axis extends ChildProperty<Axis> {
 
     /**
      * The angle to which the axis label gets rotated.
-     * @default 0
+
      */
 
     @Property(0)
@@ -610,7 +641,7 @@ export class Axis extends ChildProperty<Axis> {
 
     /**
      * Specifies the value at which the axis line has to be intersect with the vertical axis or vice versa.
-     * @default null
+
      */
 
     @Property(null)
@@ -618,7 +649,7 @@ export class Axis extends ChildProperty<Axis> {
 
     /**
      * Specifies whether axis elements like axis labels, axis title, etc has to be crossed with axis line
-     * @default true
+
      */
 
     @Property(true)
@@ -626,7 +657,7 @@ export class Axis extends ChildProperty<Axis> {
 
     /**
      * Specifies axis name with which the axis line has to be crossed
-     * @default null
+
      */
 
     @Property(null)
@@ -634,7 +665,7 @@ export class Axis extends ChildProperty<Axis> {
 
     /**
      * Specifies the minimum range of an axis.
-     * @default null
+
      */
 
     @Property(null)
@@ -642,7 +673,7 @@ export class Axis extends ChildProperty<Axis> {
 
     /**
      * Specifies the maximum range of an axis.
-     * @default null
+
      */
 
     @Property(null)
@@ -650,8 +681,8 @@ export class Axis extends ChildProperty<Axis> {
 
     /**
      * Specifies the interval for an axis.
-     * @default null
-     * @aspDefaultValueIgnore
+
+
      */
 
     @Property(null)
@@ -659,14 +690,14 @@ export class Axis extends ChildProperty<Axis> {
 
     /**
      * Specifies the maximum width of an axis label.
-     * @default 34.
+
      */
     @Property(34)
     public maximumLabelWidth: number;
 
     /**
      * Specifies the Trim property for an axis.
-     * @default false
+
      */
     @Property(false)
     public enableTrim: boolean;
@@ -716,7 +747,7 @@ export class Axis extends ChildProperty<Axis> {
      * * MultipleRows: Shows the label in MultipleRows when it intersects.
      * * Rotate45: Rotates the label to 45 degree when it intersects.
      * * Rotate90: Rotates the label to 90 degree when it intersects.
-     * @default Trim
+
      */
 
     @Property('Trim')
@@ -724,14 +755,14 @@ export class Axis extends ChildProperty<Axis> {
 
     /**
      * It specifies whether the axis to be rendered in inversed manner or not.
-     * @default false
+
      */
     @Property(false)
     public isInversed: boolean;
 
     /**
      * The polar radar radius position.
-     * @default 100
+
      */
 
     @Property(100)
@@ -739,7 +770,7 @@ export class Axis extends ChildProperty<Axis> {
 
     /**
      * The start angle for the series.
-     * @default 0
+
      */
 
     @Property(0)
@@ -747,14 +778,14 @@ export class Axis extends ChildProperty<Axis> {
 
     /**
      * Description for axis and its element.
-     * @default null
+
      */
     @Property(null)
     public description: string;
 
     /**
      * TabIndex value for the axis.
-     * @default 2
+
      */
     @Property(2)
     public tabIndex: number;

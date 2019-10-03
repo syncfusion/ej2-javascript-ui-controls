@@ -97,7 +97,7 @@ export class MultiSelect extends DropDownBase implements IInput {
      * By default, there is no checkbox provided for group headers.
      * This property allows you to render checkbox for group headers and to select 
      * all the grouped items at once
-     * @default false
+
      */
     @Property(false)
     public enableGroupCheckBox: boolean;
@@ -106,16 +106,16 @@ export class MultiSelect extends DropDownBase implements IInput {
     /**
      * Sets the CSS classes to root element of this component which helps to customize the
      * complete styles.
-     * @default null
+
      */
     @Property(null)
     public cssClass: string;
     /**
      * Gets or sets the width of the component. By default, it sizes based on its parent.
      * container dimension.
-     * @default '100%'
-     * @aspType string
-     * @blazorType string
+
+
+
      */
     @Property('100%')
     public width: string | number;
@@ -124,9 +124,9 @@ export class MultiSelect extends DropDownBase implements IInput {
      * > For more details about the popup configuration refer to 
      * [`Popup Configuration`](../../multi-select/getting-started/#configure-the-popup-list) documentation.
      * 
-     * @default '300px'
-     * @aspType string
-     * @blazorType string
+
+
+
      */
     @Property('300px')
     public popupHeight: string | number;
@@ -135,22 +135,22 @@ export class MultiSelect extends DropDownBase implements IInput {
      * > For more details about the popup configuration refer to 
      * [`Popup Configuration`](../../multi-select/getting-started/#configure-the-popup-list) documentation.
      * 
-     * @default '100%'
-     * @aspType string
-     * @blazorType string
+
+
+
      */
     @Property('100%')
     public popupWidth: string | number;
     /**
      * Gets or sets the placeholder in the component to display the given information
      * in input when no item selected. 
-     * @default null
+
      */
     @Property(null)
     public placeholder: string;
     /**
      * Accepts the value to be displayed as a watermark text on the filter bar. 
-     * @default null
+
      */
     @Property(null)
     public filterBarPlaceholder: string;
@@ -161,7 +161,7 @@ export class MultiSelect extends DropDownBase implements IInput {
      * {% codeBlock src="multiselect/html-attributes-api/index.ts" %}{% endcodeBlock %}
      * 
      * {% codeBlock src="multiselect/html-attributes-api/index.html" %}{% endcodeBlock %}
-     * @default {}
+
      */
     @Property({})
     public htmlAttributes: { [key: string]: string; };
@@ -173,7 +173,7 @@ export class MultiSelect extends DropDownBase implements IInput {
      * We have built-in `template engine`
      * which provides options to compile template string into a executable function. 
      * For EX: We have expression evolution as like ES6 expression string literals.
-     * @default null
+
      */
     @Property(null)
     public valueTemplate: string;
@@ -181,7 +181,7 @@ export class MultiSelect extends DropDownBase implements IInput {
      * Accepts the template design and assigns it to the header container of the popup list.
      * > For more details about the available template options refer to [`Template`](../../multi-select/templates) documentation.
      * 
-     * @default null
+
      */
     @Property(null)
     public headerTemplate: string;
@@ -189,7 +189,7 @@ export class MultiSelect extends DropDownBase implements IInput {
      * Accepts the template design and assigns it to the footer container of the popup list.
      * > For more details about the available template options refer to [`Template`](../../multi-select/templates) documentation.
      * 
-     * @default null
+
      */
     @Property(null)
     public footerTemplate: string;
@@ -200,7 +200,7 @@ export class MultiSelect extends DropDownBase implements IInput {
      * We have built-in `template engine`
      * which provides options to compile template string into a executable function. 
      * For EX: We have expression evolution as like ES6 expression string literals.
-     * @default null
+
      */
     @Property(null)
     public itemTemplate: string;
@@ -213,28 +213,28 @@ export class MultiSelect extends DropDownBase implements IInput {
      * 
      * {% codeBlock src="multiselect/allow-filtering-api/index.html" %}{% endcodeBlock %}
      * 
-     * @default null
+
      */
     @Property(null)
     public allowFiltering: boolean;
     /**
      * Allows user to add a 
      * [`custom value`](../../multi-select/custom-value), the value which is not present in the suggestion list.
-     * @default false
+
      */
     @Property(false)
     public allowCustomValue: boolean;
     /**
      * Enables close icon with the each selected item.
-     * @default true
+
      */
     @Property(true)
     public showClearButton: boolean;
     /**
      * Sets limitation to the value selection.
      * based on the limitation, list selection will be prevented.
-     * @default 1000
-     * @blazorType int
+
+
      */
     @Property(1000)
     public maximumSelectionLength: number;
@@ -242,32 +242,32 @@ export class MultiSelect extends DropDownBase implements IInput {
      * Gets or sets the `readonly` to input or not. Once enabled, just you can copy or highlight 
      * the text however tab key action will perform.
      * 
-     * @default false
+
      */
     @Property(false)
     public readonly: boolean;
     /**
      * Selects the list item which maps the data `text` field in the component.
-     * @default null
+
      */
     @Property(null)
     public text: string;
     /**
      * Selects the list item which maps the data `value` field in the component.
-     * @default null
-     * @isGenericType true
+
+
      */
     @Property(null)
     public value: number[] | string[] | boolean[];
     /**
      * Hides the selected item from the list item.
-     * @default true
+
      */
     @Property(true)
     public hideSelectedItem: boolean;
     /**
      * Based on the property, when item get select popup visibility state will changed.
-     * @default true
+
      */
     @Property(true)
     public closePopupOnSelect: boolean;
@@ -287,27 +287,27 @@ export class MultiSelect extends DropDownBase implements IInput {
      * 
      * {% codeBlock src="multiselect/visual-mode-api/index.html" %}{% endcodeBlock %}
      * 
-     * @default Default
+
      */
     @Property('Default')
     public mode: visualMode;
     /**
      * Sets the delimiter character for 'default' and 'delimiter' visibility modes.
-     * @default ','
+
      */
     @Property(',')
     public delimiterChar: string;
     /**
      * Sets [`case sensitive`](../../multi-select/filtering/#case-sensitive-filtering)
      * option for filter operation.
-     * @default true
+
      */
     @Property(true)
     public ignoreCase: boolean;
     /**
      * Allows you to either show or hide the DropDown button on the component
      * 
-     * @default false
+
      */
     @Property(false)
     public showDropDownIcon: boolean;
@@ -318,94 +318,94 @@ export class MultiSelect extends DropDownBase implements IInput {
      * * Always: The floating label will always float above the input.
      * * Auto: The floating label will float above the input after focusing or entering a value in the input.
      * 
-     * @default Syncfusion.EJ2.Inputs.FloatLabelType.Never
-     * @aspType Syncfusion.EJ2.Inputs.FloatLabelType
-     * @isEnumeration true
-     * @blazorType Syncfusion.EJ2.Inputs.FloatLabelType
+
+
+
+
      */
     @Property('Never')
     public floatLabelType: FloatLabelType;
     /**
      * Allows you to either show or hide the selectAll option on the component.
      * 
-     * @default false
+
      */
     @Property(false)
     public showSelectAll: boolean;
     /**
      * Specifies the selectAllText to be displayed on the component.
      * 
-     * @default 'select All'
+
      */
     @Property('Select All')
     public selectAllText: string;
     /**
      * Specifies the UnSelectAllText to be displayed on the component.
      * 
-     * @default 'select All'
+
      */
     @Property('Unselect All')
     public unSelectAllText: string;
     /**
      * Reorder the selected items in popup visibility state.
      * 
-     * @default true
+
      */
     @Property(true)
     public enableSelectionOrder: boolean;
     /**
      * Whether to automatically open the popup when the control is clicked.
-     * @default true
+
      */
     @Property(true)
     public openOnClick: boolean;
     /**
      * Fires each time when selection changes happened in list items after model and input value get affected.
      * @event
-     * @blazorProperty 'ValueChange'
+
      */
     @Event()
     public change: EmitType<MultiSelectChangeEventArgs>;
     /**
      * Fires before the selected item removed from the widget.
      * @event
-     * @blazorProperty 'OnValueRemove'
+
      */
     @Event()
     public removing: EmitType<RemoveEventArgs>;
     /**
      * Fires after the selected item removed from the widget.
      * @event
-     * @blazorProperty 'ValueRemoved'
+
      */
     @Event()
     public removed: EmitType<RemoveEventArgs>;
     /**
      * Fires after select all process completion.
      * @event
-     * @blazorProperty 'SelectedAll'
+
      */
     @Event()
     public selectedAll: EmitType<ISelectAllEventArgs>;
     /**
      * Fires when popup opens before animation.
      * @event
-     * @blazorProperty 'OnOpen'
-     * @blazorType BeforeOpenEventArgs
+
+
      */
     @Event()
     public beforeOpen: EmitType<Object>;
     /**
      * Fires when popup opens after animation completion.
      * @event
-     * @blazorProperty 'Opened'
+
      */
     @Event()
     public open: EmitType<PopupEventArgs>;
     /**
      * Fires when popup close after animation completion.
      * @event
-     * @blazorProperty 'OnClose'
+
      */
     @Event()
     public close: EmitType<PopupEventArgs>;
@@ -424,7 +424,7 @@ export class MultiSelect extends DropDownBase implements IInput {
     /**
      * Event triggers when the chip selection.
      * @event
-     * @blazorProperty 'ChipSelected'
+
      */
     @Event()
     public chipSelection: EmitType<Object>;
@@ -433,7 +433,7 @@ export class MultiSelect extends DropDownBase implements IInput {
      * > For more details about filtering, refer to [`Filtering`](../../multi-select/filtering) documentation.
      * 
      * @event
-     * @blazorProperty 'Filtering'
+
      */
     @Event()
     public filtering: EmitType<FilteringEventArgs>;
@@ -442,14 +442,14 @@ export class MultiSelect extends DropDownBase implements IInput {
      * > For more details about chip customization refer [`Chip Customization`](../../multi-select/chip-customization)
      * 
      * @event
-     * @blazorProperty 'OnChipTag'
+
      */
     @Event()
     public tagging: EmitType<TaggingEventArgs>;
     /**
      * Triggers when the [`customValue`](../../multi-select/custom-value) is selected.
      * @event
-     * @blazorProperty 'CustomValueSpecifier'
+
      */
     @Event()
     public customValueSelection: EmitType<CustomValueEventArgs>;
@@ -581,9 +581,9 @@ export class MultiSelect extends DropDownBase implements IInput {
         }
     }
     private updateCssClass(): void {
-        if (this.cssClass) {
-            this.popupWrapper.classList.add(this.cssClass);
-            this.overAllWrapper.classList.add(this.cssClass);
+        if (!isNullOrUndefined(this.cssClass) && this.cssClass !== '') {
+            addClass([this.overAllWrapper], this.cssClass.split(' '));
+            addClass([this.popupWrapper], this.cssClass.split(' '));
         }
     }
     private onPopupShown(): void {
@@ -1603,7 +1603,7 @@ export class MultiSelect extends DropDownBase implements IInput {
         let nextBottom: number = selectedLI.offsetTop + selectedLI.offsetHeight - this.list.scrollTop;
         let nextOffset: number = this.list.scrollTop + nextBottom - currentOffset;
         let boxRange: number = (selectedLI.offsetTop + selectedLI.offsetHeight - this.list.scrollTop);
-        boxRange = this.fields.groupBy && !isUndefined(this.fixedHeaderElement) ?
+        boxRange = this.fields.groupBy && !isNullOrUndefined(this.fixedHeaderElement) ?
             boxRange - this.fixedHeaderElement.offsetHeight : boxRange;
         if (activeIndex === 0) {
             this.list.scrollTop = 0;
@@ -2940,7 +2940,7 @@ export class MultiSelect extends DropDownBase implements IInput {
             });
             let compiledString: Function = compile(remainContent);
             let totalCompiledString: Function = compile(l10n.getConstant('totalCountTemplate'));
-            raminElement.appendChild(compiledString({ 'count': this.value.length })[0]);
+            raminElement.appendChild(compiledString({ 'count': this.value.length }, null, null, null, !this.isStringTemplate)[0]);
             this.viewWrapper.appendChild(raminElement);
             let remainSize: number = raminElement.offsetWidth;
             remove(raminElement);
@@ -3019,8 +3019,8 @@ export class MultiSelect extends DropDownBase implements IInput {
         raminElement.innerHTML = '';
         raminElement.appendChild(
             (viewWrapper.firstChild && viewWrapper.firstChild.nodeType === 3) ?
-            compiledString({ 'count': remaining })[0] :
-            totalCompiledString({ 'count': remaining })[0]);
+            compiledString({ 'count': remaining }, null, null, null, !this.isStringTemplate)[0] :
+            totalCompiledString({ 'count': remaining }, null, null, null, !this.isStringTemplate)[0]);
         if (viewWrapper.firstChild && viewWrapper.firstChild.nodeType === 3) {
             viewWrapper.classList.remove(TOTAL_COUNT_WRAPPER);
         } else {
@@ -3241,6 +3241,7 @@ export class MultiSelect extends DropDownBase implements IInput {
             this.isFirstClick = false;
         }
         if (this.getModuleName() === 'multiselect') {
+            this.filterAction = false;
             this.setUpdateInitial(['fields', 'query', 'dataSource'], newProp as { [key: string]: string; });
         }
         for (let prop of Object.keys(newProp)) {
@@ -3281,8 +3282,10 @@ export class MultiSelect extends DropDownBase implements IInput {
                     this.updateData(newProp.delimiterChar);
                     break;
                 case 'cssClass':
-                    this.popupWrapper.classList.remove(oldProp.cssClass);
-                    this.overAllWrapper.classList.remove(oldProp.cssClass);
+                    if (!isNullOrUndefined(oldProp.cssClass) && oldProp.cssClass !== '') {
+                        removeClass([this.overAllWrapper], oldProp.cssClass.split(' '));
+                        removeClass([this.popupWrapper], oldProp.cssClass.split(' '));
+                    }
                     this.updateCssClass();
                     break;
                 case 'enableRtl':
@@ -3321,9 +3324,7 @@ export class MultiSelect extends DropDownBase implements IInput {
                     this.reInitializePoup();
                     break;
                 case 'allowFiltering':
-                    if (this.mode === 'CheckBox' && this.popupObj) {
-                        this.reInitializePoup();
-                    }
+                    if (this.mode === 'CheckBox' && this.popupObj) { this.reInitializePoup(); }
                     break;
                 default:
                     let msProps: { [key: string]: Object };
@@ -3647,7 +3648,7 @@ export class MultiSelect extends DropDownBase implements IInput {
 export interface CustomValueEventArgs {
     /**
      * Gets the newly added data.
-     * @blazorType object
+
      */
     newData: Object;
     /**
@@ -3663,7 +3664,7 @@ export interface TaggingEventArgs {
     isInteracted: boolean;
     /**
      * Returns the selected item as JSON Object from the data source.
-     * @blazorType object
+
      */
     itemData: FieldSettingsModel;
     /**
@@ -3674,7 +3675,7 @@ export interface TaggingEventArgs {
      * To set the classes to chip element
      * @param  { string } classes - Specify the classes to chip element.
      * @return {void}.
-     * @blazorType string
+
      */
     setClass: Function;
     /**
@@ -3689,12 +3690,12 @@ export interface MultiSelectChangeEventArgs {
     isInteracted: boolean;
     /**
      * Returns the component initial Value.
-     * @isGenericType true
+
      */
     oldValue: number[] | string[] | boolean[];
     /**
      * Returns the updated component Values.
-     * @isGenericType true
+
      */
     value: number[] | string[] | boolean[];
     /**
@@ -3719,7 +3720,7 @@ export interface ISelectAllEventArgs {
     items: HTMLLIElement[];
     /**
      * Returns the selected items as JSON Object from the data source.
-     * @blazorType object
+
      */
     itemData: FieldSettingsModel[];
     /**

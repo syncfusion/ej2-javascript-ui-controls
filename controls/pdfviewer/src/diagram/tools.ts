@@ -13,11 +13,11 @@ import { PdfAnnotationBaseModel } from './pdf-annotation-model';
 import { PdfAnnotationBase } from './pdf-annotation';
 import { cloneObject, isLineShapes } from './drawing-util';
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
-import { updatePerimeterLabel, removePerimeterLabel } from './connector-util';
+import { updatePerimeterLabel } from './connector-util';
 
 /**
  * Defines the interactive tools
- * @hidden
+
  */
 export class ToolBase {
     /**
@@ -226,7 +226,7 @@ export class ToolBase {
 
 /**
  * Helps to select the objects
- * @hidden
+
  */
 export class SelectTool extends ToolBase {
     private action: Actions;
@@ -292,7 +292,7 @@ export type Actions = 'None' | 'Select' | 'Drag' | 'ResizeWest' | 'ConnectorSour
     'PortDrag' | 'PortDraw' | 'LabelSelect' | 'LabelDrag' | 'LabelResizeSouthEast' | 'LabelResizeSouthWest' | 'LabelResizeNorthEast' |
     'LabelResizeNorthWest' | 'LabelResizeSouth' | 'LabelResizeNorth' | 'LabelResizeWest' | 'LabelResizeEast' | 'LabelRotate';
 
-/** @hidden */
+
 export class MoveTool extends ToolBase {
     /**
      * Sets/Gets the previous mouse position
@@ -481,7 +481,7 @@ export class MoveTool extends ToolBase {
     }
 }
 
-/** @hidden */
+
 export class StampTool extends MoveTool {
     /**   @private  */
     // tslint:disable-next-line
@@ -514,7 +514,7 @@ export class StampTool extends MoveTool {
 
 /**
  * Helps to edit the selected connectors
- * @hidden
+
  */
 export class ConnectTool extends ToolBase {
 
@@ -662,7 +662,7 @@ export class ConnectTool extends ToolBase {
 
 /**
  * Scales the selected objects
- * @hidden
+
  */
 export class ResizeTool extends ToolBase {
     /**
@@ -885,7 +885,7 @@ export class ResizeTool extends ToolBase {
 
 /**
  * Draws a node that is defined by the user
- * @hidden
+
  */
 export class NodeDrawingTool extends ToolBase {
     /** @private */
@@ -972,7 +972,7 @@ export class NodeDrawingTool extends ToolBase {
 }
 /**
  * Draws a Polygon shape node dynamically using polygon Tool
- * @hidden
+
  */
 export class PolygonDrawingTool extends ToolBase {
     /** @private */
@@ -1111,7 +1111,6 @@ export class PolygonDrawingTool extends ToolBase {
                             });
                             this.commandHandler.select([this.drawingObject.id]);
                             if (this.commandHandler.enableMeasureAnnotation && this.drawingObject.measureType === 'Perimeter') {
-                                removePerimeterLabel(this.drawingObject);
                                 this.commandHandler.renderDrawing(null, this.drawingObject.pageIndex);
                                 // tslint:disable-next-line:max-line-length
                                 this.drawingObject.notes = this.commandHandler.annotation.measureAnnotationModule.calculatePerimeter(this.drawingObject);
@@ -1163,7 +1162,7 @@ export class PolygonDrawingTool extends ToolBase {
 
 /**
  * Helps to edit the selected connectors
- * @hidden
+
  */
 export class LineTool extends ToolBase {
 
@@ -1318,7 +1317,7 @@ export class LineTool extends ToolBase {
 
 /**
  * Rotates the selected objects
- * @hidden
+
  */
 export class RotateTool extends ToolBase {
 
@@ -1379,7 +1378,7 @@ export class RotateTool extends ToolBase {
 }
 
 /**
- * @hidden
+
  */
 export interface Info {
     ctrlKey?: boolean;
@@ -1387,7 +1386,7 @@ export interface Info {
 }
 
 /**
- * @hidden
+
  */
 export interface ITouches {
     pageX?: number;
@@ -1396,7 +1395,7 @@ export interface ITouches {
 }
 
 /**
- * @hidden
+
  */
 export interface MouseEventArgs {
     position?: PointModel;

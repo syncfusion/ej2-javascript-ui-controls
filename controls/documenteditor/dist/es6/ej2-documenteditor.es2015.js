@@ -532,6 +532,12 @@ class WUniqueFormat {
         if (property === 'bidi') {
             return 11;
         }
+        if (property === 'restartPageNumbering') {
+            return 12;
+        }
+        if (property === 'pageStartingNumber') {
+            return 13;
+        }
         return 0;
     }
     /**
@@ -859,6 +865,12 @@ class WUniqueFormat {
         if (this.isNotEqual('bidi', source, modifiedProperty, modifiedValue, 10)) {
             return false;
         }
+        if (this.isNotEqual('restartPageNumbering', source, modifiedProperty, modifiedValue, 10)) {
+            return false;
+        }
+        if (this.isNotEqual('pageStartingNumber', source, modifiedProperty, modifiedValue, 10)) {
+            return false;
+        }
         return true;
     }
     /**
@@ -1014,7 +1026,7 @@ class XmlHttpRequestHandler {
     constructor() {
         /**
          * A boolean value indicating whether the request should be sent asynchronous or not.
-         * @default true
+    
          */
         this.mode = true;
     }
@@ -1179,6 +1191,18 @@ class WSectionFormat {
     set bidi(value) {
         this.setPropertyValue('bidi', value);
     }
+    get restartPageNumbering() {
+        return this.getPropertyValue('restartPageNumbering');
+    }
+    set restartPageNumbering(value) {
+        this.setPropertyValue('restartPageNumbering', value);
+    }
+    get pageStartingNumber() {
+        return this.getPropertyValue('pageStartingNumber');
+    }
+    set pageStartingNumber(value) {
+        this.setPropertyValue('pageStartingNumber', value);
+    }
     destroy() {
         if (!isNullOrUndefined(this.uniqueSectionFormat)) {
             WSectionFormat.uniqueSectionFormats.remove(this.uniqueSectionFormat);
@@ -1228,6 +1252,12 @@ class WSectionFormat {
             case 'bidi':
                 value = false;
                 break;
+            case 'restartPageNumbering':
+                value = false;
+                break;
+            case 'pageStartingNumber':
+                value = 0;
+                break;
         }
         return value;
     }
@@ -1272,6 +1302,8 @@ class WSectionFormat {
         this.addUniqueSectionFormat('rightMargin', property, propValue, uniqueSectionFormatTemp);
         this.addUniqueSectionFormat('bottomMargin', property, propValue, uniqueSectionFormatTemp);
         this.addUniqueSectionFormat('bidi', property, propValue, uniqueSectionFormatTemp);
+        this.addUniqueSectionFormat('restartPageNumbering', property, propValue, uniqueSectionFormatTemp);
+        this.addUniqueSectionFormat('pageStartingNumber', property, propValue, uniqueSectionFormatTemp);
         // tslint:disable-next-line:max-line-length
         this.uniqueSectionFormat = WSectionFormat.uniqueSectionFormats.addUniqueFormat(uniqueSectionFormatTemp, WSectionFormat.uniqueFormatType);
     }
@@ -1737,12 +1769,20 @@ class WParagraphFormat {
         this.setPropertyValue('contextualSpacing', value);
     }
     getListFormatParagraphFormat(property) {
+        let paragraphFormat = this.getListPargaraphFormat(property);
+        if (!isNullOrUndefined(paragraphFormat)) {
+            // tslint:disable-next-line:max-line-length
+            return paragraphFormat.uniqueParagraphFormat.propertiesHash.get(WUniqueFormat.getPropertyType(WParagraphFormat.uniqueFormatType, property));
+        }
+        return undefined;
+    }
+    getListPargaraphFormat(property) {
         if (this.listFormat.listId > -1 && this.listFormat.listLevelNumber > -1) {
             let level = this.listFormat.listLevel;
             let propertyType = WUniqueFormat.getPropertyType(WParagraphFormat.uniqueFormatType, property);
-            // tslint:disable-next-line:max-line-length
-            if (!isNullOrUndefined(level) && !isNullOrUndefined(level.paragraphFormat.uniqueParagraphFormat) && level.paragraphFormat.uniqueParagraphFormat.propertiesHash.containsKey(propertyType)) {
-                return level.paragraphFormat.uniqueParagraphFormat.propertiesHash.get(propertyType);
+            if (!isNullOrUndefined(level) && !isNullOrUndefined(level.paragraphFormat.uniqueParagraphFormat) &&
+                level.paragraphFormat.uniqueParagraphFormat.propertiesHash.containsKey(propertyType)) {
+                return level.paragraphFormat;
             }
             else {
                 return undefined;
@@ -1752,12 +1792,19 @@ class WParagraphFormat {
     }
     getPropertyValue(property) {
         if (!this.hasValue(property)) {
-            let ifListFormat = this.getListFormatParagraphFormat(property);
+            let formatInList = this.getListFormatParagraphFormat(property);
             if (this.baseStyle instanceof WParagraphStyle) {
+                let currentFormat = this;
                 /* tslint:disable-next-line:no-any */
                 let baseStyle = this.baseStyle;
                 while (!isNullOrUndefined(baseStyle)) {
+                    let listParaFormat = baseStyle.paragraphFormat.getListPargaraphFormat(property);
                     if (baseStyle.paragraphFormat.hasValue(property)) {
+                        currentFormat = baseStyle.paragraphFormat;
+                        break;
+                    }
+                    else if (!isNullOrUndefined(listParaFormat) && listParaFormat.hasValue(property)) {
+                        currentFormat = listParaFormat;
                         break;
                     }
                     else {
@@ -1765,17 +1812,17 @@ class WParagraphFormat {
                     }
                 }
                 if (!isNullOrUndefined(baseStyle)) {
-                    if (!isNullOrUndefined(ifListFormat) && this.listFormat.listId !== -1
-                        && baseStyle.paragraphFormat.listFormat.listId === -1
-                        || !isNullOrUndefined(ifListFormat) && this.listFormat.listId !== baseStyle.paragraphFormat.listFormat.listId) {
-                        return ifListFormat;
+                    if (!isNullOrUndefined(formatInList) && this.listFormat.listId !== -1
+                        && currentFormat.listFormat.listId === -1
+                        || !isNullOrUndefined(formatInList) && this.listFormat.listId !== currentFormat.listFormat.listId) {
+                        return formatInList;
                     }
                     let propertyType = WUniqueFormat.getPropertyType(WParagraphFormat.uniqueFormatType, property);
-                    return baseStyle.paragraphFormat.uniqueParagraphFormat.propertiesHash.get(propertyType);
+                    return currentFormat.uniqueParagraphFormat.propertiesHash.get(propertyType);
                 }
             }
-            if (!isNullOrUndefined(ifListFormat)) {
-                return ifListFormat;
+            if (!isNullOrUndefined(formatInList)) {
+                return formatInList;
             }
         }
         else {
@@ -1804,7 +1851,8 @@ class WParagraphFormat {
     documentParagraphFormat() {
         let docParagraphFormat;
         if (!isNullOrUndefined(this.ownerBase)) {
-            if (!isNullOrUndefined(this.ownerBase.bodyWidget)) {
+            // tslint:disable-next-line:max-line-length
+            if (!isNullOrUndefined(this.ownerBase.bodyWidget) && !isNullOrUndefined(this.ownerBase.bodyWidget.page)) {
                 docParagraphFormat = this.ownerBase.bodyWidget.page.viewer.paragraphFormat;
             }
         }
@@ -2189,7 +2237,8 @@ class WCharacterFormat {
     documentCharacterFormat() {
         let docCharacterFormat;
         if (!isNullOrUndefined(this.ownerBase)) {
-            if (!isNullOrUndefined(this.ownerBase.paragraph)) {
+            // tslint:disable-next-line:max-line-length
+            if (!isNullOrUndefined(this.ownerBase.paragraph) && !isNullOrUndefined(this.ownerBase.paragraph.bodyWidget)) {
                 docCharacterFormat = this.ownerBase.paragraph.bodyWidget.page.viewer.characterFormat;
             }
             else {
@@ -2373,6 +2422,9 @@ class WCharacterFormat {
         format.baseCharStyle = this.baseCharStyle;
         return format;
     }
+    /**
+     * @private
+     */
     hasValue(property) {
         if (!isNullOrUndefined(this.uniqueCharacterFormat) && !isNullOrUndefined(this.uniqueCharacterFormat.propertiesHash)) {
             let propertyType = WUniqueFormat.getPropertyType(this.uniqueCharacterFormat.uniqueFormatType, property);
@@ -7965,15 +8017,21 @@ class LineWidget {
         let line = inline.line;
         let lineIndex = inline.line.paragraph.childWidgets.indexOf(inline.line);
         let bidi = line.paragraph.bidi;
-        for (let i = !bidi ? 0 : line.children.length - 1; i > -1 && i < line.children.length; bidi ? i-- : i++) {
-            let inlineElement = line.children[i];
-            if (inline === inlineElement) {
-                break;
+        if (!bidi) {
+            for (let i = 0; i < line.children.length; i++) {
+                let inlineElement = line.children[i];
+                if (inline === inlineElement) {
+                    break;
+                }
+                if (inlineElement instanceof ListTextElementBox) {
+                    continue;
+                }
+                textIndex += inlineElement.length;
             }
-            if (inlineElement instanceof ListTextElementBox) {
-                continue;
-            }
-            textIndex += inlineElement.length;
+        }
+        else {
+            let elementInfo = this.getInlineForOffset(textIndex, true, inline);
+            textIndex = elementInfo.index;
         }
         return textIndex;
     }
@@ -7983,23 +8041,117 @@ class LineWidget {
     getEndOffset() {
         let startOffset = 0;
         let count = 0;
-        for (let i = 0; i < this.children.length; i++) {
-            let inlineElement = this.children[i];
-            if (inlineElement.length === 0) {
-                continue;
+        // let line: LineWidget = this.line as LineWidget;
+        // let lineIndex: number = thtis.line.paragraph.childWidgets.indexOf(inline.line);
+        let bidi = this.paragraph.bidi;
+        if (!bidi) {
+            for (let i = 0; i < this.children.length; i++) {
+                let inlineElement = this.children[i];
+                if (inlineElement.length === 0) {
+                    continue;
+                }
+                if (inlineElement instanceof ListTextElementBox) {
+                    continue;
+                }
+                if (inlineElement instanceof TextElementBox || inlineElement instanceof EditRangeStartElementBox
+                    || inlineElement instanceof ImageElementBox || inlineElement instanceof EditRangeEndElementBox
+                    || inlineElement instanceof BookmarkElementBox || (inlineElement instanceof FieldElementBox
+                    && HelperMethods.isLinkedFieldCharacter(inlineElement))) {
+                    startOffset = count + inlineElement.length;
+                }
+                count += inlineElement.length;
             }
-            if (inlineElement instanceof ListTextElementBox) {
-                continue;
-            }
-            if (inlineElement instanceof TextElementBox || inlineElement instanceof EditRangeStartElementBox
-                || inlineElement instanceof ImageElementBox || inlineElement instanceof EditRangeEndElementBox
-                || inlineElement instanceof BookmarkElementBox || (inlineElement instanceof FieldElementBox
-                && HelperMethods.isLinkedFieldCharacter(inlineElement))) {
-                startOffset = count + inlineElement.length;
-            }
-            count += inlineElement.length;
+        }
+        else {
+            let elementInfo = this.getInlineForOffset(startOffset, false, this.children[0], true);
+            startOffset = elementInfo.index;
         }
         return startOffset;
+    }
+    getBodyWidget() {
+        let cntrWidget = this.paragraph.containerWidget;
+        while (!(cntrWidget instanceof BodyWidget)) {
+            cntrWidget = cntrWidget.containerWidget;
+        }
+        return cntrWidget;
+    }
+    getInlineForOffset(offset, isOffset, inline, isEndOffset) {
+        let startElement = this.children[this.children.length - 1];
+        let endElement;
+        let element = startElement;
+        let viewer = this.getBodyWidget().page.viewer;
+        let textHelper = viewer.textHelper;
+        let isApplied = false;
+        let count = 0;
+        let lineLength = viewer.selection.getLineLength(this);
+        while (element) {
+            if (!endElement && !(element instanceof TabElementBox && element.text === '\t') &&
+                (element instanceof TextElementBox && !textHelper.isRTLText(element.text)
+                    || !(element instanceof TextElementBox))) {
+                while (element.previousElement && (element.previousElement instanceof TextElementBox
+                    && !textHelper.isRTLText(element.previousElement.text) || element.previousElement instanceof FieldElementBox
+                    || element.previousElement instanceof ListTextElementBox || element instanceof BookmarkElementBox
+                    || element instanceof ImageElementBox)) {
+                    isApplied = true;
+                    element = element.previousElement;
+                    continue;
+                }
+                if (element.previousElement && (isApplied
+                    || (element.previousElement instanceof TextElementBox && textHelper.isRTLText(element.previousElement.text)))) {
+                    endElement = element.previousElement;
+                }
+                else if (!element.previousElement) {
+                    if (element instanceof ListTextElementBox) {
+                        break;
+                    }
+                    endElement = element;
+                }
+                if (element instanceof ListTextElementBox && endElement) {
+                    element = endElement;
+                    endElement = undefined;
+                }
+            }
+            if (isOffset && !isNullOrUndefined(inline)) {
+                if (inline === element) {
+                    return { 'element': element, 'index': offset };
+                }
+                offset += element.length;
+            }
+            else if (isEndOffset) {
+                offset += element.length;
+                if (offset === lineLength) {
+                    return { 'element': element, 'index': offset };
+                }
+            }
+            else {
+                if (offset <= count + element.length) {
+                    return { 'element': element, 'index': offset - count };
+                }
+                count += element.length;
+            }
+            if (element instanceof TextElementBox && textHelper.isRTLText(element.text) ||
+                (element instanceof TabElementBox && element.text === '\t')) {
+                if ((offset === count + 1 || offset > count + 1) && count === lineLength && !element.previousElement) {
+                    break;
+                }
+                element = element.previousElement;
+            }
+            else {
+                if (endElement && (!element.nextElement || element === startElement || element.nextElement instanceof TextElementBox
+                    && textHelper.isRTLText(element.nextElement.text) || element.nextElement instanceof ListTextElementBox)) {
+                    if (offset === count + 1 && count === lineLength) {
+                        break;
+                    }
+                    element = endElement;
+                    endElement = undefined;
+                    isApplied = false;
+                }
+                else {
+                    element = element.nextElement;
+                }
+            }
+        }
+        return { 'element': element, 'index': isEndOffset ? offset : 0 };
     }
     /**
      * @private
@@ -8019,39 +8171,47 @@ class LineWidget {
                 }
             }
         }
-        for (let i = !bidi ? 0 : this.children.length - 1; bidi ? i > -1 : i < this.children.length; bidi ? i-- : i++) {
-            inlineElement = this.children[i];
-            if (inlineElement instanceof ListTextElementBox) {
-                continue;
-            }
-            if (!isStarted && (inlineElement instanceof TextElementBox || inlineElement instanceof ImageElementBox
-                || inlineElement instanceof BookmarkElementBox || inlineElement instanceof EditRangeEndElementBox
-                || inlineElement instanceof EditRangeStartElementBox
-                || inlineElement instanceof FieldElementBox && HelperMethods.isLinkedFieldCharacter(inlineElement))) {
-                isStarted = true;
-            }
-            if (isStarted && offset <= count + inlineElement.length) {
-                // if (inlineElement instanceof BookmarkElementBox) {
-                //     offset += inlineElement.length;
-                //     count += inlineElement.length;
-                //     continue;
-                // }
-                // tslint:disable-next-line:max-line-length
-                if (inlineElement instanceof TextElementBox && (inlineElement.text === ' ' && isInsert)) {
-                    let currentElement = this.getNextTextElement(this, i + 1);
-                    inlineElement = !isNullOrUndefined(currentElement) ? currentElement : inlineElement;
-                    indexInInline = isNullOrUndefined(currentElement) ? (offset - count) : 0;
+        if (!bidi) {
+            for (let i = 0; i < this.children.length; i++) {
+                inlineElement = this.children[i];
+                if (inlineElement instanceof ListTextElementBox) {
+                    continue;
+                }
+                if (!isStarted && (inlineElement instanceof TextElementBox || inlineElement instanceof ImageElementBox
+                    || inlineElement instanceof BookmarkElementBox || inlineElement instanceof EditRangeEndElementBox
+                    || inlineElement instanceof EditRangeStartElementBox
+                    || inlineElement instanceof FieldElementBox
+                        && HelperMethods.isLinkedFieldCharacter(inlineElement))) {
+                    isStarted = true;
+                }
+                if (isStarted && offset <= count + inlineElement.length) {
+                    // if (inlineElement instanceof BookmarkElementBox) {
+                    //     offset += inlineElement.length;
+                    //     count += inlineElement.length;
+                    //     continue;
+                    // }
+                    // tslint:disable-next-line:max-line-length
+                    if (inlineElement instanceof TextElementBox && (inlineElement.text === ' ' && isInsert)) {
+                        let currentElement = this.getNextTextElement(this, i + 1);
+                        inlineElement = !isNullOrUndefined(currentElement) ? currentElement : inlineElement;
+                        indexInInline = isNullOrUndefined(currentElement) ? (offset - count) : 0;
+                        return { 'element': inlineElement, 'index': indexInInline };
+                    }
+                    else {
+                        indexInInline = (offset - count);
+                    }
                     return { 'element': inlineElement, 'index': indexInInline };
                 }
-                else {
-                    indexInInline = (offset - count);
-                }
-                return { 'element': inlineElement, 'index': indexInInline };
+                count += inlineElement.length;
             }
-            count += inlineElement.length;
+            if (offset > count) {
+                indexInInline = isNullOrUndefined(inlineElement) ? offset : inlineElement.length;
+            }
         }
-        if (offset > count) {
-            indexInInline = isNullOrUndefined(inlineElement) ? offset : inlineElement.length;
+        else {
+            let elementInfo = this.getInlineForOffset(offset);
+            inlineElement = elementInfo.element;
+            indexInInline = elementInfo.index;
         }
         return { 'element': inlineElement, 'index': indexInInline };
     }
@@ -8257,7 +8417,8 @@ class ElementBox {
         if (line.previousLine) {
             this.linkFieldTraversingBackward(line.previousLine, fieldEnd, this);
         }
-        else if (line.paragraph.previousRenderedWidget instanceof ParagraphWidget) {
+        else if (line.paragraph.previousRenderedWidget instanceof ParagraphWidget
+            && line.paragraph.previousRenderedWidget.childWidgets.length > 0) {
             let prevParagraph = line.paragraph.previousRenderedWidget;
             // tslint:disable-next-line:max-line-length
             this.linkFieldTraversingBackward(prevParagraph.childWidgets[prevParagraph.childWidgets.length - 1], fieldEnd, this);
@@ -8301,7 +8462,8 @@ class ElementBox {
         if (line.nextLine) {
             this.linkFieldTraversingForward(line.nextLine, fieldBegin, this);
         }
-        else if (line.paragraph.nextRenderedWidget instanceof ParagraphWidget) {
+        else if (line.paragraph.nextRenderedWidget instanceof ParagraphWidget
+            && line.paragraph.nextRenderedWidget.childWidgets.length > 0) {
             this.linkFieldTraversingForward(line.paragraph.nextRenderedWidget.childWidgets[0], fieldBegin, this);
         }
         return true;
@@ -8328,7 +8490,8 @@ class ElementBox {
         if (line.previousLine) {
             this.linkFieldTraversingBackwardSeparator(line.previousLine, fieldSeparator, this);
         }
-        else if (line.paragraph.nextRenderedWidget instanceof ParagraphWidget) {
+        else if (line.paragraph.previousRenderedWidget instanceof ParagraphWidget
+            && line.paragraph.previousRenderedWidget.childWidgets.length > 0) {
             // tslint:disable-next-line:max-line-length
             line = line.paragraph.previousRenderedWidget.childWidgets[line.paragraph.previousRenderedWidget.childWidgets.length - 1];
             this.linkFieldTraversingBackwardSeparator(line, fieldSeparator, this);
@@ -10246,7 +10409,7 @@ class Page {
         this.repeatHeaderRowTableWidget = false;
         /**
          * Specifies the bodyWidgets
-         * @default []
+    
          * @private
          */
         this.bodyWidgets = [];
@@ -10258,6 +10421,10 @@ class Page {
          * @private
          */
         this.footerWidget = undefined;
+        /**
+         * @private
+         */
+        this.currentPageNum = 0;
         // let text: string = 'DocumentEditor';
     }
     /**
@@ -10731,48 +10898,48 @@ class SpellChecker {
     }
     /**
      * Gets the languageID.
-     * @aspType int
-     * @blazorType int
+
+
      */
     get languageID() {
         return isNullOrUndefined(this.langIDInternal) ? 0 : this.langIDInternal;
     }
     /**
      * Sets the languageID.
-     * @aspType int
-     * @blazorType int
+
+
      */
     set languageID(value) {
         this.langIDInternal = value;
     }
     /**
      * Getter indicates whether suggestion enabled.
-     * @aspType bool
-     * @blazorType bool
+
+
      */
     get allowSpellCheckAndSuggestion() {
         return this.spellSuggestionInternal;
     }
     /**
      * Setter to enable or disable suggestion
-     * @aspType bool
-     * @blazorType bool
+
+
      */
     set allowSpellCheckAndSuggestion(value) {
         this.spellSuggestionInternal = value;
     }
     /**
      * Getter indicates whether underline removed for mis-spelled word.
-     * @aspType bool
-     * @blazorType bool
+
+
      */
     get removeUnderline() {
         return this.removeUnderlineInternal;
     }
     /**
      * Setter to enable or disable underline for mis-spelled word
-     * @aspType bool
-     * @blazorType bool
+
+
      */
     set removeUnderline(value) {
         this.removeUnderlineInternal = value;
@@ -12305,28 +12472,28 @@ let DocumentEditor = DocumentEditor_1 = class DocumentEditor extends Component {
     }
     /**
      *  Gets the selection object of the document editor.
-     * @aspType Selection
-     * @blazorType Selection
+
+
      * @returns {Selection}
-     * @default undefined
+
      */
     get selection() {
         return this.selectionModule;
     }
     /**
      *  Gets the editor object of the document editor.
-     * @aspType Editor
-     * @blazorType Editor
+
+
      * @returns {Editor}
-     * @default undefined
+
      */
     get editor() {
         return this.editorModule;
     }
     /**
      * Gets the editor history object of the document editor.
-     * @aspType EditorHistory
-     * @blazorType EditorHistory
+
+
      * @returns {EditorHistory}
      */
     get editorHistory() {
@@ -12334,8 +12501,8 @@ let DocumentEditor = DocumentEditor_1 = class DocumentEditor extends Component {
     }
     /**
      * Gets the search object of the document editor.
-     * @aspType Search
-     * @blazorType Search
+
+
      * @returns { Search }
      */
     get search() {
@@ -12343,8 +12510,8 @@ let DocumentEditor = DocumentEditor_1 = class DocumentEditor extends Component {
     }
     /**
      * Gets the context menu object of the document editor.
-     * @aspType ContextMenu
-     * @blazorType ContextMenu
+
+
      * @returns {ContextMenu}
      */
     get contextMenu() {
@@ -12359,8 +12526,8 @@ let DocumentEditor = DocumentEditor_1 = class DocumentEditor extends Component {
     }
     /**
      * Gets the spell check object of the document editor.
-     * @aspType SpellChecker
-     * @blazorType SpellChecker
+
+
      * @returns SpellChecker
      */
     get spellChecker() {
@@ -12383,7 +12550,7 @@ let DocumentEditor = DocumentEditor_1 = class DocumentEditor extends Component {
     }
     /**
      * Determines whether history needs to be enabled or not.
-     * @default - false
+
      * @private
      */
     get enableHistoryMode() {
@@ -12391,7 +12558,7 @@ let DocumentEditor = DocumentEditor_1 = class DocumentEditor extends Component {
     }
     /**
      * Gets the start text position in the document.
-     * @default undefined
+
      * @private
      */
     get documentStart() {
@@ -12402,7 +12569,7 @@ let DocumentEditor = DocumentEditor_1 = class DocumentEditor extends Component {
     }
     /**
      * Gets the end text position in the document.
-     * @default undefined
+
      * @private
      */
     get documentEnd() {
@@ -16508,6 +16675,9 @@ class Layout {
                             break;
                         }
                     }
+                    else if (element instanceof ListTextElementBox && viewer.clientActiveArea.x > this.viewer.clientArea.x) {
+                        return viewer.clientActiveArea.x - viewer.clientArea.x;
+                    }
                 }
             }
             if (!isCustomTab) {
@@ -16867,8 +17037,10 @@ class Layout {
         // for normal table cells only left border is rendred. for last cell left and right border is rendred.
         // this border widths are not included in margins.
         cell.leftBorderWidth = !cell.ownerTable.isBidiTable ? leftBorderWidth : rightBorderWidth;
-        cell.x += cell.leftBorderWidth;
-        cell.width -= cell.leftBorderWidth;
+        let isLeftStyleNone = (cell.cellFormat.borders.left.lineStyle === 'None');
+        let isRightStyleNone = (cell.cellFormat.borders.right.lineStyle === 'None');
+        cell.x += (!isLeftStyleNone) ? 0 : (cell.leftBorderWidth > 0) ? 0 : cell.leftBorderWidth;
+        cell.width -= (!isLeftStyleNone) ? 0 : (cell.leftBorderWidth > 0) ? 0 : cell.leftBorderWidth;
         let lastCell = !cell.ownerTable.isBidiTable ? cell.cellIndex === cell.ownerRow.childWidgets.length - 1
             : cell.cellIndex === 0;
         if (cellspace > 0 || cell.cellIndex === cell.ownerRow.childWidgets.length - 1) {
@@ -16878,8 +17050,8 @@ class Layout {
             }
         }
         //Add the border widths to respective margin side.
-        cell.margin.left = cell.margin.left + cell.leftBorderWidth;
-        cell.margin.right = cell.margin.right + cell.rightBorderWidth;
+        cell.margin.left += (isLeftStyleNone) ? 0 : (cell.leftBorderWidth);
+        cell.margin.right += (isRightStyleNone) ? 0 : (cell.rightBorderWidth);
         //cell.ownerWidget = owner;
         return cell;
     }
@@ -18591,7 +18763,7 @@ class Layout {
                 }
             }
             else if (bodyWidget instanceof TableCellWidget) {
-                let table = this.viewer.layout.getParentTable(bodyWidget.ownerTable.getSplitWidgets()[0]);
+                let table = this.viewer.layout.getParentTable(bodyWidget.ownerTable).getSplitWidgets()[0];
                 this.reLayoutTable(bodyWidget.ownerTable);
                 this.layoutNextItemsBlock(table, this.viewer);
             }
@@ -20159,7 +20331,7 @@ class Renderer {
         this.pageContext.textBaseline = 'alphabetic';
         let bold = '';
         let italic = '';
-        let fontFamily = format.fontFamily === 'Verdana' ? breakCharacterFormat.fontFamily : format.fontFamily;
+        let fontFamily = format.hasValue('fontFamily') ? format.fontFamily : breakCharacterFormat.fontFamily;
         let fontSize = format.fontSize === 11 ? breakCharacterFormat.fontSize : format.fontSize;
         // tslint:disable-next-line:max-line-length
         let baselineAlignment = format.baselineAlignment === 'Normal' ? breakCharacterFormat.baselineAlignment : format.baselineAlignment;
@@ -20928,7 +21100,7 @@ class TextHelper {
         spanElement.innerText = 'm';
         this.applyStyle(spanElement, characterFormat);
         let parentDiv = document.createElement('div');
-        parentDiv.style.display = 'inline-block';
+        parentDiv.setAttribute('style', 'display:inline-block;position:absolute;');
         let tempDiv = document.createElement('div');
         tempDiv.setAttribute('style', 'display:inline-block;width: 1px; height: 0px;vertical-align: baseline;');
         parentDiv.appendChild(spanElement);
@@ -22269,7 +22441,7 @@ class LayoutViewer {
             }
             this.isScrollHandler = false;
             this.scrollTimer = setTimeout(() => {
-                if (!this.isScrollHandler && this.owner.enableSpellCheck) {
+                if (!this.isScrollHandler && !isNullOrUndefined(this.owner) && this.owner.enableSpellCheck) {
                     this.isScrollToSpellCheck = true;
                     this.updateScrollBars();
                 }
@@ -24081,7 +24253,21 @@ class LayoutViewer {
             }
             switch (fieldCategory) {
                 case 'page':
-                    return this.getFieldText(fieldPattern, (page.index + 1));
+                    if (page.bodyWidgets[0].sectionFormat.restartPageNumbering && page.sectionIndex !== 0) {
+                        let currentSectionIndex = page.sectionIndex;
+                        let previousPage = page.previousPage;
+                        if (currentSectionIndex !== previousPage.sectionIndex) {
+                            page.currentPageNum = (page.bodyWidgets[0].sectionFormat.pageStartingNumber);
+                            return this.getFieldText(fieldPattern, page.currentPageNum);
+                        }
+                        if (previousPage.currentPageNum === 0) {
+                            previousPage.currentPageNum = (page.bodyWidgets[0].sectionFormat.pageStartingNumber);
+                        }
+                        page.currentPageNum = previousPage.currentPageNum + 1;
+                        return this.getFieldText(fieldPattern, page.currentPageNum);
+                    }
+                    page.currentPageNum = page.index + 1;
+                    return this.getFieldText(fieldPattern, page.currentPageNum);
                 case 'numpages':
                     return this.getFieldText(fieldPattern, page.viewer.pages.length);
                 default:
@@ -24785,7 +24971,8 @@ class SfdtReader {
      */
     convertJsonToDocument(json) {
         let sections = [];
-        let jsonObject = JSON.parse(json);
+        let jsonObject = json;
+        jsonObject = (jsonObject instanceof Object) ? jsonObject : JSON.parse(jsonObject);
         let characterFormat = isNullOrUndefined(jsonObject.characterFormat) ?
             this.viewer.owner.characterFormat : jsonObject.characterFormat;
         this.parseCharacterFormat(characterFormat, this.viewer.characterFormat);
@@ -25838,6 +26025,12 @@ class SfdtReader {
         if (!isNullOrUndefined(data.bidi)) {
             sectionFormat.bidi = data.bidi;
         }
+        if (!isNullOrUndefined(data.restartPageNumbering)) {
+            sectionFormat.restartPageNumbering = data.restartPageNumbering;
+        }
+        if (!isNullOrUndefined(data.pageStartingNumber)) {
+            sectionFormat.pageStartingNumber = data.pageStartingNumber;
+        }
     }
     parseTabStop(wTabs, tabs) {
         for (let i = 0; i < wTabs.length; i++) {
@@ -25916,16 +26109,16 @@ class SelectionCharacterFormat {
     }
     /**
      * Gets the font size of selected contents.
-     * @aspType int
-     * @blazorType int
+
+
      */
     get fontSize() {
         return this.fontSizeIn;
     }
     /**
      * Sets the font size of selected contents.
-     * @aspType int
-     * @blazorType int
+
+
      */
     set fontSize(value) {
         if (value === this.fontSizeIn) {
@@ -25936,16 +26129,16 @@ class SelectionCharacterFormat {
     }
     /**
      * Gets or sets the font family of selected contents.
-     * @aspType string
-     * @blazorType string
+
+
      */
     get fontFamily() {
         return this.fontFamilyIn;
     }
     /**
      * Sets the font family of selected contents.
-     * @aspType string
-     * @blazorType string
+
+
      */
     set fontFamily(value) {
         if (value === this.fontFamilyIn) {
@@ -25956,16 +26149,16 @@ class SelectionCharacterFormat {
     }
     /**
      * Gets or sets the font color of selected contents.
-     * @aspType string
-     * @blazorType string
+
+
      */
     get fontColor() {
         return this.fontColorIn;
     }
     /**
      * Sets the font color of selected contents.
-     * @aspType string
-     * @blazorType string
+
+
      */
     set fontColor(value) {
         if (value === this.fontColorIn) {
@@ -25976,16 +26169,16 @@ class SelectionCharacterFormat {
     }
     /**
      * Gets or sets the bold formatting of selected contents.
-     * @aspType bool
-     * @blazorType bool
+
+
      */
     get bold() {
         return this.boldIn;
     }
     /**
      * Sets the bold formatting of selected contents.
-     * @aspType bool
-     * @blazorType bool
+
+
      */
     set bold(value) {
         if (value === this.boldIn) {
@@ -25996,16 +26189,16 @@ class SelectionCharacterFormat {
     }
     /**
      * Gets or sets the italic formatting of selected contents.
-     * @aspType bool
-     * @blazorType bool
+
+
      */
     get italic() {
         return this.italicIn;
     }
     /**
      * Sets the italic formatting of selected contents.
-     * @aspType bool
-     * @blazorType bool
+
+
      */
     set italic(value) {
         if (value === this.italic) {
@@ -26311,18 +26504,18 @@ class SelectionParagraphFormat {
     }
     /**
      * Gets or Sets the left indent for selected paragraphs.
-     * @default undefined
-     * @aspType int
-     * @blazorType int
+
+
+
      */
     get leftIndent() {
         return this.leftIndentIn;
     }
     /**
      * Sets the left indent for selected paragraphs.
-     * @default undefined
-     * @aspType int
-     * @blazorType int
+
+
+
      */
     set leftIndent(value) {
         if (value === this.leftIndentIn) {
@@ -26333,18 +26526,18 @@ class SelectionParagraphFormat {
     }
     /**
      * Gets or Sets the right indent for selected paragraphs.
-     * @default undefined
-     * @aspType int
-     * @blazorType int
+
+
+
      */
     get rightIndent() {
         return this.rightIndentIn;
     }
     /**
      * Sets the right indent for selected paragraphs.
-     * @default undefined
-     * @aspType int
-     * @blazorType int
+
+
+
      */
     set rightIndent(value) {
         if (value === this.rightIndentIn) {
@@ -26355,18 +26548,18 @@ class SelectionParagraphFormat {
     }
     /**
      * Gets or Sets the first line indent for selected paragraphs.
-     * @default undefined
-     * @aspType int
-     * @blazorType int
+
+
+
      */
     get firstLineIndent() {
         return this.firstLineIndentIn;
     }
     /**
      * Sets the first line indent for selected paragraphs.
-     * @default undefined
-     * @aspType int
-     * @blazorType int
+
+
+
      */
     set firstLineIndent(value) {
         if (value === this.firstLineIndentIn) {
@@ -26377,14 +26570,14 @@ class SelectionParagraphFormat {
     }
     /**
      * Gets or Sets the text alignment for selected paragraphs.
-     * @default undefined
+
      */
     get textAlignment() {
         return this.textAlignmentIn;
     }
     /**
      * Sets the text alignment for selected paragraphs.
-     * @default undefined
+
      */
     set textAlignment(value) {
         if (value === this.textAlignmentIn) {
@@ -26395,18 +26588,18 @@ class SelectionParagraphFormat {
     }
     /**
      * Sets the after spacing for selected paragraphs.
-     * @default undefined
-     * @aspType int
-     * @blazorType int
+
+
+
      */
     get afterSpacing() {
         return this.afterSpacingIn;
     }
     /**
      * Gets or Sets the after spacing for selected paragraphs.
-     * @default undefined
-     * @aspType int
-     * @blazorType int
+
+
+
      */
     set afterSpacing(value) {
         if (value === this.afterSpacingIn) {
@@ -26417,18 +26610,18 @@ class SelectionParagraphFormat {
     }
     /**
      * Gets or Sets the before spacing for selected paragraphs.
-     * @default undefined
-     * @aspType int
-     * @blazorType int
+
+
+
      */
     get beforeSpacing() {
         return this.beforeSpacingIn;
     }
     /**
      * Sets the before spacing for selected paragraphs.
-     * @default undefined
-     * @aspType int
-     * @blazorType int
+
+
+
      */
     set beforeSpacing(value) {
         if (value === this.beforeSpacingIn) {
@@ -26439,18 +26632,18 @@ class SelectionParagraphFormat {
     }
     /**
      * Gets or Sets the line spacing for selected paragraphs.
-     * @default undefined
-     * @aspType int
-     * @blazorType int
+
+
+
      */
     get lineSpacing() {
         return this.lineSpacingIn;
     }
     /**
      * Sets the line spacing for selected paragraphs.
-     * @default undefined
-     * @aspType int
-     * @blazorType int
+
+
+
      */
     set lineSpacing(value) {
         if (value === this.lineSpacingIn) {
@@ -26461,14 +26654,14 @@ class SelectionParagraphFormat {
     }
     /**
      * Gets or Sets the line spacing type for selected paragraphs.
-     * @default undefined
+
      */
     get lineSpacingType() {
         return this.lineSpacingTypeIn;
     }
     /**
      * Gets or Sets the line spacing type for selected paragraphs.
-     * @default undefined
+
      */
     set lineSpacingType(value) {
         if (value === this.lineSpacingTypeIn) {
@@ -26479,18 +26672,18 @@ class SelectionParagraphFormat {
     }
     /**
      * Sets the list level number for selected paragraphs.
-     * @default undefined
-     * @aspType int
-     * @blazorType int
+
+
+
      */
     get listLevelNumber() {
         return this.listLevelNumberIn;
     }
     /**
      * Gets or Sets the list level number for selected paragraphs.
-     * @default undefined
-     * @aspType int
-     * @blazorType int
+
+
+
      */
     set listLevelNumber(value) {
         if (value === this.listLevelNumberIn) {
@@ -26501,16 +26694,16 @@ class SelectionParagraphFormat {
     }
     /**
      * Gets or Sets the bidirectional property for selected paragraphs
-     * @aspType bool
-     * @blazorType bool
+
+
      */
     get bidi() {
         return this.bidiIn;
     }
     /**
      * Sets the bidirectional property for selected paragraphs
-     * @aspType bool
-     * @blazorType bool
+
+
      */
     set bidi(value) {
         this.bidiIn = value;
@@ -26518,16 +26711,16 @@ class SelectionParagraphFormat {
     }
     /**
      * Gets or sets a value indicating whether to add space between the paragraphs of same style.
-     * @aspType bool
-     * @blazorType bool
+
+
      */
     get contextualSpacing() {
         return this.contextualSpacingIn;
     }
     /**
      * Sets a value indicating whether to add space between the paragraphs of same style.
-     * @aspType bool
-     * @blazorType bool
+
+
      */
     set contextualSpacing(value) {
         this.contextualSpacingIn = value;
@@ -26535,8 +26728,8 @@ class SelectionParagraphFormat {
     }
     /**
      * Gets the list text for selected paragraphs.
-     * @aspType string
-     * @blazorType string
+
+
      */
     get listText() {
         let listFormat = undefined;
@@ -26876,16 +27069,16 @@ class SelectionSectionFormat {
     }
     /**
      * Gets or sets the page height.
-     * @aspType int
-     * @blazorType int
+
+
      */
     get pageHeight() {
         return this.pageHeightIn;
     }
     /**
      * Gets or sets the page height.
-     * @aspType int
-     * @blazorType int
+
+
      */
     set pageHeight(value) {
         this.pageHeightIn = value;
@@ -26893,16 +27086,16 @@ class SelectionSectionFormat {
     }
     /**
      * Gets or sets the page width.
-     * @aspType int
-     * @blazorType int
+
+
      */
     get pageWidth() {
         return this.pageWidthIn;
     }
     /**
      * Gets or sets the page width.
-     * @aspType int
-     * @blazorType int
+
+
      */
     set pageWidth(value) {
         this.pageWidthIn = value;
@@ -26910,16 +27103,16 @@ class SelectionSectionFormat {
     }
     /**
      * Gets or sets the page left margin.
-     * @aspType int
-     * @blazorType int
+
+
      */
     get leftMargin() {
         return this.leftMarginIn;
     }
     /**
      * Gets or sets the page left margin.
-     * @aspType int
-     * @blazorType int
+
+
      */
     set leftMargin(value) {
         this.leftMarginIn = value;
@@ -26927,16 +27120,16 @@ class SelectionSectionFormat {
     }
     /**
      * Gets or sets the page bottom margin.
-     * @aspType int
-     * @blazorType int
+
+
      */
     get bottomMargin() {
         return this.bottomMarginIn;
     }
     /**
      * Gets or sets the page bottom margin.
-     * @aspType int
-     * @blazorType int
+
+
      */
     set bottomMargin(value) {
         this.bottomMarginIn = value;
@@ -26944,16 +27137,16 @@ class SelectionSectionFormat {
     }
     /**
      * Gets or sets the page top margin.
-     * @aspType int
-     * @blazorType int
+
+
      */
     get topMargin() {
         return this.topMarginIn;
     }
     /**
      * Gets or sets the page top margin.
-     * @aspType int
-     * @blazorType int
+
+
      */
     set topMargin(value) {
         this.topMarginIn = value;
@@ -26961,16 +27154,16 @@ class SelectionSectionFormat {
     }
     /**
      * Gets or sets the page right margin.
-     * @aspType int
-     * @blazorType int
+
+
      */
     get rightMargin() {
         return this.rightMarginIn;
     }
     /**
      * Gets or sets the page right margin.
-     * @aspType int
-     * @blazorType int
+
+
      */
     set rightMargin(value) {
         this.rightMarginIn = value;
@@ -26978,16 +27171,16 @@ class SelectionSectionFormat {
     }
     /**
      * Gets or sets the header distance.
-     * @aspType int
-     * @blazorType int
+
+
      */
     get headerDistance() {
         return this.headerDistanceIn;
     }
     /**
      * Gets or sets the header distance.
-     * @aspType int
-     * @blazorType int
+
+
      */
     set headerDistance(value) {
         this.headerDistanceIn = value;
@@ -26995,16 +27188,16 @@ class SelectionSectionFormat {
     }
     /**
      * Gets or sets the footer distance.
-     * @aspType int
-     * @blazorType int
+
+
      */
     get footerDistance() {
         return this.footerDistanceIn;
     }
     /**
      * Gets or sets the footer distance.
-     * @aspType int
-     * @blazorType int
+
+
      */
     set footerDistance(value) {
         this.footerDistanceIn = value;
@@ -27012,16 +27205,16 @@ class SelectionSectionFormat {
     }
     /**
      * Gets or sets a value indicating whether the section has different first page.
-     * @aspType bool
-     * @blazorType bool
+
+
      */
     get differentFirstPage() {
         return this.differentFirstPageIn;
     }
     /**
      * Gets or sets a value indicating whether the section has different first page.
-     * @aspType bool
-     * @blazorType bool
+
+
      */
     set differentFirstPage(value) {
         this.differentFirstPageIn = value;
@@ -27029,16 +27222,16 @@ class SelectionSectionFormat {
     }
     /**
      * Gets or sets a value indicating whether the section has different odd and even page.
-     * @aspType bool
-     * @blazorType bool
+
+
      */
     get differentOddAndEvenPages() {
         return this.differentOddAndEvenPagesIn;
     }
     /**
      * Gets or sets a value indicating whether the section has different odd and even page.
-     * @aspType bool
-     * @blazorType bool
+
+
      */
     set differentOddAndEvenPages(value) {
         this.differentOddAndEvenPagesIn = value;
@@ -27237,16 +27430,16 @@ class SelectionTableFormat {
     }
     /**
      * Gets or Sets the left indent for selected table.
-     * @aspType int
-     * @blazorType int
+
+
      */
     get leftIndent() {
         return this.leftIndentIn;
     }
     /**
      * Gets or Sets the left indent for selected table.
-     * @aspType int
-     * @blazorType int
+
+
      */
     set leftIndent(value) {
         if (value === this.leftIndentIn) {
@@ -27257,18 +27450,18 @@ class SelectionTableFormat {
     }
     /**
      * Gets or Sets the default top margin of cell for selected table.
-     * @default undefined
-     * @aspType int
-     * @blazorType int
+
+
+
      */
     get topMargin() {
         return this.topMarginIn;
     }
     /**
      * Gets or Sets the default top margin of cell for selected table.
-     * @default undefined
-     * @aspType int
-     * @blazorType int
+
+
+
      */
     set topMargin(value) {
         if (value === this.topMarginIn) {
@@ -27279,18 +27472,18 @@ class SelectionTableFormat {
     }
     /**
      * Gets or Sets the background for selected table.
-     * @default undefined
-     * @aspType string
-     * @blazorType string
+
+
+
      */
     get background() {
         return this.backgroundIn;
     }
     /**
      * Gets or Sets the background for selected table.
-     * @default undefined
-     * @aspType string
-     * @blazorType string
+
+
+
      */
     set background(value) {
         if (value === this.backgroundIn) {
@@ -27301,14 +27494,14 @@ class SelectionTableFormat {
     }
     /**
      * Gets or Sets the table alignment for selected table.
-     * @default undefined
+
      */
     get tableAlignment() {
         return this.tableAlignmentIn;
     }
     /**
      * Gets or Sets the table alignment for selected table.
-     * @default undefined
+
      */
     set tableAlignment(value) {
         if (value === this.tableAlignmentIn) {
@@ -27319,18 +27512,18 @@ class SelectionTableFormat {
     }
     /**
      * Gets or Sets the default left margin of cell for selected table.
-     * @default undefined
-     * @aspType int
-     * @blazorType int
+
+
+
      */
     get leftMargin() {
         return this.leftMarginIn;
     }
     /**
      * Gets or Sets the default left margin of cell for selected table.
-     * @default undefined
-     * @aspType int
-     * @blazorType int
+
+
+
      */
     set leftMargin(value) {
         if (value === this.leftMarginIn) {
@@ -27341,18 +27534,18 @@ class SelectionTableFormat {
     }
     /**
      * Gets or Sets the default bottom margin of cell for selected table.
-     * @default undefined
-     * @aspType int
-     * @blazorType int
+
+
+
      */
     get bottomMargin() {
         return this.bottomMarginIn;
     }
     /**
      * Gets or Sets the default bottom margin of cell for selected table.
-     * @default undefined
-     * @aspType int
-     * @blazorType int
+
+
+
      */
     set bottomMargin(value) {
         if (value === this.bottomMarginIn) {
@@ -27363,18 +27556,18 @@ class SelectionTableFormat {
     }
     /**
      * Gets or Sets the cell spacing for selected table.
-     * @default undefined
-     * @aspType int
-     * @blazorType int
+
+
+
      */
     get cellSpacing() {
         return this.cellSpacingIn;
     }
     /**
      * Gets or Sets the cell spacing for selected table.
-     * @default undefined
-     * @aspType int
-     * @blazorType int
+
+
+
      */
     set cellSpacing(value) {
         if (value === this.cellSpacingIn) {
@@ -27385,18 +27578,18 @@ class SelectionTableFormat {
     }
     /**
      * Gets or Sets the default right margin of cell for selected table.
-     * @default undefined
-     * @aspType int
-     * @blazorType int
+
+
+
      */
     get rightMargin() {
         return this.rightMarginIn;
     }
     /**
      * Gets or Sets the default right margin of cell for selected table.
-     * @default undefined
-     * @aspType int
-     * @blazorType int
+
+
+
      */
     set rightMargin(value) {
         if (value === this.rightMarginIn) {
@@ -27407,18 +27600,18 @@ class SelectionTableFormat {
     }
     /**
      * Gets or Sets the preferred width for selected table.
-     * @default undefined
-     * @aspType int
-     * @blazorType int
+
+
+
      */
     get preferredWidth() {
         return this.preferredWidthIn;
     }
     /**
      * Gets or Sets the preferred width for selected table.
-     * @default undefined
-     * @aspType int
-     * @blazorType int
+
+
+
      */
     set preferredWidth(value) {
         if (value === this.preferredWidthIn) {
@@ -27429,14 +27622,14 @@ class SelectionTableFormat {
     }
     /**
      * Gets or Sets the preferred width type for selected table.
-     * @default undefined
+
      */
     get preferredWidthType() {
         return this.preferredWidthTypeIn;
     }
     /**
      * Gets or Sets the preferred width type for selected table.
-     * @default undefined
+
      */
     set preferredWidthType(value) {
         if (value === this.preferredWidthTypeIn) {
@@ -27447,16 +27640,16 @@ class SelectionTableFormat {
     }
     /**
      * Gets or sets the bidi property
-     * @aspType bool
-     * @blazorType bool
+
+
      */
     get bidi() {
         return this.bidiIn;
     }
     /**
      * Gets or sets the bidi property
-     * @aspType bool
-     * @blazorType bool
+
+
      */
     set bidi(value) {
         this.bidiIn = value;
@@ -27584,14 +27777,14 @@ class SelectionCellFormat {
     }
     /**
      * Gets or sets the vertical alignment of the selected cells.
-     * @default undefined
+
      */
     get verticalAlignment() {
         return this.verticalAlignmentIn;
     }
     /**
      * Gets or sets the vertical alignment of the selected cells.
-     * @default undefined
+
      */
     set verticalAlignment(value) {
         if (value === this.verticalAlignmentIn) {
@@ -27602,9 +27795,9 @@ class SelectionCellFormat {
     }
     /**
      * Gets or Sets the left margin for selected cells.
-     * @default undefined
-     * @aspType int
-     * @blazorType int
+
+
+
      */
     /* tslint:disable */
     get leftMargin() {
@@ -27612,9 +27805,9 @@ class SelectionCellFormat {
     }
     /**
      * Gets or Sets the left margin for selected cells.
-     * @default undefined
-     * @aspType int
-     * @blazorType int
+
+
+
      */
     set leftMargin(value) {
         if (value === this.leftMarginIn) {
@@ -27625,18 +27818,18 @@ class SelectionCellFormat {
     }
     /**
      * Gets or Sets the right margin for selected cells.
-     * @default undefined
-     * @aspType int
-     * @blazorType int
+
+
+
      */
     get rightMargin() {
         return this.rightMarginIn;
     }
     /**
      * Gets or Sets the right margin for selected cells.
-     * @default undefined
-     * @aspType int
-     * @blazorType int
+
+
+
      */
     set rightMargin(value) {
         if (value === this.rightMarginIn) {
@@ -27647,18 +27840,18 @@ class SelectionCellFormat {
     }
     /**
      * Gets or Sets the top margin for selected cells.
-     * @default undefined
-     * @aspType int
-     * @blazorType int
+
+
+
      */
     get topMargin() {
         return this.topMarginIn;
     }
     /**
      * Gets or Sets the top margin for selected cells.
-     * @default undefined
-     * @aspType int
-     * @blazorType int
+
+
+
      */
     set topMargin(value) {
         if (value === this.topMarginIn) {
@@ -27669,18 +27862,18 @@ class SelectionCellFormat {
     }
     /**
      * Gets or Sets the bottom margin for selected cells.
-     * @default undefined
-     * @aspType int
-     * @blazorType int
+
+
+
      */
     get bottomMargin() {
         return this.bottomMarginIn;
     }
     /**
      * Gets or Sets the bottom margin for selected cells.
-     * @default undefined
-     * @aspType int
-     * @blazorType int
+
+
+
      */
     set bottomMargin(value) {
         if (value === this.bottomMarginIn) {
@@ -27691,18 +27884,18 @@ class SelectionCellFormat {
     }
     /**
      * Gets or Sets the background for selected cells.
-     * @default undefined
-     * @aspType string
-     * @blazorType string
+
+
+
      */
     get background() {
         return this.backgroundIn;
     }
     /**
      * Gets or Sets the background for selected cells.
-     * @default undefined
-     * @aspType string
-     * @blazorType string
+
+
+
      */
     /* tslint:enable */
     set background(value) {
@@ -27715,14 +27908,14 @@ class SelectionCellFormat {
     /* tslint:disable */
     /**
      * Gets or Sets the preferred width type for selected cells.
-     * @default undefined
+
      */
     get preferredWidthType() {
         return this.preferredWidthTypeIn;
     }
     /**
      * Gets or Sets the preferred width type for selected cells.
-     * @default undefined
+
      */
     set preferredWidthType(value) {
         if (value === this.preferredWidthTypeIn) {
@@ -27733,18 +27926,18 @@ class SelectionCellFormat {
     }
     /**
      * Gets or Sets the preferred width  for selected cells.
-     * @default undefined
-     * @aspType int
-     * @blazorType int
+
+
+
      */
     get preferredWidth() {
         return this.preferredWidthIn;
     }
     /**
      * Gets or Sets the preferred width  for selected cells.
-     * @default undefined
-     * @aspType int
-     * @blazorType int
+
+
+
      */
     set preferredWidth(value) {
         if (value === this.preferredWidthIn) {
@@ -27900,18 +28093,18 @@ class SelectionRowFormat {
     }
     /**
      * Gets or Sets the height for selected rows.
-     * @default undefined
-     * @aspType int
-     * @blazorType int
+
+
+
      */
     get height() {
         return this.heightIn;
     }
     /**
      * Gets or Sets the height for selected rows.
-     * @default undefined
-     * @aspType int
-     * @blazorType int
+
+
+
      */
     set height(value) {
         if (value === this.heightIn) {
@@ -27922,14 +28115,14 @@ class SelectionRowFormat {
     }
     /**
      * Gets or Sets the height type for selected rows.
-     * @default undefined
+
      */
     get heightType() {
         return this.heightTypeIn;
     }
     /**
      * Gets or Sets the height type for selected rows.
-     * @default undefined
+
      */
     set heightType(value) {
         if (value === this.heightTypeIn) {
@@ -27940,18 +28133,18 @@ class SelectionRowFormat {
     }
     /**
      * Gets or Sets a value indicating whether the selected rows are header rows or not.
-     * @default undefined
-     * @aspType bool
-     * @blazorType bool
+
+
+
      */
     get isHeader() {
         return this.isHeaderIn;
     }
     /**
      * Gets or Sets a value indicating whether the selected rows are header rows or not.
-     * @default undefined
-     * @aspType bool
-     * @blazorType bool
+
+
+
      */
     set isHeader(value) {
         if (value === this.isHeaderIn) {
@@ -27962,18 +28155,18 @@ class SelectionRowFormat {
     }
     /**
      * Gets or Sets a value indicating whether to allow break across pages for selected rows.
-     * @default undefined
-     * @aspType bool
-     * @blazorType bool
+
+
+
      */
     get allowBreakAcrossPages() {
         return this.allowRowBreakAcrossPagesIn;
     }
     /**
      * Gets or Sets a value indicating whether to allow break across pages for selected rows.
-     * @default undefined
-     * @aspType bool
-     * @blazorType bool
+
+
+
      */
     set allowBreakAcrossPages(value) {
         if (value === this.allowRowBreakAcrossPagesIn) {
@@ -28081,8 +28274,8 @@ class SelectionRowFormat {
 class SelectionImageFormat {
     /**
      * Gets the width of the image.
-     * @aspType int
-     * @blazorType int
+
+
      */
     get width() {
         if (this.image) {
@@ -28092,8 +28285,8 @@ class SelectionImageFormat {
     }
     /**
      * Gets the height of the image.
-     * @aspType int
-     * @blazorType int
+
+
      */
     get height() {
         if (this.image) {
@@ -28217,16 +28410,29 @@ class HtmlExport {
             }
             else if (inline.hasOwnProperty('fieldType')) {
                 if (inline.fieldType === 0) {
-                    this.fieldCheck = 1;
-                    let tagAttributes = [];
-                    tagAttributes.push('style="' + this.serializeInlineStyle(inline.characterFormat, '') + '"');
-                    blockStyle += this.createAttributesTag('a', tagAttributes);
+                    let fieldCode = paragraph.inlines[i + 1];
+                    if (!isNullOrUndefined(fieldCode) && (fieldCode.text.indexOf('TOC') >= 0 || fieldCode.text.indexOf('HYPERLINK') >= 0)) {
+                        this.fieldCheck = 1;
+                        let tagAttributes = [];
+                        tagAttributes.push('style="' + this.serializeInlineStyle(inline.characterFormat, '') + '"');
+                        blockStyle += this.createAttributesTag('a', tagAttributes);
+                    }
+                    else {
+                        this.fieldCheck = undefined;
+                    }
                 }
                 else if (inline.fieldType === 2) {
-                    this.fieldCheck = 2;
+                    if (!isNullOrUndefined(this.fieldCheck)) {
+                        this.fieldCheck = 2;
+                    }
+                    else {
+                        this.fieldCheck = 0;
+                    }
                 }
                 else {
-                    blockStyle += this.endTag('a');
+                    if (!isNullOrUndefined(this.fieldCheck) && this.fieldCheck !== 0) {
+                        blockStyle += this.endTag('a');
+                    }
                     this.fieldCheck = 0;
                 }
             }
@@ -28236,7 +28442,7 @@ class HtmlExport {
                     blockStyle += this.serializeSpan(text, inline.characterFormat);
                 }
                 if (this.fieldCheck === 1) {
-                    let hyperLink = text.replace('\"', '');
+                    let hyperLink = text.replace(/"/g, '');
                     blockStyle += ' href= \"' + hyperLink.replace('HYPERLINK', '').trim();
                     blockStyle += '\"';
                     blockStyle += '>';
@@ -28900,7 +29106,7 @@ class TextPosition {
     setPosition(line, positionAtStart) {
         this.currentWidget = line;
         this.offset = positionAtStart ? this.selection.getStartOffset(line.paragraph)
-            : this.selection.getParagraphLength(line.paragraph) + 1;
+            : line.paragraph.lastChild.getEndOffset() + 1;
         this.updatePhysicalPosition(true);
     }
     /**
@@ -30338,7 +30544,7 @@ class TextPosition {
     moveDown(selection, left) {
         //Moves text position to end of line.
         let prevParagraph = this.currentWidget.paragraph;
-        let prevOffset = this.offset;
+        let currentLine = this.currentWidget;
         this.moveToLineEndInternal(selection, true);
         let length = this.selection.getParagraphLength(this.currentWidget.paragraph);
         if (this.offset > length) {
@@ -30391,7 +30597,9 @@ class TextPosition {
         }
         //Moves till the Up/Down selection width.
         let top = this.selection.getTop(nextLine);
-        this.selection.updateTextPositionWidget(nextLine, new Point(left, top), this, false);
+        if (nextLine !== currentLine) {
+            this.selection.updateTextPositionWidget(nextLine, new Point(left, top), this, false);
+        }
     }
     /**
      * Moves the text position to start of the line.
@@ -31184,9 +31392,9 @@ class Selection {
     //Format retrieval properties
     /**
      * Gets the instance of selection character format.
-     * @default undefined
-     * @aspType SelectionCharacterFormat
-     * @blazorType SelectionCharacterFormat
+
+
+
      * @return {SelectionCharacterFormat}
      */
     get characterFormat() {
@@ -31194,9 +31402,9 @@ class Selection {
     }
     /**
      * Gets the instance of selection paragraph format.
-     * @default undefined
-     * @aspType SelectionParagraphFormat
-     * @blazorType SelectionParagraphFormat
+
+
+
      * @return {SelectionParagraphFormat}
      */
     get paragraphFormat() {
@@ -31204,9 +31412,9 @@ class Selection {
     }
     /**
      * Gets the instance of selection section format.
-     * @default undefined
-     * @aspType SelectionSectionFormat
-     * @blazorType SelectionSectionFormat
+
+
+
      * @return {SelectionSectionFormat}
      */
     get sectionFormat() {
@@ -31214,9 +31422,9 @@ class Selection {
     }
     /**
      * Gets the instance of selection table format.
-     * @default undefined
-     * @aspType SelectionTableFormat
-     * @blazorType SelectionTableFormat
+
+
+
      * @return {SelectionTableFormat}
      */
     get tableFormat() {
@@ -31224,9 +31432,9 @@ class Selection {
     }
     /**
      * Gets the instance of selection cell format.
-     * @default undefined
-     * @aspType SelectionCellFormat
-     * @blazorType SelectionCellFormat
+
+
+
      * @return {SelectionCellFormat}
      */
     get cellFormat() {
@@ -31234,9 +31442,9 @@ class Selection {
     }
     /**
      * Gets the instance of selection row format.
-     * @default undefined
-     * @aspType SelectionRowFormat
-     * @blazorType SelectionRowFormat
+
+
+
      * @returns {SelectionRowFormat}
      */
     get rowFormat() {
@@ -31244,9 +31452,9 @@ class Selection {
     }
     /**
      * Gets the instance of selection image format.
-     * @default undefined
-     * @aspType SelectionImageFormat
-     * @blazorType SelectionImageFormat
+
+
+
      * @returns {SelectionImageFormat}
      */
     get imageFormat() {
@@ -31288,7 +31496,7 @@ class Selection {
     }
     /**
      * Determines whether the selection direction is forward or not.
-     * @default false
+
      * @returns {boolean}
      * @private
      */
@@ -31297,7 +31505,7 @@ class Selection {
     }
     /**
      * Determines whether the start and end positions are same or not.
-     * @default false
+
      * @returns {boolean}
      * @private
      */
@@ -31309,9 +31517,9 @@ class Selection {
     }
     /**
      * Gets the text within selection.
-     * @default ''
-     * @aspType string
-     * @blazorType string
+
+
+
      * @returns {string}
      */
     get text() {
@@ -34302,11 +34510,7 @@ class Selection {
                             && selectionEndIndex > element.length) {
                             let charFormat = element.line.paragraph.characterFormat;
                             let paragraphMarkWidth = this.viewer.textHelper.getParagraphMarkSize(charFormat).Width;
-                            if (elementIsRTL) {
-                                right += paragraphMarkWidth;
-                                // Paragrph and Selection ends in normal text
-                            }
-                            else if (paragraph.bidi) {
+                            if (paragraph.bidi && !elementIsRTL) {
                                 width -= paragraphMarkWidth;
                                 // Highlight the element.
                                 this.createHighlightBorder(startLineWidget, width, left, top, true);
@@ -34940,10 +35144,15 @@ class Selection {
         element = this.getElementBox(inline, index, moveNextLine).element;
         let lineWidget = undefined;
         if (isNullOrUndefined(element) || isNullOrUndefined(element.line)) {
-            if (inline instanceof FieldElementBox || inline instanceof BookmarkElementBox) {
-                return this.getFieldCharacterPosition(inline);
+            if (inline instanceof FieldElementBox && inline.fieldType === 1) {
+                element = inline;
             }
-            return new Point(0, 0);
+            else {
+                if (inline instanceof FieldElementBox || inline instanceof BookmarkElementBox) {
+                    return this.getFieldCharacterPosition(inline);
+                }
+                return new Point(0, 0);
+            }
         }
         let margin = element.margin;
         let top = 0;
@@ -36166,6 +36375,9 @@ class Selection {
             if (i === 1 && widget.children[i] instanceof ListTextElementBox) {
                 left += widget.children[i].width;
             }
+            else if (widget.children[i] instanceof TabElementBox && elementBox === widgetInternal) {
+                left += widget.children[i].margin.left;
+            }
             else {
                 left += widget.children[i].margin.left + widget.children[i].width;
             }
@@ -36296,13 +36508,16 @@ class Selection {
      * @private
      */
     selectParagraph(paragraph, positionAtStart) {
-        let line = paragraph.firstChild;
-        if (positionAtStart) {
-            this.start.setPosition(line, positionAtStart);
-        }
-        else {
-            let endOffset = line.getEndOffset();
-            this.start.setPositionParagraph(line, endOffset);
+        let line;
+        if (!isNullOrUndefined(paragraph) && !isNullOrUndefined(paragraph.firstChild)) {
+            line = paragraph.firstChild;
+            if (positionAtStart) {
+                this.start.setPosition(line, positionAtStart);
+            }
+            else {
+                let endOffset = line.getEndOffset();
+                this.start.setPositionParagraph(line, endOffset);
+            }
         }
         this.end.setPositionInternal(this.start);
         this.upDownSelectionLength = this.start.location.x;
@@ -38553,6 +38768,12 @@ class Selection {
             return undefined;
         }
         let elements = [];
+        while (bidi && startElement && startElement !== endElement && startElement.nextElement && !startElement.isRightToLeft) {
+            startElement = startElement.nextElement;
+        }
+        while (bidi && endElement && startElement !== endElement && endElement.previousElement && !endElement.isRightToLeft) {
+            endElement = endElement.previousElement;
+        }
         let elementIndex = lineWidget.children.indexOf(startElement);
         while (elementIndex >= 0) {
             for (let i = elementIndex; i > -1 && i < lineWidget.children.length; bidi ? i-- : i++) {
@@ -38583,6 +38804,9 @@ class Selection {
      */
     getElementsBackward(lineWidget, startElement, endElement, bidi) {
         let elements = [];
+        while (bidi && startElement && startElement.previousElement && !startElement.isRightToLeft) {
+            startElement = startElement.previousElement;
+        }
         let elementIndex = lineWidget.children.indexOf(startElement);
         while (elementIndex >= 0) {
             for (let i = elementIndex; i > -1 && i < lineWidget.children.length; bidi ? i++ : i--) {
@@ -39265,24 +39489,24 @@ class TextSearchResults {
 class SearchResults {
     /**
      * Gets the length of search results.
-     * @aspType int
-     * @blazorType int
+
+
      */
     get length() {
         return this.searchModule.textSearchResults.length;
     }
     /**
      * Gets the index of current search result.
-     * @aspType int
-     * @blazorType int
+
+
      */
     get index() {
         return this.searchModule.textSearchResults.currentIndex;
     }
     /**
      * Set the index of current search result.
-     * @aspType int
-     * @blazorType int
+
+
      */
     set index(value) {
         if (this.length === 0 || value < 0 || value > this.searchModule.textSearchResults.length - 1) {
@@ -39365,8 +39589,8 @@ class Search {
     }
     /**
      * Gets the search results object.
-     * @aspType SearchResults
-     * @blazorType SearchResults
+
+
      */
     get searchResults() {
         return this.searchResultsInternal;
@@ -42131,6 +42355,9 @@ class Editor {
          */
         this.copiedData = undefined;
         this.pageRefFields = {};
+        this.delBlockContinue = false;
+        this.delBlock = undefined;
+        this.delSection = undefined;
         /**
          * @private
          */
@@ -42778,6 +43005,15 @@ class Editor {
                     this.viewer.triggerSpellCheck = true;
                     this.handleEnterKey();
                     this.viewer.triggerSpellCheck = false;
+                    break;
+                case 27:
+                    event.preventDefault();
+                    if (!this.isPaste) {
+                        this.copiedContent = undefined;
+                        this.copiedTextContent = '';
+                        this.selection.isViewPasteOptions = false;
+                        this.selection.showHidePasteOptions(undefined, undefined);
+                    }
                     break;
                 case 46:
                     this.handleDelete();
@@ -44101,8 +44337,10 @@ class Editor {
             let htmlContent = '';
             let rtfContent = '';
             let clipbordData = pasteWindow.clipboardData ? pasteWindow.clipboardData : event.clipboardData;
-            rtfContent = clipbordData.getData('Text/Rtf');
-            htmlContent = clipbordData.getData('Text/Html');
+            if (Browser.info.name !== 'msie') {
+                rtfContent = clipbordData.getData('Text/Rtf');
+                htmlContent = clipbordData.getData('Text/Html');
+            }
             this.copiedTextContent = textContent = clipbordData.getData('Text');
             if (rtfContent !== '') {
                 this.pasteAjax(rtfContent, '.rtf');
@@ -44147,7 +44385,7 @@ class Editor {
         this.pasteRequestHandler.onError = this.onPasteFailure.bind(this);
     }
     pasteFormattedContent(result) {
-        this.pasteContents(result.data);
+        this.pasteContents(isNullOrUndefined(result.data) ? this.copiedTextContent : result.data);
         this.applyPasteOptions(this.currentPasteOptions);
         hideSpinner(this.owner.element);
     }
@@ -44279,12 +44517,12 @@ class Editor {
         this.selection.end.setPositionInternal(this.pasteTextPosition.endPosition);
         switch (options) {
             case 'KeepSourceFormatting':
-                this.pasteContents(this.copiedContent);
+                this.pasteContents(this.copiedContent !== '' ? this.copiedContent : this.copiedTextContent);
                 break;
             case 'MergeWithExistingFormatting':
                 let start = this.selection.isForward ? this.selection.start : this.selection.end;
                 let currentFormat = start.paragraph.paragraphFormat;
-                this.pasteContents(this.copiedContent, currentFormat);
+                this.pasteContents(this.copiedContent !== '' ? this.copiedContent : this.copiedTextContent, currentFormat);
                 break;
             case 'KeepTextOnly':
                 this.pasteContents(this.copiedTextContent);
@@ -44383,9 +44621,13 @@ class Editor {
             }
             if (j === widgets.length - 1 && widget instanceof ParagraphWidget) {
                 let newParagraph = widget;
+                let paragraphFormat;
                 if (newParagraph.childWidgets.length > 0
                     && newParagraph.childWidgets[0].children.length > 0) {
-                    this.insertElement(newParagraph.childWidgets[0].children);
+                    if (newParagraph.paragraphFormat.listFormat.listId !== -1) {
+                        paragraphFormat = newParagraph.paragraphFormat;
+                    }
+                    this.insertElement(newParagraph.childWidgets[0].children, paragraphFormat);
                 }
             }
             else if (widget instanceof BlockWidget) {
@@ -44546,7 +44788,7 @@ class Editor {
         }
         this.setPositionParagraph(paragraphInfo.paragraph, paragraphInfo.offset + length, true);
     }
-    insertElement(element) {
+    insertElement(element, paragraphFormat) {
         let selection = this.selection;
         let length = 0;
         let paragraph = undefined;
@@ -44596,6 +44838,9 @@ class Editor {
             element[i].line = lineWidget;
             element[i].linkFieldCharacter(this.viewer);
             insertIndex++;
+        }
+        if (paragraphFormat) {
+            paragraph.paragraphFormat.copyFormat(paragraphFormat);
         }
         this.viewer.layout.reLayoutParagraph(paragraph, lineIndex, 0);
         this.setPositionParagraph(paragraphInfo.paragraph, paragraphInfo.offset + length, true);
@@ -47609,7 +47854,11 @@ class Editor {
     /* tslint:disable-next-line:max-line-length */
     applyCharacterStyle(paragraph, start, end, property, value, update) {
         let paragraphWidget = paragraph.getSplitWidgets();
-        if ((end.paragraph === paragraph || paragraphWidget.indexOf(end.paragraph) !== -1)) {
+        let selection = end.owner.selection;
+        let lastLine = end.currentWidget;
+        let isParaSelected = start.offset === 0 && (selection.isParagraphLastLine(lastLine) && end.currentWidget === lastLine
+            && end.offset === selection.getLineLength(lastLine) + 1 || end.isAtParagraphEnd);
+        if (!isParaSelected && (end.paragraph === paragraph || paragraphWidget.indexOf(end.paragraph) !== -1)) {
             if (((value.type === 'Paragraph') && ((value.link) instanceof WCharacterStyle)) || (value.type === 'Character')) {
                 let obj = (value.type === 'Character') ? value : value.link;
                 this.updateSelectionCharacterFormatting(property, obj, update);
@@ -48444,6 +48693,16 @@ class Editor {
         }
         else {
             this.deletePara(paragraph, start, end, editAction);
+            if (this.delBlockContinue && this.delBlock) {
+                if (this.delSection) {
+                    let bodyWidget = paragraph.bodyWidget instanceof BodyWidget ? paragraph.bodyWidget : undefined;
+                    this.deleteSection(selection, this.delSection, bodyWidget, editAction);
+                    this.delSection = undefined;
+                }
+                this.deleteBlock(this.delBlock, selection, start, end, editAction);
+                this.delBlockContinue = false;
+                this.delBlock = undefined;
+            }
         }
     }
     /**
@@ -48733,17 +48992,27 @@ class Editor {
                 //Removes the splitted paragraph.
             }
             if (!isNullOrUndefined(block) && !isStartParagraph) {
+                this.delBlockContinue = true;
+                this.delBlock = block;
                 let nextSection = block.bodyWidget instanceof BodyWidget ? block.bodyWidget : undefined;
                 if (nextSection && !section.equals(nextSection) && section.index !== nextSection.index) {
-                    this.deleteSection(selection, nextSection, section, editAction);
+                    this.delSection = nextSection;
                 }
-                this.deleteBlock(block, selection, start, end, editAction);
+                else {
+                    this.delSection = undefined;
+                }
+            }
+            else {
+                this.delBlockContinue = false;
+                this.delBlock = undefined;
             }
         }
         else if (start.paragraph === paragraph && (start.currentWidget !== paragraph.firstChild ||
             (start.currentWidget === paragraph.firstChild && startOffset > paragraphStart))) {
             // If selection start is after paragraph start
             //And selection does not end with this paragraph Or selection include paragraph mark.
+            this.delBlockContinue = false;
+            this.delBlock = undefined;
             if (editAction === 4) {
                 return;
             }
@@ -48796,11 +49065,12 @@ class Editor {
                 }
             }
             if (start.paragraph !== paragraph && !isNullOrUndefined(block)) {
-                let nextSection = block.bodyWidget instanceof BodyWidget ? block.bodyWidget : undefined;
-                // if (section !== nextSection) {
-                //     this.deleteSection(selection, section, nextSection, editAction);
-                // }
-                this.deleteBlock(block, selection, start, end, editAction);
+                this.delBlockContinue = true;
+                this.delBlock = block;
+            }
+            else {
+                this.delBlockContinue = false;
+                this.delBlock = undefined;
             }
         }
         this.insertParagraphPaste(paragraph, currentParagraph, start, end, isCombineNextParagraph, editAction);
@@ -48941,6 +49211,16 @@ class Editor {
     deleteBlock(block, selection, start, end, editAction) {
         if (block instanceof ParagraphWidget) {
             this.deletePara(block, start, end, editAction);
+            if (this.delBlockContinue && this.delBlock) {
+                if (this.delSection) {
+                    let bodyWidget = block.bodyWidget instanceof BodyWidget ? block.bodyWidget : undefined;
+                    this.deleteSection(selection, this.delSection, bodyWidget, editAction);
+                    this.delSection = undefined;
+                }
+                this.deleteBlock(this.delBlock, selection, start, end, editAction);
+                this.delBlockContinue = false;
+                this.delBlock = undefined;
+            }
         }
         else {
             this.deleteTableBlock(block, selection, start, end, editAction);
@@ -48978,6 +49258,17 @@ class Editor {
                     else {
                         if (startCell === containerCell) {
                             this.deletePara(end.paragraph, start, end, editAction);
+                            if (this.delBlockContinue && this.delBlock) {
+                                if (this.delSection) {
+                                    let para = end.paragraph;
+                                    let bodyWidget = para.bodyWidget instanceof BodyWidget ? para.bodyWidget : undefined;
+                                    this.deleteSection(selection, this.delSection, bodyWidget, editAction);
+                                    this.delSection = undefined;
+                                }
+                                this.deleteBlock(this.delBlock, selection, start, end, editAction);
+                                this.delBlockContinue = false;
+                                this.delBlock = undefined;
+                            }
                         }
                         else {
                             this.deleteContainer(startCell, selection, start, end, editAction);
@@ -49884,11 +50175,15 @@ class Editor {
                     this.removedBookmarkElements.splice(startIndex, 1);
                 }
                 else {
-                    this.initComplexHistory(this.editorHistory.currentBaseHistoryInfo.action);
-                    this.editorHistory.updateHistory();
+                    if (this.editorHistory.currentBaseHistoryInfo) {
+                        this.initComplexHistory(this.editorHistory.currentBaseHistoryInfo.action);
+                        this.editorHistory.updateHistory();
+                    }
                     this.initInsertInline(bookMarkStart.clone());
-                    this.editorHistory.updateComplexHistory();
-                    isHandledComplexHistory = true;
+                    if (this.editorHistory.currentHistoryInfo) {
+                        this.editorHistory.updateComplexHistory();
+                        isHandledComplexHistory = true;
+                    }
                 }
             }
             else {
@@ -49900,11 +50195,15 @@ class Editor {
                     this.removedBookmarkElements.splice(startIndex, 1);
                 }
                 else {
-                    this.initComplexHistory(this.editorHistory.currentBaseHistoryInfo.action);
-                    this.editorHistory.updateHistory();
+                    if (this.editorHistory.currentBaseHistoryInfo) {
+                        this.initComplexHistory(this.editorHistory.currentBaseHistoryInfo.action);
+                        this.editorHistory.updateHistory();
+                    }
                     this.initInsertInline(bookMarkEnd.clone());
-                    this.editorHistory.updateComplexHistory();
-                    isHandledComplexHistory = true;
+                    if (this.editorHistory.currentHistoryInfo) {
+                        this.editorHistory.updateComplexHistory();
+                        isHandledComplexHistory = true;
+                    }
                 }
             }
         }
@@ -53970,9 +54269,17 @@ class BaseHistoryInfo {
                     value = new WParagraphStyle();
                     value.copyStyle(previousFormat.baseStyle);
                     this.currentPropertyIndex++;
+                    if (!isNullOrUndefined(format.baseStyle)) {
+                        previousFormat.baseStyle = new WParagraphStyle();
+                        previousFormat.baseStyle.copyStyle(format.baseStyle);
+                    }
                     return value;
                 }
                 else {
+                    if (!isNullOrUndefined(format.baseStyle)) {
+                        previousFormat.baseStyle = new WParagraphStyle();
+                        previousFormat.baseStyle.copyStyle(format.baseStyle);
+                    }
                     return undefined;
                 }
             }
@@ -55844,16 +56151,16 @@ class EditorHistory {
     get redoStack() { return this.redoStackIn; }
     /**
      * Gets or Sets the limit of undo operations can be done.
-     * @aspType int
-     * @blazorType int
+
+
      */
     get undoLimit() {
         return isNullOrUndefined(this.undoLimitIn) ? 0 : this.undoLimitIn;
     }
     /**
      * Sets the limit of undo operations can be done.
-     * @aspType int
-     * @blazorType int
+
+
      */
     set undoLimit(value) {
         if (value < 0) {
@@ -55863,16 +56170,16 @@ class EditorHistory {
     }
     /**
      * Gets or Sets the limit of redo operations can be done.
-     * @aspType int
-     * @blazorType int
+
+
      */
     get redoLimit() {
         return isNullOrUndefined(this.redoLimitIn) ? 0 : this.redoLimitIn;
     }
     /**
      * Gets or Sets the limit of redo operations can be done.
-     * @aspType int
-     * @blazorType int
+
+
      */
     set redoLimit(value) {
         if (value < 0) {
@@ -61537,7 +61844,7 @@ class SfdtExport {
     }
     writeInlines(paragraph, line, inlines) {
         let lineWidget = line.clone();
-        let bidi = paragraph.paragraphFormat.getValue('bidi');
+        let bidi = paragraph.paragraphFormat.bidi;
         if (bidi || this.viewer.layout.isContainsRtl(lineWidget)) {
             this.viewer.layout.reArrangeElementsForRtl(lineWidget, bidi);
         }
@@ -71604,12 +71911,6 @@ class Paragraph {
             this.updateStyleNames();
             args.popup.element.getElementsByClassName('e-de-ctnr-dropdown-ftr')[0].addEventListener('click', this.createStyle);
         };
-        this.closeStyleValue = (args) => {
-            if (!isNullOrUndefined(this.styleName)) {
-                this.style.value = this.styleName;
-                this.style.dataBind();
-            }
-        };
         this.createStyle = () => {
             this.style.hidePopup();
             if (!this.documentEditor.isReadOnly) {
@@ -72091,7 +72392,6 @@ class Paragraph {
             fields: { text: 'StyleName', value: 'StyleName' },
             open: this.updateOptions,
             change: this.selectStyleValue,
-            close: this.closeStyleValue,
             itemTemplate: '<span style="${Style}">${StyleName}</span>',
             footerTemplate: '<span class="e-de-ctnr-dropdown-ftr">' + this.localObj.getConstant('Manage Styles') + '</span>'
         });
@@ -74162,8 +74462,8 @@ let DocumentEditorContainer = class DocumentEditorContainer extends Component {
     }
     /**
      * Gets DocumentEditor instance.
-     * @aspType DocumentEditor
-     * @blazorType DocumentEditor
+
+
      */
     get documentEditor() {
         return this.documentEditorInternal;
@@ -74237,6 +74537,14 @@ let DocumentEditorContainer = class DocumentEditorContainer extends Component {
         createSpinner({ target: this.containerTarget, cssClass: 'e-spin-overlay' });
         this.setserverActionSettings();
         this.renderComplete();
+    }
+    setFormat() {
+        if (this.characterFormat) {
+            this.documentEditor.setDefaultCharacterFormat(this.characterFormat);
+        }
+        if (this.paragraphFormat) {
+            this.documentEditor.setDefaultParagraphFormat(this.paragraphFormat);
+        }
     }
     setserverActionSettings() {
         if (this.serviceUrl) {
@@ -74318,6 +74626,7 @@ let DocumentEditorContainer = class DocumentEditorContainer extends Component {
         });
         this.documentEditor.enableAllModules();
         this.editorContainer.insertBefore(documentEditorTarget, this.editorContainer.firstChild);
+        this.setFormat();
         this.documentEditor.appendTo(documentEditorTarget);
         this.documentEditor.resize();
     }
@@ -74486,6 +74795,20 @@ let DocumentEditorContainer = class DocumentEditorContainer extends Component {
         this.imageProperties.showImageProperties(property === 'image');
         this.headerFooterProperties.showHeaderFooterPane(property === 'headerfooter');
         this.tocProperties.showTocPane(property === 'toc');
+    }
+    /**
+     * Set the default character format for document editor container
+     * @param characterFormat
+     */
+    setDefaultCharacterFormat(characterFormat) {
+        this.characterFormat = characterFormat;
+    }
+    /**
+     * Set the default paragraph format for document editor container
+     * @param paragraphFormat
+     */
+    setDefaultParagraphFormat(paragraphFormat) {
+        this.paragraphFormat = paragraphFormat;
     }
     /**
      * Destroys all managed resources used by this object.

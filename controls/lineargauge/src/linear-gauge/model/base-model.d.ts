@@ -32,7 +32,7 @@ export interface FontModel {
 
     /**
      * Opacity for text.
-     * @blazorDefaultValue 1
+
      */
     opacity?: number;
 
@@ -45,25 +45,25 @@ export interface MarginModel {
 
     /**
      * Left margin in pixels.
-     * @default 10
+
      */
     left?: number;
 
     /**
      * Right margin in pixels.
-     * @default 10
+
      */
     right?: number;
 
     /**
      * Top margin in pixels.
-     * @default 10
+
      */
     top?: number;
 
     /**
      * Bottom margin in pixels.
-     * @default 10
+
      */
     bottom?: number;
 
@@ -81,7 +81,7 @@ export interface BorderModel {
 
     /**
      * The width of the border in pixels.
-     * @default 0
+
      */
     width?: number;
 
@@ -109,19 +109,19 @@ export interface AnnotationModel {
 
     /**
      * Specifies the vertical alignment of annotation.
-     * @default None
+
      */
     verticalAlignment?: Placement;
 
     /**
      * Specifies the horizontal alignment of annotation.
-     * @default None
+
      */
     horizontalAlignment?: Placement;
 
     /**
      * Specifies the zIndex of the annotation.
-     * @default '-1'
+
      */
     zIndex?: string;
 
@@ -133,14 +133,14 @@ export interface AnnotationModel {
 
     /**
      * Specifies the index of axis.
-     * @aspDefaultValueIgnore
+
      */
     axisIndex?: number;
 
     /**
      * Specifies the value of axis.
-     * @aspDefaultValueIgnore
-     * @blazorDefaultValue null
+
+
      */
     axisValue?: number;
 
@@ -153,25 +153,25 @@ export interface ContainerModel {
 
     /**
      * Specifies the type of container.
-     * @default Normal
+
      */
     type?: ContainerType;
 
     /**
      * Specifies the height of the container.
-     * @default 0
+
      */
     height?: number;
 
     /**
      * Specifies the width of the container.
-     * @default 0
+
      */
     width?: number;
 
     /**
      * Specifies the corner radius for rounded rectangle.
-     * @default 10
+
      */
     roundedCornerRadius?: number;
 
@@ -187,7 +187,7 @@ export interface ContainerModel {
 
     /**
      * Specifies to move the container.
-     * @blazorDefaultValue 0
+
      */
     offset?: number;
 
@@ -200,7 +200,7 @@ export interface TooltipSettingsModel {
 
     /**
      * Enable / Disable the visibility of tooltip.
-     * @default false
+
      */
 
     enable?: boolean;
@@ -219,21 +219,21 @@ export interface TooltipSettingsModel {
 
     /**
      * Format of the tooltip content.
-     * @default null
+
      */
 
     format?: string;
 
     /**
      * Custom template to format the tooltip content. Use ${x} and ${y} as a placeholder text to display the corresponding data point.
-     * @default null
+
      */
 
     template?: string;
 
     /**
      * If set true, tooltip will animate, while moving from one point to another.
-     * @default true
+
      */
     enableAnimation?: boolean;
 

@@ -33,7 +33,7 @@ export class DataLabelSettings extends ChildProperty<DataLabelSettings> {
 
     /**
      * If set true, data label for series renders.
-     * @default false
+
      */
 
     @Property(false)
@@ -41,7 +41,7 @@ export class DataLabelSettings extends ChildProperty<DataLabelSettings> {
 
     /**
      * The DataSource field that contains the data label value.
-     * @default null
+
      */
 
     @Property(null)
@@ -49,7 +49,7 @@ export class DataLabelSettings extends ChildProperty<DataLabelSettings> {
 
     /**
      * The background color of the data label accepts value in hex and rgba as a valid CSS color string.
-     * @default 'transparent'
+
      */
 
     @Property('transparent')
@@ -57,7 +57,7 @@ export class DataLabelSettings extends ChildProperty<DataLabelSettings> {
 
     /**
      * The opacity for the background.
-     * @default 1
+
      */
 
     @Property(1)
@@ -65,7 +65,7 @@ export class DataLabelSettings extends ChildProperty<DataLabelSettings> {
 
     /**
      * Specifies angle for data label.
-     * @default 0
+
      */
 
     @Property(0)
@@ -73,7 +73,7 @@ export class DataLabelSettings extends ChildProperty<DataLabelSettings> {
 
     /**
      * Enables rotation for data label.
-     * @default false
+
      */
 
     @Property(false)
@@ -86,7 +86,7 @@ export class DataLabelSettings extends ChildProperty<DataLabelSettings> {
      * * Bottom: Positions the label at the bottom of the point.
      * * Middle: Positions the label to the middle of the point.
      * * Auto: Positions the label based on series.
-     * @default 'Auto'
+
      */
 
     @Property('Auto')
@@ -94,14 +94,14 @@ export class DataLabelSettings extends ChildProperty<DataLabelSettings> {
 
     /**
      * The roundedCornerX for the data label. It requires `border` values not to be null.
-     * @default 5
+
      */
     @Property(5)
     public rx: number;
 
     /**
      * The roundedCornerY for the data label. It requires `border` values not to be null.
-     * @default 5
+
      */
     @Property(5)
     public ry: number;
@@ -111,7 +111,7 @@ export class DataLabelSettings extends ChildProperty<DataLabelSettings> {
      * * Near: Aligns the label to the left of the point.
      * * Center: Aligns the label to the center of the point.
      * * Far: Aligns the label to the right of the point.
-     * @default 'Center'
+
      */
     @Property('Center')
     public alignment: Alignment;
@@ -140,7 +140,7 @@ export class DataLabelSettings extends ChildProperty<DataLabelSettings> {
     /**
      * Custom template to show the data label. Use ${point.x} and ${point.y} as a placeholder
      * text to display the corresponding data point.
-     * @default null
+
      */
 
     @Property(null)
@@ -157,7 +157,7 @@ export class MarkerSettings extends ChildProperty<MarkerSettings> {
 
     /**
      * If set to true the marker for series is rendered. This is applicable only for line and area type series.
-     * @default false
+
      */
 
     @Property(false)
@@ -174,7 +174,7 @@ export class MarkerSettings extends ChildProperty<MarkerSettings> {
      * * Pentagon
      * * InvertedTriangle
      * * Image
-     * @default 'Circle'
+
      */
 
     @Property('Circle')
@@ -183,7 +183,7 @@ export class MarkerSettings extends ChildProperty<MarkerSettings> {
 
     /**
      * The URL for the Image that is to be displayed as a marker.  It requires marker `shape` value to be an `Image`.
-     * @default ''
+
      */
 
     @Property('')
@@ -191,7 +191,7 @@ export class MarkerSettings extends ChildProperty<MarkerSettings> {
 
     /**
      * The height of the marker in pixels.
-     * @default 5
+
      */
 
     @Property(5)
@@ -199,7 +199,7 @@ export class MarkerSettings extends ChildProperty<MarkerSettings> {
 
     /**
      * The width of the marker in pixels.
-     * @default 5
+
      */
 
     @Property(5)
@@ -221,7 +221,7 @@ export class MarkerSettings extends ChildProperty<MarkerSettings> {
 
     /**
      *  The fill color of the marker that accepts value in hex and rgba as a valid CSS color string. By default, it will take series' color.
-     * @default null
+
      */
 
     @Property(null)
@@ -229,7 +229,7 @@ export class MarkerSettings extends ChildProperty<MarkerSettings> {
 
     /**
      * The opacity of the marker.
-     * @default 1
+
      */
 
     @Property(1)
@@ -321,42 +321,42 @@ export class Points {
 export class Trendline extends ChildProperty<Trendline> {
     /**
      * Defines the name of trendline
-     * @default ''
+
      */
     @Property('')
     public name: string;
 
     /**
      * Defines the type of the trendline
-     * @default 'Linear'
+
      */
     @Property('Linear')
     public type: TrendlineTypes;
 
     /**
      * Defines the period, the price changes over which will be considered to predict moving average trend line
-     * @default 2
+
      */
     @Property(2)
     public period: number;
 
     /**
      * Defines the polynomial order of the polynomial trendline
-     * @default 2
+
      */
     @Property(2)
     public polynomialOrder: number;
 
     /**
      * Defines the period, by which the trend has to backward forecast
-     * @default 0
+
      */
     @Property(0)
     public backwardForecast: number;
 
     /**
      * Defines the period, by which the trend has to forward forecast
-     * @default 0
+
      */
     @Property(0)
     public forwardForecast: number;
@@ -376,7 +376,7 @@ export class Trendline extends ChildProperty<Trendline> {
 
     /**
      * Enables/disables tooltip for trendlines
-     * @default true
+
      */
     @Property(true)
     public enableTooltip: boolean;
@@ -384,29 +384,29 @@ export class Trendline extends ChildProperty<Trendline> {
 
     /**
      * Defines the intercept of the trendline
-     * @default null
-     * @aspDefaultValueIgnore
+
+
      */
     @Property(null)
     public intercept: number;
 
     /**
      * Defines the fill color of trendline
-     * @default ''
+
      */
     @Property('')
     public fill: string;
 
     /**
      * Defines the width of the trendline
-     * @default 1
+
      */
     @Property(1)
     public width: number;
 
     /**
      * Sets the legend shape of the trendline
-     * @default 'SeriesType'
+
      */
     @Property('SeriesType')
     public legendShape: LegendShape;
@@ -456,7 +456,7 @@ export class ErrorBarCapSettings extends ChildProperty<ErrorBarCapSettings> {
 
     /**
      * The width of the error bar in pixels.
-     * @default 1
+
      */
 
     @Property(1)
@@ -464,7 +464,7 @@ export class ErrorBarCapSettings extends ChildProperty<ErrorBarCapSettings> {
 
     /**
      * The length of the error bar in pixels.
-     * @default 10
+
      */
 
     @Property(10)
@@ -472,7 +472,7 @@ export class ErrorBarCapSettings extends ChildProperty<ErrorBarCapSettings> {
 
     /**
      *  The stroke color of the cap, which accepts value in hex, rgba as a valid CSS color string.
-     * @default null
+
      */
 
     @Property(null)
@@ -480,7 +480,7 @@ export class ErrorBarCapSettings extends ChildProperty<ErrorBarCapSettings> {
 
     /**
      * The opacity of the cap.
-     * @default 1
+
      */
 
     @Property(1)
@@ -492,7 +492,7 @@ export class ChartSegment extends ChildProperty<ChartSegment> {
 
     /**
      * Defines the starting point of region.
-     * @default null
+
      */
 
     @Property(null)
@@ -500,7 +500,7 @@ export class ChartSegment extends ChildProperty<ChartSegment> {
 
     /**
      * Defines the color of a region.
-     * @default null
+
      */
 
     @Property(null)
@@ -508,7 +508,7 @@ export class ChartSegment extends ChildProperty<ChartSegment> {
 
     /**
      * Defines the pattern of dashes and gaps to stroke.
-     * @default '0'
+
      */
 
     @Property('0')
@@ -529,7 +529,7 @@ export class ErrorBarSettings extends ChildProperty<ErrorBarSettings> {
 
     /**
      * If set true, error bar for data gets rendered.
-     * @default false
+
      */
 
     @Property(false)
@@ -542,7 +542,7 @@ export class ErrorBarSettings extends ChildProperty<ErrorBarSettings> {
      * * StandardDeviation - Renders a standard deviation type error bar.
      * * StandardError -Renders a standard error type error bar.
      * * Custom -Renders a custom type error bar.
-     * @default 'Fixed'
+
      */
 
     @Property('Fixed')
@@ -553,7 +553,7 @@ export class ErrorBarSettings extends ChildProperty<ErrorBarSettings> {
      * * both -  Renders both direction of error bar.
      * * minus - Renders minus direction of error bar.
      * * plus - Renders plus direction error bar.
-     * @default 'Both'
+
      */
 
     @Property('Both')
@@ -564,7 +564,7 @@ export class ErrorBarSettings extends ChildProperty<ErrorBarSettings> {
      * * Vertical -  Renders a vertical error bar.
      * * Horizontal - Renders a horizontal error bar.
      * * Both - Renders both side error bar.
-     * @default 'Vertical'
+
      */
 
     @Property('Vertical')
@@ -572,7 +572,7 @@ export class ErrorBarSettings extends ChildProperty<ErrorBarSettings> {
 
     /**
      *  The color for stroke of the error bar, which accepts value in hex, rgba as a valid CSS color string.
-     * @default null
+
      */
 
     @Property(null)
@@ -580,7 +580,7 @@ export class ErrorBarSettings extends ChildProperty<ErrorBarSettings> {
 
     /**
      * The vertical error of the error bar.
-     * @default 1
+
      */
 
     @Property(1)
@@ -588,7 +588,7 @@ export class ErrorBarSettings extends ChildProperty<ErrorBarSettings> {
 
     /**
      * The stroke width of the error bar..
-     * @default 1
+
      */
 
     @Property(1)
@@ -596,7 +596,7 @@ export class ErrorBarSettings extends ChildProperty<ErrorBarSettings> {
 
     /**
      * The horizontal error of the error bar.
-     * @default 1
+
      */
 
     @Property(1)
@@ -604,7 +604,7 @@ export class ErrorBarSettings extends ChildProperty<ErrorBarSettings> {
 
     /**
      * The vertical positive error of the error bar.
-     * @default 3
+
      */
 
     @Property(3)
@@ -612,7 +612,7 @@ export class ErrorBarSettings extends ChildProperty<ErrorBarSettings> {
 
     /**
      * The vertical negative error of the error bar.
-     * @default 3
+
      */
 
     @Property(3)
@@ -620,7 +620,7 @@ export class ErrorBarSettings extends ChildProperty<ErrorBarSettings> {
 
     /**
      * The horizontal positive error of the error bar.
-     * @default 1
+
      */
 
     @Property(1)
@@ -628,7 +628,7 @@ export class ErrorBarSettings extends ChildProperty<ErrorBarSettings> {
 
     /**
      * The horizontal negative error of the error bar.
-     * @default 1
+
      */
 
     @Property(1)
@@ -649,7 +649,7 @@ export class SeriesBase extends ChildProperty<SeriesBase> {
     /**
      * The DataSource field that contains the x value.
      * It is applicable for series and technical indicators
-     * @default ''
+
      */
 
     @Property('')
@@ -658,7 +658,7 @@ export class SeriesBase extends ChildProperty<SeriesBase> {
     /**
      * The DataSource field that contains the high value of y
      * It is applicable for series and technical indicators
-     * @default ''
+
      */
 
     @Property('')
@@ -667,7 +667,7 @@ export class SeriesBase extends ChildProperty<SeriesBase> {
     /**
      * The DataSource field that contains the low value of y
      * It is applicable for series and technical indicators
-     * @default ''
+
      */
 
     @Property('')
@@ -676,7 +676,7 @@ export class SeriesBase extends ChildProperty<SeriesBase> {
     /**
      * The DataSource field that contains the open value of y
      * It is applicable for series and technical indicators
-     * @default ''
+
      */
 
     @Property('')
@@ -685,7 +685,7 @@ export class SeriesBase extends ChildProperty<SeriesBase> {
     /**
      * The DataSource field that contains the close value of y
      * It is applicable for series and technical indicators
-     * @default ''
+
      */
 
     @Property('')
@@ -694,7 +694,7 @@ export class SeriesBase extends ChildProperty<SeriesBase> {
     /**
      * Defines the data source field that contains the volume value in candle charts
      * It is applicable for financial series and technical indicators
-     * @default ''
+
      */
 
     @Property('')
@@ -703,7 +703,7 @@ export class SeriesBase extends ChildProperty<SeriesBase> {
     /**
      * The DataSource field that contains the color value of point
      * It is applicable for series
-     * @default ''
+
      */
 
     @Property('')
@@ -732,7 +732,7 @@ export class SeriesBase extends ChildProperty<SeriesBase> {
      * });
      * chart.appendTo('#Chart');
      * ```
-     * @default null
+
      */
 
     @Property(null)
@@ -761,7 +761,7 @@ export class SeriesBase extends ChildProperty<SeriesBase> {
      * });
      * chart.appendTo('#Chart');
      * ```
-     * @default null
+
      */
 
     @Property(null)
@@ -778,7 +778,7 @@ export class SeriesBase extends ChildProperty<SeriesBase> {
      * The fill color for the series that accepts value in hex and rgba as a valid CSS color string.
      * It also represents the color of the signal lines in technical indicators.
      * For technical indicators, the default value is 'blue' and for series, it has null.
-     * @default null
+
      */
 
     @Property(null)
@@ -787,7 +787,7 @@ export class SeriesBase extends ChildProperty<SeriesBase> {
     /**
      * The stroke width for the series that is applicable only for `Line` type series.
      * It also represents the stroke width of the signal lines in technical indicators.
-     * @default 1
+
      */
 
     @Property(1)
@@ -795,7 +795,7 @@ export class SeriesBase extends ChildProperty<SeriesBase> {
 
     /**
      * Defines the pattern of dashes and gaps to stroke the lines in `Line` type series.
-     * @default '0'
+
      */
 
     @Property('0')
@@ -823,7 +823,7 @@ export class SeriesBase extends ChildProperty<SeriesBase> {
      * });
      * chart.appendTo('#Chart');
      * ```
-     * @default ''
+
      */
 
     @Property('')
@@ -831,7 +831,7 @@ export class SeriesBase extends ChildProperty<SeriesBase> {
 
     /**
      * Specifies query to select data from DataSource. This property is applicable only when the DataSource is `ej.DataManager`.
-     * @default ''
+
      */
     @Property()
     public query: Query;
@@ -850,14 +850,14 @@ export class SeriesBase extends ChildProperty<SeriesBase> {
 
     /**
      * This property used to improve chart performance via data mapping for series dataSource.
-     * @default false
+
      */
     @Property(false)
     public enableComplexProperty: boolean;
 
     /**
      * Process data for the series.
-     * @hidden
+
      */
     public processJsonData(): void {
         let i: number = 0;
@@ -1224,7 +1224,7 @@ export class Series extends SeriesBase {
 
     /**
      * The name of the series visible in legend.
-     * @default ''
+
      */
 
     @Property('')
@@ -1232,7 +1232,7 @@ export class Series extends SeriesBase {
 
     /**
      * The DataSource field that contains the y value.
-     * @default ''
+
      */
 
     @Property('')
@@ -1249,14 +1249,14 @@ export class Series extends SeriesBase {
      *  'StackingArea'
      *  'RangeColumn'
      *  'SplineArea'
-     * @default 'Line'
+
      */
     @Property('Line')
     public drawType: ChartDrawType;
 
     /**
      * Specifies whether to join start and end point of a line/area series used in polar/radar chart to form a closed path.
-     * @default true
+
      */
     @Property(true)
     public isClosed: boolean;
@@ -1264,7 +1264,7 @@ export class Series extends SeriesBase {
     /**
      * This property is used in financial charts to visualize the price movements in stock.
      * It defines the color of the candle/point, when the opening price is less than the closing price.
-     * @default '#2ecd71'
+
      */
 
     @Property('#2ecd71')
@@ -1273,7 +1273,7 @@ export class Series extends SeriesBase {
     /**
      * This property is used in financial charts to visualize the price movements in stock.
      * It defines the color of the candle/point, when the opening price is higher than the closing price.
-     * @default '#e74c3d'
+
      */
 
     @Property('#e74c3d')
@@ -1282,14 +1282,14 @@ export class Series extends SeriesBase {
     /**
      * This property is applicable for candle series.
      * It enables/disables to visually compare the current values with the previous values in stock.
-     * @default false
+
      */
     @Property(false)
     public enableSolidCandles: boolean;
 
     /**
      * The DataSource field that contains the size value of y
-     * @default ''
+
      */
 
     @Property('')
@@ -1297,8 +1297,8 @@ export class Series extends SeriesBase {
 
     /**
      * The bin interval of each histogram points.
-     * @default null
-     * @aspDefaultValueIgnore
+
+
      */
 
     @Property(null)
@@ -1306,7 +1306,7 @@ export class Series extends SeriesBase {
 
     /**
      * The normal distribution of histogram series.
-     * @default false
+
      */
 
     @Property(false)
@@ -1316,7 +1316,7 @@ export class Series extends SeriesBase {
      * This property allows grouping series in `stacked column / bar` charts.
      * Any string value can be provided to the stackingGroup property.
      * If any two or above series have the same value, those series will be grouped together.
-     * @default ''
+
      */
 
     @Property('')
@@ -1324,7 +1324,7 @@ export class Series extends SeriesBase {
 
     /**
      * Specifies the visibility of series.
-     * @default true
+
      */
 
     @Property(true)
@@ -1339,14 +1339,14 @@ export class Series extends SeriesBase {
 
     /**
      * The opacity of the series.
-     * @default 1
+
      */
     @Property(1)
     public opacity: number;
 
     /**
      * The z order of the series.
-     * @default 0
+
      */
     @Property(0)
     public zOrder: number;
@@ -1380,7 +1380,7 @@ export class Series extends SeriesBase {
      * * Radar
      * * BoxAndWhisker
      * * Pareto
-     * @default 'Line'
+
      */
 
     @Property('Line')
@@ -1412,21 +1412,21 @@ export class Series extends SeriesBase {
 
     /**
      * If set true, the Tooltip for series will be visible.
-     * @default true
+
      */
     @Property(true)
     public enableTooltip: boolean;
 
     /**
      * user can format now each series tooltip format separately.
-     * @default ''
+
      */
     @Property('')
     public tooltipFormat : string;
 
     /**
      * The provided value will be considered as a Tooltip name 
-     * @default ''
+
      */
     @Property('')
     public tooltipMappingName: string;
@@ -1443,7 +1443,7 @@ export class Series extends SeriesBase {
      * * Pentagon
      * * InvertedTriangle
      * * SeriesType
-     * @default 'SeriesType'
+
      */
 
     @Property('SeriesType')
@@ -1451,34 +1451,34 @@ export class Series extends SeriesBase {
 
     /**
      * Custom style for the selected series or points.
-     * @default null
+
      */
     @Property(null)
     public selectionStyle: string;
 
     /**
      * Minimum radius
-     * @default 1
+
      */
     @Property(1)
     public minRadius: number;
 
     /**
      * Maximum radius
-     * @default 3
+
      */
     @Property(3)
     public maxRadius: number;
 
     /**
      * Defines type of spline to be rendered.
-     * @default 'Natural'
+
      */
     @Property('Natural')
     public splineType: SplineType;
     /**
      * It defines tension of cardinal spline types
-     * @default 0.5
+
      */
     @Property(0.5)
     public cardinalSplineTension: number;
@@ -1491,7 +1491,7 @@ export class Series extends SeriesBase {
 
     /**
      * If set true, the mean value for box and whisker will be visible.
-     * @default true
+
      */
     @Property(true)
     public showMean: boolean;
@@ -1501,7 +1501,7 @@ export class Series extends SeriesBase {
      * Exclusive
      * Inclusive
      * Normal
-     * @default 'Normal'
+
      */
     @Property('Normal')
     public boxPlotMode: BoxPlotMode;
@@ -1509,15 +1509,15 @@ export class Series extends SeriesBase {
     /**
      * To render the column series points with particular column width. If the series type is histogram the
      * default value is 1 otherwise 0.7.
-     * @default null
-     * @aspDefaultValueIgnore
+
+
      */
     @Property(null)
     public columnWidth: number;
 
     /**
      * To render the column series points with particular column spacing. It takes value from 0 - 1.
-     * @default 0
+
      */
     @Property(0)
     public columnSpacing: number;
@@ -1525,30 +1525,30 @@ export class Series extends SeriesBase {
 
     /**
      * Defines the visual representation of the negative changes in waterfall charts.
-     * @default '#C64E4A'
+
      */
     @Property('#C64E4A')
     public negativeFillColor: string;
 
     /**
      * Defines the visual representation of the summaries in waterfall charts.
-     * @default '#4E81BC'
+
      */
     @Property('#4E81BC')
     public summaryFillColor: string;
 
     /**
      * Defines the collection of indexes of the intermediate summary columns in waterfall charts.
-     * @default []
-     * @aspType int[]
+
+
      */
     @Property()
     public intermediateSumIndexes: number[];
 
     /**
      * Defines the collection of indexes of the overall summary columns in waterfall charts.
-     * @default []
-     * @aspType int[]
+
+
      */
     @Property()
     public sumIndexes: number[];

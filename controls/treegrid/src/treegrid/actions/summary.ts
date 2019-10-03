@@ -10,7 +10,7 @@ import { AggregateRowModel } from '../models/summary-model';
 
 /**
  * TreeGrid Aggregate module
- * @hidden
+
  */
 export class Aggregate {
     private parent: TreeGrid;
@@ -40,7 +40,7 @@ export class Aggregate {
 
     /**
      * Function to calculate summary values
-     *  @hidden
+
      */
     public calculateSummaryValue(summaryQuery: QueryOptions[], filteredData: Object[], isSort: boolean): Object[] {
         this.summaryQuery = summaryQuery;
@@ -195,7 +195,7 @@ export class Aggregate {
     /**
      * To destroy the Aggregate module 
      * @return {void}
-     * @hidden
+
      */
     public destroy(): void {
        this.removeEventListener();

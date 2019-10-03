@@ -68,7 +68,7 @@ export class Smithchart extends Component<HTMLElement> implements INotifyPropert
 
     /**
      * render type of smithchart.
-     * @default Impedance
+
      */
 
     @Property('Impedance')
@@ -76,21 +76,21 @@ export class Smithchart extends Component<HTMLElement> implements INotifyPropert
 
     /**
      * width for smithchart.
-     * @default ''
+
      */
     @Property('')
     public width: string;
 
     /**
      * height for smithchart.
-     * @default ''
+
      */
     @Property('')
     public height: string;
 
     /**
      * theme for smithchart.
-     * @default Material
+
      */
 
     @Property('Material')
@@ -191,7 +191,7 @@ export class Smithchart extends Component<HTMLElement> implements INotifyPropert
 
     /**
      *  Spacing between elements
-     * @default 10
+
      */
 
     @Property(10)
@@ -199,7 +199,7 @@ export class Smithchart extends Component<HTMLElement> implements INotifyPropert
 
     /**
      *  Spacing between elements
-     * @default 1
+
      */
 
     @Property(1)
@@ -208,14 +208,14 @@ export class Smithchart extends Component<HTMLElement> implements INotifyPropert
     /**
      * Triggers before the prints gets started.
      * @event
-     * @blazorProperty 'OnPrint'
+
      */
     @Event()
     public beforePrint: EmitType<ISmithchartPrintEventArgs>;
     /**
      * Triggers after the animation completed.
      * @event
-     * @blazorProperty 'AnimationCompleted'
+
      */
     @Event()
     public animationComplete: EmitType<ISmithchartAnimationCompleteEventArgs>;
@@ -223,14 +223,14 @@ export class Smithchart extends Component<HTMLElement> implements INotifyPropert
     /**
      * Triggers before smithchart rendered.
      * @event
-     * @blazorProperty 'OnLoad'
+
      */
     @Event()
     public load: EmitType<ISmithchartLoadEventArgs>;
     /**
      * Triggers after smithchart rendered.
      * @event
-     * @blazorProperty 'Loaded'
+
      */
     @Event()
     public loaded: EmitType<ISmithchartLoadedEventArgs>;
@@ -238,7 +238,7 @@ export class Smithchart extends Component<HTMLElement> implements INotifyPropert
     /**
      * Triggers before the legend is rendered.
      * @event
-     * @blazorProperty 'LegendRendering'
+
      */
     @Event()
     public legendRender: EmitType<ISmithchartLegendRenderEventArgs>;
@@ -246,7 +246,7 @@ export class Smithchart extends Component<HTMLElement> implements INotifyPropert
     /**
      * Triggers before the title is rendered.
      * @event
-     * @blazorProperty 'TitleRendering'
+
      */
     @Event()
     public titleRender: EmitType<ITitleRenderEventArgs>;
@@ -254,7 +254,7 @@ export class Smithchart extends Component<HTMLElement> implements INotifyPropert
     /**
      * Triggers before the sub-title is rendered.
      * @event
-     * @blazorProperty 'SubtitleRendering'
+
      */
     @Event()
     public subtitleRender: EmitType<ISubTitleRenderEventArgs>;
@@ -262,14 +262,14 @@ export class Smithchart extends Component<HTMLElement> implements INotifyPropert
     /**
      * Triggers before the datalabel text is rendered.
      * @event
-     * @blazorProperty 'TextRendering'
+
      */
     @Event()
     public textRender: EmitType<ISmithchartTextRenderEventArgs>;
     /**
      * Triggers before the axis label is rendered
      * @event
-     * @blazorProperty 'AxisLabelRendering'
+
      */
     @Event()
     public axisLabelRender: EmitType<ISmithchartAxisLabelRenderEventArgs>;

@@ -2,7 +2,7 @@
  * Month view appointment rendering spec 
  */
 import { closest, Browser, Internationalization } from '@syncfusion/ej2-base';
-import { Schedule, ScheduleModel, Day, Week, WorkWeek, Month, Agenda } from '../../../src/schedule/index';
+import { Schedule, ScheduleModel, Day, Week, WorkWeek, Month, Agenda, MoreEventsClickArgs } from '../../../src/schedule/index';
 import { testData } from '../base/datasource.spec';
 import * as util from '../util.spec';
 import { profile, inMB, getMemoryProfile } from '../../common.spec';
@@ -51,10 +51,10 @@ describe('Month Event Render Module', () => {
             Browser.userAgent = androidUserAgent;
             let model: ScheduleModel = {
                 views: [{ option: 'Day', readonly: true }, { option: 'Week' }, { option: 'WorkWeek', readonly: true }, { option: 'Month' }],
-                currentView: 'Month', height: '550px', width: '500px', selectedDate: new Date(2017, 10, 6)
+                currentView: 'Month', height: '550px', width: '500px', selectedDate: new Date(2017, 10, 6),
+                moreEventsClick: (args: MoreEventsClickArgs) => args.isPopupOpen = false
             };
             schObj = util.createSchedule(model, testData, done);
-            schObj.isMorePopup = false;
         });
         afterAll(() => {
             util.destroy(schObj);
@@ -211,8 +211,10 @@ describe('Month Event Render Module', () => {
             interface TemplateFunction extends Window {
                 getTimeString?: Function;
             }
-            let model: ScheduleModel = { currentView: 'Month', height: '550px', selectedDate: new Date(2017, 10, 2),
-             eventSettings: { template: '<div class="time">${getTimeString(data.StartTime)}</div>' }};
+            let model: ScheduleModel = {
+                currentView: 'Month', height: '550px', selectedDate: new Date(2017, 10, 2),
+                eventSettings: { template: '<div class="time">${getTimeString(data.StartTime)}</div>' }
+            };
             schObj = util.createSchedule(model, eventData, done);
         });
         afterAll(() => {

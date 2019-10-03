@@ -1,6 +1,7 @@
 import { addClass, detach, EventHandler, L10n, isNullOrUndefined, KeyboardEventArgs, select, isBlazor } from '@syncfusion/ej2-base';
 import { Browser, closest, removeClass } from '@syncfusion/ej2-base';
-import { IImageCommandsArgs, IRenderer, IDropDownItemModel, IToolbarItemModel, OffsetPosition, ImageDragEvent } from '../base/interface';
+import { IImageCommandsArgs, IRenderer, IDropDownItemModel, IToolbarItemModel, OffsetPosition,
+    ImageDragEvent, ActionBeginEventArgs } from '../base/interface';
 import { IRichTextEditor, IImageNotifyArgs, NotifyArgs, IShowPopupArgs, ResizeArgs } from '../base/interface';
 import * as events from '../base/constant';
 import * as classes from '../base/classes';
@@ -87,7 +88,7 @@ export class Image {
         this.parent.off(events.paste, this.imagePaste);
         this.parent.off(events.destroy, this.removeEventListener);
         this.parent.element.removeEventListener('drop', this.dragDrop.bind(this), true);
-        this.parent.element.removeEventListener('dragstart', this.dragStart, true);
+        this.parent.element.removeEventListener('dragstart', this.dragStart.bind(this), true);
         this.parent.element.removeEventListener('dragenter', this.dragEnter.bind(this), true);
         this.parent.element.removeEventListener('dragover', this.dragOver.bind(this), true);
         if (!isNullOrUndefined(this.contentModule)) {
@@ -112,7 +113,7 @@ export class Image {
             EventHandler.add(this.contentModule.getDocument(), 'mousedown', this.onDocumentClick, this);
         }
         this.parent.inputElement.ownerDocument.addEventListener('drop', this.dragDrop.bind(this), true);
-        this.parent.inputElement.ownerDocument.addEventListener('dragstart', this.dragStart, true);
+        this.parent.inputElement.ownerDocument.addEventListener('dragstart', this.dragStart.bind(this), true);
         this.parent.inputElement.ownerDocument.addEventListener('dragenter', this.dragOver.bind(this), true);
         this.parent.inputElement.ownerDocument.addEventListener('dragover', this.dragOver.bind(this), true);
     }
@@ -262,7 +263,7 @@ export class Image {
     }
 
     private calcPos(elem: HTMLElement): OffsetPosition {
-        let ignoreOffset: string[] = ['TD', 'TH', 'TABLE'];
+        let ignoreOffset: string[] = ['TD', 'TH', 'TABLE', 'A'];
         let parentOffset: OffsetPosition = { top: 0, left: 0 };
         let offset: OffsetPosition = elem.getBoundingClientRect();
         let doc: Document = elem.ownerDocument;
@@ -1332,10 +1333,16 @@ export class Image {
         return false;
     }
     private dragStart(e: DragEvent): void {
-        if ((e.target as HTMLElement).nodeName === 'IMG') {
-            e.dataTransfer.effectAllowed = 'copyMove';
-            (e.target as HTMLElement).classList.add(classes.CLS_RTE_DRAG_IMAGE);
-        }
+        this.parent.trigger(events.actionBegin, e, (actionBeginArgs: ActionBeginEventArgs) => {
+            if (actionBeginArgs.cancel) {
+                e.preventDefault();
+            } else {
+                if ((e.target as HTMLElement).nodeName === 'IMG') {
+                    e.dataTransfer.effectAllowed = 'copyMove';
+                    (e.target as HTMLElement).classList.add(classes.CLS_RTE_DRAG_IMAGE);
+                }
+            }
+        });
     };
 
     private dragEnter(e?: DragEvent): void {
@@ -1353,29 +1360,35 @@ export class Image {
      * USed to set range When drop an image
      */
     private dragDrop(e: ImageDragEvent): void {
-        if (closest((e.target as HTMLElement), '#' + this.parent.getID() + '_toolbar')) {
-            e.preventDefault();
-            return;
-        }
-        if (this.parent.element.querySelector('.' + classes.CLS_IMG_RESIZE)) {
-            detach(this.imgResizeDiv);
-        }
-        e.preventDefault();
-        let range: Range;
-        if (this.contentModule.getDocument().caretRangeFromPoint) { //For chrome
-            range = this.contentModule.getDocument().caretRangeFromPoint(e.clientX, e.clientY);
-        } else if ((e.rangeParent)) { //For mozilla firefox
-            range = this.contentModule.getDocument().createRange();
-            range.setStart(e.rangeParent, e.rangeOffset);
-        } else {
-            range = this.getDropRange(e.clientX, e.clientY); //For internet explorer
-        }
-        this.parent.notify(events.selectRange, { range: range });
-        let uploadArea: HTMLElement = this.parent.element.querySelector('.' + classes.CLS_DROPAREA) as HTMLElement;
-        if (uploadArea) {
-            return;
-        }
-        this.insertDragImage(e as DragEvent);
+        this.parent.trigger(events.actionBegin, e, (actionBeginArgs: ActionBeginEventArgs) => {
+            if (actionBeginArgs.cancel) {
+                e.preventDefault();
+            } else {
+                if (closest((e.target as HTMLElement), '#' + this.parent.getID() + '_toolbar')) {
+                    e.preventDefault();
+                    return;
+                }
+                if (this.parent.element.querySelector('.' + classes.CLS_IMG_RESIZE)) {
+                    detach(this.imgResizeDiv);
+                }
+                e.preventDefault();
+                let range: Range;
+                if (this.contentModule.getDocument().caretRangeFromPoint) { //For chrome
+                    range = this.contentModule.getDocument().caretRangeFromPoint(e.clientX, e.clientY);
+                } else if ((e.rangeParent)) { //For mozilla firefox
+                    range = this.contentModule.getDocument().createRange();
+                    range.setStart(e.rangeParent, e.rangeOffset);
+                } else {
+                    range = this.getDropRange(e.clientX, e.clientY); //For internet explorer
+                }
+                this.parent.notify(events.selectRange, { range: range });
+                let uploadArea: HTMLElement = this.parent.element.querySelector('.' + classes.CLS_DROPAREA) as HTMLElement;
+                if (uploadArea) {
+                    return;
+                }
+                this.insertDragImage(e as DragEvent);
+            }
+        });
     }
 
     /**
@@ -1472,9 +1485,8 @@ export class Image {
         let file: File = validFiles.rawFile as File;
         let reader: FileReader = new FileReader();
         reader.addEventListener('load', () => {
-            imageTag.src = reader.result as string;
             let url: string = URL.createObjectURL(proxy.url(reader.result as string));
-            imageTag.src = url;
+            imageTag.src = proxy.parent.insertImageSettings.saveFormat === 'Blob' ? url : reader.result as string;
         });
         if (file) {
             reader.readAsDataURL(file);

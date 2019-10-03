@@ -489,14 +489,14 @@ describe('Spreadsheet base module ->', () => {
         it('getCell testing', (done: Function) => {
             let td: HTMLTableCellElement = helper.invoke('getCell', [10, 10]);
             expect(helper.hasClass('e-cell', td)).toBeTruthy();
-            expect(td.getAttribute('aria-colindex')).toEqual('10');
+            expect(td.getAttribute('aria-colindex')).toEqual('11');
             done();
         });
 
         it('getRow testing', (done: Function) => {
             let tr: HTMLTableRowElement = helper.invoke('getRow', [10]);
             expect(helper.hasClass('e-row', tr)).toBeTruthy();
-            expect(tr.getAttribute('aria-rowindex')).toEqual('10');
+            expect(tr.getAttribute('aria-rowindex')).toEqual('11');
             done();
         });
 
@@ -607,14 +607,6 @@ describe('Spreadsheet base module ->', () => {
 
         it('getColHeaderTable testing', (done: Function) => {
             expect(helper.invoke('getColHeaderTable')).not.toBeNull();
-            done();
-        });
-
-        it('getCellIndex testing', (done: Function) => {
-            let td: HTMLTableCellElement = helper.invoke('getCell', [2, 10]);
-            let cellIndex: number[] = helper.invoke('getCellIndex', [td]);
-            expect(cellIndex[0]).toEqual(2);
-            expect(cellIndex[1]).toEqual(10);
             done();
         });
 

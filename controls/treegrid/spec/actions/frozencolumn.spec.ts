@@ -8,6 +8,7 @@ import { Page } from '../../src/treegrid/actions/page';
 import { createElement, EmitType, remove, extend } from '@syncfusion/ej2-base';
 import { RowExpandedEventArgs, RowCollapsedEventArgs, RowCollapsingEventArgs } from '../../src';
 import { projectDatas as data } from '../base/datasource.spec';
+import {frozenDatas as data1} from '../base/datasource.spec';
 import { Filter } from '../../src/treegrid/actions/filter';
 import { Toolbar } from '../../src/treegrid/actions/toolbar';
 import { ContextMenu } from '../../src/treegrid/actions/context-menu';
@@ -285,6 +286,105 @@ describe('Remotedata in Frozenrows and column', () => {
       jasmine.Ajax.uninstall();
   });
 });
+
+
+describe('Remotedata with Frozen Columns and Deep level childs', () => {
+
+  type MockAjaxReturn = { promise: Promise<Object>, request: JasmineAjaxRequest };
+  type ResponseType = { result: Object[], count: number | string };
+
+  let mockAjax: Function = (d: { data: { [o: string]: Object | Object[] } | Object[], dm?: DataManager }, query: Query | Function, response?: Object):
+      MockAjaxReturn => {
+      jasmine.Ajax.install();
+      let dataManager = d.dm || new DataManager({
+          url: '/api/Employees',
+      });
+      let prom: Promise<Object> = dataManager.executeQuery(query);
+      let request: JasmineAjaxRequest;
+      let defaults: Object = {
+          'status': 200,
+          'contentType': 'application/json',
+          'responseText': JSON.stringify(d.data)
+      };
+      let responses: Object = {};
+      request = jasmine.Ajax.requests.mostRecent();
+      extend(responses, defaults, response);
+      request.respondWith(responses);
+      return {
+          promise: prom,
+          request: request
+      }
+  };
+
+  let gridObj: TreeGrid;
+  let elem: HTMLElement = createElement('div', { id: 'Grid' });
+  let request: JasmineAjaxRequest;
+  let dataManager: DataManager;
+  let originalTimeout: number;
+  beforeAll((done: Function) => {
+      let dataBound: EmitType<Object> = () => { done(); };
+      jasmine.Ajax.install();
+      originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
+      jasmine.DEFAULT_TIMEOUT_INTERVAL = 4000;
+      dataManager = new DataManager({
+          url: 'http://localhost:50499/Home/UrlData',
+          crossDomain: true
+      });
+      document.body.appendChild(elem);
+      gridObj = new TreeGrid(
+          {
+              dataSource: dataManager, dataBound: dataBound,
+              hasChildMapping: 'isParent',
+              idMapping: 'TaskID',
+              parentIdMapping: 'parentID',
+              treeColumnIndex: 1,
+              loadChildOnDemand: true,
+              frozenRows: 1,
+              frozenColumns: 2,
+              columns: [
+                  { field: "TaskID", headerText: "Task Id" },
+                  { field: "TaskName", headerText: "Task Name" },
+                  { field: "StartDate", headerText: "Start Date" },
+                  { field: "EndDate", headerText: "End Date" },                    
+                  { field: "Progress", headerText: "Progress" }
+            ]
+          });
+      gridObj.appendTo('#Grid');
+      this.request = jasmine.Ajax.requests.mostRecent();
+      this.request.respondWith({
+          status: 200,
+          responseText: JSON.stringify({d:  data1, __count: 4})
+      });
+  });
+  it('Expand Collapse testing of Frozen Rows with Deep level childs', (done: Function) => {
+      (<HTMLElement>gridObj.getRows()[0].querySelectorAll('.e-treegridexpand')[0]).click();
+      debugger;
+      expect((gridObj.element.getElementsByClassName('e-movablecontent')[0].getElementsByClassName('e-row')[1] as HTMLTableRowElement).style.display).toBe('none');
+      expect((gridObj.element.getElementsByClassName('e-movablecontent')[0].getElementsByClassName('e-row')[2] as HTMLTableRowElement).style.display).toBe('none');
+      (<HTMLElement>gridObj.getRows()[0].querySelectorAll('.e-treegridcollapse')[0]).click();
+      expect((gridObj.element.getElementsByClassName('e-movablecontent')[0].getElementsByClassName('e-row')[1] as HTMLTableRowElement).style.display).toBe('table-row');
+      expect((gridObj.element.getElementsByClassName('e-movablecontent')[0].getElementsByClassName('e-row')[2] as HTMLTableRowElement).style.display).toBe('table-row');
+      gridObj.freezeModule.destroy();
+      done()
+   });
+  afterAll(() => {
+      jasmine.DEFAULT_TIMEOUT_INTERVAL = originalTimeout;
+      gridObj.destroy();
+      remove(elem);
+      jasmine.Ajax.uninstall();
+  });
+});
+
+
+
+
+
+
+
+
+
+
+
 describe('RowEdit in Frozen Rows and columns', () => {
   let gridObj: TreeGrid;
   let rows: Element[];

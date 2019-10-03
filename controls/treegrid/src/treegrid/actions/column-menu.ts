@@ -3,7 +3,7 @@ import { Grid, ColumnMenu as GridColumnMenu  } from '@syncfusion/ej2-grids';
 
 /**
  * TreeGrid ColumnMenu module
- * @hidden
+
  */
 export class ColumnMenu {
     private parent: TreeGrid;

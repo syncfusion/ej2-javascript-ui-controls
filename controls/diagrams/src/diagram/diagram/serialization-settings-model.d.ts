@@ -7,7 +7,7 @@ export interface SerializationSettingsModel {
 
     /**
      * Enables or Disables serialization of default values.
-     * @default false
+
      */
     preventDefaults?: boolean;
 

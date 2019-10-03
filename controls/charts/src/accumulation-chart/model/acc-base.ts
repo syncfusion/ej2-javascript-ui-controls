@@ -26,7 +26,7 @@ import { GroupModes } from './enum';
 export class AccumulationAnnotationSettings extends ChildProperty<AccumulationAnnotationSettings> {
     /**
      * Content of the annotation, which accepts the id of the custom element.
-     * @default null
+
      */
     @Property(null)
     public content: string;
@@ -34,7 +34,7 @@ export class AccumulationAnnotationSettings extends ChildProperty<AccumulationAn
     /**
      * if set coordinateUnit as `Pixel` X specifies the axis value
      * else is specifies pixel or percentage of coordinate
-     * @default '0'
+
      */
     @Property('0')
     public x: string | Date | number;
@@ -42,7 +42,7 @@ export class AccumulationAnnotationSettings extends ChildProperty<AccumulationAn
     /**
      * if set coordinateUnit as `Pixel` Y specifies the axis value
      * else is specifies pixel or percentage of coordinate
-     * @default '0'
+
      */
     @Property('0')
     public y: string | number;
@@ -51,7 +51,7 @@ export class AccumulationAnnotationSettings extends ChildProperty<AccumulationAn
      * Specifies the coordinate units of the annotation. They are
      * * Pixel - Annotation renders based on x and y pixel value.
      * * Point - Annotation renders based on x and y axis value.
-     * @default 'Pixel'
+
      */
 
     @Property('Pixel')
@@ -61,7 +61,7 @@ export class AccumulationAnnotationSettings extends ChildProperty<AccumulationAn
      * Specifies the regions of the annotation. They are
      * * Chart - Annotation renders based on chart coordinates.
      * * Series - Annotation renders based on series coordinates.
-     * @default 'Chart'
+
      */
 
     @Property('Chart')
@@ -72,7 +72,7 @@ export class AccumulationAnnotationSettings extends ChildProperty<AccumulationAn
      * * Top - Align the annotation element as top side.
      * * Bottom - Align the annotation element as bottom side.
      * * Middle - Align the annotation element as mid point.
-     * @default 'Middle'
+
      */
 
     @Property('Middle')
@@ -83,7 +83,7 @@ export class AccumulationAnnotationSettings extends ChildProperty<AccumulationAn
      * * Near - Align the annotation element as top side.
      * * Far - Align the annotation element as bottom side.
      * * Center - Align the annotation element as mid point.
-     * @default 'Center'
+
      */
 
     @Property('Center')
@@ -91,7 +91,7 @@ export class AccumulationAnnotationSettings extends ChildProperty<AccumulationAn
 
     /**
      * Information about annotation for assistive technology.
-     * @default null
+
      */
     @Property(null)
     public description: string;
@@ -105,7 +105,7 @@ export class AccumulationDataLabelSettings extends ChildProperty<AccumulationDat
 
     /**
      * If set true, data label for series gets render.
-     * @default false
+
      */
 
     @Property(false)
@@ -113,7 +113,7 @@ export class AccumulationDataLabelSettings extends ChildProperty<AccumulationDat
 
     /**
      * The DataSource field which contains the data label value.
-     * @default null
+
      */
 
     @Property(null)
@@ -121,7 +121,7 @@ export class AccumulationDataLabelSettings extends ChildProperty<AccumulationDat
 
     /**
      * The background color of the data label, which accepts value in hex, rgba as a valid CSS color string.
-     * @default 'transparent'
+
      */
 
     @Property('transparent')
@@ -131,7 +131,7 @@ export class AccumulationDataLabelSettings extends ChildProperty<AccumulationDat
      * Specifies the position of data label. They are.
      * * Outside - Places label outside the point.
      * * Inside - Places label inside the point.
-     * @default 'Inside'
+
      */
 
     @Property('Inside')
@@ -139,28 +139,28 @@ export class AccumulationDataLabelSettings extends ChildProperty<AccumulationDat
 
     /**
      * The roundedCornerX for the data label. It requires `border` values not to be null.
-     * @default 5
+
      */
     @Property(5)
     public rx: number;
 
     /**
      * The roundedCornerY for the data label. It requires `border` values not to be null.
-     * @default 5
+
      */
     @Property(5)
     public ry: number;
 
     /**
      * Specifies angle for data label.
-     * @default 0
+
      */
     @Property(0)
     public angle: number;
 
     /**
      * Enables rotation for data label.
-     * @default false
+
      */
 
     @Property(false)
@@ -191,7 +191,7 @@ export class AccumulationDataLabelSettings extends ChildProperty<AccumulationDat
     /**
      * Custom template to format the data label content. Use ${point.x} and ${point.y} as a placeholder
      * text to display the corresponding data point.
-     * @default null
+
      */
 
     @Property(null)
@@ -206,14 +206,14 @@ export class PieCenter extends ChildProperty<PieCenter> {
 
     /**
      * X value of the center.
-     * @default '50%'
+
      */
     @Property('50%')
     public x: string;
 
     /**
      * Y value of the center.
-     * @default '50%'
+
      */
     @Property('50%')
     public y: string;
@@ -315,7 +315,7 @@ export class AccumulationSeries extends ChildProperty<AccumulationSeries> {
      * });
      * pie.appendTo('#Pie');
      * ```
-     * @default ''
+
      */
 
     @Property('')
@@ -323,14 +323,14 @@ export class AccumulationSeries extends ChildProperty<AccumulationSeries> {
 
     /**
      * Specifies Query to select data from dataSource. This property is applicable only when the dataSource is `ej.DataManager`.
-     * @default null
+
      */
     @Property()
     public query: Query;
 
     /**
      * The DataSource field which contains the x value.
-     * @default ''
+
      */
 
     @Property('')
@@ -338,7 +338,7 @@ export class AccumulationSeries extends ChildProperty<AccumulationSeries> {
 
     /**
      * Specifies the series name
-     * @default ''
+
      */
 
     @Property('')
@@ -346,14 +346,14 @@ export class AccumulationSeries extends ChildProperty<AccumulationSeries> {
 
     /**
      * The provided value will be considered as a Tooltip Mapping name
-     * @default ''
+
      */
     @Property('')
     public tooltipMappingName: string;
 
     /**
      * The DataSource field which contains the y value.
-     * @default ''
+
      */
 
     @Property('')
@@ -361,7 +361,7 @@ export class AccumulationSeries extends ChildProperty<AccumulationSeries> {
 
     /**
      * Specifies the series visibility.
-     * @default true
+
      */
 
     @Property(true)
@@ -393,7 +393,7 @@ export class AccumulationSeries extends ChildProperty<AccumulationSeries> {
      * * Pentagon - Renders a pentagon.
      * * InvertedTriangle - Renders a invertedTriangle.
      * * SeriesType -Render a legend shape based on series type.
-     * @default 'SeriesType'
+
      */
 
     @Property('SeriesType')
@@ -402,7 +402,7 @@ export class AccumulationSeries extends ChildProperty<AccumulationSeries> {
     /**
      * The DataSource field that contains the color value of point
      * It is applicable for series
-     * @default ''
+
      */
 
     @Property('')
@@ -411,21 +411,21 @@ export class AccumulationSeries extends ChildProperty<AccumulationSeries> {
 
     /**
      * Custom style for the selected series or points.
-     * @default null
+
      */
     @Property(null)
     public selectionStyle: string;
 
     /**
      * AccumulationSeries y values less than groupTo are combined into single slice named others
-     * @default null
+
      */
     @Property(null)
     public groupTo: string;
 
     /**
      * AccumulationSeries y values less than groupMode are combined into single slice named others
-     * @default Value
+
      */
     @Property('Value')
     public groupMode: GroupModes;
@@ -438,78 +438,78 @@ export class AccumulationSeries extends ChildProperty<AccumulationSeries> {
 
     /**
      * Palette for series points.
-     * @default []
+
      */
     @Property([])
     public palettes: string[];
 
     /**
      * Start angle for a series.
-     * @default 0
+
      */
     @Property(0)
     public startAngle: number;
 
     /**
      * End angle for a series.
-     * @default null
+
      */
     @Property(null)
     public endAngle: number;
 
     /**
      * Radius of the pie series and its values in percentage.
-     * @default '80%'
+
      */
     @Property('80%')
     public radius: string;
 
     /**
      * When the innerRadius value is greater than 0 percentage, a donut will appear in pie series. It takes values only in percentage.
-     * @default '0'
+
      */
     @Property('0')
     public innerRadius: string;
 
     /**
      * Specify the type of the series in accumulation chart.
-     * @default 'Pie'
+
      */
     @Property('Pie')
     public type: AccumulationType;
 
     /**
      * To enable or disable tooltip for a series.
-     * @default true
+
      */
     @Property(true)
     public enableTooltip: boolean;
 
     /**
      * If set true, series points will be exploded on mouse click or touch.
-     * @default false
+
      */
     @Property(false)
     public explode: boolean;
 
     /**
      * Distance of the point from the center, which takes values in both pixels and percentage.
-     * @default '30%'
+
      */
     @Property('30%')
     public explodeOffset: string;
 
     /**
      * If set true, all the points in the series will get exploded on load.
-     * @default false
+
      */
     @Property(false)
     public explodeAll: boolean;
 
     /**
      * Index of the point, to be exploded on load.
-     * @default null
-     * @aspDefaultValueIgnore
+
+
      */
     @Property(null)
     public explodeIndex: number;
@@ -522,48 +522,48 @@ export class AccumulationSeries extends ChildProperty<AccumulationSeries> {
 
     /**
      * Defines the distance between the segments of a funnel/pyramid series. The range will be from 0 to 1
-     * @default 0
+
      */
     @Property(0)
     public gapRatio: number;
 
     /**
      * Defines the width of the funnel/pyramid with respect to the chart area
-     * @default '80%'
+
      */
     @Property('80%')
     public width: string;
 
     /**
      * Defines the height of the funnel/pyramid with respect to the chart area
-     * @default '80%'
+
      */
     @Property('80%')
     public height: string;
 
     /**
      * Defines the width of the funnel neck with respect to the chart area
-     * @default '20%'
+
      */
     @Property('20%')
     public neckWidth: string;
 
     /**
      * Defines the height of the funnel neck with respect to the chart area
-     * @default '20%'
+
      */
     @Property('20%')
     public neckHeight: string;
 
     /**
      * Defines how the values have to be reflected, whether through height/surface of the segments
-     * @default 'Linear'
+
      */
     @Property('Linear')
     public pyramidMode: PyramidModes;
     /**
      * The opacity of the series.
-     * @default 1.
+
      */
     @Property(1)
     public opacity: number;

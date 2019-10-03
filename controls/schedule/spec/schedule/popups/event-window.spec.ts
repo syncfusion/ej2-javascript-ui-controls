@@ -2134,6 +2134,55 @@ describe('Schedule event window initial load', () => {
         });
     });
 
+    describe('Argument checking while using editor template', () => {
+        let schObj: Schedule;
+        beforeAll((done: Function) => {
+            let template: string = '<div>Subject: ${Subject}</div>';
+            let scriptEle: HTMLScriptElement = document.createElement('script');
+            scriptEle.type = 'text/x-template';
+            scriptEle.id = 'eventEditor';
+            scriptEle.appendChild(document.createTextNode(template));
+            document.getElementsByTagName('head')[0].appendChild(scriptEle);
+            let model: ScheduleModel = {
+                height: '500px', currentView: 'Week', views: ['Week'], selectedDate: new Date(2017, 10, 1),
+                editorTemplate: '#eventEditor',
+                group: { resources: ['Calendars'] },
+                resources: [{
+                    field: 'CalendarId', name: 'Calendars', title: 'Calendars',
+                    dataSource: [
+                        { CalendarText: 'My Calendar', CalendarId: 1, CalendarColor: '#c43081' },
+                        { CalendarText: 'Company', CalendarId: 2, CalendarColor: '#ff7f50' },
+                        { CalendarText: 'Birthday', CalendarId: 3, CalendarColor: '#AF27CD' },
+                        { CalendarText: 'Holiday', CalendarId: 4, CalendarColor: '#808000' }
+                    ],
+                    textField: 'CalendarText', idField: 'CalendarId', colorField: 'CalendarColor'
+                }],
+            };
+            schObj = util.createSchedule(model, resourceEvents, done);
+        });
+        afterAll(() => {
+            util.destroy(schObj);
+        });
+
+        it('Editor popup type', () => {
+            schObj.popupOpen = (args: PopupOpenEventArgs) => {
+                if (args.type === 'Editor') {
+                    let data: { [key: string]: Object } = args.data as { [key: string]: Object };
+                    expect(data.startTime).toBeUndefined();
+                    expect(data.endTime).toBeUndefined();
+                    expect(data.isAllDay).toBeUndefined();
+                    expect(+data.StartTime).toBe(+new Date('2017-10-29T00:00:00.000'));
+                    expect(+data.EndTime).toBe(+new Date('2017-10-29T00:30:00.000'));
+                    expect(data.IsAllDay).toBe(false);
+                    expect(data.CalendarId).toEqual(1);
+                    args.cancel = true;
+                }
+            };
+            util.triggerMouseEvent(schObj.element.querySelector('.e-work-cells') as HTMLElement, 'click');
+            util.triggerMouseEvent(schObj.element.querySelector('.e-work-cells') as HTMLElement, 'dblclick');
+        });
+    });
+
     it('memory leak', () => {
         profile.sample();
         // tslint:disable:no-any

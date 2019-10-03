@@ -8,30 +8,30 @@ export interface DateTimePickerModel extends DatePickerModel{
 
     /**
      * Specifies the format of the time value that to be displayed in time popup list.
-     * @default null
+
      */
     timeFormat?: string;
 
     /**
      * Specifies the time interval between the two adjacent time values in the time popup list . 
-     * @default 30
-     * @blazorType int
+
+
      */
     step?: number;
 
     /**
      * Specifies the scroll bar position if there is no value is selected in the timepicker popup list or
      * the given value is not present in the timepicker popup list.
-     * @default null
-     * @isBlazorNullableType true
+
+
      */
     scrollTo?: Date;
 
     /**
      * specifies the z-index value of the popup element.
-     * @default 1000
-     * @aspType int
-     * @blazorType int
+
+
+
      */
     zIndex?: number;
 
@@ -168,22 +168,22 @@ export interface DateTimePickerModel extends DatePickerModel{
      * rightarrow<br/></td></tr> 
      * </table>
      * 
-     * @default null
-     * @blazorType object 
+
+
      */
     keyConfigs?: { [key: string]: string };
 
     /**
      * You can add the additional html attributes such as disabled, value etc., to the element.
      * If you configured both property and equivalent html attribute then the component considers the property value.
-     * @default {}
+
      */
     htmlAttributes?: { [key: string]: string; };
 
     /**
      * Enable or disable persisting component's state between page reloads. If enabled, following list of states will be persisted.
      * 1. value
-     * @default false
+
      */
     enablePersistence?: boolean;
 
@@ -193,33 +193,33 @@ export interface DateTimePickerModel extends DatePickerModel{
      * 
      * Specifies whether the input textbox is editable or not. Here the user can select the value from the 
      * popup and cannot edit in the input textbox.
-     * @default true
+
      */
     allowEdit?: boolean;
 
     /**
      * Specifies the option to enable the multiple dates selection of the calendar.
-     * @default false
+
      * @private
      */
     isMultiSelection?: boolean;
 
     /**
      * Gets or sets multiple selected dates of the calendar.
-     * @default null
+
      * @private
      */
     values?: Date[];
 
     /**
      * Specifies whether to show or hide the clear icon in textbox.
-     * @default true
+
      */
     showClearButton?: boolean;
 
     /**
      * Specifies the placeholder text that to be is displayed in textbox.
-     * @default null
+
      */
     placeholder?: string;
 
@@ -228,7 +228,7 @@ export interface DateTimePickerModel extends DatePickerModel{
      * date and time value within a specified range or else it 
      * will resets to previous value. By default, strictMode is in false.
      * it allows invalid or out-of-range value with highlighted error class.
-     * @default false
+
      * > For more details refer to 
      * [`Strict Mode`](../../datetimepicker/strict-mode/) documentation.
      */
@@ -237,16 +237,16 @@ export interface DateTimePickerModel extends DatePickerModel{
     /**
      * Triggers when popup is opened.
      * @event 
-     * @blazorProperty 'OnOpen'
-     * @blazorType PopupObjectArgs
+
+
      */
     open?: EmitType<Object>;
 
     /**
      * Triggers when popup is closed.
      * @event 
-     * @blazorProperty 'OnClose'
-     * @blazorType PopupObjectArgs
+
+
      */
     close?: EmitType<Object>;
 
@@ -265,14 +265,14 @@ export interface DateTimePickerModel extends DatePickerModel{
     /**
      * Triggers when DateTimePicker is created.
      * @event 
-     * @blazorProperty 'Created'
+
      */
     created?: EmitType<Object>;
 
     /**
      * Triggers when DateTimePicker is destroyed.
      * @event 
-     * @blazorProperty 'Destroyed'
+
      */
     destroyed?: EmitType<Object>;
 

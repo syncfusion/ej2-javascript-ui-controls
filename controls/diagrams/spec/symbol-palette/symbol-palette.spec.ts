@@ -1528,4 +1528,116 @@ describe('Symbol Palette', () => {
 
         });
     });
+    describe('CR issue for render Highlighter', () => {
+        let diagram: Diagram;
+        let palette: SymbolPalette;
+        let ele: HTMLElement;
+        let flowshapes: NodeModel[] = [{ id: 'start', shape: { type: 'Flow', shape: 'Terminator' } },
+        { id: 'process', shape: { type: 'Flow', shape: 'Process' } },
+        { id: 'decision', shape: { type: 'Flow', shape: 'Decision' } },
+        { id: 'data', shape: { type: 'Flow', shape: 'Data' } },
+        { id: 'end', shape: { type: 'Flow', shape: 'Terminator' } }];
+
+
+        beforeAll((): void => {
+            ele = createElement('div', { styles: 'width:100%;height:500px;' });
+            ele.appendChild(createElement('div', { id: 'symbolpalette', styles: 'width:25%;float:left;' }));
+            ele.appendChild(createElement('div', { id: 'diagram', styles: 'width:74%;height:500px;float:left;' }));
+            document.body.appendChild(ele);
+            let nodes: NodeModel[] = [
+                {
+                    id: 'nodea', maxHeight: 600, maxWidth: 600, minWidth: 300, minHeight: 300,
+                    constraints: NodeConstraints.Default | NodeConstraints.AllowDrop,
+                    offsetX: 50, offsetY: 300,
+                },
+                {
+                    id: 'node2', width: 100, height: 100, offsetX: 300, offsetY: 100,
+                    constraints: NodeConstraints.PointerEvents | NodeConstraints.Select,
+                    shape: {
+                        type: 'Path', data: 'M540.3643,137.9336L546.7973,159.7016L570.3633,159.7296L550.7723,171.9366' +
+                            'L558.9053,194.9966L540.3643,' +
+                            '179.4996L521.8223,194.9966L529.9553,171.9366L510.3633,159.7296L533.9313,159.7016L540.3643,137.9336z'
+                    }, annotations: [{ content: 'Path Element' }]
+                }
+            ];
+           
+
+            diagram = new Diagram({
+                nodes: nodes, pageSettings: { background: { color: 'transparent' } },
+                selectedItems: { constraints: SelectorConstraints.All,
+                 },
+                width: '70%'
+            });
+            diagram.appendTo('#diagram');
+
+            palette = new SymbolPalette({
+                width: '25%', height: '500px',
+                palettes: [
+                    { id: 'flow', expanded: true, symbols: flowshapes, iconCss: '', title: 'Flow Shapes' },
+                 ], enableAnimation: false, enableSearch: true,
+                symbolMargin: { top: 5, bottom: 5, left: 5, right: 5 }
+            });
+            palette.appendTo('#symbolpalette');
+        });
+
+        afterAll((): void => {
+            diagram.destroy();
+            palette.destroy();
+            ele.remove();
+        });
+
+        it('Checking default palette rendering', (done: Function) => {
+            
+            setTimeout(() => {
+                
+                let events: MouseEvents = new MouseEvents();
+                events.mouseDownEvent(palette.element, 75, 100, false, false);
+                events.mouseMoveEvent(palette.element, 100, 100, false, false);
+                events.mouseUpEvent(palette.element, 100, 100, false, false);
+                palette.getPersistData();
+                let start: HTMLElement = document.getElementById('start');
+                expect(start.offsetWidth == 280 && start.offsetHeight == 110).toBe(true);
+                done();
+            }, 10);
+        });
+
+       
+
+
+        it('CR issue for render Highlighter', (done: Function) => {
+            palette.element['ej2_instances'][1]['helper'] = (e: { target: HTMLElement, sender: PointerEvent | TouchEvent }) => {
+                let clonedElement: HTMLElement; let diagramElement: EJ2Instance;
+                let position: PointModel = palette['getMousePosition'](e.sender);
+                let target = document.elementFromPoint(position.x, position.y).childNodes[0];
+                let symbols: IElement = palette.symbolTable[target['id']];
+                palette['selectedSymbols'] = symbols;
+                if (symbols !== undefined) {
+                    clonedElement = palette['getSymbolPreview'](symbols, e.sender, palette.element);
+                    clonedElement.setAttribute('paletteId', palette.element.id);
+                }
+                return clonedElement;
+            };
+            diagram.dragEnter = (arg) => {
+                expect(arg.source instanceof SymbolPalette).toBe(true);
+                done();
+            }
+            diagram.dragOver = (arg) => {
+                expect(arg.diagram !== undefined).toBe(true);
+                done();
+            }
+            diagram.drop = (arg) => {
+                expect((arg.element as NodeModel).id === diagram.currentSymbol.id).toBe(true);
+                done();
+            }
+            let events: MouseEvents = new MouseEvents();
+            events.mouseDownEvent(palette.element, 75, 100, false, false);
+            events.mouseMoveEvent(palette.element, 100, 100, false, false);
+            events.mouseMoveEvent(palette.element, 200, 200, false, false);
+            let element = document.getElementById("diagram_diagramAdorner_svg")
+            expect(element.childElementCount === 1).toBe(true);
+            done();
+        });
+
+
+    });
 });

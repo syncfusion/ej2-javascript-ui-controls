@@ -7,13 +7,13 @@ export interface LocationModel {
 
     /**
      * X coordinate of the legend in pixels.
-     * @default 0
+
      */
     x?: number;
 
     /**
      * Y coordinate of the legend in pixels.
-     * @default 0
+
      */
     y?: number;
 
@@ -26,19 +26,19 @@ export interface LegendSettingsModel {
 
     /**
      * If set to true, legend will be visible.
-     * @default true
+
      */
     visible?: boolean;
 
     /**
      * The height of the legend in pixels.
-     * @default null
+
      */
     height?: string;
 
     /**
      * The width of the legend in pixels.
-     * @default null
+
      */
     width?: string;
 
@@ -71,13 +71,13 @@ export interface LegendSettingsModel {
      * * Bottom: Displays the legend at the bottom of the chart.
      * * Right: Displays the legend at the right of the chart.
      * * Custom: Displays the legend  based on the given x and y values.
-     * @default 'Auto'
+
      */
     position?: LegendPosition;
 
     /**
      * Option to customize the padding between legend items.
-     * @default 8
+
      */
     padding?: number;
 
@@ -86,7 +86,7 @@ export interface LegendSettingsModel {
      * * Near: Aligns the legend to the left of the chart.
      * * Center: Aligns the legend to the center of the chart.
      * * Far: Aligns the legend to the right of the chart.
-     * @default 'Center'
+
      */
     alignment?: Alignment;
 
@@ -97,13 +97,13 @@ export interface LegendSettingsModel {
 
     /**
      * Shape height of the legend in pixels.
-     * @default 10
+
      */
     shapeHeight?: number;
 
     /**
      * Shape width of the legend in pixels.
-     * @default 10
+
      */
     shapeWidth?: number;
 
@@ -120,37 +120,37 @@ export interface LegendSettingsModel {
 
     /**
      * Padding between the legend shape and text.
-     * @default 5
+
      */
     shapePadding?: number;
 
     /**
      * The background color of the legend that accepts value in hex and rgba as a valid CSS color string.
-     * @default 'transparent'
+
      */
     background?: string;
 
     /**
      * Opacity of the legend.
-     * @default 1
+
      */
     opacity?: number;
 
     /**
      * If set to true, series' visibility collapses based on the legend visibility.
-     * @default true
+
      */
     toggleVisibility?: boolean;
 
     /**
      * Description for legends.
-     * @default null
+
      */
     description?: string;
 
     /**
      * TabIndex value for the legend.
-     * @default 3
+
      */
     tabIndex?: number;
 

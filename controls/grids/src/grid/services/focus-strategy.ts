@@ -7,10 +7,11 @@ import { Row } from '../models/row';
 import { Cell } from '../models/cell';
 import { Column } from '../models/column';
 import { NotifyArgs } from '../base/interface';
+import { RowModelGenerator } from './row-model-generator';
 
 /**
  * FocusStrategy class
- * @hidden
+
  */
 export class FocusStrategy {
     public parent: IGrid;
@@ -26,8 +27,10 @@ export class FocusStrategy {
     private prevIndexes: IIndex = {};
     private focusedColumnUid: string;
     private refMatrix: Function = this.refreshMatrix(true);
+    private rowModelGen: RowModelGenerator;
     constructor(parent: IGrid) {
         this.parent = parent;
+        this.rowModelGen = new RowModelGenerator(this.parent);
         this.addEventListener();
     }
 
@@ -40,6 +43,10 @@ export class FocusStrategy {
     protected onFocus(): void {
         if (this.parent.isDestroyed || Browser.isDevice || this.parent.enableVirtualization) { return; }
         this.setActive(this.parent.frozenRows === 0, this.parent.frozenColumns !== 0);
+        if (!this.parent.getCurrentViewRecords().length) {
+            this.getContent().matrix.
+                generate(this.rowModelGen.generateRows({rows: [new Row<Column>({ isDataRow: true})] }), this.getContent().selector, false);
+        }
         let current: number[] = this.getContent().matrix.get(0, -1, [0, 1], null, this.getContent().validator());
         this.getContent().matrix.select(current[0], current[1]);
         if (this.skipFocus) {
@@ -363,7 +370,7 @@ export class FocusStrategy {
 
 /**
  * Create matrix from row collection which act as mental model for cell navigation
- * @hidden
+
  */
 export class Matrix {
     public matrix: number[][] = [];
@@ -429,7 +436,7 @@ export class Matrix {
     }
 }
 /**
- * @hidden
+
  */
 export class ContentFocus implements IFocus {
     public matrix: Matrix = new Matrix();
@@ -643,7 +650,7 @@ export class ContentFocus implements IFocus {
     }
 }
 /**
- * @hidden
+
  */
 export class HeaderFocus extends ContentFocus implements IFocus {
     constructor(parent: IGrid) {
@@ -794,7 +801,7 @@ export class FixedHeaderFocus extends HeaderFocus {
     }
 }
 
-/** @hidden */
+
 export class SearchBox {
     public searchBox: HTMLElement;
 

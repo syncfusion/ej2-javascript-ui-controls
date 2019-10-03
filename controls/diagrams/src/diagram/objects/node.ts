@@ -108,7 +108,7 @@ export class Shape extends ChildProperty<Shape> {
      * * Native - Sets the type of the node as Native
      * * HTML - Sets the type of the node as HTML
      * * UMLActivity - Sets the type of the node as UMLActivity
-     * @default 'Basic'
+
      */
     @Property('Basic')
     public type: Shapes;
@@ -120,7 +120,7 @@ export class Shape extends ChildProperty<Shape> {
 export class Path extends Shape {
     /**
      * Defines the type of node shape
-     * @default 'Basic'
+
      */
     @Property('Path')
     public type: Shapes;
@@ -144,7 +144,7 @@ export class Path extends Shape {
      * });
      * diagram.appendTo('#diagram');
      * ```
-     * @default ''
+
      */
     @Property('')
     public data: string;
@@ -164,7 +164,7 @@ export class Path extends Shape {
 export class Native extends Shape {
     /**
      * Defines the type of node shape.
-     * @default 'Basic'
+
      */
     @Property('Native')
     public type: Shapes;
@@ -199,7 +199,7 @@ export class Native extends Shape {
      * });
      * diagram.appendTo('#diagram');
      * ```
-     * @default ''
+
      */
     @Property('')
     public content: string | SVGElement;
@@ -210,7 +210,7 @@ export class Native extends Shape {
      * * Stretch - Sets the stretch type for diagram as Stretch
      * * Meet - Sets the stretch type for diagram as Meet
      * * Slice - Sets the stretch type for diagram as Slice
-     * @default 'Stretch'
+
      */
     @Property('Stretch')
     public scale: Stretch;
@@ -230,7 +230,7 @@ export class Native extends Shape {
 export class Html extends Shape {
     /**
      * Defines the type of node shape.
-     * @default 'Basic'
+
      */
     @Property('HTML')
     public type: Shapes;
@@ -253,7 +253,7 @@ export class Html extends Shape {
      * });
      * diagram.appendTo('#diagram');
      * ```
-     * @default ''
+
      */
     @Property('')
     public content: string | HTMLElement;
@@ -273,7 +273,7 @@ export class Html extends Shape {
 export class Image extends Shape {
     /**
      * Defines the type of node shape
-     * @default 'Basic'
+
      */
     @Property('Image')
     public type: Shapes;
@@ -294,7 +294,7 @@ export class Image extends Shape {
      * });
      * diagram.appendTo('#diagram');
      * ```
-     * @default ''
+
      */
     @Property('')
     public source: string;
@@ -304,7 +304,7 @@ export class Image extends Shape {
      * * None - Scale value will be set as None for the image
      * * Meet - Scale value Meet will be set for the image
      * * Slice - Scale value Slice will be set for the image
-     * @default 'None'
+
      */
     @Property('None')
     public scale: Scale;
@@ -321,7 +321,7 @@ export class Image extends Shape {
      * * XMinYMax - smallest X value of the view port and maximum Y value of the view port
      * * XMidYMax - midpoint X value of the view port and maximum Y value of the view port
      * * XMaxYMax - maximum X value of the view port and maximum Y value of the view port
-     * @default 'None'
+
      */
     @Property('None')
     public align: ImageAlignment;
@@ -342,7 +342,7 @@ export class Image extends Shape {
 export class Text extends Shape {
     /**
      * Defines the type of node shape
-     * @default 'Basic'
+
      */
     @Property('Text')
     public type: Shapes;
@@ -363,14 +363,14 @@ export class Text extends Shape {
      * });
      * diagram.appendTo('#diagram');
      * ```
-     * @default ''
+
      */
     @Property('')
     public content: string;
 
     /**
      * Defines the space to be let between the node and its immediate parent
-     * @default 0
+
      */
     @Complex<MarginModel>({}, Margin)
     public margin: MarginModel;
@@ -406,7 +406,7 @@ export class BasicShape extends Shape {
      * });
      * diagram.appendTo('#diagram');
      * ```
-     * @default 'Basic'
+
      */
     @Property('Basic')
     public type: Shapes;
@@ -427,23 +427,23 @@ export class BasicShape extends Shape {
      * * RightTriangle - Sets the type of the basic shape as RightTriangle
      * * Cylinder - Sets the type of the basic shape as Cylinder
      * * Diamond - Sets the type of the basic shape as Diamond
-     * @default 'Rectangle'
+
      */
     @Property('Rectangle')
     public shape: BasicShapes;
 
     /**
      * Sets the corner of the node
-     * @default 0
+
      */
     @Property(0)
     public cornerRadius: number;
 
     /**
      * Defines the collection of points to draw a polygon
-     * @aspDefaultValueIgnore
-     * @blazorDefaultValueIgnore
-     * @default undefined
+
+
+
      */
     @Collection<PointModel>([], Point)
     public points: PointModel[];
@@ -478,7 +478,7 @@ export class FlowShape extends Shape {
      * });
      * diagram.appendTo('#diagram');
      * ```
-     * @default 'Basic'
+
      */
     @Property('Flow')
     public type: Shapes;
@@ -513,7 +513,7 @@ export class FlowShape extends Shape {
      * * ManualInput - Sets the type of the flow shape as ManualInput
      * * LoopLimit - Sets the type of the flow shape as LoopLimit
      * * StoredData - Sets the type of the flow shape as StoredData
-     * @default 'Terminator'
+
      */
     @Property('Terminator')
     public shape: FlowShapes;
@@ -540,7 +540,7 @@ export class BpmnGateway extends ChildProperty<BpmnGateway> {
      * * EventBased - Sets the type of the gateway as EventBased
      * * ExclusiveEventBased - Sets the type of the gateway as ExclusiveEventBased
      * * ParallelEventBased - Sets the type of the gateway as ParallelEventBased
-     * @default 'None'
+
      */
     @Property('None')
     public type: BpmnGateways;
@@ -563,7 +563,7 @@ export class BpmnDataObject extends ChildProperty<BpmnDataObject> {
      * * None - Sets the type of the data object as None
      * * Input - Sets the type of the data object as Input
      * * Output - Sets the type of the data object as Output
-     * @default 'None'
+
      */
     @Property('None')
     public type: BpmnDataObjects;
@@ -588,7 +588,7 @@ export class BpmnDataObject extends ChildProperty<BpmnDataObject> {
      * });
      * diagram.appendTo('#diagram');
      * ```
-     * @default false
+
      */
     @Property(false)
     public collection: boolean;
@@ -617,7 +617,7 @@ export class BpmnTask extends ChildProperty<BpmnTask> {
      * * BusinessRule - Sets the type of the Bpmn Tasks as BusinessRule
      * * User - Sets the type of the Bpmn Tasks as User
      * * Script - Sets the type of the Bpmn Tasks as Script
-     * @default 'None'
+
      */
     @Property('None')
     public type: BpmnTasks;
@@ -628,14 +628,14 @@ export class BpmnTask extends ChildProperty<BpmnTask> {
      * * Standard - Sets the type of the Bpmn loop as Standard
      * * ParallelMultiInstance - Sets the type of the Bpmn loop as ParallelMultiInstance
      * * SequenceMultiInstance - Sets the type of the Bpmn loop as SequenceMultiInstance
-     * @default 'None'
+
      */
     @Property('None')
     public loop: BpmnLoops;
 
     /**
      * Sets whether the task is global or not
-     * @default false
+
      */
     @Property(false)
     public call: boolean;
@@ -661,7 +661,7 @@ export class BpmnTask extends ChildProperty<BpmnTask> {
      * });
      * diagram.appendTo('#diagram');
      * ```
-     * @default false
+
      */
     @Property(false)
     public compensation: boolean;
@@ -680,7 +680,7 @@ export class BpmnEvent extends ChildProperty<BpmnEvent> {
      * * NonInterruptingStart - Sets the type of the Bpmn Event as NonInterruptingStart
      * * NonInterruptingIntermediate - Sets the type of the Bpmn Event as NonInterruptingIntermediate
      * * ThrowingIntermediate - Sets the type of the Bpmn Event as ThrowingIntermediate
-     * @default 'Start'
+
      */
     /**
      * 
@@ -719,7 +719,7 @@ export class BpmnEvent extends ChildProperty<BpmnEvent> {
      * * Cancel - Sets the type of the trigger as Cancel
      * * Conditional - Sets the type of the trigger as Conditional
      * * Terminate - Sets the type of the trigger as Terminate
-     * @default 'None'
+
      */
     @Property('None')
     public trigger: BpmnTriggers;
@@ -753,7 +753,7 @@ export class BpmnSubEvent extends ChildProperty<BpmnSubEvent> {
      * * Cancel - Sets the type of the trigger as Cancel
      * * Conditional - Sets the type of the trigger as Conditional
      * * Terminate - Sets the type of the trigger as Terminate
-     * @default 'None'
+
      */
     @Property('None')
     public trigger: BpmnTriggers;
@@ -766,21 +766,21 @@ export class BpmnSubEvent extends ChildProperty<BpmnSubEvent> {
      * * NonInterruptingStart - Sets the type of the Bpmn Event as NonInterruptingStart
      * * NonInterruptingIntermediate - Sets the type of the Bpmn Event as NonInterruptingIntermediate
      * * ThrowingIntermediate - Sets the type of the Bpmn Event as ThrowingIntermediate
-     * @default 'Start'
+
      */
     @Property('Start')
     public event: BpmnEvents;
 
     /**
      * Sets the id of the BPMN sub event
-     * @default ''
+
      */
     @Property('')
     public id: string;
 
     /**
      * Defines the position of the sub event
-     * @default new Point(0.5,0.5)
+
      */
 
     @Complex<PointModel>({}, Point)
@@ -788,43 +788,43 @@ export class BpmnSubEvent extends ChildProperty<BpmnSubEvent> {
 
     /**
      * Defines the collection of textual annotations of the sub events
-     * @aspDefaultValueIgnore
-     * @blazorDefaultValueIgnore
-     * @default undefined
+
+
+
      */
     @Collection<ShapeAnnotationModel>([], ShapeAnnotation)
     public annotations: ShapeAnnotationModel[];
 
     /**
      * Defines the collection of connection points of the sub events
-     * @aspDefaultValueIgnore
-     * @blazorDefaultValueIgnore
-     * @default undefined
+
+
+
      */
     @Collection<PointPortModel>([], PointPort)
     public ports: PointPortModel[];
 
     /**
      * Sets the width of the node
-     * @aspDefaultValueIgnore
-     * @blazorDefaultValueIgnore
-     * @default undefined
+
+
+
      */
     @Property()
     public width: number;
 
     /**
      * Sets the height of the node
-     * @aspDefaultValueIgnore
-     * @blazorDefaultValueIgnore
-     * @default undefined
+
+
+
      */
     @Property()
     public height: number;
 
     /**
      * Defines the space to be left between the node and its immediate parent
-     * @default 0
+
      */
     @Complex<MarginModel>({}, Margin)
     public margin: MarginModel;
@@ -836,7 +836,7 @@ export class BpmnSubEvent extends ChildProperty<BpmnSubEvent> {
      * * Right - Aligns the diagram element at the right of its immediate parent
      * * Center - Aligns the diagram element at the center of its immediate parent
      * * Auto - Aligns the diagram element based on the characteristics of its immediate parent
-     * @default 'Center'
+
      */
     @Property('Center')
     public horizontalAlignment: HorizontalAlignment;
@@ -848,14 +848,14 @@ export class BpmnSubEvent extends ChildProperty<BpmnSubEvent> {
      * * Bottom - Aligns the diagram element at the bottom of its immediate parent
      * * Center - Aligns the diagram element at the center of its immediate parent
      * * Auto - Aligns the diagram element based on the characteristics of its immediate parent
-     * @default 'Center'
+
      */
     @Property('Center')
     public verticalAlignment: VerticalAlignment;
 
     /**
      * Sets the visibility of the sub event
-     * @default true
+
      */
     @Property(true)
     public visible: boolean;
@@ -904,14 +904,14 @@ export class BpmnSubProcess extends ChildProperty<BpmnSubProcess> {
      * * None - Sets the type of the Sub process as None
      * * Transaction - Sets the type of the Sub process as Transaction
      * * Event - Sets the type of the Sub process as Event
-     * @default 'None'
+
      */
     @Property('None')
     public type: BpmnSubProcessTypes;
 
     /**
      * Defines whether the sub process is without any prescribed order or not
-     * @default false
+
      */
     @Property(false)
     public adhoc: boolean;
@@ -921,7 +921,7 @@ export class BpmnSubProcess extends ChildProperty<BpmnSubProcess> {
      * * Default - Sets the type of the boundary as Default
      * * Call - Sets the type of the boundary as Call
      * * Event - Sets the type of the boundary as Event
-     * @default 'Default'
+
      */
     /**
      * 
@@ -951,7 +951,7 @@ export class BpmnSubProcess extends ChildProperty<BpmnSubProcess> {
 
     /**
      * Defines the whether the task is triggered as a compensation of another task
-     * @default false
+
      */
     @Property(false)
     public compensation: boolean;
@@ -962,21 +962,21 @@ export class BpmnSubProcess extends ChildProperty<BpmnSubProcess> {
      * * Standard - Sets the type of the Bpmn loop as Standard
      * * ParallelMultiInstance - Sets the type of the Bpmn loop as ParallelMultiInstance
      * * SequenceMultiInstance - Sets the type of the Bpmn loop as SequenceMultiInstance
-     * @default 'None'
+
      */
     @Property('None')
     public loop: BpmnLoops;
 
     /**
      * Defines the whether the shape is collapsed or not
-     * @default true
+
      */
     @Property(true)
     public collapsed: boolean;
 
     /**
      * Defines the collection of events of the BPMN sub event
-     * @default 'undefined'
+
      */
     /**
      * ```html
@@ -1029,7 +1029,7 @@ export class BpmnSubProcess extends ChildProperty<BpmnSubProcess> {
 
     /**
      * Defines the transaction sub process
-     * @default []
+
      */
     @Property(undefined)
     public processes: string[];
@@ -1045,7 +1045,7 @@ export class BpmnActivity extends ChildProperty<BpmnActivity> {
      * * None - Sets the type of the Bpmn Activity as None
      * * Task - Sets the type of the Bpmn Activity as Task
      * * SubProcess - Sets the type of the Bpmn Activity as SubProcess
-     * @default 'Task'
+
      */
     @Property('Task')
     public activity: BpmnActivities;
@@ -1073,7 +1073,7 @@ export class BpmnActivity extends ChildProperty<BpmnActivity> {
      * });
      * diagram.appendTo('#diagram');
      * ```
-     * @default 'new BPMNTask()'
+
      */
     @Complex<BpmnTaskModel>({}, BpmnTask)
     public task: BpmnTaskModel;
@@ -1101,7 +1101,7 @@ export class BpmnActivity extends ChildProperty<BpmnActivity> {
      * });
      * diagram.appendTo('#diagram');
      * ```
-     * @default 'None'
+
      */
     @Complex<BpmnSubProcessModel>({}, BpmnSubProcess)
     public subProcess: BpmnSubProcessModel;
@@ -1126,50 +1126,50 @@ export class BpmnAnnotation extends ChildProperty<BpmnAnnotation> {
     }
     /**
      * Sets the text to annotate the bpmn shape
-     * @default ''
+
      */
     @Property('')
     public text: string;
 
     /**
      * Sets the id of the BPMN sub event
-     * @default ''
+
      */
     @Property('')
     public id: string;
 
     /**
      * Sets the angle between the bpmn shape and the annotation
-     * @aspDefaultValueIgnore
-     * @blazorDefaultValueIgnore
-     * @default undefined
+
+
+
      */
     @Property(0)
     public angle: number;
 
     /**
      * Sets the height of the text
-     * @aspDefaultValueIgnore
-     * @blazorDefaultValueIgnore
-     * @default undefined
+
+
+
      */
     @Property()
     public height: number;
 
     /**
      * Sets the width of the text
-     * @aspDefaultValueIgnore
-     * @blazorDefaultValueIgnore
-     * @default undefined
+
+
+
      */
     @Property()
     public width: number;
 
     /**
      * Sets the distance between the bpmn shape and the annotation
-     * @aspDefaultValueIgnore
-     * @blazorDefaultValueIgnore
-     * @default undefined
+
+
+
      */
     @Property(0)
     public length: number;
@@ -1192,7 +1192,7 @@ export class BpmnAnnotation extends ChildProperty<BpmnAnnotation> {
 export class BpmnShape extends Shape {
     /**
      * Defines the type of node shape
-     * @default 'Basic'
+
      */
     @Property('Bpmn')
     public type: Shapes;
@@ -1207,7 +1207,7 @@ export class BpmnShape extends Shape {
      * * Activity - Sets the type of the Bpmn Shape as Activity
      * * Group - Sets the type of the Bpmn Shape as Group
      * * TextAnnotation - Represents the shape as Text Annotation
-     * @default 'Event'
+
      */
     /**
      * ```html
@@ -1234,41 +1234,41 @@ export class BpmnShape extends Shape {
 
     /**
      * Defines the type of the BPMN Event shape
-     * @default 'None'
+
      */
     @Complex<BpmnEventModel>({}, BpmnEvent)
     public event: BpmnEventModel;
 
     /**
      * Defines the type of the BPMN Gateway shape
-     * @default 'None'
+
      */
     @Complex<BpmnGatewayModel>({}, BpmnGateway)
     public gateway: BpmnGatewayModel;
 
     /**
      * Defines the type of the BPMN DataObject shape
-     * @default 'None'
+
      */
     @Complex<BpmnDataObjectModel>({}, BpmnDataObject)
     public dataObject: BpmnDataObjectModel;
 
     /**
      * Defines the type of the BPMN Activity shape
-     * @default 'None'
+
      */
     @Complex<BpmnActivityModel>({}, BpmnActivity)
     public activity: BpmnActivityModel;
 
     /**
      * Defines the text of the bpmn annotation
-     * @default 'None'
+
      */
     @Complex<BpmnAnnotationModel>({}, BpmnAnnotation)
     public annotation: BpmnAnnotationModel;
     /**
      * Defines the text of the bpmn annotation collection
-     * @default 'None'
+
      */
 
     @Collection<BpmnAnnotationModel>([], BpmnAnnotation)
@@ -1305,7 +1305,7 @@ export class UmlActivityShape extends Shape {
      * });
      * diagram.appendTo('#diagram');
      * ```
-     * @default 'Basic'
+
      */
     @Property('UmlActivity')
     public type: Shapes;
@@ -1324,7 +1324,7 @@ export class UmlActivityShape extends Shape {
      * * ReceiveSignal - Sets the type of the UMLActivity Shape as ReceiveSignal
      * * StructuredNode - Sets the type of the UMLActivity Shape as StructuredNode
      * * Note - Sets the type of the UMLActivity Shape as Note
-     * @default 'Action'
+
      * @IgnoreSingular
      */
     @Property('Action')
@@ -1346,22 +1346,22 @@ export class UmlActivityShape extends Shape {
 export class MethodArguments extends ChildProperty<MethodArguments> {
     /**
      * Defines the name of the attributes
-     * @default ''
+
      * @IgnoreSingular
      */
     @Property('')
     public name: string;
     /**
      * Defines the type of the attributes
-     * @default ''
+
      * @IgnoreSingular
      */
     @Property('')
     public type: string;
     /**
      * Sets the shape style of the node
-     * @default new ShapeStyle()
-     * @aspType object
+
+
      */
     @Complex<ShapeStyleModel | TextStyleModel>({}, TextStyle)
     public style: ShapeStyleModel | TextStyleModel;
@@ -1380,14 +1380,14 @@ export class MethodArguments extends ChildProperty<MethodArguments> {
 export class UmlClassAttribute extends MethodArguments {
     /**
      * Defines the type of the attributes
-     * @default 'Public'
+
      * @IgnoreSingular
      */
     @Property('Public')
     public scope: UmlScope;
     /**
      * Defines the separator of the attributes
-     * @default false
+
      * @IgnoreSingular
      */
     @Property(false)
@@ -1408,7 +1408,7 @@ export class UmlClassAttribute extends MethodArguments {
 export class UmlClassMethod extends UmlClassAttribute {
     /**
      * Defines the type of the arguments
-     * @default ''
+
      * @IgnoreSingular
      */
 
@@ -1430,21 +1430,21 @@ export class UmlClassMethod extends UmlClassAttribute {
 export class UmlClass extends ChildProperty<UmlClass> {
     /**
      * Defines the name of the attributes
-     * @default ''
+
      * @IgnoreSingular
      */
     @Property('')
     public name: string;
     /**
      * Defines the text of the bpmn annotation collection
-     * @default 'None'
+
      */
 
     @Collection<UmlClassAttributeModel>([], UmlClassAttribute)
     public attributes: UmlClassAttributeModel[];
     /**
      * Defines the text of the bpmn annotation collection
-     * @default 'None'
+
      */
 
     @Collection<UmlClassMethodModel>([], UmlClassMethod)
@@ -1452,8 +1452,8 @@ export class UmlClass extends ChildProperty<UmlClass> {
 
     /**
      * Sets the shape style of the node
-     * @default new ShapeStyle()
-     * @aspType object
+
+
      */
     @Complex<TextStyleModel>({}, TextStyle)
     public style: TextStyleModel;
@@ -1473,7 +1473,7 @@ export class UmlClass extends ChildProperty<UmlClass> {
 export class UmlInterface extends UmlClass {
     /**
      * Defines the separator of the attributes
-     * @default false
+
      * @IgnoreSingular
      */
     @Property(false)
@@ -1494,29 +1494,29 @@ export class UmlInterface extends UmlClass {
 export class UmlEnumerationMember extends ChildProperty<UmlEnumerationMember> {
     /**
      * Defines the value of the member
-     * @default ''
+
      * @IgnoreSingular
      */
     @Property('')
     public name: string;
     /**
      * Defines the value of the member
-     * @default ''
+
      * @IgnoreSingular
      */
     @Property('')
     public value: string;
     /**
      * Defines the separator of the attributes
-     * @default false
+
      * @IgnoreSingular
      */
     @Property(false)
     public isSeparator: boolean;
     /**
      * Sets the shape style of the node
-     * @default new ShapeStyle()
-     * @aspType object
+
+
      */
     @Complex<ShapeStyleModel | TextStyleModel>({}, TextStyle)
     public style: ShapeStyleModel | TextStyleModel;
@@ -1536,22 +1536,22 @@ export class UmlEnumerationMember extends ChildProperty<UmlEnumerationMember> {
 export class UmlEnumeration extends ChildProperty<UmlEnumeration> {
     /**
      * Defines the name of the attributes
-     * @default ''
+
      * @IgnoreSingular
      */
     @Property('')
     public name: string;
     /**
      * Defines the text of the bpmn annotation collection
-     * @default 'None'
+
      */
 
     @Collection<UmlEnumerationMemberModel>([], UmlEnumerationMember)
     public members: UmlEnumerationMemberModel[];
     /**
      * Sets the shape style of the node
-     * @default new ShapeStyle()
-     * @aspType object
+
+
      */
     @Complex<ShapeStyleModel | TextStyleModel>({}, TextStyle)
     public style: ShapeStyleModel | TextStyleModel;
@@ -1586,32 +1586,32 @@ export class UmlClassifierShape extends Shape {
      * });
      * diagram.appendTo('#diagram');
      * ```
-     * @default 'Basic'
+
      */
     @Property('UmlClassifier')
     public type: Shapes;
 
     /**
      * Defines the text of the bpmn annotation collection
-     * @default 'None'
+
      */
     @Complex<UmlClassModel>({} as UmlClass, UmlClass)
     public classShape: UmlClassModel;
     /**
      * Defines the text of the bpmn annotation collection
-     * @default 'None'
+
      */
     @Complex<UmlInterfaceModel>({} as UmlInterface, UmlInterface)
     public interfaceShape: UmlInterfaceModel;
     /**
      * Defines the text of the bpmn annotation collection
-     * @default 'None'
+
      */
     @Complex<UmlEnumerationModel>({} as UmlEnumeration, UmlEnumeration)
     public enumerationShape: UmlEnumerationModel;
     /**
      * Defines the type of classifier
-     * @default 'Class'
+
      * @IgnoreSingular
      */
     @Property('Class')
@@ -1633,120 +1633,120 @@ export class Node extends NodeBase implements IElement {
 
     /**
      * Defines the collection of textual annotations of nodes/connectors
-     * @aspDefaultValueIgnore
-     * @blazorDefaultValueIgnore
-     * @default undefined
+
+
+
      */
     @Collection<ShapeAnnotationModel>([], ShapeAnnotation)
     public annotations: ShapeAnnotationModel[];
 
     /**
      * Sets the x-coordinate of the position of the node
-     * @default 0
+
      */
     @Property(0)
     public offsetX: number;
 
     /**
      * Sets the y-coordinate of the position of the node
-     * @default 0
+
      */
     @Property(0)
     public offsetY: number;
 
     /**
      * Sets the reference point, that will act as the offset values(offsetX, offsetY) of a node
-     * @default new Point(0.5,0.5)
+
      */
     @Complex<PointModel>({ x: 0.5, y: 0.5 }, Point)
     public pivot: PointModel;
 
     /**
      * Sets the width of the node
-     * @aspDefaultValueIgnore
-     * @blazorDefaultValueIgnore
-     * @default undefined
+
+
+
      */
     @Property()
     public width: number;
 
     /**
      * Sets the height of the node
-     * @aspDefaultValueIgnore
-     * @blazorDefaultValueIgnore
-     * @default undefined
+
+
+
      */
     @Property()
     public height: number;
 
     /**
      * Sets the minimum width of the node
-     * @aspDefaultValueIgnore
-     * @blazorDefaultValueIgnore
-     * @default undefined
+
+
+
      */
     @Property()
     public minWidth: number;
 
     /**
      * Sets the minimum height of the node
-     * @aspDefaultValueIgnore
-     * @blazorDefaultValueIgnore
-     * @default undefined
+
+
+
      */
     @Property()
     public minHeight: number;
 
     /**
      * Sets the maximum width of the node
-     * @aspDefaultValueIgnore
-     * @blazorDefaultValueIgnore
-     * @default undefined
+
+
+
      */
     @Property()
     public maxWidth: number;
 
     /**
      * Sets the maximum height of the node
-     * @aspDefaultValueIgnore
-     * @blazorDefaultValueIgnore
-     * @default undefined
+
+
+
      */
     @Property()
     public maxHeight: number;
 
     /**
      * Sets the rotate angle of the node
-     * @default 0
+
      */
     @Property(0)
     public rotateAngle: number;
 
     /**
      * Sets the shape style of the node
-     * @default new ShapeStyle()
-     * @aspType object
+
+
      */
     @Complex<ShapeStyleModel | TextStyleModel>({ fill: 'white' }, TextStyle)
     public style: ShapeStyleModel | TextStyleModel;
 
     /**
      * Sets the background color of the shape
-     * @default 'transparent'
+
      */
     @Property('transparent')
     public backgroundColor: string;
     /**
      * Sets the border color of the node
-     * @default 'none'
+
      */
     @Property('none')
     public borderColor: string;
 
     /**
      * Sets the border width of the node
-     * @default 0
-     * @isBlazorNullableType true
+
+
      */
     @Property(0)
     public borderWidth: number;
@@ -1760,8 +1760,8 @@ export class Node extends NodeBase implements IElement {
     /* tslint:disable */
     /**
      * Defines the shape of a node
-     * @default Basic Shape
-     * @aspType object
+
+
      */
     @ComplexFactory(getShapeType)
     public shape: ShapeModel | FlowShapeModel | BasicShapeModel | ImageModel | PathModel | TextModel | BpmnShapeModel | NativeModel | HtmlModel | UmlActivityShapeModel | UmlClassifierShapeModel | SwimLaneModel;
@@ -1770,7 +1770,7 @@ export class Node extends NodeBase implements IElement {
 
     /**
      * Sets or gets the UI of a node
-     * @default null
+
      */
     @Property(null)
     public wrapper: Container;
@@ -1804,34 +1804,34 @@ export class Node extends NodeBase implements IElement {
      * * Tooltip - Enables or disables tool tip for the Nodes
      * * InheritTooltip - Enables or disables tool tip for the Nodes
      * * ReadOnly - Enables the  ReadOnly support for Annotation
-     * @default 'Default'
-     * @aspNumberEnum
-     * @blazorNumberEnum
+
+
+
      */
     @Property(NodeConstraints.Default)
     public constraints: NodeConstraints;
 
     /**
      * Defines the shadow of a shape/path
-     * @default null
+
      */
     @Complex<ShadowModel>({}, Shadow)
     public shadow: ShadowModel;
 
     /**
      * Defines the children of group element
-     * @aspDefaultValueIgnore
-     * @blazorDefaultValueIgnore
-     * @default undefined
+
+
+
      */
     @Property()
     public children: string[];
 
     /**
      * Defines the type of the container
-     * @aspDefaultValueIgnore
-     * @blazorDefaultValueIgnore
-     * @default null
+
+
+
      */
 
     @Property(null)
@@ -1839,21 +1839,21 @@ export class Node extends NodeBase implements IElement {
 
     /**
      * Sets the horizontalAlignment of the node
-     * @default 'Stretch'
+
      */
     @Property('Left')
     public horizontalAlignment: HorizontalAlignment;
     /**
      * Sets the verticalAlignment of the node
-     * @default 'Stretch'
+
      */
     @Property('Top')
     public verticalAlignment: VerticalAlignment;
     /**
      * Used to define the rows for the grid container
-     * @aspDefaultValueIgnore
-     * @blazorDefaultValueIgnore
-     * @default undefined
+
+
+
      */
 
     @Property()
@@ -1861,9 +1861,9 @@ export class Node extends NodeBase implements IElement {
 
     /**
      * Used to define the column for the grid container
-     * @aspDefaultValueIgnore
-     * @blazorDefaultValueIgnore
-     * @default undefined
+
+
+
      */
 
     @Property()
@@ -1871,9 +1871,9 @@ export class Node extends NodeBase implements IElement {
 
     /**
      * Used to define a index of row in the grid
-     * @aspDefaultValueIgnore
-     * @blazorDefaultValueIgnore
-     * @default undefined
+
+
+
      */
 
     @Property()
@@ -1881,9 +1881,9 @@ export class Node extends NodeBase implements IElement {
 
     /**
      * Used to define a index of column in the grid
-     * @aspDefaultValueIgnore
-     * @blazorDefaultValueIgnore
-     * @default undefined
+
+
+
      */
 
     @Property()
@@ -1891,27 +1891,27 @@ export class Node extends NodeBase implements IElement {
 
     /**
      * Merge the row use the property in the grid container
-     * @aspDefaultValueIgnore
-     * @blazorDefaultValueIgnore
-     * @default undefined
+
+
+
      */
     @Property()
     public rowSpan: number;
 
     /**
      * Merge the column use the property in the grid container
-     * @aspDefaultValueIgnore
-     * @blazorDefaultValueIgnore
-     * @default undefined
+
+
+
      */
     @Property()
     public columnSpan: number;
 
     /**
      * Set the branch for the mind map
-     * @aspDefaultValueIgnore
-     * @blazorDefaultValueIgnore
-     * @default ''
+
+
+
      */
     @Property('')
     public branch: BranchTypes;
@@ -2398,35 +2398,35 @@ export class Header extends ChildProperty<Shape> {
 
     /**
      * Sets the id of the header
-     * @default ''
+
      */
     @Property('')
     public id: string;
 
     /**
      * Sets the content of the header
-     * @default ''
+
      */
     @Complex<AnnotationModel>({ style: { fill: '#111111' } }, Annotation)
     public annotation: Annotation;
 
     /**
      * Sets the style of the header
-     * @default ''
+
      */
     @Complex<ShapeStyleModel>({ fill: '#E7F4FF', strokeColor: '#CCCCCC' }, ShapeStyle)
     public style: ShapeStyleModel;
 
     /**
      * Sets the height of the header
-     * @default 50
+
      */
     @Property(50)
     public height: number;
 
     /**
      * Sets the width of the header
-     * @default 50
+
      */
     @Property(50)
     public width: number;
@@ -2440,42 +2440,42 @@ export class Lane extends ChildProperty<Shape> {
 
     /**
      * Sets the id of the lane
-     * @default ''
+
      */
     @Property('')
     public id: string;
 
     /**
      * Sets style of the lane
-     * @default ''
+
      */
     @Complex<ShapeStyleModel>({ fill: '#F9F9F9', strokeColor: '#CCCCCC' }, ShapeStyle)
     public style: ShapeStyleModel;
 
     /**
      * Defines the collection of child nodes
-     * @default []
+
      */
     @Collection<NodeModel>([], Node)
     public children: NodeModel[];
 
     /**
      * Defines the height of the phase
-     * @default 100
+
      */
     @Property(100)
     public height: number;
 
     /**
      * Defines the height of the phase
-     * @default 100
+
      */
     @Property(100)
     public width: number;
 
     /**
      * Defines the collection of header in the phase.
-     * @default new Header()
+
      */
     @Complex<HeaderModel>({ style: { fill: '#E7F4FF', strokeColor: '#CCCCCC' }, annotation: { content: 'Function' } as Annotation }, Header)
     public header: HeaderModel;
@@ -2496,28 +2496,28 @@ export class Lane extends ChildProperty<Shape> {
 export class Phase extends ChildProperty<Shape> {
     /**
      * Sets the id of the phase
-     * @default ''
+
      */
     @Property('')
     public id: string;
 
     /**
      * Sets the style of the lane
-     * @default ''
+
      */
     @Complex<ShapeStyleModel>({ strokeColor: '#CCCCCC' }, ShapeStyle)
     public style: ShapeStyleModel;
 
     /**
      * Sets the header collection of the phase
-     * @default  new Header()
+
      */
     @Complex<HeaderModel>({ annotation: { content: 'Phase' } as Annotation }, Header)
     public header: HeaderModel;
 
     /**
      * Sets the offset of the lane
-     * @default 100
+
      */
     @Property(100)
     public offset: number;
@@ -2537,56 +2537,56 @@ export class Phase extends ChildProperty<Shape> {
 export class SwimLane extends Shape {
     /**
      * Defines the type of node shape.
-     * @default 'Basic'
+
      */
     @Property('SwimLane')
     public type: Shapes;
 
     /**
      * Defines the size of phase.
-     * @default 20
+
      */
     @Property(20)
     public phaseSize: number;
 
     /**
      * Defines the collection of phases.
-     * @default 'undefined'
+
      */
     @Collection<PhaseModel>([], Phase)
     public phases: PhaseModel[];
 
     /**
      * Defines the orientation of the swimLane
-     * @default 'Horizontal'
+
      */
     @Property('Horizontal')
     public orientation: Orientation;
 
     /**
      * Defines the collection of lanes
-     * @default 'undefined'
+
      */
     @Collection<LaneModel>([], Lane)
     public lanes: LaneModel[];
 
     /**
      * Defines the collection of header
-     * @default 'undefined'
+
      */
     @Complex<HeaderModel>({ style: { fill: '#E7F4FF', strokeColor: '#CCCCCC' }, annotation: { content: 'Function' } as Annotation }, Header)
     public header: HeaderModel;
 
     /**
      * Defines the whether the shape is a lane or not
-     * @default false
+
      */
     @Property(false)
     public isLane: boolean;
 
     /**
      * Defines the whether the shape is a phase or not
-     * @default false
+
      */
     @Property(false)
     public isPhase: boolean;
@@ -2618,17 +2618,17 @@ export class SwimLane extends Shape {
 export class ChildContainer {
     /**
      * Defines the type of the container
-     * @aspDefaultValueIgnore
-     * @blazorDefaultValueIgnore
-     * @default Canvas
+
+
+
      */
     @Property('Canvas')
     public type: ContainerTypes;
     /**
      * Defines the type of the swimLane orientation.
-     * @aspDefaultValueIgnore
-     * @blazorDefaultValueIgnore
-     * @default undefined
+
+
+
      */
     @Property('Vertical')
     public orientation: Orientation;
@@ -2648,21 +2648,21 @@ export class ChildContainer {
 export class Selector extends ChildProperty<Selector> implements IElement {
     /**
      * Defines the size and position of the container
-     * @default null
+
      */
     @Property(null)
     public wrapper: Container;
 
     /**
      * Defines the collection of selected nodes
-     * @blazorType List<DiagramNode>
+
      */
     @Collection<NodeModel>([], Node)
     public nodes: NodeModel[];
 
     /**
      * Defines the collection of selected connectors
-     * @blazorType List<DiagramConnector>
+
      */
     @Collection<ConnectorModel>([], Connector)
     public connectors: ConnectorModel[];
@@ -2673,49 +2673,49 @@ export class Selector extends ChildProperty<Selector> implements IElement {
     public annotation: ShapeAnnotationModel | PathAnnotationModel;
     /**
      * Sets/Gets the width of the container
-     * @aspDefaultValueIgnore
-     * @blazorDefaultValueIgnore
-     * @default undefined
+
+
+
      */
     @Property()
     public width: number;
 
     /**
      * Sets/Gets the height of the container
-     * @aspDefaultValueIgnore
-     * @blazorDefaultValueIgnore
-     * @default undefined
+
+
+
      */
     @Property()
     public height: number;
 
     /**
      * Sets the rotate angle of the container
-     * @default 0
-     * @isBlazorNullableType true
+
+
      */
     @Property(0)
     public rotateAngle: number;
 
     /**
      * Sets the positionX of the container
-     * @default 0
-     * @isBlazorNullableType true
+
+
      */
     @Property(0)
     public offsetX: number;
 
     /**
      * Sets the positionY of the container
-     * @default 0
-     * @isBlazorNullableType true
+
+
      */
     @Property(0)
     public offsetY: number;
 
     /**
      * Sets the pivot of the selector
-     * @default { x: 0.5, y: 0.5 }
+
      */
     @Complex<PointModel>({ x: 0.5, y: 0.5 }, Point)
     public pivot: PointModel;
@@ -2724,7 +2724,7 @@ export class Selector extends ChildProperty<Selector> implements IElement {
      * Defines how to pick the objects to be selected using rubber band selection
      * * CompleteIntersect - Selects the objects that are contained within the selected region
      * * PartialIntersect - Selects the objects that are partially intersected with the selected region
-     * @default 'CompleteIntersect'
+
      */
     @Property('CompleteIntersect')
     public rubberBandSelectionMode: RubberBandSelectionMode;
@@ -2766,7 +2766,7 @@ export class Selector extends ChildProperty<Selector> implements IElement {
      * });
      * diagram.appendTo('#diagram');
      * ```
-     * @default []
+
      */
     @Collection<UserHandleModel>([], UserHandle)
     public userHandles: UserHandleModel[];
@@ -2787,9 +2787,9 @@ export class Selector extends ChildProperty<Selector> implements IElement {
      * * Rotate - Shows/hides the rotate handle of the selector
      * * UserHandles - Shows/hides the user handles of the selector
      * * Resize - Shows/hides all resize handles of the selector
-     * @default 'All'
-     * @aspNumberEnum
-     * @blazorNumberEnum
+
+
+
      */
     @Property(SelectorConstraints.All)
     public constraints: SelectorConstraints;
@@ -2809,17 +2809,17 @@ export class Selector extends ChildProperty<Selector> implements IElement {
      * * ResizeNorthWest - Enable ResizeNorthWest Resize
      * * ResizeNorth - Enable ResizeNorth Resize
      * @private
-     * @aspNumberEnum
-     * @blazorNumberEnum
+
+
      */
     public thumbsConstraints: ThumbsConstraints;
 
     /**
      * setTooltipTemplate helps to customize the content of a tooltip
-     * @aspDefaultValueIgnore
-     * @blazorDefaultValueIgnore
-     * @default undefined
-     * @deprecated
+
+
+
+
      */
     @Property()
     public setTooltipTemplate: Function | string;

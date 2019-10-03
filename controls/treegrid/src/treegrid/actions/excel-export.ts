@@ -8,7 +8,7 @@ import { DataManager, Query, ReturnOption } from '@syncfusion/ej2-data';
 import * as event from '../base/constant';
 /**
  * TreeGrid Excel Export module
- * @hidden
+
  */
 export class ExcelExport {
     private parent: TreeGrid;
@@ -30,7 +30,7 @@ export class ExcelExport {
       return 'ExcelExport';
     }
     /**
-     * @hidden
+
      */
     public addEventListener(): void {
         this.parent.on('updateResults', this.updateExcelResultModel, this);
@@ -39,13 +39,13 @@ export class ExcelExport {
       /**
        * To destroy the Excel Export
        * @return {void}
-       * @hidden
+
        */
        public destroy(): void {
          this.removeEventListener();
        }
       /**
-       * @hidden
+
        */
       public removeEventListener(): void {
         if (this.parent.isDestroyed) { return; }
@@ -135,7 +135,7 @@ export class ExcelExport {
     }
       /**
        * TreeGrid Excel Export cell modifier
-       * @hidden
+
        */
       private excelQueryCellInfo(args?: ExcelQueryCellInfoEventArgs) : void {
         if (this.parent.grid.getColumnIndexByUid(args.column.uid) === this.parent.treeColumnIndex) {

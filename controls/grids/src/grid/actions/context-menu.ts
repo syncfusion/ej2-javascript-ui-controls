@@ -99,7 +99,7 @@ export class ContextMenu implements IAction {
         this.addEventListener();
     }
     /**
-     * @hidden
+
      */
     public addEventListener(): void {
         if (this.parent.isDestroyed) { return; }
@@ -108,7 +108,7 @@ export class ContextMenu implements IAction {
     }
 
     /**
-     * @hidden
+
      */
     public removeEventListener(): void {
         if (this.parent.isDestroyed) { return; }
@@ -190,7 +190,7 @@ export class ContextMenu implements IAction {
         this.isOpen = true;
     }
     /**
-     * @hidden
+
      */
     public contextMenuItemClick(args: ContextMenuClickEventArgs): void {
         let item: string = this.getKeyFromId(args.item.id);
@@ -485,7 +485,7 @@ export class ContextMenu implements IAction {
      * Destroys the context menu component in the Grid.
      * @method destroy
      * @return {void}
-     * @hidden
+
      */
     public destroy(): void {
         let gridElement: Element = this.parent.element;

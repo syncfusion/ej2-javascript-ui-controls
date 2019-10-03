@@ -18,21 +18,21 @@ export interface AggregateColumnModel {
      * * falsecount
      * * custom
      * > Specify the `type` value as `custom` to use custom aggregation.
-     * @aspType string
-     * @default null
+
+
      */
     type?: AggregateType | AggregateType[] | string;
 
     /**
      * Defines the column name to perform aggregation.
-     * @default null
+
      */
     field?: string;
 
     /**
      * Defines the column name to display the aggregate value. If `columnName` is not defined,
      * then `field` name value will be assigned to the `columnName` property.
-     * @default null
+
      */
     columnName?: string;
 
@@ -41,9 +41,9 @@ export interface AggregateColumnModel {
      * Gets the format from the user, which can be standard or custom
      * [`number`](../../common/internationalization/#number-formatting/)
      * and [`date`](../../common/internationalization/#number-formatting/) formats.
-     * @aspType string
-     * @blazorType string
-     * @default null    
+
+
+
      */
     format?: string | NumberFormatOptions | DateFormatOptions;
 
@@ -52,7 +52,7 @@ export interface AggregateColumnModel {
      * The `type` name should be used to access aggregate values inside the template.
      * 
      * {% codeBlock src="grid/footer-template-api/index.ts" %}{% endcodeBlock %}
-     * @default null
+
      */
     footerTemplate?: string;
 
@@ -64,7 +64,7 @@ export interface AggregateColumnModel {
      * * **key**: The current grouped value.
      * 
      * {% codeBlock src="grid/group-footer-api/index.ts" %}{% endcodeBlock %}
-     * @default null
+
      */
     groupFooterTemplate?: string;
 
@@ -76,7 +76,7 @@ export interface AggregateColumnModel {
      * * **key**: The current grouped field value.
      * 
      * {% codeBlock src="grid/group-caption-api/index.ts" %}{% endcodeBlock %}
-     * @default null
+
      */
     groupCaptionTemplate?: string;
 
@@ -86,7 +86,7 @@ export interface AggregateColumnModel {
      * **Total aggregation**: The custom function will be called with the whole data and the current `AggregateColumn` object.
      * **Group aggregation**: This will be called with the current group details and the `AggregateColumn` object.
      * 
-     * @default null
+
      */
     customAggregate?: CustomSummaryType | string;
 
@@ -99,7 +99,7 @@ export interface AggregateRowModel {
 
     /**
      * Configures the aggregate columns. 
-     * @default []
+
      */
     columns?: AggregateColumnModel[];
 

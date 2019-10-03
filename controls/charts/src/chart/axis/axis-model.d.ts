@@ -8,7 +8,7 @@ export interface RowModel {
     /**
      * The height of the row as a string accept input both as '100px' and '100%'.
      * If specified as '100%, row renders to the full height of its chart.
-     * @default '100%'
+
      */
 
     height?: string;
@@ -29,7 +29,7 @@ export interface ColumnModel {
     /**
      * The width of the column as a string accepts input both as like '100px' or '100%'.
      * If specified as '100%, column renders to the full width of its chart.
-     * @default '100%'
+
      */
 
     width?: string;
@@ -49,21 +49,21 @@ export interface MajorGridLinesModel {
 
     /**
      * The width of the line in pixels.
-     * @default 1
+
      */
 
     width?: number;
 
     /**
      * The dash array of the grid lines.
-     * @default ''
+
      */
 
     dashArray?: string;
 
     /**
      * The color of the major grid line that accepts value in hex and rgba as a valid CSS color string.
-     * @default null
+
      */
 
     color?: string;
@@ -77,21 +77,21 @@ export interface MinorGridLinesModel {
 
     /**
      * The width of the line in pixels.
-     * @default 0.7
+
      */
 
     width?: number;
 
     /**
      * The dash array of grid lines.
-     * @default ''
+
      */
 
     dashArray?: string;
 
     /**
      * The color of the minor grid line that accepts value in hex and rgba as a valid CSS color string.
-     * @default null
+
      */
 
     color?: string;
@@ -105,21 +105,21 @@ export interface AxisLineModel {
 
     /**
      * The width of the line in pixels.
-     * @default 1
+
      */
 
     width?: number;
 
     /**
      * The dash array of the axis line.
-     * @default ''
+
      */
 
     dashArray?: string;
 
     /**
      * The color of the axis line that accepts value in hex and rgba as a valid CSS color string.
-     * @default null
+
      */
 
     color?: string;
@@ -133,21 +133,21 @@ export interface MajorTickLinesModel {
 
     /**
      * The width of the tick lines in pixels.
-     * @default 1
+
      */
 
     width?: number;
 
     /**
      * The height of the ticks in pixels.
-     * @default 5
+
      */
 
     height?: number;
 
     /**
      * The color of the major tick line that accepts value in hex and rgba as a valid CSS color string.
-     * @default null
+
      */
 
     color?: string;
@@ -161,21 +161,21 @@ export interface MinorTickLinesModel {
 
     /**
      * The width of the tick line in pixels.
-     * @default 0.7
+
      */
 
     width?: number;
 
     /**
      * The height of the ticks in pixels.
-     * @default 5
+
      */
 
     height?: number;
 
     /**
      * The color of the minor tick line that accepts value in hex and rgba as a valid CSS color string.
-     * @default null
+
      */
 
     color?: string;
@@ -189,14 +189,14 @@ export interface CrosshairTooltipModel {
 
     /**
      * If set to true, crosshair ToolTip will be visible.
-     *  @default false
+
      */
 
     enable?: Boolean;
 
     /**
      * The fill color of the ToolTip accepts value in hex and rgba as a valid CSS color string.
-     * @default null
+
      */
 
     fill?: string;
@@ -228,7 +228,7 @@ export interface AxisModel {
 
     /**
      * Specifies the title of an axis.
-     * @default ''
+
      */
 
     title?: string;
@@ -242,42 +242,70 @@ export interface AxisModel {
     /**
      * Used to format the axis label that accepts any global string format like 'C', 'n1', 'P' etc.
      * It also accepts placeholder like '{value}°C' in which value represent the axis label, e.g, 20°C.
-     * @default ''
+
      */
 
     labelFormat?: string;
 
     /**
      * Specifies the skeleton format in which the dateTime format will process.
-     * @default ''
+
      */
 
     skeleton?: string;
 
     /**
      * It specifies the type of format to be used in dateTime format process.
-     * @default 'DateTime'
+
      */
 
     skeletonType?: SkeletonType;
 
     /**
      * Left and right padding for the plot area in pixels.
-     * @default 0
+
      */
 
     plotOffset?: number;
 
     /**
+     * Left padding for the plot area in pixels.
+
+     */
+
+    plotOffsetLeft?: number;
+
+    /**
+     * Top padding for the plot area in pixels.
+
+     */
+
+    plotOffsetTop?: number;
+
+    /**
+     * Right padding for the plot area in pixels.
+
+     */
+
+    plotOffsetRight?: number;
+
+    /**
+     * Bottom padding for the plot area in pixels.
+
+     */
+
+    plotOffsetBottom?: number;
+
+    /**
      * Specifies indexed category  axis.
-     * @default false
+
      */
 
     isIndexed?: boolean;
 
     /**
      * The base value for logarithmic axis. It requires `valueType` to be `Logarithmic`.
-     * @default 10
+
      */
     logBase?: number;
 
@@ -300,7 +328,7 @@ export interface AxisModel {
      * });
      * chart.appendTo('#Chart');
      * ```
-     * @default 0
+
      */
 
     columnIndex?: number;
@@ -323,57 +351,57 @@ export interface AxisModel {
      * });
      * chart.appendTo('#Chart');
      * ```
-     * @default 0
+
      */
 
     rowIndex?: number;
 
     /**
      * Specifies the number of `columns` or `rows` an axis has to span horizontally or vertically.
-     * @default 1
+
      */
 
     span?: number;
 
     /**
      * With this property, you can request axis to calculate intervals approximately equal to your specified interval.
-     * @default null
-     * @aspDefaultValueIgnore
+
+
      */
 
     desiredIntervals?: number;
 
     /**
      * The maximum number of label count per 100 pixels with respect to the axis length.
-     * @default 3
+
      */
 
     maximumLabels?: number;
 
     /**
      * The axis is scaled by this factor. When zoomFactor is 0.5, the chart is scaled by 200% along this axis. Value ranges from 0 to 1.
-     * @default 1
+
      */
 
     zoomFactor?: number;
 
     /**
      * Position of the zoomed axis. Value ranges from 0 to 1.
-     * @default 0
+
      */
 
     zoomPosition?: number;
 
     /**
      * If set to true, the axis will render at the opposite side of its default position.
-     * @default false
+
      */
 
     opposedPosition?: boolean;
 
     /**
      * If set to true, axis interval will be calculated automatically with respect to the zoomed range.
-     * @default true
+
      */
 
     enableAutoIntervalOnZooming?: boolean;
@@ -384,7 +412,7 @@ export interface AxisModel {
      * * normal: Padding is applied to the axis based on the range calculation.
      * * additional: Interval of the axis is added as padding to the minimum and maximum values of the range.
      * * round: Axis range is rounded to the nearest possible value divided by the interval.
-     * @default 'Auto'
+
      */
 
     rangePadding?: ChartRangePadding;
@@ -395,9 +423,9 @@ export interface AxisModel {
      * * DateTime: Renders a dateTime axis.
      * * Category: Renders a category axis.
      * * Logarithmic: Renders a log axis.
-     * @default 'Double'
-     * @blazorType Syncfusion.EJ2.Blazor.Charts.ValueType
-     * @isEnumeration true
+
+
+
      */
 
     valueType?: ValueType;
@@ -407,7 +435,7 @@ export interface AxisModel {
      * * None: No action will be performed.
      * * Hide: Edge label will be hidden.
      * * Shift: Shifts the edge labels.
-     * @default 'None'
+
      */
 
     edgeLabelPlacement?: EdgeLabelPlacement;
@@ -420,7 +448,7 @@ export interface AxisModel {
      * * Days: Defines the interval of the axis in days.
      * * Hours: Defines the interval of the axis in hours.
      * * Minutes: Defines the interval of the axis in minutes.
-     * @default 'Auto'
+
      */
 
     intervalType?: IntervalType;
@@ -429,7 +457,7 @@ export interface AxisModel {
      * Specifies the placement of a label for category axis. They are,
      * * betweenTicks: Renders the label between the ticks.
      * * onTicks: Renders the label on the ticks.
-     * @default 'BetweenTicks'
+
      */
 
     labelPlacement?: LabelPlacement;
@@ -438,7 +466,7 @@ export interface AxisModel {
      * Specifies the placement of a ticks to the axis line. They are,
      * * inside: Renders the ticks inside to the axis line.
      * * outside: Renders the ticks outside to the axis line.
-     * @default 'Outside'
+
      */
 
     tickPosition?: AxisPosition;
@@ -447,7 +475,7 @@ export interface AxisModel {
      * Specifies the placement of a labels to the axis line. They are,
      * * inside: Renders the labels inside to the axis line.
      * * outside: Renders the labels outside to the axis line.
-     * @default 'Outside'
+
      */
 
     labelPosition?: AxisPosition;
@@ -455,84 +483,84 @@ export interface AxisModel {
     /**
      * Unique identifier of an axis.
      * To associate an axis with the series, set this name to the xAxisName/yAxisName properties of the series.
-     * @default ''
+
      */
 
     name?: string;
 
     /**
      * If set to true, axis label will be visible.
-     * @default true
+
      */
 
     visible?: boolean;
 
     /**
      * Specifies the number of minor ticks per interval.
-     * @default 0
+
      */
 
     minorTicksPerInterval?: number;
 
     /**
      * The angle to which the axis label gets rotated.
-     * @default 0
+
      */
 
     labelRotation?: number;
 
     /**
      * Specifies the value at which the axis line has to be intersect with the vertical axis or vice versa.
-     * @default null
+
      */
 
     crossesAt?: Object;
 
     /**
      * Specifies whether axis elements like axis labels, axis title, etc has to be crossed with axis line
-     * @default true
+
      */
 
     placeNextToAxisLine?: boolean;
 
     /**
      * Specifies axis name with which the axis line has to be crossed
-     * @default null
+
      */
 
     crossesInAxis?: string;
 
     /**
      * Specifies the minimum range of an axis.
-     * @default null
+
      */
 
     minimum?: Object;
 
     /**
      * Specifies the maximum range of an axis.
-     * @default null
+
      */
 
     maximum?: Object;
 
     /**
      * Specifies the interval for an axis.
-     * @default null
-     * @aspDefaultValueIgnore
+
+
      */
 
     interval?: number;
 
     /**
      * Specifies the maximum width of an axis label.
-     * @default 34.
+
      */
     maximumLabelWidth?: number;
 
     /**
      * Specifies the Trim property for an axis.
-     * @default false
+
      */
     enableTrim?: boolean;
 
@@ -576,40 +604,40 @@ export interface AxisModel {
      * * MultipleRows: Shows the label in MultipleRows when it intersects.
      * * Rotate45: Rotates the label to 45 degree when it intersects.
      * * Rotate90: Rotates the label to 90 degree when it intersects.
-     * @default Trim
+
      */
 
     labelIntersectAction?: LabelIntersectAction;
 
     /**
      * It specifies whether the axis to be rendered in inversed manner or not.
-     * @default false
+
      */
     isInversed?: boolean;
 
     /**
      * The polar radar radius position.
-     * @default 100
+
      */
 
     coefficient?: number;
 
     /**
      * The start angle for the series.
-     * @default 0
+
      */
 
     startAngle?: number;
 
     /**
      * Description for axis and its element.
-     * @default null
+
      */
     description?: string;
 
     /**
      * TabIndex value for the axis.
-     * @default 2
+
      */
     tabIndex?: number;
 

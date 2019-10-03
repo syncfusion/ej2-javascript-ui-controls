@@ -14,7 +14,7 @@ export class Line extends ChildProperty<Line> {
 
     /**
      * The width of the line in pixels.
-     * @default 2
+
      */
 
     @Property(2)
@@ -22,7 +22,7 @@ export class Line extends ChildProperty<Line> {
 
     /**
      * The dash array of the axis line.
-     * @default ''
+
      */
 
     @Property('')
@@ -51,7 +51,7 @@ export class Label extends ChildProperty<Label> {
     /**
      * To format the axis label, which accepts any global string format like 'C', 'n1', 'P' etc.
      * Also accepts placeholder like '{value}°C' in which value represent the axis label e.g. 20°C.
-     * @default ''
+
      */
 
     @Property('')
@@ -61,7 +61,7 @@ export class Label extends ChildProperty<Label> {
      * Specifies the position of the labels. They are,
      * * inside -  Places the labels inside the axis.
      * * outside - Places the labels outside of the axis.
-     * @default Inside
+
      */
 
     @Property('Inside')
@@ -72,7 +72,7 @@ export class Label extends ChildProperty<Label> {
      * * first -  Hides the 1st label on intersect.
      * * last - Hides the last label on intersect.
      * * none - Places both the labels.
-     * @default None
+
      */
 
     @Property('None')
@@ -80,14 +80,14 @@ export class Label extends ChildProperty<Label> {
 
     /**
      * if set true, the labels will get rotated along the axis.
-     * @default false
+
      */
     @Property(false)
     public autoAngle: boolean;
 
     /**
      * If set true, labels takes the range color.
-     * @default false
+
      */
 
     @Property(false)
@@ -95,7 +95,7 @@ export class Label extends ChildProperty<Label> {
 
     /**
      * Distance of the labels from axis in pixel.
-     * @default 0
+
      */
 
     @Property(0)
@@ -111,8 +111,8 @@ export class Range extends ChildProperty<Range> {
 
     /**
      * Specifies the minimum value of the range.
-     * @aspDefaultValueIgnore
-     * @default 0
+
+
      */
 
     @Property(0)
@@ -120,8 +120,8 @@ export class Range extends ChildProperty<Range> {
 
     /**
      * Specifies the maximum value of the range.
-     * @aspDefaultValueIgnore
-     * @default 0
+
+
      */
 
     @Property(0)
@@ -129,7 +129,7 @@ export class Range extends ChildProperty<Range> {
 
     /**
      * The radius of the range in pixels or in percentage.
-     * @default null
+
      */
 
     @Property(null)
@@ -137,7 +137,7 @@ export class Range extends ChildProperty<Range> {
 
     /**
      * Specifies the start width of the ranges
-     * @default '10'
+
      */
 
     @Property(10)
@@ -145,7 +145,7 @@ export class Range extends ChildProperty<Range> {
 
     /**
      * Specifies the end width of the ranges
-     * @default '10'
+
      */
 
     @Property(10)
@@ -153,8 +153,8 @@ export class Range extends ChildProperty<Range> {
 
     /**
      * Specifies the color of the ranges
-     * @aspDefaultValueIgnore
-     * @default null
+
+
      */
 
     @Property(null)
@@ -162,7 +162,7 @@ export class Range extends ChildProperty<Range> {
 
     /**
      * Specifies the rounded corner radius for ranges.
-     * @default 0
+
      */
 
     @Property(0)
@@ -170,7 +170,7 @@ export class Range extends ChildProperty<Range> {
 
     /**
      * Specifies the opacity for ranges.
-     * @default 1
+
      */
 
     @Property(1)
@@ -178,7 +178,7 @@ export class Range extends ChildProperty<Range> {
 
     /**
      * Specifies the text for legend.
-     * @default ''
+
      */
     @Property('')
     public legendText: string;
@@ -198,8 +198,8 @@ export class Tick extends ChildProperty<Tick> {
 
     /**
      * The width of the ticks in pixels.
-     * @aspDefaultValueIgnore
-     * @default 2
+
+
      */
 
     @Property(2)
@@ -207,8 +207,8 @@ export class Tick extends ChildProperty<Tick> {
 
     /**
      * The height of the line in pixels.
-     * @aspDefaultValueIgnore
-     * @default null
+
+
      */
 
     @Property(null)
@@ -216,8 +216,8 @@ export class Tick extends ChildProperty<Tick> {
 
     /**
      * Specifies the interval of the tick line.
-     * @aspDefaultValueIgnore
-     * @default null
+
+
      */
 
     @Property(null)
@@ -225,7 +225,7 @@ export class Tick extends ChildProperty<Tick> {
 
     /**
      * Distance of the ticks from axis in pixel.
-     * @default 0
+
      */
 
     @Property(0)
@@ -233,8 +233,8 @@ export class Tick extends ChildProperty<Tick> {
 
     /**
      * The color of the tick line, which accepts value in hex, rgba as a valid CSS color string.
-     * @aspDefaultValueIgnore
-     * @default null
+
+
      */
 
     @Property(null)
@@ -244,7 +244,7 @@ export class Tick extends ChildProperty<Tick> {
      * Specifies the position of the ticks. They are
      * * inside -  Places the ticks inside the axis.
      * * outside - Places the ticks outside of the axis.
-     * @default Inside
+
      */
 
     @Property('Inside')
@@ -252,7 +252,7 @@ export class Tick extends ChildProperty<Tick> {
 
     /**
      * If set true, major ticks takes the range color.
-     * @default false
+
      */
 
     @Property(false)
@@ -267,7 +267,7 @@ export class Cap extends ChildProperty<Cap> {
 
     /**
      * The color of the cap.
-     * @default null
+
      */
 
     @Property(null)
@@ -282,7 +282,7 @@ export class Cap extends ChildProperty<Cap> {
 
     /**
      * Radius of the cap in pixels.
-     * @default 8
+
      */
 
     @Property(8)
@@ -298,8 +298,8 @@ export class NeedleTail extends ChildProperty<NeedleTail> {
 
     /**
      * The color of the back needle.
-     * @aspDefaultValueIgnore
-     * @default null
+
+
      */
 
     @Property(null)
@@ -314,7 +314,7 @@ export class NeedleTail extends ChildProperty<NeedleTail> {
 
     /**
      * The radius of the back needle in pixels or in percentage.
-     * @default '0%'
+
      */
 
     @Property('0%')
@@ -330,7 +330,7 @@ export class Animation extends ChildProperty<Animation> {
 
     /**
      * If set true, pointers get animate on initial loading.
-     * @default true
+
      */
 
     @Property(true)
@@ -338,7 +338,7 @@ export class Animation extends ChildProperty<Animation> {
 
     /**
      * Duration of animation in milliseconds.
-     * @default 1000
+
      */
 
     @Property(1000)
@@ -354,35 +354,35 @@ export class Annotation extends ChildProperty<Annotation> {
 
     /**
      * Content of the annotation, which accepts the id of the custom element.
-     * @default null
+
      */
     @Property(null)
     public content: string;
 
     /**
      * Angle for annotation with respect to axis.
-     * @default 90
+
      */
     @Property(90)
     public angle: number;
 
     /**
      * Radius for annotation with respect to axis.
-     * @default '50%'
+
      */
     @Property('50%')
     public radius: string;
 
     /**
      * Order of an annotation in an axis.
-     * @default '-1'
+
      */
     @Property('-1')
     public zIndex: string;
 
     /**
      * Rotates the annotation along the axis.
-     * @default false
+
      */
     @Property(false)
     public autoAngle: boolean;
@@ -396,7 +396,7 @@ export class Annotation extends ChildProperty<Annotation> {
 
     /**
      * Information about annotation for assistive technology.
-     * @default null
+
      */
     @Property(null)
     public description: string;
@@ -411,8 +411,8 @@ export class Pointer extends ChildProperty<Pointer> {
 
     /**
      * Specifies the value of the pointer.
-     * @aspDefaultValueIgnore
-     * @default null
+
+
      */
 
     @Property(null)
@@ -423,7 +423,7 @@ export class Pointer extends ChildProperty<Pointer> {
      * * needle -  Renders a needle.
      * * marker - Renders a marker.
      * * rangeBar - Renders a rangeBar.
-     * @default Needle
+
      */
 
     @Property('Needle')
@@ -431,7 +431,7 @@ export class Pointer extends ChildProperty<Pointer> {
 
     /**
      * Specifies the rounded corner radius for pointer.
-     * @default 0
+
      */
 
     @Property(0)
@@ -440,21 +440,21 @@ export class Pointer extends ChildProperty<Pointer> {
     /**
      * The URL for the Image that is to be displayed as pointer.
      * It requires marker shape value to be Image.
-     * @default null
+
      */
     @Property(null)
     public imageUrl: string;
 
     /**
      * Length of the pointer in pixels or in percentage.
-     * @default null
+
      */
     @Property(null)
     public radius: string;
 
     /**
      * Width of the pointer in pixels.
-     * @default 20
+
      */
     @Property(20)
     public pointerWidth: number;
@@ -502,7 +502,7 @@ export class Pointer extends ChildProperty<Pointer> {
      * * diamond - Renders a diamond.
      * * invertedTriangle - Renders a invertedTriangle.
      * * image - Renders a image.
-     * @default Circle
+
      */
 
     @Property('Circle')
@@ -510,7 +510,7 @@ export class Pointer extends ChildProperty<Pointer> {
 
     /**
      * The height of the marker in pixels.
-     * @default 5
+
      */
 
     @Property(5)
@@ -518,14 +518,14 @@ export class Pointer extends ChildProperty<Pointer> {
 
     /**
      * Information about pointer for assistive technology.
-     * @default null
+
      */
     @Property(null)
     public description: string;
 
     /**
      * The width of the marker in pixels.
-     * @default 5
+
      */
 
     @Property(5)
@@ -550,8 +550,8 @@ export class Axis extends ChildProperty<Axis> {
 
     /**
      * Specifies the minimum value of an axis.
-     * @aspDefaultValueIgnore
-     * @default null
+
+
      */
 
     @Property(null)
@@ -559,8 +559,8 @@ export class Axis extends ChildProperty<Axis> {
 
     /**
      * Specifies the maximum value of an axis.
-     * @aspDefaultValueIgnore
-     * @default null
+
+
      */
 
     @Property(null)
@@ -568,7 +568,7 @@ export class Axis extends ChildProperty<Axis> {
 
     /**
      * Specifies the last label to be shown
-     * @default false
+
      */
 
     @Property(false)
@@ -576,7 +576,7 @@ export class Axis extends ChildProperty<Axis> {
 
     /**
      * Specifies to hide the intersecting axis labels
-     * @default false
+
      */
 
     @Property(false)
@@ -584,7 +584,7 @@ export class Axis extends ChildProperty<Axis> {
 
     /**
      * Specifies the rounding Off value in the label
-     * @default null
+
      */
 
     @Property(null)
@@ -592,7 +592,7 @@ export class Axis extends ChildProperty<Axis> {
 
     /**
      * Radius of an axis in pixels or in percentage.
-     * @default null
+
      */
 
     @Property(null)
@@ -628,7 +628,7 @@ export class Axis extends ChildProperty<Axis> {
 
     /**
      * Options for customizing the major tick lines.
-     * @default { width: 2, height: 10 }
+
      */
 
     @Complex<TickModel>({ width: 2, height: 10 }, Tick)
@@ -636,7 +636,7 @@ export class Axis extends ChildProperty<Axis> {
 
     /**
      * Options for customizing the minor tick lines.
-     * @default { width: 2, height: 5 }
+
      */
 
     @Complex<TickModel>({ width: 2, height: 5 }, Tick)
@@ -644,7 +644,7 @@ export class Axis extends ChildProperty<Axis> {
 
     /**
      * The start angle of an axis
-     * @default 200
+
      */
 
     @Property(200)
@@ -652,7 +652,7 @@ export class Axis extends ChildProperty<Axis> {
 
     /**
      * The end angle of an axis
-     * @default 160
+
      */
 
     @Property(160)
@@ -662,7 +662,7 @@ export class Axis extends ChildProperty<Axis> {
      * Specifies the direction of an axis. They are
      * * clockWise -  Renders the axis in clock wise direction.
      * * antiClockWise - Renders the axis in anti-clock wise direction.
-     * @default ClockWise
+
      */
 
     @Property('ClockWise')
@@ -670,21 +670,21 @@ export class Axis extends ChildProperty<Axis> {
 
     /**
      * The background color of the axis, which accepts value in hex, rgba as a valid CSS color string.
-     * @default null
+
      */
     @Property(null)
     public background: string;
 
     /**
      * Specifies the range gap property by pixel value.
-     * @default null
+
      */
     @Property(null)
     public rangeGap: number;
 
     /**
      * Specifies the start and end range gap.
-     * @default false
+
      */
     @Property(false)
     public startAndEndRangeGap: boolean;

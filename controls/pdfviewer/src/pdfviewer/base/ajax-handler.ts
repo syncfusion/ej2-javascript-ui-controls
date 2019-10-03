@@ -1,34 +1,34 @@
 import { PdfViewer } from '../index';
 
 /**
- * @hidden
+
  */
 export class AjaxHandler {
 
     /**
      * Specifies the URL to which request to be sent.
-     * @default null	
+
      */
     public url: string;
     /**
      * Specifies the URL to which request to be sent.
-     * @default 'POST'
+
      */
     public type: string = 'POST';
     /**
      * Specifies the responseType to which request response.
-     * @default null
+
      */
     public responseType: XMLHttpRequestResponseType;
     /**		 
      * A boolean value indicating whether the request should be sent asynchronous or not.
-     * @default true
+
      * @private
      */
     public mode: boolean = true;
     /**		 
      * Specifies the ContentType to which request to be sent
-     * @default null
+
      * @private
      */
     public contentType: string = 'application/json;charset=UTF-8';

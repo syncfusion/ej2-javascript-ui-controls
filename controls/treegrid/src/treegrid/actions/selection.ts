@@ -1,6 +1,6 @@
 import { TreeGrid } from '../base/treegrid';
 import { ColumnModel } from '../models/column';
-import { isNullOrUndefined, removeClass } from '@syncfusion/ej2-base';
+import { isNullOrUndefined, removeClass, isBlazor } from '@syncfusion/ej2-base';
 import { createCheckBox } from '@syncfusion/ej2-buttons';
 import { QueryCellInfoEventArgs, parentsUntil, getObject } from '@syncfusion/ej2-grids';
 import { CellSaveEventArgs } from '../base/interface';
@@ -10,7 +10,7 @@ import { getParentData } from '../utils';
 
 /**
  * TreeGrid Selection module
- * @hidden
+
  */
 export class Selection {
     private parent: TreeGrid;
@@ -54,7 +54,7 @@ export class Selection {
   /**
    * To destroy the Selection 
    * @return {void}
-   * @hidden
+
    */
   public destroy(): void {
     this.removeEventListener();
@@ -220,9 +220,13 @@ export class Selection {
       let indeter: number = 0; let checkChildRecords: number = 0;
       if (!isNullOrUndefined(record)) {
         for (let i: number = 0; i < childRecords.length; i++) {
-          if (childRecords[i].checkboxState === 'indeterminate') {
+          let childRecord: ITreeData[] = this.parent.getCurrentViewRecords().filter((e: ITreeData) => {
+            return e.uniqueID === childRecords[i].uniqueID;
+          });
+          let checkBoxRecord: ITreeData = isBlazor() ? childRecord[0] : childRecords[i];
+          if (checkBoxRecord.checkboxState === 'indeterminate') {
             indeter++;
-          } else if (childRecords[i].checkboxState === 'check') {
+          } else if (checkBoxRecord.checkboxState === 'check') {
             checkChildRecords++;
           }
         }
@@ -285,6 +289,7 @@ export class Selection {
         return e.uniqueID === currentRecord.uniqueID;
       });
       let recordIndex: number = this.parent.getCurrentViewRecords().indexOf(record[0]);
+      let checkboxRecord: ITreeData = isBlazor() ? record[0] : currentRecord;
       let checkbox: HTMLElement;
       if (recordIndex > -1) {
         let tr: HTMLElement = this.parent.getRows()[recordIndex];
@@ -298,24 +303,24 @@ export class Selection {
           removeClass([checkbox], ['e-check', 'e-stop', 'e-uncheck']);
         }
       }
-      currentRecord.checkboxState = checkState;
+      checkboxRecord.checkboxState = checkState;
       if (checkState === 'check' && isNullOrUndefined(currentRecord.isSummaryRow)) {
         if (recordIndex !== -1 && this.selectedIndexes.indexOf(recordIndex) === -1) {
           this.selectedIndexes.push(recordIndex);
         }
-        if (this.selectedItems.indexOf(currentRecord) === -1 && (recordIndex !== -1 &&
+        if (this.selectedItems.indexOf(checkboxRecord) === -1 && (recordIndex !== -1 &&
           (!isNullOrUndefined(this.parent.filterModule) && this.parent.filterModule.filteredResult.length > 0))) {
-          this.selectedItems.push(currentRecord);
+          this.selectedItems.push(checkboxRecord);
         }
-        if (this.selectedItems.indexOf(currentRecord) === -1 && (!isNullOrUndefined(this.parent.filterModule) &&
+        if (this.selectedItems.indexOf(checkboxRecord) === -1 && (!isNullOrUndefined(this.parent.filterModule) &&
             this.parent.filterModule.filteredResult.length === 0)) {
-          this.selectedItems.push(currentRecord);
+          this.selectedItems.push(checkboxRecord);
         }
-        if (this.selectedItems.indexOf(currentRecord) === -1 && isNullOrUndefined(this.parent.filterModule)) {
-          this.selectedItems.push(currentRecord);
+        if (this.selectedItems.indexOf(checkboxRecord) === -1 && isNullOrUndefined(this.parent.filterModule)) {
+          this.selectedItems.push(checkboxRecord);
         }
       } else if ((checkState === 'uncheck' || checkState === 'indeterminate') && isNullOrUndefined(currentRecord.isSummaryRow)) {
-        let index: number = this.selectedItems.indexOf(currentRecord);
+        let index: number = this.selectedItems.indexOf(checkboxRecord);
         if (index !== -1) {
             this.selectedItems.splice(index, 1);
         }

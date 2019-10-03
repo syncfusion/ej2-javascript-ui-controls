@@ -1,9 +1,9 @@
-import { Workbook, getSheetName, getSheetIndex, getSheet } from '../base/index';
-import { workbookFormulaOperation, getColumnHeaderText } from '../common/index';
+import { Workbook, getSheetName, getSheetIndex, getSheet, SheetModel } from '../base/index';
+import { workbookFormulaOperation, getColumnHeaderText, aggregateComputation, AggregateArgs, getRangeIndexes } from '../common/index';
 import { Calculate, ValueChangedArgs, CalcSheetFamilyItem } from '../../calculate/index';
 import { IFormulaColl } from '../../calculate/common/interface';
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
-import { DefineNameModel } from '../common/index';
+import { DefineNameModel, getCellAddress } from '../common/index';
 
 /**
  * @hidden
@@ -45,11 +45,13 @@ export class WorkbookFormula {
 
     private addEventListener(): void {
         this.parent.on(workbookFormulaOperation, this.performFormulaOperation, this);
+        this.parent.on(aggregateComputation, this.aggregateComputation, this);
     }
 
     private removeEventListener(): void {
         if (!this.parent.isDestroyed) {
             this.parent.off(workbookFormulaOperation, this.performFormulaOperation);
+            this.parent.off(aggregateComputation, this.aggregateComputation);
         }
     }
 
@@ -66,6 +68,7 @@ export class WorkbookFormula {
         this.calculateInstance = new Calculate(this.parent);
         this.calcID = this.calculateInstance.createSheetFamilyID();
         this.calculateInstance.setTreatEmptyStringAsZero(true);
+        this.calculateInstance.grid = this.parent.getActiveSheet().id.toString();
     }
 
     private performFormulaOperation(args: { [key: string]: Object }): void {
@@ -160,6 +163,24 @@ export class WorkbookFormula {
         if (isFormula) {
             let cellArgs: ValueChangedArgs = new ValueChangedArgs(rowIdx + 1, colIdx + 1, value);
             this.calculateInstance.valueChanged(sheetName, cellArgs, true);
+            let referenceCollection: string[]  = this.calculateInstance.randCollection;
+            if (this.calculateInstance.isRandomVal === true) {
+                let rowId: number;
+                let colId: number;
+                let refValue: string = '';
+                if (this.calculateInstance.randomValues.size > 1 && this.calculateInstance.randomValues.size ===
+                    referenceCollection.length) {
+                    for (let i: number = 0; i < this.calculateInstance.randomValues.size; i++) {
+                        rowId = this.calculateInstance.rowIndex(referenceCollection[i]);
+                        colId = this.calculateInstance.colIndex(referenceCollection[i]);
+                        refValue = this.calculateInstance.randomValues.get(referenceCollection[i]);
+                        sheetName = (parseFloat(this.calculateInstance.getSheetToken(
+                            referenceCollection[i]).split(this.calculateInstance.sheetToken).join('')) + 1).toString();
+                        let tempArgs: ValueChangedArgs = new ValueChangedArgs(rowId, colId, refValue);
+                        this.calculateInstance.valueChanged(sheetName, tempArgs, true);
+                    }
+                }
+            }
         } else {
             let family: CalcSheetFamilyItem = this.calculateInstance.getSheetFamilyItem(sheetName);
             let cellRef: string = getColumnHeaderText(colIdx + 1) + (rowIdx + 1);
@@ -172,7 +193,9 @@ export class WorkbookFormula {
                     this.calculateInstance.clearFormulaDependentCells(cellRef);
                 }
             }
+            this.calculateInstance.getComputedValue().clear();
             this.calculateInstance.refresh(cellRef);
+            this.calculateInstance.refreshRandValues(cellRef);
         }
     }
 
@@ -266,5 +289,26 @@ export class WorkbookFormula {
             }
         });
         return index;
+    }
+
+    private toFixed(value: string): string {
+        let num: number = Number(value);
+        if (Math.round(num) !== num) { value = num.toFixed(2); }
+        return value;
+    }
+
+    private aggregateComputation(args: AggregateArgs): void {
+        let sheet: SheetModel = this.parent.getActiveSheet();
+        let range: string = sheet.selectedRange;
+        let indexes: number[] = getRangeIndexes(range.split(':')[1]);
+        if (indexes[0] + 1 === sheet.rowCount && indexes[1] + 1 === sheet.colCount) {
+            range = `A1:${getCellAddress(sheet.usedRange.rowIndex, sheet.usedRange.colIndex)}`;
+        }
+        args.Count = this.calculateInstance.getFunction('COUNTA')(range);
+        if (!args.Count) { return; }
+        args.Sum = this.toFixed(this.calculateInstance.getFunction('SUM')(range));
+        args.Avg = this.toFixed(this.calculateInstance.getFunction('AVERAGE')(range));
+        args.Min = this.toFixed(this.calculateInstance.getFunction('MIN')(range));
+        args.Max = this.toFixed(this.calculateInstance.getFunction('MAX')(range));
     }
 }

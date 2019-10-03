@@ -107,7 +107,7 @@ export class Splitter {
             if (position.indexOf('px') !== -1) {
                 let intValue: number = parseInt(position, 10);
                 value = (((intValue / this.parent.ganttWidth) * 100) <= 100 ? ((intValue / this.parent.ganttWidth) * 100) + '%' :
-                    '100%');
+                    '25%');
             } else {
                 value = position.indexOf('%') === -1 ?
                     position + '%' : position;

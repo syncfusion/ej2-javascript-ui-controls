@@ -2097,7 +2097,7 @@ var ListView = /** @__PURE__ @class */ (function (_super) {
     /**
      * It is used to get the currently [here](./api-selectedItem)
      *  item details from the list items.
-     * @blazorType ListSelectedItem<TValue>
+
      */
     ListView.prototype.getSelectedItems = function () {
         // tslint:disable-next-line:no-any
@@ -2229,7 +2229,7 @@ var ListView = /** @__PURE__ @class */ (function (_super) {
     /**
      * It is used to find out an item details from the current list.
      * @param  {Fields | HTMLElement | Element} obj - We can pass element Object or Fields as Object with ID and Text fields.
-     * @blazorType TValue
+
      */
     ListView.prototype.findItem = function (obj) {
         return this.getItemData(obj);
@@ -2317,7 +2317,7 @@ var ListView = /** @__PURE__ @class */ (function (_super) {
      * For example fields: { text: 'Name', tooltip: 'Name', id:'id'}
      * @param  {{[key:string]:Object}[]} data - JSON Array Data that need to add.
      * @param  {Fields} fields - Target item to add the given data as its children (can be null).
-     * @blazorArgsType data|List<TValue>,fields|TValue
+
      */
     ListView.prototype.addItem = function (data, fields) {
         if (fields === void 0) { fields = undefined; }

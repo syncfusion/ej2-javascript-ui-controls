@@ -7,38 +7,38 @@ export interface SubtitleModel {
 
     /**
  * visibility for sub title.
- * @default true
+
  */
     visible?: boolean;
 
     /**
  * text for sub title.
- * @default ''
+
  */
     text?: string;
 
     /**
  * description for sub title.
- * @default ''
+
  */
     description?: string;
 
     /**
  * text alignment for sub title.
- * @default Far
+
  */
     textAlignment?: SmithchartAlignment;
 
     /**
   * trim the sub title.
-  * @default true
+
   */
     enableTrim?: boolean;
 
     /**
  * maximum width of the sub title.
- * @aspDefaultValueIgnore
- * @default null
+
+
  */
     maximumWidth?: number;
 
@@ -57,39 +57,39 @@ export interface TitleModel {
 
     /**
  * visibility for title.
- * @default true
+
  */
     visible?: boolean;
 
     /**
  * text for title.
- * @default ''
+
  */
     text?: string;
 
     /**
  * description for title.
- * @default ''
+
  */
     description?: string;
 
     /**
  * text alignment for title.
- * @default Center
+
  */
     textAlignment?: SmithchartAlignment;
 
     /**
  * trim the title.
- * @default true
+
  */
 
     enableTrim?: boolean;
 
     /**
  * maximum width of the sub title
- * @aspDefaultValueIgnore
- * @default null
+
+
  */
     maximumWidth?: number;
 

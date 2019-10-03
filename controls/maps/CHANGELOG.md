@@ -8,6 +8,14 @@
 
 ## [Unreleased]
 
+## 17.3.14 (2019-10-03)
+
+### Maps
+
+#### Bug Fixes
+
+- `F147309` - Issue in adding sub layer in the 'OpenStreetMap' has been resolved.
+
 ## 17.3.9-beta (2019-09-20)
 
 ### Maps

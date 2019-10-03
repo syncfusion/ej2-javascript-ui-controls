@@ -477,6 +477,46 @@ describe('CheckBox', () => {
         });
     });
 
+    describe('Notify Html Attributes property changes of', () => {
+        afterEach(() => {
+            checkbox.destroy();
+        });
+
+        it('CheckBox with Style', () => {
+            checkbox = new CheckBox({ label: 'checkbox', htmlAttributes: { style: 'background-color:red' } }, '#checkbox');
+            expect(element.parentElement.children[1].getAttribute("style").indexOf("background-color:red")).toEqual(0);
+            checkbox.htmlAttributes = {style: "background-color:#d3d3d3" }
+            checkbox.dataBind();
+            expect(element.parentElement.children[1].getAttribute("style").indexOf("background-color:#d3d3d3")).toEqual(0);
+        });
+
+        it('CheckBox with Class', () => {
+            checkbox = new CheckBox({htmlAttributes: { class: 'e-checkbox-syncfusion' }}, '#checkbox');
+            expect(element.parentElement.parentElement.classList.contains('e-checkbox-syncfusion')).toEqual(true);
+            checkbox.htmlAttributes = {class: "e-new-checkbox" }
+            checkbox.dataBind();
+            expect(element.parentElement.parentElement.classList.contains('e-new-checkbox')).toEqual(true);
+        });
+
+        it('CheckBox with Title', () => {
+            checkbox = new CheckBox({htmlAttributes: { title: 'ejcheckbox' }}, '#checkbox');
+            expect(element.parentElement.parentElement.getAttribute("title").indexOf("ejcheckbox")).toEqual(0);
+            checkbox.htmlAttributes = {title: "e-new-checkbox" }
+            checkbox.dataBind();
+            expect(element.parentElement.parentElement.getAttribute("title").indexOf("e-new-checkbox")).toEqual(0);
+        });
+
+        it('CheckBox with disabled state', () => {
+            checkbox = new CheckBox({htmlAttributes: { disabled: "true" }}, '#checkbox');
+            expect(element.parentElement.children[0].getAttribute("disabled").indexOf("true")).toEqual(0);
+            checkbox.htmlAttributes = {readonly: "true" }
+            checkbox.dataBind();
+            expect(element.parentElement.children[0].getAttribute("readonly").indexOf("true")).toEqual(0);
+        });
+
+       
+    });
+
     it('memory leak', () => {
         profile.sample();
         let average: any = inMB(profile.averageChange);

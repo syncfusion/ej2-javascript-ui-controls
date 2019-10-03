@@ -172,7 +172,7 @@ export class GaugeTooltip {
             rangeTooltipFormat.replace(/{start}/g, startData).replace(/{end}/g, endData) :
             'Start : ' + rangeFormat(roundStartValue) + '<br>' + 'End : ' + rangeFormat(roundEndValue);
             location = getLocationFromAngle(
-                rangeAngle, this.currentAxis.currentRadius, this.gauge.midPoint
+                rangeAngle, this.currentRange.currentRadius, this.gauge.midPoint
             );
             location.x = (this.tooltip.rangeSettings.template && ((rangeAngle >= 150 && rangeAngle <= 250) ||
             (rangeAngle >= 330 && rangeAngle <= 360) ||
@@ -237,11 +237,7 @@ export class GaugeTooltip {
             this.currentAxis = <Axis>this.gauge.axes[currentAnnotation.axisIndex];
             this.currentAnnotation = <Annotation>(this.currentAxis.annotations)[currentAnnotation.pointerIndex];
             let annotationAngle: number = (this.currentAnnotation.angle - 90);
-            this.tooltipEle = createElement('div', {
-                id: this.tooltipId,
-                className: 'EJ2-CircularGauge-Tooltip',
-                styles: 'position: absolute;pointer-events:none;'
-            });
+            this.tooltipElement();
             document.getElementById(this.gauge.element.id + '_Secondary_Element').appendChild(this.tooltipEle);
             let annotationContent: string = (this.gauge.tooltip.annotationSettings.format !== null) ?
                                              this.gauge.tooltip.annotationSettings.format : '' ;

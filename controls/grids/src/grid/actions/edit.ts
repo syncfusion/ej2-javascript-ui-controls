@@ -31,7 +31,7 @@ export class Edit implements IAction {
     private edit: Edit;
     protected renderer: EditRender;
     private editModule: IEdit;
-    /** @hidden */
+
     public formObj: FormValidator;
     public mFormObj: FormValidator;
     private static editCellType: Object = {
@@ -57,7 +57,7 @@ export class Edit implements IAction {
 
     /**
      * Constructor for the Grid editing module
-     * @hidden
+
      */
     constructor(parent?: IGrid, serviceLocator?: ServiceLocator) {
         this.parent = parent;
@@ -94,7 +94,7 @@ export class Edit implements IAction {
     }
 
     /**
-     * @hidden
+
      */
     public onPropertyChanged(e: NotifyArgs): void {
         if (e.module !== this.getModuleName()) {
@@ -444,7 +444,7 @@ export class Edit implements IAction {
     }
 
     /**
-     * @hidden
+
      */
     public addEventListener(): void {
         if (this.parent.isDestroyed) { return; }
@@ -462,7 +462,7 @@ export class Edit implements IAction {
     }
 
     /**
-     * @hidden
+
      */
     public removeEventListener(): void {
         if (this.parent.isDestroyed) { return; }
@@ -486,7 +486,7 @@ export class Edit implements IAction {
     }
 
     /**
-     * @hidden
+
      */
     public getCurrentEditedData(form: Element, editedData: Object): Object {
         let gObj: IGrid = this.parent;
@@ -542,7 +542,8 @@ export class Edit implements IAction {
     }
 
     private getValue(col: Column, input: HTMLInputElement, editedData: Object): string | boolean | number | Date {
-        let value: string | boolean | number | Date = input.value;
+        let value: string | boolean | number | Date = col.isForeignColumn() ? ((<EJ2Intance>(input as Element)).ej2_instances ?
+            (<EJ2Intance>(input as Element)).ej2_instances[0].value : input.value) : input.value;
         let gObj: IGrid = this.parent;
         let temp: Function = col.edit.read as Function;
         if (col.type === 'checkbox' || col.type === 'boolean') {
@@ -561,7 +562,7 @@ export class Edit implements IAction {
     }
 
     /**
-     * @hidden
+
      */
     public onActionBegin(e: NotifyArgs): void {
         let restrictedRequestTypes: string[] = ['filterafteropen', 'filterbeforeopen', 'filterchoicerequest', 'save'];
@@ -573,7 +574,7 @@ export class Edit implements IAction {
     }
 
     /**
-     * @hidden
+
      */
     public destroyWidgets(cols?: Column[]): void {
         let gObj: IGrid = this.parent;
@@ -610,7 +611,7 @@ export class Edit implements IAction {
     }
 
     /**
-     * @hidden
+
      */
     public destroyForm(): void {
         this.destroyToolTip();
@@ -623,7 +624,7 @@ export class Edit implements IAction {
     /**
      * To destroy the editing. 
      * @return {void}
-     * @hidden
+
      */
     public destroy(): void {
         let gridElement: Element = this.parent.element;
@@ -693,7 +694,7 @@ export class Edit implements IAction {
     }
 
     /**
-     * @hidden
+
      */
     public applyFormValidation(cols?: Column[]): void {
         let gObj: IGrid = this.parent;
@@ -852,14 +853,14 @@ export class Edit implements IAction {
         }
     }
     /**
-     * @hidden
+
      */
     public checkColumnIsGrouped(col: Column): boolean {
         return !col.visible && !(this.parent.groupSettings.columns.indexOf(col.field) > -1);
     }
 
     /**
-     * @hidden
+
      */
     public static AddEditors(editors: object): void {
         Edit.editCellType = extend(Edit.editCellType, editors);

@@ -21,13 +21,13 @@ export interface BackgroundModel {
      * });
      * diagram.appendTo('#diagram');
      * ```
-     * @default ''
+
      */
     source?: string;
 
     /**
      * Defines the background color of diagram
-     * @default 'transparent'
+
      */
     color?: string;
 
@@ -36,7 +36,7 @@ export interface BackgroundModel {
      * * None - Scale value will be set as None for the image
      * * Meet - Scale value Meet will be set for the image
      * * Slice - Scale value Slice will be set for the image
-     * @default 'None'
+
      */
     scale?: Scale;
 
@@ -52,7 +52,7 @@ export interface BackgroundModel {
      * * XMinYMax - smallest X value of the view port and maximum Y value of the view port
      * * XMidYMax - midpoint X value of the view port and maximum Y value of the view port
      * * XMaxYMax - maximum X value of the view port and maximum Y value of the view port
-     * @default 'None'
+
      */
     align?: ImageAlignment;
 
@@ -65,19 +65,19 @@ export interface PageSettingsModel {
 
     /**
      * Sets the width of a diagram Page
-     * @default null
+
      */
     width?: number;
 
     /**
      * Sets the height of a diagram Page
-     * @default null
+
      */
     height?: number;
 
     /**
      * Sets the margin of a diagram page
-     * @default new Margin(0,0,0,0)
+
      */
     margin?: MarginModel;
 
@@ -85,7 +85,7 @@ export interface PageSettingsModel {
      * Sets the orientation of the pages in a diagram
      *  * Landscape - Display with page Width is more than the page Height.
      *  * Portrait - Display with page Height is more than the page width.
-     * @default 'Landscape'
+
      */
     orientation?: PageOrientation;
 
@@ -94,25 +94,25 @@ export interface PageSettingsModel {
      * * Infinity - Allow the interactions to take place at the infinite height and width 
      * * Diagram - Allow the interactions to take place around the diagram height and width 
      * * Page - Allow the interactions to take place around the page height and width
-     * @default 'Infinity'
+
      */
     boundaryConstraints?: BoundaryConstraints;
 
     /**
      * Defines the background color and image of diagram
-     * @default 'transparent' 
+
      */
     background?: BackgroundModel;
 
     /**
      * Sets whether multiple pages can be created to fit all nodes and connectors
-     * @default false
+
      */
     multiplePage?: boolean;
 
     /**
      * Enables or disables the page break lines
-     * @default false
+
      */
     showPageBreaks?: boolean;
 
@@ -125,47 +125,47 @@ export interface ScrollSettingsModel {
 
     /**
      * Defines horizontal offset of the scroller
-     * @default 0
-     * @isBlazorNullableType true
+
+
      */
     horizontalOffset?: number;
 
     /**
      * Defines vertical offset of the scroller
-     * @default 0
-     * @isBlazorNullableType true
+
+
      */
     verticalOffset?: number;
 
     /**
      * Defines the currentZoom value of diagram
-     * @default 1
+
      */
     currentZoom?: number;
 
     /**
      * Allows to read the viewport width of the diagram
-     * @default 0
-     * @isBlazorNullableType true
+
+
      */
     viewPortWidth?: number;
 
     /**
      * Allows to read the viewport height of the diagram
-     * @default 0
-     * @isBlazorNullableType true
+
+
      */
     viewPortHeight?: number;
 
     /**
      * Defines the minimum zoom value of the diagram
-     * @default 0.2
+
      */
     minZoom?: number;
 
     /**
      * Defines the maximum zoom value of the scroller
-     * @default 30
+
      */
     maxZoom?: number;
 
@@ -186,33 +186,33 @@ export interface ScrollSettingsModel {
      * });
      * diagram.appendTo('#diagram');
      * ```
-     * @default 'Diagram'
+
      */
     scrollLimit?: ScrollLimit;
 
     /**
      * Defines the scrollable area of diagram. Applicable, if the scroll limit is “limited”.
-     * @aspDefaultValueIgnore
-     * @blazorDefaultValueIgnore
-     * @default undefined
+
+
+
      */
     scrollableArea?: Rect;
 
     /**
      * Enables or Disables the auto scroll option
-     * @default false
+
      */
     canAutoScroll?: boolean;
 
     /**
      * Defines the maximum distance to be left between the object and the scroll bar to trigger auto scrolling
-     * @default { left: 15, right: 15, top: 15, bottom: 15 }
+
      */
     autoScrollBorder?: MarginModel;
 
     /**
      * Defines the maximum distance to be left between the object and the edge of the page.
-     * @default { left: 0, right: 0, top: 0, bottom: 0 }
+
      */
     padding?: MarginModel;
 

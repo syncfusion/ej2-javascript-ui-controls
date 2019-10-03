@@ -10,7 +10,7 @@ import { renderMovable, getScrollBarWidth, wrap } from '../base/util';
 
 /**
  * Freeze module is used to render grid content with frozen rows and columns
- * @hidden
+
  */
 export class FreezeContentRender extends ContentRender implements IRenderer {
     private frozenContent: Element;
@@ -239,12 +239,14 @@ export class FreezeRender extends HeaderRender implements IRenderer {
             }
             fRowHgt = height[i];
             mRowHgt = width[i];
-            if (fRows[i].childElementCount && ((isWrap && fRowHgt < mRowHgt) || (!isWrap && fRowHgt < mRowHgt) ||
-                (this.parent.allowResizing && this.parent.resizeModule && !this.parent.resizeModule.isFrozenColResized))) {
+            if (!isNullOrUndefined(fRows[i]) && fRows[i].childElementCount && ((isWrap && fRowHgt < mRowHgt) ||
+                (!isWrap && fRowHgt < mRowHgt) || (this.parent.allowResizing && this.parent.resizeModule &&
+                !this.parent.resizeModule.isFrozenColResized))) {
                 fRows[i].style.height = mRowHgt + 'px';
             }
-            if (mRows[i].childElementCount && ((isWrap && fRowHgt > mRowHgt) || (!isWrap && fRowHgt > mRowHgt) ||
-                (this.parent.allowResizing && this.parent.resizeModule && this.parent.resizeModule.isFrozenColResized))) {
+            if (!isNullOrUndefined(mRows[i]) && mRows[i].childElementCount && ((isWrap && fRowHgt > mRowHgt) ||
+                (!isWrap && fRowHgt > mRowHgt) || (this.parent.allowResizing && this.parent.resizeModule &&
+                this.parent.resizeModule.isFrozenColResized))) {
                 mRows[i].style.height = fRowHgt + 'px';
             }
         }

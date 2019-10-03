@@ -118,7 +118,7 @@ export class TextHelper {
         spanElement.innerText = 'm';
         this.applyStyle(spanElement, characterFormat);
         let parentDiv: HTMLDivElement = document.createElement('div');
-        parentDiv.style.display = 'inline-block';
+        parentDiv.setAttribute('style', 'display:inline-block;position:absolute;');
         let tempDiv: HTMLDivElement = document.createElement('div');
         tempDiv.setAttribute('style', 'display:inline-block;width: 1px; height: 0px;vertical-align: baseline;');
         parentDiv.appendChild(spanElement);

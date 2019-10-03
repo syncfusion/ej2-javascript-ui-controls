@@ -2,6 +2,7 @@ import { Spreadsheet } from '../../spreadsheet/index';
 import { rowHeightChanged } from '../common/index';
 import { CellFormatArgs, getRowHeight, setRowHeight, applyCellFormat, CellStyleModel } from '../../workbook/index';
 import { SheetModel } from '../../workbook/index';
+import { isNullOrUndefined } from '@syncfusion/ej2-base';
 /**
  * CellFormat module allows to format the cell styles.
  */
@@ -44,8 +45,17 @@ export class CellFormat {
                         this.row.innerHTML = '';
                     }
                 } else {
-                    if (!this.checkHeight) { this.checkHeight = this.isHeightCheckNeeded(args.style, args.onActionUpdate); }
-                    this.updateRowHeight(cell, args.rowIdx, args.lastCell, args.onActionUpdate);
+                    let idx: number;
+                    if (this.parent.scrollSettings.enableVirtualization) { idx = args.rowIdx - this.parent.viewport.topIndex; }
+                    if (!this.checkHeight) {
+                        this.checkHeight = this.isHeightCheckNeeded(args.style, args.onActionUpdate);
+                    }
+                    if (isNullOrUndefined(this.parent.getActiveSheet().rows[idx]) ||
+                        isNullOrUndefined(this.parent.getActiveSheet().rows[idx].customHeight)) {
+                        this.updateRowHeight(cell, args.rowIdx, args.lastCell, args.onActionUpdate);
+                    } else {
+                        cell.parentElement.style.lineHeight = parseInt(cell.parentElement.style.height, 10) - 1 + 'px';
+                    }
                 }
             }
         } else {
@@ -66,7 +76,7 @@ export class CellFormat {
             if (test) { cell.textContent = ''; }
             height = height < 20 ? 20 : height;
             let prevHeight: number = getRowHeight(sheet, rowIdx);
-            let heightChanged: boolean = onActionUpdate ? height !== prevHeight : height > prevHeight ;
+            let heightChanged: boolean = onActionUpdate ? height !== prevHeight : height > prevHeight;
             if (heightChanged) {
                 row.style.height = `${height}px`;
                 if (sheet.showHeaders) {

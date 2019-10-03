@@ -281,7 +281,7 @@ export class SfdtExport {
     }
     private writeInlines(paragraph: ParagraphWidget, line: LineWidget, inlines: any): void {
         let lineWidget: LineWidget = line.clone();
-        let bidi: boolean = paragraph.paragraphFormat.getValue('bidi') as boolean;
+        let bidi: boolean = paragraph.paragraphFormat.bidi;
         if (bidi || this.viewer.layout.isContainsRtl(lineWidget)) {
             this.viewer.layout.reArrangeElementsForRtl(lineWidget, bidi);
         }

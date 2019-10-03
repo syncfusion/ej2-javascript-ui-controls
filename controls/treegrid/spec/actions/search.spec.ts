@@ -80,21 +80,42 @@ describe('Search module', () => {
         }
         gridObj.grid.actionComplete = actionComplete;
         gridObj.search("Testing");
+    });   
+   
+    afterAll(() => {
+      destroy(gridObj);
     });
+  });
 
-
+  describe('Hierarchy Search Testing - Child', () => {
+    let gridObj: TreeGrid;
+    let actionComplete: ()=> void;
+    beforeAll((done: Function) => {
+      gridObj = createGrid(
+        {
+          dataSource: sampleData,
+          childMapping: 'subtasks',
+          treeColumnIndex: 1,
+          toolbar: ['Search'],
+          searchSettings: { hierarchyMode: 'Child' },
+          columns: ['taskID', 'taskName', 'duration', 'progress'],
+        },
+        done
+      );
+    });
+   
     it('Check the searched records for child mode in collapsed state without paging', (done: Function) => {
-      gridObj.actionComplete = () => void {}
-      gridObj.search('');
-      actionComplete = (args?: Object): void => {
-         expect(gridObj.getRows().length).toBe(3);
-         expect(gridObj.getRows()[0].getElementsByClassName('e-rowcell')[1].querySelector("div>.e-treecell").innerHTML === "Testing").toBe(true);
-         expect(gridObj.getRows()[1].getElementsByClassName('e-rowcell')[1].querySelector("div>.e-treecell").innerHTML === "Testing").toBe(true); 
-         expect(gridObj.getRows()[2].getElementsByClassName('e-rowcell')[1].querySelector("div>.e-treecell").innerHTML === "Testing").toBe(true); 
-         done();
+      actionComplete = (args?: any): void => {
+        if (args.requestType === 'searching' && args.searchString === 'Testing') {
+          expect(gridObj.getRows().length).toBe(3);
+          expect(gridObj.getRows()[0].getElementsByClassName('e-rowcell')[1].querySelector("div>.e-treecell").innerHTML === "Testing").toBe(true);
+          expect(gridObj.getRows()[1].getElementsByClassName('e-rowcell')[1].querySelector("div>.e-treecell").innerHTML === "Testing").toBe(true);
+          expect(gridObj.getRows()[2].getElementsByClassName('e-rowcell')[1].querySelector("div>.e-treecell").innerHTML === "Testing").toBe(true);
+          done();
+        }
       }
-      gridObj.grid.actionComplete = actionComplete;
       gridObj.collapseAll();
+      gridObj.grid.actionComplete = actionComplete;      
       gridObj.search("Testing");
   });
    

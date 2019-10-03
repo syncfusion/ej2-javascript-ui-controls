@@ -19,7 +19,7 @@ export class Clipboard implements IAction {
 
     /**
      * Constructor for the Grid clipboard module
-     * @hidden
+
      */
     constructor(parent?: IGrid) {
         this.parent = parent;
@@ -27,7 +27,7 @@ export class Clipboard implements IAction {
     }
 
     /**
-     * @hidden
+
      */
     public addEventListener(): void {
         if (this.parent.isDestroyed) { return; }
@@ -38,7 +38,7 @@ export class Clipboard implements IAction {
     }
 
     /**
-     * @hidden
+
      */
     public removeEventListener(): void {
         if (this.parent.isDestroyed) { return; }
@@ -289,7 +289,7 @@ export class Clipboard implements IAction {
     /**
      * To destroy the clipboard 
      * @return {void}
-     * @hidden
+
      */
     public destroy(): void {
         this.removeEventListener();

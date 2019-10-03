@@ -111,10 +111,10 @@ export function getDateFromString(date: string): Date {
         date.indexOf('T') !== -1 ? new Date(date) : new Date(date.replace(/-/g, '/'));
 }
 
-/** @hidden */
+
 let scrollWidth: number = null;
 
-/** @hidden */
+
 export function getScrollBarWidth(): number {
     if (scrollWidth !== null) { return scrollWidth; }
     let divNode: HTMLElement = createElement('div');

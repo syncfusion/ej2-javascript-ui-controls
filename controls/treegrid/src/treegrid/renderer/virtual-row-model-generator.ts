@@ -5,7 +5,7 @@ import * as events from '../base/constant';
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
 /**
  * RowModelGenerator is used to generate grid data rows.
- * @hidden
+
  */
 export class TreeVirtualRowModelGenerator extends VirtualRowModelGenerator {
     private visualData: ITreeData[];

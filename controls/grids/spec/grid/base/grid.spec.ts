@@ -1210,3 +1210,42 @@ describe('Grid base module', () => {
             });
         });
     });
+    
+    describe('grid checkbox selection functionalities with Freeze pane', () => {
+        let gridObj: Grid;
+        let rowSelected: () => void;
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: data,
+                    allowSelection: true,
+                    allowPaging: true,
+                    pageSettings: { pageSize: 6},
+                    columns: [
+                        { type:'checkbox', width: 40},
+                        { headerText: 'OrderID', field: 'OrderID' },
+                        { headerText: 'CustomerID', field: 'CustomerID' },
+                        { headerText: 'EmployeeID', field: 'EmployeeID' },
+                        { headerText: 'ShipCountry', field: 'ShipCountry' },
+                        { headerText: 'ShipCity', field: 'ShipCity' },
+                    ],
+                    rowSelected:rowSelected
+                    
+                }, done);
+        });
+    
+        it('Checkbox select all with data count', () => {
+            rowSelected = (args?: any): void => {
+                expect(args.data.length).toBe(6);
+                expect(args.isInteracted).toBeTruthy();
+            }
+            gridObj.rowSelected = rowSelected;
+            (gridObj.element.querySelector('.e-headercelldiv').querySelectorAll('.e-frame.e-icons')[0] as any).click();
+            expect(gridObj.getSelectedRowIndexes().length).toBe(6);
+        });
+        afterAll(() => {
+            destroy(gridObj);
+            gridObj = null;
+        });
+    });
+    

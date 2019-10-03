@@ -206,7 +206,7 @@ export class DiagramRenderer {
             dashArray: '', opacity: 1, cornerRadius: 0,
             visible: true, id: canvas.id + '_highlighter', class: 'e-diagram-highlighter'
         };
-        this.svgRenderer.drawRectangle(canvas, options, this.diagramId);
+        this.svgRenderer.drawRectangle(canvas, options, this.diagramId, undefined, undefined, canvas as SVGSVGElement);
     }
 
     /**

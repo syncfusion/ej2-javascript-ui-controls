@@ -10,7 +10,7 @@ export interface TextWrapSettingsModel {
      * * `Both`: Wraps both the header and content. 
      * * `Content`: Wraps the header alone.
      * * `Header`: Wraps the content alone. 
-     * @default Both
+
      */
     wrapMode?: WrapMode;
 

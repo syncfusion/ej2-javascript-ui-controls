@@ -292,7 +292,7 @@ export class KeyboardInteraction {
     private isInverseTableSelect(): boolean {
         return this.parent.activeView.isInverseTableSelect;
     }
-    /** @hidden */
+
     public selectCells(isMultiple: boolean, targetCell: HTMLTableCellElement): void {
         this.parent.removeSelectedClass();
         let target: HTMLTableCellElement = (targetCell instanceof Array) ? targetCell.slice(-1)[0] : targetCell;

@@ -4,7 +4,7 @@
 import { remove, isVisible, Browser, closest, createElement, append } from '@syncfusion/ej2-base';
 import {
     Schedule, Day, Week, WorkWeek, Month, Agenda, TimelineViews, EJ2Instance,
-    EventRenderedArgs, ScheduleModel, CellClickEventArgs, Timezone
+    EventRenderedArgs, ScheduleModel, CellClickEventArgs, Timezone, MoreEventsClickArgs
 } from '../../../src/schedule/index';
 import { RecurrenceEditor } from '../../../src/recurrence-editor/index';
 import { defaultData, resourceData, timelineData } from '../base/datasource.spec';
@@ -1723,9 +1723,9 @@ describe('Quick Popups', () => {
                 expect(schObj.eventsData.length).toEqual(1);
                 let dataObj: { [key: string]: Object }[] = schObj.eventsData as { [key: string]: Object }[];
                 expect(dataObj[0].Subject).toEqual('Recurrence - Series Edit');
-                expect(dataObj[0].RecurrenceException as string).toEqual(null);
-                expect(dataObj[0].RecurrenceID as string).toEqual(null);
-                expect(dataObj[0].FollowingID as string).toEqual(undefined);
+                expect(dataObj[0].RecurrenceException).toBeNull();
+                expect(dataObj[0].RecurrenceID).toBeNull();
+                expect(dataObj[0].FollowingID).toBeNull();
                 done();
             };
             expect(schObj.eventsData.length).toEqual(1);
@@ -1862,7 +1862,7 @@ describe('Quick Popups', () => {
             schObj.dataBound = () => {
                 expect(schObj.eventsData.length).toEqual(4);
                 let dataObj: { [key: string]: Object }[] = schObj.eventsData as { [key: string]: Object }[];
-                expect(dataObj[3].RecurrenceException).toEqual(null);
+                expect(dataObj[3].RecurrenceException).toBeNull();
                 expect(dataObj[3].Subject).toEqual('Include Edited Occurrences in Following Edit');
                 expect(dataObj[3].Id).toEqual(5);
                 expect(dataObj[3].FollowingID).toEqual(3);
@@ -1891,7 +1891,7 @@ describe('Quick Popups', () => {
         it('Edit Single Occurrence as Series', (done: Function) => {
             schObj.dataBound = () => {
                 expect(schObj.currentAction).toEqual('EditSeries');
-                expect(schObj.eventsData.length).toEqual(2);
+                expect(schObj.eventsData.length).toEqual(4);
                 let dataObj: { [key: string]: Object }[] = schObj.eventsData as { [key: string]: Object }[];
                 expect((<string>dataObj[0].RecurrenceException).split(',').length).toEqual(1);
                 expect(dataObj[0].Id).toEqual(1);
@@ -1928,11 +1928,11 @@ describe('Quick Popups', () => {
                 expect(schObj.eventsData.length).toEqual(1);
                 let dataObj: { [key: string]: Object }[] = schObj.eventsData as { [key: string]: Object }[];
                 expect(dataObj[0].Id).toEqual(1);
-                expect(dataObj[0].RecurrenceException).toEqual(null);
+                expect(dataObj[0].RecurrenceException).toBeNull();
                 expect(dataObj[0].Subject).toEqual('Recurrence');
                 done();
             };
-            expect(schObj.eventsData.length).toEqual(2);
+            expect(schObj.eventsData.length).toEqual(4);
             let appElements: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
             util.triggerMouseEvent(appElements[5], 'click');
             util.triggerMouseEvent(appElements[5], 'dblclick');
@@ -2036,12 +2036,14 @@ describe('Quick Popups', () => {
             schObj.dataBound = () => {
                 expect(schObj.eventsData.length).toEqual(2);
                 let dataObj: { [key: string]: Object }[] = schObj.eventsData as { [key: string]: Object }[];
-                expect((<string>dataObj[0].RecurrenceException).split(',').length).toEqual(1);
                 expect(dataObj[0].Id).toEqual(1);
-                expect(dataObj[0].RecurrenceException).toEqual('20190205T100000Z');
                 expect(dataObj[0].Subject).toEqual('Recurrence');
+                expect((<string>dataObj[0].RecurrenceException).split(',').length).toEqual(3);
+                expect(dataObj[0].RecurrenceException).toEqual('20190205T100000Z,20190208T100000Z,20190209T100000Z');
                 expect(dataObj[1].Id).toEqual(2);
                 expect(dataObj[1].RecurrenceID).toEqual(1);
+                expect(dataObj[1].RecurrenceException).toEqual('20190205T100000Z');
+                expect((<string>dataObj[1].RecurrenceException).split(',').length).toEqual(1);
                 expect(dataObj[1].Subject).toEqual('Recurrence - Edited1');
                 done();
             };
@@ -2184,12 +2186,12 @@ describe('Quick Popups', () => {
                 expect(dataObj[1].Subject).toEqual('Recurrence - Edited');
                 expect(dataObj[2].Id).toEqual(3);
                 expect(dataObj[2].Subject).toEqual('Recurrence - Edited1');
-                expect(dataObj[2].FollowingID).toEqual(undefined);
+                expect(dataObj[2].FollowingID).toBeNull();
                 expect(dataObj[2].RecurrenceID).toEqual(1);
                 expect(dataObj[3].Id).toEqual(4);
                 expect(dataObj[3].Subject).toEqual('Recurrence - Following Edited');
-                expect(dataObj[3].FollowingID).toEqual(undefined);
-                expect(dataObj[3].RecurrenceID).toEqual(null);
+                expect(dataObj[3].FollowingID).toBeNull();
+                expect(dataObj[3].RecurrenceID).toBeNull();
                 done();
             };
             expect(schObj.eventsData.length).toEqual(3);
@@ -2206,11 +2208,11 @@ describe('Quick Popups', () => {
             let dialogElement: HTMLElement = document.querySelector('.' + cls.EVENT_WINDOW_DIALOG_CLASS) as HTMLElement;
             let startDate: DateTimePicker = (<HTMLElement>dialogElement.querySelector('.e-start') as EJ2Instance).
                 ej2_instances[0] as DateTimePicker;
-            startDate.value = timezone.removeLocalOffset(new Date(2019, 1, 5, 10));
+            startDate.value = timezone.removeLocalOffset(new Date(2019, 1, 5, 8));
             startDate.dataBind();
             let endDate: DateTimePicker = (<HTMLElement>dialogElement.querySelector('.e-end') as EJ2Instance).
                 ej2_instances[0] as DateTimePicker;
-            endDate.value = timezone.removeLocalOffset(new Date(2019, 1, 5, 11));
+            endDate.value = timezone.removeLocalOffset(new Date(2019, 1, 5, 9));
             endDate.dataBind();
             util.triggerMouseEvent(eventWindow.querySelector('.e-event-save'), 'click');
             expect(eventWindow.classList.contains('e-popup-open')).toEqual(false);
@@ -2496,7 +2498,7 @@ describe('Quick Popups', () => {
             schObj.dataBound = () => {
                 (schObj.element.querySelector('.e-more-indicator') as HTMLElement).click();
                 let moreEventPopup: Element = document.querySelector('.e-more-popup-wrapper');
-                // expect(isVisible(moreEventPopup)).toBe(true);
+                expect(isVisible(moreEventPopup)).toBe(true);
                 let moreEventWrapper: HTMLElement = document.querySelector('.e-more-appointment-wrapper') as HTMLElement;
                 let moreEventCount: number = moreEventWrapper.childElementCount;
                 expect(moreEventCount).toEqual(15);
@@ -2505,14 +2507,18 @@ describe('Quick Popups', () => {
             };
         });
 
-        it('isMorePopup property is set to false and check the more indicator click navigation on timeline month view', () => {
-            schObj.isMorePopup = false;
+        it('isMorePopup property is set to false and check the more indicator click navigation on timeline day view', (done: DoneFn) => {
+            schObj.moreEventsClick = (args: MoreEventsClickArgs) => args.isPopupOpen = false;
             schObj.dataBind();
+            schObj.dataBound = () => {
+                expect(schObj.currentView).toEqual('TimelineDay');
+                expect(isVisible(document.querySelector('.e-more-popup-wrapper'))).toBe(false);
+                done();
+            };
             (schObj.element.querySelector('.e-more-indicator') as HTMLElement).click();
-            expect(schObj.currentView).toEqual('TimelineDay');
         });
 
-        it('isMorePopup property is set to false and check the more indicator click navigation on month view', (done: Function) => {
+        it('isMorePopup property is set to false and check the more indicator click navigation on day view', (done: Function) => {
             schObj.currentView = 'Month';
             schObj.dataBind();
             schObj.dataBound = () => {
@@ -2544,8 +2550,7 @@ describe('Quick Popups', () => {
             let moreEventPopup: Element = document.querySelector('.e-more-popup-wrapper');
             expect(isVisible(moreEventPopup)).toBe(true);
             let moreEventWrapper: HTMLElement = document.querySelector('.e-more-appointment-wrapper') as HTMLElement;
-            let moreEventCount: number = moreEventWrapper.childElementCount;
-            expect(moreEventCount).toEqual(15);
+            expect(moreEventWrapper.childElementCount).toEqual(15);
             (document.querySelector('.e-more-event-close') as HTMLElement).click();
         });
 
@@ -2557,21 +2562,24 @@ describe('Quick Popups', () => {
                 let moreEventPopup: Element = document.querySelector('.e-more-popup-wrapper');
                 expect(isVisible(moreEventPopup)).toBe(true);
                 let moreEventWrapper: HTMLElement = document.querySelector('.e-more-appointment-wrapper') as HTMLElement;
-                let moreEventCount: number = moreEventWrapper.childElementCount;
-                expect(moreEventCount).toEqual(15);
+                expect(moreEventWrapper.childElementCount).toEqual(15);
                 (document.querySelector('.e-more-event-close') as HTMLElement).click();
                 done();
             };
         });
 
-        it('isMorePopup property is set to false and check the more indicator click navigation on timeline month view', () => {
-            schObj.isMorePopup = false;
+        it('isMorePopup property is set to false and check the more indicator click navigation on timeline day view', (done: DoneFn) => {
+            schObj.moreEventsClick = (args: MoreEventsClickArgs) => args.isPopupOpen = false;
             schObj.dataBind();
+            schObj.dataBound = () => {
+                expect(schObj.currentView).toEqual('TimelineDay');
+                expect(isVisible(document.querySelector('.e-more-popup-wrapper'))).toBe(false);
+                done();
+            };
             (schObj.element.querySelector('.e-more-indicator') as HTMLElement).click();
-            expect(schObj.currentView).toEqual('TimelineDay');
         });
 
-        it('isMorePopup property is set to false and check the more indicator click navigation on month view', (done: Function) => {
+        it('isMorePopup property is set to false and check the more indicator click navigation on day view', (done: Function) => {
             schObj.currentView = 'Month';
             schObj.dataBind();
             schObj.dataBound = () => {

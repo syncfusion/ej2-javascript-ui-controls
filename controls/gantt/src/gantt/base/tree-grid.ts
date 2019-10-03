@@ -67,6 +67,8 @@ export class GanttTreeGrid {
         this.parent.treeGrid.rowHeight = this.parent.rowHeight;
         this.parent.treeGrid.gridLines = this.parent.gridLines;
         this.parent.treeGrid.searchSettings = this.parent.searchSettings;
+        let isJsComponent: string = 'isJsComponent';
+        this.parent.treeGrid[isJsComponent] = true;
         let toolbarHeight: number = 0;
         if (!isNullOrUndefined(this.parent.toolbarModule) && !isNullOrUndefined(this.parent.toolbarModule.element)) {
             toolbarHeight = this.parent.toolbarModule.element.offsetHeight;
@@ -385,12 +387,14 @@ export class GanttTreeGrid {
                 this.parent.dateFormat.toLowerCase().indexOf('hh') !== -1 ? 'datetimepickeredit' : 'datepickeredit';
             column.format = column.format ? column.format : { type: 'date', format: this.parent.dateFormat };
             column.width = column.width ? column.width : 150;
+            column.edit = { params: { renderDayCell: this.parent.renderWorkingDayCell.bind(this.parent) } };
         } else if (taskSettings.endDate === column.field) {
             column.headerText = column.headerText ? column.headerText : this.parent.localeObj.getConstant('endDate');
             column.format = column.format ? column.format : { type: 'date', format: this.parent.dateFormat };
             column.editType = column.editType ? column.editType :
                 this.parent.dateFormat.toLowerCase().indexOf('hh') !== -1 ? 'datetimepickeredit' : 'datepickeredit';
             column.width = column.width ? column.width : 150;
+            column.edit = { params: { renderDayCell: this.parent.renderWorkingDayCell.bind(this.parent) } };
         } else if (taskSettings.duration === column.field) {
             column.width = column.width ? column.width : 150;
             column.headerText = column.headerText ? column.headerText : this.parent.localeObj.getConstant('duration');
@@ -411,6 +415,9 @@ export class GanttTreeGrid {
             column.headerText = column.headerText ? column.headerText : this.parent.localeObj.getConstant('notes');
             column.width = column.width ? column.width : 150;
             column.editType = column.editType ? column.editType : 'stringedit';
+            if (isBlazor() && !column.template) {
+                this.parent.setProperties({'showInlineNotes': true}, true);
+            }
             if (!this.parent.showInlineNotes) {
                 if (!column.template) {
                     column.template = '<div class="e-ganttnotes-info">' +

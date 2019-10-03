@@ -18,15 +18,15 @@ export class Line extends ChildProperty<Line> {
 
     /**
      * Height of the axis line.
-     * @aspDefaultValueIgnore
-     * @blazorDefaultValueIgnore
+
+
      */
     @Property(null)
     public height: number;
 
     /**
      * Width of the axis line.
-     * @default 2
+
      */
     @Property(2)
     public width: number;
@@ -39,7 +39,7 @@ export class Line extends ChildProperty<Line> {
 
     /**
      * Specifies to move the axis line.
-     * @blazorDefaultValue 0
+
      */
     @Property(0)
     public offset: number;
@@ -58,7 +58,7 @@ export class Label extends ChildProperty<Label> {
 
     /**
      * The color of the label, based on range color.
-     * @default false
+
      */
 
     @Property(false)
@@ -74,7 +74,7 @@ export class Label extends ChildProperty<Label> {
 
     /**
      * To move the axis labels.
-     * @default 0
+
      */
     @Property(0)
     public offset: number;
@@ -89,21 +89,21 @@ export class Range extends ChildProperty<Range> {
 
     /**
      * Start of the axis range.
-     * @default 0
+
      */
     @Property(0)
     public start: number;
 
     /**
      * End of the axis range.
-     * @default 0
+
      */
     @Property(0)
     public end: number;
 
     /**
      * Specifies to position the axis range.
-     * @default Outside
+
      */
     @Property('Outside')
     public position: Position;
@@ -116,21 +116,21 @@ export class Range extends ChildProperty<Range> {
 
     /**
      * Starting width of axis range.
-     * @default 10
+
      */
     @Property(10)
     public startWidth: number;
 
     /**
      * Ending width of axis range.
-     * @default 10
+
      */
     @Property(10)
     public endWidth: number;
 
     /**
      * Specifies to move the axis range.
-     * @default 0
+
      */
     @Property(0)
     public offset: number;
@@ -165,14 +165,14 @@ export class Tick extends ChildProperty<Tick> {
 
     /**
      * Width of the tick line. 
-     * @default 2
+
      */
     @Property(2)
     public width: number;
 
     /**
      * Specifies the interval for ticks.
-     * @aspDefaultValueIgnore
+
      */
     @Property(null)
     public interval: number;
@@ -186,7 +186,7 @@ export class Tick extends ChildProperty<Tick> {
 
     /**
      * Specifies to move the axis ticks.
-     * @aspDefaultValueIgnore
+
      */
     @Property(null)
     public offset: number;
@@ -201,15 +201,15 @@ export class Tick extends ChildProperty<Tick> {
 export class Pointer extends ChildProperty<Pointer> {
     /**
      * Specifies the type of pointer.
-     * @default Marker
+
      */
     @Property('Marker')
     public type: Point;
 
     /**
      * Specifies value of the pointer.
-     * @blazorDefaultValue 0
-     * @default null
+
+
      */
 
     @Property(null)
@@ -217,14 +217,14 @@ export class Pointer extends ChildProperty<Pointer> {
 
     /**
      * Specifies the marker shape in pointer.
-     * @default InvertedTriangle
+
      */
     @Property('InvertedTriangle')
     public markerType: MarkerType;
 
     /**
      * Specifies the path of image.
-     * @default null
+
      */
     @Property(null)
     public imageUrl: string;
@@ -237,28 +237,28 @@ export class Pointer extends ChildProperty<Pointer> {
 
     /**
      * Specifies the corner radius for rounded rectangle.
-     * @default 10
+
      */
     @Property(10)
     public roundedCornerRadius: number;
 
     /**
      * Specifies the place of the pointer.
-     * @default Far
+
      */
     @Property('Far')
     public placement: Placement;
 
     /**
      * Specifies the height of pointer.
-     * @default 20
+
      */
     @Property(20)
     public height: number;
 
     /**
      * Specifies the width of pointer.
-     * @default 20
+
      */
     @Property(20)
     public width: number;
@@ -271,35 +271,35 @@ export class Pointer extends ChildProperty<Pointer> {
 
     /**
      * Specifies the opacity for pointer.
-     * @default 1
+
      */
     @Property(1)
     public opacity: number;
 
     /**
      * Specifies the animating duration of pointer in milliseconds.
-     * @default 0
+
      */
     @Property(0)
     public animationDuration: number;
 
     /**
      * Specifies the enable or disable the pointer drag.
-     * @default false
+
      */
     @Property(false)
     public enableDrag: boolean;
 
     /**
      * Specifies to move the pointer.
-     * @default 0
+
      */
     @Property(0)
     public offset: number;
 
     /**
      * Description of the pointer.
-     * @default null
+
      */
     @Property(null)
     public description: string;
@@ -325,7 +325,7 @@ export class Pointer extends ChildProperty<Pointer> {
 export class Axis extends ChildProperty<Axis> {
     /**
      * Specifies the minimum value of an axis.
-     * @default 0
+
      */
 
     @Property(0)
@@ -333,7 +333,7 @@ export class Axis extends ChildProperty<Axis> {
 
     /**
      * Specifies the maximum value of an axis.
-     * @default 100
+
      */
 
     @Property(100)

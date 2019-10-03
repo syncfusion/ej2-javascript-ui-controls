@@ -640,6 +640,77 @@ describe('MultiSelect', () => {
             listObj.resetValueHandler();
         });
     });
+
+    //Multiple cssClass
+    describe('Add multiple CssClass', () => {
+        let listObj: MultiSelect;
+        let popupObj: any;
+        let element: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'multiselect', attrs: { 'type': 'text' } });
+        beforeAll(() => {
+            document.body.innerHTML = '';
+            document.body.appendChild(element);
+        });
+        afterAll(() => {
+            if (element) {
+                listObj.destroy();
+                element.remove();
+            }
+        });
+        it('Dynamically change multiple cssClass', () => {
+            listObj = new MultiSelect({ dataSource: datasource2, cssClass: 'sample' });
+            listObj.appendTo(element);
+            expect((<any>listObj).overAllWrapper.classList.contains('sample')).toEqual(true);
+            expect((<any>listObj).popupWrapper.classList.contains('sample')).toBe(true);
+            listObj.cssClass = 'test highlight';
+            listObj.dataBind();
+            expect((<any>listObj).overAllWrapper.classList.contains('test')).toEqual(true);
+            expect((<any>listObj).overAllWrapper.classList.contains('highlight')).toEqual(true);
+            expect((<any>listObj).overAllWrapper.classList.contains('test')).toEqual(true);
+            expect((<any>listObj).overAllWrapper.classList.contains('highlight')).toEqual(true);
+
+        });
+        it('Initially render multiple cssClass', () => {
+            listObj = new MultiSelect({ dataSource: datasource2, cssClass: 'sample highlight' });
+            listObj.appendTo(element);
+            expect((<any>listObj).overAllWrapper.classList.contains('sample')).toEqual(true);
+            expect((<any>listObj).overAllWrapper.classList.contains('highlight')).toEqual(true);
+            expect((<any>listObj).popupWrapper.classList.contains('sample')).toBe(true);
+            expect((<any>listObj).popupWrapper.classList.contains('highlight')).toBe(true);
+            listObj.cssClass = 'test';
+            listObj.dataBind();
+            expect((<any>listObj).overAllWrapper.classList.contains('test')).toEqual(true);
+            expect((<any>listObj).popupWrapper.classList.contains('test')).toBe(true);
+        });
+        it('Dynamically change cssClass as null', () => {
+            listObj = new MultiSelect({ dataSource: datasource2, cssClass: 'sample highlight' });
+            listObj.appendTo(element);
+            expect((<any>listObj).overAllWrapper.classList.contains('sample')).toEqual(true);
+            expect((<any>listObj).overAllWrapper.classList.contains('highlight')).toEqual(true);
+            expect((<any>listObj).popupWrapper.classList.contains('sample')).toBe(true);
+            expect((<any>listObj).popupWrapper.classList.contains('highlight')).toBe(true);
+            listObj.cssClass = null;
+            listObj.dataBind();
+            expect((<any>listObj).overAllWrapper.classList.contains('sample')).toEqual(false);
+            expect((<any>listObj).overAllWrapper.classList.contains('highlight')).toEqual(false);
+            expect((<any>listObj).popupWrapper.classList.contains('sample')).toBe(false);
+            expect((<any>listObj).popupWrapper.classList.contains('highlight')).toBe(false);
+        });
+        it('Dynamically change cssClass as empty', () => {
+            listObj = new MultiSelect({ dataSource: datasource2, cssClass: 'sample highlight' });
+            listObj.appendTo(element);
+            expect((<any>listObj).overAllWrapper.classList.contains('sample')).toEqual(true);
+            expect((<any>listObj).overAllWrapper.classList.contains('highlight')).toEqual(true);
+            expect((<any>listObj).popupWrapper.classList.contains('sample')).toBe(true);
+            expect((<any>listObj).popupWrapper.classList.contains('highlight')).toBe(true);
+            listObj.cssClass = '';
+            listObj.dataBind();
+            expect((<any>listObj).overAllWrapper.classList.contains('sample')).toEqual(false);
+            expect((<any>listObj).overAllWrapper.classList.contains('highlight')).toEqual(false);
+            expect((<any>listObj).popupWrapper.classList.contains('sample')).toBe(false);
+            expect((<any>listObj).popupWrapper.classList.contains('highlight')).toBe(false);
+        });
+    });
+
     //Validation for element strcture and css class.
     describe('Property validation on initial render', () => {
         let listObj: MultiSelect;

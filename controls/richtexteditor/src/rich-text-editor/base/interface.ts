@@ -509,7 +509,7 @@ export interface BeforeQuickToolbarOpenArgs {
     targetElement: Element;
 }
 
-export interface QuickToolbarArgs {
+export interface QuickToolbarEventArgs {
     /**
      * Defines the instance of the current popup element
      * @deprecated

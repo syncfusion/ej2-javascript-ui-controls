@@ -1979,6 +1979,8 @@ export class Layout {
                             defaultTabWidth = leftIndent - defaultTabWidth;
                             break;
                         }
+                    } else if (element instanceof ListTextElementBox && viewer.clientActiveArea.x > this.viewer.clientArea.x) {
+                        return viewer.clientActiveArea.x - viewer.clientArea.x;
                     }
                 }
             }
@@ -2325,8 +2327,10 @@ export class Layout {
         // for normal table cells only left border is rendred. for last cell left and right border is rendred.
         // this border widths are not included in margins.
         cell.leftBorderWidth = !cell.ownerTable.isBidiTable ? leftBorderWidth : rightBorderWidth;
-        cell.x += cell.leftBorderWidth;
-        cell.width -= cell.leftBorderWidth;
+        let isLeftStyleNone: boolean = (cell.cellFormat.borders.left.lineStyle === 'None');
+        let isRightStyleNone: boolean = (cell.cellFormat.borders.right.lineStyle === 'None');
+        cell.x += (!isLeftStyleNone) ? 0 : (cell.leftBorderWidth > 0) ? 0 : cell.leftBorderWidth;
+        cell.width -= (!isLeftStyleNone) ? 0 : (cell.leftBorderWidth > 0) ? 0 : cell.leftBorderWidth;
         let lastCell: boolean = !cell.ownerTable.isBidiTable ? cell.cellIndex === cell.ownerRow.childWidgets.length - 1
             : cell.cellIndex === 0;
         if (cellspace > 0 || cell.cellIndex === cell.ownerRow.childWidgets.length - 1) {
@@ -2336,8 +2340,8 @@ export class Layout {
             }
         }
         //Add the border widths to respective margin side.
-        cell.margin.left = cell.margin.left + cell.leftBorderWidth;
-        cell.margin.right = cell.margin.right + cell.rightBorderWidth;
+        cell.margin.left += (isLeftStyleNone) ? 0 : (cell.leftBorderWidth);
+        cell.margin.right += (isRightStyleNone) ? 0 : (cell.rightBorderWidth);
         //cell.ownerWidget = owner;
         return cell;
     }
@@ -4006,7 +4010,7 @@ export class Layout {
                     this.layoutNextItemsBlock(curretBlock, this.viewer);
                 }
             } else if (bodyWidget instanceof TableCellWidget) {
-                let table: TableWidget = this.viewer.layout.getParentTable(bodyWidget.ownerTable.getSplitWidgets()[0] as TableWidget);
+                let table: TableWidget = this.viewer.layout.getParentTable(bodyWidget.ownerTable).getSplitWidgets()[0] as TableWidget;
                 this.reLayoutTable(bodyWidget.ownerTable);
                 this.layoutNextItemsBlock(table, this.viewer);
             }

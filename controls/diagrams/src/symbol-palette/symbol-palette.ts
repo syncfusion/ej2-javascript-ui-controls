@@ -36,44 +36,44 @@ let getObjectType: Function = (obj: Object): Object => {
 export class Palette extends ChildProperty<Palette> {
     /**
      * Defines the unique id of a symbol group
-     * @default ''
+
      */
     @Property('')
     public id: string;
 
     /**
      * Sets the height of the symbol group
-     * @aspDefaultValueIgnore
-     * @blazorDefaultValueIgnore
-     * @default undefined
+
+
+
      */
     @Property()
     public height: number;
 
     /**
      * Sets whether the palette items to be expanded or not
-     * @default true
+
      */
     @Property(true)
     public expanded: boolean;
 
     /**
      * Defines the content of the symbol group
-     * @default ''
+
      */
     @Property('')
     public iconCss: string;
 
     /**
      * Defines the title of the symbol group
-     * @default ''
+
      */
     @Property('')
     public title: string;
 
     /**
      * Defines the collection of predefined symbols
-     * @aspType object
+
      */
     @CollectionFactory(getObjectType)
     public symbols: (NodeModel | ConnectorModel)[];
@@ -90,25 +90,25 @@ export class SymbolPreview extends ChildProperty<SymbolPreview> {
 
     /**
      * Sets the preview width of the symbols
-     * @aspDefaultValueIgnore
-     * @blazorDefaultValueIgnore
-     * @default undefined
+
+
+
      */
     @Property()
     public width: number;
 
     /**
      * Sets the preview height of the symbols
-     * @aspDefaultValueIgnore
-     * @blazorDefaultValueIgnore
-     * @default undefined
+
+
+
      */
     @Property()
     public height: number;
 
     /**
      * Defines the distance to be left between the cursor and symbol
-     * @default {}
+
      */
     @Complex<PointModel>({}, Point)
     public offset: PointModel;
@@ -134,37 +134,37 @@ export class SymbolPalette extends Component<HTMLElement> implements INotifyProp
 
     /**
      * Configures the key, when it pressed the symbol palette will be focused
-     * @default 'S'
+
      */
     @Property('S')
     public accessKey: string;
 
     /**
      * Defines the width of the symbol palette
-     * @default '100%'
+
      */
     @Property('100%')
     public width: string | number;
 
     /**
      * Defines the height of the symbol palette
-     * @default '100%'
+
      */
     @Property('100%')
     public height: string | number;
 
     /**
      * Defines the collection of symbol groups
-     * @default []
+
      */
     @Collection<PaletteModel>([], Palette)
     public palettes: PaletteModel[];
 
     /**
      * Defines the size, appearance and description of a symbol
-     * @aspDefaultValueIgnore
-     * @blazorDefaultValueIgnore
-     * @default undefined
+
+
+
      */
     /**
      * ```html
@@ -205,7 +205,7 @@ export class SymbolPalette extends Component<HTMLElement> implements INotifyProp
      * node.style.strokeColor = '#3A3A3A';
      * }
      * ```
-     * @deprecated
+
      */
     @Property()
     public getSymbolInfo: Function | string;
@@ -218,9 +218,9 @@ export class SymbolPalette extends Component<HTMLElement> implements INotifyProp
 
     /**
      * Defines the symbols to be added in search palette
-     * @aspDefaultValueIgnore
-     * @default undefined
-     * @deprecated
+
+
+
      */
     @Property()
     public filterSymbols: Function | string;
@@ -235,58 +235,58 @@ export class SymbolPalette extends Component<HTMLElement> implements INotifyProp
 
     /**
      * Defines the content of a symbol
-     * @aspDefaultValueIgnore
-     * @blazorDefaultValueIgnore
-     * @default undefined
-     * @deprecated
+
+
+
+
      */
     @Property()
     public getSymbolTemplate: Function | string;
 
     /**
      * Defines the width of the symbol
-     * @aspDefaultValueIgnore
-     * @blazorDefaultValueIgnore
-     * @default undefined
+
+
+
      */
     @Property()
     public symbolWidth: number;
 
     /**
      * Defines the height of the symbol
-     * @aspDefaultValueIgnore
-     * @blazorDefaultValueIgnore
-     * @default undefined
+
+
+
      */
     @Property()
     public symbolHeight: number;
 
     /**
      * Defines the space to be left around a symbol
-     * @default {left:10,right:10,top:10,bottom:10}
+
      */
     @Complex<MarginModel>({ left: 10, right: 10, top: 10, bottom: 10 }, Margin)
     public symbolMargin: MarginModel;
 
     /**
      * Defines whether the symbols can be dragged from palette or not
-     * @default true
+
      */
     @Property(true)
     public allowDrag: boolean;
 
     /**
      * Defines the size and position of the symbol preview
-     * @aspDefaultValueIgnore
-     * @blazorDefaultValueIgnore
-     * @default undefined
+
+
+
      */
     @Complex<SymbolPreviewModel>({}, SymbolPreview)
     public symbolPreview: SymbolPreviewModel;
 
     /**
      * Enables/Disables search option in symbol palette
-     * @default false
+
      */
     @Property(false)
     public enableSearch: boolean;
@@ -299,7 +299,7 @@ export class SymbolPalette extends Component<HTMLElement> implements INotifyProp
 
     /**
      * Defines how many palettes can be at expanded mode at a time
-     * @default 'Multiple'
+
      */
     @Property('Multiple')
     public expandMode: ExpandMode;
@@ -307,7 +307,7 @@ export class SymbolPalette extends Component<HTMLElement> implements INotifyProp
     /**
      * Triggers after the selection changes in the symbol palette
      * @event
-     * @blazorProperty 'OnPaletteSelectionChange'
+
      */
     @Event()
     public paletteSelectionChange: EmitType<IPaletteSelectionChangeArgs>;
@@ -319,7 +319,7 @@ export class SymbolPalette extends Component<HTMLElement> implements INotifyProp
 
     /**
      * Helps to return the default properties of node
-     * @deprecated
+
      */
     @Property()
     public getNodeDefaults: Function | string;
@@ -327,7 +327,7 @@ export class SymbolPalette extends Component<HTMLElement> implements INotifyProp
 
     /**
      * Helps to return the default properties of node
-     * @blazorType DiagramNode
+
      */
     @Property()
     public nodeDefaults: NodeModel;
@@ -335,14 +335,14 @@ export class SymbolPalette extends Component<HTMLElement> implements INotifyProp
 
     /**
      * Helps to return the default properties of connector
-     * @deprecated
+
      */
     @Property()
     public getConnectorDefaults: Function | string;
 
     /**
      * Helps to return the default properties of connectors
-     * @blazorType DiagramConnector
+
      */
     @Property()
     public connectorDefaults: ConnectorModel;
@@ -372,7 +372,7 @@ export class SymbolPalette extends Component<HTMLElement> implements INotifyProp
 
     /**
      * Constructor for creating the component
-     * @hidden
+
      */
     constructor(options?: SymbolPaletteModel, element?: Element) {
         super(options, <HTMLButtonElement | string>element);
@@ -1656,41 +1656,41 @@ export interface SymbolInfo {
 
     /**
      * Defines the width of the symbol to be drawn over the palette
-     * @aspDefaultValueIgnore
-     * @blazorDefaultValueIgnore
-     * @default undefined
+
+
+
      */
     width?: number;
 
     /**
      * Defines the height of the symbol to be drawn over the palette
-     * @aspDefaultValueIgnore
-     * @blazorDefaultValueIgnore
-     * @default undefined
+
+
+
      */
     height?: number;
 
     /**
      * Defines whether the symbol has to be fit inside the size, that is defined by the symbol palette
-     * @default true
+
      */
     fit?: boolean;
 
     /**
      * Define the template of the symbol that is to be drawn over the palette
-     * @default null
+
      */
     template?: DiagramElement;
 
     /**
      * Define the text to be displayed and how that is to be handled.
-     * @default null
+
      */
     description?: SymbolDescription;
 
     /**
      * Define the text to be displayed when mouse hover on the shape.
-     * @default ''
+
      */
     tooltip?: string;
 }
@@ -1702,9 +1702,9 @@ export interface SymbolDescription {
 
     /**
      * Defines the symbol description
-     * @aspDefaultValueIgnore
-     * @blazorDefaultValueIgnore
-     * @default undefined
+
+
+
      */
     text?: string;
 
@@ -1713,7 +1713,7 @@ export interface SymbolDescription {
      * * Wrap - Wraps the text to next line, when it exceeds its bounds
      * * Ellipsis - It truncates the overflown text and represents the clipping with an ellipsis
      * * Clip - It clips the overflow text
-     * @default ellipsis
+
      */
     overflow?: TextOverflow;
 
@@ -1722,7 +1722,7 @@ export interface SymbolDescription {
      * * WrapWithOverflow - Wraps the text so that no word is broken
      * * Wrap - Wraps the text and breaks the word, if necessary
      * * NoWrap - Text will no be wrapped
-     * @default Wrap
+
      */
     wrap?: TextWrap;
 }

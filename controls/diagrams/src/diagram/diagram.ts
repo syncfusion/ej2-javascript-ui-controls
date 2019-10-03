@@ -156,7 +156,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
 
     /**
      * `radialTreeModule` is used to arrange the nodes in a radial tree like structure
-     * @ignoreapilink
+
      */
     public radialTreeModule: RadialTree;
 
@@ -242,7 +242,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
      * width:'1000px', height:'500px' });
      * diagram.appendTo('#diagram');
      * ```
-     * @default '100%'
+
      */
     @Property('100%')
     public width: string | number;
@@ -251,14 +251,14 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
      * Defines the diagram rendering mode.
      * * SVG - Renders the diagram objects as SVG elements
      * * Canvas - Renders the diagram in a canvas
-     * @default 'SVG'
+
      */
     @Property('SVG')
     public mode: RenderingMode;
 
     /**
      * Defines the height of the diagram model.
-     * @default '100%'
+
      */
     @Property('100%')
     public height: string | number;
@@ -277,7 +277,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
      * });
      * diagram.appendTo('#diagram');
      * ```
-     * @deprecated
+
      */
     @Complex<ContextMenuSettingsModel>({}, ContextMenuSettings)
     public contextMenuSettings: ContextMenuSettingsModel;
@@ -295,9 +295,9 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
      * * PanX - Enables/Disable PanX support for the diagram
      * * PanY - Enables/Disable PanY support for the diagram
      * * Pan - Enables/Disable Pan support the diagram
-     * @default 'Default'
-     * @aspNumberEnum 
-     * @blazorNumberEnum
+
+
+
      */
     @Property(DiagramConstraints.Default)
     public constraints: DiagramConstraints;
@@ -310,9 +310,9 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
      * * ZoomPan - Enables/Disable ZoomPan support for the diagram
      * * DrawOnce - Enables/Disable ContinuousDraw support for the diagram 
      * * ContinuousDraw - Enables/Disable ContinuousDraw support for the diagram
-     * @default 'Default'
-     * @aspNumberEnum
-     * @blazorNumberEnum
+
+
+
      */
 
     @Property(DiagramTools.Default)
@@ -324,14 +324,14 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
      * * Bottom - Defines the direction of the bridge as Bottom
      * * Left - Sets the bridge direction as left
      * * Right - Sets the bridge direction as right
-     * @default top
+
      */
     @Property('Top')
     public bridgeDirection: BridgeDirection;
 
     /**
      * Defines the background color of the diagram
-     * @default 'transparent'
+
      */
     @Property('transparent')
     public backgroundColor: string;
@@ -352,7 +352,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
      * });
      * diagram.appendTo('#diagram');
      * ```
-     * @default {}
+
      */
     @Complex<SnapSettingsModel>({}, SnapSettings)
     public snapSettings: SnapSettingsModel;
@@ -379,7 +379,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
      * });
      * diagram.appendTo('#diagram');
      * ```
-     * @default {}
+
      */
     @Complex<RulerSettingsModel>({}, RulerSettings)
     public rulerSettings: RulerSettingsModel;
@@ -398,7 +398,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
      * });
      * diagram.appendTo('#diagram');
      * ```
-     * @default {}
+
      */
     @Complex<PageSettingsModel>({}, PageSettings)
     public pageSettings: PageSettingsModel;
@@ -416,7 +416,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
      * });
      * diagram.appendTo('#diagram');
      * ```
-     * @default {}
+
      */
     @Complex<SerializationSettingsModel>({}, SerializationSettings)
     public serializationSettings: SerializationSettingsModel;
@@ -446,9 +446,9 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
      * });
      * diagram.appendTo('#diagram');
      * ```
-     * @aspDefaultValueIgnore
-     * @blazorDefaultValueIgnore
-     * @default undefined
+
+
+
      */
     @Collection<NodeModel>([], Node)
     public nodes: NodeModel[];
@@ -465,10 +465,10 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
      * });
      * diagram.appendTo('#diagram');
      * ```
-     * @aspDefaultValueIgnore
-     * @blazorDefaultValueIgnore
-     * @default undefined
-     * @deprecated
+
+
+
+
      */
     @Property()
     public drawingObject: NodeModel | ConnectorModel;
@@ -492,15 +492,15 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
      * });
      * diagram.appendTo('#diagram');
      * ```
-     * @default []
+
      */
     @Collection<ConnectorModel>([], Connector)
     public connectors: ConnectorModel[];
 
     /**
      * Defines the basic elements for the diagram
-     * @default []
-     * @hidden
+
+
      */
     @Property([])
     public basicElements: DiagramElement[];
@@ -508,31 +508,31 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
     /**
      * Defines the tooltip that should be shown when the mouse hovers over a node or connector
      * An object that defines the description, appearance and alignments of tooltip
-     * @default {}
+
      */
     @Complex<DiagramTooltipModel>({}, DiagramTooltip)
     public tooltip: DiagramTooltipModel;
 
     /**
      * Configures the data source that is to be bound with diagram
-     * @default {}
+
      */
     @Complex<DataSourceModel>({}, DataSource)
     public dataSourceSettings: DataSourceModel;
 
     /**
      * Allows the user to save custom information/data about diagram
-     * @aspDefaultValueIgnore
-     * @blazorDefaultValueIgnore
-     * @default undefined
+
+
+
      */
     @Property()
     public addInfo: Object;
 
     /**
      * Customizes the undo redo functionality 
-     * @default undefined
-     * @deprecated
+
+
      */
     @Property()
     public historyManager: History;
@@ -571,17 +571,17 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
      * });
      * diagram.appendTo('#diagram');
      * ```
-     * @aspDefaultValueIgnore
-     * @blazorDefaultValueIgnore
-     * @default undefined
-     * @deprecated
+
+
+
+
      */
     @Property()
     public getNodeDefaults: Function | string;
 
     /**
      * Helps to assign the default properties of nodes
-     * @blazorType DiagramNode
+
      */
     @Property()
     public nodeDefaults: NodeModel;
@@ -609,17 +609,17 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
      * });
      * diagram.appendTo('#diagram');
      * ```
-     * @aspDefaultValueIgnore
-     * @blazorDefaultValueIgnore
-     * @default undefined
-     * @deprecated 
+
+
+
+
      */
     @Property()
     public getConnectorDefaults: Function | string;
 
     /**
      * Helps to assign the default properties of connector
-     * @blazorType DiagramConnector
+
      */
     @Property()
     public connectorDefaults: ConnectorModel;
@@ -672,19 +672,19 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
      *   }
      * ...
      * }
-     * @aspDefaultValueIgnore
-     * @blazorDefaultValueIgnore
-     * @default undefined
-     * @deprecated
+
+
+
+
      */
     @Property()
     public setNodeTemplate: Function | string;
 
     /**
      * Allows to set accessibility content for diagram objects
-     * @aspDefaultValueIgnore
-     * @blazorDefaultValueIgnore
-     * @default undefined
+
+
+
      */
     /**
      * ```html
@@ -722,7 +722,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
      * return value;
      * }
      * ```
-     * @deprecated
+
      */
     @Property()
     public getDescription: Function | string;
@@ -760,18 +760,18 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
      * });
      * diagram.appendTo('#diagram');
      * ```
-     * @aspDefaultValueIgnore
-     * @blazorDefaultValueIgnore
-     * @default undefined
-     * @deprecated
+
+
+
+
      */
     @Property()
     public getCustomProperty: Function | string;
     /**
      * Allows the user to set custom tool that corresponds to the given action
-     * @aspDefaultValueIgnore
-     * @blazorDefaultValueIgnore
-     * @default undefined
+
+
+
      */
     /**
      * ```html
@@ -817,16 +817,16 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
      * });
      * diagram.appendTo('#diagram');
      * ```
-     * @deprecated
+
      */
     @Property()
     public getCustomTool: Function | string;
 
     /**
      * Allows the user to set custom cursor that corresponds to the given action
-     * @aspDefaultValueIgnore
-     * @blazorDefaultValueIgnore
-     * @default undefined
+
+
+
      */
     /**
      * ```html
@@ -863,14 +863,14 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
      * });
      * diagram.appendTo('#diagram');
      * ```
-     * @deprecated
+
      */
     @Property()
     public getCustomCursor: Function | string;
 
     /**
      * A collection of JSON objects where each object represents a custom cursor action. Layer is a named category of diagram shapes.
-     * @default []
+
      */
     @Collection<CustomCursorActionModel>([], CustomCursorAction)
     public customCursor: CustomCursorActionModel[];
@@ -899,10 +899,10 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
      * });
      * diagram.appendTo('#diagram');
      * ```
-     * @aspDefaultValueIgnore
-     * @blazorDefaultValueIgnore
-     * @default undefined
-     * @deprecated
+
+
+
+
      */
     @Property()
     public updateSelection: Function | string;
@@ -912,30 +912,30 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
 
     /**
      * Defines the collection of selected items, size and position of the selector
-     * @default {}
-     * @deprecated
+
+
      */
     @Complex<SelectorModel>({}, Selector)
     public selectedItems: SelectorModel;
 
     /**
      * Defines the current zoom value, zoom factor, scroll status and view port size of the diagram
-     * @default {}
+
      */
     @Complex<ScrollSettingsModel>({}, ScrollSettings)
     public scrollSettings: ScrollSettingsModel;
 
     /**
      * Layout is used to auto-arrange the nodes in the Diagram area
-     * @default {}
+
      */
     @Complex<LayoutModel>({}, Layout)
     public layout: LayoutModel;
 
     /**
      * Defines a set of custom commands and binds them with a set of desired key gestures
-     * @default {}
-     * @deprecated
+
+
      */
     @Complex<CommandManagerModel>({}, CommandManager)
     public commandManager: CommandManagerModel;
@@ -943,17 +943,17 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
     /**
      * Triggers after diagram is populated from the external data source
      * @event
-     * @blazorProperty 'DataLoaded'
+
      */
     @Event()
     public dataLoaded: EmitType<IDataLoadedEventArgs>;
 
     /**
      * Triggers when a symbol is dragged into diagram from symbol palette
-     * @deprecated
+
      * @event
-     * @blazorProperty 'DragEnter'
-     * @blazorType Syncfusion.EJ2.Blazor.Diagrams.IBlazorDragEnterEventArgs
+
+
      */
     @Event()
     public dragEnter: EmitType<IDragEnterEventArgs>;
@@ -961,7 +961,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
     /**
      * Triggers when a symbol is dragged outside of the diagram.
      * @event
-     * @blazorProperty 'DragLeave'
+
      */
     @Event()
     public dragLeave: EmitType<IDragLeaveEventArgs>;
@@ -969,7 +969,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
     /**
      * Triggers when a symbol is dragged over diagram
      * @event
-     * @blazorProperty 'DragOver'
+
      */
     @Event()
     public dragOver: EmitType<IDragOverEventArgs>;
@@ -977,8 +977,8 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
     /**
      * Triggers when a node, connector or diagram is clicked
      * @event
-     * @blazorProperty 'Clicked'
-     * @blazorType Syncfusion.EJ2.Blazor.Diagrams.IBlazorClickEventArgs
+
+
      */
     @Event()
     public click: EmitType<IClickEventArgs>;
@@ -986,8 +986,8 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
     /**
      * Triggers when a change is reverted or restored(undo/redo)
      * @event
-     * @blazorProperty 'HistoryChanged'
-     * @blazorType 'IBlazorHistoryChangeArgs'
+
+
      */
     @Event()
     public historyChange: EmitType<IHistoryChangeArgs>;
@@ -995,8 +995,8 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
     /**
      * Triggers when a custom entry change is reverted or restored(undo/redo)
      * @event
-     * @blazorProperty 'CustomHistoryChanged'
-     * @blazorType IBlazorCustomHistoryChangeArgs
+
+
      */
     @Event()
     public historyStateChange: EmitType<IBlazorCustomHistoryChangeArgs>;
@@ -1004,17 +1004,17 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
     /**
      * Triggers when a node, connector or diagram model is clicked twice
      * @event
-     * @blazorProperty 'OnDoubleClick'
-     * @blazorType Syncfusion.EJ2.Blazor.Diagrams.IBlazorDoubleClickEventArgs
+
+
      */
     @Event()
     public doubleClick: EmitType<IDoubleClickEventArgs>;
 
     /**
      * Triggers when editor got focus at the time of node’s label or text node editing.
-     * @deprecated
+
      * @event
-     * @blazorProperty 'TextEdited'
+
      */
     @Event()
     public textEdit: EmitType<ITextEditEventArgs>;
@@ -1022,37 +1022,37 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
     /**
      * Triggers when the diagram is zoomed or panned
      * @event
-     * @blazorProperty 'ScrollChanged'
-     * @blazorType 'IBlazorScrollChangeEventArgs'
+
+
      */
     @Event()
     public scrollChange: EmitType<IScrollChangeEventArgs>;
 
     /**
      * Triggers when the selection is changed in diagram
-     * @deprecated
+
      * @event
-     * @blazorProperty 'SelectionChanged'
-     * @blazorType 'IBlazorSelectionChangeEventArgs'
+
+
      */
     @Event()
     public selectionChange: EmitType<ISelectionChangeEventArgs>;
 
     /**
      * Triggers when a node is resized
-     * @deprecated
+
      * @event
-     * @blazorProperty 'OnSizeChange'
+
      */
     @Event()
     public sizeChange: EmitType<ISizeChangeEventArgs>;
 
     /**
      * Triggers when the connection is changed
-     * @deprecated
+
      * @event
-     * @blazorProperty 'OnConnectionChange'
-     * @blazorType 'IBlazorConnectionChangeEventArgs'
+
+
      */
     @Event()
     public connectionChange: EmitType<IConnectionChangeEventArgs>;
@@ -1060,8 +1060,8 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
     /**
      * Triggers when the connector's source point is changed
      * @event
-     * @blazorProperty 'OnSourcePointChange'
-     * @deprecated
+
+
      */
     @Event()
     public sourcePointChange: EmitType<IEndChangeEventArgs>;
@@ -1069,8 +1069,8 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
     /**
      * Triggers when the connector's target point is changed
      * @event
-     * @blazorProperty 'OnTargetPointChange'
-     * @deprecated
+
+
      */
     @Event()
     public targetPointChange: EmitType<IEndChangeEventArgs>;
@@ -1078,8 +1078,8 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
     /**
      * Triggers once the node or connector property changed.
      * @event
-     * @blazorProperty 'PropertyChanged'
-     * @blazorType Syncfusion.EJ2.Blazor.Diagrams.IBlazorPropertyChangeEventArgs
+
+
      */
     @Event()
     public propertyChange: EmitType<IPropertyChangeEventArgs>;
@@ -1087,8 +1087,8 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
     /**
      * Triggers while dragging the elements in diagram
      * @event
-     * @blazorProperty 'OnPositionChange'
-     * @blazorType Syncfusion.EJ2.Blazor.Diagrams.IBlazorDraggingEventArgs
+
+
      */
     @Event()
     public positionChange: EmitType<IDraggingEventArgs>;
@@ -1096,16 +1096,16 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
     /**
      * Triggers after animation is completed for the diagram elements.
      * @event
-     * @blazorProperty 'OnAnimationComplete'
+
      */
     @Event()
     public animationComplete: EmitType<Object>;
 
     /**
      * Triggers when the diagram elements are rotated
-     * @deprecated
+
      * @event
-     * @blazorProperty 'OnRotateChange'
+
      */
     @Event()
     public rotateChange: EmitType<IRotationEventArgs>;
@@ -1113,10 +1113,10 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
 
     /**
      * Triggers when a node/connector is added/removed to/from the diagram.
-     * @deprecated
+
      * @event
-     * @blazorProperty 'OnCollectionChange'
-     * @blazorType 'IBlazorCollectionChangeEventArgs'
+
+
      */
     @Event()
     public collectionChange: EmitType<ICollectionChangeEventArgs>;
@@ -1124,7 +1124,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
     /**
      * Triggers when a mouseDown on the user handle.
      * @event
-     * @blazorProperty 'OnUserHandleMouseDown'
+
      */
     @Event()
     public onUserHandleMouseDown: EmitType<UserHandleEventsArgs>;
@@ -1132,7 +1132,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
     /**
      * Triggers when a mouseUp on the user handle.
      * @event
-     * @blazorProperty 'OnUserHandleMouseUp'
+
      */
     @Event()
     public onUserHandleMouseUp: EmitType<UserHandleEventsArgs>;
@@ -1140,7 +1140,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
     /**
      * Triggers when a mouseEnter on the user handle.
      * @event
-     * @blazorProperty 'OnUserHandleMouseEnter'
+
      */
     @Event()
     public onUserHandleMouseEnter: EmitType<UserHandleEventsArgs>;
@@ -1148,7 +1148,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
     /**
      * Triggers when a mouseLeave on the user handle.
      * @event
-     * @blazorProperty 'OnUserHandleMouseLeave'
+
      */
     @Event()
     public onUserHandleMouseLeave: EmitType<UserHandleEventsArgs>;
@@ -1156,9 +1156,9 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
     /**
      * Triggers when a segment is added/removed to/from the connector.
      * @event
-     * @blazorProperty 'OnSegmentCollectionChange'
-     * @deprecated
-     * @blazorType 'IBlazorSegmentCollectionChangeEventArgs'
+
+
+
      */
     @Event()
     public segmentCollectionChange: EmitType<ISegmentCollectionChangeEventArgs>;
@@ -1166,7 +1166,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
     /**
      * Triggers when the state of the expand and collapse icon change for a node.
      * @event
-     * @blazorProperty 'OnExpandStateChange'
+
      */
     @Event()
     public expandStateChange: EmitType<IExpandStateChangeEventArgs>;
@@ -1174,7 +1174,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
     /**
      * Triggered when the diagram is rendered completely.
      * @event
-     * @blazorProperty 'Created'
+
      */
     @Event()
     public created: EmitType<Object>;
@@ -1182,8 +1182,8 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
     /**
      * Triggered when mouse enters a node/connector.
      * @event
-     * @blazorProperty 'MouseEnter'
-     * @blazorType Syncfusion.EJ2.Blazor.Diagrams.IBlazorMouseEventArgs
+
+
      */
     @Event()
     public mouseEnter: EmitType<IMouseEventArgs>;
@@ -1191,8 +1191,8 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
     /**
      * Triggered when mouse leaves node/connector.
      * @event
-     * @blazorProperty 'MouseLeave'
-     * @blazorType Syncfusion.EJ2.Blazor.Diagrams.IBlazorMouseEventArgs
+
+
      */
     @Event()
     public mouseLeave: EmitType<IMouseEventArgs>;
@@ -1200,8 +1200,8 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
     /**
      * Triggered when mouse hovers a node/connector.
      * @event
-     * @blazorProperty 'MouseOver'
-     * @blazorType Syncfusion.EJ2.Blazor.Diagrams.IBlazorMouseEventArgs
+
+
      */
     @Event()
     public mouseOver: EmitType<IMouseEventArgs>;
@@ -1209,8 +1209,8 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
     /**
      * Triggers before opening the context menu
      * @event
-     * @blazorProperty 'OnContextMenuOpen'
-     * @blazorType Syncfusion.EJ2.Blazor.Diagrams.DiagramBeforeMenuOpenEventArgs
+
+
      */
     @Event()
     public contextMenuOpen: EmitType<BeforeOpenCloseMenuEventArgs>;
@@ -1218,8 +1218,8 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
     /**
      * Triggers before rendering the context menu item
      * @event
-     * @blazorProperty 'OnContextMenuItemRender'
-     * @blazorType Syncfusion.EJ2.Blazor.Diagrams.DiagramMenuEventArgs
+
+
      */
     @Event()
     public contextMenuBeforeItemRender: EmitType<MenuEventArgs>;
@@ -1227,8 +1227,8 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
     /**
      * Triggers when a context menu item is clicked
      * @event
-     * @blazorProperty 'ContextMenuItemClicked'
-     * @blazorType Syncfusion.EJ2.Blazor.Diagrams.DiagramMenuEventArgs
+
+
      */
     @Event()
     public contextMenuClick: EmitType<MenuEventArgs>;
@@ -1236,24 +1236,24 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
     /**
      * Triggers when a command executed.
      * @event
-     * @blazorProperty 'OnCommandExecuted'
+
      */
     @Event()
     public commandExecute: EmitType<ICommandExecuteEventArgs>;
 
     /**
      * A collection of JSON objects where each object represents a layer. Layer is a named category of diagram shapes.
-     * @default []
+
      */
     @Collection<LayerModel>([], Layer)
     public layers: LayerModel[];
 
     /**
      * Triggers when a symbol is dragged and dropped from symbol palette to drawing area
-     * @deprecated
+
      * @event
-     * @blazorProperty 'OnDrop'
-     * @blazorType 'IBlazorDropEventArgs'
+
+
      */
     @Event()
     public drop: EmitType<IDropEventArgs>;
@@ -1262,7 +1262,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
     /** @private */
     public preventUpdate: boolean;
 
-    /** @hidden */
+
     /** @private */
     public localeObj: L10n;
     private defaultLocale: Object;
@@ -4697,8 +4697,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                         if (obj.type !== obj.segments[0].type) { obj.segments = []; }
                     }
                 }
-                let sourceNode: NodeModel = this.nameTable[obj.sourceID];
-                let targetNode: NodeModel = this.nameTable[obj.targetID];
+                let sourceNode: NodeModel = this.nameTable[obj.sourceID]; let targetNode: NodeModel = this.nameTable[obj.targetID];
                 let port: PointPortModel = this.getConnectedPort(sourceNode, obj);
                 let targetPort: PointPortModel = this.getConnectedPort(targetNode, obj);
                 let outPort: PointPortModel = this.findInOutConnectPorts(sourceNode, false);
@@ -4734,6 +4733,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                 }
                 obj.wrapper.measure(new Size(undefined, undefined));
                 obj.wrapper.arrange(obj.wrapper.desiredSize);
+                if (obj instanceof Connector && obj.type === 'Bezier') { this.updateConnectorAnnotation(obj); }
                 for (let j: number = 0; j < obj.wrapper.children.length; j++) {
                     this.pathTable[(obj.wrapper.children[j] as PathElement).data] = {};
                     this.pathTable[(obj.wrapper.children[j] as PathElement).data].absoluteBounds =

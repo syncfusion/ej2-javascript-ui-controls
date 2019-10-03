@@ -11,7 +11,7 @@ import { PdfBitmap, PdfBorders, PdfColor, PdfCompositeField, PdfDocument, PdfFon
 
 /**
  * ValueFormatter class to globalize the value.
- * @hidden
+
  */
 var ValueFormatter = /** @__PURE__ @class */ (function () {
     function ValueFormatter(cultureName) {
@@ -74,48 +74,48 @@ var Column = /** @__PURE__ @class */ (function () {
         /**
          * If `allowSorting` set to false, then it disables sorting option of a particular column.
          * By default all columns are sortable.
-         * @default true
+    
          */
         this.allowSorting = true;
         /**
          * If `allowResizing` is set to false, it disables resize option of a particular column.
          * By default all the columns can be resized.
-         * @default true
+    
          */
         this.allowResizing = true;
         /**
          * If `allowFiltering` set to false, then it disables filtering option and filter bar element of a particular column.
          * By default all columns are filterable.
-         * @default true
+    
          */
         this.allowFiltering = true;
         /**
          * If `allowGrouping` set to false, then it disables grouping of a particular column.
          * By default all columns are groupable.
-         * @default true
+    
          */
         this.allowGrouping = true;
         /**
          * If `allowReordering` set to false, then it disables reorder of a particular column.
          * By default all columns can be reorder.
-         * @default true
+    
          */
         this.allowReordering = true;
         /**
          * If `showColumnMenu` set to false, then it disable the column menu of a particular column.
          * By default column menu will show for all columns
-         * @default true
+    
          */
         this.showColumnMenu = true;
         /**
          * If `enableGroupByFormat` set to true, then it groups the particular column by formatted values.
-         * @default true
+    
          */
         this.enableGroupByFormat = false;
         /**
          * If `allowEditing` set to false, then it disables editing of a particular column.
          * By default all columns are editable.
-         * @default true
+    
          */
         this.allowEditing = true;
         /**
@@ -128,37 +128,35 @@ var Column = /** @__PURE__ @class */ (function () {
          * {% codeBlock src="grid/filter-menu-api/index.ts" %}{% endcodeBlock %}
          *
          * > Check the [`Filter UI`](../../grid/filtering/#custom-component-in-filter-menu) for its customization.
-         *  @default {}
+    
          */
         this.filter = {};
         /**
          * If `showInColumnChooser` set to false, then hide the particular column in column chooser.
          *  By default all columns are displayed in column Chooser.
-         * @default true
+    
          */
         this.showInColumnChooser = true;
         /**
          * Defines the `IEditCell` object to customize default edit cell.
-         * @default {}
+    
          */
         this.edit = {};
         /**
          * If `allowSearching` set to false, then it disables Searching of a particular column.
          * By default all columns allow Searching.
-         * @default true
+    
          */
         this.allowSearching = true;
         /**
          * If `autoFit` set to true, then the particular column content width will be
          * adjusted based on its content in the initial rendering itself.
          * Setting this property as true is equivalent to calling `autoFitColumns` method in the `dataBound` event.
-         * @default false
+    
          */
         this.autoFit = false;
         this.sortDirection = 'Descending';
-        /** @hidden */
         this.getEditTemplate = function () { return _this.editTemplateFn; };
-        /** @hidden */
         this.getFilterTemplate = function () { return _this.filterTemplateFn; };
         merge(this, options);
         this.type = this.type === 'none' ? null : (this.type ? this.type.toLowerCase() : this.type);
@@ -249,15 +247,12 @@ var Column = /** @__PURE__ @class */ (function () {
             };
         }
     }
-    /** @hidden */
     Column.prototype.getSortDirection = function () {
         return this.sortDirection;
     };
-    /** @hidden */
     Column.prototype.setSortDirection = function (direction) {
         this.sortDirection = direction;
     };
-    /** @hidden */
     Column.prototype.setProperties = function (column) {
         //Angular two way binding
         var keys = Object.keys(column);
@@ -266,41 +261,33 @@ var Column = /** @__PURE__ @class */ (function () {
         }
     };
     /**
-     * @hidden
+
      * It defines the column is foreign key column or not.
      */
     Column.prototype.isForeignColumn = function () {
         return !!(this.dataSource && this.foreignKeyValue);
     };
-    /** @hidden */
     Column.prototype.getFormatter = function () {
         return this.formatFn;
     };
-    /** @hidden */
     Column.prototype.setFormatter = function (value) {
         this.formatFn = value;
     };
-    /** @hidden */
     Column.prototype.getParser = function () {
         return this.parserFn;
     };
-    /** @hidden */
     Column.prototype.setParser = function (value) {
         this.parserFn = value;
     };
-    /** @hidden */
     Column.prototype.getColumnTemplate = function () {
         return this.templateFn;
     };
-    /** @hidden */
     Column.prototype.getHeaderTemplate = function () {
         return this.headerTemplateFn;
     };
-    /** @hidden */
     Column.prototype.getFilterItemTemplate = function () {
         return this.fltrTemplateFn;
     };
-    /** @hidden */
     Column.prototype.getDomSetter = function () {
         return this.disableHtmlEncode ? 'textContent' : 'innerHTML';
     };
@@ -324,364 +311,188 @@ var CommandColumnModel = /** @__PURE__ @class */ (function () {
     return CommandColumnModel;
 }());
 
-/** @hidden */
 var created = 'create';
-/** @hidden */
 var destroyed = 'destroy';
-/** @hidden */
 var load = 'load';
-/** @hidden */
 var rowDataBound = 'rowDataBound';
-/** @hidden */
 var queryCellInfo = 'queryCellInfo';
-/** @hidden */
 var headerCellInfo = 'headerCellInfo';
-/** @hidden */
 var actionBegin = 'actionBegin';
-/** @hidden */
 var actionComplete = 'actionComplete';
-/** @hidden */
 var actionFailure = 'actionFailure';
-/** @hidden */
 var dataBound = 'dataBound';
-/** @hidden */
 var rowSelecting = 'rowSelecting';
-/** @hidden */
 var rowSelected = 'rowSelected';
-/** @hidden */
 var rowDeselecting = 'rowDeselecting';
-/** @hidden */
 var rowDeselected = 'rowDeselected';
-/** @hidden */
 var cellSelecting = 'cellSelecting';
-/** @hidden */
 var cellSelected = 'cellSelected';
-/** @hidden */
 var cellDeselecting = 'cellDeselecting';
-/** @hidden */
 var cellDeselected = 'cellDeselected';
-/** @hidden */
 var columnDragStart = 'columnDragStart';
-/** @hidden */
 var columnDrag = 'columnDrag';
-/** @hidden */
 var columnDrop = 'columnDrop';
-/** @hidden */
 var rowDragStartHelper = 'rowDragStartHelper';
-/** @hidden */
 var rowDragStart = 'rowDragStart';
-/** @hidden */
 var rowDrag = 'rowDrag';
-/** @hidden */
 var rowDrop = 'rowDrop';
-/** @hidden */
 var beforePrint = 'beforePrint';
-/** @hidden */
 var printComplete = 'printComplete';
-/** @hidden */
 var detailDataBound = 'detailDataBound';
-/** @hidden */
 var toolbarClick = 'toolbarClick';
-/** @hidden */
 var batchAdd = 'batchAdd';
-/** @hidden */
 var batchCancel = 'batchCancel';
-/** @hidden */
 var batchDelete = 'batchDelete';
-/** @hidden */
 var beforeBatchAdd = 'beforeBatchAdd';
-/** @hidden */
 var beforeBatchDelete = 'beforeBatchDelete';
-/** @hidden */
 var beforeBatchSave = 'beforeBatchSave';
-/** @hidden */
 var beginEdit = 'beginEdit';
-/** @hidden */
 var cellEdit = 'cellEdit';
-/** @hidden */
 var cellSave = 'cellSave';
-/** @hidden */
 var cellSaved = 'cellSaved';
-/** @hidden */
 var endAdd = 'endAdd';
-/** @hidden */
 var endDelete = 'endDelete';
-/** @hidden */
 var endEdit = 'endEdit';
-/** @hidden */
 var recordDoubleClick = 'recordDoubleClick';
-/** @hidden */
 var recordClick = 'recordClick';
-/** @hidden */
 var beforeDataBound = 'beforeDataBound';
-/** @hidden */
 var beforeOpenColumnChooser = 'beforeOpenColumnChooser';
-/** @hidden */
 var resizeStart = 'resizeStart';
-/** @hidden */
 var onResize = 'resizing';
-/** @hidden */
 var resizeStop = 'resizeStop';
-/** @hidden */
 var checkBoxChange = 'checkBoxChange';
-/** @hidden */
 var beforeCopy = 'beforeCopy';
-/** @hidden */
 var beforePaste = 'beforePaste';
-/** @hidden */
 var filterChoiceRequest = 'filterchoicerequest';
-/** @hidden */
 var filterAfterOpen = 'filterafteropen';
-/** @hidden */
 var filterBeforeOpen = 'filterbeforeopen';
-/** @hidden */
 var filterSearchBegin = 'filtersearchbegin';
-/** @hidden */
 var commandClick = 'commandClick';
 /**
  * Specifies grid internal events
  */
-/** @hidden */
 var initialLoad = 'initial-load';
-/** @hidden */
 var initialEnd = 'initial-end';
-/** @hidden */
 var dataReady = 'data-ready';
-/** @hidden */
 var contentReady = 'content-ready';
-/** @hidden */
 var uiUpdate = 'ui-update';
-/** @hidden */
 var onEmpty = 'on-empty';
-/** @hidden */
 var inBoundModelChanged = 'inbound-model-changed';
-/** @hidden */
 var modelChanged = 'model-changed';
-/** @hidden */
 var colGroupRefresh = 'colgroup-refresh';
-/** @hidden */
 var headerRefreshed = 'header-refreshed';
-/** @hidden */
 var pageBegin = 'paging-begin';
-/** @hidden */
 var pageComplete = 'paging-complete';
-/** @hidden */
 var sortBegin = 'sorting-begin';
-/** @hidden */
 var sortComplete = 'sorting-complete';
-/** @hidden */
 var filterBegin = 'filtering-begin';
-/** @hidden */
 var filterComplete = 'filtering-complete';
-/** @hidden */
 var searchBegin = 'searching-begin';
-/** @hidden */
 var searchComplete = 'searching-complete';
-/** @hidden */
 var reorderBegin = 'reorder-begin';
-/** @hidden */
 var reorderComplete = 'reorder-complete';
-/** @hidden */
 var rowDragAndDropBegin = 'rowdraganddrop-begin';
-/** @hidden */
 var rowDragAndDropComplete = 'rowdraganddrop-complete';
-/** @hidden */
 var groupBegin = 'grouping-begin';
-/** @hidden */
 var groupComplete = 'grouping-complete';
-/** @hidden */
 var ungroupBegin = 'ungrouping-begin';
-/** @hidden */
 var ungroupComplete = 'ungrouping-complete';
-/** @hidden */
 var groupAggregates = 'group-aggregates';
-/** @hidden */
 var refreshFooterRenderer = 'refresh-footer-rendered';
-/** @hidden */
 var refreshAggregateCell = 'refresh-aggregate-cell';
-/** @hidden */
 var refreshAggregates = 'refresh-aggregates';
-/** @hidden */
 var rowSelectionBegin = 'rowselecting';
-/** @hidden */
 var rowSelectionComplete = 'rowselected';
-/** @hidden */
 var columnSelectionBegin = 'columnselecting';
-/** @hidden */
 var columnSelectionComplete = 'columnselected';
-/** @hidden */
 var cellSelectionBegin = 'cellselecting';
-/** @hidden */
 var cellSelectionComplete = 'cellselected';
-/** @hidden */
 var beforeCellFocused = 'beforecellfocused';
-/** @hidden */
 var cellFocused = 'cellfocused';
-/** @hidden */
 var keyPressed = 'key-pressed';
-/** @hidden */
 var click = 'click';
-/** @hidden */
 var destroy = 'destroy';
-/** @hidden */
 var columnVisibilityChanged = 'column-visible-changed';
-/** @hidden */
 var scroll = 'scroll';
-/** @hidden */
 var columnWidthChanged = 'column-width-changed';
-/** @hidden */
 var columnPositionChanged = 'column-position-changed';
-/** @hidden */
 var rowDragAndDrop = 'row-drag-and-drop';
-/** @hidden */
 var rowsAdded = 'rows-added';
-/** @hidden */
 var rowsRemoved = 'rows-removed';
-/** @hidden */
 var columnDragStop = 'column-drag-stop';
-/** @hidden */
 var headerDrop = 'header-drop';
-/** @hidden */
 var dataSourceModified = 'datasource-modified';
-/** @hidden */
 var refreshComplete = 'refresh-complete';
-/** @hidden */
 var refreshVirtualBlock = 'refresh-virtual-block';
-/** @hidden */
 var dblclick = 'dblclick';
-/** @hidden */
 var toolbarRefresh = 'toolbar-refresh';
-/** @hidden */
 var bulkSave = 'bulk-save';
-/** @hidden */
 var autoCol = 'auto-col';
-/** @hidden */
 var tooltipDestroy = 'tooltip-destroy';
-/** @hidden */
 var updateData = 'update-data';
-/** @hidden */
 var editBegin = 'edit-begin';
-/** @hidden */
 var editComplete = 'edit-complete';
-/** @hidden */
 var addBegin = 'add-begin';
-/** @hidden */
 var addComplete = 'add-complete';
-/** @hidden */
 var saveComplete = 'save-complete';
-/** @hidden */
 var deleteBegin = 'delete-begin';
-/** @hidden */
 var deleteComplete = 'delete-complete';
-/** @hidden */
 var preventBatch = 'prevent-batch';
-/** @hidden */
 var dialogDestroy = 'dialog-destroy';
-/** @hidden */
 var crudAction = 'crud-Action';
-/** @hidden */
 var addDeleteAction = 'add-delete-Action';
-/** @hidden */
 var destroyForm = 'destroy-form';
-/** @hidden */
 var doubleTap = 'double-tap';
-/** @hidden */
 var beforeExcelExport = 'beforeExcelExport';
-/** @hidden */
 var excelExportComplete = 'excelExportComplete';
-/** @hidden */
 var excelQueryCellInfo = 'excelQueryCellInfo';
-/** @hidden */
 var excelHeaderQueryCellInfo = 'excelHeaderQueryCellInfo';
-/** @hidden */
 var exportDetailDataBound = 'exportdetaildatabound';
-/** @hidden */
 var beforePdfExport = 'beforePdfExport';
-/** @hidden */
 var pdfExportComplete = 'pdfExportComplete';
-/** @hidden */
 var pdfQueryCellInfo = 'pdfQueryCellInfo';
-/** @hidden */
 var pdfHeaderQueryCellInfo = 'pdfHeaderQueryCellInfo';
-/** @hidden */
 var accessPredicate = 'access-predicate';
-/** @hidden */
 var contextMenuClick = 'contextMenuClick';
-/** @hidden */
 var freezeRender = 'freezerender';
-/** @hidden */
 var freezeRefresh = 'freezerefresh';
-/** @hidden */
 var contextMenuOpen = 'contextMenuOpen';
-/** @hidden */
 var columnMenuClick = 'columnMenuClick';
-/** @hidden */
 var columnMenuOpen = 'columnMenuOpen';
-/** @hidden */
 var filterOpen = 'filterOpen';
-/** @hidden */
 var filterDialogCreated = 'filterDialogCreated';
-/** @hidden */
 var filterMenuClose = 'filter-menu-close';
-/** @hidden */
 var initForeignKeyColumn = 'initForeignKeyColumn';
-/** @hidden */
 var getForeignKeyData = 'getForeignKeyData';
-/** @hidden */
 var generateQuery = 'generateQuery';
-/** @hidden */
 var showEmptyGrid = 'showEmptyGrid';
-/** @hidden */
 var foreignKeyData = 'foreignKeyData';
-/** @hidden */
 var dataStateChange = 'dataStateChange';
-/** @hidden */
 var dataSourceChanged = 'dataSourceChanged';
-/** @hidden */
 var rtlUpdated = 'rtl-updated';
-/** @hidden */
 var beforeFragAppend = 'beforeFragAppend';
-/** @hidden */
 var frozenHeight = 'frozenHeight';
-/** @hidden */
 var textWrapRefresh = 'textWrapRefresh';
-/** @hidden */
 var recordAdded = 'recordAdded';
-/** @hidden */
 var cancelBegin = 'cancel-Begin';
-/** @hidden */
 var editNextValCell = 'editNextValCell';
-/** @hidden */
 var hierarchyPrint = 'hierarchyprint';
-/** @hidden */
 var expandChildGrid = 'expandchildgrid';
-/** @hidden */
 var printGridInit = 'printGrid-Init';
-/** @hidden */
 var exportRowDataBound = 'export-RowDataBound';
-/** @hidden */
 var rowPositionChanged = 'row-position-changed';
-/** @hidden */
 var columnChooserOpened = 'columnChooserOpened';
-/** @hidden */
 var batchForm = 'batchedit-form';
-/** @hidden */
 var beforeStartEdit = 'edit-form';
-/** @hidden */
 var beforeBatchCancel = 'before-batch-cancel';
-/** @hidden */
 var batchEditFormRendered = 'batcheditform-rendered';
-/** @hidden */
 var partialRefresh = 'partial-refresh';
-/** @hidden */
 var beforeCustomFilterOpen = 'beforeCustomFilterOpen';
-/** @hidden */
 var selectVirtualRow = 'select-virtual-Row';
-/** @hidden */
 var columnsPrepared = 'columns-prepared';
 
 /**
- * @hidden
+
  */
 function getCloneProperties() {
     return ['aggregates', 'allowGrouping', 'allowFiltering', 'allowMultiSorting', 'allowReordering', 'allowSorting',
@@ -697,7 +508,7 @@ function getCloneProperties() {
 var Print = /** @__PURE__ @class */ (function () {
     /**
      * Constructor for the Grid print module
-     * @hidden
+
      */
     function Print(parent, scrollModule) {
         this.isAsyncPrint = false;
@@ -863,6 +674,11 @@ var Print = /** @__PURE__ @class */ (function () {
             groupCaption[i].setAttribute('colspan', colSpan);
         }
         var colGroups = element.querySelectorAll("colgroup" + id + "colGroup");
+        var contentColGroups = element.querySelector('.e-content').querySelectorAll('colgroup');
+        this.hideColGroup(colGroups, depth);
+        this.hideColGroup(contentColGroups, depth);
+    };
+    Print.prototype.hideColGroup = function (colGroups, depth) {
         for (var i = 0; i < colGroups.length; i++) {
             for (var j = 0; j < depth; j++) {
                 colGroups[i].childNodes[j].style.display = 'none';
@@ -875,7 +691,7 @@ var Print = /** @__PURE__ @class */ (function () {
     /**
      * To destroy the print
      * @return {void}
-     * @hidden
+
      */
     Print.prototype.destroy = function () {
         if (this.parent.isDestroyed) {
@@ -903,7 +719,7 @@ var Print = /** @__PURE__ @class */ (function () {
  * @param  {Object} target
  * @param  {string} checkFor
  * @returns no
- * @hidden
+
  */
 function doesImplementInterface(target, checkFor) {
     /* tslint:disable:no-any */
@@ -914,7 +730,7 @@ function doesImplementInterface(target, checkFor) {
  * @param  {string} field
  * @param  {Object} data
  * @param  {IColumn} column
- * @hidden
+
  */
 function valueAccessor(field, data, column) {
     return (isNullOrUndefined(field) || field === '') ? '' : DataUtil.getObject(field, data);
@@ -923,7 +739,7 @@ function valueAccessor(field, data, column) {
  * The function used to update Dom using requestAnimationFrame.
  * @param  {Function} fn - Function that contains the actual action
  * @return {Promise<T>}
- * @hidden
+
  */
 function getUpdateUsingRaf(updateFunction, callBack) {
     requestAnimationFrame(function () {
@@ -936,7 +752,7 @@ function getUpdateUsingRaf(updateFunction, callBack) {
     });
 }
 /**
- * @hidden
+
  */
 function updatecloneRow(grid) {
     var nRows = [];
@@ -955,7 +771,7 @@ function updatecloneRow(grid) {
     grid.vcRows = nRows;
 }
 /**
- * @hidden
+
  */
 var count = 0;
 function getCollapsedRowsCount(val, grid) {
@@ -1009,7 +825,7 @@ function getCollapsedRowsCount(val, grid) {
     return count;
 }
 /**
- * @hidden
+
  */
 function recursive(row) {
     var items = 'items';
@@ -1023,7 +839,7 @@ function recursive(row) {
     }
 }
 /**
- * @hidden
+
  */
 function iterateArrayOrObject(collection, predicate) {
     var result = [];
@@ -1035,7 +851,6 @@ function iterateArrayOrObject(collection, predicate) {
     }
     return result;
 }
-/** @hidden */
 function iterateExtend(array) {
     var obj = [];
     for (var i = 0; i < array.length; i++) {
@@ -1043,7 +858,6 @@ function iterateExtend(array) {
     }
     return obj;
 }
-/** @hidden */
 function templateCompiler(template) {
     if (template) {
         try {
@@ -1057,7 +871,6 @@ function templateCompiler(template) {
     }
     return undefined;
 }
-/** @hidden */
 function setStyleAndAttributes(node, customAttributes) {
     var copyAttr = {};
     var literals = ['style', 'class'];
@@ -1073,7 +886,6 @@ function setStyleAndAttributes(node, customAttributes) {
     }
     attributes(node, copyAttr);
 }
-/** @hidden */
 function extend$1(copied, first, second, exclude) {
     var moved = extend(copied, first, second);
     Object.keys(moved).forEach(function (value, index) {
@@ -1083,7 +895,6 @@ function extend$1(copied, first, second, exclude) {
     });
     return moved;
 }
-/** @hidden */
 function setColumnIndex(columnModel, ind) {
     if (ind === void 0) { ind = 0; }
     for (var i = 0, len = columnModel.length; i < len; i++) {
@@ -1099,7 +910,6 @@ function setColumnIndex(columnModel, ind) {
     }
     return ind;
 }
-/** @hidden */
 function prepareColumns(columns, autoWidth) {
     for (var c = 0, len = columns.length; c < len; c++) {
         var column = void 0;
@@ -1130,7 +940,6 @@ function prepareColumns(columns, autoWidth) {
     }
     return columns;
 }
-/** @hidden */
 function setCssInGridPopUp(popUp, e, className) {
     var popUpSpan = popUp.querySelector('span');
     var position = popUp.parentElement.getBoundingClientRect();
@@ -1152,7 +961,6 @@ function setCssInGridPopUp(popUp, e, className) {
         popUp.querySelector('.e-uptail').style.display = '';
     }
 }
-/** @hidden */
 function getPopupLeftPosition(popup, e, targetPosition, left) {
     var width = popup.offsetWidth / 2;
     var x = getPosition(e).x;
@@ -1166,7 +974,6 @@ function getPopupLeftPosition(popup, e, targetPosition, left) {
         return x - left - width;
     }
 }
-/** @hidden */
 function getActualProperties(obj) {
     if (obj instanceof ChildProperty) {
         return getValue('properties', obj);
@@ -1175,7 +982,6 @@ function getActualProperties(obj) {
         return obj;
     }
 }
-/** @hidden */
 function parentsUntil(elem, selector, isID) {
     var parent = elem;
     while (parent) {
@@ -1186,7 +992,6 @@ function parentsUntil(elem, selector, isID) {
     }
     return parent;
 }
-/** @hidden */
 function getElementIndex(element, elements) {
     var index = -1;
     for (var i = 0, len = elements.length; i < len; i++) {
@@ -1197,7 +1002,6 @@ function getElementIndex(element, elements) {
     }
     return index;
 }
-/** @hidden */
 function inArray(value, collection) {
     for (var i = 0, len = collection.length; i < len; i++) {
         if (collection[i] === value) {
@@ -1206,7 +1010,6 @@ function inArray(value, collection) {
     }
     return -1;
 }
-/** @hidden */
 function getActualPropFromColl(collection) {
     var coll = [];
     for (var i = 0, len = collection.length; i < len; i++) {
@@ -1219,14 +1022,12 @@ function getActualPropFromColl(collection) {
     }
     return coll;
 }
-/** @hidden */
 function removeElement(target, selector) {
     var elements = [].slice.call(target.querySelectorAll(selector));
     for (var i = 0; i < elements.length; i++) {
         remove(elements[i]);
     }
 }
-/** @hidden */
 function getPosition(e) {
     var position = {};
     position.x = (isNullOrUndefined(e.clientX) ? e.changedTouches[0].clientX :
@@ -1236,11 +1037,9 @@ function getPosition(e) {
     return position;
 }
 var uid = 0;
-/** @hidden */
 function getUid(prefix) {
     return prefix + uid++;
 }
-/** @hidden */
 function appendChildren(elem, children) {
     for (var i = 0, len = children.length; i < len; i++) {
         if (len === children.length) {
@@ -1252,7 +1051,6 @@ function appendChildren(elem, children) {
     }
     return elem;
 }
-/** @hidden */
 function parents(elem, selector, isID) {
     var parent = elem;
     var parents = [];
@@ -1264,7 +1062,6 @@ function parents(elem, selector, isID) {
     }
     return parents;
 }
-/** @hidden */
 function calculateAggregate(type, data, column, context) {
     if (type === 'Custom') {
         var temp = column.customAggregate;
@@ -1275,9 +1072,7 @@ function calculateAggregate(type, data, column, context) {
     }
     return (column.field in data || data instanceof Array) ? DataUtil.aggregates[type.toLowerCase()](data, column.field) : null;
 }
-/** @hidden */
 var scrollWidth = null;
-/** @hidden */
 function getScrollBarWidth() {
     if (scrollWidth !== null) {
         return scrollWidth;
@@ -1290,9 +1085,7 @@ function getScrollBarWidth() {
     document.body.removeChild(divNode);
     return scrollWidth = value;
 }
-/** @hidden */
 var rowHeight;
-/** @hidden */
 function getRowHeight(element) {
     if (rowHeight !== undefined) {
         return rowHeight;
@@ -1305,21 +1098,17 @@ function getRowHeight(element) {
     rowHeight = Math.ceil(rect.height);
     return rowHeight;
 }
-/** @hidden */
 function isComplexField(field) {
     return field.split('.').length > 1;
 }
-/** @hidden */
 function getComplexFieldID(field) {
     if (field === void 0) { field = ''; }
     return field.replace(/\./g, '___');
 }
-/** @hidden */
 function setComplexFieldID(field) {
     if (field === void 0) { field = ''; }
     return field.replace(/___/g, '.');
 }
-/** @hidden */
 function isEditable(col, type, elem) {
     var row = parentsUntil(elem, 'e-row');
     var isOldRow = !row ? true : row && !row.classList.contains('e-insertedrow');
@@ -1339,14 +1128,12 @@ function isEditable(col, type, elem) {
         return true;
     }
 }
-/** @hidden */
 function isActionPrevent(inst) {
     var dlg = inst.element.querySelector('#' + inst.element.id + 'EditConfirm');
     return inst.editSettings.mode === 'Batch' &&
         (inst.element.querySelectorAll('.e-updatedtd').length) && inst.editSettings.showConfirmDialog &&
         (dlg ? dlg.classList.contains('e-popup-close') : true);
 }
-/** @hidden */
 function wrap(elem, action) {
     var clName = 'e-wrap';
     elem = elem instanceof Array ? elem : [elem];
@@ -1354,7 +1141,6 @@ function wrap(elem, action) {
         action ? elem[i].classList.add(clName) : elem[i].classList.remove(clName);
     }
 }
-/** @hidden */
 function setFormatter(serviceLocator, column) {
     var fmtr = serviceLocator.getService('valueFormatter');
     switch (column.type) {
@@ -1372,7 +1158,6 @@ function setFormatter(serviceLocator, column) {
             break;
     }
 }
-/** @hidden */
 function addRemoveActiveClasses(cells, add) {
     var args = [];
     for (var _i = 2; _i < arguments.length; _i++) {
@@ -1389,7 +1174,6 @@ function addRemoveActiveClasses(cells, add) {
         }
     }
 }
-/** @hidden */
 function distinctStringValues(result) {
     var temp = {};
     var res = [];
@@ -1401,7 +1185,6 @@ function distinctStringValues(result) {
     }
     return res;
 }
-/** @hidden */
 function getFilterMenuPostion(target, dialogObj, grid) {
     var elementVisible = dialogObj.element.style.display;
     dialogObj.element.style.display = 'block';
@@ -1432,24 +1215,20 @@ function getFilterMenuPostion(target, dialogObj, grid) {
         }
     }
 }
-/** @hidden */
 function getZIndexCalcualtion(args, dialogObj) {
     args.popup.element.style.zIndex = (dialogObj.zIndex + 1).toString();
 }
-/** @hidden */
 function toogleCheckbox(elem) {
     var span = elem.querySelector('.e-frame');
     span.classList.contains('e-check') ? classList(span, ['e-uncheck'], ['e-check']) :
         classList(span, ['e-check'], ['e-uncheck']);
 }
-/** @hidden */
 function createCboxWithWrap(uid, elem, className) {
     var div = createElement('div', { className: className });
     div.appendChild(elem);
     div.setAttribute('uid', uid);
     return div;
 }
-/** @hidden */
 function removeAddCboxClasses(elem, checked) {
     removeClass([elem], ['e-check', 'e-stop', 'e-uncheck']);
     if (checked) {
@@ -1464,7 +1243,7 @@ function removeAddCboxClasses(elem, checked) {
  * @param row - Grid Row model object.
  * @param columns - Foreign columns array.
  * @param data - Updated Row data.
- * @hidden
+
  */
 function refreshForeignData(row, columns, data) {
     columns.forEach(function (col) {
@@ -1482,7 +1261,7 @@ function refreshForeignData(row, columns, data) {
  * @param data - Row data.
  * @param lValue - cell value.
  * @param foreignData - foreign data source.
- * @hidden
+
  */
 function getForeignData(column, data, lValue, foreignKeyData) {
     var fField = column.foreignKeyField;
@@ -1503,7 +1282,7 @@ function getForeignData(column, data, lValue, foreignKeyData) {
  * To use to get the column's object by the foreign key value.
  * @param foreignKeyValue - Defines ForeignKeyValue.
  * @param columns - Array of column object.
- * @hidden
+
  */
 function getColumnByForeignKeyValue(foreignKeyValue, columns) {
     var column;
@@ -1513,7 +1292,7 @@ function getColumnByForeignKeyValue(foreignKeyValue, columns) {
     }) && column;
 }
 /**
- * @hidden
+
  * @param filterObject - Defines predicate model object
  */
 function getDatePredicate(filterObject, type) {
@@ -1567,7 +1346,7 @@ function getDatePredicate(filterObject, type) {
     return datePredicate;
 }
 /**
- * @hidden
+
  */
 function renderMovable(ele, frzCols) {
     var mEle = ele.cloneNode(true);
@@ -1580,13 +1359,13 @@ function renderMovable(ele, frzCols) {
     return mEle;
 }
 /**
- * @hidden
+
  */
 function isGroupAdaptive(grid) {
     return grid.enableVirtualization && grid.groupSettings.columns.length > 0 && grid.isVirtualAdaptive;
 }
 /**
- * @hidden
+
  */
 function getObject(field, object) {
     if (field === void 0) { field = ''; }
@@ -1600,7 +1379,7 @@ function getObject(field, object) {
     }
 }
 /**
- * @hidden
+
  */
 function getCustomDateFormat(format, colType) {
     var intl = new Internationalization();
@@ -1620,7 +1399,7 @@ function getCustomDateFormat(format, colType) {
     return formatvalue;
 }
 /**
- * @hidden
+
  */
 function getExpandedState(gObj, hierarchyPrintMode) {
     var rows = gObj.getRowsObject();
@@ -1639,7 +1418,7 @@ function getExpandedState(gObj, hierarchyPrintMode) {
     return obj;
 }
 /**
- * @hidden
+
  */
 function getPrintGridModel(gObj, hierarchyPrintMode) {
     if (hierarchyPrintMode === void 0) { hierarchyPrintMode = 'Expanded'; }
@@ -1665,7 +1444,7 @@ function getPrintGridModel(gObj, hierarchyPrintMode) {
     return printGridModel;
 }
 /**
- * @hidden
+
  */
 function extendObjWithFn(copied, first, second, deep) {
     var res = copied || {};
@@ -1706,7 +1485,7 @@ function extendObjWithFn(copied, first, second, deep) {
     return res;
 }
 /**
- * @hidden
+
  */
 function getPrototypesOfObj(obj) {
     var keys = [];
@@ -1717,7 +1496,7 @@ function getPrototypesOfObj(obj) {
     return keys;
 }
 /**
- * @hidden
+
  */
 function measureColumnDepth(column) {
     var max = 0;
@@ -1730,7 +1509,7 @@ function measureColumnDepth(column) {
     return max + 1;
 }
 /**
- * @hidden
+
  */
 function checkDepth(col, index) {
     var max = index;
@@ -1750,7 +1529,7 @@ function checkDepth(col, index) {
     return index;
 }
 /**
- * @hidden
+
  */
 function refreshFilteredColsUid(gObj, filteredCols) {
     for (var i = 0; i < filteredCols.length; i++) {
@@ -1759,7 +1538,6 @@ function refreshFilteredColsUid(gObj, filteredCols) {
             : gObj.getColumnByField(filteredCols[i].field).uid;
     }
 }
-/** @hidden */
 var Global;
 (function (Global) {
     Global.timer = null;
@@ -1767,7 +1545,7 @@ var Global;
 
 /**
  * Defines types of Cell
- * @hidden
+
  */
 var CellType;
 (function (CellType) {
@@ -1810,7 +1588,7 @@ var CellType;
 })(CellType || (CellType = {}));
 /**
  * Defines types of Render
- * @hidden
+
  */
 var RenderType;
 (function (RenderType) {
@@ -1823,7 +1601,7 @@ var RenderType;
 })(RenderType || (RenderType = {}));
 /**
  * Defines Predefined toolbar items.
- * @hidden
+
  */
 var ToolbarItem;
 (function (ToolbarItem) {
@@ -1843,13 +1621,13 @@ var ToolbarItem;
 
 /* tslint:disable-next-line:max-line-length */
 /**
- * @hidden
+
  * `CheckBoxFilter` module is used to handle filtering action.
  */
 var CheckBoxFilter = /** @__PURE__ @class */ (function () {
     /**
      * Constructor for checkbox filtering module
-     * @hidden
+
      */
     function CheckBoxFilter(parent, filterSettings, serviceLocator) {
         this.existingPredicate = {};
@@ -1878,7 +1656,7 @@ var CheckBoxFilter = /** @__PURE__ @class */ (function () {
     /**
      * To destroy the filter bar.
      * @return {void}
-     * @hidden
+
      */
     CheckBoxFilter.prototype.destroy = function () {
         this.closeDialog();
@@ -2699,12 +2477,12 @@ var CheckBoxFilter = /** @__PURE__ @class */ (function () {
 
 /**
  * Grid data module is used to generate query and data source.
- * @hidden
+
  */
 var Data = /** @__PURE__ @class */ (function () {
     /**
      * Constructor for data module.
-     * @hidden
+
      */
     function Data(parent, serviceLocator) {
         this.dataState = { isPending: false, resolver: null, group: [] };
@@ -2743,7 +2521,7 @@ var Data = /** @__PURE__ @class */ (function () {
     /**
      * The function is used to generate updated Query from Grid model.
      * @return {Query}
-     * @hidden
+
      */
     Data.prototype.generateQuery = function (skipPage) {
         var gObj = this.parent;
@@ -2984,7 +2762,7 @@ var Data = /** @__PURE__ @class */ (function () {
      * The function is used to get dataManager promise by executing given Query.
      * @param  {Query} query - Defines the query which will execute along with data processing.
      * @return {Promise<Object>}
-     * @hidden
+
      */
     Data.prototype.getData = function (args, query) {
         var _this = this;
@@ -3089,7 +2867,6 @@ var Data = /** @__PURE__ @class */ (function () {
         args[pr] = promise ? promise : args[pr];
         this.parent.notify(crudAction, args);
     };
-    /** @hidden */
     Data.prototype.saveChanges = function (changes, key, original, query) {
         if (query === void 0) { query = this.generateQuery(); }
         query.requiresCount();
@@ -3116,7 +2893,6 @@ var Data = /** @__PURE__ @class */ (function () {
         }
         return undefined;
     };
-    /** @hidden */
     Data.prototype.isRemote = function () {
         return this.dataManager.dataSource.offline !== true && this.dataManager.dataSource.url !== undefined &&
             this.dataManager.dataSource.url !== '';
@@ -3173,17 +2949,20 @@ var Data = /** @__PURE__ @class */ (function () {
         if (args.requestType !== undefined && this.dataState.isDataChanged !== false) {
             state.action = args;
             if (args.requestType === 'save' || args.requestType === 'delete') {
-                var editArgs = args;
-                editArgs.key = key;
+                var editArgs_1 = args;
+                editArgs_1.key = key;
                 var promise = 'promise';
-                editArgs[promise] = deff.promise;
-                editArgs.state = state;
+                editArgs_1[promise] = deff.promise;
+                editArgs_1.state = state;
                 this.setState({ isPending: true, resolver: deff.resolve });
                 dataArgs.endEdit = deff.resolve;
                 dataArgs.cancelEdit = deff.reject;
-                this.parent.trigger(dataSourceChanged, editArgs);
+                this.parent.trigger(dataSourceChanged, editArgs_1);
                 deff.promise.then(function (e) {
                     _this.setState({ isPending: true, resolver: def.resolve, group: state.group, aggregates: state.aggregates });
+                    if (editArgs_1.requestType === 'save') {
+                        _this.parent.notify(recordAdded, editArgs_1);
+                    }
                     _this.parent.trigger(dataStateChange, state);
                 })
                     .catch(function () { return void 0; });
@@ -3224,7 +3003,7 @@ var Data = /** @__PURE__ @class */ (function () {
 
 /**
  * Row
- * @hidden
+
  */
 var Row = /** @__PURE__ @class */ (function () {
     function Row(options) {
@@ -3241,7 +3020,7 @@ var Row = /** @__PURE__ @class */ (function () {
 
 /**
  * Cell
- * @hidden
+
  */
 var Cell = /** @__PURE__ @class */ (function () {
     function Cell(options) {
@@ -3259,7 +3038,7 @@ var Cell = /** @__PURE__ @class */ (function () {
 
 /**
  * `CellMergeRender` module.
- * @hidden
+
  */
 var CellMergeRender = /** @__PURE__ @class */ (function () {
     function CellMergeRender(serviceLocator, parent) {
@@ -3380,7 +3159,7 @@ var CellMergeRender = /** @__PURE__ @class */ (function () {
 
 /**
  * RowRenderer class which responsible for building row content.
- * @hidden
+
  */
 var RowRenderer = /** @__PURE__ @class */ (function () {
     function RowRenderer(serviceLocator, cellType, parent) {
@@ -3569,7 +3348,7 @@ var RowRenderer = /** @__PURE__ @class */ (function () {
 
 /**
  * RowModelGenerator is used to generate grid data rows.
- * @hidden
+
  */
 var RowModelGenerator = /** @__PURE__ @class */ (function () {
     /**
@@ -3682,7 +3461,7 @@ var __extends$2 = (undefined && undefined.__extends) || (function () {
 })();
 /**
  * Summary row model generator
- * @hidden
+
  */
 var SummaryModelGenerator = /** @__PURE__ @class */ (function () {
     /**
@@ -3875,7 +3654,7 @@ var __extends$1 = (undefined && undefined.__extends) || (function () {
 })();
 /**
  * GroupModelGenerator is used to generate group caption rows and data rows.
- * @hidden
+
  */
 var GroupModelGenerator = /** @__PURE__ @class */ (function (_super) {
     __extends$1(GroupModelGenerator, _super);
@@ -4058,7 +3837,7 @@ var GroupModelGenerator = /** @__PURE__ @class */ (function (_super) {
 
 /**
  * Content module is used to render grid content
- * @hidden
+
  */
 var ContentRender = /** @__PURE__ @class */ (function () {
     /**
@@ -4160,7 +3939,7 @@ var ContentRender = /** @__PURE__ @class */ (function () {
     /**
      * The function is used to create content table elements
      * @return {Element}
-     * @hidden
+
      */
     ContentRender.prototype.createContentTable = function (id) {
         var innerDiv = this.getPanel().firstChild;
@@ -4558,7 +4337,7 @@ var ContentRender = /** @__PURE__ @class */ (function () {
         }
     };
     /**
-     * @hidden
+
      */
     ContentRender.prototype.setDisplayNone = function (tr, idx, displayVal, rows) {
         Object.keys(tr).forEach(function (i) {
@@ -4573,7 +4352,8 @@ var ContentRender = /** @__PURE__ @class */ (function () {
     };
     ContentRender.prototype.colGroupRefresh = function () {
         if (this.getColGroup()) {
-            var colGroup = this.parent.element.querySelector('.e-gridheader').querySelector('colgroup').cloneNode(true);
+            var colGroup = isBlazor() ? this.parent.getHeaderTable().querySelector('colgroup').cloneNode(true) :
+                this.parent.element.querySelector('.e-gridheader').querySelector('colgroup').cloneNode(true);
             this.getTable().replaceChild(colGroup, this.getColGroup());
             this.setColGroup(colGroup);
         }
@@ -4637,7 +4417,7 @@ var ContentRender = /** @__PURE__ @class */ (function () {
 
 /**
  * Content module is used to render grid content
- * @hidden
+
  */
 var HeaderRender = /** @__PURE__ @class */ (function () {
     /**
@@ -4835,7 +4615,7 @@ var HeaderRender = /** @__PURE__ @class */ (function () {
     /**
      * The function is used to create header table elements
      * @return {Element}
-     * @hidden
+
      */
     HeaderRender.prototype.createHeaderTable = function () {
         var table = this.createTable();
@@ -4844,7 +4624,7 @@ var HeaderRender = /** @__PURE__ @class */ (function () {
         return innerDiv;
     };
     /**
-     * @hidden
+
      */
     HeaderRender.prototype.createTable = function () {
         var gObj = this.parent;
@@ -5235,7 +5015,7 @@ var HeaderRender = /** @__PURE__ @class */ (function () {
 
 /**
  * CellRenderer class which responsible for building cell content.
- * @hidden
+
  */
 var CellRenderer = /** @__PURE__ @class */ (function () {
     function CellRenderer(parent, locator) {
@@ -5411,7 +5191,7 @@ var CellRenderer = /** @__PURE__ @class */ (function () {
         return node;
     };
     /**
-     * @hidden
+
      */
     CellRenderer.prototype.setAttributes = function (node, cell, attributes$$1) {
         var column = cell.column;
@@ -5467,7 +5247,7 @@ var CellRenderer = /** @__PURE__ @class */ (function () {
 
 /**
  * AriaService
- * @hidden
+
  */
 var AriaService = /** @__PURE__ @class */ (function () {
     function AriaService() {
@@ -5495,7 +5275,7 @@ var AriaService = /** @__PURE__ @class */ (function () {
     return AriaService;
 }());
 /**
- * @hidden
+
  */
 function setStateAndProperties(target, attribute, value, remove$$1) {
     if (remove$$1 && target) {
@@ -5536,7 +5316,7 @@ var __extends$3 = (undefined && undefined.__extends) || (function () {
 })();
 /**
  * HeaderCellRenderer class which responsible for building header cell content.
- * @hidden
+
  */
 var HeaderCellRenderer = /** @__PURE__ @class */ (function (_super) {
     __extends$3(HeaderCellRenderer, _super);
@@ -5727,7 +5507,7 @@ var __extends$4 = (undefined && undefined.__extends) || (function () {
 })();
 /**
  * StackedHeaderCellRenderer class which responsible for building stacked header cell content.
- * @hidden
+
  */
 var StackedHeaderCellRenderer = /** @__PURE__ @class */ (function (_super) {
     __extends$4(StackedHeaderCellRenderer, _super);
@@ -5799,7 +5579,7 @@ var __extends$5 = (undefined && undefined.__extends) || (function () {
 })();
 /**
  * IndentCellRenderer class which responsible for building group indent cell.
- * @hidden
+
  */
 var IndentCellRenderer = /** @__PURE__ @class */ (function (_super) {
     __extends$5(IndentCellRenderer, _super);
@@ -5836,7 +5616,7 @@ var __extends$6 = (undefined && undefined.__extends) || (function () {
 })();
 /**
  * GroupCaptionCellRenderer class which responsible for building group caption cell.
- * @hidden
+
  */
 var GroupCaptionCellRenderer = /** @__PURE__ @class */ (function (_super) {
     __extends$6(GroupCaptionCellRenderer, _super);
@@ -5886,7 +5666,7 @@ var GroupCaptionCellRenderer = /** @__PURE__ @class */ (function (_super) {
 }(CellRenderer));
 /**
  * GroupCaptionEmptyCellRenderer class which responsible for building group caption empty cell.
- * @hidden
+
  */
 var GroupCaptionEmptyCellRenderer = /** @__PURE__ @class */ (function (_super) {
     __extends$6(GroupCaptionEmptyCellRenderer, _super);
@@ -5924,7 +5704,7 @@ var __extends$7 = (undefined && undefined.__extends) || (function () {
 })();
 /**
  * ExpandCellRenderer class which responsible for building group expand cell.
- * @hidden
+
  */
 var ExpandCellRenderer = /** @__PURE__ @class */ (function (_super) {
     __extends$7(ExpandCellRenderer, _super);
@@ -5968,7 +5748,7 @@ var __extends$8 = (undefined && undefined.__extends) || (function () {
 })();
 /**
  * HeaderIndentCellRenderer class which responsible for building header indent cell.
- * @hidden
+
  */
 var HeaderIndentCellRenderer = /** @__PURE__ @class */ (function (_super) {
     __extends$8(HeaderIndentCellRenderer, _super);
@@ -6005,7 +5785,7 @@ var __extends$9 = (undefined && undefined.__extends) || (function () {
 })();
 /**
  * DetailHeaderIndentCellRenderer class which responsible for building detail header indent cell.
- * @hidden
+
  */
 var DetailHeaderIndentCellRenderer = /** @__PURE__ @class */ (function (_super) {
     __extends$9(DetailHeaderIndentCellRenderer, _super);
@@ -6042,7 +5822,7 @@ var __extends$10 = (undefined && undefined.__extends) || (function () {
 })();
 /**
  * ExpandCellRenderer class which responsible for building group expand cell.
- * @hidden
+
  */
 var DetailExpandCellRenderer = /** @__PURE__ @class */ (function (_super) {
     __extends$10(DetailExpandCellRenderer, _super);
@@ -6087,7 +5867,7 @@ var __extends$11 = (undefined && undefined.__extends) || (function () {
 })();
 /**
  * ExpandCellRenderer class which responsible for building group expand cell.
- * @hidden
+
  */
 var RowDragDropRenderer = /** @__PURE__ @class */ (function (_super) {
     __extends$11(RowDragDropRenderer, _super);
@@ -6127,7 +5907,7 @@ var __extends$12 = (undefined && undefined.__extends) || (function () {
 })();
 /**
  * DetailHeaderIndentCellRenderer class which responsible for building detail header indent cell.
- * @hidden
+
  */
 var RowDragDropHeaderRenderer = /** @__PURE__ @class */ (function (_super) {
     __extends$12(RowDragDropHeaderRenderer, _super);
@@ -6151,7 +5931,7 @@ var RowDragDropHeaderRenderer = /** @__PURE__ @class */ (function (_super) {
 
 /**
  * Content module is used to render grid content
- * @hidden
+
  */
 var Render = /** @__PURE__ @class */ (function () {
     /**
@@ -6368,7 +6148,7 @@ var Render = /** @__PURE__ @class */ (function () {
     /**
      * Render empty row to Grid which is used at the time to represent to no records.
      * @return {void}
-     * @hidden
+
      */
     Render.prototype.renderEmptyRow = function () {
         this.emptyRow(true);
@@ -6443,7 +6223,6 @@ var Render = /** @__PURE__ @class */ (function () {
             }
         }
     };
-    /** @hidden */
     Render.prototype.dataManagerSuccess = function (e, args) {
         var _this = this;
         var gObj = this.parent;
@@ -6586,7 +6365,6 @@ var Render = /** @__PURE__ @class */ (function () {
         this.parent.on(showEmptyGrid, function () { _this.emptyGrid = true; }, this);
         this.parent.on(autoCol, this.dynamicColumnChange, this);
     };
-    /** @hidden */
     Render.prototype.validateGroupRecords = function (e) {
         var _this = this;
         var index = e.result.length - 1;
@@ -6668,7 +6446,7 @@ var Render = /** @__PURE__ @class */ (function () {
 
 /**
  * CellRendererFactory
- * @hidden
+
  */
 var CellRendererFactory = /** @__PURE__ @class */ (function () {
     function CellRendererFactory() {
@@ -6694,7 +6472,7 @@ var CellRendererFactory = /** @__PURE__ @class */ (function () {
 
 /**
  * ServiceLocator
- * @hidden
+
  */
 var ServiceLocator = /** @__PURE__ @class */ (function () {
     function ServiceLocator() {
@@ -6716,7 +6494,7 @@ var ServiceLocator = /** @__PURE__ @class */ (function () {
 
 /**
  * RendererFactory
- * @hidden
+
  */
 var RendererFactory = /** @__PURE__ @class */ (function () {
     function RendererFactory() {
@@ -6742,7 +6520,7 @@ var RendererFactory = /** @__PURE__ @class */ (function () {
 
 /**
  * ColumnWidthService
- * @hidden
+
  */
 var ColumnWidthService = /** @__PURE__ @class */ (function () {
     function ColumnWidthService(parent) {
@@ -7021,7 +6799,7 @@ var __extends$13 = (undefined && undefined.__extends) || (function () {
 })();
 /**
  * FocusStrategy class
- * @hidden
+
  */
 var FocusStrategy = /** @__PURE__ @class */ (function () {
     function FocusStrategy(parent) {
@@ -7034,6 +6812,7 @@ var FocusStrategy = /** @__PURE__ @class */ (function () {
         this.prevIndexes = {};
         this.refMatrix = this.refreshMatrix(true);
         this.parent = parent;
+        this.rowModelGen = new RowModelGenerator(this.parent);
         this.addEventListener();
     }
     FocusStrategy.prototype.focusCheck = function (e) {
@@ -7046,6 +6825,10 @@ var FocusStrategy = /** @__PURE__ @class */ (function () {
             return;
         }
         this.setActive(this.parent.frozenRows === 0, this.parent.frozenColumns !== 0);
+        if (!this.parent.getCurrentViewRecords().length) {
+            this.getContent().matrix.
+                generate(this.rowModelGen.generateRows({ rows: [new Row({ isDataRow: true })] }), this.getContent().selector, false);
+        }
         var current = this.getContent().matrix.get(0, -1, [0, 1], null, this.getContent().validator());
         this.getContent().matrix.select(current[0], current[1]);
         if (this.skipFocus) {
@@ -7401,7 +7184,7 @@ var FocusStrategy = /** @__PURE__ @class */ (function () {
 }());
 /**
  * Create matrix from row collection which act as mental model for cell navigation
- * @hidden
+
  */
 var Matrix = /** @__PURE__ @class */ (function () {
     function Matrix() {
@@ -7468,7 +7251,7 @@ var Matrix = /** @__PURE__ @class */ (function () {
     return Matrix;
 }());
 /**
- * @hidden
+
  */
 var ContentFocus = /** @__PURE__ @class */ (function () {
     function ContentFocus(parent) {
@@ -7689,7 +7472,7 @@ var ContentFocus = /** @__PURE__ @class */ (function () {
     return ContentFocus;
 }());
 /**
- * @hidden
+
  */
 var HeaderFocus = /** @__PURE__ @class */ (function (_super) {
     __extends$13(HeaderFocus, _super);
@@ -7851,7 +7634,6 @@ var FixedHeaderFocus = /** @__PURE__ @class */ (function (_super) {
     };
     return FixedHeaderFocus;
 }(HeaderFocus));
-/** @hidden */
 var SearchBox = /** @__PURE__ @class */ (function () {
     function SearchBox(searchBox) {
         this.searchBox = searchBox;
@@ -7945,29 +7727,31 @@ var __assign = (undefined && undefined.__assign) || function () {
 var Selection = /** @__PURE__ @class */ (function () {
     /**
      * Constructor for the Grid selection module
-     * @hidden
+
      */
     function Selection(parent, selectionSettings, locator) {
         //Internal letiables       
         /**
-         * @hidden
+    
          */
         this.selectedRowIndexes = [];
         /**
-         * @hidden
+    
          */
         this.selectedRowCellIndexes = [];
         /**
-         * @hidden
+    
          */
         this.selectedRecords = [];
         /**
-         * @hidden
+    
          */
         this.preventFocus = false;
         this.isMultiShiftRequest = false;
         this.isMultiCtrlRequest = false;
         this.enableSelectMultiTouch = false;
+        this.clearRowCheck = false;
+        this.selectRowCheck = false;
         this.selectedRowState = {};
         this.totalRecordsCount = 0;
         this.chkAllCollec = [];
@@ -7992,7 +7776,7 @@ var Selection = /** @__PURE__ @class */ (function () {
     /**
      * The function used to trigger onActionBegin
      * @return {void}
-     * @hidden
+
      */
     Selection.prototype.onActionBegin = function (args, type) {
         this.parent.trigger(type, this.fDataUpdate(args));
@@ -8008,7 +7792,7 @@ var Selection = /** @__PURE__ @class */ (function () {
     /**
      * The function used to trigger onActionComplete
      * @return {void}
-     * @hidden
+
      */
     Selection.prototype.onActionComplete = function (args, type) {
         this.parent.trigger(type, this.fDataUpdate(args));
@@ -8023,7 +7807,7 @@ var Selection = /** @__PURE__ @class */ (function () {
     /**
      * To destroy the selection
      * @return {void}
-     * @hidden
+
      */
     Selection.prototype.destroy = function () {
         var gridElement = this.parent.element;
@@ -8128,13 +7912,33 @@ var Selection = /** @__PURE__ @class */ (function () {
         if (!isNullOrUndefined(args) && args[can] === true) {
             return;
         }
+        this.index = index;
+        this.toggle = isToggle;
+        this.data = selectData;
+        this.removed = isRemoved;
         if (isRowSelected && this.selectionSettings.persistSelection) {
             this.clearSelectedRow(index);
             isRemoved = true;
+            this.removed = isRemoved;
+            this.selectRowCallBack();
+        }
+        else if (!isRowSelected && this.selectionSettings.persistSelection) {
+            this.selectRowCallBack();
         }
         if (!this.selectionSettings.persistSelection) {
+            this.selectRowCheck = true;
             this.clearRow();
         }
+    };
+    Selection.prototype.selectRowCallBack = function () {
+        var gObj = this.parent;
+        var args;
+        var index = this.index;
+        var isToggle = this.toggle;
+        var selectData = this.data;
+        var isRemoved = this.removed;
+        var selectedRow = gObj.getRowByIndex(index);
+        var selectedMovableRow = this.getSelectedMovableRow(index);
         if (!isToggle && !isRemoved) {
             if (this.selectedRowIndexes.indexOf(index) <= -1) {
                 this.updateRowSelection(selectedRow, index);
@@ -8221,7 +8025,7 @@ var Selection = /** @__PURE__ @class */ (function () {
         args = {
             rowIndexes: rowIndexes, row: selectedRow, rowIndex: rowIndex, target: this.actualTarget,
             prevRow: gObj.getRows()[this.prevRowIndex], previousRowIndex: this.prevRowIndex,
-            data: selectedData
+            data: this.getSelectedRecords(), isInteracted: this.isInteracted
         };
         args = this.addMovableArgs(args, selectedMovableRow);
         this.onActionComplete(args, rowSelected);
@@ -8230,7 +8034,7 @@ var Selection = /** @__PURE__ @class */ (function () {
      * Select rows with existing row selection by passing row indexes.
      * @param  {number} startIndex - Specifies the row indexes.
      * @return {void}
-     * @hidden
+
      */
     Selection.prototype.addRowsToSelection = function (rowIndexes) {
         var gObj = this.parent;
@@ -8316,7 +8120,10 @@ var Selection = /** @__PURE__ @class */ (function () {
         return indexes;
     };
     Selection.prototype.clearRow = function () {
+        this.clearRowCheck = true;
         this.clearRowSelection();
+    };
+    Selection.prototype.clearRowCallBack = function () {
         if (this.isCancelDeSelect && this.parent.checkAllRows !== 'Check') {
             return;
         }
@@ -8443,14 +8250,14 @@ var Selection = /** @__PURE__ @class */ (function () {
         var _this = this;
         if (this.isRowSelected) {
             var gObj = this.parent;
-            var rows = this.parent.getDataRows();
-            var data = [];
-            var row = [];
-            var mRow = [];
-            var rowIndex = [];
+            var rows_1 = this.parent.getDataRows();
+            var data_1 = [];
+            var row_1 = [];
+            var mRow_1 = [];
+            var rowIndex_1 = [];
             var frzCols = gObj.getFrozenColumns();
-            var foreignKeyData$$1 = [];
-            var target = this.target;
+            var foreignKeyData_1 = [];
+            var target_1 = this.target;
             var currentViewData = this.parent.getCurrentViewRecords();
             for (var i = 0, len = this.selectedRowIndexes.length; i < len; i++) {
                 var currentRow = this.parent.editSettings.mode === 'Batch' ?
@@ -8458,62 +8265,90 @@ var Selection = /** @__PURE__ @class */ (function () {
                     : this.parent.getDataRows()[this.selectedRowIndexes[i]];
                 var rowObj = this.getRowObj(currentRow);
                 if (rowObj) {
-                    data.push(rowObj.data);
-                    row.push(currentRow);
-                    rowIndex.push(this.selectedRowIndexes[i]);
-                    foreignKeyData$$1.push(rowObj.foreignKeyData);
+                    data_1.push(rowObj.data);
+                    row_1.push(currentRow);
+                    rowIndex_1.push(this.selectedRowIndexes[i]);
+                    foreignKeyData_1.push(rowObj.foreignKeyData);
                 }
                 if (frzCols) {
-                    mRow.push(gObj.getMovableRows()[this.selectedRowIndexes[i]]);
+                    mRow_1.push(gObj.getMovableRows()[this.selectedRowIndexes[i]]);
                 }
             }
             if (this.selectionSettings.persistSelection) {
                 this.isInteracted = this.checkSelectAllClicked ? true : false;
             }
-            this.rowDeselect(rowDeselecting, rowIndex, data, row, foreignKeyData$$1, target, mRow);
-            if (this.isCancelDeSelect && (this.isInteracted || this.checkSelectAllClicked)) {
-                if (this.parent.isPersistSelection) {
-                    if (this.getCheckAllStatus(this.parent.element.querySelector('.e-checkselectall')) === 'Intermediate') {
-                        for (var i = 0; i < this.selectedRecords.length; i++) {
-                            this.updatePersistCollection(this.selectedRecords[i], true);
+            this.rowDeselect(rowDeselecting, rowIndex_1, data_1, row_1, foreignKeyData_1, target_1, mRow_1, function () {
+                if (_this.isCancelDeSelect && (_this.isInteracted || _this.checkSelectAllClicked)) {
+                    if (_this.parent.isPersistSelection) {
+                        if (_this.getCheckAllStatus(_this.parent.element.querySelector('.e-checkselectall')) === 'Intermediate') {
+                            for (var i = 0; i < _this.selectedRecords.length; i++) {
+                                _this.updatePersistCollection(_this.selectedRecords[i], true);
+                            }
+                        }
+                        else {
+                            _this.parent.checkAllRows = 'Check';
+                            _this.updatePersistSelectedData(true);
                         }
                     }
-                    else {
-                        this.parent.checkAllRows = 'Check';
-                        this.updatePersistSelectedData(true);
+                    if (_this.clearRowCheck) {
+                        _this.clearRowCallBack();
+                        _this.clearRowCheck = false;
+                        if (_this.selectRowCheck) {
+                            _this.selectRowCallBack();
+                            _this.selectRowCheck = false;
+                        }
+                    }
+                    return;
+                }
+                rows_1.filter(function (record) { return record.hasAttribute('aria-selected'); }).forEach(function (ele) {
+                    if (!_this.disableUI) {
+                        ele.removeAttribute('aria-selected');
+                        _this.addRemoveClassesForRow(ele, false, true, 'e-selectionbackground', 'e-active');
+                    }
+                    _this.updatePersistCollection(ele, false);
+                    _this.updateCheckBoxes(ele);
+                });
+                for (var i = 0, len = _this.selectedRowIndexes.length; i < len; i++) {
+                    var movableRow = _this.getSelectedMovableRow(_this.selectedRowIndexes[i]);
+                    if (movableRow) {
+                        if (!_this.disableUI) {
+                            movableRow.removeAttribute('aria-selected');
+                            _this.addRemoveClassesForRow(movableRow, false, true, 'e-selectionbackground', 'e-active');
+                        }
+                        _this.updatePersistCollection(movableRow, false);
                     }
                 }
-                return;
-            }
-            rows.filter(function (record) { return record.hasAttribute('aria-selected'); }).forEach(function (ele) {
-                if (!_this.disableUI) {
-                    ele.removeAttribute('aria-selected');
-                    _this.addRemoveClassesForRow(ele, false, true, 'e-selectionbackground', 'e-active');
+                _this.selectedRowIndexes = [];
+                _this.selectedRecords = [];
+                _this.isRowSelected = false;
+                _this.selectRowIndex(-1);
+                _this.rowDeselect(rowDeselected, rowIndex_1, data_1, row_1, foreignKeyData_1, target_1, mRow_1);
+                _this.isInteracted = false;
+                if (_this.clearRowCheck) {
+                    _this.clearRowCallBack();
+                    _this.clearRowCheck = false;
+                    if (_this.selectRowCheck) {
+                        _this.selectRowCallBack();
+                        _this.selectRowCheck = false;
+                    }
                 }
-                _this.updatePersistCollection(ele, false);
-                _this.updateCheckBoxes(ele);
             });
-            for (var i = 0, len = this.selectedRowIndexes.length; i < len; i++) {
-                var movableRow = this.getSelectedMovableRow(this.selectedRowIndexes[i]);
-                if (movableRow) {
-                    if (!this.disableUI) {
-                        movableRow.removeAttribute('aria-selected');
-                        this.addRemoveClassesForRow(movableRow, false, true, 'e-selectionbackground', 'e-active');
-                    }
-                    this.updatePersistCollection(movableRow, false);
+        }
+        else {
+            if (this.clearRowCheck) {
+                this.clearRowCallBack();
+                this.clearRowCheck = false;
+                if (this.selectRowCheck) {
+                    this.selectRowCallBack();
+                    this.selectRowCheck = false;
                 }
             }
-            this.selectedRowIndexes = [];
-            this.selectedRecords = [];
-            this.isRowSelected = false;
-            this.selectRowIndex(-1);
-            this.rowDeselect(rowDeselected, rowIndex, data, row, foreignKeyData$$1, target, mRow);
-            this.isInteracted = false;
         }
     };
-    Selection.prototype.rowDeselect = function (type, rowIndex, data, row, foreignKeyData$$1, target, mRow) {
+    Selection.prototype.rowDeselect = function (type, rowIndex, data, row, foreignKeyData$$1, target, mRow, rowDeselectCallBack) {
+        var _this = this;
         if ((this.selectionSettings.persistSelection && this.isInteracted) || !this.selectionSettings.persistSelection) {
-            var cancl = 'cancel';
+            var cancl_1 = 'cancel';
             var rowDeselectObj = {
                 rowIndex: rowIndex, data: data, foreignKeyData: foreignKeyData$$1,
                 cancel: false, target: target, isInteracted: this.isInteracted
@@ -8523,16 +8358,25 @@ var Selection = /** @__PURE__ @class */ (function () {
                 rowDeselectObj[rowInString] = row;
             }
             else {
-                var rowIndex_1 = 'rowIndex';
-                var data_1 = 'data';
-                rowDeselectObj[rowIndex_1] = rowDeselectObj[rowIndex_1][rowDeselectObj[rowIndex_1].length - 1];
-                rowDeselectObj[data_1] = rowDeselectObj[data_1][rowDeselectObj[data_1].length - 1];
+                var rowIndex_2 = 'rowIndex';
+                var data_2 = 'data';
+                rowDeselectObj[rowIndex_2] = rowDeselectObj[rowIndex_2][rowDeselectObj[rowIndex_2].length - 1];
+                rowDeselectObj[data_2] = rowDeselectObj[data_2][rowDeselectObj[data_2].length - 1];
             }
-            this.parent.trigger(type, this.parent.getFrozenColumns() ? __assign({}, rowDeselectObj, { mRow: mRow }) : rowDeselectObj);
-            this.isCancelDeSelect = rowDeselectObj[cancl];
-            if (!this.isCancelDeSelect || (!this.isInteracted && !this.checkSelectAllClicked)) {
-                this.updatePersistCollection(row[0], false);
-                this.updateCheckBoxes(row[0], undefined, rowIndex[0]);
+            this.parent.trigger(type, this.parent.getFrozenColumns() ? __assign({}, rowDeselectObj, { mRow: mRow }) : rowDeselectObj, function (args) {
+                _this.isCancelDeSelect = args[cancl_1];
+                if (!_this.isCancelDeSelect || (!_this.isInteracted && !_this.checkSelectAllClicked)) {
+                    _this.updatePersistCollection(row[0], false);
+                    _this.updateCheckBoxes(row[0], undefined, rowIndex[0]);
+                }
+                if (rowDeselectCallBack !== undefined) {
+                    rowDeselectCallBack();
+                }
+            });
+        }
+        else if (this.selectionSettings.persistSelection && !this.isInteracted) {
+            if (rowDeselectCallBack !== undefined) {
+                rowDeselectCallBack();
             }
         }
     };
@@ -8799,7 +8643,7 @@ var Selection = /** @__PURE__ @class */ (function () {
      * Select cells with existing cell selection by passing row and column index.
      * @param  {IIndex} startIndex - Defines the collection of row and column index.
      * @return {void}
-     * @hidden
+
      */
     Selection.prototype.addCellsToSelection = function (cellIndexes) {
         if (!this.isCellType()) {
@@ -9366,7 +9210,7 @@ var Selection = /** @__PURE__ @class */ (function () {
         }
     };
     /**
-     * @hidden
+
      */
     Selection.prototype.updateAutoFillPosition = function () {
         if (this.parent.enableAutoFill && !this.parent.isEdit &&
@@ -9461,7 +9305,7 @@ var Selection = /** @__PURE__ @class */ (function () {
         }
     };
     /**
-     * @hidden
+
      */
     Selection.prototype.addEventListener = function () {
         if (this.parent.isDestroyed) {
@@ -9485,7 +9329,7 @@ var Selection = /** @__PURE__ @class */ (function () {
         this.addEventListener_checkbox();
     };
     /**
-     * @hidden
+
      */
     Selection.prototype.removeEventListener = function () {
         if (this.parent.isDestroyed) {
@@ -10186,7 +10030,7 @@ var Selection = /** @__PURE__ @class */ (function () {
     /**
      * Apply ctrl + A key selection
      * @return {void}
-     * @hidden
+
      */
     Selection.prototype.ctrlPlusA = function () {
         if (this.isRowType() && !this.isSingleSel()) {
@@ -10269,7 +10113,7 @@ var Selection = /** @__PURE__ @class */ (function () {
     /**
      * Apply shift+down key selection
      * @return {void}
-     * @hidden
+
      */
     Selection.prototype.shiftDownKey = function (rowIndex, cellIndex) {
         var gObj = this.parent;
@@ -10399,7 +10243,7 @@ var Selection = /** @__PURE__ @class */ (function () {
 var Search = /** @__PURE__ @class */ (function () {
     /**
      * Constructor for Grid search module.
-     * @hidden
+
      */
     function Search(parent) {
         this.parent = parent;
@@ -10428,7 +10272,7 @@ var Search = /** @__PURE__ @class */ (function () {
         }
     };
     /**
-     * @hidden
+
      */
     Search.prototype.addEventListener = function () {
         if (this.parent.isDestroyed) {
@@ -10442,7 +10286,7 @@ var Search = /** @__PURE__ @class */ (function () {
         this.parent.on(cancelBegin, this.cancelBeginEvent, this);
     };
     /**
-     * @hidden
+
      */
     Search.prototype.removeEventListener = function () {
         if (this.parent.isDestroyed) {
@@ -10457,13 +10301,13 @@ var Search = /** @__PURE__ @class */ (function () {
     /**
      * To destroy the print
      * @return {void}
-     * @hidden
+
      */
     Search.prototype.destroy = function () {
         this.removeEventListener();
     };
     /**
-     * @hidden
+
      */
     Search.prototype.onPropertyChanged = function (e) {
         if (e.module !== this.getModuleName()) {
@@ -10483,7 +10327,7 @@ var Search = /** @__PURE__ @class */ (function () {
     /**
      * The function used to trigger onActionComplete
      * @return {void}
-     * @hidden
+
      */
     Search.prototype.onSearchComplete = function (e) {
         this.parent.trigger(actionComplete, extend(e, {
@@ -10514,7 +10358,7 @@ var Search = /** @__PURE__ @class */ (function () {
 var ShowHide = /** @__PURE__ @class */ (function () {
     /**
      * Constructor for the show hide module.
-     * @hidden
+
      */
     function ShowHide(parent) {
         this.parent = parent;
@@ -10612,7 +10456,7 @@ var ShowHide = /** @__PURE__ @class */ (function () {
 var Scroll = /** @__PURE__ @class */ (function () {
     /**
      * Constructor for the Grid scrolling.
-     * @hidden
+
      */
     function Scroll(parent) {
         this.lastScrollTop = 0;
@@ -10631,7 +10475,7 @@ var Scroll = /** @__PURE__ @class */ (function () {
         return 'scroll';
     };
     /**
-     * @hidden
+
      */
     Scroll.prototype.setWidth = function (uiupdate) {
         this.parent.element.style.width = formatUnit(this.parent.width);
@@ -10644,7 +10488,7 @@ var Scroll = /** @__PURE__ @class */ (function () {
         }
     };
     /**
-     * @hidden
+
      */
     Scroll.prototype.setHeight = function () {
         var mHdrHeight = 0;
@@ -10660,7 +10504,7 @@ var Scroll = /** @__PURE__ @class */ (function () {
         this.ensureOverflow(content);
     };
     /**
-     * @hidden
+
      */
     Scroll.prototype.setPadding = function () {
         var content = this.parent.getHeaderContent();
@@ -10670,7 +10514,7 @@ var Scroll = /** @__PURE__ @class */ (function () {
         content.style[cssProps.padding] = scrollWidth > 0 ? scrollWidth + 'px' : '0px';
     };
     /**
-     * @hidden
+
      */
     Scroll.prototype.removePadding = function (rtl) {
         var cssProps = this.getCssProperties(rtl);
@@ -10702,7 +10546,7 @@ var Scroll = /** @__PURE__ @class */ (function () {
         return 1;
     };
     /**
-     * @hidden
+
      */
     Scroll.prototype.addEventListener = function () {
         if (this.parent.isDestroyed) {
@@ -10715,7 +10559,7 @@ var Scroll = /** @__PURE__ @class */ (function () {
         this.parent.on(headerRefreshed, this.setScrollLeft, this);
     };
     /**
-     * @hidden
+
      */
     Scroll.prototype.removeEventListener = function () {
         if (this.parent.isDestroyed) {
@@ -10919,7 +10763,7 @@ var Scroll = /** @__PURE__ @class */ (function () {
         this.parent.isPreventScrollEvent = false;
     };
     /**
-     * @hidden
+
      */
     Scroll.prototype.getCssProperties = function (rtl) {
         var css = {};
@@ -10954,7 +10798,7 @@ var Scroll = /** @__PURE__ @class */ (function () {
         this.setWidth(!isNullOrUndefined(e.properties[width]));
     };
     /**
-     * @hidden
+
      */
     Scroll.prototype.destroy = function () {
         var gridElement = this.parent.element;
@@ -10976,7 +10820,7 @@ var Scroll = /** @__PURE__ @class */ (function () {
     /**
      * Function to get the scrollbar width of the browser.
      * @return {number}
-     * @hidden
+
      */
     Scroll.getScrollBarWidth = function () {
         return getScrollBarWidth();
@@ -11014,7 +10858,7 @@ var AggregateColumn = /** @__PURE__ @class */ (function (_super) {
         return _this;
     }
     /**
-     * @hidden
+
      */
     AggregateColumn.prototype.setFormatter = function (cultureName) {
         var valueFormatter = new ValueFormatter(cultureName);
@@ -11023,13 +10867,13 @@ var AggregateColumn = /** @__PURE__ @class */ (function (_super) {
         }
     };
     /**
-     * @hidden
+
      */
     AggregateColumn.prototype.getFormatter = function () {
         return this.formatFn;
     };
     /**
-     * @hidden
+
      */
     AggregateColumn.prototype.setTemplate = function (helper) {
         if (helper === void 0) { helper = {}; }
@@ -11047,13 +10891,13 @@ var AggregateColumn = /** @__PURE__ @class */ (function (_super) {
         }
     };
     /**
-     * @hidden
+
      */
     AggregateColumn.prototype.getTemplate = function (type) {
         return this.templateFn[getEnumValue(CellType, type)];
     };
     /**
-     * @hidden
+
      */
     AggregateColumn.prototype.setPropertiesSilent = function (prop) {
         this.setProperties(prop, true);
@@ -11104,7 +10948,7 @@ var AggregateRow = /** @__PURE__ @class */ (function (_super) {
 var Clipboard = /** @__PURE__ @class */ (function () {
     /**
      * Constructor for the Grid clipboard module
-     * @hidden
+
      */
     function Clipboard(parent) {
         this.copyContent = '';
@@ -11113,7 +10957,7 @@ var Clipboard = /** @__PURE__ @class */ (function () {
         this.addEventListener();
     }
     /**
-     * @hidden
+
      */
     Clipboard.prototype.addEventListener = function () {
         if (this.parent.isDestroyed) {
@@ -11125,7 +10969,7 @@ var Clipboard = /** @__PURE__ @class */ (function () {
         EventHandler.add(this.parent.element, 'keydown', this.pasteHandler, this);
     };
     /**
-     * @hidden
+
      */
     Clipboard.prototype.removeEventListener = function () {
         if (this.parent.isDestroyed) {
@@ -11365,7 +11209,7 @@ var Clipboard = /** @__PURE__ @class */ (function () {
     /**
      * To destroy the clipboard
      * @return {void}
-     * @hidden
+
      */
     Clipboard.prototype.destroy = function () {
         this.removeEventListener();
@@ -11711,7 +11555,7 @@ var Grid = /** @__PURE__ @class */ (function (_super) {
     __extends(Grid, _super);
     /**
      * Constructor for creating the component
-     * @hidden
+
      */
     function Grid(options, element) {
         var _this = _super.call(this, options, element) || this;
@@ -11719,23 +11563,16 @@ var Grid = /** @__PURE__ @class */ (function (_super) {
         _this.inViewIndexes = [];
         _this.media = {};
         _this.freezeRefresh = Component.prototype.refresh;
-        /** @hidden */
         _this.isVirtualAdaptive = false;
-        /** @hidden */
         _this.vRows = [];
-        /** @hidden */
         _this.vcRows = [];
-        /** @hidden */
         _this.vGroupOffsets = {};
         /**
          * Gets the currently visible records of the Grid.
          */
         _this.currentViewData = [];
-        /** @hidden */
         _this.lockcolPositionCount = 0;
-        /** @hidden */
         _this.prevPageMoving = false;
-        /** @hidden */
         _this.pageTemplateChange = false;
         // enable/disable logger for MVC & Core
         _this.enableLogger = true;
@@ -11748,7 +11585,7 @@ var Grid = /** @__PURE__ @class */ (function (_super) {
     /**
      * Get the properties to be maintained in the persisted state.
      * @return {string}
-     * @hidden
+
      */
     Grid.prototype.getPersistData = function () {
         var _this = this;
@@ -11776,7 +11613,7 @@ var Grid = /** @__PURE__ @class */ (function (_super) {
     /**
      * To provide the array of modules needed for component rendering
      * @return {ModuleDeclaration[]}
-     * @hidden
+
      */
     Grid.prototype.requiredModules = function () {
         var modules = [];
@@ -12136,7 +11973,7 @@ var Grid = /** @__PURE__ @class */ (function (_super) {
         this.media[col.uid].addListener(this.mediaQueryUpdate.bind(this, index));
     };
     /**
-     * @hidden
+
      */
     Grid.prototype.updateMediaColumns = function (col) {
         if (!this.enableColumnVirtualization) {
@@ -12151,7 +11988,7 @@ var Grid = /** @__PURE__ @class */ (function (_super) {
         }
     };
     /**
-     * @hidden
+
      */
     Grid.prototype.mediaQueryUpdate = function (columnIndex, e) {
         var col = this.getColumns()[columnIndex];
@@ -12243,7 +12080,7 @@ var Grid = /** @__PURE__ @class */ (function (_super) {
     };
     /**
      * Called internally if any of the property value changed.
-     * @hidden
+
      */
     /* tslint:disable-next-line:max-line-length */
     // tslint:disable-next-line:max-func-body-length
@@ -12529,7 +12366,7 @@ var Grid = /** @__PURE__ @class */ (function (_super) {
         }
     };
     /**
-     * @hidden
+
      */
     Grid.prototype.updateDefaultCursor = function () {
         var headerRows = [].slice.call(this.element.querySelectorAll('.e-columnheader'));
@@ -12596,7 +12433,7 @@ var Grid = /** @__PURE__ @class */ (function (_super) {
     /**
      * Gets the columns from the Grid.
      * @return {Column[]}
-     * @blazorType List<GridColumn>
+
      */
     Grid.prototype.getColumns = function (isRefresh) {
         var _this = this;
@@ -12653,7 +12490,7 @@ var Grid = /** @__PURE__ @class */ (function (_super) {
     /**
      * Gets the visible columns from the Grid.
      * @return {Column[]}
-     * @blazorType List<GridColumn>
+
      */
     Grid.prototype.getVisibleColumns = function () {
         var cols = [];
@@ -12838,7 +12675,7 @@ var Grid = /** @__PURE__ @class */ (function (_super) {
         return dataRows;
     };
     /**
-     * @hidden
+
      */
     Grid.prototype.addMovableRows = function (fRows, mrows) {
         for (var i = 0, len = mrows.length; i < len; i++) {
@@ -12995,7 +12832,7 @@ var Grid = /** @__PURE__ @class */ (function (_super) {
         return this.getHeaderTable().querySelectorAll('.e-headercell')[index];
     };
     /**
-     * @hidden
+
      */
     Grid.prototype.getRowObjectFromUID = function (uid) {
         var rows = this.contentModule.getRows();
@@ -13018,13 +12855,13 @@ var Grid = /** @__PURE__ @class */ (function (_super) {
         return null;
     };
     /**
-     * @hidden
+
      */
     Grid.prototype.getRowsObject = function () {
         return this.contentModule.getRows();
     };
     /**
-     * @hidden
+
      */
     Grid.prototype.getMovableRowsObject = function () {
         return this.contentModule.getMovableRows();
@@ -13046,8 +12883,8 @@ var Grid = /** @__PURE__ @class */ (function (_super) {
         return this.getHeaderContent().querySelector('[e-mappinguid=' + uid + ']').parentElement;
     };
     /**
-     * @hidden
-     * @blazorType GridColumn
+
+
      */
     Grid.prototype.getColumnByIndex = function (index) {
         var column;
@@ -13061,7 +12898,7 @@ var Grid = /** @__PURE__ @class */ (function (_super) {
      * Gets a Column by column name.
      * @param  {string} field - Specifies the column name.
      * @return {Column}
-     * @blazorType GridColumn
+
      */
     Grid.prototype.getColumnByField = function (field) {
         return iterateArrayOrObject(this.getColumns(), function (item, index) {
@@ -13089,7 +12926,7 @@ var Grid = /** @__PURE__ @class */ (function (_super) {
      * Gets a column by UID.
      * @param  {string} uid - Specifies the column UID.
      * @return {Column}
-     * @blazorType GridColumn
+
      */
     Grid.prototype.getColumnByUid = function (uid) {
         return iterateArrayOrObject(this.getColumns().concat(this.getStackedColumns(this.columns)), function (item, index) {
@@ -13100,7 +12937,7 @@ var Grid = /** @__PURE__ @class */ (function (_super) {
         })[0];
     };
     /**
-     * @hidden
+
      */
     Grid.prototype.getStackedColumns = function (columns, stackedColumn) {
         if (stackedColumn === void 0) { stackedColumn = []; }
@@ -13253,7 +13090,7 @@ var Grid = /** @__PURE__ @class */ (function (_super) {
     /**
      * Gets the collection of selected records.
      * @return {Object[]}
-     * @isGenericType true
+
      */
     Grid.prototype.getSelectedRecords = function () {
         return this.selectionModule ? this.selectionModule.getSelectedRecords() : [];
@@ -13286,13 +13123,13 @@ var Grid = /** @__PURE__ @class */ (function (_super) {
         this.showHider.hide(keys, hideBy);
     };
     /**
-     * @hidden
+
      */
     Grid.prototype.getFrozenColumns = function () {
         return this.frozenColumns + this.getFrozenCount(this.columns, 0);
     };
     /**
-     * @hidden
+
      */
     Grid.prototype.getVisibleFrozenColumns = function () {
         return this.getVisibleFrozenColumnsCount() + this.getVisibleFrozenCount(this.columns, 0);
@@ -13378,7 +13215,7 @@ var Grid = /** @__PURE__ @class */ (function (_super) {
      * Remove sorted column by field name.
      * @param {string} field - Defines the column field name to remove sort.
      * @return {void}
-     * @hidden
+
      */
     Grid.prototype.removeSortColumn = function (field) {
         if (this.sortModule) {
@@ -13418,7 +13255,7 @@ var Grid = /** @__PURE__ @class */ (function (_super) {
      * @param  {string} field - Defines column field name to remove filter.
      * @param  {boolean} isClearFilterBar -  Specifies whether the filter bar value needs to be cleared.
      * @return {void}
-     * @hidden
+
      */
     Grid.prototype.removeFilteredColsByField = function (field, isClearFilterBar) {
         if (this.filterModule) {
@@ -13625,7 +13462,7 @@ var Grid = /** @__PURE__ @class */ (function (_super) {
         }
     };
     /**
-     * @hidden
+
      */
     Grid.prototype.recalcIndentWidth = function () {
         if (!this.getHeaderTable().querySelector('.e-emptycell')) {
@@ -13667,7 +13504,7 @@ var Grid = /** @__PURE__ @class */ (function (_super) {
         this.getHeaderTable().querySelector('.e-emptycell').setAttribute('indentRefreshed', 'true');
     };
     /**
-     * @hidden
+
      */
     Grid.prototype.isRowDragable = function () {
         return this.allowRowDragAndDrop && !this.rowDropSettings.targetID;
@@ -13719,13 +13556,13 @@ var Grid = /** @__PURE__ @class */ (function (_super) {
         }
     };
     /**
-     * @hidden
+
      */
     Grid.prototype.refreshDataSource = function (e, args) {
         this.notify('refreshdataSource', e);
     };
     /**
-     * @hidden
+
      */
     Grid.prototype.disableRowDD = function (enable) {
         var headerTable = this.getHeaderTable();
@@ -13773,7 +13610,7 @@ var Grid = /** @__PURE__ @class */ (function (_super) {
         }
     };
     /**
-     * @hidden
+
      */
     Grid.prototype.createColumnchooser = function (x, y, target) {
         if (this.columnChooserModule) {
@@ -13931,7 +13768,7 @@ var Grid = /** @__PURE__ @class */ (function (_super) {
     /**
      * The function is used to apply text wrap
      * @return {void}
-     * @hidden
+
      */
     Grid.prototype.applyTextWrap = function () {
         if (this.allowTextWrap) {
@@ -13957,7 +13794,7 @@ var Grid = /** @__PURE__ @class */ (function (_super) {
     /**
      * The function is used to remove text wrap
      * @return {void}
-     * @hidden
+
      */
     Grid.prototype.removeTextWrap = function () {
         wrap(this.element, false);
@@ -13968,7 +13805,7 @@ var Grid = /** @__PURE__ @class */ (function (_super) {
     /**
      * The function is used to add Tooltip to the grid cell that has ellipsiswithtooltip clip mode.
      * @return {void}
-     * @hidden
+
      */
     Grid.prototype.createTooltip = function () {
         this.toolTipObj = new Tooltip({ opensOn: 'custom', content: '' }, this.element);
@@ -14033,7 +13870,7 @@ var Grid = /** @__PURE__ @class */ (function (_super) {
     };
     /**
      * To create table for ellipsiswithtooltip
-     * @hidden
+
      */
     Grid.prototype.createTable = function (table, tag, type) {
         var myTableDiv = this.createElement('div');
@@ -14061,7 +13898,7 @@ var Grid = /** @__PURE__ @class */ (function (_super) {
     };
     /**
      * Binding events to the element while component creation.
-     * @hidden
+
      */
     Grid.prototype.wireEvents = function () {
         EventHandler.add(this.element, 'click', this.mouseClickHandler, this);
@@ -14084,7 +13921,7 @@ var Grid = /** @__PURE__ @class */ (function (_super) {
     };
     /**
      * Unbinding events from the element while component destroy.
-     * @hidden
+
      */
     Grid.prototype.unwireEvents = function () {
         EventHandler.remove(this.element, 'click', this.mouseClickHandler);
@@ -14097,7 +13934,7 @@ var Grid = /** @__PURE__ @class */ (function (_super) {
         EventHandler.remove(this.getContent(), 'touchstart', this.tapEvent);
     };
     /**
-     * @hidden
+
      */
     Grid.prototype.addListener = function () {
         if (this.isDestroyed) {
@@ -14112,7 +13949,7 @@ var Grid = /** @__PURE__ @class */ (function (_super) {
         this.on(contentReady, this.blazorTemplate, this);
     };
     /**
-     * @hidden
+
      */
     Grid.prototype.removeListener = function () {
         if (this.isDestroyed) {
@@ -14170,8 +14007,8 @@ var Grid = /** @__PURE__ @class */ (function (_super) {
     /**
      * Get current visible data of grid.
      * @return {Object[]}
-     * @hidden
-     * @isGenericType true
+
+
      */
     Grid.prototype.getCurrentViewRecords = function () {
         if (isGroupAdaptive(this)) {
@@ -14299,7 +14136,7 @@ var Grid = /** @__PURE__ @class */ (function (_super) {
         });
     };
     /**
-     * @hidden
+
      */
     Grid.prototype.isDetail = function () {
         return !isNullOrUndefined(this.detailTemplate) || !isNullOrUndefined(this.childGrid);
@@ -14345,7 +14182,7 @@ var Grid = /** @__PURE__ @class */ (function (_super) {
         }
     };
     /**
-     * @hidden
+
      */
     Grid.prototype.setInjectedModules = function (modules) {
         this.injectedModules = modules;
@@ -14359,7 +14196,7 @@ var Grid = /** @__PURE__ @class */ (function (_super) {
     /**
      * Gets the foreign columns from Grid.
      * @return {Column[]}
-     * @blazorType List<GridColumn>
+
      */
     Grid.prototype.getForeignKeyColumns = function () {
         return this.getColumns().filter(function (col) {
@@ -14367,7 +14204,7 @@ var Grid = /** @__PURE__ @class */ (function (_super) {
         });
     };
     /**
-     * @hidden
+
      */
     Grid.prototype.getRowHeight = function () {
         return this.rowHeight ? this.rowHeight : getRowHeight(this.element);
@@ -14388,7 +14225,7 @@ var Grid = /** @__PURE__ @class */ (function (_super) {
      * @param  {workbook} workbook - Defines the Workbook if multiple export is enabled.
      * @param  {boolean} isBlob - If 'isBlob' set to true, then it will be returned as blob data.
      * @return {Promise<any>}
-     * @blazorType void
+
      */
     Grid.prototype.excelExport = function (excelExportProperties, isMultipleExport, 
     /* tslint:disable-next-line:no-any */
@@ -14403,7 +14240,7 @@ var Grid = /** @__PURE__ @class */ (function (_super) {
      * @param  {workbook} workbook - Defines the Workbook if multiple export is enabled.
      * @param  {boolean} isBlob - If 'isBlob' set to true, then it will be returned as blob data.
      * @return {Promise<any>}
-     * @blazorType void
+
      */
     Grid.prototype.csvExport = function (excelExportProperties, 
     /* tslint:disable-next-line:no-any */
@@ -14418,7 +14255,7 @@ var Grid = /** @__PURE__ @class */ (function (_super) {
      * @param  {pdfDoc} pdfDoc - Defined the Pdf Document if multiple export is enabled.
      * @param  {boolean} isBlob - If 'isBlob' set to true, then it will be returned as blob data.
      * @return {Promise<any>}
-     * @blazorType void
+
      */
     Grid.prototype.pdfExport = function (pdfExportProperties, 
     /* tslint:disable-next-line:no-any */
@@ -14571,13 +14408,13 @@ var Grid = /** @__PURE__ @class */ (function (_super) {
         }
     };
     /**
-     * @hidden
+
      */
     Grid.prototype.isContextMenuOpen = function () {
         return this.contextMenuModule && this.contextMenuModule.isOpen;
     };
     /**
-     * @hidden
+
      */
     Grid.prototype.ensureModuleInjected = function (module) {
         return this.getInjectedModules().indexOf(module) >= 0;
@@ -14591,14 +14428,14 @@ var Grid = /** @__PURE__ @class */ (function (_super) {
         this.clearTemplate(propertyNames, index);
     };
     /**
-     * @hidden
+
      * @private
      */
     Grid.prototype.log = function (type, args) {
         this.loggerModule ? this.loggerModule.log(type, args) : (function () { return 0; })();
     };
     /**
-     * @hidden
+
      */
     Grid.prototype.applyBiggerTheme = function (element) {
         if (this.element.classList.contains('e-bigger')) {
@@ -14606,7 +14443,7 @@ var Grid = /** @__PURE__ @class */ (function (_super) {
         }
     };
     /**
-     * @hidden
+
      */
     Grid.prototype.getPreviousRowData = function () {
         var previousRowData = this.getRowsObject()[this.getRows().length - 1].data;
@@ -14647,7 +14484,7 @@ var Grid = /** @__PURE__ @class */ (function (_super) {
     };
     
     /**
-    * @hidden
+
     */
     // Need to have all columns while filtering with ColumnVirtualization.
     Grid.prototype.grabColumnByFieldFromAllCols = function (field) {
@@ -14662,7 +14499,7 @@ var Grid = /** @__PURE__ @class */ (function (_super) {
         return column;
     };
     /**
-    * @hidden
+
     */
     // Need to have all columns while filtering with ColumnVirtualization.
     Grid.prototype.grabColumnByUidFromAllCols = function (uid) {
@@ -14681,7 +14518,7 @@ var Grid = /** @__PURE__ @class */ (function (_super) {
         return /iphone|ipod|ipad/.test(userAgent);
     };
     /**
-     * @hidden
+
      */
     // Need to have all columns while filtering with ColumnVirtualization.
     Grid.prototype.tapEvent = function (e) {
@@ -15071,7 +14908,7 @@ var Grid = /** @__PURE__ @class */ (function (_super) {
 var Sort = /** @__PURE__ @class */ (function () {
     /**
      * Constructor for Grid sorting module
-     * @hidden
+
      */
     function Sort(parent, sortSettings, sortedColumns, locator) {
         this.contentRefresh = true;
@@ -15087,7 +14924,7 @@ var Sort = /** @__PURE__ @class */ (function () {
     /**
      * The function used to update sortSettings
      * @return {void}
-     * @hidden
+
      */
     Sort.prototype.updateModel = function () {
         var sortedColumn = { field: this.columnName, direction: this.direction };
@@ -15131,7 +14968,7 @@ var Sort = /** @__PURE__ @class */ (function () {
     /**
      * The function used to trigger onActionComplete
      * @return {void}
-     * @hidden
+
      */
     Sort.prototype.onActionComplete = function (e) {
         var args = !this.isRemove ? {
@@ -15204,7 +15041,7 @@ var Sort = /** @__PURE__ @class */ (function () {
         }
     };
     /**
-     * @hidden
+
      */
     Sort.prototype.onPropertyChanged = function (e) {
         if (e.module !== this.getModuleName()) {
@@ -15254,7 +15091,7 @@ var Sort = /** @__PURE__ @class */ (function () {
      * Remove sorted column by field name.
      * @param {string} field - Defines the column field name to remove sort.
      * @return {void}
-     * @hidden
+
      */
     Sort.prototype.removeSortColumn = function (field) {
         var gObj = this.parent;
@@ -15319,7 +15156,7 @@ var Sort = /** @__PURE__ @class */ (function () {
         }
     };
     /**
-     * @hidden
+
      */
     Sort.prototype.addEventListener = function () {
         if (this.parent.isDestroyed) {
@@ -15334,7 +15171,7 @@ var Sort = /** @__PURE__ @class */ (function () {
         this.parent.on(cancelBegin, this.cancelBeginEvent, this);
     };
     /**
-     * @hidden
+
      */
     Sort.prototype.removeEventListener = function () {
         if (this.parent.isDestroyed) {
@@ -15350,7 +15187,7 @@ var Sort = /** @__PURE__ @class */ (function () {
     /**
      * To destroy the sorting
      * @return {void}
-     * @hidden
+
      */
     Sort.prototype.destroy = function () {
         this.isModelChanged = false;
@@ -15538,14 +15375,14 @@ var Sort = /** @__PURE__ @class */ (function () {
 var NumericContainer = /** @__PURE__ @class */ (function () {
     /**
      * Constructor for numericContainer module
-     * @hidden
+
      */
     function NumericContainer(pagerModule) {
         this.pagerModule = pagerModule;
     }
     /**
      * The function is used to render numericContainer
-     * @hidden
+
      */
     NumericContainer.prototype.render = function () {
         this.pagerElement = this.pagerModule.element;
@@ -15565,7 +15402,7 @@ var NumericContainer = /** @__PURE__ @class */ (function () {
     };
     /**
      * The function is used to refresh refreshNumericLinks
-     * @hidden
+
      */
     NumericContainer.prototype.refreshNumericLinks = function () {
         var link;
@@ -15589,14 +15426,14 @@ var NumericContainer = /** @__PURE__ @class */ (function () {
     };
     /**
      * Binding events to the element while component creation
-     * @hidden
+
      */
     NumericContainer.prototype.wireEvents = function () {
         EventHandler.add(this.pagerElement, 'click', this.clickHandler, this);
     };
     /**
      * Unbinding events from the element while component destroy
-     * @hidden
+
      */
     NumericContainer.prototype.unwireEvents = function () {
         EventHandler.remove(this.pagerModule.element, 'click', this.clickHandler);
@@ -15605,7 +15442,7 @@ var NumericContainer = /** @__PURE__ @class */ (function () {
      * To destroy the PagerMessage
      * @method destroy
      * @return {void}
-     * @hidden
+
      */
     NumericContainer.prototype.destroy = function () {
         this.unwireEvents();
@@ -15814,14 +15651,14 @@ var NumericContainer = /** @__PURE__ @class */ (function () {
 var PagerMessage = /** @__PURE__ @class */ (function () {
     /**
      * Constructor for externalMessage module
-     * @hidden
+
      */
     function PagerMessage(pagerModule) {
         this.pagerModule = pagerModule;
     }
     /**
      * The function is used to render pager message
-     * @hidden
+
      */
     PagerMessage.prototype.render = function () {
         var div = createElement('div', { className: 'e-parentmsgbar', attrs: { 'aria-label': 'Pager Information' } });
@@ -15866,7 +15703,7 @@ var PagerMessage = /** @__PURE__ @class */ (function () {
      * To destroy the PagerMessage
      * @method destroy
      * @return {void}
-     * @hidden
+
      */
     PagerMessage.prototype.destroy = function () {
         //destroy
@@ -15917,14 +15754,14 @@ var Pager = /** @__PURE__ @class */ (function (_super) {
     __extends$16(Pager, _super);
     /**
      * Constructor for creating the component.
-     * @hidden
+
      */
     function Pager(options, element) {
         return _super.call(this, options, element) || this;
     }
     /**
      * To provide the array of modules needed for component rendering
-     * @hidden
+
      */
     Pager.prototype.requiredModules = function () {
         var modules = [];
@@ -15944,7 +15781,7 @@ var Pager = /** @__PURE__ @class */ (function (_super) {
     };
     /**
      * Initialize the event handler
-     * @hidden
+
      */
     Pager.prototype.preRender = function () {
         //preRender
@@ -15994,7 +15831,7 @@ var Pager = /** @__PURE__ @class */ (function (_super) {
     };
     /**
      * Get the properties to be maintained in the persisted state.
-     * @hidden
+
      */
     Pager.prototype.getPersistData = function () {
         var keyEntity = ['currentPage', 'pageSize'];
@@ -16020,7 +15857,7 @@ var Pager = /** @__PURE__ @class */ (function (_super) {
     };
     /**
      * Called internally if any of the property value changed.
-     * @hidden
+
      */
     Pager.prototype.onPropertyChanged = function (newProp, oldProp) {
         if (this.isDestroyed) {
@@ -16111,7 +15948,7 @@ var Pager = /** @__PURE__ @class */ (function (_super) {
         }
     };
     /**
-     * @hidden
+
      */
     Pager.prototype.setPageSize = function (pageSize) {
         this.pageSize = pageSize;
@@ -16161,12 +15998,10 @@ var Pager = /** @__PURE__ @class */ (function (_super) {
         result = this.getPagerTemplate()(data);
         appendChildren(this.element, result);
     };
-    /** @hidden */
     Pager.prototype.updateTotalPages = function () {
         this.totalPages = (this.totalRecordsCount % this.pageSize === 0) ? (this.totalRecordsCount / this.pageSize) :
             (parseInt((this.totalRecordsCount / this.pageSize).toString(), 10) + 1);
     };
-    /** @hidden */
     Pager.prototype.getPagerTemplate = function () {
         return this.templateFn;
     };
@@ -16317,7 +16152,7 @@ var Pager = /** @__PURE__ @class */ (function (_super) {
 var PagerDropDown = /** @__PURE__ @class */ (function () {
     /**
      * Constructor for pager module
-     * @hidden
+
      */
     function PagerDropDown(pagerModule) {
         this.pagerModule = pagerModule;
@@ -16325,14 +16160,14 @@ var PagerDropDown = /** @__PURE__ @class */ (function () {
     /**
      * For internal use only - Get the module name.
      * @private
-     * @hidden
+
      */
     PagerDropDown.prototype.getModuleName = function () {
         return 'pagerdropdown';
     };
     /**
      * The function is used to render pager dropdown
-     * @hidden
+
      */
     PagerDropDown.prototype.render = function () {
         var pagerObj = this.pagerModule;
@@ -16368,7 +16203,7 @@ var PagerDropDown = /** @__PURE__ @class */ (function () {
     /**
      * For internal use only - Get the pagesize.
      * @private
-     * @hidden
+
      */
     PagerDropDown.prototype.onChange = function (e) {
         if (this.dropDownListObject.value === this.pagerModule.getLocalizedLabel('All')) {
@@ -16416,7 +16251,7 @@ var PagerDropDown = /** @__PURE__ @class */ (function () {
      * To destroy the Pagerdropdown
      * @method destroy
      * @return {void}
-     * @hidden
+
      */
     PagerDropDown.prototype.destroy = function (args) {
         if (this.dropDownListObject && !this.dropDownListObject.isDestroyed) {
@@ -16436,7 +16271,7 @@ var ExternalMessage = /** @__PURE__ @class */ (function () {
      * Constructor for externalMessage module
      * @param  {Pager} pagerModule?
      * @returns defaultType
-     * @hidden
+
      */
     function ExternalMessage(pagerModule) {
         this.pagerModule = pagerModule;
@@ -16450,7 +16285,7 @@ var ExternalMessage = /** @__PURE__ @class */ (function () {
     };
     /**
      * The function is used to render pager externalMessage
-     * @hidden
+
      */
     ExternalMessage.prototype.render = function () {
         this.element = createElement('div', { className: 'e-pagerexternalmsg', attrs: { 'aria-label': 'Pager external message' } });
@@ -16487,7 +16322,7 @@ var ExternalMessage = /** @__PURE__ @class */ (function () {
      * To destroy the PagerMessage
      * @method destroy
      * @return {void}
-     * @hidden
+
      */
     ExternalMessage.prototype.destroy = function () {
         remove(this.element);
@@ -16501,7 +16336,7 @@ var ExternalMessage = /** @__PURE__ @class */ (function () {
 var Page = /** @__PURE__ @class */ (function () {
     /**
      * Constructor for the Grid paging module
-     * @hidden
+
      */
     function Page(parent, pageSettings) {
         Pager.Inject(ExternalMessage, PagerDropDown);
@@ -16519,7 +16354,7 @@ var Page = /** @__PURE__ @class */ (function () {
     /**
      * The function used to render pager from grid pageSettings
      * @return {void}
-     * @hidden
+
      */
     Page.prototype.render = function () {
         var gObj = this.parent;
@@ -16592,7 +16427,7 @@ var Page = /** @__PURE__ @class */ (function () {
         this.pagerObj.goToPage(pageNo);
     };
     /**
-     * @hidden
+
      */
     Page.prototype.setPageSize = function (pageSize) {
         this.pagerObj.setPageSize(pageSize);
@@ -16600,7 +16435,7 @@ var Page = /** @__PURE__ @class */ (function () {
     /**
      * The function used to update pageSettings model
      * @return {void}
-     * @hidden
+
      */
     Page.prototype.updateModel = function (e) {
         this.parent.pageSettings.totalRecordsCount = e.count;
@@ -16609,7 +16444,7 @@ var Page = /** @__PURE__ @class */ (function () {
     /**
      * The function used to trigger onActionComplete
      * @return {void}
-     * @hidden
+
      */
     Page.prototype.onActionComplete = function (e) {
         this.parent.trigger(actionComplete, extend(e, {
@@ -16618,7 +16453,7 @@ var Page = /** @__PURE__ @class */ (function () {
         }));
     };
     /**
-     * @hidden
+
      */
     Page.prototype.onPropertyChanged = function (e) {
         if (e.module !== this.getModuleName()) {
@@ -16699,7 +16534,7 @@ var Page = /** @__PURE__ @class */ (function () {
         }
     };
     /**
-     * @hidden
+
      */
     Page.prototype.addEventListener = function () {
         this.handlers = {
@@ -16723,7 +16558,7 @@ var Page = /** @__PURE__ @class */ (function () {
         this.parent.on(keyPressed, this.handlers.keyPress, this);
     };
     /**
-     * @hidden
+
      */
     Page.prototype.removeEventListener = function () {
         if (this.parent.isDestroyed) {
@@ -16740,7 +16575,7 @@ var Page = /** @__PURE__ @class */ (function () {
     /**
      * To destroy the pager
      * @return {void}
-     * @hidden
+
      */
     Page.prototype.destroy = function () {
         this.removeEventListener();
@@ -16755,7 +16590,7 @@ var Page = /** @__PURE__ @class */ (function () {
     return Page;
 }());
 /**
- * @hidden
+
  */
 var keyActions = {
     pageUp: '.e-prev',
@@ -16781,7 +16616,7 @@ var __extends$17 = (undefined && undefined.__extends) || (function () {
 })();
 /**
  * FilterCellRenderer class which responsible for building filter cell.
- * @hidden
+
  */
 var FilterCellRenderer = /** @__PURE__ @class */ (function (_super) {
     __extends$17(FilterCellRenderer, _super);
@@ -16916,7 +16751,7 @@ var FilterCellRenderer = /** @__PURE__ @class */ (function (_super) {
 
 /**
  * `filter operators` render boolean column.
- * @hidden
+
  */
 var FlMenuOptrUI = /** @__PURE__ @class */ (function () {
     function FlMenuOptrUI(parent, customFltrOperators, serviceLocator, filterSettings) {
@@ -16926,7 +16761,7 @@ var FlMenuOptrUI = /** @__PURE__ @class */ (function () {
         this.customFilterOperators = customFltrOperators;
     }
     /**
-     * @hidden
+
      */
     FlMenuOptrUI.prototype.renderOperatorUI = function (dlgConetntEle, target, column, dlgObj) {
         this.dialogObj = dlgObj;
@@ -16978,7 +16813,7 @@ var FlMenuOptrUI = /** @__PURE__ @class */ (function () {
         return selValue;
     };
     /**
-     * @hidden
+
      */
     FlMenuOptrUI.prototype.getFlOperator = function () {
         return this.dropOptr.value;
@@ -16988,7 +16823,7 @@ var FlMenuOptrUI = /** @__PURE__ @class */ (function () {
 
 /**
  * `string filterui` render string column.
- * @hidden
+
  */
 var StringFilterUI = /** @__PURE__ @class */ (function () {
     function StringFilterUI(parent, serviceLocator, filterSettings) {
@@ -17025,8 +16860,8 @@ var StringFilterUI = /** @__PURE__ @class */ (function () {
             actionComplete: function (e) {
                 e.result = e.result.filter(function (obj, index, arr) {
                     return arr.map(function (mapObj) {
-                        return mapObj[_this.actObj.fields.value];
-                    }).indexOf(obj[_this.actObj.fields.value]) === index;
+                        return (getValue(_this.actObj.fields.value, mapObj));
+                    }).indexOf(getValue((_this.actObj.fields.value), obj)) === index;
                 });
             }
         }, args.column.filter.params));
@@ -17059,7 +16894,7 @@ var StringFilterUI = /** @__PURE__ @class */ (function () {
 
 /**
  * `numberfilterui` render number column.
- * @hidden
+
  */
 var NumberFilterUI = /** @__PURE__ @class */ (function () {
     function NumberFilterUI(parent, serviceLocator, filterSettings) {
@@ -17093,7 +16928,7 @@ var NumberFilterUI = /** @__PURE__ @class */ (function () {
 
 /**
  * `boolfilterui` render boolean column.
- * @hidden
+
  */
 var BooleanFilterUI = /** @__PURE__ @class */ (function () {
     function BooleanFilterUI(parent, serviceLocator, filterSettings) {
@@ -17143,7 +16978,7 @@ var BooleanFilterUI = /** @__PURE__ @class */ (function () {
 
 /**
  * `datefilterui` render date column.
- * @hidden
+
  */
 var DateFilterUI = /** @__PURE__ @class */ (function () {
     function DateFilterUI(parent, serviceLocator, filterSettings) {
@@ -17199,7 +17034,7 @@ var DateFilterUI = /** @__PURE__ @class */ (function () {
 
 /**
  * `filter menu` render boolean column.
- * @hidden
+
  */
 var FilterMenuRenderer = /** @__PURE__ @class */ (function () {
     function FilterMenuRenderer(parent, filterSettings, serviceLocator, customFltrOperators, fltrObj) {
@@ -17448,14 +17283,14 @@ var __extends$18 = (undefined && undefined.__extends) || (function () {
     };
 })();
 /**
- * @hidden
+
  * `ExcelFilter` module is used to handle filtering action.
  */
 var ExcelFilter = /** @__PURE__ @class */ (function (_super) {
     __extends$18(ExcelFilter, _super);
     /**
      * Constructor for excel filtering module
-     * @hidden
+
      */
     function ExcelFilter(parent, filterSettings, serviceLocator, customFltrOperators) {
         var _this = _super.call(this, parent, filterSettings, serviceLocator) || this;
@@ -17495,7 +17330,7 @@ var ExcelFilter = /** @__PURE__ @class */ (function (_super) {
     /**
      * To destroy the filter bar.
      * @return {void}
-     * @hidden
+
      */
     ExcelFilter.prototype.destroy = function () {
         if (this.dlg) {
@@ -18174,7 +18009,7 @@ var ExcelFilter = /** @__PURE__ @class */ (function (_super) {
 var Filter = /** @__PURE__ @class */ (function () {
     /**
      * Constructor for Grid filtering module
-     * @hidden
+
      */
     function Filter(parent, filterSettings, serviceLocator) {
         this.predicate = 'and';
@@ -18198,7 +18033,7 @@ var Filter = /** @__PURE__ @class */ (function () {
     /**
      * To render filter bar when filtering enabled.
      * @return {void}
-     * @hidden
+
      */
     Filter.prototype.render = function (e) {
         if (DataUtil.getObject('args.isFrozen', e)) {
@@ -18243,7 +18078,7 @@ var Filter = /** @__PURE__ @class */ (function () {
     /**
      * To destroy the filter bar.
      * @return {void}
-     * @hidden
+
      */
     Filter.prototype.destroy = function () {
         var gridElement = this.parent.element;
@@ -18308,7 +18143,7 @@ var Filter = /** @__PURE__ @class */ (function () {
     /**
      * To update filterSettings when applying filter.
      * @return {void}
-     * @hidden
+
      */
     Filter.prototype.updateModel = function () {
         var col = this.parent.getColumnByField(this.fieldName);
@@ -18340,7 +18175,7 @@ var Filter = /** @__PURE__ @class */ (function () {
     /**
      * To trigger action complete event.
      * @return {void}
-     * @hidden
+
      */
     Filter.prototype.onActionComplete = function (e) {
         var args = !this.isRemove ? {
@@ -18383,7 +18218,7 @@ var Filter = /** @__PURE__ @class */ (function () {
         }
     };
     /**
-     * @hidden
+
      */
     Filter.prototype.addEventListener = function () {
         if (this.parent.isDestroyed) {
@@ -18402,7 +18237,7 @@ var Filter = /** @__PURE__ @class */ (function () {
         this.parent.on(click, this.filterIconClickHandler, this);
     };
     /**
-     * @hidden
+
      */
     Filter.prototype.removeEventListener = function () {
         EventHandler.remove(document, 'click', this.clickHandler);
@@ -18665,7 +18500,7 @@ var Filter = /** @__PURE__ @class */ (function () {
      * @param  {string} field - Defines column field name to remove filter.
      * @param  {boolean} isClearFilterBar -  Specifies whether the filter bar value needs to be cleared.
      * @return {void}
-     * @hidden
+
      */
     Filter.prototype.removeFilteredColsByField = function (field, isClearFilterBar) {
         var fCell;
@@ -19131,13 +18966,13 @@ var resizeClassList = {
 };
 /**
  * `Resize` module is used to handle Resize to fit for columns.
- * @hidden
+
  * @private
  */
 var Resize = /** @__PURE__ @class */ (function () {
     /**
      * Constructor for the Grid resize module
-     * @hidden
+
      */
     function Resize(parent) {
         this.tapped = false;
@@ -19284,7 +19119,7 @@ var Resize = /** @__PURE__ @class */ (function () {
     /**
      * To destroy the resize
      * @return {void}
-     * @hidden
+
      */
     Resize.prototype.destroy = function () {
         var gridElement = this.parent.element;
@@ -19314,7 +19149,7 @@ var Resize = /** @__PURE__ @class */ (function () {
     };
     /**
      * To create table for autofit
-     * @hidden
+
      */
     Resize.prototype.createTable = function (table, text, tag) {
         var myTableDiv = this.parent.createElement('div');
@@ -19341,7 +19176,7 @@ var Resize = /** @__PURE__ @class */ (function () {
         return Math.ceil(offsetWidthValue);
     };
     /**
-     * @hidden
+
      */
     Resize.prototype.addEventListener = function () {
         if (this.parent.isDestroyed) {
@@ -19352,7 +19187,7 @@ var Resize = /** @__PURE__ @class */ (function () {
         this.parent.on(contentReady, this.autoFit, this);
     };
     /**
-     * @hidden
+
      */
     Resize.prototype.removeEventListener = function () {
         if (this.parent.isDestroyed) {
@@ -19362,7 +19197,7 @@ var Resize = /** @__PURE__ @class */ (function () {
         this.parent.off(initialEnd, this.wireEvents);
     };
     /**
-     * @hidden
+
      */
     Resize.prototype.render = function () {
         this.unwireEvents();
@@ -19797,7 +19632,7 @@ var Resize = /** @__PURE__ @class */ (function () {
 var Reorder = /** @__PURE__ @class */ (function () {
     /**
      * Constructor for the Grid reorder module
-     * @hidden
+
      */
     function Reorder(parent) {
         this.parent = parent;
@@ -20130,7 +19965,7 @@ var Reorder = /** @__PURE__ @class */ (function () {
     /**
      * The function used to trigger onActionComplete
      * @return {void}
-     * @hidden
+
      */
     Reorder.prototype.onActionComplete = function (e) {
         this.parent.trigger(actionComplete, extend(e, { type: actionComplete }));
@@ -20138,7 +19973,7 @@ var Reorder = /** @__PURE__ @class */ (function () {
     /**
      * To destroy the reorder
      * @return {void}
-     * @hidden
+
      */
     Reorder.prototype.destroy = function () {
         var gridElement = this.parent.element;
@@ -20261,12 +20096,12 @@ var Reorder = /** @__PURE__ @class */ (function () {
 /**
  *
  * Reorder module is used to handle row reordering.
- * @hidden
+
  */
 var RowDD = /** @__PURE__ @class */ (function () {
     /**
      * Constructor for the Grid print module
-     * @hidden
+
      */
     function RowDD(parent) {
         var _this = this;
@@ -20466,13 +20301,34 @@ var RowDD = /** @__PURE__ @class */ (function () {
             _this.isRefresh = false;
             var selectedIndexes = _this.parent.getSelectedRowIndexes();
             if (gObj.isRowDragable()) {
-                if (!_this.parent.rowDropSettings.targetID &&
-                    _this.startedRow.querySelector('td.e-selectionbackground') && selectedIndexes.length > 1 &&
-                    selectedIndexes.length !== _this.parent.getCurrentViewRecords().length) {
-                    _this.reorderRows(selectedIndexes, args.dropIndex);
+                if (!isBlazor()) {
+                    if (!_this.parent.rowDropSettings.targetID &&
+                        _this.startedRow.querySelector('td.e-selectionbackground') && selectedIndexes.length > 1 &&
+                        selectedIndexes.length !== _this.parent.getCurrentViewRecords().length) {
+                        _this.reorderRows(selectedIndexes, args.dropIndex);
+                    }
+                    else {
+                        _this.reorderRows([parseInt(_this.startedRow.getAttribute('aria-rowindex'), 10)], _this.dragTarget);
+                    }
                 }
                 else {
-                    _this.reorderRows([parseInt(_this.startedRow.getAttribute('aria-rowindex'), 10)], _this.dragTarget);
+                    var fromIdx = parseInt(_this.startedRow.getAttribute('aria-rowindex'), 10);
+                    var currentVdata = [];
+                    currentVdata[0] = _this.parent.currentViewData[fromIdx];
+                    var draggedData = _this.parent.getSelectedRecords().length ? _this.parent.getSelectedRecords() : (currentVdata);
+                    var changeRecords = {
+                        addedRecords: [],
+                        deletedRecords: draggedData,
+                        changedRecords: []
+                    };
+                    var toIdx = _this.dragTarget ? _this.dragTarget : args.dropIndex;
+                    var dragDropDestinationIndex = 'dragDropDestinationIndex';
+                    var query = new Query;
+                    query[dragDropDestinationIndex] = toIdx;
+                    _this.saveChange(changeRecords, query);
+                    changeRecords.deletedRecords = [];
+                    changeRecords.addedRecords = draggedData;
+                    _this.saveChange(changeRecords, query);
                 }
                 _this.dragTarget = null;
                 if (!gObj.rowDropSettings.targetID) {
@@ -20499,6 +20355,17 @@ var RowDD = /** @__PURE__ @class */ (function () {
         this.parent.addEventListener(dataBound, this.onDataBoundFn);
         this.parent.on(uiUpdate, this.enableAfterRender, this);
     }
+    RowDD.prototype.saveChange = function (changeRecords, query) {
+        var _this = this;
+        this.parent.getDataModule().saveChanges(changeRecords, this.parent.getPrimaryKeyFieldNames()[0], {}, query)
+            .then(function () {
+            _this.parent.notify(modelChanged, {
+                type: actionBegin, requestType: 'rowdraganddrop'
+            });
+        }).catch(function (e) {
+            _this.parent.trigger(actionFailure, { error: e });
+        });
+    };
     RowDD.prototype.reorderRows = function (fromIndexes, toIndex) {
         var selectedIndexes = this.parent.getSelectedRowIndexes();
         var selectedRecords = [];
@@ -20778,7 +20645,7 @@ var RowDD = /** @__PURE__ @class */ (function () {
     /**
      * To destroy the print
      * @return {void}
-     * @hidden
+
      */
     RowDD.prototype.destroy = function () {
         var gridElement = this.parent.element;
@@ -20822,7 +20689,7 @@ var RowDD = /** @__PURE__ @class */ (function () {
 var Group = /** @__PURE__ @class */ (function () {
     /**
      * Constructor for Grid group module
-     * @hidden
+
      */
     function Group(parent, groupSettings, sortedColumns, serviceLocator) {
         var _this = this;
@@ -20928,7 +20795,7 @@ var Group = /** @__PURE__ @class */ (function () {
         }
     };
     /**
-     * @hidden
+
      */
     Group.prototype.addEventListener = function () {
         if (this.parent.isDestroyed) {
@@ -20951,7 +20818,7 @@ var Group = /** @__PURE__ @class */ (function () {
         this.parent.on(groupAggregates, this.onGroupAggregates, this);
     };
     /**
-     * @hidden
+
      */
     Group.prototype.removeEventListener = function () {
         if (this.parent.isDestroyed) {
@@ -21193,7 +21060,7 @@ var Group = /** @__PURE__ @class */ (function () {
     /**
      * The function is used to render grouping
      * @return {Element}
-     * @hidden
+
      */
     Group.prototype.render = function () {
         this.l10n = this.serviceLocator.getService('localization');
@@ -21314,7 +21181,7 @@ var Group = /** @__PURE__ @class */ (function () {
     /**
      * The function used to update groupSettings
      * @return {void}
-     * @hidden
+
      */
     Group.prototype.updateModel = function () {
         var gObj = this.parent;
@@ -21327,7 +21194,7 @@ var Group = /** @__PURE__ @class */ (function () {
     /**
      * The function used to trigger onActionComplete
      * @return {void}
-     * @hidden
+
      */
     Group.prototype.onActionComplete = function (e) {
         var gObj = this.parent;
@@ -21517,7 +21384,7 @@ var Group = /** @__PURE__ @class */ (function () {
     /**
      * To destroy the reorder
      * @return {void}
-     * @hidden
+
      */
     Group.prototype.destroy = function () {
         var gridElement = this.parent.element;
@@ -21665,7 +21532,7 @@ var Group = /** @__PURE__ @class */ (function () {
 var DetailRow = /** @__PURE__ @class */ (function () {
     /**
      * Constructor for the Grid detail template module
-     * @hidden
+
      */
     function DetailRow(parent, locator) {
         //Internal variables
@@ -21790,7 +21657,7 @@ var DetailRow = /** @__PURE__ @class */ (function () {
         }
     };
     /**
-     * @hidden
+
      * @param gObj
      * @param rowObj
      */
@@ -21942,7 +21809,7 @@ var DetailRow = /** @__PURE__ @class */ (function () {
 
 /**
  * The `Toolbar` module is used to handle ToolBar actions.
- * @hidden
+
  */
 var Toolbar$1 = /** @__PURE__ @class */ (function () {
     function Toolbar$$1(parent, serviceLocator) {
@@ -21986,7 +21853,7 @@ var Toolbar$1 = /** @__PURE__ @class */ (function () {
     /**
      * Gets the toolbar of the Grid.
      * @return {Element}
-     * @hidden
+
      */
     Toolbar$$1.prototype.getToolbar = function () {
         return this.toolbar.element;
@@ -22125,7 +21992,7 @@ var Toolbar$1 = /** @__PURE__ @class */ (function () {
      * @param {string[]} items - Defines the collection of itemID of ToolBar items.
      * @param {boolean} isEnable - Defines the items to be enabled or disabled.
      * @return {void}
-     * @hidden
+
      */
     Toolbar$$1.prototype.enableItems = function (items, isEnable) {
         for (var _i = 0, items_2 = items; _i < items_2.length; _i++) {
@@ -22270,7 +22137,7 @@ var __extends$19 = (undefined && undefined.__extends) || (function () {
 })();
 /**
  * Footer module is used to render grid content
- * @hidden
+
  */
 var FooterRenderer = /** @__PURE__ @class */ (function (_super) {
     __extends$19(FooterRenderer, _super);
@@ -22351,7 +22218,7 @@ var FooterRenderer = /** @__PURE__ @class */ (function (_super) {
             fragment.appendChild(tr);
         }
         table.tFoot.appendChild(fragment);
-        this.aggregates = e;
+        this.aggregates = !isNullOrUndefined(e) ? e : this.aggregates;
     };
     FooterRenderer.prototype.refresh = function (e) {
         if (this.parent.getFrozenColumns()) {
@@ -22430,61 +22297,58 @@ var FooterRenderer = /** @__PURE__ @class */ (function (_super) {
         var aggregates = this.onAggregates(editedData);
         this.refresh(aggregates);
     };
+    FooterRenderer.prototype.getIndexByKey = function (data, ds) {
+        var key = this.parent.getPrimaryKeyFieldNames()[0];
+        for (var i = 0; i < ds.length; i++) {
+            if (ds[i][key] === data[key]) {
+                return i;
+            }
+        }
+        return -1;
+    };
     FooterRenderer.prototype.onAggregates = function (editedData) {
         var _this = this;
         editedData = editedData instanceof Array ? editedData : [];
-        var field = this.parent.getPrimaryKeyFieldNames()[0];
-        var deletedCols = [];
-        var data = 'dataSource';
-        var mergeds;
-        var rows = this.parent.frozenColumns > 0 ? this.parent.getMovableRowsObject() : this.parent.getRowsObject();
-        var initds = this.parent.dataSource instanceof Array ? this.parent.dataSource : this.parent.dataSource[data].json.length
-            ? this.parent.dataSource[data].json : this.parent.getCurrentViewRecords();
-        var addrow = [];
-        var changeds = rows.map(function (row) {
-            if (row.changes && row.edit === 'add') {
-                addrow.push(row.changes);
+        var mergeds = [];
+        var dataSource = [];
+        var isModified = false;
+        var gridData = 'dataSource';
+        var changedRecords = 'changedRecords';
+        var addedRecords = 'addedRecords';
+        var deletedRecords = 'deletedRecords';
+        var currentViewData = this.parent.dataSource instanceof Array ?
+            this.parent.dataSource : this.parent.dataSource[gridData].json.length
+            ? this.parent.dataSource[gridData].json : this.parent.getCurrentViewRecords();
+        var batchChanges = this.parent.editModule.getBatchChanges();
+        if (Object.keys(batchChanges).length) {
+            for (var i = 0; i < currentViewData.length; i++) {
+                isModified = false;
+                if (batchChanges[changedRecords].length && this.getIndexByKey(currentViewData[i], batchChanges[changedRecords]) > -1) {
+                    isModified = true;
+                    dataSource.push(batchChanges[changedRecords][this.getIndexByKey(currentViewData[i], batchChanges[changedRecords])]);
+                }
+                if (batchChanges[deletedRecords].length && this.getIndexByKey(currentViewData[i], batchChanges[deletedRecords]) > -1) {
+                    isModified = true;
+                }
+                else if (!isModified) {
+                    dataSource.push(currentViewData[i]);
+                }
             }
-            if (row.edit === 'delete') {
-                deletedCols.push(row.data);
+            if (batchChanges[addedRecords].length) {
+                for (var i = 0; i < batchChanges[addedRecords].length; i++) {
+                    dataSource.push(batchChanges[addedRecords][i]);
+                }
             }
-            return row.isDirty && row.changes ? row.changes : row.data;
-        });
-        changeds = editedData.length === 0 ? changeds : editedData;
-        mergeds = initds.map(function (item) {
-            var idVal = DataUtil.getObject(field, item);
-            var value;
-            var hasVal = changeds.some(function (cItem) {
-                value = cItem;
-                return idVal === DataUtil.getObject(field, cItem);
-            });
-            return hasVal ? value : item;
-        });
-        var currentData = this.parent.groupSettings.columns.length > 0 && 'records' in this.parent.currentViewData ?
-            this.parent.getCurrentViewRecords() : this.parent.currentViewData;
-        var currentds;
-        currentds = currentData.map(function (item) {
-            var idVal = DataUtil.getObject(field, item);
-            var value;
-            var hasVal = mergeds.some(function (cItem) {
-                value = cItem;
-                return idVal === DataUtil.getObject(field, cItem);
-            });
-            return hasVal ? value : item;
-        });
-        if (addrow.length > 0) {
-            addrow.forEach(function (row) { mergeds.push(row); currentds.push(row); });
+        }
+        else {
+            if (editedData.length) {
+                mergeds.push(editedData[0]);
+            }
+            dataSource = editedData ? extend(currentViewData, mergeds) : currentViewData;
         }
         var eData = editedData;
-        if (!(eData.type && eData.type === 'cancel') && deletedCols.length > 0) {
-            deletedCols.forEach(function (row) {
-                var index = mergeds.indexOf(row);
-                var curIndx = currentData.indexOf(row);
-                mergeds.splice(index, 1);
-                if (currentds && currentds.length) {
-                    currentds.splice(curIndx, 1);
-                }
-            });
+        if ((eData.type && eData.type === 'cancel')) {
+            dataSource = currentViewData;
         }
         var aggregate = {};
         var agrVal;
@@ -22493,14 +22357,14 @@ var FooterRenderer = /** @__PURE__ @class */ (function (_super) {
             row.columns.forEach(function (col) {
                 var data = [];
                 var type = col.type.toString();
-                data = type.toLowerCase() === 'custom' && !isNullOrUndefined(currentds) ? currentds : mergeds;
+                data = dataSource;
                 agrVal = calculateAggregate(type, data, col, _this.parent);
                 aggregate[col.field + ' - ' + type.toLowerCase()] = agrVal;
             });
         });
         var result = {
-            result: this.parent.groupSettings.columns.length > 0 ? mergeds : currentds,
-            count: mergeds.length,
+            result: dataSource,
+            count: dataSource.length,
             aggregates: aggregate
         };
         return result;
@@ -22523,7 +22387,7 @@ var __extends$20 = (undefined && undefined.__extends) || (function () {
 })();
 /**
  * SummaryCellRenderer class which responsible for building summary cell content.
- * @hidden
+
  */
 var SummaryCellRenderer = /** @__PURE__ @class */ (function (_super) {
     __extends$20(SummaryCellRenderer, _super);
@@ -22693,7 +22557,7 @@ function summaryIterator(aggregates, callback) {
 
 /**
  * InterSectionObserver - class watch whether it enters the viewport.
- * @hidden
+
  */
 var InterSectionObserver = /** @__PURE__ @class */ (function () {
     function InterSectionObserver(element, options) {
@@ -22995,7 +22859,7 @@ var __extends$21 = (undefined && undefined.__extends) || (function () {
 })();
 /**
  * VirtualContentRenderer
- * @hidden
+
  */
 var VirtualContentRenderer = /** @__PURE__ @class */ (function (_super) {
     __extends$21(VirtualContentRenderer, _super);
@@ -23443,7 +23307,7 @@ var VirtualContentRenderer = /** @__PURE__ @class */ (function (_super) {
     return VirtualContentRenderer;
 }(ContentRender));
 /**
- * @hidden
+
  */
 var VirtualHeaderRenderer = /** @__PURE__ @class */ (function (_super) {
     __extends$21(VirtualHeaderRenderer, _super);
@@ -23517,7 +23381,7 @@ var VirtualHeaderRenderer = /** @__PURE__ @class */ (function (_super) {
     return VirtualHeaderRenderer;
 }(HeaderRender));
 /**
- * @hidden
+
  */
 var VirtualElementHandler = /** @__PURE__ @class */ (function () {
     function VirtualElementHandler() {
@@ -23603,7 +23467,7 @@ var VirtualScroll = /** @__PURE__ @class */ (function () {
 
 /**
  * Edit render module is used to render grid edit row.
- * @hidden
+
  */
 var InlineEditRender = /** @__PURE__ @class */ (function () {
     /**
@@ -23826,7 +23690,7 @@ var InlineEditRender = /** @__PURE__ @class */ (function () {
 
 /**
  * Edit render module is used to render grid edit row.
- * @hidden
+
  */
 var BatchEditRender = /** @__PURE__ @class */ (function () {
     /**
@@ -23863,7 +23727,7 @@ var BatchEditRender = /** @__PURE__ @class */ (function () {
 
 /**
  * Edit render module is used to render grid edit row.
- * @hidden
+
  */
 var DialogEditRender = /** @__PURE__ @class */ (function () {
     /**
@@ -23992,7 +23856,7 @@ var DialogEditRender = /** @__PURE__ @class */ (function () {
 
 /**
  * Edit render module is used to render grid edit row.
- * @hidden
+
  */
 var EditRender = /** @__PURE__ @class */ (function () {
     /**
@@ -24144,7 +24008,8 @@ var EditRender = /** @__PURE__ @class */ (function () {
             if (col.editTemplate) {
                 input = this.parent.createElement('span', { attrs: { 'e-mappinguid': col.uid } });
                 var tempID = this.parent.element.id + col.uid + 'editTemplate';
-                appendChildren(input, col.getEditTemplate()(args.rowData, this.parent, 'editTemplate', tempID));
+                var tempData = extend({}, {}, args.rowData, true);
+                appendChildren(input, col.getEditTemplate()(tempData, this.parent, 'editTemplate', tempID));
                 if (isBlazor()) {
                     updateBlazorTemplate(tempID, 'EditTemplate', col);
                 }
@@ -24189,7 +24054,7 @@ var EditRender = /** @__PURE__ @class */ (function () {
 
 /**
  * `BooleanEditCell` is used to handle boolean cell type editing.
- * @hidden
+
  */
 var BooleanEditCell = /** @__PURE__ @class */ (function () {
     function BooleanEditCell(parent) {
@@ -24264,7 +24129,7 @@ var BooleanEditCell = /** @__PURE__ @class */ (function () {
 
 /**
  * `DropDownEditCell` is used to handle dropdown cell type editing.
- * @hidden
+
  */
 var DropDownEditCell = /** @__PURE__ @class */ (function () {
     function DropDownEditCell(parent) {
@@ -24330,7 +24195,7 @@ var DropDownEditCell = /** @__PURE__ @class */ (function () {
 
 /**
  * `NumericEditCell` is used to handle numeric cell type editing.
- * @hidden
+
  */
 var NumericEditCell = /** @__PURE__ @class */ (function () {
     function NumericEditCell(parent) {
@@ -24373,7 +24238,7 @@ var NumericEditCell = /** @__PURE__ @class */ (function () {
 
 /**
  * `DefaultEditCell` is used to handle default cell type editing.
- * @hidden
+
  */
 var DefaultEditCell = /** @__PURE__ @class */ (function () {
     function DefaultEditCell(parent) {
@@ -24410,7 +24275,7 @@ var DefaultEditCell = /** @__PURE__ @class */ (function () {
 
 /**
  * `NormalEdit` module is used to handle normal('inline, dialog, external') editing actions.
- * @hidden
+
  */
 var NormalEdit = /** @__PURE__ @class */ (function () {
     function NormalEdit(parent, serviceLocator, renderer) {
@@ -24440,7 +24305,7 @@ var NormalEdit = /** @__PURE__ @class */ (function () {
     /**
      * The function used to trigger editComplete
      * @return {void}
-     * @hidden
+
      */
     NormalEdit.prototype.editComplete = function (e) {
         this.parent.isEdit = false;
@@ -24830,7 +24695,7 @@ var NormalEdit = /** @__PURE__ @class */ (function () {
         }
     };
     /**
-     * @hidden
+
      */
     NormalEdit.prototype.addEventListener = function () {
         if (this.parent.isDestroyed) {
@@ -24845,7 +24710,7 @@ var NormalEdit = /** @__PURE__ @class */ (function () {
         this.parent.on(saveComplete, this.editComplete, this);
     };
     /**
-     * @hidden
+
      */
     NormalEdit.prototype.removeEventListener = function () {
         if (this.parent.isDestroyed) {
@@ -24860,7 +24725,7 @@ var NormalEdit = /** @__PURE__ @class */ (function () {
         this.parent.off(saveComplete, this.editComplete);
     };
     /**
-     * @hidden
+
      */
     NormalEdit.prototype.destroy = function () {
         this.removeEventListener();
@@ -24884,7 +24749,7 @@ var __extends$22 = (undefined && undefined.__extends) || (function () {
 })();
 /**
  * `InlineEdit` module is used to handle inline editing actions.
- * @hidden
+
  */
 var InlineEdit = /** @__PURE__ @class */ (function (_super) {
     __extends$22(InlineEdit, _super);
@@ -24918,7 +24783,7 @@ var InlineEdit = /** @__PURE__ @class */ (function (_super) {
 
 /**
  * `BatchEdit` module is used to handle batch editing actions.
- * @hidden
+
  */
 var BatchEdit = /** @__PURE__ @class */ (function () {
     function BatchEdit(parent, serviceLocator, renderer) {
@@ -24930,7 +24795,7 @@ var BatchEdit = /** @__PURE__ @class */ (function () {
         this.addEventListener();
     }
     /**
-     * @hidden
+
      */
     BatchEdit.prototype.addEventListener = function () {
         if (this.parent.isDestroyed) {
@@ -24947,7 +24812,7 @@ var BatchEdit = /** @__PURE__ @class */ (function () {
         this.parent.on(editNextValCell, this.editNextValCell, this);
     };
     /**
-     * @hidden
+
      */
     BatchEdit.prototype.removeEventListener = function () {
         if (this.parent.isDestroyed) {
@@ -24966,7 +24831,7 @@ var BatchEdit = /** @__PURE__ @class */ (function () {
         this.parent.notify(toolbarRefresh, {});
     };
     /**
-     * @hidden
+
      */
     BatchEdit.prototype.destroy = function () {
         this.removeEventListener();
@@ -25274,7 +25139,7 @@ var BatchEdit = /** @__PURE__ @class */ (function () {
         }
     };
     /**
-     * @hidden
+
      */
     BatchEdit.prototype.removeRowObjectFromUID = function (uid) {
         var rows = this.parent.getRowsObject();
@@ -25287,7 +25152,7 @@ var BatchEdit = /** @__PURE__ @class */ (function () {
         rows.splice(i, 1);
     };
     /**
-     * @hidden
+
      */
     BatchEdit.prototype.addRowObject = function (row) {
         var isTop = this.parent.editSettings.newRowPosition === 'Top';
@@ -25849,7 +25714,7 @@ var BatchEdit = /** @__PURE__ @class */ (function () {
         }
     };
     /**
-     * @hidden
+
      */
     BatchEdit.prototype.addCancelWhilePaging = function () {
         if (this.validateFormObj()) {
@@ -25876,7 +25741,7 @@ var __extends$23 = (undefined && undefined.__extends) || (function () {
 })();
 /**
  * `DialogEdit` module is used to handle dialog editing actions.
- * @hidden
+
  */
 var DialogEdit = /** @__PURE__ @class */ (function (_super) {
     __extends$23(DialogEdit, _super);
@@ -25916,7 +25781,7 @@ var DialogEdit = /** @__PURE__ @class */ (function (_super) {
 
 /**
  * `DatePickerEditCell` is used to handle datepicker cell type editing.
- * @hidden
+
  */
 var DatePickerEditCell = /** @__PURE__ @class */ (function () {
     function DatePickerEditCell(parent) {
@@ -25968,7 +25833,7 @@ function dateanddatetimerender(args, mode, rtl) {
 
 /**
  * `TemplateEditCell` is used to handle template cell.
- * @hidden
+
  */
 var TemplateEditCell = /** @__PURE__ @class */ (function () {
     function TemplateEditCell(parent) {
@@ -25992,7 +25857,7 @@ var TemplateEditCell = /** @__PURE__ @class */ (function () {
 var Edit = /** @__PURE__ @class */ (function () {
     /**
      * Constructor for the Grid editing module
-     * @hidden
+
      */
     function Edit(parent, serviceLocator) {
         this.editType = { 'Inline': InlineEdit, 'Normal': InlineEdit, 'Batch': BatchEdit, 'Dialog': DialogEdit };
@@ -26026,7 +25891,7 @@ var Edit = /** @__PURE__ @class */ (function () {
         return 'edit';
     };
     /**
-     * @hidden
+
      */
     Edit.prototype.onPropertyChanged = function (e) {
         if (e.module !== this.getModuleName()) {
@@ -26345,7 +26210,7 @@ var Edit = /** @__PURE__ @class */ (function () {
         this.dlgCancel();
     };
     /**
-     * @hidden
+
      */
     Edit.prototype.addEventListener = function () {
         if (this.parent.isDestroyed) {
@@ -26364,7 +26229,7 @@ var Edit = /** @__PURE__ @class */ (function () {
         this.parent.addEventListener(actionComplete, this.actionCompleteFunction);
     };
     /**
-     * @hidden
+
      */
     Edit.prototype.removeEventListener = function () {
         if (this.parent.isDestroyed) {
@@ -26388,7 +26253,7 @@ var Edit = /** @__PURE__ @class */ (function () {
         this.refreshToolbar();
     };
     /**
-     * @hidden
+
      */
     Edit.prototype.getCurrentEditedData = function (form, editedData) {
         var _this = this;
@@ -26444,7 +26309,8 @@ var Edit = /** @__PURE__ @class */ (function () {
         return editedData;
     };
     Edit.prototype.getValue = function (col, input, editedData) {
-        var value = input.value;
+        var value = col.isForeignColumn() ? (input.ej2_instances ?
+            input.ej2_instances[0].value : input.value) : input.value;
         var gObj = this.parent;
         var temp = col.edit.read;
         if (col.type === 'checkbox' || col.type === 'boolean') {
@@ -26463,7 +26329,7 @@ var Edit = /** @__PURE__ @class */ (function () {
         return value;
     };
     /**
-     * @hidden
+
      */
     Edit.prototype.onActionBegin = function (e) {
         var restrictedRequestTypes = ['filterafteropen', 'filterbeforeopen', 'filterchoicerequest', 'save'];
@@ -26474,7 +26340,7 @@ var Edit = /** @__PURE__ @class */ (function () {
         }
     };
     /**
-     * @hidden
+
      */
     Edit.prototype.destroyWidgets = function (cols) {
         var gObj = this.parent;
@@ -26512,7 +26378,7 @@ var Edit = /** @__PURE__ @class */ (function () {
         });
     };
     /**
-     * @hidden
+
      */
     Edit.prototype.destroyForm = function () {
         this.destroyToolTip();
@@ -26524,7 +26390,7 @@ var Edit = /** @__PURE__ @class */ (function () {
     /**
      * To destroy the editing.
      * @return {void}
-     * @hidden
+
      */
     Edit.prototype.destroy = function () {
         var gridElement = this.parent.element;
@@ -26590,7 +26456,7 @@ var Edit = /** @__PURE__ @class */ (function () {
         this.preventObj.handler.call(this.preventObj.instance, this.preventObj.arg1, this.preventObj.arg2, this.preventObj.arg3, this.preventObj.arg4, this.preventObj.arg5, this.preventObj.arg6, this.preventObj.arg7, this.preventObj.arg8);
     };
     /**
-     * @hidden
+
      */
     Edit.prototype.applyFormValidation = function (cols) {
         var gObj = this.parent;
@@ -26747,13 +26613,13 @@ var Edit = /** @__PURE__ @class */ (function () {
         }
     };
     /**
-     * @hidden
+
      */
     Edit.prototype.checkColumnIsGrouped = function (col) {
         return !col.visible && !(this.parent.groupSettings.columns.indexOf(col.field) > -1);
     };
     /**
-     * @hidden
+
      */
     Edit.AddEditors = function (editors) {
         Edit.editCellType = extend(Edit.editCellType, editors);
@@ -26773,7 +26639,7 @@ var Edit = /** @__PURE__ @class */ (function () {
 var ColumnChooser = /** @__PURE__ @class */ (function () {
     /**
      * Constructor for the Grid ColumnChooser module
-     * @hidden
+
      */
     function ColumnChooser(parent, serviceLocator) {
         this.showColumn = [];
@@ -26822,7 +26688,7 @@ var ColumnChooser = /** @__PURE__ @class */ (function () {
         }
     };
     /**
-     * @hidden
+
      */
     ColumnChooser.prototype.addEventListener = function () {
         if (this.parent.isDestroyed) {
@@ -26836,7 +26702,7 @@ var ColumnChooser = /** @__PURE__ @class */ (function () {
         this.parent.on(rtlUpdated, this.rtlUpdate, this);
     };
     /**
-     * @hidden
+
      */
     ColumnChooser.prototype.removeEventListener = function () {
         if (this.parent.isDestroyed) {
@@ -26898,7 +26764,7 @@ var ColumnChooser = /** @__PURE__ @class */ (function () {
     /**
      * To render columnChooser when showColumnChooser enabled.
      * @return {void}
-     * @hidden
+
      */
     ColumnChooser.prototype.renderColumnChooser = function (x, y, target) {
         if (!this.dlgObj.visible && (this.parent.detailTemplate || this.parent.childGrid)) {
@@ -27397,7 +27263,7 @@ var ColumnChooser = /** @__PURE__ @class */ (function () {
 }());
 
 /**
- * @hidden
+
  * `ExportHelper` for `PdfExport` & `ExcelExport`
  */
 var ExportHelper = /** @__PURE__ @class */ (function () {
@@ -27632,7 +27498,7 @@ var ExportHelper = /** @__PURE__ @class */ (function () {
     return ExportHelper;
 }());
 /**
- * @hidden
+
  * `ExportValueFormatter` for `PdfExport` & `ExcelExport`
  */
 var ExportValueFormatter = /** @__PURE__ @class */ (function () {
@@ -27712,13 +27578,13 @@ var ExportValueFormatter = /** @__PURE__ @class */ (function () {
 }());
 
 /**
- * @hidden
+
  * `ExcelExport` module is used to handle the Excel export action.
  */
 var ExcelExport = /** @__PURE__ @class */ (function () {
     /**
      * Constructor for the Grid Excel Export module.
-     * @hidden
+
      */
     function ExcelExport(parent, locator) {
         /* tslint:disable-next-line:no-any */
@@ -28607,7 +28473,7 @@ var ExcelExport = /** @__PURE__ @class */ (function () {
     /**
      * To destroy the excel export
      * @return {void}
-     * @hidden
+
      */
     ExcelExport.prototype.destroy = function () {
         //destroy for exporting
@@ -28617,12 +28483,12 @@ var ExcelExport = /** @__PURE__ @class */ (function () {
 
 /**
  * `PDF Export` module is used to handle the exportToPDF action.
- * @hidden
+
  */
 var PdfExport = /** @__PURE__ @class */ (function () {
     /**
      * Constructor for the Grid PDF Export module
-     * @hidden
+
      */
     function PdfExport(parent) {
         this.hideColumnInclude = false;
@@ -29135,7 +29001,7 @@ var PdfExport = /** @__PURE__ @class */ (function () {
         var value = content.value.toString();
         var x = content.position.x * 0.75;
         var y = content.position.y * 0.75;
-        var format;
+        var format = new PdfStringFormat();
         var result = this.setContentFormat(content, format);
         if (result !== null && !isNullOrUndefined(result.format) && !isNullOrUndefined(result.size)) {
             pageTemplate.graphics.drawString(value, font, pen, brush, x, y, result.size.width, result.size.height, result.format);
@@ -29616,8 +29482,8 @@ var PdfExport = /** @__PURE__ @class */ (function () {
     };
     /* tslint:disable-next-line:no-any */
     PdfExport.prototype.getFont = function (content) {
-        if (content.style.font) {
-            return content.style.font;
+        if (content.font) {
+            return content.font;
         }
         var fontSize = (!isNullOrUndefined(content.style.fontSize)) ? (content.style.fontSize * 0.75) : 9.75;
         var fontFamily = (!isNullOrUndefined(content.style.fontFamily)) ?
@@ -29825,7 +29691,7 @@ var PdfExport = /** @__PURE__ @class */ (function () {
     /**
      * To destroy the pdf export
      * @return {void}
-     * @hidden
+
      */
     PdfExport.prototype.destroy = function () {
         //destroy for exporting
@@ -29848,7 +29714,7 @@ var __extends$24 = (undefined && undefined.__extends) || (function () {
 })();
 /**
  * `CommandColumn` used to render command column in grid
- * @hidden
+
  */
 var CommandColumnRenderer = /** @__PURE__ @class */ (function (_super) {
     __extends$24(CommandColumnRenderer, _super);
@@ -29924,7 +29790,7 @@ var CommandColumnRenderer = /** @__PURE__ @class */ (function (_super) {
 
 /**
  * `CommandColumn` used to handle the command column actions.
- * @hidden
+
  */
 var CommandColumn = /** @__PURE__ @class */ (function () {
     function CommandColumn(parent, locator) {
@@ -30085,7 +29951,7 @@ var ContextMenu$1 = /** @__PURE__ @class */ (function () {
         this.addEventListener();
     }
     /**
-     * @hidden
+
      */
     ContextMenu$$1.prototype.addEventListener = function () {
         if (this.parent.isDestroyed) {
@@ -30095,7 +29961,7 @@ var ContextMenu$1 = /** @__PURE__ @class */ (function () {
         this.parent.on(initialLoad, this.render, this);
     };
     /**
-     * @hidden
+
      */
     ContextMenu$$1.prototype.removeEventListener = function () {
         if (this.parent.isDestroyed) {
@@ -30176,7 +30042,7 @@ var ContextMenu$1 = /** @__PURE__ @class */ (function () {
         this.isOpen = true;
     };
     /**
-     * @hidden
+
      */
     ContextMenu$$1.prototype.contextMenuItemClick = function (args) {
         var item = this.getKeyFromId(args.item.id);
@@ -30480,7 +30346,7 @@ var ContextMenu$1 = /** @__PURE__ @class */ (function () {
      * Destroys the context menu component in the Grid.
      * @method destroy
      * @return {void}
-     * @hidden
+
      */
     ContextMenu$$1.prototype.destroy = function () {
         var gridElement = this.parent.element;
@@ -30618,7 +30484,7 @@ var ContextMenu$1 = /** @__PURE__ @class */ (function () {
 
 /**
  * FreezeRowModelGenerator is used to generate grid data rows with freeze row and column.
- * @hidden
+
  */
 var FreezeRowModelGenerator = /** @__PURE__ @class */ (function () {
     function FreezeRowModelGenerator(parent) {
@@ -30658,7 +30524,7 @@ var __extends$25 = (undefined && undefined.__extends) || (function () {
 })();
 /**
  * Freeze module is used to render grid content with frozen rows and columns
- * @hidden
+
  */
 var FreezeContentRender = /** @__PURE__ @class */ (function (_super) {
     __extends$25(FreezeContentRender, _super);
@@ -30866,12 +30732,14 @@ var FreezeRender = /** @__PURE__ @class */ (function (_super) {
             }
             fRowHgt = height[i];
             mRowHgt = width[i];
-            if (fRows[i].childElementCount && ((isWrap && fRowHgt < mRowHgt) || (!isWrap && fRowHgt < mRowHgt) ||
-                (this.parent.allowResizing && this.parent.resizeModule && !this.parent.resizeModule.isFrozenColResized))) {
+            if (!isNullOrUndefined(fRows[i]) && fRows[i].childElementCount && ((isWrap && fRowHgt < mRowHgt) ||
+                (!isWrap && fRowHgt < mRowHgt) || (this.parent.allowResizing && this.parent.resizeModule &&
+                !this.parent.resizeModule.isFrozenColResized))) {
                 fRows[i].style.height = mRowHgt + 'px';
             }
-            if (mRows[i].childElementCount && ((isWrap && fRowHgt > mRowHgt) || (!isWrap && fRowHgt > mRowHgt) ||
-                (this.parent.allowResizing && this.parent.resizeModule && this.parent.resizeModule.isFrozenColResized))) {
+            if (!isNullOrUndefined(mRows[i]) && mRows[i].childElementCount && ((isWrap && fRowHgt > mRowHgt) ||
+                (!isWrap && fRowHgt > mRowHgt) || (this.parent.allowResizing && this.parent.resizeModule &&
+                this.parent.resizeModule.isFrozenColResized))) {
                 mRows[i].style.height = fRowHgt + 'px';
             }
         }
@@ -30961,7 +30829,7 @@ var FreezeRender = /** @__PURE__ @class */ (function (_super) {
 
 /**
  * `Freeze` module is used to handle Frozen rows and columns.
- * @hidden
+
  */
 var Freeze = /** @__PURE__ @class */ (function () {
     function Freeze(parent, locator) {
@@ -31000,7 +30868,7 @@ var Freeze = /** @__PURE__ @class */ (function () {
 
 /**
  * 'column menu module used to handle column menu actions'
- * @hidden
+
  */
 var ColumnMenu = /** @__PURE__ @class */ (function () {
     function ColumnMenu(parent, serviceLocator) {
@@ -31039,7 +30907,7 @@ var ColumnMenu = /** @__PURE__ @class */ (function () {
     /**
      * To destroy the resize
      * @return {void}
-     * @hidden
+
      */
     ColumnMenu.prototype.destroy = function () {
         var gridElement = this.parent.element;
@@ -31098,7 +30966,7 @@ var ColumnMenu = /** @__PURE__ @class */ (function () {
         return [].slice.call(this.parent.getHeaderTable().querySelectorAll('.' + this.ROOT));
     };
     /**
-     * @hidden
+
      */
     ColumnMenu.prototype.addEventListener = function () {
         if (this.parent.isDestroyed) {
@@ -31113,7 +30981,7 @@ var ColumnMenu = /** @__PURE__ @class */ (function () {
         this.parent.on(click, this.columnMenuHandlerClick, this);
     };
     /**
-     * @hidden
+
      */
     ColumnMenu.prototype.removeEventListener = function () {
         if (this.parent.isDestroyed) {
@@ -31396,7 +31264,7 @@ var ColumnMenu = /** @__PURE__ @class */ (function () {
             id.replace(this.gridID + '_colmenu_' + (append$$1 ? append$$1 : ''), '');
     };
     /**
-     * @hidden
+
      */
     ColumnMenu.prototype.getColumnMenu = function () {
         return this.element;
@@ -32087,7 +31955,7 @@ var ajaxErrorHandler = function (args, parent) {
 
 /**
  * `AutoCompleteEditCell` is used to handle autocomplete cell type editing.
- * @hidden
+
  */
 var AutoCompleteEditCell = /** @__PURE__ @class */ (function () {
     function AutoCompleteEditCell(parent) {
@@ -32141,7 +32009,7 @@ var AutoCompleteEditCell = /** @__PURE__ @class */ (function () {
 
 /**
  * `ComboBoxEditCell` is used to handle ComboBoxEdit cell type editing.
- * @hidden
+
  */
 var ComboboxEditCell = /** @__PURE__ @class */ (function () {
     function ComboboxEditCell(parentObject) {
@@ -32193,7 +32061,7 @@ var ComboboxEditCell = /** @__PURE__ @class */ (function () {
 
 /**
  * `MultiSelectEditCell` is used to handle multiselect dropdown cell type editing.
- * @hidden
+
  */
 var MultiSelectEditCell = /** @__PURE__ @class */ (function () {
     function MultiSelectEditCell(parentObj) {
@@ -32236,7 +32104,7 @@ var MultiSelectEditCell = /** @__PURE__ @class */ (function () {
 
 /**
  * `TimePickerEditCell` is used to handle Timepicker cell type editing.
- * @hidden
+
  */
 var TimePickerEditCell = /** @__PURE__ @class */ (function () {
     function TimePickerEditCell(grid) {
@@ -32278,7 +32146,7 @@ var TimePickerEditCell = /** @__PURE__ @class */ (function () {
 
 /**
  * `ToggleEditCell` is used to handle boolean cell type editing.
- * @hidden
+
  */
 var ToggleEditCell = /** @__PURE__ @class */ (function () {
     function ToggleEditCell(parentObject) {
@@ -32353,7 +32221,7 @@ var ToggleEditCell = /** @__PURE__ @class */ (function () {
 
 /**
  * `MaskedTextBoxCellEdit` is used to handle masked input cell type editing.
- * @hidden
+
  */
 var MaskedTextBoxCellEdit = /** @__PURE__ @class */ (function () {
     function MaskedTextBoxCellEdit(parentInstance) {

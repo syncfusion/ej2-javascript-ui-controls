@@ -678,110 +678,110 @@ describe('Chart Control', () => {
             chart.refresh();
         });
     });
-    describe('Checking IsIndex true', () => {
-        let chartDTCObj: Chart;
-        beforeAll((): void => {
-            ele = createElement('div', { id: 'datetimecategory1' });
-            document.body.appendChild(ele);
-            chartDTCObj = new Chart(
-                {
-                    primaryXAxis: {
-                        valueType: 'DateTimeCategory',
-                        labelFormat: 'HH:mm:ss',
-                        intervalType: 'Hours',
-                        interval: 1,
-                        majorGridLines: { width: 0 },
-                        labelPlacement: 'OnTicks',
-                        isIndexed: true,
-                    },
-                    //Initializing Primary X Axis
-                    primaryYAxis: {
-                        labelFormat: '{value}%',
-                        rangePadding: 'None',
-                        minimum: 0,
-                        maximum: 100,
-                        interval: 20,
-                        lineStyle: { width: 0 },
-                        majorTickLines: { width: 0 },
-                        minorTickLines: { width: 0 }
-                    },
-                    chartArea: {
-                        border: {
-                            width: 0
-                        }
-                    },
-                    //Initializing Chart Series
-                    series: [
-                        {
-                            type: 'Line',
-                            dataSource: [
-                                { x: '2019-07-05T11:00:00+02:00', y: 21 },
-                                { x: '2019-07-05T23:00:00+02:00', y: 24 },
-                                { x: '2019-07-06T11:00:00+02:00', y: 36 },
-                                { x: '2019-07-06T12:00:00+02:00', y: 38 },
-                                { x: '2019-07-06T14:00:00+02:00', y: 54 },
-                                { x: '2019-07-07T11:00:00+02:00', y: 57 },
-                                { x: '2019-07-07T23:00:00+02:00', y: 70 }
-                            ],
-                            xName: 'x', width: 2,
-                            marker: {
-                                visible: true,
-                                width: 10,
-                                height: 10
-                            },
-                            yName: 'y', name: 'Germany',
-                        },
-                        {
-                            type: 'Line',
-                            dataSource: [
-                                { x: '2019-07-05T16:00:00+02:00', y: 15 },
-                                { x: '2019-07-05T22:00:00+02:00', y: 18 },
-                                { x: '2019-07-06T13:00:00+02:00', y: 20 },
-                                { x: '2019-07-06T15:00:00+02:00', y: 25 },
-                                { x: '2019-07-06T17:00:00+02:00', y: 29 },
-                                { x: '2019-07-07T18:00:00+02:00', y: 40 },
-                                { x: '2019-07-07T20:00:00+02:00', y: 60 }
-                            ],
-                            xName: 'x', width: 2,
-                            marker: {
-                                visible: true,
-                                width: 10,
-                                height: 10
-                            },
-                            yName: 'y', name: 'England',
-                        }
-                    ],
-                    title: 'DateTimeCategory Axis Index based',
-                    width: '100%'
-                });
-        });
+    // describe('Checking IsIndex true', () => {
+    //     let chartDTCObj: Chart;
+    //     beforeAll((): void => {
+    //         ele = createElement('div', { id: 'datetimecategory1' });
+    //         document.body.appendChild(ele);
+    //         chartDTCObj = new Chart(
+    //             {
+    //                 primaryXAxis: {
+    //                     valueType: 'DateTimeCategory',
+    //                     labelFormat: 'HH:mm:ss',
+    //                     intervalType: 'Hours',
+    //                     interval: 1,
+    //                     majorGridLines: { width: 0 },
+    //                     labelPlacement: 'OnTicks',
+    //                     isIndexed: true,
+    //                 },
+    //                 //Initializing Primary X Axis
+    //                 primaryYAxis: {
+    //                     labelFormat: '{value}%',
+    //                     rangePadding: 'None',
+    //                     minimum: 0,
+    //                     maximum: 100,
+    //                     interval: 20,
+    //                     lineStyle: { width: 0 },
+    //                     majorTickLines: { width: 0 },
+    //                     minorTickLines: { width: 0 }
+    //                 },
+    //                 chartArea: {
+    //                     border: {
+    //                         width: 0
+    //                     }
+    //                 },
+    //                 //Initializing Chart Series
+    //                 series: [
+    //                     {
+    //                         type: 'Line',
+    //                         dataSource: [
+    //                             { x: '2019-07-05T11:00:00+02:00', y: 21 },
+    //                             { x: '2019-07-05T23:00:00+02:00', y: 24 },
+    //                             { x: '2019-07-06T11:00:00+02:00', y: 36 },
+    //                             { x: '2019-07-06T12:00:00+02:00', y: 38 },
+    //                             { x: '2019-07-06T14:00:00+02:00', y: 54 },
+    //                             { x: '2019-07-07T11:00:00+02:00', y: 57 },
+    //                             { x: '2019-07-07T23:00:00+02:00', y: 70 }
+    //                         ],
+    //                         xName: 'x', width: 2,
+    //                         marker: {
+    //                             visible: true,
+    //                             width: 10,
+    //                             height: 10
+    //                         },
+    //                         yName: 'y', name: 'Germany',
+    //                     },
+    //                     {
+    //                         type: 'Line',
+    //                         dataSource: [
+    //                             { x: '2019-07-05T16:00:00+02:00', y: 15 },
+    //                             { x: '2019-07-05T22:00:00+02:00', y: 18 },
+    //                             { x: '2019-07-06T13:00:00+02:00', y: 20 },
+    //                             { x: '2019-07-06T15:00:00+02:00', y: 25 },
+    //                             { x: '2019-07-06T17:00:00+02:00', y: 29 },
+    //                             { x: '2019-07-07T18:00:00+02:00', y: 40 },
+    //                             { x: '2019-07-07T20:00:00+02:00', y: 60 }
+    //                         ],
+    //                         xName: 'x', width: 2,
+    //                         marker: {
+    //                             visible: true,
+    //                             width: 10,
+    //                             height: 10
+    //                         },
+    //                         yName: 'y', name: 'England',
+    //                     }
+    //                 ],
+    //                 title: 'DateTimeCategory Axis Index based',
+    //                 width: '100%'
+    //             });
+    //     });
 
-        afterAll((): void => {
-            chartDTCObj.destroy();
-            ele.remove();
-        });
-        it('Checking Axis labels', (done: Function) => {
-            loaded = (args: ILoadedEventArgs): void => {
-                let label: HTMLElement = document.getElementById('datetimecategory10_AxisLabel_1');
-                expect(label.textContent).toBe('23:00:00, 22:00:00');
-                expect(parseInt(label.getAttribute('x'), 10)).toBeLessThan(200);
-                done();
-            };
-            chartDTCObj.loaded = loaded;
-            chartDTCObj.appendTo('#datetimecategory1');
-        });
-        it('Checking Axis labels Inversed axis', (done: Function) => {
-            loaded = (args: ILoadedEventArgs): void => {
-                let label: HTMLElement = document.getElementById('datetimecategory10_AxisLabel_1');
-                expect(label.textContent).toBe('23:00:00, 22:00:00');
-                expect(parseInt(label.getAttribute('x'), 10)).toBeGreaterThan(500);
-                done();
-            };
-            chartDTCObj.loaded = loaded;
-            chartDTCObj.primaryXAxis.isInversed = true;
-            chartDTCObj.dataBind();
-        });
-    });
+    //     afterAll((): void => {
+    //         chartDTCObj.destroy();
+    //         ele.remove();
+    //     });
+    //     it('Checking Axis labels', (done: Function) => {
+    //         loaded = (args: ILoadedEventArgs): void => {
+    //             let label: HTMLElement = document.getElementById('datetimecategory10_AxisLabel_1');
+    //             expect(label.textContent).toBe('23:00:00, 22:00:00');
+    //             expect(parseInt(label.getAttribute('x'), 10)).toBeLessThan(200);
+    //             done();
+    //         };
+    //         chartDTCObj.loaded = loaded;
+    //         chartDTCObj.appendTo('#datetimecategory1');
+    //     });
+    //     it('Checking Axis labels Inversed axis', (done: Function) => {
+    //         loaded = (args: ILoadedEventArgs): void => {
+    //             let label: HTMLElement = document.getElementById('datetimecategory10_AxisLabel_1');
+    //             expect(label.textContent).toBe('23:00:00, 22:00:00');
+    //             expect(parseInt(label.getAttribute('x'), 10)).toBeGreaterThan(500);
+    //             done();
+    //         };
+    //         chartDTCObj.loaded = loaded;
+    //         chartDTCObj.primaryXAxis.isInversed = true;
+    //         chartDTCObj.dataBind();
+    //     });
+    // });
     it('memory leak', () => {
         profile.sample();
         let average: any = inMB(profile.averageChange)

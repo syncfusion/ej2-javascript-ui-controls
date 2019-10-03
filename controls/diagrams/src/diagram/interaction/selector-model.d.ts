@@ -7,31 +7,31 @@ export interface UserHandleModel {
 
     /**
      * Defines the name of user Handle
-     * @default ''
+
      */
     name?: string;
 
     /**
      * Defines the path data of user Handle 
-     * @default ''
+
      */
     pathData?: string;
 
     /**
      * Defines the custom content of the user handle
-     * @default ''
+
      */
     content?: string;
 
     /**
      * Defines the image source of the user handle
-     * @default ''
+
      */
     source?: string;
 
     /**
      * Defines the background color of user Handle 
-     * @default 'black'
+
      */
     backgroundColor?: string;
 
@@ -41,56 +41,56 @@ export interface UserHandleModel {
      *  * Bottom - Aligns the user handles at the bottom of an object
      *  * Left - Aligns the user handles at the left of an object
      *  * Right - Aligns the user handles at the right of an object
-     * @default 'top'
+
      */
     side?: Side;
 
     /**
      * Defines the borderColor of user Handle 
-     * @default ''
+
      */
     borderColor?: string;
 
     /**
      * Defines the borderWidth of user Handle 
-     * @default 0.5
+
      */
     borderWidth?: number;
 
     /**
      * Defines the size of user Handle 
-     * @default 25
+
      */
     size?: number;
 
     /**
      * Defines the path color of user Handle 
-     * @default 'white'
+
      */
     pathColor?: string;
 
     /**
      * Defines the displacement of user Handle 
-     * @default 10
+
      */
     displacement?: number;
 
     /**
      * Defines the visible of user Handle 
-     * @default true
+
      */
     visible?: boolean;
 
     /**
      * Defines the offset of user Handle 
-     * @default 0
-     * @isBlazorNullableType true
+
+
      */
     offset?: number;
 
     /**
      * Defines the margin of the user handle
-     * @default new Margin(0,0,0,0)
+
      */
     margin?: MarginModel;
 
@@ -101,7 +101,7 @@ export interface UserHandleModel {
      * * Right - Aligns the diagram element at the right of its immediate parent
      * * Center - Aligns the diagram element at the center of its immediate parent
      * * Auto - Aligns the diagram element based on the characteristics of its immediate parent
-     * @default 'Center'
+
      */
     horizontalAlignment?: HorizontalAlignment;
 
@@ -112,7 +112,7 @@ export interface UserHandleModel {
      * * Bottom - Aligns the diagram element at the bottom of its immediate parent
      * * Center - Aligns the diagram element at the center of its immediate parent
      * * Auto - Aligns the diagram element based on the characteristics of its immediate parent
-     * @default 'Center'
+
      */
     verticalAlignment?: VerticalAlignment;
 

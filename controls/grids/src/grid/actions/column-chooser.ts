@@ -49,7 +49,7 @@ export class ColumnChooser implements IAction {
     private prevShowedCols: string[] = [];
     /**
      * Constructor for the Grid ColumnChooser module
-     * @hidden
+
      */
     constructor(parent?: IGrid, serviceLocator?: ServiceLocator) {
         this.parent = parent;
@@ -92,7 +92,7 @@ export class ColumnChooser implements IAction {
     }
 
     /**
-     * @hidden
+
      */
     public addEventListener(): void {
         if (this.parent.isDestroyed) { return; }
@@ -105,7 +105,7 @@ export class ColumnChooser implements IAction {
     }
 
     /**
-     * @hidden
+
      */
     public removeEventListener(): void {
         if (this.parent.isDestroyed) { return; }
@@ -168,7 +168,7 @@ export class ColumnChooser implements IAction {
     /** 
      * To render columnChooser when showColumnChooser enabled. 
      * @return {void}  
-     * @hidden
+
      */
     public renderColumnChooser(x?: number, y?: number, target?: Element): void {
         if (!this.dlgObj.visible && (this.parent.detailTemplate || this.parent.childGrid)) {

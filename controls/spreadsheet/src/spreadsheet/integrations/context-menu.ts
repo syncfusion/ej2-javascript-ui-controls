@@ -1,9 +1,9 @@
 import { Spreadsheet } from '../base/index';
 import { ContextMenu as ContextMenuComponent, BeforeOpenCloseMenuEventArgs, MenuItemModel } from '@syncfusion/ej2-navigations';
 import { MenuEventArgs } from '@syncfusion/ej2-navigations';
-import { closest, extend, detach } from '@syncfusion/ej2-base';
-import { MenuSelectArgs, addSheetTab, removeSheetTab, cMenuBeforeOpen, renameSheetTab, cut, copy, paste } from '../common/index';
-import { addContextMenuItems, removeContextMenuItems, enableContextMenuItems } from '../common/index';
+import { closest, extend, detach, L10n } from '@syncfusion/ej2-base';
+import { MenuSelectArgs, addSheetTab, removeSheetTab, cMenuBeforeOpen, renameSheetTab, cut, copy, paste, locale } from '../common/index';
+import { addContextMenuItems, removeContextMenuItems, enableContextMenuItems, initiateCustomSort } from '../common/index';
 
 /**
  * Represents context menu for Spreadsheet.
@@ -56,33 +56,40 @@ export class ContextMenu {
         let selectArgs: MenuSelectArgs = extend({ cancel: false }, args) as MenuSelectArgs;
         this.parent.trigger('contextMenuItemSelect', selectArgs);
         if (!selectArgs.cancel) {
+            let l10n: L10n = this.parent.serviceLocator.getService(locale);
             switch (args.item.text) {
-                case 'Dialog':
-                    // Dialog functionality goes here
-                    break;
-                case 'Cut':
+                case l10n.getConstant('Cut'):
                     this.parent.notify(cut, { isClick: true });
                     break;
-                case 'Copy':
+                case l10n.getConstant('Copy'):
                     this.parent.notify(copy, { isClick: true });
                     break;
-                case 'Paste':
+                case l10n.getConstant('Paste'):
                     this.parent.notify(paste, { isClick: true });
                     break;
-                case 'Values':
+                case l10n.getConstant('Values'):
                     this.parent.notify(paste, { type: 'Values' });
                     break;
-                case 'Formats':
+                case l10n.getConstant('Formats'):
                     this.parent.notify(paste, { type: 'Formats' });
                     break;
-                case 'Rename':
+                case l10n.getConstant('Rename'):
                     this.parent.notify(renameSheetTab, {});
                     break;
-                case 'Delete':
+                case l10n.getConstant('Delete'):
                     this.parent.notify(removeSheetTab, {});
                     break;
-                case 'Insert':
-                    this.parent.notify(addSheetTab, { text: args.item.text });
+                case l10n.getConstant('Insert'):
+                    this.parent.notify(addSheetTab, { text: 'Insert' });
+                    break;
+                case l10n.getConstant('SortAscending'):
+                    this.parent.sort();
+                    break;
+                case l10n.getConstant('SortDescending'):
+                    this.parent.sort({ sortDescriptors: { order: 'Descending' }});
+                    break;
+                case l10n.getConstant('CustomSort') + '...':
+                    this.parent.notify(initiateCustomSort, null);
                     break;
                 default:
                 // Rename functionality goes here
@@ -108,12 +115,16 @@ export class ContextMenu {
      * To get target area based on right click.
      */
     private getTarget(target: Element): string {
-        if (closest(target, '.e-row-header') || closest(target, '.e-header-panel')) {
-            return 'Header';
-        } else if (closest(target, '.e-main-content')) {
+        if (closest(target, '.e-main-content')) {
             return 'Content';
+        } else if (closest(target, '.e-column-header')) {
+            return 'ColumnHeader';
+        } else if (closest(target, '.e-row-header')) {
+            return 'RowHeader';
         } else if (closest(target, '.e-sheet-tabs-items')) {
             return 'Footer';
+        } else if (closest(target, '.e-selectall-container')) {
+            return 'SelectAll';
         } else {
             return '';
         }
@@ -123,45 +134,70 @@ export class ContextMenu {
      * To populate context menu items based on target area.
      */
     private getDataSource(target: string): MenuItemModel[] {
+        let l10n: L10n = this.parent.serviceLocator.getService(locale);
         let items: MenuItemModel[] = [];
-        if (target === 'Header') {
-            this.setClipboardData(items);
-        } else if (target === 'Content') {
-            this.setClipboardData(items);
+        if (target === 'Content') {
+            this.setClipboardData(items, l10n);
+            //push sort items here
+            this.setSortItems(items);
+        } else if (target === 'RowHeader') {
+            this.setClipboardData(items, l10n);
+        } else if (target === 'ColumnHeader') {
+            this.setClipboardData(items, l10n);
+        } else if (target === 'SelectAll') {
+            this.setClipboardData(items, l10n);
+            this.setSortItems(items);
         } else if (target === 'Footer') {
             items.push({
-                text: 'Insert'
+                text: l10n.getConstant('Insert')
             });
             items.push({
-                text: 'Delete', iconCss: 'e-icons e-delete'
+                text: l10n.getConstant('Delete'), iconCss: 'e-icons e-delete'
             });
             items.push({
-                text: 'Rename'
+                text: l10n.getConstant('Rename')
             });
         }
         return items;
     }
 
-    private setClipboardData(items: MenuItemModel[]): void {
+    /**
+     * Sets sorting related items to the context menu.
+     */
+    private setSortItems(items: MenuItemModel[]): void {
+        let l10n: L10n = this.parent.serviceLocator.getService(locale);
+        if (this.parent.allowSorting) {
+            items.push({
+                text: l10n.getConstant('Sort'),
+                iconCss: 'e-icons e-sort-icon',
+                items: [
+                    { text: l10n.getConstant('SortAscending'), iconCss: 'e-icons e-sort-asc' },
+                    { text: l10n.getConstant('SortDescending'), iconCss: 'e-icons e-sort-desc' },
+                    { text: l10n.getConstant('CustomSort') + '...', iconCss: 'e-icons e-sort-custom' }
+                ]
+            });
+        }
+    }
+
+    private setClipboardData(items: MenuItemModel[], l10n: L10n): void {
         if (this.parent.enableClipboard) {
             items.push({
-                text: 'Cut',
+                text: l10n.getConstant('Cut'),
                 iconCss: 'e-icons e-cut-icon'
             });
             items.push({
-                text: 'Copy',
+                text: l10n.getConstant('Copy'),
                 iconCss: 'e-icons e-copy-icon'
             });
             items.push({
-                text: 'Paste',
+                text: l10n.getConstant('Paste'),
                 iconCss: 'e-icons e-paste-icon'
             });
             items.push({
-                text: 'Paste Special',
-                iconCss: 'e-icons e-paste-icon',
+                text: l10n.getConstant('PasteSpecial'),
                 items: [
-                    { text: 'Values' },
-                    { text: 'Formats' }
+                    { text: l10n.getConstant('Values') },
+                    { text: l10n.getConstant('Formats') }
                 ]
             });
         }

@@ -210,7 +210,7 @@ export interface SelectionSettings {
 
     /**
      * Pivot widget supports row, column, cell, and both (row and column) selection mode. 
-     * @default Row
+
      */
     mode?: SelectionMode;
 
@@ -220,7 +220,7 @@ export interface SelectionSettings {
      * * `Flow`: Selects the range of cells between start index and end index that also includes the other cells of the selected rows.
      * * `Box`: Selects the range of cells within the start and end column indexes that includes in between cells of rows within the range.
      * * `BoxWithBorder`: Selects the range of cells as like Box mode with borders.
-     * @default Flow
+
      */
     cellSelectionMode?: CellSelectionMode;
 
@@ -228,7 +228,7 @@ export interface SelectionSettings {
      * Defines options for selection type. They are 
      * * `Single`: Allows selection of only a row or a column or a cell. 
      * * `Multiple`: Allows selection of multiple rows or columns or cells. 
-     * @default Single 
+
      */
     type?: SelectionType;
 
@@ -236,14 +236,14 @@ export interface SelectionSettings {
      * If 'checkboxOnly' set to true, then the selection is allowed only through checkbox.
      * 
      * > To enable checkboxOnly selection, should specify the column type as`checkbox`.
-     * @default false 
+
      */
     checkboxOnly?: boolean;
 
     /**
      * If 'persistSelection' set to true, then the selection is persisted on all operations.
      * For persisting selection, any one of the column should be enabled as a primary key.
-     * @default false 
+
      */
     persistSelection?: boolean;
 
@@ -252,19 +252,19 @@ export interface SelectionSettings {
      * * `Default`: This is the default value of the checkboxMode. In this mode, user can select multiple rows by clicking rows one by one.
      * * `ResetOnRowClick`: In ResetOnRowClick mode, on clicking a row it will reset previously selected row and also multiple
      *  rows can be selected by using CTRL or SHIFT key.
-     * @default Default
+
      */
     checkboxMode?: CheckboxSelectionType;
 
     /**
      * If 'enableSimpleMultiRowSelection' set to true, then the user can able to perform multiple row selection with single clicks.
-     * @default false
+
      */
     enableSimpleMultiRowSelection?: boolean;
 }
 
 /**
- * @hidden
+
  */
 export interface CommonArgs {
     pivotEngine: PivotEngine | OlapEngine;
@@ -279,7 +279,7 @@ export interface CommonArgs {
     dataType: string;
 }
 /**
- * @hidden
+
  */
 export interface PivotButtonArgs {
     field: IFieldOptions[];
@@ -288,7 +288,7 @@ export interface PivotButtonArgs {
 
 /**
  * IAction interface
- * @hidden
+
  */
 export interface IAction {
     updateModel?(): void;
@@ -334,14 +334,14 @@ export interface ExcelCell {
 }
 
 /**
- * @hidden
+
  */
 export interface ResizeInfo {
     [key: string]: number;
 }
 
 /**
- * @hidden
+
  */
 export interface ScrollInfo {
     vertical: number; horizontal: number; verticalSection: number; horizontalSection: number;
@@ -349,7 +349,7 @@ export interface ScrollInfo {
 }
 
 /**
- * @hidden
+
  */
 export interface HeaderCollection {
     rowHeaders: IAxisSet[];
@@ -359,21 +359,21 @@ export interface HeaderCollection {
 }
 
 /**
- * @hidden
+
  */
 export interface RowHeaderPositionGrouping {
     [key: number]: RowHeaderLevelGrouping;
 }
 
 /**
- * @hidden
+
  */
 export interface RowHeaderLevelGrouping {
     [key: string]: ChartLabelInfo;
 }
 
 /**
- * @hidden
+
  */
 export interface ChartLabelInfo {
     text: string;

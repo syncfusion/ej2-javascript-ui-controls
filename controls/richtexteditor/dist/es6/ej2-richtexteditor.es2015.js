@@ -8898,6 +8898,7 @@ class ImageCommand {
             removeClass([selectNode.parentElement], CLASS_IMAGE_LEFT);
             removeClass([selectNode.parentElement], CLASS_IMAGE_RIGHT);
             addClass([selectNode.parentElement], CLASS_IMAGE_CENTER);
+            addClass([selectNode], CLASS_IMAGE_CENTER);
         }
         else {
             addClass([selectNode], CLASS_IMAGE_CENTER);
@@ -10400,7 +10401,9 @@ class MsWordPaste {
         for (let i = 0; i < emptyElements.length; i++) {
             if (emptyElements[i].tagName !== 'IMG' && emptyElements[i].tagName !== 'BR') {
                 let detachableElement = this.findDetachEmptyElem(emptyElements[i]);
-                detach(detachableElement);
+                if (!isNullOrUndefined(detachableElement)) {
+                    detach(detachableElement);
+                }
             }
         }
     }
@@ -12171,15 +12174,15 @@ class PasteCleanup {
         }
     }
     radioRender() {
-        let keepRadioButton = new RadioButton({ label: 'Keep', name: 'pasteOption', checked: true });
+        let keepRadioButton = new RadioButton({ label: this.i10n.getConstant('keepFormat'), name: 'pasteOption', checked: true });
         keepRadioButton.isStringTemplate = true;
         let keepFormatElement = this.parent.element.querySelector('#keepFormating');
         keepRadioButton.appendTo(keepFormatElement);
-        let cleanRadioButton = new RadioButton({ label: 'Clean', name: 'pasteOption' });
+        let cleanRadioButton = new RadioButton({ label: this.i10n.getConstant('cleanFormat'), name: 'pasteOption' });
         cleanRadioButton.isStringTemplate = true;
         let cleanFormatElement = this.parent.element.querySelector('#cleanFormat');
         cleanRadioButton.appendTo(cleanFormatElement);
-        let plainTextRadioButton = new RadioButton({ label: 'Plain Text', name: 'pasteOption' });
+        let plainTextRadioButton = new RadioButton({ label: this.i10n.getConstant('plainText'), name: 'pasteOption' });
         plainTextRadioButton.isStringTemplate = true;
         let plainTextElement = this.parent.element.querySelector('#plainTextFormat');
         plainTextRadioButton.appendTo(plainTextElement);
@@ -12843,7 +12846,8 @@ class Link {
             target = this.getAnchorNode(target);
             this.contentModule = this.rendererFactory.getRenderer(RenderType.Content);
             let isPopupOpen = this.quickToolObj.linkQTBar.element.classList.contains('e-rte-pop');
-            if (target.nodeName === 'A' && !target.contains(target.querySelector('img'))) {
+            if (target.nodeName === 'A' && (target.childNodes.length > 0 && target.childNodes[0].nodeName !== 'IMG') &&
+                e.args.target.nodeName !== 'IMG') {
                 if (isPopupOpen) {
                     return;
                 }
@@ -13210,7 +13214,7 @@ class Image {
         this.parent.off(paste, this.imagePaste);
         this.parent.off(destroy, this.removeEventListener);
         this.parent.element.removeEventListener('drop', this.dragDrop.bind(this), true);
-        this.parent.element.removeEventListener('dragstart', this.dragStart, true);
+        this.parent.element.removeEventListener('dragstart', this.dragStart.bind(this), true);
         this.parent.element.removeEventListener('dragenter', this.dragEnter.bind(this), true);
         this.parent.element.removeEventListener('dragover', this.dragOver.bind(this), true);
         if (!isNullOrUndefined(this.contentModule)) {
@@ -13235,7 +13239,7 @@ class Image {
             EventHandler.add(this.contentModule.getDocument(), 'mousedown', this.onDocumentClick, this);
         }
         this.parent.inputElement.ownerDocument.addEventListener('drop', this.dragDrop.bind(this), true);
-        this.parent.inputElement.ownerDocument.addEventListener('dragstart', this.dragStart, true);
+        this.parent.inputElement.ownerDocument.addEventListener('dragstart', this.dragStart.bind(this), true);
         this.parent.inputElement.ownerDocument.addEventListener('dragenter', this.dragOver.bind(this), true);
         this.parent.inputElement.ownerDocument.addEventListener('dragover', this.dragOver.bind(this), true);
     }
@@ -13399,7 +13403,7 @@ class Image {
         imgResizeDiv.querySelector('.e-rte-topLeft').style.top = (top - borWid) + 'px';
     }
     calcPos(elem) {
-        let ignoreOffset = ['TD', 'TH', 'TABLE'];
+        let ignoreOffset = ['TD', 'TH', 'TABLE', 'A'];
         let parentOffset = { top: 0, left: 0 };
         let offset = elem.getBoundingClientRect();
         let doc = elem.ownerDocument;
@@ -14481,10 +14485,17 @@ class Image {
         return false;
     }
     dragStart(e) {
-        if (e.target.nodeName === 'IMG') {
-            e.dataTransfer.effectAllowed = 'copyMove';
-            e.target.classList.add(CLS_RTE_DRAG_IMAGE);
-        }
+        this.parent.trigger(actionBegin, e, (actionBeginArgs) => {
+            if (actionBeginArgs.cancel) {
+                e.preventDefault();
+            }
+            else {
+                if (e.target.nodeName === 'IMG') {
+                    e.dataTransfer.effectAllowed = 'copyMove';
+                    e.target.classList.add(CLS_RTE_DRAG_IMAGE);
+                }
+            }
+        });
     }
     ;
     dragEnter(e) {
@@ -14503,31 +14514,38 @@ class Image {
      * USed to set range When drop an image
      */
     dragDrop(e) {
-        if (closest(e.target, '#' + this.parent.getID() + '_toolbar')) {
-            e.preventDefault();
-            return;
-        }
-        if (this.parent.element.querySelector('.' + CLS_IMG_RESIZE)) {
-            detach(this.imgResizeDiv);
-        }
-        e.preventDefault();
-        let range;
-        if (this.contentModule.getDocument().caretRangeFromPoint) { //For chrome
-            range = this.contentModule.getDocument().caretRangeFromPoint(e.clientX, e.clientY);
-        }
-        else if ((e.rangeParent)) { //For mozilla firefox
-            range = this.contentModule.getDocument().createRange();
-            range.setStart(e.rangeParent, e.rangeOffset);
-        }
-        else {
-            range = this.getDropRange(e.clientX, e.clientY); //For internet explorer
-        }
-        this.parent.notify(selectRange, { range: range });
-        let uploadArea = this.parent.element.querySelector('.' + CLS_DROPAREA);
-        if (uploadArea) {
-            return;
-        }
-        this.insertDragImage(e);
+        this.parent.trigger(actionBegin, e, (actionBeginArgs) => {
+            if (actionBeginArgs.cancel) {
+                e.preventDefault();
+            }
+            else {
+                if (closest(e.target, '#' + this.parent.getID() + '_toolbar')) {
+                    e.preventDefault();
+                    return;
+                }
+                if (this.parent.element.querySelector('.' + CLS_IMG_RESIZE)) {
+                    detach(this.imgResizeDiv);
+                }
+                e.preventDefault();
+                let range;
+                if (this.contentModule.getDocument().caretRangeFromPoint) { //For chrome
+                    range = this.contentModule.getDocument().caretRangeFromPoint(e.clientX, e.clientY);
+                }
+                else if ((e.rangeParent)) { //For mozilla firefox
+                    range = this.contentModule.getDocument().createRange();
+                    range.setStart(e.rangeParent, e.rangeOffset);
+                }
+                else {
+                    range = this.getDropRange(e.clientX, e.clientY); //For internet explorer
+                }
+                this.parent.notify(selectRange, { range: range });
+                let uploadArea = this.parent.element.querySelector('.' + CLS_DROPAREA);
+                if (uploadArea) {
+                    return;
+                }
+                this.insertDragImage(e);
+            }
+        });
     }
     /**
      * Used to calculate range on internet explorer
@@ -14626,9 +14644,8 @@ class Image {
         let file = validFiles.rawFile;
         let reader = new FileReader();
         reader.addEventListener('load', () => {
-            imageTag.src = reader.result;
             let url = URL.createObjectURL(proxy.url(reader.result));
-            imageTag.src = url;
+            imageTag.src = proxy.parent.insertImageSettings.saveFormat === 'Blob' ? url : reader.result;
         });
         if (file) {
             reader.readAsDataURL(file);
@@ -16852,6 +16869,7 @@ let RichTextEditor = class RichTextEditor extends Component {
     }
     persistData() {
         if (this.enablePersistence && this.originalElement.tagName === 'TEXTAREA') {
+            this.element.id = this.originalElement.id + '_wrapper';
             let data = window.localStorage.getItem(this.getModuleName() + this.element.id);
             if (!(isNullOrUndefined(data) || (data === ''))) {
                 this.setProperties(JSON.parse(data), true);
@@ -17323,6 +17341,9 @@ let RichTextEditor = class RichTextEditor extends Component {
         this.removeHtmlAttributes();
         this.removeAttributes();
         super.destroy();
+        if (this.enablePersistence) {
+            window.localStorage.removeItem(this.getModuleName() + this.element.id);
+        }
     }
     removeHtmlAttributes() {
         if (this.htmlAttributes) {
@@ -17964,7 +17985,10 @@ let RichTextEditor = class RichTextEditor extends Component {
             }
             let active = document.activeElement;
             if (active === this.element || active === this.getToolbarElement() || active === this.contentModule.getEditPanel()
-                || (this.iframeSettings.enable && active === this.contentModule.getPanel())
+                || ((this.iframeSettings.enable && active === this.contentModule.getPanel()) &&
+                    !e.target.classList.contains('e-img-inner')
+                    && (e.target && e.target.parentElement
+                        && !e.target.parentElement.classList.contains('e-img-wrap')))
                 || active.closest('.e-rte-toolbar') === this.getToolbarElement()) {
                 this.contentModule.getEditPanel().focus();
                 if (!isNullOrUndefined(this.getToolbarElement())) {

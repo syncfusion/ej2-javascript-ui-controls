@@ -72,7 +72,7 @@ export interface IScrollArgs {
  * @hidden
  */
 export interface IRowRenderer {
-    render(isHeader: boolean, index?: number): Element;
+    render(index?: number, isRowHeader?: boolean): Element;
 }
 
 /**

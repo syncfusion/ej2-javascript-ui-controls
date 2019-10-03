@@ -122,7 +122,7 @@ export class RangeSlider {
         this.sliderY = bounds.y > this.thumpY ? this.thumpY : bounds.y;
         if (sliderGroup && !control.disableRangeSelector) {
             shadowElement = render.createDefs();
-            shadowElement.innerHTML = '<rect xmlns="http://www.w3.org/2000/svg" id="path-1" x="0" ' +
+            shadowElement.innerHTML = '<rect xmlns="http://www.w3.org/2000/svg" id="' + this.control.element.id + '_shadow' + '" x="0" ' +
                 'y="' + this.thumpY + '" width="' + control.themeStyle.thumbWidth + '" height="' + control.themeStyle.thumbHeight + '"' +
                 ' rx="' + (thump.type === 'Circle' ? '50%' : '0%') + '"/>' +
                 '<filter xmlns="http://www.w3.org/2000/svg" x="-25.0%" y="-20.0%" width="150.0%" height="150.0%"' +
@@ -252,7 +252,7 @@ export class RangeSlider {
     }
 
     /**
-     * @hidden
+
      */
     private addEventListener(): void {
         if (this.control.isDestroyed) { return; }
@@ -262,7 +262,7 @@ export class RangeSlider {
         this.control.on(Browser.isPointer ? 'pointerleave' : 'mouseleave', this.mouseCancelHandler, this);
     }
     /**
-     * @hidden
+
      */
     private removeEventListener(): void {
         if (this.control.isDestroyed) { return; }
@@ -273,7 +273,7 @@ export class RangeSlider {
     }
     /**
      * Move move handler perfomed here
-     * @hidden
+
      * @param e 
      */
     private mouseMoveHandler(e: PointerEvent | TouchEvent): void {

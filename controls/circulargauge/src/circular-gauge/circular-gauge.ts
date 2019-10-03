@@ -58,7 +58,7 @@ export class CircularGauge extends Component<HTMLElement> implements INotifyProp
     /**
      * The width of the circular gauge as a string in order to provide input as both like '100px' or '100%'.
      * If specified as '100%, gauge will render to the full width of its parent element.
-     * @default null
+
      */
 
     @Property(null)
@@ -67,7 +67,7 @@ export class CircularGauge extends Component<HTMLElement> implements INotifyProp
     /**
      * The height of the circular gauge as a string in order to provide input as both like '100px' or '100%'.
      * If specified as '100%, gauge will render to the full height of its parent element.
-     * @default null
+
      */
 
     @Property(null)
@@ -86,14 +86,14 @@ export class CircularGauge extends Component<HTMLElement> implements INotifyProp
 
     /**
      * The background color of the gauge, which accepts value in hex, rgba as a valid CSS color string.
-     * @default null
+
      */
     @Property(null)
     public background: string;
 
     /**
      * Title for gauge
-     * @default ''
+
      */
 
     @Property('')
@@ -129,14 +129,14 @@ export class CircularGauge extends Component<HTMLElement> implements INotifyProp
 
     /**
      * If set true, pointers can able to drag on interaction.
-     * @default false
+
      */
     @Property(false)
     public enablePointerDrag: boolean;
 
     /**
      * X coordinate of the circular gauge center point, which takes values either in pixels or in percentage.
-     * @default null
+
      */
 
     @Property(null)
@@ -144,7 +144,7 @@ export class CircularGauge extends Component<HTMLElement> implements INotifyProp
 
     /**
      * Y coordinate of the circular gauge center point, which takes values either in pixels or in percentage.
-     * @default null
+
      */
 
     @Property(null)
@@ -152,7 +152,7 @@ export class CircularGauge extends Component<HTMLElement> implements INotifyProp
 
     /**
      * To place the half or quarter circle in center position, if values not specified for centerX and centerY.
-     * @default false
+
      */
     @Property(false)
     public moveToCenter: boolean;
@@ -161,28 +161,28 @@ export class CircularGauge extends Component<HTMLElement> implements INotifyProp
      * Specifies the theme for circular gauge.
      * * Material - Gauge render with material theme.
      * * Fabric - Gauge render with fabric theme.
-     * @default Material
+
      */
     @Property('Material')
     public theme: GaugeTheme;
 
     /**
      * Specifies whether a grouping separator should be used for a number.
-     * @default false
+
      */
     @Property(false)
     public useGroupingSeparator: boolean;
 
     /**
      * Information about gauge for assistive technology.
-     * @default null
+
      */
     @Property(null)
     public description: string;
 
     /**
      * TabIndex value for the gauge.
-     * @default 1
+
      */
     @Property(1)
     public tabIndex: number;
@@ -195,7 +195,7 @@ export class CircularGauge extends Component<HTMLElement> implements INotifyProp
     /**
      * Triggers after gauge loaded.
      * @event
-     * @blazorProperty 'Loaded'
+
      */
     @Event()
     public loaded: EmitType<ILoadedEventArgs>;
@@ -203,7 +203,7 @@ export class CircularGauge extends Component<HTMLElement> implements INotifyProp
     /**
      * Triggers before gauge load.
      * @event
-     * @blazorProperty 'OnLoad'
+
      */
     @Event()
     public load: EmitType<ILoadedEventArgs>;
@@ -211,7 +211,7 @@ export class CircularGauge extends Component<HTMLElement> implements INotifyProp
     /**
      * Triggers after animation gets completed for pointers.
      * @event
-     * @blazorProperty 'AnimationCompleted'
+
      */
     @Event()
     public animationComplete: EmitType<IAnimationCompleteEventArgs>;
@@ -219,8 +219,8 @@ export class CircularGauge extends Component<HTMLElement> implements INotifyProp
     /**
      * Triggers before each axis label gets rendered.
      * @event
-     * @deprecated
-     * @blazorProperty 'AxisLabelRendering'
+
+
      */
     @Event()
     public axisLabelRender: EmitType<IAxisLabelRenderEventArgs>;
@@ -228,7 +228,7 @@ export class CircularGauge extends Component<HTMLElement> implements INotifyProp
     /**
      * Triggers before the radius gets rendered
      * @event
-     * @blazorProperty 'OnRadiusCalculate'
+
      */
     @Event()
     public radiusCalculate: EmitType<IRadiusCalculateEventArgs>;
@@ -237,15 +237,15 @@ export class CircularGauge extends Component<HTMLElement> implements INotifyProp
     /**
      * Triggers before each annotation gets rendered.
      * @event
-     * @blazorProperty 'AnnotationRendering'
+
      */
     @Event()
     public annotationRender: EmitType<IAnnotationRenderEventArgs>;
     /**
      * Triggers before each legend gets rendered.
      * @event
-     * @deprecated
-     * @blazorProperty 'legendRender'
+
+
      */
     @Event()
     public legendRender: EmitType<ILegendRenderEventArgs>;
@@ -253,7 +253,7 @@ export class CircularGauge extends Component<HTMLElement> implements INotifyProp
     /**
      * Triggers before the tooltip for pointer gets rendered.
      * @event
-     * @blazorProperty 'TooltipRendering'
+
      */
 
     @Event()
@@ -262,7 +262,7 @@ export class CircularGauge extends Component<HTMLElement> implements INotifyProp
     /**
      * Triggers before the pointer is dragged.
      * @event
-     * @blazorProperty 'OnDragStart'
+
      */
 
     @Event()
@@ -271,7 +271,7 @@ export class CircularGauge extends Component<HTMLElement> implements INotifyProp
     /**
      * Triggers while dragging the pointers.
      * @event
-     * @blazorProperty 'OnDragMove'
+
      */
 
     @Event()
@@ -280,7 +280,7 @@ export class CircularGauge extends Component<HTMLElement> implements INotifyProp
     /**
      * Triggers after the pointer is dragged.
      * @event
-     * @blazorProperty 'OnDragEnd'
+
      */
 
     @Event()
@@ -289,7 +289,7 @@ export class CircularGauge extends Component<HTMLElement> implements INotifyProp
     /**
      * Triggers on hovering the circular gauge.
      * @event
-     * @blazorProperty 'OnGaugeMouseMove'
+
      */
 
     @Event()
@@ -299,7 +299,7 @@ export class CircularGauge extends Component<HTMLElement> implements INotifyProp
     /**
      * Triggers while cursor leaves the circular gauge.
      * @event
-     * @blazorProperty 'OnGaugeMouseLeave'
+
      */
 
     @Event()
@@ -308,7 +308,7 @@ export class CircularGauge extends Component<HTMLElement> implements INotifyProp
     /**
      * Triggers on mouse down.
      * @event
-     * @blazorProperty 'OnGaugeMouseDown'
+
      */
 
     @Event()
@@ -317,7 +317,7 @@ export class CircularGauge extends Component<HTMLElement> implements INotifyProp
     /**
      * Triggers on mouse up.
      * @event
-     * @blazorProperty 'OnGaugeMouseUp'
+
      */
 
     @Event()
@@ -326,7 +326,7 @@ export class CircularGauge extends Component<HTMLElement> implements INotifyProp
     /**
      * Triggers after window resize.
      * @event
-     * @blazorProperty 'Resizing'
+
      */
 
     @Event()
@@ -355,7 +355,7 @@ export class CircularGauge extends Component<HTMLElement> implements INotifyProp
     /** @private */
     /**
      * Render axis panel for gauge.
-     * @hidden
+
      */
     public gaugeAxisLayoutPanel: AxisLayoutPanel;
     /**
@@ -376,7 +376,7 @@ export class CircularGauge extends Component<HTMLElement> implements INotifyProp
 
     /**
      * Constructor for creating the widget
-     * @hidden
+
      */
     constructor(options?: CircularGaugeModel, element?: string | HTMLElement) {
         super(options, element);
@@ -388,7 +388,7 @@ export class CircularGauge extends Component<HTMLElement> implements INotifyProp
     //tslint:disable
     protected preRender(): void {
         let blazor: string = 'Blazor';
-        this.isBlazor = window[blazor];
+        this.isBlazor = Object.keys(window).indexOf(blazor) >= 0;
         this.unWireEvents();
         this.trigger(load, this.isBlazor ? null : { gauge: this });
         this.initPrivateVariable();
@@ -687,7 +687,7 @@ export class CircularGauge extends Component<HTMLElement> implements INotifyProp
                     this.calculateBounds();
                     this.renderElements();
                     args.currentSize = this.availableSize;
-                    if ( this.isBlazor) {
+                    if (this.isBlazor) {
                         const {previousSize, name, currentSize} : IResizeEventArgs = args;
                         args = {previousSize, name, currentSize};
                     }

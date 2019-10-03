@@ -180,34 +180,34 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
 
     /**
      * Default Paste Formatting Options
-     * @default KeepSourceFormatting
+
      */
     @Property('KeepSourceFormatting')
     public defaultPasteOption: PasteOptions;
 
     /**
      * Current User
-     * @default ''
+
      */
     @Property('')
     public currentUser: string;
 
     /**
      * User Selection Highlight Color
-     * @default '#FFFF00'
+
      */
     @Property('#FFFF00')
     public userColor: string;
 
     /**
      * Gets or sets the page gap value in document editor
-     * @default 20
+
      */
     @Property(20)
     public pageGap: number;
     /**
      * Gets or sets the name of the document.
-     * @default ''
+
      */
     @Property('')
     public documentName: string;
@@ -218,140 +218,140 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
 
     /**
      * Sfdt Service URL
-     * @default ''
+
      */
     @Property('')
     public serviceUrl: string;
     // Public Implementation Starts
     /**
      * Gets or sets the zoom factor in document editor.
-     * @default 1
+
      */
     @Property(1)
     public zoomFactor: number;
     /**
      * Gets or sets a value indicating whether the document editor is in read only state or not.
-     * @default true
+
      */
     @Property(true)
     public isReadOnly: boolean;
     /**
      * Gets or sets a value indicating whether print needs to be enabled or not.
-     * @default false
+
      */
     @Property(false)
     public enablePrint: boolean;
     /**
      * Gets or sets a value indicating whether selection needs to be enabled or not.
-     * @default false
+
      */
     @Property(false)
     public enableSelection: boolean;
     /**
      * Gets or sets a value indicating whether editor needs to be enabled or not.
-     * @default false
+
      */
     @Property(false)
     public enableEditor: boolean;
     /**
      * Gets or sets a value indicating whether editor history needs to be enabled or not.
-     * @default false
+
      */
     @Property(false)
     public enableEditorHistory: boolean;
     /**
      * Gets or sets a value indicating whether Sfdt export needs to be enabled or not.
-     * @default false
+
      */
     @Property(false)
     public enableSfdtExport: boolean;
     /**
      * Gets or sets a value indicating whether word export needs to be enabled or not.
-     * @default false
+
      */
     @Property(false)
     public enableWordExport: boolean;
     /**
      * Gets or sets a value indicating whether text export needs to be enabled or not.
-     * @default false
+
      */
     @Property(false)
     public enableTextExport: boolean;
     /**
      * Gets or sets a value indicating whether options pane is enabled or not.
-     * @default false
+
      */
     @Property(false)
     public enableOptionsPane: boolean;
     /**
      * Gets or sets a value indicating whether context menu is enabled or not.
-     * @default false
+
      */
     @Property(false)
     public enableContextMenu: boolean;
     /**
      * Gets or sets a value indicating whether hyperlink dialog is enabled or not.
-     * @default false
+
      */
     @Property(false)
     public enableHyperlinkDialog: boolean;
     /**
      * Gets or sets a value indicating whether bookmark dialog is enabled or not.
-     * @default false
+
      */
     @Property(false)
     public enableBookmarkDialog: boolean;
     /**
      * Gets or sets a value indicating whether table of contents dialog is enabled or not.
-     * @default false
+
      */
     @Property(false)
     public enableTableOfContentsDialog: boolean;
     /**
      * Gets or sets a value indicating whether search module is enabled or not.
-     * @default false
+
      */
     @Property(false)
     public enableSearch: boolean;
     /**
      * Gets or sets a value indicating whether paragraph dialog is enabled or not.
-     * @default false
+
      */
     @Property(false)
     public enableParagraphDialog: boolean;
     /**
      * Gets or sets a value indicating whether list dialog is enabled or not.
-     * @default false
+
      */
     @Property(false)
     public enableListDialog: boolean;
     /**
      * Gets or sets a value indicating whether table properties dialog is enabled or not.
-     * @default false
+
      */
     @Property(false)
     public enableTablePropertiesDialog: boolean;
     /**
      * Gets or sets a value indicating whether borders and shading dialog is enabled or not.
-     * @default false
+
      */
     @Property(false)
     public enableBordersAndShadingDialog: boolean;
     /**
      * Gets or sets a value indicating whether margin dialog is enabled or not.
-     * @default false
+
      */
     @Property(false)
     public enablePageSetupDialog: boolean;
     /**
      * Gets or sets a value indicating whether font dialog is enabled or not.
-     * @default false
+
      */
     @Property(false)
     public enableStyleDialog: boolean;
     /**
      * Gets or sets a value indicating whether font dialog is enabled or not.
-     * @default false
+
      */
     @Property(false)
     public enableFontDialog: boolean;
@@ -361,56 +361,56 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
     public fontDialogModule: FontDialog;
     /**
      * Gets or sets a value indicating whether table options dialog is enabled or not.
-     * @default false
+
      */
     @Property(false)
     public enableTableOptionsDialog: boolean;
     /**
      * Gets or sets a value indicating whether table dialog is enabled or not.
-     * @default false
+
      */
     @Property(false)
     public enableTableDialog: boolean;
     /**
      * Gets or sets a value indicating whether image resizer is enabled or not.
-     * @default false
+
      */
     @Property(false)
     public enableImageResizer: boolean;
     /**
      * Gets or sets a value indicating whether editor need to be spell checked.
-     * @default false
+
      */
     @Property(false)
     public enableSpellCheck: boolean;
 
     /**
      * Gets or Sets a value indicating whether tab key can be accepted as input or not.
-     * @default false
+
      */
     @Property(false)
     public acceptTab: boolean;
     /**
      * Gets or Sets a value indicating whether holding Ctrl key is required to follow hyperlink on click. The default value is true.
-     * @default true
+
      */
     @Property(true)
     public useCtrlClickToFollowHyperlink: boolean;
     /**
      * Gets or sets the page outline color.
-     * @default '#000000'
+
      */
     @Property('#000000')
     public pageOutline: string;
     /**
      * Gets or sets a value indicating whether to enable cursor in document editor on read only state or not. The default value is false.
-     * @default false
+
      */
     @Property(false)
     public enableCursorOnReadOnly: boolean;
     /**
      * Gets or sets a value indicating whether local paste needs to be enabled or not.
-     * @default false
+
      */
     @Property(false)
     public enableLocalPaste: boolean;
@@ -423,84 +423,84 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
     /**
      * Triggers whenever document changes in the document editor.
      * @event
-     * @blazorproperty 'DocumentChanged'
+
      */
     @Event()
     public documentChange: EmitType<DocumentChangeEventArgs>;
     /**
      * Triggers whenever container view changes in the document editor.
      * @event
-     * @blazorproperty 'ViewChanged'
+
      */
     @Event()
     public viewChange: EmitType<ViewChangeEventArgs>;
     /**
      * Triggers whenever zoom factor changes in the document editor.
      * @event
-     * @blazorproperty 'ZoomFactorChanged'
+
      */
     @Event()
     public zoomFactorChange: EmitType<ZoomFactorChangeEventArgs>;
     /**
      * Triggers whenever selection changes in the document editor.
      * @event
-     * @blazorproperty 'SelectionChanged'
+
      */
     @Event()
     public selectionChange: EmitType<SelectionChangeEventArgs>;
     /**
      * Triggers whenever hyperlink is clicked or tapped in the document editor.
      * @event
-     * @blazorproperty 'OnRequestNavigate'
+
      */
     @Event()
     public requestNavigate: EmitType<RequestNavigateEventArgs>;
     /**
      * Triggers whenever content changes in the document editor.
      * @event
-     * @blazorproperty 'ContentChanged'
+
      */
     @Event()
     public contentChange: EmitType<ContentChangeEventArgs>;
     /**
      * Triggers whenever key is pressed in the document editor.
      * @event
-     * @blazorproperty 'OnKeyDown'
+
      */
     @Event()
     public keyDown: EmitType<DocumentEditorKeyDownEventArgs>;
     /**
      * Triggers whenever search results changes in the document editor.
      * @event
-     * @blazorproperty 'SearchResultsChanged'
+
      */
     @Event()
     public searchResultsChange: EmitType<SearchResultsChangeEventArgs>;
     /**
      * Triggers when the component is created
      * @event
-     * @blazorproperty 'Created'
+
      */
     @Event()
     public created: EmitType<Object>;
     /**
      * Triggers when the component is destroyed.
      * @event
-     * @blazorproperty 'Destroyed'
+
      */
     @Event()
     public destroyed: EmitType<Object>;
     /**
      * Triggers while selecting the custom context-menu option.
      * @event
-     * @blazorproperty 'ContextMenuItemSelected'
+
      */
     @Event()
     public customContextMenuSelect: EmitType<CustomContentMenuEventArgs>;
     /**
      * Triggers before opening the custom context-menu option.
      * @event
-     * @blazorproperty 'OnContextMenuOpen'
+
      */
     @Event()
     public customContextMenuBeforeOpen: EmitType<BeforeOpenCloseCustomContentMenuEventArgs>;
@@ -524,28 +524,28 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
     }
     /**
      *  Gets the selection object of the document editor.
-     * @aspType Selection
-     * @blazorType Selection
+
+
      * @returns {Selection}
-     * @default undefined
+
      */
     public get selection(): Selection {
         return this.selectionModule;
     }
     /**
      *  Gets the editor object of the document editor.
-     * @aspType Editor
-     * @blazorType Editor
+
+
      * @returns {Editor}
-     * @default undefined
+
      */
     public get editor(): Editor {
         return this.editorModule;
     }
     /** 
      * Gets the editor history object of the document editor.
-     * @aspType EditorHistory
-     * @blazorType EditorHistory
+
+
      * @returns {EditorHistory}
      */
     public get editorHistory(): EditorHistory {
@@ -553,8 +553,8 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
     }
     /** 
      * Gets the search object of the document editor.
-     * @aspType Search
-     * @blazorType Search
+
+
      * @returns { Search }
      */
     public get search(): Search {
@@ -562,8 +562,8 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
     }
     /**
      * Gets the context menu object of the document editor.
-     * @aspType ContextMenu
-     * @blazorType ContextMenu
+
+
      * @returns {ContextMenu}
      */
     public get contextMenu(): ContextMenu {
@@ -578,8 +578,8 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
     }
     /**
      * Gets the spell check object of the document editor.
-     * @aspType SpellChecker
-     * @blazorType SpellChecker
+
+
      * @returns SpellChecker
      */
     public get spellChecker(): SpellChecker {
@@ -602,7 +602,7 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
     }
     /**
      * Determines whether history needs to be enabled or not.
-     * @default - false
+
      * @private
      */
     get enableHistoryMode(): boolean {
@@ -610,7 +610,7 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
     }
     /**
      * Gets the start text position in the document.
-     * @default undefined
+
      * @private
      */
     get documentStart(): TextPosition {
@@ -621,7 +621,7 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
     }
     /**
      * Gets the end text position in the document.
-     * @default undefined
+
      * @private
      */
     get documentEnd(): TextPosition {
@@ -1818,21 +1818,21 @@ export class ServerActionSettings extends ChildProperty<ServerActionSettings> {
 
     /**
      * Specifies the system clipboard action of Document Editor.
-     * @default 'SystemClipboard'
+
      */
     @Property('SystemClipboard')
     public systemClipboard: string;
 
     /**
      * Specifies the spell check action of Document Editor.
-     * @default 'SpellCheck'
+
      */
     @Property('SpellCheck')
     public spellCheck: string;
 
     /**
      * Specifies the restrict editing encryption/decryption action of Document Editor.
-     * @default 'RestrictEditing'
+
      */
     @Property('RestrictEditing')
     public restrictEditing: string;
@@ -1844,7 +1844,7 @@ export class ServerActionSettings extends ChildProperty<ServerActionSettings> {
 export class ContainerServerActionSettings extends ServerActionSettings {
     /**
      * Specifies the load action of Document Editor.
-     * @default 'Import'
+
      */
     @Property('Import')
     public import: string;

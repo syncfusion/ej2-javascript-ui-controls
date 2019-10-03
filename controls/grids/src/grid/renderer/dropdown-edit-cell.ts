@@ -9,7 +9,7 @@ import { parentsUntil } from '../base/util';
 
 /**
  * `DropDownEditCell` is used to handle dropdown cell type editing.
- * @hidden
+
  */
 export class DropDownEditCell implements IEditCell {
 

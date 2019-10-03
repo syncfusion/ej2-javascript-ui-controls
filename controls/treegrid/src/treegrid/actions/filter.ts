@@ -7,7 +7,7 @@ import {  FilterHierarchyMode } from '..';
 
 /**
  * TreeGrid Filter module will handle filtering action
- * @hidden
+
  */
 export class Filter {
 
@@ -38,20 +38,20 @@ export class Filter {
     /**
      * To destroy the Filter module 
      * @return {void}
-     * @hidden
+
      */
     public destroy(): void {
         this.removeEventListener();
     }
     /**
-     * @hidden
+
      */
     public addEventListener(): void {
         this.parent.on('updateFilterRecs', this.updatedFilteredRecord, this);
         this.parent.on('clearFilters', this.clearFilterLevel, this);
       }
       /**
-       * @hidden
+
        */
       public removeEventListener(): void {
         if (this.parent.isDestroyed) { return; }
@@ -60,7 +60,7 @@ export class Filter {
       }
     /**
      * Function to update filtered records
-     *  @hidden
+
      */
     private updatedFilteredRecord(dataDetails: { data: Object }): void {
         setValue('uniqueIDFilterCollection', {}, this.parent);

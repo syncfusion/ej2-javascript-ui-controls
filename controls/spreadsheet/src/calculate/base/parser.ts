@@ -269,7 +269,7 @@ export class Parser {
                     }
                     if (formula[i] === '-') {
                         form = form + formula[i];
-                        form = form.split('--').join('+').split('++').join('+').split('+-').join('-').split('-').join('-');
+                        form = form.split('++').join('+').split('+-').join('-').split('-').join('-');
                     }
                     i = i + 1;
                 }
@@ -302,10 +302,19 @@ export class Parser {
         }
         sheet.sheetNameToToken.forEach((value: string, key: string) => {
             if (sheet.sheetNameToToken.get(key).toString() === token) {
+                let s: string = this.emptyStr;
                 this.parent.namedRanges.forEach((value: string, key: string) => {
-                    scopedRange = (this.parent.namedRanges.get(key)).toUpperCase();
-                    b = text.toUpperCase().replace(key.toUpperCase(), scopedRange);
-                    return b;
+                    /* tslint:disable-next-line:no-any */
+                    if (!isNullOrUndefined(this.parent.parentObject as any)) {
+                        /* tslint:disable-next-line:no-any */
+                        s = ((this.parent.parentObject as any).getActiveSheet().name + this.sheetToken + text).toUpperCase();
+                    } else {
+                        s = sheet.sheetNameToToken.get(key).toUpperCase();
+                    }
+                    if (this.parent.getNamedRanges().has(s)) {
+                        scopedRange = (this.parent.getNamedRanges().get(s)).toUpperCase();
+                        b = scopedRange;
+                    }
                 });
             }
         });
@@ -599,8 +608,8 @@ export class Parser {
                             let jTemp: number = 0;
                             let inbracket: boolean = false;
                             while (j < text.length && (this.parent.isUpperChar(text[j]) || text[j] === '_'
-                            || text[j] === '.' || text[j] === '[' || text[j] === ']' || text[j] === '#' || text[j] === ' '
-                            || text[j] === '%' || text[j] === this.parent.getParseDecimalSeparator() && inbracket)) {
+                                || text[j] === '.' || text[j] === '[' || text[j] === ']' || text[j] === '#' || text[j] === ' '
+                                || text[j] === '%' || text[j] === this.parent.getParseDecimalSeparator() && inbracket)) {
                                 if (j !== text.length - 1 && text[j] === '[' && text[j + 1] === '[') {
                                     inbracket = true;
                                 }
@@ -613,7 +622,7 @@ export class Parser {
                             let noCellReference: boolean = (j === text.length) || !this.parent.isDigit(text[j]);
                             if (jTemp > 1) {
                                 while (j < text.length && (this.parent.isUpperChar(text[j]) || this.parent.isDigit(text[j])
-                                || text[j] === ' ' || text[j] === '_')) {
+                                    || text[j] === ' ' || text[j] === '_')) {
                                     j++;
                                 }
                                 noCellReference = true;
@@ -1097,30 +1106,31 @@ export class Parser {
                 text = 'A' + this.parent.colIndex(text);
             }
             if (this.parent.namedRanges.size > 0 && this.parent.namedRanges.has(text.toUpperCase())) {
-                // if (!isNullOrUndefined(this.parentObject) && this.parentObject.pluginName == "ejSpreadsheet") {
-                //     text = this.parse(this.namedRanges.get(text.toUpperCase()));
-                // }
-                //else {
-                text = this.parse(this.parent.namedRanges.get(text.toUpperCase()));
-                text = this.parent.setTokensForSheets(text);
-                if (text.indexOf(this.fixedReference) > -1) {
-                    text.split(this.fixedReference).join(this.emptyStr);
+                /* tslint:disable-next-line:no-any */
+                if (!isNullOrUndefined(this.parent.parentObject as any)) {
+                    text = this.parse(this.parent.namedRanges.get(text.toUpperCase()));
+                }
+                else {
+                    text = this.parse(this.parent.namedRanges.get(text.toUpperCase()));
+                    text = this.parent.setTokensForSheets(text);
+                    if (text.indexOf(this.fixedReference) > -1) {
+                        text.split(this.fixedReference).join(this.emptyStr);
+                    }
+                    this.findNamedRange = true;
                 }
             }
-            this.findNamedRange = true;
-        }
 
-        if (this.findNamedRange) {
-            if (text[0] !== '!' && text[0] !== 'q' && text[0] !== 'bq') {
-                text = this.parent.setTokensForSheets(text);
-                if (text.indexOf(this.fixedReference) > -1) {
-                    text = text.split(this.fixedReference).join(this.emptyStr);
+            if (this.findNamedRange) {
+                if (text[0] !== '!' && text[0] !== 'q' && text[0] !== 'bq') {
+                    text = this.parent.setTokensForSheets(text);
+                    if (text.indexOf(this.fixedReference) > -1) {
+                        text = text.split(this.fixedReference).join(this.emptyStr);
+                    }
                 }
             }
         }
         return text;
     }
-
     private getTableRange(text: string): string {
         text = text.replace(' ', this.emptyStr).toUpperCase();
         let name: string = text.replace(']', this.emptyStr).replace('#DATA', this.emptyStr);

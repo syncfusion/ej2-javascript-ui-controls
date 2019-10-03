@@ -10,7 +10,7 @@ export class TextWrapSettings extends ChildProperty<TextWrapSettings> {
      * * `Both`: Wraps both the header and content. 
      * * `Content`: Wraps the header alone.
      * * `Header`: Wraps the content alone. 
-     * @default Both
+
      */
     @Property('Both')
     public wrapMode: WrapMode;

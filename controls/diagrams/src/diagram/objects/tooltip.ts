@@ -13,14 +13,14 @@ export abstract class DiagramTooltip extends ChildProperty<DiagramTooltip> {
 
     /**
      * Defines the content of the Tooltip
-     * @default ''
+
      */
     @Property('')
     public content: string | HTMLElement;
 
     /**
      * Defines the position of the Tooltip
-     * @default 'TopLeft'
+
      */
     @Property('TopLeft')
     public position: Position;
@@ -29,35 +29,35 @@ export abstract class DiagramTooltip extends ChildProperty<DiagramTooltip> {
      * Defines the relative mode of the Tooltip
      * * Object - sets the tooltip position relative to the node
      * * Mouse - sets the tooltip position relative to the mouse
-     * @default 'Mouse'
+
      */
     @Property('Mouse')
     public relativeMode: TooltipRelativeMode;
 
     /**
      * Defines if the Tooltip has tip pointer or not
-     * @default true
+
      */
     @Property(true)
     public showTipPointer: boolean;
 
     /**
      * Sets the width of the Tooltip
-     * @default 'auto'
+
      */
     @Property('auto')
     public width: number | string;
 
     /**
      * Sets the height of the Tooltip
-     * @default 'auto'
+
      */
     @Property('auto')
     public height: number | string;
 
     /**
      * Sets how to open the Tooltip
-     * @default 'Auto'
+
      */
     @Property('Auto')
     public openOn: TooltipMode;
@@ -81,9 +81,9 @@ export abstract class DiagramTooltip extends ChildProperty<DiagramTooltip> {
      * ...
      * }
      * ```
-     * @aspDefaultValueIgnore
-     * @blazorType Syncfusion.EJ2.Blazor.Popups.AnimationModel
-     * @default { open: { effect: 'FadeIn', duration: 150, delay: 0 }, close: { effect: 'FadeOut', duration: 150, delay: 0 } }
+
+
+
      */
     @Property()
     public animation: AnimationModel;

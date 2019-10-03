@@ -107,7 +107,7 @@ export class SpreadsheetHelper extends TestHelper {
     }
 
     triggerMouseAction(type: string, coords?: { x: number, y: number },
-        element?: HTMLElement, target?: HTMLElement): void {
+        element?: HTMLElement | Document, target?: HTMLElement): void {
         if (!element) {
             element = this.getElement();
         }
@@ -119,7 +119,7 @@ export class SpreadsheetHelper extends TestHelper {
         eventArg['view'] = window;
         eventArg['bubbles'] = true;
         eventArg['cancelable'] =  true;
-        EventHandler.trigger(element, type, eventArg);
+        EventHandler.trigger(element as HTMLElement, type, eventArg);
     }
 
     isEditState(): boolean {

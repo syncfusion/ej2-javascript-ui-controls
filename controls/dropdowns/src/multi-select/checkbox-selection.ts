@@ -330,9 +330,11 @@ export class CheckBoxSelection {
     }
 
     protected targetElement(): string {
-        this.parent.targetInputElement = this.filterInput;
-        (this.clearIconElement as HTMLElement).style.visibility = this.parent.targetInputElement.value === '' ? 'hidden' : 'visible';
-        return this.parent.targetInputElement.value;
+        if (!isNullOrUndefined(this.clearIconElement)) {
+            this.parent.targetInputElement = this.filterInput;
+            (this.clearIconElement as HTMLElement).style.visibility = this.parent.targetInputElement.value === '' ? 'hidden' : 'visible';
+        }
+        return (this.parent.targetInputElement as HTMLInputElement).value;
     }
 
     private onBlur(e: MouseEvent): void {

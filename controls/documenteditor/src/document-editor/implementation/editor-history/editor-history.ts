@@ -72,16 +72,16 @@ export class EditorHistory {
     get redoStack(): BaseHistoryInfo[] { return this.redoStackIn; }
     /**
      * Gets or Sets the limit of undo operations can be done.
-     * @aspType int
-     * @blazorType int
+
+
      */
     get undoLimit(): number {
         return isNullOrUndefined(this.undoLimitIn) ? 0 : this.undoLimitIn;
     }
     /**
      * Sets the limit of undo operations can be done.
-     * @aspType int
-     * @blazorType int
+
+
      */
     set undoLimit(value: number) {
         if (value < 0) {
@@ -91,16 +91,16 @@ export class EditorHistory {
     }
     /**
      * Gets or Sets the limit of redo operations can be done.
-     * @aspType int
-     * @blazorType int
+
+
      */
     public get redoLimit(): number {
         return isNullOrUndefined(this.redoLimitIn) ? 0 : this.redoLimitIn;
     }
     /**
      * Gets or Sets the limit of redo operations can be done.
-     * @aspType int
-     * @blazorType int
+
+
      */
     public set redoLimit(value: number) {
         if (value < 0) {

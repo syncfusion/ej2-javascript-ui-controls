@@ -17,7 +17,7 @@ import { SortOrder } from '@syncfusion/ej2-lists';
 export interface ChangeEventArgs extends SelectEventArgs {
     /**
      * Returns the selected value
-     * @isGenericType true
+
      */
     value: number | string | boolean;
     /**
@@ -26,7 +26,7 @@ export interface ChangeEventArgs extends SelectEventArgs {
     previousItem: HTMLLIElement;
     /**
      * Returns the previous selected item as JSON Object from the data source.
-     * @blazorType object
+
      */
     previousItemData: FieldSettingsModel;
     /**
@@ -137,16 +137,16 @@ export class DropDownList extends DropDownBase implements IInput {
 
     /**
      * Sets CSS classes to the root element of the component that allows customization of appearance.
-     * @default null
+
      */
     @Property(null)
     public cssClass: string;
     /**
      * Specifies the width of the component. By default, the component width sets based on the width of 
      * its parent container. You can also set the width in pixel values.
-     * @default '100%'
-     * @aspType string
-     * @blazorType string
+
+
+
      */
     @Property('100%')
     public width: string | number;
@@ -154,9 +154,9 @@ export class DropDownList extends DropDownBase implements IInput {
      * Specifies the height of the popup list.  
      * > For more details about the popup configuration refer to 
      * [`Popup Configuration`](../../drop-down-list/getting-started#configure-the-popup-list) documentation.
-     * @default '300px'
-     * @aspType string
-     * @blazorType string
+
+
+
      */
     @Property('300px')
     public popupHeight: string | number;
@@ -165,21 +165,21 @@ export class DropDownList extends DropDownBase implements IInput {
      * the component.
      * > For more details about the popup configuration refer to 
      * [`Popup Configuration`](../../drop-down-list/getting-started#configure-the-popup-list) documentation.
-     * @default '100%'
-     * @aspType string
-     * @blazorType string
+
+
+
      */
     @Property('100%')
     public popupWidth: string | number;
     /**
      * Specifies a short hint that describes the expected value of the DropDownList component.
-     * @default null
+
      */
     @Property(null)
     public placeholder: string;
     /**
      * Accepts the value to be displayed as a watermark text on the filter bar. 
-     * @default null
+
      */
     @Property(null)
     public filterBarPlaceholder: string;
@@ -191,7 +191,7 @@ export class DropDownList extends DropDownBase implements IInput {
      * 
      * {% codeBlock src="dropdownlist/html-attributes-api/index.html" %}{% endcodeBlock %}
      *
-     * @default {}
+
      */
     @Property({})
     public htmlAttributes: { [key: string]: string; };
@@ -203,7 +203,7 @@ export class DropDownList extends DropDownBase implements IInput {
      * 
      * {% codeBlock src="dropdownlist/query-api/index.html" %}{% endcodeBlock %}
      * 
-     * @default null
+
      */
     @Property(null)
     public query: Query;
@@ -215,21 +215,21 @@ export class DropDownList extends DropDownBase implements IInput {
      * We have built-in `template engine`
      * which provides options to compile template string into a executable function.
      * For EX: We have expression evolution as like ES6 expression string literals.
-     * @default null
+
      */
     @Property(null)
     public valueTemplate: string;
     /**
      * Accepts the template design and assigns it to the header container of the popup list.
      * > For more details about the available template options refer to [`Template`](../../drop-down-list/templates) documentation.
-     * @default null
+
      */
     @Property(null)
     public headerTemplate: string;
     /**
      * Accepts the template design and assigns it to the footer container of the popup list.
      * > For more details about the available template options refer to [`Template`](../../drop-down-list/templates) documentation.
-     * @default null
+
      */
     @Property(null)
     public footerTemplate: string;
@@ -244,26 +244,26 @@ export class DropDownList extends DropDownBase implements IInput {
      * {% codeBlock src="dropdownlist/allow-filtering-api/index.ts" %}{% endcodeBlock %}
      * 
      * {% codeBlock src="dropdownlist/allow-filtering-api/index.html" %}{% endcodeBlock %}
-     * @default false
+
      */
     @Property(false)
     public allowFiltering: boolean;
     /**
      * When set to true, the user interactions on the component are disabled.
-     * @default false
+
      */
     @Property(false)
     public readonly: boolean;
     /**
      * Gets or sets the display text of the selected item in the component.
-     * @default null
+
      */
     @Property(null)
     public text: string;
     /**
      * Gets or sets the value of the selected item in the component.
-     * @default null
-     * @isGenericType true
+
+
      */
     @Property(null)
     public value: number | string | boolean;
@@ -274,9 +274,9 @@ export class DropDownList extends DropDownBase implements IInput {
      * 
      * {% codeBlock src="dropdownlist/index-api/index.html" %}{% endcodeBlock %}
      * 
-     * @default null
-     * @blazorType int
-     * @isBlazorNullableType true
+
+
+
      */
     @Property(null)
     public index: number;
@@ -291,17 +291,17 @@ export class DropDownList extends DropDownBase implements IInput {
      * 
      * {% codeBlock src="dropdownlist/float-label-type-api/index.html" %}{% endcodeBlock %}
      * 
-     * @default Syncfusion.EJ2.Inputs.FloatLabelType.Never
-     * @aspType Syncfusion.EJ2.Inputs.FloatLabelType
-     * @isEnumeration true
-     * @blazorType Syncfusion.EJ2.Inputs.FloatLabelType
+
+
+
+
      */
     @Property('Never')
     public floatLabelType: FloatLabelType;
     /**
      * Specifies whether to show or hide the clear button. 
      * When the clear button is clicked, `value`, `text`, and `index` properties are reset to null.
-     * @default false
+
      */
     @Property(false)
     public showClearButton: boolean;
@@ -312,7 +312,7 @@ export class DropDownList extends DropDownBase implements IInput {
      * > For more details about the filtering refer to [`Filtering`](../../drop-down-list/filtering) documentation.
      * 
      * @event
-     * @blazorProperty 'Filtering'
+
      */
     @Event()
     public filtering: EmitType<FilteringEventArgs>;
@@ -322,29 +322,29 @@ export class DropDownList extends DropDownBase implements IInput {
      * Use change event to 
      * [`Configure the Cascading DropDownList`](../../drop-down-list/how-to/cascading)
      * @event
-     * @blazorProperty 'ValueChange'
+
      */
     @Event()
     public change: EmitType<ChangeEventArgs>;
     /**
      * Triggers when the popup before opens.
      * @event
-     * @blazorProperty 'OnOpen'
-     * @blazorType BeforeOpenEventArgs
+
+
      */
     @Event()
     public beforeOpen: EmitType<Object>;
     /**
      * Triggers when the popup opens.
      * @event
-     * @blazorProperty 'Opened'
+
      */
     @Event()
     public open: EmitType<PopupEventArgs>;
     /**
      * Triggers when the popup is closed.
      * @event
-     * @blazorProperty 'OnClose'
+
      */
     @Event()
     public close: EmitType<PopupEventArgs>;
@@ -1336,6 +1336,9 @@ export class DropDownList extends DropDownBase implements IInput {
             };
             this.trigger('change', eventArgs);
         }
+        if ((isNullOrUndefined(this.value) || this.value === '') && this.floatLabelType !== 'Always') {
+            removeClass([this.inputWrapper.container], 'e-valid-input');
+        }
     }
 
     protected setHiddenValue(): void {
@@ -1420,7 +1423,7 @@ export class DropDownList extends DropDownBase implements IInput {
     }
     protected getQuery(query: Query): Query {
         let filterQuery: Query;
-        if (!this.isCustomFilter && this.allowFiltering) {
+        if (!this.isCustomFilter && this.allowFiltering && this.filterInput) {
             filterQuery = query ? query.clone() : this.query ? this.query.clone() : new Query();
             let filterType: string = this.typedString === '' ? 'contains' : this.filterType;
             let dataType: string = <string>this.typeOfData(this.dataSource as { [key: string]: Object; }[]).typeof;
@@ -1790,7 +1793,7 @@ export class DropDownList extends DropDownBase implements IInput {
                         this.popupObj.show(new Animation(eventArgs.animation), (this.zIndex === 1000) ? this.element : null);
                     }
                 });
-            }
+            } else { this.beforePopupOpen = false; }
         });
     }
     private checkCollision(popupEle: HTMLElement): void {
@@ -1831,6 +1834,13 @@ export class DropDownList extends DropDownBase implements IInput {
             open: () => {
                 EventHandler.add(document, 'mousedown', this.onDocumentClick, this);
                 this.isPopupOpen = true;
+                let actionList: HTMLElement = this.actionCompleteData && this.actionCompleteData.ulElement &&
+                    this.actionCompleteData.ulElement.querySelector('li');
+                let ulElement: HTMLElement = this.list.querySelector('ul li');
+                if (this.isFiltering() && this.itemTemplate && (this.element.tagName === this.getNgDirective()) &&
+                    (actionList && ulElement && actionList.textContent !== ulElement.textContent)) {
+                    this.cloneElements();
+                }
                 if (this.isFilterLayout()) {
                     removeClass([this.inputWrapper.container], [dropDownListClasses.inputFocus]);
                     this.isFilterFocus = true;
@@ -2359,11 +2369,17 @@ export class DropDownList extends DropDownBase implements IInput {
     }
 
     private setCssClass(newProp: DropDownListModel, oldProp: DropDownListModel): void {
-        this.inputWrapper.container.classList.remove(oldProp.cssClass);
+        if (!isNullOrUndefined(oldProp.cssClass) && oldProp.cssClass !== '' ) {
+            removeClass([this.inputWrapper.container], oldProp.cssClass.split(' '));
+        }
         Input.setCssClass(newProp.cssClass, [this.inputWrapper.container]);
         if (this.popupObj) {
-            this.popupObj.element.classList.remove(oldProp.cssClass);
-            this.popupObj.element.classList.add(newProp.cssClass);
+            if (!isNullOrUndefined(oldProp.cssClass) && oldProp.cssClass !== '' ) {
+                removeClass([this.popupObj.element], oldProp.cssClass.split(' '));
+            }
+            if (!isNullOrUndefined(newProp.cssClass) && newProp.cssClass !== '' ) {
+                addClass([this.popupObj.element], newProp.cssClass.split(' '));
+            }
         }
     }
     /**

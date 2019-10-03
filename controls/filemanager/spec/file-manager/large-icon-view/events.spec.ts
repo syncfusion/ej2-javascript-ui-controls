@@ -8,7 +8,7 @@ import { Toolbar } from '../../../src/file-manager/actions/toolbar';
 import { BeforeSendEventArgs, FileOpenEventArgs, FileLoadEventArgs, ToolbarCreateEventArgs } from '../../../src/file-manager/base/interface';
 import { UploadListCreateArgs, MenuOpenEventArgs, MenuClickEventArgs, ToolbarClickEventArgs, PopupOpenCloseEventArgs, BeforePopupOpenCloseEventArgs } from '../../../src/file-manager/base/interface';
 import { createElement, Browser } from '@syncfusion/ej2-base';
-import { toolbarItems, toolbarItems1, toolbarItems2, data1, data2, data3, doubleClickRead2, multiCopySuccess1, multiItemCopyRead3, multiCopySuccess2, multiItemCopyRead2, uploadData1, singleSelectionDetails, getMultipleDetails } from '../data';
+import { toolbarItems, toolbarItems1, toolbarItems2, data1, data2, data3, doubleClickRead2, multiCopySuccess1, multiItemCopyRead3, multiCopySuccess2, multiItemCopyRead2, uploadData1, singleSelectionDetails, getMultipleDetails, doubleClickRead } from '../data';
 
 FileManager.Inject(Toolbar, NavigationPane, DetailsView);
 
@@ -46,6 +46,65 @@ describe('FileManager control LargeIcons view', () => {
             if (feObj) feObj.destroy();
             ele.remove();
         });
+        it('for fileOpen', (done) => {
+            let i: number = 0;
+            feObj = new FileManager({
+                view: 'LargeIcons',
+                ajaxSettings: {
+                    url: '/FileOperations',
+                    uploadUrl: '/Upload', downloadUrl: '/Download', getImageUrl: '/GetImage'
+                },
+                showThumbnail: false,
+                fileOpen: () => {
+                    i++;
+                }
+            });
+            feObj.appendTo('#file');
+            this.request = jasmine.Ajax.requests.mostRecent();
+            this.request.respondWith({
+                status: 200,
+                responseText: JSON.stringify(data1)
+            });
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+            setTimeout(function () {
+            mouseEventArgs.target = document.getElementById('file_largeicons').querySelectorAll('li')[2];
+            tapEvent.tapCount = 2;
+            (<any>feObj.largeiconsviewModule).clickObj.tap(tapEvent);
+                this.request = jasmine.Ajax.requests.mostRecent();
+                this.request.respondWith({
+                    status: 200,
+                    responseText: JSON.stringify(doubleClickRead)
+                });
+                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                setTimeout(function () {
+                    expect(i).toBe(1);
+                    feObj.element.getElementsByClassName('e-address-list-item')[0].click();
+                    this.request = jasmine.Ajax.requests.mostRecent();
+                    this.request.respondWith({
+                        status: 200,
+                        responseText: JSON.stringify(data1)
+                    });
+                    jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                    setTimeout(function () {
+                        expect(i).toBe(2);
+                        let li: Element[] = <Element[] & NodeListOf<HTMLLIElement>>document.getElementById('file_tree').querySelectorAll('li');
+                        mouseEventArgs.target = li[3].querySelector('.e-fullrow');
+                        feObj.navigationpaneModule.treeObj.touchClickObj.tap(tapEvent);
+                        this.request = jasmine.Ajax.requests.mostRecent();
+                        this.request.respondWith({
+                            status: 200,
+                            responseText: JSON.stringify(doubleClickRead)
+                        });
+                        jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                        setTimeout(function () {
+                            expect(i).toBe(3);
+                            done();
+                        }, 500);
+                    }, 500);
+                }, 500);
+            }, 500);
+        });
+
         it('for menuOpen', (done) => {
             let i: number = 0;
             feObj = new FileManager({

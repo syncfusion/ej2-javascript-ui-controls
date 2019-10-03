@@ -423,13 +423,13 @@ describe('draggable', () => {
             });
             it('Drag Area is initiated properly using selector', () => {
                 EventHandler.trigger(<any>(document), 'mousemove', mousemove);
-                expect(instance.dragLimit).toEqual({ left: 11, right: 711, top: 11, bottom: 611 });
+                expect(instance.dragLimit).toEqual({ left: 11, right: 709, top: 11, bottom: 609 });
                 instance.intDestroy(mousedown);
             });
             it('Drag Area is initiated properly using element options', () => {
                 instance.dragArea = outerEle;
                 EventHandler.trigger(<any>(document), 'mousemove', mousemove);
-                expect(instance.dragLimit).toEqual({ left: 11, right: 711, top: 11, bottom: 611 });
+                expect(instance.dragLimit).toEqual({ left: 11, right: 709, top: 11, bottom: 609 });
                 instance.intDestroy(mousedown);
             });
             it('Drag Area is not initiated when property is not specifed', () => {
@@ -445,7 +445,7 @@ describe('draggable', () => {
                 outerEle.style.padding = '0px';
                 instance.dragArea = outerEle;
                 EventHandler.trigger(<any>(document), 'mousemove', mousemove);
-                expect(instance.dragLimit).toEqual({ left: 8, right: 8, top: 8, bottom: 8 });
+                expect(instance.dragLimit).toEqual({ left: 8, right: 310, top: 8, bottom: 160 });
                 instance.intDestroy(mousedown);
             });
         });
@@ -513,14 +513,14 @@ describe('draggable', () => {
                 mousemove.srcElement = mousemove.target = mousemove.toElement = document.body;
                 EventHandler.trigger(<any>(document), 'mousemove', mousemove);
                 expect(instance.element.style.top).toBe('10px');
-                expect(instance.element.style.left).toBe('408px');
+                expect(instance.element.style.left).toBe('406px');
                 instance.intDestroy(mousedown);
             });
             it('drag operation with drag area exceeding top value and minimum left value', () => {
                 mousemove = setMouseCordinates(mousemove, 8, 700);
                 mousemove.srcElement = mousemove.target = mousemove.toElement = document.body;
                 EventHandler.trigger(<any>(document), 'mousemove', mousemove);
-                expect(instance.element.style.top).toBe('458px');
+                expect(instance.element.style.top).toBe('456px');
                 expect(instance.element.style.left).toBe('10px');
                 instance.intDestroy(mousedown);
             });
@@ -545,8 +545,8 @@ describe('draggable', () => {
                 mousemove = setMouseCordinates(mousemove, 0, 0);
                 mousemove.srcElement = mousemove.targetElement = mousemove.toElement = document.body;
                 EventHandler.trigger(<any>(document), 'mousemove', mousemove);
-                expect(instance.element.style.top).toBe('10px');
-                expect(instance.element.style.left).toBe('10px');
+                expect(instance.element.style.top).toBe('-3px');
+                expect(instance.element.style.left).toBe('-7px');
                 instance.intDestroy(mousedown);
             });
             it('drag event with multi touch point is prevented properly', () => {

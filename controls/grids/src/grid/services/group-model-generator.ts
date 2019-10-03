@@ -10,7 +10,7 @@ import { GroupSummaryModelGenerator, CaptionSummaryModelGenerator } from '../ser
 import { getForeignData, getUid } from '../../grid/base/util';
 /**
  * GroupModelGenerator is used to generate group caption rows and data rows.
- * @hidden
+
  */
 export class GroupModelGenerator extends RowModelGenerator implements IModelGenerator<Column> {
 

@@ -16,7 +16,7 @@ import { Resize } from '../actions/resize';
 
 /**
  * 'column menu module used to handle column menu actions'
- * @hidden
+
  */
 export class ColumnMenu implements IAction {
     //internal variables
@@ -67,7 +67,7 @@ export class ColumnMenu implements IAction {
     /**
      * To destroy the resize 
      * @return {void}
-     * @hidden
+
      */
     public destroy(): void {
         let gridElement: Element = this.parent.element;
@@ -125,7 +125,7 @@ export class ColumnMenu implements IAction {
     }
 
     /**
-     * @hidden
+
      */
     public addEventListener() : void {
         if (this.parent.isDestroyed) { return; }
@@ -139,7 +139,7 @@ export class ColumnMenu implements IAction {
     }
 
     /**
-     * @hidden
+
      */
     public removeEventListener() : void {
         if (this.parent.isDestroyed) { return; }
@@ -427,7 +427,7 @@ export class ColumnMenu implements IAction {
             id.replace(this.gridID + '_colmenu_' + (append ? append : ''), '');
     }
     /**
-     * @hidden
+
      */
     public getColumnMenu(): HTMLElement {
         return this.element;

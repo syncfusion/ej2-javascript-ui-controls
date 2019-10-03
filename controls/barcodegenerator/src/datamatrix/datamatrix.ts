@@ -19,14 +19,14 @@ import { DataMatrixGeneratorModel } from './datamatrix-model';
 export class DataMatrixGenerator extends Component<HTMLElement> implements INotifyPropertyChanged {
     /**
      * Defines encoding type of the DataMatrix.
-     * @default 'Auto'
+
      */
     @Property('Auto')
     public encoding: DataMatrixEncoding;
 
     /**
      * Defines encoding type of the DataMatrix.
-     * @default 'Auto'
+
      */
     @Property(DataMatrixSize.Auto)
     public size: DataMatrixSize;
@@ -35,7 +35,7 @@ export class DataMatrixGenerator extends Component<HTMLElement> implements INoti
      * Defines the DataMatrix rendering mode.
      * * SVG - Renders the bar-code objects as SVG elements
      * * Canvas - Renders the bar-code in a canvas
-     * @default 'SVG'
+
      */
     @Property('SVG')
     public mode: RenderingMode;
@@ -44,38 +44,38 @@ export class DataMatrixGenerator extends Component<HTMLElement> implements INoti
 
     /**
      * Defines the value of the DataMatrix to be rendered.
-     * @default undefined
+
      */
     @Property(undefined)
     public value: string;
 
     /**
      * Defines the height of the DataMatrix.
-     * @default '100%'
+
      */
     @Property('100%')
     public height: string | number;
     /**
      * Defines the width of the DataMatrix.
-     * @default '100%'
+
      */
     @Property('100%')
     public width: string | number;
     /**
      * Defines the text properties for the DataMatrix.
-     * @default ''
+
      */
     @Complex<DisplayTextModel>({}, DisplayText)
     public displayText: DisplayTextModel;
     /**
      * Defines the margin properties for the DataMatrix.
-     * @default ''
+
      */
     @Complex<MarginModel>({}, Margin)
     public margin: MarginModel;
     /**
      * Defines the background color of the DataMatrix.
-     * @default 'white'
+
      */
     @Property('white')
     public backgroundColor: string;
@@ -89,7 +89,7 @@ export class DataMatrixGenerator extends Component<HTMLElement> implements INoti
 
     /**
      * Defines the forecolor of the DataMatrix.
-     * @default 'black'
+
      */
     @Property('black')
     public foreColor: string;

@@ -5,6 +5,7 @@ import { getRowHeight, isSingleCell, activeCellChanged } from '../../workbook/in
 import { EventHandler, addClass, removeClass, isNullOrUndefined, Browser } from '@syncfusion/ej2-base';
 import { BeforeSelectEventArgs, selectionComplete, getMoveEvent, getEndEvent, isTouchStart, locateElem } from '../common/index';
 import { isTouchEnd, isTouchMove, getClientX, getClientY, mouseUpAfterSelection, selectRange, rowHeightChanged } from '../common/index';
+import { colWidthChanged } from '../common/index';
 import { getRangeIndexes, getCellAddress, getRangeAddress, getCellIndexes, getSwapRange } from '../../workbook/common/address';
 
 
@@ -37,6 +38,7 @@ export class Selection {
         this.parent.on(cellNavigate, this.cellNavigateHandler, this);
         this.parent.on(selectRange, this.selectRange, this);
         this.parent.on(rowHeightChanged, this.rowHeightChanged, this);
+        this.parent.on(colWidthChanged, this.colWidthChanged, this);
     }
 
     private removeEventListener(): void {
@@ -47,18 +49,52 @@ export class Selection {
             this.parent.off(cellNavigate, this.cellNavigateHandler);
             this.parent.off(selectRange, this.selectRange);
             this.parent.off(rowHeightChanged, this.rowHeightChanged);
+            this.parent.off(colWidthChanged, this.colWidthChanged);
         }
     }
 
     private rowHeightChanged(args: { threshold: number, rowIdx: number }): void {
         getUpdateUsingRaf((): void => {
             let ele: HTMLElement = this.getActiveCell();
-            if (getCellIndexes(this.parent.getActiveSheet().activeCell)[0] === args.rowIdx && ele) {
+            let cellIndex: number = getCellIndexes(this.parent.getActiveSheet().activeCell)[0];
+            if ( cellIndex === args.rowIdx && ele) {
                 ele.style.height = `${parseInt(ele.style.height, 10) + args.threshold}px`;
+            } else if (cellIndex > args.rowIdx && ele) {
+                ele.style.top = `${parseInt(ele.style.top, 10) + args.threshold}px`;
             }
             ele = this.getSelectionElement();
             if (ele) {
+            let selectedRange: number[] = getRangeIndexes(this.parent.getActiveSheet().selectedRange);
+            let sRange: number[] = getSwapRange(selectedRange);
+            let rowStart: number = sRange[0];
+            let rowEnd: number = sRange[2];
+            if (rowStart <= args.rowIdx && rowEnd >= args.rowIdx && ele) {
                 ele.style.height = `${parseInt(ele.style.height, 10) + args.threshold}px`;
+            } else if (rowStart > args.rowIdx && ele) {
+                ele.style.top = `${parseInt(ele.style.top, 10) + args.threshold}px`;
+            }
+        }
+        });
+    }
+
+    private colWidthChanged(args: { threshold: number, colIdx: number }): void {
+        getUpdateUsingRaf((): void => {
+            let ele: HTMLElement = this.getActiveCell();
+            let cellIndex: number = getCellIndexes(this.parent.getActiveSheet().activeCell)[1];
+            if ( cellIndex === args.colIdx && ele) {
+                ele.style.width = `${parseInt(ele.style.width, 10) + args.threshold}px`;
+            } else if (cellIndex > args.colIdx && ele) {
+                ele.style.left = `${parseInt(ele.style.left, 10) + args.threshold}px`;
+            }
+            ele = this.getSelectionElement();
+            let selectedRange: number[] = getRangeIndexes(this.parent.getActiveSheet().selectedRange);
+            let sRange: number[] = getSwapRange(selectedRange);
+            let colStart: number = sRange[1];
+            let colEnd: number = sRange[3];
+            if (colStart <= args.colIdx && colEnd >= args.colIdx && ele) {
+                ele.style.width = `${parseInt(ele.style.width, 10) + args.threshold}px`;
+            } else if (colStart > args.colIdx && ele) {
+                ele.style.left = `${parseInt(ele.style.left, 10) + args.threshold}px`;
             }
         });
     }
@@ -87,7 +123,8 @@ export class Selection {
 
     private mouseDownHandler(e: MouseEvent & TouchEvent): void {
         if (!this.parent.isEdit) {
-            if (this.getSheetElement().contains(e.target as Node)) {
+            if (this.getSheetElement().contains(e.target as Node) && !(e.target as HTMLElement).classList.contains('e-colresize')
+                && !(e.target as HTMLElement).classList.contains('e-rowresize')) {
                 let sheet: SheetModel = this.parent.getActiveSheet();
                 let mode: string = this.parent.selectionSettings.mode;
                 let rowIdx: number = this.getRowIdxFromClientY(getClientY(e));
@@ -203,7 +240,7 @@ export class Selection {
     }
 
     private isSelected(rowIdx: number, colIdx: number): boolean {
-        let indexes: number[] = getRangeIndexes(this.parent.getActiveSheet().selectedRange);
+        let indexes: number[] = getSwapRange(getRangeIndexes(this.parent.getActiveSheet().selectedRange));
         return indexes[0] <= rowIdx && rowIdx <= indexes[2] && indexes[1] <= colIdx && colIdx <= indexes[3];
     }
 
@@ -232,6 +269,10 @@ export class Selection {
         return this.parent.getMainContent();
     }
 
+    private getScrollLeft(): number {
+        return this.parent.scrollModule ? this.parent.scrollModule.prevScroll.scrollLeft : 0;
+    }
+
     private cellNavigateHandler(args: { range: number[] }): void {
         this.selectRangeByIdx(args.range.concat(args.range));
     }
@@ -239,8 +280,8 @@ export class Selection {
     private getColIdxFromClientX(clientX: number): number {
         let width: number = 0;
         let sheet: SheetModel = this.parent.getActiveSheet();
-        let left: number = (clientX - this.parent.getMainContent().getBoundingClientRect().left)
-            + this.parent.getMainContent().scrollLeft;
+        let cliRect: ClientRect = this.parent.getMainContent().getBoundingClientRect();
+        let left: number = (this.parent.enableRtl ? (cliRect.right - clientX) : (clientX - cliRect.left)) + this.getScrollLeft();
         for (let i: number = 0; ; i++) {
             width += getColumnsWidth(sheet, i);
             if (left < width) {
@@ -274,7 +315,7 @@ export class Selection {
             ele.classList.add('e-hide');
         } else {
             ele.classList.remove('e-hide');
-            locateElem(ele, range, sheet);
+            locateElem(ele, range, sheet, this.parent.enableRtl);
         }
         updateSelectedRange(this.parent, getRangeAddress(range), sheet);
         this.UpdateRowColSelected(range);
@@ -299,7 +340,7 @@ export class Selection {
         let colIdx: number = this.isRowSelected ? topLeftIdx[1] : range[1];
         sheet.activeCell = getCellAddress(rowIdx, colIdx);
         this.parent.setProperties({ 'sheets': this.parent.sheets }, true);
-        locateElem(this.getActiveCell(), getRangeIndexes(sheet.activeCell), sheet);
+        locateElem(this.getActiveCell(), getRangeIndexes(sheet.activeCell), sheet, this.parent.enableRtl);
         this.parent.notify(activeCellChanged, [rowIdx, colIdx]);
     }
 

@@ -10,7 +10,7 @@ import { foreignKeyData } from '../base/constant';
 
 /**
  * CellRenderer class which responsible for building cell content. 
- * @hidden
+
  */
 export class CellRenderer implements ICellRenderer<Column> {
 
@@ -208,7 +208,7 @@ export class CellRenderer implements ICellRenderer<Column> {
         return node;
     }
     /**
-     * @hidden
+
      */
     public setAttributes(node: HTMLElement, cell: Cell<Column>, attributes?: { [x: string]: Object }): void {
         let column: Column = cell.column;

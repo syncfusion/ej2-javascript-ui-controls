@@ -7,7 +7,7 @@ import { AxisFieldRenderer } from './axis-field-renderer';
 /**
  * Module to render Pivot Table component
  */
-/** @hidden */
+
 export class Render {
     public parent: PivotFieldList;
 

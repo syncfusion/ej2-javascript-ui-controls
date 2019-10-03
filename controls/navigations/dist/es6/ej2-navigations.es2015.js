@@ -2061,7 +2061,7 @@ let MenuBase = class MenuBase extends Component {
         if (this.showSubMenu) {
             let idx = this.navIdx.concat(this.cliIdx);
             let item = this.getItem(idx);
-            if (item[this.getField('children', idx.length - 1)] &&
+            if (item && item[this.getField('children', idx.length - 1)] &&
                 item[this.getField('children', idx.length - 1)].length) {
                 if (e.type === 'mouseover' || (Browser.isDevice && this.isMenu)) {
                     this.setLISelected(this.cli);
@@ -2108,6 +2108,13 @@ let MenuBase = class MenuBase extends Component {
             items = items[navIdx[i]][this.getField('children', i)];
         }
         return items;
+    }
+    setItems(newItems, navIdx) {
+        let items = this.getItems(navIdx);
+        items.splice(0, items.length);
+        for (let i = 0; i < newItems.length; i++) {
+            items.splice(i, 0, newItems[i]);
+        }
     }
     getIdx(ul, li, skipHdr = true) {
         let idx = Array.prototype.indexOf.call(ul.querySelectorAll('li'), li);
@@ -2217,8 +2224,8 @@ let MenuBase = class MenuBase extends Component {
                                 idx = navIdx.pop();
                                 item = this.getItems(navIdx);
                                 this.insertAfter([item[idx]], item[idx].text);
-                                item = this.getItems(navIdx);
                                 this.removeItem(item, navIdx, idx);
+                                this.setItems(item, navIdx);
                             }
                             navIdx.length = 0;
                         }
@@ -3294,7 +3301,6 @@ let Toolbar = class Toolbar extends Component {
             this.popupRefresh(this.popObj.element, false);
         }
     }
-    /** @hidden */
     changeOrientation() {
         let ele = this.element;
         if (this.isVertical) {
@@ -5107,11 +5113,11 @@ let Accordion = class Accordion extends Component {
                     let ctn = this.contentRendering(index);
                     ele.appendChild(ctn);
                 });
-                this.updateContentBlazorTemplate(eventArgs.item, index);
             }
             else {
                 acrdnItem.appendChild(this.contentRendering(index));
             }
+            this.updateContentBlazorTemplate(eventArgs.item, index);
             this.ariaAttrUpdate(acrdnItem);
         }
         this.trigger('clicked', eventArgs);
@@ -8178,7 +8184,7 @@ let TreeView = TreeView_1 = class TreeView extends Component {
     /**
      * Get the properties to be maintained in the persisted state.
      * @returns string
-     * @hidden
+
      */
     getPersistData() {
         let keyEntity = ['selectedNodes', 'checkedNodes', 'expandedNodes'];
@@ -12091,7 +12097,7 @@ let TreeView = TreeView_1 = class TreeView extends Component {
      * of the corresponding node otherwise it will return the entire updated data source of TreeView.
      * * The updated data source also contains custom attributes if you specified in data source.
      * @param  {string | Element} node - Specifies ID of TreeView node/TreeView node.
-     * @isGenericType true
+
      */
     getTreeData(node) {
         let id = this.getId(node);

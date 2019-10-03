@@ -16,16 +16,22 @@ To install Spreadsheet and its dependent packages, use the following command.
 npm install @syncfusion/ej2-spreadsheet
 ```
 
+## Resources
+
+* [Getting Started](https://ej2.syncfusion.com/documentation/spreadsheet/getting-started.html?lang=typescript&utm_source=npm&utm_campaign=spreadsheet)
+* [View Online Demos](https://ej2.syncfusion.com/demos/?utm_source=npm&utm_campaign=spreadsheet#/material/spreadsheet/default.html)
+* [Product Page](https://www.syncfusion.com/javascript-ui-controls/js-spreadsheet)
+
 ## Supported Frameworks
 
 Spreadsheet component is also offered in the following list of frameworks.
 
-1. **Angular**
-2. **React**
-3. **VueJS**
-4. **ASP.NET Core**
-5. **ASP.NET MVC**
-6. **JavaScript (ES5)**
+1. [Angular](https://github.com/syncfusion/ej2-angular-ui-components/tree/master/components/spreadsheet)
+2. [React](https://github.com/syncfusion/ej2-react-ui-components/tree/master/components/spreadsheet)
+3. [VueJS](https://github.com/syncfusion/ej2-vue-ui-components/tree/master/components/spreadsheet)
+4. [ASP.NET Core](https://www.syncfusion.com/aspnet-core-ui-controls/spreadsheet)
+5. [ASP.NET MVC](https://www.syncfusion.com/aspnet-mvc-ui-controls/spreadsheet)
+6. [JavaScript (ES5)](https://www.syncfusion.com/javascript-ui-controls/js-spreadsheet)
 
 ## Key Features
 
@@ -39,6 +45,8 @@ Spreadsheet component is also offered in the following list of frameworks.
 - **Number formatting:** Provides option to format the cell value.
 - **Open:** Provides the option to open excel file in spreadsheet.
 - **Save:** Provides option to save spreadsheet data as excel file.
+- **Sorting:** Helps you to arrange the data to particular order in a selected range of cells.
+- **Resize:** Allows you to change the row height and column width. Auto fit the rows and columns based on its content.
 - **RTL:** Provides right-to-left mode which aligns content in the spreadsheet component from right to left.
 - **Localization:** Provides inherent support to localize the UI.
 - **Accessibility:** Provides with built-in accessibility support which helps to access all the spreadsheet component features through the keyboard, screen readers, or other assistive technology devices.
@@ -54,5 +62,9 @@ Product support is available through following mediums.
 ## License
 
 Check the license details [here](https://github.com/syncfusion/ej2-javascript-ui-controls/blob/master/license?utm_source=npm&utm_campaign=spreadsheet).
+
+## Changelog
+
+Check the changelog [here](https://github.com/syncfusion/ej2-javascript-ui-controls/blob/master/controls/spreadsheet/CHANGELOG.md?utm_source=npm&utm_campaign=spreadsheet)
 
 &copy; Copyright 2019 Syncfusion, Inc. All Rights Reserved. The Syncfusion Essential Studio license and copyright applies to this distribution.

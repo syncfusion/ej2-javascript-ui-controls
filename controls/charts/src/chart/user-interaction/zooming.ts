@@ -609,7 +609,7 @@ export class Zoom {
         return false;
     }
     /**
-     * @hidden
+
      */
     public addEventListener(): void {
         if (this.chart.isDestroyed) { return; }
@@ -620,7 +620,7 @@ export class Zoom {
         this.chart.on(this.cancelEvent, this.mouseCancelHandler, this);
     }
     /**
-     * @hidden
+
      */
     public removeEventListener(): void {
         if (this.chart.isDestroyed) { return; }
@@ -651,7 +651,7 @@ export class Zoom {
         return false;
     }
     /**
-     * @hidden
+
      */
     private mouseMoveHandler(e: PointerEvent | TouchEvent): void {
         //Zooming for chart
@@ -677,7 +677,7 @@ export class Zoom {
         }
     }
     /**
-     * @hidden
+
      */
     private mouseDownHandler(e: PointerEvent): void {
         //Zooming for chart
@@ -699,7 +699,7 @@ export class Zoom {
         }
     }
     /**
-     * @hidden
+
      */
     private mouseUpHandler(e: PointerEvent): void {
         let chart: Chart = this.chart;
@@ -718,7 +718,7 @@ export class Zoom {
         }
     }
     /**
-     * @hidden
+
      */
     private mouseCancelHandler(e: PointerEvent): void {
         if (this.isZoomed) {

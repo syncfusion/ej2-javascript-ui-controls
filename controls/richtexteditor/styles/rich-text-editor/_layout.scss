@@ -190,6 +190,7 @@
           }
 
           .e-background-color.e-icons::before {
+            display: inline;
             font-size: 14px;
           }
 
@@ -286,6 +287,7 @@
         height: 100%;
         min-height: 100px;
         outline: 0 solid transparent;
+        overflow-x: auto;
         padding: 16px;
         position: relative;
         text-align: inherit;
@@ -910,6 +912,11 @@
           font-size: 16px;
         }
       }
+
+      .e-background-color.e-icons::before {
+        display: inline;
+      }
+
     }
 
     .e-rte-dropdown-btn.e-tbar-btn {
@@ -1264,7 +1271,7 @@
     min-height: 190px;
   }
 
-  .e-upload .e-upload-files .e-upload-file-list .e-file-container {
+  .e-richtexteditor .e-upload .e-upload-files .e-upload-file-list .e-file-container {
     margin-right: 50px;
   }
 

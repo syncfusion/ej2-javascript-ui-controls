@@ -79,7 +79,7 @@ export class FieldValidator {
     }
 
     /**
-     * @hidden
+
      */
     public destroy(): void {
         if (this.formObj && this.formObj.element && !this.formObj.isDestroyed) {

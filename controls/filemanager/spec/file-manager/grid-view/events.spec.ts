@@ -7,7 +7,7 @@ import { DetailsView } from '../../../src/file-manager/layout/details-view';
 import { Toolbar } from '../../../src/file-manager/actions/toolbar';
 import { BeforeSendEventArgs, FileLoadEventArgs, ToolbarCreateEventArgs, UploadListCreateArgs, MenuOpenEventArgs, MenuClickEventArgs, ToolbarClickEventArgs, PopupOpenCloseEventArgs, BeforePopupOpenCloseEventArgs } from '../../../src/file-manager/base/interface';
 import { createElement, Browser } from '@syncfusion/ej2-base';
-import { toolbarItems, toolbarItems1, toolbarItems2, data1, data2, data3, multiCopySuccess1, doubleClickRead2, multiItemCopyRead3, multiCopySuccess2, multiItemCopyRead2, uploadData1, getMultipleDetails, singleSelectionDetails } from '../data';
+import { toolbarItems, toolbarItems1, toolbarItems2, data1, data2, data3, multiCopySuccess1, doubleClickRead2, multiItemCopyRead3, multiCopySuccess2, multiItemCopyRead2, uploadData1, getMultipleDetails, singleSelectionDetails, doubleClickRead } from '../data';
 
 FileManager.Inject(Toolbar, NavigationPane, DetailsView);
 
@@ -45,6 +45,70 @@ describe('FileManager control Grid view', () => {
             if (feObj) feObj.destroy();
             ele.remove();
         });
+        it('for fileOpen', (done) => {
+            let dblclickevent:any;
+            let i: number = 0;
+            feObj = new FileManager({
+                view: 'Details',
+                ajaxSettings: {
+                    url: '/FileOperations',
+                    uploadUrl: '/Upload', downloadUrl: '/Download', getImageUrl: '/GetImage'
+                },
+                showThumbnail: false,
+                fileOpen: () => {
+                    i++;
+                }
+            });
+            feObj.appendTo('#file');
+            this.request = jasmine.Ajax.requests.mostRecent();
+            this.request.respondWith({
+                status: 200,
+                responseText: JSON.stringify(data1)
+            });
+            dblclickevent = new MouseEvent('dblclick', {
+                'view': window,
+                'bubbles': true,
+                'cancelable': true
+            });
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+            setTimeout(function () {
+                feObj.detailsviewModule.gridObj.selectRows([2]);
+                feObj.detailsviewModule.gridObj.element.querySelectorAll('.e-row')[2].firstElementChild.dispatchEvent(dblclickevent);
+                this.request = jasmine.Ajax.requests.mostRecent();
+                this.request.respondWith({
+                    status: 200,
+                    responseText: JSON.stringify(doubleClickRead)
+                });
+                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                setTimeout(function () {
+                    expect(i).toBe(1);
+                    feObj.element.getElementsByClassName('e-address-list-item')[0].click();
+                    this.request = jasmine.Ajax.requests.mostRecent();
+                    this.request.respondWith({
+                        status: 200,
+                        responseText: JSON.stringify(data1)
+                    });
+                    jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                    setTimeout(function () {
+                        expect(i).toBe(2);
+                        let li: Element[] = <Element[] & NodeListOf<HTMLLIElement>>document.getElementById('file_tree').querySelectorAll('li');
+                        mouseEventArgs.target = li[3].querySelector('.e-fullrow');
+                        feObj.navigationpaneModule.treeObj.touchClickObj.tap(tapEvent);
+                        this.request = jasmine.Ajax.requests.mostRecent();
+                        this.request.respondWith({
+                            status: 200,
+                            responseText: JSON.stringify(doubleClickRead)
+                        });
+                        jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                        setTimeout(function () {
+                            expect(i).toBe(3);
+                            done();
+                        }, 500);
+                    }, 500);
+                }, 500);
+            }, 500);
+        });
+
         it('for menuOpen', (done) => {
             let i: number = 0;
             feObj = new FileManager({
@@ -319,11 +383,11 @@ describe('FileManager control Grid view', () => {
             });
             setTimeout(function () {
                 expect(i).toEqual(1);
-                feObj.toolbarCreate=(args:ToolbarCreateEventArgs)=>{
+                feObj.toolbarCreate = (args: ToolbarCreateEventArgs) => {
                     clickFn();
-                    let ind:number= (<FileManager>feObj).getToolbarItemIndex('Custom tool');
-                    if(ind!==-1){
-                        args.items[ind].cssClass='e-custom';
+                    let ind: number = (<FileManager>feObj).getToolbarItemIndex('Custom tool');
+                    if (ind !== -1) {
+                        args.items[ind].cssClass = 'e-custom';
                     }
                 }
                 feObj.toolbarSettings.items = toolbarItems2;
@@ -501,7 +565,7 @@ describe('FileManager control Grid view', () => {
 
         it('for BeforeClose cancel testing', () => {
             name = 'Create Folder';
-            feObj.beforePopupClose = (args: BeforePopupOpenCloseEventArgs) => { args.cancel = true;k++; }
+            feObj.beforePopupClose = (args: BeforePopupOpenCloseEventArgs) => { args.cancel = true; k++; }
             let item: any = document.getElementById('file_tb_newfolder');
             item.click();
             item = document.getElementById('file_dialog').querySelector('.e-dlg-closeicon-btn');

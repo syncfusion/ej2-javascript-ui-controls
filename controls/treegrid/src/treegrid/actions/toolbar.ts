@@ -5,7 +5,7 @@ import { ClickEventArgs } from '@syncfusion/ej2-navigations/src/toolbar';
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
 /**
  * Toolbar Module for TreeGrid
- * @hidden
+
  */
 export class Toolbar {
     private parent: TreeGrid;
@@ -24,7 +24,7 @@ export class Toolbar {
     }
 
     /**
-     * @hidden
+
      */
     public addEventListener(): void {
         this.parent.on(events.rowSelected, this.refreshToolbar, this);
@@ -32,7 +32,7 @@ export class Toolbar {
     }
 
     /**
-     * @hidden
+
      */
     public removeEventListener(): void {
         if (this.parent.isDestroyed) { return; }
@@ -108,7 +108,7 @@ export class Toolbar {
     /**
      * Gets the toolbar of the TreeGrid.
      * @return {Element}
-     * @hidden
+
      */
     public getToolbar(): Element {
         return this.parent.grid.toolbarModule.getToolbar();
@@ -119,7 +119,7 @@ export class Toolbar {
      * @param {string[]} items - Defines the collection of itemID of ToolBar items.
      * @param {boolean} isEnable - Defines the items to be enabled or disabled.
      * @return {void}
-     * @hidden
+
      */
     public enableItems(items: string[], isEnable: boolean): void {
         this.parent.grid.toolbarModule.enableItems(items, isEnable);

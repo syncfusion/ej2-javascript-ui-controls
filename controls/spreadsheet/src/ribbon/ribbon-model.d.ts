@@ -75,6 +75,12 @@ export interface RibbonModel extends ComponentModel{
     fileItemSelect?: EmitType<MenuEventArgs>;
 
     /**
+     * Triggers while rendering each file menu item.
+     * @event
+     */
+    beforeFileItemRender?: EmitType<MenuEventArgs>;
+
+    /**
      * Triggers before opening the file menu.
      * @event
      */

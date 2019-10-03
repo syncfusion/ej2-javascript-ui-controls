@@ -126,7 +126,7 @@ export function clipDecorator(connector: PdfAnnotationBaseModel, points: PointMo
     return point;
 }
 /**
- * @hidden
+
  */
 export function initDistanceLabel(obj: PdfAnnotationBaseModel, points: PointModel[], measure: MeasureAnnotation): TextElement[] {
     let labels: TextElement[] = [];
@@ -147,7 +147,7 @@ export function initDistanceLabel(obj: PdfAnnotationBaseModel, points: PointMode
 }
 
 /**
- * @hidden
+
  */
 export function updateDistanceLabel(obj: PdfAnnotationBaseModel, points: PointModel[], measure: MeasureAnnotation): string {
     let distance: string;
@@ -164,7 +164,7 @@ export function updateDistanceLabel(obj: PdfAnnotationBaseModel, points: PointMo
 }
 
 /**
- * @hidden
+
  */
 export function updateRadiusLabel(obj: PdfAnnotationBaseModel, measure: MeasureAnnotation): string {
     let radius: string;
@@ -189,7 +189,7 @@ export function updateRadiusLabel(obj: PdfAnnotationBaseModel, measure: MeasureA
 }
 
 /**
- * @hidden
+
  */
 export function initPerimeterLabel(obj: PdfAnnotationBaseModel, points: PointModel[]): TextElement[] {
     let labels: TextElement[] = [];
@@ -209,7 +209,7 @@ export function initPerimeterLabel(obj: PdfAnnotationBaseModel, points: PointMod
 }
 
 /**
- * @hidden
+
  */
 export function updatePerimeterLabel(obj: PdfAnnotationBaseModel, points: PointModel[], measure: MeasureAnnotation): string {
     let perimeter: string;
@@ -226,7 +226,7 @@ export function updatePerimeterLabel(obj: PdfAnnotationBaseModel, points: PointM
 }
 
 /**
- * @hidden
+
  */
 export function removePerimeterLabel(obj: PdfAnnotationBaseModel): void {
     for (let i: number = 0; i < obj.wrapper.children.length; i++) {
@@ -239,7 +239,7 @@ export function removePerimeterLabel(obj: PdfAnnotationBaseModel): void {
 
 /**
  * Used to find the path for polygon shapes
- * @hidden
+
  */
 export function getPolygonPath(collection: PointModel[]): string {
     let path: string = '';
@@ -254,7 +254,7 @@ export function getPolygonPath(collection: PointModel[]): string {
     return path;
 }
 /**
- * @hidden
+
  */
 export function textElement(obj: PdfAnnotationBaseModel, angle: number): TextElement {
     let textele: TextElement = new TextElement();
@@ -273,7 +273,7 @@ export function textElement(obj: PdfAnnotationBaseModel, angle: number): TextEle
     return textele;
 }
 /**
- * @hidden
+
  */
 export function initLeaders(obj: PdfAnnotationBaseModel, points: PointModel[]): PathElement[] {
     let leaders: PathElement[] = [];
@@ -284,7 +284,7 @@ export function initLeaders(obj: PdfAnnotationBaseModel, points: PointModel[]): 
     return leaders;
 }
 /**
- * @hidden
+
  */
 export function initLeader(
     obj: PdfAnnotationBaseModel, point1: PointModel, point2: PointModel, isSecondLeader?: boolean): PathElement {
@@ -378,7 +378,7 @@ export function findNearestPoint(reference: PointModel, start: PointModel, end: 
 }
 
 /**
- * @hidden
+
  */
 export function getDecoratorShape(shape: DecoratorShapes, ): string {
     // tslint:disable-next-line

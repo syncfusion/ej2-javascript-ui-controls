@@ -25,7 +25,7 @@ export class Tooltip extends BaseTooltip {
     }
 
     /**
-     * @hidden
+
      */
     private addEventListener(): void {
         if (this.chart.isDestroyed) { return; }
@@ -138,8 +138,8 @@ export class Tooltip extends BaseTooltip {
         this.currentPoints = [];
         let tool: this;
         if (this.findData(data, this.previousPoints[0] as PointData)) {
-            if (this.previousPoints[0] && data.point.index === this.previousPoints[0].point.index
-                && data.series.index === this.previousPoints[0].series.index) {
+            if (!(chart.dataEditingModule && chart.dataEditingModule.isPointDragging) && (this.previousPoints[0] &&
+                data.point.index === this.previousPoints[0].point.index && data.series.index === this.previousPoints[0].series.index)) {
                 return null;
             }
             if (this.pushData(data, isFirst, tooltipDiv, true)) {
@@ -507,7 +507,7 @@ export class Tooltip extends BaseTooltip {
     }
 
  /*
-    * @hidden
+
     */
    public removeHighlightedMarker(data: PointData[]): void {
     for (let item of data) {

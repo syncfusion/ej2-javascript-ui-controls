@@ -251,345 +251,180 @@ __decorate$7([
 /**
  * Specifies the File Manager internal ID's
  */
-/** @hidden */
 const TOOLBAR_ID = '_toolbar';
-/** @hidden */
 const LAYOUT_ID = '_layout';
-/** @hidden */
 const NAVIGATION_ID = '_navigation';
-/** @hidden */
 const TREE_ID = '_tree';
-/** @hidden */
 const GRID_ID = '_grid';
-/** @hidden */
 const LARGEICON_ID = '_largeicons';
-/** @hidden */
 const DIALOG_ID = '_dialog';
-/** @hidden */
 const ALT_DIALOG_ID = '_alt_dialog';
-/** @hidden */
 const IMG_DIALOG_ID = '_img_dialog';
-/** @hidden */
 const EXTN_DIALOG_ID = '_extn_dialog';
-/** @hidden */
 const UPLOAD_DIALOG_ID = '_upload_dialog';
-/** @hidden */
 const RETRY_DIALOG_ID = '_retry_dialog';
-/** @hidden */
 const CONTEXT_MENU_ID = '_contextmenu';
-/** @hidden */
 const SORTBY_ID = '_sortby';
-/** @hidden */
 const VIEW_ID = '_view';
-/** @hidden */
 const SPLITTER_ID = '_splitter';
-/** @hidden */
 const CONTENT_ID = '_content';
-/** @hidden */
 const BREADCRUMBBAR_ID = '_breadcrumbbar';
-/** @hidden */
 const UPLOAD_ID = '_upload';
-/** @hidden */
 const RETRY_ID = '_retry';
-/** @hidden */
 const SEARCH_ID = '_search';
 /**
  * Specifies the File Manager internal class names
  */
-/** @hidden */
 const ROOT = 'e-filemanager';
-/** @hidden */
 const CONTROL = 'e-control';
-/** @hidden */
 const CHECK_SELECT = 'e-fe-cb-select';
-/** @hidden */
 const ROOT_POPUP = 'e-fe-popup';
-/** @hidden */
 const MOBILE = 'e-fe-mobile';
-/** @hidden */
 const MULTI_SELECT = 'e-fe-m-select';
-/** @hidden */
 const FILTER = 'e-fe-m-filter';
-/** @hidden */
 const LAYOUT = 'e-layout';
-/** @hidden */
 const NAVIGATION = 'e-navigation';
-/** @hidden */
 const LAYOUT_CONTENT = 'e-layout-content';
-/** @hidden */
 const LARGE_ICONS = 'e-large-icons';
-/** @hidden */
 const TB_ITEM = 'e-toolbar-item';
-/** @hidden */
 const LIST_ITEM = 'e-list-item';
-/** @hidden */
 const LIST_TEXT = 'e-list-text';
-/** @hidden */
 const LIST_PARENT = 'e-list-parent';
-/** @hidden */
 const TB_OPTION_TICK = 'e-icons e-fe-tick';
-/** @hidden */
 const TB_OPTION_DOT = 'e-icons e-fe-dot';
-/** @hidden */
 const BLUR = 'e-blur';
-/** @hidden */
 const ACTIVE = 'e-active';
-/** @hidden */
 const HOVER = 'e-hover';
-/** @hidden */
 const FOCUS = 'e-focus';
-/** @hidden */
 const FOCUSED = 'e-focused';
-/** @hidden */
 const CHECK = 'e-check';
-/** @hidden */
 const FRAME = 'e-frame';
-/** @hidden */
 const CB_WRAP = 'e-checkbox-wrapper';
-/** @hidden */
 const ROW = 'e-row';
-/** @hidden */
 const ROWCELL = 'e-rowcell';
-/** @hidden */
 const EMPTY = 'e-empty';
-/** @hidden */
 const EMPTY_CONTENT = 'e-empty-content';
-/** @hidden */
 const EMPTY_INNER_CONTENT = 'e-empty-inner-content';
-/** @hidden */
 const CLONE = 'e-fe-clone';
-/** @hidden */
 const DROP_FOLDER = 'e-fe-drop-folder';
-/** @hidden */
 const DROP_FILE = 'e-fe-drop-file';
-/** @hidden */
 const FOLDER = 'e-fe-folder';
-/** @hidden */
 const ICON_IMAGE = 'e-fe-image';
-/** @hidden */
 const ICON_MUSIC = 'e-fe-music';
-/** @hidden */
 const ICON_VIDEO = 'e-fe-video';
-/** @hidden */
 const LARGE_ICON = 'e-large-icon';
-/** @hidden */
 const LARGE_EMPTY_FOLDER = 'e-empty-icon e-fe-folder';
-/** @hidden */
 const LARGE_EMPTY_FOLDER_TWO = 'e-empty-icon.e-fe-folder';
-/** @hidden */
 const LARGE_ICON_FOLDER = 'e-fe-folder';
-/** @hidden */
 const SELECTED_ITEMS = 'e-items';
-/** @hidden */
 const TEXT_CONTENT = 'e-text-content';
-/** @hidden */
 const GRID_HEADER = 'e-gridheader';
-/** @hidden */
 const TEMPLATE_CELL = 'e-templatecell';
-/** @hidden */
 const TREE_VIEW = 'e-treeview';
-/** @hidden */
 const MENU_ITEM = 'e-menu-item';
-/** @hidden */
 const MENU_ICON = 'e-menu-icon';
-/** @hidden */
 const SUBMENU_ICON = 'e-caret';
-/** @hidden */
 const GRID_VIEW = 'e-content';
-/** @hidden */
 const ICON_VIEW = 'e-list-parent';
-/** @hidden */
 const ICON_OPEN = 'e-icons e-fe-open';
-/** @hidden */
 const ICON_UPLOAD = 'e-icons e-fe-upload';
-/** @hidden */
 const ICON_CUT = 'e-icons e-fe-cut';
-/** @hidden */
 const ICON_COPY = 'e-icons e-fe-copy';
-/** @hidden */
 const ICON_PASTE = 'e-icons e-fe-paste';
-/** @hidden */
 const ICON_DELETE = 'e-icons e-fe-delete';
-/** @hidden */
 const ICON_RENAME = 'e-icons e-fe-rename';
-/** @hidden */
 const ICON_NEWFOLDER = 'e-icons e-fe-newfolder';
-/** @hidden */
 const ICON_DETAILS = 'e-icons e-fe-details';
-/** @hidden */
 const ICON_SHORTBY = 'e-icons e-fe-sort';
-/** @hidden */
 const ICON_REFRESH = 'e-icons e-fe-refresh';
-/** @hidden */
 const ICON_SELECTALL = 'e-icons e-fe-select';
-/** @hidden */
 const ICON_DOWNLOAD = 'e-icons e-fe-download';
-/** @hidden */
 const ICON_OPTIONS = 'e-icons e-fe-options';
-/** @hidden */
 const ICON_GRID = 'e-icons e-fe-grid';
-/** @hidden */
 const ICON_LARGE = 'e-icons e-fe-large';
-/** @hidden */
 const ICON_BREADCRUMB = 'e-icons e-fe-breadcrumb';
-/** @hidden */
 const ICON_CLEAR = 'e-icons e-fe-clear';
-/** @hidden */
 const ICON_DROP_IN = 'e-icons e-fe-drop-in';
-/** @hidden */
 const ICON_DROP_OUT = 'e-icons e-fe-drop-out';
-/** @hidden */
 const ICON_NO_DROP = 'e-icons e-fe-no-drop';
-/** @hidden */
 const ICONS = 'e-icons';
-/** @hidden */
 const DETAILS_LABEL = 'e-detailslabel';
-/** @hidden */
 const ERROR_CONTENT = 'e-fe-errorcontent';
-/** @hidden */
 const STATUS = 'e-status';
-/** @hidden */
 const BREADCRUMBS = 'e-address';
-/** @hidden */
 const RTL = 'e-rtl';
-/** @hidden */
 const DISPLAY_NONE = 'e-display-none';
-/** @hidden */
 const COLLAPSED = 'e-node-collapsed';
-/** @hidden */
 const FULLROW = 'e-fullrow';
-/** @hidden */
 const ICON_COLLAPSIBLE = 'e-icon-collapsible';
-/** @hidden */
 const SPLIT_BAR = 'e-split-bar';
-/** @hidden */
 const HEADER_CHECK = 'e-headercheck';
-/** @hidden */
 const OVERLAY = 'e-fe-overlay';
-/** @hidden */
 const VALUE = 'e-fe-value';
 
 /**
  * Specifies the File Manager internal variables
  */
-/** @hidden */
 const isFile = 'isFile';
 /**
  * Specifies the File Manager internal events
  */
-/** @hidden */
 const modelChanged = 'model-changed';
-/** @hidden */
 const initialEnd = 'initial-end';
-/** @hidden */
 const finalizeEnd = 'finalize-end';
-/** @hidden */
 const createEnd = 'create-end';
-/** @hidden */
 const filterEnd = 'filter-end';
-/** @hidden */
 const beforeDelete = 'before-delete';
-/** @hidden */
 const pathDrag = 'path-drag';
-/** @hidden */
 const deleteInit = 'delete-init';
-/** @hidden */
 const deleteEnd = 'delete-end';
-/** @hidden */
 const refreshEnd = 'refresh-end';
-/** @hidden */
 const resizeEnd = 'resize-end';
-/** @hidden */
 const splitterResize = 'splitter-resize';
-/** @hidden */
 const pathChanged = 'path-changed';
-/** @hidden */
 const destroy = 'destroy';
-/** @hidden */
 const beforeRequest = 'before-request';
-/** @hidden */
 const upload = 'upload';
-/** @hidden */
 const afterRequest = 'after-request';
-/** @hidden */
 const download = 'download';
-/** @hidden */
 const layoutRefresh = 'layout-refresh';
-/** @hidden */
 const actionFailure = 'actionFailure';
-/** @hidden */
 const search = 'search';
-/** @hidden */
 const openInit = 'open-init';
-/** @hidden */
 const openEnd = 'open-end';
-/** @hidden */
 const selectionChanged = 'selection-changed';
-/** @hidden */
 const selectAllInit = 'select-all-init';
-/** @hidden */
 const clearAllInit = 'clear-all-init';
-/** @hidden */
 const clearPathInit = 'clear-path-init';
-/** @hidden */
 const layoutChange = 'layout-change';
-/** @hidden */
 const sortByChange = 'sort-by-change';
-/** @hidden */
 const nodeExpand = 'node-expand';
-/** @hidden */
 const detailsInit = 'details-init';
-/** @hidden */
 const menuItemData = 'menu-item-data';
-/** @hidden */
 const renameInit = 'rename-init';
-/** @hidden */
 const renameEndParent = 'rename-end-parent';
-/** @hidden */
 const renameEnd = 'rename-end';
-/** @hidden */
 const showPaste = 'show-paste';
-/** @hidden */
 const hidePaste = 'hide-paste';
-/** @hidden */
 const selectedData = 'selected-data';
-/** @hidden */
 const cutCopyInit = 'cut-copy-init';
-/** @hidden */
 const pasteInit = 'paste-init';
-/** @hidden */
 const pasteEnd = 'paste-end';
-/** @hidden */
 const cutEnd = 'cut-end';
-/** @hidden */
 const hideLayout = 'hide-layout';
-/** @hidden */
 const updateTreeSelection = 'update-tree-selection';
-/** @hidden */
 const treeSelect = 'select-node';
-/** @hidden */
 const sortColumn = 'sort-column';
-/** @hidden */
 const pathColumn = 'path-column';
-/** @hidden */
 const searchTextChange = 'search-change';
-/** @hidden */
 const beforeDownload = 'before-download';
-/** @hidden */
 const downloadInit = 'download-init';
-/** @hidden */
 const dropInit = 'drop-init';
-/** @hidden */
 const dragEnd = 'drag-end';
-/** @hidden */
 const dropPath = 'drop-path';
-/** @hidden */
 const dragHelper = 'drag-helper';
-/** @hidden */
 const dragging = 'dragging';
-/** @hidden */
 const updateSelectionData = 'update-selection-data';
-/** @hidden */
 const methodCall = 'method-call';
 
 /**
@@ -2624,7 +2459,7 @@ function updateImage(parent) {
 class LargeIconsView {
     /**
      * Constructor for the LargeIcons module
-     * @hidden
+
      */
     constructor(parent) {
         this.uploadOperation = false;
@@ -3314,7 +3149,6 @@ class LargeIconsView {
         this.doSelection(target, e.originalEvent);
         this.parent.activeModule = 'largeiconsview';
     }
-    /** @hidden */
     doSelection(target, e) {
         let item = closest(target, '.' + LIST_ITEM);
         let cList = target.classList;
@@ -3399,7 +3233,7 @@ class LargeIconsView {
                 createDeniedDialog(this.parent, details);
                 return;
             }
-            let eventArgs = { cancel: false, fileDetails: details };
+            let eventArgs = { cancel: false, fileDetails: details, module: 'LargeIconsView' };
             this.parent.trigger('fileOpen', eventArgs, (fileOpenArgs) => {
                 if (!fileOpenArgs.cancel) {
                     let text = getValue('name', details);
@@ -4028,7 +3862,7 @@ class LargeIconsView {
 class BreadCrumbBar {
     /**
      * constructor for addressbar module
-     * @hidden
+
      */
     constructor(parent) {
         this.addressPath = '';
@@ -4252,11 +4086,18 @@ class BreadCrumbBar {
             if (!isNullOrUndefined(node)) {
                 this.parent.isFiltered = false;
                 let currentPath = this.updatePath(node);
-                this.liClick(currentPath);
+                this.parent.itemData = [getValue(this.parent.pathId[this.parent.pathId.length - 1], this.parent.feParent)];
+                this.triggerFileOpen(this.parent.itemData[0]);
+                read(this.parent, pathChanged, currentPath);
                 let treeNodeId = this.parent.pathId[this.parent.pathId.length - 1];
                 this.parent.notify(updateTreeSelection, { module: 'treeview', selectedNode: treeNodeId });
             }
         }
+    }
+    triggerFileOpen(data) {
+        let eventArgs = { cancel: false, fileDetails: data, module: 'BreadCrumbBar' };
+        delete eventArgs.cancel;
+        this.parent.trigger('fileOpen', eventArgs);
     }
     /* istanbul ignore next */
     onShowInput() {
@@ -4320,10 +4161,6 @@ class BreadCrumbBar {
     onPasteEnd(args) {
         this.onPathChange();
     }
-    liClick(currentPath) {
-        this.parent.itemData = [getValue(this.parent.pathId[this.parent.pathId.length - 1], this.parent.feParent)];
-        read(this.parent, pathChanged, currentPath);
-    }
     addEventListener() {
         this.keyboardModule = new KeyboardEvents(this.parent.breadCrumbBarNavigation, {
             keyAction: this.keyActionHandler.bind(this),
@@ -4379,6 +4216,7 @@ class BreadCrumbBar {
             let liEle = args.target.closest('li');
             this.parent.dropPath = this.updatePath((liEle.children[0]));
             this.parent.dropData = getValue(this.parent.pathId[this.parent.pathId.length - 1], this.parent.feParent);
+            this.triggerFileOpen(this.parent.dropData);
             let treeNodeId = this.parent.pathId[this.parent.pathId.length - 1];
             this.parent.notify(updateTreeSelection, { module: 'treeview', selectedNode: treeNodeId });
         }
@@ -4414,7 +4252,7 @@ class BreadCrumbBar {
 class ContextMenu$2 {
     /**
      * Constructor for the ContextMenu module
-     * @hidden
+
      */
     constructor(parent) {
         this.currentItems = [];
@@ -4600,7 +4438,6 @@ class ContextMenu$2 {
             'largeiconsview' : this.parent.activeModule;
     }
     /* istanbul ignore next */
-    /** @hidden */
     getTargetView(target) {
         return target.classList.contains(TREE_VIEW) ?
             'TreeView' : target.classList.contains(GRID_VIEW) ?
@@ -5165,7 +5002,7 @@ let FileManager = FileManager_1 = class FileManager extends Component {
     /**
      * Gets the properties to be maintained upon browser refresh..
      * @returns string
-     * @hidden
+
      */
     getPersistData() {
         let keyEntity = ['view', 'path', 'selectedItems'];
@@ -5174,7 +5011,7 @@ let FileManager = FileManager_1 = class FileManager extends Component {
     /**
      * To provide the array of modules needed for component rendering
      * @return {ModuleDeclaration[]}
-     * @hidden
+
      */
     requiredModules() {
         let modules = [];
@@ -6186,7 +6023,7 @@ FileManager = FileManager_1 = __decorate$8([
 class Toolbar$1 {
     /**
      * Constructor for the Toolbar module
-     * @hidden
+
      */
     constructor(parent) {
         this.default = ['Delete', 'Rename', 'Download', 'Cut', 'Copy', 'Paste'];
@@ -6641,7 +6478,7 @@ class Toolbar$1 {
 class NavigationPane {
     /**
      * Constructor for the TreeView module
-     * @hidden
+
      */
     constructor(parent) {
         this.removeNodes = [];
@@ -6792,8 +6629,14 @@ class NavigationPane {
         }
         this.activeNode = args.node;
         this.parent.activeModule = 'navigationpane';
+        let nodeData = this.getTreeData(getValue('id', args.nodeData));
+        if (!this.renameParent) {
+            let eventArgs = { cancel: false, fileDetails: nodeData[0], module: 'NavigationPane' };
+            delete eventArgs.cancel;
+            this.parent.trigger('fileOpen', eventArgs);
+        }
         this.parent.selectedItems = [];
-        this.parent.itemData = this.getTreeData(getValue('id', args.nodeData));
+        this.parent.itemData = nodeData;
         updatePath(args.node, this.parent.itemData[0], this.parent);
         this.expandNodeTarget = null;
         if (args.node.querySelector('.' + ICONS) && args.node.querySelector('.' + LIST_ITEM) === null) {
@@ -7367,7 +7210,7 @@ class NavigationPane {
 class DetailsView {
     /**
      * Constructor for the GridView module
-     * @hidden
+
      */
     constructor(parent) {
         this.isInteracted = true;
@@ -7885,7 +7728,7 @@ class DetailsView {
             createDeniedDialog(this.parent, data);
             return;
         }
-        let eventArgs = { cancel: false, fileDetails: data };
+        let eventArgs = { cancel: false, fileDetails: data, module: 'DetailsView' };
         this.parent.trigger('fileOpen', eventArgs, (fileOpenArgs) => {
             if (!fileOpenArgs.cancel) {
                 let name = getValue('name', data);

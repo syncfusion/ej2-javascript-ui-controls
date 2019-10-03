@@ -190,12 +190,12 @@ export class ChartRows {
                 this.getTemplateID('MilestoneTemplate'), false);
         } else {
             let template: string = '<div class="' + cls.traceMilestone + '" style="position:absolute;">' +
-                '<div class="' + cls.milestoneTop + ((!data.ganttProperties.startDate && !data.ganttProperties.endDate) ?
-                    cls.unscheduledMilestoneTop : '"') + '" style="border-right-width:' +
+                '<div class="' + cls.milestoneTop + ' ' + ((!data.ganttProperties.startDate && !data.ganttProperties.endDate) ?
+                    cls.unscheduledMilestoneTop : '') + '" style="border-right-width:' +
                 this.milesStoneRadius + 'px;border-left-width:' + this.milesStoneRadius + 'px;border-bottom-width:' +
                 this.milesStoneRadius + 'px;"></div>' +
-                '<div class="' + cls.milestoneBottom + ((!data.ganttProperties.startDate && !data.ganttProperties.endDate) ?
-                    cls.unscheduledMilestoneBottom : '"') + '" style="top:' +
+                '<div class="' + cls.milestoneBottom + ' ' + ((!data.ganttProperties.startDate && !data.ganttProperties.endDate) ?
+                    cls.unscheduledMilestoneBottom : '') + '" style="top:' +
                 (this.milesStoneRadius) + 'px;border-right-width:' + this.milesStoneRadius + 'px; border-left-width:' +
                 this.milesStoneRadius + 'px; border-top-width:' + this.milesStoneRadius + 'px;"></div></div>';
             milestoneNode = this.createDivElement(template);
@@ -428,28 +428,28 @@ export class ChartRows {
         }
         if (this.parentTaskbarTemplateFunction && isParent) {
             if (isUpdate) {
-                updateBlazorTemplate(this.getTemplateID('ParentTaskbarTemplate'), 'ParentTaskbarTemplate', this.parent);
+                updateBlazorTemplate(this.getTemplateID('ParentTaskbarTemplate'), 'ParentTaskbarTemplate', this.parent, false);
             } else {
                 resetBlazorTemplate(this.getTemplateID('ParentTaskbarTemplate'), 'ParentTaskbarTemplate');
             }
         }
         if (this.childTaskbarTemplateFunction && isChild) {
             if (isUpdate) {
-                updateBlazorTemplate(this.getTemplateID('TaskbarTemplate'), 'TaskbarTemplate', this.parent);
+                updateBlazorTemplate(this.getTemplateID('TaskbarTemplate'), 'TaskbarTemplate', this.parent, false);
             } else {
                 resetBlazorTemplate(this.getTemplateID('TaskbarTemplate'), 'TaskbarTemplate');
             }
         }
         if (this.milestoneTemplateFunction && isMilestone) {
             if (isUpdate) {
-                updateBlazorTemplate(this.getTemplateID('MilestoneTemplate'), 'MilestoneTemplate', this.parent);
+                updateBlazorTemplate(this.getTemplateID('MilestoneTemplate'), 'MilestoneTemplate', this.parent, false);
             } else {
                 resetBlazorTemplate(this.getTemplateID('MilestoneTemplate'), 'MilestoneTemplate');
             }
         }
         if (this.leftTaskLabelTemplateFunction) {
             if (isUpdate) {
-                updateBlazorTemplate(this.getTemplateID('LeftLabelTemplate'), 'LeftLabelTemplate', this.parent.labelSettings);
+                updateBlazorTemplate(this.getTemplateID('LeftLabelTemplate'), 'LeftLabelTemplate', this.parent.labelSettings, false);
             } else {
                 resetBlazorTemplate(this.getTemplateID('LeftLabelTemplate'), 'LeftLabelTemplate');
             }
@@ -457,7 +457,7 @@ export class ChartRows {
         if (this.rightTaskLabelTemplateFunction) {
             if (isUpdate) {
                 updateBlazorTemplate(
-                    this.getTemplateID('RightLabelTemplate'), 'RightLabelTemplate', this.parent.labelSettings);
+                    this.getTemplateID('RightLabelTemplate'), 'RightLabelTemplate', this.parent.labelSettings, false);
             } else {
                 resetBlazorTemplate(
                     this.getTemplateID('RightLabelTemplate'), 'RightLabelTemplate');
@@ -466,7 +466,7 @@ export class ChartRows {
         if (this.taskLabelTemplateFunction && (isParent || isChild)) {
             if (isUpdate) {
                 updateBlazorTemplate(
-                    this.getTemplateID('TaskLabelTemplate'), 'TaskLabelTemplate', this.parent.labelSettings);
+                    this.getTemplateID('TaskLabelTemplate'), 'TaskLabelTemplate', this.parent.labelSettings, false);
             } else {
                 resetBlazorTemplate(
                     this.getTemplateID('TaskLabelTemplate'), 'TaskLabelTemplate');
@@ -483,9 +483,10 @@ export class ChartRows {
 
     private taskbarContainer(): NodeList {
         let data: IGanttData = this.templateData;
-        let template: string = '<div class="' + cls.taskBarMainContainer + ' ' + this.parent.getUnscheduledTaskClass(data.ganttProperties) +
+        let template: string = '<div class="' + cls.taskBarMainContainer + ' ' +
+            this.parent.getUnscheduledTaskClass(data.ganttProperties) + '" ' +
             ((data.ganttProperties.cssClass) ? data.ganttProperties.cssClass : '') +
-            ' tabindex="-1" ' + ' aria-label = "' + this.generateAriaLabel(data) + '"  ' +
+            ' tabindex="-1" aria-label = "' + this.generateAriaLabel(data) + '"  ' +
             ' style="' + ((data.ganttProperties.isMilestone) ? ('width:' + this.milestoneHeight + 'px;height:' +
                 this.milestoneHeight + 'px;margin-top:' + this.milestoneMarginTop + 'px;left:' + (data.ganttProperties.left -
                     (this.milestoneHeight / 2)) + 'px;') : ('width:' + data.ganttProperties.width + 'px;margin-top:' +

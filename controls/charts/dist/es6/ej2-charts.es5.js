@@ -1338,7 +1338,7 @@ var Row = /** @__PURE__ @class */ (function (_super) {
         /**
          * The height of the row as a string accept input both as '100px' and '100%'.
          * If specified as '100%, row renders to the full height of its chart.
-         * @default '100%'
+    
          */
         var _this = _super !== null && _super.apply(this, arguments) || this;
         /** @private */
@@ -1385,7 +1385,7 @@ var Column = /** @__PURE__ @class */ (function (_super) {
         /**
          * The width of the column as a string accepts input both as like '100px' or '100%'.
          * If specified as '100%, column renders to the full width of its chart.
-         * @default '100%'
+    
          */
         var _this = _super !== null && _super.apply(this, arguments) || this;
         /** @private */
@@ -1923,6 +1923,18 @@ var Axis = /** @__PURE__ @class */ (function (_super) {
     __decorate$2([
         Property(0)
     ], Axis.prototype, "plotOffset", void 0);
+    __decorate$2([
+        Property(null)
+    ], Axis.prototype, "plotOffsetLeft", void 0);
+    __decorate$2([
+        Property(null)
+    ], Axis.prototype, "plotOffsetTop", void 0);
+    __decorate$2([
+        Property(null)
+    ], Axis.prototype, "plotOffsetRight", void 0);
+    __decorate$2([
+        Property(null)
+    ], Axis.prototype, "plotOffsetBottom", void 0);
     __decorate$2([
         Property(false)
     ], Axis.prototype, "isIndexed", void 0);
@@ -3759,6 +3771,7 @@ var CartesianAxisLayoutPanel = /** @__PURE__ @class */ (function () {
         var size = 0;
         var x;
         var y;
+        var axisOffset;
         this.calculateRowSize(rect);
         for (var i = 0, len = chart.rows.length; i < len; i++) {
             row = chart.rows[i];
@@ -3766,6 +3779,7 @@ var CartesianAxisLayoutPanel = /** @__PURE__ @class */ (function () {
             farCount = 0;
             for (var j = 0, len_1 = row.axes.length; j < len_1; j++) {
                 axis = row.axes[j];
+                axisOffset = axis.plotOffset;
                 if (axis.rect.height === 0) {
                     axis.rect.height = row.computedHeight;
                     size = 0;
@@ -3773,8 +3787,9 @@ var CartesianAxisLayoutPanel = /** @__PURE__ @class */ (function () {
                         definition = chart.rows[k];
                         size += definition.computedHeight;
                     }
-                    axis.rect.y = (row.computedTop - size) + axis.plotOffset;
-                    axis.rect.height = (axis.rect.height + size) - (2 * axis.plotOffset);
+                    axis.rect.y = (row.computedTop - size) + (axis.plotOffsetTop ? axis.plotOffsetTop : axisOffset);
+                    axis.rect.height = (axis.rect.height + size) -
+                        (this.getAxisOffsetValue(axis.plotOffsetTop, axis.plotOffsetBottom, axis.plotOffset));
                     axis.rect.width = 0;
                 }
                 if (axis.opposedPosition) {
@@ -3796,13 +3811,14 @@ var CartesianAxisLayoutPanel = /** @__PURE__ @class */ (function () {
             farCount = 0;
             for (var j = 0, len_3 = column.axes.length; j < len_3; j++) {
                 axis = column.axes[j];
+                axisOffset = axis.plotOffset;
                 if (axis.rect.width === 0) {
                     for (var k = i, len_4 = (i + axis.span); k < len_4; k++) {
                         definition = chart.columns[k];
                         axis.rect.width += definition.computedWidth;
                     }
-                    axis.rect.x = column.computedLeft + axis.plotOffset;
-                    axis.rect.width -= (2 * axis.plotOffset);
+                    axis.rect.x = column.computedLeft + (axis.plotOffsetLeft ? axis.plotOffsetLeft : axisOffset);
+                    axis.rect.width -= (this.getAxisOffsetValue(axis.plotOffsetLeft, axis.plotOffsetRight, axis.plotOffset));
                     axis.rect.height = 0;
                 }
                 if (axis.opposedPosition) {
@@ -3860,6 +3876,11 @@ var CartesianAxisLayoutPanel = /** @__PURE__ @class */ (function () {
                 chart.columns[actualIndex] = column;
             }
         }
+    };
+    CartesianAxisLayoutPanel.prototype.getAxisOffsetValue = function (position1, position2, plotOffset) {
+        var rangeOffset = position1 ? (position1 + (position2 ? position2 :
+            plotOffset)) : (position2 ? position2 + plotOffset : 2 * plotOffset);
+        return rangeOffset;
     };
     CartesianAxisLayoutPanel.prototype.crossAt = function (chart) {
         for (var _i = 0, _a = chart.axisCollections; _i < _a.length; _i++) {
@@ -4382,6 +4403,7 @@ var CartesianAxisLayoutPanel = /** @__PURE__ @class */ (function () {
         var x = rect.x + padding;
         var y = rect.y + rect.height * 0.5;
         var options = new TextOption(chart.element.id + '_AxisTitle_' + index, x, y - this.padding, 'middle', axis.title, 'rotate(' + labelRotation + ',' + (x) + ',' + (y) + ')', null, labelRotation);
+        options.text = textTrim(axis.updatedRect.height, options.text, axis.titleStyle);
         var element = textElement(chart.renderer, options, axis.titleStyle, axis.titleStyle.color || chart.themeStyle.axisTitle, parent);
         element.setAttribute('tabindex', axis.tabIndex.toString());
         element.setAttribute('aria-label', axis.description || axis.title);
@@ -4781,6 +4803,7 @@ var CartesianAxisLayoutPanel = /** @__PURE__ @class */ (function () {
         padding = axis.opposedPosition ? -(padding + elementSize.height / 4 + scrollBarHeight) : (padding + (3 *
             elementSize.height / 4) + scrollBarHeight);
         var options = new TextOption(chart.element.id + '_AxisTitle_' + index, rect.x + rect.width * 0.5, rect.y + padding, 'middle', axis.title);
+        options.text = textTrim(axis.updatedRect.width, options.text, axis.titleStyle);
         var element = textElement(chart.renderer, options, axis.titleStyle, axis.titleStyle.color || chart.themeStyle.axisTitle, parent);
         element.setAttribute('aria-label', axis.description || axis.title);
         element.setAttribute('tabindex', axis.tabIndex.toString());
@@ -5388,7 +5411,7 @@ var SeriesBase = /** @__PURE__ @class */ (function (_super) {
         /**
          * The DataSource field that contains the x value.
          * It is applicable for series and technical indicators
-         * @default ''
+    
          */
         var _this = _super !== null && _super.apply(this, arguments) || this;
         /** @private */
@@ -5401,7 +5424,7 @@ var SeriesBase = /** @__PURE__ @class */ (function (_super) {
     }
     /**
      * Process data for the series.
-     * @hidden
+
      */
     SeriesBase.prototype.processJsonData = function () {
         var i = 0;
@@ -6313,7 +6336,7 @@ var MarkerExplode = /** @__PURE__ @class */ (function (_super) {
         return _this;
     }
     /**
-     * @hidden
+
      */
     MarkerExplode.prototype.addEventListener = function () {
         if (this.chart.isDestroyed) {
@@ -6323,7 +6346,7 @@ var MarkerExplode = /** @__PURE__ @class */ (function (_super) {
         this.chart.on(Browser.touchEndEvent, this.mouseUpHandler, this);
     };
     /**
-     * @hidden
+
      */
     MarkerExplode.prototype.removeEventListener = function () {
         if (this.chart.isDestroyed) {
@@ -6333,7 +6356,7 @@ var MarkerExplode = /** @__PURE__ @class */ (function (_super) {
         this.chart.off(Browser.touchEndEvent, this.mouseUpHandler);
     };
     /**
-     * @hidden
+
      */
     MarkerExplode.prototype.mouseUpHandler = function () {
         var chart = this.chart;
@@ -6342,7 +6365,7 @@ var MarkerExplode = /** @__PURE__ @class */ (function (_super) {
         }
     };
     /**
-     * @hidden
+
      */
     MarkerExplode.prototype.mouseMoveHandler = function () {
         var chart = this.chart;
@@ -6458,7 +6481,7 @@ var MarkerExplode = /** @__PURE__ @class */ (function (_super) {
         }
     };
     /**
-     * @hidden
+
      */
     MarkerExplode.prototype.removeHighlightedMarker = function () {
         var elements = document.getElementsByClassName('EJ2-Trackball');
@@ -7699,7 +7722,7 @@ var Chart = /** @__PURE__ @class */ (function (_super) {
     __extends(Chart, _super);
     /**
      * Constructor for creating the widget
-     * @hidden
+
      */
     function Chart(options, element) {
         var _this = _super.call(this, options, element) || this;
@@ -8761,9 +8784,15 @@ var Chart = /** @__PURE__ @class */ (function (_super) {
     };
     Chart.prototype.titleTooltip = function (event, x, y, isTouch) {
         var targetId = event.target.id;
-        var id = (targetId === (this.element.id + '_ChartTitle') || targetId === (this.element.id + '_ChartSubTitle'));
+        var id = (targetId === (this.element.id + '_ChartTitle') || targetId === (this.element.id + '_ChartSubTitle') ||
+            targetId.indexOf('_AxisTitle') > -1);
+        var index = 0;
+        if (targetId.indexOf('_AxisTitle') > -1) {
+            index = parseInt(((targetId.replace(this.element.id, '')).replace('AxisLabel_', '')).split('_')[2], 10);
+        }
         if (id && (event.target.textContent.indexOf('...') > -1)) {
-            var title = (targetId === (this.element.id + '_ChartTitle')) ? this.title : this.subTitle;
+            var title = (targetId === (this.element.id + '_ChartTitle')) ? this.title :
+                targetId.indexOf('_AxisTitle') > -1 ? this.axisCollections[index].title : this.subTitle;
             showTooltip(title, x, y, this.element.offsetWidth, this.element.id + '_EJ2_Title_Tooltip', getElement(this.element.id + '_Secondary_Element'), isTouch);
         }
         else {
@@ -16967,7 +16996,7 @@ var Crosshair = /** @__PURE__ @class */ (function () {
         this.addEventListener();
     }
     /**
-     * @hidden
+
      */
     Crosshair.prototype.addEventListener = function () {
         if (this.chart.isDestroyed) {
@@ -17561,7 +17590,7 @@ var BaseTooltip = /** @__PURE__ @class */ (function (_super) {
         }
     };
     /*
-    * @hidden
+
     */
     BaseTooltip.prototype.removeHighlightedMarker = function (data) {
         if (this.chart.markerRender) {
@@ -17650,7 +17679,7 @@ var Tooltip$1 = /** @__PURE__ @class */ (function (_super) {
         return _this;
     }
     /**
-     * @hidden
+
      */
     Tooltip$$1.prototype.addEventListener = function () {
         if (this.chart.isDestroyed) {
@@ -17762,8 +17791,8 @@ var Tooltip$1 = /** @__PURE__ @class */ (function (_super) {
         var rect = chart.chartAxisLayoutPanel.seriesClipRect;
         this.currentPoints = [];
         if (this.findData(data, this.previousPoints[0])) {
-            if (this.previousPoints[0] && data.point.index === this.previousPoints[0].point.index
-                && data.series.index === this.previousPoints[0].series.index) {
+            if (!(chart.dataEditingModule && chart.dataEditingModule.isPointDragging) && (this.previousPoints[0] &&
+                data.point.index === this.previousPoints[0].point.index && data.series.index === this.previousPoints[0].series.index)) {
                 return null;
             }
             if (this.pushData(data, isFirst, tooltipDiv, true)) {
@@ -18114,7 +18143,7 @@ var Tooltip$1 = /** @__PURE__ @class */ (function (_super) {
         return toolTip;
     };
     /*
-       * @hidden
+   
        */
     Tooltip$$1.prototype.removeHighlightedMarker = function (data) {
         for (var _i = 0, data_1 = data; _i < data_1.length; _i++) {
@@ -19000,7 +19029,7 @@ var Zoom = /** @__PURE__ @class */ (function () {
         return false;
     };
     /**
-     * @hidden
+
      */
     Zoom.prototype.addEventListener = function () {
         if (this.chart.isDestroyed) {
@@ -19013,7 +19042,7 @@ var Zoom = /** @__PURE__ @class */ (function () {
         this.chart.on(this.cancelEvent, this.mouseCancelHandler, this);
     };
     /**
-     * @hidden
+
      */
     Zoom.prototype.removeEventListener = function () {
         if (this.chart.isDestroyed) {
@@ -19044,7 +19073,7 @@ var Zoom = /** @__PURE__ @class */ (function () {
         return false;
     };
     /**
-     * @hidden
+
      */
     Zoom.prototype.mouseMoveHandler = function (e) {
         //Zooming for chart
@@ -19070,7 +19099,7 @@ var Zoom = /** @__PURE__ @class */ (function () {
         }
     };
     /**
-     * @hidden
+
      */
     Zoom.prototype.mouseDownHandler = function (e) {
         //Zooming for chart
@@ -19093,7 +19122,7 @@ var Zoom = /** @__PURE__ @class */ (function () {
         }
     };
     /**
-     * @hidden
+
      */
     Zoom.prototype.mouseUpHandler = function (e) {
         var chart = this.chart;
@@ -19112,7 +19141,7 @@ var Zoom = /** @__PURE__ @class */ (function () {
         }
     };
     /**
-     * @hidden
+
      */
     Zoom.prototype.mouseCancelHandler = function (e) {
         if (this.isZoomed) {
@@ -20368,6 +20397,11 @@ var DataEditing = /** @__PURE__ @class */ (function () {
      * @private.
      */
     function DataEditing(chart) {
+        /**
+         * @private
+         * It is used to identify point is dragging for data editing in other modules.
+         */
+        this.isPointDragging = false;
         this.chart = chart;
     }
     /**
@@ -20474,6 +20508,7 @@ var DataEditing = /** @__PURE__ @class */ (function () {
             }
             series.yMin = Math.min.apply(null, yValueArray);
             series.yMax = Math.max.apply(null, yValueArray);
+            this.isPointDragging = true;
             chart.refreshBound();
             chart.trigger(drag, {
                 seriesIndex: si, pointIndex: pi, series: series, point: series.points[pi],
@@ -20497,6 +20532,7 @@ var DataEditing = /** @__PURE__ @class */ (function () {
                 chart.visibleSeries[this.seriesIndex].points[this.pointIndex].y =
                     chart.visibleSeries[this.seriesIndex].points[this.pointIndex].yValue;
                 chart.isPointMouseDown = false;
+                this.isPointDragging = false;
                 this.seriesIndex = this.pointIndex = undefined;
             }
         }
@@ -24304,7 +24340,7 @@ var AccumulationSeries = /** @__PURE__ @class */ (function (_super) {
          * });
          * pie.appendTo('#Pie');
          * ```
-         * @default ''
+    
          */
         var _this = _super !== null && _super.apply(this, arguments) || this;
         /** @private */
@@ -27944,7 +27980,7 @@ var AccumulationTooltip = /** @__PURE__ @class */ (function (_super) {
         return _this;
     }
     /**
-     * @hidden
+
      */
     AccumulationTooltip.prototype.addEventListener = function () {
         if (this.accumulation.isDestroyed) {
@@ -29528,7 +29564,7 @@ var RangeSlider = /** @__PURE__ @class */ (function () {
         this.sliderY = bounds.y > this.thumpY ? this.thumpY : bounds.y;
         if (sliderGroup && !control.disableRangeSelector) {
             shadowElement = render.createDefs();
-            shadowElement.innerHTML = '<rect xmlns="http://www.w3.org/2000/svg" id="path-1" x="0" ' +
+            shadowElement.innerHTML = '<rect xmlns="http://www.w3.org/2000/svg" id="' + this.control.element.id + '_shadow' + '" x="0" ' +
                 'y="' + this.thumpY + '" width="' + control.themeStyle.thumbWidth + '" height="' + control.themeStyle.thumbHeight + '"' +
                 ' rx="' + (thump.type === 'Circle' ? '50%' : '0%') + '"/>' +
                 '<filter xmlns="http://www.w3.org/2000/svg" x="-25.0%" y="-20.0%" width="150.0%" height="150.0%"' +
@@ -29640,7 +29676,7 @@ var RangeSlider = /** @__PURE__ @class */ (function () {
         this.control.trigger('changed', argsData);
     };
     /**
-     * @hidden
+
      */
     RangeSlider.prototype.addEventListener = function () {
         if (this.control.isDestroyed) {
@@ -29652,7 +29688,7 @@ var RangeSlider = /** @__PURE__ @class */ (function () {
         this.control.on(Browser.isPointer ? 'pointerleave' : 'mouseleave', this.mouseCancelHandler, this);
     };
     /**
-     * @hidden
+
      */
     RangeSlider.prototype.removeEventListener = function () {
         if (this.control.isDestroyed) {
@@ -29665,7 +29701,7 @@ var RangeSlider = /** @__PURE__ @class */ (function () {
     };
     /**
      * Move move handler perfomed here
-     * @hidden
+
      * @param e
      */
     RangeSlider.prototype.mouseMoveHandler = function (e) {
@@ -29910,7 +29946,7 @@ var RangeNavigator = /** @__PURE__ @class */ (function (_super) {
     __extends$72(RangeNavigator, _super);
     /**
      * Constructor for creating the widget
-     * @hidden
+
      */
     function RangeNavigator(options, element) {
         var _this = _super.call(this, options, element) || this;
@@ -30142,6 +30178,7 @@ var RangeNavigator = /** @__PURE__ @class */ (function (_super) {
             return false;
         }
         this.animateSeries = false;
+        this.removeAllTooltip();
         if (this.resizeTo) {
             clearTimeout(this.resizeTo);
         }
@@ -30163,6 +30200,22 @@ var RangeNavigator = /** @__PURE__ @class */ (function (_super) {
             _this.chartSeries.renderChart(_this);
         }, 500);
         return false;
+    };
+    /**
+     * Bug task ID: EJ2-30797
+     * while resizing tooltip shows in wrong position
+     * Cause: Due to time lag in resize, tooltip did not remove until the component calculation
+     * Fix: Removed the tooltip element on resize
+     */
+    RangeNavigator.prototype.removeAllTooltip = function () {
+        if (this.tooltip.enable && this.tooltip.displayMode === 'Always') {
+            if (getElement(this.element.id + '_leftTooltip')) {
+                remove(getElement(this.element.id + '_leftTooltip'));
+            }
+            if (getElement(this.element.id + '_rightTooltip')) {
+                remove(getElement(this.element.id + '_rightTooltip'));
+            }
+        }
     };
     /**
      * Handles the mouse move.
@@ -30288,7 +30341,6 @@ var RangeNavigator = /** @__PURE__ @class */ (function (_super) {
                     break;
                 case 'series':
                 case 'enableRtl':
-                case 'dataSource':
                 case 'xName':
                 case 'yName':
                 case 'query':
@@ -30307,6 +30359,10 @@ var RangeNavigator = /** @__PURE__ @class */ (function (_super) {
                 case 'secondaryLabelAlignment':
                     renderer = true;
                     break;
+                case 'dataSource':
+                    renderer = true;
+                    refreshBounds = true;
+                    break;
                 case 'theme':
                     this.animateSeries = true;
                     break;
@@ -30324,6 +30380,14 @@ var RangeNavigator = /** @__PURE__ @class */ (function (_super) {
             this.removeSvg();
             this.chartSeries.xMin = Infinity;
             this.chartSeries.xMax = -Infinity;
+            this.chartSeries.renderChart(this);
+        }
+        // issue fix for Range Navigator size gets reduced when the data source is refreshed
+        if (refreshBounds && renderer) {
+            this.removeSvg();
+            this.chartSeries.xMin = Infinity;
+            this.chartSeries.xMax = -Infinity;
+            this.calculateBounds();
             this.chartSeries.renderChart(this);
         }
         if (refreshBounds) {
@@ -32041,7 +32105,7 @@ var StockSeries = /** @__PURE__ @class */ (function (_super) {
         /**
          * The DataSource field that contains the x value.
          * It is applicable for series and technical indicators
-         * @default ''
+    
          */
         var _this = _super !== null && _super.apply(this, arguments) || this;
         /** @private */
@@ -32850,7 +32914,7 @@ var StockChart = /** @__PURE__ @class */ (function (_super) {
     __extends$71(StockChart, _super);
     /**
      * Constructor for creating the widget
-     * @hidden
+
      */
     function StockChart(options, element) {
         var _this = _super.call(this, options, element) || this;
@@ -39820,7 +39884,7 @@ var SparklineTooltip = /** @__PURE__ @class */ (function () {
         this.addEventListener();
     }
     /**
-     * @hidden
+
      */
     SparklineTooltip.prototype.addEventListener = function () {
         if (this.sparkline.isDestroyed) {

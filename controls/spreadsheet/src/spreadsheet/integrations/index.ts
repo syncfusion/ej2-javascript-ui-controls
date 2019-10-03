@@ -9,3 +9,4 @@ export * from './open';
 export * from './save';
 export * from './context-menu';
 export * from './number-format';
+export * from './sort';

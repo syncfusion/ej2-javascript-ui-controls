@@ -4,22 +4,23 @@ import { IFieldOptions, IField } from '../../base/engine';
 import { SummaryTypes } from '../../base/types';
 import { FieldDroppedEventArgs } from '../base/interface';
 import { OlapEngine, IOlapField } from '../../base/olap/engine';
+import { isBlazor } from '@syncfusion/ej2-base';
 
 /**
  * `DataSourceUpdate` module is used to update the dataSource.
  */
-/** @hidden */
+
 export class DataSourceUpdate {
     public parent: PivotCommon;
-    /** @hidden */
+
     public btnElement: HTMLElement;
-    /** @hidden */
+
     /* tslint:disable-next-line */
     public control: any;
 
     /**
      * Constructor for the dialog action.
-     * @hidden
+
      */
     constructor(parent?: PivotCommon) {
         this.parent = parent;
@@ -32,7 +33,7 @@ export class DataSourceUpdate {
      * @param  {number} fieldCaption - Defines dropped position to the axis based on field position.
      * @method updateDataSource
      * @return {void}
-     * @hidden
+
      */
     public updateDataSource(fieldName: string, droppedClass: string, droppedPosition: number): void {
         let dataSourceItem: IFieldOptions;
@@ -69,48 +70,64 @@ export class DataSourceUpdate {
             let eventArgs: FieldDroppedEventArgs = {
                 'droppedField': dataSourceItem, 'dataSourceSettings': this.parent.dataSourceSettings, 'droppedAxis': droppedClass
             };
-            this.control.trigger(events.onFieldDropped, eventArgs);
-        }
-        if (dataSourceItem) {
-            switch (droppedClass) {
-                case 'filters':
-                    droppedPosition !== -1 ?
-                        this.parent.dataSourceSettings.filters.splice(droppedPosition as number, 0, dataSourceItem) :
-                        this.parent.dataSourceSettings.filters.push(dataSourceItem);
-                    break;
-                case 'rows':
-                    droppedPosition !== -1 ?
-                        this.parent.dataSourceSettings.rows.splice(droppedPosition as number, 0, dataSourceItem) :
-                        this.parent.dataSourceSettings.rows.push(dataSourceItem);
-                    break;
-                case 'columns':
-                    droppedPosition !== -1 ?
-                        this.parent.dataSourceSettings.columns.splice(droppedPosition as number, 0, dataSourceItem) :
-                        this.parent.dataSourceSettings.columns.push(dataSourceItem);
-                    break;
-                case 'values':
-                    droppedPosition !== -1 ?
-                        this.parent.dataSourceSettings.values.splice(droppedPosition as number, 0, dataSourceItem) :
-                        this.parent.dataSourceSettings.values.push(dataSourceItem);
-                    if (this.parent.dataType === 'olap' && !(this.parent.engineModule as OlapEngine).isMeasureAvail) {
-                        let measureField: IFieldOptions = {
-                            name: '[Measures]', caption: 'Measures', baseField: undefined, baseItem: undefined
-                        };
-                        let fieldAxis: IFieldOptions[] = this.parent.dataSourceSettings.valueAxis === 'row' ?
-                            this.parent.dataSourceSettings.rows : this.parent.dataSourceSettings.columns;
-                        fieldAxis.push(measureField);
+            /* tslint:disable */
+            let dataSourceUpdate: DataSourceUpdate = this;
+            this.control.trigger(events.onFieldDropped, eventArgs, (observedArgs: FieldDroppedEventArgs) => {
+                eventArgs = observedArgs;
+                if (dataSourceItem) {
+                    dataSourceItem = observedArgs.droppedField;
+                    switch (droppedClass) {
+                        case 'filters':
+                            droppedPosition !== -1 ?
+                                (isBlazor() ? dataSourceUpdate.parent.dataSourceSettings.filters.splice(droppedPosition, 0, dataSourceItem) : this.parent.dataSourceSettings.filters.splice(droppedPosition, 0, dataSourceItem)) :
+                                (isBlazor() ? dataSourceUpdate.parent.dataSourceSettings.filters.push(dataSourceItem) : this.parent.dataSourceSettings.filters.push(dataSourceItem));
+                            break;
+                        case 'rows':
+                            droppedPosition !== -1 ?
+                                (isBlazor() ? dataSourceUpdate.parent.dataSourceSettings.rows.splice(droppedPosition, 0, dataSourceItem) : this.parent.dataSourceSettings.rows.splice(droppedPosition, 0, dataSourceItem)) :
+                                (isBlazor() ? dataSourceUpdate.parent.dataSourceSettings.rows.push(dataSourceItem) : this.parent.dataSourceSettings.rows.push(dataSourceItem));
+                            break;
+                        case 'columns':
+                            droppedPosition !== -1 ?
+                                (isBlazor() ? dataSourceUpdate.parent.dataSourceSettings.columns.splice(droppedPosition, 0, dataSourceItem) : this.parent.dataSourceSettings.columns.splice(droppedPosition, 0, dataSourceItem)) :
+                                (isBlazor() ? dataSourceUpdate.parent.dataSourceSettings.columns.push(dataSourceItem) : this.parent.dataSourceSettings.columns.push(dataSourceItem));
+                            break;
+                        case 'values':
+                            droppedPosition !== -1 ?
+                                (isBlazor() ? dataSourceUpdate.parent.dataSourceSettings.values.splice(droppedPosition, 0, dataSourceItem) : this.parent.dataSourceSettings.values.splice(droppedPosition, 0, dataSourceItem)) :
+                                (isBlazor() ? dataSourceUpdate.parent.dataSourceSettings.values.push(dataSourceItem) : this.parent.dataSourceSettings.values.push(dataSourceItem));
+                            if (isBlazor()) {
+                                if (dataSourceUpdate.parent.dataType === 'olap' && !(dataSourceUpdate.parent.engineModule as OlapEngine).isMeasureAvail) {
+                                    let measureField: IFieldOptions = {
+                                        name: '[Measures]', caption: 'Measures', baseField: undefined, baseItem: undefined
+                                    };
+                                    let fieldAxis: IFieldOptions[] = dataSourceUpdate.parent.dataSourceSettings.valueAxis === 'row' ?
+                                        dataSourceUpdate.parent.dataSourceSettings.rows : dataSourceUpdate.parent.dataSourceSettings.columns;
+                                    fieldAxis.push(measureField);
+                                }
+                            } else {
+                                if (this.parent.dataType === 'olap' && !(this.parent.engineModule as OlapEngine).isMeasureAvail) {
+                                    let measureField: IFieldOptions = {
+                                        name: '[Measures]', caption: 'Measures', baseField: undefined, baseItem: undefined
+                                    };
+                                    let fieldAxis: IFieldOptions[] = this.parent.dataSourceSettings.valueAxis === 'row' ?
+                                        this.parent.dataSourceSettings.rows : this.parent.dataSourceSettings.columns;
+                                    fieldAxis.push(measureField);
+                                }
+                            }
+                            break;
                     }
-                    break;
-            }
+                }
+            });
         }
     }
-
+    /* tslint:enable */
     /**
      * Updates the dataSource by removing the given field from the dataSource.
      * @param  {string} fieldName - Defines dropped field name to remove dataSource.
      * @method removeFieldFromReport
      * @return {void}
-     * @hidden
+
      */
     public removeFieldFromReport(fieldName: string): IFieldOptions {
         let dataSourceItem: IFieldOptions;
@@ -135,8 +152,6 @@ export class DataSourceUpdate {
                             let engineModule: OlapEngine = this.parent.engineModule as OlapEngine;
                             if (engineModule && engineModule.fieldList[fieldName]) {
                                 engineModule.fieldList[fieldName].currrentMembers = {};
-                                engineModule.fieldList[fieldName].members = {};
-                                engineModule.fieldList[fieldName].filterMembers = [];
                                 engineModule.fieldList[fieldName].searchMembers = [];
                             }
                         }
@@ -154,7 +169,7 @@ export class DataSourceUpdate {
      * @param  {string} fieldName - Defines dropped field name to add dataSource.
      * @method getNewField
      * @return {void}
-     * @hidden
+
      */
     public getNewField(fieldName: string): IFieldOptions {
         let newField: IFieldOptions;

@@ -66,13 +66,13 @@ export class TreeMap extends Component<HTMLElement> implements INotifyPropertyCh
     public treeMapLegendModule: TreeMapLegend;
     /**
      * Specifies the width by given pixel or percentage.
-     * @default null
+
      */
     @Property(null)
     public width: string;
     /**
      * Specifies the height by given pixel or percentage.
-     * @default null
+
      */
     @Property(null)
     public height: string;
@@ -108,15 +108,15 @@ export class TreeMap extends Component<HTMLElement> implements INotifyPropertyCh
     public layoutType: LayoutMode;
     /**
      * Specifies the dataSource.
-     * @isGenericType true
-     * @isObservable true
-     * @default null
+
+
+
      */
     @Property(null)
     public dataSource: DataManager | TreeMapAjax | Object[];
     /**
      * Specifies the query for filter the data.
-     * @default null
+
      */
     @Property(null)
     public query: Query;
@@ -147,7 +147,7 @@ export class TreeMap extends Component<HTMLElement> implements INotifyPropertyCh
     public palette: string[];
     /**
      * Specifies the rendering of layout of the treemap items.
-     * @default TopLeftBottomRight
+
      */
     @Property('TopLeftBottomRight')
     public renderDirection: RenderingMode;
@@ -208,26 +208,26 @@ export class TreeMap extends Component<HTMLElement> implements INotifyPropertyCh
     public legendSettings: LegendSettingsModel;
     /**
      * To enable the separator
-     * @default false
+
      */
     @Property(false)
     public useGroupingSeparator: boolean;
     /**
      * Description for maps.
-     * @default null
+
      */
     @Property(null)
     public description: string;
 
     /**
      * TabIndex value for treemap.
-     * @default 1
+
      */
     @Property(1)
     public tabIndex: number;
     /**
      * To apply internationalization for treemap
-     * @default null
+
      */
     @Property(null)
     public format: string;
@@ -240,121 +240,121 @@ export class TreeMap extends Component<HTMLElement> implements INotifyPropertyCh
     /**
      * Triggers before the prints gets started.
      * @event
-     * @blazorProperty 'OnPrint'
+
      */
     @Event()
     public beforePrint: EmitType<IPrintEventArgs>;
     /**
      * Triggers after treemap rendered.
      * @event
-     * @blazorProperty 'Loaded'
+
      */
     @Event()
     public loaded: EmitType<ILoadedEventArgs>;
     /**
      * Triggers before item rendering.
      * @event
-     * @blazorProperty 'ItemRendering'
+
      */
     @Event()
     public itemRendering: EmitType<IItemRenderingEventArgs>;
     /**
      * Triggers the drillDown start.
      * @event
-     * @blazorProperty 'OnDrillStart'
+
      */
     @Event()
     public drillStart: EmitType<IDrillStartEventArgs>;
     /**
      * Triggers the drillDown end.
      * @event
-     * @blazorProperty 'DrillCompleted'
+
      */
     @Event()
     public drillEnd: EmitType<IDrillEndEventArgs>;
     /**
      * Triggers the item selected.
      * @event
-     * @blazorProperty 'ItemSelected'
+
      */
     @Event()
     public itemSelected: EmitType<IItemSelectedEventArgs>;
     /**
      * Triggers the item highlight.
      * @event
-     * @blazorProperty 'ItemHighlighted'
+
      */
     @Event()
     public itemHighlight: EmitType<IItemHighlightEventArgs>;
     /**
      * Triggers the tooltip rendering.
      * @event
-     * @blazorProperty 'TooltipRendering'
-     * @blazorType ITreeMapTooltipArgs
+
+
      */
     @Event()
     public tooltipRendering: EmitType<ITreeMapTooltipRenderEventArgs>;
     /**
      * Triggers the item click.
      * @event
-     * @blazorProperty 'OnItemClick'
+
      */
     @Event()
     public itemClick: EmitType<IItemClickEventArgs>;
     /**
      * Triggers the item move.
      * @event
-     * @blazorProperty 'OnItemMove'
+
      */
     @Event()
     public itemMove: EmitType<IItemMoveEventArgs>;
     /**
      * Triggers the click event.
      * @event
-     * @blazorProperty 'OnClick'
+
      */
     @Event()
     public click: EmitType<IItemClickEventArgs>;
     /**
      * Triggers on double clicking the maps.
      * @event
-     * @blazorProperty 'OnDoubleClick'
+
      */
     @Event()
     public doubleClick: EmitType<IDoubleClickEventArgs>;
     /**
      * Triggers on right clicking the maps.
      * @event
-     * @blazorProperty 'OnRightClick'
+
      */
     @Event()
     public rightClick: EmitType<IMouseMoveEventArgs>;
     /**
      * Triggers the mouse move event.
      * @event
-     * @blazorProperty 'OnMouseMove'
+
      */
     @Event()
     public mouseMove: EmitType<IMouseMoveEventArgs>;
     /**
      * Triggers the resize event.
      * @event
-     * @blazorProperty 'Resizing'
+
      */
     @Event()
     public resize: EmitType<IResizeEventArgs>;
     /**
      * Triggers the legend item rendering.
      * @event
-     * @blazorProperty 'LegendItemRendering'
+
      */
     @Event()
     public legendItemRendering: EmitType<ILegendItemRenderingEventArgs>;
     /**
      * Triggers the legend rendering event.
      * @event
-     * @deprecated
-     * @blazorProperty 'LegendRendering'
+
+
      */
     @Event()
     public legendRendering: EmitType<ILegendRenderingEventArgs>;

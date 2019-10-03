@@ -8,7 +8,7 @@ export interface SearchSettingsModel {
 
     /**
      * Enables or disables the allowSearchOnTyping.
-     * @default true
+
      */
     allowSearchOnTyping?: boolean;
 
@@ -17,14 +17,14 @@ export interface SearchSettingsModel {
      * * `contains`
      * * `startsWith`
      * * `endsWith`
-     * @default 'contains'
+
      */
     filterType?: FilterType;
 
     /**
      * If ignoreCase is set to false, searches files that match exactly,
      * else searches files that are case insensitive(uppercase and lowercase letters treated the same).
-     * @default true
+
      */
     ignoreCase?: boolean;
 

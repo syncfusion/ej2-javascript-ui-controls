@@ -27,7 +27,7 @@ export interface TooltipModel extends ComponentModel{
     /**
      * It is used to set the width of Tooltip component which accepts both string and number values.
      * When set to auto, the Tooltip width gets auto adjusted to display its content within the viewable screen.
-     * @default 'auto'
+
      */
     width?: string | number;
 
@@ -36,7 +36,7 @@ export interface TooltipModel extends ComponentModel{
      * When Tooltip content gets overflow due to height value then the scroll mode will be enabled.
      * Refer the documentation [here](https://ej2.syncfusion.com/documentation/tooltip/setting-dimension.html?lang=typescript)
      *  to know more about this property with demo.
-     * @default 'auto'
+
      */
     height?: string | number;
 
@@ -61,7 +61,7 @@ export interface TooltipModel extends ComponentModel{
      * It is used to set the position of Tooltip element, with respect to Target element.
      *
      * {% codeBlock src="tooltip/position-api/index.ts" %}{% endcodeBlock %}
-     * @default 'TopCenter'
+
      */
     position?: Position;
 
@@ -69,7 +69,7 @@ export interface TooltipModel extends ComponentModel{
      * It sets the space between the target and Tooltip element in X axis.
      *
      * {% codeBlock src="tooltip/offsetX-api/index.ts" %}{% endcodeBlock %}
-     * @default 0
+
      */
     offsetX?: number;
 
@@ -77,7 +77,7 @@ export interface TooltipModel extends ComponentModel{
      * It sets the space between the target and Tooltip element in Y axis.
      *
      * {% codeBlock src="tooltip/offsetX-api/index.ts" %}{% endcodeBlock %}
-     * @default 0
+
      */
     offsetY?: number;
 
@@ -85,7 +85,7 @@ export interface TooltipModel extends ComponentModel{
      * It is used to show or hide the tip pointer of Tooltip.
      *
      * {% codeBlock src="tooltip/offsetX-api/index.ts" %}{% endcodeBlock %}
-     * @default true
+
      */
     showTipPointer?: boolean;
 
@@ -96,7 +96,7 @@ export interface TooltipModel extends ComponentModel{
      * Refer the documentation
      *  [here](https://ej2.syncfusion.com/documentation/tooltip/position.html?lang=typescript#tip-pointer-positioning)
      *  to know more about this property with demo.
-     * @default 'Auto'
+
      */
     tipPointerPosition?: TipPointerPosition;
 
@@ -106,7 +106,7 @@ export interface TooltipModel extends ComponentModel{
      * If it is in touch device, it will show the Tooltip content when tap and holding on the target element.
      *
      * {% codeBlock src="tooltip/opensOn-api/index.ts" %}{% endcodeBlock %}
-     * @default 'Auto'
+
      */
     opensOn?: string;
 
@@ -116,7 +116,7 @@ export interface TooltipModel extends ComponentModel{
      *  to know more about this property with demo.
      *
      * {% codeBlock src="tooltip/offsetX-api/index.ts" %}{% endcodeBlock %}
-     * @default false
+
      */
     mouseTrail?: boolean;
 
@@ -124,7 +124,7 @@ export interface TooltipModel extends ComponentModel{
      * It is used to display the Tooltip in an open state until closed by manually.
      * Refer the documentation [here](https://ej2.syncfusion.com/documentation/tooltip/open-mode.html?lang=typescript#sticky-mode)
      *  to know more about this property with demo.
-     * @default false
+
      */
     isSticky?: boolean;
 
@@ -134,26 +134,26 @@ export interface TooltipModel extends ComponentModel{
      *  to know more about this property with demo.
      *
      * {% codeBlock src="tooltip/animation-api/index.ts" %}{% endcodeBlock %}
-     * @default { open: { effect: 'FadeIn', duration: 150, delay: 0 }, close: { effect: 'FadeOut', duration: 150, delay: 0 } }
+
      */
     animation?: AnimationModel;
 
     /**
      * It is used to open the Tooltip after the specified delay in milliseconds.
-     * @default 0
+
      */
     openDelay?: number;
 
     /**
      * It is used to close the Tooltip after a specified delay in milliseconds.
-     * @default 0
+
      */
     closeDelay?: number;
 
     /**
      * It is used to customize the Tooltip which accepts custom CSS class names that
      *  defines specific user-defined styles and themes to be applied on the Tooltip element.
-     * @default null
+
      */
     cssClass?: string;
 
@@ -166,7 +166,7 @@ export interface TooltipModel extends ComponentModel{
      *  [here](https://ej2.syncfusion.com/documentation/tooltip/content.html?lang=typescript#dynamic-content-via-ajax)
      *  to know more about this property with demo.
      * @event
-     * @blazorProperty 'OnRender'
+
      */
     beforeRender?: EmitType<TooltipEventArgs>;
 
@@ -176,49 +176,49 @@ export interface TooltipModel extends ComponentModel{
      * This event is mainly used for the purpose of refreshing the Tooltip positions dynamically or to
      *  set customized styles in it and so on.
      * @event
-     * @blazorProperty 'OnOpen'
+
      */
     beforeOpen?: EmitType<TooltipEventArgs>;
 
     /**
      * We can trigger `afterOpen` event after the Tooltip Component gets opened.
      * @event
-     * @blazorProperty 'Opened'
+
      */
     afterOpen?: EmitType<TooltipEventArgs>;
 
     /**
      * We can trigger `beforeClose` event before the Tooltip hides from the screen. If returned false, then the Tooltip is no more hidden.
      * @event
-     * @blazorProperty 'OnClose'
+
      */
     beforeClose?: EmitType<TooltipEventArgs>;
 
     /**
      * We can trigger `afterClose` event when the Tooltip Component gets closed.
      * @event
-     * @blazorProperty 'Closed'
+
      */
     afterClose?: EmitType<TooltipEventArgs>;
 
     /**
      * We can trigger `beforeCollision` event for every collision fit calculation.
      * @event
-     * @blazorProperty 'OnCollision'
+
      */
     beforeCollision?: EmitType<TooltipEventArgs>;
 
     /**
      * We can trigger `created` event after the Tooltip component is created.
      * @event
-     * @blazorProperty 'Created'
+
      */
     created?: EmitType<Object>;
 
     /**
      * We can trigger `destroyed` event when the Tooltip component is destroyed.
      * @event
-     * @blazorProperty 'Destroyed'
+
      */
     destroyed?: EmitType<Object>;
 

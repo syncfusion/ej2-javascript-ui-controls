@@ -1,8 +1,12 @@
-import { IPivotValues } from './engine';
+import { IPivotValues, IDataOptions, IFieldOptions, IFilter, ISort } from './engine';
+import { IDrillOptions, IValueSortSettings, IGroupSettings, IConditionalFormatSettings } from './engine';
+import { extend, isNullOrUndefined } from '@syncfusion/ej2-base';
+import { PivotView } from '../pivotview';
+import { PivotFieldList } from '../pivotfieldlist';
 
 /**
  * This is a file to perform common utility for OLAP and Relational datasource
- * @hidden
+
  */
 
 export class PivotUtil {
@@ -73,5 +77,83 @@ export class PivotUtil {
             }
         }
         return -1;
+    }
+
+    public static getClonedDataSourceSettings(dataSourceSettings: IDataOptions): IDataOptions {
+        let clonesDataSource: IDataOptions = {
+            catalog: dataSourceSettings.catalog,
+            cube: dataSourceSettings.cube,
+            providerType: dataSourceSettings.providerType,
+            url: dataSourceSettings.url,
+            localeIdentifier: dataSourceSettings.localeIdentifier,
+            excludeFields: isNullOrUndefined(dataSourceSettings.excludeFields) ? [] : [...dataSourceSettings.excludeFields],
+            expandAll: dataSourceSettings.expandAll,
+            allowLabelFilter: dataSourceSettings.allowLabelFilter,
+            allowValueFilter: dataSourceSettings.allowValueFilter,
+            enableSorting: dataSourceSettings.enableSorting ? true : false,
+            rows: extend([], dataSourceSettings.rows, null, true) as IFieldOptions[],
+            columns: extend([], dataSourceSettings.columns, null, true) as IFieldOptions[],
+            filters: extend([], dataSourceSettings.filters, null, true) as IFieldOptions[],
+            filterSettings: extend([], dataSourceSettings.filterSettings, null, true) as IFilter[],
+            sortSettings: extend([], dataSourceSettings.sortSettings, null, true) as ISort[],
+            drilledMembers: extend([], dataSourceSettings.drilledMembers, null, true) as IDrillOptions[],
+            valueSortSettings: extend({}, dataSourceSettings.valueSortSettings, null, true) as IValueSortSettings,
+            valueAxis: dataSourceSettings.valueAxis,
+            formatSettings: extend([], dataSourceSettings.formatSettings, null, true) as IDrillOptions[],
+            calculatedFieldSettings: extend([], dataSourceSettings.calculatedFieldSettings, null, true) as IDrillOptions[],
+            showSubTotals: dataSourceSettings.showSubTotals,
+            showRowSubTotals: dataSourceSettings.showRowSubTotals,
+            showColumnSubTotals: dataSourceSettings.showColumnSubTotals,
+            showGrandTotals: dataSourceSettings.showGrandTotals,
+            showRowGrandTotals: dataSourceSettings.showRowGrandTotals,
+            showColumnGrandTotals: dataSourceSettings.showColumnGrandTotals,
+            showHeaderWhenEmpty: dataSourceSettings.showHeaderWhenEmpty,
+            alwaysShowValueHeader: dataSourceSettings.alwaysShowValueHeader,
+            conditionalFormatSettings: extend([], dataSourceSettings.conditionalFormatSettings, null, true) as IConditionalFormatSettings[],
+            emptyCellsTextContent: dataSourceSettings.emptyCellsTextContent,
+            groupSettings: extend([], dataSourceSettings.groupSettings, null, true) as IGroupSettings[]
+        };
+        return clonesDataSource;
+    }
+
+    public static updateDataSourceSettings(control: PivotView | PivotFieldList, dataSourceSettings: IDataOptions): void {
+        if (control) {
+            /* tslint:disable */
+            control.setProperties({
+                dataSourceSettings: {
+                    catalog: dataSourceSettings.catalog,
+                    cube: dataSourceSettings.cube,
+                    providerType: dataSourceSettings.providerType,
+                    url: dataSourceSettings.url,
+                    localeIdentifier: dataSourceSettings.localeIdentifier,
+                    excludeFields: isNullOrUndefined(dataSourceSettings.excludeFields) ? [] : dataSourceSettings.excludeFields,
+                    expandAll: dataSourceSettings.expandAll,
+                    allowLabelFilter: dataSourceSettings.allowLabelFilter,
+                    allowValueFilter: dataSourceSettings.allowValueFilter,
+                    enableSorting: dataSourceSettings.enableSorting ? true : false,
+                    rows: dataSourceSettings.rows,
+                    columns: dataSourceSettings.columns,
+                    filters: dataSourceSettings.filters,
+                    filterSettings: dataSourceSettings.filterSettings,
+                    sortSettings: dataSourceSettings.sortSettings,
+                    drilledMembers: dataSourceSettings.drilledMembers,
+                    valueSortSettings: dataSourceSettings.valueSortSettings,
+                    valueAxis: dataSourceSettings.valueAxis,
+                    formatSettings: dataSourceSettings.formatSettings,
+                    calculatedFieldSettings: dataSourceSettings.calculatedFieldSettings,
+                    showSubTotals: dataSourceSettings.showSubTotals,
+                    showRowSubTotals: dataSourceSettings.showRowSubTotals,
+                    showColumnSubTotals: dataSourceSettings.showColumnSubTotals,
+                    showGrandTotals: dataSourceSettings.showGrandTotals,
+                    showRowGrandTotals: dataSourceSettings.showRowGrandTotals,
+                    showColumnGrandTotals: dataSourceSettings.showColumnGrandTotals,
+                    showHeaderWhenEmpty: dataSourceSettings.showHeaderWhenEmpty,
+                    alwaysShowValueHeader: dataSourceSettings.alwaysShowValueHeader,
+                    conditionalFormatSettings: dataSourceSettings.conditionalFormatSettings,
+                    emptyCellsTextContent: dataSourceSettings.emptyCellsTextContent,
+                    groupSettings: dataSourceSettings.groupSettings
+                }
+            }, true);
+        }
     }
 }

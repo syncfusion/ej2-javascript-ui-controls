@@ -62,7 +62,7 @@ export interface AccordionClickArgs extends BaseEventArgs {
   item?: AccordionItemModel;
   /** 
    * Defines the current Event arguments.
-   * @blazorType MouseEventArgs
+
    */
   originalEvent?: Event;
 }
@@ -97,21 +97,21 @@ export interface ExpandedEventArgs extends BaseEventArgs {
 export class AccordionActionSettings extends ChildProperty<AccordionActionSettings> {
   /**
    * Specifies the type of animation.
-   * @default 'SlideDown'
-   * @aspType string
-   * @blazorType string
+
+
+
    */
   @Property('SlideDown')
   public effect: 'None' | Effect;
   /**
    * Specifies the duration to animate.
-   * @default 400
+
    */
   @Property(400)
   public duration: number;
   /**
    * Specifies the animation timing function.
-   * @default 'linear'
+
    */
   @Property('linear')
   public easing: string;
@@ -120,13 +120,13 @@ export class AccordionActionSettings extends ChildProperty<AccordionActionSettin
 export class AccordionAnimationSettings extends ChildProperty<AccordionAnimationSettings> {
   /**
    * Specifies the animation to appear while collapsing the Accordion item.
-   * @default { effect: 'SlideDown', duration: 400, easing: 'linear' }
+
    */
   @Complex<AccordionActionSettingsModel>({ effect: 'SlideUp', duration: 400, easing: 'linear' }, AccordionActionSettings)
   public collapse: AccordionActionSettingsModel;
   /**
    * Specifies the animation to appear while expanding the Accordion item.
-   * @default { effect: 'SlideDown', duration: 400, easing: 'linear' }
+
    */
   @Complex<AccordionActionSettingsModel>({ effect: 'SlideDown', duration: 400, easing: 'linear' }, AccordionActionSettings)
   public expand: AccordionActionSettingsModel;
@@ -148,7 +148,7 @@ export class AccordionItem extends ChildProperty<AccordionItem>  {
      *        });
      *   accordionObj.appendTo('#accordion');
      * ```
-     * @default null
+
      */
     @Property(null)
     public content: string;
@@ -165,13 +165,13 @@ export class AccordionItem extends ChildProperty<AccordionItem>  {
      *        });
      *   accordionObj.appendTo('#accordion');
      * ```
-     * @default null
+
      */
     @Property(null)
     public header: string;
     /**
      * Defines single/multiple classes (separated by a space) are to be used for Accordion item customization.
-     * @default null
+
      */
     @Property(null)
     public cssClass: string;
@@ -191,13 +191,13 @@ export class AccordionItem extends ChildProperty<AccordionItem>  {
      *   content: "\e710";
      * }
      * ```
-     * @default null
+
      */
     @Property(null)
     public iconCss: string;
     /**
      * Sets the expand (true) or collapse (false) state of the Accordion item. By default, all the items are in a collapsed state.
-     * @default false
+
      */
     @Property(false)
     public expanded: Boolean;
@@ -248,38 +248,38 @@ export class Accordion extends Component<HTMLElement> implements INotifyProperty
      *        });
      *   accordionObj.appendTo('#accordion');
      * ```
-     * @default []
+
      */
     @Collection<AccordionItemModel>([], AccordionItem)
     public items: AccordionItemModel[];
     /**
      * Specifies the datasource for the accordion items.
-     * @isdatamanager false
-     * @default []
+
+
      */
     @Property([])
     public dataSource: Object[];
     /**
      * Specifies the template option for accordion items.
-     * @default null
+
      */
     @Property()
     public itemTemplate: string;
     /**
      * Specifies the header title template option for accordion items.
-     * @default null
+
      */
      @Property()
      public headerTemplate: string;
     /**
      * Specifies the width of the Accordion in pixels/number/percentage. Number value is considered as pixels.
-     * @default '100%'
+
      */
     @Property('100%')
     public width: string | number;
     /**
      * Specifies the height of the Accordion in pixels/number/percentage. Number value is considered as pixels.
-     * @default 'auto'
+
      */
     @Property('auto')
     public height: string | number;
@@ -288,13 +288,13 @@ export class Accordion extends Component<HTMLElement> implements INotifyProperty
      * The possible values are:
      * - Single: Sets to expand only one Accordion item at a time.
      * - Multiple: Sets to expand more than one Accordion item at a time.
-     * @default 'Multiple'
+
      */
     @Property('Multiple')
     public expandMode: ExpandMode;
     /**
      * Specifies the animation configuration settings for expanding and collapsing the panel.
-     * @default { expand: { effect: 'SlideDown', duration: 400, easing: 'linear' },
+
      * collapse: { effect: 'SlideUp', duration: 400, easing: 'linear' }}
      */
     @Complex<AccordionAnimationSettingsModel>({}, AccordionAnimationSettings)
@@ -302,35 +302,35 @@ export class Accordion extends Component<HTMLElement> implements INotifyProperty
     /**
      * The event will be fired while clicking anywhere within the Accordion.
      * @event
-     * @blazorProperty 'Clicked'
+
      */
     @Event()
     public clicked: EmitType<AccordionClickArgs>;
     /**
      * The event will be fired before the item gets collapsed/expanded.
      * @event
-     * @blazorProperty 'Expanding'
+
      */
     @Event()
     public expanding: EmitType<ExpandEventArgs>;
     /**
      * The event will be fired after the item gets collapsed/expanded.
      * @event
-     * @blazorProperty 'Expanded'
+
      */
     @Event()
     public expanded: EmitType<ExpandedEventArgs>;
     /**
      * The event will be fired once the control rendering is completed.
      * @event
-     * @blazorProperty 'Created'
+
      */
     @Event()
     public created: EmitType<Event>;
     /**
      * The event will be fired when the control gets destroyed.
      * @event
-     * @blazorProperty 'Destroyed'
+
      */
     @Event()
     public destroyed: EmitType<Event>;
@@ -595,10 +595,10 @@ export class Accordion extends Component<HTMLElement> implements INotifyProperty
            let ctn: HTEle = this.contentRendering(index);
            ele.appendChild(ctn);
          });
-         this.updateContentBlazorTemplate(eventArgs.item, index);
        } else {
          acrdnItem.appendChild(this.contentRendering(index));
        }
+       this.updateContentBlazorTemplate(eventArgs.item, index);
        this.ariaAttrUpdate(acrdnItem);
      }
      this.trigger('clicked', eventArgs);

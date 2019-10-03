@@ -56,7 +56,7 @@ export class VScroll extends Component<HTMLElement> implements INotifyPropertyCh
 
     /**
      * Specifies the up or down scrolling distance of the vertical scrollbar moving.
-     * @default null
+
      */
     @Property(null)
     public scrollStep: number;

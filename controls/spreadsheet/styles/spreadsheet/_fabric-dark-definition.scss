@@ -1,55 +1,54 @@
 //default
-$spreadsheet-border-color: transparent !default;
+$sheet-skin: 'fabric-dark' !default;
+$spreadsheet-border-color: $neutral-quintenary !default;
 $spreadsheet-border-width: 1px;
-$spreadsheet-border: none !default;
-$spreadsheet-bg-color: transparent !default;
-$header-cell-bg-color: initial !default;
-$header-cell-color: initial !default;
+$spreadsheet-border: $spreadsheet-border-width solid $spreadsheet-border-color !default;
+$header-cell-bg-color: $neutral-white !default;
+$header-cell-color: $neutral-light-font !default;
 $select-all-size: 26px !default;
 $select-all-bg-color: $spreadsheet-border-color !default;
-$select-all-hover-bg-color: $spreadsheet-border-color !default;
-$select-all-active-bg-color: $spreadsheet-border-color !default;
+$select-all-hover-bg-color: $neutral-tertiary-alt !default;
+$select-all-active-bg-color: $theme-primary !default;
 $cell-background: #fff !default;
 $cell-color: #000 !default;
-$cell-border-color: $spreadsheet-border-color !default;
+$cell-border-color: #e0e0e0 !default;
+$hdr-cell-border-color: $neutral-quintenary !default;
 //enddefault
 //selection
-$selection-bg-color: lighten($theme-primary, 32%);
+$selection-bg-color: rgba($theme-primary, .2) !default;
 $selection-border-color: $theme-primary !default;
-$hdr-selection-bg-color: #e6e6e6;
-$hdr-selection-border: 1px solid;
-$hdr-selection-border-color: #000;
-$hdr-selection-color: #424242;
-$hdr-hover-bg-color: #eee;
+$hdr-selection-bg-color: $neutral-quintenary !default;
+$hdr-selection-border: 1px solid !default;
+$hdr-selection-border-color: $neutral-tertiary-alt !default;
+$hdr-selection-color: $neutral-light-fontalt !default;
+$hdr-hover-bg-color: $neutral-tertiary-alt !default;
 //end selection
 //Tab
 $sheets-btn-height: 38px !default;
+$bigger-formula-bar-font-size: 15px !default;
 $msheets-btn-height: 48px !default;
-$sheet-tab-panel-bg-color: initial !default;
-$sheet-tab-bg-color: $sheet-tab-panel-bg-color !default;
-$sheet-tab-hover-bg-color: $spreadsheet-border-color !default;
-$sheet-tab-active-bg-color: initial !default;
-$select-icon-color: initial !default;
+$sheet-tab-panel-bg-color: $neutral-lighter !default;
+$sheet-tab-bg-color: $neutral-lighter !default;
+$sheet-tab-hover-bg-color: $neutral-tertiary-alt !default;
+$sheet-tab-active-bg-color: $neutral-quintenary !default;
+$select-icon-color: $theme-primary !default;
 //End Tab
 //Formula bar
+$formula-bar-bg-color: $neutral-white !default;
 $formula-bar-font-size: 14px !default;
-$formula-bar-height: 24px !default;
 $name-box-width: 112px !default;
 $namebox-icon-size: 10px !default;
-$formula-textarea-width: calc(100% - 166px) !default;
-$formula-bar-color: initial !default;
-$insert-fn-icon-color: initial !default;
+$formula-textarea-width: calc(100% - 168px) !default;
+$formula-bar-color: $neutral-light-font !default;
 $mformula-bar-height: 40px !default;
 $expand-icon-margin: 4px !default;
 //End formula bar
 //Insert dialog box
-$dlg-list-border-color: 1px solid #e0e0e0;
-$dlg-list-active: #f5f5f5;
-$dlg-list-color: #000;
-$dlg-description-font-weight: 550;
-$dlg-content-padding: 28px 18px 10px;
-$dlg-category-margin-bottom: 5px;
-$dlg-min-height: 510px;
+$dlg-list-border: 1px solid $neutral-light !default;
+$dlg-description-font-weight: 550 !default;
+$dlg-content-padding: 18px !default;
+$dlg-category-margin-bottom: 5px !default;
+$dlg-min-height: 510px !default;
 //End Insert dialogbox
 //Ribbon
 $fontsize-btn-width: 71px !default;
@@ -72,3 +71,7 @@ $ribbon-item-active-border-color: transparent !default;
 $font-family-collection: ('Arial', 'Arial Black', 'Axettac Demo', 'Batang', 'Book Antiqua', 'Calibri', 'Courier', 'Courier New', 'Din Condensed', 'Georgia', 'Helvetica', 'Helvetica New', 'Roboto', 'Tahoma', 'Times New Roman', 'Verdana') !default;
 $normal-btn-padding: 8px !default;
 //End Ribbon
+//Sorting
+$sort-error-bg-color: #fce7e9;
+$sort-error-font-color: #333;
+//End Sorting

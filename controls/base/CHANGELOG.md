@@ -2,6 +2,15 @@
 
 ## [Unreleased]
 
+## 17.3.14 (2019-10-03)
+
+### Common
+
+#### Bug Fixes
+
+- `#240169` - Resolved Drag and drop doesn't work, if `Drag element` is partially hidden.
+- `#240696` - Fixed the positioning of the draggable element without clone misbehaves after scrolling.
+
 ## 17.2.49 (2019-09-04)
 
 ### Common

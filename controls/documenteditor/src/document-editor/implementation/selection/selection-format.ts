@@ -64,16 +64,16 @@ export class SelectionCharacterFormat {
     public styleName: string;
     /**
      * Gets the font size of selected contents.
-     * @aspType int
-     * @blazorType int
+
+
      */
     public get fontSize(): number {
         return this.fontSizeIn;
     }
     /**
      * Sets the font size of selected contents.
-     * @aspType int
-     * @blazorType int
+
+
      */
     public set fontSize(value: number) {
         if (value === this.fontSizeIn) {
@@ -84,16 +84,16 @@ export class SelectionCharacterFormat {
     }
     /**
      * Gets or sets the font family of selected contents.
-     * @aspType string
-     * @blazorType string
+
+
      */
     public get fontFamily(): string {
         return this.fontFamilyIn;
     }
     /**
      * Sets the font family of selected contents.
-     * @aspType string
-     * @blazorType string
+
+
      */
     public set fontFamily(value: string) {
         if (value === this.fontFamilyIn) {
@@ -104,16 +104,16 @@ export class SelectionCharacterFormat {
     }
     /**
      * Gets or sets the font color of selected contents.
-     * @aspType string
-     * @blazorType string
+
+
      */
     public get fontColor(): string {
         return this.fontColorIn;
     }
     /**
      * Sets the font color of selected contents.
-     * @aspType string
-     * @blazorType string
+
+
      */
     public set fontColor(value: string) {
         if (value === this.fontColorIn) {
@@ -124,16 +124,16 @@ export class SelectionCharacterFormat {
     }
     /**
      * Gets or sets the bold formatting of selected contents.
-     * @aspType bool
-     * @blazorType bool
+
+
      */
     public get bold(): boolean {
         return this.boldIn;
     }
     /**
      * Sets the bold formatting of selected contents.
-     * @aspType bool
-     * @blazorType bool
+
+
      */
     public set bold(value: boolean) {
         if (value === this.boldIn) {
@@ -144,16 +144,16 @@ export class SelectionCharacterFormat {
     }
     /**
      * Gets or sets the italic formatting of selected contents.
-     * @aspType bool
-     * @blazorType bool
+
+
      */
     public get italic(): boolean {
         return this.italicIn;
     }
     /**
      * Sets the italic formatting of selected contents.
-     * @aspType bool
-     * @blazorType bool
+
+
      */
     public set italic(value: boolean) {
         if (value === this.italic) {
@@ -471,18 +471,18 @@ export class SelectionParagraphFormat {
     public styleName: string;
     /**
      * Gets or Sets the left indent for selected paragraphs.
-     * @default undefined
-     * @aspType int
-     * @blazorType int
+
+
+
      */
     public get leftIndent(): number {
         return this.leftIndentIn;
     }
     /**
      * Sets the left indent for selected paragraphs.
-     * @default undefined
-     * @aspType int
-     * @blazorType int
+
+
+
      */
     public set leftIndent(value: number) {
         if (value === this.leftIndentIn) {
@@ -493,18 +493,18 @@ export class SelectionParagraphFormat {
     }
     /**
      * Gets or Sets the right indent for selected paragraphs.
-     * @default undefined
-     * @aspType int
-     * @blazorType int
+
+
+
      */
     public get rightIndent(): number {
         return this.rightIndentIn;
     }
     /**
      * Sets the right indent for selected paragraphs.
-     * @default undefined
-     * @aspType int
-     * @blazorType int
+
+
+
      */
     public set rightIndent(value: number) {
         if (value === this.rightIndentIn) {
@@ -515,18 +515,18 @@ export class SelectionParagraphFormat {
     }
     /**
      * Gets or Sets the first line indent for selected paragraphs.
-     * @default undefined
-     * @aspType int
-     * @blazorType int
+
+
+
      */
     public get firstLineIndent(): number {
         return this.firstLineIndentIn;
     }
     /**
      * Sets the first line indent for selected paragraphs.
-     * @default undefined
-     * @aspType int
-     * @blazorType int
+
+
+
      */
     public set firstLineIndent(value: number) {
         if (value === this.firstLineIndentIn) {
@@ -537,14 +537,14 @@ export class SelectionParagraphFormat {
     }
     /**
      * Gets or Sets the text alignment for selected paragraphs.
-     * @default undefined
+
      */
     public get textAlignment(): TextAlignment {
         return this.textAlignmentIn;
     }
     /**
      * Sets the text alignment for selected paragraphs.
-     * @default undefined
+
      */
     public set textAlignment(value: TextAlignment) {
         if (value === this.textAlignmentIn) {
@@ -555,18 +555,18 @@ export class SelectionParagraphFormat {
     }
     /**
      * Sets the after spacing for selected paragraphs.
-     * @default undefined
-     * @aspType int
-     * @blazorType int
+
+
+
      */
     public get afterSpacing(): number {
         return this.afterSpacingIn;
     }
     /**
      * Gets or Sets the after spacing for selected paragraphs.
-     * @default undefined
-     * @aspType int
-     * @blazorType int
+
+
+
      */
     public set afterSpacing(value: number) {
         if (value === this.afterSpacingIn) {
@@ -577,18 +577,18 @@ export class SelectionParagraphFormat {
     }
     /**
      * Gets or Sets the before spacing for selected paragraphs.
-     * @default undefined
-     * @aspType int
-     * @blazorType int
+
+
+
      */
     public get beforeSpacing(): number {
         return this.beforeSpacingIn;
     }
     /**
      * Sets the before spacing for selected paragraphs.
-     * @default undefined
-     * @aspType int
-     * @blazorType int
+
+
+
      */
     public set beforeSpacing(value: number) {
         if (value === this.beforeSpacingIn) {
@@ -599,18 +599,18 @@ export class SelectionParagraphFormat {
     }
     /**
      * Gets or Sets the line spacing for selected paragraphs.
-     * @default undefined
-     * @aspType int
-     * @blazorType int
+
+
+
      */
     public get lineSpacing(): number {
         return this.lineSpacingIn;
     }
     /**
      * Sets the line spacing for selected paragraphs.
-     * @default undefined
-     * @aspType int
-     * @blazorType int
+
+
+
      */
     public set lineSpacing(value: number) {
         if (value === this.lineSpacingIn) {
@@ -621,14 +621,14 @@ export class SelectionParagraphFormat {
     }
     /**
      * Gets or Sets the line spacing type for selected paragraphs.
-     * @default undefined
+
      */
     public get lineSpacingType(): LineSpacingType {
         return this.lineSpacingTypeIn;
     }
     /**
      * Gets or Sets the line spacing type for selected paragraphs.
-     * @default undefined
+
      */
     public set lineSpacingType(value: LineSpacingType) {
         if (value === this.lineSpacingTypeIn) {
@@ -639,18 +639,18 @@ export class SelectionParagraphFormat {
     }
     /**
      * Sets the list level number for selected paragraphs.
-     * @default undefined
-     * @aspType int
-     * @blazorType int
+
+
+
      */
     public get listLevelNumber(): number {
         return this.listLevelNumberIn;
     }
     /**
      * Gets or Sets the list level number for selected paragraphs.
-     * @default undefined
-     * @aspType int
-     * @blazorType int
+
+
+
      */
     public set listLevelNumber(value: number) {
         if (value === this.listLevelNumberIn) {
@@ -661,16 +661,16 @@ export class SelectionParagraphFormat {
     }
     /**
      * Gets or Sets the bidirectional property for selected paragraphs
-     * @aspType bool
-     * @blazorType bool
+
+
      */
     public get bidi(): boolean {
         return this.bidiIn;
     }
     /**
      * Sets the bidirectional property for selected paragraphs
-     * @aspType bool
-     * @blazorType bool
+
+
      */
     public set bidi(value: boolean) {
         this.bidiIn = value;
@@ -678,16 +678,16 @@ export class SelectionParagraphFormat {
     }
     /**
      * Gets or sets a value indicating whether to add space between the paragraphs of same style.
-     * @aspType bool
-     * @blazorType bool
+
+
      */
     public get contextualSpacing(): boolean {
         return this.contextualSpacingIn;
     }
     /**
      * Sets a value indicating whether to add space between the paragraphs of same style.
-     * @aspType bool
-     * @blazorType bool
+
+
      */
     public set contextualSpacing(value: boolean) {
         this.contextualSpacingIn = value;
@@ -695,8 +695,8 @@ export class SelectionParagraphFormat {
     }
     /**
      * Gets the list text for selected paragraphs.
-     * @aspType string
-     * @blazorType string
+
+
      */
     public get listText(): string {
         let listFormat: string = undefined;
@@ -1041,16 +1041,16 @@ export class SelectionSectionFormat {
     public bidi: boolean = undefined;
     /**
      * Gets or sets the page height.
-     * @aspType int
-     * @blazorType int
+
+
      */
     public get pageHeight(): number {
         return this.pageHeightIn;
     }
     /**
      * Gets or sets the page height.
-     * @aspType int
-     * @blazorType int
+
+
      */
     public set pageHeight(value: number) {
         this.pageHeightIn = value;
@@ -1058,16 +1058,16 @@ export class SelectionSectionFormat {
     }
     /**
      * Gets or sets the page width.
-     * @aspType int
-     * @blazorType int
+
+
      */
     public get pageWidth(): number {
         return this.pageWidthIn;
     }
     /**
      * Gets or sets the page width.
-     * @aspType int
-     * @blazorType int
+
+
      */
     public set pageWidth(value: number) {
         this.pageWidthIn = value;
@@ -1075,16 +1075,16 @@ export class SelectionSectionFormat {
     }
     /**
      * Gets or sets the page left margin.
-     * @aspType int
-     * @blazorType int
+
+
      */
     public get leftMargin(): number {
         return this.leftMarginIn;
     }
     /**
      * Gets or sets the page left margin.
-     * @aspType int
-     * @blazorType int
+
+
      */
     public set leftMargin(value: number) {
         this.leftMarginIn = value;
@@ -1092,16 +1092,16 @@ export class SelectionSectionFormat {
     }
     /**
      * Gets or sets the page bottom margin.
-     * @aspType int
-     * @blazorType int
+
+
      */
     public get bottomMargin(): number {
         return this.bottomMarginIn;
     }
     /**
      * Gets or sets the page bottom margin.
-     * @aspType int
-     * @blazorType int
+
+
      */
     public set bottomMargin(value: number) {
         this.bottomMarginIn = value;
@@ -1109,16 +1109,16 @@ export class SelectionSectionFormat {
     }
     /**
      * Gets or sets the page top margin.
-     * @aspType int
-     * @blazorType int
+
+
      */
     public get topMargin(): number {
         return this.topMarginIn;
     }
     /**
      * Gets or sets the page top margin.
-     * @aspType int
-     * @blazorType int
+
+
      */
     public set topMargin(value: number) {
         this.topMarginIn = value;
@@ -1126,16 +1126,16 @@ export class SelectionSectionFormat {
     }
     /**
      * Gets or sets the page right margin.
-     * @aspType int
-     * @blazorType int
+
+
      */
     public get rightMargin(): number {
         return this.rightMarginIn;
     }
     /**
      * Gets or sets the page right margin.
-     * @aspType int
-     * @blazorType int
+
+
      */
     public set rightMargin(value: number) {
         this.rightMarginIn = value;
@@ -1143,16 +1143,16 @@ export class SelectionSectionFormat {
     }
     /**
      * Gets or sets the header distance.
-     * @aspType int
-     * @blazorType int
+
+
      */
     public get headerDistance(): number {
         return this.headerDistanceIn;
     }
     /**
      * Gets or sets the header distance.
-     * @aspType int
-     * @blazorType int
+
+
      */
     public set headerDistance(value: number) {
         this.headerDistanceIn = value;
@@ -1160,16 +1160,16 @@ export class SelectionSectionFormat {
     }
     /**
      * Gets or sets the footer distance.
-     * @aspType int
-     * @blazorType int
+
+
      */
     public get footerDistance(): number {
         return this.footerDistanceIn;
     }
     /**
      * Gets or sets the footer distance.
-     * @aspType int
-     * @blazorType int
+
+
      */
     public set footerDistance(value: number) {
         this.footerDistanceIn = value;
@@ -1177,16 +1177,16 @@ export class SelectionSectionFormat {
     }
     /**
      * Gets or sets a value indicating whether the section has different first page.
-     * @aspType bool
-     * @blazorType bool
+
+
      */
     public get differentFirstPage(): boolean {
         return this.differentFirstPageIn;
     }
     /**
      * Gets or sets a value indicating whether the section has different first page.
-     * @aspType bool
-     * @blazorType bool
+
+
      */
     public set differentFirstPage(value: boolean) {
         this.differentFirstPageIn = value;
@@ -1194,16 +1194,16 @@ export class SelectionSectionFormat {
     }
     /**
      * Gets or sets a value indicating whether the section has different odd and even page.
-     * @aspType bool
-     * @blazorType bool
+
+
      */
     public get differentOddAndEvenPages(): boolean {
         return this.differentOddAndEvenPagesIn;
     }
     /**
      * Gets or sets a value indicating whether the section has different odd and even page.
-     * @aspType bool
-     * @blazorType bool
+
+
      */
     public set differentOddAndEvenPages(value: boolean) {
         this.differentOddAndEvenPagesIn = value;
@@ -1405,16 +1405,16 @@ export class SelectionTableFormat {
     }
     /**
      * Gets or Sets the left indent for selected table.
-     * @aspType int
-     * @blazorType int
+
+
      */
     public get leftIndent(): number {
         return this.leftIndentIn;
     }
     /**
      * Gets or Sets the left indent for selected table.
-     * @aspType int
-     * @blazorType int
+
+
      */
     public set leftIndent(value: number) {
         if (value === this.leftIndentIn) {
@@ -1425,18 +1425,18 @@ export class SelectionTableFormat {
     }
     /**
      * Gets or Sets the default top margin of cell for selected table.
-     * @default undefined
-     * @aspType int
-     * @blazorType int
+
+
+
      */
     public get topMargin(): number {
         return this.topMarginIn;
     }
     /**
      * Gets or Sets the default top margin of cell for selected table.
-     * @default undefined
-     * @aspType int
-     * @blazorType int
+
+
+
      */
     public set topMargin(value: number) {
         if (value === this.topMarginIn) {
@@ -1447,18 +1447,18 @@ export class SelectionTableFormat {
     }
     /**
      * Gets or Sets the background for selected table.
-     * @default undefined
-     * @aspType string
-     * @blazorType string
+
+
+
      */
     public get background(): string {
         return this.backgroundIn;
     }
     /**
      * Gets or Sets the background for selected table.
-     * @default undefined
-     * @aspType string
-     * @blazorType string
+
+
+
      */
     public set background(value: string) {
         if (value === this.backgroundIn) {
@@ -1469,14 +1469,14 @@ export class SelectionTableFormat {
     }
     /**
      * Gets or Sets the table alignment for selected table.
-     * @default undefined
+
      */
     public get tableAlignment(): TableAlignment {
         return this.tableAlignmentIn;
     }
     /**
      * Gets or Sets the table alignment for selected table.
-     * @default undefined
+
      */
     public set tableAlignment(value: TableAlignment) {
         if (value === this.tableAlignmentIn) {
@@ -1487,18 +1487,18 @@ export class SelectionTableFormat {
     }
     /**
      * Gets or Sets the default left margin of cell for selected table.
-     * @default undefined
-     * @aspType int
-     * @blazorType int
+
+
+
      */
     public get leftMargin(): number {
         return this.leftMarginIn;
     }
     /**
      * Gets or Sets the default left margin of cell for selected table.
-     * @default undefined
-     * @aspType int
-     * @blazorType int
+
+
+
      */
     public set leftMargin(value: number) {
         if (value === this.leftMarginIn) {
@@ -1509,18 +1509,18 @@ export class SelectionTableFormat {
     }
     /**
      * Gets or Sets the default bottom margin of cell for selected table.
-     * @default undefined
-     * @aspType int
-     * @blazorType int
+
+
+
      */
     public get bottomMargin(): number {
         return this.bottomMarginIn;
     }
     /**
      * Gets or Sets the default bottom margin of cell for selected table.
-     * @default undefined
-     * @aspType int
-     * @blazorType int
+
+
+
      */
     public set bottomMargin(value: number) {
         if (value === this.bottomMarginIn) {
@@ -1531,18 +1531,18 @@ export class SelectionTableFormat {
     }
     /**
      * Gets or Sets the cell spacing for selected table.
-     * @default undefined
-     * @aspType int
-     * @blazorType int
+
+
+
      */
     public get cellSpacing(): number {
         return this.cellSpacingIn;
     }
     /**
      * Gets or Sets the cell spacing for selected table.
-     * @default undefined
-     * @aspType int
-     * @blazorType int
+
+
+
      */
     public set cellSpacing(value: number) {
         if (value === this.cellSpacingIn) {
@@ -1553,18 +1553,18 @@ export class SelectionTableFormat {
     }
     /**
      * Gets or Sets the default right margin of cell for selected table.
-     * @default undefined
-     * @aspType int
-     * @blazorType int
+
+
+
      */
     public get rightMargin(): number {
         return this.rightMarginIn;
     }
     /**
      * Gets or Sets the default right margin of cell for selected table.
-     * @default undefined
-     * @aspType int
-     * @blazorType int
+
+
+
      */
     public set rightMargin(value: number) {
         if (value === this.rightMarginIn) {
@@ -1575,18 +1575,18 @@ export class SelectionTableFormat {
     }
     /**
      * Gets or Sets the preferred width for selected table.
-     * @default undefined
-     * @aspType int
-     * @blazorType int
+
+
+
      */
     public get preferredWidth(): number {
         return this.preferredWidthIn;
     }
     /**
      * Gets or Sets the preferred width for selected table.
-     * @default undefined
-     * @aspType int
-     * @blazorType int
+
+
+
      */
     public set preferredWidth(value: number) {
         if (value === this.preferredWidthIn) {
@@ -1597,14 +1597,14 @@ export class SelectionTableFormat {
     }
     /**
      * Gets or Sets the preferred width type for selected table.
-     * @default undefined
+
      */
     public get preferredWidthType(): WidthType {
         return this.preferredWidthTypeIn;
     }
     /**
      * Gets or Sets the preferred width type for selected table.
-     * @default undefined
+
      */
     public set preferredWidthType(value: WidthType) {
         if (value === this.preferredWidthTypeIn) {
@@ -1615,16 +1615,16 @@ export class SelectionTableFormat {
     }
     /**
      * Gets or sets the bidi property
-     * @aspType bool
-     * @blazorType bool
+
+
      */
     public get bidi(): boolean {
         return this.bidiIn;
     }
     /**
      * Gets or sets the bidi property
-     * @aspType bool
-     * @blazorType bool
+
+
      */
     public set bidi(value: boolean) {
         this.bidiIn = value;
@@ -1754,14 +1754,14 @@ export class SelectionCellFormat {
     private preferredWidthTypeIn: WidthType = undefined;
     /**
      * Gets or sets the vertical alignment of the selected cells.
-     * @default undefined
+
      */
     public get verticalAlignment(): CellVerticalAlignment {
         return this.verticalAlignmentIn;
     }
     /**
      * Gets or sets the vertical alignment of the selected cells.
-     * @default undefined
+
      */
     public set verticalAlignment(value: CellVerticalAlignment) {
         if (value === this.verticalAlignmentIn) {
@@ -1772,9 +1772,9 @@ export class SelectionCellFormat {
     }
     /**
      * Gets or Sets the left margin for selected cells.
-     * @default undefined
-     * @aspType int
-     * @blazorType int
+
+
+
      */
     /* tslint:disable */
     public get leftMargin(): number {
@@ -1782,9 +1782,9 @@ export class SelectionCellFormat {
     }
     /**
      * Gets or Sets the left margin for selected cells.
-     * @default undefined
-     * @aspType int
-     * @blazorType int
+
+
+
      */
     public set leftMargin(value: number) {
         if (value === this.leftMarginIn) {
@@ -1795,18 +1795,18 @@ export class SelectionCellFormat {
     }
     /**
      * Gets or Sets the right margin for selected cells.
-     * @default undefined
-     * @aspType int
-     * @blazorType int
+
+
+
      */
     public get rightMargin(): number {
         return this.rightMarginIn;
     }
     /**
      * Gets or Sets the right margin for selected cells.
-     * @default undefined
-     * @aspType int
-     * @blazorType int
+
+
+
      */
     public set rightMargin(value: number) {
         if (value === this.rightMarginIn) {
@@ -1817,18 +1817,18 @@ export class SelectionCellFormat {
     }
     /**
      * Gets or Sets the top margin for selected cells.
-     * @default undefined
-     * @aspType int
-     * @blazorType int
+
+
+
      */
     public get topMargin(): number {
         return this.topMarginIn;
     }
     /**
      * Gets or Sets the top margin for selected cells.
-     * @default undefined
-     * @aspType int
-     * @blazorType int
+
+
+
      */
     public set topMargin(value: number) {
         if (value === this.topMarginIn) {
@@ -1839,18 +1839,18 @@ export class SelectionCellFormat {
     }
     /**
      * Gets or Sets the bottom margin for selected cells.
-     * @default undefined
-     * @aspType int
-     * @blazorType int
+
+
+
      */
     public get bottomMargin(): number {
         return this.bottomMarginIn;
     }
     /**
      * Gets or Sets the bottom margin for selected cells.
-     * @default undefined
-     * @aspType int
-     * @blazorType int
+
+
+
      */
     public set bottomMargin(value: number) {
         if (value === this.bottomMarginIn) {
@@ -1861,18 +1861,18 @@ export class SelectionCellFormat {
     }
     /**
      * Gets or Sets the background for selected cells.
-     * @default undefined
-     * @aspType string
-     * @blazorType string
+
+
+
      */
     public get background(): string {
         return this.backgroundIn;
     }
     /**
      * Gets or Sets the background for selected cells.
-     * @default undefined
-     * @aspType string
-     * @blazorType string
+
+
+
      */
     /* tslint:enable */
     public set background(value: string) {
@@ -1885,14 +1885,14 @@ export class SelectionCellFormat {
     /* tslint:disable */
     /**
      * Gets or Sets the preferred width type for selected cells.
-     * @default undefined
+
      */
     public get preferredWidthType(): WidthType {
         return this.preferredWidthTypeIn;
     }
     /**
      * Gets or Sets the preferred width type for selected cells.
-     * @default undefined
+
      */
     public set preferredWidthType(value: WidthType) {
         if (value === this.preferredWidthTypeIn) {
@@ -1903,18 +1903,18 @@ export class SelectionCellFormat {
     }
     /**
      * Gets or Sets the preferred width  for selected cells.
-     * @default undefined
-     * @aspType int
-     * @blazorType int
+
+
+
      */
     public get preferredWidth(): number {
         return this.preferredWidthIn;
     }
     /**
      * Gets or Sets the preferred width  for selected cells.
-     * @default undefined
-     * @aspType int
-     * @blazorType int
+
+
+
      */
     public set preferredWidth(value: number) {
         if (value === this.preferredWidthIn) {
@@ -2071,18 +2071,18 @@ export class SelectionRowFormat {
     private allowRowBreakAcrossPagesIn: boolean = undefined;
     /**
      * Gets or Sets the height for selected rows.
-     * @default undefined
-     * @aspType int
-     * @blazorType int
+
+
+
      */
     public get height(): number {
         return this.heightIn;
     }
     /**
      * Gets or Sets the height for selected rows.
-     * @default undefined
-     * @aspType int
-     * @blazorType int
+
+
+
      */
     public set height(value: number) {
         if (value === this.heightIn) {
@@ -2093,14 +2093,14 @@ export class SelectionRowFormat {
     }
     /**
      * Gets or Sets the height type for selected rows.
-     * @default undefined
+
      */
     public get heightType(): HeightType {
         return this.heightTypeIn;
     }
     /**
      * Gets or Sets the height type for selected rows.
-     * @default undefined
+
      */
     public set heightType(value: HeightType) {
         if (value === this.heightTypeIn) {
@@ -2111,18 +2111,18 @@ export class SelectionRowFormat {
     }
     /**
      * Gets or Sets a value indicating whether the selected rows are header rows or not.
-     * @default undefined
-     * @aspType bool
-     * @blazorType bool
+
+
+
      */
     public get isHeader(): boolean {
         return this.isHeaderIn;
     }
     /**
      * Gets or Sets a value indicating whether the selected rows are header rows or not.
-     * @default undefined
-     * @aspType bool
-     * @blazorType bool
+
+
+
      */
     public set isHeader(value: boolean) {
         if (value === this.isHeaderIn) {
@@ -2133,18 +2133,18 @@ export class SelectionRowFormat {
     }
     /**
      * Gets or Sets a value indicating whether to allow break across pages for selected rows.
-     * @default undefined
-     * @aspType bool
-     * @blazorType bool
+
+
+
      */
     public get allowBreakAcrossPages(): boolean {
         return this.allowRowBreakAcrossPagesIn;
     }
     /**
      * Gets or Sets a value indicating whether to allow break across pages for selected rows.
-     * @default undefined
-     * @aspType bool
-     * @blazorType bool
+
+
+
      */
     public set allowBreakAcrossPages(value: boolean) {
         if (value === this.allowRowBreakAcrossPagesIn) {
@@ -2266,8 +2266,8 @@ export class SelectionImageFormat {
     public selection: Selection;
     /**
      * Gets the width of the image.
-     * @aspType int
-     * @blazorType int
+
+
      */
     public get width(): number {
         if (this.image) {
@@ -2277,8 +2277,8 @@ export class SelectionImageFormat {
     }
     /**
      * Gets the height of the image.
-     * @aspType int
-     * @blazorType int
+
+
      */
     public get height(): number {
         if (this.image) {

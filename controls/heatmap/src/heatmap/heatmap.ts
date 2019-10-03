@@ -39,7 +39,7 @@ export class HeatMap extends Component<HTMLElement> implements INotifyPropertyCh
     /**
      * The width of the heatmap as a string accepts input as both like '100px' or '100%'.
      * If specified as '100%, heatmap renders to the full width of its parent element.
-     * @default null
+
      */
 
     @Property(null)
@@ -48,7 +48,7 @@ export class HeatMap extends Component<HTMLElement> implements INotifyPropertyCh
     /**
      * The height of the heatmap as a string accepts input as both like '100px' or '100%'.
      * If specified as '100%, heatmap renders to the full height of its parent element.
-     * @default null
+
      */
 
     @Property(null)
@@ -56,7 +56,7 @@ export class HeatMap extends Component<HTMLElement> implements INotifyPropertyCh
 
     /**
      * Enable or disable the tool tip for heatmap
-     * @default true
+
      */
 
     @Property(true)
@@ -65,7 +65,7 @@ export class HeatMap extends Component<HTMLElement> implements INotifyPropertyCh
     /**
      * Triggers when click the heat map cell.
      * @event
-     * @blazorProperty 'TooltipRendering'
+
      */
     @Event()
     public tooltipRender: EmitType<ITooltipEventArgs>;
@@ -73,7 +73,7 @@ export class HeatMap extends Component<HTMLElement> implements INotifyPropertyCh
     /**
      * Triggers after resizing of Heatmap.
      * @event
-     * @blazorProperty 'Resized'
+
      */
     @Event()
     public resized: EmitType<IResizeEventArgs>;
@@ -81,16 +81,16 @@ export class HeatMap extends Component<HTMLElement> implements INotifyPropertyCh
     /**
      * Triggers after heatmap is loaded.
      * @event
-     * @blazorProperty 'Loaded'
+
      */
     @Event()
     public loaded: EmitType<ILoadedEventArgs>;
 
     /**
      * Triggers before each heatmap cell renders.
-     * @deprecated
+
      * @event
-     * @blazorProperty 'CellRendering'
+
      */
     @Event()
     public cellRender: EmitType<ICellEventArgs>;
@@ -98,7 +98,7 @@ export class HeatMap extends Component<HTMLElement> implements INotifyPropertyCh
     /**
      * Triggers when multiple cells gets selected.
      * @event
-     * @blazorProperty 'CellSelected'
+
      */
     @Event()
     public cellSelected: EmitType<ISelectedEventArgs>;
@@ -108,15 +108,15 @@ export class HeatMap extends Component<HTMLElement> implements INotifyPropertyCh
      * * SVG - Heat map is render using SVG draw mode.
      * * Canvas - Heat map is render using Canvas draw mode.
      * * Auto - Automatically switch the draw mode based on number of records in data source.
-     * @default SVG
+
      */
     @Property('SVG')
     public renderingMode: DrawType;
 
     /**
      * Specifies the datasource for the heat map.
-     * @isdatamanager false
-     * @default null
+
+
      */
 
     @Property(null)
@@ -130,14 +130,14 @@ export class HeatMap extends Component<HTMLElement> implements INotifyPropertyCh
 
     /**
      *  Specifies the theme for heatmap.
-     * @default 'Material'
+
      */
     @Property('Material')
     public theme: HeatMapTheme;
 
     /**
      * Enable or disable the selection of multiple cells in heatmap
-     * @default false
+
      */
 
     @Property(false)
@@ -152,7 +152,7 @@ export class HeatMap extends Component<HTMLElement> implements INotifyPropertyCh
 
     /**
      * Title of heat map
-     * @default ''
+
      */
     @Complex<TitleModel>({ text: '', textStyle: Theme.heatMapTitleFont }, Title)
     public titleSettings: TitleModel;
@@ -166,7 +166,7 @@ export class HeatMap extends Component<HTMLElement> implements INotifyPropertyCh
 
     /**
      * Options for customizing the legend of the heat map
-     * @default ''
+
      */
     @Complex<LegendSettingsModel>({}, LegendSettings)
     public legendSettings: LegendSettingsModel;
@@ -200,7 +200,7 @@ export class HeatMap extends Component<HTMLElement> implements INotifyPropertyCh
     /**
      * Triggers after heat map rendered.
      * @event
-     * @blazorProperty 'Created'
+
      */
     @Event()
     public created: EmitType<Object>;
@@ -208,7 +208,7 @@ export class HeatMap extends Component<HTMLElement> implements INotifyPropertyCh
     /**
      * Triggers before heat map load.
      * @event
-     * @blazorProperty 'OnLoad'
+
      */
     @Event()
     public load: EmitType<ILoadedEventArgs>;
@@ -216,16 +216,16 @@ export class HeatMap extends Component<HTMLElement> implements INotifyPropertyCh
     /**
      * Triggers when click the heat map cell.
      * @event
-     * @blazorProperty 'CellClicked'
+
      */
     @Event()
     public cellClick: EmitType<ICellClickEventArgs>;
 
     /**
      * Triggers before the legend is rendered.
-     * @deprecated
+
      * @event
-     * @blazorProperty 'LegendRendering'
+
      */
     @Event()
     public legendRender: EmitType<ILegendRenderEventArgs>;
@@ -365,7 +365,7 @@ export class HeatMap extends Component<HTMLElement> implements INotifyPropertyCh
 
     /**
      * Gets the axis of the HeatMap.
-     * @hidden
+
      */
     public axisCollections: Axis[];
 

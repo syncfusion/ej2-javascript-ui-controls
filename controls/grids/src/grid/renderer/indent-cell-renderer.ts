@@ -6,7 +6,7 @@ import { CellRenderer } from './cell-renderer';
 
 /**
  * IndentCellRenderer class which responsible for building group indent cell. 
- * @hidden
+
  */
 export class IndentCellRenderer extends CellRenderer implements ICellRenderer<Column> {
 

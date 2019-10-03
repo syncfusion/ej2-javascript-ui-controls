@@ -14,7 +14,7 @@ export class Border extends ChildProperty<Border> {
 
     /**
      * The width of the border in pixels.
-     * @default 1
+
      */
     @Property(1)
     public width: number;
@@ -29,7 +29,7 @@ export class Font extends ChildProperty<Font> {
 
     /**
      * Font size for text.
-     * @default '16px'
+
      */
     @Property('16px')
     public size: string;
@@ -42,28 +42,28 @@ export class Font extends ChildProperty<Font> {
 
     /**
      * FontFamily for text.
-     * @default 'segoe UI'
+
      */
     @Property('segoe UI')
     public fontFamily: string;
 
     /**
      * FontWeight for text.
-     * @default 'Normal'
+
      */
     @Property('Normal')
     public fontWeight: string;
 
     /**
      * FontStyle for text.
-     * @default 'Normal'
+
      */
     @Property('Normal')
     public fontStyle: string;
 
     /**
      * Opacity for text.
-     * @default 1
+
      */
     @Property(1)
     public opacity: number;
@@ -76,7 +76,7 @@ export class Font extends ChildProperty<Font> {
 export class RangeTooltip extends ChildProperty<RangeTooltip> {
     /**
      * The fill color of the range tooltip, which accepts value in hex, rgba as a valid CSS color string.
-     * @default null
+
      */
 
     @Property(null)
@@ -91,7 +91,7 @@ export class RangeTooltip extends ChildProperty<RangeTooltip> {
 
     /**
      * Format of the range tooltip content.
-     * @default null
+
      */
 
     @Property(null)
@@ -99,7 +99,7 @@ export class RangeTooltip extends ChildProperty<RangeTooltip> {
 
     /**
      * Custom template to format the  tooltip content. Use ${x} and ${y} as a placeholder text to display the corresponding data point.
-     * @default null
+
      */
 
     @Property(null)
@@ -107,7 +107,7 @@ export class RangeTooltip extends ChildProperty<RangeTooltip> {
 
     /**
      * If set true, range tooltip will animate, while moving from one point to another.
-     * @default true
+
      */
     @Property(true)
     public enableAnimation: boolean;
@@ -120,7 +120,7 @@ export class RangeTooltip extends ChildProperty<RangeTooltip> {
 
     /**
      * Options to show the range tooltip position on pointer.
-     * @default false
+
      */
     @Property(false)
     public showAtMousePosition: boolean;
@@ -132,7 +132,7 @@ export class RangeTooltip extends ChildProperty<RangeTooltip> {
 export class AnnotationTooltip extends ChildProperty<AnnotationTooltip> {
     /**
      * The fill color of the annotation tooltip, which accepts value in hex, rgba as a valid CSS color string.
-     * @default null
+
      */
 
     @Property(null)
@@ -147,7 +147,7 @@ export class AnnotationTooltip extends ChildProperty<AnnotationTooltip> {
 
     /**
      * Format of the annotation tooltip content.
-     * @default null
+
      */
 
     @Property(null)
@@ -155,7 +155,7 @@ export class AnnotationTooltip extends ChildProperty<AnnotationTooltip> {
 
     /**
      * Custom template to format the  tooltip content. Use ${x} and ${y} as a placeholder text to display the corresponding data point.
-     * @default null
+
      */
 
     @Property(null)
@@ -163,7 +163,7 @@ export class AnnotationTooltip extends ChildProperty<AnnotationTooltip> {
 
     /**
      * If set true, range and annotation tooltip will animate, while moving from one point to another.
-     * @default true
+
      */
     @Property(true)
     public enableAnimation: boolean;
@@ -183,28 +183,28 @@ export class Margin extends ChildProperty<Margin> {
 
     /**
      * Left margin in pixels.
-     * @default 10
+
      */
     @Property(10)
     public left: number;
 
     /**
      * Right margin in pixels.
-     * @default 10
+
      */
     @Property(10)
     public right: number;
 
     /**
      * Top margin in pixels.
-     * @default 10
+
      */
     @Property(10)
     public top: number;
 
     /**
      * Bottom margin in pixels.
-     * @default 10
+
      */
     @Property(10)
     public bottom: number;
@@ -217,7 +217,7 @@ export class Margin extends ChildProperty<Margin> {
 export class TooltipSettings extends ChildProperty<TooltipSettings> {
     /**
      * Enable / Disable the visibility of tooltip.
-     * @default false
+
      */
 
     @Property(false)
@@ -225,7 +225,7 @@ export class TooltipSettings extends ChildProperty<TooltipSettings> {
 
     /**
      * The fill color of the tooltip, which accepts value in hex, rgba as a valid CSS color string.
-     * @default null
+
      */
 
     @Property(null)
@@ -254,7 +254,7 @@ export class TooltipSettings extends ChildProperty<TooltipSettings> {
 
     /**
      * Format of the tooltip content.
-     * @default null
+
      */
 
     @Property(null)
@@ -262,7 +262,7 @@ export class TooltipSettings extends ChildProperty<TooltipSettings> {
 
     /**
      * Custom template to format the tooltip content. Use ${x} and ${y} as a placeholder text to display the corresponding data point.
-     * @default null
+
      */
 
     @Property(null)
@@ -270,7 +270,7 @@ export class TooltipSettings extends ChildProperty<TooltipSettings> {
 
     /**
      * If set true, tooltip will animate, while moving from one point to another.
-     * @default true
+
      */
     @Property(true)
     public enableAnimation: boolean;
@@ -283,14 +283,14 @@ export class TooltipSettings extends ChildProperty<TooltipSettings> {
 
     /**
      * Options to show the tooltip position on pointer
-     * @default false
+
      */
     @Property(false)
     public showAtMousePosition: boolean;
 
     /**
      * Option to select the tooltip from Range, Annotation, Pointer
-     * @default Pointer
+
      */
     @Property('Pointer')
     public type: string[];

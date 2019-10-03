@@ -10,7 +10,7 @@ import { Column } from '../models';
 
 /**
  * Internal dataoperations for tree grid
- * @hidden
+
  */
 export class DataManipulation {
   //Internal variables
@@ -38,7 +38,7 @@ export class DataManipulation {
   }
 
     /**
-     * @hidden
+
      */
     public addEventListener(): void {
       this.parent.on('updateRemoteLevel', this.updateParentRemoteData, this);
@@ -49,7 +49,7 @@ export class DataManipulation {
     }
 
     /**
-     * @hidden
+
      */
     public removeEventListener(): void {
       if (this.parent.isDestroyed) { return; }
@@ -63,13 +63,13 @@ export class DataManipulation {
     /**
      * To destroy the dataModule
      * @return {void}
-     * @hidden
+
      */
     public destroy(): void {
       this.removeEventListener();
     }
 
-/** @hidden */
+
 public isRemote(): boolean {
   if (!(this.parent.dataSource instanceof DataManager)) {
     return false;
@@ -81,7 +81,7 @@ public isRemote(): boolean {
 
 /**
  * Function to manipulate datasource
- * @hidden
+
  */
   public convertToFlatData(data: Object): void {
     this.parent.flatData = <Object[]>(Object.keys(data).length === 0 && !(this.parent.dataSource instanceof DataManager) ?
@@ -188,7 +188,7 @@ public isRemote(): boolean {
   }
   /**
    * Function to update the zeroth level parent records in remote binding
-   * @hidden
+
    */
   private updateParentRemoteData(args?: BeforeDataBoundArgs) : void {
     let records: ITreeData[] = args.result;
@@ -219,7 +219,7 @@ public isRemote(): boolean {
   }
   /**
    * Function to manipulate datasource
-   * @hidden
+
    */
   private collectExpandingRecs(rowDetails: {record: ITreeData,
     rows: HTMLTableRowElement[], parentRow: HTMLTableRowElement}): void {
@@ -353,7 +353,7 @@ public isRemote(): boolean {
 
   /**
    * Function to perform filtering/sorting action for local data
-   * @hidden
+
    */
   public dataProcessor(args?: BeforeDataBoundArgs) : void {
     let isExport: boolean = getObject('isExport', args);

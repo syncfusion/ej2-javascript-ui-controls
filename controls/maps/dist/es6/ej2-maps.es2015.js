@@ -3576,7 +3576,10 @@ class LayerPanel {
     renderTileLayer(panel, layer, layerIndex, bing) {
         let center = new Point(panel.mapObject.centerPosition.longitude, panel.mapObject.centerPosition.latitude);
         panel.currentFactor = panel.calculateFactor(layer);
-        if (isNullOrUndefined(panel.mapObject.tileZoomLevel) || panel.mapObject.tileZoomLevel >= 1) {
+        if (isNullOrUndefined(panel.mapObject.tileZoomLevel)) {
+            panel.mapObject.tileZoomLevel = panel.mapObject.zoomSettings.zoomFactor;
+        }
+        else if (panel.mapObject.zoomSettings.zoomFactor !== 1) {
             panel.mapObject.tileZoomLevel = panel.mapObject.zoomSettings.zoomFactor;
             if (!isNullOrUndefined(panel.mapObject.tileTranslatePoint)) {
                 panel.mapObject.tileTranslatePoint.x = 0;
@@ -7167,7 +7170,7 @@ class Legend {
     getLegendAlignment(map, width, height, legend) {
         let x;
         let y;
-        let spacing = 20;
+        let spacing = 10;
         let totalRect;
         totalRect = extend({}, map.mapAreaRect, totalRect, true);
         let areaX = totalRect.x;
@@ -7185,7 +7188,7 @@ class Legend {
                 case 'Bottom':
                     totalRect.height = (areaHeight - height);
                     x = (totalWidth / 2) - (width / 2);
-                    y = (legend.position === 'Top') ? areaY : (areaY + totalRect.height) - spacing;
+                    y = (legend.position === 'Top') ? areaY : (areaY + totalRect.height);
                     totalRect.y = (legend.position === 'Top') ? areaY + height + spacing : areaY;
                     break;
                 case 'Left':
@@ -7214,7 +7217,12 @@ class Legend {
                     }
                     break;
             }
-            map.totalRect = totalRect;
+            if (legend.height && legend.width && legend.mode !== 'Interactive') {
+                map.totalRect = totalRect;
+            }
+            else {
+                map.mapAreaRect = totalRect;
+            }
             this.translate = new Point(x, y);
         }
     }

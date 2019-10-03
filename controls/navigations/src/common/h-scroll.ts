@@ -56,7 +56,7 @@ export class HScroll extends Component<HTMLElement> implements INotifyPropertyCh
 
     /**
      * Specifies the left or right scrolling distance of the horizontal scrollbar moving.
-     * @default null
+
      */
     @Property(null)
     public scrollStep: number;

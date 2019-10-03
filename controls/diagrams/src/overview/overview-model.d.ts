@@ -8,26 +8,26 @@ export interface OverviewModel extends ComponentModel{
 
     /**
      * Defines the width of the overview
-     * @default '100%'
+
      */
     width?: string | number;
 
     /**
      * Defines the height of the overview
-     * @default '100%'
+
      */
     height?: string | number;
 
     /**
      * Defines the ID of the overview
-     * @default ''
+
      */
     sourceID?: string;
 
     /**
      * Triggers after render the diagram elements
      * @event
-     * @blazorProperty 'Created'
+
      */
     created?: EmitType<Object>;
 

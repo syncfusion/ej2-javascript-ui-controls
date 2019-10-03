@@ -6856,7 +6856,7 @@ var DateRangePicker = /** @__PURE__ @class */ (function (_super) {
      * Gets the current view of the Calendar.
      * @returns string
      * @private
-     * @hidden
+
      */
     DateRangePicker.prototype.currentView = function () {
         return _super.prototype.currentView.call(this);
@@ -7921,7 +7921,7 @@ var DateRangePicker = /** @__PURE__ @class */ (function (_super) {
      * @param  {string} view - Specifies the view of the Calendar.
      * @param  {Date} date - Specifies the focused date in a view.
      * @returns void
-     * @hidden
+
      */
     DateRangePicker.prototype.navigateTo = function (view, date) {
         if (this.isPopupOpen()) {

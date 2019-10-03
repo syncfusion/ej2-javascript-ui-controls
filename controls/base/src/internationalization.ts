@@ -282,7 +282,7 @@ export function enableRtl(status: boolean = true): void {
 /**
  * To get the numeric CLDR object for given culture
  * @param {string} locale - Specifies the locale for which numericObject to be returned.
- * @ignore
+
  * @private
  */
 export function getNumericObject(locale: string, type?: string): Object {
@@ -299,7 +299,7 @@ export function getNumericObject(locale: string, type?: string): Object {
  * To get the numeric CLDR  number base object for given culture
  * @param {string} locale - Specifies the locale for which numericObject to be returned.
  * @param {string} currency - Specifies the currency for which numericObject to be returned.
- * @ignore
+
  * @private
  */
  export function getNumberDependable(locale: string, currency: string): string  {
@@ -309,7 +309,7 @@ export function getNumericObject(locale: string, type?: string): Object {
 
 /**
  * To get the default date CLDR object.
- * @ignore
+
  * @private
  */
 export function getDefaultDateObject(mode?: string): Object {

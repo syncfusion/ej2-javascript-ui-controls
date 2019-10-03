@@ -395,345 +395,180 @@ var Column = /** @__PURE__ @class */ (function (_super) {
 /**
  * Specifies the File Manager internal ID's
  */
-/** @hidden */
 var TOOLBAR_ID = '_toolbar';
-/** @hidden */
 var LAYOUT_ID = '_layout';
-/** @hidden */
 var NAVIGATION_ID = '_navigation';
-/** @hidden */
 var TREE_ID = '_tree';
-/** @hidden */
 var GRID_ID = '_grid';
-/** @hidden */
 var LARGEICON_ID = '_largeicons';
-/** @hidden */
 var DIALOG_ID = '_dialog';
-/** @hidden */
 var ALT_DIALOG_ID = '_alt_dialog';
-/** @hidden */
 var IMG_DIALOG_ID = '_img_dialog';
-/** @hidden */
 var EXTN_DIALOG_ID = '_extn_dialog';
-/** @hidden */
 var UPLOAD_DIALOG_ID = '_upload_dialog';
-/** @hidden */
 var RETRY_DIALOG_ID = '_retry_dialog';
-/** @hidden */
 var CONTEXT_MENU_ID = '_contextmenu';
-/** @hidden */
 var SORTBY_ID = '_sortby';
-/** @hidden */
 var VIEW_ID = '_view';
-/** @hidden */
 var SPLITTER_ID = '_splitter';
-/** @hidden */
 var CONTENT_ID = '_content';
-/** @hidden */
 var BREADCRUMBBAR_ID = '_breadcrumbbar';
-/** @hidden */
 var UPLOAD_ID = '_upload';
-/** @hidden */
 var RETRY_ID = '_retry';
-/** @hidden */
 var SEARCH_ID = '_search';
 /**
  * Specifies the File Manager internal class names
  */
-/** @hidden */
 var ROOT = 'e-filemanager';
-/** @hidden */
 var CONTROL = 'e-control';
-/** @hidden */
 var CHECK_SELECT = 'e-fe-cb-select';
-/** @hidden */
 var ROOT_POPUP = 'e-fe-popup';
-/** @hidden */
 var MOBILE = 'e-fe-mobile';
-/** @hidden */
 var MULTI_SELECT = 'e-fe-m-select';
-/** @hidden */
 var FILTER = 'e-fe-m-filter';
-/** @hidden */
 var LAYOUT = 'e-layout';
-/** @hidden */
 var NAVIGATION = 'e-navigation';
-/** @hidden */
 var LAYOUT_CONTENT = 'e-layout-content';
-/** @hidden */
 var LARGE_ICONS = 'e-large-icons';
-/** @hidden */
 var TB_ITEM = 'e-toolbar-item';
-/** @hidden */
 var LIST_ITEM = 'e-list-item';
-/** @hidden */
 var LIST_TEXT = 'e-list-text';
-/** @hidden */
 var LIST_PARENT = 'e-list-parent';
-/** @hidden */
 var TB_OPTION_TICK = 'e-icons e-fe-tick';
-/** @hidden */
 var TB_OPTION_DOT = 'e-icons e-fe-dot';
-/** @hidden */
 var BLUR = 'e-blur';
-/** @hidden */
 var ACTIVE = 'e-active';
-/** @hidden */
 var HOVER = 'e-hover';
-/** @hidden */
 var FOCUS = 'e-focus';
-/** @hidden */
 var FOCUSED = 'e-focused';
-/** @hidden */
 var CHECK = 'e-check';
-/** @hidden */
 var FRAME = 'e-frame';
-/** @hidden */
 var CB_WRAP = 'e-checkbox-wrapper';
-/** @hidden */
 var ROW = 'e-row';
-/** @hidden */
 var ROWCELL = 'e-rowcell';
-/** @hidden */
 var EMPTY = 'e-empty';
-/** @hidden */
 var EMPTY_CONTENT = 'e-empty-content';
-/** @hidden */
 var EMPTY_INNER_CONTENT = 'e-empty-inner-content';
-/** @hidden */
 var CLONE = 'e-fe-clone';
-/** @hidden */
 var DROP_FOLDER = 'e-fe-drop-folder';
-/** @hidden */
 var DROP_FILE = 'e-fe-drop-file';
-/** @hidden */
 var FOLDER = 'e-fe-folder';
-/** @hidden */
 var ICON_IMAGE = 'e-fe-image';
-/** @hidden */
 var ICON_MUSIC = 'e-fe-music';
-/** @hidden */
 var ICON_VIDEO = 'e-fe-video';
-/** @hidden */
 var LARGE_ICON = 'e-large-icon';
-/** @hidden */
 var LARGE_EMPTY_FOLDER = 'e-empty-icon e-fe-folder';
-/** @hidden */
 var LARGE_EMPTY_FOLDER_TWO = 'e-empty-icon.e-fe-folder';
-/** @hidden */
 var LARGE_ICON_FOLDER = 'e-fe-folder';
-/** @hidden */
 var SELECTED_ITEMS = 'e-items';
-/** @hidden */
 var TEXT_CONTENT = 'e-text-content';
-/** @hidden */
 var GRID_HEADER = 'e-gridheader';
-/** @hidden */
 var TEMPLATE_CELL = 'e-templatecell';
-/** @hidden */
 var TREE_VIEW = 'e-treeview';
-/** @hidden */
 var MENU_ITEM = 'e-menu-item';
-/** @hidden */
 var MENU_ICON = 'e-menu-icon';
-/** @hidden */
 var SUBMENU_ICON = 'e-caret';
-/** @hidden */
 var GRID_VIEW = 'e-content';
-/** @hidden */
 var ICON_VIEW = 'e-list-parent';
-/** @hidden */
 var ICON_OPEN = 'e-icons e-fe-open';
-/** @hidden */
 var ICON_UPLOAD = 'e-icons e-fe-upload';
-/** @hidden */
 var ICON_CUT = 'e-icons e-fe-cut';
-/** @hidden */
 var ICON_COPY = 'e-icons e-fe-copy';
-/** @hidden */
 var ICON_PASTE = 'e-icons e-fe-paste';
-/** @hidden */
 var ICON_DELETE = 'e-icons e-fe-delete';
-/** @hidden */
 var ICON_RENAME = 'e-icons e-fe-rename';
-/** @hidden */
 var ICON_NEWFOLDER = 'e-icons e-fe-newfolder';
-/** @hidden */
 var ICON_DETAILS = 'e-icons e-fe-details';
-/** @hidden */
 var ICON_SHORTBY = 'e-icons e-fe-sort';
-/** @hidden */
 var ICON_REFRESH = 'e-icons e-fe-refresh';
-/** @hidden */
 var ICON_SELECTALL = 'e-icons e-fe-select';
-/** @hidden */
 var ICON_DOWNLOAD = 'e-icons e-fe-download';
-/** @hidden */
 var ICON_OPTIONS = 'e-icons e-fe-options';
-/** @hidden */
 var ICON_GRID = 'e-icons e-fe-grid';
-/** @hidden */
 var ICON_LARGE = 'e-icons e-fe-large';
-/** @hidden */
 var ICON_BREADCRUMB = 'e-icons e-fe-breadcrumb';
-/** @hidden */
 var ICON_CLEAR = 'e-icons e-fe-clear';
-/** @hidden */
 var ICON_DROP_IN = 'e-icons e-fe-drop-in';
-/** @hidden */
 var ICON_DROP_OUT = 'e-icons e-fe-drop-out';
-/** @hidden */
 var ICON_NO_DROP = 'e-icons e-fe-no-drop';
-/** @hidden */
 var ICONS = 'e-icons';
-/** @hidden */
 var DETAILS_LABEL = 'e-detailslabel';
-/** @hidden */
 var ERROR_CONTENT = 'e-fe-errorcontent';
-/** @hidden */
 var STATUS = 'e-status';
-/** @hidden */
 var BREADCRUMBS = 'e-address';
-/** @hidden */
 var RTL = 'e-rtl';
-/** @hidden */
 var DISPLAY_NONE = 'e-display-none';
-/** @hidden */
 var COLLAPSED = 'e-node-collapsed';
-/** @hidden */
 var FULLROW = 'e-fullrow';
-/** @hidden */
 var ICON_COLLAPSIBLE = 'e-icon-collapsible';
-/** @hidden */
 var SPLIT_BAR = 'e-split-bar';
-/** @hidden */
 var HEADER_CHECK = 'e-headercheck';
-/** @hidden */
 var OVERLAY = 'e-fe-overlay';
-/** @hidden */
 var VALUE = 'e-fe-value';
 
 /**
  * Specifies the File Manager internal variables
  */
-/** @hidden */
 var isFile = 'isFile';
 /**
  * Specifies the File Manager internal events
  */
-/** @hidden */
 var modelChanged = 'model-changed';
-/** @hidden */
 var initialEnd = 'initial-end';
-/** @hidden */
 var finalizeEnd = 'finalize-end';
-/** @hidden */
 var createEnd = 'create-end';
-/** @hidden */
 var filterEnd = 'filter-end';
-/** @hidden */
 var beforeDelete = 'before-delete';
-/** @hidden */
 var pathDrag = 'path-drag';
-/** @hidden */
 var deleteInit = 'delete-init';
-/** @hidden */
 var deleteEnd = 'delete-end';
-/** @hidden */
 var refreshEnd = 'refresh-end';
-/** @hidden */
 var resizeEnd = 'resize-end';
-/** @hidden */
 var splitterResize = 'splitter-resize';
-/** @hidden */
 var pathChanged = 'path-changed';
-/** @hidden */
 var destroy = 'destroy';
-/** @hidden */
 var beforeRequest = 'before-request';
-/** @hidden */
 var upload = 'upload';
-/** @hidden */
 var afterRequest = 'after-request';
-/** @hidden */
 var download = 'download';
-/** @hidden */
 var layoutRefresh = 'layout-refresh';
-/** @hidden */
 var actionFailure = 'actionFailure';
-/** @hidden */
 var search = 'search';
-/** @hidden */
 var openInit = 'open-init';
-/** @hidden */
 var openEnd = 'open-end';
-/** @hidden */
 var selectionChanged = 'selection-changed';
-/** @hidden */
 var selectAllInit = 'select-all-init';
-/** @hidden */
 var clearAllInit = 'clear-all-init';
-/** @hidden */
 var clearPathInit = 'clear-path-init';
-/** @hidden */
 var layoutChange = 'layout-change';
-/** @hidden */
 var sortByChange = 'sort-by-change';
-/** @hidden */
 var nodeExpand = 'node-expand';
-/** @hidden */
 var detailsInit = 'details-init';
-/** @hidden */
 var menuItemData = 'menu-item-data';
-/** @hidden */
 var renameInit = 'rename-init';
-/** @hidden */
 var renameEndParent = 'rename-end-parent';
-/** @hidden */
 var renameEnd = 'rename-end';
-/** @hidden */
 var showPaste = 'show-paste';
-/** @hidden */
 var hidePaste = 'hide-paste';
-/** @hidden */
 var selectedData = 'selected-data';
-/** @hidden */
 var cutCopyInit = 'cut-copy-init';
-/** @hidden */
 var pasteInit = 'paste-init';
-/** @hidden */
 var pasteEnd = 'paste-end';
-/** @hidden */
 var cutEnd = 'cut-end';
-/** @hidden */
 var hideLayout = 'hide-layout';
-/** @hidden */
 var updateTreeSelection = 'update-tree-selection';
-/** @hidden */
 var treeSelect = 'select-node';
-/** @hidden */
 var sortColumn = 'sort-column';
-/** @hidden */
 var pathColumn = 'path-column';
-/** @hidden */
 var searchTextChange = 'search-change';
-/** @hidden */
 var beforeDownload = 'before-download';
-/** @hidden */
 var downloadInit = 'download-init';
-/** @hidden */
 var dropInit = 'drop-init';
-/** @hidden */
 var dragEnd = 'drag-end';
-/** @hidden */
 var dropPath = 'drop-path';
-/** @hidden */
 var dragHelper = 'drag-helper';
-/** @hidden */
 var dragging = 'dragging';
-/** @hidden */
 var updateSelectionData = 'update-selection-data';
-/** @hidden */
 var methodCall = 'method-call';
 
 /**
@@ -2771,7 +2606,7 @@ function updateImage(parent) {
 var LargeIconsView = /** @__PURE__ @class */ (function () {
     /**
      * Constructor for the LargeIcons module
-     * @hidden
+
      */
     function LargeIconsView(parent) {
         this.uploadOperation = false;
@@ -3462,7 +3297,6 @@ var LargeIconsView = /** @__PURE__ @class */ (function () {
         this.doSelection(target, e.originalEvent);
         this.parent.activeModule = 'largeiconsview';
     };
-    /** @hidden */
     LargeIconsView.prototype.doSelection = function (target, e) {
         var item = closest(target, '.' + LIST_ITEM);
         var cList = target.classList;
@@ -3548,7 +3382,7 @@ var LargeIconsView = /** @__PURE__ @class */ (function () {
                 createDeniedDialog(this.parent, details_1);
                 return;
             }
-            var eventArgs = { cancel: false, fileDetails: details_1 };
+            var eventArgs = { cancel: false, fileDetails: details_1, module: 'LargeIconsView' };
             this.parent.trigger('fileOpen', eventArgs, function (fileOpenArgs) {
                 if (!fileOpenArgs.cancel) {
                     var text = getValue('name', details_1);
@@ -4178,7 +4012,7 @@ var LargeIconsView = /** @__PURE__ @class */ (function () {
 var BreadCrumbBar = /** @__PURE__ @class */ (function () {
     /**
      * constructor for addressbar module
-     * @hidden
+
      */
     function BreadCrumbBar(parent) {
         this.addressPath = '';
@@ -4404,11 +4238,18 @@ var BreadCrumbBar = /** @__PURE__ @class */ (function () {
             if (!isNullOrUndefined(node)) {
                 this.parent.isFiltered = false;
                 var currentPath = this.updatePath(node);
-                this.liClick(currentPath);
+                this.parent.itemData = [getValue(this.parent.pathId[this.parent.pathId.length - 1], this.parent.feParent)];
+                this.triggerFileOpen(this.parent.itemData[0]);
+                read(this.parent, pathChanged, currentPath);
                 var treeNodeId = this.parent.pathId[this.parent.pathId.length - 1];
                 this.parent.notify(updateTreeSelection, { module: 'treeview', selectedNode: treeNodeId });
             }
         }
+    };
+    BreadCrumbBar.prototype.triggerFileOpen = function (data) {
+        var eventArgs = { cancel: false, fileDetails: data, module: 'BreadCrumbBar' };
+        delete eventArgs.cancel;
+        this.parent.trigger('fileOpen', eventArgs);
     };
     /* istanbul ignore next */
     BreadCrumbBar.prototype.onShowInput = function () {
@@ -4472,10 +4313,6 @@ var BreadCrumbBar = /** @__PURE__ @class */ (function () {
     BreadCrumbBar.prototype.onPasteEnd = function (args) {
         this.onPathChange();
     };
-    BreadCrumbBar.prototype.liClick = function (currentPath) {
-        this.parent.itemData = [getValue(this.parent.pathId[this.parent.pathId.length - 1], this.parent.feParent)];
-        read(this.parent, pathChanged, currentPath);
-    };
     BreadCrumbBar.prototype.addEventListener = function () {
         this.keyboardModule = new KeyboardEvents(this.parent.breadCrumbBarNavigation, {
             keyAction: this.keyActionHandler.bind(this),
@@ -4531,6 +4368,7 @@ var BreadCrumbBar = /** @__PURE__ @class */ (function () {
             var liEle = args.target.closest('li');
             this.parent.dropPath = this.updatePath((liEle.children[0]));
             this.parent.dropData = getValue(this.parent.pathId[this.parent.pathId.length - 1], this.parent.feParent);
+            this.triggerFileOpen(this.parent.dropData);
             var treeNodeId = this.parent.pathId[this.parent.pathId.length - 1];
             this.parent.notify(updateTreeSelection, { module: 'treeview', selectedNode: treeNodeId });
         }
@@ -4567,7 +4405,7 @@ var BreadCrumbBar = /** @__PURE__ @class */ (function () {
 var ContextMenu$2 = /** @__PURE__ @class */ (function () {
     /**
      * Constructor for the ContextMenu module
-     * @hidden
+
      */
     function ContextMenu$$1(parent) {
         this.currentItems = [];
@@ -4754,7 +4592,6 @@ var ContextMenu$2 = /** @__PURE__ @class */ (function () {
             'largeiconsview' : this.parent.activeModule;
     };
     /* istanbul ignore next */
-    /** @hidden */
     ContextMenu$$1.prototype.getTargetView = function (target) {
         return target.classList.contains(TREE_VIEW) ?
             'TreeView' : target.classList.contains(GRID_VIEW) ?
@@ -5337,7 +5174,7 @@ var FileManager = /** @__PURE__ @class */ (function (_super) {
     /**
      * Gets the properties to be maintained upon browser refresh..
      * @returns string
-     * @hidden
+
      */
     FileManager.prototype.getPersistData = function () {
         var keyEntity = ['view', 'path', 'selectedItems'];
@@ -5346,7 +5183,7 @@ var FileManager = /** @__PURE__ @class */ (function (_super) {
     /**
      * To provide the array of modules needed for component rendering
      * @return {ModuleDeclaration[]}
-     * @hidden
+
      */
     FileManager.prototype.requiredModules = function () {
         var modules = [];
@@ -6361,7 +6198,7 @@ var FileManager = /** @__PURE__ @class */ (function (_super) {
 var Toolbar$1 = /** @__PURE__ @class */ (function () {
     /**
      * Constructor for the Toolbar module
-     * @hidden
+
      */
     function Toolbar$$1(parent) {
         this.default = ['Delete', 'Rename', 'Download', 'Cut', 'Copy', 'Paste'];
@@ -6824,7 +6661,7 @@ var Toolbar$1 = /** @__PURE__ @class */ (function () {
 var NavigationPane = /** @__PURE__ @class */ (function () {
     /**
      * Constructor for the TreeView module
-     * @hidden
+
      */
     function NavigationPane(parent) {
         this.removeNodes = [];
@@ -6975,8 +6812,14 @@ var NavigationPane = /** @__PURE__ @class */ (function () {
         }
         this.activeNode = args.node;
         this.parent.activeModule = 'navigationpane';
+        var nodeData = this.getTreeData(getValue('id', args.nodeData));
+        if (!this.renameParent) {
+            var eventArgs = { cancel: false, fileDetails: nodeData[0], module: 'NavigationPane' };
+            delete eventArgs.cancel;
+            this.parent.trigger('fileOpen', eventArgs);
+        }
         this.parent.selectedItems = [];
-        this.parent.itemData = this.getTreeData(getValue('id', args.nodeData));
+        this.parent.itemData = nodeData;
         updatePath(args.node, this.parent.itemData[0], this.parent);
         this.expandNodeTarget = null;
         if (args.node.querySelector('.' + ICONS) && args.node.querySelector('.' + LIST_ITEM) === null) {
@@ -7552,7 +7395,7 @@ var NavigationPane = /** @__PURE__ @class */ (function () {
 var DetailsView = /** @__PURE__ @class */ (function () {
     /**
      * Constructor for the GridView module
-     * @hidden
+
      */
     function DetailsView(parent) {
         this.isInteracted = true;
@@ -8072,7 +7915,7 @@ var DetailsView = /** @__PURE__ @class */ (function () {
             createDeniedDialog(this.parent, data);
             return;
         }
-        var eventArgs = { cancel: false, fileDetails: data };
+        var eventArgs = { cancel: false, fileDetails: data, module: 'DetailsView' };
         this.parent.trigger('fileOpen', eventArgs, function (fileOpenArgs) {
             if (!fileOpenArgs.cancel) {
                 var name_2 = getValue('name', data);

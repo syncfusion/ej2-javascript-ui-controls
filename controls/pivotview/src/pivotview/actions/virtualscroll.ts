@@ -16,12 +16,12 @@ export class VirtualScroll {
     private pageXY: { x: number, y: number };
     private eventType: string = '';
     private engineModule: PivotEngine | OlapEngine;
-    /** @hidden */
+
     public direction: string;
 
     /**
      * Constructor for PivotView scrolling.
-     * @hidden
+
      */
     constructor(parent?: PivotView) {
         this.parent = parent;
@@ -32,7 +32,7 @@ export class VirtualScroll {
     /**
      * It returns the Module name.
      * @returns string
-     * @hidden
+
      */
     public getModuleName(): string {
         return 'virtualscroll';
@@ -353,7 +353,7 @@ export class VirtualScroll {
     }
 
     /**
-     * @hidden
+
      */
     public removeInternalEvents(): void {
         if (this.parent.isDestroyed) { return; }
@@ -363,7 +363,7 @@ export class VirtualScroll {
     /**
      * To destroy the virtualscrolling event listener
      * @return {void}
-     * @hidden
+
      */
 
     public destroy(): void {

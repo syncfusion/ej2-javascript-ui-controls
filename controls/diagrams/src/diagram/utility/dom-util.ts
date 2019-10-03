@@ -559,7 +559,7 @@ export function createSvgElement(elementType: string, attribute: Object): SVGEle
     return element;
 }
 
-/** @hidden */
+
 export function parentsUntil(elem: Element, selector: string, isID?: boolean): Element {
     let parent: Element = elem;
     while (parent) {
@@ -576,7 +576,7 @@ export function hasClass(element: HTMLElement, className: string): boolean {
         (typeof element.className === 'object') ? (element.className as SVGAnimatedString).animVal : element.className;
     return ((' ' + eClassName + ' ').indexOf(' ' + className + ' ') > -1) ? true : false;
 }
-/** @hidden */
+
 export function getScrollerWidth(): number {
     let outer: HTMLElement = createHtmlElement('div', { 'style': 'visibility:hidden; width: 100px' });
     document.body.appendChild(outer);

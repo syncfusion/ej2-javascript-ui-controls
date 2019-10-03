@@ -21,9 +21,9 @@ export class ButtonProps extends ChildProperty<ButtonProps> {
     /**
      * Specify the type of the button.
      * Possible values are Button, Submit and Reset.
-     * @default 'Button'
-     * @aspType string
-     * @blazorType string
+
+
+
      */
     @Property('Button')
     public type: ButtonType | string;
@@ -31,7 +31,7 @@ export class ButtonProps extends ChildProperty<ButtonProps> {
     /**
      * Event triggers when `click` the dialog button.
      * @event
-     * @blazorProperty 'OnClick'
+
      */
     @Event()
     public click: EmitType<Object>;
@@ -61,21 +61,21 @@ export class AnimationSettings extends ChildProperty<AnimationSettings> {
      * 14. SlideTop
      * 15. Zoom
      * 16. None
-     * @default 'Fade'
+
      */
     @Property('Fade')
     public effect: DialogEffect;
 
     /**
      * Specifies the duration in milliseconds that the animation takes to open or close the dialog.
-     * @default 400
+
      */
     @Property(400)
     public duration: number;
 
     /**
      * Specifies the delay in milliseconds to start animation.
-     * @default 0
+
      */
     @Property(0)
     public delay: number;
@@ -134,9 +134,9 @@ export interface BeforeOpenEventArgs {
     element: Element;
     /**
      * Returns the target element of the dialog.
-     * @aspType string
-     * @blazorType string
-     * @deprecated
+
+
+
      */
     target?: HTMLElement | String;
 }
@@ -164,9 +164,9 @@ export interface BeforeCloseEventArgs {
     element: Element;
     /**
      * Returns the target element of the dialog.
-     * @aspType string
-     * @blazorType string
-     * @deprecated
+
+
+
      */
     target?: HTMLElement | String;
     /**
@@ -175,7 +175,11 @@ export interface BeforeCloseEventArgs {
     event: Event;
 }
 
-export interface DialogOpenEvent {
+export interface OpenEventArgs {
+    /**
+     * Defines whether the focus action can be prevented in dialog.
+     */
+    preventFocus: boolean;
     /**
      * Defines whether the current action can be prevented.
      */
@@ -194,7 +198,7 @@ export interface DialogOpenEvent {
     name: string;
 }
 
-export interface DialogCloseEvent {
+export interface CloseEventArgs {
     /**
      * Defines whether the current action can be prevented.
      */
@@ -225,7 +229,7 @@ export interface DialogCloseEvent {
     name: string;
 }
 
-export interface DialogDragStartEvent {
+export interface DragStartEventArgs {
     /**
      * Returns the original event arguments.
      */
@@ -244,7 +248,7 @@ export interface DialogDragStartEvent {
     name: String;
 }
 
-export interface DialogDragStopEvent {
+export interface DragStopEventArgs {
     /**
      * Returns the original event arguments.
      */
@@ -267,7 +271,7 @@ export interface DialogDragStopEvent {
     name: String;
 }
 
-export interface DialogDragEvent {
+export interface DragEventArgs {
     /**
      * Returns the original event arguments.
      */
@@ -340,14 +344,14 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
      * {% codeBlock src="dialog/content-api/index.ts" %}{% endcodeBlock %}
      * 
      * {% codeBlock src="dialog/content-api/index.html" %}{% endcodeBlock %}
-     * @default ''
-     * @blazorType string
+
+
      */
     @Property('')
     public content: string | HTMLElement;
     /**
      * Specifies the value that represents whether the close icon is shown in the dialog component.
-     * @default false
+
      */
     @Property(false)
     public showCloseIcon: boolean;
@@ -356,63 +360,63 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
      * * `Modal`: It creates overlay that disable interaction with the parent application and user should 
      *    respond with modal before continuing with other applications.
      * * `Modeless`: It does not prevent user interaction with parent application.
-     * @default false
+
      */
     @Property(false)
     public isModal: boolean;
     /**
      * Specifies the value that can be displayed in the dialog's title area that can be configured with plain text or HTML elements.
      * This is optional property and the dialog can be displayed without header, if the header property is null.
-     * @default ''
-     * @blazorType string
+
+
      */
     @Property('')
     public header: string | HTMLElement;
     /**
      * Specifies the value that represents whether the dialog component is visible.
-     * @default true 
+
      */
     @Property(true)
     public visible: boolean;
     /**
      * Specifies the value whether the dialog component can be resized by the end-user.
      * If enableResize is true, the dialog component creates grip to resize it diagonal direction.
-     * @default false 
+
      */
     @Property(false)
     public enableResize: boolean;
     /**
      * Specifies the height of the dialog component.
-     * @default 'auto'
-     * @blazorType string
+
+
      */
     @Property('auto')
     public height: string | number;
     /**
      * Specifies the width of the dialog. 
-     * @default '100%'
-     * @blazorType string
+
+
      */
     @Property('100%')
     public width: string | number;
     /**
      * Specifies the CSS class name that can be appended with root element of the dialog.
      * One or more custom CSS classes can be added to a dialog.
-     * @default ''
+
      */
     @Property('')
     public cssClass: string;
     /**
      * Specifies the z-order for rendering that determines whether the dialog is displayed in front or behind of another component.
-     * @default 1000
+
      */
     @Property(1000)
     public zIndex: number;
     /**
      * Specifies the target element in which to display the dialog.
      * The default value is null, which refers the `document.body` element.
-     * @default null
-     * @blazorType string
+
+
      */
     @Property(null)
     public target: HTMLElement | string;
@@ -424,8 +428,8 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
      * 
      * > More information on the footer template configuration can be found on this [documentation](../../dialog/template/#footer) section.
      * 
-     * @default ''
-     * @blazorType string
+
+
      */
     @Property('')
     public footerTemplate: HTMLElement | string;
@@ -435,7 +439,7 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
      * 
      * > More information on the draggable behavior can be found on this [documentation](../../dialog/getting-started/#draggable) section.
      * 
-     * @default false
+
      */
     @Property(false)
     public allowDragging: boolean;
@@ -449,14 +453,14 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
      * {% codeBlock src="dialog/buttons-api/index.ts" %}{% endcodeBlock %}
      * 
      * {% codeBlock src="dialog/buttons-api/index.html" %}{% endcodeBlock %}
-     * @default [{}]   
+
      */
     @Collection<ButtonPropsModel>([{}], ButtonProps)
     public buttons: ButtonPropsModel[];
     /**
      * Specifies the boolean value whether the dialog can be closed with the escape key 
      * that is used to control the dialog's closing behavior.
-     * @default true
+
      */
     @Property(true)
     public closeOnEscape: boolean;
@@ -469,7 +473,7 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
      * {% codeBlock src="dialog/animation-api/index.ts" %}{% endcodeBlock %}
      * 
      * {% codeBlock src="dialog/animation-api/index.html" %}{% endcodeBlock %}
-     * @default { effect: 'Fade', duration: 400, delay:0 }
+
      */
     @Complex<AnimationSettingsModel>({}, AnimationSettings)
     public animationSettings: AnimationSettingsModel;
@@ -478,22 +482,22 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
      * The position can be represented with pre-configured positions or specific X and Y values.
      * * `X value`: left, center, right, or offset value.
      * * `Y value`: top, center, bottom, or offset value.
-     * @default {X:'center', Y:'center'}
+
      */
     @Complex<PositionDataModel>({ X: 'center', Y: 'center' }, PositionData)
     public position: PositionDataModel;
     /**
      * Event triggers when the dialog is created.
      * @event
-     * @blazorProperty 'Created'
+
      */
     @Event()
     public created: EmitType<Object>;
     /**
      * Event triggers when a dialog is opened.
      * @event
-     * @blazorProperty 'Opened'
-     * @blazorType DialogOpenEvent
+
+
      */
     @Event()
     public open: EmitType<Object>;
@@ -502,15 +506,15 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
      * If you cancel this event, the dialog remains closed.
      * Set the cancel argument to true to cancel the open of a dialog. 
      * @event
-     * @blazorProperty 'OnOpen'
+
      */
     @Event()
     public beforeOpen: EmitType<BeforeOpenEventArgs>;
     /**
      * Event triggers after the dialog has been closed.
      * @event
-     * @blazorProperty 'Closed'
-     * @blazorType DialogCloseEvent
+
+
      */
     @Event()
     public close: EmitType<Object>;
@@ -519,65 +523,65 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
      * If you cancel this event, the dialog remains opened.
      * Set the cancel argument to true to cancel the closure of a dialog. 
      * @event
-     * @blazorProperty 'OnClose'
+
      */
     @Event()
     public beforeClose: EmitType<BeforeCloseEventArgs>;
     /**
      * Event triggers when the user begins dragging the dialog.
      * @event
-     * @blazorProperty 'OnDragStart'
-     * @blazorType DialogDragStartEvent
+
+
      */
     @Event()
     public dragStart: EmitType<Object>;
     /**
      * Event triggers when the user stop dragging the dialog.
      * @event
-     * @blazorProperty 'OnDragStop'
-     * @blazorType DialogDragStopEvent
+
+
      */
     @Event()
     public dragStop: EmitType<Object>;
     /**
      * Event triggers when the user drags the dialog.
      * @event
-     * @blazorProperty 'OnDrag'
-     * @blazorType DialogDragEvent
+
+
      */
     @Event()
     public drag: EmitType<Object>;
     /**
      * Event triggers when the overlay of dialog is clicked.
      * @event
-     * @blazorProperty 'OnOverlayClick'
+
      */
     @Event()
     public overlayClick: EmitType<Object>;
     /**
      * Event triggers when the user begins to resize a dialog.
      * @event
-     * @blazorProperty 'OnResizeStart'
+
      */
     @Event()
     public resizeStart: EmitType<Object>;
     /**
      * Event triggers when the user resize the dialog.
      * @event
-     * @blazorProperty 'Resizing'
+
      */
     @Event()
     public resizing: EmitType<Object>;
     /**
      * Event triggers when the user stop to resize a dialog.
      * @event
-     * @blazorProperty 'OnResizeStop'
+
      */
     @Event()
     public resizeStop: EmitType<Object>;
     /**
      * Constructor for creating the widget    
-     * @hidden
+
      */
     constructor(options?: DialogModel, element?: string | HTMLElement) {
         super(options, <HTMLElement | string>element);
@@ -842,16 +846,20 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
             relateTo: this.target,
             actionOnScroll: 'none',
             open: (event: Event) => {
-                this.focusContent();
                 let eventArgs: object = {
                     container: this.isModal ? this.dlgContainer : this.element,
                     element: this.element,
-                    target: this.target
+                    target: this.target,
+                    preventFocus: false
                 };
                 if (this.enableResize) {
                     this.getMinHeight();
                 }
-                this.trigger('open', eventArgs);
+                this.trigger('open', eventArgs, (openEventArgs: {[key: string]: object} ) => {
+                    if (!openEventArgs.preventFocus) {
+                        this.focusContent();
+                    }
+                });
             },
             close: (event: Event) => {
                 if (this.isModal) {
@@ -1415,7 +1423,7 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
 
     /**
      * Binding event to the element while widget creation
-     * @hidden
+
      */
     private wireEvents(): void {
         if (this.showCloseIcon) {
@@ -1428,7 +1436,7 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
     }
     /**
      * Unbinding event to the element while widget destroy
-     * @hidden
+
      */
     private unWireEvents(): void {
         if (this.showCloseIcon) {

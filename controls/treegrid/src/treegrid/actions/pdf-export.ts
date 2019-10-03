@@ -9,7 +9,7 @@ import * as event from '../base/constant';
 import { PdfDocument } from '@syncfusion/ej2-pdf-export';
 /**
  * TreeGrid PDF Export module
- * @hidden
+
  */
 export class PdfExport {
     private parent: TreeGrid;
@@ -31,14 +31,14 @@ export class PdfExport {
       return 'PdfExport';
     }
     /**
-     * @hidden
+
      */
     public addEventListener(): void {
         this.parent.on('pdfCellInfo', this.pdfQueryCellInfo, this);
         this.parent.on('updateResults', this.updatePdfResultModel, this);
       }
       /**
-       * @hidden
+
        */
       public removeEventListener(): void {
         if (this.parent.isDestroyed) { return; }
@@ -48,7 +48,7 @@ export class PdfExport {
      /**
       * To destroy the PDF Export
       * @return {void}
-      * @hidden
+
       */
       public destroy(): void {
         this.removeEventListener();
@@ -137,7 +137,7 @@ export class PdfExport {
       }
       /**
        * TreeGrid PDF Export cell modifier
-       * @hidden
+
        */
       private pdfQueryCellInfo(args?: PdfQueryCellInfoEventArgs) : void {
         if (this.parent.grid.getColumnIndexByUid(args.column.uid) === this.parent.treeColumnIndex) {

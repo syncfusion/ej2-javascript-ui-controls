@@ -97,6 +97,13 @@ export class Ribbon extends Component<HTMLDivElement> implements INotifyProperty
     public fileItemSelect: EmitType<MenuEventArgs>;
 
     /**
+     * Triggers while rendering each file menu item.
+     * @event
+     */
+    @Event()
+    public beforeFileItemRender: EmitType<MenuEventArgs>;
+
+    /**
      * Triggers before opening the file menu.
      * @event
      */
@@ -225,6 +232,9 @@ export class Ribbon extends Component<HTMLDivElement> implements INotifyProperty
                 if (!args.parentItem || args.parentItem.text === menuItems[0].text) {
                     requestAnimationFrame((): void => menuObj.setProperties({ showItemOnClick: true }, true));
                 }
+            },
+            beforeItemRender: (args: MenuEventArgs): void => {
+                this.trigger('beforeFileItemRender', args);
             }
         });
         menuObj.createElement = this.createElement;
@@ -253,9 +263,7 @@ export class Ribbon extends Component<HTMLDivElement> implements INotifyProperty
                     this.toolbarObj.items = this.items[args.selectingIndex].content;
                     this.toolbarObj.dataBind();
                     if (this.element.classList.contains('e-collapsed')) {
-                        EventHandler.remove(
-                            this.tabObj.element.querySelector('.e-tab-header .e-toolbar-item.e-active'),
-                            'click', this.ribbonExpandCollapse);
+                        EventHandler.remove(args.selectedItem, 'click', this.ribbonExpandCollapse);
                     }
                 }
                 this.trigger('selecting', args);
@@ -280,13 +288,18 @@ export class Ribbon extends Component<HTMLDivElement> implements INotifyProperty
 
     private ribbonExpandCollapse(e: MouseEvent): void {
         let eventArgs: ExpandCollapseEventArgs = { element: this.toolbarObj.element, expanded: true };
-        let activeTab: Element = this.tabObj.element.querySelector('.e-tab-header .e-toolbar-item.e-active');
+        let activeTab: Element;
         if (this.element.classList.contains('e-collapsed')) {
+            activeTab = this.tabObj.element.querySelector('.e-tab-header').getElementsByClassName(
+                'e-toolbar-item')[this.tabObj.selectedItem];
             this.element.classList.remove('e-collapsed');
+            activeTab.classList.add('e-active');
             EventHandler.remove(activeTab, 'click', this.ribbonExpandCollapse);
             this.trigger('expandCollapse', eventArgs);
         } else {
+            activeTab = this.tabObj.element.querySelector('.e-tab-header .e-toolbar-item.e-active');
             this.element.classList.add('e-collapsed'); eventArgs.expanded = false;
+            activeTab.classList.remove('e-active');
             EventHandler.add(activeTab, 'click', this.ribbonExpandCollapse, this);
             this.trigger('expandCollapse', eventArgs);
         }

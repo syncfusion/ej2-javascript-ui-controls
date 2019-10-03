@@ -2,13 +2,14 @@ import { Tab, SelectingEventArgs, TabItemModel, SelectEventArgs } from '@syncfus
 import { Spreadsheet } from '../base/index';
 import { refreshSheetTabs, locale, addSheetTab, cMenuBeforeOpen, dialog, renameSheet } from '../common/index';
 import { sheetTabs, renameSheetTab, removeSheetTab, activeSheetChanged, onVerticalScroll, onHorizontalScroll } from '../common/index';
-import { SheetModel, getSheetName } from '../../workbook/index';
+import { getUpdateUsingRaf } from '../common/index';
+import { SheetModel, getSheetName, aggregateComputation, AggregateArgs, isSingleCell, getRangeIndexes } from '../../workbook/index';
 import { DropDownButton, MenuEventArgs, BeforeOpenCloseMenuEventArgs, OpenCloseMenuEventArgs } from '@syncfusion/ej2-splitbuttons';
 import { ItemModel } from '@syncfusion/ej2-splitbuttons';
 import { isCollide, OffsetPosition, calculatePosition } from '@syncfusion/ej2-popups';
 import { rippleEffect, L10n, closest, EventHandler, remove } from '@syncfusion/ej2-base';
 import { Dialog } from '../services/index';
-import { sheetsDestroyed } from '../../workbook/common/index';
+import { sheetsDestroyed, activeCellChanged } from '../../workbook/common/index';
 
 /**
  * Represents SheetTabs for Spreadsheet.
@@ -18,6 +19,8 @@ export class SheetTabs {
     private tabInstance: Tab;
     private dropDownInstance: DropDownButton;
     private addBtnRipple: Function;
+    private aggregateDropDown: DropDownButton;
+    private aggregateContent: string = '';
     constructor(parent: Spreadsheet) {
         this.parent = parent;
         this.addEventListener();
@@ -49,8 +52,8 @@ export class SheetTabs {
             iconCss: 'e-icons',
             items: items.ddbItems,
             select: (args: MenuEventArgs): void => this.updateSheetTab({ idx: this.dropDownInstance.items.indexOf(args.item) }),
-            beforeOpen: this.beforeOpenHandler.bind(this),
-            open: this.openHandler.bind(this),
+            beforeOpen: (args: BeforeOpenCloseMenuEventArgs): void => this.beforeOpenHandler(this.dropDownInstance, args.element),
+            open: (args: OpenCloseMenuEventArgs): void => this.openHandler(this.dropDownInstance, args.element, 'left'),
             cssClass: 'e-sheets-list e-flat e-caret-hide',
             close: (): void => this.parent.element.focus()
         });
@@ -61,6 +64,7 @@ export class SheetTabs {
             selectedItem: 0,
             overflowMode: 'Scrollable',
             items: items.tabItems,
+            scrollStep: 250,
             selecting: (args: SelectingEventArgs): void => {
                 /** */
             },
@@ -90,22 +94,25 @@ export class SheetTabs {
         this.dropDownInstance.setProperties({ 'items': this.dropDownInstance.items }, true);
     }
 
-    private beforeOpenHandler(args: BeforeOpenCloseMenuEventArgs): void {
+    private beforeOpenHandler(instance: DropDownButton, element: HTMLElement): void {
         let viewportHeight: number = this.parent.viewport.height;
-        let actualHeight: number = (parseInt(getComputedStyle(args.element.firstElementChild).height, 10) *
-            this.dropDownInstance.items.length) + (parseInt(getComputedStyle(args.element).paddingTop, 10) * 2);
+        let actualHeight: number = (parseInt(getComputedStyle(element.firstElementChild).height, 10) *
+            instance.items.length) + (parseInt(getComputedStyle(element).paddingTop, 10) * 2);
         if (actualHeight > viewportHeight) {
-            args.element.style.height = `${viewportHeight}px`; args.element.style.overflowY = 'auto';
+            element.style.height = `${viewportHeight}px`; element.style.overflowY = 'auto';
         }
-        args.element.parentElement.style.visibility = 'hidden';
+        element.parentElement.style.visibility = 'hidden';
     }
 
-    private openHandler(args: OpenCloseMenuEventArgs): void {
-        let wrapper: HTMLElement = args.element.parentElement; let height: number;
+    private openHandler(instance: DropDownButton, element: HTMLElement, positionX: string): void {
+        let wrapper: HTMLElement = element.parentElement; let height: number;
         let collide: string[] = isCollide(wrapper);
         if (collide.indexOf('bottom') === -1) {
-            height = args.element.style.overflowY === 'auto' ? this.parent.viewport.height : wrapper.getBoundingClientRect().height;
-            let offset: OffsetPosition = calculatePosition(this.dropDownInstance.element, 'left', 'top');
+            height = element.style.overflowY === 'auto' ? this.parent.viewport.height : wrapper.getBoundingClientRect().height;
+            let offset: OffsetPosition = calculatePosition(instance.element, positionX, 'top');
+            if (positionX === 'right') {
+                offset.left -= wrapper.getBoundingClientRect().width;
+            }
             wrapper.style.left = `${offset.left}px`;
             wrapper.style.top = `${offset.top - height}px`;
         }
@@ -176,7 +183,7 @@ export class SheetTabs {
             });
             (target.firstElementChild as HTMLElement).style.display = 'none';
             target.appendChild(input);
-            EventHandler.add(document, 'click', this.renameInputFocusOut, this);
+            EventHandler.add(document, 'mousedown touchstart', this.renameInputFocusOut, this);
             EventHandler.add(input, 'input', this.updateWidth, this);
             input.focus();
             (input as HTMLInputElement).setSelectionRange(0, value.length);
@@ -197,7 +204,8 @@ export class SheetTabs {
 
     private renameInputFocusOut(e: KeyboardEvent | MouseEvent): void {
         let target: HTMLInputElement = e.target as HTMLInputElement;
-        if (e.type === 'click' && (target.classList.contains('e-sheet-rename') || closest(target, '.e-dlg-container'))) { return; }
+        if ((e.type === 'mousedown' || e.type === 'touchstart') &&  (target.classList.contains('e-sheet-rename') ||
+            closest(target, '.e-dlg-container'))) { return; }
         target = document.getElementById(this.parent.element.id + '_rename_input') as HTMLInputElement;
         if (e.type === 'keydown' && (e as KeyboardEvent).keyCode === 27) {
             this.removeRenameInput(target); this.parent.element.focus(); return;
@@ -243,7 +251,7 @@ export class SheetTabs {
         let textEle: HTMLElement = target.parentElement.querySelector('.e-tab-text');
         let sheetItems: Element = closest(target, '.e-toolbar-items');
         EventHandler.add(sheetItems, 'dblclick', this.renameSheetTab, this);
-        EventHandler.remove(document, 'click', this.renameInputFocusOut);
+        EventHandler.remove(document, 'mousedown touchstart', this.renameInputFocusOut);
         EventHandler.remove(target, 'input', this.updateWidth);
         remove(target);
         textEle.style.display = '';
@@ -311,6 +319,63 @@ export class SheetTabs {
         this.parent.element.focus();
     }
 
+    private showAggregate(): void {
+        if (isSingleCell(getRangeIndexes(this.parent.getActiveSheet().selectedRange))) { return; }
+        getUpdateUsingRaf((): void => {
+            let eventArgs: AggregateArgs = { Count: 0, Sum: '0', Avg: '0', Min: '0', Max: '0' };
+            this.parent.notify(aggregateComputation, eventArgs);
+            if (eventArgs.Count) {
+                if (!this.aggregateContent) { this.aggregateContent = eventArgs.Sum ? 'Sum' : 'Count'; }
+                let key: string = this.aggregateContent;
+                let content: string = `${key}: ${eventArgs[key]}`;
+                if (!this.aggregateDropDown) {
+                    let aggregateEle: HTMLElement = this.parent.createElement('button');
+                    document.getElementById(`${this.parent.element.id}_sheet_tab_panel`).appendChild(aggregateEle);
+                    this.aggregateDropDown = new DropDownButton({
+                        content: content,
+                        items: this.getAggregateItems(eventArgs),
+                        select: (args: MenuEventArgs): void => this.updateAggregateContent(args.item.text, eventArgs),
+                        beforeOpen: (args: BeforeOpenCloseMenuEventArgs): void =>
+                            this.beforeOpenHandler(this.aggregateDropDown, args.element),
+                        open: (args: OpenCloseMenuEventArgs): void => this.openHandler(this.aggregateDropDown, args.element, 'right'),
+                        close: (): void => this.parent.element.focus(),
+                        cssClass: 'e-aggregate-list e-flat'
+                    });
+                    this.aggregateDropDown.createElement = this.parent.createElement;
+                    this.aggregateDropDown.appendTo(aggregateEle);
+                } else {
+                    this.updateAggregateContent(content, eventArgs);
+                }
+            }
+        });
+    }
+
+    private getAggregateItems(args: AggregateArgs): ItemModel[] {
+        let items: ItemModel[] = []; let text: string; let iconCss: string;
+        Object.keys(args).forEach((key: string): void => {
+            if (args[key] !== aggregateComputation) {
+                text = `${key}: ${args[key]}`; iconCss = key === this.aggregateContent ? 'e-selected-icon e-icons' : '';
+                items.push({ text: text, iconCss: iconCss });
+            }
+        });
+        return items;
+    }
+
+    private updateAggregateContent(text: string, eventArgs: AggregateArgs): void {
+        this.aggregateContent = text.split(': ')[0];
+        this.aggregateDropDown.content = text;
+        this.aggregateDropDown.dataBind();
+        this.aggregateDropDown.setProperties({ 'items': this.getAggregateItems(eventArgs) }, true);
+     }
+
+    private removeAggregate(): void {
+        if (this.aggregateDropDown && isSingleCell(getRangeIndexes(this.parent.getActiveSheet().selectedRange))) {
+            this.aggregateDropDown.destroy();
+            remove(this.aggregateDropDown.element);
+            this.aggregateDropDown = null;
+        }
+    }
+
     private addEventListener(): void {
         this.parent.on(sheetTabs, this.createSheetTabs, this);
         this.parent.on(refreshSheetTabs, this.refreshSheetTab, this);
@@ -320,6 +385,7 @@ export class SheetTabs {
         this.parent.on(cMenuBeforeOpen, this.switchSheetTab, this);
         this.parent.on(activeSheetChanged, this.updateSheetTab, this);
         this.parent.on(renameSheet, this.renameInputFocusOut, this);
+        this.parent.on(activeCellChanged, this.removeAggregate, this);
         this.parent.on(onVerticalScroll, this.focusRenameInput, this);
         this.parent.on(onHorizontalScroll, this.focusRenameInput, this);
     }
@@ -330,9 +396,11 @@ export class SheetTabs {
         this.dropDownInstance = null;
         this.tabInstance.destroy();
         this.tabInstance = null;
+        this.aggregateDropDown = null;
+        this.aggregateContent = null;
         this.addBtnRipple();
         this.addBtnRipple = null;
-        EventHandler.remove(document, 'click', this.renameInputFocusOut);
+        EventHandler.remove(document, 'mousedown touchstart', this.renameInputFocusOut);
         let ele: HTMLElement = document.getElementById(this.parent.element.id + '_sheet_tab_panel');
         if (ele) { remove(ele); }
         this.parent = null;
@@ -348,6 +416,7 @@ export class SheetTabs {
             this.parent.off(cMenuBeforeOpen, this.switchSheetTab);
             this.parent.off(activeSheetChanged, this.updateSheetTab);
             this.parent.off(renameSheet, this.renameInputFocusOut);
+            this.parent.off(activeCellChanged, this.removeAggregate);
             this.parent.off(onVerticalScroll, this.focusRenameInput);
             this.parent.off(onHorizontalScroll, this.focusRenameInput);
         }

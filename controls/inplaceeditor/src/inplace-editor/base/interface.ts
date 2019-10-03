@@ -7,7 +7,7 @@ import { RenderMode } from './inplace-editor';
 
 /**
  * InPlace-Editor interface defined here.
- * @hidden
+
  */
 
 export type Component = AutoComplete | ColorPicker | ComboBox | DateRangePicker | MultiSelect | RichTextEditor | Slider | TimePicker;
@@ -19,6 +19,7 @@ export interface NotifyParams {
 }
 
 export interface IComponent {
+    showPopup?(): void;
     compObj: Component;
     render(e: NotifyParams): void;
     focus(): void;

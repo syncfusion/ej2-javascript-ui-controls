@@ -1,5 +1,5 @@
 /**
- * @hidden
+
  */
 export type PdfAnnotationType =
     /**
@@ -72,7 +72,7 @@ export type PdfAnnotationType =
  * OutdentedArrow - Sets the decorator shape as Outdented Arrow
  * DoubleArrow - Sets the decorator shape as DoubleArrow
  * 
- * @hidden
+
  */
 export type DecoratorShapes =
     /** None - Sets the decorator shape as None */

@@ -11,7 +11,7 @@ import { Query } from '@syncfusion/ej2-data';
 /**
  * 
  * Reorder module is used to handle row reordering.
- * @hidden
+
  */
 export class RowDD {
     //Internal variables    
@@ -226,12 +226,32 @@ export class RowDD {
         this.isRefresh = false;
         let selectedIndexes: number[] = this.parent.getSelectedRowIndexes();
         if (gObj.isRowDragable()) {
-            if (!this.parent.rowDropSettings.targetID &&
-                this.startedRow.querySelector('td.e-selectionbackground') && selectedIndexes.length > 1 &&
-                selectedIndexes.length !== this.parent.getCurrentViewRecords().length) {
-                this.reorderRows(selectedIndexes, args.dropIndex);
+            if (!isBlazor()) {
+                if (!this.parent.rowDropSettings.targetID &&
+                    this.startedRow.querySelector('td.e-selectionbackground') && selectedIndexes.length > 1 &&
+                    selectedIndexes.length !== this.parent.getCurrentViewRecords().length) {
+                    this.reorderRows(selectedIndexes, args.dropIndex);
+                } else {
+                    this.reorderRows([parseInt(this.startedRow.getAttribute('aria-rowindex'), 10)], this.dragTarget);
+                }
             } else {
-                this.reorderRows([parseInt(this.startedRow.getAttribute('aria-rowindex'), 10)], this.dragTarget);
+                let fromIdx: number = parseInt(this.startedRow.getAttribute('aria-rowindex'), 10);
+                let currentVdata: object[] = [];
+                currentVdata[0] = this.parent.currentViewData[fromIdx];
+                let draggedData: object[] = this.parent.getSelectedRecords().length ? this.parent.getSelectedRecords() : (currentVdata);
+                let changeRecords: { addedRecords: Object[], deletedRecords: Object[], changedRecords: Object[] } = {
+                    addedRecords: [],
+                    deletedRecords: draggedData,
+                    changedRecords: []
+                };
+                let toIdx: number = this.dragTarget ? this.dragTarget : args.dropIndex;
+                let dragDropDestinationIndex: string = 'dragDropDestinationIndex';
+                let query: Query = new Query;
+                query[dragDropDestinationIndex] = toIdx;
+                this.saveChange(changeRecords, query);
+                changeRecords.deletedRecords = [];
+                changeRecords.addedRecords = draggedData;
+                this.saveChange(changeRecords, query);
             }
             this.dragTarget = null;
             if (!gObj.rowDropSettings.targetID) {
@@ -240,6 +260,17 @@ export class RowDD {
             }
         }
         this.isRefresh = true;
+    }
+
+    private saveChange(changeRecords: object, query: Query): void {
+        this.parent.getDataModule().saveChanges(changeRecords, this.parent.getPrimaryKeyFieldNames()[0], {}, query)
+            .then(() => {
+                this.parent.notify(events.modelChanged, {
+                    type: events.actionBegin, requestType: 'rowdraganddrop'
+                });
+            }).catch((e: Error) => {
+                this.parent.trigger(events.actionFailure, { error: e });
+            });
     }
 
     public reorderRows(fromIndexes: number[], toIndex: number): void {
@@ -304,7 +335,7 @@ export class RowDD {
 
     /**
      * Constructor for the Grid print module
-     * @hidden
+
      */
     constructor(parent?: IGrid) {
         this.parent = parent;
@@ -561,7 +592,7 @@ export class RowDD {
     /**
      * To destroy the print 
      * @return {void}
-     * @hidden
+
      */
     public destroy(): void {
         let gridElement: Element = this.parent.element;

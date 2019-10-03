@@ -9,7 +9,7 @@ import { isEditable, getComplexFieldID, getObject } from '../base/util';
 
 /**
  * `ComboBoxEditCell` is used to handle ComboBoxEdit cell type editing.
- * @hidden
+
  */
 export class ComboboxEditCell implements IEditCell {
 

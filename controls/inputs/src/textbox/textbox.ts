@@ -232,6 +232,7 @@ export class TextBox extends Component<HTMLInputElement | HTMLTextAreaElement> i
                     break;
                 case 'enabled':
                     Input.setEnabled(this.enabled, this.respectiveElement, this.floatLabelType, this.textboxWrapper.container);
+                    this.bindClearEvent();
                     break;
                 case 'value':
                     let prevOnChange: boolean = this.isProtectedOnChange;
@@ -517,9 +518,7 @@ export class TextBox extends Component<HTMLInputElement | HTMLTextAreaElement> i
         if (this.isForm) {
             EventHandler.add(this.formElement, 'reset', this.resetForm, this);
         }
-        if (this.enabled) {
-            this.bindClearEvent();
-        }
+        this.bindClearEvent();
     }
 
     private resetValue(value: string) : void {
@@ -611,7 +610,11 @@ export class TextBox extends Component<HTMLInputElement | HTMLTextAreaElement> i
 
     private bindClearEvent(): void {
         if (this.showClearButton && this.respectiveElement.tagName !== 'TEXTAREA') {
-            EventHandler.add(this.textboxWrapper.clearButton, 'mousedown touchstart', this.resetInputHandler, this);
+            if (this.enabled) {
+                EventHandler.add(this.textboxWrapper.clearButton, 'mousedown touchstart', this.resetInputHandler, this);
+            } else {
+                EventHandler.remove(this.textboxWrapper.clearButton, 'mousedown touchstart', this.resetInputHandler);
+            }
         }
     }
 

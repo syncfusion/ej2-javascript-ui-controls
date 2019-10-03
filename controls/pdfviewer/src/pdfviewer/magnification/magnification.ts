@@ -312,7 +312,7 @@ export class Magnification {
             this.pdfViewerBase.viewerContainer.style.overflowY = 'auto';
         }
         if (this.pdfViewerBase.pageCount > 0) {
-            if ((this.previousZoomFactor !== this.zoomFactor) || this.isInitialLoading ) {
+            if ((this.previousZoomFactor !== this.zoomFactor)) {
                 if (!this.isPinchZoomed) {
                     this.magnifyPages();
                 } else {

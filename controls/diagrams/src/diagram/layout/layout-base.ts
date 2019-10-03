@@ -15,28 +15,28 @@ export class Layout extends ChildProperty<Layout> {
 
     /**
      * Sets the name of the node with respect to which all other nodes will be translated
-     * @default ''
+
      */
     @Property('')
     public fixedNode: string;
 
     /**
      * Sets the space that has to be horizontally left between the nodes
-     * @default 30
+
      */
     @Property(30)
     public horizontalSpacing: number;
 
     /**
      * Sets the space that has to be Vertically left between the nodes
-     * @default 30
+
      */
     @Property(30)
     public verticalSpacing: number;
 
     /**
      * Sets the Maximum no of iteration of the symmetrical layout
-     * @default 30
+
      */
     @Property(30)
     public maxIteration: number;
@@ -55,21 +55,21 @@ export class Layout extends ChildProperty<Layout> {
      * });
      * diagram.appendTo('#diagram');
      * ```
-     * @default 40
+
      */
     @Property(40)
     public springFactor: number;
 
     /**
      * Sets how long edges should be, ideally of the symmetrical layout
-     * @default 50
+
      */
     @Property(50)
     public springLength: number;
 
     /**
      * * Defines the space between the viewport and the layout
-     * @default { left: 50, top: 50, right: 0, bottom: 0 }
+
      */
     @Complex<MarginModel>({ left: 50, top: 50, right: 0, bottom: 0 }, Margin)
     public margin: MarginModel;
@@ -81,7 +81,7 @@ export class Layout extends ChildProperty<Layout> {
      * * Right - Aligns the diagram element at the right of its immediate parent
      * * Center - Aligns the diagram element at the center of its immediate parent
      * * Auto - Aligns the diagram element based on the characteristics of its immediate parent
-     * @default 'Auto'
+
      */
     @Property('Auto')
     public horizontalAlignment: HorizontalAlignment;
@@ -93,7 +93,7 @@ export class Layout extends ChildProperty<Layout> {
      * * Bottom - Aligns the diagram element at the bottom of its immediate parent
      * * Center - Aligns the diagram element at the center of its immediate parent
      * * Auto - Aligns the diagram element based on the characteristics of its immediate parent
-     * @default 'Auto'
+
      */
     @Property('Auto')
     public verticalAlignment: VerticalAlignment;
@@ -104,7 +104,7 @@ export class Layout extends ChildProperty<Layout> {
      * * BottomToTop - Renders the layout from bottom to top
      * * LeftToRight - Renders the layout from left to right
      * * RightToLeft - Renders the layout from right to left
-     * @default 'TopToBottom'
+
      */
     @Property('TopToBottom')
     public orientation: LayoutOrientation;
@@ -114,7 +114,7 @@ export class Layout extends ChildProperty<Layout> {
      * * Auto - Defines the first segment direction based on the type of the layout
      * * Orientation - Defines the first segment direction based on the orientation of the layout
      * * Custom - Defines the first segment direction dynamically by the user
-     * @default 'Auto'
+
      */
     @Property('Auto')
     public connectionDirection: ConnectionDirection;
@@ -123,7 +123,7 @@ export class Layout extends ChildProperty<Layout> {
      * Sets whether the segments have to be customized based on the layout or not
      *  * Default - Routes the connectors like a default diagram
      *  * Layout - Routes the connectors based on the type of the layout
-     * @default 'Default'
+
      */
     @Property('Default')
     public connectorSegments: ConnectorSegments;
@@ -135,7 +135,7 @@ export class Layout extends ChildProperty<Layout> {
      * * OrganizationalChart - Defines the type of the layout as Organizational Chart
      * * ComplexHierarchicalTree - Defines the type of the layout as complex HierarchicalTree
      * * RadialTree - Defines the type of the layout as Radial tree
-     * @default 'None'
+
      */
     @Property('None')
     public type: LayoutType;
@@ -181,10 +181,10 @@ export class Layout extends ChildProperty<Layout> {
      * });
      * diagram.appendTo('#diagram');
      * ```
-     * @aspDefaultValueIgnore
-     * @blazorDefaultValueIgnore
-     * @default undefined
-     * @deprecated
+
+
+
+
      */
     @Property()
     public getLayoutInfo: Function | string;
@@ -197,19 +197,19 @@ export class Layout extends ChildProperty<Layout> {
 
     /**
      * Defines whether an object should be at the left/right of the mind map. Applicable only for the direct children of the root node
-     * @aspDefaultValueIgnore
-     * @blazorDefaultValueIgnore
-     * @default undefined
-     * @deprecated
+
+
+
+
      */
     @Property()
     public getBranch: Function | string;
 
     /**
      * Aligns the layout within the given bounds
-     * @aspDefaultValueIgnore
-     * @blazorDefaultValueIgnore
-     * @default undefined
+
+
+
      */
     @Property()
     public bounds: Rect;
@@ -250,14 +250,14 @@ export class Layout extends ChildProperty<Layout> {
      * });
      * diagram.appendTo('#diagram');
      * ```
-     * @default true
+
      */
     @Property(true)
     public enableAnimation: boolean;
 
     /**
      * Defines the root of the hierarchical tree layout
-     * @default ''
+
      */
     @Property('')
     public root: string;
@@ -360,22 +360,22 @@ export interface ILayout {
     nameTable?: Object;
     /**
      * Provides firstLevelNodes node of the diagram layout
-     * @default undefined
+
      */
     firstLevelNodes?: INode[];
     /**
      * Provides centerNode node of the diagram layout
-     * @default undefined
+
      */
     centerNode?: null;
     /**
      * Provides type of the diagram layout
-     * @default undefined
+
      */
     type?: string;
     /**
      * Provides orientation of the diagram layout
-     * @default undefined
+
      */
     orientation?: string;
     graphNodes?: {};
@@ -383,35 +383,35 @@ export interface ILayout {
     updateView?: boolean;
     /**
      * Provides vertical spacing of the diagram layout
-     * @default undefined
+
      */
     verticalSpacing?: number;
     /**
      * Provides horizontal spacing of the diagram layout
-     * @default undefined
+
      */
     horizontalSpacing?: number;
     levels?: LevelBounds[];
     /**
      * Provides horizontal alignment of the diagram layout
-     * @default undefined
-     * @blazorDefaultValueIgnore
+
+
      */
     horizontalAlignment?: HorizontalAlignment;
     /**
      * Provides horizontal alignment of the diagram layout
-     * @default undefined
-     * @blazorDefaultValueIgnore
+
+
      */
     verticalAlignment?: VerticalAlignment;
     /**
      * Provides fixed of the diagram layout
-     * @default undefined
+
      */
     fixedNode?: string;
     /**
      * Provides the layout bounds
-     * @default undefined
+
      */
     bounds?: Rect;
     getLayoutInfo?: Function;
@@ -421,17 +421,17 @@ export interface ILayout {
     level?: number;
     /**
      * Defines the layout margin values
-     * @default undefined
+
      */
     margin?: MarginModel;
     /**
      * Defines objects on the layout
-     * @default undefined
+
      */
     objects?: INode[];
     /**
      * Defines the root of the hierarchical tree layout
-     * @default undefined
+
      */
     root?: string;
 }

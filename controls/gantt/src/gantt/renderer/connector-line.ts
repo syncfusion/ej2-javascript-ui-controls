@@ -104,7 +104,7 @@ export class ConnectorLine {
             connectorLine = connectorLine + this.getConnectorLineTemplate(connectorLinesCollection[index]);
         }
         this.dependencyViewContainer.innerHTML = connectorLine;
-        this.parent.ganttChartModule.scrollElement.appendChild(this.dependencyViewContainer);
+        this.parent.ganttChartModule.chartBodyContent.appendChild(this.dependencyViewContainer);
     }
 
     /**
@@ -332,7 +332,7 @@ export class ConnectorLine {
         let isMilestone: boolean = data.milestoneChild ? true : false;
         let connectorContainer: string = '';
         if (this.getParentPosition(data)) {
-            connectorContainer = '<div id="ConnectorLine' + data.connectorLineId + '" style="background-color=black">';
+            connectorContainer = '<div id="ConnectorLine' + data.connectorLineId + '" style="background-color:black">';
             let div: string = '<div class="' + cls.connectorLineContainer +
                 '" tabindex="-1" aria-label="' + this.generateAriaLabel(data) + '" style="';
             let eLine: string = '<div class="' + cls.connectorLine + '" style="' +

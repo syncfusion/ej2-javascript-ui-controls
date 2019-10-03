@@ -35,14 +35,14 @@ export class Panel extends ChildProperty<Panel> {
 
     /**
      * Defines the id of the panel.
-     * @default ''
+
      */
     @Property('')
     public id: string;
 
     /**
      * Defines the CSS class name that can be appended with each panel element.
-     * @default ''
+
      */
     @Property('')
     public cssClass: string;
@@ -61,25 +61,25 @@ export class Panel extends ChildProperty<Panel> {
 
     /**
      * Defines whether to the panel should be enabled or not.
-     * @default true
+
      */
     @Property(true)
     public enabled: boolean;
 
     /**
      * Defines a row value where the panel should be placed.
-     * @default 0
-     * @aspType int
-     * @blazorType int
+
+
+
      */
     @Property(0)
     public row: number;
 
     /**
      * Defines the column value where the panel to be placed.
-     * @default 0
-     * @aspType int
-     * @blazorType int
+
+
+
      */
     @Property(0)
     public col: number;
@@ -87,7 +87,7 @@ export class Panel extends ChildProperty<Panel> {
     /**
      * Specifies the width of the panel in the layout in cells count.
      *
-     * @default 1
+
      */
     @Property(1)
     public sizeX: number;
@@ -95,7 +95,7 @@ export class Panel extends ChildProperty<Panel> {
     /**
      * Specifies the height of the panel in the layout in cells count.
      *
-     * @default 1
+
      */
     @Property(1)
     public sizeY: number;
@@ -103,7 +103,7 @@ export class Panel extends ChildProperty<Panel> {
     /**
      * Specifies the minimum height of the panel in cells count.
      * 
-     * @default 1
+
      */
     @Property(1)
     public minSizeY: number;
@@ -111,7 +111,7 @@ export class Panel extends ChildProperty<Panel> {
     /**
      * Specifies the minimum width of the panel in cells count.
      * *
-     * @default 1
+
      */
     @Property(1)
     public minSizeX: number;
@@ -119,9 +119,9 @@ export class Panel extends ChildProperty<Panel> {
     /**
      * Specifies the maximum height of the panel in cells count.
      * *
-     * @default null
-     * @aspType int
-     * @blazorType int
+
+
+
      *
      */
     @Property(null)
@@ -130,9 +130,9 @@ export class Panel extends ChildProperty<Panel> {
     /**
      * Specifies the maximum width of the panel in cells count.
      * *
-     * @default null
-     * @aspType int
-     * @blazorType int
+
+
+
      */
     @Property(null)
     public maxSizeX: number;
@@ -140,9 +140,9 @@ export class Panel extends ChildProperty<Panel> {
     /**
      * Specifies the z-index of the panel
      * *
-     * @default 1000
-     * @aspType double
-     * @blazorType double
+
+
+
      */
     @Property(1000)
     public zIndex: number;
@@ -175,7 +175,6 @@ export class DashboardLayout extends Component<HTMLElement> implements INotifyPr
     protected rows: number = 1;
     protected dragobj: Draggable;
     protected dragStartArgs: DragStartArgs;
-    protected isDynamicallyUpdated: boolean;
     protected dragStopEventArgs: DragStopArgs;
     protected draggedEventArgs: DraggedEventArgs;
     protected updatedRows: number;
@@ -270,14 +269,14 @@ export class DashboardLayout extends Component<HTMLElement> implements INotifyPr
     /**
      * If allowDragging is set to true, then the DashboardLayout allows you to drag and reorder the panels.
      * *
-     * @default true
+
      */
     @Property(true)
     public allowDragging: boolean;
 
     /**
      * If allowResizing is set to true, then the DashboardLayout allows you to resize the panels.
-     * @default false
+
      */
     @Property(false)
     public allowResizing: boolean;
@@ -286,7 +285,7 @@ export class DashboardLayout extends Component<HTMLElement> implements INotifyPr
      * If pushing is set to true, then the DashboardLayout allow to push the panels when panels collide
      * while dragging or resizing the panels.
      * *
-     * @default true
+
      * @private
      */
     @Property(true)
@@ -296,14 +295,14 @@ export class DashboardLayout extends Component<HTMLElement> implements INotifyPr
      * If allowFloating is set to true, then the DashboardLayout automatically move the panels upwards to fill the empty available 
      * cells while dragging or resizing the panels.
      * *
-     * @default true
+
      */
     @Property(true)
     public allowFloating: boolean;
 
     /** 
      * Defines the cell aspect ratio of the panel. 
-     * @default 1
+
      */
     @Property(1)
     public cellAspectRatio: number;
@@ -311,21 +310,21 @@ export class DashboardLayout extends Component<HTMLElement> implements INotifyPr
     /**
      * Defines the spacing between the panels.
      * *
-     * @default [5,5]
+
      */
     @Property([5, 5])
     public cellSpacing: number[];
 
     /** 
      * Defines the number of columns to be created in the DashboardLayout. 
-     * @default 1
+
      */
     @Property(1)
     public columns: number;
     /**
      * 
      * *
-     * @default false
+
      */
     @Property(false)
     public showGridLines: boolean;
@@ -333,7 +332,7 @@ export class DashboardLayout extends Component<HTMLElement> implements INotifyPr
     /**
      * Defines the draggable handle selector which will act as dragging handler for the panels.
      * *
-     * @default null
+
      */
     @Property(null)
     public draggableHandle: string;
@@ -341,7 +340,7 @@ export class DashboardLayout extends Component<HTMLElement> implements INotifyPr
     /**
      * Locale property.
      * This is not a dashboard layout property.
-     * @default 'en-US'
+
      * @private
      */
     @Property('en-US')
@@ -349,7 +348,7 @@ export class DashboardLayout extends Component<HTMLElement> implements INotifyPr
 
     /**
      * Defines the media query value where the dashboardlayout becomes stacked layout when the resolution meets.
-     * @default 'max-width:600px'
+
      */
     @Property('max-width: 600px')
     public mediaQuery: string;
@@ -358,14 +357,14 @@ export class DashboardLayout extends Component<HTMLElement> implements INotifyPr
      *
      * Defines the panels property of the DashboardLayout component.
      *
-     * @default null
+
      */
     @Collection<PanelModel>([], Panel)
     public panels: PanelModel[];
 
     /**
      * Defines the resizing handles directions used for resizing the panels.
-     * @default 'e-south-east'
+
      * 
      */
     @Property(['e-south-east'])
@@ -374,7 +373,7 @@ export class DashboardLayout extends Component<HTMLElement> implements INotifyPr
     /**
      * Triggers whenever the panels positions are changed.
      * @event
-     * @blazorProperty 'Changed'
+
      */
     @Event()
     public change: EmitType<ChangeEventArgs>;
@@ -382,7 +381,7 @@ export class DashboardLayout extends Component<HTMLElement> implements INotifyPr
     /**
      * Triggers when a panel is about to drag.
      * @event
-     * @blazorProperty 'OnDragStart'
+
      */
     @Event()
     public dragStart: EmitType<DragStartArgs>;
@@ -390,7 +389,7 @@ export class DashboardLayout extends Component<HTMLElement> implements INotifyPr
     /**
      * Triggers while a panel is dragged continuously.
      * @event
-     * @blazorProperty 'Dragging'
+
      */
     @Event()
     public drag: EmitType<DraggedEventArgs>;
@@ -398,7 +397,7 @@ export class DashboardLayout extends Component<HTMLElement> implements INotifyPr
     /**
      * Triggers when a dragged panel is dropped.
      * @event
-     * @blazorProperty 'OnDragStop'
+
      */
     @Event()
     public dragStop: EmitType<DragStopArgs>;
@@ -406,7 +405,7 @@ export class DashboardLayout extends Component<HTMLElement> implements INotifyPr
     /**
      * Triggers when a panel is about to resize.
      * @event
-     * @blazorProperty 'OnResizeStart'
+
      */
     @Event()
     public resizeStart: EmitType<ResizeArgs>;
@@ -414,7 +413,7 @@ export class DashboardLayout extends Component<HTMLElement> implements INotifyPr
     /**
      * Triggers when a panel is being resized continuously.
      * @event
-     * @blazorProperty 'Resizing'
+
      */
     @Event()
     public resize: EmitType<ResizeArgs>;
@@ -422,7 +421,7 @@ export class DashboardLayout extends Component<HTMLElement> implements INotifyPr
     /**
      * Triggers when a panel resize ends.
      * @event
-     * @blazorProperty 'OnResizeStop'
+
      */
     @Event()
     public resizeStop: EmitType<ResizeArgs>;
@@ -430,14 +429,14 @@ export class DashboardLayout extends Component<HTMLElement> implements INotifyPr
     /** 
      * Triggers when Dashboard Layout is created.
      * @event 
-     * @blazorproperty 'Created'
+
      */
     @Event()
     public created: EmitType<Object>;
     /** 
      * Triggers when Dashboard Layout is destroyed.
      * @event 
-     * @blazorproperty 'Destroyed'
+
      */
     @Event()
     public destroyed: EmitType<Object>;
@@ -460,7 +459,6 @@ export class DashboardLayout extends Component<HTMLElement> implements INotifyPr
         this.dimensions = [];
         this.allItems = [];
         this.oldRowCol = {};
-        this.isDynamicallyUpdated = false;
         this.availableClasses = [];
         this.setOldRowCol();
         this.calculateCellSize();
@@ -2167,6 +2165,7 @@ export class DashboardLayout extends Component<HTMLElement> implements INotifyPr
                     preventDefault: false,
                     clone: false,
                     dragArea: this.element,
+                    isDragScroll: true,
                     handle: this.draggableHandle ? this.draggableHandle : '.e-panel',
                     abort: '.e-resize',
                     dragStart: this.onDraggingStart.bind(this),
@@ -2870,19 +2869,17 @@ export class DashboardLayout extends Component<HTMLElement> implements INotifyPr
                     this.setProperties({ allowPushing: newProp.allowPushing }, true);
                     break;
                 case 'panels':
-                    if (!this.isDynamicallyUpdated) {
+                    if (!newProp.columns) {
                         this.isRenderComplete = false;
                         this.updatePanelsDynamically(newProp.panels);
                         this.isRenderComplete = true;
-                        this.isDynamicallyUpdated = true;
-                    } else { this.isDynamicallyUpdated = false; }
+                    }
                     break;
                 case 'columns':
                     this.isRenderComplete = false;
-                    if (newProp.panels && !this.isDynamicallyUpdated) {
+                    if (newProp.panels) {
                         this.updatePanelsDynamically(newProp.panels);
-                        this.isDynamicallyUpdated = true;
-                    } else { this.isDynamicallyUpdated = false; }
+                    }
                     this.setProperties({ columns: newProp.columns }, true);
                     this.panelCollection = [];
                     this.maxColumnValue = this.columns;

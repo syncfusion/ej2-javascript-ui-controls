@@ -198,35 +198,45 @@ export class Edit {
      */
     public reUpdateEditModules(): void {
         let editSettings: EditSettingsModel = this.parent.editSettings;
-        if (this.parent.editModule.cellEditModule && (!editSettings.allowEditing ||
-            editSettings.mode === 'Dialog')) {
-            this.cellEditModule.destroy();
-        } else if (!isNullOrUndefined(this.cellEditModule) && editSettings.allowEditing &&
-            editSettings.mode === 'Auto') {
-            this.cellEditModule = new CellEdit(this.parent);
-        }
-        if (this.taskbarEditModule && !editSettings.allowTaskbarEditing) {
-            this.taskbarEditModule.destroy();
-        } else if (!isNullOrUndefined(this.taskbarEditModule) && editSettings.allowTaskbarEditing) {
-            this.taskbarEditModule = new TaskbarEdit(this.parent);
-        }
-        if (this.dialogModule && !editSettings.allowEditing) {
-            this.dialogModule.destroy();
-        } else if (!isNullOrUndefined(this.dialogModule) && editSettings.allowEditing) {
-            this.dialogModule = new DialogEdit(this.parent);
-            if (this.parent.editSettings.mode === 'Dialog') {
+        if (editSettings.allowEditing) {
+            if (this.parent.editModule.cellEditModule && editSettings.mode === 'Dialog') {
+                this.cellEditModule.destroy();
                 this.parent.treeGrid.recordDoubleClick = this.recordDoubleClick.bind(this);
+            } else if (isNullOrUndefined(this.parent.editModule.cellEditModule) && editSettings.mode === 'Auto') {
+                this.cellEditModule = new CellEdit(this.parent);
+            }
+            if (this.parent.editModule.dialogModule && editSettings.mode === 'Auto') {
+                this.parent.treeGrid.recordDoubleClick = undefined;
+            } else if (isNullOrUndefined(this.parent.editModule.dialogModule)) {
+                this.dialogModule = new DialogEdit(this.parent);
+            }
+            if (isNullOrUndefined(this.parent.editModule.taskbarEditModule)) {
+                this.taskbarEditModule = new TaskbarEdit(this.parent);
+            }
+        } else {
+            if (this.cellEditModule) {
+                this.cellEditModule.destroy();
+            }
+            if (this.taskbarEditModule) {
+                this.taskbarEditModule.destroy();
+            }
+            if (this.dialogModule) {
+                this.dialogModule.destroy();
             }
         }
-        if (this.confirmDialog && !this.confirmDialog.isDestroyed &&
-            !editSettings.allowDeleting) {
-            this.confirmDialog.destroy();
-        } else if (!isNullOrUndefined(this.confirmDialog) && this.parent.editSettings.allowDeleting) {
-            let confirmDialog: HTMLElement = createElement('div', {
-                id: this.parent.element.id + '_deleteConfirmDialog',
-            });
-            this.parent.element.appendChild(confirmDialog);
-            this.renderDeleteConfirmDialog();
+
+        if (editSettings.allowDeleting && editSettings.showDeleteConfirmDialog) {
+            if (isNullOrUndefined(this.confirmDialog)) {
+                let confirmDialog: HTMLElement = createElement('div', {
+                    id: this.parent.element.id + '_deleteConfirmDialog',
+                });
+                this.parent.element.appendChild(confirmDialog);
+                this.renderDeleteConfirmDialog();
+            }
+        } else if (!editSettings.allowDeleting || !editSettings.showDeleteConfirmDialog) {
+            if (this.confirmDialog && !this.confirmDialog.isDestroyed) {
+                this.confirmDialog.destroy();
+            }
         }
     }
 
@@ -781,7 +791,7 @@ export class Edit {
         if (validStartDate.getTime() >= validEndDate.getTime()) {
             durationDiff = 0;
         } else {
-            durationDiff = this.parent.dateValidationModule.getDuration(validStartDate, validEndDate, 'minute', true);
+            durationDiff = this.parent.dateValidationModule.getDuration(validStartDate, validEndDate, 'minute', true, false);
         }
         for (let i: number = 0; i < childRecords.length; i++) {
             if (childRecords[i].ganttProperties.isAutoSchedule) {
@@ -905,7 +915,7 @@ export class Edit {
             this.parent.timelineModule.updateTimeLineOnEditing(tempArray, args.action);
         }
         this.parent.chartRowsModule.refreshRecords(this.parent.editedRecords);
-        if (this.parent.isConnectorLineUpdate) {
+        if (this.parent.isConnectorLineUpdate && !isNullOrUndefined(this.parent.connectorLineEditModule)) {
             this.parent.updatedConnectorLineCollection = [];
             this.parent.connectorLineIds = [];
             this.parent.connectorLineEditModule.refreshEditedRecordConnectorLine(this.parent.editedRecords);
@@ -1732,6 +1742,7 @@ export class Edit {
      */
     /* tslint:disable-next-line:max-func-body-length */
     public addRecord(data?: Object | IGanttData, rowPosition?: RowPosition, rowIndex?: number): void {
+        if (this.parent.editModule && this.parent.editSettings.allowAdding) {
         let selectedRowIndex: number = isNullOrUndefined(rowIndex) || isNaN(parseInt(rowIndex.toString(), 10)) ?
             this.parent.selectionModule ?
                 (this.parent.selectionSettings.mode === 'Row' || this.parent.selectionSettings.mode === 'Both') &&
@@ -1844,6 +1855,7 @@ export class Edit {
             this.parent.element.tabIndex = 0;
             this.parent.initiateEditAction(false);
         });
+    }
     }
 
     /**

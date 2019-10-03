@@ -1,6 +1,6 @@
 import { Spreadsheet } from '../base/index';
 import { IRowRenderer } from '../common/interface';
-import { getRowHeight } from '../../workbook/base/index';
+import { getRowHeight, SheetModel } from '../../workbook/base/index';
 import { attributes } from '@syncfusion/ej2-base';
 
 /**
@@ -13,18 +13,19 @@ export class RowRenderer implements IRowRenderer {
 
     constructor(parent?: Spreadsheet) {
         this.parent = parent;
-        this.element = this.parent.createElement('tr') as HTMLTableRowElement;
+        this.element = this.parent.createElement('tr', { attrs: { 'role': 'row' } }) as HTMLTableRowElement;
     }
 
-    public render(isHeader: boolean, index?: number): Element {
+    public render(index?: number, isRowHeader?: boolean): Element {
         let row: HTMLElement = this.element.cloneNode() as HTMLElement;
-        if (isHeader) {
+        if (index === undefined) {
             row.classList.add('e-header-row');
             return row;
         }
         row.classList.add('e-row');
-        attributes(row, { 'role': 'row', 'aria-rowindex': index.toString() });
-        row.style.height = `${getRowHeight(this.parent.getActiveSheet(), index)}px`;
+        let sheet: SheetModel = this.parent.getActiveSheet();
+        attributes(row, { 'aria-rowindex': (index + 1).toString() });
+        row.style.height = `${getRowHeight(sheet, index)}px`;
         return row;
     }
 }

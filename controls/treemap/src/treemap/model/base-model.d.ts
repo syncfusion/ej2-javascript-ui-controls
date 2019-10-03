@@ -1,4 +1,4 @@
-import { Property, ChildProperty, Complex, Collection } from '@syncfusion/ej2-base';import { LabelPosition, Alignment, HighLightMode, SelectionMode, LabelIntersectAction, LabelPlacement } from '../utils/enum';import { LabelAlignment, LegendShape, LegendPosition, LegendMode, LegendOrientation } from '../utils/enum';import { Location } from '../utils/helper';
+import { Property, ChildProperty, Complex, Collection } from '@syncfusion/ej2-base';import { LabelPosition, Alignment, HighLightMode, SelectionMode, LabelIntersectAction, LabelPlacement } from '../utils/enum';import { LabelAlignment, LegendShape, LegendPosition, LegendMode, LegendOrientation } from '../utils/enum';import { Location } from '../utils/helper';import { defaultFont } from './constants';
 import {MarkerShape} from "./base";
 
 /**
@@ -8,13 +8,13 @@ export interface BorderModel {
 
     /**
      * The color of the border that accepts value in hex and rgba as a valid CSS color string.
-     * @default '#808080'
+
      */
     color?: string;
 
     /**
      * The width of the border in pixels.
-     * @default 0
+
      */
     width?: number;
 
@@ -27,25 +27,25 @@ export interface MarginModel {
 
     /**
      * Left margin in pixels.
-     * @default 10
+
      */
     left?: number;
 
     /**
      * Right margin in pixels.
-     * @default 10
+
      */
     right?: number;
 
     /**
      * Top margin in pixels.
-     * @default 10
+
      */
     top?: number;
 
     /**
      * Bottom margin in pixels.
-     * @default 10
+
      */
     bottom?: number;
 
@@ -58,37 +58,37 @@ export interface FontModel {
 
     /**
      * Font size for the text.
-     * @default null
+
      */
     size?: string;
 
     /**
      * Color for the text.
-     * @default null
+
      */
     color?: string;
 
     /**
      * fontFamily for the text.
-     * @default null
+
      */
     fontFamily?: string;
 
     /**
      * FontWeight for the text.
-     * @default 'Normal'
+
      */
     fontWeight?: string;
 
     /**
      * FontStyle for the text.
-     * @default 'Normal'
+
      */
     fontStyle?: string;
 
     /**
      * Opacity for the text.
-     * @default 1
+
      */
     opacity?: number;
 
@@ -101,13 +101,13 @@ export interface CommonTitleSettingsModel {
 
     /**
      * To customize the text of the title.
-     * @default ''
+
      */
     text?: string;
 
     /**
      * To customize title description for the accessibility.
-     * @default ''
+
      */
     description?: string;
 
@@ -125,7 +125,7 @@ export interface SubTitleSettingsModel extends CommonTitleSettingsModel{
 
     /**
      * Options for customize the text alignment.
-     * @default 'Center'
+
      */
     alignment?: Alignment;
 
@@ -143,7 +143,7 @@ export interface TitleSettingsModel extends CommonTitleSettingsModel{
 
     /**
      * Options for customize the text alignment.
-     * @default 'Center'
+
      */
     alignment?: Alignment;
 
@@ -161,49 +161,51 @@ export interface ColorMappingModel {
 
     /**
      * Specifies the from
-     * @default null
+
+
      */
     from?: number;
 
     /**
      * Specifies the to
-     * @default null
+
+
      */
     to?: number;
 
     /**
      * specifies the color
-     * @default null 
+
      */
     color?: string | string[];
 
     /**
      * Specifies the label text.
-     * @default null
+
      */
     label?: string;
 
     /**
      * Specifies the value
-     * @default null
+
      */
     value?: string | number;
 
     /**
      * Specifies the minOpacity
-     * @default null 
+
      */
     minOpacity?: number;
 
     /**
      * maxOpacity
-     * @default null 
+
      */
     maxOpacity?: number;
 
     /**
      * Specifies the visibility of the legend for color mapping
-     * @default true
+
      */
     showLegend?: boolean;
 
@@ -216,37 +218,37 @@ export interface LegendSettingsModel {
 
     /**
      * Toggle the legend visibility.
-     * @default false
+
      */
     visible?: boolean;
 
     /**
      * Customize the legend mode.
-     * @default 'Default'
+
      */
     mode?: LegendMode;
 
     /**
      * Customize the legend background
-     * @default 'transparent'
+
      */
     background?: string;
 
     /**
      * Customize the legend shape.
-     * @default 'Circle'
+
      */
     shape?: LegendShape;
 
     /**
      * Customize the legend width.
-     * @default ''
+
      */
     width?: string;
 
     /**
      * Customize the legend height.
-     * @default ''
+
      */
     height?: string;
 
@@ -257,37 +259,37 @@ export interface LegendSettingsModel {
 
     /**
      * Specifies the legend shape color
-     * @default null
+
      */
     fill?: string;
 
     /**
      * Specifies the legend opacity of shape color
-     * @default 1
+
      */
     opacity?: number;
 
     /**
      * Customize the shape width.
-     * @default 15
+
      */
     shapeWidth?: number;
 
     /**
      * Customize the shape height.
-     * @default 15
+
      */
     shapeHeight?: number;
 
     /**
      * Customize the shape padding
-     * @default 10
+
      */
     shapePadding?: number;
 
     /**
      * Specifies the images url.
-     * @default null
+
      */
     imageUrl?: string;
 
@@ -313,37 +315,37 @@ export interface LegendSettingsModel {
 
     /**
      * Customize the legend position of the maps.
-     * @default 'Bottom'
+
      */
     position?: LegendPosition;
 
     /**
      * Customize the legend items placed
-     * @default 'None'
+
      */
     orientation?: LegendOrientation;
 
     /**
      * Inverted pointer for interactive legend
-     * @default false
+
      */
     invertedPointer?: boolean;
 
     /**
      * To place the label position for interactive legend.
-     * @default 'After'
+
      */
     labelPosition?: LabelPlacement;
 
     /**
      * Specifies the label intersect action.
-     * @default 'None'
+
      */
     labelDisplayMode?: LabelIntersectAction;
 
     /**
      * Customize the legend alignment.
-     * @default 'Center'
+
      */
     alignment?: Alignment;
 
@@ -354,19 +356,19 @@ export interface LegendSettingsModel {
 
     /**
      * Enable or disable the visibility of the legend.
-     * @default null
+
      */
     showLegendPath?: string;
 
     /**
      * Used to render particular field in dataSource as legend.
-     * @default null
+
      */
     valuePath?: string;
 
     /**
      * Used to remove duplicate of the legend items.
-     * @default false
+
      */
     removeDuplicateLegend?: boolean;
 
@@ -379,13 +381,13 @@ export interface InitialDrillSettingsModel {
 
     /**
      * Specifies the initial rendering level.
-     * @default null
+
      */
     groupIndex?: number;
 
     /**
      * Specifies the initial rendering name.
-     * @default null
+
      */
     groupName?: string;
 
@@ -398,13 +400,13 @@ export interface LeafItemSettingsModel {
 
     /**
      * Specifies the fill color for leaf items.
-     * @default null
+
      */
     fill?: string;
 
     /**
      * Items rendering with random colors.
-     * @default false
+
      */
     autoFill?: boolean;
 
@@ -415,43 +417,43 @@ export interface LeafItemSettingsModel {
 
     /**
      * Specifies the item gap.
-     * @default 0
+
      */
     gap?: number;
 
     /**
      * Specifies the padding.
-     * @default 10
+
      */
     padding?: number;
 
     /**
      * Specifies the opacity for color.
-     * @default 1
+
      */
     opacity?: number;
 
     /**
      * To show or hide the labels
-     * @default true
+
      */
     showLabels?: boolean;
 
     /**
      * Specifies the field name from the dataSource.
-     * @default null
+
      */
     labelPath?: string;
 
     /**
      * Specifies the label format.
-     * @default null
+
      */
     labelFormat?: string;
 
     /**
      * Specifies the alignment of label.
-     * @default 'TopLeft'
+
      */
     labelPosition?: LabelPosition;
 
@@ -462,19 +464,19 @@ export interface LeafItemSettingsModel {
 
     /**
      * Specifies the label template.
-     * @default null
+
      */
     labelTemplate?: string;
 
     /**
      * Specifies the alignment of template.
-     * @default 'Center'
+
      */
     templatePosition?: LabelPosition;
 
     /**
      * Specifies the label intersect action.
-     * @default 'Trim'
+
      */
     interSectAction?: LabelAlignment;
 
@@ -492,37 +494,37 @@ export interface TooltipSettingsModel {
 
     /**
      * To enable or disable the Tooltip.
-     * @default false
+
      */
     visible?: boolean;
 
     /**
      * To specifies the template for tooltip.
-     * @default ''
+
      */
     template?: string;
 
     /**
      * Specifies the format by given ${data}
-     * @default null
+
      */
     format?: string;
 
     /**
      * To fill the tooltip background.
-     * @default null
+
      */
     fill?: string;
 
     /**
      * Specifies the opacity for fill.
-     * @default null
+
      */
     opacity?: number;
 
     /**
      * Specifies the marker shapes.
-     * @default '[Circle]'
+
      */
     markerShapes?: MarkerShape[];
 
@@ -545,19 +547,19 @@ export interface SelectionSettingsModel {
 
     /**
      * To enable or disable the selection
-     * @default false
+
      */
     enable?: boolean;
 
     /**
      * To specifies the selection color
-     * @default '#808080'
+
      */
     fill?: string;
 
     /**
      * To specified the opacity of color.
-     * @default '0.5'
+
      */
     opacity?: string;
 
@@ -568,7 +570,7 @@ export interface SelectionSettingsModel {
 
     /**
      * To specifies the selection mode.
-     * @default 'Item'
+
      */
     mode?: SelectionMode;
 
@@ -581,19 +583,19 @@ export interface HighlightSettingsModel {
 
     /**
      * To enable or disable the highlight.
-     * @default false
+
      */
     enable?: boolean;
 
     /**
      * To specifies the highlight color.
-     * @default '#808080'
+
      */
     fill?: string;
 
     /**
      * To specified the opacity of color.
-     * @default '0.5'
+
      */
     opacity?: string;
 
@@ -604,7 +606,7 @@ export interface HighlightSettingsModel {
 
     /**
      * To specifies the highlight mode.
-     * @default 'Item'
+
      */
     mode?: HighLightMode;
 
@@ -617,19 +619,19 @@ export interface LevelSettingsModel {
 
     /**
      * Specifies the field name from the dataSource.
-     * @default null
+
      */
     groupPath?: string;
 
     /**
      * Specifies the padding.
-     * @default 0
+
      */
     groupGap?: number;
 
     /**
      * Specifies the padding.
-     * @default 10
+
      */
     groupPadding?: number;
 
@@ -640,49 +642,49 @@ export interface LevelSettingsModel {
 
     /**
      * Specifies the background of level.
-     * @default null
+
      */
     fill?: string;
 
     /**
      * Items rendering with random colors.
-     * @default false
+
      */
     autoFill?: boolean;
 
     /**
      * Specifies the opacity for color.
-     * @default 1
+
      */
     opacity?: number;
 
     /**
      * To Show or hide the header in level.
-     * @default true
+
      */
     showHeader?: boolean;
 
     /**
      * To specifies the height of header.
-     * @default 20
+
      */
     headerHeight?: number;
 
     /**
      * Specifies the template for header rendering.
-     * @default null
+
      */
     headerTemplate?: string;
 
     /**
      * Specifies the header format.
-     * @default null
+
      */
     headerFormat?: string;
 
     /**
      * Customize the text alignment
-     * @default 'Near'
+
      */
     headerAlignment?: Alignment;
 
@@ -693,7 +695,7 @@ export interface LevelSettingsModel {
 
     /**
      * Specifies the label position in level.
-     * @default 'TopLeft'
+
      */
     templatePosition?: LabelPosition;
 

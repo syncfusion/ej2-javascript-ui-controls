@@ -153,7 +153,7 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
     /**
      * It is used to set the width of Tooltip component which accepts both string and number values.
      * When set to auto, the Tooltip width gets auto adjusted to display its content within the viewable screen.
-     * @default 'auto'
+
      */
     @Property('auto')
     public width: string | number;
@@ -162,7 +162,7 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
      * When Tooltip content gets overflow due to height value then the scroll mode will be enabled.
      * Refer the documentation [here](https://ej2.syncfusion.com/documentation/tooltip/setting-dimension.html?lang=typescript)
      *  to know more about this property with demo.
-     * @default 'auto'
+
      */
     @Property('auto')
     public height: string | number;
@@ -187,7 +187,7 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
      * It is used to set the position of Tooltip element, with respect to Target element.
      *
      * {% codeBlock src="tooltip/position-api/index.ts" %}{% endcodeBlock %}
-     * @default 'TopCenter'
+
      */
     @Property('TopCenter')
     public position: Position;
@@ -195,7 +195,7 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
      * It sets the space between the target and Tooltip element in X axis.
      *
      * {% codeBlock src="tooltip/offsetX-api/index.ts" %}{% endcodeBlock %}
-     * @default 0
+
      */
     @Property(0)
     public offsetX: number;
@@ -203,7 +203,7 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
      * It sets the space between the target and Tooltip element in Y axis.
      *
      * {% codeBlock src="tooltip/offsetX-api/index.ts" %}{% endcodeBlock %}
-     * @default 0
+
      */
     @Property(0)
     public offsetY: number;
@@ -211,7 +211,7 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
      * It is used to show or hide the tip pointer of Tooltip.
      *
      * {% codeBlock src="tooltip/offsetX-api/index.ts" %}{% endcodeBlock %}
-     * @default true
+
      */
     @Property(true)
     public showTipPointer: boolean;
@@ -222,7 +222,7 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
      * Refer the documentation
      *  [here](https://ej2.syncfusion.com/documentation/tooltip/position.html?lang=typescript#tip-pointer-positioning)
      *  to know more about this property with demo.
-     * @default 'Auto'
+
      */
     @Property('Auto')
     public tipPointerPosition: TipPointerPosition;
@@ -232,7 +232,7 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
      * If it is in touch device, it will show the Tooltip content when tap and holding on the target element.
      *
      * {% codeBlock src="tooltip/opensOn-api/index.ts" %}{% endcodeBlock %}
-     * @default 'Auto'
+
      */
     @Property('Auto')
     public opensOn: string;
@@ -242,7 +242,7 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
      *  to know more about this property with demo.
      *
      * {% codeBlock src="tooltip/offsetX-api/index.ts" %}{% endcodeBlock %}
-     * @default false
+
      */
     @Property(false)
     public mouseTrail: boolean;
@@ -250,7 +250,7 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
      * It is used to display the Tooltip in an open state until closed by manually.
      * Refer the documentation [here](https://ej2.syncfusion.com/documentation/tooltip/open-mode.html?lang=typescript#sticky-mode)
      *  to know more about this property with demo.
-     * @default false
+
      */
     @Property(false)
     public isSticky: boolean;
@@ -260,26 +260,26 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
      *  to know more about this property with demo.
      *
      * {% codeBlock src="tooltip/animation-api/index.ts" %}{% endcodeBlock %}
-     * @default { open: { effect: 'FadeIn', duration: 150, delay: 0 }, close: { effect: 'FadeOut', duration: 150, delay: 0 } }
+
      */
     @Complex<AnimationModel>({}, Animation)
     public animation: AnimationModel;
     /**
      * It is used to open the Tooltip after the specified delay in milliseconds.
-     * @default 0
+
      */
     @Property(0)
     public openDelay: number;
     /**
      * It is used to close the Tooltip after a specified delay in milliseconds.
-     * @default 0
+
      */
     @Property(0)
     public closeDelay: number;
     /**
      * It is used to customize the Tooltip which accepts custom CSS class names that
      *  defines specific user-defined styles and themes to be applied on the Tooltip element.
-     * @default null
+
      */
     @Property()
     public cssClass: string;
@@ -292,7 +292,7 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
      *  [here](https://ej2.syncfusion.com/documentation/tooltip/content.html?lang=typescript#dynamic-content-via-ajax)
      *  to know more about this property with demo.
      * @event
-     * @blazorProperty 'OnRender'
+
      */
     @Event()
     public beforeRender: EmitType<TooltipEventArgs>;
@@ -302,49 +302,49 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
      * This event is mainly used for the purpose of refreshing the Tooltip positions dynamically or to
      *  set customized styles in it and so on.
      * @event
-     * @blazorProperty 'OnOpen'
+
      */
     @Event()
     public beforeOpen: EmitType<TooltipEventArgs>;
     /**
      * We can trigger `afterOpen` event after the Tooltip Component gets opened.
      * @event
-     * @blazorProperty 'Opened'
+
      */
     @Event()
     public afterOpen: EmitType<TooltipEventArgs>;
     /**
      * We can trigger `beforeClose` event before the Tooltip hides from the screen. If returned false, then the Tooltip is no more hidden.
      * @event
-     * @blazorProperty 'OnClose'
+
      */
     @Event()
     public beforeClose: EmitType<TooltipEventArgs>;
     /**
      * We can trigger `afterClose` event when the Tooltip Component gets closed.
      * @event
-     * @blazorProperty 'Closed'
+
      */
     @Event()
     public afterClose: EmitType<TooltipEventArgs>;
     /**
      * We can trigger `beforeCollision` event for every collision fit calculation.
      * @event
-     * @blazorProperty 'OnCollision'
+
      */
     @Event()
     public beforeCollision: EmitType<TooltipEventArgs>;
     /**
      * We can trigger `created` event after the Tooltip component is created.
      * @event
-     * @blazorProperty 'Created'
+
      */
     @Event()
     public created: EmitType<Object>;
     /**
      * We can trigger `destroyed` event when the Tooltip component is destroyed.
      * @event
-     * @blazorProperty 'Destroyed'
+
      */
     @Event()
     public destroyed: EmitType<Object>;
@@ -975,7 +975,7 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
     }
     /**
      * Binding events to the Tooltip element.
-     * @hidden
+
      */
     private wireEvents(trigger: string): void {
         let triggerList: string[] = this.getTriggerList(trigger);
@@ -1036,7 +1036,7 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
     }
     /**
      * Unbinding events from the element on widget destroy.
-     * @hidden
+
      */
     private unwireEvents(trigger: string): void {
         let triggerList: string[] = this.getTriggerList(trigger);

@@ -14,7 +14,7 @@ import { DataUtil } from '@syncfusion/ej2-data';
 
 /**
  * `NormalEdit` module is used to handle normal('inline, dialog, external') editing actions.
- * @hidden
+
  */
 export class NormalEdit {
     protected parent: IGrid;
@@ -57,7 +57,7 @@ export class NormalEdit {
     /**
      * The function used to trigger editComplete
      * @return {void}
-     * @hidden
+
      */
     public editComplete(e: NotifyArgs): void {
         this.parent.isEdit = false;
@@ -454,7 +454,7 @@ export class NormalEdit {
     }
 
     /**
-     * @hidden
+
      */
     public addEventListener(): void {
         if (this.parent.isDestroyed) { return; }
@@ -468,7 +468,7 @@ export class NormalEdit {
     }
 
     /**
-     * @hidden
+
      */
     public removeEventListener(): void {
         if (this.parent.isDestroyed) { return; }
@@ -482,7 +482,7 @@ export class NormalEdit {
     }
 
     /**
-     * @hidden
+
      */
     public destroy(): void {
         this.removeEventListener();

@@ -7,7 +7,7 @@ export interface PredicateModel {
 
     /**
    * Defines the field name of the filter column.
-   * @default ''
+
    */
     field?: string;
 
@@ -65,69 +65,69 @@ export interface PredicateModel {
    * Checks whether the value is less than or equal to the specified value.<br/><br/></td><td colspan=1 rowspan=1> 
    * <br/>Number | Date<br/></td></tr> 
    * </table> 
-   * @default null
-   * @blazorType Syncfusion.EJ2.Blazor.Operator
-   * @blazorDefaultValue Syncfusion.EJ2.Blazor.Operator.None
+
+
+
    */
     operator?: string;
 
     /**
    * Defines the value used to filter records. 
-   * @default ''
+
    */
     value?: string | number | Date | boolean;
 
     /**
    * If match case set to true, then filter records with exact match or else  
    * filter records with case insensitive(uppercase and lowercase letters treated as same).  
-   * @default null
+
    */
     matchCase?: boolean;
 
     /**
    * If ignoreAccent is set to true, then filter ignores the diacritic characters or accents while filtering.
-   * @default false
+
    */
     ignoreAccent?: boolean;
 
     /**
    * Defines the relationship between one filter query and another by using AND or OR predicate.   
-   * @default null
+
    */
     predicate?: string;
 
     /**
-   * @hidden 
+
    * Defines the actual filter value for the filter column.  
    */
     actualFilterValue?: Object;
 
     /**
-   * @hidden 
+
    * Defines the actual filter operator for the filter column.  
    */
     actualOperator?: Object;
 
     /**
-   * @hidden 
+
    * Defines the type of the filter column.  
    */
     type?: string;
 
     /**
-   * @hidden 
+
    * Defines the predicate of filter column.  
    */
     ejpredicate?: Object;
 
     /**
-   * @hidden 
+
    * Defines the UID of filter column.  
    */
     uid?: string;
 
     /**
-   * @hidden 
+
    * Defines the foreignKey availability in filtered columns.
    */
     isForeignKey?: boolean;
@@ -141,7 +141,7 @@ export interface FilterSettingsModel {
 
     /**
      * Specifies the columns to be filtered at initial rendering of the TreeGrid. You can also get the columns that were currently filtered.
-     * @default []
+
      */
     columns?: PredicateModel[];
 
@@ -149,7 +149,7 @@ export interface FilterSettingsModel {
      * Defines options for filtering type. The available options are
      * * `Menu` - Specifies the filter type as menu.
      * * `FilterBar` - Specifies the filter type as filterbar.
-     * @default FilterBar
+
      */
     type?: FilterType;
 
@@ -157,22 +157,22 @@ export interface FilterSettingsModel {
      * Defines the filter bar modes. The available options are,
      * * `OnEnter`: Initiates filter operation after Enter key is pressed.
      * * `Immediate`: Initiates filter operation after a certain time interval. By default, time interval is 1500 ms.
-     * @default Syncfusion.EJ2.Grids.FilterBarMode.OnEnter
-     * @isEnumeration true
-     * @aspType Syncfusion.EJ2.Grids.FilterBarMode
-     * @blazorType Syncfusion.EJ2.Blazor.Grids.FilterBarMode
+
+
+
+
      */
     mode?: FilterBarMode;
 
     /**
      * Shows or hides the filtered status message on the pager.
-     * @default true
+
      */
     showFilterBarStatus?: boolean;
 
     /**
      * Defines the time delay (in milliseconds) in filtering records when the `Immediate` mode of filter bar is set.
-     * @default 1500
+
      */
     immediateModeDelay?: number;
 
@@ -181,7 +181,7 @@ export interface FilterSettingsModel {
      * (string, number, date and boolean). Based on the column type, this customize operator list will render in filter menu.
      *
      * > Check the `Filter Menu Operator` customization.
-     * @default null
+
      */
     operators?: ICustomOptr;
 
@@ -189,7 +189,7 @@ export interface FilterSettingsModel {
      * If ignoreAccent set to true, then filter ignores the diacritic characters or accents while filtering.
      *
      * > Check the [`Diacritics`](../filtering/#diacritics) filtering.
-     * @default false
+
      */
     ignoreAccent?: boolean;
 
@@ -199,7 +199,7 @@ export interface FilterSettingsModel {
      * `Child`: Shows the filtered record with child record. 
      * `Both` : shows the filtered record with both parent and child record.
      * `None` : Shows only filtered record.
-     * @default Parent
+
      */
     hierarchyMode?: FilterHierarchyMode;
 

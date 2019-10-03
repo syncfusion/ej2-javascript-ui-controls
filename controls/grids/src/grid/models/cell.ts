@@ -3,7 +3,7 @@ import { CellType } from '../base/enum';
 import { CommandModel } from '../base/interface';
 /**
  * Cell
- * @hidden
+
  */
 export class Cell<T> {
 

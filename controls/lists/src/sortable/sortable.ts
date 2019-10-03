@@ -26,13 +26,13 @@ export class Sortable extends Base<HTMLElement>  implements INotifyPropertyChang
     private placeHolderElement: HTMLElement;
     /**
      * It is used to enable or disable the built-in animations. The default value is `false`
-     * @default false
+
      */
     @Property(false)
     public enableAnimation: boolean;
     /**
      * Specifies the sortable item class.
-     * @default null
+
      */
     @Property(null)
     public itemClass: string;

@@ -11,7 +11,7 @@ import {getCustomDateFormat} from '../base/util';
 
 /**
  * `datefilterui` render date column.
- * @hidden
+
  */
 
 export class DateFilterUI implements IFilterMUI {

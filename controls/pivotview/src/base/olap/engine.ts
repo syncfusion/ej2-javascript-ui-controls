@@ -3,102 +3,104 @@ import { PivotUtil } from '../util';
 import { MDXQuery } from './mdx-query';
 import { IField, IDataOptions, IMembers, IDrillOptions, IDrilledItem, IFieldOptions, IPageSettings, ISort, IPivotRows } from '../engine';
 import { IAxisSet, IGridValues, IPivotValues, IFilter, ICustomProperties, IValueSortSettings, ICalculatedFieldSettings } from '../engine';
-import { IFormatSettings } from '../engine';
+import { IFormatSettings, IMatrix2D } from '../engine';
 import * as cls from '../../common/base/css-constant';
 import { SummaryTypes } from '../types';
 /**
  * OlapEngine is used to manipulate the olap or Multi-Dimensional data as pivoting values.
  */
 
-/** @hidden */
+
 export class OlapEngine {
 
-    /** @hidden */
+
     public isEmptyData: boolean;
-    /** @hidden */
+
     public globalize: Internationalization;
-    /** @hidden */
+
     public fieldList: IOlapFieldListOptions = {};
-    /** @hidden */
+
     public fields: string[];
-    /** @hidden */
+
     public rows: IFieldOptions[];
-    /** @hidden */
+
     public columns: IFieldOptions[];
-    /** @hidden */
+
     public values: IFieldOptions[];
-    /** @hidden */
+
     public filters: IFieldOptions[];
-    /** @hidden */
+
     public calculatedFieldSettings: ICalculatedFieldSettings[];
-    /** @hidden */
+
     public isMutiMeasures: boolean;
-    /** @hidden */
+
     public drilledMembers: IDrillOptions[];
-    /** @hidden */
+
     public valueSortSettings: IValueSortSettings;
-    /** @hidden */
+
     public isEngineUpdated: boolean;
-    /** @hidden */
+
     public savedFieldList: IOlapFieldListOptions;
-    /** @hidden */
+
     public savedFieldListData: IOlapField[];
-    /** @hidden */
+
     public valueAxis: string;
-    /** @hidden */
+
     public columnCount: number = 0;
-    /** @hidden */
+
     public rowCount: number = 0;
-    /** @hidden */
+
     public colFirstLvl: number = 0;
-    /** @hidden */
+
     public rowFirstLvl: number = 0;
-    /** @hidden */
+
     public pageColStartPos: number = 0;
-    /** @hidden */
+
     public enableSort: boolean = false;
-    /** @hidden */
+
     public enableValueSorting: boolean = false;
-    /** @hidden */
+
     public isHeaderAvail: boolean;
-    /** @hidden */
+
     public fieldListData: IOlapField[];
-    /** @hidden */
+
     public fieldListObj: FieldData;
-    /** @hidden */
+
     public dataFields: { [key: string]: IFieldOptions } = {};
-    /** @hidden */
+
     public formats: IFormatSettings[];
-    /** @hidden */
+
     public formatFields: { [key: string]: IFormatSettings } = {};
-    /** @hidden */
+
     public emptyCellTextContent: string;
-    /** @hidden */
+
     public isMondrian: boolean;
-    /** @hidden */
+
     public isMeasureAvail: boolean;
-    /** @hidden */
+
     public selectedItems: string[];
-    /** @hidden */
+
     public filterSettings: IFilter[];
-    /** @hidden */
+
     public sortSettings: ISort[];
-    /** @hidden */
+
     public filterMembers: { [key: string]: string[] | IFilter[] } = {};
-    /** @hidden */
+
     public allowLabelFilter: boolean;
-    /** @hidden */
+
     public allowValueFilter: boolean;
-    /** @hidden */
+
     public mdxQuery: string;
-    /** @hidden */
+
     public isPaging: boolean;
-    /** @hidden */
+
     public pageSettings: IPageSettings;
-    /** @hidden */
+
     public calcChildMembers: IOlapField[];
-    /** @hidden */
+
     public drilledSets: { [key: string]: HTMLElement } = {};
+
+    public aggregatedValueMatrix: IMatrix2D = [];
     private localeObj: L10n;
     private measureReportItems: string[];
     private locale: string;
@@ -107,31 +109,31 @@ export class OlapEngine {
     private formatRegex: RegExp = /(^[ncpae]{1})([0-1]?[0-9]|20)?$/i;
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    /** @hidden */
+
     public xmlaCellSet: NodeListOf<Element>;
-    /** @hidden */
+
     public pivotValues: IPivotValues = [];
-    /** @hidden */
+
     public dataSourceSettings: IDataOptions;
-    /** @hidden */
+
     public valueContent: IGridValues = [];
-    /** @hidden */
+
     public headerContent: IGridValues = [];
-    /** @hidden */
+
     public colMeasurePos: number;
-    /** @hidden */
+
     public rowStartPos: number = 0;
-    /** @hidden */
+
     public pageRowStartPos: number = 0;
-    /** @hidden */
+
     public rowMeasurePos: number;
-    /** @hidden */
+
     public tupColumnInfo: ITupInfo[] = [];
-    /** @hidden */
+
     public tupRowInfo: ITupInfo[] = [];
-    /** @hidden */
+
     public gridJSON: string = '';
-    /** @hidden */
+
     public namedSetsPosition: { [key: string]: { [key: number]: string } } = {};
     private colDepth: number = 0;
     private totalCollection: ITotCollection[] = [];
@@ -158,6 +160,7 @@ export class OlapEngine {
         this.allowLabelFilter = false;
         this.allowValueFilter = false;
         this.isMondrian = false;
+        this.aggregatedValueMatrix = [];
         this.measureReportItems = [];
         this.calcChildMembers = [];
         this.selectedItems = [];
@@ -174,7 +177,6 @@ export class OlapEngine {
         this.pageColStartPos = 0;
         this.enableValueSorting = false;
         this.sortObject = {};
-        this.drilledSets = {};
         this.globalize = new Internationalization();
         /* tslint:disable */
         this.locale = (this.globalize as any).getCulture();
@@ -223,7 +225,12 @@ export class OlapEngine {
     public generateGridData(dataSourceSettings: IDataOptions, action?: string): void {
         let refPaging: boolean = (action && action === 'navPaging' &&
             this.isPaging && this.pageSettings !== undefined ? true : false);
-        MDXQuery.getCellSets(dataSourceSettings, this, refPaging);
+        if (this.rows.length > 0 || this.columns.length > 0 || this.values.length > 0 || this.filters.length > 0) {
+            MDXQuery.getCellSets(dataSourceSettings, this, refPaging);
+        } else {
+            MDXQuery.getCellSets(dataSourceSettings, this, true, undefined, true);
+            this.generateEngine(undefined, undefined, { dataSourceSettings: dataSourceSettings, action: 'loadTableElements' });
+        }
     }
     public generatePagingData(xmlDoc: Document, request: Ajax, customArgs: FieldData): void {
         let xmlaCellSet: HTMLElement[] = [].slice.call(xmlDoc.querySelectorAll('Axes, CellData'));
@@ -258,7 +265,7 @@ export class OlapEngine {
             this.rowMeasurePos = undefined;
             this.rowStartPos = -1;
         }
-        this.xmlDoc = xmlDoc.cloneNode(true) as Document;
+        this.xmlDoc = xmlDoc ? xmlDoc.cloneNode(true) as Document : undefined;
         this.request = request;
         this.customArgs = customArgs;
         this.totalCollection = [];
@@ -266,13 +273,13 @@ export class OlapEngine {
         this.curDrillEndPos = -1;
         this.onDemandDrillEngine = [];
         this.getSubTotalsVisibility();
-        this.xmlaCellSet = xmlDoc.querySelectorAll('Axes, CellData');
+        this.xmlaCellSet = xmlDoc ? xmlDoc.querySelectorAll('Axes, CellData') : undefined;
 
-        let columnTuples: Element[] = this.xmlaCellSet.length > 0 ?
+        let columnTuples: Element[] = this.xmlaCellSet && this.xmlaCellSet.length > 0 ?
             [].slice.call(this.xmlaCellSet[0].querySelectorAll('Axis[name|="Axis0"] Tuple')) : [];
-        let rowTuples: Element[] = this.xmlaCellSet.length > 0 ?
+        let rowTuples: Element[] = this.xmlaCellSet && this.xmlaCellSet.length > 0 ?
             [].slice.call(this.xmlaCellSet[0].querySelectorAll('Axis[name|="Axis1"] Tuple')) : [];
-        let valCollection: Element[] = this.xmlaCellSet.length > 1 ?
+        let valCollection: Element[] = this.xmlaCellSet && this.xmlaCellSet.length > 1 ?
             [].slice.call(this.xmlaCellSet[1].querySelectorAll('Cell')) : [];
         if (this.drilledMembers.length > 0) {
             // let st1: number = new Date().getTime();
@@ -304,7 +311,7 @@ export class OlapEngine {
         }
         this.frameValues(valCollection, columnTuples.length);
         this.performColumnSpanning();
-        if (this.dataSourceSettings.sortSettings.length > 0 && !this.isPaging) {
+        if (!this.isPaging && this.enableSort) {
             for (let i: number = 0; i < this.headerContent.length; i++) {
                 this.headerContent[i] = this.pivotValues[i] as IAxisSet[];
             }
@@ -430,8 +437,9 @@ export class OlapEngine {
                     } else {
                         minLevel[memPos] = Number(firstTupMembers[memPos].querySelector('LNum').textContent);
                     }
-                    if (firstTupMembers[memPos].querySelector('MEMBER_TYPE').textContent === '1' &&
-                        (this.isPaging || Number(firstTupMembers[memPos].querySelector('LNum').textContent) === 0)) {
+                    // if (firstTupMembers[memPos].querySelector('MEMBER_TYPE').textContent === '1' &&
+                    //   (this.isPaging || Number(firstTupMembers[memPos].querySelector('LNum').textContent) === 0)) {
+                    if (firstTupMembers[memPos].querySelector('MEMBER_TYPE').textContent === '1') {
                         allType[memPos] = 0;
                         withoutAllStartPos = withoutAllStartPos === -1 ? memPos : withoutAllStartPos;
                         withoutAllEndPos = memPos;
@@ -487,10 +495,12 @@ export class OlapEngine {
                     let lastPos: number = position;
                     let lastMemPos: number = memPos;
                     prevParent = {};
+                    let withoutAllDrilled: boolean = false;
                     while (memPos < members.length && pagingAllowFlag) {
                         let member: Element = members[memPos];
                         if (member.querySelector('UName').textContent !== prevUNArray[memPos] && typeColl[memPos] !== '2'
-                            && ((prevParent && prevParent.isDrilled) ? (typeColl[memPos] === '3' && allType[memPos - 1]) : true)) {
+                            && ((Object.keys(prevParent).length > 0 ? prevParent.isDrilled : withoutAllDrilled) ?
+                                (typeColl[memPos] === '3' && (allType[memPos - 1] && allType[memPos + 1] !== 0)) : true)) {
                             /* tslint:disable-next-line:max-line-length */
                             let lvl: number = Number(member.querySelector('LNum').textContent) -
                                 ((allType[memPos] && typeColl[memPos] !== '3') ? 1 : minLevel[memPos]);
@@ -538,6 +548,10 @@ export class OlapEngine {
                             lastMemPos = memPos;
                         } else if (typeColl[memPos] === '2') {
                             lastMemPos = memPos;
+                        } else {
+                            if (this.tupRowInfo[tupPos].drillInfo[memPos].isDrilled && allType[memPos] === 0) {
+                                withoutAllDrilled = true;
+                            }
                         }
                         if (this.tupRowInfo[tupPos].drillInfo[memPos].isDrilled && this.tupRowInfo[tupPos].showTotals) {
                             this.tupRowInfo[tupPos].showTotals = !this.showRowSubTotals ? false :
@@ -611,6 +625,10 @@ export class OlapEngine {
                 (Number(member.querySelector('MEMBER_TYPE').textContent) > 3 ? '1' : member.querySelector('MEMBER_TYPE').textContent);
             /* tslint:enable */
             let memberCaption: string = member.querySelector('Caption').textContent;
+            if (this.fieldList[memberCaption] && this.fieldList[memberCaption].type === 'CalculatedField') {
+                memberCaption = this.fieldList[memberCaption].caption;
+                member.querySelector('Caption').textContent = memberCaption;
+            }
             let hierarchy: string = member.getAttribute('Hierarchy');
             /* tslint:disable-next-line:max-line-length */
             let parentUName: string = member.querySelector('PARENT_UNIQUE_NAME') ? member.querySelector('PARENT_UNIQUE_NAME').textContent : '';
@@ -715,6 +733,9 @@ export class OlapEngine {
             let measurePosition: number = tuple.uNameCollection.split(/[~~,::]+/g).indexOf(tuple.measureName);
             let captionCollectionArray: string[] = tuple.captionCollection.split(/[~~,::]+/g);
             captionCollectionArray.splice(measurePosition, 0, measureName);
+            captionColection = captionCollectionArray.join('.');
+        } else {
+            let captionCollectionArray: string[] = tuple.captionCollection.split(/[~~,::]+/g);
             captionColection = captionCollectionArray.join('.');
         }
         return captionColection;
@@ -1137,10 +1158,8 @@ export class OlapEngine {
                     if (memberType !== '2') {
                         colMembers[member.querySelector('UName').textContent] = member.querySelector('Caption').textContent;
                     }
-                    let delimiter: string = this.valueSortSettings && this.dataSourceSettings.valueSortSettings.headerDelimiter ?
-                        this.dataSourceSettings.valueSortSettings.headerDelimiter : '~~';
                     /* tslint:disable */
-                    let levelName: string = (Object as any).values(colMembers).join(delimiter);
+                    let levelName: string = (Object as any).values(colMembers).join('.');
                     let isNamedSet: boolean = this.namedSetsPosition['column'][memPos] ? true : false;
                     (this.pivotValues[spanMemPos] as IAxisSet[])[position] = {
                         axis: 'column',
@@ -1208,7 +1227,6 @@ export class OlapEngine {
         }
     }
 
-    /************************************Below temporary method should be removed*************************************************/
     /* tslint:disable */
     private performRowSorting(): void {
         if (this.enableSort && this.tupRowInfo.length > 0) {
@@ -1248,7 +1266,9 @@ export class OlapEngine {
                 }
             }
             let isMeasureAvail: boolean = Object.keys(measureObjects).length > 0 && this.tupRowInfo[0].measurePosition > 0;
-            let levels: number[] = Object.keys(lvlGrouping).map((item: string) => { return Number(item); }).sort();
+            let levels: number[] = Object.keys(lvlGrouping).map((item: string) => {
+                return Number(item);
+            }).sort((a, b) => (a > b) ? 1 : ((b > a) ? -1 : 0));
             let sortLvlGrouping: { [key: number]: { [key: string]: IAxisSet[] } } = {};
             for (let lPos: number = levels.length - 1; lPos >= 0; lPos--) {
                 let parentGrouping: { [key: string]: IAxisSet[] } = {};
@@ -1366,85 +1386,87 @@ export class OlapEngine {
                     let header: IAxisSet[] = this.pivotValues[j] as IAxisSet[];
                     let key: string[];
                     let keys: string[];
-                    let temp: any = [];
+                    let arrange: { [key: string]: IAxisSet[] } = {};
                     let value: number = 1;
                     grandTotal[index] = [];
                     temporary[index] = [];
                     let k: number = 1;
                     for (k = k; k < header.length; k++) {
-                        if ((header[k] as IAxisSet).memberType != 2 && ((header[k] as IAxisSet).actualText as string).split(".")[0]
-                            != '[Measures]' && (header[k] as IAxisSet).level != -1) {
-                            isNullOrUndefined(temp[(header[k] as IAxisSet).formattedText]) ?
-                                temp[(header[k] as IAxisSet).formattedText] = [] : temp[k];
-                            temp[(header[k] as IAxisSet).formattedText][(header[k] as IAxisSet).colIndex] = header[k];
-                        }
-                        else if (Object.keys(temp).length > 0) {
-                            (grandTotal[index] as Object[])[(grandTotal[index] as Object[]).length + value] = header[k];
-                            key = Object.keys(temp);
-                            /* tslint:disable:typedef */
-                            key = this.sortColumnHeaders(key, this.sortObject[header[k].levelUniqueName] ||
-                                this.sortObject[header[k].hierarchy]);
-                            isNullOrUndefined(temporary[index]) ? temporary[index] = [] : temporary[index];
-                            for (let l: number = 0; l < key.length; l++) {
-                                let length: number = Object.keys(temp[key[l]]).length;
-                                for (let q: number = 0; q < length; q++) {
-                                    value = (temporary[index] as Object[]).length == 0 ? 1 : 0;
-                                    (temporary[index] as Object[])[(temporary[index] as Object[]).length + value] =
-                                        temp[key[l]][Object.keys(temp[key[l]])[q]];
+                        if (!header[k].isNamedSet) {
+                            if ((header[k] as IAxisSet).memberType != 2 && header[k].hierarchy
+                                != '[Measures]' && (header[k] as IAxisSet).level != -1) {
+                                isNullOrUndefined(arrange[(header[k] as IAxisSet).formattedText]) ?
+                                    arrange[(header[k] as IAxisSet).formattedText] = [] : arrange[k];
+                                arrange[(header[k] as IAxisSet).formattedText][(header[k] as IAxisSet).colIndex] = header[k];
+                            }
+                            else if (Object.keys(arrange).length > 0) {
+                                (grandTotal[index] as Object[])[(grandTotal[index] as Object[]).length + value] = header[k];
+                                key = Object.keys(arrange);
+                                /* tslint:disable:typedef */
+                                key = this.sortColumnHeaders(key, this.sortObject[header[k - 1].levelUniqueName] ||
+                                    this.sortObject[header[k].hierarchy]);
+                                isNullOrUndefined(temporary[index]) ? temporary[index] = [] : temporary[index];
+                                for (let l: number = 0; l < key.length; l++) {
+                                    let length: number = Object.keys(arrange[key[l]]).length;
+                                    for (let q: number = 0; q < length; q++) {
+                                        value = (temporary[index] as Object[]).length == 0 ? 1 : 0;
+                                        (temporary[index] as Object[])[(temporary[index] as Object[]).length + value] =
+                                            arrange[key[l]][Number(Object.keys(arrange[key[l]])[q])];
+                                    }
                                 }
                             }
-                        }
-                        else if ((header[k] as IAxisSet).level === -1 && Object.keys(temp).length >= 0 &&
-                            ((header[k] as IAxisSet).actualText as string).split(".")[0] != '[Measures]') {
-                            (grandTotal[index] as Object[])[(grandTotal[index] as Object[]).length + value] = header[k];
-                        }
-                        if ((header[k] as IAxisSet).level != -1 && Object.keys(temp).length === 1 &&
-                            ((header[k] as IAxisSet).actualText as string).split(".")[0] !=
-                            '[Measures]' && !isNullOrUndefined(header[k + 1]) && (header[k + 1] as IAxisSet).level === -1) {
-                            let height: number = Object.keys(temp[(header[k] as IAxisSet).formattedText]).length;
-                            let weight: string[] = Object.keys(temp[(header[k] as IAxisSet).formattedText]);
-                            if (height > 1) {
-                                for (let hgt: number = 0; hgt < height; hgt++) {
-                                    value = (grandTotal[index] as Object[]).length == 0 ? 1 : 0;
-                                    (grandTotal[index] as Object[])[(grandTotal[index] as Object[]).length + value] =
-                                        temp[(header[k] as IAxisSet).formattedText][weight[hgt]];
-                                }
-                            }
-                            else {
+                            else if (((header[k] as IAxisSet).level === -1 || (header[k] as IAxisSet).level === 0) &&
+                                Object.keys(arrange).length >= 0 && header[k].hierarchy != '[Measures]') {
                                 (grandTotal[index] as Object[])[(grandTotal[index] as Object[]).length + value] = header[k];
                             }
-                        }
-                        if (Object.keys(grandTotal[index]).length > 0) {
-                            value = (temporary[index] as Object[]).length == 0 ? 1 : 0;
-                            let height1: number = (grandTotal[index] as Object[]).length;
-                            if (height1 > 2) {
-                                for (let hgt1: number = 1; hgt1 < height1; hgt1++) {
-                                    value = (temporary[index] as Object[]).length == 0 ? 1 : 0;
-                                    (temporary[index] as Object[])[(temporary[index] as Object[]).length + value] =
-                                        (grandTotal[index] as Object[])[hgt1];
+                            if ((header[k] as IAxisSet).level != -1 && Object.keys(arrange).length === 1 &&
+                                header[k].hierarchy != '[Measures]' && !isNullOrUndefined(header[k + 1]) &&
+                                (header[k + 1] as IAxisSet).level === -1) {
+                                let height: number = Object.keys(arrange[(header[k] as IAxisSet).formattedText]).length;
+                                let weight: string[] = Object.keys(arrange[(header[k] as IAxisSet).formattedText]);
+                                if (height > 1) {
+                                    for (let hgt: number = 0; hgt < height; hgt++) {
+                                        value = (grandTotal[index] as Object[]).length == 0 ? 1 : 0;
+                                        (grandTotal[index] as Object[])[(grandTotal[index] as Object[]).length + value] =
+                                            arrange[(header[k] as IAxisSet).formattedText][Number(weight[hgt])];
+                                    }
+                                }
+                                else {
+                                    (grandTotal[index] as Object[])[(grandTotal[index] as Object[]).length + value] = header[k];
                                 }
                             }
-                            else {
-                                (temporary[index] as Object[])[(temporary[index] as Object[]).length + value] =
-                                    (grandTotal[index] as Object[])[1] || (grandTotal[index] as Object[])[0];
+                            if (Object.keys(grandTotal[index]).length > 0) {
+                                value = (temporary[index] as Object[]).length == 0 ? 1 : 0;
+                                let height1: number = (grandTotal[index] as Object[]).length;
+                                if (height1 > 2) {
+                                    for (let hgt1: number = 1; hgt1 < height1; hgt1++) {
+                                        value = (temporary[index] as Object[]).length == 0 ? 1 : 0;
+                                        (temporary[index] as Object[])[(temporary[index] as Object[]).length + value] =
+                                            (grandTotal[index] as Object[])[hgt1];
+                                    }
+                                }
+                                else {
+                                    (temporary[index] as Object[])[(temporary[index] as Object[]).length + value] =
+                                        (grandTotal[index] as Object[])[1] || (grandTotal[index] as Object[])[0];
+                                }
+                                arrange = {};
+                                grandTotal[index] = [];
                             }
-                            temp = {};
-                            grandTotal[index] = [];
                         }
                     }
-                    if (Object.keys(temp).length > 0) {
+                    if (Object.keys(arrange).length > 0) {
                         (grandTotal[index] as Object[])[(grandTotal[index] as Object[]).length + value] = header[k];
-                        keys = Object.keys(temp);
+                        keys = Object.keys(arrange);
                         /* tslint:disable:typedef */
-                        let order: string = this.sortObject[header[k].levelUniqueName] || this.sortObject[header[k].hierarchy];
-                        key = this.sortColumnHeaders(key, order);
+                        let order: string = this.sortObject[header[k - 1].levelUniqueName] || this.sortObject[header[k - 1].hierarchy];
+                        key = this.sortColumnHeaders(keys, order);
                         isNullOrUndefined(temporary[index]) ? temporary[index] = [] : temporary[index];
                         for (let len: number = 0; len < keys.length; len++) {
-                            let leng: number = Object.keys(temp[keys[len]]).length;
+                            let leng: number = Object.keys(arrange[keys[len]]).length;
                             for (let q: number = 0; q < leng; q++) {
                                 value = (temporary[index] as Object[]).length == 0 ? 1 : 0;
                                 (temporary[index] as Object[])[(temporary[index] as Object[]).length + value] =
-                                    temp[key[len]][Object.keys(temp[keys[len]])[q]];
+                                    arrange[key[len]][Number(Object.keys(arrange[keys[len]])[q])];
                             }
                         }
                     }
@@ -1465,7 +1487,7 @@ export class OlapEngine {
                         }
                     }
                     index++;
-                    temp = {};
+                    arrange = {};
                 }
                 for (let i: number = 0; i < this.pivotValues.length; i++) {
                     let header: IPivotRows = this.pivotValues[i];
@@ -1485,7 +1507,7 @@ export class OlapEngine {
         return uniqueName;
     }
     private sortRowHeaders(headers: IAxisSet[]): IAxisSet[] {
-        if (headers.length > 0 && headers[0].memberType !== 3) {
+        if (headers.length > 0 && headers[0].memberType !== 3 && !headers[0].isNamedSet) {
             let order: string = (this.sortObject[headers[0].hierarchy] || this.sortObject[headers[0].levelUniqueName]);
             if (order === 'Ascending' || order === undefined) {
                 headers == headers.sort((a: IAxisSet, b: IAxisSet) => (a.formattedText > b.formattedText) ? 1 :
@@ -1567,10 +1589,12 @@ export class OlapEngine {
                 let isSubTot: boolean = tupColInfo.allStartPos > (tupColInfo.typeCollection[0] === '3' ? 1 : 0);
                 if (nextRowCell && nextColCell && ((currCell.memberType === 2 || currCell.level === -1) ?
                     (nextColCell.actualText === currCell.actualText) :
-                    (nextColCell.valueSort.levelName === currCell.valueSort.levelName))) {
+                    ((currCell.memberType === 3 && currCell.actualText === nextColCell.actualText) ||
+                        nextColCell.valueSort.levelName === currCell.valueSort.levelName))) {
                     if (currCell.memberType === 2) {
                         if (isSubTot ? nextColCell.type === 'sum' : true) {
-                            currCell.colSpan = (nextColCell.colSpan + 1) > colMeasureCount ? 1 : (nextColCell.colSpan + 1);
+                            currCell.colSpan = (nextColCell.colSpan + 1) >
+                                (tupColInfo.measurePosition > rowPos ? colMeasureCount : 0) ? 1 : (nextColCell.colSpan + 1);
                         } else {
                             currCell.colSpan = 1;
                         }
@@ -1591,7 +1615,7 @@ export class OlapEngine {
                     } else {
                         let levelName: string | number | Date = 'Grand Total';
                         if (nextRowCell && colMeasureCount > 0) {
-                            levelName = nextRowCell.memberType === 3 ? ('Grand Total.' + nextRowCell.actualText) :
+                            levelName = nextRowCell.memberType === 3 ? ('Grand Total.' + nextRowCell.formattedText) :
                                 nextRowCell.valueSort.levelName;
                         }
                         currCell.type = 'grand sum';
@@ -1667,8 +1691,6 @@ export class OlapEngine {
             let rowOrdinal: number = columns[0].ordinal;
             for (let colPos: number = 1; colPos < (this.pivotValues[0] as IAxisSet[]).length; colPos++) {
                 let colOrdinal: number = (this.pivotValues[this.colDepth - 1] as IAxisSet[])[colPos].ordinal;
-                let isSum: boolean = columns[0].hasChild || columns[0].hasChild ||
-                    columns[0].type === 'grand sum' || columns[0].type === 'grand sum';
                 let lastColCell: IAxisSet = (this.pivotValues[this.colDepth - 1][colPos] as IAxisSet);
                 let measure: string | number = columns[0].memberType === 3 ? columns[0].actualText.toString() :
                     ((this.tupColumnInfo[lastColCell.ordinal] && this.tupColumnInfo[lastColCell.ordinal].measure) ?
@@ -1705,8 +1727,10 @@ export class OlapEngine {
                     formattedText = showTotals && !isNullOrUndefined(value) ?
                         this.getFormattedValue(Number(value), measureName, (formattedText !== '' ? formattedText : value)) :
                         formattedText;
-                    let isSum: boolean = (this.tupColumnInfo[colOrdinal] ? this.tupColumnInfo[colOrdinal].allCount > 0 : true) ||
-                        (this.tupRowInfo[rowOrdinal] ? this.tupRowInfo[rowOrdinal].allCount > 0 : true);
+                    let isSum: boolean = (this.tupColumnInfo[colOrdinal] ? (this.tupColumnInfo[colOrdinal].allCount > 0 ||
+                        this.tupColumnInfo[colOrdinal].drillStartPos > -1) : true) ||
+                        (this.tupRowInfo[rowOrdinal] ? (this.tupRowInfo[rowOrdinal].allCount > 0 ||
+                            this.tupRowInfo[rowOrdinal].drillStartPos > -1) : true);
                     columns[colPos] = {
                         axis: 'value',
                         actualText: measureName,
@@ -2052,7 +2076,9 @@ export class OlapEngine {
                     this.savedFieldListData[i].isSelected = false;
                 }
             }
-            if (this.savedFieldList[fieldName] && this.savedFieldList[fieldName].isCalculatedField) {
+            if ((this.savedFieldList[fieldName] && this.savedFieldList[fieldName].isCalculatedField) ||
+                fieldName.toLowerCase() === '[calculated members].[_0]') {
+                let isAvail: boolean = false;
                 for (let field of this.calculatedFieldSettings) {
                     if (fieldName === field.name) {
                         let expression: string = field.formula;
@@ -2064,6 +2090,15 @@ export class OlapEngine {
                         this.savedFieldList[fieldName].formula = expression;
                         this.savedFieldList[fieldName].formatString = formatString;
                         this.savedFieldList[fieldName].parentHierarchy = this.savedFieldListData[i].parentHierarchy;
+                        isAvail = true;
+                    }
+                }
+                if (!isAvail || (fieldName.toLowerCase() === '[calculated members].[_0]' &&
+                    this.calculatedFieldSettings.length === 0)) {
+                    this.savedFieldListData.splice(i, 1);
+                    i--;
+                    if (this.savedFieldList[fieldName]) {
+                        delete this.savedFieldList[fieldName];
                     }
                 }
             }
@@ -2287,7 +2322,7 @@ export class OlapEngine {
     // }
 
     /**
-     * @hidden
+
      */
     public getDrillThroughData(pivotValue: IAxisSet, maxRows: number): void {
         let column: string[] = this.tupColumnInfo[pivotValue.colOrdinal] &&
@@ -3156,13 +3191,13 @@ export class OlapEngine {
     }
 }
 /**
- * @hidden
+
  */
 export interface IOlapFieldListOptions {
     [index: string]: IOlapField;
 }
 /**
- * @hidden
+
  */
 export interface IOlapField extends IField {
     pid?: string;
@@ -3192,7 +3227,7 @@ export interface IOlapField extends IField {
     parentHierarchy?: string;
 }
 /**
- * @hidden
+
  */
 export interface ConnectionInfo {
     url?: string;
@@ -3202,7 +3237,7 @@ export interface ConnectionInfo {
     request?: string;
 }
 /**
- * @hidden
+
  */
 export interface FieldData {
     hierarchy?: IOlapField[];
@@ -3218,14 +3253,14 @@ export interface FieldData {
     drillInfo?: IDrilledItem;
     loadLevelMembers?: boolean;
 }
-/** @hidden */
+
 export interface IOlapCustomProperties extends ICustomProperties {
     savedFieldList?: IOlapFieldListOptions;
     savedFieldListData?: IOlapField[];
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
-/** @hidden */
+
 export interface ITupInfo {
     allCount?: number;
     allStartPos?: number;
@@ -3244,14 +3279,14 @@ export interface ITupInfo {
     endDrillUniquename?: string;
     showTotals?: boolean;
 }
-/** @hidden */
+
 export interface IDrillInfo {
     level: number;
     uName: string;
     hierarchy: string;
     isDrilled: boolean;
 }
-/** @hidden */
+
 export interface ITotCollection {
     allCount: number;
     allStartPos?: number;
@@ -3259,21 +3294,21 @@ export interface ITotCollection {
     members: NodeListOf<Element>;
     drillInfo?: IDrillInfo[];
 }
-/** @hidden */
+
 export interface IParentObjCollection {
     [key: number]: { [key: number]: Element; };
 }
-/** @hidden */
+
 export interface ILastSavedInfo {
     [key: string]: string | number;
 }
-/** @hidden */
+
 export interface IMeasureInfo {
     measureAxis: string;
     measureIndex: number;
     valueInfo: string[];
 }
-/** @hidden */
+
 export interface IOrderedInfo {
     orderedValueTuples: Element[];
     orderedHeaderTuples: Element[];

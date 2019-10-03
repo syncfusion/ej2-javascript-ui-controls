@@ -34,7 +34,7 @@ import { RowDragDropHeaderRenderer } from '../renderer/row-drag-header-indent-re
 
 /**
  * Content module is used to render grid content
- * @hidden
+
  */
 export class Render {
     //Internal variables              
@@ -268,7 +268,7 @@ export class Render {
     /** 
      * Render empty row to Grid which is used at the time to represent to no records. 
      * @return {void} 
-     * @hidden
+
      */
     public renderEmptyRow(): void {
         this.emptyRow(true);
@@ -349,7 +349,7 @@ export class Render {
         }
     }
 
-    /** @hidden */
+
     public dataManagerSuccess(e: ReturnType, args?: NotifyArgs): void {
         let gObj: IGrid = this.parent;
         this.contentRenderer = <ContentRender>this.renderer.getRenderer(RenderType.Content);
@@ -494,7 +494,7 @@ export class Render {
         this.parent.on(events.autoCol, this.dynamicColumnChange, this);
     }
 
-    /** @hidden */
+
     public validateGroupRecords(e: ReturnType): Promise<Object> {
         let index: number = e.result.length - 1;
         if (index < 0) { return Promise.resolve(e); }

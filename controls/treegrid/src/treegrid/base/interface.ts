@@ -2,7 +2,7 @@ import { Column } from '../models/column';
 import { SaveEventArgs, DataStateChangeEventArgs } from '@syncfusion/ej2-grids';
 /**
  * Specifies FlatData interfaces.
- * @hidden
+
  */
 export interface ITreeData {
     /**
@@ -73,7 +73,7 @@ export interface ITreeGridCellFormatter {
 export interface RowExpandedEventArgs {
     /**
      * Defines the parent row data.
-     * @isGenericType true
+
      */
     data?: Object;
     /** Defines the parent row element. */
@@ -82,7 +82,7 @@ export interface RowExpandedEventArgs {
 export interface RowExpandingEventArgs {
     /**
      * Defines the parent row data.
-     * @isGenericType true
+
      */
     data?: Object;
     /** Defines the parent row element. */
@@ -93,7 +93,7 @@ export interface RowExpandingEventArgs {
 export interface RowCollapsedEventArgs {
     /**
      * Defines the parent row data.
-     * @isGenericType true
+
      */
     data?: Object;
     /** Defines the parent row element. */
@@ -102,7 +102,7 @@ export interface RowCollapsedEventArgs {
 export interface RowCollapsingEventArgs {
     /**
      * Defines the parent row data.
-     * @isGenericType true
+
      */
     data?: Object;
     /** Defines the parent row element. */
@@ -119,7 +119,7 @@ export interface DataStateChangeEventArgs extends DataStateChangeEventArgs {
     childData? : ITreeData[];
     /**
      * Defines the parent row data.
-     * @isGenericType true
+
      */
     data?: Object;
     /** Defines the parent row element. */

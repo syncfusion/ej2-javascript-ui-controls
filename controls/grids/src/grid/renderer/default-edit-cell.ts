@@ -7,7 +7,7 @@ import { InputArgs }  from '@syncfusion/ej2-inputs';
 
 /**
  * `DefaultEditCell` is used to handle default cell type editing.
- * @hidden
+
  */
 export class DefaultEditCell implements IEditCell {
 

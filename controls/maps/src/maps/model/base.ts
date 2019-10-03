@@ -325,6 +325,7 @@ export class ColorMappingSettings extends ChildProperty<ColorMappingSettings> {
      * To configure from
      * @aspDefaultValueIgnore
      * @default null
+     * @isBlazorNullableType true
      */
     @Property(null)
     public from: number;
@@ -332,6 +333,7 @@ export class ColorMappingSettings extends ChildProperty<ColorMappingSettings> {
      * To configure to
      * @aspDefaultValueIgnore
      * @default null
+     * @isBlazorNullableType true
      */
     @Property(null)
     public to: number;

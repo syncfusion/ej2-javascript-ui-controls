@@ -56,19 +56,19 @@ export interface ColorValue {
 export interface IPrintOptions {
     /**
      * Sets the width of the page to be printed
-     * @default null
+
      */
     pageWidth?: number;
 
     /**
      * Sets the height of the page to be printed
-     * @default null
+
      */
     pageHeight?: number;
 
     /**
      * Sets the margin of the page to be printed
-     * @default new Margin(0,0,0,0)
+
      */
     margin?: MarginModel;
 
@@ -76,13 +76,13 @@ export interface IPrintOptions {
      * Sets the orientation of the page to be printed
      *  * Landscape - Display with page Width is more than the page Height.
      *  * Portrait - Display with page Height is more than the page width.
-     * @default 'Landscape'
+
      */
     pageOrientation?: PageOrientation;
 
     /**
      * Defines whether the diagram has to be exported as single or multiple images
-     * @default false
+
      */
     multiplePage?: boolean;
 
@@ -91,7 +91,7 @@ export interface IPrintOptions {
      * * PageSettings - The region to be exported/printed will be based on the given page settings
      * * Content - Only the content of the diagram control will be exported
      * * CustomBounds - The region to be exported will be explicitly defined
-     * @default 'PageSettings'
+
      */
     region?: DiagramRegions;
 
@@ -101,7 +101,7 @@ export interface IPrintOptions {
      * * Stretch - Sets the stretch type for diagram as Stretch
      * * Meet - Sets the stretch type for diagram as Meet
      * * Slice - Sets the stretch type for diagram as Slice
-     * @default Stretch
+
      */
     stretch?: Stretch;
 }
@@ -112,7 +112,7 @@ export interface IPrintOptions {
 export interface IExportOptions extends IPrintOptions {
     /**
      * Sets the file name of the exported image
-     * @default('')
+
      */
     fileName?: string;
 
@@ -122,7 +122,7 @@ export interface IExportOptions extends IPrintOptions {
      * * PNG - Saves the file in PNG Format
      * * BMP - Save the file in BMP Format
      * * SVG - save the file in SVG format
-     * @default('')
+
      */
     format?: FileFormats;
 
@@ -130,19 +130,19 @@ export interface IExportOptions extends IPrintOptions {
      * Sets the Mode for the file to be downloaded
      * * Download - Downloads the diagram as image
      * * Data - Sends the diagram as ImageUrl
-     * @default('')
+
      */
     mode?: ExportModes;
 
     /**
      * Sets the region that has to be exported
-     * @default (0)
+
      */
     bounds?: Rect;
 
     /**
      * Sets the printOptions that has to be printed
-     * @default false
+
      */
     printOptions?: boolean;
 
@@ -153,7 +153,7 @@ export interface IExportOptions extends IPrintOptions {
 export interface DiagramMenuEventArgs extends MenuEventArgs {
     cancel?: boolean;
     /**
-     * @blazorType Syncfusion.EJ2.Blazor.Navigations.MenuItemModel
+
      */
     item: MenuItemModel;
 }
@@ -163,11 +163,11 @@ export interface DiagramBeforeMenuOpenEventArgs extends BeforeOpenCloseMenuEvent
     /** Defines the hidden items of the diagram context menu */
     hiddenItems: string[];
     /**
-     * @blazorType List<Syncfusion.EJ2.Blazor.Navigations.MenuItemModel>
+
      */
     items: MenuItemModel[];
     /**
-     * @blazorType Syncfusion.EJ2.Blazor.Navigations.MenuItemModel
+
      */
     parentItem: MenuItemModel;
 }

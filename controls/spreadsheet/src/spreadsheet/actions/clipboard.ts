@@ -81,7 +81,9 @@ export class Clipboard {
 
     private cMenuBeforeOpenHandler(e: { target: string }): void {
         if (e.target === 'Content' || e.target === 'Header') {
-            this.parent.enableContextMenuItems(['Paste', 'Paste Special'], this.copiedInfo ? true : false);
+            let l10n: L10n = this.parent.serviceLocator.getService(locale);
+            this.parent.enableContextMenuItems(
+                [l10n.getConstant('Paste'), l10n.getConstant('PasteSpecial')], this.copiedInfo ? true : false);
         }
     }
 
@@ -164,6 +166,7 @@ export class Clipboard {
                 }
                 rowIdx++;
             }
+            this.parent.setUsedRange(rfshRange[2], rfshRange[3]);
             if (cSIdx === this.parent.activeSheetTab - 1) {
                 this.parent.serviceLocator.getService<ICellRenderer>('cell').refreshRange(rfshRange);
                 this.parent.notify(selectRange, rfshRange);
@@ -273,6 +276,10 @@ export class Clipboard {
     private initCopyIndicator(): void {
         if (this.copiedInfo && this.parent.getActiveSheet().id === this.copiedInfo.sId) {
             let copyIndicator: Element = this.parent.createElement('div', { className: 'e-copy-indicator' });
+            copyIndicator.appendChild(this.parent.createElement('div', { className: 'e-top' }));
+            copyIndicator.appendChild(this.parent.createElement('div', { className: 'e-bottom' }));
+            copyIndicator.appendChild(this.parent.createElement('div', { className: 'e-left' }));
+            copyIndicator.appendChild(this.parent.createElement('div', { className: 'e-right' }));
             locateElem(copyIndicator, this.copiedInfo.range, this.parent.getActiveSheet());
             this.parent.getMainContent().appendChild(copyIndicator);
         }

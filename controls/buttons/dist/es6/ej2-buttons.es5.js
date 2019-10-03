@@ -467,6 +467,7 @@ var RIPPLECHECK = 'e-ripple-check';
 var RIPPLEINDETERMINATE = 'e-ripple-stop';
 var RTL = 'e-rtl';
 var WRAPPER = 'e-checkbox-wrapper';
+var containerAttr = ['title', 'class', 'style', 'disabled', 'readonly', 'name', 'value'];
 /**
  * The CheckBox is a graphical user interface element that allows you to select one or more options from the choices.
  * It contains checked, unchecked, and indeterminate states.
@@ -488,8 +489,6 @@ var CheckBox = /** @__PURE__ @class */ (function (_super) {
         var _this = _super.call(this, options, element) || this;
         _this.isFocused = false;
         _this.isMouseClick = false;
-        _this.start = 0;
-        _this.end = 0;
         return _this;
     }
     CheckBox.prototype.changeState = function (state) {
@@ -530,12 +529,6 @@ var CheckBox = /** @__PURE__ @class */ (function (_super) {
         this.getWrapper().setAttribute('aria-checked', ariaState);
     };
     CheckBox.prototype.clickHandler = function (event) {
-        if ((this.end - this.start) > 750) {
-            this.end = 0;
-            this.end = 0;
-            event.stopPropagation();
-            return;
-        }
         if (this.isMouseClick) {
             this.focusOutHandler();
             this.isMouseClick = false;
@@ -628,6 +621,7 @@ var CheckBox = /** @__PURE__ @class */ (function (_super) {
         if (this.disabled) {
             this.setDisabled();
         }
+        this.updateHtmlAttributeToWrapper();
     };
     CheckBox.prototype.initWrapper = function () {
         var wrapper = this.element.parentElement;
@@ -744,6 +738,9 @@ var CheckBox = /** @__PURE__ @class */ (function (_super) {
                 case 'value':
                     this.element.setAttribute('value', newProp.value);
                     break;
+                case 'htmlAttributes':
+                    this.updateHtmlAttributeToWrapper();
+                    break;
             }
         }
     };
@@ -801,23 +798,12 @@ var CheckBox = /** @__PURE__ @class */ (function (_super) {
     CheckBox.prototype.changeHandler = function (e) {
         e.stopPropagation();
     };
-    CheckBox.prototype.touchStartHandler = function (e) {
-        this.start = new Date().getTime();
-    };
-    CheckBox.prototype.touchEndHandler = function (e) {
-        this.end = new Date().getTime();
-    };
     CheckBox.prototype.formResetHandler = function () {
         this.checked = this.initialCheckedValue;
         this.element.checked = this.initialCheckedValue;
     };
     CheckBox.prototype.unWireEvents = function () {
         var wrapper = this.getWrapper();
-        var iOS = !!navigator.platform && /iPad|iPhone|iPod/.test(navigator.platform);
-        if (iOS) {
-            EventHandler.remove(wrapper, 'touchstart', this.touchStartHandler);
-            EventHandler.remove(wrapper, 'touchend', this.touchEndHandler);
-        }
         EventHandler.remove(this.element, 'click', this.clickHandler);
         EventHandler.remove(this.element, 'keyup', this.keyUpHandler);
         EventHandler.remove(this.element, 'focus', this.focusHandler);
@@ -834,11 +820,6 @@ var CheckBox = /** @__PURE__ @class */ (function (_super) {
     };
     CheckBox.prototype.wireEvents = function () {
         var wrapper = this.getWrapper();
-        var iOS = !!navigator.platform && /iPad|iPhone|iPod/.test(navigator.platform);
-        if (iOS) {
-            EventHandler.add(wrapper, 'touchstart', this.touchStartHandler, this);
-            EventHandler.add(wrapper, 'touchend', this.touchEndHandler, this);
-        }
         EventHandler.add(this.element, 'click', this.clickHandler, this);
         EventHandler.add(this.element, 'keyup', this.keyUpHandler, this);
         EventHandler.add(this.element, 'focus', this.focusHandler, this);
@@ -851,6 +832,29 @@ var CheckBox = /** @__PURE__ @class */ (function (_super) {
         }
         if (this.tagName === 'EJS-CHECKBOX') {
             EventHandler.add(this.element, 'change', this.changeHandler, this);
+        }
+    };
+    CheckBox.prototype.updateHtmlAttributeToWrapper = function () {
+        if (!isNullOrUndefined(this.htmlAttributes)) {
+            for (var _i = 0, _a = Object.keys(this.htmlAttributes); _i < _a.length; _i++) {
+                var key = _a[_i];
+                if (containerAttr.indexOf(key) > -1) {
+                    var wrapper = this.getWrapper();
+                    if (key === 'class') {
+                        addClass([wrapper], this.htmlAttributes[key].split(' '));
+                    }
+                    else if (key === 'title') {
+                        wrapper.setAttribute(key, this.htmlAttributes[key]);
+                    }
+                    else if (key === 'style') {
+                        var frameSpan = this.getWrapper().getElementsByClassName(FRAME)[0];
+                        frameSpan.setAttribute(key, this.htmlAttributes[key]);
+                    }
+                    else {
+                        this.element.setAttribute(key, this.htmlAttributes[key]);
+                    }
+                }
+            }
         }
     };
     /**
@@ -899,6 +903,9 @@ var CheckBox = /** @__PURE__ @class */ (function (_super) {
     __decorate$1([
         Property('')
     ], CheckBox.prototype, "value", void 0);
+    __decorate$1([
+        Property({})
+    ], CheckBox.prototype, "htmlAttributes", void 0);
     CheckBox = __decorate$1([
         NotifyPropertyChanges
     ], CheckBox);

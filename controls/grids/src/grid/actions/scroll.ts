@@ -23,7 +23,7 @@ export class Scroll implements IAction {
 
     /**
      * Constructor for the Grid scrolling.
-     * @hidden
+
      */
     constructor(parent?: IGrid) {
         this.parent = parent;
@@ -39,7 +39,7 @@ export class Scroll implements IAction {
         return 'scroll';
     }
     /**
-     * @hidden
+
      */
     public setWidth(uiupdate?: boolean): void {
         this.parent.element.style.width = formatUnit(this.parent.width);
@@ -52,7 +52,7 @@ export class Scroll implements IAction {
         }
     }
     /**
-     * @hidden
+
      */
     public setHeight(): void {
         let mHdrHeight: number = 0;
@@ -67,7 +67,7 @@ export class Scroll implements IAction {
         this.ensureOverflow(content);
     }
     /**
-     * @hidden
+
      */
     public setPadding(): void {
         let content: HTMLElement = <HTMLElement>this.parent.getHeaderContent();
@@ -79,7 +79,7 @@ export class Scroll implements IAction {
         content.style[cssProps.padding] = scrollWidth > 0 ? scrollWidth + 'px' : '0px';
     }
     /**
-     * @hidden
+
      */
     public removePadding(rtl?: boolean): void {
         let cssProps: ScrollCss = this.getCssProperties(rtl);
@@ -114,7 +114,7 @@ export class Scroll implements IAction {
         return 1;
     }
     /**
-     * @hidden
+
      */
     public addEventListener(): void {
         if (this.parent.isDestroyed) { return; }
@@ -125,7 +125,7 @@ export class Scroll implements IAction {
         this.parent.on(headerRefreshed, this.setScrollLeft, this);
     }
     /**
-     * @hidden
+
      */
     public removeEventListener(): void {
         if (this.parent.isDestroyed) { return; }
@@ -334,7 +334,7 @@ export class Scroll implements IAction {
     }
 
     /** 
-     * @hidden
+
      */
     public getCssProperties(rtl?: boolean): ScrollCss {
         let css: ScrollCss = {};
@@ -370,7 +370,7 @@ export class Scroll implements IAction {
         this.setWidth(!isNullOrUndefined(e.properties[width]));
     }
     /**
-     * @hidden
+
      */
     public destroy(): void {
         let gridElement: Element = this.parent.element;
@@ -395,7 +395,7 @@ export class Scroll implements IAction {
     /**
      * Function to get the scrollbar width of the browser.
      * @return {number} 
-     * @hidden
+
      */
     public static getScrollBarWidth(): number {
         return getScrollBarWidth();
@@ -403,7 +403,7 @@ export class Scroll implements IAction {
 }
 
 /**
- * @hidden
+
  */
 export interface ScrollCss {
     padding?: string;

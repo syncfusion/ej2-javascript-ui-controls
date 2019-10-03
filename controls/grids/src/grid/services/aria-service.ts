@@ -2,7 +2,7 @@ import { ValueType } from '../base/type';
 import { SortDirection } from '../base/enum';
 /**
  * AriaService
- * @hidden
+
  */
 export class AriaService {
 
@@ -33,7 +33,7 @@ export class AriaService {
     }
 }
 /**
- * @hidden
+
  */
 function setStateAndProperties(target: HTMLElement, attribute?: string, value?: ValueType, remove?: boolean): void {
     if (remove && target) {
@@ -45,7 +45,7 @@ function setStateAndProperties(target: HTMLElement, attribute?: string, value?: 
     }
 }
 /**
- * @hidden
+
  */
 export interface IAriaOptions<T> {
     role?: string;

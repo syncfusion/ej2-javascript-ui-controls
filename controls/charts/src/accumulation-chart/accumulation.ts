@@ -120,7 +120,7 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
     /**
      * The width of the chart as a string in order to provide input as both like '100px' or '100%'.
      * If specified as '100%, chart will render to the full width of its parent element.
-     * @default null
+
      */
 
     @Property(null)
@@ -129,7 +129,7 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
     /**
      * The height of the chart as a string in order to provide input as both like '100px' or '100%'.
      * If specified as '100%, chart will render to the full height of its parent element.
-     * @default null
+
      */
 
     @Property(null)
@@ -137,7 +137,7 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
 
     /**
      * Title for accumulation chart
-     * @default null
+
      */
     @Property(null)
     public title: string;
@@ -170,7 +170,7 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
     * });
     * pie.appendTo('#Pie');
     * ```
-    * @default ''
+
     */
 
     @Property('')
@@ -185,7 +185,7 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
 
     /**
      * SubTitle for accumulation chart
-     * @default null
+
      */
     @Property(null)
     public subTitle: string;
@@ -212,21 +212,21 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
 
     /**
      * Specifies whether point has to get selected or not. Takes value either 'None 'or 'Point'
-     * @default None
+
      */
     @Property('None')
     public selectionMode: AccumulationSelectionMode;
 
     /**
      * If set true, enables the multi selection in accumulation chart. It requires `selectionMode` to be `Point`.
-     * @default false
+
      */
     @Property(false)
     public isMultiSelect: boolean;
 
     /**
      * If set true, enables the animation for both chart and accumulation.
-     * @default true
+
      */
     @Property(true)
     public enableAnimation: boolean;
@@ -247,7 +247,7 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
      * });
      * pie.appendTo('#Pie');
      * ```
-     * @default []
+
      */
     @Collection<IndexesModel>([], Indexes)
     public selectedDataIndexes: IndexesModel[];
@@ -261,7 +261,7 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
 
     /**
      * If set true, labels for the point will be placed smartly without overlapping.
-     * @default true
+
      */
     @Property(true)
     public enableSmartLabels: boolean;
@@ -275,7 +275,7 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
 
     /**
      * The background color of the chart, which accepts value in hex, rgba as a valid CSS color string.
-     * @default null
+
      */
     @Property(null)
     public background: string;
@@ -296,21 +296,21 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
 
     /**
      * Specifies the theme for accumulation chart.
-     * @default 'Material'
+
      */
     @Property('Material')
     public theme: AccumulationTheme;
 
     /**
      * Specifies whether a grouping separator should be used for a number.
-     * @default false
+
      */
     @Property(false)
     public useGroupingSeparator: boolean;
 
     /**
      * To enable export feature in chart.
-     * @default true
+
      */
     @Property(true)
     public enableExport: boolean;
@@ -318,7 +318,7 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
     /**
      * Triggers after accumulation chart loaded.
      * @event
-     * @blazorProperty 'Loaded'
+
      */
     @Event()
     public loaded: EmitType<IAccLoadedEventArgs>;
@@ -326,7 +326,7 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
     /**
      * Triggers before accumulation chart load.
      * @event
-     * @deprecated
+
      */
     @Event()
     public load: EmitType<IAccLoadedEventArgs>;
@@ -334,7 +334,7 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
     /**
      * Triggers before the series gets rendered.
      * @event
-     * @deprecated
+
      */
     @Event()
     public seriesRender: EmitType<IAccSeriesRenderEventArgs>;
@@ -342,7 +342,7 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
     /**
      * Triggers before the legend gets rendered.
      * @event
-     * @deprecated
+
      */
     @Event()
     public legendRender: EmitType<ILegendRenderEventArgs>;
@@ -350,7 +350,7 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
     /**
      * Triggers before the data label for series gets rendered.
      * @event
-     * @deprecated
+
      */
     @Event()
     public textRender: EmitType<IAccTextRenderEventArgs>;
@@ -365,7 +365,7 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
     /**
      * Triggers before each points for series gets rendered.
      * @event
-     * @deprecated
+
      */
 
     @Event()
@@ -374,7 +374,7 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
     /**
      * Triggers before the annotation gets rendered.
      * @event
-     * @deprecated
+
      */
 
     @Event()
@@ -383,7 +383,7 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
     /**
      * Triggers before the prints gets started.
      * @event
-     * @blazorProperty 'OnPrint'
+
      */
 
     @Event()
@@ -392,7 +392,7 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
     /**
      * Triggers on hovering the accumulation chart.
      * @event
-     * @blazorProperty 'OnChartMouseMove'
+
      */
 
     @Event()
@@ -401,7 +401,7 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
     /**
      * Triggers on clicking the accumulation chart.
      * @event
-     * @blazorProperty 'OnChartMouseClick'
+
      */
 
     @Event()
@@ -410,7 +410,7 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
     /**
      * Triggers on point click.
      * @event
-     * @blazorProperty 'OnPointClick'
+
      */
 
     @Event()
@@ -419,7 +419,7 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
     /**
      * Triggers on point move.
      * @event
-     * @blazorProperty 'PointMoved'
+
      */
 
     @Event()
@@ -428,7 +428,7 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
     /**
      * Triggers after animation gets completed for series.
      * @event
-     * @blazorProperty 'OnAnimationComplete'
+
      */
     @Event()
     public animationComplete: EmitType<IAccAnimationCompleteEventArgs>;
@@ -436,7 +436,7 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
     /**
      * Triggers on mouse down.
      * @event
-     * @blazorProperty 'OnChartMouseDown'
+
      */
 
     @Event()
@@ -445,7 +445,7 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
     /**
      * Triggers while cursor leaves the accumulation chart.
      * @event
-     * @blazorProperty 'OnChartMouseLeave'
+
      */
 
     @Event()
@@ -454,7 +454,7 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
     /**
      * Triggers on mouse up.
      * @event
-     * @blazorProperty 'OnChartMouseUp'
+
      */
 
     @Event()
@@ -463,7 +463,7 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
     /**
      * Triggers after window resize.
      * @event
-     * @blazorProperty 'Resized'
+
      */
 
     @Event()
@@ -472,7 +472,7 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
     /**
      * Defines the currencyCode format of the accumulation chart
      * @private
-     * @aspType string
+
      */
 
     @Property('USD')

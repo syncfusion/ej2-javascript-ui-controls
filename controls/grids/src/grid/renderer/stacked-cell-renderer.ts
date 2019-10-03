@@ -8,7 +8,7 @@ import { setStyleAndAttributes, appendChildren } from '../base/util';
 
 /**
  * StackedHeaderCellRenderer class which responsible for building stacked header cell content.
- * @hidden 
+
  */
 export class StackedHeaderCellRenderer extends CellRenderer implements ICellRenderer<Column> {
 

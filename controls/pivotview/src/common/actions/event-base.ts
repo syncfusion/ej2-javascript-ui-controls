@@ -11,13 +11,13 @@ import { PivotUtil } from '../../base/util';
 /**
  * `EventBase` for active fields action.
  */
-/** @hidden */
+
 export class EventBase {
     public parent: PivotCommon;
 
     /**
      * Constructor for the dialog action.
-     * @hidden
+
      */
     constructor(parent?: PivotCommon) {
         this.parent = parent;
@@ -28,7 +28,7 @@ export class EventBase {
      * @method updateSorting
      * @param  {Event} args - Contains clicked element information to update dataSource.
      * @return {void}
-     * @hidden
+
      */
     public updateSorting(args: Event): void {
         if (!((args.target as HTMLElement).classList.contains(cls.FILTER_COMMON_CLASS)) &&
@@ -92,7 +92,7 @@ export class EventBase {
      * @method updateFiltering
      * @param  {Event} args - Contains clicked element information to update dataSource.
      * @return {void}
-     * @hidden
+
      */
     public updateFiltering(args: Event): void {
         let target: HTMLElement = args.target as HTMLElement;
@@ -177,7 +177,7 @@ export class EventBase {
      * @method sortFilterData
      * @param  {{ [key: string]: Object }[]} treeData - Gets filter members for the given field name.
      * @return {{ [key: string]: Object }[]}
-     * @hidden
+
      */
     public sortOlapFilterData(treeData: { [key: string]: Object }[], order: string): { [key: string]: Object }[] {
         if (treeData.length > 0) {
@@ -197,7 +197,7 @@ export class EventBase {
      * @method getSortItemByName
      * @param  {string} fieldName - Gets sort settings for the given field name.
      * @return {ISort}
-     * @hidden
+
      */
     public getSortItemByName(fieldName: string): ISort {
         let sortObjects: ISort[] = this.parent.dataSourceSettings.sortSettings;
@@ -209,7 +209,7 @@ export class EventBase {
      * @method getFilterItemByName
      * @param  {string} fieldName - Gets filter settings for the given field name.
      * @return {IFilter}
-     * @hidden
+
      */
     public getFilterItemByName(fieldName: string): IFilter {
         let filterObjects: IFilter[] = this.parent.dataSourceSettings.filterSettings;
@@ -225,7 +225,7 @@ export class EventBase {
      * @method getFieldByName
      * @param  {string} fieldName - Gets filter settings for the given field name.
      * @return {Sort}
-     * @hidden
+
      */
     public getFieldByName(fieldName: string, fields: IFieldOptions[]): IFieldOptions {
         return new DataManager({ json: fields }).executeLocal(new Query().where('name', 'equal', fieldName))[0] as IFieldOptions;
@@ -236,7 +236,7 @@ export class EventBase {
      * @method getFilterItemByName
      * @param  {string} fieldName - Gets format settings for the given field name.
      * @return {IFormatSettings}
-     * @hidden
+
      */
     public getFormatItemByName(fieldName: string): IFormatSettings {
         let formatObjects: IFormatSettings[] = this.parent.dataSourceSettings.formatSettings;
@@ -275,7 +275,7 @@ export class EventBase {
     }
     /**
      * show tree nodes using search text.
-     * @hidden
+
      */
     /* tslint:disable:max-func-body-length */
     public searchTreeNodes(args: MaskChangeEventArgs, treeObj: TreeView, isFieldCollection: boolean, isHierarchy?: boolean): void {
@@ -499,6 +499,10 @@ export class EventBase {
             }
         }
     }
+    /**
+     * get the parent node of particular filter members.
+
+     */
     public getParentNode(fieldName: string, item: string, filterObj: { [key: string]: string }): { [key: string]: string } {
         let members: IMembers = this.parent.engineModule.fieldList[fieldName].members;
         if (members[item].parent && item !== members[item].parent) {

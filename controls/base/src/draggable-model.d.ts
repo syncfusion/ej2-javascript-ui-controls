@@ -30,7 +30,7 @@ export interface DraggableModel {
 
     /**
      * If `clone` set to true, drag operations are performed in duplicate element of the draggable element. 
-     * @default true
+
      */
     clone?: boolean;
 
@@ -38,6 +38,11 @@ export interface DraggableModel {
      * Defines the parent  element in which draggable element movement will be restricted.
      */
     dragArea?: HTMLElement | string;
+
+    /**
+     * Defines the dragArea is scrollable or not.
+     */
+    isDragScroll?: boolean;
 
     /**
      * Specifies the callback function for drag event.
@@ -59,7 +64,7 @@ export interface DraggableModel {
 
     /**
      * Defines the minimum distance draggable element to be moved to trigger the drag operation.
-     * @default 1
+
      */
     distance?: number;
 
@@ -136,7 +141,7 @@ export interface DraggableModel {
 
     /**
      * Specifies the time delay for tap hold.
-     * @default 750
+
      *  @private
      */
     tapHoldThreshold?: number;

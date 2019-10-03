@@ -1,4 +1,4 @@
-import { selectAll, select, createElement, Base, EmitType } from '@syncfusion/ej2-base';
+import { selectAll, select, createElement, Base, EmitType, detach } from '@syncfusion/ej2-base';
 import { extend, isNullOrUndefined, IKeyValue, EventHandler } from '@syncfusion/ej2-base';
 import { Property, NotifyPropertyChanges, INotifyPropertyChanged, Event, onIntlChange } from '@syncfusion/ej2-base';
 import { Internationalization, L10n } from '@syncfusion/ej2-base';
@@ -266,7 +266,7 @@ export class FormValidator extends Base<HTMLFormElement> implements INotifyPrope
         this.rules = {};
         let elements: HTMLElement[] = selectAll('.' + this.errorClass + ', .' + this.validClass, this.element);
         for (let element of elements) {
-            element.remove();
+            detach(element);
         }
         super.destroy();
         onIntlChange.off('notifyExternalChange', this.afterLocalization);

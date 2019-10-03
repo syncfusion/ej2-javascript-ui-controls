@@ -8,7 +8,7 @@ import { getExpandStatus, isFilterChildHierarchy } from '../utils';
 
 /**
  * The `Page` module is used to render pager and handle paging action.
- * @hidden
+
  */
 export class Page {
     private parent: TreeGrid;
@@ -18,14 +18,14 @@ export class Page {
         this.addEventListener();
     }
     /**
-     * @hidden
+
      */
     public addEventListener(): void {
         this.parent.on(events.localPagedExpandCollapse, this.collapseExpandPagedchilds, this);
         this.parent.on(events.pagingActions, this.pageAction, this);
       }
       /**
-       * @hidden
+
        */
       public removeEventListener(): void {
         if (this.parent.isDestroyed) { return; }
@@ -51,7 +51,7 @@ export class Page {
     /**
      * To destroy the pager 
      * @return {void}
-     * @hidden
+
      */
     public destroy(): void {
         this.removeEventListener();
@@ -75,7 +75,7 @@ export class Page {
         this.parent.grid.pagerModule.updateExternalMessage(message);
     }
     /**
-     * @hidden
+
      */
     private collapseExpandPagedchilds(rowDetails: { action: string, row: HTMLTableRowElement,
              record: ITreeData, args: RowCollapsedEventArgs }): void {

@@ -7,7 +7,7 @@ export interface SelectorModel {
 
     /**
      * Defines the size and position of the container
-     * @default null
+
      */
     wrapper?: Container;
 
@@ -19,39 +19,39 @@ export interface SelectorModel {
 
     /**
      * Sets/Gets the width of the container
-     * @aspDefaultValueIgnore
-     * @default undefined
+
+
      */
     width?: number;
 
     /**
      * Sets/Gets the height of the container
-     * @aspDefaultValueIgnore
-     * @default undefined
+
+
      */
     height?: number;
 
     /**
      * Sets the rotate angle of the container
-     * @default 0
+
      */
     rotateAngle?: number;
 
     /**
      * Sets the positionX of the container
-     * @default 0
+
      */
     offsetX?: number;
 
     /**
      * Sets the positionY of the container
-     * @default 0
+
      */
     offsetY?: number;
 
     /**
      * Sets the pivot of the selector
-     * @default { x: 0.5, y: 0.5 }
+
      */
     pivot?: PointModel;
 

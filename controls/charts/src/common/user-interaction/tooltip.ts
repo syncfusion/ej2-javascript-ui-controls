@@ -231,7 +231,7 @@ export class BaseTooltip extends ChartData {
     }
 
     /*
-    * @hidden
+
     */
     public removeHighlightedMarker(data: PointData[]): void {
         if (this.chart.markerRender) {

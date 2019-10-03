@@ -41,7 +41,7 @@ export class BookmarkView {
     public createRequestForBookmarks(): void {
         let proxy: BookmarkView = this;
         // tslint:disable-next-line:max-line-length
-        let jsonObject: object = { hashId: this.pdfViewerBase.hashId, action: 'Bookmarks', elementId: this.pdfViewer.element.id };
+        let jsonObject: object = { hashId: this.pdfViewerBase.hashId, action: 'Bookmarks', elementId: this.pdfViewer.element.id, uniqueId: this.pdfViewerBase.documentId };
         if (this.pdfViewerBase.jsonDocumentId) {
             // tslint:disable-next-line
             (jsonObject as any).documentId = this.pdfViewerBase.jsonDocumentId;
@@ -66,7 +66,7 @@ export class BookmarkView {
                         data = null;
                     }
                 }
-                if (data) {
+                if (data && data.uniqueId === proxy.pdfViewerBase.documentId) {
                     proxy.bookmarks = { bookMark: data.Bookmarks };
                     proxy.bookmarksDestination = { bookMarkDestination: data.BookmarksDestination };
                 }

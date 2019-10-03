@@ -6,7 +6,7 @@ import { isEditable, getComplexFieldID, getObject } from '../base/util';
 
 /**
  * `NumericEditCell` is used to handle numeric cell type editing.
- * @hidden
+
  */
 export class NumericEditCell implements IEditCell {
 

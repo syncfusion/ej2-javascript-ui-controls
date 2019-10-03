@@ -5,7 +5,7 @@ import { RowModelGenerator } from '../services/row-model-generator';
 
 /**
  * FreezeRowModelGenerator is used to generate grid data rows with freeze row and column.
- * @hidden
+
  */
 export class FreezeRowModelGenerator implements IModelGenerator<Column> {
 

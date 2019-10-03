@@ -28,7 +28,7 @@ export class ContextMenu {
     public menuItemData: object;
     /**
      * Constructor for the ContextMenu module
-     * @hidden
+
      */
     constructor(parent?: IFileManager) {
         this.parent = parent;
@@ -208,7 +208,7 @@ export class ContextMenu {
     }
 
     /* istanbul ignore next */
-    /** @hidden */
+
     public getTargetView(target: Element): string {
         return target.classList.contains(CLS.TREE_VIEW) ?
             'TreeView' : target.classList.contains(CLS.GRID_VIEW) ?

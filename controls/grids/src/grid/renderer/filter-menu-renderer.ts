@@ -18,7 +18,7 @@ import * as events from '../base/constant';
 
 /**
  * `filter menu` render boolean column.
- * @hidden
+
  */
 export class FilterMenuRenderer {
     private parent: IGrid;

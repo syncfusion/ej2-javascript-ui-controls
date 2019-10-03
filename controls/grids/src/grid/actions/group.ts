@@ -98,7 +98,7 @@ export class Group implements IAction {
 
     /**
      * Constructor for Grid group module
-     * @hidden
+
      */
     constructor(parent?: IGrid, groupSettings?: GroupSettingsModel, sortedColumns?: string[], serviceLocator?: ServiceLocator) {
         this.parent = parent;
@@ -146,7 +146,7 @@ export class Group implements IAction {
     }
 
     /**
-     * @hidden
+
      */
     public addEventListener(): void {
         if (this.parent.isDestroyed) { return; }
@@ -167,7 +167,7 @@ export class Group implements IAction {
         this.parent.on(events.groupAggregates, this.onGroupAggregates, this);
     }
     /**
-     * @hidden
+
      */
     public removeEventListener(): void {
         if (this.parent.isDestroyed) { return; }
@@ -404,7 +404,7 @@ export class Group implements IAction {
     /**
      * The function is used to render grouping
      * @return {Element} 
-     * @hidden
+
      */
     public render(): void {
         this.l10n = this.serviceLocator.getService<L10n>('localization');
@@ -531,7 +531,7 @@ export class Group implements IAction {
     /**
      * The function used to update groupSettings 
      * @return {void}
-     * @hidden
+
      */
     public updateModel(): void {
         let gObj: IGrid = this.parent;
@@ -546,7 +546,7 @@ export class Group implements IAction {
     /**
      * The function used to trigger onActionComplete
      * @return {void}
-     * @hidden
+
      */
     public onActionComplete(e: NotifyArgs): void {
         let gObj: IGrid = this.parent;
@@ -746,7 +746,7 @@ export class Group implements IAction {
     /**
      * To destroy the reorder 
      * @return {void}
-     * @hidden
+
      */
     public destroy(): void {
         let gridElement: Element = this.parent.element;

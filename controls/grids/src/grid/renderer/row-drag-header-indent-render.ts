@@ -6,7 +6,7 @@ import { Column } from '../models/column';
 
 /**
  * DetailHeaderIndentCellRenderer class which responsible for building detail header indent cell. 
- * @hidden
+
  */
 export class RowDragDropHeaderRenderer extends CellRenderer implements ICellRenderer<Column> {
 

@@ -301,6 +301,7 @@ export interface ColorMappingSettingsModel {
      * To configure from
      * @aspDefaultValueIgnore
      * @default null
+     * @isBlazorNullableType true
      */
     from?: number;
 
@@ -308,6 +309,7 @@ export interface ColorMappingSettingsModel {
      * To configure to
      * @aspDefaultValueIgnore
      * @default null
+     * @isBlazorNullableType true
      */
     to?: number;
 

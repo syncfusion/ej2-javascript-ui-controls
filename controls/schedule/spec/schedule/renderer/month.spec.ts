@@ -403,6 +403,27 @@ describe('Schedule Month view', () => {
             expect(eventName).toEqual('select');
         });
 
+        it('validate start and end time on multi cell select', () => {
+            let eventName: string;
+            let model: ScheduleModel = {
+                select: (args: SelectEventArgs) => eventName = args.name,
+                currentView: 'Month', selectedDate: new Date(2017, 9, 5)
+            };
+            schObj = util.createSchedule(model, []);
+            let workCells: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-work-cells'));
+            expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(0);
+            util.triggerMouseEvent(workCells[3], 'mousedown');
+            util.triggerMouseEvent(workCells[5], 'mousemove');
+            util.triggerMouseEvent(workCells[5], 'mouseup');
+            let focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
+            expect(focuesdEle.classList).toContain('e-selected-cell');
+            expect(focuesdEle.getAttribute('aria-selected')).toEqual('true');
+            expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(3);
+            expect(schObj.activeCellsData.startTime).toEqual(new Date(2017, 9, 4, 0, 0, 0));
+            expect(schObj.activeCellsData.endTime).toEqual(new Date(2017, 9, 7, 0, 0, 0));
+            expect(eventName).toEqual('select');
+        });
+
         it('cell click', () => {
             let cellStartTime: number;
             let cellEndTime: number;
@@ -1337,21 +1358,21 @@ describe('Schedule Month view', () => {
             afterAll(() => {
                 util.destroy(schObj);
             });
-            it('Week number testing for when firstdayofWeek set to Sunday', ()  => {
+            it('Week number testing for when firstdayofWeek set to Sunday', () => {
                 schObj.firstDayOfWeek = 0;
                 expect(schObj.element.querySelectorAll('.e-week-number')[1].innerHTML).toBe('45');
             });
-            it('Week number testing for when firstdayofWeek set to Monday', ()  => {
+            it('Week number testing for when firstdayofWeek set to Monday', () => {
                 schObj.firstDayOfWeek = 1;
                 schObj.dataBind();
                 expect(schObj.element.querySelectorAll('.e-week-number')[1].innerHTML).toBe('46');
             });
-            it('Week number testing for when firstdayofWeek set to saturday', ()  => {
+            it('Week number testing for when firstdayofWeek set to saturday', () => {
                 schObj.firstDayOfWeek = 6;
                 schObj.dataBind();
                 expect(schObj.element.querySelectorAll('.e-week-number')[1].innerHTML).toBe('45');
             });
-        });    
+        });
     });
 
     describe('More indicator event rendering based on the provided template', () => {
@@ -1405,16 +1426,16 @@ describe('Schedule Month view', () => {
         afterAll(() => {
             util.destroy(schObj);
         });
-        it('Week number testing for when firstdayofWeek set to Sunday', ()  => {
+        it('Week number testing for when firstdayofWeek set to Sunday', () => {
             schObj.firstDayOfWeek = 0;
             expect(schObj.element.querySelectorAll('.e-week-number')[1].innerHTML).toBe('45');
         });
-        it('Week number testing for when firstdayofWeek set to Monday', ()  => {
+        it('Week number testing for when firstdayofWeek set to Monday', () => {
             schObj.firstDayOfWeek = 1;
             schObj.dataBind();
             expect(schObj.element.querySelectorAll('.e-week-number')[1].innerHTML).toBe('46');
         });
-        it('Week number testing for when firstdayofWeek set to saturday', ()  => {
+        it('Week number testing for when firstdayofWeek set to saturday', () => {
             schObj.firstDayOfWeek = 6;
             schObj.dataBind();
             expect(schObj.element.querySelectorAll('.e-week-number')[1].innerHTML).toBe('45');

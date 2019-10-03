@@ -348,7 +348,7 @@ export abstract class LayoutViewer {
 
     /**
      * @private
-     * @default false
+
      */
     public isScrollToSpellCheck: boolean;
 
@@ -1117,7 +1117,7 @@ export abstract class LayoutViewer {
         }
         this.isScrollHandler = false;
         this.scrollTimer = setTimeout(() => {
-            if (!this.isScrollHandler && this.owner.enableSpellCheck) {
+            if (!this.isScrollHandler && !isNullOrUndefined(this.owner) && this.owner.enableSpellCheck) {
                 this.isScrollToSpellCheck = true;
                 this.updateScrollBars();
             }
@@ -2367,7 +2367,21 @@ export abstract class LayoutViewer {
             }
             switch (fieldCategory) {
                 case 'page':
-                    return this.getFieldText(fieldPattern, (page.index + 1));
+                    if (page.bodyWidgets[0].sectionFormat.restartPageNumbering && page.sectionIndex !== 0) {
+                        let currentSectionIndex: number = page.sectionIndex;
+                        let previousPage: Page = page.previousPage;
+                        if (currentSectionIndex !== previousPage.sectionIndex) {
+                            page.currentPageNum = (page.bodyWidgets[0].sectionFormat.pageStartingNumber);
+                            return this.getFieldText(fieldPattern, page.currentPageNum);
+                        }
+                        if (previousPage.currentPageNum === 0) {
+                            previousPage.currentPageNum = (page.bodyWidgets[0].sectionFormat.pageStartingNumber);
+                        }
+                        page.currentPageNum = previousPage.currentPageNum + 1;
+                        return this.getFieldText(fieldPattern, page.currentPageNum);
+                    }
+                    page.currentPageNum = page.index + 1;
+                    return this.getFieldText(fieldPattern, page.currentPageNum);
                 case 'numpages':
                     return this.getFieldText(fieldPattern, page.viewer.pages.length);
                 default:

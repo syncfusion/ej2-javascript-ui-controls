@@ -19,7 +19,7 @@ export class Data extends ChildProperty<Data> {
 
     /**
      * Specifies the provided datasource is an JSON data. 
-     * @default false
+
      */
 
     @Property(false)
@@ -27,14 +27,14 @@ export class Data extends ChildProperty<Data> {
 
     /**
      * specifies Adaptor type
-     * @default None
+
      */
     @Property('None')
     public adaptorType: AdaptorType;
 
     /**
      * Specifies xAxis mapping. 
-     * @default ''
+
      */
 
     @Property('')
@@ -42,7 +42,7 @@ export class Data extends ChildProperty<Data> {
 
     /**
      * Specifies yAxis mapping. 
-     * @default ''
+
      */
 
     @Property('')
@@ -50,7 +50,7 @@ export class Data extends ChildProperty<Data> {
 
     /**
      * Specifies value mapping. 
-     * @default ''
+
      */
 
     @Property('')

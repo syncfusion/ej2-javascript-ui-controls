@@ -1,6 +1,6 @@
 import { Spreadsheet } from '../index';
 import { Selection, Edit, KeyboardNavigation, KeyboardShortcut, Clipboard, CellFormat } from '../actions/index';
-import { Ribbon, FormulaBar, SheetTabs, Open, ContextMenu, Save, NumberFormat, Formula } from '../integrations/index';
+import { Ribbon, FormulaBar, SheetTabs, Open, ContextMenu, Save, NumberFormat, Formula, Sort } from '../integrations/index';
 import { DataBind } from '../../workbook/index';
 
 /**
@@ -15,7 +15,7 @@ export class BasicModule {
     constructor() {
         Spreadsheet.Inject(
             Ribbon, FormulaBar, SheetTabs, Selection, Edit, KeyboardNavigation, KeyboardShortcut, Clipboard, DataBind, Open,
-            ContextMenu, Save, NumberFormat, CellFormat, Formula);
+            ContextMenu, Save, NumberFormat, CellFormat, Formula, Sort);
     }
 
     /**

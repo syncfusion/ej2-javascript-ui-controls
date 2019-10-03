@@ -20,19 +20,19 @@ import { OlapEngine, ITupInfo } from '../../base/olap/engine';
 /**
  * Module to render PivotGrid control
  */
-/** @hidden */
+
 export class Render {
-    /** @hidden */
+
     public parent: PivotView;
-    /** @hidden */
+
     public engine: PivotEngine | OlapEngine;
-    /** @hidden */
+
     public gridSettings: GridSettingsModel;
-    /** @hidden */
+
     public rowStartPos: number;
-    /** @hidden */
+
     public maxIndent: number;
-    /** @hidden */
+
     public indentCollection: { [key: number]: number } = {};
     private formatList: { [key: string]: string };
     private colPos: number = 0;
@@ -63,7 +63,7 @@ export class Render {
         this.aggMenu = new AggregateMenu(this.parent);
     }
 
-    /** @hidden */
+
     /* tslint:disable */
     public render(): void {
         let parent: PivotView = this.parent;
@@ -138,7 +138,7 @@ export class Render {
             mHdr.scrollLeft = mCont.scrollLeft;
         }
     }
-    /** @hidden */
+
     public bindGrid(parent: PivotView, isEmpty: boolean): void {
         this.injectGridModules(parent);
         this.parent.grid = new Grid({
@@ -595,7 +595,7 @@ export class Render {
         }
     }
 
-    /** @hidden */
+
     public updateGridSettings(): void {
         this.injectGridModules(this.parent);
         this.parent.grid.allowResizing = this.gridSettings.allowResizing;
@@ -713,7 +713,7 @@ export class Render {
     }
 
     /* tslint:disable */
-    /** @hidden */
+
     public selected(): void {
         clearTimeout(this.timeOutObj);
         this.timeOutObj = setTimeout(this.onSelect.bind(this), 300);
@@ -889,22 +889,17 @@ export class Render {
                 if (cell.memberType === 3 && rowMeasurePos === fieldSep.length) {
                     fieldSep.push(cell.actualText.toString());
                 }
-                let nxtIndextCount: number = rowMeasurePos > 0 ? -2 : -1;
-                let lastIndextCount: number = rowMeasurePos === 0 ? -1 : 0;
-                let firstMemberAvailChild: boolean;
+                let nxtIndextCount: number = -1;
+                let lastIndextCount: number = 0;
+                let prevHasChild: boolean = false;
                 for (let fPos: number = 0; fPos < fieldSep.length; fPos++) {
                     let fieldMembers: string = fieldSep[fPos];
                     let membersCount: number = fieldMembers.split('~~').length;
-                    nxtIndextCount += membersCount + ((rowMeasurePos > fPos && (rowMeasurePos === 1 ? true : fPos > 0))
-                        ? membersCount : 0);
+                    nxtIndextCount += membersCount;
                     let hasChild: boolean = Number(tupInfo.members[fPos].querySelector('CHILDREN_CARDINALITY').textContent) > 0;
-                    firstMemberAvailChild = (!firstMemberAvailChild && fPos === 0 && rowMeasurePos !== 0) ? hasChild :
-                        firstMemberAvailChild;
-                    lastIndextCount += !hasChild ? 1 : 0;
+                    lastIndextCount += (fPos > 0 && prevHasChild && !hasChild) ? 1 : 0;
+                    prevHasChild = hasChild;
                 }
-                lastIndextCount -= firstMemberAvailChild ? 1 : 0;
-                nxtIndextCount = (nxtIndextCount === 1 && rowMeasurePos === fieldSep.length && fieldSep.length === 1) ?
-                    0 : nxtIndextCount;
                 let indent: number = 0;
                 for (let iPos: number = 0; iPos < nxtIndextCount; iPos++) {
                     tCell.appendChild(createElement('span', {
@@ -1091,7 +1086,6 @@ export class Render {
     }
     private onOlapColumnCellBoundEvent(tCell: HTMLElement, cell: IAxisSet): HTMLElement {
         tCell.setAttribute('fieldname', cell.memberType === 3 ? cell.actualText.toString() : cell.hierarchy);
-        //if (cell.memberType === 3 || cell.type === 'grand sum') {
         let prevCell: IAxisSet = this.engine.headerContent[cell.rowIndex] ?
             this.engine.headerContent[cell.rowIndex][cell.colIndex - 1] : undefined;
         if (prevCell && prevCell.actualText === cell.actualText && prevCell.type === cell.type &&
@@ -1101,8 +1095,25 @@ export class Render {
             tCell.setAttribute('colspan', cell.colSpan.toString());
             tCell.setAttribute('aria-colspan', cell.colSpan.toString());
         }
-        //}
+        if (cell.rowIndex === (this.engine.headerContent.length - 1) && cell.memberType === 2) {
+            tCell.style.display = this.isSpannedCell(this.engine.headerContent.length, cell) ? 'none' : tCell.style.display;
+        }
         return tCell;
+    }
+    private isSpannedCell(colLength: number, currCell: IAxisSet): boolean {
+        let prevCell: IAxisSet = this.engine.headerContent[currCell.rowIndex - 1] ?
+            this.engine.headerContent[currCell.rowIndex - 1][currCell.colIndex] : undefined;
+        let parentCellSpan: number;
+        let parentCellPos: number;
+        while (prevCell && ((prevCell.memberType === currCell.memberType) || (prevCell.type && currCell.type))) {
+            if (prevCell.rowSpan > 0) {
+                parentCellSpan = prevCell.rowSpan;
+                parentCellPos = prevCell.rowIndex;
+            }
+            prevCell = this.engine.headerContent[prevCell.rowIndex - 1] ?
+                this.engine.headerContent[prevCell.rowIndex - 1][currCell.colIndex] : undefined;
+        }
+        return (parentCellPos + parentCellSpan) >= colLength;
     }
 
     private onHyperCellClick(e: MouseEvent): void {
@@ -1164,7 +1175,7 @@ export class Render {
         return dataContent;
     }
 
-    /** @hidden */
+
     /* tslint:disable-next-line */
     public frameEmptyData(): any[] {
         /* tslint:disable-next-line */
@@ -1213,7 +1224,7 @@ export class Render {
         return parWidth;
     }
 
-    /** @hidden */
+
     public calculateGridHeight(elementCreated?: boolean): number | string {
         let gridHeight: number | string = this.parent.height;
         let parHeight: number = this.parent.getHeightAsNumber();
@@ -1358,13 +1369,13 @@ export class Render {
         return integrateModel;
     }
 
-    /** @hidden */
+
     public setSavedWidth(column: string, width: number): number {
         width = this.parent.resizeInfo[column] ? this.parent.resizeInfo[column] : width;
         return width;
     }
 
-    /** @hidden */
+
     public frameEmptyColumns(): ColumnModel[] {
         let columns: ColumnModel[] = [];
         let colWidth: number = this.calculateColWidth(2);
@@ -1374,7 +1385,7 @@ export class Render {
         return columns;
     }
 
-    /** @hidden */
+
     public getFormatList(): { [key: string]: string } {
         let formatArray: { [key: string]: string } = {};
         for (let vCnt: number = 0; vCnt < this.parent.dataSourceSettings.values.length; vCnt++) {

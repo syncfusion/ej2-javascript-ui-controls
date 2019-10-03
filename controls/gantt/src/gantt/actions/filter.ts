@@ -18,8 +18,7 @@ export class Filter {
     constructor(gantt: Gantt) {
         this.parent = gantt;
         TreeGrid.Inject(TreeGridFilter);
-        this.parent.treeGrid.allowFiltering = this.parent.allowFiltering ||
-            (this.parent.toolbar.indexOf('Search') !== -1 ? true : false);
+        this.parent.treeGrid.allowFiltering = this.parent.allowFiltering;
         this.updateCustomFilters();
         this.parent.treeGrid.filterSettings = getActualProperties(this.parent.filterSettings) as TreeFilterSettingsModel;
         this.addEventListener();

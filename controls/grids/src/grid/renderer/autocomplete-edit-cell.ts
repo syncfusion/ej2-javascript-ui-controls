@@ -7,7 +7,7 @@ import { isEditable, getComplexFieldID, getObject } from '../base/util';
 
 /**
  * `AutoCompleteEditCell` is used to handle autocomplete cell type editing.
- * @hidden
+
  */
 export class AutoCompleteEditCell implements IEditCell {
 

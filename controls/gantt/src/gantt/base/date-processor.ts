@@ -1,5 +1,5 @@
 import { isNullOrUndefined, getValue, setValue } from '@syncfusion/ej2-base';
-import { IGanttData, IWorkingTimeRange, ITaskData } from './interface';
+import { IGanttData, IWorkingTimeRange, ITaskData, IIndicator } from './interface';
 import { HolidayModel, DayWorkingTimeModel, EventMarkerModel } from '../models/models';
 import { Gantt } from './gantt';
 /**
@@ -244,7 +244,8 @@ export class DateProcessor {
     public calculateDuration(ganttData: IGanttData): void {
         let ganttProperties: ITaskData = ganttData.ganttProperties;
         let tDuration: number = this.getDuration(
-            ganttProperties.startDate, ganttProperties.endDate, ganttProperties.durationUnit, ganttProperties.isAutoSchedule);
+            ganttProperties.startDate, ganttProperties.endDate, ganttProperties.durationUnit,
+            ganttProperties.isAutoSchedule, ganttProperties.isMilestone);
         this.parent.setRecordValue('duration', tDuration, ganttProperties, true);
         if (this.parent.taskFields.duration) {
             this.parent.dataOperation.updateMappingData(ganttData, 'duration');
@@ -283,7 +284,8 @@ export class DateProcessor {
      * @private
      */
     public getDuration(
-        startDate: Date, endDate: Date, durationUnit: string, isAutoSchedule: boolean, isCheckTimeZone?: boolean): number {
+        startDate: Date, endDate: Date, durationUnit: string, isAutoSchedule: boolean,
+        isMilestone: boolean, isCheckTimeZone?: boolean): number {
         if (isNullOrUndefined(startDate) || isNullOrUndefined(endDate)) {
             return null;
         }
@@ -292,12 +294,16 @@ export class DateProcessor {
         let timeDiff: number = this.getTimeDifference(startDate, endDate, isCheckTimeZone) / 1000;
         let nonWorkHours: number = this.getNonworkingTime(startDate, endDate, isAutoSchedule, isCheckTimeZone);
         let durationHours: number = timeDiff - nonWorkHours;
-        if (!durationUnit || durationUnit === 'day') {
-            durationValue = durationHours / this.parent.secondsPerDay;
-        } else if (durationUnit === 'minute') {
-            durationValue = durationHours / 60;
+        if (isMilestone && this.parent.getFormatedDate(startDate) === this.parent.getFormatedDate(endDate)) {
+            durationValue = 0;
         } else {
-            durationValue = durationHours / 3600;
+            if (!durationUnit || durationUnit === 'day') {
+                durationValue = durationHours / this.parent.secondsPerDay;
+            } else if (durationUnit === 'minute') {
+                durationValue = durationHours / 60;
+            } else {
+                durationValue = durationHours / 3600;
+            }
         }
         return parseFloat(durationValue.toString());
     }
@@ -386,7 +392,13 @@ export class DateProcessor {
             this.parent.cloneProjectStartDate = this.checkStartDate(cloneStartDate);
         } else if (!isNullOrUndefined(isLoad)) {
             let flatData: IGanttData[] = this.parent.flatData;
-            let minStartDate: Date = flatData[0].ganttProperties.startDate;
+            let minStartDate: Date;
+            if (flatData.length > 0) {
+                minStartDate = flatData[0].ganttProperties.startDate;
+            } else {
+                minStartDate = new Date();
+                minStartDate.setHours(0, 0, 0, 0);
+            }
             for (let index: number = 1; index < flatData.length; index++) {
                 let startDate: Date = flatData[index].ganttProperties.startDate;
                 if (!isNullOrUndefined(startDate) && this.compareDates(startDate, minStartDate) === -1) {
@@ -906,61 +918,65 @@ export class DateProcessor {
             ? this.getDateFromFormat(this.parent.cloneProjectEndDate) : this.getDateFromFormat(this.parent.projectEndDate);
         let minStartDate: Date = null; let maxEndDate: Date = null;
         let flatData: IGanttData[] = this.parent.flatData;
+        let taskRange: Date[] = [];
+        let addDateToList: Function = (date: Date): void => {
+            if (!isNullOrUndefined(date)) {
+                taskRange.push(date);
+            }
+        };
+        let sortDates: Function = (dates: Date[]): void => {
+            if (dates.length > 0) {
+                dates.sort((a: Date, b: Date) => {
+                    return a.getTime() - b.getTime();
+                });
+                minStartDate = new Date(dates[0].getTime());
+                maxEndDate = dates.length > 1 ? new Date(dates[dates.length - 1].getTime()) : null;
+            }
+        };
         if (((!projectStartDate || !projectEndDate) && flatData.length > 0) || editArgs || this.parent.timelineModule.isZoomToFit) {
             flatData.forEach((data: IGanttData, index: number) => {
+                taskRange = [];
                 let task: ITaskData = data.ganttProperties;
                 let tempStartDate: Date = this.getValidStartDate(task);
                 let tempEndDate: Date = this.getValidEndDate(task);
-                let baselineStartDate: Date = this.parent.timelineModule.isZoomToFit ? null
-                : task.baselineStartDate ? new Date(task.baselineStartDate.getTime()) : null;
-                let baselineEndDate: Date = this.parent.timelineModule.isZoomToFit ? null
-                : task.baselineEndDate ? new Date(task.baselineEndDate.getTime()) : null;
-                if (minStartDate) {
-                    if (tempStartDate && this.compareDates(minStartDate, tempStartDate) === 1) {
-                        minStartDate = tempStartDate;
-                    }
-                    if (baselineStartDate && this.parent.renderBaseline && this.compareDates(minStartDate, baselineStartDate) === 1) {
-                        minStartDate = baselineStartDate;
-                    } else if (baselineEndDate && this.parent.renderBaseline && this.compareDates(minStartDate, baselineEndDate) === 1) {
-                        minStartDate = baselineEndDate;
-                    }
-                } else {
-                    if (baselineStartDate && this.parent.renderBaseline && this.compareDates(tempStartDate, baselineStartDate) === 1) {
-                        minStartDate = baselineStartDate;
-                    } else if (baselineEndDate && this.parent.renderBaseline && this.compareDates(tempStartDate, baselineEndDate) === 1) {
-                        minStartDate = baselineEndDate;
-                    } else {
-                        minStartDate = tempStartDate;
-                    }
-
+                addDateToList(minStartDate);
+                addDateToList(maxEndDate);
+                addDateToList(tempStartDate);
+                addDateToList(tempEndDate);
+                if (this.parent.renderBaseline) {
+                    addDateToList(task.baselineStartDate);
+                    addDateToList(task.baselineEndDate);
                 }
-                if (maxEndDate) {
-                    if (tempEndDate && this.compareDates(maxEndDate, tempEndDate) === -1) {
-                        maxEndDate = tempEndDate;
-                    }
-                    if (baselineEndDate && this.parent.renderBaseline && this.compareDates(maxEndDate, baselineEndDate) === -1) {
-                        maxEndDate = baselineEndDate;
-                    } else if (baselineEndDate && this.parent.renderBaseline && this.compareDates(maxEndDate, baselineStartDate) === -1) {
-                        maxEndDate = baselineStartDate;
-                    }
-                } else {
-                    if (baselineEndDate && this.parent.renderBaseline && this.compareDates(tempEndDate, baselineEndDate) === -1) {
-                        maxEndDate = baselineStartDate;
-                    } else if (baselineEndDate && this.parent.renderBaseline && this.compareDates(tempEndDate, baselineStartDate) === -1) {
-                        maxEndDate = baselineEndDate;
-                    } else {
-                        maxEndDate = tempEndDate;
-                    }
+                if (task.indicators && task.indicators.length > 0) {
+                    task.indicators.forEach((item: IIndicator, index: number) => {
+                        addDateToList(this.getDateFromFormat(item.date));
+                    });
                 }
+                sortDates(taskRange);
             });
+            taskRange = [];
+            addDateToList(minStartDate);
+            addDateToList(maxEndDate);
+            //update schedule dates as per holiday and strip line collection
+            if (this.parent.eventMarkers.length > 0) {
+                let eventMarkers: EventMarkerModel[] = this.parent.eventMarkers;
+                eventMarkers.forEach((marker: EventMarkerModel, index: number) => {
+                    addDateToList(this.getDateFromFormat(marker.day));
+                });
+            }
+            if (this.parent.totalHolidayDates.length > 0) {
+                let holidays: number[] = this.parent.totalHolidayDates;
+                holidays.forEach((holiday: number, index: number) => {
+                    addDateToList(new Date(holiday));
+                });
+            }
+            sortDates(taskRange);
+
             if (!minStartDate || !maxEndDate) {
-                minStartDate = this.getDateFromFormat(new Date());
+                minStartDate = isNullOrUndefined(minStartDate) ? this.getDateFromFormat(new Date()) : minStartDate;
                 maxEndDate = this.getDateFromFormat(new Date(minStartDate.getTime()));
                 maxEndDate.setDate(maxEndDate.getDate() + 20);
             }
-            //update schedule dates as per holiday and strip line collection         
-            this.updateProjectDatesByEventMarker(minStartDate, maxEndDate);
-            this.updateProjectDatesByHolidays(minStartDate, maxEndDate);
         } else if ((!projectStartDate || !projectEndDate) && flatData.length === 0) {
             minStartDate = this.getDateFromFormat(new Date());
             maxEndDate = this.getDateFromFormat(new Date(minStartDate.getTime()));
@@ -972,41 +988,6 @@ export class DateProcessor {
         } else {
             setValue('minStartDate', minStartDate, editArgs);
             setValue('maxEndDate', maxEndDate, editArgs);
-        }
-    }
-    /**
-     * 
-     * @param startDate 
-     * @param endDate 
-     */
-    private updateProjectDatesByEventMarker(startDate: Date, endDate: Date): void {
-        let eventMarker: EventMarkerModel[] = this.parent.eventMarkers;
-        if (eventMarker && eventMarker.length > 0) {
-            for (let index: number = 0; index < eventMarker.length; index++) {
-                let day: Date = this.getDateFromFormat(eventMarker[index].day);
-                if (!(day.getTime() > startDate.getTime()) || !(day.getTime() < endDate.getTime())) {
-                    if (day.getTime() < startDate.getTime()) {
-                        startDate = new Date(day.getTime());
-                    } else {
-                        endDate = new Date(day.getTime());
-                    }
-                }
-            }
-        }
-    }
-    private updateProjectDatesByHolidays(startDate: Date, endDate: Date): void {
-        let holidayList: number[] = this.parent.totalHolidayDates;
-        if (holidayList && holidayList.length > 0) {
-            for (let i: number = 0; i < holidayList.length; i++) {
-                let holiday: Date = this.getDateFromFormat(new Date(holidayList[i]));
-                if (!(holiday.getTime() > startDate.getTime()) || !(holiday.getTime() < endDate.getTime())) {
-                    if (holiday.getTime() < startDate.getTime()) {
-                        startDate = new Date(holiday.getTime());
-                    } else {
-                        endDate = new Date(holiday.getTime());
-                    }
-                }
-            }
         }
     }
 }

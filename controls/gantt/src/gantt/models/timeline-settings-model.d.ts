@@ -86,11 +86,13 @@ export interface TimelineSettingsModel {
 
     /**
      * Enables or disables tooltip for timeline cells.
+     * @default true
      */
     showTooltip?: boolean;
 
     /**
      * Enables or disables timeline auto update on editing action.
+     * @default true
      */
     updateTimescaleView?: boolean;
 

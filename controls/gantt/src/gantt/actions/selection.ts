@@ -2,7 +2,7 @@ import { Gantt } from '../base/gantt';
 import { RowSelectEventArgs, RowSelectingEventArgs, RowDeselectEventArgs, parentsUntil, getActualProperties } from '@syncfusion/ej2-grids';
 import { CellDeselectEventArgs, ISelectedCell, setCssInGridPopUp, Grid } from '@syncfusion/ej2-grids';
 import { CellSelectingEventArgs, CellSelectEventArgs, IIndex } from '@syncfusion/ej2-grids';
-import { isNullOrUndefined, removeClass, getValue, addClass, closest, setValue, Browser, extend, isBlazor } from '@syncfusion/ej2-base';
+import { isNullOrUndefined, removeClass, getValue, addClass, closest, setValue, extend, isBlazor } from '@syncfusion/ej2-base';
 import { IGanttData } from '../base/interface';
 import { Deferred } from '@syncfusion/ej2-data';
 import { TaskbarEdit } from './taskbar-edit';
@@ -77,6 +77,10 @@ export class Selection {
         this.parent.treeGrid.cellDeselected = this.cellDeselected.bind(this);
     }
     private rowSelecting(args: RowSelectingEventArgs): void {
+        if (!this.parent.isGanttChartRendered) {
+            args.cancel = true;
+            return;
+        }
         args.isCtrlPressed = this.isMultiCtrlRequest;
         args.isShiftPressed = this.isMultiShiftRequest;
         args.target = this.actualTarget as Element;
@@ -88,7 +92,7 @@ export class Selection {
     private rowSelected(args: RowSelectEventArgs): void {
         let rowIndexes: string = 'rowIndexes';
         let index: number[] = (this.parent.selectionSettings.type === 'Multiple' && !isNullOrUndefined(args[rowIndexes])) ?
-        args[rowIndexes] : [args.rowIndex];
+            args[rowIndexes] : [args.rowIndex];
         this.addClass(index);
         this.selectedRowIndexes = extend([], this.getSelectedRowIndexes(), [], true) as number[];
         this.parent.setProperties({ selectedRowIndex: this.parent.treeGrid.selectedRowIndex }, true);
@@ -121,6 +125,10 @@ export class Selection {
         this.parent.setProperties({ selectedRowIndex: -1 }, true);
         if (!isNullOrUndefined(this.parent.toolbarModule)) {
             this.parent.toolbarModule.refreshToolbarItems();
+        }
+        if (this.parent.selectionSettings.type === 'Multiple' && this.parent.isAdaptive
+            && this.selectedRowIndexes.length === 0) {
+            this.hidePopUp();
         }
         args.target = this.actualTarget as Element;
         args.isInteracted = this.isInteracted;
@@ -273,7 +281,7 @@ export class Selection {
         this.isSelectionFromChart = fromChart;
         if (fromChart) {
             if (this.parent.selectionSettings.type === 'Single' || (!this.isMultiCtrlRequest && !this.isMultiShiftRequest)) {
-                   this.selectRow(rIndex, true);
+                this.selectRow(rIndex, true);
             } else {
                 if (this.isMultiShiftRequest) {
                     this.selectRowsByRange(isNullOrUndefined(this.prevRowIndex) ? rIndex : this.prevRowIndex, rIndex);
@@ -322,7 +330,7 @@ export class Selection {
     private removeClass(records: number | number[]): void {
         if (!this.parent.selectionSettings.persistSelection) {
             let ganttRow: HTMLCollection = document.getElementById(this.parent.element.id + 'GanttTaskTableBody').children;
-             /* tslint:disable-next-line:no-any */
+            /* tslint:disable-next-line:no-any */
             let rowIndex: any | number | number[] = isBlazor() && isNullOrUndefined((records as number[]).length) ? [records] : records;
             for (let i: number = 0; i < (rowIndex as number[]).length; i++) {
                 removeClass([ganttRow[rowIndex[i]]], 'e-active');
@@ -340,7 +348,7 @@ export class Selection {
                     (this.getSelectedRecords().length > 1 || this.getSelectedRowCellIndexes().length > 1)) ? ' e-spanclicked' : ''));
             (<HTMLElement>document.getElementsByClassName('e-gridpopup')[0]).style.display = 'none';
             this.openPopup = true;
-        } else {
+        } else if (this.selectedRowIndexes.length === 0) {
             this.hidePopUp();
         }
     }
@@ -349,6 +357,8 @@ export class Selection {
         if (this.openPopup) {
             (<HTMLElement>document.getElementsByClassName('e-ganttpopup')[0]).style.display = 'none';
             this.openPopup = false;
+        } else {
+            (<HTMLElement>document.getElementsByClassName('e-gridpopup')[0]).style.display = 'none';
         }
     }
 
@@ -374,8 +384,11 @@ export class Selection {
                     spanElement.classList.remove('e-spanclicked');
                 }
             }
-        } else {
-            this.hidePopUp();
+        } else if (this.parent.selectionSettings.type === 'Multiple' && this.parent.isAdaptive) {
+            let $tr: Element = closest(target, '.e-rowcell');
+            if ($tr && this.selectedRowIndexes.length === 0) {
+                this.hidePopUp();
+            }
         }
         if (grid) {
             setValue('enableSelectMultiTouch', this.enableSelectMultiTouch, grid.selectionModule);
@@ -407,8 +420,12 @@ export class Selection {
                 } else {
                     this.highlightSelectedRows(e, false);
                 }
-                if (this.parent.selectionSettings.type === 'Multiple' && Browser.isDevice) {
-                    this.showPopup(e);
+                if (this.parent.selectionSettings.type === 'Multiple' && this.parent.isAdaptive) {
+                    if (this.selectedRowIndexes.length > 0) {
+                        this.showPopup(e);
+                    } else {
+                        this.hidePopUp();
+                    }
                 }
             } else {
                 this.isSelectionFromChart = false;

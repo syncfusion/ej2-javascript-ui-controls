@@ -3,7 +3,7 @@ import {
     Rect, Margin, IWidget, Widget, BodyWidget, TableRowWidget, TableWidget,
     LineWidget, TextElementBox, ListTextElementBox, ImageElementBox, Page, ParagraphWidget, TableCellWidget,
     FieldElementBox, BlockWidget, HeaderFooterWidget, BlockContainer, BookmarkElementBox, ElementBox, HeaderFooters,
-    EditRangeStartElementBox, EditRangeEndElementBox
+    EditRangeStartElementBox, EditRangeEndElementBox, TabElementBox
 } from '../viewer/page';
 import {
     ElementInfo, CaretHeightInfo, IndexInfo, SizeInfo,
@@ -172,9 +172,9 @@ export class Selection {
     //Format retrieval properties
     /**
      * Gets the instance of selection character format.
-     * @default undefined
-     * @aspType SelectionCharacterFormat
-     * @blazorType SelectionCharacterFormat
+
+
+
      * @return {SelectionCharacterFormat}
      */
     public get characterFormat(): SelectionCharacterFormat {
@@ -182,9 +182,9 @@ export class Selection {
     }
     /**
      * Gets the instance of selection paragraph format.
-     * @default undefined
-     * @aspType SelectionParagraphFormat
-     * @blazorType SelectionParagraphFormat
+
+
+
      * @return {SelectionParagraphFormat}
      */
     public get paragraphFormat(): SelectionParagraphFormat {
@@ -192,9 +192,9 @@ export class Selection {
     }
     /**
      * Gets the instance of selection section format.
-     * @default undefined
-     * @aspType SelectionSectionFormat
-     * @blazorType SelectionSectionFormat
+
+
+
      * @return {SelectionSectionFormat}
      */
     public get sectionFormat(): SelectionSectionFormat {
@@ -202,9 +202,9 @@ export class Selection {
     }
     /**
      * Gets the instance of selection table format.
-     * @default undefined
-     * @aspType SelectionTableFormat
-     * @blazorType SelectionTableFormat
+
+
+
      * @return {SelectionTableFormat}
      */
     public get tableFormat(): SelectionTableFormat {
@@ -212,9 +212,9 @@ export class Selection {
     }
     /**
      * Gets the instance of selection cell format.
-     * @default undefined
-     * @aspType SelectionCellFormat
-     * @blazorType SelectionCellFormat
+
+
+
      * @return {SelectionCellFormat}
      */
     public get cellFormat(): SelectionCellFormat {
@@ -222,9 +222,9 @@ export class Selection {
     }
     /**
      * Gets the instance of selection row format.
-     * @default undefined
-     * @aspType SelectionRowFormat
-     * @blazorType SelectionRowFormat
+
+
+
      * @returns {SelectionRowFormat}
      */
     public get rowFormat(): SelectionRowFormat {
@@ -232,9 +232,9 @@ export class Selection {
     }
     /**
      * Gets the instance of selection image format.
-     * @default undefined
-     * @aspType SelectionImageFormat
-     * @blazorType SelectionImageFormat
+
+
+
      * @returns {SelectionImageFormat}
      */
     public get imageFormat(): SelectionImageFormat {
@@ -277,7 +277,7 @@ export class Selection {
 
     /**
      * Determines whether the selection direction is forward or not.
-     * @default false
+
      * @returns {boolean}
      * @private
      */
@@ -286,7 +286,7 @@ export class Selection {
     }
     /**
      * Determines whether the start and end positions are same or not.
-     * @default false
+
      * @returns {boolean}
      * @private
      */
@@ -298,9 +298,9 @@ export class Selection {
     }
     /**
      * Gets the text within selection.
-     * @default ''
-     * @aspType string
-     * @blazorType string
+
+
+
      * @returns {string}
      */
     public get text(): string {
@@ -3231,10 +3231,7 @@ export class Selection {
                             && selectionEndIndex > (element as TextElementBox).length) {
                             let charFormat: WCharacterFormat = element.line.paragraph.characterFormat;
                             let paragraphMarkWidth: number = this.viewer.textHelper.getParagraphMarkSize(charFormat).Width;
-                            if (elementIsRTL) {
-                                right += paragraphMarkWidth;
-                                // Paragrph and Selection ends in normal text
-                            } else if (paragraph.bidi) {
+                            if (paragraph.bidi && !elementIsRTL) {
                                 width -= paragraphMarkWidth;
                                 // Highlight the element.
                                 this.createHighlightBorder(startLineWidget, width, left, top, true);
@@ -3844,14 +3841,17 @@ export class Selection {
      */
     public getPhysicalPositionInline(inline: ElementBox, index: number, moveNextLine: boolean): Point {
         let element: ElementBox = undefined;
-
         element = this.getElementBox(inline, index, moveNextLine).element;
         let lineWidget: LineWidget = undefined;
         if (isNullOrUndefined(element) || isNullOrUndefined(element.line)) {
-            if (inline instanceof FieldElementBox || inline instanceof BookmarkElementBox) {
-                return this.getFieldCharacterPosition(inline);
+            if (inline instanceof FieldElementBox && inline.fieldType === 1) {
+                element = inline;
+            } else {
+                if (inline instanceof FieldElementBox || inline instanceof BookmarkElementBox) {
+                    return this.getFieldCharacterPosition(inline);
+                }
+                return new Point(0, 0);
             }
-            return new Point(0, 0);
         }
         let margin: Margin = element.margin;
         let top: number = 0;
@@ -5024,6 +5024,8 @@ export class Selection {
             // }
             if (i === 1 && widget.children[i] instanceof ListTextElementBox) {
                 left += widget.children[i].width;
+            } else if (widget.children[i] instanceof TabElementBox && elementBox === widgetInternal) {
+                left += widget.children[i].margin.left;
             } else {
                 left += widget.children[i].margin.left + widget.children[i].width;
             }
@@ -5147,12 +5149,15 @@ export class Selection {
      * @private
      */
     public selectParagraph(paragraph: ParagraphWidget, positionAtStart: boolean): void {
-        let line: LineWidget = paragraph.firstChild as LineWidget;
-        if (positionAtStart) {
-            this.start.setPosition(line, positionAtStart);
-        } else {
-            let endOffset: number = line.getEndOffset();
-            this.start.setPositionParagraph(line, endOffset);
+        let line: LineWidget;
+        if (!isNullOrUndefined(paragraph) && !isNullOrUndefined(paragraph.firstChild)) {
+            line = paragraph.firstChild as LineWidget;
+            if (positionAtStart) {
+                this.start.setPosition(line, positionAtStart);
+            } else {
+                let endOffset: number = line.getEndOffset();
+                this.start.setPositionParagraph(line, endOffset);
+            }
         }
         this.end.setPositionInternal(this.start);
         this.upDownSelectionLength = this.start.location.x;
@@ -7370,7 +7375,12 @@ export class Selection {
             return undefined;
         }
         let elements: ElementBox[] = [];
-
+        while (bidi && startElement && startElement !== endElement && startElement.nextElement && !startElement.isRightToLeft) {
+            startElement = startElement.nextElement;
+        }
+        while (bidi && endElement && startElement !== endElement && endElement.previousElement && !endElement.isRightToLeft) {
+            endElement = endElement.previousElement;
+        }
         let elementIndex: number = lineWidget.children.indexOf(startElement);
         while (elementIndex >= 0) {
             for (let i: number = elementIndex; i > -1 && i < lineWidget.children.length; bidi ? i-- : i++) {
@@ -7402,7 +7412,9 @@ export class Selection {
      */
     public getElementsBackward(lineWidget: LineWidget, startElement: ElementBox, endElement: ElementBox, bidi: boolean): ElementBox[] {
         let elements: ElementBox[] = [];
-
+        while (bidi && startElement && startElement.previousElement && !startElement.isRightToLeft) {
+            startElement = startElement.previousElement;
+        }
         let elementIndex: number = lineWidget.children.indexOf(startElement);
         while (elementIndex >= 0) {
             for (let i: number = elementIndex; i > -1 && i < lineWidget.children.length; bidi ? i++ : i--) {

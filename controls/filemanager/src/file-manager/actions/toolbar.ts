@@ -31,7 +31,7 @@ export class Toolbar {
 
     /**
      * Constructor for the Toolbar module
-     * @hidden
+
      */
     constructor(parent?: IFileManager) {
         this.parent = parent;

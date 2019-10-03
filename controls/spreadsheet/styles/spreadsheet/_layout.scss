@@ -1,3 +1,4 @@
+@import '../ribbon/mixin.scss';
 @include export-module('spreadsheet-layout') {
   /*! spreadsheet layout */
   .e-spreadsheet {
@@ -23,7 +24,7 @@
         vertical-align: top;
 
         & .e-btn-icon {
-          font-size: 14px;
+          font-size: 16px;
           margin-top: 0;
           vertical-align: top;
         }
@@ -44,7 +45,7 @@
           display: none;
         }
 
-        &.e-input-group.e-input-focus.e-control-wrapper.e-ddl.e-name-box {
+        &.e-input-group.e-input-focus.e-control-wrapper.e-ddl {
           border: 0;
           z-index: 1;
 
@@ -95,7 +96,7 @@
         align-self: flex-start;
         cursor: pointer;
         float: right;
-        line-height: $formula-bar-height - $spreadsheet-border-width;
+        line-height: 23px;
         margin-right: $expand-icon-margin;
         text-align: center;
         transition: transform 300ms ease;
@@ -133,7 +134,6 @@
       height: 100%;
 
       & .e-virtualable {
-        overflow: hidden;
         will-change: transform;
         z-index: 1;
       }
@@ -145,7 +145,6 @@
 
     & .e-main-panel {
       height: calc(100% - 30px);
-      position: relative;
 
       & .e-spreadsheet-edit {
         border: 0;
@@ -168,6 +167,18 @@
           text-align: right;
         }
       }
+
+      & .e-virtualable {
+        position: absolute;
+      }
+
+      & .e-virtualtrack {
+        position: relative;
+      }
+
+      & .e-row.e-hide {
+        height: 0 !important; // sass-lint:disable-line no-important
+      }
     }
 
     & .e-table {
@@ -178,12 +189,14 @@
       table-layout: fixed;
 
       & tr {
+        line-height: normal;
+
         & .e-cell,
         & .e-header-cell,
         & .e-select-all-cell {
           border-style: solid;
           border-width: 0 1px 1px 0;
-          line-height: normal;
+          line-height: inherit;
           overflow: hidden;
         }
 
@@ -236,16 +249,55 @@
       vertical-align: middle;
     }
 
+    & .e-row-header .e-table {
+      .e-zero .e-header-cell,
+      .e-zero-start .e-header-cell,
+      .e-zero-end .e-header-cell {
+        border-bottom-width: 0;
+        padding-bottom: 0;
+        padding-top: 0;
+        vertical-align: bottom;
+      }
+  }
+
+    & .e-row-header .e-table {
+      .e-reach-fntsize .e-header-cell {
+        padding-bottom: 0;
+        padding-top: 0;
+        vertical-align: bottom;
+      }
+  }
+
+    & .e-row-header .e-table .e-zero-last .e-header-cell {
+      border-bottom-width: 1px;
+    }
+
+    & .e-main-content .e-table {
+      .e-zero .e-cell,
+      .e-zero-start .e-cell ,
+      .e-zero-end .e-cell  {
+        border-bottom-width: 0;
+    }
+  }
+
+    & .e-column-header .e-table tr .e-header-cell.e-colresize {
+      cursor: col-resize;
+    }
+
+    & .e-row-header .e-table tr .e-header-cell.e-rowresize {
+      cursor: row-resize;
+    }
+
     & .e-sheet {
       border: $spreadsheet-border;
 
       &.e-hide-headers .e-main-panel {
         height: 100%;
       }
-    }
 
-    & .e-virtualtrack {
-      position: relative;
+      & colgroup .e-hide {
+        width: 0 !important; // sass-lint:disable-line no-important
+      }
     }
 
     & .e-header-panel,
@@ -254,12 +306,14 @@
     }
 
     .e-main-content {
+      overflow: scroll;
       position: relative;
     }
 
     & .e-row-header {
       border-bottom: $spreadsheet-border-width solid;
       overflow-y: hidden;
+      position: relative;
     }
 
     & .e-main-content,
@@ -269,22 +323,10 @@
       }
     }
 
-    & .e-main-content {
-      overflow: scroll;
-
-      & .e-virtualtrack {
-        cursor: cell;
-      }
-    }
-
     & .e-column-header {
       border-style: solid;
       border-width: 0;
       overflow: hidden;
-
-      & .e-virtualtrack {
-        height: 1px;
-      }
     }
 
     & .e-header-panel {
@@ -292,6 +334,11 @@
       & .e-selectall-container,
       & .e-column-header {
         height: 30px;
+      }
+
+      & .e-virtualtrack {
+        height: 1px;
+        position: absolute;
       }
     }
 
@@ -305,6 +352,7 @@
 
     & .e-sheet-tab {
       display: inline-block;
+      line-height: 0;
 
       &> div {
         display: inline-block;
@@ -319,14 +367,16 @@
         }
 
         & .e-tab-header {
+          @include tab-header-layout;
+
+          & .e-indicator {
+            display: block;
+            transition: none;
+          }
+
           @if $skin-name == 'bootstrap4' or $skin-name == 'bootstrap' {
             &::before {
               border-bottom-width: 0;
-            }
-
-            & .e-indicator {
-              display: block;
-              transition: none;
             }
 
             & .e-toolbar-item {
@@ -340,14 +390,14 @@
                 border-top-width: 0;
               }
             }
+
+            & .e-toolbar-items:not(.e-tbar-pos) .e-toolbar-item:last-child {
+              margin: 0;
+            }
           }
           @else {
-            & .e-toolbar-items {
-              @if $skin-name != 'bootsrap' and $skin-name != 'bootsrap4' {
-                & .e-toolbar-item {
-                  border-right: $spreadsheet-border;
-                }
-              }
+            & .e-toolbar-items .e-toolbar-item {
+              border-right: $spreadsheet-border;
             }
           }
 
@@ -360,14 +410,31 @@
               box-shadow: none;
               min-width: 20px;
               padding: 0;
+            }
 
-              @if $skin-name == 'material' {
+            & .e-tab-wrap {
+              padding: 0 12px;
+            }
+
+            @if $skin-name == 'material' {
+              &.e-active {
+                border-left-width: 0;
+                border-top-width: 0;
+              }
+
+              & input.e-input.e-sheet-rename {
                 margin-bottom: 0;
               }
             }
 
-            &.e-toolbar-item:nth-child(2) {
+            &:nth-child(2) {
               border-left: $spreadsheet-border;
+            }
+
+            @if $skin-name == 'fabric' or $skin-name == 'highcontrast' {
+              &.e-active .e-text-wrap::before {
+                border-width: 0;
+              }
             }
           }
 
@@ -382,19 +449,7 @@
       }
     }
 
-    & .e-tab {
-      & .e-tab-header .e-toolbar-item {
-        user-select: none;
-
-        & .e-tab-text {
-          text-transform: none;
-        }
-      }
-
-      &.e-sheet-tab .e-tab-header .e-tab-text {
-        white-space: pre;
-      }
-    }
+    @include default-props;
 
     & .e-sheets-list {
       margin-right: 8px;
@@ -420,14 +475,45 @@
 
     .e-active-cell,
     .e-copy-indicator {
-      border: 2px solid $selection-border-color;
       cursor: cell;
       position: absolute;
       z-index: 1;
     }
 
-    .e-copy-indicator {
-      border-style: dashed;
+    .e-active-cell {
+      border: 2px solid $selection-border-color;
+    }
+
+    .e-copy-indicator div {
+      position: absolute;
+
+      &.e-top,
+      &.e-bottom {
+        height: 2px;
+        width: 100%;
+      }
+
+      &.e-left,
+      &.e-right {
+        height: 100%;
+        width: 2px;
+      }
+
+      &.e-top {
+        top: 0;
+      }
+
+      &.e-bottom {
+        bottom: 0;
+      }
+
+      &.e-left {
+        left: 0;
+      }
+
+      &.e-right {
+        right: 0;
+      }
     }
 
     .e-clipboard {
@@ -439,12 +525,6 @@
     }
 
     & .e-ribbon {
-      @if $skin-name == 'highcontrast' {
-        & .e-toolbar {
-          border: 0;
-        }
-      }
-
       & .e-dropdown-btn {
         & .e-tbar-btn-text {
           float: left;
@@ -730,7 +810,69 @@
         border-width: 0 0 1px 1px;
       }
     }
+
+    .e-sheet-panel {
+      position: relative;
+    }
+
+    & .e-colresize-handler {
+      border-right: 1px solid;
+      cursor: col-resize;
+      pointer-events: none;
+      position: absolute;
+      z-index: 1;
+      }
+
+    & .e-rowresize-handler {
+      border-top: 1px solid;
+      cursor: row-resize;
+      pointer-events: none;
+      position: absolute;
+      z-index: 1;
+      }
+
+    .e-rtl {
+      .e-spreadsheet-edit {
+        direction: ltr;
+        text-align: left;
+      }
+    }
+
+    & .e-customsort-dlg {
+      @if $skin-name == 'material' {
+        height: 360px !important; // sass-lint:disable-line no-important
+      }
+
+      & .e-dlg-content {
+        padding-bottom: 0;
+        padding-left: 0;
+        padding-right: 0;
+
+        & .e-sort-listsection {
+          padding-top: $dlg-content-padding;
+
+          & .e-input-group {
+            min-width: 220px;
+          }
+        }
+      }
+
+      & .e-footer-content {
+        & .e-sort-addbtn {
+          float: left;
+          margin-left: 0;
+        }
+      }
+    }
   }
+
+  .e-spreadsheet.e-col-resizing {
+    cursor: col-resize;
+    }
+
+  .e-spreadsheet.e-row-resizing {
+    cursor: row-resize;
+    }
 
   .e-dropdown-popup {
     &.e-numformat-ddb ul .e-numformat-preview-text {
@@ -782,6 +924,10 @@
         }
       }
     }
+
+    & .e-aggregate-list {
+      margin-left: auto;
+    }
   }
 
   .e-menu-wrapper {
@@ -813,7 +959,8 @@
 
     & .e-dlg-content {
       overflow: hidden;
-      padding: $dlg-content-padding;
+      padding-left: $dlg-content-padding;
+      padding-right: $dlg-content-padding;
 
       & .e-category-content {
         font-size: 12px;
@@ -834,15 +981,10 @@
       }
 
       & .e-formula-list {
-        border: $dlg-list-border-color;
+        border: $dlg-list-border;
         cursor: default;
         margin-top: 6px;
         overflow-y: auto;
-
-        & .e-list-item.e-active {
-          background-color: $dlg-list-active;
-          color: $dlg-list-color;
-        }
       }
     }
   }
@@ -861,28 +1003,27 @@
 
       & .e-btn.e-css.e-insert-function {
         border-left: $spreadsheet-border;
-        height: $formula-bar-height - $spreadsheet-border-width;
-        line-height: $formula-bar-height - $spreadsheet-border-width - 1;
+        height: 23px;
 
         & .e-btn-icon {
-          line-height: $formula-bar-height;
+          line-height: 24px;
         }
       }
 
       & .e-formula-bar {
-        height: $formula-bar-height - $spreadsheet-border-width;
-        line-height: $formula-bar-height - $spreadsheet-border-width;
+        height: 23px;
+        line-height: 23px;
         width: $formula-textarea-width;
       }
 
       &.e-expanded {
         & .e-formula-bar,
         & .e-btn.e-css.e-insert-function {
-          height: ($formula-bar-height * 3) - $spreadsheet-border-width;
+          height: 71px;
         }
 
         & .e-btn.e-css.e-insert-function {
-          line-height: ($formula-bar-height * 3) - $spreadsheet-border-width;
+          line-height: 71px;
         }
 
         & .e-drop-icon {
@@ -904,10 +1045,16 @@
       }
     }
 
-    & .e-add-sheet-tab,
-    & .e-sheets-list {
-      height: $sheets-btn-height;
+    & .e-add-sheet-tab.e-btn.e-icon-btn.e-css,
+    & .e-sheets-list.e-dropdown-btn {
+      height: 33px;
+      padding: 0;
       width: 32px;
+
+      & .e-btn-icon {
+        line-height: 33px;
+        margin-top: 0;
+      }
     }
 
     & .e-aggregate-list {
@@ -977,10 +1124,24 @@
       }
     }
 
-    & .e-add-sheet-tab,
-    & .e-sheets-list {
-      height: $msheets-btn-height;
-      width: 40px;
+    & .e-add-sheet-tab.e-btn.e-icon-btn.e-css,
+    & .e-sheets-list.e-dropdown-btn {
+      height: 39px;
+      width: 39px;
+
+      & .e-btn-icon {
+        line-height: 39px;
+      }
+    }
+
+    & .e-sheet-tab-panel {
+      @include bigger-tab-header-layout;
+    }
+
+    & .e-sheet-tab .e-tab-header .e-toolbar-item {
+      & .e-tab-wrap {
+        padding: 0 16px;
+      }
     }
 
     @if $skin-name != 'bootstrap' and $skin-name != 'bootstrap4' {
@@ -989,12 +1150,158 @@
         margin-right: 5px;
       }
     }
+
+    &:not(.e-mobile-view) .e-formula-bar-panel {
+      & .e-btn.e-css.e-insert-function {
+        height: 29px;
+
+        & .e-btn-icon {
+          font-size: 18px;
+          line-height: 30px;
+        }
+      }
+
+      & .e-input-group.e-control-wrapper.e-ddl.e-name-box input.e-input {
+        height: 29px;
+      }
+
+      & .e-drop-icon {
+        line-height: 29px;
+      }
+
+      & .e-separator {
+        height: 15px;
+      }
+
+      & .e-formula-bar {
+        font-size: $bigger-formula-bar-font-size;
+        height: 29px;
+        line-height: 29px;
+      }
+
+      &.e-expanded {
+        & .e-formula-bar,
+        & .e-btn.e-css.e-insert-function {
+          height: 89px;
+          line-height: 89px;
+        }
+
+        & .e-separator {
+          height: 78px;
+        }
+      }
+    }
+
+    & .e-customsort-dlg {
+      width: 590px !important; // sass-lint:disable-line no-important
+    }
+
+    .e-sort-dialog .e-sort-template .e-list-item {
+      height: auto;
+      line-height: 1;
+    }
   }
 
   .e-bigger.e-dropdown-popup,
   .e-bigger .e-dropdown-popup {
     &.e-font-size-ddb ul {
       min-width: 70px;
+    }
+  }
+
+  .e-sort-dialog {
+    height: 100%;
+    position: relative;
+
+    & .e-sort-listsection {
+      height: calc(100% - 28px);
+      margin: 0 auto;
+      overflow: auto;
+      width: 100%;
+    }
+
+    & .e-sort-listwrapper {
+      padding-left: 2px;
+    }
+
+    & .e-sort-listwrapper .text {
+      font-size: 12px;
+      padding: 10px 0 5px;
+    }
+
+    & .e-list-sort {
+      height: 100%;
+    }
+
+    & .e-sort-row {
+      align-items: center;
+      display: flex;
+      padding: 5px 0 10px;
+    }
+
+    & .e-sort-error,
+    & .e-sort-header,
+    & .e-sort-listsection {
+      padding-left: $dlg-content-padding;
+      padding-right: $dlg-content-padding;
+    }
+
+    & .e-sort-error {
+      bottom: 0;
+      display: none;
+      font-size: 12px;
+      height: 20px;
+      line-height: 20px;
+      position: absolute;
+      width: 100%;
+    }
+
+    & .e-sort-template {
+      border: 0;
+
+      & .e-list-item {
+        height: auto;
+        line-height: unset;
+
+        &:not(:first-child) {
+          padding: 5px 0 0;
+        }
+
+        &:first-child {
+          padding: 0;
+        }
+      }
+
+      & .e-content {
+        height: 100%;
+        overflow: auto;
+      }
+    }
+
+    & .e-sort-field {
+      width: auto;
+    }
+
+    & .e-radio-wrapper {
+      margin-left: 16px;
+    }
+
+    & li:first-of-type .e-sort-delete {
+      display: none;
+    }
+
+    & .e-sort-delete {
+      border-left-style: solid;
+      border-left-width: 1px;
+      line-height: 32px;
+      margin-left: auto;
+      margin-right: 5px;
+      padding-left: 22px;
+      vertical-align: middle;
+
+      &::before {
+        cursor: pointer;
+      }
     }
   }
 }

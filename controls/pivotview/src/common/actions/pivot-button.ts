@@ -18,7 +18,7 @@ import { OlapEngine, IOlapFieldListOptions, IOlapField } from '../../base/olap/e
 /**
  * Module to render Pivot button
  */
-/** @hidden */
+
 export class PivotButton implements IAction {
     public parent: PivotView | PivotFieldList;
     private parentElement: HTMLElement;
@@ -169,7 +169,7 @@ export class PivotButton implements IAction {
                 }
                 if (axis === 'values') {
                     for (let element of this.parentElement.querySelectorAll('.e-group-' + axis) as any) {
-                        if (element.classList.contains(cls.GROUP_CHART_VALUE)) {
+                        if (element.classList.contains(cls.GROUP_CHART_VALUE) && (this.parent as PivotView).chartModule) {
                             let valueData: { text: string, value: string }[] = field.map((item) => { return { text: item.caption ? item.caption : item.name, value: item.name } });
                             let parent: PivotView = this.parent as PivotView;
                             if (this.valueFiedDropDownList && element.querySelector('.' + cls.GROUP_CHART_VALUE_DROPDOWN_DIV)) {
@@ -455,28 +455,26 @@ export class PivotButton implements IAction {
         let filterItems: string[] = engineModule.fieldList[fieldName].actualFilter;
         if (filterItems.length > 0) {
             let cMembers: IMembers = engineModule.fieldList[fieldName].members;
-            let sMembers: IMembers = engineModule.fieldList[fieldName].currrentMembers;
-            let updatedFilterItems: string[] = [];
-            if (engineModule.fieldList[fieldName].searchMembers.length > 0) {
+            let actualFilterItems: string[] = [];
+            if (engineModule.fieldList[fieldName].filterMembers.length > 0) {
+                let dummyfilterItems: { [key: string]: string } = {};
                 for (let item of filterItems) {
-                    if (sMembers[item].isSelected) {
-                        if (!(sMembers[item].parent && sMembers[sMembers[item].parent].isSelected)) {
-                            updatedFilterItems.push(item);
-                        }
+                    dummyfilterItems[item] = item;
+                    if (cMembers[item]) {
+                        dummyfilterItems = this.parent.pivotCommon.eventBase.getParentNode(fieldName, item, dummyfilterItems);
                     }
                 }
-                firstNode = updatedFilterItems.length === 1 ? sMembers[updatedFilterItems[0]].caption : firstNode;
-            } else if (engineModule.fieldList[fieldName].filterMembers.length > 0) {
-                for (let item of filterItems) {
+                let updatedFilterItems: string[] = dummyfilterItems ? Object.keys(dummyfilterItems) : [];
+                for (let item of updatedFilterItems) {
                     if (cMembers[item].isSelected) {
                         if (!(cMembers[item].parent && cMembers[cMembers[item].parent].isSelected)) {
-                            updatedFilterItems.push(item);
+                            actualFilterItems.push(item);
                         }
                     }
                 }
-                firstNode = updatedFilterItems.length === 1 ? cMembers[updatedFilterItems[0]].caption : firstNode;
+                firstNode = actualFilterItems.length === 1 ? cMembers[actualFilterItems[0]].caption : firstNode;
             }
-            filterCount = updatedFilterItems.length === 0 ? filterCount : updatedFilterItems.length;
+            filterCount = actualFilterItems.length === 0 ? filterCount : actualFilterItems.length;
         }
         if (filterCount === 0) {
             filterMem = (engineModule.fieldList[fieldName].allMember ?
@@ -936,11 +934,10 @@ export class PivotButton implements IAction {
             }
             let filterItems: string[] = filterItem.items;
             for (let node of filterItems) {
-                if (cMembers[node]) {
-                    cMembers[node].isSelected = true;
-                }
-                if (sMembers[node]) {
+                if ((engineModule as OlapEngine).fieldList[fieldName].searchMembers.length > 0 && sMembers[node]) {
                     sMembers[node].isSelected = true;
+                } else if (cMembers[node]) {
+                    cMembers[node].isSelected = true;
                 }
             }
         } else {
@@ -1071,7 +1068,7 @@ export class PivotButton implements IAction {
     }
 
     /**
-     * @hidden
+
      */
     public addEventListener(): void {
         this.handlers = {
@@ -1082,7 +1079,7 @@ export class PivotButton implements IAction {
     }
 
     /**
-     * @hidden
+
      */
     public removeEventListener(): void {
         if (this.parent.isDestroyed) { return; }
@@ -1092,7 +1089,7 @@ export class PivotButton implements IAction {
     /**
      * To destroy the pivot button event listener
      * @return {void}
-     * @hidden
+
      */
 
     public destroy(): void {

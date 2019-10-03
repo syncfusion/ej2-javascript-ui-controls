@@ -26,7 +26,7 @@ export class SparklineTooltip {
     }
 
     /**
-     * @hidden
+
      */
     private addEventListener(): void {
         if (this.sparkline.isDestroyed) { return; }

@@ -1644,7 +1644,7 @@ var Dialog = /** @__PURE__ @class */ (function (_super) {
     __extends$1(Dialog, _super);
     /**
      * Constructor for creating the widget
-     * @hidden
+
      */
     function Dialog(options, element) {
         return _super.call(this, options, element) || this;
@@ -1910,16 +1910,20 @@ var Dialog = /** @__PURE__ @class */ (function (_super) {
             relateTo: this.target,
             actionOnScroll: 'none',
             open: function (event) {
-                _this.focusContent();
                 var eventArgs = {
                     container: _this.isModal ? _this.dlgContainer : _this.element,
                     element: _this.element,
-                    target: _this.target
+                    target: _this.target,
+                    preventFocus: false
                 };
                 if (_this.enableResize) {
                     _this.getMinHeight();
                 }
-                _this.trigger('open', eventArgs);
+                _this.trigger('open', eventArgs, function (openEventArgs) {
+                    if (!openEventArgs.preventFocus) {
+                        _this.focusContent();
+                    }
+                });
             },
             close: function (event) {
                 if (_this.isModal) {
@@ -2515,7 +2519,7 @@ var Dialog = /** @__PURE__ @class */ (function (_super) {
     };
     /**
      * Binding event to the element while widget creation
-     * @hidden
+
      */
     Dialog.prototype.wireEvents = function () {
         if (this.showCloseIcon) {
@@ -2527,7 +2531,7 @@ var Dialog = /** @__PURE__ @class */ (function (_super) {
     };
     /**
      * Unbinding event to the element while widget destroy
-     * @hidden
+
      */
     Dialog.prototype.unWireEvents = function () {
         if (this.showCloseIcon) {
@@ -3737,7 +3741,7 @@ var Tooltip = /** @__PURE__ @class */ (function (_super) {
     };
     /**
      * Binding events to the Tooltip element.
-     * @hidden
+
      */
     Tooltip.prototype.wireEvents = function (trigger) {
         var triggerList = this.getTriggerList(trigger);
@@ -3804,7 +3808,7 @@ var Tooltip = /** @__PURE__ @class */ (function (_super) {
     };
     /**
      * Unbinding events from the element on widget destroy.
-     * @hidden
+
      */
     Tooltip.prototype.unwireEvents = function (trigger) {
         var triggerList = this.getTriggerList(trigger);

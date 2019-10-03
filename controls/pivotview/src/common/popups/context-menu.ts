@@ -9,12 +9,12 @@ import { SummaryTypes } from '../../base/types';
 /**
  * Module to render Pivot button
  */
-/** @hidden */
+
 export class PivotContextMenu {
     public parent: PivotView | PivotFieldList;
-    /** @hidden */
+
     public menuObj: ContextMenu;
-    /** @hidden */
+
     public fieldElement: HTMLElement;
 
     /** Constructor for render module */
@@ -94,7 +94,7 @@ export class PivotContextMenu {
     /**
      * To destroy the pivot button event listener
      * @return {void}
-     * @hidden
+
      */
     public destroy(): void {
         if (!this.parent.isDestroyed) { return; }

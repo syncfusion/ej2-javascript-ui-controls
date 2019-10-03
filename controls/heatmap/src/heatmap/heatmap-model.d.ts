@@ -9,7 +9,7 @@ export interface HeatMapModel extends ComponentModel{
     /**
      * The width of the heatmap as a string accepts input as both like '100px' or '100%'.
      * If specified as '100%, heatmap renders to the full width of its parent element.
-     * @default null
+
      */
 
     width?: string;
@@ -17,14 +17,14 @@ export interface HeatMapModel extends ComponentModel{
     /**
      * The height of the heatmap as a string accepts input as both like '100px' or '100%'.
      * If specified as '100%, heatmap renders to the full height of its parent element.
-     * @default null
+
      */
 
     height?: string;
 
     /**
      * Enable or disable the tool tip for heatmap
-     * @default true
+
      */
 
     showTooltip?: boolean;
@@ -32,36 +32,36 @@ export interface HeatMapModel extends ComponentModel{
     /**
      * Triggers when click the heat map cell.
      * @event
-     * @blazorProperty 'TooltipRendering'
+
      */
     tooltipRender?: EmitType<ITooltipEventArgs>;
 
     /**
      * Triggers after resizing of Heatmap.
      * @event
-     * @blazorProperty 'Resized'
+
      */
     resized?: EmitType<IResizeEventArgs>;
 
     /**
      * Triggers after heatmap is loaded.
      * @event
-     * @blazorProperty 'Loaded'
+
      */
     loaded?: EmitType<ILoadedEventArgs>;
 
     /**
      * Triggers before each heatmap cell renders.
-     * @deprecated
+
      * @event
-     * @blazorProperty 'CellRendering'
+
      */
     cellRender?: EmitType<ICellEventArgs>;
 
     /**
      * Triggers when multiple cells gets selected.
      * @event
-     * @blazorProperty 'CellSelected'
+
      */
     cellSelected?: EmitType<ISelectedEventArgs>;
 
@@ -70,14 +70,14 @@ export interface HeatMapModel extends ComponentModel{
      * * SVG - Heat map is render using SVG draw mode.
      * * Canvas - Heat map is render using Canvas draw mode.
      * * Auto - Automatically switch the draw mode based on number of records in data source.
-     * @default SVG
+
      */
     renderingMode?: DrawType;
 
     /**
      * Specifies the datasource for the heat map.
-     * @isdatamanager false
-     * @default null
+
+
      */
 
     dataSource?: Object ;
@@ -89,13 +89,13 @@ export interface HeatMapModel extends ComponentModel{
 
     /**
      *  Specifies the theme for heatmap.
-     * @default 'Material'
+
      */
     theme?: HeatMapTheme;
 
     /**
      * Enable or disable the selection of multiple cells in heatmap
-     * @default false
+
      */
 
     allowSelection?: boolean;
@@ -108,7 +108,7 @@ export interface HeatMapModel extends ComponentModel{
 
     /**
      * Title of heat map
-     * @default ''
+
      */
     titleSettings?: TitleModel;
 
@@ -120,7 +120,7 @@ export interface HeatMapModel extends ComponentModel{
 
     /**
      * Options for customizing the legend of the heat map
-     * @default ''
+
      */
     legendSettings?: LegendSettingsModel;
 
@@ -149,29 +149,29 @@ export interface HeatMapModel extends ComponentModel{
     /**
      * Triggers after heat map rendered.
      * @event
-     * @blazorProperty 'Created'
+
      */
     created?: EmitType<Object>;
 
     /**
      * Triggers before heat map load.
      * @event
-     * @blazorProperty 'OnLoad'
+
      */
     load?: EmitType<ILoadedEventArgs>;
 
     /**
      * Triggers when click the heat map cell.
      * @event
-     * @blazorProperty 'CellClicked'
+
      */
     cellClick?: EmitType<ICellClickEventArgs>;
 
     /**
      * Triggers before the legend is rendered.
-     * @deprecated
+
      * @event
-     * @blazorProperty 'LegendRendering'
+
      */
     legendRender?: EmitType<ILegendRenderEventArgs>;
 

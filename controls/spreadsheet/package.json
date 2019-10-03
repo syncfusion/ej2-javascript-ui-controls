@@ -1,6 +1,6 @@
 {
 	"name": "@syncfusion/ej2-spreadsheet",
-	"version": "17.2.36",
+	"version": "17.2.48",
 	"description": "Feature-rich JavaScript Spreadsheet (Excel) control with built-in support for selection, editing, formatting, importing and exporting to Excel",
 	"author": "Syncfusion Inc.",
 	"license": "SEE LICENSE IN license",
@@ -47,6 +47,10 @@
 		"excel like spreadsheet",
 		"data"
 	],
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/syncfusion/ej2-javascript-ui-controls/tree/master/controls/spreadsheet"
+	},
 	"scripts": {
 		"build": "gulp build",
 		"test": "gulp test"

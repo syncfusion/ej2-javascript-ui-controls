@@ -7,7 +7,6 @@ import { workbookEditOperation, getFormattedBarText, getFormattedCellObject } fr
 import { CellModel, SheetModel, getSheetName, getSheetIndex, getCell } from '../../workbook/base/index';
 import { getSheetNameFromAddress, getCellPosition, getSheet } from '../../workbook/base/index';
 import { RefreshValueArgs } from '../integrations/index';
-import { NumberFormatType } from '../../workbook/index';
 import { CellEditEventArgs, CellSaveEventArgs, ICellRenderer } from '../common/index';
 
 /**
@@ -289,7 +288,7 @@ export class Edit {
             let trgtElem: HTMLElement = <HTMLElement>e.target;
             this.isCellEdit = trgtElem.classList.contains('e-spreadsheet-edit');
             if (trgtElem.classList.contains('e-cell') || trgtElem.classList.contains('e-header-cell') ||
-                trgtElem.classList.contains('e-virtualtrack') || trgtElem.classList.contains('e-selectall')) {
+                trgtElem.classList.contains('e-selectall') || closest(trgtElem, '.e-toolbar-item.e-active')) {
                 this.endEdit();
             }
         }
@@ -388,9 +387,8 @@ export class Edit {
         let mainContElement: HTMLElement = <HTMLElement>this.parent.getMainContent();
         let editWidth: number = mainContElement.offsetWidth - left - 28;
         //let editHeight: number = mainContElement.offsetHeight - top - 28;
-        let inlineStyles: string = 'display:block;top:' + top + 'px;left:' + left + 'px;' +
-            'min-width:' + minWidth + 'px;max-width:' + editWidth + 'px;height:' +
-            minHeight + 'px;';
+        let inlineStyles: string = 'display:block;top:' + top + 'px;' + (this.parent.enableRtl ? 'right:' : 'left:') + left + 'px;' +
+            'min-width:' + minWidth + 'px;max-width:' + editWidth + 'px;height:' + minHeight + 'px;';
         inlineStyles += tdElem.style.cssText;
 
         this.editorElem.setAttribute('style', inlineStyles);
@@ -403,7 +401,10 @@ export class Edit {
     }
 
     private updateEditedValue(tdRefresh: boolean = true): void {
-        if (this.editCellData.oldValue !== this.editCellData.value) {
+        let oldCellValue: string = this.editCellData.oldValue;
+        let oldValue: string = oldCellValue.toString().toUpperCase();
+        if (oldCellValue !== this.editCellData.value || oldValue.indexOf('=RAND()') > -1 || oldValue.indexOf('RAND()') > -1 ||
+            oldValue.indexOf('=RANDBETWEEN(') > -1 || oldValue.indexOf('RANDBETWEEN(') > -1) {
             let cellIndex: number[] = getRangeIndexes(this.parent.getActiveSheet().activeCell);
             this.parent.notify(
                 workbookEditOperation,
@@ -436,7 +437,7 @@ export class Edit {
         let fCode: string = (cell && cell.format) ? cell.format : '';
         let eventArgs: { [key: string]: string | number | boolean } = {
             value: cell.value, format: fCode, onLoad: true,
-            formattedText: '', isRightAlign: false, type: NumberFormatType.General
+            formattedText: '', isRightAlign: false, type: 'General'
         };
         let args: RefreshValueArgs;
         this.parent.notify(getFormattedCellObject, eventArgs);

@@ -10,7 +10,7 @@ import { appendChildren } from '../base/util';
 
 /**
  * `CommandColumn` used to render command column in grid
- * @hidden
+
  */
 
 export class CommandColumnRenderer extends CellRenderer implements ICellRenderer<Column> {

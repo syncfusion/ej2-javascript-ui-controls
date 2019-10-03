@@ -10,45 +10,45 @@ export interface InPlaceEditorModel extends ComponentModel{
     /**
      * * Specifies the name of the field which is used to map data to the server. 
      * If name is not given, then component ID is taken as mapping field name.
-     * @default ''
+
      */
     name?: string;
 
     /**
      * Specifies the display value for input when original input value is empty.
-     * @default null
-     * @isGenericType true
+
+
      */
     value?: string | number | Date | string[] | Date[] | number[];
 
     /**
      * Specifies the HTML element ID as a string that can be added as a editable field.
-     * @default ''
-     * @blazorType string
+
+
      */
     template?: string | HTMLElement;
 
     /**
      * Defines single/multiple classes (separated by space) to be used for customization of In-place editor.
-     * @default ''
+
      */
     cssClass?: string;
 
     /**
      * Defines the unique primary key of editable field which can be used for saving data in data-base.
-     * @default ''
+
      */
     primaryKey?: string | number;
 
     /**
      * Sets the text to be shown when an element has 'Empty' value.
-     * @default 'Empty'
+
      */
     emptyText?: string;
 
     /**
      * Gets the url for server submit action.
-     * @default ''
+
      */
     url?: string;
 
@@ -57,7 +57,7 @@ export interface InPlaceEditorModel extends ComponentModel{
      * 
      * - `Inline`: Editable content is displayed as inline text and ok/cancel buttons are displayed at right bottom corner of input.
      * - `Popup`: Editable content and ok/cancel buttons are displayed inside popup while editing.
-     * @default 'Popup'
+
      */
     mode?: RenderMode;
 
@@ -67,13 +67,13 @@ export interface InPlaceEditorModel extends ComponentModel{
      * - `UrlAdaptor`: Base adaptor for interacting with remote data services.
      * - `ODataV4Adaptor`: Used to interact with ODataV4 service.
      * - `WebApiAdaptor`: Used to interact with Web api created with OData endpoint.
-     * @default 'UrlAdaptor'
+
      */
     adaptor?: AdaptorType;
 
     /**
      * Specifies the type of components that integrated with In-place editor to make it as editable.
-     * @default 'Text'
+
      */
     type?: InputType;
 
@@ -83,7 +83,7 @@ export interface InPlaceEditorModel extends ComponentModel{
      * - `Click`: Do the single click action on input to enter into the edit mode.
      * - `DblClick`: Do the single double click action on input to enter into the edit mode.
      * - `EditIconClick`: Disables the editing of event action of input and allows user to edit only through edit icon.
-     * @default 'Click'
+
      */
     editableOn?: EditableType;
 
@@ -94,103 +94,103 @@ export interface InPlaceEditorModel extends ComponentModel{
      * - `Cancel`: Cancel's the editing and resets the old content.
      * - `Submit`: Submit the edited content to the server.
      * - `Ignore`: No action is perform with this type and allows to have many containers open.
-     * @default 'Submit'
+
      */
     actionOnBlur?: ActionBlur;
 
     /**
      * Enable or disable persisting component's state between page reloads. If enabled, following list of states will be persisted.
      * 1. value
-     * @default false
+
      */
     enablePersistence?: boolean;
 
     /**
      * Specifies whether to enable editing mode or not.
-     * @default false
+
      */
     disabled?: boolean;
 
     /**
      * Used to show/hide the ok/cancel buttons of In-place editor.
-     * @default true
+
      */
     showButtons?: boolean;
 
     /**
      * Specifies to show/hide the editing mode.
-     * @default false
+
      */
     enableEditMode?: boolean;
 
     /**
      * Sets to trigger the submit action with enter key pressing of input.
-     * @default true
+
      */
     submitOnEnter?: boolean;
 
     /**
      * Specifies the object to customize popup display settings like positions, animation etc.
-     * @default {}
+
      */
     popupSettings?: PopupSettingsModel;
 
     /**
      * Specifies the model object configuration for the integrated components like AutoComplete, DatePicker,NumericTextBox, etc.
-     * @default null
+
      */
     model?: AutoCompleteModel | ColorPickerModel | ComboBoxModel | DatePickerModel | DateRangePickerModel | DateTimePickerModel | DropDownListModel | MaskedTextBoxModel | MultiSelectModel | NumericTextBoxModel | RichTextEditorModel | SliderModel | TextBoxModel | TimePickerModel;
 
     /**
      * Used to customize the "Save" button UI appearance by defining Button model configuration.
-     * @default { iconCss: 'e-icons e-save-icon' }
+
      */
     saveButton?: ButtonModel;
 
     /**
      * Used to customize the "Cancel" button UI appearance by defining Button model configuration.
-     * @default { iconCss: 'e-icons e-cancel-icon' }
+
      */
     cancelButton?: ButtonModel;
 
     /**
      * Maps the validation rules for the input.
-     * @default null
+
      */
     validationRules?: { [name: string]: { [rule: string]: Object } };
 
     /**
      * The event will be fired once the component rendering is completed.
      * @event
-     * @blazorProperty 'Created'
+
      */
     created?: EmitType<Event>;
 
     /**
      * The event will be fired before the data submitted to the server.
      * @event
-     * @blazorProperty 'OnActionBegin'
+
      */
     actionBegin?: EmitType<ActionBeginEventArgs>;
 
     /**
      * The event will be fired when data submitted successfully to the server.
      * @event
-     * @blazorProperty 'OnActionSuccess'
+
      */
     actionSuccess?: EmitType<ActionEventArgs>;
 
     /**
      * The event will be fired when data submission failed.
      * @event
-     * @blazorProperty 'OnActionFailure'
+
      */
     actionFailure?: EmitType<ActionEventArgs>;
 
     /**
      * The event will be fired while validating current value.
      * @event
-     * @blazorProperty 'Validating'
+
      */
     validating?: EmitType<ValidateEventArgs>;
 
@@ -203,7 +203,7 @@ export interface InPlaceEditorModel extends ComponentModel{
     /**
      * The event will be fired when the component gets destroyed.
      * @event
-     * @blazorProperty 'Destroyed'
+
      */
     destroyed?: EmitType<Event>;
 

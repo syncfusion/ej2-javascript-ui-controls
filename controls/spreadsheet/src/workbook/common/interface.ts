@@ -1,5 +1,5 @@
 import { CellStyleModel } from './class-model';
-import { SaveType } from './enum';
+import { SaveType, SortOrder } from './enum';
 import { Sheet } from '../base/sheet';
 
 export interface SaveOptions {
@@ -50,5 +50,45 @@ export interface BeforeCellFormatArgs {
     value: string;
     format: string;
     requestType: string;
+    cancel?: boolean;
+}
+
+/** @hidden */
+export interface AggregateArgs {
+    Count: number;
+    Sum: string;
+    Avg: string;
+    Min: string;
+    Max: string;
+}
+/**
+ * Specifies the procedure for sorting.
+ */
+export interface SortDescriptor {
+    field?: string;
+    order?: SortOrder;
+    sortComparer?: Function;
+}
+
+/**
+ * Specifies the arguments for sorting.
+ */
+export interface SortEventArgs {
+    range?: string;
+    sortOptions?: SortOptions;
+}
+
+/**
+ * Specifies the options for sorting.
+ */
+export interface SortOptions {
+    sortDescriptors?: SortDescriptor | SortDescriptor[];
+    containsHeader?: boolean;
+}
+
+/**
+ * Specifies before sorting arguments.
+ */
+export interface BeforeSortEventArgs extends SortEventArgs {
     cancel?: boolean;
 }

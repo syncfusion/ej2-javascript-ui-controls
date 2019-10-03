@@ -16,7 +16,7 @@ export interface BarcodeGeneratorModel extends ComponentModel{
      * width:'1000px', height:'500px' });
      * barcode.appendTo('#barcode');
      * ```
-     * @default '100%'
+
      */
     width?: string | number;
 
@@ -30,7 +30,7 @@ export interface BarcodeGeneratorModel extends ComponentModel{
      * height:'1000px', height:'500px' });
      * barcode.appendTo('#barcode');
      * ```
-     * @default '100'
+
      */
     height?: string | number;
 
@@ -38,49 +38,49 @@ export interface BarcodeGeneratorModel extends ComponentModel{
      * Defines the barcode rendering mode.
      * * SVG - Renders the bar-code objects as SVG elements
      * * Canvas - Renders the bar-code in a canvas
-     * @default 'SVG'
+
      */
     mode?: RenderingMode;
 
     /**
      * Defines the type of barcode to be rendered.
-     * @default 'Code128'
+
      */
     type?: BarcodeType;
 
     /**
      * Defines the value of the barcode to be rendered.
-     * @default undefined
+
      */
     value?: string;
 
     /**
      * Defines the checksum for the barcode.
-     * @default 'true'
+
      */
     enableCheckSum?: boolean;
 
     /**
      * Defines the text properties for the barcode.
-     * @default ''
+
      */
     displayText?: DisplayTextModel;
 
     /**
      * Defines the margin properties for the barcode.
-     * @default ''
+
      */
     margin?: MarginModel;
 
     /**
      * Defines the background color of the barcode.
-     * @default 'white'
+
      */
     backgroundColor?: string;
 
     /**
      * Defines the forecolor of the barcode.
-     * @default 'black'
+
      */
     foreColor?: string;
 

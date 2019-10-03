@@ -92,3 +92,8 @@ export const legendRendering: string = 'legendRendering';
  * @private
  */
 export const resize: string = 'resize';
+/**
+ * Specifies the font family
+ * @private
+ */
+export const defaultFont: string = 'Roboto, Segoe UI, Noto, Sans-serif';

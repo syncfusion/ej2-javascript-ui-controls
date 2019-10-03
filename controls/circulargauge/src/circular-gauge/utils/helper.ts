@@ -398,10 +398,15 @@ export function getElement(id: string): Element {
  * @returns Function
  * @private
  */
-export function getTemplateFunction(template: string): Function {
+export function getTemplateFunction(template: string, gauge: CircularGauge): Function {
     let templateFn: Function = null;
     let e: Object;
     try {
+        if (gauge.isBlazor) {
+            let numb: string = template.match(/\d+/g).toString();
+            template = numb ? template.replace(numb, '') : template;
+            template = template.indexOf('/') !== -1 ? template.replace('/', '') : template;
+        }
         if (document.querySelectorAll(template).length) {
             if ((template.charAt(0) !== 'a' || template.charAt(0) !== 'A') && template.length !== 1) {
                 templateFn = templateComplier(document.querySelector(template).innerHTML.trim());
@@ -441,7 +446,7 @@ export function getPointer(targetId: string, gauge: CircularGauge): IVisiblePoin
 
 export function getElementSize(template: string, gauge: CircularGauge, parent: HTMLElement): Size {
     let elementSize: Size; let element: HTMLElement;
-    let templateFn: Function = getTemplateFunction(template);
+    let templateFn: Function = getTemplateFunction(template, gauge);
     let tooltipData: Element[] = templateFn ? templateFn({}, null, null, gauge.element.id + 'Template') : [];
     if (templateFn && tooltipData.length) {
         element = gauge.createElement('div', { id: gauge.element.id + '_Measure_Element' });

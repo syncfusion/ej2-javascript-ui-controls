@@ -5,10 +5,10 @@ import * as cls from '../../common/base/css-constant';
 /**
  * Module to render Axis Field Table
  */
-/** @hidden */
+
 export class AxisTableRenderer {
     public parent: PivotFieldList;
-    /** @hidden */
+
     public axisTable: Element;
 
     private leftAxisPanel: HTMLElement;

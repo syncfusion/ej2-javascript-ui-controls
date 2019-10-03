@@ -735,13 +735,13 @@ export class ResourceBase {
     }
 
     public getResourceColor(eventObj: { [key: string]: Object }, groupOrder?: string[]): string {
-        this.colorIndex = (this.parent.activeView.isTimelineView() && !isNullOrUndefined(groupOrder)) ?
-            groupOrder.length - 1 : this.colorIndex;
-        let resource: ResourcesModel = this.resourceCollection[this.colorIndex];
+        let colorFieldIndex: number = (!isNullOrUndefined(groupOrder) &&
+            this.colorIndex > groupOrder.length - 1) ? groupOrder.length - 1 : this.colorIndex;
+        let resource: ResourcesModel = this.resourceCollection[colorFieldIndex];
         if (isNullOrUndefined(groupOrder) && this.parent.activeViewOptions.group.allowGroupEdit && resource.allowMultiple) {
             return undefined;
         }
-        let id: string = isNullOrUndefined(groupOrder) ? <string>eventObj[resource.field] : <string>groupOrder[this.colorIndex];
+        let id: string = isNullOrUndefined(groupOrder) ? <string>eventObj[resource.field] : <string>groupOrder[colorFieldIndex];
         let data: Object[] = this.filterData(resource.dataSource, resource.idField, 'equal', id);
         if (data.length > 0) {
             return (data[0] as { [key: string]: Object })[resource.colorField] as string;

@@ -28,22 +28,21 @@ export type FontFamily = 'Arial' | 'Arial Black' | 'Axettac Demo' | 'Batang' | '
 /**
  * Specifies the number format types in Spreadsheet.
  */
-
- export enum NumberFormatType {
-    General = 'General',
-    Number = 'Number',
-    Currency = 'Currency',
-    Accounting = 'Accounting',
-    ShortDate = 'ShortDate',
-    LongDate = 'LongDate',
-    Time = 'Time',
-    Percentage = 'Percentage',
-    Fraction = 'Fraction',
-    Scientific = 'Scientific',
-    Text = 'Text'
- }
+export type NumberFormatType = 'General' | 'Number' | 'Currency' | 'Accounting' | 'ShortDate' | 'LongDate' | 'Time' | 'Percentage' |
+    'Fraction' | 'Scientific' | 'Text';
 
 /**
  * Specifies the option for save file type from Spreadsheet. By default, Excel save will be occur.
  */
 export type SaveType = 'Xlsx' | 'Xls' | 'Csv';
+
+/** 
+ * Defines the order of Sorting. They are
+ * * Ascending
+ * * Descending 
+ */
+export type SortOrder =
+    /**  Defines SortDirection as Ascending */
+    'Ascending' |
+    /**  Defines SortDirection as Descending */
+    'Descending';

@@ -9,3 +9,4 @@ export * from './virtual-scroll';
 export * from './keyboard-navigation';
 export * from './keyboard-shortcut';
 export * from './cell-format';
+export * from './resize';

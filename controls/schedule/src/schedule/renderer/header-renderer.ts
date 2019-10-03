@@ -41,7 +41,7 @@ export class HeaderRenderer {
         }
         this.hideHeaderPopup();
     }
-    /** @hidden */
+
     public hideHeaderPopup(): void {
         if (this.headerPopup) {
             this.headerPopup.hide();

@@ -224,7 +224,7 @@ export class ScheduleTouch {
         removeClass([this.element], cls.TRANSLATE_CLASS);
     }
     /**
-     * @hidden
+
      */
     public destroy(): void {
         this.touchObj.destroy();

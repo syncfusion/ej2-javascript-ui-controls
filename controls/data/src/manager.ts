@@ -7,15 +7,17 @@ import { ODataAdaptor, JsonAdaptor, CacheAdaptor, RemoteSaveAdaptor } from './ad
  * DataManager is used to manage and manipulate relational data. 
  */
 export class DataManager {
-    /** @hidden */
+
     public adaptor: AdaptorOptions;
-    /** @hidden */
+
     public defaultQuery: Query;
-    /** @hidden */
+
     public dataSource: DataOptions;
-    /** @hidden */
+
     public dateParse: boolean = true;
-    /** @hidden */
+
+    public timeZoneHandling: boolean = true;
+
     public ready: Promise<Ajax>;
     private isDataAvailable: boolean;
     private requests: Ajax[] = [];
@@ -25,13 +27,16 @@ export class DataManager {
      * @param  {DataOptions|JSON[]} dataSource?
      * @param  {Query} query?
      * @param  {AdaptorOptions|string} adaptor?
-     * @hidden
+
      */
     constructor(dataSource?: DataOptions | JSON[] | Object[], query?: Query, adaptor?: AdaptorOptions | string) {
         if (!dataSource && !this.dataSource) {
             dataSource = [];
         }
         adaptor = adaptor || (dataSource as DataOptions).adaptor;
+        if (dataSource && (dataSource as DataOptions).timeZoneHandling === false) {
+            this.timeZoneHandling = (dataSource as DataOptions).timeZoneHandling;
+        }
         let data: DataOptions;
         if (dataSource instanceof Array) {
             data = {
@@ -183,8 +188,11 @@ export class DataManager {
             let result: ReturnOption = this.adaptor.processQuery(this, query);
             if (!isNullOrUndefined(this.adaptor[makeRequest])) {
                 this.adaptor[makeRequest](result, deffered, args, <Query>query);
-            } else {
+            } else if (!isNullOrUndefined(result.url)) {
                 this.makeRequest(result, deffered, args, <Query>query);
+            } else {
+                args = DataManager.getDeferedArgs(<Query>query, result as ReturnOption, args as ReturnOption);
+                deffered.resolve(args);
             }
         } else {
             DataManager.nextTick(
@@ -547,7 +555,7 @@ export class Deferred {
 }
 
 /**
- * @hidden
+
  */
 export interface DataOptions {
     url?: string;
@@ -571,10 +579,11 @@ export interface DataOptions {
     dataType?: string;
     offline?: boolean;
     requiresFormat?: boolean;
+    timeZoneHandling?: boolean;
 }
 
 /**
- * @hidden
+
  */
 export interface ReturnOption {
     result?: ReturnOption;
@@ -584,7 +593,7 @@ export interface ReturnOption {
 }
 
 /**
- * @hidden
+
  */
 export interface RequestOptions {
     xhr?: XMLHttpRequest;
@@ -598,7 +607,7 @@ export interface RequestOptions {
 }
 
 /**
- * @hidden
+
  */
 export interface AdaptorOptions {
     processQuery?: Function;

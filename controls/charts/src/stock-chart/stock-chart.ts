@@ -41,7 +41,7 @@ export class StockChart extends Component<HTMLElement> implements INotifyPropert
     /**
      * The width of the stockChart as a string accepts input as both like '100px' or '100%'.
      * If specified as '100%, stockChart renders to the full width of its parent element.
-     * @default null
+
      */
 
     @Property(null)
@@ -50,7 +50,7 @@ export class StockChart extends Component<HTMLElement> implements INotifyPropert
     /**
      * The height of the stockChart as a string accepts input both as '100px' or '100%'.
      * If specified as '100%, stockChart renders to the full height of its parent element.
-     * @default null
+
      */
 
     @Property(null)
@@ -78,7 +78,7 @@ export class StockChart extends Component<HTMLElement> implements INotifyPropert
      * });
      * financial.appendTo('#financial');
      * ```
-     * @default ''
+
      */
 
     @Property('')
@@ -102,14 +102,14 @@ export class StockChart extends Component<HTMLElement> implements INotifyPropert
 
     /**
      * The background color of the stockChart that accepts value in hex and rgba as a valid CSS color string.
-     * @default null
+
      */
     @Property(null)
     public background: string;
 
     /**
      * Specifies the theme for the stockChart.
-     * @default 'Material'
+
      */
 
     @Property('Material')
@@ -169,14 +169,14 @@ export class StockChart extends Component<HTMLElement> implements INotifyPropert
 
     /**
      * It specifies whether the stockChart should be render in transposed manner or not.
-     * @default false
+
      */
     @Property(false)
     public isTransposed: boolean;
 
     /**
      * Title of the chart
-     * @default ''
+
      */
 
     @Property('')
@@ -216,28 +216,28 @@ export class StockChart extends Component<HTMLElement> implements INotifyPropert
 
     /**
      * It specifies whether the periodSelector to be rendered in financial chart
-     * @default true
+
      */
     @Property(true)
     public enablePeriodSelector: boolean;
 
     /**
      * Custom Range
-     * @default true
+
      */
     @Property(true)
     public enableCustomRange: boolean;
 
     /**
      * If set true, enables the animation in chart.
-     * @default false
+
      */
     @Property(false)
     public isSelect: boolean;
 
     /**
      * It specifies whether the range navigator to be rendered in financial chart
-     * @default true
+
      */
     @Property(true)
     public enableSelector: boolean;
@@ -258,7 +258,7 @@ export class StockChart extends Component<HTMLElement> implements INotifyPropert
     /**
      * Triggers before render the selector
      * @event
-     * @deprecated
+
      */
     @Event()
     public selectorRender: EmitType<IRangeSelectorRenderEventArgs>;
@@ -266,7 +266,7 @@ export class StockChart extends Component<HTMLElement> implements INotifyPropert
     /**
      * Triggers on hovering the stock chart.
      * @event
-     * @blazorProperty 'OnStockChartMouseMove'
+
      */
 
     @Event()
@@ -275,7 +275,7 @@ export class StockChart extends Component<HTMLElement> implements INotifyPropert
     /**
      * Triggers when cursor leaves the chart.
      * @event
-     * @blazorProperty 'OnStockChartMouseLeave'
+
      */
 
     @Event()
@@ -284,7 +284,7 @@ export class StockChart extends Component<HTMLElement> implements INotifyPropert
     /**
      * Triggers on mouse down.
      * @event
-     * @blazorProperty 'OnStockChartMouseDown'
+
      */
 
     @Event()
@@ -293,7 +293,7 @@ export class StockChart extends Component<HTMLElement> implements INotifyPropert
     /**
      * Triggers on mouse up.
      * @event
-     * @blazorProperty 'OnStockChartMouseUp'
+
      */
 
     @Event()
@@ -302,7 +302,7 @@ export class StockChart extends Component<HTMLElement> implements INotifyPropert
     /**
      * Triggers on clicking the stock chart.
      * @event
-     * @blazorProperty 'OnStockChartMouseClick'
+
      */
 
     @Event()
@@ -311,7 +311,7 @@ export class StockChart extends Component<HTMLElement> implements INotifyPropert
     /**
      * Triggers on point click.
      * @event
-     * @blazorProperty 'OnPointClick'
+
      */
 
     @Event()
@@ -320,7 +320,7 @@ export class StockChart extends Component<HTMLElement> implements INotifyPropert
     /**
      * Triggers on point move.
      * @event
-     * @blazorProperty 'PointMoved'
+
      */
 
     @Event()
@@ -336,14 +336,14 @@ export class StockChart extends Component<HTMLElement> implements INotifyPropert
      * * dragXY: selects points by dragging with respect to both horizontal and vertical axes
      * * dragX: selects points by dragging with respect to horizontal axis.
      * * dragY: selects points by dragging with respect to vertical axis.
-     * @default None
+
      */
     @Property('None')
     public selectionMode: SelectionMode;
 
     /**
      * If set true, enables the multi selection in chart. It requires `selectionMode` to be `Point` | `Series` | or `Cluster`.
-     * @default false
+
      */
     @Property(false)
     public isMultiSelect: boolean;
@@ -351,7 +351,7 @@ export class StockChart extends Component<HTMLElement> implements INotifyPropert
     /**
      * Triggers before the range navigator rendering
      * @event
-     * @deprecated
+
      */
     @Event()
     public load: EmitType<IStockChartEventArgs>;
@@ -359,7 +359,7 @@ export class StockChart extends Component<HTMLElement> implements INotifyPropert
     /**
      * Triggers after the range navigator rendering
      * @event
-     * @blazorProperty 'Loaded'
+
      */
     @Event()
     public loaded: EmitType<IStockChartEventArgs>;
@@ -367,7 +367,7 @@ export class StockChart extends Component<HTMLElement> implements INotifyPropert
     /**
      * Triggers if the range is changed
      * @event
-     * @blazorProperty 'RangeChange'
+
      */
     @Event()
     public rangeChange: EmitType<IRangeChangeEventArgs>;
@@ -375,7 +375,7 @@ export class StockChart extends Component<HTMLElement> implements INotifyPropert
     /**
      * Triggers before each axis label is rendered.
      * @event
-     * @deprecated
+
      */
     @Event()
     public axisLabelRender: EmitType<IAxisLabelRenderEventArgs>;
@@ -383,7 +383,7 @@ export class StockChart extends Component<HTMLElement> implements INotifyPropert
     /**
      * Triggers before the tooltip for series is rendered.
      * @event
-     * @deprecated
+
      */
 
     @Event()
@@ -392,7 +392,7 @@ export class StockChart extends Component<HTMLElement> implements INotifyPropert
     /**
      * Triggers before the series is rendered.
      * @event
-     * @deprecated
+
      */
 
     @Event()
@@ -401,7 +401,7 @@ export class StockChart extends Component<HTMLElement> implements INotifyPropert
     /**
      * Triggers before the series is rendered.
      * @event
-     * @deprecated
+
      */
     @Event()
     public stockEventRender: EmitType<IStockEventRenderArgs>;
@@ -423,7 +423,7 @@ export class StockChart extends Component<HTMLElement> implements INotifyPropert
      * });
      * chart.appendTo('#Chart');
      * ```
-     * @default []
+
      */
     @Collection<StockChartIndexesModel>([], StockChartIndexes)
     public selectedDataIndexes: StockChartIndexesModel[];
@@ -562,7 +562,7 @@ export class StockChart extends Component<HTMLElement> implements INotifyPropert
 
     /**
      * Constructor for creating the widget
-     * @hidden
+
      */
     constructor(options?: StockChartModel, element?: string | HTMLElement) {
         super(options, <HTMLElement | string>element);

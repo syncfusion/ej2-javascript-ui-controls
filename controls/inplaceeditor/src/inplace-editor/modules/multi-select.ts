@@ -22,6 +22,14 @@ export class MultiSelect implements IComponent {
         this.compObj = new EJ2MultiSelect(this.parent.model as MultiSelectModel, e.target);
     }
 
+    /**
+
+     */
+    public showPopup(): void {
+        this.compObj.focusIn();
+        this.compObj.showPopup();
+    }
+
     public focus(): void {
         closest(this.compObj.element, '.e-multi-select-wrapper').dispatchEvent(new MouseEvent('mousedown'));
     }
@@ -41,7 +49,7 @@ export class MultiSelect implements IComponent {
      * Destroys the module.
      * @method destroy
      * @return {void}
-     * @hidden
+
      */
     public destroy(): void {
         this.base.destroy();

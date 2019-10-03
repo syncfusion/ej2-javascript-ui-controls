@@ -25,7 +25,7 @@ export class AccumulationTooltip extends BaseTooltip {
         this.addEventListener();
     }
     /**
-     * @hidden
+
      */
     private addEventListener(): void {
         if (this.accumulation.isDestroyed) { return; }

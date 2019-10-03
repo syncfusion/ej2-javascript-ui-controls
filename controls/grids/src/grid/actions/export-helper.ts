@@ -12,7 +12,7 @@ import { ReturnType } from '../base/type';
 import { Grid } from '../base/grid';
 
 /**
- * @hidden
+
  * `ExportHelper` for `PdfExport` & `ExcelExport`
  */
 export class ExportHelper {
@@ -252,7 +252,7 @@ export class ExportHelper {
 }
 
 /**
- * @hidden
+
  * `ExportValueFormatter` for `PdfExport` & `ExcelExport`
  */
 export class ExportValueFormatter {

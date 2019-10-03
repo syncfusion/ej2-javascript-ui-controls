@@ -5,21 +5,27 @@ const consts: { [key: string]: string } = { GroupGuid: '{271bbba0-1ee7}' };
 
 /**
  * Data manager common utility methods.
- * @hidden
+
  */
 export class DataUtil {
     /**
      * Specifies the value which will be used to adjust the date value to server timezone.
-     * @default null
+
      */
     public static serverTimezoneOffset: number = null;
+
+    /**
+     * Species whether are not to be parsed with serverTimezoneOffset value.
+
+     */
+    public static timeZoneHandling: boolean = true;
 
     /**
      * Returns the value by invoking the provided parameter function.
      * If the paramater is not of type function then it will be returned as it is.
      * @param  {Function|string|string[]|number} value
      * @param  {Object} inst?
-     * @hidden
+
      */
     public static getValue<T>(value: T | Function, inst?: Object): T {
         if (typeof value === 'function') {
@@ -49,7 +55,7 @@ export class DataUtil {
     /**
      * To return the sorting function based on the string.
      * @param  {string} order
-     * @hidden
+
      */
     public static fnSort(order: string): Function {
         order = order ? DataUtil.toLowerCase(order) : 'ascending';
@@ -217,7 +223,7 @@ export class DataUtil {
      * @param  {Object[]} source
      * @param  {Group} lookup?
      * @param  {string} pKey?
-     * @hidden
+
      */
     public static buildHierarchy(fKey: string, from: string, source: Group, lookup?: Group, pKey?: string): void {
         let i: number;
@@ -342,7 +348,7 @@ export class DataUtil {
      * @param  {Object} obj
      * @param  {string[]} fields?
      * @param  {string} prefix?
-     * @hidden
+
      */
     public static getFieldList(obj: Object, fields?: string[], prefix?: string): string[] {
         if (prefix === undefined) {
@@ -391,7 +397,7 @@ export class DataUtil {
      * @param {Object} value - Value that you need to set.
      * @param {Object} obj - Object to get the inner object value.
      * @return { [key: string]: Object; } | Object
-     * @hidden
+
      */
     public static setValue(nameSpace: string, value: Object | null, obj: Object): { [key: string]: Object; } | Object {
         let keys: string[] = nameSpace.toString().split('.');
@@ -449,7 +455,8 @@ export class DataUtil {
         while (left.length > 0 || right.length > 0) {
             if (left.length > 0 && right.length > 0) {
                 if (comparer) {
-                    current = (<Function>comparer)(this.getVal(left, 0, fieldName), this.getVal(right, 0, fieldName)) <= 0 ? left : right;
+                    current = (<Function>comparer)(this.getVal(left, 0, fieldName), this.getVal(right, 0, fieldName),
+                                                   left[0], right[0]) <= 0 ? left : right;
                 } else {
                     current = left[0][fieldName] < left[0][fieldName] ? left : right;
                 }
@@ -1515,7 +1522,7 @@ export class DataUtil {
         /**
          * It will return the filter operator based on the filter symbol.
          * @param  {string} operator
-         * @hidden
+
          */
         processSymbols: (operator: string): string => {
             let fnName: string = DataUtil.operatorSymbols[operator];
@@ -1528,7 +1535,7 @@ export class DataUtil {
         /**
          * It will return the valid filter operator based on the specified operators.
          * @param  {string} operator
-         * @hidden
+
          */
         processOperator: (operator: string): string => {
             let fn: string = DataUtil.fnOperators[operator];
@@ -1543,7 +1550,7 @@ export class DataUtil {
      * @param  {string} fnName
      * @param  {Object} param1?
      * @param  {Object} param2?
-     * @hidden
+
      */
     public static callAdaptorFunction(adaptor: Object, fnName: string, param1?: Object, param2?: Object): Object {
         if (fnName in adaptor) {
@@ -1584,7 +1591,7 @@ export class DataUtil {
         /**
          * It will perform on array of values.
          * @param  {string[]|Object[]} array
-         * @hidden
+
          */
         iterateAndReviveArray: (array: string[] | Object[]): void => {
             for (let i: number = 0; i < array.length; i++) {
@@ -1600,7 +1607,7 @@ export class DataUtil {
         /**
          * It will perform on JSON values
          * @param  {JSON} json
-         * @hidden
+
          */
         iterateAndReviveJson: (json: JSON): void => {
             let value: Object | string;
@@ -1627,23 +1634,47 @@ export class DataUtil {
          * It will perform on JSON values
          * @param  {string} field
          * @param  {string|Date} value
-         * @hidden
+
          */
         jsonReviver: (field: string, value: string | Date): string | Date => {
-            let dupValue: string | Date = value;
             if (typeof value === 'string') {
                 let ms: string[] = /^\/Date\(([+-]?[0-9]+)([+-][0-9]{4})?\)\/$/.exec(<string>value);
+                let offSet: number = DataUtil.timeZoneHandling ? DataUtil.serverTimezoneOffset : null;
                 if (ms) {
-                    return DataUtil.dateParse.toTimeZone(new Date(parseInt(ms[1], 10)), DataUtil.serverTimezoneOffset, true);
+                        return DataUtil.dateParse.toTimeZone(new Date(parseInt(ms[1], 10)), offSet, true);
                 } else if (/^(\d{4}\-\d\d\-\d\d([tT][\d:\.]*){1})([zZ]|([+\-])(\d\d):?(\d\d))?$/.test(<string>value)) {
-                    let arr: string[] = (<string>dupValue).split(/[^0-9]/);
-                    value = DataUtil.dateParse
-                    .toTimeZone(new Date(
-                                parseInt(arr[0], 10),
-                                parseInt(arr[1], 10) - 1,
-                                parseInt(arr[2], 10),
-                                parseInt(arr[3], 10), parseInt(arr[4], 10), parseInt(arr[5], 10)),
-                                DataUtil.serverTimezoneOffset, true);
+                    let isUTC: boolean = value.indexOf('Z') > -1 || value.indexOf('z') > -1;
+                    let arr: string[] = (<string>value).split(/[^0-9]/);
+                    if (isUTC) {
+                        value = DataUtil.dateParse
+                        .toTimeZone(new Date(
+                                    parseInt(arr[0], 10),
+                                    parseInt(arr[1], 10) - 1,
+                                    parseInt(arr[2], 10),
+                                    parseInt(arr[3], 10), parseInt(arr[4], 10), parseInt(arr[5], 10)),
+                                    DataUtil.serverTimezoneOffset, false);
+                    } else {
+                        let utcFormat: Date = new Date(
+                            parseInt(arr[0], 10),
+                            parseInt(arr[1], 10) - 1,
+                            parseInt(arr[2], 10),
+                            parseInt(arr[3], 10), parseInt(arr[4], 10), parseInt(arr[5], 10));
+                        let hrs: number = parseInt(arr[6], 10);
+                        let mins: number = parseInt(arr[7], 10);
+                        if (isNaN(hrs) && isNaN(mins)) {
+                            return utcFormat;
+                        }
+                        if (value.indexOf('+') > -1) {
+                            utcFormat.setHours(utcFormat.getHours() - hrs, utcFormat.getMinutes() - mins);
+                        } else {
+                            utcFormat.setHours(utcFormat.getHours() + hrs, utcFormat.getMinutes() + mins);
+                        }
+                        value = DataUtil.dateParse
+                            .toTimeZone(utcFormat, DataUtil.serverTimezoneOffset, false);
+                    }
+                    if (DataUtil.serverTimezoneOffset == null) {
+                        value = DataUtil.dateParse.addSelfOffset(value);
+                    }
                 }
             }
             return value;
@@ -1671,7 +1702,7 @@ export class DataUtil {
          * The method used to replace the value based on the type.
          * @param  {Object} value
          * @param  {boolean} stringify
-         * @hidden
+
          */
         replacer: (value: Object, stringify?: boolean): Object => {
 
@@ -1692,7 +1723,7 @@ export class DataUtil {
          * It will replace the JSON value.
          * @param  {string} key
          * @param  {Object} val
-         * @hidden
+
          */
         jsonReplacer: (val: Object, stringify: boolean): Object => {
             let value: Date;
@@ -1704,7 +1735,12 @@ export class DataUtil {
                     continue;
                 }
                 let d: Date = value;
-                val[prop] = DataUtil.dateParse.toTimeZone(DataUtil.dateParse.addSelfOffset(d), DataUtil.serverTimezoneOffset).toJSON();
+                if (DataUtil.serverTimezoneOffset == null) {
+                    val[prop] = DataUtil.dateParse.toTimeZone(d, null).toJSON();
+                } else {
+                    d = new Date(+d + DataUtil.serverTimezoneOffset * 3600000);
+                    val[prop] = DataUtil.dateParse.toTimeZone(DataUtil.dateParse.addSelfOffset(d), null).toJSON();
+                }
             }
 
             return val;
@@ -1713,7 +1749,7 @@ export class DataUtil {
          * It will replace the Array of value.
          * @param  {string} key
          * @param  {Object[]} val
-         * @hidden
+
          */
         arrayReplacer: (val: Object[]): Object => {
 
@@ -1726,6 +1762,44 @@ export class DataUtil {
             }
 
             return val;
+        },
+        /**
+         * It will replace the Date object with respective to UTC format value.
+         * @param  {string} key
+         * @param  {any} value
+
+         */
+        /* tslint:disable-next-line:no-any */
+        jsonDateReplacer: (key: string, value: any): any => {
+            if (key === 'value' && value) {
+                if (typeof value === 'string') {
+                    let ms: string[] = /^\/Date\(([+-]?[0-9]+)([+-][0-9]{4})?\)\/$/.exec(<string>value);
+                    if (ms) {
+                        value = DataUtil.dateParse.toTimeZone(new Date(parseInt(ms[1], 10)), null, true);
+                    } else if (/^(\d{4}\-\d\d\-\d\d([tT][\d:\.]*){1})([zZ]|([+\-])(\d\d):?(\d\d))?$/.test(<string>value)) {
+                        let arr: string[] = (<string>value).split(/[^0-9]/);
+                        value = DataUtil.dateParse
+                        .toTimeZone(new Date(
+                                    parseInt(arr[0], 10),
+                                    parseInt(arr[1], 10) - 1,
+                                    parseInt(arr[2], 10),
+                                    parseInt(arr[3], 10), parseInt(arr[4], 10), parseInt(arr[5], 10)),
+                                    null, true);
+                    }
+                }
+                if (value instanceof Date) {
+                    value = DataUtil.dateParse.addSelfOffset(value);
+                    if (DataUtil.serverTimezoneOffset === null) {
+                        return DataUtil.dateParse.toTimeZone(DataUtil.dateParse.addSelfOffset(value), null).toJSON();
+                    } else {
+                        value = DataUtil.dateParse.toTimeZone(value, (((value.getTimezoneOffset() / 60) * 2)
+                                                                     - DataUtil.serverTimezoneOffset ),
+                                                              false);
+                        return value.toJSON();
+                    }
+                }
+            }
+            return value;
         }
     };
 
@@ -1782,7 +1856,7 @@ export class DataUtil {
      * @param  {string} field
      * @param  {Function} comparer
      * @returns Object
-     * @hidden
+
      */
     public static getItemFromComparer(array: Object[], field: string, comparer: Function): Object {
         let keyVal: Object;
@@ -1820,7 +1894,7 @@ export class DataUtil {
      * @param  {boolean} requiresCompleteRecord
      * @returns Object[]
      * * distinct array of objects is return when requiresCompleteRecord set as true.
-     * @hidden
+
      */
     public static distinct(json: Object[], fieldName: string, requiresCompleteRecord?: boolean): Object[] {
         requiresCompleteRecord = isNullOrUndefined(requiresCompleteRecord) ? false : requiresCompleteRecord;
@@ -1837,7 +1911,7 @@ export class DataUtil {
         return result;
     }
     /**
-     * @hidden
+
      */
     public static dateParse: DateParseOption = {
         addSelfOffset: (input: Date) => {
@@ -1871,7 +1945,7 @@ export class DataUtil {
 }
 
 /**
- * @hidden
+
  */
 export interface Aggregates {
     sum?: Function;
@@ -1886,7 +1960,7 @@ export interface Aggregates {
 }
 
 /**
- * @hidden
+
  */
 export interface Operators {
     equal?: Function;
@@ -1905,7 +1979,7 @@ export interface Operators {
 }
 
 /**
- * @hidden
+
  */
 export interface Group {
     GroupGuid?: string;
@@ -1922,7 +1996,7 @@ export interface Group {
 }
 
 /**
- * @hidden
+
  */
 export interface ParseOption {
     parseJson?: Function;
@@ -1934,9 +2008,11 @@ export interface ParseOption {
     replacer?: Function;
     jsonReplacer?: Function;
     arrayReplacer?: Function;
+    /* tslint:disable-next-line:no-any */
+    jsonDateReplacer?: (key: string, value: any) => any;
 }
 /**
- * @hidden
+
  */
 export interface DateParseOption {
     addSelfOffset?: (input: Date) => Date;

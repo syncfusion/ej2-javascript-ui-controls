@@ -10,7 +10,7 @@ import { Cell } from '../models/cell';
 
 /**
  * `CellMergeRender` module.
- * @hidden
+
  */
 export class CellMergeRender<T> {
 

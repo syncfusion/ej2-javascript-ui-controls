@@ -5,7 +5,7 @@ import { Cell } from '../models/cell';
 
 /**
  * ExpandCellRenderer class which responsible for building group expand cell. 
- * @hidden
+
  */
 export class RowDragDropRenderer extends CellRenderer implements ICellRenderer<Column> {
 

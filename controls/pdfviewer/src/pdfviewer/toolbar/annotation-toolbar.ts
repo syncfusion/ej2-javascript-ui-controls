@@ -14,7 +14,7 @@ import { ComboBox } from '@syncfusion/ej2-dropdowns';
 import { Query } from '@syncfusion/ej2-data';
 
 /**
- * @hidden
+
  */
 export class AnnotationToolbar {
     private pdfViewer: PdfViewer;
@@ -321,6 +321,7 @@ export class AnnotationToolbar {
             showItemOnClick: true,
             enableScrolling: true,
             beforeOpen: (args: Menuopen): void => {
+                this.resetFreeTextAnnot();
                 if (args.parentItem.text === '' && this.pdfViewer.customStampSettings.isAddToSubMenu && args.items.length > 0) {
                     // tslint:disable-next-line
                     let currentElements: any = null;
@@ -671,21 +672,28 @@ export class AnnotationToolbar {
             if (args.element.getElementsByTagName('button') && args.element.getElementsByTagName('button').length > 0) {
                 // tslint:disable-next-line
                 let dropDownOptions: any = args.element.getElementsByTagName('button');
-                dropDownOptions.pdfViewer_left_align.classList.remove('textprop-option-active');
-                dropDownOptions.pdfViewer_right_align.classList.remove('textprop-option-active');
-                dropDownOptions.pdfViewer_center_align.classList.remove('textprop-option-active');
-                dropDownOptions.pdfViewer_justify_align.classList.remove('textprop-option-active');
-                if (this.pdfViewer.selectedItems.annotations[0].textAlign === 'Left') {
-                    dropDownOptions.pdfViewer_left_align.classList.add('textprop-option-active');
-                }
-                if (this.pdfViewer.selectedItems.annotations[0].textAlign === 'Right') {
-                    dropDownOptions.pdfViewer_right_align.classList.add('textprop-option-active');
-                }
-                if (this.pdfViewer.selectedItems.annotations[0].textAlign === 'Center') {
-                    dropDownOptions.pdfViewer_center_align.classList.add('textprop-option-active');
-                }
-                if (this.pdfViewer.selectedItems.annotations[0].textAlign === 'Justify') {
-                    dropDownOptions.pdfViewer_justify_align.classList.add('textprop-option-active');
+                // tslint:disable-next-line
+                let selectedAnnotation: any = this.pdfViewer.selectedItems.annotations[0];
+                for (let n: number = 0; n < dropDownOptions.length; n++) {
+                    if (dropDownOptions[n]) {
+                        dropDownOptions[n].classList.remove('textprop-option-active');
+                        // tslint:disable-next-line:max-line-length
+                        if (dropDownOptions[n].id === (this.pdfViewer.element.id + '_left_align') && selectedAnnotation.textAlign === 'Left') {
+                            dropDownOptions[n].classList.add('textprop-option-active');
+                        }
+                        // tslint:disable-next-line:max-line-length
+                        if (dropDownOptions[n].id === (this.pdfViewer.element.id + '_right_align') && selectedAnnotation.textAlign === 'Right') {
+                            dropDownOptions[n].classList.add('textprop-option-active');
+                        }
+                        // tslint:disable-next-line:max-line-length
+                        if (dropDownOptions[n].id === (this.pdfViewer.element.id + '_center_align') && selectedAnnotation.textAlign === 'Center') {
+                            dropDownOptions[n].classList.add('textprop-option-active');
+                        }
+                        // tslint:disable-next-line:max-line-length
+                        if (dropDownOptions[n].id === (this.pdfViewer.element.id + '_justify_align') && selectedAnnotation.textAlign === 'Justify') {
+                            dropDownOptions[n].classList.add('textprop-option-active');
+                        }
+                    }
                 }
             }
         }
@@ -696,21 +704,25 @@ export class AnnotationToolbar {
             if (args.element.getElementsByTagName('button') && args.element.getElementsByTagName('button').length > 0) {
                 // tslint:disable-next-line
                 let dropDownOptions: any = args.element.getElementsByTagName('button');
-                dropDownOptions.pdfViewer_bold.classList.remove('textprop-option-active');
-                dropDownOptions.pdfViewer_italic.classList.remove('textprop-option-active');
-                dropDownOptions.pdfViewer_strikeout.classList.remove('textprop-option-active');
-                dropDownOptions.pdfViewer_underline_textinput.classList.remove('textprop-option-active');
-                if (this.pdfViewer.selectedItems.annotations[0].font.isBold) {
-                    dropDownOptions.pdfViewer_bold.classList.add('textprop-option-active');
-                }
-                if (this.pdfViewer.selectedItems.annotations[0].font.isItalic) {
-                    dropDownOptions.pdfViewer_italic.classList.add('textprop-option-active');
-                }
-                if (this.pdfViewer.selectedItems.annotations[0].font.isStrikeout) {
-                    dropDownOptions.pdfViewer_strikeout.classList.add('textprop-option-active');
-                }
-                if (this.pdfViewer.selectedItems.annotations[0].font.isUnderline) {
-                    dropDownOptions.pdfViewer_underline_textinput.classList.add('textprop-option-active');
+                // tslint:disable-next-line
+                let selectedAnnotation: any = this.pdfViewer.selectedItems.annotations[0];
+                for (let n: number = 0; n < dropDownOptions.length; n++) {
+                    if (dropDownOptions[n]) {
+                        dropDownOptions[n].classList.remove('textprop-option-active');
+                        if (dropDownOptions[n].id === (this.pdfViewer.element.id + '_bold') && selectedAnnotation.font.isBold) {
+                            dropDownOptions[n].classList.add('textprop-option-active');
+                        }
+                        if (dropDownOptions[n].id === (this.pdfViewer.element.id + '_italic') && selectedAnnotation.font.isItalic) {
+                            dropDownOptions[n].classList.add('textprop-option-active');
+                        }
+                        if (dropDownOptions[n].id === (this.pdfViewer.element.id + '_strikeout') && selectedAnnotation.font.isStrikeout) {
+                            dropDownOptions[n].classList.add('textprop-option-active');
+                        }
+                         // tslint:disable-next-line:max-line-length
+                        if (dropDownOptions[n].id === (this.pdfViewer.element.id + '_underline_textinput') && selectedAnnotation.font.isUnderline) {
+                            dropDownOptions[n].classList.add('textprop-option-active');
+                        }
+                    }
                 }
             }
         }
@@ -1097,6 +1109,7 @@ export class AnnotationToolbar {
         let elementId: string = this.pdfViewer.element.id;
         let shapeAnnotationModule: ShapeAnnotation = this.pdfViewer.annotation.shapeAnnotationModule;
         this.deselectAllItems();
+        this.resetFreeTextAnnot();
         switch ((args.originalEvent.target as HTMLElement).id) {
             case elementId + '_shape_line':
             case elementId + '_shape_lineIcon':
@@ -1141,6 +1154,7 @@ export class AnnotationToolbar {
         let elementId: string = this.pdfViewer.element.id;
         let measureModule: MeasureAnnotation = this.pdfViewer.annotation.measureAnnotationModule;
         this.deselectAllItems();
+        this.resetFreeTextAnnot();
         switch ((args.originalEvent.target as HTMLElement).id) {
             case elementId + '_calibrate_distance':
             case elementId + '_calibrate_distanceIcon':
@@ -1504,6 +1518,7 @@ export class AnnotationToolbar {
     private resetFreeTextAnnot(): void {
         if (this.pdfViewer.annotationModule.freeTextAnnotationModule) {
             this.pdfViewer.annotation.freeTextAnnotationModule.isNewFreeTextAnnot = false;
+            this.pdfViewer.annotation.freeTextAnnotationModule.isNewAddedAnnot = false;
             this.primaryToolbar.deSelectItem(this.freeTextEditItem);
             this.enableFreeTextAnnotationPropertiesTools(false);
         }
@@ -2111,6 +2126,9 @@ export class AnnotationToolbar {
     private getColorHexValue(colorString: string, type: string): string {
         if (colorString === '#ffffff00') {
             colorString = '#ffffff';
+        }
+        if (colorString.toLowerCase() === 'red') {
+            colorString = '#FF0000';
         }
         if (colorString !== 'transparent') {
             return this.colorPalette.getValue(colorString, 'hex');

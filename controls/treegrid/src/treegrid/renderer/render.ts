@@ -8,7 +8,7 @@ import { Column } from '../models';
 
 /**
  * TreeGrid render module
- * @hidden
+
  */
 export class Render {
     //Module declarations

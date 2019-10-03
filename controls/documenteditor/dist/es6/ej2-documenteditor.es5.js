@@ -541,6 +541,12 @@ var WUniqueFormat = /** @__PURE__ @class */ (function () {
         if (property === 'bidi') {
             return 11;
         }
+        if (property === 'restartPageNumbering') {
+            return 12;
+        }
+        if (property === 'pageStartingNumber') {
+            return 13;
+        }
         return 0;
     };
     /**
@@ -868,6 +874,12 @@ var WUniqueFormat = /** @__PURE__ @class */ (function () {
         if (this.isNotEqual('bidi', source, modifiedProperty, modifiedValue, 10)) {
             return false;
         }
+        if (this.isNotEqual('restartPageNumbering', source, modifiedProperty, modifiedValue, 10)) {
+            return false;
+        }
+        if (this.isNotEqual('pageStartingNumber', source, modifiedProperty, modifiedValue, 10)) {
+            return false;
+        }
         return true;
     };
     /**
@@ -1025,7 +1037,7 @@ var XmlHttpRequestHandler = /** @__PURE__ @class */ (function () {
     function XmlHttpRequestHandler() {
         /**
          * A boolean value indicating whether the request should be sent asynchronous or not.
-         * @default true
+    
          */
         this.mode = true;
     }
@@ -1236,6 +1248,26 @@ var WSectionFormat = /** @__PURE__ @class */ (function () {
         enumerable: true,
         configurable: true
     });
+    Object.defineProperty(WSectionFormat.prototype, "restartPageNumbering", {
+        get: function () {
+            return this.getPropertyValue('restartPageNumbering');
+        },
+        set: function (value) {
+            this.setPropertyValue('restartPageNumbering', value);
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(WSectionFormat.prototype, "pageStartingNumber", {
+        get: function () {
+            return this.getPropertyValue('pageStartingNumber');
+        },
+        set: function (value) {
+            this.setPropertyValue('pageStartingNumber', value);
+        },
+        enumerable: true,
+        configurable: true
+    });
     WSectionFormat.prototype.destroy = function () {
         if (!isNullOrUndefined(this.uniqueSectionFormat)) {
             WSectionFormat.uniqueSectionFormats.remove(this.uniqueSectionFormat);
@@ -1285,6 +1317,12 @@ var WSectionFormat = /** @__PURE__ @class */ (function () {
             case 'bidi':
                 value = false;
                 break;
+            case 'restartPageNumbering':
+                value = false;
+                break;
+            case 'pageStartingNumber':
+                value = 0;
+                break;
         }
         return value;
     };
@@ -1329,6 +1367,8 @@ var WSectionFormat = /** @__PURE__ @class */ (function () {
         this.addUniqueSectionFormat('rightMargin', property, propValue, uniqueSectionFormatTemp);
         this.addUniqueSectionFormat('bottomMargin', property, propValue, uniqueSectionFormatTemp);
         this.addUniqueSectionFormat('bidi', property, propValue, uniqueSectionFormatTemp);
+        this.addUniqueSectionFormat('restartPageNumbering', property, propValue, uniqueSectionFormatTemp);
+        this.addUniqueSectionFormat('pageStartingNumber', property, propValue, uniqueSectionFormatTemp);
         // tslint:disable-next-line:max-line-length
         this.uniqueSectionFormat = WSectionFormat.uniqueSectionFormats.addUniqueFormat(uniqueSectionFormatTemp, WSectionFormat.uniqueFormatType);
     };
@@ -1877,12 +1917,20 @@ var WParagraphFormat = /** @__PURE__ @class */ (function () {
         configurable: true
     });
     WParagraphFormat.prototype.getListFormatParagraphFormat = function (property) {
+        var paragraphFormat = this.getListPargaraphFormat(property);
+        if (!isNullOrUndefined(paragraphFormat)) {
+            // tslint:disable-next-line:max-line-length
+            return paragraphFormat.uniqueParagraphFormat.propertiesHash.get(WUniqueFormat.getPropertyType(WParagraphFormat.uniqueFormatType, property));
+        }
+        return undefined;
+    };
+    WParagraphFormat.prototype.getListPargaraphFormat = function (property) {
         if (this.listFormat.listId > -1 && this.listFormat.listLevelNumber > -1) {
             var level = this.listFormat.listLevel;
             var propertyType = WUniqueFormat.getPropertyType(WParagraphFormat.uniqueFormatType, property);
-            // tslint:disable-next-line:max-line-length
-            if (!isNullOrUndefined(level) && !isNullOrUndefined(level.paragraphFormat.uniqueParagraphFormat) && level.paragraphFormat.uniqueParagraphFormat.propertiesHash.containsKey(propertyType)) {
-                return level.paragraphFormat.uniqueParagraphFormat.propertiesHash.get(propertyType);
+            if (!isNullOrUndefined(level) && !isNullOrUndefined(level.paragraphFormat.uniqueParagraphFormat) &&
+                level.paragraphFormat.uniqueParagraphFormat.propertiesHash.containsKey(propertyType)) {
+                return level.paragraphFormat;
             }
             else {
                 return undefined;
@@ -1892,12 +1940,19 @@ var WParagraphFormat = /** @__PURE__ @class */ (function () {
     };
     WParagraphFormat.prototype.getPropertyValue = function (property) {
         if (!this.hasValue(property)) {
-            var ifListFormat = this.getListFormatParagraphFormat(property);
+            var formatInList = this.getListFormatParagraphFormat(property);
             if (this.baseStyle instanceof WParagraphStyle) {
+                var currentFormat = this;
                 /* tslint:disable-next-line:no-any */
                 var baseStyle = this.baseStyle;
                 while (!isNullOrUndefined(baseStyle)) {
+                    var listParaFormat = baseStyle.paragraphFormat.getListPargaraphFormat(property);
                     if (baseStyle.paragraphFormat.hasValue(property)) {
+                        currentFormat = baseStyle.paragraphFormat;
+                        break;
+                    }
+                    else if (!isNullOrUndefined(listParaFormat) && listParaFormat.hasValue(property)) {
+                        currentFormat = listParaFormat;
                         break;
                     }
                     else {
@@ -1905,17 +1960,17 @@ var WParagraphFormat = /** @__PURE__ @class */ (function () {
                     }
                 }
                 if (!isNullOrUndefined(baseStyle)) {
-                    if (!isNullOrUndefined(ifListFormat) && this.listFormat.listId !== -1
-                        && baseStyle.paragraphFormat.listFormat.listId === -1
-                        || !isNullOrUndefined(ifListFormat) && this.listFormat.listId !== baseStyle.paragraphFormat.listFormat.listId) {
-                        return ifListFormat;
+                    if (!isNullOrUndefined(formatInList) && this.listFormat.listId !== -1
+                        && currentFormat.listFormat.listId === -1
+                        || !isNullOrUndefined(formatInList) && this.listFormat.listId !== currentFormat.listFormat.listId) {
+                        return formatInList;
                     }
                     var propertyType = WUniqueFormat.getPropertyType(WParagraphFormat.uniqueFormatType, property);
-                    return baseStyle.paragraphFormat.uniqueParagraphFormat.propertiesHash.get(propertyType);
+                    return currentFormat.uniqueParagraphFormat.propertiesHash.get(propertyType);
                 }
             }
-            if (!isNullOrUndefined(ifListFormat)) {
-                return ifListFormat;
+            if (!isNullOrUndefined(formatInList)) {
+                return formatInList;
             }
         }
         else {
@@ -1944,7 +1999,8 @@ var WParagraphFormat = /** @__PURE__ @class */ (function () {
     WParagraphFormat.prototype.documentParagraphFormat = function () {
         var docParagraphFormat;
         if (!isNullOrUndefined(this.ownerBase)) {
-            if (!isNullOrUndefined(this.ownerBase.bodyWidget)) {
+            // tslint:disable-next-line:max-line-length
+            if (!isNullOrUndefined(this.ownerBase.bodyWidget) && !isNullOrUndefined(this.ownerBase.bodyWidget.page)) {
                 docParagraphFormat = this.ownerBase.bodyWidget.page.viewer.paragraphFormat;
             }
         }
@@ -2390,7 +2446,8 @@ var WCharacterFormat = /** @__PURE__ @class */ (function () {
     WCharacterFormat.prototype.documentCharacterFormat = function () {
         var docCharacterFormat;
         if (!isNullOrUndefined(this.ownerBase)) {
-            if (!isNullOrUndefined(this.ownerBase.paragraph)) {
+            // tslint:disable-next-line:max-line-length
+            if (!isNullOrUndefined(this.ownerBase.paragraph) && !isNullOrUndefined(this.ownerBase.paragraph.bodyWidget)) {
                 docCharacterFormat = this.ownerBase.paragraph.bodyWidget.page.viewer.characterFormat;
             }
             else {
@@ -2574,6 +2631,9 @@ var WCharacterFormat = /** @__PURE__ @class */ (function () {
         format.baseCharStyle = this.baseCharStyle;
         return format;
     };
+    /**
+     * @private
+     */
     WCharacterFormat.prototype.hasValue = function (property) {
         if (!isNullOrUndefined(this.uniqueCharacterFormat) && !isNullOrUndefined(this.uniqueCharacterFormat.propertiesHash)) {
             var propertyType = WUniqueFormat.getPropertyType(this.uniqueCharacterFormat.uniqueFormatType, property);
@@ -8632,15 +8692,21 @@ var LineWidget = /** @__PURE__ @class */ (function () {
         var line = inline.line;
         var lineIndex = inline.line.paragraph.childWidgets.indexOf(inline.line);
         var bidi = line.paragraph.bidi;
-        for (var i = !bidi ? 0 : line.children.length - 1; i > -1 && i < line.children.length; bidi ? i-- : i++) {
-            var inlineElement = line.children[i];
-            if (inline === inlineElement) {
-                break;
+        if (!bidi) {
+            for (var i = 0; i < line.children.length; i++) {
+                var inlineElement = line.children[i];
+                if (inline === inlineElement) {
+                    break;
+                }
+                if (inlineElement instanceof ListTextElementBox) {
+                    continue;
+                }
+                textIndex += inlineElement.length;
             }
-            if (inlineElement instanceof ListTextElementBox) {
-                continue;
-            }
-            textIndex += inlineElement.length;
+        }
+        else {
+            var elementInfo = this.getInlineForOffset(textIndex, true, inline);
+            textIndex = elementInfo.index;
         }
         return textIndex;
     };
@@ -8650,23 +8716,117 @@ var LineWidget = /** @__PURE__ @class */ (function () {
     LineWidget.prototype.getEndOffset = function () {
         var startOffset = 0;
         var count = 0;
-        for (var i = 0; i < this.children.length; i++) {
-            var inlineElement = this.children[i];
-            if (inlineElement.length === 0) {
-                continue;
+        // let line: LineWidget = this.line as LineWidget;
+        // let lineIndex: number = thtis.line.paragraph.childWidgets.indexOf(inline.line);
+        var bidi = this.paragraph.bidi;
+        if (!bidi) {
+            for (var i = 0; i < this.children.length; i++) {
+                var inlineElement = this.children[i];
+                if (inlineElement.length === 0) {
+                    continue;
+                }
+                if (inlineElement instanceof ListTextElementBox) {
+                    continue;
+                }
+                if (inlineElement instanceof TextElementBox || inlineElement instanceof EditRangeStartElementBox
+                    || inlineElement instanceof ImageElementBox || inlineElement instanceof EditRangeEndElementBox
+                    || inlineElement instanceof BookmarkElementBox || (inlineElement instanceof FieldElementBox
+                    && HelperMethods.isLinkedFieldCharacter(inlineElement))) {
+                    startOffset = count + inlineElement.length;
+                }
+                count += inlineElement.length;
             }
-            if (inlineElement instanceof ListTextElementBox) {
-                continue;
-            }
-            if (inlineElement instanceof TextElementBox || inlineElement instanceof EditRangeStartElementBox
-                || inlineElement instanceof ImageElementBox || inlineElement instanceof EditRangeEndElementBox
-                || inlineElement instanceof BookmarkElementBox || (inlineElement instanceof FieldElementBox
-                && HelperMethods.isLinkedFieldCharacter(inlineElement))) {
-                startOffset = count + inlineElement.length;
-            }
-            count += inlineElement.length;
+        }
+        else {
+            var elementInfo = this.getInlineForOffset(startOffset, false, this.children[0], true);
+            startOffset = elementInfo.index;
         }
         return startOffset;
+    };
+    LineWidget.prototype.getBodyWidget = function () {
+        var cntrWidget = this.paragraph.containerWidget;
+        while (!(cntrWidget instanceof BodyWidget)) {
+            cntrWidget = cntrWidget.containerWidget;
+        }
+        return cntrWidget;
+    };
+    LineWidget.prototype.getInlineForOffset = function (offset, isOffset, inline, isEndOffset) {
+        var startElement = this.children[this.children.length - 1];
+        var endElement;
+        var element = startElement;
+        var viewer = this.getBodyWidget().page.viewer;
+        var textHelper = viewer.textHelper;
+        var isApplied = false;
+        var count = 0;
+        var lineLength = viewer.selection.getLineLength(this);
+        while (element) {
+            if (!endElement && !(element instanceof TabElementBox && element.text === '\t') &&
+                (element instanceof TextElementBox && !textHelper.isRTLText(element.text)
+                    || !(element instanceof TextElementBox))) {
+                while (element.previousElement && (element.previousElement instanceof TextElementBox
+                    && !textHelper.isRTLText(element.previousElement.text) || element.previousElement instanceof FieldElementBox
+                    || element.previousElement instanceof ListTextElementBox || element instanceof BookmarkElementBox
+                    || element instanceof ImageElementBox)) {
+                    isApplied = true;
+                    element = element.previousElement;
+                    continue;
+                }
+                if (element.previousElement && (isApplied
+                    || (element.previousElement instanceof TextElementBox && textHelper.isRTLText(element.previousElement.text)))) {
+                    endElement = element.previousElement;
+                }
+                else if (!element.previousElement) {
+                    if (element instanceof ListTextElementBox) {
+                        break;
+                    }
+                    endElement = element;
+                }
+                if (element instanceof ListTextElementBox && endElement) {
+                    element = endElement;
+                    endElement = undefined;
+                }
+            }
+            if (isOffset && !isNullOrUndefined(inline)) {
+                if (inline === element) {
+                    return { 'element': element, 'index': offset };
+                }
+                offset += element.length;
+            }
+            else if (isEndOffset) {
+                offset += element.length;
+                if (offset === lineLength) {
+                    return { 'element': element, 'index': offset };
+                }
+            }
+            else {
+                if (offset <= count + element.length) {
+                    return { 'element': element, 'index': offset - count };
+                }
+                count += element.length;
+            }
+            if (element instanceof TextElementBox && textHelper.isRTLText(element.text) ||
+                (element instanceof TabElementBox && element.text === '\t')) {
+                if ((offset === count + 1 || offset > count + 1) && count === lineLength && !element.previousElement) {
+                    break;
+                }
+                element = element.previousElement;
+            }
+            else {
+                if (endElement && (!element.nextElement || element === startElement || element.nextElement instanceof TextElementBox
+                    && textHelper.isRTLText(element.nextElement.text) || element.nextElement instanceof ListTextElementBox)) {
+                    if (offset === count + 1 && count === lineLength) {
+                        break;
+                    }
+                    element = endElement;
+                    endElement = undefined;
+                    isApplied = false;
+                }
+                else {
+                    element = element.nextElement;
+                }
+            }
+        }
+        return { 'element': element, 'index': isEndOffset ? offset : 0 };
     };
     /**
      * @private
@@ -8686,39 +8846,47 @@ var LineWidget = /** @__PURE__ @class */ (function () {
                 }
             }
         }
-        for (var i = !bidi ? 0 : this.children.length - 1; bidi ? i > -1 : i < this.children.length; bidi ? i-- : i++) {
-            inlineElement = this.children[i];
-            if (inlineElement instanceof ListTextElementBox) {
-                continue;
-            }
-            if (!isStarted && (inlineElement instanceof TextElementBox || inlineElement instanceof ImageElementBox
-                || inlineElement instanceof BookmarkElementBox || inlineElement instanceof EditRangeEndElementBox
-                || inlineElement instanceof EditRangeStartElementBox
-                || inlineElement instanceof FieldElementBox && HelperMethods.isLinkedFieldCharacter(inlineElement))) {
-                isStarted = true;
-            }
-            if (isStarted && offset <= count + inlineElement.length) {
-                // if (inlineElement instanceof BookmarkElementBox) {
-                //     offset += inlineElement.length;
-                //     count += inlineElement.length;
-                //     continue;
-                // }
-                // tslint:disable-next-line:max-line-length
-                if (inlineElement instanceof TextElementBox && (inlineElement.text === ' ' && isInsert)) {
-                    var currentElement = this.getNextTextElement(this, i + 1);
-                    inlineElement = !isNullOrUndefined(currentElement) ? currentElement : inlineElement;
-                    indexInInline = isNullOrUndefined(currentElement) ? (offset - count) : 0;
+        if (!bidi) {
+            for (var i = 0; i < this.children.length; i++) {
+                inlineElement = this.children[i];
+                if (inlineElement instanceof ListTextElementBox) {
+                    continue;
+                }
+                if (!isStarted && (inlineElement instanceof TextElementBox || inlineElement instanceof ImageElementBox
+                    || inlineElement instanceof BookmarkElementBox || inlineElement instanceof EditRangeEndElementBox
+                    || inlineElement instanceof EditRangeStartElementBox
+                    || inlineElement instanceof FieldElementBox
+                        && HelperMethods.isLinkedFieldCharacter(inlineElement))) {
+                    isStarted = true;
+                }
+                if (isStarted && offset <= count + inlineElement.length) {
+                    // if (inlineElement instanceof BookmarkElementBox) {
+                    //     offset += inlineElement.length;
+                    //     count += inlineElement.length;
+                    //     continue;
+                    // }
+                    // tslint:disable-next-line:max-line-length
+                    if (inlineElement instanceof TextElementBox && (inlineElement.text === ' ' && isInsert)) {
+                        var currentElement = this.getNextTextElement(this, i + 1);
+                        inlineElement = !isNullOrUndefined(currentElement) ? currentElement : inlineElement;
+                        indexInInline = isNullOrUndefined(currentElement) ? (offset - count) : 0;
+                        return { 'element': inlineElement, 'index': indexInInline };
+                    }
+                    else {
+                        indexInInline = (offset - count);
+                    }
                     return { 'element': inlineElement, 'index': indexInInline };
                 }
-                else {
-                    indexInInline = (offset - count);
-                }
-                return { 'element': inlineElement, 'index': indexInInline };
+                count += inlineElement.length;
             }
-            count += inlineElement.length;
+            if (offset > count) {
+                indexInInline = isNullOrUndefined(inlineElement) ? offset : inlineElement.length;
+            }
         }
-        if (offset > count) {
-            indexInInline = isNullOrUndefined(inlineElement) ? offset : inlineElement.length;
+        else {
+            var elementInfo = this.getInlineForOffset(offset);
+            inlineElement = elementInfo.element;
+            indexInInline = elementInfo.index;
         }
         return { 'element': inlineElement, 'index': indexInInline };
     };
@@ -8929,7 +9097,8 @@ var ElementBox = /** @__PURE__ @class */ (function () {
         if (line.previousLine) {
             this.linkFieldTraversingBackward(line.previousLine, fieldEnd, this);
         }
-        else if (line.paragraph.previousRenderedWidget instanceof ParagraphWidget) {
+        else if (line.paragraph.previousRenderedWidget instanceof ParagraphWidget
+            && line.paragraph.previousRenderedWidget.childWidgets.length > 0) {
             var prevParagraph = line.paragraph.previousRenderedWidget;
             // tslint:disable-next-line:max-line-length
             this.linkFieldTraversingBackward(prevParagraph.childWidgets[prevParagraph.childWidgets.length - 1], fieldEnd, this);
@@ -8973,7 +9142,8 @@ var ElementBox = /** @__PURE__ @class */ (function () {
         if (line.nextLine) {
             this.linkFieldTraversingForward(line.nextLine, fieldBegin, this);
         }
-        else if (line.paragraph.nextRenderedWidget instanceof ParagraphWidget) {
+        else if (line.paragraph.nextRenderedWidget instanceof ParagraphWidget
+            && line.paragraph.nextRenderedWidget.childWidgets.length > 0) {
             this.linkFieldTraversingForward(line.paragraph.nextRenderedWidget.childWidgets[0], fieldBegin, this);
         }
         return true;
@@ -9000,7 +9170,8 @@ var ElementBox = /** @__PURE__ @class */ (function () {
         if (line.previousLine) {
             this.linkFieldTraversingBackwardSeparator(line.previousLine, fieldSeparator, this);
         }
-        else if (line.paragraph.nextRenderedWidget instanceof ParagraphWidget) {
+        else if (line.paragraph.previousRenderedWidget instanceof ParagraphWidget
+            && line.paragraph.previousRenderedWidget.childWidgets.length > 0) {
             // tslint:disable-next-line:max-line-length
             line = line.paragraph.previousRenderedWidget.childWidgets[line.paragraph.previousRenderedWidget.childWidgets.length - 1];
             this.linkFieldTraversingBackwardSeparator(line, fieldSeparator, this);
@@ -11318,7 +11489,7 @@ var Page = /** @__PURE__ @class */ (function () {
         this.repeatHeaderRowTableWidget = false;
         /**
          * Specifies the bodyWidgets
-         * @default []
+    
          * @private
          */
         this.bodyWidgets = [];
@@ -11330,6 +11501,10 @@ var Page = /** @__PURE__ @class */ (function () {
          * @private
          */
         this.footerWidget = undefined;
+        /**
+         * @private
+         */
+        this.currentPageNum = 0;
         // let text: string = 'DocumentEditor';
     }
     Object.defineProperty(Page.prototype, "index", {
@@ -11828,16 +12003,16 @@ var SpellChecker = /** @__PURE__ @class */ (function () {
     Object.defineProperty(SpellChecker.prototype, "languageID", {
         /**
          * Gets the languageID.
-         * @aspType int
-         * @blazorType int
+    
+    
          */
         get: function () {
             return isNullOrUndefined(this.langIDInternal) ? 0 : this.langIDInternal;
         },
         /**
          * Sets the languageID.
-         * @aspType int
-         * @blazorType int
+    
+    
          */
         set: function (value) {
             this.langIDInternal = value;
@@ -11848,16 +12023,16 @@ var SpellChecker = /** @__PURE__ @class */ (function () {
     Object.defineProperty(SpellChecker.prototype, "allowSpellCheckAndSuggestion", {
         /**
          * Getter indicates whether suggestion enabled.
-         * @aspType bool
-         * @blazorType bool
+    
+    
          */
         get: function () {
             return this.spellSuggestionInternal;
         },
         /**
          * Setter to enable or disable suggestion
-         * @aspType bool
-         * @blazorType bool
+    
+    
          */
         set: function (value) {
             this.spellSuggestionInternal = value;
@@ -11868,16 +12043,16 @@ var SpellChecker = /** @__PURE__ @class */ (function () {
     Object.defineProperty(SpellChecker.prototype, "removeUnderline", {
         /**
          * Getter indicates whether underline removed for mis-spelled word.
-         * @aspType bool
-         * @blazorType bool
+    
+    
          */
         get: function () {
             return this.removeUnderlineInternal;
         },
         /**
          * Setter to enable or disable underline for mis-spelled word
-         * @aspType bool
-         * @blazorType bool
+    
+    
          */
         set: function (value) {
             this.removeUnderlineInternal = value;
@@ -13448,10 +13623,10 @@ var DocumentEditor = /** @__PURE__ @class */ (function (_super) {
     Object.defineProperty(DocumentEditor.prototype, "selection", {
         /**
          *  Gets the selection object of the document editor.
-         * @aspType Selection
-         * @blazorType Selection
+    
+    
          * @returns {Selection}
-         * @default undefined
+    
          */
         get: function () {
             return this.selectionModule;
@@ -13462,10 +13637,10 @@ var DocumentEditor = /** @__PURE__ @class */ (function (_super) {
     Object.defineProperty(DocumentEditor.prototype, "editor", {
         /**
          *  Gets the editor object of the document editor.
-         * @aspType Editor
-         * @blazorType Editor
+    
+    
          * @returns {Editor}
-         * @default undefined
+    
          */
         get: function () {
             return this.editorModule;
@@ -13476,8 +13651,8 @@ var DocumentEditor = /** @__PURE__ @class */ (function (_super) {
     Object.defineProperty(DocumentEditor.prototype, "editorHistory", {
         /**
          * Gets the editor history object of the document editor.
-         * @aspType EditorHistory
-         * @blazorType EditorHistory
+    
+    
          * @returns {EditorHistory}
          */
         get: function () {
@@ -13489,8 +13664,8 @@ var DocumentEditor = /** @__PURE__ @class */ (function (_super) {
     Object.defineProperty(DocumentEditor.prototype, "search", {
         /**
          * Gets the search object of the document editor.
-         * @aspType Search
-         * @blazorType Search
+    
+    
          * @returns { Search }
          */
         get: function () {
@@ -13502,8 +13677,8 @@ var DocumentEditor = /** @__PURE__ @class */ (function (_super) {
     Object.defineProperty(DocumentEditor.prototype, "contextMenu", {
         /**
          * Gets the context menu object of the document editor.
-         * @aspType ContextMenu
-         * @blazorType ContextMenu
+    
+    
          * @returns {ContextMenu}
          */
         get: function () {
@@ -13526,8 +13701,8 @@ var DocumentEditor = /** @__PURE__ @class */ (function (_super) {
     Object.defineProperty(DocumentEditor.prototype, "spellChecker", {
         /**
          * Gets the spell check object of the document editor.
-         * @aspType SpellChecker
-         * @blazorType SpellChecker
+    
+    
          * @returns SpellChecker
          */
         get: function () {
@@ -13562,7 +13737,7 @@ var DocumentEditor = /** @__PURE__ @class */ (function (_super) {
     Object.defineProperty(DocumentEditor.prototype, "enableHistoryMode", {
         /**
          * Determines whether history needs to be enabled or not.
-         * @default - false
+    
          * @private
          */
         get: function () {
@@ -13574,7 +13749,7 @@ var DocumentEditor = /** @__PURE__ @class */ (function (_super) {
     Object.defineProperty(DocumentEditor.prototype, "documentStart", {
         /**
          * Gets the start text position in the document.
-         * @default undefined
+    
          * @private
          */
         get: function () {
@@ -13589,7 +13764,7 @@ var DocumentEditor = /** @__PURE__ @class */ (function (_super) {
     Object.defineProperty(DocumentEditor.prototype, "documentEnd", {
         /**
          * Gets the end text position in the document.
-         * @default undefined
+    
          * @private
          */
         get: function () {
@@ -17757,6 +17932,9 @@ var Layout = /** @__PURE__ @class */ (function () {
                             break;
                         }
                     }
+                    else if (element instanceof ListTextElementBox && viewer.clientActiveArea.x > this.viewer.clientArea.x) {
+                        return viewer.clientActiveArea.x - viewer.clientArea.x;
+                    }
                 }
             }
             if (!isCustomTab) {
@@ -18116,8 +18294,10 @@ var Layout = /** @__PURE__ @class */ (function () {
         // for normal table cells only left border is rendred. for last cell left and right border is rendred.
         // this border widths are not included in margins.
         cell.leftBorderWidth = !cell.ownerTable.isBidiTable ? leftBorderWidth : rightBorderWidth;
-        cell.x += cell.leftBorderWidth;
-        cell.width -= cell.leftBorderWidth;
+        var isLeftStyleNone = (cell.cellFormat.borders.left.lineStyle === 'None');
+        var isRightStyleNone = (cell.cellFormat.borders.right.lineStyle === 'None');
+        cell.x += (!isLeftStyleNone) ? 0 : (cell.leftBorderWidth > 0) ? 0 : cell.leftBorderWidth;
+        cell.width -= (!isLeftStyleNone) ? 0 : (cell.leftBorderWidth > 0) ? 0 : cell.leftBorderWidth;
         var lastCell = !cell.ownerTable.isBidiTable ? cell.cellIndex === cell.ownerRow.childWidgets.length - 1
             : cell.cellIndex === 0;
         if (cellspace > 0 || cell.cellIndex === cell.ownerRow.childWidgets.length - 1) {
@@ -18127,8 +18307,8 @@ var Layout = /** @__PURE__ @class */ (function () {
             }
         }
         //Add the border widths to respective margin side.
-        cell.margin.left = cell.margin.left + cell.leftBorderWidth;
-        cell.margin.right = cell.margin.right + cell.rightBorderWidth;
+        cell.margin.left += (isLeftStyleNone) ? 0 : (cell.leftBorderWidth);
+        cell.margin.right += (isRightStyleNone) ? 0 : (cell.rightBorderWidth);
         //cell.ownerWidget = owner;
         return cell;
     };
@@ -19840,7 +20020,7 @@ var Layout = /** @__PURE__ @class */ (function () {
                 }
             }
             else if (bodyWidget instanceof TableCellWidget) {
-                var table = this.viewer.layout.getParentTable(bodyWidget.ownerTable.getSplitWidgets()[0]);
+                var table = this.viewer.layout.getParentTable(bodyWidget.ownerTable).getSplitWidgets()[0];
                 this.reLayoutTable(bodyWidget.ownerTable);
                 this.layoutNextItemsBlock(table, this.viewer);
             }
@@ -21429,7 +21609,7 @@ var Renderer = /** @__PURE__ @class */ (function () {
         this.pageContext.textBaseline = 'alphabetic';
         var bold = '';
         var italic = '';
-        var fontFamily = format.fontFamily === 'Verdana' ? breakCharacterFormat.fontFamily : format.fontFamily;
+        var fontFamily = format.hasValue('fontFamily') ? format.fontFamily : breakCharacterFormat.fontFamily;
         var fontSize = format.fontSize === 11 ? breakCharacterFormat.fontSize : format.fontSize;
         // tslint:disable-next-line:max-line-length
         var baselineAlignment = format.baselineAlignment === 'Normal' ? breakCharacterFormat.baselineAlignment : format.baselineAlignment;
@@ -22209,7 +22389,7 @@ var TextHelper = /** @__PURE__ @class */ (function () {
         spanElement.innerText = 'm';
         this.applyStyle(spanElement, characterFormat);
         var parentDiv = document.createElement('div');
-        parentDiv.style.display = 'inline-block';
+        parentDiv.setAttribute('style', 'display:inline-block;position:absolute;');
         var tempDiv = document.createElement('div');
         tempDiv.setAttribute('style', 'display:inline-block;width: 1px; height: 0px;vertical-align: baseline;');
         parentDiv.appendChild(spanElement);
@@ -23575,7 +23755,7 @@ var LayoutViewer = /** @__PURE__ @class */ (function () {
             }
             _this.isScrollHandler = false;
             _this.scrollTimer = setTimeout(function () {
-                if (!_this.isScrollHandler && _this.owner.enableSpellCheck) {
+                if (!_this.isScrollHandler && !isNullOrUndefined(_this.owner) && _this.owner.enableSpellCheck) {
                     _this.isScrollToSpellCheck = true;
                     _this.updateScrollBars();
                 }
@@ -25439,7 +25619,21 @@ var LayoutViewer = /** @__PURE__ @class */ (function () {
             }
             switch (fieldCategory) {
                 case 'page':
-                    return this.getFieldText(fieldPattern, (page.index + 1));
+                    if (page.bodyWidgets[0].sectionFormat.restartPageNumbering && page.sectionIndex !== 0) {
+                        var currentSectionIndex = page.sectionIndex;
+                        var previousPage = page.previousPage;
+                        if (currentSectionIndex !== previousPage.sectionIndex) {
+                            page.currentPageNum = (page.bodyWidgets[0].sectionFormat.pageStartingNumber);
+                            return this.getFieldText(fieldPattern, page.currentPageNum);
+                        }
+                        if (previousPage.currentPageNum === 0) {
+                            previousPage.currentPageNum = (page.bodyWidgets[0].sectionFormat.pageStartingNumber);
+                        }
+                        page.currentPageNum = previousPage.currentPageNum + 1;
+                        return this.getFieldText(fieldPattern, page.currentPageNum);
+                    }
+                    page.currentPageNum = page.index + 1;
+                    return this.getFieldText(fieldPattern, page.currentPageNum);
                 case 'numpages':
                     return this.getFieldText(fieldPattern, page.viewer.pages.length);
                 default:
@@ -26155,7 +26349,8 @@ var SfdtReader = /** @__PURE__ @class */ (function () {
      */
     SfdtReader.prototype.convertJsonToDocument = function (json) {
         var sections = [];
-        var jsonObject = JSON.parse(json);
+        var jsonObject = json;
+        jsonObject = (jsonObject instanceof Object) ? jsonObject : JSON.parse(jsonObject);
         var characterFormat = isNullOrUndefined(jsonObject.characterFormat) ?
             this.viewer.owner.characterFormat : jsonObject.characterFormat;
         this.parseCharacterFormat(characterFormat, this.viewer.characterFormat);
@@ -27208,6 +27403,12 @@ var SfdtReader = /** @__PURE__ @class */ (function () {
         if (!isNullOrUndefined(data.bidi)) {
             sectionFormat.bidi = data.bidi;
         }
+        if (!isNullOrUndefined(data.restartPageNumbering)) {
+            sectionFormat.restartPageNumbering = data.restartPageNumbering;
+        }
+        if (!isNullOrUndefined(data.pageStartingNumber)) {
+            sectionFormat.pageStartingNumber = data.pageStartingNumber;
+        }
     };
     SfdtReader.prototype.parseTabStop = function (wTabs, tabs) {
         for (var i = 0; i < wTabs.length; i++) {
@@ -27288,16 +27489,16 @@ var SelectionCharacterFormat = /** @__PURE__ @class */ (function () {
     Object.defineProperty(SelectionCharacterFormat.prototype, "fontSize", {
         /**
          * Gets the font size of selected contents.
-         * @aspType int
-         * @blazorType int
+    
+    
          */
         get: function () {
             return this.fontSizeIn;
         },
         /**
          * Sets the font size of selected contents.
-         * @aspType int
-         * @blazorType int
+    
+    
          */
         set: function (value) {
             if (value === this.fontSizeIn) {
@@ -27312,16 +27513,16 @@ var SelectionCharacterFormat = /** @__PURE__ @class */ (function () {
     Object.defineProperty(SelectionCharacterFormat.prototype, "fontFamily", {
         /**
          * Gets or sets the font family of selected contents.
-         * @aspType string
-         * @blazorType string
+    
+    
          */
         get: function () {
             return this.fontFamilyIn;
         },
         /**
          * Sets the font family of selected contents.
-         * @aspType string
-         * @blazorType string
+    
+    
          */
         set: function (value) {
             if (value === this.fontFamilyIn) {
@@ -27336,16 +27537,16 @@ var SelectionCharacterFormat = /** @__PURE__ @class */ (function () {
     Object.defineProperty(SelectionCharacterFormat.prototype, "fontColor", {
         /**
          * Gets or sets the font color of selected contents.
-         * @aspType string
-         * @blazorType string
+    
+    
          */
         get: function () {
             return this.fontColorIn;
         },
         /**
          * Sets the font color of selected contents.
-         * @aspType string
-         * @blazorType string
+    
+    
          */
         set: function (value) {
             if (value === this.fontColorIn) {
@@ -27360,16 +27561,16 @@ var SelectionCharacterFormat = /** @__PURE__ @class */ (function () {
     Object.defineProperty(SelectionCharacterFormat.prototype, "bold", {
         /**
          * Gets or sets the bold formatting of selected contents.
-         * @aspType bool
-         * @blazorType bool
+    
+    
          */
         get: function () {
             return this.boldIn;
         },
         /**
          * Sets the bold formatting of selected contents.
-         * @aspType bool
-         * @blazorType bool
+    
+    
          */
         set: function (value) {
             if (value === this.boldIn) {
@@ -27384,16 +27585,16 @@ var SelectionCharacterFormat = /** @__PURE__ @class */ (function () {
     Object.defineProperty(SelectionCharacterFormat.prototype, "italic", {
         /**
          * Gets or sets the italic formatting of selected contents.
-         * @aspType bool
-         * @blazorType bool
+    
+    
          */
         get: function () {
             return this.italicIn;
         },
         /**
          * Sets the italic formatting of selected contents.
-         * @aspType bool
-         * @blazorType bool
+    
+    
          */
         set: function (value) {
             if (value === this.italic) {
@@ -27720,18 +27921,18 @@ var SelectionParagraphFormat = /** @__PURE__ @class */ (function () {
     Object.defineProperty(SelectionParagraphFormat.prototype, "leftIndent", {
         /**
          * Gets or Sets the left indent for selected paragraphs.
-         * @default undefined
-         * @aspType int
-         * @blazorType int
+    
+    
+    
          */
         get: function () {
             return this.leftIndentIn;
         },
         /**
          * Sets the left indent for selected paragraphs.
-         * @default undefined
-         * @aspType int
-         * @blazorType int
+    
+    
+    
          */
         set: function (value) {
             if (value === this.leftIndentIn) {
@@ -27746,18 +27947,18 @@ var SelectionParagraphFormat = /** @__PURE__ @class */ (function () {
     Object.defineProperty(SelectionParagraphFormat.prototype, "rightIndent", {
         /**
          * Gets or Sets the right indent for selected paragraphs.
-         * @default undefined
-         * @aspType int
-         * @blazorType int
+    
+    
+    
          */
         get: function () {
             return this.rightIndentIn;
         },
         /**
          * Sets the right indent for selected paragraphs.
-         * @default undefined
-         * @aspType int
-         * @blazorType int
+    
+    
+    
          */
         set: function (value) {
             if (value === this.rightIndentIn) {
@@ -27772,18 +27973,18 @@ var SelectionParagraphFormat = /** @__PURE__ @class */ (function () {
     Object.defineProperty(SelectionParagraphFormat.prototype, "firstLineIndent", {
         /**
          * Gets or Sets the first line indent for selected paragraphs.
-         * @default undefined
-         * @aspType int
-         * @blazorType int
+    
+    
+    
          */
         get: function () {
             return this.firstLineIndentIn;
         },
         /**
          * Sets the first line indent for selected paragraphs.
-         * @default undefined
-         * @aspType int
-         * @blazorType int
+    
+    
+    
          */
         set: function (value) {
             if (value === this.firstLineIndentIn) {
@@ -27798,14 +27999,14 @@ var SelectionParagraphFormat = /** @__PURE__ @class */ (function () {
     Object.defineProperty(SelectionParagraphFormat.prototype, "textAlignment", {
         /**
          * Gets or Sets the text alignment for selected paragraphs.
-         * @default undefined
+    
          */
         get: function () {
             return this.textAlignmentIn;
         },
         /**
          * Sets the text alignment for selected paragraphs.
-         * @default undefined
+    
          */
         set: function (value) {
             if (value === this.textAlignmentIn) {
@@ -27820,18 +28021,18 @@ var SelectionParagraphFormat = /** @__PURE__ @class */ (function () {
     Object.defineProperty(SelectionParagraphFormat.prototype, "afterSpacing", {
         /**
          * Sets the after spacing for selected paragraphs.
-         * @default undefined
-         * @aspType int
-         * @blazorType int
+    
+    
+    
          */
         get: function () {
             return this.afterSpacingIn;
         },
         /**
          * Gets or Sets the after spacing for selected paragraphs.
-         * @default undefined
-         * @aspType int
-         * @blazorType int
+    
+    
+    
          */
         set: function (value) {
             if (value === this.afterSpacingIn) {
@@ -27846,18 +28047,18 @@ var SelectionParagraphFormat = /** @__PURE__ @class */ (function () {
     Object.defineProperty(SelectionParagraphFormat.prototype, "beforeSpacing", {
         /**
          * Gets or Sets the before spacing for selected paragraphs.
-         * @default undefined
-         * @aspType int
-         * @blazorType int
+    
+    
+    
          */
         get: function () {
             return this.beforeSpacingIn;
         },
         /**
          * Sets the before spacing for selected paragraphs.
-         * @default undefined
-         * @aspType int
-         * @blazorType int
+    
+    
+    
          */
         set: function (value) {
             if (value === this.beforeSpacingIn) {
@@ -27872,18 +28073,18 @@ var SelectionParagraphFormat = /** @__PURE__ @class */ (function () {
     Object.defineProperty(SelectionParagraphFormat.prototype, "lineSpacing", {
         /**
          * Gets or Sets the line spacing for selected paragraphs.
-         * @default undefined
-         * @aspType int
-         * @blazorType int
+    
+    
+    
          */
         get: function () {
             return this.lineSpacingIn;
         },
         /**
          * Sets the line spacing for selected paragraphs.
-         * @default undefined
-         * @aspType int
-         * @blazorType int
+    
+    
+    
          */
         set: function (value) {
             if (value === this.lineSpacingIn) {
@@ -27898,14 +28099,14 @@ var SelectionParagraphFormat = /** @__PURE__ @class */ (function () {
     Object.defineProperty(SelectionParagraphFormat.prototype, "lineSpacingType", {
         /**
          * Gets or Sets the line spacing type for selected paragraphs.
-         * @default undefined
+    
          */
         get: function () {
             return this.lineSpacingTypeIn;
         },
         /**
          * Gets or Sets the line spacing type for selected paragraphs.
-         * @default undefined
+    
          */
         set: function (value) {
             if (value === this.lineSpacingTypeIn) {
@@ -27920,18 +28121,18 @@ var SelectionParagraphFormat = /** @__PURE__ @class */ (function () {
     Object.defineProperty(SelectionParagraphFormat.prototype, "listLevelNumber", {
         /**
          * Sets the list level number for selected paragraphs.
-         * @default undefined
-         * @aspType int
-         * @blazorType int
+    
+    
+    
          */
         get: function () {
             return this.listLevelNumberIn;
         },
         /**
          * Gets or Sets the list level number for selected paragraphs.
-         * @default undefined
-         * @aspType int
-         * @blazorType int
+    
+    
+    
          */
         set: function (value) {
             if (value === this.listLevelNumberIn) {
@@ -27946,16 +28147,16 @@ var SelectionParagraphFormat = /** @__PURE__ @class */ (function () {
     Object.defineProperty(SelectionParagraphFormat.prototype, "bidi", {
         /**
          * Gets or Sets the bidirectional property for selected paragraphs
-         * @aspType bool
-         * @blazorType bool
+    
+    
          */
         get: function () {
             return this.bidiIn;
         },
         /**
          * Sets the bidirectional property for selected paragraphs
-         * @aspType bool
-         * @blazorType bool
+    
+    
          */
         set: function (value) {
             this.bidiIn = value;
@@ -27967,16 +28168,16 @@ var SelectionParagraphFormat = /** @__PURE__ @class */ (function () {
     Object.defineProperty(SelectionParagraphFormat.prototype, "contextualSpacing", {
         /**
          * Gets or sets a value indicating whether to add space between the paragraphs of same style.
-         * @aspType bool
-         * @blazorType bool
+    
+    
          */
         get: function () {
             return this.contextualSpacingIn;
         },
         /**
          * Sets a value indicating whether to add space between the paragraphs of same style.
-         * @aspType bool
-         * @blazorType bool
+    
+    
          */
         set: function (value) {
             this.contextualSpacingIn = value;
@@ -27988,8 +28189,8 @@ var SelectionParagraphFormat = /** @__PURE__ @class */ (function () {
     Object.defineProperty(SelectionParagraphFormat.prototype, "listText", {
         /**
          * Gets the list text for selected paragraphs.
-         * @aspType string
-         * @blazorType string
+    
+    
          */
         get: function () {
             var listFormat = undefined;
@@ -28334,16 +28535,16 @@ var SelectionSectionFormat = /** @__PURE__ @class */ (function () {
     Object.defineProperty(SelectionSectionFormat.prototype, "pageHeight", {
         /**
          * Gets or sets the page height.
-         * @aspType int
-         * @blazorType int
+    
+    
          */
         get: function () {
             return this.pageHeightIn;
         },
         /**
          * Gets or sets the page height.
-         * @aspType int
-         * @blazorType int
+    
+    
          */
         set: function (value) {
             this.pageHeightIn = value;
@@ -28355,16 +28556,16 @@ var SelectionSectionFormat = /** @__PURE__ @class */ (function () {
     Object.defineProperty(SelectionSectionFormat.prototype, "pageWidth", {
         /**
          * Gets or sets the page width.
-         * @aspType int
-         * @blazorType int
+    
+    
          */
         get: function () {
             return this.pageWidthIn;
         },
         /**
          * Gets or sets the page width.
-         * @aspType int
-         * @blazorType int
+    
+    
          */
         set: function (value) {
             this.pageWidthIn = value;
@@ -28376,16 +28577,16 @@ var SelectionSectionFormat = /** @__PURE__ @class */ (function () {
     Object.defineProperty(SelectionSectionFormat.prototype, "leftMargin", {
         /**
          * Gets or sets the page left margin.
-         * @aspType int
-         * @blazorType int
+    
+    
          */
         get: function () {
             return this.leftMarginIn;
         },
         /**
          * Gets or sets the page left margin.
-         * @aspType int
-         * @blazorType int
+    
+    
          */
         set: function (value) {
             this.leftMarginIn = value;
@@ -28397,16 +28598,16 @@ var SelectionSectionFormat = /** @__PURE__ @class */ (function () {
     Object.defineProperty(SelectionSectionFormat.prototype, "bottomMargin", {
         /**
          * Gets or sets the page bottom margin.
-         * @aspType int
-         * @blazorType int
+    
+    
          */
         get: function () {
             return this.bottomMarginIn;
         },
         /**
          * Gets or sets the page bottom margin.
-         * @aspType int
-         * @blazorType int
+    
+    
          */
         set: function (value) {
             this.bottomMarginIn = value;
@@ -28418,16 +28619,16 @@ var SelectionSectionFormat = /** @__PURE__ @class */ (function () {
     Object.defineProperty(SelectionSectionFormat.prototype, "topMargin", {
         /**
          * Gets or sets the page top margin.
-         * @aspType int
-         * @blazorType int
+    
+    
          */
         get: function () {
             return this.topMarginIn;
         },
         /**
          * Gets or sets the page top margin.
-         * @aspType int
-         * @blazorType int
+    
+    
          */
         set: function (value) {
             this.topMarginIn = value;
@@ -28439,16 +28640,16 @@ var SelectionSectionFormat = /** @__PURE__ @class */ (function () {
     Object.defineProperty(SelectionSectionFormat.prototype, "rightMargin", {
         /**
          * Gets or sets the page right margin.
-         * @aspType int
-         * @blazorType int
+    
+    
          */
         get: function () {
             return this.rightMarginIn;
         },
         /**
          * Gets or sets the page right margin.
-         * @aspType int
-         * @blazorType int
+    
+    
          */
         set: function (value) {
             this.rightMarginIn = value;
@@ -28460,16 +28661,16 @@ var SelectionSectionFormat = /** @__PURE__ @class */ (function () {
     Object.defineProperty(SelectionSectionFormat.prototype, "headerDistance", {
         /**
          * Gets or sets the header distance.
-         * @aspType int
-         * @blazorType int
+    
+    
          */
         get: function () {
             return this.headerDistanceIn;
         },
         /**
          * Gets or sets the header distance.
-         * @aspType int
-         * @blazorType int
+    
+    
          */
         set: function (value) {
             this.headerDistanceIn = value;
@@ -28481,16 +28682,16 @@ var SelectionSectionFormat = /** @__PURE__ @class */ (function () {
     Object.defineProperty(SelectionSectionFormat.prototype, "footerDistance", {
         /**
          * Gets or sets the footer distance.
-         * @aspType int
-         * @blazorType int
+    
+    
          */
         get: function () {
             return this.footerDistanceIn;
         },
         /**
          * Gets or sets the footer distance.
-         * @aspType int
-         * @blazorType int
+    
+    
          */
         set: function (value) {
             this.footerDistanceIn = value;
@@ -28502,16 +28703,16 @@ var SelectionSectionFormat = /** @__PURE__ @class */ (function () {
     Object.defineProperty(SelectionSectionFormat.prototype, "differentFirstPage", {
         /**
          * Gets or sets a value indicating whether the section has different first page.
-         * @aspType bool
-         * @blazorType bool
+    
+    
          */
         get: function () {
             return this.differentFirstPageIn;
         },
         /**
          * Gets or sets a value indicating whether the section has different first page.
-         * @aspType bool
-         * @blazorType bool
+    
+    
          */
         set: function (value) {
             this.differentFirstPageIn = value;
@@ -28523,16 +28724,16 @@ var SelectionSectionFormat = /** @__PURE__ @class */ (function () {
     Object.defineProperty(SelectionSectionFormat.prototype, "differentOddAndEvenPages", {
         /**
          * Gets or sets a value indicating whether the section has different odd and even page.
-         * @aspType bool
-         * @blazorType bool
+    
+    
          */
         get: function () {
             return this.differentOddAndEvenPagesIn;
         },
         /**
          * Gets or sets a value indicating whether the section has different odd and even page.
-         * @aspType bool
-         * @blazorType bool
+    
+    
          */
         set: function (value) {
             this.differentOddAndEvenPagesIn = value;
@@ -28740,16 +28941,16 @@ var SelectionTableFormat = /** @__PURE__ @class */ (function () {
     Object.defineProperty(SelectionTableFormat.prototype, "leftIndent", {
         /**
          * Gets or Sets the left indent for selected table.
-         * @aspType int
-         * @blazorType int
+    
+    
          */
         get: function () {
             return this.leftIndentIn;
         },
         /**
          * Gets or Sets the left indent for selected table.
-         * @aspType int
-         * @blazorType int
+    
+    
          */
         set: function (value) {
             if (value === this.leftIndentIn) {
@@ -28764,18 +28965,18 @@ var SelectionTableFormat = /** @__PURE__ @class */ (function () {
     Object.defineProperty(SelectionTableFormat.prototype, "topMargin", {
         /**
          * Gets or Sets the default top margin of cell for selected table.
-         * @default undefined
-         * @aspType int
-         * @blazorType int
+    
+    
+    
          */
         get: function () {
             return this.topMarginIn;
         },
         /**
          * Gets or Sets the default top margin of cell for selected table.
-         * @default undefined
-         * @aspType int
-         * @blazorType int
+    
+    
+    
          */
         set: function (value) {
             if (value === this.topMarginIn) {
@@ -28790,18 +28991,18 @@ var SelectionTableFormat = /** @__PURE__ @class */ (function () {
     Object.defineProperty(SelectionTableFormat.prototype, "background", {
         /**
          * Gets or Sets the background for selected table.
-         * @default undefined
-         * @aspType string
-         * @blazorType string
+    
+    
+    
          */
         get: function () {
             return this.backgroundIn;
         },
         /**
          * Gets or Sets the background for selected table.
-         * @default undefined
-         * @aspType string
-         * @blazorType string
+    
+    
+    
          */
         set: function (value) {
             if (value === this.backgroundIn) {
@@ -28816,14 +29017,14 @@ var SelectionTableFormat = /** @__PURE__ @class */ (function () {
     Object.defineProperty(SelectionTableFormat.prototype, "tableAlignment", {
         /**
          * Gets or Sets the table alignment for selected table.
-         * @default undefined
+    
          */
         get: function () {
             return this.tableAlignmentIn;
         },
         /**
          * Gets or Sets the table alignment for selected table.
-         * @default undefined
+    
          */
         set: function (value) {
             if (value === this.tableAlignmentIn) {
@@ -28838,18 +29039,18 @@ var SelectionTableFormat = /** @__PURE__ @class */ (function () {
     Object.defineProperty(SelectionTableFormat.prototype, "leftMargin", {
         /**
          * Gets or Sets the default left margin of cell for selected table.
-         * @default undefined
-         * @aspType int
-         * @blazorType int
+    
+    
+    
          */
         get: function () {
             return this.leftMarginIn;
         },
         /**
          * Gets or Sets the default left margin of cell for selected table.
-         * @default undefined
-         * @aspType int
-         * @blazorType int
+    
+    
+    
          */
         set: function (value) {
             if (value === this.leftMarginIn) {
@@ -28864,18 +29065,18 @@ var SelectionTableFormat = /** @__PURE__ @class */ (function () {
     Object.defineProperty(SelectionTableFormat.prototype, "bottomMargin", {
         /**
          * Gets or Sets the default bottom margin of cell for selected table.
-         * @default undefined
-         * @aspType int
-         * @blazorType int
+    
+    
+    
          */
         get: function () {
             return this.bottomMarginIn;
         },
         /**
          * Gets or Sets the default bottom margin of cell for selected table.
-         * @default undefined
-         * @aspType int
-         * @blazorType int
+    
+    
+    
          */
         set: function (value) {
             if (value === this.bottomMarginIn) {
@@ -28890,18 +29091,18 @@ var SelectionTableFormat = /** @__PURE__ @class */ (function () {
     Object.defineProperty(SelectionTableFormat.prototype, "cellSpacing", {
         /**
          * Gets or Sets the cell spacing for selected table.
-         * @default undefined
-         * @aspType int
-         * @blazorType int
+    
+    
+    
          */
         get: function () {
             return this.cellSpacingIn;
         },
         /**
          * Gets or Sets the cell spacing for selected table.
-         * @default undefined
-         * @aspType int
-         * @blazorType int
+    
+    
+    
          */
         set: function (value) {
             if (value === this.cellSpacingIn) {
@@ -28916,18 +29117,18 @@ var SelectionTableFormat = /** @__PURE__ @class */ (function () {
     Object.defineProperty(SelectionTableFormat.prototype, "rightMargin", {
         /**
          * Gets or Sets the default right margin of cell for selected table.
-         * @default undefined
-         * @aspType int
-         * @blazorType int
+    
+    
+    
          */
         get: function () {
             return this.rightMarginIn;
         },
         /**
          * Gets or Sets the default right margin of cell for selected table.
-         * @default undefined
-         * @aspType int
-         * @blazorType int
+    
+    
+    
          */
         set: function (value) {
             if (value === this.rightMarginIn) {
@@ -28942,18 +29143,18 @@ var SelectionTableFormat = /** @__PURE__ @class */ (function () {
     Object.defineProperty(SelectionTableFormat.prototype, "preferredWidth", {
         /**
          * Gets or Sets the preferred width for selected table.
-         * @default undefined
-         * @aspType int
-         * @blazorType int
+    
+    
+    
          */
         get: function () {
             return this.preferredWidthIn;
         },
         /**
          * Gets or Sets the preferred width for selected table.
-         * @default undefined
-         * @aspType int
-         * @blazorType int
+    
+    
+    
          */
         set: function (value) {
             if (value === this.preferredWidthIn) {
@@ -28968,14 +29169,14 @@ var SelectionTableFormat = /** @__PURE__ @class */ (function () {
     Object.defineProperty(SelectionTableFormat.prototype, "preferredWidthType", {
         /**
          * Gets or Sets the preferred width type for selected table.
-         * @default undefined
+    
          */
         get: function () {
             return this.preferredWidthTypeIn;
         },
         /**
          * Gets or Sets the preferred width type for selected table.
-         * @default undefined
+    
          */
         set: function (value) {
             if (value === this.preferredWidthTypeIn) {
@@ -28990,16 +29191,16 @@ var SelectionTableFormat = /** @__PURE__ @class */ (function () {
     Object.defineProperty(SelectionTableFormat.prototype, "bidi", {
         /**
          * Gets or sets the bidi property
-         * @aspType bool
-         * @blazorType bool
+    
+    
          */
         get: function () {
             return this.bidiIn;
         },
         /**
          * Gets or sets the bidi property
-         * @aspType bool
-         * @blazorType bool
+    
+    
          */
         set: function (value) {
             this.bidiIn = value;
@@ -29132,14 +29333,14 @@ var SelectionCellFormat = /** @__PURE__ @class */ (function () {
     Object.defineProperty(SelectionCellFormat.prototype, "verticalAlignment", {
         /**
          * Gets or sets the vertical alignment of the selected cells.
-         * @default undefined
+    
          */
         get: function () {
             return this.verticalAlignmentIn;
         },
         /**
          * Gets or sets the vertical alignment of the selected cells.
-         * @default undefined
+    
          */
         set: function (value) {
             if (value === this.verticalAlignmentIn) {
@@ -29154,9 +29355,9 @@ var SelectionCellFormat = /** @__PURE__ @class */ (function () {
     Object.defineProperty(SelectionCellFormat.prototype, "leftMargin", {
         /**
          * Gets or Sets the left margin for selected cells.
-         * @default undefined
-         * @aspType int
-         * @blazorType int
+    
+    
+    
          */
         /* tslint:disable */
         get: function () {
@@ -29164,9 +29365,9 @@ var SelectionCellFormat = /** @__PURE__ @class */ (function () {
         },
         /**
          * Gets or Sets the left margin for selected cells.
-         * @default undefined
-         * @aspType int
-         * @blazorType int
+    
+    
+    
          */
         set: function (value) {
             if (value === this.leftMarginIn) {
@@ -29181,18 +29382,18 @@ var SelectionCellFormat = /** @__PURE__ @class */ (function () {
     Object.defineProperty(SelectionCellFormat.prototype, "rightMargin", {
         /**
          * Gets or Sets the right margin for selected cells.
-         * @default undefined
-         * @aspType int
-         * @blazorType int
+    
+    
+    
          */
         get: function () {
             return this.rightMarginIn;
         },
         /**
          * Gets or Sets the right margin for selected cells.
-         * @default undefined
-         * @aspType int
-         * @blazorType int
+    
+    
+    
          */
         set: function (value) {
             if (value === this.rightMarginIn) {
@@ -29207,18 +29408,18 @@ var SelectionCellFormat = /** @__PURE__ @class */ (function () {
     Object.defineProperty(SelectionCellFormat.prototype, "topMargin", {
         /**
          * Gets or Sets the top margin for selected cells.
-         * @default undefined
-         * @aspType int
-         * @blazorType int
+    
+    
+    
          */
         get: function () {
             return this.topMarginIn;
         },
         /**
          * Gets or Sets the top margin for selected cells.
-         * @default undefined
-         * @aspType int
-         * @blazorType int
+    
+    
+    
          */
         set: function (value) {
             if (value === this.topMarginIn) {
@@ -29233,18 +29434,18 @@ var SelectionCellFormat = /** @__PURE__ @class */ (function () {
     Object.defineProperty(SelectionCellFormat.prototype, "bottomMargin", {
         /**
          * Gets or Sets the bottom margin for selected cells.
-         * @default undefined
-         * @aspType int
-         * @blazorType int
+    
+    
+    
          */
         get: function () {
             return this.bottomMarginIn;
         },
         /**
          * Gets or Sets the bottom margin for selected cells.
-         * @default undefined
-         * @aspType int
-         * @blazorType int
+    
+    
+    
          */
         set: function (value) {
             if (value === this.bottomMarginIn) {
@@ -29259,18 +29460,18 @@ var SelectionCellFormat = /** @__PURE__ @class */ (function () {
     Object.defineProperty(SelectionCellFormat.prototype, "background", {
         /**
          * Gets or Sets the background for selected cells.
-         * @default undefined
-         * @aspType string
-         * @blazorType string
+    
+    
+    
          */
         get: function () {
             return this.backgroundIn;
         },
         /**
          * Gets or Sets the background for selected cells.
-         * @default undefined
-         * @aspType string
-         * @blazorType string
+    
+    
+    
          */
         /* tslint:enable */
         set: function (value) {
@@ -29287,14 +29488,14 @@ var SelectionCellFormat = /** @__PURE__ @class */ (function () {
         /* tslint:disable */
         /**
          * Gets or Sets the preferred width type for selected cells.
-         * @default undefined
+    
          */
         get: function () {
             return this.preferredWidthTypeIn;
         },
         /**
          * Gets or Sets the preferred width type for selected cells.
-         * @default undefined
+    
          */
         set: function (value) {
             if (value === this.preferredWidthTypeIn) {
@@ -29309,18 +29510,18 @@ var SelectionCellFormat = /** @__PURE__ @class */ (function () {
     Object.defineProperty(SelectionCellFormat.prototype, "preferredWidth", {
         /**
          * Gets or Sets the preferred width  for selected cells.
-         * @default undefined
-         * @aspType int
-         * @blazorType int
+    
+    
+    
          */
         get: function () {
             return this.preferredWidthIn;
         },
         /**
          * Gets or Sets the preferred width  for selected cells.
-         * @default undefined
-         * @aspType int
-         * @blazorType int
+    
+    
+    
          */
         set: function (value) {
             if (value === this.preferredWidthIn) {
@@ -29481,18 +29682,18 @@ var SelectionRowFormat = /** @__PURE__ @class */ (function () {
     Object.defineProperty(SelectionRowFormat.prototype, "height", {
         /**
          * Gets or Sets the height for selected rows.
-         * @default undefined
-         * @aspType int
-         * @blazorType int
+    
+    
+    
          */
         get: function () {
             return this.heightIn;
         },
         /**
          * Gets or Sets the height for selected rows.
-         * @default undefined
-         * @aspType int
-         * @blazorType int
+    
+    
+    
          */
         set: function (value) {
             if (value === this.heightIn) {
@@ -29507,14 +29708,14 @@ var SelectionRowFormat = /** @__PURE__ @class */ (function () {
     Object.defineProperty(SelectionRowFormat.prototype, "heightType", {
         /**
          * Gets or Sets the height type for selected rows.
-         * @default undefined
+    
          */
         get: function () {
             return this.heightTypeIn;
         },
         /**
          * Gets or Sets the height type for selected rows.
-         * @default undefined
+    
          */
         set: function (value) {
             if (value === this.heightTypeIn) {
@@ -29529,18 +29730,18 @@ var SelectionRowFormat = /** @__PURE__ @class */ (function () {
     Object.defineProperty(SelectionRowFormat.prototype, "isHeader", {
         /**
          * Gets or Sets a value indicating whether the selected rows are header rows or not.
-         * @default undefined
-         * @aspType bool
-         * @blazorType bool
+    
+    
+    
          */
         get: function () {
             return this.isHeaderIn;
         },
         /**
          * Gets or Sets a value indicating whether the selected rows are header rows or not.
-         * @default undefined
-         * @aspType bool
-         * @blazorType bool
+    
+    
+    
          */
         set: function (value) {
             if (value === this.isHeaderIn) {
@@ -29555,18 +29756,18 @@ var SelectionRowFormat = /** @__PURE__ @class */ (function () {
     Object.defineProperty(SelectionRowFormat.prototype, "allowBreakAcrossPages", {
         /**
          * Gets or Sets a value indicating whether to allow break across pages for selected rows.
-         * @default undefined
-         * @aspType bool
-         * @blazorType bool
+    
+    
+    
          */
         get: function () {
             return this.allowRowBreakAcrossPagesIn;
         },
         /**
          * Gets or Sets a value indicating whether to allow break across pages for selected rows.
-         * @default undefined
-         * @aspType bool
-         * @blazorType bool
+    
+    
+    
          */
         set: function (value) {
             if (value === this.allowRowBreakAcrossPagesIn) {
@@ -29685,8 +29886,8 @@ var SelectionImageFormat = /** @__PURE__ @class */ (function () {
     Object.defineProperty(SelectionImageFormat.prototype, "width", {
         /**
          * Gets the width of the image.
-         * @aspType int
-         * @blazorType int
+    
+    
          */
         get: function () {
             if (this.image) {
@@ -29700,8 +29901,8 @@ var SelectionImageFormat = /** @__PURE__ @class */ (function () {
     Object.defineProperty(SelectionImageFormat.prototype, "height", {
         /**
          * Gets the height of the image.
-         * @aspType int
-         * @blazorType int
+    
+    
          */
         get: function () {
             if (this.image) {
@@ -29824,16 +30025,29 @@ var HtmlExport = /** @__PURE__ @class */ (function () {
             }
             else if (inline.hasOwnProperty('fieldType')) {
                 if (inline.fieldType === 0) {
-                    this.fieldCheck = 1;
-                    var tagAttributes = [];
-                    tagAttributes.push('style="' + this.serializeInlineStyle(inline.characterFormat, '') + '"');
-                    blockStyle += this.createAttributesTag('a', tagAttributes);
+                    var fieldCode = paragraph.inlines[i + 1];
+                    if (!isNullOrUndefined(fieldCode) && (fieldCode.text.indexOf('TOC') >= 0 || fieldCode.text.indexOf('HYPERLINK') >= 0)) {
+                        this.fieldCheck = 1;
+                        var tagAttributes = [];
+                        tagAttributes.push('style="' + this.serializeInlineStyle(inline.characterFormat, '') + '"');
+                        blockStyle += this.createAttributesTag('a', tagAttributes);
+                    }
+                    else {
+                        this.fieldCheck = undefined;
+                    }
                 }
                 else if (inline.fieldType === 2) {
-                    this.fieldCheck = 2;
+                    if (!isNullOrUndefined(this.fieldCheck)) {
+                        this.fieldCheck = 2;
+                    }
+                    else {
+                        this.fieldCheck = 0;
+                    }
                 }
                 else {
-                    blockStyle += this.endTag('a');
+                    if (!isNullOrUndefined(this.fieldCheck) && this.fieldCheck !== 0) {
+                        blockStyle += this.endTag('a');
+                    }
                     this.fieldCheck = 0;
                 }
             }
@@ -29843,7 +30057,7 @@ var HtmlExport = /** @__PURE__ @class */ (function () {
                     blockStyle += this.serializeSpan(text, inline.characterFormat);
                 }
                 if (this.fieldCheck === 1) {
-                    var hyperLink = text.replace('\"', '');
+                    var hyperLink = text.replace(/"/g, '');
                     blockStyle += ' href= \"' + hyperLink.replace('HYPERLINK', '').trim();
                     blockStyle += '\"';
                     blockStyle += '>';
@@ -30532,7 +30746,7 @@ var TextPosition = /** @__PURE__ @class */ (function () {
     TextPosition.prototype.setPosition = function (line, positionAtStart) {
         this.currentWidget = line;
         this.offset = positionAtStart ? this.selection.getStartOffset(line.paragraph)
-            : this.selection.getParagraphLength(line.paragraph) + 1;
+            : line.paragraph.lastChild.getEndOffset() + 1;
         this.updatePhysicalPosition(true);
     };
     /**
@@ -31970,7 +32184,7 @@ var TextPosition = /** @__PURE__ @class */ (function () {
     TextPosition.prototype.moveDown = function (selection, left) {
         //Moves text position to end of line.
         var prevParagraph = this.currentWidget.paragraph;
-        var prevOffset = this.offset;
+        var currentLine = this.currentWidget;
         this.moveToLineEndInternal(selection, true);
         var length = this.selection.getParagraphLength(this.currentWidget.paragraph);
         if (this.offset > length) {
@@ -32023,7 +32237,9 @@ var TextPosition = /** @__PURE__ @class */ (function () {
         }
         //Moves till the Up/Down selection width.
         var top = this.selection.getTop(nextLine);
-        this.selection.updateTextPositionWidget(nextLine, new Point(left, top), this, false);
+        if (nextLine !== currentLine) {
+            this.selection.updateTextPositionWidget(nextLine, new Point(left, top), this, false);
+        }
     };
     /**
      * Moves the text position to start of the line.
@@ -32854,9 +33070,9 @@ var Selection = /** @__PURE__ @class */ (function () {
         //Format retrieval properties
         /**
          * Gets the instance of selection character format.
-         * @default undefined
-         * @aspType SelectionCharacterFormat
-         * @blazorType SelectionCharacterFormat
+    
+    
+    
          * @return {SelectionCharacterFormat}
          */
         get: function () {
@@ -32868,9 +33084,9 @@ var Selection = /** @__PURE__ @class */ (function () {
     Object.defineProperty(Selection.prototype, "paragraphFormat", {
         /**
          * Gets the instance of selection paragraph format.
-         * @default undefined
-         * @aspType SelectionParagraphFormat
-         * @blazorType SelectionParagraphFormat
+    
+    
+    
          * @return {SelectionParagraphFormat}
          */
         get: function () {
@@ -32882,9 +33098,9 @@ var Selection = /** @__PURE__ @class */ (function () {
     Object.defineProperty(Selection.prototype, "sectionFormat", {
         /**
          * Gets the instance of selection section format.
-         * @default undefined
-         * @aspType SelectionSectionFormat
-         * @blazorType SelectionSectionFormat
+    
+    
+    
          * @return {SelectionSectionFormat}
          */
         get: function () {
@@ -32896,9 +33112,9 @@ var Selection = /** @__PURE__ @class */ (function () {
     Object.defineProperty(Selection.prototype, "tableFormat", {
         /**
          * Gets the instance of selection table format.
-         * @default undefined
-         * @aspType SelectionTableFormat
-         * @blazorType SelectionTableFormat
+    
+    
+    
          * @return {SelectionTableFormat}
          */
         get: function () {
@@ -32910,9 +33126,9 @@ var Selection = /** @__PURE__ @class */ (function () {
     Object.defineProperty(Selection.prototype, "cellFormat", {
         /**
          * Gets the instance of selection cell format.
-         * @default undefined
-         * @aspType SelectionCellFormat
-         * @blazorType SelectionCellFormat
+    
+    
+    
          * @return {SelectionCellFormat}
          */
         get: function () {
@@ -32924,9 +33140,9 @@ var Selection = /** @__PURE__ @class */ (function () {
     Object.defineProperty(Selection.prototype, "rowFormat", {
         /**
          * Gets the instance of selection row format.
-         * @default undefined
-         * @aspType SelectionRowFormat
-         * @blazorType SelectionRowFormat
+    
+    
+    
          * @returns {SelectionRowFormat}
          */
         get: function () {
@@ -32938,9 +33154,9 @@ var Selection = /** @__PURE__ @class */ (function () {
     Object.defineProperty(Selection.prototype, "imageFormat", {
         /**
          * Gets the instance of selection image format.
-         * @default undefined
-         * @aspType SelectionImageFormat
-         * @blazorType SelectionImageFormat
+    
+    
+    
          * @returns {SelectionImageFormat}
          */
         get: function () {
@@ -32998,7 +33214,7 @@ var Selection = /** @__PURE__ @class */ (function () {
     Object.defineProperty(Selection.prototype, "isForward", {
         /**
          * Determines whether the selection direction is forward or not.
-         * @default false
+    
          * @returns {boolean}
          * @private
          */
@@ -33011,7 +33227,7 @@ var Selection = /** @__PURE__ @class */ (function () {
     Object.defineProperty(Selection.prototype, "isEmpty", {
         /**
          * Determines whether the start and end positions are same or not.
-         * @default false
+    
          * @returns {boolean}
          * @private
          */
@@ -33027,9 +33243,9 @@ var Selection = /** @__PURE__ @class */ (function () {
     Object.defineProperty(Selection.prototype, "text", {
         /**
          * Gets the text within selection.
-         * @default ''
-         * @aspType string
-         * @blazorType string
+    
+    
+    
          * @returns {string}
          */
         get: function () {
@@ -36031,11 +36247,7 @@ var Selection = /** @__PURE__ @class */ (function () {
                             && selectionEndIndex > element.length) {
                             var charFormat = element.line.paragraph.characterFormat;
                             var paragraphMarkWidth = this.viewer.textHelper.getParagraphMarkSize(charFormat).Width;
-                            if (elementIsRTL) {
-                                right += paragraphMarkWidth;
-                                // Paragrph and Selection ends in normal text
-                            }
-                            else if (paragraph.bidi) {
+                            if (paragraph.bidi && !elementIsRTL) {
                                 width -= paragraphMarkWidth;
                                 // Highlight the element.
                                 this.createHighlightBorder(startLineWidget, width, left, top, true);
@@ -36669,10 +36881,15 @@ var Selection = /** @__PURE__ @class */ (function () {
         element = this.getElementBox(inline, index, moveNextLine).element;
         var lineWidget = undefined;
         if (isNullOrUndefined(element) || isNullOrUndefined(element.line)) {
-            if (inline instanceof FieldElementBox || inline instanceof BookmarkElementBox) {
-                return this.getFieldCharacterPosition(inline);
+            if (inline instanceof FieldElementBox && inline.fieldType === 1) {
+                element = inline;
             }
-            return new Point(0, 0);
+            else {
+                if (inline instanceof FieldElementBox || inline instanceof BookmarkElementBox) {
+                    return this.getFieldCharacterPosition(inline);
+                }
+                return new Point(0, 0);
+            }
         }
         var margin = element.margin;
         var top = 0;
@@ -37895,6 +38112,9 @@ var Selection = /** @__PURE__ @class */ (function () {
             if (i === 1 && widget.children[i] instanceof ListTextElementBox) {
                 left += widget.children[i].width;
             }
+            else if (widget.children[i] instanceof TabElementBox && elementBox === widgetInternal) {
+                left += widget.children[i].margin.left;
+            }
             else {
                 left += widget.children[i].margin.left + widget.children[i].width;
             }
@@ -38025,13 +38245,16 @@ var Selection = /** @__PURE__ @class */ (function () {
      * @private
      */
     Selection.prototype.selectParagraph = function (paragraph, positionAtStart) {
-        var line = paragraph.firstChild;
-        if (positionAtStart) {
-            this.start.setPosition(line, positionAtStart);
-        }
-        else {
-            var endOffset = line.getEndOffset();
-            this.start.setPositionParagraph(line, endOffset);
+        var line;
+        if (!isNullOrUndefined(paragraph) && !isNullOrUndefined(paragraph.firstChild)) {
+            line = paragraph.firstChild;
+            if (positionAtStart) {
+                this.start.setPosition(line, positionAtStart);
+            }
+            else {
+                var endOffset = line.getEndOffset();
+                this.start.setPositionParagraph(line, endOffset);
+            }
         }
         this.end.setPositionInternal(this.start);
         this.upDownSelectionLength = this.start.location.x;
@@ -40284,6 +40507,12 @@ var Selection = /** @__PURE__ @class */ (function () {
             return undefined;
         }
         var elements = [];
+        while (bidi && startElement && startElement !== endElement && startElement.nextElement && !startElement.isRightToLeft) {
+            startElement = startElement.nextElement;
+        }
+        while (bidi && endElement && startElement !== endElement && endElement.previousElement && !endElement.isRightToLeft) {
+            endElement = endElement.previousElement;
+        }
         var elementIndex = lineWidget.children.indexOf(startElement);
         while (elementIndex >= 0) {
             for (var i = elementIndex; i > -1 && i < lineWidget.children.length; bidi ? i-- : i++) {
@@ -40314,6 +40543,9 @@ var Selection = /** @__PURE__ @class */ (function () {
      */
     Selection.prototype.getElementsBackward = function (lineWidget, startElement, endElement, bidi) {
         var elements = [];
+        while (bidi && startElement && startElement.previousElement && !startElement.isRightToLeft) {
+            startElement = startElement.previousElement;
+        }
         var elementIndex = lineWidget.children.indexOf(startElement);
         while (elementIndex >= 0) {
             for (var i = elementIndex; i > -1 && i < lineWidget.children.length; bidi ? i++ : i--) {
@@ -41044,8 +41276,8 @@ var SearchResults = /** @__PURE__ @class */ (function () {
     Object.defineProperty(SearchResults.prototype, "length", {
         /**
          * Gets the length of search results.
-         * @aspType int
-         * @blazorType int
+    
+    
          */
         get: function () {
             return this.searchModule.textSearchResults.length;
@@ -41056,16 +41288,16 @@ var SearchResults = /** @__PURE__ @class */ (function () {
     Object.defineProperty(SearchResults.prototype, "index", {
         /**
          * Gets the index of current search result.
-         * @aspType int
-         * @blazorType int
+    
+    
          */
         get: function () {
             return this.searchModule.textSearchResults.currentIndex;
         },
         /**
          * Set the index of current search result.
-         * @aspType int
-         * @blazorType int
+    
+    
          */
         set: function (value) {
             if (this.length === 0 || value < 0 || value > this.searchModule.textSearchResults.length - 1) {
@@ -41151,8 +41383,8 @@ var Search = /** @__PURE__ @class */ (function () {
     Object.defineProperty(Search.prototype, "searchResults", {
         /**
          * Gets the search results object.
-         * @aspType SearchResults
-         * @blazorType SearchResults
+    
+    
          */
         get: function () {
             return this.searchResultsInternal;
@@ -43929,6 +44161,9 @@ var Editor = /** @__PURE__ @class */ (function () {
          */
         this.copiedData = undefined;
         this.pageRefFields = {};
+        this.delBlockContinue = false;
+        this.delBlock = undefined;
+        this.delSection = undefined;
         /**
          * @private
          */
@@ -44596,6 +44831,15 @@ var Editor = /** @__PURE__ @class */ (function () {
                     this.viewer.triggerSpellCheck = true;
                     this.handleEnterKey();
                     this.viewer.triggerSpellCheck = false;
+                    break;
+                case 27:
+                    event.preventDefault();
+                    if (!this.isPaste) {
+                        this.copiedContent = undefined;
+                        this.copiedTextContent = '';
+                        this.selection.isViewPasteOptions = false;
+                        this.selection.showHidePasteOptions(undefined, undefined);
+                    }
                     break;
                 case 46:
                     this.handleDelete();
@@ -45920,8 +46164,10 @@ var Editor = /** @__PURE__ @class */ (function () {
             var htmlContent = '';
             var rtfContent = '';
             var clipbordData = pasteWindow.clipboardData ? pasteWindow.clipboardData : event.clipboardData;
-            rtfContent = clipbordData.getData('Text/Rtf');
-            htmlContent = clipbordData.getData('Text/Html');
+            if (Browser.info.name !== 'msie') {
+                rtfContent = clipbordData.getData('Text/Rtf');
+                htmlContent = clipbordData.getData('Text/Html');
+            }
             this.copiedTextContent = textContent = clipbordData.getData('Text');
             if (rtfContent !== '') {
                 this.pasteAjax(rtfContent, '.rtf');
@@ -45966,7 +46212,7 @@ var Editor = /** @__PURE__ @class */ (function () {
         this.pasteRequestHandler.onError = this.onPasteFailure.bind(this);
     };
     Editor.prototype.pasteFormattedContent = function (result) {
-        this.pasteContents(result.data);
+        this.pasteContents(isNullOrUndefined(result.data) ? this.copiedTextContent : result.data);
         this.applyPasteOptions(this.currentPasteOptions);
         hideSpinner(this.owner.element);
     };
@@ -46098,12 +46344,12 @@ var Editor = /** @__PURE__ @class */ (function () {
         this.selection.end.setPositionInternal(this.pasteTextPosition.endPosition);
         switch (options) {
             case 'KeepSourceFormatting':
-                this.pasteContents(this.copiedContent);
+                this.pasteContents(this.copiedContent !== '' ? this.copiedContent : this.copiedTextContent);
                 break;
             case 'MergeWithExistingFormatting':
                 var start = this.selection.isForward ? this.selection.start : this.selection.end;
                 var currentFormat = start.paragraph.paragraphFormat;
-                this.pasteContents(this.copiedContent, currentFormat);
+                this.pasteContents(this.copiedContent !== '' ? this.copiedContent : this.copiedTextContent, currentFormat);
                 break;
             case 'KeepTextOnly':
                 this.pasteContents(this.copiedTextContent);
@@ -46202,9 +46448,13 @@ var Editor = /** @__PURE__ @class */ (function () {
             }
             if (j === widgets.length - 1 && widget instanceof ParagraphWidget) {
                 var newParagraph = widget;
+                var paragraphFormat = void 0;
                 if (newParagraph.childWidgets.length > 0
                     && newParagraph.childWidgets[0].children.length > 0) {
-                    this.insertElement(newParagraph.childWidgets[0].children);
+                    if (newParagraph.paragraphFormat.listFormat.listId !== -1) {
+                        paragraphFormat = newParagraph.paragraphFormat;
+                    }
+                    this.insertElement(newParagraph.childWidgets[0].children, paragraphFormat);
                 }
             }
             else if (widget instanceof BlockWidget) {
@@ -46365,7 +46615,7 @@ var Editor = /** @__PURE__ @class */ (function () {
         }
         this.setPositionParagraph(paragraphInfo.paragraph, paragraphInfo.offset + length, true);
     };
-    Editor.prototype.insertElement = function (element) {
+    Editor.prototype.insertElement = function (element, paragraphFormat) {
         var selection = this.selection;
         var length = 0;
         var paragraph = undefined;
@@ -46415,6 +46665,9 @@ var Editor = /** @__PURE__ @class */ (function () {
             element[i].line = lineWidget;
             element[i].linkFieldCharacter(this.viewer);
             insertIndex++;
+        }
+        if (paragraphFormat) {
+            paragraph.paragraphFormat.copyFormat(paragraphFormat);
         }
         this.viewer.layout.reLayoutParagraph(paragraph, lineIndex, 0);
         this.setPositionParagraph(paragraphInfo.paragraph, paragraphInfo.offset + length, true);
@@ -49430,7 +49683,11 @@ var Editor = /** @__PURE__ @class */ (function () {
     /* tslint:disable-next-line:max-line-length */
     Editor.prototype.applyCharacterStyle = function (paragraph, start, end, property, value, update) {
         var paragraphWidget = paragraph.getSplitWidgets();
-        if ((end.paragraph === paragraph || paragraphWidget.indexOf(end.paragraph) !== -1)) {
+        var selection = end.owner.selection;
+        var lastLine = end.currentWidget;
+        var isParaSelected = start.offset === 0 && (selection.isParagraphLastLine(lastLine) && end.currentWidget === lastLine
+            && end.offset === selection.getLineLength(lastLine) + 1 || end.isAtParagraphEnd);
+        if (!isParaSelected && (end.paragraph === paragraph || paragraphWidget.indexOf(end.paragraph) !== -1)) {
             if (((value.type === 'Paragraph') && ((value.link) instanceof WCharacterStyle)) || (value.type === 'Character')) {
                 var obj = (value.type === 'Character') ? value : value.link;
                 this.updateSelectionCharacterFormatting(property, obj, update);
@@ -50265,6 +50522,16 @@ var Editor = /** @__PURE__ @class */ (function () {
         }
         else {
             this.deletePara(paragraph, start, end, editAction);
+            if (this.delBlockContinue && this.delBlock) {
+                if (this.delSection) {
+                    var bodyWidget = paragraph.bodyWidget instanceof BodyWidget ? paragraph.bodyWidget : undefined;
+                    this.deleteSection(selection, this.delSection, bodyWidget, editAction);
+                    this.delSection = undefined;
+                }
+                this.deleteBlock(this.delBlock, selection, start, end, editAction);
+                this.delBlockContinue = false;
+                this.delBlock = undefined;
+            }
         }
     };
     /**
@@ -50554,17 +50821,27 @@ var Editor = /** @__PURE__ @class */ (function () {
                 //Removes the splitted paragraph.
             }
             if (!isNullOrUndefined(block) && !isStartParagraph) {
+                this.delBlockContinue = true;
+                this.delBlock = block;
                 var nextSection = block.bodyWidget instanceof BodyWidget ? block.bodyWidget : undefined;
                 if (nextSection && !section.equals(nextSection) && section.index !== nextSection.index) {
-                    this.deleteSection(selection, nextSection, section, editAction);
+                    this.delSection = nextSection;
                 }
-                this.deleteBlock(block, selection, start, end, editAction);
+                else {
+                    this.delSection = undefined;
+                }
+            }
+            else {
+                this.delBlockContinue = false;
+                this.delBlock = undefined;
             }
         }
         else if (start.paragraph === paragraph && (start.currentWidget !== paragraph.firstChild ||
             (start.currentWidget === paragraph.firstChild && startOffset > paragraphStart))) {
             // If selection start is after paragraph start
             //And selection does not end with this paragraph Or selection include paragraph mark.
+            this.delBlockContinue = false;
+            this.delBlock = undefined;
             if (editAction === 4) {
                 return;
             }
@@ -50617,11 +50894,12 @@ var Editor = /** @__PURE__ @class */ (function () {
                 }
             }
             if (start.paragraph !== paragraph && !isNullOrUndefined(block)) {
-                var nextSection = block.bodyWidget instanceof BodyWidget ? block.bodyWidget : undefined;
-                // if (section !== nextSection) {
-                //     this.deleteSection(selection, section, nextSection, editAction);
-                // }
-                this.deleteBlock(block, selection, start, end, editAction);
+                this.delBlockContinue = true;
+                this.delBlock = block;
+            }
+            else {
+                this.delBlockContinue = false;
+                this.delBlock = undefined;
             }
         }
         this.insertParagraphPaste(paragraph, currentParagraph, start, end, isCombineNextParagraph, editAction);
@@ -50762,6 +51040,16 @@ var Editor = /** @__PURE__ @class */ (function () {
     Editor.prototype.deleteBlock = function (block, selection, start, end, editAction) {
         if (block instanceof ParagraphWidget) {
             this.deletePara(block, start, end, editAction);
+            if (this.delBlockContinue && this.delBlock) {
+                if (this.delSection) {
+                    var bodyWidget = block.bodyWidget instanceof BodyWidget ? block.bodyWidget : undefined;
+                    this.deleteSection(selection, this.delSection, bodyWidget, editAction);
+                    this.delSection = undefined;
+                }
+                this.deleteBlock(this.delBlock, selection, start, end, editAction);
+                this.delBlockContinue = false;
+                this.delBlock = undefined;
+            }
         }
         else {
             this.deleteTableBlock(block, selection, start, end, editAction);
@@ -50799,6 +51087,17 @@ var Editor = /** @__PURE__ @class */ (function () {
                     else {
                         if (startCell === containerCell) {
                             this.deletePara(end.paragraph, start, end, editAction);
+                            if (this.delBlockContinue && this.delBlock) {
+                                if (this.delSection) {
+                                    var para = end.paragraph;
+                                    var bodyWidget = para.bodyWidget instanceof BodyWidget ? para.bodyWidget : undefined;
+                                    this.deleteSection(selection, this.delSection, bodyWidget, editAction);
+                                    this.delSection = undefined;
+                                }
+                                this.deleteBlock(this.delBlock, selection, start, end, editAction);
+                                this.delBlockContinue = false;
+                                this.delBlock = undefined;
+                            }
                         }
                         else {
                             this.deleteContainer(startCell, selection, start, end, editAction);
@@ -51705,11 +52004,15 @@ var Editor = /** @__PURE__ @class */ (function () {
                     this.removedBookmarkElements.splice(startIndex, 1);
                 }
                 else {
-                    this.initComplexHistory(this.editorHistory.currentBaseHistoryInfo.action);
-                    this.editorHistory.updateHistory();
+                    if (this.editorHistory.currentBaseHistoryInfo) {
+                        this.initComplexHistory(this.editorHistory.currentBaseHistoryInfo.action);
+                        this.editorHistory.updateHistory();
+                    }
                     this.initInsertInline(bookMarkStart.clone());
-                    this.editorHistory.updateComplexHistory();
-                    isHandledComplexHistory = true;
+                    if (this.editorHistory.currentHistoryInfo) {
+                        this.editorHistory.updateComplexHistory();
+                        isHandledComplexHistory = true;
+                    }
                 }
             }
             else {
@@ -51721,11 +52024,15 @@ var Editor = /** @__PURE__ @class */ (function () {
                     this.removedBookmarkElements.splice(startIndex, 1);
                 }
                 else {
-                    this.initComplexHistory(this.editorHistory.currentBaseHistoryInfo.action);
-                    this.editorHistory.updateHistory();
+                    if (this.editorHistory.currentBaseHistoryInfo) {
+                        this.initComplexHistory(this.editorHistory.currentBaseHistoryInfo.action);
+                        this.editorHistory.updateHistory();
+                    }
                     this.initInsertInline(bookMarkEnd.clone());
-                    this.editorHistory.updateComplexHistory();
-                    isHandledComplexHistory = true;
+                    if (this.editorHistory.currentHistoryInfo) {
+                        this.editorHistory.updateComplexHistory();
+                        isHandledComplexHistory = true;
+                    }
                 }
             }
         }
@@ -55855,9 +56162,17 @@ var BaseHistoryInfo = /** @__PURE__ @class */ (function () {
                     value = new WParagraphStyle();
                     value.copyStyle(previousFormat.baseStyle);
                     this.currentPropertyIndex++;
+                    if (!isNullOrUndefined(format.baseStyle)) {
+                        previousFormat.baseStyle = new WParagraphStyle();
+                        previousFormat.baseStyle.copyStyle(format.baseStyle);
+                    }
                     return value;
                 }
                 else {
+                    if (!isNullOrUndefined(format.baseStyle)) {
+                        previousFormat.baseStyle = new WParagraphStyle();
+                        previousFormat.baseStyle.copyStyle(format.baseStyle);
+                    }
                     return undefined;
                 }
             }
@@ -57782,16 +58097,16 @@ var EditorHistory = /** @__PURE__ @class */ (function () {
     Object.defineProperty(EditorHistory.prototype, "undoLimit", {
         /**
          * Gets or Sets the limit of undo operations can be done.
-         * @aspType int
-         * @blazorType int
+    
+    
          */
         get: function () {
             return isNullOrUndefined(this.undoLimitIn) ? 0 : this.undoLimitIn;
         },
         /**
          * Sets the limit of undo operations can be done.
-         * @aspType int
-         * @blazorType int
+    
+    
          */
         set: function (value) {
             if (value < 0) {
@@ -57805,16 +58120,16 @@ var EditorHistory = /** @__PURE__ @class */ (function () {
     Object.defineProperty(EditorHistory.prototype, "redoLimit", {
         /**
          * Gets or Sets the limit of redo operations can be done.
-         * @aspType int
-         * @blazorType int
+    
+    
          */
         get: function () {
             return isNullOrUndefined(this.redoLimitIn) ? 0 : this.redoLimitIn;
         },
         /**
          * Gets or Sets the limit of redo operations can be done.
-         * @aspType int
-         * @blazorType int
+    
+    
          */
         set: function (value) {
             if (value < 0) {
@@ -63511,7 +63826,7 @@ var SfdtExport = /** @__PURE__ @class */ (function () {
     };
     SfdtExport.prototype.writeInlines = function (paragraph, line, inlines) {
         var lineWidget = line.clone();
-        var bidi = paragraph.paragraphFormat.getValue('bidi');
+        var bidi = paragraph.paragraphFormat.bidi;
         if (bidi || this.viewer.layout.isContainsRtl(lineWidget)) {
             this.viewer.layout.reArrangeElementsForRtl(lineWidget, bidi);
         }
@@ -73690,12 +74005,6 @@ var Paragraph = /** @__PURE__ @class */ (function () {
             _this.updateStyleNames();
             args.popup.element.getElementsByClassName('e-de-ctnr-dropdown-ftr')[0].addEventListener('click', _this.createStyle);
         };
-        this.closeStyleValue = function (args) {
-            if (!isNullOrUndefined(_this.styleName)) {
-                _this.style.value = _this.styleName;
-                _this.style.dataBind();
-            }
-        };
         this.createStyle = function () {
             _this.style.hidePopup();
             if (!_this.documentEditor.isReadOnly) {
@@ -74184,7 +74493,6 @@ var Paragraph = /** @__PURE__ @class */ (function () {
             fields: { text: 'StyleName', value: 'StyleName' },
             open: this.updateOptions,
             change: this.selectStyleValue,
-            close: this.closeStyleValue,
             itemTemplate: '<span style="${Style}">${StyleName}</span>',
             footerTemplate: '<span class="e-de-ctnr-dropdown-ftr">' + this.localObj.getConstant('Manage Styles') + '</span>'
         });
@@ -76336,8 +76644,8 @@ var DocumentEditorContainer = /** @__PURE__ @class */ (function (_super) {
     Object.defineProperty(DocumentEditorContainer.prototype, "documentEditor", {
         /**
          * Gets DocumentEditor instance.
-         * @aspType DocumentEditor
-         * @blazorType DocumentEditor
+    
+    
          */
         get: function () {
             return this.documentEditorInternal;
@@ -76415,6 +76723,14 @@ var DocumentEditorContainer = /** @__PURE__ @class */ (function (_super) {
         createSpinner({ target: this.containerTarget, cssClass: 'e-spin-overlay' });
         this.setserverActionSettings();
         this.renderComplete();
+    };
+    DocumentEditorContainer.prototype.setFormat = function () {
+        if (this.characterFormat) {
+            this.documentEditor.setDefaultCharacterFormat(this.characterFormat);
+        }
+        if (this.paragraphFormat) {
+            this.documentEditor.setDefaultParagraphFormat(this.paragraphFormat);
+        }
     };
     DocumentEditorContainer.prototype.setserverActionSettings = function () {
         if (this.serviceUrl) {
@@ -76496,6 +76812,7 @@ var DocumentEditorContainer = /** @__PURE__ @class */ (function (_super) {
         });
         this.documentEditor.enableAllModules();
         this.editorContainer.insertBefore(documentEditorTarget, this.editorContainer.firstChild);
+        this.setFormat();
         this.documentEditor.appendTo(documentEditorTarget);
         this.documentEditor.resize();
     };
@@ -76665,6 +76982,20 @@ var DocumentEditorContainer = /** @__PURE__ @class */ (function (_super) {
         this.imageProperties.showImageProperties(property === 'image');
         this.headerFooterProperties.showHeaderFooterPane(property === 'headerfooter');
         this.tocProperties.showTocPane(property === 'toc');
+    };
+    /**
+     * Set the default character format for document editor container
+     * @param characterFormat
+     */
+    DocumentEditorContainer.prototype.setDefaultCharacterFormat = function (characterFormat) {
+        this.characterFormat = characterFormat;
+    };
+    /**
+     * Set the default paragraph format for document editor container
+     * @param paragraphFormat
+     */
+    DocumentEditorContainer.prototype.setDefaultParagraphFormat = function (paragraphFormat) {
+        this.paragraphFormat = paragraphFormat;
     };
     /**
      * Destroys all managed resources used by this object.

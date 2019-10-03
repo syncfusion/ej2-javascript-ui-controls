@@ -79,6 +79,18 @@ export class WSectionFormat {
     set bidi(value: boolean) {
         this.setPropertyValue('bidi', value);
     }
+    get restartPageNumbering(): boolean {
+        return this.getPropertyValue('restartPageNumbering') as boolean;
+    }
+    set restartPageNumbering(value: boolean) {
+        this.setPropertyValue('restartPageNumbering', value);
+    }
+    get pageStartingNumber(): number {
+        return this.getPropertyValue('pageStartingNumber') as number;
+    }
+    set pageStartingNumber(value: number) {
+        this.setPropertyValue('pageStartingNumber', value);
+    }
     constructor(node?: Object) {
         this.ownerBase = node;
     }
@@ -132,6 +144,13 @@ export class WSectionFormat {
             case 'bidi':
                 value = false;
                 break;
+            case 'restartPageNumbering':
+                value = false;
+                break;
+            case 'pageStartingNumber':
+                value = 0;
+                break;
+
         }
         return value;
     }
@@ -175,6 +194,8 @@ export class WSectionFormat {
         this.addUniqueSectionFormat('rightMargin', property, propValue, uniqueSectionFormatTemp);
         this.addUniqueSectionFormat('bottomMargin', property, propValue, uniqueSectionFormatTemp);
         this.addUniqueSectionFormat('bidi', property, propValue, uniqueSectionFormatTemp);
+        this.addUniqueSectionFormat('restartPageNumbering', property, propValue, uniqueSectionFormatTemp);
+        this.addUniqueSectionFormat('pageStartingNumber', property, propValue, uniqueSectionFormatTemp);
         // tslint:disable-next-line:max-line-length
         this.uniqueSectionFormat = WSectionFormat.uniqueSectionFormats.addUniqueFormat(uniqueSectionFormatTemp, WSectionFormat.uniqueFormatType);
     }

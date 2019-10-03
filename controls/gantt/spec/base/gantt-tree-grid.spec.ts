@@ -1,11 +1,12 @@
 /**
  * Gantt base spec
  */
-import { Gantt } from '../../src/index';
+import { Gantt, ColumnMenu } from '../../src/index';
 import { baselineData } from './data-source.spec';
 import { createGantt, destroyGantt } from './gantt-util.spec';
 describe('Gantt spec for  scroll', () => {
-    describe('Gantt base module', () => {
+    Gantt.Inject(ColumnMenu);
+    describe('Gantt base module', () => {        
         let ganttObj: Gantt;
         beforeAll((done: Function) => {
             ganttObj = createGantt({

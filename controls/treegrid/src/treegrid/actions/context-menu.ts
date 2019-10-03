@@ -4,7 +4,7 @@ import { MenuEventArgs } from '@syncfusion/ej2-navigations';
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
 /**
  * ContextMenu Module for TreeGrid 
- * @hidden
+
  */
 export class ContextMenu {
     private parent: TreeGrid;
@@ -14,14 +14,14 @@ export class ContextMenu {
         this.addEventListener();
     }
     /**
-     * @hidden
+
      */
     public addEventListener(): void {
         this.parent.on('contextMenuOpen', this.contextMenuOpen, this);
         this.parent.on('contextMenuClick', this.contextMenuClick, this);
       }
     /**
-     * @hidden
+
      */
     public removeEventListener(): void {
         if (this.parent.isDestroyed) {

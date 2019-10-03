@@ -42,21 +42,21 @@ const LAST_BAR: string = 'e-last-bar';
 export class PaneProperties extends ChildProperty<PaneProperties> {
     /**
      * Configures the properties for each pane.
-     * @default ''
+
      */
     @Property()
     public size: string;
 
     /**
      * Specifies whether a pane is collapsible or not collapsible.
-     * @default false
+
      */
     @Property(false)
     public collapsible: boolean;
 
     /**
      * Specifies whether a pane is collapsed or not collapsed at the initial rendering of splitter.
-     * @default false
+
      */
     @Property(false)
     public collapsed: boolean;
@@ -64,29 +64,29 @@ export class PaneProperties extends ChildProperty<PaneProperties> {
     /**
      * Specifies the value whether a pane is resizable. By default, the Splitter is resizable in all panes.
      * You can disable this for any specific panes using this property.
-     * @default true
+
      */
     @Property(true)
     public resizable: boolean;
 
     /**
      * Specifies the minimum size of a pane. The pane cannot be resized if it is less than the specified minimum size.
-     * @default null
+
      */
     @Property(null)
     public min: string;
 
     /**
      * Specifies the maximum size of a pane. The pane cannot be resized if it is more than the specified maximum limit.
-     * @default null
+
      */
     @Property(null)
     public max: string;
 
     /**
      * Specifies the content of split pane as plain text, HTML markup, or any other JavaScript controls.
-     * @default ''
-     * @blazorType string
+
+
      */
     @Property()
     public content: string | HTMLElement;
@@ -163,7 +163,7 @@ export class Splitter extends Component<HTMLElement> {
 
     /**
      * Specifies the height of the Splitter component that accepts both string and number values.
-     * @default '100%'
+
      */
     @Property('100%')
     public height: string;
@@ -171,14 +171,14 @@ export class Splitter extends Component<HTMLElement> {
     /**
      * Specifies the width of the Splitter control, which accepts both string and number values as width.
      * The string value can be either in pixel or percentage format.
-     * @default '100%'
+
      */
     @Property('100%')
     public width: string;
 
     /**
      * Configures the individual pane behaviors such as content, size, resizable, minimum, maximum validation, collapsible and collapsed.
-     * @default []
+
      */
     @Collection<PanePropertiesModel>([], PaneProperties)
     public paneSettings: PanePropertiesModel[];
@@ -187,7 +187,7 @@ export class Splitter extends Component<HTMLElement> {
      * Specifies a value that indicates whether to align the split panes horizontally or vertically.
      *  * Set the orientation property as "Horizontal" to create a horizontal splitter that aligns the panes left-to-right.
      *  * Set the orientation property as "Vertical" to create a vertical splitter that aligns the panes top-to-bottom.
-     * @default Horizontal
+
      */
     @Property('Horizontal')
     public orientation: Orientation;
@@ -197,7 +197,7 @@ export class Splitter extends Component<HTMLElement> {
      * styles and themes to be appended on the root element of the Splitter.
      * It is used to customize the Splitter control.
      * One or more custom CSS classes can be specified to the Splitter.
-     * @default ''
+
      */
     @Property('')
     public cssClass: string;
@@ -205,7 +205,7 @@ export class Splitter extends Component<HTMLElement> {
     /**
      * Specifies boolean value that indicates whether the component is enabled or disabled.
      * The Splitter component does not allow to interact when this property is disabled.
-     * @default true
+
      */
     @Property(true)
     public enabled: boolean;
@@ -213,7 +213,7 @@ export class Splitter extends Component<HTMLElement> {
     /**
      * Specifies the size of the separator line for both horizontal or vertical orientation.
      * The separator is used to separate the panes by lines.
-     * @default null
+
      */
     @Property(null)
     public separatorSize: number;
@@ -221,7 +221,7 @@ export class Splitter extends Component<HTMLElement> {
     /**
      * Triggers after creating the splitter component with its panes.
      * @event
-     * @blazorProperty 'Created'
+
      */
     @Event()
     public created: EmitType<Object>;
@@ -229,7 +229,7 @@ export class Splitter extends Component<HTMLElement> {
     /**
      * Triggers when the split pane is started to resize.
      * @event
-     * @blazorProperty 'OnResizeStart'
+
      */
     @Event()
     public resizeStart: EmitType<ResizeEventArgs>;
@@ -237,7 +237,7 @@ export class Splitter extends Component<HTMLElement> {
     /**
      * Triggers when a split pane is being resized.
      * @event
-     * @blazorProperty 'Resizing'
+
      */
     @Event()
     public resizing: EmitType<ResizingEventArgs>;
@@ -245,7 +245,7 @@ export class Splitter extends Component<HTMLElement> {
     /**
      * Triggers when the resizing of split pane is stopped.
      * @event
-     * @blazorProperty 'OnResizeStop'
+
      */
     @Event()
     public resizeStop: EmitType<ResizingEventArgs>;
@@ -253,7 +253,7 @@ export class Splitter extends Component<HTMLElement> {
     /**
      * Triggers when before panes get collapsed.
      * @event 
-     * @blazorProperty 'OnCollapse'
+
      */
     @Event()
     public beforeCollapse: EmitType<BeforeExpandEventArgs>;
@@ -261,7 +261,7 @@ export class Splitter extends Component<HTMLElement> {
     /**
      * Triggers when before panes get expanded.
      * @event 
-     * @blazorProperty 'OnExpand'
+
      */
     @Event()
     public beforeExpand: EmitType<BeforeExpandEventArgs>;
@@ -269,7 +269,7 @@ export class Splitter extends Component<HTMLElement> {
     /**
      * Triggers when after panes get collapsed.
      * @event 
-     * @blazorProperty 'Collapsed'
+
      */
     @Event()
     public collapsed: EmitType<ExpandedEventArgs>;
@@ -277,7 +277,7 @@ export class Splitter extends Component<HTMLElement> {
     /**
      * Triggers when after panes get expanded.
      * @event 
-     * @blazorProperty 'Expanded'
+
      */
     @Event()
     public expanded: EmitType<ExpandedEventArgs>;

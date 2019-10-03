@@ -108,7 +108,7 @@ export class TaskbarEdit {
     private mouseClickHandler(e: PointerEvent): void {
         let targetElement: Element = this.getElementByPosition(e);
         let element: Element = parentsUntil(targetElement as Element, cls.taskBarMainContainer);
-        if (this.parent.selectionModule.enableSelectMultiTouch) {
+        if (this.parent.selectionModule && this.parent.selectionModule.enableSelectMultiTouch) {
             if (this.tapPointOnFocus) {
                 this.updateTaskBarEditElement(e);
             }
@@ -119,8 +119,8 @@ export class TaskbarEdit {
             this.connectorSecondAction = 'ConnectorPointLeftDrag';
             this.connectorSecondElement = element;
             this.fromPredecessorText = 'Finish';
-            if (this.validateConnectorPoint() && !this.taskBarEditingAction(e)) {
-                this.taskBarEditedAction(e);
+            if (this.validateConnectorPoint()) {
+                this.taskBarEditingAction(e, true);
             }
             this.showHideActivePredecessors(false);
             this.initPublicProp();
@@ -132,9 +132,7 @@ export class TaskbarEdit {
             this.tapPointOnFocus = true;
             this.taskBarEditAction = 'ConnectorPointRightDrag';
             this.connectorSecondRecord = this.taskBarEditRecord;
-            if (this.taskBarEditingAction(e)) {
-                this.tapPointOnFocus = false;
-            }
+            this.taskBarEditingAction(e, false);
         } else {
             if (this.tapPointOnFocus) {
                 this.showHideActivePredecessors(false);
@@ -407,7 +405,7 @@ export class TaskbarEdit {
                 this.taskBarEditAction === 'ConnectorPointRightDrag') {
                 this.updateConnectorLineSecondProperties(event);
             }
-            this.taskBarEditingAction(event);
+            this.taskBarEditingAction(event, false);
         } else if (!this.parent.isAdaptive && !this.taskBarEditAction) {
             this.updateTaskBarEditElement(event);
         }
@@ -417,7 +415,7 @@ export class TaskbarEdit {
      * @return {Boolean}
      * @private
      */
-    public taskBarEditingAction(e: PointerEvent): Boolean {
+    public taskBarEditingAction(e: PointerEvent, isMouseClick: boolean): void {
         let args: ITaskbarEditedEventArgs = {} as ITaskbarEditedEventArgs;
         let recordIndex: number = this.parent.ganttChartModule.getIndexByTaskBar(this.taskBarEditElement);
         if (this.taskBarEditRecord !== null) {
@@ -426,34 +424,40 @@ export class TaskbarEdit {
             args.recordIndex = recordIndex;
             args.taskBarEditAction = this.taskBarEditAction;
             args.roundOffDuration = this.roundOffDuration;
-            this.parent.trigger('taskbarEditing', args);
-        }
-        if (!args.cancel && this.taskBarEditRecord !== null) {
-            this.roundOffDuration = args.roundOffDuration;
-            this.updateMouseMoveProperties(e);
-            if (this.taskBarEditAction === 'ProgressResizing') {
-                this.performProgressResize(e);
-            } else if (this.taskBarEditAction === 'LeftResizing') {
-                this.enableLeftResizing(e);
-            } else if (this.taskBarEditAction === 'RightResizing') {
-                this.enableRightResizing(e);
-            } else if (this.taskBarEditAction === 'ParentDrag' || this.taskBarEditAction === 'ChildDrag' ||
-                this.taskBarEditAction === 'MilestoneDrag') {
-                this.enableDragging(e);
-            } else if (this.taskBarEditAction === 'ConnectorPointLeftDrag' ||
-                this.taskBarEditAction === 'ConnectorPointRightDrag') {
-                this.triggerDependencyEvent(e);
-                if (!this.parent.isAdaptive) {
-                    this.drawFalseLine();
+            args.cancel = false;
+            this.parent.trigger('taskbarEditing', args, (args: ITaskbarEditedEventArgs) => {
+                if (!args.cancel && this.taskBarEditRecord !== null) {
+                    this.roundOffDuration = args.roundOffDuration;
+                    this.updateMouseMoveProperties(e);
+                    if (this.taskBarEditAction === 'ProgressResizing') {
+                        this.performProgressResize(e);
+                    } else if (this.taskBarEditAction === 'LeftResizing') {
+                        this.enableLeftResizing(e);
+                    } else if (this.taskBarEditAction === 'RightResizing') {
+                        this.enableRightResizing(e);
+                    } else if (this.taskBarEditAction === 'ParentDrag' || this.taskBarEditAction === 'ChildDrag' ||
+                        this.taskBarEditAction === 'MilestoneDrag') {
+                        this.enableDragging(e);
+                    } else if (this.taskBarEditAction === 'ConnectorPointLeftDrag' ||
+                        this.taskBarEditAction === 'ConnectorPointRightDrag') {
+                        this.triggerDependencyEvent(e);
+                        if (!this.parent.isAdaptive) {
+                            this.drawFalseLine();
+                        }
+                    }
+                    this.setItemPosition();
+                    this.updateEditedItem();
+                    this.editTooltip.updateTooltip();
+                    if (isMouseClick) {
+                        this.taskBarEditedAction(e);
+                    }
+                } else {
+                    this.tapPointOnFocus = false;
+                    this.editTooltip.showHideTaskbarEditTooltip(false);
                 }
-            }
-            this.setItemPosition();
-            this.updateEditedItem();
-            this.editTooltip.updateTooltip();
-        } else {
-            this.editTooltip.showHideTaskbarEditTooltip(false);
+
+            });
         }
-        return args.cancel;
     }
 
     /**
@@ -1269,7 +1273,8 @@ export class TaskbarEdit {
     }
 
     private multipleSelectionEnabled(): void {
-        if (this.parent.selectionSettings.mode !== 'Cell'
+        if (this.parent.selectionModule &&
+            this.parent.selectionSettings.mode !== 'Cell'
             && this.parent.selectionSettings.type === 'Multiple') {
             this.parent.selectionModule.hidePopUp();
         }
@@ -1291,5 +1296,6 @@ export class TaskbarEdit {
     public destroy(): void {
         this.unWireEvents();
         this.stopScrollTimer();
+        this.parent.editModule.taskbarEditModule = undefined;
     }
 }

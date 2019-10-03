@@ -9,7 +9,7 @@ export class Scroll {
     private parent: Schedule;
     /**
      * Constructor for the scrolling.
-     * @hidden
+
      */
     constructor(parent?: Schedule) {
         this.parent = parent;
@@ -24,33 +24,33 @@ export class Scroll {
         return 'scroll';
     }
     /**
-     * @hidden
+
      */
     public setWidth(): void {
         this.parent.element.style.width = formatUnit(this.parent.width);
     }
     /**
-     * @hidden
+
      */
     public setHeight(): void {
         this.parent.element.style.height = formatUnit(this.parent.height);
     }
     /**
-     * @hidden
+
      */
     public addEventListener(): void {
         this.parent.on(contentReady, this.setDimensions, this);
         this.parent.on(uiUpdate, this.onPropertyChanged, this);
     }
     /**
-     * @hidden
+
      */
     public removeEventListener(): void {
         this.parent.off(contentReady, this.setDimensions);
         this.parent.off(uiUpdate, this.onPropertyChanged);
     }
     /**
-     * @hidden
+
      */
     private setDimensions(): void {
         this.setWidth();
@@ -59,13 +59,13 @@ export class Scroll {
         this.parent.notify(scrollUiUpdate, data);
     }
     /** 
-     * @hidden
+
      */
     private onPropertyChanged(e: NotifyEventArgs): void {
         this.setDimensions();
     }
     /**
-     * @hidden
+
      */
     public destroy(): void {
         this.removeEventListener();

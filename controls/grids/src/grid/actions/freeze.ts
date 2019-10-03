@@ -7,7 +7,7 @@ import { FreezeRender, FreezeContentRender } from '../renderer/freeze-renderer';
 
 /**
  * `Freeze` module is used to handle Frozen rows and columns.
- * @hidden
+
  */
 export class Freeze implements IAction {
     private locator: ServiceLocator;

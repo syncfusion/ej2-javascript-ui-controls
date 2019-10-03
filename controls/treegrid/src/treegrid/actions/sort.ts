@@ -7,7 +7,7 @@ import { getParentData } from '../utils';
 
 /**
  * Internal dataoperations for TreeGrid 
- * @hidden
+
  */
 export class Sort {
   // Internal variables
@@ -35,7 +35,7 @@ export class Sort {
     return 'sort';
   }
   /**
-   * @hidden
+
    */
 
   public addEventListener(): void {
@@ -44,7 +44,7 @@ export class Sort {
   }
 
   /**
-   * @hidden
+
    */
   public removeEventListener(): void {
     if (this.parent.isDestroyed) { return; }
@@ -96,7 +96,7 @@ export class Sort {
   /**
    * The function used to update sortSettings of TreeGrid.
    * @return {void}
-   * @hidden
+
    */
   private updateModel(): void {
     this.parent.setProperties({sortSettings: getActualProperties(this.parent.grid.sortSettings)}, true);

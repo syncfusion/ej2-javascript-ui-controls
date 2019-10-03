@@ -2373,7 +2373,7 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
     /**
      * return the Query from current rules collection.
      * @returns Promise.
-     * @blazorType object
+
      */
     QueryBuilder.prototype.getFilteredRecords = function () {
         var predicate = this.getPredicate(this.getValidRules(this.rule));

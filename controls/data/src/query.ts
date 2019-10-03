@@ -5,41 +5,41 @@ import { NumberFormatOptions, DateFormatOptions } from '@syncfusion/ej2-base';
  * Query class is used to build query which is used by the DataManager to communicate with datasource.
  */
 export class Query {
-    /** @hidden */
+
     public queries: QueryOptions[];
-    /** @hidden */
+
     public key: string;
-    /** @hidden */
+
     public fKey: string;
-    /** @hidden */
+
     public fromTable: string;
-    /** @hidden */
+
     public lookups: string[];
-    /** @hidden */
+
     public expands: Object[];
-    /** @hidden */
+
     public sortedColumns: Object[];
-    /** @hidden */
+
     public groupedColumns: Object[];
-    /** @hidden */
+
     public subQuerySelector: Function;
-    /** @hidden */
+
     public subQuery: Query = null;
-    /** @hidden */
+
     public isChild: boolean = false;
-    /** @hidden */
+
     public params: ParamOption[];
-    /** @hidden */
+
     public isCountRequired: boolean;
-    /** @hidden */
+
     public dataManager: DataManager;
-    /** @hidden */
+
     public distincts: string[] = [];
 
     /**
      * Constructor for Query class.
      * @param  {string|string[]} from?
-     * @hidden
+
      */
     constructor(from?: string | string[]) {
         this.queries = [];
@@ -166,7 +166,7 @@ export class Query {
     }
 
     /**
-     * @hidden
+
      */
     public distinct(fields: string | string[]): Query {
         if (typeof fields === 'string') {
@@ -440,7 +440,7 @@ export class Query {
      * Pass array of filterColumn query for performing filter operation.
      * @param  {QueryOptions[]} queries
      * @param  {string} name
-     * @hidden
+
      */
     public static filterQueries(queries: QueryOptions[], name: string): QueryOptions[] {
         return queries.filter((q: QueryOptions): boolean => {
@@ -451,7 +451,7 @@ export class Query {
      * To get the list of queries which is already filtered in current data source.
      * @param  {Object[]} queries
      * @param  {string[]} singles
-     * @hidden
+
      */
     public static filterQueryLists(queries: Object[], singles: string[]): Object {
         let filtered: QueryOptions[] = queries.filter((q: QueryOptions) => {
@@ -472,23 +472,23 @@ export class Query {
  * This will be used by DataManager to perform multiple filtering operation.
  */
 export class Predicate {
-    /** @hidden */
+
     public field: string;
-    /** @hidden */
+
     public operator: string;
-    /** @hidden */
+
     public value: string | number | Date | boolean | Predicate | Predicate[] | null;
-    /** @hidden */
+
     public condition: string;
-    /** @hidden */
+
     public ignoreCase: boolean;
-    /** @hidden */
+
     public ignoreAccent: boolean = false;
-    /** @hidden */
+
     public isComplex: boolean = false;
-    /** @hidden */
+
     public predicates: Predicate[];
-    /** @hidden */
+
     public comparer: Function;
     [x: string]: string | number | Date | boolean | Predicate | Predicate[] | Function | null;
 
@@ -498,7 +498,7 @@ export class Predicate {
      * @param  {string} operator
      * @param  {string|number|boolean|Predicate|Predicate[]} value
      * @param  {boolean=false} ignoreCase
-     * @hidden
+
      */
     constructor(
         field: string | Predicate, operator: string, value: string | number | Date | boolean | Predicate | Predicate[] | null,
@@ -676,7 +676,7 @@ export class Predicate {
     }
 }
 /**
- * @hidden
+
  */
 export interface QueryOptions {
     fn?: string;
@@ -706,7 +706,7 @@ export interface QueryOptions {
     condition?: string;
 }
 /**
- * @hidden
+
  */
 export interface QueryList {
     onSelect?: QueryOptions;
@@ -716,7 +716,7 @@ export interface QueryList {
     onRange?: QueryOptions;
 }
 /**
- * @hidden
+
  */
 export interface ParamOption {
     key: string;

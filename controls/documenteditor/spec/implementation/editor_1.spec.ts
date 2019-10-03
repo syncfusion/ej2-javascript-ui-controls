@@ -954,3 +954,43 @@ describe('Table relayouting validation', () => {
         expect(editor.viewer.pages.length).toBeGreaterThan(1);
     });
 });
+
+describe("Press enter key", () => {
+    let editor: DocumentEditor;
+    let viewer: LayoutViewer;
+    beforeAll((): void => {
+        let ele: HTMLElement = createElement('div', { id: 'container' });
+        document.body.appendChild(ele);
+        DocumentEditor.Inject(Editor, Selection, EditorHistory);
+        editor = new DocumentEditor({ enableEditor: true, isReadOnly: false, enableSelection: true, enableEditorHistory: true });
+        editor.acceptTab = true;
+        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        editor.appendTo('#container');
+        viewer = editor.viewer as PageLayoutViewer;
+    });
+    afterAll((done): void => {
+        viewer.destroy();
+        viewer = undefined;
+        editor.destroy();
+        document.body.removeChild(document.getElementById('container'));
+        editor = undefined;
+        setTimeout(function () {
+            done();
+        }, 500);
+    });
+    it("Inside nested table", () => {
+        editor.editor.insertTable(2, 2);
+        editor.editor.onEnter();
+        editor.editor.insertTable(2, 2);
+        editor.selection.moveUp();
+        editor.selection.characterFormat.fontSize = 96;
+        for (let i = 0; i < 7; i++) {
+            editor.editor.onEnter();
+        }
+        editor.selection.moveDown();
+        expect(function () { editor.editor.onEnter() }).not.toThrowError();
+    });
+});

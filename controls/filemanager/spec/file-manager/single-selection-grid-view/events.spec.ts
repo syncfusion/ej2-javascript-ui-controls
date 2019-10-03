@@ -7,7 +7,7 @@ import {DetailsView} from '../../../src/file-manager/layout/details-view';
 import { Toolbar } from '../../../src/file-manager/actions/toolbar';
 import { BeforeSendEventArgs,FileLoadEventArgs, ToolbarCreateEventArgs, UploadListCreateArgs } from '../../../src/file-manager/base/interface';
 import { createElement, Browser } from '@syncfusion/ej2-base';
-import { toolbarItems, toolbarItems1, toolbarItems2, data1, data2, data3 } from '../data';
+import { toolbarItems, toolbarItems1, toolbarItems2, data1, data2, data3, doubleClickRead } from '../data';
 
 FileManager.Inject(Toolbar, NavigationPane, DetailsView);
 
@@ -45,6 +45,71 @@ describe('FileManager control single selection Grid view', () => {
             if (feObj) feObj.destroy();
             ele.remove();
         });
+        it('for fileOpen', (done) => {
+            let dblclickevent:any;
+            let i: number = 0;
+            feObj = new FileManager({
+                view: 'Details',
+                ajaxSettings: {
+                    url: '/FileOperations',
+                    uploadUrl: '/Upload', downloadUrl: '/Download', getImageUrl: '/GetImage'
+                },
+                allowMultiSelection:false,
+                showThumbnail: false,
+                fileOpen: () => {
+                    i++;
+                }
+            });
+            feObj.appendTo('#file');
+            this.request = jasmine.Ajax.requests.mostRecent();
+            this.request.respondWith({
+                status: 200,
+                responseText: JSON.stringify(data1)
+            });
+            dblclickevent = new MouseEvent('dblclick', {
+                'view': window,
+                'bubbles': true,
+                'cancelable': true
+            });
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+            setTimeout(function () {
+                feObj.detailsviewModule.gridObj.selectRows([2]);
+                feObj.detailsviewModule.gridObj.element.querySelectorAll('.e-row')[2].firstElementChild.dispatchEvent(dblclickevent);
+                this.request = jasmine.Ajax.requests.mostRecent();
+                this.request.respondWith({
+                    status: 200,
+                    responseText: JSON.stringify(doubleClickRead)
+                });
+                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                setTimeout(function () {
+                    expect(i).toBe(1);
+                    feObj.element.getElementsByClassName('e-address-list-item')[0].click();
+                    this.request = jasmine.Ajax.requests.mostRecent();
+                    this.request.respondWith({
+                        status: 200,
+                        responseText: JSON.stringify(data1)
+                    });
+                    jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                    setTimeout(function () {
+                        expect(i).toBe(2);
+                        let li: Element[] = <Element[] & NodeListOf<HTMLLIElement>>document.getElementById('file_tree').querySelectorAll('li');
+                        mouseEventArgs.target = li[3].querySelector('.e-fullrow');
+                        feObj.navigationpaneModule.treeObj.touchClickObj.tap(tapEvent);
+                        this.request = jasmine.Ajax.requests.mostRecent();
+                        this.request.respondWith({
+                            status: 200,
+                            responseText: JSON.stringify(doubleClickRead)
+                        });
+                        jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                        setTimeout(function () {
+                            expect(i).toBe(3);
+                            done();
+                        }, 500);
+                    }, 500);
+                }, 500);
+            }, 500);
+        });
+
         it('for beforeSend', () => {
             feObj = new FileManager({
                 view: 'Details',

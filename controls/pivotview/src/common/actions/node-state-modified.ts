@@ -7,13 +7,13 @@ import { OlapEngine } from '../../base/olap/engine';
 /**
  * `DialogAction` module is used to handle field list dialog related behaviour.
  */
-/** @hidden */
+
 export class NodeStateModified {
     public parent: PivotCommon;
 
     /**
      * Constructor for the dialog action.
-     * @hidden
+
      */
     constructor(parent?: PivotCommon) {
         this.parent = parent;
@@ -25,7 +25,7 @@ export class NodeStateModified {
      * @param  {DragEventArgs & DragAndDropEventArgs} args -  Contains both pivot button and field list drag and drop information.
      * @param  {string} fieldName - Defines dropped field name to update dataSource.
      * @return {void}
-     * @hidden
+
      */
     public onStateModified(args: DragEventArgs & DragAndDropEventArgs, fieldName: string): boolean {
         let droppedClass: string = '';

@@ -672,7 +672,7 @@ export class TextSearch {
             for (let y: number = 0; y < noTileY; y++) {
         let jsonObject: object;
         // tslint:disable-next-line:max-line-length
-        jsonObject = { xCoordinate: 0, yCoordinate: 0, pageNumber: pageIndex, viwePortWidth: viewportWidth,  viewportHeight: viewportHeight, documentId: proxy.pdfViewerBase.getDocumentId(), hashId: proxy.pdfViewerBase.hashId, zoomFactor: proxy.pdfViewerBase.getZoomFactor(), tilecount : tileCount, action: 'RenderPdfPages', elementId: proxy.pdfViewer.element.id };
+        jsonObject = { xCoordinate: 0, yCoordinate: 0, pageNumber: pageIndex, viwePortWidth: viewportWidth,  viewportHeight: viewportHeight, documentId: proxy.pdfViewerBase.getDocumentId(), hashId: proxy.pdfViewerBase.hashId, zoomFactor: proxy.pdfViewerBase.getZoomFactor(), tilecount : tileCount, action: 'RenderPdfPages', elementId: proxy.pdfViewer.element.id, uniqueId: proxy.pdfViewerBase.documentId };
         if (this.pdfViewerBase.jsonDocumentId) {
             // tslint:disable-next-line
             (jsonObject as any).documentId = this.pdfViewerBase.jsonDocumentId;
@@ -695,7 +695,7 @@ export class TextSearch {
                     }
                 }
                 if (data) {
-                    if (data.pageText) {
+                    if (data.pageText && data.uniqueId === proxy.pdfViewerBase.documentId) {
                         let pageNumber: number = (data.pageNumber !== undefined) ? data.pageNumber : pageIndex;
                         if (viewportWidth > pageWidth) {
                             proxy.pdfViewerBase.storeWinData(data, pageNumber);

@@ -88,7 +88,7 @@ export class ThumbnailView {
             proxy.thumbnailLimit = proxy.startIndex + proxy.thumbnailThreshold < proxy.pdfViewer.pageCount ? proxy.startIndex + proxy.thumbnailThreshold : proxy.pdfViewer.pageCount;
         }
         // tslint:disable-next-line:max-line-length
-        let jsonObject: object = { startPage: proxy.startIndex, endPage: proxy.thumbnailLimit, sizeX: 99.7, sizeY: 141, hashId: proxy.pdfViewerBase.hashId, action: 'RenderThumbnailImages', elementId: proxy.pdfViewer.element.id  };
+        let jsonObject: object = { startPage: proxy.startIndex, endPage: proxy.thumbnailLimit, sizeX: 99.7, sizeY: 141, hashId: proxy.pdfViewerBase.hashId, action: 'RenderThumbnailImages', elementId: proxy.pdfViewer.element.id, uniqueId: proxy.pdfViewerBase.documentId  };
         if (this.pdfViewerBase.jsonDocumentId) {
             // tslint:disable-next-line
             (jsonObject as any).documentId = this.pdfViewerBase.jsonDocumentId;
@@ -110,7 +110,7 @@ export class ThumbnailView {
                         data = null;
                     }
                 }
-                if (data) {
+                if (data && data.uniqueId === proxy.pdfViewerBase.documentId) {
                     proxy.renderThumbnailImage(data);
                     if (!proxy.isThumbnailCompleted) {
                         let index: number = (data && isNaN(data.endPage)) ? data.endPage : proxy.thumbnailLimit;
@@ -524,7 +524,7 @@ export class ThumbnailView {
 
 /**
  * The `IVisibleThumbnailElement` module is used to handle visible thumbnail element collection of PDF viewer.
- * @hidden
+
  */
 export interface IVisibleThumbnailElement {
     id: string;
@@ -535,7 +535,7 @@ export interface IVisibleThumbnailElement {
 }
 /**
  * The `IVisibleThumbnail` module is used to handle visible thumbnail collection of PDF viewer.
- * @hidden
+
  */
 export interface IVisibleThumbnail {
     first: IVisibleThumbnailElement;

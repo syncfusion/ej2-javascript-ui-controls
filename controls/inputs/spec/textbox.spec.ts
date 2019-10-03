@@ -1942,6 +1942,32 @@ describe('TextBox ', () => {
             expect(onInput).toHaveBeenCalled();
         });
     });
+    describe('Input event testing - ', () => {
+        let inputObj: any;
+        let onInput: EmitType<Object> = jasmine.createSpy('input');
+        let originalTimeout: number;
+        beforeAll((): void => {
+            originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 5000;
+            let element: HTMLElement = createElement('input', {id: 'textbox'});
+            document.body.appendChild(element);
+            inputObj = new TextBox({input: onInput, showClearButton: true, enabled: false, value: "Syncfusion"});
+            inputObj.appendTo(document.getElementById('textbox'));
+        })
+        afterAll((): void => {
+            inputObj.destroy();
+            document.body.innerHTML = '';
+        });
+        it('Clear value by click on clear button', () => {
+            let mouseEvent = document.createEvent('MouseEvents');
+            inputObj.enabled = true;
+            inputObj.dataBind();
+            inputObj.textboxWrapper.clearButton.classList.remove('e-clear-icon-hide');
+            inputObj.resetInputHandler(mouseEvent);
+            expect(inputObj.element.value).toBe('');
+            expect(onInput).toHaveBeenCalled();
+        });
+    });
 
     describe('HTML attributes at inline element testing', () => {
         let inputObj: any;

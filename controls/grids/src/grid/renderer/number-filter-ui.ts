@@ -8,7 +8,7 @@ import { extend } from '@syncfusion/ej2-base';
 
 /**
  * `numberfilterui` render number column.
- * @hidden
+
  */
 
 export class NumberFilterUI implements IFilterMUI {

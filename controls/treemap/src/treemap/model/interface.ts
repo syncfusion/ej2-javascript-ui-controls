@@ -22,7 +22,7 @@ export interface IPrintEventArgs extends ITreeMapEventArgs {
  */
 export interface ILoadEventArgs extends ITreeMapEventArgs {
     /** Defines the current TreeMap instance
-     * @deprecated
+
      */
     treemap?: TreeMap;
 }
@@ -32,7 +32,7 @@ export interface ILoadEventArgs extends ITreeMapEventArgs {
  */
 export interface ILoadedEventArgs extends ITreeMapEventArgs {
     /** Defines the current TreeMap instance
-     * @deprecated
+
      */
     treemap?: TreeMap;
 }
@@ -42,7 +42,7 @@ export interface ILoadedEventArgs extends ITreeMapEventArgs {
  */
 export interface IItemRenderingEventArgs extends ITreeMapEventArgs {
     /** Defines the current TreeMap instance
-     * @deprecated
+
      */
     treemap?: TreeMap;
     /**
@@ -64,7 +64,7 @@ export interface IItemRenderingEventArgs extends ITreeMapEventArgs {
  */
 export interface IDrillStartEventArgs extends ITreeMapEventArgs {
     /** Defines the current TreeMap instance
-     * @deprecated
+
      */
     treemap?: TreeMap;
     /**
@@ -97,7 +97,7 @@ export interface IDrillStartEventArgs extends ITreeMapEventArgs {
 
 export interface IDrillEndEventArgs extends ITreeMapEventArgs {
     /** Defines the current TreeMap instance
-     * @deprecated
+
      */
     treemap?: TreeMap;
     /**
@@ -108,7 +108,7 @@ export interface IDrillEndEventArgs extends ITreeMapEventArgs {
 
 export interface IItemClickEventArgs extends ITreeMapEventArgs {
     /** Defines the current TreeMap instance
-     * @deprecated
+
      */
     treemap?: TreeMap;
     /**
@@ -131,7 +131,7 @@ export interface IItemClickEventArgs extends ITreeMapEventArgs {
 
 export interface IItemMoveEventArgs extends ITreeMapEventArgs {
     /** Defines the current TreeMap instance
-     * @deprecated
+
      */
     treemap?: TreeMap;
     /**
@@ -146,7 +146,7 @@ export interface IItemMoveEventArgs extends ITreeMapEventArgs {
 
 export interface IClickEventArgs extends ITreeMapEventArgs {
     /** Defines the current TreeMap instance
-     * @deprecated
+
      */
     treemap?: TreeMap;
     /**
@@ -157,7 +157,7 @@ export interface IClickEventArgs extends ITreeMapEventArgs {
 
 export interface IDoubleClickEventArgs extends ITreeMapEventArgs {
     /** Defines the current TreeMap instance
-     * @deprecated
+
      */
     treemap?: TreeMap;
     /**
@@ -168,7 +168,7 @@ export interface IDoubleClickEventArgs extends ITreeMapEventArgs {
 
 export interface IRightClickEventArgs extends ITreeMapEventArgs {
     /** Defines the current TreeMap instance
-     * @deprecated
+
      */
     treemap?: TreeMap;
     /**
@@ -179,7 +179,7 @@ export interface IRightClickEventArgs extends ITreeMapEventArgs {
 
 export interface IMouseMoveEventArgs extends ITreeMapEventArgs {
     /** Defines the current TreeMap instance
-     * @deprecated
+
      */
     treemap?: TreeMap;
     /**
@@ -190,7 +190,7 @@ export interface IMouseMoveEventArgs extends ITreeMapEventArgs {
 
 export interface IItemSelectedEventArgs extends ITreeMapEventArgs {
     /** Defines the current TreeMap instance
-     * @deprecated
+
      */
     treemap?: TreeMap;
     /**
@@ -205,7 +205,7 @@ export interface IItemSelectedEventArgs extends ITreeMapEventArgs {
 
 export interface IItemHighlightEventArgs extends ITreeMapEventArgs {
     /** Defines the current TreeMap instance
-     * @deprecated
+
      */
     treemap?: TreeMap;
     /**
@@ -220,11 +220,11 @@ export interface IItemHighlightEventArgs extends ITreeMapEventArgs {
 
 /**
  * Specifies the Tooltip Rendering Event arguments.
- * @deprecated
+
  */
 export interface ITreeMapTooltipRenderEventArgs extends ITreeMapEventArgs {
     /** Defines the current TreeMap instance
-     * @deprecated
+
      */
     treemap?: TreeMap;
     /**
@@ -247,7 +247,7 @@ export interface ITreeMapTooltipRenderEventArgs extends ITreeMapEventArgs {
 
 /**
  * Specifies the Tooltip Rendering Event arguments.
- * @deprecated
+
  */
 export interface ITreeMapTooltipArgs extends ITreeMapEventArgs {
     location: Object;
@@ -263,7 +263,7 @@ export interface ITreeMapTooltipArgs extends ITreeMapEventArgs {
 export interface ILegendItemRenderingEventArgs extends ITreeMapEventArgs {
     /**
      * maps instance event argument
-     * @deprecated
+
      */
     treemap?: TreeMap;
     /**
@@ -290,7 +290,7 @@ export interface ILegendItemRenderingEventArgs extends ITreeMapEventArgs {
 export interface ILegendRenderingEventArgs extends ITreeMapEventArgs {
     /**
      * maps instance event argument
-     * @deprecated
+
      */
     treemap?: TreeMap;
     /**
@@ -313,7 +313,7 @@ export interface IResizeEventArgs extends ITreeMapEventArgs {
     /** Defines the current size of the treemap */
     currentSize: Size;
     /** Defines the treemap instance 
-     * @deprecated
+
      */
     treemap?: TreeMap;
 }
@@ -353,6 +353,4 @@ export interface IThemeStyle {
     fontSize?: string;
     legendFontSize?: string;
     labelFontFamily?: string;
-    borderWidth: number;
-    borderColor: string;
 }

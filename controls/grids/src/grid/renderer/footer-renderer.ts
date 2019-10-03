@@ -1,4 +1,4 @@
-import { isNullOrUndefined, remove } from '@syncfusion/ej2-base';
+import { isNullOrUndefined, remove, extend } from '@syncfusion/ej2-base';
 import { formatUnit } from '@syncfusion/ej2-base';
 import { IRenderer, IGrid } from '../base/interface';
 import { Browser } from '@syncfusion/ej2-base';
@@ -11,12 +11,11 @@ import { RowRenderer } from './row-renderer';
 import { ServiceLocator } from '../services/service-locator';
 import { SummaryModelGenerator } from '../services/summary-model-generator';
 import { renderMovable, calculateAggregate } from '../base/util';
-import { DataUtil } from '@syncfusion/ej2-data';
 import { AggregateColumn, AggregateRow } from '../models/aggregate';
 
 /**
  * Footer module is used to render grid content
- * @hidden
+
  */
 export class FooterRenderer extends ContentRender implements IRenderer {
     //private parent: Grid;
@@ -102,7 +101,7 @@ export class FooterRenderer extends ContentRender implements IRenderer {
         }
 
         table.tFoot.appendChild(fragment);
-        this.aggregates = e;
+        this.aggregates = !isNullOrUndefined(e) ? e : this.aggregates;
     }
 
     public refresh(e?: { aggregates?: Object }): void {
@@ -187,52 +186,57 @@ export class FooterRenderer extends ContentRender implements IRenderer {
         let aggregates: Object = this.onAggregates(editedData);
         this.refresh(aggregates);
     }
+    public getIndexByKey(data: object, ds: object[]): number {
+        let key: string = this.parent.getPrimaryKeyFieldNames()[0];
+        for (let i: number = 0; i < ds.length; i++) {
+            if (ds[i][key] === data[key]) {
+                return i;
+            }
+        }
+        return -1;
+    }
+
     public onAggregates(editedData: Object[]): Object {
         editedData = editedData instanceof Array ? editedData : [];
-        let field: string = this.parent.getPrimaryKeyFieldNames()[0];
-        let deletedCols: Object[] = [];
-        let data: string = 'dataSource';
-        let mergeds: Object[];
-        let rows: Row<Column>[] = this.parent.frozenColumns > 0 ? this.parent.getMovableRowsObject() : this.parent.getRowsObject();
-        let initds: Object[] = this.parent.dataSource instanceof Array ? this.parent.dataSource : this.parent.dataSource[data].json.length
-         ? this.parent.dataSource[data].json : this.parent.getCurrentViewRecords();
-        let addrow: Object[] = [];
-        let changeds: Object[] = rows.map((row: Row<{}>) => {
-            if (row.changes && row.edit === 'add') { addrow.push(row.changes); }
-            if (row.edit === 'delete') { deletedCols.push(row.data); }
-            return row.isDirty && row.changes ? row.changes : row.data;
-        });
-        changeds = editedData.length === 0 ? changeds : editedData;
-        mergeds = initds.map((item: Object) => {
-            let idVal: Object = DataUtil.getObject(field, item);
-            let value: Object;
-            let hasVal: boolean = changeds.some((cItem: Object) => {
-                value = cItem;
-                return idVal === DataUtil.getObject(field, cItem);
-            });
-            return hasVal ? value : item;
-        });
-        let currentData: Object[] = this.parent.groupSettings.columns.length > 0 && 'records' in this.parent.currentViewData ?
-            this.parent.getCurrentViewRecords() : this.parent.currentViewData;
-        let currentds: Object[];
-        currentds = currentData.map((item: Object) => {
-            let idVal: Object = DataUtil.getObject(field, item);
-            let value: Object;
-            let hasVal: boolean = mergeds.some((cItem: Object) => {
-                value = cItem;
-                return idVal === DataUtil.getObject(field, cItem);
-            });
-            return hasVal ? value : item;
-        });
-        if (addrow.length > 0) { addrow.forEach((row: Object) => { mergeds.push(row); currentds.push(row); }); }
+        let mergeds: Object[] = [];
+        let dataSource: object[] = [];
+        let isModified: boolean = false;
+        let gridData: string = 'dataSource';
+        let changedRecords: string = 'changedRecords';
+        let addedRecords: string = 'addedRecords';
+        let deletedRecords: string = 'deletedRecords';
+        let currentViewData: Object[] = this.parent.dataSource instanceof Array ?
+            this.parent.dataSource : this.parent.dataSource[gridData].json.length
+            ? this.parent.dataSource[gridData].json : this.parent.getCurrentViewRecords();
+
+        let batchChanges: Object = this.parent.editModule.getBatchChanges();
+        if (Object.keys(batchChanges).length) {
+            for (let i: number = 0; i < currentViewData.length; i++) {
+                isModified = false;
+                if (batchChanges[changedRecords].length && this.getIndexByKey(currentViewData[i], batchChanges[changedRecords]) > -1) {
+                    isModified = true;
+                    dataSource.push(batchChanges[changedRecords][this.getIndexByKey(currentViewData[i], batchChanges[changedRecords])]);
+                }
+                if (batchChanges[deletedRecords].length && this.getIndexByKey(currentViewData[i], batchChanges[deletedRecords]) > -1) {
+                    isModified = true;
+                } else if (!isModified) {
+                    dataSource.push(currentViewData[i]);
+                }
+            }
+            if (batchChanges[addedRecords].length) {
+                for (let i: number = 0; i < batchChanges[addedRecords].length; i++) {
+                    dataSource.push(batchChanges[addedRecords][i]);
+                }
+            }
+        } else {
+            if (editedData.length) {
+                mergeds.push(editedData[0]);
+            }
+            dataSource = editedData ? (extend(currentViewData, mergeds) as Object[]) : currentViewData;
+        }
         let eData: Object = editedData;
-        if (!((<{ type: string }>eData).type && (<{ type: string }>eData).type === 'cancel') && deletedCols.length > 0) {
-            deletedCols.forEach((row: Object) => {
-                let index: number = mergeds.indexOf(row);
-                let curIndx: number = currentData.indexOf(row);
-                mergeds.splice(index, 1);
-                if (currentds && currentds.length) { currentds.splice(curIndx, 1); }
-            });
+        if (((<{ type: string }>eData).type && (<{ type: string }>eData).type === 'cancel')) {
+            dataSource = currentViewData;
         }
         let aggregate: Object = {};
         let agrVal: Object;
@@ -241,14 +245,14 @@ export class FooterRenderer extends ContentRender implements IRenderer {
             row.columns.forEach((col: AggregateColumn) => {
                 let data: Object[] = [];
                 let type: string = col.type.toString();
-                data = type.toLowerCase() === 'custom' && !isNullOrUndefined(currentds) ? currentds : mergeds;
+                data = dataSource;
                 agrVal = calculateAggregate(type, data, col, this.parent);
                 aggregate[col.field + ' - ' + type.toLowerCase()] = agrVal;
             });
         });
         let result: Object = {
-            result: this.parent.groupSettings.columns.length > 0 ? mergeds : currentds,
-            count: mergeds.length,
+            result: dataSource,
+            count: dataSource.length,
             aggregates: aggregate
         };
         return result;

@@ -43,6 +43,13 @@ export class Row extends ChildProperty<SheetModel> {
      */
     @Property(20)
     public height: number;
+
+    /**
+     * specifies custom height of the row.
+     * @default false
+     */
+    @Property(false)
+    public customHeight: boolean;
 }
 
 /**
@@ -52,11 +59,25 @@ export function getRow(sheet: SheetModel, rowIndex: number): RowModel {
     return sheet.rows[rowIndex];
 }
 
+/** @hidden */
+export function setRow(sheet: SheetModel, rowIndex: number, row: RowModel): void {
+    if (!sheet.rows[rowIndex]) {
+        sheet.rows[rowIndex] = {};
+    }
+    Object.keys(row).forEach((key: string): void => {
+        sheet.rows[rowIndex][key] = row[key];
+    });
+}
+
 /**
  * @hidden
  */
 export function getRowHeight(sheet: SheetModel, rowIndex: number): number {
-    return (sheet && sheet.rows && sheet.rows[rowIndex] && sheet.rows[rowIndex].height) || 20;
+    if (sheet && sheet.rows && sheet.rows[rowIndex] && (sheet.rows[rowIndex].height || sheet.rows[rowIndex].customHeight)) {
+        return sheet.rows[rowIndex].height;
+    } else {
+        return 20;
+    }
 }
 /**
  * @hidden

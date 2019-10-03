@@ -184,6 +184,10 @@ export interface FileOpenEventArgs {
      * Return the currently selected item as JSON object.
      */
     fileDetails?: Object;
+    /**
+     * Returns the name of the target module in file manager.
+     */
+    module?: string;
 }
 
 export interface PopupOpenCloseEventArgs {
@@ -234,7 +238,7 @@ export interface FileSelectEventArgs {
 export interface ToolbarCreateEventArgs {
     /**
      * Return an array of items that is used to configure toolbar content.
-     * @blazorType List<Syncfusion.EJ2.Blazor.Navigations.ItemModel>
+
      */
     items: ItemModel[];
 }
@@ -250,7 +254,7 @@ export interface ToolbarClickEventArgs {
     fileDetails: Object[];
     /**
      * Return the currently clicked toolbar item as JSON object.
-     * @blazorType Syncfusion.EJ2.Blazor.Navigations.ItemModel
+
      */
     item: ItemModel;
 }
@@ -270,7 +274,7 @@ export interface MenuClickEventArgs {
     fileDetails?: Object[];
     /**
      * Return the currently clicked context menu item as JSON object.
-     * @blazorType Syncfusion.EJ2.Blazor.Navigations.MenuItemModel
+
      */
     item?: MenuItemModel;
 }
@@ -290,12 +294,12 @@ export interface MenuOpenEventArgs {
     fileDetails?: Object[];
     /**
      * Returns the current context menu items as JSON object.
-     * @blazorType List<Syncfusion.EJ2.Blazor.Navigations.MenuItemModel>
+
      */
     items?: MenuItemModel[];
     /**
      * Returns the instance of context menu component.
-     * @blazorType Syncfusion.EJ2.Blazor.Navigations.ContextMenuModel
+
      */
     menuModule?: ContextMenu;
     /**
@@ -377,7 +381,7 @@ export interface ValidationMessages {
     maxSize?: string;
 }
 
-/** @hidden */
+
 export interface IFileManager extends Component<HTMLElement> {
     hasId: boolean;
     pathNames: string[];
@@ -484,7 +488,7 @@ export interface IFileManager extends Component<HTMLElement> {
     refreshLayout(): void;
 }
 
-/** @hidden */
+
 export interface ITreeView extends Component<HTMLElement> {
     treeObj: TreeView;
     removeNode: Function;
@@ -494,7 +498,7 @@ export interface ITreeView extends Component<HTMLElement> {
     activeNode: Element;
 }
 
-/** @hidden */
+
 export interface IContextMenu extends Component<HTMLElement> {
     disableItem(items: string[]): void;
     getItemIndex(item: string): number;

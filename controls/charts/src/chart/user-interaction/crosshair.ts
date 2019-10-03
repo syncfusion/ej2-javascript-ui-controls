@@ -42,7 +42,7 @@ export class Crosshair {
     }
 
     /**
-     * @hidden
+
      */
     private addEventListener(): void {
         if (this.chart.isDestroyed) { return; }

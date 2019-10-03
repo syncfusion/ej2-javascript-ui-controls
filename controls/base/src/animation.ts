@@ -29,25 +29,25 @@ export type Effect = 'FadeIn' | 'FadeOut' | 'FadeZoomIn' | 'FadeZoomOut' | 'Flip
 export class Animation extends Base<HTMLElement> implements INotifyPropertyChanged {
     /**
      * Specify the type of animation
-     * @default : 'FadeIn';
+
      */
     @Property('FadeIn')
     public name: Effect;
     /**
      * Specify the duration to animate
-     * @default : 400;
+
      */
     @Property(400)
     public duration: number;
     /**
      * Specify the animation timing function
-     * @default : 'ease';
+
      */
     @Property('ease')
     public timingFunction: string;
     /**
      * Specify the delay to start animation
-     * @default : 0;
+
      */
     @Property(0)
     public delay: number;

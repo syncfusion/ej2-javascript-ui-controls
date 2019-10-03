@@ -9,7 +9,7 @@ import { GroupedData } from '../services/group-model-generator';
 
 /**
  * GroupCaptionCellRenderer class which responsible for building group caption cell. 
- * @hidden
+
  */
 export class GroupCaptionCellRenderer extends CellRenderer implements ICellRenderer<Column> {
 
@@ -55,7 +55,7 @@ export class GroupCaptionCellRenderer extends CellRenderer implements ICellRende
 
 /**
  * GroupCaptionEmptyCellRenderer class which responsible for building group caption empty cell. 
- * @hidden
+
  */
 export class GroupCaptionEmptyCellRenderer extends CellRenderer implements ICellRenderer<Column> {
 

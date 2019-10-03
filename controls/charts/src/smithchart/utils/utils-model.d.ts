@@ -12,31 +12,31 @@ export interface SmithchartFontModel {
 
     /**
      * font style for text.
-     * @default 'Normal'
+
      */
     fontStyle?: string;
 
     /**
      * font weight for text.
-     * @default 'Regular'
+
      */
     fontWeight?: string;
 
     /**
      * Color for the text.
-     * @default ''
+
      */
     color?: string;
 
     /**
      * font size for text.
-     * @default '12px'
+
      */
     size?: string;
 
     /**
      * font opacity for text.
-     * @default 1
+
      */
     opacity?: number;
 
@@ -49,26 +49,26 @@ export interface SmithchartMarginModel {
 
     /**
      * top margin of chartArea.
-     * @default 10
+
      */
     top?: number;
 
     /**
      * bottom margin of chartArea.
-     * @default 10
+
      */
     bottom?: number;
 
     /**
      * right margin of chartArea.
-     * @default 10
+
      */
 
     right?: number;
 
     /**
      * left margin of chartArea.
-     * @default 10
+
      */
 
     left?: number;
@@ -82,20 +82,20 @@ export interface SmithchartBorderModel {
 
     /**
      * width for smithchart border.
-     * @default 0
+
      */
 
     width?: number;
 
     /**
      * opacity for smithchart border.
-     * @default 1
+
      */
     opacity?: number;
 
     /**
      * color for smithchart border .
-     * @default 'transparent'
+
      */
 
     color?: string;

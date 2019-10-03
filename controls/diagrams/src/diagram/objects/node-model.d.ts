@@ -17,7 +17,7 @@ export interface ShapeModel {
      * * Native - Sets the type of the node as Native
      * * HTML - Sets the type of the node as HTML
      * * UMLActivity - Sets the type of the node as UMLActivity
-     * @default 'Basic'
+
      */
     type?: Shapes;
 
@@ -30,7 +30,7 @@ export interface PathModel extends ShapeModel{
 
     /**
      * Defines the type of node shape
-     * @default 'Basic'
+
      */
     type?: Shapes;
 
@@ -53,7 +53,7 @@ export interface PathModel extends ShapeModel{
      * });
      * diagram.appendTo('#diagram');
      * ```
-     * @default ''
+
      */
     data?: string;
 
@@ -66,7 +66,7 @@ export interface NativeModel extends ShapeModel{
 
     /**
      * Defines the type of node shape.
-     * @default 'Basic'
+
      */
     type?: Shapes;
 
@@ -101,7 +101,7 @@ export interface NativeModel extends ShapeModel{
      * });
      * diagram.appendTo('#diagram');
      * ```
-     * @default ''
+
      */
     content?: string | SVGElement;
 
@@ -111,7 +111,7 @@ export interface NativeModel extends ShapeModel{
      * * Stretch - Sets the stretch type for diagram as Stretch
      * * Meet - Sets the stretch type for diagram as Meet
      * * Slice - Sets the stretch type for diagram as Slice
-     * @default 'Stretch'
+
      */
     scale?: Stretch;
 
@@ -124,7 +124,7 @@ export interface HtmlModel extends ShapeModel{
 
     /**
      * Defines the type of node shape.
-     * @default 'Basic'
+
      */
     type?: Shapes;
 
@@ -146,7 +146,7 @@ export interface HtmlModel extends ShapeModel{
      * });
      * diagram.appendTo('#diagram');
      * ```
-     * @default ''
+
      */
     content?: string | HTMLElement;
 
@@ -159,7 +159,7 @@ export interface ImageModel extends ShapeModel{
 
     /**
      * Defines the type of node shape
-     * @default 'Basic'
+
      */
     type?: Shapes;
 
@@ -180,7 +180,7 @@ export interface ImageModel extends ShapeModel{
      * });
      * diagram.appendTo('#diagram');
      * ```
-     * @default ''
+
      */
     source?: string;
 
@@ -189,7 +189,7 @@ export interface ImageModel extends ShapeModel{
      * * None - Scale value will be set as None for the image
      * * Meet - Scale value Meet will be set for the image
      * * Slice - Scale value Slice will be set for the image
-     * @default 'None'
+
      */
     scale?: Scale;
 
@@ -205,7 +205,7 @@ export interface ImageModel extends ShapeModel{
      * * XMinYMax - smallest X value of the view port and maximum Y value of the view port
      * * XMidYMax - midpoint X value of the view port and maximum Y value of the view port
      * * XMaxYMax - maximum X value of the view port and maximum Y value of the view port
-     * @default 'None'
+
      */
     align?: ImageAlignment;
 
@@ -218,7 +218,7 @@ export interface TextModel extends ShapeModel{
 
     /**
      * Defines the type of node shape
-     * @default 'Basic'
+
      */
     type?: Shapes;
 
@@ -239,13 +239,13 @@ export interface TextModel extends ShapeModel{
      * });
      * diagram.appendTo('#diagram');
      * ```
-     * @default ''
+
      */
     content?: string;
 
     /**
      * Defines the space to be let between the node and its immediate parent
-     * @default 0
+
      */
     margin?: MarginModel;
 
@@ -273,7 +273,7 @@ export interface BasicShapeModel extends ShapeModel{
      * });
      * diagram.appendTo('#diagram');
      * ```
-     * @default 'Basic'
+
      */
     type?: Shapes;
 
@@ -294,21 +294,21 @@ export interface BasicShapeModel extends ShapeModel{
      * * RightTriangle - Sets the type of the basic shape as RightTriangle
      * * Cylinder - Sets the type of the basic shape as Cylinder
      * * Diamond - Sets the type of the basic shape as Diamond
-     * @default 'Rectangle'
+
      */
     shape?: BasicShapes;
 
     /**
      * Sets the corner of the node
-     * @default 0
+
      */
     cornerRadius?: number;
 
     /**
      * Defines the collection of points to draw a polygon
-     * @aspDefaultValueIgnore
-     * @blazorDefaultValueIgnore
-     * @default undefined
+
+
+
      */
     points?: PointModel[];
 
@@ -336,7 +336,7 @@ export interface FlowShapeModel extends ShapeModel{
      * });
      * diagram.appendTo('#diagram');
      * ```
-     * @default 'Basic'
+
      */
     type?: Shapes;
 
@@ -370,7 +370,7 @@ export interface FlowShapeModel extends ShapeModel{
      * * ManualInput - Sets the type of the flow shape as ManualInput
      * * LoopLimit - Sets the type of the flow shape as LoopLimit
      * * StoredData - Sets the type of the flow shape as StoredData
-     * @default 'Terminator'
+
      */
     shape?: FlowShapes;
 
@@ -390,7 +390,7 @@ export interface BpmnGatewayModel {
      * * EventBased - Sets the type of the gateway as EventBased
      * * ExclusiveEventBased - Sets the type of the gateway as ExclusiveEventBased
      * * ParallelEventBased - Sets the type of the gateway as ParallelEventBased
-     * @default 'None'
+
      */
     type?: BpmnGateways;
 
@@ -406,7 +406,7 @@ export interface BpmnDataObjectModel {
      * * None - Sets the type of the data object as None
      * * Input - Sets the type of the data object as Input
      * * Output - Sets the type of the data object as Output
-     * @default 'None'
+
      */
     type?: BpmnDataObjects;
 
@@ -430,7 +430,7 @@ export interface BpmnDataObjectModel {
      * });
      * diagram.appendTo('#diagram');
      * ```
-     * @default false
+
      */
     collection?: boolean;
 
@@ -452,7 +452,7 @@ export interface BpmnTaskModel {
      * * BusinessRule - Sets the type of the Bpmn Tasks as BusinessRule
      * * User - Sets the type of the Bpmn Tasks as User
      * * Script - Sets the type of the Bpmn Tasks as Script
-     * @default 'None'
+
      */
     type?: BpmnTasks;
 
@@ -462,13 +462,13 @@ export interface BpmnTaskModel {
      * * Standard - Sets the type of the Bpmn loop as Standard
      * * ParallelMultiInstance - Sets the type of the Bpmn loop as ParallelMultiInstance
      * * SequenceMultiInstance - Sets the type of the Bpmn loop as SequenceMultiInstance
-     * @default 'None'
+
      */
     loop?: BpmnLoops;
 
     /**
      * Sets whether the task is global or not
-     * @default false
+
      */
     call?: boolean;
 
@@ -493,7 +493,7 @@ export interface BpmnTaskModel {
      * });
      * diagram.appendTo('#diagram');
      * ```
-     * @default false
+
      */
     compensation?: boolean;
 
@@ -540,7 +540,7 @@ export interface BpmnEventModel {
      * * Cancel - Sets the type of the trigger as Cancel
      * * Conditional - Sets the type of the trigger as Conditional
      * * Terminate - Sets the type of the trigger as Terminate
-     * @default 'None'
+
      */
     trigger?: BpmnTriggers;
 
@@ -565,7 +565,7 @@ export interface BpmnSubEventModel {
      * * Cancel - Sets the type of the trigger as Cancel
      * * Conditional - Sets the type of the trigger as Conditional
      * * Terminate - Sets the type of the trigger as Terminate
-     * @default 'None'
+
      */
     trigger?: BpmnTriggers;
 
@@ -577,58 +577,58 @@ export interface BpmnSubEventModel {
      * * NonInterruptingStart - Sets the type of the Bpmn Event as NonInterruptingStart
      * * NonInterruptingIntermediate - Sets the type of the Bpmn Event as NonInterruptingIntermediate
      * * ThrowingIntermediate - Sets the type of the Bpmn Event as ThrowingIntermediate
-     * @default 'Start'
+
      */
     event?: BpmnEvents;
 
     /**
      * Sets the id of the BPMN sub event
-     * @default ''
+
      */
     id?: string;
 
     /**
      * Defines the position of the sub event
-     * @default new Point(0.5,0.5)
+
      */
 
     offset?: PointModel;
 
     /**
      * Defines the collection of textual annotations of the sub events
-     * @aspDefaultValueIgnore
-     * @blazorDefaultValueIgnore
-     * @default undefined
+
+
+
      */
     annotations?: ShapeAnnotationModel[];
 
     /**
      * Defines the collection of connection points of the sub events
-     * @aspDefaultValueIgnore
-     * @blazorDefaultValueIgnore
-     * @default undefined
+
+
+
      */
     ports?: PointPortModel[];
 
     /**
      * Sets the width of the node
-     * @aspDefaultValueIgnore
-     * @blazorDefaultValueIgnore
-     * @default undefined
+
+
+
      */
     width?: number;
 
     /**
      * Sets the height of the node
-     * @aspDefaultValueIgnore
-     * @blazorDefaultValueIgnore
-     * @default undefined
+
+
+
      */
     height?: number;
 
     /**
      * Defines the space to be left between the node and its immediate parent
-     * @default 0
+
      */
     margin?: MarginModel;
 
@@ -639,7 +639,7 @@ export interface BpmnSubEventModel {
      * * Right - Aligns the diagram element at the right of its immediate parent
      * * Center - Aligns the diagram element at the center of its immediate parent
      * * Auto - Aligns the diagram element based on the characteristics of its immediate parent
-     * @default 'Center'
+
      */
     horizontalAlignment?: HorizontalAlignment;
 
@@ -650,13 +650,13 @@ export interface BpmnSubEventModel {
      * * Bottom - Aligns the diagram element at the bottom of its immediate parent
      * * Center - Aligns the diagram element at the center of its immediate parent
      * * Auto - Aligns the diagram element based on the characteristics of its immediate parent
-     * @default 'Center'
+
      */
     verticalAlignment?: VerticalAlignment;
 
     /**
      * Sets the visibility of the sub event
-     * @default true
+
      */
     visible?: boolean;
 
@@ -694,13 +694,13 @@ export interface BpmnSubProcessModel {
      * * None - Sets the type of the Sub process as None
      * * Transaction - Sets the type of the Sub process as Transaction
      * * Event - Sets the type of the Sub process as Event
-     * @default 'None'
+
      */
     type?: BpmnSubProcessTypes;
 
     /**
      * Defines whether the sub process is without any prescribed order or not
-     * @default false
+
      */
     adhoc?: boolean;
 
@@ -731,7 +731,7 @@ export interface BpmnSubProcessModel {
 
     /**
      * Defines the whether the task is triggered as a compensation of another task
-     * @default false
+
      */
     compensation?: boolean;
 
@@ -741,13 +741,13 @@ export interface BpmnSubProcessModel {
      * * Standard - Sets the type of the Bpmn loop as Standard
      * * ParallelMultiInstance - Sets the type of the Bpmn loop as ParallelMultiInstance
      * * SequenceMultiInstance - Sets the type of the Bpmn loop as SequenceMultiInstance
-     * @default 'None'
+
      */
     loop?: BpmnLoops;
 
     /**
      * Defines the whether the shape is collapsed or not
-     * @default true
+
      */
     collapsed?: boolean;
 
@@ -800,7 +800,7 @@ export interface BpmnSubProcessModel {
 
     /**
      * Defines the transaction sub process
-     * @default []
+
      */
     processes?: string[];
 
@@ -816,7 +816,7 @@ export interface BpmnActivityModel {
      * * None - Sets the type of the Bpmn Activity as None
      * * Task - Sets the type of the Bpmn Activity as Task
      * * SubProcess - Sets the type of the Bpmn Activity as SubProcess
-     * @default 'Task'
+
      */
     activity?: BpmnActivities;
 
@@ -843,7 +843,7 @@ export interface BpmnActivityModel {
      * });
      * diagram.appendTo('#diagram');
      * ```
-     * @default 'new BPMNTask()'
+
      */
     task?: BpmnTaskModel;
 
@@ -869,7 +869,7 @@ export interface BpmnActivityModel {
      * });
      * diagram.appendTo('#diagram');
      * ```
-     * @default 'None'
+
      */
     subProcess?: BpmnSubProcessModel;
 
@@ -882,45 +882,45 @@ export interface BpmnAnnotationModel {
 
     /**
      * Sets the text to annotate the bpmn shape
-     * @default ''
+
      */
     text?: string;
 
     /**
      * Sets the id of the BPMN sub event
-     * @default ''
+
      */
     id?: string;
 
     /**
      * Sets the angle between the bpmn shape and the annotation
-     * @aspDefaultValueIgnore
-     * @blazorDefaultValueIgnore
-     * @default undefined
+
+
+
      */
     angle?: number;
 
     /**
      * Sets the height of the text
-     * @aspDefaultValueIgnore
-     * @blazorDefaultValueIgnore
-     * @default undefined
+
+
+
      */
     height?: number;
 
     /**
      * Sets the width of the text
-     * @aspDefaultValueIgnore
-     * @blazorDefaultValueIgnore
-     * @default undefined
+
+
+
      */
     width?: number;
 
     /**
      * Sets the distance between the bpmn shape and the annotation
-     * @aspDefaultValueIgnore
-     * @blazorDefaultValueIgnore
-     * @default undefined
+
+
+
      */
     length?: number;
 
@@ -933,7 +933,7 @@ export interface BpmnShapeModel extends ShapeModel{
 
     /**
      * Defines the type of node shape
-     * @default 'Basic'
+
      */
     type?: Shapes;
 
@@ -961,37 +961,37 @@ export interface BpmnShapeModel extends ShapeModel{
 
     /**
      * Defines the type of the BPMN Event shape
-     * @default 'None'
+
      */
     event?: BpmnEventModel;
 
     /**
      * Defines the type of the BPMN Gateway shape
-     * @default 'None'
+
      */
     gateway?: BpmnGatewayModel;
 
     /**
      * Defines the type of the BPMN DataObject shape
-     * @default 'None'
+
      */
     dataObject?: BpmnDataObjectModel;
 
     /**
      * Defines the type of the BPMN Activity shape
-     * @default 'None'
+
      */
     activity?: BpmnActivityModel;
 
     /**
      * Defines the text of the bpmn annotation
-     * @default 'None'
+
      */
     annotation?: BpmnAnnotationModel;
 
     /**
      * Defines the text of the bpmn annotation collection
-     * @default 'None'
+
      */
 
     annotations?: BpmnAnnotationModel[];
@@ -1020,7 +1020,7 @@ export interface UmlActivityShapeModel extends ShapeModel{
      * });
      * diagram.appendTo('#diagram');
      * ```
-     * @default 'Basic'
+
      */
     type?: Shapes;
 
@@ -1039,7 +1039,7 @@ export interface UmlActivityShapeModel extends ShapeModel{
      * * ReceiveSignal - Sets the type of the UMLActivity Shape as ReceiveSignal
      * * StructuredNode - Sets the type of the UMLActivity Shape as StructuredNode
      * * Note - Sets the type of the UMLActivity Shape as Note
-     * @default 'Action'
+
      * @IgnoreSingular
      */
     shape?: UmlActivityShapes;
@@ -1053,22 +1053,22 @@ export interface MethodArgumentsModel {
 
     /**
      * Defines the name of the attributes
-     * @default ''
+
      * @IgnoreSingular
      */
     name?: string;
 
     /**
      * Defines the type of the attributes
-     * @default ''
+
      * @IgnoreSingular
      */
     type?: string;
 
     /**
      * Sets the shape style of the node
-     * @default new ShapeStyle()
-     * @aspType object
+
+
      */
     style?: ShapeStyleModel | TextStyleModel;
 
@@ -1081,14 +1081,14 @@ export interface UmlClassAttributeModel extends MethodArgumentsModel{
 
     /**
      * Defines the type of the attributes
-     * @default 'Public'
+
      * @IgnoreSingular
      */
     scope?: UmlScope;
 
     /**
      * Defines the separator of the attributes
-     * @default false
+
      * @IgnoreSingular
      */
     isSeparator?: boolean;
@@ -1102,7 +1102,7 @@ export interface UmlClassMethodModel extends UmlClassAttributeModel{
 
     /**
      * Defines the type of the arguments
-     * @default ''
+
      * @IgnoreSingular
      */
 
@@ -1117,29 +1117,29 @@ export interface UmlClassModel {
 
     /**
      * Defines the name of the attributes
-     * @default ''
+
      * @IgnoreSingular
      */
     name?: string;
 
     /**
      * Defines the text of the bpmn annotation collection
-     * @default 'None'
+
      */
 
     attributes?: UmlClassAttributeModel[];
 
     /**
      * Defines the text of the bpmn annotation collection
-     * @default 'None'
+
      */
 
     methods?: UmlClassMethodModel[];
 
     /**
      * Sets the shape style of the node
-     * @default new ShapeStyle()
-     * @aspType object
+
+
      */
     style?: TextStyleModel;
 
@@ -1152,7 +1152,7 @@ export interface UmlInterfaceModel extends UmlClassModel{
 
     /**
      * Defines the separator of the attributes
-     * @default false
+
      * @IgnoreSingular
      */
     isSeparator?: boolean;
@@ -1166,29 +1166,29 @@ export interface UmlEnumerationMemberModel {
 
     /**
      * Defines the value of the member
-     * @default ''
+
      * @IgnoreSingular
      */
     name?: string;
 
     /**
      * Defines the value of the member
-     * @default ''
+
      * @IgnoreSingular
      */
     value?: string;
 
     /**
      * Defines the separator of the attributes
-     * @default false
+
      * @IgnoreSingular
      */
     isSeparator?: boolean;
 
     /**
      * Sets the shape style of the node
-     * @default new ShapeStyle()
-     * @aspType object
+
+
      */
     style?: ShapeStyleModel | TextStyleModel;
 
@@ -1201,22 +1201,22 @@ export interface UmlEnumerationModel {
 
     /**
      * Defines the name of the attributes
-     * @default ''
+
      * @IgnoreSingular
      */
     name?: string;
 
     /**
      * Defines the text of the bpmn annotation collection
-     * @default 'None'
+
      */
 
     members?: UmlEnumerationMemberModel[];
 
     /**
      * Sets the shape style of the node
-     * @default new ShapeStyle()
-     * @aspType object
+
+
      */
     style?: ShapeStyleModel | TextStyleModel;
 
@@ -1244,31 +1244,31 @@ export interface UmlClassifierShapeModel extends ShapeModel{
      * });
      * diagram.appendTo('#diagram');
      * ```
-     * @default 'Basic'
+
      */
     type?: Shapes;
 
     /**
      * Defines the text of the bpmn annotation collection
-     * @default 'None'
+
      */
     classShape?: UmlClassModel;
 
     /**
      * Defines the text of the bpmn annotation collection
-     * @default 'None'
+
      */
     interfaceShape?: UmlInterfaceModel;
 
     /**
      * Defines the text of the bpmn annotation collection
-     * @default 'None'
+
      */
     enumerationShape?: UmlEnumerationModel;
 
     /**
      * Defines the type of classifier
-     * @default 'Class'
+
      * @IgnoreSingular
      */
     classifier?: ClassifierShape;
@@ -1282,107 +1282,107 @@ export interface NodeModel extends NodeBaseModel{
 
     /**
      * Defines the collection of textual annotations of nodes/connectors
-     * @aspDefaultValueIgnore
-     * @blazorDefaultValueIgnore
-     * @default undefined
+
+
+
      */
     annotations?: ShapeAnnotationModel[];
 
     /**
      * Sets the x-coordinate of the position of the node
-     * @default 0
+
      */
     offsetX?: number;
 
     /**
      * Sets the y-coordinate of the position of the node
-     * @default 0
+
      */
     offsetY?: number;
 
     /**
      * Sets the reference point, that will act as the offset values(offsetX, offsetY) of a node
-     * @default new Point(0.5,0.5)
+
      */
     pivot?: PointModel;
 
     /**
      * Sets the width of the node
-     * @aspDefaultValueIgnore
-     * @blazorDefaultValueIgnore
-     * @default undefined
+
+
+
      */
     width?: number;
 
     /**
      * Sets the height of the node
-     * @aspDefaultValueIgnore
-     * @blazorDefaultValueIgnore
-     * @default undefined
+
+
+
      */
     height?: number;
 
     /**
      * Sets the minimum width of the node
-     * @aspDefaultValueIgnore
-     * @blazorDefaultValueIgnore
-     * @default undefined
+
+
+
      */
     minWidth?: number;
 
     /**
      * Sets the minimum height of the node
-     * @aspDefaultValueIgnore
-     * @blazorDefaultValueIgnore
-     * @default undefined
+
+
+
      */
     minHeight?: number;
 
     /**
      * Sets the maximum width of the node
-     * @aspDefaultValueIgnore
-     * @blazorDefaultValueIgnore
-     * @default undefined
+
+
+
      */
     maxWidth?: number;
 
     /**
      * Sets the maximum height of the node
-     * @aspDefaultValueIgnore
-     * @blazorDefaultValueIgnore
-     * @default undefined
+
+
+
      */
     maxHeight?: number;
 
     /**
      * Sets the rotate angle of the node
-     * @default 0
+
      */
     rotateAngle?: number;
 
     /**
      * Sets the shape style of the node
-     * @default new ShapeStyle()
-     * @aspType object
+
+
      */
     style?: ShapeStyleModel | TextStyleModel;
 
     /**
      * Sets the background color of the shape
-     * @default 'transparent'
+
      */
     backgroundColor?: string;
 
     /**
      * Sets the border color of the node
-     * @default 'none'
+
      */
     borderColor?: string;
 
     /**
      * Sets the border width of the node
-     * @default 0
-     * @isBlazorNullableType true
+
+
      */
     borderWidth?: number;
 
@@ -1393,14 +1393,14 @@ export interface NodeModel extends NodeBaseModel{
 
     /**
      * Defines the shape of a node
-     * @default Basic Shape
-     * @aspType object
+
+
      */
     shape?: ShapeModel | FlowShapeModel | BasicShapeModel | ImageModel | PathModel | TextModel | BpmnShapeModel | NativeModel | HtmlModel | UmlActivityShapeModel | UmlClassifierShapeModel | SwimLaneModel;
 
     /**
      * Sets or gets the UI of a node
-     * @default null
+
      */
     wrapper?: Container;
 
@@ -1433,104 +1433,104 @@ export interface NodeModel extends NodeBaseModel{
      * * Tooltip - Enables or disables tool tip for the Nodes
      * * InheritTooltip - Enables or disables tool tip for the Nodes
      * * ReadOnly - Enables the  ReadOnly support for Annotation
-     * @default 'Default'
-     * @aspNumberEnum
-     * @blazorNumberEnum
+
+
+
      */
     constraints?: NodeConstraints;
 
     /**
      * Defines the shadow of a shape/path
-     * @default null
+
      */
     shadow?: ShadowModel;
 
     /**
      * Defines the children of group element
-     * @aspDefaultValueIgnore
-     * @blazorDefaultValueIgnore
-     * @default undefined
+
+
+
      */
     children?: string[];
 
     /**
      * Defines the type of the container
-     * @aspDefaultValueIgnore
-     * @blazorDefaultValueIgnore
-     * @default null
+
+
+
      */
 
     container?: ChildContainerModel;
 
     /**
      * Sets the horizontalAlignment of the node
-     * @default 'Stretch'
+
      */
     horizontalAlignment?: HorizontalAlignment;
 
     /**
      * Sets the verticalAlignment of the node
-     * @default 'Stretch'
+
      */
     verticalAlignment?: VerticalAlignment;
 
     /**
      * Used to define the rows for the grid container
-     * @aspDefaultValueIgnore
-     * @blazorDefaultValueIgnore
-     * @default undefined
+
+
+
      */
 
     rows?: RowDefinition[];
 
     /**
      * Used to define the column for the grid container
-     * @aspDefaultValueIgnore
-     * @blazorDefaultValueIgnore
-     * @default undefined
+
+
+
      */
 
     columns?: ColumnDefinition[];
 
     /**
      * Used to define a index of row in the grid
-     * @aspDefaultValueIgnore
-     * @blazorDefaultValueIgnore
-     * @default undefined
+
+
+
      */
 
     rowIndex?: number;
 
     /**
      * Used to define a index of column in the grid
-     * @aspDefaultValueIgnore
-     * @blazorDefaultValueIgnore
-     * @default undefined
+
+
+
      */
 
     columnIndex?: number;
 
     /**
      * Merge the row use the property in the grid container
-     * @aspDefaultValueIgnore
-     * @blazorDefaultValueIgnore
-     * @default undefined
+
+
+
      */
     rowSpan?: number;
 
     /**
      * Merge the column use the property in the grid container
-     * @aspDefaultValueIgnore
-     * @blazorDefaultValueIgnore
-     * @default undefined
+
+
+
      */
     columnSpan?: number;
 
     /**
      * Set the branch for the mind map
-     * @aspDefaultValueIgnore
-     * @blazorDefaultValueIgnore
-     * @default ''
+
+
+
      */
     branch?: BranchTypes;
 
@@ -1543,31 +1543,31 @@ export interface HeaderModel {
 
     /**
      * Sets the id of the header
-     * @default ''
+
      */
     id?: string;
 
     /**
      * Sets the content of the header
-     * @default ''
+
      */
     annotation?: Annotation;
 
     /**
      * Sets the style of the header
-     * @default ''
+
      */
     style?: ShapeStyleModel;
 
     /**
      * Sets the height of the header
-     * @default 50
+
      */
     height?: number;
 
     /**
      * Sets the width of the header
-     * @default 50
+
      */
     width?: number;
 
@@ -1580,37 +1580,37 @@ export interface LaneModel {
 
     /**
      * Sets the id of the lane
-     * @default ''
+
      */
     id?: string;
 
     /**
      * Sets style of the lane
-     * @default ''
+
      */
     style?: ShapeStyleModel;
 
     /**
      * Defines the collection of child nodes
-     * @default []
+
      */
     children?: NodeModel[];
 
     /**
      * Defines the height of the phase
-     * @default 100
+
      */
     height?: number;
 
     /**
      * Defines the height of the phase
-     * @default 100
+
      */
     width?: number;
 
     /**
      * Defines the collection of header in the phase.
-     * @default new Header()
+
      */
     header?: HeaderModel;
 
@@ -1623,25 +1623,25 @@ export interface PhaseModel {
 
     /**
      * Sets the id of the phase
-     * @default ''
+
      */
     id?: string;
 
     /**
      * Sets the style of the lane
-     * @default ''
+
      */
     style?: ShapeStyleModel;
 
     /**
      * Sets the header collection of the phase
-     * @default  new Header()
+
      */
     header?: HeaderModel;
 
     /**
      * Sets the offset of the lane
-     * @default 100
+
      */
     offset?: number;
 
@@ -1654,49 +1654,49 @@ export interface SwimLaneModel extends ShapeModel{
 
     /**
      * Defines the type of node shape.
-     * @default 'Basic'
+
      */
     type?: Shapes;
 
     /**
      * Defines the size of phase.
-     * @default 20
+
      */
     phaseSize?: number;
 
     /**
      * Defines the collection of phases.
-     * @default 'undefined'
+
      */
     phases?: PhaseModel[];
 
     /**
      * Defines the orientation of the swimLane
-     * @default 'Horizontal'
+
      */
     orientation?: Orientation;
 
     /**
      * Defines the collection of lanes
-     * @default 'undefined'
+
      */
     lanes?: LaneModel[];
 
     /**
      * Defines the collection of header
-     * @default 'undefined'
+
      */
     header?: HeaderModel;
 
     /**
      * Defines the whether the shape is a lane or not
-     * @default false
+
      */
     isLane?: boolean;
 
     /**
      * Defines the whether the shape is a phase or not
-     * @default false
+
      */
     isPhase?: boolean;
 
@@ -1709,17 +1709,17 @@ export interface ChildContainerModel {
 
     /**
      * Defines the type of the container
-     * @aspDefaultValueIgnore
-     * @blazorDefaultValueIgnore
-     * @default Canvas
+
+
+
      */
     type?: ContainerTypes;
 
     /**
      * Defines the type of the swimLane orientation.
-     * @aspDefaultValueIgnore
-     * @blazorDefaultValueIgnore
-     * @default undefined
+
+
+
      */
     orientation?: Orientation;
 
@@ -1732,62 +1732,62 @@ export interface SelectorModel {
 
     /**
      * Defines the size and position of the container
-     * @default null
+
      */
     wrapper?: Container;
 
     /**
      * Defines the collection of selected nodes
-     * @blazorType List<DiagramNode>
+
      */
     nodes?: NodeModel[];
 
     /**
      * Defines the collection of selected connectors
-     * @blazorType List<DiagramConnector>
+
      */
     connectors?: ConnectorModel[];
 
     /**
      * Sets/Gets the width of the container
-     * @aspDefaultValueIgnore
-     * @blazorDefaultValueIgnore
-     * @default undefined
+
+
+
      */
     width?: number;
 
     /**
      * Sets/Gets the height of the container
-     * @aspDefaultValueIgnore
-     * @blazorDefaultValueIgnore
-     * @default undefined
+
+
+
      */
     height?: number;
 
     /**
      * Sets the rotate angle of the container
-     * @default 0
-     * @isBlazorNullableType true
+
+
      */
     rotateAngle?: number;
 
     /**
      * Sets the positionX of the container
-     * @default 0
-     * @isBlazorNullableType true
+
+
      */
     offsetX?: number;
 
     /**
      * Sets the positionY of the container
-     * @default 0
-     * @isBlazorNullableType true
+
+
      */
     offsetY?: number;
 
     /**
      * Sets the pivot of the selector
-     * @default { x: 0.5, y: 0.5 }
+
      */
     pivot?: PointModel;
 
@@ -1795,7 +1795,7 @@ export interface SelectorModel {
      * Defines how to pick the objects to be selected using rubber band selection
      * * CompleteIntersect - Selects the objects that are contained within the selected region
      * * PartialIntersect - Selects the objects that are partially intersected with the selected region
-     * @default 'CompleteIntersect'
+
      */
     rubberBandSelectionMode?: RubberBandSelectionMode;
 
@@ -1836,7 +1836,7 @@ export interface SelectorModel {
      * });
      * diagram.appendTo('#diagram');
      * ```
-     * @default []
+
      */
     userHandles?: UserHandleModel[];
 
@@ -1856,18 +1856,18 @@ export interface SelectorModel {
      * * Rotate - Shows/hides the rotate handle of the selector
      * * UserHandles - Shows/hides the user handles of the selector
      * * Resize - Shows/hides all resize handles of the selector
-     * @default 'All'
-     * @aspNumberEnum
-     * @blazorNumberEnum
+
+
+
      */
     constraints?: SelectorConstraints;
 
     /**
      * setTooltipTemplate helps to customize the content of a tooltip
-     * @aspDefaultValueIgnore
-     * @blazorDefaultValueIgnore
-     * @default undefined
-     * @deprecated
+
+
+
+
      */
     setTooltipTemplate?: Function | string;
 

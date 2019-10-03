@@ -16,7 +16,7 @@ export interface DiagramModel extends ComponentModel{
      * width:'1000px', height:'500px' });
      * diagram.appendTo('#diagram');
      * ```
-     * @default '100%'
+
      */
     width?: string | number;
 
@@ -24,13 +24,13 @@ export interface DiagramModel extends ComponentModel{
      * Defines the diagram rendering mode.
      * * SVG - Renders the diagram objects as SVG elements
      * * Canvas - Renders the diagram in a canvas
-     * @default 'SVG'
+
      */
     mode?: RenderingMode;
 
     /**
      * Defines the height of the diagram model.
-     * @default '100%'
+
      */
     height?: string | number;
 
@@ -48,7 +48,7 @@ export interface DiagramModel extends ComponentModel{
      * });
      * diagram.appendTo('#diagram');
      * ```
-     * @deprecated
+
      */
     contextMenuSettings?: ContextMenuSettingsModel;
 
@@ -65,9 +65,9 @@ export interface DiagramModel extends ComponentModel{
      * * PanX - Enables/Disable PanX support for the diagram
      * * PanY - Enables/Disable PanY support for the diagram
      * * Pan - Enables/Disable Pan support the diagram
-     * @default 'Default'
-     * @aspNumberEnum 
-     * @blazorNumberEnum
+
+
+
      */
     constraints?: DiagramConstraints;
 
@@ -79,9 +79,9 @@ export interface DiagramModel extends ComponentModel{
      * * ZoomPan - Enables/Disable ZoomPan support for the diagram
      * * DrawOnce - Enables/Disable ContinuousDraw support for the diagram 
      * * ContinuousDraw - Enables/Disable ContinuousDraw support for the diagram
-     * @default 'Default'
-     * @aspNumberEnum
-     * @blazorNumberEnum
+
+
+
      */
 
     tool?: DiagramTools;
@@ -92,13 +92,13 @@ export interface DiagramModel extends ComponentModel{
      * * Bottom - Defines the direction of the bridge as Bottom
      * * Left - Sets the bridge direction as left
      * * Right - Sets the bridge direction as right
-     * @default top
+
      */
     bridgeDirection?: BridgeDirection;
 
     /**
      * Defines the background color of the diagram
-     * @default 'transparent'
+
      */
     backgroundColor?: string;
 
@@ -118,7 +118,7 @@ export interface DiagramModel extends ComponentModel{
      * });
      * diagram.appendTo('#diagram');
      * ```
-     * @default {}
+
      */
     snapSettings?: SnapSettingsModel;
 
@@ -144,7 +144,7 @@ export interface DiagramModel extends ComponentModel{
      * });
      * diagram.appendTo('#diagram');
      * ```
-     * @default {}
+
      */
     rulerSettings?: RulerSettingsModel;
 
@@ -162,7 +162,7 @@ export interface DiagramModel extends ComponentModel{
      * });
      * diagram.appendTo('#diagram');
      * ```
-     * @default {}
+
      */
     pageSettings?: PageSettingsModel;
 
@@ -179,7 +179,7 @@ export interface DiagramModel extends ComponentModel{
      * });
      * diagram.appendTo('#diagram');
      * ```
-     * @default {}
+
      */
     serializationSettings?: SerializationSettingsModel;
 
@@ -208,9 +208,9 @@ export interface DiagramModel extends ComponentModel{
      * });
      * diagram.appendTo('#diagram');
      * ```
-     * @aspDefaultValueIgnore
-     * @blazorDefaultValueIgnore
-     * @default undefined
+
+
+
      */
     nodes?: NodeModel[];
 
@@ -227,10 +227,10 @@ export interface DiagramModel extends ComponentModel{
      * });
      * diagram.appendTo('#diagram');
      * ```
-     * @aspDefaultValueIgnore
-     * @blazorDefaultValueIgnore
-     * @default undefined
-     * @deprecated
+
+
+
+
      */
     drawingObject?: NodeModel | ConnectorModel;
 
@@ -253,42 +253,42 @@ export interface DiagramModel extends ComponentModel{
      * });
      * diagram.appendTo('#diagram');
      * ```
-     * @default []
+
      */
     connectors?: ConnectorModel[];
 
     /**
      * Defines the basic elements for the diagram
-     * @default []
-     * @hidden
+
+
      */
     basicElements?: DiagramElement[];
 
     /**
      * Defines the tooltip that should be shown when the mouse hovers over a node or connector
      * An object that defines the description, appearance and alignments of tooltip
-     * @default {}
+
      */
     tooltip?: DiagramTooltipModel;
 
     /**
      * Configures the data source that is to be bound with diagram
-     * @default {}
+
      */
     dataSourceSettings?: DataSourceModel;
 
     /**
      * Allows the user to save custom information/data about diagram
-     * @aspDefaultValueIgnore
-     * @blazorDefaultValueIgnore
-     * @default undefined
+
+
+
      */
     addInfo?: Object;
 
     /**
      * Customizes the undo redo functionality 
-     * @default undefined
-     * @deprecated
+
+
      */
     historyManager?: History;
 
@@ -326,16 +326,16 @@ export interface DiagramModel extends ComponentModel{
      * });
      * diagram.appendTo('#diagram');
      * ```
-     * @aspDefaultValueIgnore
-     * @blazorDefaultValueIgnore
-     * @default undefined
-     * @deprecated
+
+
+
+
      */
     getNodeDefaults?: Function | string;
 
     /**
      * Helps to assign the default properties of nodes
-     * @blazorType DiagramNode
+
      */
     nodeDefaults?: NodeModel;
 
@@ -363,16 +363,16 @@ export interface DiagramModel extends ComponentModel{
      * });
      * diagram.appendTo('#diagram');
      * ```
-     * @aspDefaultValueIgnore
-     * @blazorDefaultValueIgnore
-     * @default undefined
-     * @deprecated 
+
+
+
+
      */
     getConnectorDefaults?: Function | string;
 
     /**
      * Helps to assign the default properties of connector
-     * @blazorType DiagramConnector
+
      */
     connectorDefaults?: ConnectorModel;
 
@@ -425,10 +425,10 @@ export interface DiagramModel extends ComponentModel{
      *   }
      * ...
      * }
-     * @aspDefaultValueIgnore
-     * @blazorDefaultValueIgnore
-     * @default undefined
-     * @deprecated
+
+
+
+
      */
     setNodeTemplate?: Function | string;
 
@@ -468,7 +468,7 @@ export interface DiagramModel extends ComponentModel{
      * return value;
      * }
      * ```
-     * @deprecated
+
      */
     getDescription?: Function | string;
 
@@ -505,10 +505,10 @@ export interface DiagramModel extends ComponentModel{
      * });
      * diagram.appendTo('#diagram');
      * ```
-     * @aspDefaultValueIgnore
-     * @blazorDefaultValueIgnore
-     * @default undefined
-     * @deprecated
+
+
+
+
      */
     getCustomProperty?: Function | string;
 
@@ -556,7 +556,7 @@ export interface DiagramModel extends ComponentModel{
      * });
      * diagram.appendTo('#diagram');
      * ```
-     * @deprecated
+
      */
     getCustomTool?: Function | string;
 
@@ -595,13 +595,13 @@ export interface DiagramModel extends ComponentModel{
      * });
      * diagram.appendTo('#diagram');
      * ```
-     * @deprecated
+
      */
     getCustomCursor?: Function | string;
 
     /**
      * A collection of JSON objects where each object represents a custom cursor action. Layer is a named category of diagram shapes.
-     * @default []
+
      */
     customCursor?: CustomCursorActionModel[];
 
@@ -628,317 +628,317 @@ export interface DiagramModel extends ComponentModel{
      * });
      * diagram.appendTo('#diagram');
      * ```
-     * @aspDefaultValueIgnore
-     * @blazorDefaultValueIgnore
-     * @default undefined
-     * @deprecated
+
+
+
+
      */
     updateSelection?: Function | string;
 
     /**
      * Defines the collection of selected items, size and position of the selector
-     * @default {}
-     * @deprecated
+
+
      */
     selectedItems?: SelectorModel;
 
     /**
      * Defines the current zoom value, zoom factor, scroll status and view port size of the diagram
-     * @default {}
+
      */
     scrollSettings?: ScrollSettingsModel;
 
     /**
      * Layout is used to auto-arrange the nodes in the Diagram area
-     * @default {}
+
      */
     layout?: LayoutModel;
 
     /**
      * Defines a set of custom commands and binds them with a set of desired key gestures
-     * @default {}
-     * @deprecated
+
+
      */
     commandManager?: CommandManagerModel;
 
     /**
      * Triggers after diagram is populated from the external data source
      * @event
-     * @blazorProperty 'DataLoaded'
+
      */
     dataLoaded?: EmitType<IDataLoadedEventArgs>;
 
     /**
      * Triggers when a symbol is dragged into diagram from symbol palette
-     * @deprecated
+
      * @event
-     * @blazorProperty 'DragEnter'
-     * @blazorType Syncfusion.EJ2.Blazor.Diagrams.IBlazorDragEnterEventArgs
+
+
      */
     dragEnter?: EmitType<IDragEnterEventArgs>;
 
     /**
      * Triggers when a symbol is dragged outside of the diagram.
      * @event
-     * @blazorProperty 'DragLeave'
+
      */
     dragLeave?: EmitType<IDragLeaveEventArgs>;
 
     /**
      * Triggers when a symbol is dragged over diagram
      * @event
-     * @blazorProperty 'DragOver'
+
      */
     dragOver?: EmitType<IDragOverEventArgs>;
 
     /**
      * Triggers when a node, connector or diagram is clicked
      * @event
-     * @blazorProperty 'Clicked'
-     * @blazorType Syncfusion.EJ2.Blazor.Diagrams.IBlazorClickEventArgs
+
+
      */
     click?: EmitType<IClickEventArgs>;
 
     /**
      * Triggers when a change is reverted or restored(undo/redo)
      * @event
-     * @blazorProperty 'HistoryChanged'
-     * @blazorType 'IBlazorHistoryChangeArgs'
+
+
      */
     historyChange?: EmitType<IHistoryChangeArgs>;
 
     /**
      * Triggers when a custom entry change is reverted or restored(undo/redo)
      * @event
-     * @blazorProperty 'CustomHistoryChanged'
-     * @blazorType IBlazorCustomHistoryChangeArgs
+
+
      */
     historyStateChange?: EmitType<IBlazorCustomHistoryChangeArgs>;
 
     /**
      * Triggers when a node, connector or diagram model is clicked twice
      * @event
-     * @blazorProperty 'OnDoubleClick'
-     * @blazorType Syncfusion.EJ2.Blazor.Diagrams.IBlazorDoubleClickEventArgs
+
+
      */
     doubleClick?: EmitType<IDoubleClickEventArgs>;
 
     /**
      * Triggers when editor got focus at the time of node’s label or text node editing.
-     * @deprecated
+
      * @event
-     * @blazorProperty 'TextEdited'
+
      */
     textEdit?: EmitType<ITextEditEventArgs>;
 
     /**
      * Triggers when the diagram is zoomed or panned
      * @event
-     * @blazorProperty 'ScrollChanged'
-     * @blazorType 'IBlazorScrollChangeEventArgs'
+
+
      */
     scrollChange?: EmitType<IScrollChangeEventArgs>;
 
     /**
      * Triggers when the selection is changed in diagram
-     * @deprecated
+
      * @event
-     * @blazorProperty 'SelectionChanged'
-     * @blazorType 'IBlazorSelectionChangeEventArgs'
+
+
      */
     selectionChange?: EmitType<ISelectionChangeEventArgs>;
 
     /**
      * Triggers when a node is resized
-     * @deprecated
+
      * @event
-     * @blazorProperty 'OnSizeChange'
+
      */
     sizeChange?: EmitType<ISizeChangeEventArgs>;
 
     /**
      * Triggers when the connection is changed
-     * @deprecated
+
      * @event
-     * @blazorProperty 'OnConnectionChange'
-     * @blazorType 'IBlazorConnectionChangeEventArgs'
+
+
      */
     connectionChange?: EmitType<IConnectionChangeEventArgs>;
 
     /**
      * Triggers when the connector's source point is changed
      * @event
-     * @blazorProperty 'OnSourcePointChange'
-     * @deprecated
+
+
      */
     sourcePointChange?: EmitType<IEndChangeEventArgs>;
 
     /**
      * Triggers when the connector's target point is changed
      * @event
-     * @blazorProperty 'OnTargetPointChange'
-     * @deprecated
+
+
      */
     targetPointChange?: EmitType<IEndChangeEventArgs>;
 
     /**
      * Triggers once the node or connector property changed.
      * @event
-     * @blazorProperty 'PropertyChanged'
-     * @blazorType Syncfusion.EJ2.Blazor.Diagrams.IBlazorPropertyChangeEventArgs
+
+
      */
     propertyChange?: EmitType<IPropertyChangeEventArgs>;
 
     /**
      * Triggers while dragging the elements in diagram
      * @event
-     * @blazorProperty 'OnPositionChange'
-     * @blazorType Syncfusion.EJ2.Blazor.Diagrams.IBlazorDraggingEventArgs
+
+
      */
     positionChange?: EmitType<IDraggingEventArgs>;
 
     /**
      * Triggers after animation is completed for the diagram elements.
      * @event
-     * @blazorProperty 'OnAnimationComplete'
+
      */
     animationComplete?: EmitType<Object>;
 
     /**
      * Triggers when the diagram elements are rotated
-     * @deprecated
+
      * @event
-     * @blazorProperty 'OnRotateChange'
+
      */
     rotateChange?: EmitType<IRotationEventArgs>;
 
     /**
      * Triggers when a node/connector is added/removed to/from the diagram.
-     * @deprecated
+
      * @event
-     * @blazorProperty 'OnCollectionChange'
-     * @blazorType 'IBlazorCollectionChangeEventArgs'
+
+
      */
     collectionChange?: EmitType<ICollectionChangeEventArgs>;
 
     /**
      * Triggers when a mouseDown on the user handle.
      * @event
-     * @blazorProperty 'OnUserHandleMouseDown'
+
      */
     onUserHandleMouseDown?: EmitType<UserHandleEventsArgs>;
 
     /**
      * Triggers when a mouseUp on the user handle.
      * @event
-     * @blazorProperty 'OnUserHandleMouseUp'
+
      */
     onUserHandleMouseUp?: EmitType<UserHandleEventsArgs>;
 
     /**
      * Triggers when a mouseEnter on the user handle.
      * @event
-     * @blazorProperty 'OnUserHandleMouseEnter'
+
      */
     onUserHandleMouseEnter?: EmitType<UserHandleEventsArgs>;
 
     /**
      * Triggers when a mouseLeave on the user handle.
      * @event
-     * @blazorProperty 'OnUserHandleMouseLeave'
+
      */
     onUserHandleMouseLeave?: EmitType<UserHandleEventsArgs>;
 
     /**
      * Triggers when a segment is added/removed to/from the connector.
      * @event
-     * @blazorProperty 'OnSegmentCollectionChange'
-     * @deprecated
-     * @blazorType 'IBlazorSegmentCollectionChangeEventArgs'
+
+
+
      */
     segmentCollectionChange?: EmitType<ISegmentCollectionChangeEventArgs>;
 
     /**
      * Triggers when the state of the expand and collapse icon change for a node.
      * @event
-     * @blazorProperty 'OnExpandStateChange'
+
      */
     expandStateChange?: EmitType<IExpandStateChangeEventArgs>;
 
     /**
      * Triggered when the diagram is rendered completely.
      * @event
-     * @blazorProperty 'Created'
+
      */
     created?: EmitType<Object>;
 
     /**
      * Triggered when mouse enters a node/connector.
      * @event
-     * @blazorProperty 'MouseEnter'
-     * @blazorType Syncfusion.EJ2.Blazor.Diagrams.IBlazorMouseEventArgs
+
+
      */
     mouseEnter?: EmitType<IMouseEventArgs>;
 
     /**
      * Triggered when mouse leaves node/connector.
      * @event
-     * @blazorProperty 'MouseLeave'
-     * @blazorType Syncfusion.EJ2.Blazor.Diagrams.IBlazorMouseEventArgs
+
+
      */
     mouseLeave?: EmitType<IMouseEventArgs>;
 
     /**
      * Triggered when mouse hovers a node/connector.
      * @event
-     * @blazorProperty 'MouseOver'
-     * @blazorType Syncfusion.EJ2.Blazor.Diagrams.IBlazorMouseEventArgs
+
+
      */
     mouseOver?: EmitType<IMouseEventArgs>;
 
     /**
      * Triggers before opening the context menu
      * @event
-     * @blazorProperty 'OnContextMenuOpen'
-     * @blazorType Syncfusion.EJ2.Blazor.Diagrams.DiagramBeforeMenuOpenEventArgs
+
+
      */
     contextMenuOpen?: EmitType<BeforeOpenCloseMenuEventArgs>;
 
     /**
      * Triggers before rendering the context menu item
      * @event
-     * @blazorProperty 'OnContextMenuItemRender'
-     * @blazorType Syncfusion.EJ2.Blazor.Diagrams.DiagramMenuEventArgs
+
+
      */
     contextMenuBeforeItemRender?: EmitType<MenuEventArgs>;
 
     /**
      * Triggers when a context menu item is clicked
      * @event
-     * @blazorProperty 'ContextMenuItemClicked'
-     * @blazorType Syncfusion.EJ2.Blazor.Diagrams.DiagramMenuEventArgs
+
+
      */
     contextMenuClick?: EmitType<MenuEventArgs>;
 
     /**
      * Triggers when a command executed.
      * @event
-     * @blazorProperty 'OnCommandExecuted'
+
      */
     commandExecute?: EmitType<ICommandExecuteEventArgs>;
 
     /**
      * A collection of JSON objects where each object represents a layer. Layer is a named category of diagram shapes.
-     * @default []
+
      */
     layers?: LayerModel[];
 
     /**
      * Triggers when a symbol is dragged and dropped from symbol palette to drawing area
-     * @deprecated
+
      * @event
-     * @blazorProperty 'OnDrop'
-     * @blazorType 'IBlazorDropEventArgs'
+
+
      */
     drop?: EmitType<IDropEventArgs>;
 

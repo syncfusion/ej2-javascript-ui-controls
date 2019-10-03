@@ -6,7 +6,7 @@ import { NormalEdit } from './normal-edit';
 
 /**
  * `InlineEdit` module is used to handle inline editing actions.
- * @hidden
+
  */
 export class InlineEdit extends NormalEdit {
 

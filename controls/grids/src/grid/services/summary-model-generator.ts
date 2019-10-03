@@ -13,7 +13,7 @@ import { Cell } from '../models/cell';
 
 /**
  * Summary row model generator
- * @hidden
+
  */
 export class SummaryModelGenerator implements IModelGenerator<AggregateColumnModel> {
 

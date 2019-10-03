@@ -10,7 +10,7 @@ PivotFieldList.Inject(CalculatedField);
 /**
  * Module for Field List rendering
  */
-/** @hidden */
+
 export class FieldList implements IAction {
     /**
      * Module declarations
@@ -64,7 +64,10 @@ export class FieldList implements IAction {
             locale: this.parent.locale,
             target: this.parent.element.parentElement,
             maxNodeLimitInMemberEditor: this.parent.maxNodeLimitInMemberEditor,
-            aggregateCellInfo: this.parent.bindTriggerEvents.bind(this.parent)
+            aggregateCellInfo: this.parent.bindTriggerEvents.bind(this.parent),
+            enginePopulating: this.parent.bindTriggerEvents.bind(this.parent),
+            enginePopulated: this.parent.bindTriggerEvents.bind(this.parent),
+            onFieldDropped: this.parent.bindTriggerEvents.bind(this.parent)
         });
         this.parent.pivotFieldListModule.appendTo('#' + this.element.id);
     }
@@ -118,7 +121,7 @@ export class FieldList implements IAction {
     }
 
     /**
-     * @hidden
+
      */
     public addEventListener(): void {
         this.handlers = {
@@ -131,7 +134,7 @@ export class FieldList implements IAction {
     }
 
     /**
-     * @hidden
+
      */
     public removeEventListener(): void {
         if (this.parent.isDestroyed) { return; }
@@ -142,7 +145,7 @@ export class FieldList implements IAction {
     /**
      * To destroy the Field List 
      * @return {void}
-     * @hidden
+
      */
     public destroy(): void {
         this.removeEventListener();

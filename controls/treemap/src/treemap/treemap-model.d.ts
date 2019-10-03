@@ -8,13 +8,13 @@ export interface TreeMapModel extends ComponentModel{
 
     /**
      * Specifies the width by given pixel or percentage.
-     * @default null
+
      */
     width?: string;
 
     /**
      * Specifies the height by given pixel or percentage.
-     * @default null
+
      */
     height?: string;
 
@@ -50,15 +50,15 @@ export interface TreeMapModel extends ComponentModel{
 
     /**
      * Specifies the dataSource.
-     * @isGenericType true
-     * @isObservable true
-     * @default null
+
+
+
      */
     dataSource?: DataManager | TreeMapAjax | Object[];
 
     /**
      * Specifies the query for filter the data.
-     * @default null
+
      */
     query?: Query;
 
@@ -89,7 +89,7 @@ export interface TreeMapModel extends ComponentModel{
 
     /**
      * Specifies the rendering of layout of the treemap items.
-     * @default TopLeftBottomRight
+
      */
     renderDirection?: RenderingMode;
 
@@ -150,25 +150,25 @@ export interface TreeMapModel extends ComponentModel{
 
     /**
      * To enable the separator
-     * @default false
+
      */
     useGroupingSeparator?: boolean;
 
     /**
      * Description for maps.
-     * @default null
+
      */
     description?: string;
 
     /**
      * TabIndex value for treemap.
-     * @default 1
+
      */
     tabIndex?: number;
 
     /**
      * To apply internationalization for treemap
-     * @default null
+
      */
     format?: string;
 
@@ -181,121 +181,121 @@ export interface TreeMapModel extends ComponentModel{
     /**
      * Triggers before the prints gets started.
      * @event
-     * @blazorProperty 'OnPrint'
+
      */
     beforePrint?: EmitType<IPrintEventArgs>;
 
     /**
      * Triggers after treemap rendered.
      * @event
-     * @blazorProperty 'Loaded'
+
      */
     loaded?: EmitType<ILoadedEventArgs>;
 
     /**
      * Triggers before item rendering.
      * @event
-     * @blazorProperty 'ItemRendering'
+
      */
     itemRendering?: EmitType<IItemRenderingEventArgs>;
 
     /**
      * Triggers the drillDown start.
      * @event
-     * @blazorProperty 'OnDrillStart'
+
      */
     drillStart?: EmitType<IDrillStartEventArgs>;
 
     /**
      * Triggers the drillDown end.
      * @event
-     * @blazorProperty 'DrillCompleted'
+
      */
     drillEnd?: EmitType<IDrillEndEventArgs>;
 
     /**
      * Triggers the item selected.
      * @event
-     * @blazorProperty 'ItemSelected'
+
      */
     itemSelected?: EmitType<IItemSelectedEventArgs>;
 
     /**
      * Triggers the item highlight.
      * @event
-     * @blazorProperty 'ItemHighlighted'
+
      */
     itemHighlight?: EmitType<IItemHighlightEventArgs>;
 
     /**
      * Triggers the tooltip rendering.
      * @event
-     * @blazorProperty 'TooltipRendering'
-     * @blazorType ITreeMapTooltipArgs
+
+
      */
     tooltipRendering?: EmitType<ITreeMapTooltipRenderEventArgs>;
 
     /**
      * Triggers the item click.
      * @event
-     * @blazorProperty 'OnItemClick'
+
      */
     itemClick?: EmitType<IItemClickEventArgs>;
 
     /**
      * Triggers the item move.
      * @event
-     * @blazorProperty 'OnItemMove'
+
      */
     itemMove?: EmitType<IItemMoveEventArgs>;
 
     /**
      * Triggers the click event.
      * @event
-     * @blazorProperty 'OnClick'
+
      */
     click?: EmitType<IItemClickEventArgs>;
 
     /**
      * Triggers on double clicking the maps.
      * @event
-     * @blazorProperty 'OnDoubleClick'
+
      */
     doubleClick?: EmitType<IDoubleClickEventArgs>;
 
     /**
      * Triggers on right clicking the maps.
      * @event
-     * @blazorProperty 'OnRightClick'
+
      */
     rightClick?: EmitType<IMouseMoveEventArgs>;
 
     /**
      * Triggers the mouse move event.
      * @event
-     * @blazorProperty 'OnMouseMove'
+
      */
     mouseMove?: EmitType<IMouseMoveEventArgs>;
 
     /**
      * Triggers the resize event.
      * @event
-     * @blazorProperty 'Resizing'
+
      */
     resize?: EmitType<IResizeEventArgs>;
 
     /**
      * Triggers the legend item rendering.
      * @event
-     * @blazorProperty 'LegendItemRendering'
+
      */
     legendItemRendering?: EmitType<ILegendItemRenderingEventArgs>;
 
     /**
      * Triggers the legend rendering event.
      * @event
-     * @deprecated
-     * @blazorProperty 'LegendRendering'
+
+
      */
     legendRendering?: EmitType<ILegendRenderingEventArgs>;
 

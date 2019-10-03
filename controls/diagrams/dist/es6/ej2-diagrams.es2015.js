@@ -804,22 +804,22 @@ class Rect {
     constructor(x, y, width, height) {
         /**
          * Sets the x-coordinate of the starting point of a rectangular region
-         * @default 0
+    
          */
         this.x = Number.MAX_VALUE;
         /**
          * Sets the y-coordinate of the starting point of a rectangular region
-         * @default 0
+    
          */
         this.y = Number.MAX_VALUE;
         /**
          * Sets the width of a rectangular region
-         * @default 0
+    
          */
         this.width = 0;
         /**
          * Sets the height of a rectangular region
-         * @default 0
+    
          */
         this.height = 0;
         if (x === undefined || y === undefined) {
@@ -1540,8 +1540,8 @@ __decorate$3([
  * Hover - Shows the port when the mouse hovers over a node
  * Connect - Shows the port when a connection end point is dragged over a node
  * Default - By default the ports will be visible when a node is hovered and being tried to connect
- * @aspNumberEnum
- * @blazorNumberEnum
+
+
  */
 var PortVisibility;
 (function (PortVisibility) {
@@ -1565,8 +1565,8 @@ var PortVisibility;
  * SnapToLines - Enables the object to snap with both horizontal and Vertical gridlines.
  * snapToObject - Enables the object to snap with the other objects in the diagram.
  * @IgnoreSingular
- * @aspNumberEnum
- * @blazorNumberEnum
+
+
  */
 var SnapConstraints;
 (function (SnapConstraints) {
@@ -1605,8 +1605,8 @@ var SnapConstraints;
  * Rotate - Shows/hides the rotate handle of the selector
  * UserHandles - Shows/hides the user handles of the selector
  * Resize - Shows/hides all resize handles of the selector
- * @aspNumberEnum
- * @blazorNumberEnum
+
+
  * @IgnoreSingular
  */
 var SelectorConstraints;
@@ -1663,8 +1663,8 @@ var SelectorConstraints;
  * * Interaction - Features of the connector used for interaction.
  * * ReadOnly - Enables ReadOnly
  * * Default - Default features of the connector.
- * @aspNumberEnum
- * @blazorNumberEnum
+
+
  * @IgnoreSingular
  */
 var ConnectorConstraints;
@@ -1718,8 +1718,8 @@ var ConnectorConstraints;
  * Rotate - Enables/Disable rotate support for the annotation
  * Interaction - Enables annotation to inherit the interaction option
  * None - Disable all annotation constraints
- * @aspNumberEnum
- * @blazorNumberEnum
+
+
  * @IgnoreSingular
  */
 var AnnotationConstraints;
@@ -1771,8 +1771,8 @@ var AnnotationConstraints;
  * InheritTooltip - Enables or disables tool tip for the Nodes
  * ReadOnly - Enables the  ReadOnly support for Annotation
  * Default - Enables all constraints
- * @aspNumberEnum
- * @blazorNumberEnum
+
+
  * @IgnoreSingular
  */
 var NodeConstraints;
@@ -1907,8 +1907,8 @@ var ThumbsConstraints;
  * ZoomTextEdit - Enables/Disables zooming the text box while editing the text
  * Virtualization - Enables/Disable Virtualization support the diagram
  * Default - Enables/Disable all constraints
- * @aspNumberEnum
- * @blazorNumberEnum
+
+
  * @IgnoreSingular
  */
 var DiagramConstraints;
@@ -1953,8 +1953,8 @@ var DiagramConstraints;
  * DrawOnce - Enables/Disable continuousDraw support for the diagram
  * ContinuousDraw - Enables/Disable continuousDraw support for the diagram
  * Default - Enables/Disable all constraints
- * @aspNumberEnum
- * @blazorNumberEnum
+
+
  * @IgnoreSingular
  */
 var DiagramTools;
@@ -2005,8 +2005,8 @@ var RenderMode;
  * * Meta - meta key im mac
  * * Alt - alt key
  * * Shift - shift key
- * @aspNumberEnum
- * @blazorNumberEnum
+
+
  * @IgnoreSingular
  */
 var KeyModifiers;
@@ -2091,8 +2091,8 @@ var KeyModifiers;
  * * The Minus
  * * The Plus
  * * The Star
- * @aspNumberEnum
- * @blazorNumberEnum
+
+
  * @IgnoreSingular
  */
 var Keys;
@@ -2340,8 +2340,8 @@ var DiagramEvent;
     DiagramEvent[DiagramEvent["onUserHandleMouseLeave"] = 30] = "onUserHandleMouseLeave";
 })(DiagramEvent || (DiagramEvent = {}));
 /** Enables/Disables certain features of port connection
- * @aspNumberEnum
- * @blazorNumberEnum
+
+
  * @IgnoreSingular
  */
 var PortConstraints;
@@ -7875,7 +7875,6 @@ class Connector extends NodeBase {
         element.offsetX = pt.x;
         element.offsetY = pt.y;
     }
-    /** @hidden */
     scale(sw, sh, width, height, refObject) {
         let tx = 0;
         let ty = 0;
@@ -8887,7 +8886,7 @@ var __decorate$11 = (undefined && undefined.__decorate) || function (decorators,
  * });
  * diagram.appendTo('#diagram');
  * ```
- * @default {}
+
  */
 class UserHandle extends ChildProperty {
     /**
@@ -10039,6 +10038,9 @@ function moveChildInStack(sourceNode, target, diagram, action) {
  */
 /** @private */
 function initSwimLane(grid, diagram, node) {
+    if (!node.width && node.shape.phases.length === 0) {
+        node.width = 100;
+    }
     let row = [];
     let columns = [];
     let index = 0;
@@ -10313,6 +10315,10 @@ function initGridColumns(columns, orientation, object) {
             if (k === shape.lanes.length - 1 && totalWidth < object.width) {
                 cols.width += object.width - totalWidth;
             }
+            columns.push(cols);
+        }
+        if ((shape.phases.length === 0 || shape.lanes.length === 0)) {
+            cols = createColumn(object.width);
             columns.push(cols);
         }
     }
@@ -16198,7 +16204,6 @@ function createSvgElement(elementType, attribute) {
     setAttributeSvg(element, attribute);
     return element;
 }
-/** @hidden */
 function parentsUntil(elem, selector, isID) {
     let parent = elem;
     while (parent) {
@@ -16213,7 +16218,6 @@ function hasClass(element, className) {
     let eClassName = (typeof element.className === 'object') ? element.className.animVal : element.className;
     return ((' ' + eClassName + ' ').indexOf(' ' + className + ' ') > -1) ? true : false;
 }
-/** @hidden */
 function getScrollerWidth() {
     let outer = createHtmlElement('div', { 'style': 'visibility:hidden; width: 100px' });
     document.body.appendChild(outer);
@@ -18177,7 +18181,7 @@ class DiagramRenderer {
             dashArray: '', opacity: 1, cornerRadius: 0,
             visible: true, id: canvas.id + '_highlighter', class: 'e-diagram-highlighter'
         };
-        this.svgRenderer.drawRectangle(canvas, options, this.diagramId);
+        this.svgRenderer.drawRectangle(canvas, options, this.diagramId, undefined, undefined, canvas);
     }
     /**
      * @private
@@ -19236,7 +19240,7 @@ __decorate$13([
  * });
  * diagram.appendTo('#diagram');
  * ```
- * @default {}
+
  */
 class PageSettings extends ChildProperty {
 }
@@ -19308,7 +19312,7 @@ __decorate$13([
 
 /**
  * ServiceLocator
- * @hidden
+
  */
 class ServiceLocator {
     constructor() {
@@ -19347,7 +19351,7 @@ __decorate$14([
 ], Gridlines.prototype, "snapIntervals", void 0);
 /**
  * Defines the gridlines and defines how and when the objects have to be snapped
- * @default {}
+
  */
 class SnapSettings extends ChildProperty {
 }
@@ -19415,7 +19419,7 @@ __decorate$15([
  * });
  * diagram.appendTo('#diagram');
  * ```
- * @default {}
+
  */
 class RulerSettings extends ChildProperty {
 }
@@ -21738,30 +21742,36 @@ class ConnectorEditing extends ToolBase {
     }
     /**   @private  */
     mouseDown(args) {
-        this.inAction = true;
-        this.undoElement = cloneObject(args.source);
-        super.mouseDown(args);
         let connectors;
+        let edit = true;
         if (args.source && args.source.connectors) {
             connectors = args.source.connectors[0];
         }
-        // Sets the selected segment         
-        for (let i = 0; i < connectors.segments.length; i++) {
-            let segment = connectors.segments[i];
-            if (this.endPoint === 'OrthoThumb') {
-                for (let j = 0; j < segment.points.length - 1; j++) {
-                    let segPoint = { x: 0, y: 0 };
-                    segPoint.x = ((segment.points[j].x + segment.points[j + 1].x) / 2);
-                    segPoint.y = ((segment.points[j].y + segment.points[j + 1].y) / 2);
-                    if (contains(this.currentPosition, segPoint, 30)) {
-                        this.selectedSegment = segment;
-                        this.segmentIndex = j;
+        if (args.info) {
+            edit = args.info.ctrlKey && args.actualObject.type !== 'Orthogonal';
+        }
+        if (connectors && edit) {
+            this.inAction = true;
+            this.undoElement = cloneObject(args.source);
+            super.mouseDown(args);
+            // Sets the selected segment         
+            for (let i = 0; i < connectors.segments.length; i++) {
+                let segment = connectors.segments[i];
+                if (this.endPoint === 'OrthoThumb') {
+                    for (let j = 0; j < segment.points.length - 1; j++) {
+                        let segPoint = { x: 0, y: 0 };
+                        segPoint.x = ((segment.points[j].x + segment.points[j + 1].x) / 2);
+                        segPoint.y = ((segment.points[j].y + segment.points[j + 1].y) / 2);
+                        if (contains(this.currentPosition, segPoint, 30)) {
+                            this.selectedSegment = segment;
+                            this.segmentIndex = j;
+                        }
                     }
                 }
-            }
-            else {
-                if (contains(this.currentPosition, segment.point, 10)) {
-                    this.selectedSegment = segment;
+                else {
+                    if (contains(this.currentPosition, segment.point, 10)) {
+                        this.selectedSegment = segment;
+                    }
                 }
             }
         }
@@ -22853,6 +22863,15 @@ class DiagramEventHandler {
             this.tool.mouseDown(this.initialEventArgs);
         }
     }
+    isSwimlaneElements(obj) {
+        if (obj && (obj.isLane || obj.isPhase || obj.isHeader)) {
+            return false;
+        }
+        else {
+            return true;
+        }
+    }
+    /* tslint:disable */
     /** @private */
     mouseMove(e, touches) {
         this.focus = true;
@@ -22891,7 +22910,12 @@ class DiagramEventHandler {
                             if (obj instanceof Node) {
                                 this.hoverNode = obj;
                             }
-                            this.hoverElement = obj;
+                            let canResetElement = true;
+                            if (!this.isSwimlaneElements(obj)
+                                && (this.hoverElement && this.isSwimlaneElements(this.hoverElement))) {
+                                canResetElement = false;
+                            }
+                            this.hoverElement = canResetElement ? obj : this.hoverElement;
                             this.elementEnter(this.currentPosition, false);
                         }
                         else if (!this.hoverElement && this.hoverElement === obj) {
@@ -22918,7 +22942,8 @@ class DiagramEventHandler {
                     this.updateCursor();
                     this.renderUmlHighLighter(this.eventArgs);
                     let isNode = false;
-                    if (!(this.hoverElement && (!(this.tool instanceof ZoomPanTool)) && obj instanceof Node &&
+                    if (!(this.hoverElement && (!(this.tool instanceof ZoomPanTool))
+                        && (obj instanceof Node && this.isSwimlaneElements(obj)) &&
                         (this.diagram.selectedItems.nodes.length === 0 || !isSelected(this.diagram, this.hoverElement)))) {
                         isNode = true;
                     }
@@ -22958,6 +22983,7 @@ class DiagramEventHandler {
             }
         }
     }
+    /* tslint:enable */
     getContent() {
         let isPrivateTooltip = ((this.hoverElement instanceof Node) &&
             this.hoverElement.constraints & NodeConstraints.Tooltip) ||
@@ -29360,7 +29386,7 @@ var __decorate$20 = (undefined && undefined.__decorate) || function (decorators,
  * });
  * diagram.appendTo('#diagram');
  * ```
- * @default {}
+
  */
 class SerializationSettings extends ChildProperty {
 }
@@ -32685,6 +32711,9 @@ class Diagram extends Component {
                 }
                 obj.wrapper.measure(new Size(undefined, undefined));
                 obj.wrapper.arrange(obj.wrapper.desiredSize);
+                if (obj instanceof Connector && obj.type === 'Bezier') {
+                    this.updateConnectorAnnotation(obj);
+                }
                 for (let j = 0; j < obj.wrapper.children.length; j++) {
                     this.pathTable[obj.wrapper.children[j].data] = {};
                     this.pathTable[obj.wrapper.children[j].data].absoluteBounds =
@@ -37329,7 +37358,7 @@ class DiagramContextMenu {
         this.addEventListener();
     }
     /**
-     * @hidden
+
      * @private
      */
     addEventListener() {
@@ -37339,7 +37368,7 @@ class DiagramContextMenu {
         this.parent.on('initial-load', this.render, this);
     }
     /**
-     * @hidden
+
      * @private
      */
     removeEventListener() {
@@ -48102,7 +48131,7 @@ class SymbolPalette extends Component {
     //region - protected methods 
     /**
      * Constructor for creating the component
-     * @hidden
+
      */
     constructor(options, element) {
         super(options, element);
@@ -50119,8 +50148,8 @@ class Overview extends Component {
         this.resizeTo = setTimeout(() => {
             let element = document.getElementById(this.element.id);
             let bRect = element.getBoundingClientRect();
-            this.model.width = bRect.width;
-            this.model.height = bRect.height;
+            this.model.width = bRect.width > 0 ? bRect.width : this.model.width;
+            this.model.height = bRect.height > 0 ? bRect.height : this.model.height;
             this.renderCanvas();
             this.setParent(this.sourceID);
         }, 10);

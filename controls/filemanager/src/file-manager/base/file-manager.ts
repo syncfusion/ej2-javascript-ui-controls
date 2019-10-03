@@ -51,17 +51,17 @@ import { PositionModel } from '@syncfusion/ej2-base/src/draggable-model';
 export class FileManager extends Component<HTMLElement> implements INotifyPropertyChanged {
 
     /* Internal modules */
-    /** @hidden */
+
     public toolbarModule: Toolbar;
-    /** @hidden */
+
     public detailsviewModule: DetailsView;
-    /** @hidden */
+
     public navigationpaneModule: ITreeView;
-    /** @hidden */
+
     public largeiconsviewModule: LargeIconsView;
-    /** @hidden */
+
     public contextmenuModule: IContextMenu;
-    /** @hidden */
+
     public breadcrumbbarModule: BreadCrumbBar;
 
 
@@ -156,7 +156,7 @@ export class FileManager extends Component<HTMLElement> implements INotifyProper
 
     /**
      * Specifies the AJAX settings of the file manager.
-     * @default {
+
      *  getImageUrl: null;
      *  url: null;
      *  uploadUrl: null;
@@ -168,21 +168,21 @@ export class FileManager extends Component<HTMLElement> implements INotifyProper
 
     /**
      * Enables or disables drag-and-drop of files.
-     * @default false
+
      */
     @Property(false)
     public allowDragAndDrop: boolean;
 
     /**
      * Enables or disables the multiple files selection of the file manager.
-     * @default true
+
      */
     @Property(true)
     public allowMultiSelection: boolean;
 
     /**
      * Specifies the context menu settings of the file manager.
-     * @default {
+
      *  file: ['Open','|', 'Cut', 'Copy', '|', 'Delete', 'Rename', '|', 'Details'],
      *  folder: ['Open','|', 'Cut', 'Copy', 'Paste', '|', 'Delete', 'Rename', '|', 'Details'],
      *  layout: ['SortBy', 'View', 'Refresh', '|', 'Paste', '|', 'NewFolder', 'Upload', '|', 'Details', '|', 'SelectAll'],
@@ -194,14 +194,14 @@ export class FileManager extends Component<HTMLElement> implements INotifyProper
 
     /**
      * Specifies the root CSS class of the file manager that allows you to customize the appearance by overriding the styles.
-     * @default ''
+
      */
     @Property('')
     public cssClass: string;
 
     /**
      * Specifies the details view settings of the file manager.
-     * @default {     
+
      * columns: [{
      * field: 'name', headerText: 'Name', minWidth: 120, width: 'auto', template: '<span class="e-fe-text">${name}</span>',
      * customAttributes: { class: 'e-fe-grid-name'}}, { field: '_fm_modified', headerText: 'DateModified',
@@ -218,14 +218,14 @@ export class FileManager extends Component<HTMLElement> implements INotifyProper
      * 1. `view`: Represents the previous view of the file manager.
      * 2. `path`: Represents the previous path of the file manager.
      * 3. `selectedItems`: Represents the previous selected items in the file manager.
-     * @default false
+
      */
     @Property(false)
     public enablePersistence: boolean;
 
     /**
      * Specifies the height of the file manager.
-     * @default '400px'
+
      */
     @Property('400px')
     public height: string | number;
@@ -235,14 +235,14 @@ export class FileManager extends Component<HTMLElement> implements INotifyProper
      * With the help of this property, initial view can be changed to details or largeicons view. The available views are:
      * * `LargeIcons`
      * * `Details`
-     * @default 'LargeIcons'
+
      */
     @Property('LargeIcons')
     public view: ViewType;
 
     /**
      * Specifies the navigationpane settings of the file manager.
-     * @default {
+
      *  maxWidth: '650px',
      *  minWidth: '240px',
      *  visible: true,
@@ -253,14 +253,14 @@ export class FileManager extends Component<HTMLElement> implements INotifyProper
 
     /**
      * Specifies the current path of the file manager.
-     * @default '/'
+
      */
     @Property('/')
     public path: string;
 
     /**
      * Specifies the search settings of the file manager.
-     * @default {
+
      *  allowSearchOnTyping: true,
      *  filterType: 'contains',
      *  ignoreCase: true
@@ -271,35 +271,35 @@ export class FileManager extends Component<HTMLElement> implements INotifyProper
 
     /**
      * Specifies the selected folders and files name of the  file manager.
-     * @default []
+
      */
     @Property()
     public selectedItems: string[];
 
     /**
      * Shows or hides the file extension in file manager.
-     * @default true
+
      */
     @Property(true)
     public showFileExtension: boolean;
 
     /**
      * Shows or hides the files and folders that are marked as hidden.
-     * @default false
+
      */
     @Property(false)
     public showHiddenItems: boolean;
 
     /**
      * Shows or hides the thumbnail images in largeicons view.
-     * @default true
+
      */
     @Property(true)
     public showThumbnail: boolean;
 
     /**
      * Specifies the group of items aligned horizontally in the toolbar.
-     * @default {
+
      *  items: ['NewFolder', 'Upload', 'Cut', 'Copy', 'Paste', 'Delete',
      *  'Download', 'Rename', 'SortBy', 'Refresh', 'Selection', 'View', 'Details'],
      *  visible: true
@@ -310,7 +310,7 @@ export class FileManager extends Component<HTMLElement> implements INotifyProper
 
     /**
      * Specifies the upload settings for the file manager.
-     * @default {
+
      *  autoUpload: true,
      *  minFileSize: 0,
      *  maxFileSize: 30000000,
@@ -322,7 +322,7 @@ export class FileManager extends Component<HTMLElement> implements INotifyProper
 
     /**
      * Specifies the width of the file manager.
-     * @default '100%'
+
      */
     @Property('100%')
     public width: string | number;
@@ -330,7 +330,7 @@ export class FileManager extends Component<HTMLElement> implements INotifyProper
     /**
      * Triggers before the file/folder is rendered.
      * @event
-     * @blazorproperty 'OnFileLoad'
+
      */
     @Event()
     public fileLoad: EmitType<FileLoadEventArgs>;
@@ -338,7 +338,7 @@ export class FileManager extends Component<HTMLElement> implements INotifyProper
     /**
      * Triggers before the file/folder is opened.
      * @event
-     * @blazorproperty 'OnFileOpen'
+
      */
     @Event()
     public fileOpen: EmitType<FileOpenEventArgs>;
@@ -346,7 +346,7 @@ export class FileManager extends Component<HTMLElement> implements INotifyProper
     /**
      * Triggers before the dialog is closed.
      * @event
-     * @blazorproperty 'BeforePopupClose'
+
      */
     @Event()
     public beforePopupClose: EmitType<BeforePopupOpenCloseEventArgs>;
@@ -354,7 +354,7 @@ export class FileManager extends Component<HTMLElement> implements INotifyProper
     /**
      * Triggers before the dialog is opened.
      * @event
-     * @blazorproperty 'BeforePopupOpen'
+
      */
     @Event()
     public beforePopupOpen: EmitType<BeforePopupOpenCloseEventArgs>;
@@ -362,7 +362,7 @@ export class FileManager extends Component<HTMLElement> implements INotifyProper
     /**
      * Triggers before sending the AJAX request to the server.
      * @event
-     * @blazorproperty 'OnSend'
+
      */
     @Event()
     public beforeSend: EmitType<BeforeSendEventArgs>;
@@ -370,7 +370,7 @@ export class FileManager extends Component<HTMLElement> implements INotifyProper
     /**
      * Triggers when the file manager component is created.
      * @event
-     * @blazorproperty 'Created'
+
      */
     @Event()
     public created: EmitType<Object>;
@@ -378,7 +378,7 @@ export class FileManager extends Component<HTMLElement> implements INotifyProper
     /**
      * Triggers when the file manager component is destroyed.
      * @event
-     * @blazorproperty 'Destroyed'
+
      */
     @Event()
     public destroyed: EmitType<Object>;
@@ -386,7 +386,7 @@ export class FileManager extends Component<HTMLElement> implements INotifyProper
     /**
      * Triggers when the file/folder dragging is started.
      * @event
-     * @blazorproperty 'OnFileDragStart'
+
      */
     @Event()
     public fileDragStart: EmitType<FileDragEventArgs>;
@@ -394,7 +394,7 @@ export class FileManager extends Component<HTMLElement> implements INotifyProper
     /**
      * Triggers while dragging the file/folder.
      * @event
-     * @blazorproperty 'FileDragging'
+
      */
     @Event()
     public fileDragging: EmitType<FileDragEventArgs>;
@@ -402,7 +402,7 @@ export class FileManager extends Component<HTMLElement> implements INotifyProper
     /**
      * Triggers when the file/folder is about to be dropped at the target.
      * @event
-     * @blazorproperty 'OnFileDragStop'
+
      */
     @Event()
     public fileDragStop: EmitType<FileDragEventArgs>;
@@ -410,7 +410,7 @@ export class FileManager extends Component<HTMLElement> implements INotifyProper
     /**
      * Triggers when the file/folder is dropped.
      * @event
-     * @blazorproperty 'FileDropped'
+
      */
     @Event()
     public fileDropped: EmitType<FileDragEventArgs>;
@@ -418,7 +418,7 @@ export class FileManager extends Component<HTMLElement> implements INotifyProper
     /**
      * Triggers when the file/folder is selected/unselected.
      * @event
-     * @blazorproperty 'FileSelected'
+
      */
     @Event()
     public fileSelect: EmitType<FileSelectEventArgs>;
@@ -426,7 +426,7 @@ export class FileManager extends Component<HTMLElement> implements INotifyProper
     /**
      * Triggers when the context menu item is clicked.
      * @event
-     * @blazorproperty 'OnMenuClick'
+
      */
     @Event()
     public menuClick: EmitType<MenuClickEventArgs>;
@@ -434,7 +434,7 @@ export class FileManager extends Component<HTMLElement> implements INotifyProper
     /**
      * Triggers before the context menu is opened.
      * @event
-     * @blazorproperty 'MenuOpened'
+
      */
     @Event()
     public menuOpen: EmitType<MenuOpenEventArgs>;
@@ -442,7 +442,7 @@ export class FileManager extends Component<HTMLElement> implements INotifyProper
     /**
      * Triggers when the AJAX request is failed.
      * @event
-     * @blazorproperty 'OnError'
+
      */
     @Event()
     public failure: EmitType<FailureEventArgs>;
@@ -450,7 +450,7 @@ export class FileManager extends Component<HTMLElement> implements INotifyProper
     /**
      * Triggers when the dialog is closed.
      * @event
-     * @blazorproperty 'PopupClosed'
+
      */
     @Event()
     public popupClose: EmitType<PopupOpenCloseEventArgs>;
@@ -458,7 +458,7 @@ export class FileManager extends Component<HTMLElement> implements INotifyProper
     /**
      * Triggers when the dialog is opened.
      * @event
-     * @blazorproperty 'PopupOpened'
+
      */
     @Event()
     public popupOpen: EmitType<PopupOpenCloseEventArgs>;
@@ -466,7 +466,7 @@ export class FileManager extends Component<HTMLElement> implements INotifyProper
     /**
      * Triggers when the AJAX request is success.
      * @event
-     * @blazorproperty 'OnSuccess'
+
      */
     @Event()
     public success: EmitType<SuccessEventArgs>;
@@ -474,7 +474,7 @@ export class FileManager extends Component<HTMLElement> implements INotifyProper
     /**
      * Triggers when the toolbar item is clicked.
      * @event
-     * @blazorproperty 'ToolbarItemClicked'
+
      */
     @Event()
     public toolbarClick: EmitType<ToolbarClickEventArgs>;
@@ -482,7 +482,7 @@ export class FileManager extends Component<HTMLElement> implements INotifyProper
     /**
      * Triggers before creating the toolbar.
      * @event
-     * @blazorproperty 'ToolbarCreated'
+
      */
     @Event()
     public toolbarCreate: EmitType<ToolbarCreateEventArgs>;
@@ -490,7 +490,7 @@ export class FileManager extends Component<HTMLElement> implements INotifyProper
     /**
      * Triggers before rendering each file item in upload dialog box.
      * @event
-     * @blazorproperty 'UploadListCreated'
+
      */
     @Event()
     public uploadListCreate: EmitType<UploadListCreateArgs>;
@@ -540,7 +540,7 @@ export class FileManager extends Component<HTMLElement> implements INotifyProper
     /**
      * Gets the properties to be maintained upon browser refresh..
      * @returns string
-     * @hidden
+
      */
     public getPersistData(): string {
         let keyEntity: string[] = ['view', 'path', 'selectedItems'];
@@ -550,7 +550,7 @@ export class FileManager extends Component<HTMLElement> implements INotifyProper
     /**
      * To provide the array of modules needed for component rendering
      * @return {ModuleDeclaration[]}
-     * @hidden
+
      */
     public requiredModules(): ModuleDeclaration[] {
         let modules: ModuleDeclaration[] = [];

@@ -8,7 +8,7 @@ import { IFieldOptions } from '../../base/engine';
 /**
  * Module to render Axis Fields
  */
-/** @hidden */
+
 export class AxisFieldRenderer {
     public parent: PivotFieldList;
     private pivotButton: PivotButton;

@@ -84,8 +84,8 @@ export class RangeNavigator extends Component<HTMLElement> {
     /**
      * The width of the range navigator as a string accepts input as both like '100px' or '100%'.
      * If specified as '100%, range navigator renders to the full width of its parent element.
-     * @default null
-     * @aspDefaultValueIgnore
+
+
      */
 
     @Property(null)
@@ -94,8 +94,8 @@ export class RangeNavigator extends Component<HTMLElement> {
     /**
      * The height of the chart as a string accepts input both as '100px' or '100%'.
      * If specified as '100%, range navigator renders to the full height of its parent element.
-     * @default null
-     * @aspDefaultValueIgnore
+
+
      */
 
     @Property(null)
@@ -103,28 +103,28 @@ export class RangeNavigator extends Component<HTMLElement> {
 
     /**
      * It defines the data source for a range navigator.
-     * @default null
+
      */
     @Property(null)
     public dataSource: Object | DataManager;
 
     /**
      * It defines the xName for the range navigator.
-     * @default null
+
      */
     @Property(null)
     public xName: string;
 
     /**
      * It defines the yName for the range navigator.
-     * @default null
+
      */
     @Property(null)
     public yName: string;
 
     /**
      * It defines the query for the data source.
-     * @default null
+
      */
     @Property()
     public query: Query;
@@ -144,31 +144,31 @@ export class RangeNavigator extends Component<HTMLElement> {
 
     /**
      * Minimum value for the axis
-     * @default null
-     * @aspDefaultValueIgnore
+
+
      */
     @Property(null)
     public minimum: number | Date;
 
     /**
      * Maximum value for the axis
-     * @default null
-     * @aspDefaultValueIgnore
+
+
      */
     @Property(null)
     public maximum: number | Date;
 
     /**
      * interval value for the axis
-     * @default null
-     * @aspDefaultValueIgnore
+
+
      */
     @Property(null)
     public interval: number;
 
     /**
      * IntervalType for the dateTime axis
-     * @default 'Auto'
+
      */
     @Property('Auto')
     public intervalType: RangeIntervalType;
@@ -177,7 +177,7 @@ export class RangeNavigator extends Component<HTMLElement> {
      * Specifies, when the axis labels intersect with each other.They are,
      * * None: Shows all the labels.
      * * Hide: Hides the label when it intersects.
-     * @default Hide
+
      */
 
     @Property('Hide')
@@ -185,77 +185,77 @@ export class RangeNavigator extends Component<HTMLElement> {
 
     /**
      * base value for log axis
-     * @default 10
+
      */
     @Property(10)
     public logBase: number;
 
     /**
      * ValueType for the axis
-     * @default 'Double'
+
      */
     @Property('Double')
     public valueType: RangeValueType;
 
     /**
      * Label positions for the axis
-     * @default 'Outside'
+
      */
     @Property('Outside')
     public labelPosition: AxisPosition;
 
     /**
      * Duration of the animation
-     * @default 500
+
      */
     @Property(500)
     public animationDuration: number;
 
     /**
      * Enable grouping for the labels
-     * @default false
+
      */
     @Property(false)
     public enableGrouping: boolean;
 
     /**
      * Enable deferred update for the range navigator
-     * @default false
+
      */
     @Property(false)
     public enableDeferredUpdate: boolean;
 
     /**
      * To render the period selector with out range navigator.
-     * @default false
+
      */
     @Property(false)
     public disableRangeSelector: boolean;
 
     /**
      * Enable snapping for range navigator sliders
-     * @default false
+
      */
     @Property(false)
     public allowSnapping: boolean;
 
     /**
      * Specifies whether a grouping separator should be used for a number.
-     * @default false
+
      */
     @Property(false)
     public useGroupingSeparator: boolean;
 
     /**
      * GroupBy property for the axis
-     * @default `Auto`
+
      */
     @Property()
     public groupBy: RangeIntervalType;
 
     /**
      * Tick Position for the axis
-     * @default 'Outside'
+
      */
     @Property('Outside')
     public tickPosition: AxisPosition;
@@ -296,14 +296,14 @@ export class RangeNavigator extends Component<HTMLElement> {
 
     /**
      * Specifies the theme for the range navigator.
-     * @default 'Material'
+
      */
     @Property('Material')
     public theme: ChartTheme;
 
     /**
      * Selected range for range navigator.
-     * @default []
+
      */
     @Property([])
     public value: number[] | Date[];
@@ -311,7 +311,7 @@ export class RangeNavigator extends Component<HTMLElement> {
     /**
      * Used to format the axis label that accepts any global string format like 'C', 'n1', 'P' etc.
      * It also accepts placeholder like '{value}°C' in which value represent the axis label, e.g, 20°C.
-     * @default ''
+
      */
 
     @Property('')
@@ -319,7 +319,7 @@ export class RangeNavigator extends Component<HTMLElement> {
 
     /**
      * Specifies the skeleton format in which the dateTime format will process.
-     * @default ''
+
      */
 
     @Property('')
@@ -327,7 +327,7 @@ export class RangeNavigator extends Component<HTMLElement> {
 
     /**
      * It specifies the type of format to be used in dateTime format process.
-     * @default 'DateTime'
+
      */
 
     @Property('DateTime')
@@ -335,7 +335,7 @@ export class RangeNavigator extends Component<HTMLElement> {
 
     /**
      * It specifies the label alignment for secondary axis labels
-     * @default 'Middle'
+
      */
 
     @Property('Middle')
@@ -343,7 +343,7 @@ export class RangeNavigator extends Component<HTMLElement> {
 
     /**
      * Margin for the range navigator
-     * @default
+
      */
     @Complex<MarginModel>({ top: 5, bottom: 5, right: 5, left: 5 }, Margin)
     public margin: MarginModel;
@@ -354,7 +354,7 @@ export class RangeNavigator extends Component<HTMLElement> {
     /**
      * Triggers before the range navigator rendering
      * @event
-     * @deprecated
+
      */
     @Event()
     public load: EmitType<IRangeLoadedEventArgs>;
@@ -362,7 +362,7 @@ export class RangeNavigator extends Component<HTMLElement> {
     /**
      * Triggers after the range navigator rendering
      * @event
-     * @blazorProperty 'Loaded'
+
      */
     @Event()
     public loaded: EmitType<IRangeLoadedEventArgs>;
@@ -370,7 +370,7 @@ export class RangeNavigator extends Component<HTMLElement> {
     /**
      * Triggers after the range navigator resized
      * @event
-     * @blazorProperty 'Resized'
+
      */
     @Event()
     public resized: EmitType<IResizeRangeNavigatorEventArgs>;
@@ -378,21 +378,21 @@ export class RangeNavigator extends Component<HTMLElement> {
     /**
      * Triggers before the label rendering
      * @event
-     * @deprecated
+
      */
     @Event()
     public labelRender: EmitType<ILabelRenderEventsArgs>;
     /**
      * Triggers after change the slider.
      * @event
-     * @blazorProperty 'Changed'
+
      */
     @Event()
     public changed: EmitType<IChangedEventArgs>;
     /**
      * Triggers before the tooltip for series is rendered.
      * @event
-     * @deprecated
+
      */
 
     @Event()
@@ -401,7 +401,7 @@ export class RangeNavigator extends Component<HTMLElement> {
     /**
      * Triggers before the range navigator selector rendering
      * @event
-     * @deprecated
+
      */
     @Event()
     public selectorRender: EmitType<IRangeSelectorRenderEventArgs>;
@@ -409,7 +409,7 @@ export class RangeNavigator extends Component<HTMLElement> {
     /**
      * Triggers before the prints gets started.
      * @event
-     * @blazorProperty 'OnPrint'
+
      */
 
     @Event()
@@ -454,7 +454,7 @@ export class RangeNavigator extends Component<HTMLElement> {
     public stockChart: StockChart;
     /**
      * Constructor for creating the widget
-     * @hidden
+
      */
     constructor(options?: RangeNavigatorModel, element?: string | HTMLElement) {
         super(options, <HTMLElement | string>element);
@@ -714,6 +714,7 @@ export class RangeNavigator extends Component<HTMLElement> {
             return false;
         }
         this.animateSeries = false;
+        this.removeAllTooltip();
         if (this.resizeTo) {
             clearTimeout(this.resizeTo);
         }
@@ -740,6 +741,23 @@ export class RangeNavigator extends Component<HTMLElement> {
             },
             500);
         return false;
+    }
+
+    /**
+     * Bug task ID: EJ2-30797
+     * while resizing tooltip shows in wrong position
+     * Cause: Due to time lag in resize, tooltip did not remove until the component calculation
+     * Fix: Removed the tooltip element on resize
+     */
+    private removeAllTooltip(): void {
+        if (this.tooltip.enable && this.tooltip.displayMode === 'Always') {
+            if (getElement(this.element.id + '_leftTooltip')) {
+                remove(getElement(this.element.id + '_leftTooltip'));
+            }
+            if (getElement(this.element.id + '_rightTooltip')) {
+                remove(getElement(this.element.id + '_rightTooltip'));
+            }
+        }
     }
 
     /**
@@ -878,7 +896,6 @@ export class RangeNavigator extends Component<HTMLElement> {
                     break;
                 case 'series':
                 case 'enableRtl':
-                case 'dataSource':
                 case 'xName':
                 case 'yName':
                 case 'query':
@@ -897,6 +914,10 @@ export class RangeNavigator extends Component<HTMLElement> {
                 case 'secondaryLabelAlignment':
                     renderer = true;
                     break;
+                case 'dataSource':
+                    renderer = true;
+                    refreshBounds = true;
+                    break;
                 case 'theme':
                     this.animateSeries = true;
                     break;
@@ -912,6 +933,14 @@ export class RangeNavigator extends Component<HTMLElement> {
             this.removeSvg();
             this.chartSeries.xMin = Infinity;
             this.chartSeries.xMax = -Infinity;
+            this.chartSeries.renderChart(this);
+        }
+        // issue fix for Range Navigator size gets reduced when the data source is refreshed
+        if (refreshBounds && renderer) {
+            this.removeSvg();
+            this.chartSeries.xMin = Infinity;
+            this.chartSeries.xMax = -Infinity;
+            this.calculateBounds();
             this.chartSeries.renderChart(this);
         }
         if (refreshBounds) {

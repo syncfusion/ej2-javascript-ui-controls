@@ -9,32 +9,32 @@ export interface FieldSettingsModel {
 
     /**
      * Maps the text column from data table for each list item
-     * @default null
+
      */
     text?: string;
 
     /**
      * Maps the value column from data table for each list item
-     * @default null
+
      */
     value?: string;
 
     /**
      * Maps the icon class column from data table for each list item.
-     * @default null
+
      */
     iconCss?: string;
 
     /**
      * Group the list items with it's related items by mapping groupBy field.
-     * @default null
+
      */
     groupBy?: string;
 
     /**
      * Allows additional attributes such as title, disabled, etc., to configure the elements 
      * in various ways to meet the criteria.
-     * @default null
+
      */
     htmlAttributes?: string;
 
@@ -63,7 +63,7 @@ export interface DropDownBaseModel extends ComponentModel{
      *   });
      *   customers.appendTo("#list");
      * ```
-     * @default {text: null, value: null, iconCss: null, groupBy: null}
+
      */
     fields?: FieldSettingsModel;
 
@@ -71,7 +71,7 @@ export interface DropDownBaseModel extends ComponentModel{
      * Enable or disable persisting component's state between page reloads. 
      * If enabled, following list of states will be persisted.
      * 1. value
-     * @default false
+
      */
     enablePersistence?: boolean;
 
@@ -81,27 +81,27 @@ export interface DropDownBaseModel extends ComponentModel{
      * 
      * which provides options to compile template string into a executable function. 
      * For EX: We have expression evolution as like ES6 expression string literals. 
-     * @default null
+
      */
     itemTemplate?: string;
 
     /**
      * Accepts the template design and assigns it to the group headers present in the popup list.
-     * @default null
+
      */
     groupTemplate?: string;
 
     /**
      * Accepts the template design and assigns it to popup list of component
      * when no data is available on the component.
-     * @default 'No Records Found'
+
      */
     noRecordsTemplate?: string;
 
     /**
      * Accepts the template and assigns it to the popup list content of the component
      * when the data fetch request from the remote server fails.
-     * @default 'The Request Failed'
+
      */
     actionFailureTemplate?: string;
 
@@ -110,13 +110,13 @@ export interface DropDownBaseModel extends ComponentModel{
      * * `None` - The data source is not sorting.
      * * `Ascending` - The data source is sorting with ascending order.
      * * `Descending` - The data source is sorting with descending order.
-     * @default None
+
      */
     sortOrder?: SortOrder;
 
     /**
      * Specifies a value that indicates whether the component is enabled or not.
-     * @default true
+
      */
     enabled?: boolean;
 
@@ -124,14 +124,14 @@ export interface DropDownBaseModel extends ComponentModel{
      * Accepts the list items either through local or remote service and binds it to the component.
      * It can be an array of JSON Objects or an instance of
      * `DataManager`.
-     * @default []
+
      */
     dataSource?: { [key: string]: Object }[] | DataManager | string[] | number[] | boolean[];
 
     /**
      * Accepts the external `Query`
      * which will execute along with the data processing.
-     * @default null
+
      */
     query?: Query;
 
@@ -163,20 +163,20 @@ export interface DropDownBaseModel extends ComponentModel{
      * </table>
      * 
      * The default value set to `StartsWith`, all the suggestion items which contain typed characters to listed in the suggestion popup.
-     * @default 'StartsWith'
+
      */
     filterType?: FilterType;
 
     /**
      * When set to ‘false’, consider the `case-sensitive` on performing the search to find suggestions.
      * By default consider the casing.
-     * @default true
+
      */
     ignoreCase?: boolean;
 
     /**
      * specifies the z-index value of the component popup element.
-     * @default 1000
+
      */
     zIndex?: number;
 
@@ -187,59 +187,59 @@ export interface DropDownBaseModel extends ComponentModel{
 
     /**
      * Overrides the global culture and localization value for this component. Default global culture is 'en-US'.
-     * @default 'en-US'
+
      */
     locale?: string;
 
     /**
      * Triggers before fetching data from the remote server.
      * @event
-     * @blazorProperty 'OnActionBegin'
-     * @blazorType ActionBeginEventArgs
+
+
      */
     actionBegin?: EmitType<Object>;
 
     /**
      * Triggers after data is fetched successfully from the remote server.
      * @event
-     * @blazorProperty 'OnActionComplete'
-     * @blazorType ActionCompleteEventArgs
+
+
      */
     actionComplete?: EmitType<Object>;
 
     /**
      * Triggers when the data fetch request from the remote server fails.
      * @event
-     * @blazorProperty 'OnActionFailure'
+
      */
     actionFailure?: EmitType<Object>;
 
     /**
      * Triggers when an item in the popup is selected by the user either with mouse/tap or with keyboard navigation.
      * @event
-     * @blazorProperty 'OnValueSelect'
+
      */
     select?: EmitType<SelectEventArgs>;
 
     /**
      * Triggers when data source is populated in the popup list..
      * @event
-     * @blazorProperty 'DataBound'
-     * @blazorType DataBoundEventArgs
+
+
      */
     dataBound?: EmitType<Object>;
 
     /**
      * Triggers when the component is created.
      * @event 
-     * @blazorProperty 'Created'
+
      */
     created?: EmitType<Object>;
 
     /**
      * Triggers when the component is destroyed.
      * @event
-     * @blazorProperty 'Destroyed'
+
      */
     destroyed?: EmitType<Object>;
 

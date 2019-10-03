@@ -85,6 +85,9 @@ export class Editor {
 
     private animationTimer: number;
     private pageRefFields: PageRefFields = {};
+    private delBlockContinue: boolean = false;
+    private delBlock: Widget = undefined;
+    private delSection: BodyWidget = undefined;
     /**
      * @private
      */
@@ -720,6 +723,15 @@ export class Editor {
                     this.viewer.triggerSpellCheck = true;
                     this.handleEnterKey();
                     this.viewer.triggerSpellCheck = false;
+                    break;
+                case 27:
+                    event.preventDefault();
+                    if (!this.isPaste) {
+                        this.copiedContent = undefined;
+                        this.copiedTextContent = '';
+                        this.selection.isViewPasteOptions = false;
+                        this.selection.showHidePasteOptions(undefined, undefined);
+                    }
                     break;
                 case 46:
                     this.handleDelete();
@@ -2014,8 +2026,10 @@ export class Editor {
             let htmlContent: string = '';
             let rtfContent: string = '';
             let clipbordData: DataTransfer = pasteWindow.clipboardData ? pasteWindow.clipboardData : event.clipboardData;
-            rtfContent = clipbordData.getData('Text/Rtf');
-            htmlContent = clipbordData.getData('Text/Html');
+            if (Browser.info.name !== 'msie') {
+                rtfContent = clipbordData.getData('Text/Rtf');
+                htmlContent = clipbordData.getData('Text/Html');
+            }
             this.copiedTextContent = textContent = clipbordData.getData('Text');
 
             if (rtfContent !== '') {
@@ -2061,7 +2075,7 @@ export class Editor {
     }
 
     private pasteFormattedContent(result: any): void {
-        this.pasteContents(result.data);
+        this.pasteContents(isNullOrUndefined(result.data) ? this.copiedTextContent : result.data);
         this.applyPasteOptions(this.currentPasteOptions);
         hideSpinner(this.owner.element);
     }
@@ -2194,12 +2208,12 @@ export class Editor {
         this.selection.end.setPositionInternal(this.pasteTextPosition.endPosition);
         switch (options) {
             case 'KeepSourceFormatting':
-                this.pasteContents(this.copiedContent);
+                this.pasteContents(this.copiedContent !== '' ? this.copiedContent : this.copiedTextContent);
                 break;
             case 'MergeWithExistingFormatting':
                 let start: TextPosition = this.selection.isForward ? this.selection.start : this.selection.end;
                 let currentFormat: WParagraphFormat = start.paragraph.paragraphFormat;
-                this.pasteContents(this.copiedContent, currentFormat);
+                this.pasteContents(this.copiedContent !== '' ? this.copiedContent : this.copiedTextContent, currentFormat);
                 break;
             case 'KeepTextOnly':
                 this.pasteContents(this.copiedTextContent);
@@ -2299,9 +2313,13 @@ export class Editor {
             }
             if (j === widgets.length - 1 && widget instanceof ParagraphWidget) {
                 let newParagraph: ParagraphWidget = widget as ParagraphWidget;
+                let paragraphFormat: WParagraphFormat;
                 if (newParagraph.childWidgets.length > 0
                     && (newParagraph.childWidgets[0] as LineWidget).children.length > 0) {
-                    this.insertElement((newParagraph.childWidgets[0] as LineWidget).children);
+                    if (newParagraph.paragraphFormat.listFormat.listId !== -1) {
+                        paragraphFormat = newParagraph.paragraphFormat;
+                    }
+                    this.insertElement((newParagraph.childWidgets[0] as LineWidget).children, paragraphFormat);
                 }
             } else if (widget instanceof BlockWidget) {
                 let startParagraph: ParagraphWidget = this.selection.start.paragraph;
@@ -2461,7 +2479,7 @@ export class Editor {
         }
         this.setPositionParagraph(paragraphInfo.paragraph, paragraphInfo.offset + length, true);
     }
-    private insertElement(element: ElementBox[]): void {
+    private insertElement(element: ElementBox[], paragraphFormat?: WParagraphFormat): void {
         let selection: Selection = this.selection;
         let length: number = 0;
         let paragraph: ParagraphWidget = undefined;
@@ -2508,6 +2526,9 @@ export class Editor {
             element[i].line = lineWidget;
             element[i].linkFieldCharacter(this.viewer);
             insertIndex++;
+        }
+        if (paragraphFormat) {
+            paragraph.paragraphFormat.copyFormat(paragraphFormat);
         }
         this.viewer.layout.reLayoutParagraph(paragraph, lineIndex, 0);
         this.setPositionParagraph(paragraphInfo.paragraph, paragraphInfo.offset + length, true);
@@ -5428,7 +5449,11 @@ export class Editor {
     /* tslint:disable-next-line:max-line-length */
     private applyCharacterStyle(paragraph: ParagraphWidget, start: TextPosition, end: TextPosition, property: string, value: WStyle, update: boolean): boolean {
         let paragraphWidget: BlockWidget[] = paragraph.getSplitWidgets() as BlockWidget[];
-        if ((end.paragraph === paragraph || paragraphWidget.indexOf(end.paragraph) !== -1)) {
+        let selection: Selection = end.owner.selection;
+        let lastLine: LineWidget = end.currentWidget;
+        let isParaSelected: boolean = start.offset === 0 && (selection.isParagraphLastLine(lastLine) && end.currentWidget === lastLine
+            && end.offset === selection.getLineLength(lastLine) + 1 || end.isAtParagraphEnd);
+        if (!isParaSelected && (end.paragraph === paragraph || paragraphWidget.indexOf(end.paragraph) !== -1)) {
             if (((value.type === 'Paragraph') && ((value.link) instanceof WCharacterStyle)) || (value.type === 'Character')) {
                 let obj: WStyle = (value.type === 'Character') ? value : value.link;
                 this.updateSelectionCharacterFormatting(property, obj, update);
@@ -6239,6 +6264,16 @@ export class Editor {
             this.deleteTableCell(end.paragraph.associatedCell, selection, start, end, editAction);
         } else {
             this.deletePara(paragraph, start, end, editAction);
+            if (this.delBlockContinue && this.delBlock) {
+                if (this.delSection) {
+                    let bodyWidget: BodyWidget = paragraph.bodyWidget instanceof BodyWidget ? paragraph.bodyWidget : undefined;
+                    this.deleteSection(selection, this.delSection, bodyWidget, editAction);
+                    this.delSection = undefined;
+                }
+                this.deleteBlock((this.delBlock as ParagraphWidget), selection, start, end, editAction);
+                this.delBlockContinue = false;
+                this.delBlock = undefined;
+            }
         }
     }
     /**
@@ -6519,16 +6554,24 @@ export class Editor {
                 //Removes the splitted paragraph.
             }
             if (!isNullOrUndefined(block) && !isStartParagraph) {
+                this.delBlockContinue = true;
+                this.delBlock = block;
                 let nextSection: BodyWidget = block.bodyWidget instanceof BodyWidget ? block.bodyWidget : undefined;
                 if (nextSection && !section.equals(nextSection) && section.index !== nextSection.index) {
-                    this.deleteSection(selection, nextSection, section, editAction);
+                    this.delSection = nextSection;
+                } else {
+                    this.delSection = undefined;
                 }
-                this.deleteBlock(block, selection, start, end, editAction);
+            } else {
+                this.delBlockContinue = false;
+                this.delBlock = undefined;
             }
         } else if (start.paragraph === paragraph && (start.currentWidget !== paragraph.firstChild ||
             (start.currentWidget === paragraph.firstChild && startOffset > paragraphStart))) {
             // If selection start is after paragraph start
             //And selection does not end with this paragraph Or selection include paragraph mark.
+            this.delBlockContinue = false;
+            this.delBlock = undefined;
             if (editAction === 4) {
                 return;
             } else {
@@ -6578,11 +6621,11 @@ export class Editor {
                 }
             }
             if (start.paragraph !== paragraph && !isNullOrUndefined(block)) {
-                let nextSection: BodyWidget = block.bodyWidget instanceof BodyWidget ? block.bodyWidget : undefined;
-                // if (section !== nextSection) {
-                //     this.deleteSection(selection, section, nextSection, editAction);
-                // }
-                this.deleteBlock(block, selection, start, end, editAction);
+                this.delBlockContinue = true;
+                this.delBlock = block;
+            } else {
+                this.delBlockContinue = false;
+                this.delBlock = undefined;
             }
         }
         this.insertParagraphPaste(paragraph, currentParagraph, start, end, isCombineNextParagraph, editAction);
@@ -6722,6 +6765,16 @@ export class Editor {
     private deleteBlock(block: BlockWidget, selection: Selection, start: TextPosition, end: TextPosition, editAction: number): void {
         if (block instanceof ParagraphWidget) {
             this.deletePara(block as ParagraphWidget, start, end, editAction);
+            if (this.delBlockContinue && this.delBlock) {
+                if (this.delSection) {
+                    let bodyWidget: BodyWidget = block.bodyWidget instanceof BodyWidget ? block.bodyWidget : undefined;
+                    this.deleteSection(selection, this.delSection, bodyWidget, editAction);
+                    this.delSection = undefined;
+                }
+                this.deleteBlock((this.delBlock as ParagraphWidget), selection, start, end, editAction);
+                this.delBlockContinue = false;
+                this.delBlock = undefined;
+            }
         } else {
             this.deleteTableBlock(block as TableWidget, selection, start, end, editAction);
         }
@@ -6755,6 +6808,17 @@ export class Editor {
                     } else {
                         if (startCell === containerCell) {
                             this.deletePara(end.paragraph, start, end, editAction);
+                            if (this.delBlockContinue && this.delBlock) {
+                                if (this.delSection) {
+                                    let para: ParagraphWidget = end.paragraph;
+                                    let bodyWidget: BodyWidget = para.bodyWidget instanceof BodyWidget ? para.bodyWidget : undefined;
+                                    this.deleteSection(selection, this.delSection, bodyWidget, editAction);
+                                    this.delSection = undefined;
+                                }
+                                this.deleteBlock((this.delBlock as ParagraphWidget), selection, start, end, editAction);
+                                this.delBlockContinue = false;
+                                this.delBlock = undefined;
+                            }
                         } else {
                             this.deleteContainer(startCell, selection, start, end, editAction);
                         }
@@ -7632,11 +7696,15 @@ export class Editor {
                     this.removedBookmarkElements.splice(endIndex, 1);
                     this.removedBookmarkElements.splice(startIndex, 1);
                 } else {
-                    this.initComplexHistory(this.editorHistory.currentBaseHistoryInfo.action);
-                    this.editorHistory.updateHistory();
+                    if (this.editorHistory.currentBaseHistoryInfo) {
+                        this.initComplexHistory(this.editorHistory.currentBaseHistoryInfo.action);
+                        this.editorHistory.updateHistory();
+                    }
                     this.initInsertInline(bookMarkStart.clone());
-                    this.editorHistory.updateComplexHistory();
-                    isHandledComplexHistory = true;
+                    if (this.editorHistory.currentHistoryInfo) {
+                        this.editorHistory.updateComplexHistory();
+                        isHandledComplexHistory = true;
+                    }
                 }
             } else {
                 let bookMarkEnd: BookmarkElementBox = bookMark;
@@ -7646,11 +7714,15 @@ export class Editor {
                     this.removedBookmarkElements.splice(endIndex, 1);
                     this.removedBookmarkElements.splice(startIndex, 1);
                 } else {
-                    this.initComplexHistory(this.editorHistory.currentBaseHistoryInfo.action);
-                    this.editorHistory.updateHistory();
+                    if (this.editorHistory.currentBaseHistoryInfo) {
+                        this.initComplexHistory(this.editorHistory.currentBaseHistoryInfo.action);
+                        this.editorHistory.updateHistory();
+                    }
                     this.initInsertInline(bookMarkEnd.clone());
-                    this.editorHistory.updateComplexHistory();
-                    isHandledComplexHistory = true;
+                    if (this.editorHistory.currentHistoryInfo) {
+                        this.editorHistory.updateComplexHistory();
+                        isHandledComplexHistory = true;
+                    }
                 }
             }
         }

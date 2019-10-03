@@ -203,12 +203,12 @@ export interface DragAndDropEventArgs {
     draggedNodeData: { [key: string]: Object };
     /**
      * Returns the dragged/dropped element's target index position
-     * @isBlazorNullableType true
+
      */
     dropIndex: number;
     /**
      * Returns the dragged/dropped element's target level
-     * @isBlazorNullableType true
+
      */
     dropLevel: number;
     /**
@@ -249,7 +249,7 @@ export interface DrawNodeEventArgs {
     node: HTMLLIElement;
     /**
      * Return the current rendering node as JSON object.
-     * @isGenericType true
+
      */
     nodeData: { [key: string]: Object };
     /**
@@ -276,7 +276,7 @@ export interface NodeKeyPressEventArgs {
     cancel: boolean;
     /**
      * Return the actual event.
-     * @blazorType KeyboardEventArgs
+
      */
     event: KeyboardEventArgs;
     /**
@@ -288,7 +288,7 @@ export interface NodeKeyPressEventArgs {
 export interface DataBoundEventArgs {
     /**
      * Return the TreeView data.
-     * @isGenericType true
+
      */
     data: { [key: string]: Object }[];
 }
@@ -298,7 +298,7 @@ export interface DataSourceChangedEventArgs {
      * Return the updated TreeView data. The data source will be updated after performing some operation like
      * drag and drop, node editing, adding and removing node. If you want to get updated data source after performing operation like
      * selecting/unSelecting, checking/unChecking, expanding/collapsing the node, then you can use getTreeData method.
-     * @isGenericType true
+
      */
     data: { [key: string]: Object }[];
 }
@@ -334,10 +334,10 @@ export class FieldsSettings extends ChildProperty<FieldsSettings> {
 
     /**
      * Specifies the array of JavaScript objects or instance of DataManager to populate the nodes.
-     * @default []
-     * @aspDatasourceNullIgnore
-     * @blazorDatasourceNullIgnore
-     * @isGenericType true
+
+
+
+
      */
     @Property([])
     public dataSource: DataManager | { [key: string]: Object }[];
@@ -393,7 +393,7 @@ export class FieldsSettings extends ChildProperty<FieldsSettings> {
     /**
      * Defines the external [`Query`](http://ej2.syncfusion.com/documentation/data/api-query.html)
      * that will execute along with data processing.
-     * @default null
+
      */
     @Property(null)
     public query: Query;
@@ -440,19 +440,19 @@ export type SortOrder = 'None' | 'Ascending' | 'Descending';
 export class ActionSettings extends ChildProperty<ActionSettings> {
     /**
      * Specifies the type of animation.
-     * @default 'SlideDown'
+
      */
     @Property('SlideDown')
     public effect: Effect;
     /**
      * Specifies the duration to animate.
-     * @default 400
+
      */
     @Property(400)
     public duration: number;
     /**
      * Specifies the animation timing function.
-     * @default 'linear'
+
      */
     @Property('linear')
     public easing: string;
@@ -464,13 +464,13 @@ export class ActionSettings extends ChildProperty<ActionSettings> {
 export class NodeAnimationSettings extends ChildProperty<NodeAnimationSettings> {
     /**
      * Specifies the animation that applies on collapsing the nodes.
-     * @default { effect: 'SlideUp', duration: 400, easing: 'linear' }
+
      */
     @Complex<ActionSettingsModel>({ effect: 'SlideUp', duration: 400, easing: 'linear' }, ActionSettings)
     public collapse: ActionSettingsModel;
     /**
      * Specifies the animation that applies on expanding the nodes.
-     * @default { effect: 'SlideDown', duration: 400, easing: 'linear' }
+
      */
     @Complex<ActionSettingsModel>({ effect: 'SlideDown', duration: 400, easing: 'linear' }, ActionSettings)
     public expand: ActionSettingsModel;
@@ -551,7 +551,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
      * the mouse. For touch devices, drag and drop operation is performed by touch, touch move
      * and touch end. For more information on drag and drop nodes concept, refer to
      * [Drag and Drop](../../treeview/drag-and-drop/).
-     * @default false
+
      */
     @Property(false)
     public allowDragAndDrop: boolean;
@@ -561,7 +561,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
      * to true, the TreeView allows you to edit the node by double clicking the node or by navigating to
      * the node and pressing **F2** key. For more information on node editing, refer
      * to [Node Editing](../../treeview/node-editing/).
-     * @default false
+
      */
     @Property(false)
     public allowEditing: boolean;
@@ -574,14 +574,14 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
      *
      * For more information on multi-selection, refer to
      * [Multi-Selection](../../treeview/multiple-selection/).
-     * @default false
+
      */
     @Property(false)
     public allowMultiSelection: boolean;
 
     /**
      * Specifies the type of animation applied on expanding and collapsing the nodes along with duration.
-     * @default {expand: { effect: 'SlideDown', duration: 400, easing: 'linear' },
+
      * collapse: { effect: 'SlideUp', duration: 400, easing: 'linear' }}
      */
     @Complex<NodeAnimationSettingsModel>({}, NodeAnimationSettings)
@@ -593,14 +593,14 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
      * The `checkedNodes` property depends upon the value of `showCheckBox` property.
      * For more information on checkedNodes, refer to
      * [checkedNodes](../../treeview/check-box#checked-nodes).
-     * @default []
+
      */
     @Property()
     public checkedNodes: string[];
 
     /**
      * Specifies the CSS classes to be added with root element of the TreeView to help customize the appearance of the component.
-     * @default ''
+
      */
     @Property('')
     public cssClass: string;
@@ -610,7 +610,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
      * 1. `selectedNodes` - Represents the nodes that are selected in the TreeView component.
      * 2. `checkedNodes`  - Represents the nodes that are checked in the TreeView component.
      * 3. `expandedNodes` - Represents the nodes that are expanded in the TreeView component.
-     * @default false
+
      */
     @Property(false)
     public enablePersistence: boolean;
@@ -618,7 +618,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
     /**
      * Represents the expanded nodes in the TreeView component. We can set the nodes that need to be
      * expanded or get the ID of the nodes that are currently expanded by using this property.
-     * @default []
+
      */
     @Property()
     public expandedNodes: string[];
@@ -631,14 +631,14 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
      * * `DblClick` - The expand/collapse operation happens when you double-click the node in both desktop and mobile devices.
      * * `None` - The expand/collapse operation will not happen when you single-click or double-click the node in both desktop
      *  and mobile devices.
-     * @default 'Auto'
+
      */
     @Property('Auto')
     public expandOn: ExpandOnSettings;
 
     /**
      * Specifies the data source and mapping fields to render TreeView nodes.
-     * @default {id: 'id', text: 'text', dataSource: [], child: 'child', parentID: 'parentID', hasChildren: 'hasChildren',
+
      *  expanded: 'expanded', htmlAttributes: 'htmlAttributes', iconCss: 'iconCss', imageUrl: 'imageUrl', isChecked: 'isChecked',
      *  query: null, selected: 'selected', tableName: null, tooltip: 'tooltip', navigateUrl: 'navigateUrl'}
      */
@@ -650,7 +650,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
      * When disabled only the corresponding node's text gets selected.
      * For more information on Fields concept, refer to
      * [Fields](../../treeview/data-binding#local-data).
-     * @default true
+
      */
     @Property(true)
     public fullRowSelect: boolean;
@@ -658,7 +658,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
     /**
      * By default, the load on demand (Lazy load) is set to true. By disabling this property, all the tree nodes are rendered at the
      * beginning itself.
-     * @default true
+
      */
     @Property(true)
     public loadOnDemand: boolean;
@@ -669,7 +669,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
      * [template string](http://ej2.syncfusion.com/documentation/base/template-engine.html)
      * or HTML element ID holding the content. For more information on template concept, refer to
      * [Template](../../treeview/template/).
-     * @default null
+
      */
     @Property()
     public nodeTemplate: string;
@@ -681,7 +681,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
      * it we can select only a single node.
      * For more information on selectedNodes, refer to
      * [selectedNodes](../../treeview/multiple-selection#selected-nodes).
-     * @default []
+
      */
     @Property()
     public selectedNodes: string[];
@@ -692,7 +692,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
      * * `None` - The nodes are not sorted.
      * * `Ascending` - The nodes are sorted in the ascending order.
      * * `Descending` - The nodes are sorted in the ascending order.
-     * @default 'None'
+
      */
     @Property('None')
     public sortOrder: SortOrder;
@@ -701,14 +701,14 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
      * Indicates that the nodes will display CheckBoxes in the TreeView.
      * The CheckBox will be displayed next to the expand/collapse icon of the node. For more information on CheckBoxes, refer to
      * [CheckBox](../../treeview/check-box/).
-     * @default false
+
      */
     @Property(false)
     public showCheckBox: boolean;
 
     /**
      * Allow us to specify the parent and child nodes to get auto check while we check or uncheck a node.
-     * @default true
+
      */
     @Property(true)
     public autoCheck: boolean;
@@ -716,7 +716,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
     /**
      * Triggers when the TreeView control is created successfully.
      * @event
-     * @blazorProperty 'Created'
+
      */
     @Event()
     public created: EmitType<Object>;
@@ -724,7 +724,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
     /**
      * Triggers when data source is populated in the TreeView.
      * @event
-     * @blazorProperty 'DataBound'
+
      */
     @Event()
     public dataBound: EmitType<DataBoundEventArgs>;
@@ -733,7 +733,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
      * Triggers when data source is changed in the TreeView. The data source will be changed after performing some operation like
      * drag and drop, node editing, adding and removing node.
      * @event
-     * @blazorProperty 'DataSourceChanged'
+
      */
     @Event()
     public dataSourceChanged: EmitType<DataSourceChangedEventArgs>;
@@ -741,7 +741,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
     /**
      * Triggers before the TreeView node is appended to the TreeView element. It helps to customize specific nodes.
      * @event
-     * @blazorProperty 'OnDrawNode'
+
      */
     @Event()
     public drawNode: EmitType<DrawNodeEventArgs>;
@@ -749,7 +749,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
     /**
      * Triggers when the TreeView control is destroyed successfully.
      * @event
-     * @blazorProperty 'Destroyed'
+
      */
     @Event()
     public destroyed: EmitType<Object>;
@@ -757,7 +757,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
     /**
      * Triggers when key press is successful. It helps to customize the operations at key press.
      * @event
-     * @blazorProperty 'OnKeyPress'
+
      */
     @Event()
     public keyPress: EmitType<NodeKeyPressEventArgs>;
@@ -765,7 +765,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
     /**
      * Triggers when the TreeView node is checked/unchecked successfully.
      * @event
-     * @blazorProperty 'NodeChecked'
+
      */
     @Event()
     public nodeChecked: EmitType<NodeCheckEventArgs>;
@@ -773,7 +773,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
     /**
      * Triggers before the TreeView node is to be checked/unchecked.
      * @event
-     * @blazorProperty 'NodeChecking'
+
      */
     @Event()
     public nodeChecking: EmitType<NodeCheckEventArgs>;
@@ -781,7 +781,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
     /**
      * Triggers when the TreeView node is clicked successfully.
      * @event
-     * @blazorProperty 'NodeClicked'
+
      */
     @Event()
     public nodeClicked: EmitType<NodeClickEventArgs>;
@@ -789,7 +789,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
     /**
      * Triggers when the TreeView node collapses successfully.
      * @event
-     * @blazorProperty 'NodeCollapsed'
+
      */
     @Event()
     public nodeCollapsed: EmitType<NodeExpandEventArgs>;
@@ -797,37 +797,37 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
     /**
      * Triggers before the TreeView node collapses.
      * @event
-     * @blazorProperty 'NodeCollapsing'
+
      */
     @Event()
     public nodeCollapsing: EmitType<NodeExpandEventArgs>;
 
     /**
      * Triggers when the TreeView node is dragged (moved) continuously.
-     * @deprecated
+
      * @event
-     * @blazorProperty 'NodeDragging'
+
      */
     @Event()
     public nodeDragging: EmitType<DragAndDropEventArgs>;
     /**
      * Triggers when the TreeView node drag (move) starts.
      * @event
-     * @blazorProperty 'OnNodeDragStart'
+
      */
     @Event()
     public nodeDragStart: EmitType<DragAndDropEventArgs>;
     /**
      * Triggers when the TreeView node drag (move) is stopped.
      * @event
-     * @blazorProperty 'OnNodeDragged'
+
      */
     @Event()
     public nodeDragStop: EmitType<DragAndDropEventArgs>;
     /**
      * Triggers when the TreeView node is dropped on target element successfully.
      * @event
-     * @blazorProperty 'NodeDropped'
+
      */
     @Event()
     public nodeDropped: EmitType<DragAndDropEventArgs>;
@@ -835,7 +835,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
     /**
      * Triggers when the TreeView node is renamed successfully.
      * @event
-     * @blazorProperty 'NodeEdited'
+
      */
     @Event()
     public nodeEdited: EmitType<NodeEditEventArgs>;
@@ -843,7 +843,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
     /**
      * Triggers before the TreeView node is renamed.
      * @event
-     * @blazorProperty 'NodeEditing'
+
      */
     @Event()
     public nodeEditing: EmitType<NodeEditEventArgs>;
@@ -851,7 +851,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
     /**
      * Triggers when the TreeView node expands successfully.
      * @event
-     * @blazorProperty 'NodeExpanded'
+
      */
     @Event()
     public nodeExpanded: EmitType<NodeExpandEventArgs>;
@@ -859,7 +859,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
     /**
      * Triggers before the TreeView node is to be expanded.
      * @event
-     * @blazorProperty 'NodeExpanding'
+
      */
     @Event()
     public nodeExpanding: EmitType<NodeExpandEventArgs>;
@@ -867,7 +867,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
     /**
      * Triggers when the TreeView node is selected/unselected successfully.
      * @event
-     * @blazorProperty 'NodeSelected'
+
      */
     @Event()
     public nodeSelected: EmitType<NodeSelectEventArgs>;
@@ -875,7 +875,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
     /**
      * Triggers before the TreeView node is selected/unselected.
      * @event
-     * @blazorProperty 'NodeSelecting'
+
      */
     @Event()
     public nodeSelecting: EmitType<NodeSelectEventArgs>;
@@ -962,7 +962,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
     /**
      * Get the properties to be maintained in the persisted state.
      * @returns string
-     * @hidden
+
      */
     public getPersistData(): string {
         let keyEntity: string[] = ['selectedNodes', 'checkedNodes', 'expandedNodes'];
@@ -4909,7 +4909,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
      * of the corresponding node otherwise it will return the entire updated data source of TreeView.
      * * The updated data source also contains custom attributes if you specified in data source.
      * @param  {string | Element} node - Specifies ID of TreeView node/TreeView node.
-     * @isGenericType true
+
      */
     public getTreeData(node?: string | Element): { [key: string]: Object }[] {
         let id: string = this.getId(node);

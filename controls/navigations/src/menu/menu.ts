@@ -37,49 +37,49 @@ export class Menu extends MenuBase implements INotifyPropertyChanged {
 
     /**
      * Specified the orientation of Menu whether it can be horizontal or vertical.
-     * @default 'Horizontal'
+
      */
      @Property('Horizontal')
      public orientation: Orientation;
 
     /**
      * Specifies target element to open/close Menu while click in Hamburger mode.
-     * @default ''  
+
      */
     @Property('')
     public target: string;
 
     /**
      * Specifies the template for Menu item.
-     * @default null
+
      */
     @Property(null)
     public template: string;
 
     /**
      * Specifies whether to enable / disable the scrollable option in Menu.
-     * @default false
+
      */
     @Property(false)
     public enableScrolling: boolean;
 
     /**
      * Specifies whether to enable / disable the hamburger mode in Menu.
-     * @default false
+
      */
     @Property(false)
     public hamburgerMode: boolean;
 
     /**
      * Specifies the title text for hamburger mode in Menu.
-     * @default 'Menu'
+
      */
     @Property('Menu')
     public title: string;
 
     /**
      * Specifies mapping fields from the dataSource.
-     * @default { itemId: "id", text: "text", parentId: "parentId", iconCss: "iconCss", url: "url", separator: "separator",
+
      * children: "items" }
      */
     @Complex<FieldSettingsModel>({}, FieldSettings)

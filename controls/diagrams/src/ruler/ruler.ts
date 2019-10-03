@@ -35,57 +35,57 @@ export type RulerOrientation = 'Horizontal' | 'Vertical';
 export class Ruler extends Component<HTMLElement> implements INotifyPropertyChanged {
     /**
      * Defines the unique interval of the ruler.
-     * @default 5
+
      */
     @Property(5)
     public interval: number;
 
     /**
      * Sets the segment width of the ruler.
-     * @default 100
+
      */
     @Property(100)
     public segmentWidth: number;
 
     /**
      * Defines the orientation of the ruler.
-     * @default 'Horizontal'
+
      */
     @Property('Horizontal')
     public orientation: RulerOrientation;
 
     /**
      * Defines the alignment of the tick in the ruler.
-     * @default 'RightOrBottom'
+
      */
     @Property('RightOrBottom')
     public tickAlignment: TickAlignment;
 
     /**
      * Defines the color of the marker.
-     * @default 'red'
+
      */
     @Property('red')
     public markerColor: string;
 
     /**
      * Defines the thickness of the ruler.
-     * @default 25
+
      */
     @Property(25)
     public thickness: number;
 
     /**
      * Sets the segment width of the ruler.
-     * @default null
-     * @deprecated
+
+
      */
     @Property(null)
     public arrangeTick: Function | string;
 
     /**
      * Defines the length of the ruler.
-     * @default 400
+
      */
     @Property(400)
     public length: number;

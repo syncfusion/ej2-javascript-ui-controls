@@ -7,7 +7,7 @@ import { PdfAnnotationBaseModel } from '../../diagram/pdf-annotation-model';
 import { cloneObject } from '../../diagram/drawing-util';
 
 /**
- * @hidden
+
  */
 export interface IPopupAnnotation {
     shapeAnnotationType: string;
@@ -30,7 +30,7 @@ export interface IPopupAnnotation {
 }
 
 /**
- * @hidden
+
  */
 export interface ICommentsCollection {
     author: string;
@@ -48,7 +48,7 @@ export interface ICommentsCollection {
 }
 
 /**
- * @hidden
+
  */
 export interface IReviewCollection {
     author: string;
@@ -92,6 +92,10 @@ export class StickyNotesAnnotation {
      * @private
      */
     public mainContainer: HTMLElement;
+    /** 
+     * @private
+     */
+    public opacity: number;
     private isPageCommentsRendered: boolean = false;
     private isCommentsRendered: boolean = false;
 
@@ -101,6 +105,7 @@ export class StickyNotesAnnotation {
     constructor(pdfViewer: PdfViewer, pdfViewerBase: PdfViewerBase) {
         this.pdfViewer = pdfViewer;
         this.pdfViewerBase = pdfViewerBase;
+        this.opacity = this.pdfViewer.stickyNotesSettings.opacity ? this.pdfViewer.stickyNotesSettings.opacity : 1;
     }
 
     /**
@@ -171,7 +176,7 @@ export class StickyNotesAnnotation {
                 annot = {
                     // tslint:disable-next-line:max-line-length
                     bounds: { x: X, y: Y, width: width, height: height }, pageIndex: pageIndex, data: image.src, modifiedDate: date.toLocaleString(),
-                    shapeAnnotationType: 'StickyNotes', strokeColor: 'transparent', stampStrokeColor: '', annotName: annotationName, id: annotationName,
+                    shapeAnnotationType: 'StickyNotes', strokeColor: 'transparent', stampStrokeColor: '', annotName: annotationName, id: annotationName, opacity: this.opacity
                 };
                 if (proxy.pdfViewer.toolbarModule.isAddComment) {
                     // tslint:disable-next-line:max-line-length
@@ -182,7 +187,7 @@ export class StickyNotesAnnotation {
                     // tslint:disable-next-line:max-line-length
                     author: author, modifiedDate: date.toLocaleString(), subject: 'Sticky Note', shapeAnnotationType: 'sticky',
                     // tslint:disable-next-line:max-line-length
-                    note: '', opacity: 1, pathData: image.src, state: '', stateModel: '', color: 'rgba(255,255,0)', comments: [], annotName: annotationName,
+                    note: '', opacity: this.opacity, pathData: image.src, state: '', stateModel: '', color: 'rgba(255,255,0)', comments: [], annotName: annotationName,
                     // tslint:disable-next-line:max-line-length
                     bounds: { left: X, top: Y, width: width, height: height }, review: { state: '', stateModel: '', modifiedDate: '', author: author }
                 };
@@ -228,11 +233,11 @@ export class StickyNotesAnnotation {
         }
         if (!this.isCommentsRendered) {
             // tslint:disable-next-line:max-line-length
-            jsonObject = { pageStartIndex: startIndex, pageEndIndex: pageCount, hashId: this.pdfViewerBase.hashId, action: 'RenderAnnotationComments', elementId: this.pdfViewer.element.id };
+            jsonObject = { pageStartIndex: startIndex, pageEndIndex: pageCount, hashId: this.pdfViewerBase.hashId, action: 'RenderAnnotationComments', elementId: this.pdfViewer.element.id, uniqueId: proxy.pdfViewerBase.documentId };
             proxy.isCommentsRendered = true;
         } else {
             // tslint:disable-next-line:max-line-length
-            jsonObject = { pageStartIndex: pageLimit, pageEndIndex: pageCount, hashId: this.pdfViewerBase.hashId, action: 'RenderAnnotationComments', elementId: this.pdfViewer.element.id };
+            jsonObject = { pageStartIndex: pageLimit, pageEndIndex: pageCount, hashId: this.pdfViewerBase.hashId, action: 'RenderAnnotationComments', elementId: this.pdfViewer.element.id, uniqueId: proxy.pdfViewerBase.documentId };
         }
         if (this.pdfViewerBase.jsonDocumentId) {
             // tslint:disable-next-line
@@ -262,7 +267,7 @@ export class StickyNotesAnnotation {
                     }
                 }
                 if (data) {
-                    if (data.popupAnnotation) {
+                    if (data.popupAnnotation && data.uniqueId === proxy.pdfViewerBase.documentId) {
                         for (let j: number = data.startPageIndex; j < data.endPageIndex; j++) {
                             if (data.popupAnnotation[j]) {
                                 proxy.renderAnnotationComments(data.popupAnnotation[j], j);
@@ -1706,6 +1711,9 @@ export class StickyNotesAnnotation {
                                 this.pdfViewer.annotation.addAction(pageIndex, i, pageAnnotations[i], 'Text Property Added', '', clonedObject, pageAnnotations[i]);
                                 currentAnnotation = pageAnnotations[i];
                                 currentAnnotation.note = text;
+                                if (currentAnnotation.enableShapeLabel) {
+                                    currentAnnotation.labelContent = text;
+                                }
                                 currentAnnotation.modifiedDate = new Date().toLocaleString();
                                 if (!isMeasure) {
                                     this.updateUndoRedoCollections(currentAnnotation, pageIndex);

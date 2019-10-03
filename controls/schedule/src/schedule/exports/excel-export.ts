@@ -43,7 +43,7 @@ export class ExcelExport {
         for (let event of eventCollection) {
             let columnData: Object[] = [];
             fields.forEach((field: string, n: number) => {
-                let columnRule: Object = { index: n + 1, value: event[field || ''] };
+                let columnRule: Object = { index: n + 1, value: event[field] || '' };
                 if (field === this.parent.eventFields.startTime || field === this.parent.eventFields.endTime) {
                     let styleRule: Object = { fontSize: 12, numberFormat: 'm/d/yyyy h:mm AM/PM' };
                     columnRule = extend({}, columnRule, { style: styleRule }, true);

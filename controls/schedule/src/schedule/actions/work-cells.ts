@@ -99,7 +99,8 @@ export class WorkCellInteraction {
 
     public onHover(e: MouseEvent): void {
         let targetSelector: string = '.' + cls.WORK_CELLS_CLASS + ',.' + cls.TIME_SLOT_CLASS + ',.' + cls.ALLDAY_CELLS_CLASS + ',.' +
-            cls.HEADER_CELLS_CLASS + ',.' + cls.RESOURCE_CELLS_CLASS + ',.' + cls.APPOINTMENT_CLASS + ',.' + cls.WEEK_NUMBER_CLASS;
+            cls.HEADER_CELLS_CLASS + ',.' + cls.RESOURCE_CELLS_CLASS + ',.' + cls.APPOINTMENT_CLASS + ',.' + cls.WEEK_NUMBER_CLASS +
+            ',.' + cls.MONTH_HEADER_CLASS;
         let hoverTarget: HTMLElement = closest((e.target as Element), targetSelector) as HTMLElement;
         if (hoverTarget) {
             let hoverArgs: HoverEventArgs = { element: hoverTarget, event: e };

@@ -13,7 +13,7 @@ export class ShowHide {
 
     /**
      * Constructor for the show hide module.
-     * @hidden
+
      */
     constructor(parent: IGrid) {
         this.parent = parent;

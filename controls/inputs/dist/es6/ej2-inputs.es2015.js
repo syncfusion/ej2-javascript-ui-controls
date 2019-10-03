@@ -94,9 +94,11 @@ var Input;
     }
     function _focusFn() {
         let label = getParentNode(this).getElementsByClassName('e-float-text')[0];
-        addClass([label], CLASSNAMES.LABELTOP);
-        if (label.classList.contains(CLASSNAMES.LABELBOTTOM)) {
-            removeClass([label], CLASSNAMES.LABELBOTTOM);
+        if (!isNullOrUndefined(label)) {
+            addClass([label], CLASSNAMES.LABELTOP);
+            if (label.classList.contains(CLASSNAMES.LABELBOTTOM)) {
+                removeClass([label], CLASSNAMES.LABELBOTTOM);
+            }
         }
     }
     function _blurFn() {
@@ -104,10 +106,12 @@ var Input;
         if ((parent.getElementsByTagName('textarea')[0]) ? parent.getElementsByTagName('textarea')[0].value === '' :
             parent.getElementsByTagName('input')[0].value === '') {
             let label = parent.getElementsByClassName('e-float-text')[0];
-            if (label.classList.contains(CLASSNAMES.LABELTOP)) {
-                removeClass([label], CLASSNAMES.LABELTOP);
+            if (!isNullOrUndefined(label)) {
+                if (label.classList.contains(CLASSNAMES.LABELTOP)) {
+                    removeClass([label], CLASSNAMES.LABELTOP);
+                }
+                addClass([label], CLASSNAMES.LABELBOTTOM);
             }
-            addClass([label], CLASSNAMES.LABELBOTTOM);
         }
     }
     function wireFloatingEvents(element) {
@@ -6237,7 +6241,7 @@ let FormValidator = FormValidator_1 = class FormValidator extends Base {
         this.rules = {};
         let elements = selectAll('.' + this.errorClass + ', .' + this.validClass, this.element);
         for (let element of elements) {
-            element.remove();
+            detach(element);
         }
         super.destroy();
         onIntlChange.off('notifyExternalChange', this.afterLocalization);
@@ -6847,6 +6851,7 @@ const FILE_TYPE = 'e-file-type';
 const FILE_SIZE = 'e-file-size';
 const REMOVE_ICON = 'e-file-remove-btn';
 const DELETE_ICON = 'e-file-delete-btn';
+const SPINNER_PANE = 'e-spinner-pane';
 const ABORT_ICON = 'e-file-abort-btn';
 const RETRY_ICON = 'e-file-reload-btn';
 const DRAG_HOVER = 'e-upload-drag-hover';
@@ -7575,7 +7580,12 @@ let Uploader = class Uploader extends Component {
         }
         let pasteFile = [].slice.call(item)[0];
         if ((pasteFile.kind === 'file') && pasteFile.type.match('^image/')) {
-            this.renderSelectedFiles(event, [pasteFile.getAsFile()], false, true);
+            if (isBlazor()) {
+                this.renderSelectedFiles(event, [pasteFile.getAsFile()], false, true);
+            }
+            else {
+                this._renderSelectedFiles(event, [pasteFile.getAsFile()], false, true);
+            }
         }
     }
     removeFiles(args) {
@@ -7775,7 +7785,12 @@ let Uploader = class Uploader extends Component {
                     let path = item.fullPath;
                     files.push({ 'path': path, 'file': fileObj });
                 });
-                this.renderSelectedFiles(event, files, true);
+                if (isBlazor()) {
+                    this.renderSelectedFiles(event, files, true);
+                }
+                else {
+                    this._renderSelectedFiles(event, files, true);
+                }
             }
             else if (item.isDirectory) {
                 this.traverseFileTree(item, event);
@@ -7804,7 +7819,12 @@ let Uploader = class Uploader extends Component {
                     files.push({ 'path': path, 'file': fileObj });
                 });
             }
-            this.renderSelectedFiles(event, files, true);
+            if (isBlazor()) {
+                this.renderSelectedFiles(event, files, true);
+            }
+            else {
+                this._renderSelectedFiles(event, files, true);
+            }
         }
         else if (item.isFile) {
             this.filesEntries.push(item);
@@ -7837,14 +7857,26 @@ let Uploader = class Uploader extends Component {
             }
             else {
                 let files = this.sortFilesList = args.dataTransfer.files;
-                this.element.files = files;
+                if (this.browserName !== 'msie' && this.browserName !== 'edge') {
+                    this.element.files = files;
+                }
                 targetFiles = this.multiple ? this.sortFileList(files) : [files[0]];
-                this.renderSelectedFiles(args, targetFiles);
+                if (isBlazor()) {
+                    this.renderSelectedFiles(args, targetFiles);
+                }
+                else {
+                    this._renderSelectedFiles(args, targetFiles);
+                }
             }
         }
         else {
             targetFiles = [].slice.call(args.target.files);
-            this.renderSelectedFiles(args, targetFiles);
+            if (isBlazor()) {
+                this.renderSelectedFiles(args, targetFiles);
+            }
+            else {
+                this._renderSelectedFiles(args, targetFiles);
+            }
         }
     }
     /* istanbul ignore next */
@@ -7857,10 +7889,12 @@ let Uploader = class Uploader extends Component {
         });
     }
     /* istanbul ignore next */
+    /* tslint:ignore */
     renderSelectedFiles(args, 
     // tslint:disable-next-line
     targetFiles, directory, paste) {
         return __awaiter(this, void 0, void 0, function* () {
+            // tslint:disable-next-line
             let eventArgs = {
                 event: args,
                 cancel: false,
@@ -7891,29 +7925,7 @@ let Uploader = class Uploader extends Component {
                     let data = yield this.getBase64(file);
                     this.base64String.push(data);
                 }
-                let fileName = directory ? targetFiles[i].path.substring(1, targetFiles[i].path.length) : paste ?
-                    getUniqueID(file.name.substring(0, file.name.lastIndexOf('.'))) + '.' + this.getFileType(file.name) :
-                    this.directoryUpload ? targetFiles[i].webkitRelativePath : file.name;
-                let fileDetails = {
-                    name: fileName,
-                    rawFile: file,
-                    size: file.size,
-                    status: this.localizedTexts('readyToUploadMessage'),
-                    type: this.getFileType(file.name),
-                    validationMessages: this.validatedFileSize(file.size),
-                    statusCode: '1'
-                };
-                /* istanbul ignore next */
-                if (paste) {
-                    fileDetails.fileSource = 'paste';
-                }
-                fileDetails.status = fileDetails.validationMessages.minSize !== '' ? this.localizedTexts('invalidMinFileSize') :
-                    fileDetails.validationMessages.maxSize !== '' ? this.localizedTexts('invalidMaxFileSize') : fileDetails.status;
-                if (fileDetails.validationMessages.minSize !== '' || fileDetails.validationMessages.maxSize !== '') {
-                    fileDetails.statusCode = '0';
-                    this.checkActionComplete(true);
-                }
-                fileData.push(fileDetails);
+                this.updateInitialFileDetails(args, targetFiles, file, i, fileData, directory, paste);
             }
             eventArgs.filesData = fileData;
             if (this.allowedExtensions.indexOf('*') > -1) {
@@ -7923,45 +7935,121 @@ let Uploader = class Uploader extends Component {
                 fileData = this.checkExtension(fileData);
             }
             this.trigger('selected', eventArgs, (eventArgs) => {
-                if (!eventArgs.cancel) {
-                    /* istanbul ignore next */
-                    if (isBlazor()) {
-                        this.currentRequestHeader = eventArgs.currentRequest;
-                        this.customFormDatas = eventArgs.customFormData;
-                    }
-                    this.selectedFiles = fileData;
-                    this.btnTabIndex = this.disableKeyboardNavigation ? '-1' : '0';
-                    if (this.showFileList) {
-                        if (eventArgs.isModified && eventArgs.modifiedFilesData.length > 0) {
-                            let dataFiles = this.allTypes ? eventArgs.modifiedFilesData :
-                                this.checkExtension(eventArgs.modifiedFilesData);
-                            this.updateSortedFileList(dataFiles);
-                            this.filesData = dataFiles;
-                            if (!this.isForm || this.allowUpload()) {
-                                this.checkAutoUpload(dataFiles);
-                            }
-                        }
-                        else {
-                            this.createFileList(fileData);
-                            this.filesData = this.filesData.concat(fileData);
-                            if (!this.isForm || this.allowUpload()) {
-                                this.checkAutoUpload(fileData);
-                            }
-                        }
-                        if (!isNullOrUndefined(eventArgs.progressInterval) && eventArgs.progressInterval !== '') {
-                            this.progressInterval = eventArgs.progressInterval;
-                        }
-                    }
-                    else {
-                        this.filesData = this.filesData.concat(fileData);
-                        if (this.autoUpload) {
-                            this.upload(this.filesData, true);
-                        }
-                    }
-                    this.raiseActionComplete();
-                }
+                this._internalRenderSelect(eventArgs, fileData);
             });
         });
+    }
+    /* istanbul ignore next */
+    /* tslint: ignore*/
+    _renderSelectedFiles(args, 
+    // tslint:disable-next-line
+    targetFiles, directory, paste) {
+        // tslint:disable-next-line
+        let eventArg = {
+            event: args,
+            cancel: false,
+            filesData: [],
+            isModified: false,
+            modifiedFilesData: [],
+            progressInterval: '',
+            isCanceled: false,
+            currentRequest: null,
+            customFormData: null
+        };
+        /* istanbul ignore next */
+        if (targetFiles.length < 1) {
+            eventArg.isCanceled = true;
+            this.trigger('selected', eventArg);
+            return;
+        }
+        this.flag = true;
+        // tslint:disable-next-line
+        let fileData = [];
+        // tslint:disable-next-line
+        if (!this.multiple) {
+            this.clearData(true);
+            targetFiles = [targetFiles[0]];
+        }
+        for (let i = 0; i < targetFiles.length; i++) {
+            let file = directory ? targetFiles[i].file : targetFiles[i];
+            this.updateInitialFileDetails(args, targetFiles, file, i, fileData, directory, paste);
+        }
+        eventArg.filesData = fileData;
+        if (this.allowedExtensions.indexOf('*') > -1) {
+            this.allTypes = true;
+        }
+        if (!this.allTypes) {
+            fileData = this.checkExtension(fileData);
+        }
+        this.trigger('selected', eventArg, (eventArg) => {
+            this._internalRenderSelect(eventArg, fileData);
+        });
+    }
+    updateInitialFileDetails(args, 
+    // tslint:disable-next-line
+    targetFiles, file, i, fileData, directory, paste) {
+        let fileName = directory ? targetFiles[i].path.substring(1, targetFiles[i].path.length) : paste ?
+            getUniqueID(file.name.substring(0, file.name.lastIndexOf('.'))) + '.' + this.getFileType(file.name) :
+            this.directoryUpload ? targetFiles[i].webkitRelativePath : file.name;
+        let fileDetails = {
+            name: fileName,
+            rawFile: file,
+            size: file.size,
+            status: this.localizedTexts('readyToUploadMessage'),
+            type: this.getFileType(file.name),
+            validationMessages: this.validatedFileSize(file.size),
+            statusCode: '1'
+        };
+        /* istanbul ignore next */
+        if (paste) {
+            fileDetails.fileSource = 'paste';
+        }
+        fileDetails.status = fileDetails.validationMessages.minSize !== '' ? this.localizedTexts('invalidMinFileSize') :
+            fileDetails.validationMessages.maxSize !== '' ? this.localizedTexts('invalidMaxFileSize') : fileDetails.status;
+        if (fileDetails.validationMessages.minSize !== '' || fileDetails.validationMessages.maxSize !== '') {
+            fileDetails.statusCode = '0';
+            this.checkActionComplete(true);
+        }
+        fileData.push(fileDetails);
+    }
+    _internalRenderSelect(eventArgs, fileData) {
+        if (!eventArgs.cancel) {
+            /* istanbul ignore next */
+            if (isBlazor()) {
+                this.currentRequestHeader = eventArgs.currentRequest;
+                this.customFormDatas = eventArgs.customFormData;
+            }
+            this.selectedFiles = fileData;
+            this.btnTabIndex = this.disableKeyboardNavigation ? '-1' : '0';
+            if (this.showFileList) {
+                if (eventArgs.isModified && eventArgs.modifiedFilesData.length > 0) {
+                    let dataFiles = this.allTypes ? eventArgs.modifiedFilesData :
+                        this.checkExtension(eventArgs.modifiedFilesData);
+                    this.updateSortedFileList(dataFiles);
+                    this.filesData = dataFiles;
+                    if (!this.isForm || this.allowUpload()) {
+                        this.checkAutoUpload(dataFiles);
+                    }
+                }
+                else {
+                    this.createFileList(fileData);
+                    this.filesData = this.filesData.concat(fileData);
+                    if (!this.isForm || this.allowUpload()) {
+                        this.checkAutoUpload(fileData);
+                    }
+                }
+                if (!isNullOrUndefined(eventArgs.progressInterval) && eventArgs.progressInterval !== '') {
+                    this.progressInterval = eventArgs.progressInterval;
+                }
+            }
+            else {
+                this.filesData = this.filesData.concat(fileData);
+                if (this.autoUpload) {
+                    this.upload(this.filesData, true);
+                }
+            }
+            this.raiseActionComplete();
+        }
     }
     allowUpload() {
         let allowFormUpload = false;
@@ -8090,7 +8178,7 @@ let Uploader = class Uploader extends Component {
             this.listParent.appendChild(liElement);
             this.fileList.push(liElement);
         }
-        updateBlazorTemplate(this.element.id + 'Template', 'Template', this);
+        updateBlazorTemplate(this.element.id + 'Template', 'Template', this, false);
     }
     createParentUL() {
         if (isNullOrUndefined(this.listParent)) {
@@ -8436,6 +8524,14 @@ let Uploader = class Uploader extends Component {
         let args = {
             e, response: response, operation: 'upload', file: this.updateStatus(file, statusMessage, '2', false), statusText: statusMessage
         };
+        let liElement = this.getLiElement(file);
+        if (!isNullOrUndefined(liElement)) {
+            let spinnerEle = liElement.querySelector('.' + SPINNER_PANE);
+            if (!isNullOrUndefined(spinnerEle)) {
+                hideSpinner(liElement);
+                detach(spinnerEle);
+            }
+        }
         this.trigger('success', args, (args) => {
             // tslint:disable-next-line
             this.updateStatus(file, args.statusText, '2');
@@ -11486,6 +11582,7 @@ let TextBox = class TextBox extends Component {
                     break;
                 case 'enabled':
                     Input.setEnabled(this.enabled, this.respectiveElement, this.floatLabelType, this.textboxWrapper.container);
+                    this.bindClearEvent();
                     break;
                 case 'value':
                     let prevOnChange = this.isProtectedOnChange;
@@ -11767,9 +11864,7 @@ let TextBox = class TextBox extends Component {
         if (this.isForm) {
             EventHandler.add(this.formElement, 'reset', this.resetForm, this);
         }
-        if (this.enabled) {
-            this.bindClearEvent();
-        }
+        this.bindClearEvent();
     }
     resetValue(value) {
         let prevOnChange = this.isProtectedOnChange;
@@ -11857,7 +11952,12 @@ let TextBox = class TextBox extends Component {
     }
     bindClearEvent() {
         if (this.showClearButton && this.respectiveElement.tagName !== 'TEXTAREA') {
-            EventHandler.add(this.textboxWrapper.clearButton, 'mousedown touchstart', this.resetInputHandler, this);
+            if (this.enabled) {
+                EventHandler.add(this.textboxWrapper.clearButton, 'mousedown touchstart', this.resetInputHandler, this);
+            }
+            else {
+                EventHandler.remove(this.textboxWrapper.clearButton, 'mousedown touchstart', this.resetInputHandler);
+            }
         }
     }
     resetInputHandler(event) {

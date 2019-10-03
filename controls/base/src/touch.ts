@@ -98,21 +98,21 @@ export class Touch extends Base<HTMLElement> implements INotifyPropertyChanged {
 
     /**
      * Specifies the time delay for tap.
-     * @default 350
+
      */
     @Property(350)
     public tapThreshold: number;
 
     /**
      * Specifies the time delay for tap hold.
-     * @default 750
+
      */
     @Property(750)
     public tapHoldThreshold: number;
 
     /**
      * Customize the swipe event configuration.
-     * @default { swipeThresholdDistance: 50 }
+
      */
     @Complex<SwipeSettingsModel>({}, SwipeSettings)
     public swipeSettings: SwipeSettingsModel;

@@ -11,7 +11,7 @@ import { PdfBitmap, PdfBorders, PdfColor, PdfCompositeField, PdfDocument, PdfFon
 
 /**
  * ValueFormatter class to globalize the value.
- * @hidden
+
  */
 class ValueFormatter {
     constructor(cultureName) {
@@ -72,48 +72,48 @@ class Column {
         /**
          * If `allowSorting` set to false, then it disables sorting option of a particular column.
          * By default all columns are sortable.
-         * @default true
+    
          */
         this.allowSorting = true;
         /**
          * If `allowResizing` is set to false, it disables resize option of a particular column.
          * By default all the columns can be resized.
-         * @default true
+    
          */
         this.allowResizing = true;
         /**
          * If `allowFiltering` set to false, then it disables filtering option and filter bar element of a particular column.
          * By default all columns are filterable.
-         * @default true
+    
          */
         this.allowFiltering = true;
         /**
          * If `allowGrouping` set to false, then it disables grouping of a particular column.
          * By default all columns are groupable.
-         * @default true
+    
          */
         this.allowGrouping = true;
         /**
          * If `allowReordering` set to false, then it disables reorder of a particular column.
          * By default all columns can be reorder.
-         * @default true
+    
          */
         this.allowReordering = true;
         /**
          * If `showColumnMenu` set to false, then it disable the column menu of a particular column.
          * By default column menu will show for all columns
-         * @default true
+    
          */
         this.showColumnMenu = true;
         /**
          * If `enableGroupByFormat` set to true, then it groups the particular column by formatted values.
-         * @default true
+    
          */
         this.enableGroupByFormat = false;
         /**
          * If `allowEditing` set to false, then it disables editing of a particular column.
          * By default all columns are editable.
-         * @default true
+    
          */
         this.allowEditing = true;
         /**
@@ -126,37 +126,35 @@ class Column {
          * {% codeBlock src="grid/filter-menu-api/index.ts" %}{% endcodeBlock %}
          *
          * > Check the [`Filter UI`](../../grid/filtering/#custom-component-in-filter-menu) for its customization.
-         *  @default {}
+    
          */
         this.filter = {};
         /**
          * If `showInColumnChooser` set to false, then hide the particular column in column chooser.
          *  By default all columns are displayed in column Chooser.
-         * @default true
+    
          */
         this.showInColumnChooser = true;
         /**
          * Defines the `IEditCell` object to customize default edit cell.
-         * @default {}
+    
          */
         this.edit = {};
         /**
          * If `allowSearching` set to false, then it disables Searching of a particular column.
          * By default all columns allow Searching.
-         * @default true
+    
          */
         this.allowSearching = true;
         /**
          * If `autoFit` set to true, then the particular column content width will be
          * adjusted based on its content in the initial rendering itself.
          * Setting this property as true is equivalent to calling `autoFitColumns` method in the `dataBound` event.
-         * @default false
+    
          */
         this.autoFit = false;
         this.sortDirection = 'Descending';
-        /** @hidden */
         this.getEditTemplate = () => this.editTemplateFn;
-        /** @hidden */
         this.getFilterTemplate = () => this.filterTemplateFn;
         merge(this, options);
         this.type = this.type === 'none' ? null : (this.type ? this.type.toLowerCase() : this.type);
@@ -247,15 +245,12 @@ class Column {
             };
         }
     }
-    /** @hidden */
     getSortDirection() {
         return this.sortDirection;
     }
-    /** @hidden */
     setSortDirection(direction) {
         this.sortDirection = direction;
     }
-    /** @hidden */
     setProperties(column) {
         //Angular two way binding
         let keys = Object.keys(column);
@@ -264,41 +259,33 @@ class Column {
         }
     }
     /**
-     * @hidden
+
      * It defines the column is foreign key column or not.
      */
     isForeignColumn() {
         return !!(this.dataSource && this.foreignKeyValue);
     }
-    /** @hidden */
     getFormatter() {
         return this.formatFn;
     }
-    /** @hidden */
     setFormatter(value) {
         this.formatFn = value;
     }
-    /** @hidden */
     getParser() {
         return this.parserFn;
     }
-    /** @hidden */
     setParser(value) {
         this.parserFn = value;
     }
-    /** @hidden */
     getColumnTemplate() {
         return this.templateFn;
     }
-    /** @hidden */
     getHeaderTemplate() {
         return this.headerTemplateFn;
     }
-    /** @hidden */
     getFilterItemTemplate() {
         return this.fltrTemplateFn;
     }
-    /** @hidden */
     getDomSetter() {
         return this.disableHtmlEncode ? 'textContent' : 'innerHTML';
     }
@@ -318,364 +305,188 @@ __decorate$1([
     Property()
 ], CommandColumnModel.prototype, "buttonOption", void 0);
 
-/** @hidden */
 const created = 'create';
-/** @hidden */
 const destroyed = 'destroy';
-/** @hidden */
 const load = 'load';
-/** @hidden */
 const rowDataBound = 'rowDataBound';
-/** @hidden */
 const queryCellInfo = 'queryCellInfo';
-/** @hidden */
 const headerCellInfo = 'headerCellInfo';
-/** @hidden */
 const actionBegin = 'actionBegin';
-/** @hidden */
 const actionComplete = 'actionComplete';
-/** @hidden */
 const actionFailure = 'actionFailure';
-/** @hidden */
 const dataBound = 'dataBound';
-/** @hidden */
 const rowSelecting = 'rowSelecting';
-/** @hidden */
 const rowSelected = 'rowSelected';
-/** @hidden */
 const rowDeselecting = 'rowDeselecting';
-/** @hidden */
 const rowDeselected = 'rowDeselected';
-/** @hidden */
 const cellSelecting = 'cellSelecting';
-/** @hidden */
 const cellSelected = 'cellSelected';
-/** @hidden */
 const cellDeselecting = 'cellDeselecting';
-/** @hidden */
 const cellDeselected = 'cellDeselected';
-/** @hidden */
 const columnDragStart = 'columnDragStart';
-/** @hidden */
 const columnDrag = 'columnDrag';
-/** @hidden */
 const columnDrop = 'columnDrop';
-/** @hidden */
 const rowDragStartHelper = 'rowDragStartHelper';
-/** @hidden */
 const rowDragStart = 'rowDragStart';
-/** @hidden */
 const rowDrag = 'rowDrag';
-/** @hidden */
 const rowDrop = 'rowDrop';
-/** @hidden */
 const beforePrint = 'beforePrint';
-/** @hidden */
 const printComplete = 'printComplete';
-/** @hidden */
 const detailDataBound = 'detailDataBound';
-/** @hidden */
 const toolbarClick = 'toolbarClick';
-/** @hidden */
 const batchAdd = 'batchAdd';
-/** @hidden */
 const batchCancel = 'batchCancel';
-/** @hidden */
 const batchDelete = 'batchDelete';
-/** @hidden */
 const beforeBatchAdd = 'beforeBatchAdd';
-/** @hidden */
 const beforeBatchDelete = 'beforeBatchDelete';
-/** @hidden */
 const beforeBatchSave = 'beforeBatchSave';
-/** @hidden */
 const beginEdit = 'beginEdit';
-/** @hidden */
 const cellEdit = 'cellEdit';
-/** @hidden */
 const cellSave = 'cellSave';
-/** @hidden */
 const cellSaved = 'cellSaved';
-/** @hidden */
 const endAdd = 'endAdd';
-/** @hidden */
 const endDelete = 'endDelete';
-/** @hidden */
 const endEdit = 'endEdit';
-/** @hidden */
 const recordDoubleClick = 'recordDoubleClick';
-/** @hidden */
 const recordClick = 'recordClick';
-/** @hidden */
 const beforeDataBound = 'beforeDataBound';
-/** @hidden */
 const beforeOpenColumnChooser = 'beforeOpenColumnChooser';
-/** @hidden */
 const resizeStart = 'resizeStart';
-/** @hidden */
 const onResize = 'resizing';
-/** @hidden */
 const resizeStop = 'resizeStop';
-/** @hidden */
 const checkBoxChange = 'checkBoxChange';
-/** @hidden */
 const beforeCopy = 'beforeCopy';
-/** @hidden */
 const beforePaste = 'beforePaste';
-/** @hidden */
 const filterChoiceRequest = 'filterchoicerequest';
-/** @hidden */
 const filterAfterOpen = 'filterafteropen';
-/** @hidden */
 const filterBeforeOpen = 'filterbeforeopen';
-/** @hidden */
 const filterSearchBegin = 'filtersearchbegin';
-/** @hidden */
 const commandClick = 'commandClick';
 /**
  * Specifies grid internal events
  */
-/** @hidden */
 const initialLoad = 'initial-load';
-/** @hidden */
 const initialEnd = 'initial-end';
-/** @hidden */
 const dataReady = 'data-ready';
-/** @hidden */
 const contentReady = 'content-ready';
-/** @hidden */
 const uiUpdate = 'ui-update';
-/** @hidden */
 const onEmpty = 'on-empty';
-/** @hidden */
 const inBoundModelChanged = 'inbound-model-changed';
-/** @hidden */
 const modelChanged = 'model-changed';
-/** @hidden */
 const colGroupRefresh = 'colgroup-refresh';
-/** @hidden */
 const headerRefreshed = 'header-refreshed';
-/** @hidden */
 const pageBegin = 'paging-begin';
-/** @hidden */
 const pageComplete = 'paging-complete';
-/** @hidden */
 const sortBegin = 'sorting-begin';
-/** @hidden */
 const sortComplete = 'sorting-complete';
-/** @hidden */
 const filterBegin = 'filtering-begin';
-/** @hidden */
 const filterComplete = 'filtering-complete';
-/** @hidden */
 const searchBegin = 'searching-begin';
-/** @hidden */
 const searchComplete = 'searching-complete';
-/** @hidden */
 const reorderBegin = 'reorder-begin';
-/** @hidden */
 const reorderComplete = 'reorder-complete';
-/** @hidden */
 const rowDragAndDropBegin = 'rowdraganddrop-begin';
-/** @hidden */
 const rowDragAndDropComplete = 'rowdraganddrop-complete';
-/** @hidden */
 const groupBegin = 'grouping-begin';
-/** @hidden */
 const groupComplete = 'grouping-complete';
-/** @hidden */
 const ungroupBegin = 'ungrouping-begin';
-/** @hidden */
 const ungroupComplete = 'ungrouping-complete';
-/** @hidden */
 const groupAggregates = 'group-aggregates';
-/** @hidden */
 const refreshFooterRenderer = 'refresh-footer-rendered';
-/** @hidden */
 const refreshAggregateCell = 'refresh-aggregate-cell';
-/** @hidden */
 const refreshAggregates = 'refresh-aggregates';
-/** @hidden */
 const rowSelectionBegin = 'rowselecting';
-/** @hidden */
 const rowSelectionComplete = 'rowselected';
-/** @hidden */
 const columnSelectionBegin = 'columnselecting';
-/** @hidden */
 const columnSelectionComplete = 'columnselected';
-/** @hidden */
 const cellSelectionBegin = 'cellselecting';
-/** @hidden */
 const cellSelectionComplete = 'cellselected';
-/** @hidden */
 const beforeCellFocused = 'beforecellfocused';
-/** @hidden */
 const cellFocused = 'cellfocused';
-/** @hidden */
 const keyPressed = 'key-pressed';
-/** @hidden */
 const click = 'click';
-/** @hidden */
 const destroy = 'destroy';
-/** @hidden */
 const columnVisibilityChanged = 'column-visible-changed';
-/** @hidden */
 const scroll = 'scroll';
-/** @hidden */
 const columnWidthChanged = 'column-width-changed';
-/** @hidden */
 const columnPositionChanged = 'column-position-changed';
-/** @hidden */
 const rowDragAndDrop = 'row-drag-and-drop';
-/** @hidden */
 const rowsAdded = 'rows-added';
-/** @hidden */
 const rowsRemoved = 'rows-removed';
-/** @hidden */
 const columnDragStop = 'column-drag-stop';
-/** @hidden */
 const headerDrop = 'header-drop';
-/** @hidden */
 const dataSourceModified = 'datasource-modified';
-/** @hidden */
 const refreshComplete = 'refresh-complete';
-/** @hidden */
 const refreshVirtualBlock = 'refresh-virtual-block';
-/** @hidden */
 const dblclick = 'dblclick';
-/** @hidden */
 const toolbarRefresh = 'toolbar-refresh';
-/** @hidden */
 const bulkSave = 'bulk-save';
-/** @hidden */
 const autoCol = 'auto-col';
-/** @hidden */
 const tooltipDestroy = 'tooltip-destroy';
-/** @hidden */
 const updateData = 'update-data';
-/** @hidden */
 const editBegin = 'edit-begin';
-/** @hidden */
 const editComplete = 'edit-complete';
-/** @hidden */
 const addBegin = 'add-begin';
-/** @hidden */
 const addComplete = 'add-complete';
-/** @hidden */
 const saveComplete = 'save-complete';
-/** @hidden */
 const deleteBegin = 'delete-begin';
-/** @hidden */
 const deleteComplete = 'delete-complete';
-/** @hidden */
 const preventBatch = 'prevent-batch';
-/** @hidden */
 const dialogDestroy = 'dialog-destroy';
-/** @hidden */
 const crudAction = 'crud-Action';
-/** @hidden */
 const addDeleteAction = 'add-delete-Action';
-/** @hidden */
 const destroyForm = 'destroy-form';
-/** @hidden */
 const doubleTap = 'double-tap';
-/** @hidden */
 const beforeExcelExport = 'beforeExcelExport';
-/** @hidden */
 const excelExportComplete = 'excelExportComplete';
-/** @hidden */
 const excelQueryCellInfo = 'excelQueryCellInfo';
-/** @hidden */
 const excelHeaderQueryCellInfo = 'excelHeaderQueryCellInfo';
-/** @hidden */
 const exportDetailDataBound = 'exportdetaildatabound';
-/** @hidden */
 const beforePdfExport = 'beforePdfExport';
-/** @hidden */
 const pdfExportComplete = 'pdfExportComplete';
-/** @hidden */
 const pdfQueryCellInfo = 'pdfQueryCellInfo';
-/** @hidden */
 const pdfHeaderQueryCellInfo = 'pdfHeaderQueryCellInfo';
-/** @hidden */
 const accessPredicate = 'access-predicate';
-/** @hidden */
 const contextMenuClick = 'contextMenuClick';
-/** @hidden */
 const freezeRender = 'freezerender';
-/** @hidden */
 const freezeRefresh = 'freezerefresh';
-/** @hidden */
 const contextMenuOpen = 'contextMenuOpen';
-/** @hidden */
 const columnMenuClick = 'columnMenuClick';
-/** @hidden */
 const columnMenuOpen = 'columnMenuOpen';
-/** @hidden */
 const filterOpen = 'filterOpen';
-/** @hidden */
 const filterDialogCreated = 'filterDialogCreated';
-/** @hidden */
 const filterMenuClose = 'filter-menu-close';
-/** @hidden */
 const initForeignKeyColumn = 'initForeignKeyColumn';
-/** @hidden */
 const getForeignKeyData = 'getForeignKeyData';
-/** @hidden */
 const generateQuery = 'generateQuery';
-/** @hidden */
 const showEmptyGrid = 'showEmptyGrid';
-/** @hidden */
 const foreignKeyData = 'foreignKeyData';
-/** @hidden */
 const dataStateChange = 'dataStateChange';
-/** @hidden */
 const dataSourceChanged = 'dataSourceChanged';
-/** @hidden */
 const rtlUpdated = 'rtl-updated';
-/** @hidden */
 const beforeFragAppend = 'beforeFragAppend';
-/** @hidden */
 const frozenHeight = 'frozenHeight';
-/** @hidden */
 const textWrapRefresh = 'textWrapRefresh';
-/** @hidden */
 const recordAdded = 'recordAdded';
-/** @hidden */
 const cancelBegin = 'cancel-Begin';
-/** @hidden */
 const editNextValCell = 'editNextValCell';
-/** @hidden */
 const hierarchyPrint = 'hierarchyprint';
-/** @hidden */
 const expandChildGrid = 'expandchildgrid';
-/** @hidden */
 const printGridInit = 'printGrid-Init';
-/** @hidden */
 const exportRowDataBound = 'export-RowDataBound';
-/** @hidden */
 const rowPositionChanged = 'row-position-changed';
-/** @hidden */
 const columnChooserOpened = 'columnChooserOpened';
-/** @hidden */
 const batchForm = 'batchedit-form';
-/** @hidden */
 const beforeStartEdit = 'edit-form';
-/** @hidden */
 const beforeBatchCancel = 'before-batch-cancel';
-/** @hidden */
 const batchEditFormRendered = 'batcheditform-rendered';
-/** @hidden */
 const partialRefresh = 'partial-refresh';
-/** @hidden */
 const beforeCustomFilterOpen = 'beforeCustomFilterOpen';
-/** @hidden */
 const selectVirtualRow = 'select-virtual-Row';
-/** @hidden */
 const columnsPrepared = 'columns-prepared';
 
 /**
- * @hidden
+
  */
 function getCloneProperties() {
     return ['aggregates', 'allowGrouping', 'allowFiltering', 'allowMultiSorting', 'allowReordering', 'allowSorting',
@@ -691,7 +502,7 @@ function getCloneProperties() {
 class Print {
     /**
      * Constructor for the Grid print module
-     * @hidden
+
      */
     constructor(parent, scrollModule) {
         this.isAsyncPrint = false;
@@ -854,6 +665,11 @@ class Print {
             groupCaption[i].setAttribute('colspan', colSpan);
         }
         let colGroups = element.querySelectorAll(`colgroup${id}colGroup`);
+        let contentColGroups = element.querySelector('.e-content').querySelectorAll('colgroup');
+        this.hideColGroup(colGroups, depth);
+        this.hideColGroup(contentColGroups, depth);
+    }
+    hideColGroup(colGroups, depth) {
         for (let i = 0; i < colGroups.length; i++) {
             for (let j = 0; j < depth; j++) {
                 colGroups[i].childNodes[j].style.display = 'none';
@@ -866,7 +682,7 @@ class Print {
     /**
      * To destroy the print
      * @return {void}
-     * @hidden
+
      */
     destroy() {
         if (this.parent.isDestroyed) {
@@ -893,7 +709,7 @@ Print.printGridProp = [...getCloneProperties(), beforePrint, printComplete];
  * @param  {Object} target
  * @param  {string} checkFor
  * @returns no
- * @hidden
+
  */
 function doesImplementInterface(target, checkFor) {
     /* tslint:disable:no-any */
@@ -904,7 +720,7 @@ function doesImplementInterface(target, checkFor) {
  * @param  {string} field
  * @param  {Object} data
  * @param  {IColumn} column
- * @hidden
+
  */
 function valueAccessor(field, data, column) {
     return (isNullOrUndefined(field) || field === '') ? '' : DataUtil.getObject(field, data);
@@ -913,7 +729,7 @@ function valueAccessor(field, data, column) {
  * The function used to update Dom using requestAnimationFrame.
  * @param  {Function} fn - Function that contains the actual action
  * @return {Promise<T>}
- * @hidden
+
  */
 function getUpdateUsingRaf(updateFunction, callBack) {
     requestAnimationFrame(() => {
@@ -926,7 +742,7 @@ function getUpdateUsingRaf(updateFunction, callBack) {
     });
 }
 /**
- * @hidden
+
  */
 function updatecloneRow(grid) {
     let nRows = [];
@@ -945,7 +761,7 @@ function updatecloneRow(grid) {
     grid.vcRows = nRows;
 }
 /**
- * @hidden
+
  */
 let count = 0;
 function getCollapsedRowsCount(val, grid) {
@@ -999,7 +815,7 @@ function getCollapsedRowsCount(val, grid) {
     return count;
 }
 /**
- * @hidden
+
  */
 function recursive(row) {
     let items = 'items';
@@ -1013,7 +829,7 @@ function recursive(row) {
     }
 }
 /**
- * @hidden
+
  */
 function iterateArrayOrObject(collection, predicate) {
     let result = [];
@@ -1025,7 +841,6 @@ function iterateArrayOrObject(collection, predicate) {
     }
     return result;
 }
-/** @hidden */
 function iterateExtend(array) {
     let obj = [];
     for (let i = 0; i < array.length; i++) {
@@ -1033,7 +848,6 @@ function iterateExtend(array) {
     }
     return obj;
 }
-/** @hidden */
 function templateCompiler(template) {
     if (template) {
         try {
@@ -1047,7 +861,6 @@ function templateCompiler(template) {
     }
     return undefined;
 }
-/** @hidden */
 function setStyleAndAttributes(node, customAttributes) {
     let copyAttr = {};
     let literals = ['style', 'class'];
@@ -1063,7 +876,6 @@ function setStyleAndAttributes(node, customAttributes) {
     }
     attributes(node, copyAttr);
 }
-/** @hidden */
 function extend$1(copied, first, second, exclude) {
     let moved = extend(copied, first, second);
     Object.keys(moved).forEach((value, index) => {
@@ -1073,7 +885,6 @@ function extend$1(copied, first, second, exclude) {
     });
     return moved;
 }
-/** @hidden */
 function setColumnIndex(columnModel, ind = 0) {
     for (let i = 0, len = columnModel.length; i < len; i++) {
         if (columnModel[i].columns) {
@@ -1088,7 +899,6 @@ function setColumnIndex(columnModel, ind = 0) {
     }
     return ind;
 }
-/** @hidden */
 function prepareColumns(columns, autoWidth) {
     for (let c = 0, len = columns.length; c < len; c++) {
         let column;
@@ -1119,7 +929,6 @@ function prepareColumns(columns, autoWidth) {
     }
     return columns;
 }
-/** @hidden */
 function setCssInGridPopUp(popUp, e, className) {
     let popUpSpan = popUp.querySelector('span');
     let position = popUp.parentElement.getBoundingClientRect();
@@ -1141,7 +950,6 @@ function setCssInGridPopUp(popUp, e, className) {
         popUp.querySelector('.e-uptail').style.display = '';
     }
 }
-/** @hidden */
 function getPopupLeftPosition(popup, e, targetPosition, left) {
     let width = popup.offsetWidth / 2;
     let x = getPosition(e).x;
@@ -1155,7 +963,6 @@ function getPopupLeftPosition(popup, e, targetPosition, left) {
         return x - left - width;
     }
 }
-/** @hidden */
 function getActualProperties(obj) {
     if (obj instanceof ChildProperty) {
         return getValue('properties', obj);
@@ -1164,7 +971,6 @@ function getActualProperties(obj) {
         return obj;
     }
 }
-/** @hidden */
 function parentsUntil(elem, selector, isID) {
     let parent = elem;
     while (parent) {
@@ -1175,7 +981,6 @@ function parentsUntil(elem, selector, isID) {
     }
     return parent;
 }
-/** @hidden */
 function getElementIndex(element, elements) {
     let index = -1;
     for (let i = 0, len = elements.length; i < len; i++) {
@@ -1186,7 +991,6 @@ function getElementIndex(element, elements) {
     }
     return index;
 }
-/** @hidden */
 function inArray(value, collection) {
     for (let i = 0, len = collection.length; i < len; i++) {
         if (collection[i] === value) {
@@ -1195,7 +999,6 @@ function inArray(value, collection) {
     }
     return -1;
 }
-/** @hidden */
 function getActualPropFromColl(collection) {
     let coll = [];
     for (let i = 0, len = collection.length; i < len; i++) {
@@ -1208,14 +1011,12 @@ function getActualPropFromColl(collection) {
     }
     return coll;
 }
-/** @hidden */
 function removeElement(target, selector) {
     let elements = [].slice.call(target.querySelectorAll(selector));
     for (let i = 0; i < elements.length; i++) {
         remove(elements[i]);
     }
 }
-/** @hidden */
 function getPosition(e) {
     let position = {};
     position.x = (isNullOrUndefined(e.clientX) ? e.changedTouches[0].clientX :
@@ -1225,11 +1026,9 @@ function getPosition(e) {
     return position;
 }
 let uid = 0;
-/** @hidden */
 function getUid(prefix) {
     return prefix + uid++;
 }
-/** @hidden */
 function appendChildren(elem, children) {
     for (let i = 0, len = children.length; i < len; i++) {
         if (len === children.length) {
@@ -1241,7 +1040,6 @@ function appendChildren(elem, children) {
     }
     return elem;
 }
-/** @hidden */
 function parents(elem, selector, isID) {
     let parent = elem;
     let parents = [];
@@ -1253,7 +1051,6 @@ function parents(elem, selector, isID) {
     }
     return parents;
 }
-/** @hidden */
 function calculateAggregate(type, data, column, context) {
     if (type === 'Custom') {
         let temp = column.customAggregate;
@@ -1264,9 +1061,7 @@ function calculateAggregate(type, data, column, context) {
     }
     return (column.field in data || data instanceof Array) ? DataUtil.aggregates[type.toLowerCase()](data, column.field) : null;
 }
-/** @hidden */
 let scrollWidth = null;
-/** @hidden */
 function getScrollBarWidth() {
     if (scrollWidth !== null) {
         return scrollWidth;
@@ -1279,9 +1074,7 @@ function getScrollBarWidth() {
     document.body.removeChild(divNode);
     return scrollWidth = value;
 }
-/** @hidden */
 let rowHeight;
-/** @hidden */
 function getRowHeight(element) {
     if (rowHeight !== undefined) {
         return rowHeight;
@@ -1294,19 +1087,15 @@ function getRowHeight(element) {
     rowHeight = Math.ceil(rect.height);
     return rowHeight;
 }
-/** @hidden */
 function isComplexField(field) {
     return field.split('.').length > 1;
 }
-/** @hidden */
 function getComplexFieldID(field = '') {
     return field.replace(/\./g, '___');
 }
-/** @hidden */
 function setComplexFieldID(field = '') {
     return field.replace(/___/g, '.');
 }
-/** @hidden */
 function isEditable(col, type, elem) {
     let row = parentsUntil(elem, 'e-row');
     let isOldRow = !row ? true : row && !row.classList.contains('e-insertedrow');
@@ -1326,14 +1115,12 @@ function isEditable(col, type, elem) {
         return true;
     }
 }
-/** @hidden */
 function isActionPrevent(inst) {
     let dlg = inst.element.querySelector('#' + inst.element.id + 'EditConfirm');
     return inst.editSettings.mode === 'Batch' &&
         (inst.element.querySelectorAll('.e-updatedtd').length) && inst.editSettings.showConfirmDialog &&
         (dlg ? dlg.classList.contains('e-popup-close') : true);
 }
-/** @hidden */
 function wrap(elem, action) {
     let clName = 'e-wrap';
     elem = elem instanceof Array ? elem : [elem];
@@ -1341,7 +1128,6 @@ function wrap(elem, action) {
         action ? elem[i].classList.add(clName) : elem[i].classList.remove(clName);
     }
 }
-/** @hidden */
 function setFormatter(serviceLocator, column) {
     let fmtr = serviceLocator.getService('valueFormatter');
     switch (column.type) {
@@ -1359,7 +1145,6 @@ function setFormatter(serviceLocator, column) {
             break;
     }
 }
-/** @hidden */
 function addRemoveActiveClasses(cells, add, ...args) {
     for (let i = 0, len = cells.length; i < len; i++) {
         if (add) {
@@ -1372,7 +1157,6 @@ function addRemoveActiveClasses(cells, add, ...args) {
         }
     }
 }
-/** @hidden */
 function distinctStringValues(result) {
     let temp = {};
     let res = [];
@@ -1384,7 +1168,6 @@ function distinctStringValues(result) {
     }
     return res;
 }
-/** @hidden */
 function getFilterMenuPostion(target, dialogObj, grid) {
     let elementVisible = dialogObj.element.style.display;
     dialogObj.element.style.display = 'block';
@@ -1415,24 +1198,20 @@ function getFilterMenuPostion(target, dialogObj, grid) {
         }
     }
 }
-/** @hidden */
 function getZIndexCalcualtion(args, dialogObj) {
     args.popup.element.style.zIndex = (dialogObj.zIndex + 1).toString();
 }
-/** @hidden */
 function toogleCheckbox(elem) {
     let span = elem.querySelector('.e-frame');
     span.classList.contains('e-check') ? classList(span, ['e-uncheck'], ['e-check']) :
         classList(span, ['e-check'], ['e-uncheck']);
 }
-/** @hidden */
 function createCboxWithWrap(uid, elem, className) {
     let div = createElement('div', { className: className });
     div.appendChild(elem);
     div.setAttribute('uid', uid);
     return div;
 }
-/** @hidden */
 function removeAddCboxClasses(elem, checked) {
     removeClass([elem], ['e-check', 'e-stop', 'e-uncheck']);
     if (checked) {
@@ -1447,7 +1226,7 @@ function removeAddCboxClasses(elem, checked) {
  * @param row - Grid Row model object.
  * @param columns - Foreign columns array.
  * @param data - Updated Row data.
- * @hidden
+
  */
 function refreshForeignData(row, columns, data) {
     columns.forEach((col) => {
@@ -1465,7 +1244,7 @@ function refreshForeignData(row, columns, data) {
  * @param data - Row data.
  * @param lValue - cell value.
  * @param foreignData - foreign data source.
- * @hidden
+
  */
 function getForeignData(column, data, lValue, foreignKeyData) {
     let fField = column.foreignKeyField;
@@ -1486,7 +1265,7 @@ function getForeignData(column, data, lValue, foreignKeyData) {
  * To use to get the column's object by the foreign key value.
  * @param foreignKeyValue - Defines ForeignKeyValue.
  * @param columns - Array of column object.
- * @hidden
+
  */
 function getColumnByForeignKeyValue(foreignKeyValue, columns) {
     let column;
@@ -1496,7 +1275,7 @@ function getColumnByForeignKeyValue(foreignKeyValue, columns) {
     }) && column;
 }
 /**
- * @hidden
+
  * @param filterObject - Defines predicate model object
  */
 function getDatePredicate(filterObject, type) {
@@ -1550,7 +1329,7 @@ function getDatePredicate(filterObject, type) {
     return datePredicate;
 }
 /**
- * @hidden
+
  */
 function renderMovable(ele, frzCols) {
     let mEle = ele.cloneNode(true);
@@ -1563,13 +1342,13 @@ function renderMovable(ele, frzCols) {
     return mEle;
 }
 /**
- * @hidden
+
  */
 function isGroupAdaptive(grid) {
     return grid.enableVirtualization && grid.groupSettings.columns.length > 0 && grid.isVirtualAdaptive;
 }
 /**
- * @hidden
+
  */
 function getObject(field = '', object) {
     if (field) {
@@ -1582,7 +1361,7 @@ function getObject(field = '', object) {
     }
 }
 /**
- * @hidden
+
  */
 function getCustomDateFormat(format, colType) {
     let intl = new Internationalization();
@@ -1602,7 +1381,7 @@ function getCustomDateFormat(format, colType) {
     return formatvalue;
 }
 /**
- * @hidden
+
  */
 function getExpandedState(gObj, hierarchyPrintMode) {
     let rows = gObj.getRowsObject();
@@ -1620,7 +1399,7 @@ function getExpandedState(gObj, hierarchyPrintMode) {
     return obj;
 }
 /**
- * @hidden
+
  */
 function getPrintGridModel(gObj, hierarchyPrintMode = 'Expanded') {
     let printGridModel = {};
@@ -1644,7 +1423,7 @@ function getPrintGridModel(gObj, hierarchyPrintMode = 'Expanded') {
     return printGridModel;
 }
 /**
- * @hidden
+
  */
 function extendObjWithFn(copied, first, second, deep) {
     let res = copied || {};
@@ -1681,7 +1460,7 @@ function extendObjWithFn(copied, first, second, deep) {
     return res;
 }
 /**
- * @hidden
+
  */
 function getPrototypesOfObj(obj) {
     let keys = [];
@@ -1692,7 +1471,7 @@ function getPrototypesOfObj(obj) {
     return keys;
 }
 /**
- * @hidden
+
  */
 function measureColumnDepth(column) {
     let max = 0;
@@ -1705,7 +1484,7 @@ function measureColumnDepth(column) {
     return max + 1;
 }
 /**
- * @hidden
+
  */
 function checkDepth(col, index) {
     let max = index;
@@ -1725,7 +1504,7 @@ function checkDepth(col, index) {
     return index;
 }
 /**
- * @hidden
+
  */
 function refreshFilteredColsUid(gObj, filteredCols) {
     for (let i = 0; i < filteredCols.length; i++) {
@@ -1734,7 +1513,6 @@ function refreshFilteredColsUid(gObj, filteredCols) {
             : gObj.getColumnByField(filteredCols[i].field).uid;
     }
 }
-/** @hidden */
 var Global;
 (function (Global) {
     Global.timer = null;
@@ -1742,7 +1520,7 @@ var Global;
 
 /**
  * Defines types of Cell
- * @hidden
+
  */
 var CellType;
 (function (CellType) {
@@ -1785,7 +1563,7 @@ var CellType;
 })(CellType || (CellType = {}));
 /**
  * Defines types of Render
- * @hidden
+
  */
 var RenderType;
 (function (RenderType) {
@@ -1798,7 +1576,7 @@ var RenderType;
 })(RenderType || (RenderType = {}));
 /**
  * Defines Predefined toolbar items.
- * @hidden
+
  */
 var ToolbarItem;
 (function (ToolbarItem) {
@@ -1818,13 +1596,13 @@ var ToolbarItem;
 
 /* tslint:disable-next-line:max-line-length */
 /**
- * @hidden
+
  * `CheckBoxFilter` module is used to handle filtering action.
  */
 class CheckBoxFilter {
     /**
      * Constructor for checkbox filtering module
-     * @hidden
+
      */
     constructor(parent, filterSettings, serviceLocator) {
         this.existingPredicate = {};
@@ -1853,7 +1631,7 @@ class CheckBoxFilter {
     /**
      * To destroy the filter bar.
      * @return {void}
-     * @hidden
+
      */
     destroy() {
         this.closeDialog();
@@ -2665,12 +2443,12 @@ class CheckBoxFilter {
 
 /**
  * Grid data module is used to generate query and data source.
- * @hidden
+
  */
 class Data {
     /**
      * Constructor for data module.
-     * @hidden
+
      */
     constructor(parent, serviceLocator) {
         this.dataState = { isPending: false, resolver: null, group: [] };
@@ -2709,7 +2487,7 @@ class Data {
     /**
      * The function is used to generate updated Query from Grid model.
      * @return {Query}
-     * @hidden
+
      */
     generateQuery(skipPage) {
         let gObj = this.parent;
@@ -2945,7 +2723,7 @@ class Data {
      * The function is used to get dataManager promise by executing given Query.
      * @param  {Query} query - Defines the query which will execute along with data processing.
      * @return {Promise<Object>}
-     * @hidden
+
      */
     getData(args = { requestType: '' }, query) {
         let key = this.getKey(args.foreignKeyData &&
@@ -3047,7 +2825,6 @@ class Data {
         args[pr] = promise ? promise : args[pr];
         this.parent.notify(crudAction, args);
     }
-    /** @hidden */
     saveChanges(changes, key, original, query = this.generateQuery()) {
         query.requiresCount();
         if ('result' in this.parent.dataSource) {
@@ -3073,7 +2850,6 @@ class Data {
         }
         return undefined;
     }
-    /** @hidden */
     isRemote() {
         return this.dataManager.dataSource.offline !== true && this.dataManager.dataSource.url !== undefined &&
             this.dataManager.dataSource.url !== '';
@@ -3140,6 +2916,9 @@ class Data {
                 this.parent.trigger(dataSourceChanged, editArgs);
                 deff.promise.then((e) => {
                     this.setState({ isPending: true, resolver: def.resolve, group: state.group, aggregates: state.aggregates });
+                    if (editArgs.requestType === 'save') {
+                        this.parent.notify(recordAdded, editArgs);
+                    }
                     this.parent.trigger(dataStateChange, state);
                 })
                     .catch(() => void 0);
@@ -3178,7 +2957,7 @@ class Data {
 
 /**
  * Row
- * @hidden
+
  */
 class Row {
     constructor(options) {
@@ -3194,7 +2973,7 @@ class Row {
 
 /**
  * Cell
- * @hidden
+
  */
 class Cell {
     constructor(options) {
@@ -3211,7 +2990,7 @@ class Cell {
 
 /**
  * `CellMergeRender` module.
- * @hidden
+
  */
 class CellMergeRender {
     constructor(serviceLocator, parent) {
@@ -3329,7 +3108,7 @@ class CellMergeRender {
 
 /**
  * RowRenderer class which responsible for building row content.
- * @hidden
+
  */
 class RowRenderer {
     constructor(serviceLocator, cellType, parent) {
@@ -3509,7 +3288,7 @@ class RowRenderer {
 
 /**
  * RowModelGenerator is used to generate grid data rows.
- * @hidden
+
  */
 class RowModelGenerator {
     /**
@@ -3604,7 +3383,7 @@ class RowModelGenerator {
 
 /**
  * Summary row model generator
- * @hidden
+
  */
 class SummaryModelGenerator {
     /**
@@ -3767,7 +3546,7 @@ class CaptionSummaryModelGenerator extends SummaryModelGenerator {
 
 /**
  * GroupModelGenerator is used to generate group caption rows and data rows.
- * @hidden
+
  */
 class GroupModelGenerator extends RowModelGenerator {
     constructor(parent) {
@@ -3944,7 +3723,7 @@ class GroupModelGenerator extends RowModelGenerator {
 
 /**
  * Content module is used to render grid content
- * @hidden
+
  */
 class ContentRender {
     /**
@@ -4045,7 +3824,7 @@ class ContentRender {
     /**
      * The function is used to create content table elements
      * @return {Element}
-     * @hidden
+
      */
     createContentTable(id) {
         let innerDiv = this.getPanel().firstChild;
@@ -4441,7 +4220,7 @@ class ContentRender {
         }
     }
     /**
-     * @hidden
+
      */
     setDisplayNone(tr, idx, displayVal, rows) {
         Object.keys(tr).forEach((i) => {
@@ -4456,7 +4235,8 @@ class ContentRender {
     }
     colGroupRefresh() {
         if (this.getColGroup()) {
-            let colGroup = this.parent.element.querySelector('.e-gridheader').querySelector('colgroup').cloneNode(true);
+            let colGroup = isBlazor() ? this.parent.getHeaderTable().querySelector('colgroup').cloneNode(true) :
+                this.parent.element.querySelector('.e-gridheader').querySelector('colgroup').cloneNode(true);
             this.getTable().replaceChild(colGroup, this.getColGroup());
             this.setColGroup(colGroup);
         }
@@ -4519,7 +4299,7 @@ class ContentRender {
 
 /**
  * Content module is used to render grid content
- * @hidden
+
  */
 class HeaderRender {
     /**
@@ -4716,7 +4496,7 @@ class HeaderRender {
     /**
      * The function is used to create header table elements
      * @return {Element}
-     * @hidden
+
      */
     createHeaderTable() {
         let table = this.createTable();
@@ -4725,7 +4505,7 @@ class HeaderRender {
         return innerDiv;
     }
     /**
-     * @hidden
+
      */
     createTable() {
         let gObj = this.parent;
@@ -5114,7 +4894,7 @@ class HeaderRender {
 
 /**
  * CellRenderer class which responsible for building cell content.
- * @hidden
+
  */
 class CellRenderer {
     constructor(parent, locator) {
@@ -5286,7 +5066,7 @@ class CellRenderer {
         return node;
     }
     /**
-     * @hidden
+
      */
     setAttributes(node, cell, attributes$$1) {
         let column = cell.column;
@@ -5341,7 +5121,7 @@ class CellRenderer {
 
 /**
  * AriaService
- * @hidden
+
  */
 class AriaService {
     setOptions(target, options) {
@@ -5366,7 +5146,7 @@ class AriaService {
     }
 }
 /**
- * @hidden
+
  */
 function setStateAndProperties(target, attribute, value, remove$$1) {
     if (remove$$1 && target) {
@@ -5394,7 +5174,7 @@ const config = {
 
 /**
  * HeaderCellRenderer class which responsible for building header cell content.
- * @hidden
+
  */
 class HeaderCellRenderer extends CellRenderer {
     constructor() {
@@ -5569,7 +5349,7 @@ class HeaderCellRenderer extends CellRenderer {
 
 /**
  * StackedHeaderCellRenderer class which responsible for building stacked header cell content.
- * @hidden
+
  */
 class StackedHeaderCellRenderer extends CellRenderer {
     constructor() {
@@ -5625,7 +5405,7 @@ class StackedHeaderCellRenderer extends CellRenderer {
 
 /**
  * IndentCellRenderer class which responsible for building group indent cell.
- * @hidden
+
  */
 class IndentCellRenderer extends CellRenderer {
     constructor() {
@@ -5646,7 +5426,7 @@ class IndentCellRenderer extends CellRenderer {
 
 /**
  * GroupCaptionCellRenderer class which responsible for building group caption cell.
- * @hidden
+
  */
 class GroupCaptionCellRenderer extends CellRenderer {
     constructor() {
@@ -5693,7 +5473,7 @@ class GroupCaptionCellRenderer extends CellRenderer {
 }
 /**
  * GroupCaptionEmptyCellRenderer class which responsible for building group caption empty cell.
- * @hidden
+
  */
 class GroupCaptionEmptyCellRenderer extends CellRenderer {
     constructor() {
@@ -5715,7 +5495,7 @@ class GroupCaptionEmptyCellRenderer extends CellRenderer {
 
 /**
  * ExpandCellRenderer class which responsible for building group expand cell.
- * @hidden
+
  */
 class ExpandCellRenderer extends IndentCellRenderer {
     /**
@@ -5741,7 +5521,7 @@ class ExpandCellRenderer extends IndentCellRenderer {
 
 /**
  * HeaderIndentCellRenderer class which responsible for building header indent cell.
- * @hidden
+
  */
 class HeaderIndentCellRenderer extends CellRenderer {
     constructor() {
@@ -5762,7 +5542,7 @@ class HeaderIndentCellRenderer extends CellRenderer {
 
 /**
  * DetailHeaderIndentCellRenderer class which responsible for building detail header indent cell.
- * @hidden
+
  */
 class DetailHeaderIndentCellRenderer extends CellRenderer {
     constructor() {
@@ -5783,7 +5563,7 @@ class DetailHeaderIndentCellRenderer extends CellRenderer {
 
 /**
  * ExpandCellRenderer class which responsible for building group expand cell.
- * @hidden
+
  */
 class DetailExpandCellRenderer extends CellRenderer {
     constructor() {
@@ -5812,7 +5592,7 @@ class DetailExpandCellRenderer extends CellRenderer {
 
 /**
  * ExpandCellRenderer class which responsible for building group expand cell.
- * @hidden
+
  */
 class RowDragDropRenderer extends CellRenderer {
     constructor() {
@@ -5836,7 +5616,7 @@ class RowDragDropRenderer extends CellRenderer {
 
 /**
  * DetailHeaderIndentCellRenderer class which responsible for building detail header indent cell.
- * @hidden
+
  */
 class RowDragDropHeaderRenderer extends CellRenderer {
     constructor() {
@@ -5857,7 +5637,7 @@ class RowDragDropHeaderRenderer extends CellRenderer {
 
 /**
  * Content module is used to render grid content
- * @hidden
+
  */
 class Render {
     /**
@@ -6067,7 +5847,7 @@ class Render {
     /**
      * Render empty row to Grid which is used at the time to represent to no records.
      * @return {void}
-     * @hidden
+
      */
     renderEmptyRow() {
         this.emptyRow(true);
@@ -6142,7 +5922,6 @@ class Render {
             }
         }
     }
-    /** @hidden */
     dataManagerSuccess(e, args) {
         let gObj = this.parent;
         this.contentRenderer = this.renderer.getRenderer(RenderType.Content);
@@ -6283,7 +6062,6 @@ class Render {
         this.parent.on(showEmptyGrid, () => { this.emptyGrid = true; }, this);
         this.parent.on(autoCol, this.dynamicColumnChange, this);
     }
-    /** @hidden */
     validateGroupRecords(e) {
         let index = e.result.length - 1;
         if (index < 0) {
@@ -6356,7 +6134,7 @@ class Render {
 
 /**
  * CellRendererFactory
- * @hidden
+
  */
 class CellRendererFactory {
     constructor() {
@@ -6381,7 +6159,7 @@ class CellRendererFactory {
 
 /**
  * ServiceLocator
- * @hidden
+
  */
 class ServiceLocator {
     constructor() {
@@ -6402,7 +6180,7 @@ class ServiceLocator {
 
 /**
  * RendererFactory
- * @hidden
+
  */
 class RendererFactory {
     constructor() {
@@ -6427,7 +6205,7 @@ class RendererFactory {
 
 /**
  * ColumnWidthService
- * @hidden
+
  */
 class ColumnWidthService {
     constructor(parent) {
@@ -6689,7 +6467,7 @@ class ColumnWidthService {
 
 /**
  * FocusStrategy class
- * @hidden
+
  */
 class FocusStrategy {
     constructor(parent) {
@@ -6702,6 +6480,7 @@ class FocusStrategy {
         this.prevIndexes = {};
         this.refMatrix = this.refreshMatrix(true);
         this.parent = parent;
+        this.rowModelGen = new RowModelGenerator(this.parent);
         this.addEventListener();
     }
     focusCheck(e) {
@@ -6714,6 +6493,10 @@ class FocusStrategy {
             return;
         }
         this.setActive(this.parent.frozenRows === 0, this.parent.frozenColumns !== 0);
+        if (!this.parent.getCurrentViewRecords().length) {
+            this.getContent().matrix.
+                generate(this.rowModelGen.generateRows({ rows: [new Row({ isDataRow: true })] }), this.getContent().selector, false);
+        }
         let current = this.getContent().matrix.get(0, -1, [0, 1], null, this.getContent().validator());
         this.getContent().matrix.select(current[0], current[1]);
         if (this.skipFocus) {
@@ -7063,7 +6846,7 @@ class FocusStrategy {
 }
 /**
  * Create matrix from row collection which act as mental model for cell navigation
- * @hidden
+
  */
 class Matrix {
     constructor() {
@@ -7128,7 +6911,7 @@ class Matrix {
     }
 }
 /**
- * @hidden
+
  */
 class ContentFocus {
     constructor(parent) {
@@ -7344,7 +7127,7 @@ class ContentFocus {
     }
 }
 /**
- * @hidden
+
  */
 class HeaderFocus extends ContentFocus {
     constructor(parent) {
@@ -7488,7 +7271,6 @@ class FixedHeaderFocus extends HeaderFocus {
         return current3;
     }
 }
-/** @hidden */
 class SearchBox {
     constructor(searchBox) {
         this.searchBox = searchBox;
@@ -7552,29 +7334,31 @@ __decorate$2([
 class Selection {
     /**
      * Constructor for the Grid selection module
-     * @hidden
+
      */
     constructor(parent, selectionSettings, locator) {
         //Internal letiables       
         /**
-         * @hidden
+    
          */
         this.selectedRowIndexes = [];
         /**
-         * @hidden
+    
          */
         this.selectedRowCellIndexes = [];
         /**
-         * @hidden
+    
          */
         this.selectedRecords = [];
         /**
-         * @hidden
+    
          */
         this.preventFocus = false;
         this.isMultiShiftRequest = false;
         this.isMultiCtrlRequest = false;
         this.enableSelectMultiTouch = false;
+        this.clearRowCheck = false;
+        this.selectRowCheck = false;
         this.selectedRowState = {};
         this.totalRecordsCount = 0;
         this.chkAllCollec = [];
@@ -7599,7 +7383,7 @@ class Selection {
     /**
      * The function used to trigger onActionBegin
      * @return {void}
-     * @hidden
+
      */
     onActionBegin(args, type) {
         this.parent.trigger(type, this.fDataUpdate(args));
@@ -7615,7 +7399,7 @@ class Selection {
     /**
      * The function used to trigger onActionComplete
      * @return {void}
-     * @hidden
+
      */
     onActionComplete(args, type) {
         this.parent.trigger(type, this.fDataUpdate(args));
@@ -7630,7 +7414,7 @@ class Selection {
     /**
      * To destroy the selection
      * @return {void}
-     * @hidden
+
      */
     destroy() {
         let gridElement = this.parent.element;
@@ -7735,13 +7519,33 @@ class Selection {
         if (!isNullOrUndefined(args) && args[can] === true) {
             return;
         }
+        this.index = index;
+        this.toggle = isToggle;
+        this.data = selectData;
+        this.removed = isRemoved;
         if (isRowSelected && this.selectionSettings.persistSelection) {
             this.clearSelectedRow(index);
             isRemoved = true;
+            this.removed = isRemoved;
+            this.selectRowCallBack();
+        }
+        else if (!isRowSelected && this.selectionSettings.persistSelection) {
+            this.selectRowCallBack();
         }
         if (!this.selectionSettings.persistSelection) {
+            this.selectRowCheck = true;
             this.clearRow();
         }
+    }
+    selectRowCallBack() {
+        let gObj = this.parent;
+        let args;
+        let index = this.index;
+        let isToggle = this.toggle;
+        let selectData = this.data;
+        let isRemoved = this.removed;
+        let selectedRow = gObj.getRowByIndex(index);
+        let selectedMovableRow = this.getSelectedMovableRow(index);
         if (!isToggle && !isRemoved) {
             if (this.selectedRowIndexes.indexOf(index) <= -1) {
                 this.updateRowSelection(selectedRow, index);
@@ -7827,7 +7631,7 @@ class Selection {
         args = {
             rowIndexes: rowIndexes, row: selectedRow, rowIndex: rowIndex, target: this.actualTarget,
             prevRow: gObj.getRows()[this.prevRowIndex], previousRowIndex: this.prevRowIndex,
-            data: selectedData
+            data: this.getSelectedRecords(), isInteracted: this.isInteracted
         };
         args = this.addMovableArgs(args, selectedMovableRow);
         this.onActionComplete(args, rowSelected);
@@ -7836,7 +7640,7 @@ class Selection {
      * Select rows with existing row selection by passing row indexes.
      * @param  {number} startIndex - Specifies the row indexes.
      * @return {void}
-     * @hidden
+
      */
     addRowsToSelection(rowIndexes) {
         let gObj = this.parent;
@@ -7921,7 +7725,10 @@ class Selection {
         return indexes;
     }
     clearRow() {
+        this.clearRowCheck = true;
         this.clearRowSelection();
+    }
+    clearRowCallBack() {
         if (this.isCancelDeSelect && this.parent.checkAllRows !== 'Check') {
             return;
         }
@@ -8072,48 +7879,75 @@ class Selection {
             if (this.selectionSettings.persistSelection) {
                 this.isInteracted = this.checkSelectAllClicked ? true : false;
             }
-            this.rowDeselect(rowDeselecting, rowIndex, data, row, foreignKeyData$$1, target, mRow);
-            if (this.isCancelDeSelect && (this.isInteracted || this.checkSelectAllClicked)) {
-                if (this.parent.isPersistSelection) {
-                    if (this.getCheckAllStatus(this.parent.element.querySelector('.e-checkselectall')) === 'Intermediate') {
-                        for (let i = 0; i < this.selectedRecords.length; i++) {
-                            this.updatePersistCollection(this.selectedRecords[i], true);
+            this.rowDeselect(rowDeselecting, rowIndex, data, row, foreignKeyData$$1, target, mRow, () => {
+                if (this.isCancelDeSelect && (this.isInteracted || this.checkSelectAllClicked)) {
+                    if (this.parent.isPersistSelection) {
+                        if (this.getCheckAllStatus(this.parent.element.querySelector('.e-checkselectall')) === 'Intermediate') {
+                            for (let i = 0; i < this.selectedRecords.length; i++) {
+                                this.updatePersistCollection(this.selectedRecords[i], true);
+                            }
+                        }
+                        else {
+                            this.parent.checkAllRows = 'Check';
+                            this.updatePersistSelectedData(true);
                         }
                     }
-                    else {
-                        this.parent.checkAllRows = 'Check';
-                        this.updatePersistSelectedData(true);
+                    if (this.clearRowCheck) {
+                        this.clearRowCallBack();
+                        this.clearRowCheck = false;
+                        if (this.selectRowCheck) {
+                            this.selectRowCallBack();
+                            this.selectRowCheck = false;
+                        }
                     }
+                    return;
                 }
-                return;
-            }
-            rows.filter((record) => record.hasAttribute('aria-selected')).forEach((ele) => {
-                if (!this.disableUI) {
-                    ele.removeAttribute('aria-selected');
-                    this.addRemoveClassesForRow(ele, false, true, 'e-selectionbackground', 'e-active');
-                }
-                this.updatePersistCollection(ele, false);
-                this.updateCheckBoxes(ele);
-            });
-            for (let i = 0, len = this.selectedRowIndexes.length; i < len; i++) {
-                let movableRow = this.getSelectedMovableRow(this.selectedRowIndexes[i]);
-                if (movableRow) {
+                rows.filter((record) => record.hasAttribute('aria-selected')).forEach((ele) => {
                     if (!this.disableUI) {
-                        movableRow.removeAttribute('aria-selected');
-                        this.addRemoveClassesForRow(movableRow, false, true, 'e-selectionbackground', 'e-active');
+                        ele.removeAttribute('aria-selected');
+                        this.addRemoveClassesForRow(ele, false, true, 'e-selectionbackground', 'e-active');
                     }
-                    this.updatePersistCollection(movableRow, false);
+                    this.updatePersistCollection(ele, false);
+                    this.updateCheckBoxes(ele);
+                });
+                for (let i = 0, len = this.selectedRowIndexes.length; i < len; i++) {
+                    let movableRow = this.getSelectedMovableRow(this.selectedRowIndexes[i]);
+                    if (movableRow) {
+                        if (!this.disableUI) {
+                            movableRow.removeAttribute('aria-selected');
+                            this.addRemoveClassesForRow(movableRow, false, true, 'e-selectionbackground', 'e-active');
+                        }
+                        this.updatePersistCollection(movableRow, false);
+                    }
+                }
+                this.selectedRowIndexes = [];
+                this.selectedRecords = [];
+                this.isRowSelected = false;
+                this.selectRowIndex(-1);
+                this.rowDeselect(rowDeselected, rowIndex, data, row, foreignKeyData$$1, target, mRow);
+                this.isInteracted = false;
+                if (this.clearRowCheck) {
+                    this.clearRowCallBack();
+                    this.clearRowCheck = false;
+                    if (this.selectRowCheck) {
+                        this.selectRowCallBack();
+                        this.selectRowCheck = false;
+                    }
+                }
+            });
+        }
+        else {
+            if (this.clearRowCheck) {
+                this.clearRowCallBack();
+                this.clearRowCheck = false;
+                if (this.selectRowCheck) {
+                    this.selectRowCallBack();
+                    this.selectRowCheck = false;
                 }
             }
-            this.selectedRowIndexes = [];
-            this.selectedRecords = [];
-            this.isRowSelected = false;
-            this.selectRowIndex(-1);
-            this.rowDeselect(rowDeselected, rowIndex, data, row, foreignKeyData$$1, target, mRow);
-            this.isInteracted = false;
         }
     }
-    rowDeselect(type, rowIndex, data, row, foreignKeyData$$1, target, mRow) {
+    rowDeselect(type, rowIndex, data, row, foreignKeyData$$1, target, mRow, rowDeselectCallBack) {
         if ((this.selectionSettings.persistSelection && this.isInteracted) || !this.selectionSettings.persistSelection) {
             let cancl = 'cancel';
             let rowDeselectObj = {
@@ -8130,11 +7964,20 @@ class Selection {
                 rowDeselectObj[rowIndex] = rowDeselectObj[rowIndex][rowDeselectObj[rowIndex].length - 1];
                 rowDeselectObj[data] = rowDeselectObj[data][rowDeselectObj[data].length - 1];
             }
-            this.parent.trigger(type, this.parent.getFrozenColumns() ? Object.assign({}, rowDeselectObj, { mRow: mRow }) : rowDeselectObj);
-            this.isCancelDeSelect = rowDeselectObj[cancl];
-            if (!this.isCancelDeSelect || (!this.isInteracted && !this.checkSelectAllClicked)) {
-                this.updatePersistCollection(row[0], false);
-                this.updateCheckBoxes(row[0], undefined, rowIndex[0]);
+            this.parent.trigger(type, this.parent.getFrozenColumns() ? Object.assign({}, rowDeselectObj, { mRow: mRow }) : rowDeselectObj, (args) => {
+                this.isCancelDeSelect = args[cancl];
+                if (!this.isCancelDeSelect || (!this.isInteracted && !this.checkSelectAllClicked)) {
+                    this.updatePersistCollection(row[0], false);
+                    this.updateCheckBoxes(row[0], undefined, rowIndex[0]);
+                }
+                if (rowDeselectCallBack !== undefined) {
+                    rowDeselectCallBack();
+                }
+            });
+        }
+        else if (this.selectionSettings.persistSelection && !this.isInteracted) {
+            if (rowDeselectCallBack !== undefined) {
+                rowDeselectCallBack();
             }
         }
     }
@@ -8398,7 +8241,7 @@ class Selection {
      * Select cells with existing cell selection by passing row and column index.
      * @param  {IIndex} startIndex - Defines the collection of row and column index.
      * @return {void}
-     * @hidden
+
      */
     addCellsToSelection(cellIndexes) {
         if (!this.isCellType()) {
@@ -8964,7 +8807,7 @@ class Selection {
         }
     }
     /**
-     * @hidden
+
      */
     updateAutoFillPosition() {
         if (this.parent.enableAutoFill && !this.parent.isEdit &&
@@ -9059,7 +8902,7 @@ class Selection {
         }
     }
     /**
-     * @hidden
+
      */
     addEventListener() {
         if (this.parent.isDestroyed) {
@@ -9083,7 +8926,7 @@ class Selection {
         this.addEventListener_checkbox();
     }
     /**
-     * @hidden
+
      */
     removeEventListener() {
         if (this.parent.isDestroyed) {
@@ -9779,7 +9622,7 @@ class Selection {
     /**
      * Apply ctrl + A key selection
      * @return {void}
-     * @hidden
+
      */
     ctrlPlusA() {
         if (this.isRowType() && !this.isSingleSel()) {
@@ -9862,7 +9705,7 @@ class Selection {
     /**
      * Apply shift+down key selection
      * @return {void}
-     * @hidden
+
      */
     shiftDownKey(rowIndex, cellIndex) {
         let gObj = this.parent;
@@ -9986,7 +9829,7 @@ class Selection {
 class Search {
     /**
      * Constructor for Grid search module.
-     * @hidden
+
      */
     constructor(parent) {
         this.parent = parent;
@@ -10015,7 +9858,7 @@ class Search {
         }
     }
     /**
-     * @hidden
+
      */
     addEventListener() {
         if (this.parent.isDestroyed) {
@@ -10029,7 +9872,7 @@ class Search {
         this.parent.on(cancelBegin, this.cancelBeginEvent, this);
     }
     /**
-     * @hidden
+
      */
     removeEventListener() {
         if (this.parent.isDestroyed) {
@@ -10044,13 +9887,13 @@ class Search {
     /**
      * To destroy the print
      * @return {void}
-     * @hidden
+
      */
     destroy() {
         this.removeEventListener();
     }
     /**
-     * @hidden
+
      */
     onPropertyChanged(e) {
         if (e.module !== this.getModuleName()) {
@@ -10070,7 +9913,7 @@ class Search {
     /**
      * The function used to trigger onActionComplete
      * @return {void}
-     * @hidden
+
      */
     onSearchComplete(e) {
         this.parent.trigger(actionComplete, extend(e, {
@@ -10100,7 +9943,7 @@ class Search {
 class ShowHide {
     /**
      * Constructor for the show hide module.
-     * @hidden
+
      */
     constructor(parent) {
         this.parent = parent;
@@ -10196,7 +10039,7 @@ class ShowHide {
 class Scroll {
     /**
      * Constructor for the Grid scrolling.
-     * @hidden
+
      */
     constructor(parent) {
         this.lastScrollTop = 0;
@@ -10215,7 +10058,7 @@ class Scroll {
         return 'scroll';
     }
     /**
-     * @hidden
+
      */
     setWidth(uiupdate) {
         this.parent.element.style.width = formatUnit(this.parent.width);
@@ -10228,7 +10071,7 @@ class Scroll {
         }
     }
     /**
-     * @hidden
+
      */
     setHeight() {
         let mHdrHeight = 0;
@@ -10244,7 +10087,7 @@ class Scroll {
         this.ensureOverflow(content);
     }
     /**
-     * @hidden
+
      */
     setPadding() {
         let content = this.parent.getHeaderContent();
@@ -10254,7 +10097,7 @@ class Scroll {
         content.style[cssProps.padding] = scrollWidth > 0 ? scrollWidth + 'px' : '0px';
     }
     /**
-     * @hidden
+
      */
     removePadding(rtl) {
         let cssProps = this.getCssProperties(rtl);
@@ -10286,7 +10129,7 @@ class Scroll {
         return 1;
     }
     /**
-     * @hidden
+
      */
     addEventListener() {
         if (this.parent.isDestroyed) {
@@ -10299,7 +10142,7 @@ class Scroll {
         this.parent.on(headerRefreshed, this.setScrollLeft, this);
     }
     /**
-     * @hidden
+
      */
     removeEventListener() {
         if (this.parent.isDestroyed) {
@@ -10497,7 +10340,7 @@ class Scroll {
         this.parent.isPreventScrollEvent = false;
     }
     /**
-     * @hidden
+
      */
     getCssProperties(rtl) {
         let css = {};
@@ -10532,7 +10375,7 @@ class Scroll {
         this.setWidth(!isNullOrUndefined(e.properties[width]));
     }
     /**
-     * @hidden
+
      */
     destroy() {
         let gridElement = this.parent.element;
@@ -10554,7 +10397,7 @@ class Scroll {
     /**
      * Function to get the scrollbar width of the browser.
      * @return {number}
-     * @hidden
+
      */
     static getScrollBarWidth() {
         return getScrollBarWidth();
@@ -10576,7 +10419,7 @@ class AggregateColumn extends ChildProperty {
         this.templateFn = {};
     }
     /**
-     * @hidden
+
      */
     setFormatter(cultureName) {
         let valueFormatter = new ValueFormatter(cultureName);
@@ -10585,13 +10428,13 @@ class AggregateColumn extends ChildProperty {
         }
     }
     /**
-     * @hidden
+
      */
     getFormatter() {
         return this.formatFn;
     }
     /**
-     * @hidden
+
      */
     setTemplate(helper = {}) {
         if (this.footerTemplate !== undefined) {
@@ -10608,13 +10451,13 @@ class AggregateColumn extends ChildProperty {
         }
     }
     /**
-     * @hidden
+
      */
     getTemplate(type) {
         return this.templateFn[getEnumValue(CellType, type)];
     }
     /**
-     * @hidden
+
      */
     setPropertiesSilent(prop) {
         this.setProperties(prop, true);
@@ -10659,7 +10502,7 @@ __decorate$3([
 class Clipboard {
     /**
      * Constructor for the Grid clipboard module
-     * @hidden
+
      */
     constructor(parent) {
         this.copyContent = '';
@@ -10668,7 +10511,7 @@ class Clipboard {
         this.addEventListener();
     }
     /**
-     * @hidden
+
      */
     addEventListener() {
         if (this.parent.isDestroyed) {
@@ -10680,7 +10523,7 @@ class Clipboard {
         EventHandler.add(this.parent.element, 'keydown', this.pasteHandler, this);
     }
     /**
-     * @hidden
+
      */
     removeEventListener() {
         if (this.parent.isDestroyed) {
@@ -10919,7 +10762,7 @@ class Clipboard {
     /**
      * To destroy the clipboard
      * @return {void}
-     * @hidden
+
      */
     destroy() {
         this.removeEventListener();
@@ -11201,7 +11044,7 @@ __decorate([
 let Grid = Grid_1 = class Grid extends Component {
     /**
      * Constructor for creating the component
-     * @hidden
+
      */
     constructor(options, element) {
         super(options, element);
@@ -11209,23 +11052,16 @@ let Grid = Grid_1 = class Grid extends Component {
         this.inViewIndexes = [];
         this.media = {};
         this.freezeRefresh = Component.prototype.refresh;
-        /** @hidden */
         this.isVirtualAdaptive = false;
-        /** @hidden */
         this.vRows = [];
-        /** @hidden */
         this.vcRows = [];
-        /** @hidden */
         this.vGroupOffsets = {};
         /**
          * Gets the currently visible records of the Grid.
          */
         this.currentViewData = [];
-        /** @hidden */
         this.lockcolPositionCount = 0;
-        /** @hidden */
         this.prevPageMoving = false;
-        /** @hidden */
         this.pageTemplateChange = false;
         // enable/disable logger for MVC & Core
         this.enableLogger = true;
@@ -11236,7 +11072,7 @@ let Grid = Grid_1 = class Grid extends Component {
     /**
      * Get the properties to be maintained in the persisted state.
      * @return {string}
-     * @hidden
+
      */
     getPersistData() {
         let keyEntity = ['pageSettings', 'sortSettings',
@@ -11262,7 +11098,7 @@ let Grid = Grid_1 = class Grid extends Component {
     /**
      * To provide the array of modules needed for component rendering
      * @return {ModuleDeclaration[]}
-     * @hidden
+
      */
     requiredModules() {
         let modules = [];
@@ -11622,7 +11458,7 @@ let Grid = Grid_1 = class Grid extends Component {
         this.media[col.uid].addListener(this.mediaQueryUpdate.bind(this, index));
     }
     /**
-     * @hidden
+
      */
     updateMediaColumns(col) {
         if (!this.enableColumnVirtualization) {
@@ -11637,7 +11473,7 @@ let Grid = Grid_1 = class Grid extends Component {
         }
     }
     /**
-     * @hidden
+
      */
     mediaQueryUpdate(columnIndex, e) {
         let col = this.getColumns()[columnIndex];
@@ -11729,7 +11565,7 @@ let Grid = Grid_1 = class Grid extends Component {
     }
     /**
      * Called internally if any of the property value changed.
-     * @hidden
+
      */
     /* tslint:disable-next-line:max-line-length */
     // tslint:disable-next-line:max-func-body-length
@@ -12013,7 +11849,7 @@ let Grid = Grid_1 = class Grid extends Component {
         }
     }
     /**
-     * @hidden
+
      */
     updateDefaultCursor() {
         let headerRows = [].slice.call(this.element.querySelectorAll('.e-columnheader'));
@@ -12079,7 +11915,7 @@ let Grid = Grid_1 = class Grid extends Component {
     /**
      * Gets the columns from the Grid.
      * @return {Column[]}
-     * @blazorType List<GridColumn>
+
      */
     getColumns(isRefresh) {
         let inview = this.inViewIndexes.map((v) => v - this.groupSettings.columns.length).filter((v) => v > -1);
@@ -12135,7 +11971,7 @@ let Grid = Grid_1 = class Grid extends Component {
     /**
      * Gets the visible columns from the Grid.
      * @return {Column[]}
-     * @blazorType List<GridColumn>
+
      */
     getVisibleColumns() {
         let cols = [];
@@ -12319,7 +12155,7 @@ let Grid = Grid_1 = class Grid extends Component {
         return dataRows;
     }
     /**
-     * @hidden
+
      */
     addMovableRows(fRows, mrows) {
         for (let i = 0, len = mrows.length; i < len; i++) {
@@ -12470,7 +12306,7 @@ let Grid = Grid_1 = class Grid extends Component {
         return this.getHeaderTable().querySelectorAll('.e-headercell')[index];
     }
     /**
-     * @hidden
+
      */
     getRowObjectFromUID(uid) {
         let rows = this.contentModule.getRows();
@@ -12492,13 +12328,13 @@ let Grid = Grid_1 = class Grid extends Component {
         return null;
     }
     /**
-     * @hidden
+
      */
     getRowsObject() {
         return this.contentModule.getRows();
     }
     /**
-     * @hidden
+
      */
     getMovableRowsObject() {
         return this.contentModule.getMovableRows();
@@ -12520,8 +12356,8 @@ let Grid = Grid_1 = class Grid extends Component {
         return this.getHeaderContent().querySelector('[e-mappinguid=' + uid + ']').parentElement;
     }
     /**
-     * @hidden
-     * @blazorType GridColumn
+
+
      */
     getColumnByIndex(index) {
         let column;
@@ -12535,7 +12371,7 @@ let Grid = Grid_1 = class Grid extends Component {
      * Gets a Column by column name.
      * @param  {string} field - Specifies the column name.
      * @return {Column}
-     * @blazorType GridColumn
+
      */
     getColumnByField(field) {
         return iterateArrayOrObject(this.getColumns(), (item, index) => {
@@ -12563,7 +12399,7 @@ let Grid = Grid_1 = class Grid extends Component {
      * Gets a column by UID.
      * @param  {string} uid - Specifies the column UID.
      * @return {Column}
-     * @blazorType GridColumn
+
      */
     getColumnByUid(uid) {
         return iterateArrayOrObject([...this.getColumns(), ...this.getStackedColumns(this.columns)], (item, index) => {
@@ -12574,7 +12410,7 @@ let Grid = Grid_1 = class Grid extends Component {
         })[0];
     }
     /**
-     * @hidden
+
      */
     getStackedColumns(columns, stackedColumn = []) {
         for (const column of columns) {
@@ -12725,7 +12561,7 @@ let Grid = Grid_1 = class Grid extends Component {
     /**
      * Gets the collection of selected records.
      * @return {Object[]}
-     * @isGenericType true
+
      */
     getSelectedRecords() {
         return this.selectionModule ? this.selectionModule.getSelectedRecords() : [];
@@ -12758,13 +12594,13 @@ let Grid = Grid_1 = class Grid extends Component {
         this.showHider.hide(keys, hideBy);
     }
     /**
-     * @hidden
+
      */
     getFrozenColumns() {
         return this.frozenColumns + this.getFrozenCount(this.columns, 0);
     }
     /**
-     * @hidden
+
      */
     getVisibleFrozenColumns() {
         return this.getVisibleFrozenColumnsCount() + this.getVisibleFrozenCount(this.columns, 0);
@@ -12850,7 +12686,7 @@ let Grid = Grid_1 = class Grid extends Component {
      * Remove sorted column by field name.
      * @param {string} field - Defines the column field name to remove sort.
      * @return {void}
-     * @hidden
+
      */
     removeSortColumn(field) {
         if (this.sortModule) {
@@ -12890,7 +12726,7 @@ let Grid = Grid_1 = class Grid extends Component {
      * @param  {string} field - Defines column field name to remove filter.
      * @param  {boolean} isClearFilterBar -  Specifies whether the filter bar value needs to be cleared.
      * @return {void}
-     * @hidden
+
      */
     removeFilteredColsByField(field, isClearFilterBar) {
         if (this.filterModule) {
@@ -13097,7 +12933,7 @@ let Grid = Grid_1 = class Grid extends Component {
         }
     }
     /**
-     * @hidden
+
      */
     recalcIndentWidth() {
         if (!this.getHeaderTable().querySelector('.e-emptycell')) {
@@ -13139,7 +12975,7 @@ let Grid = Grid_1 = class Grid extends Component {
         this.getHeaderTable().querySelector('.e-emptycell').setAttribute('indentRefreshed', 'true');
     }
     /**
-     * @hidden
+
      */
     isRowDragable() {
         return this.allowRowDragAndDrop && !this.rowDropSettings.targetID;
@@ -13191,13 +13027,13 @@ let Grid = Grid_1 = class Grid extends Component {
         }
     }
     /**
-     * @hidden
+
      */
     refreshDataSource(e, args) {
         this.notify('refreshdataSource', e);
     }
     /**
-     * @hidden
+
      */
     disableRowDD(enable) {
         let headerTable = this.getHeaderTable();
@@ -13245,7 +13081,7 @@ let Grid = Grid_1 = class Grid extends Component {
         }
     }
     /**
-     * @hidden
+
      */
     createColumnchooser(x, y, target) {
         if (this.columnChooserModule) {
@@ -13398,7 +13234,7 @@ let Grid = Grid_1 = class Grid extends Component {
     /**
      * The function is used to apply text wrap
      * @return {void}
-     * @hidden
+
      */
     applyTextWrap() {
         if (this.allowTextWrap) {
@@ -13424,7 +13260,7 @@ let Grid = Grid_1 = class Grid extends Component {
     /**
      * The function is used to remove text wrap
      * @return {void}
-     * @hidden
+
      */
     removeTextWrap() {
         wrap(this.element, false);
@@ -13435,7 +13271,7 @@ let Grid = Grid_1 = class Grid extends Component {
     /**
      * The function is used to add Tooltip to the grid cell that has ellipsiswithtooltip clip mode.
      * @return {void}
-     * @hidden
+
      */
     createTooltip() {
         this.toolTipObj = new Tooltip({ opensOn: 'custom', content: '' }, this.element);
@@ -13500,7 +13336,7 @@ let Grid = Grid_1 = class Grid extends Component {
     }
     /**
      * To create table for ellipsiswithtooltip
-     * @hidden
+
      */
     createTable(table, tag, type) {
         let myTableDiv = this.createElement('div');
@@ -13528,7 +13364,7 @@ let Grid = Grid_1 = class Grid extends Component {
     }
     /**
      * Binding events to the element while component creation.
-     * @hidden
+
      */
     wireEvents() {
         EventHandler.add(this.element, 'click', this.mouseClickHandler, this);
@@ -13551,7 +13387,7 @@ let Grid = Grid_1 = class Grid extends Component {
     }
     /**
      * Unbinding events from the element while component destroy.
-     * @hidden
+
      */
     unwireEvents() {
         EventHandler.remove(this.element, 'click', this.mouseClickHandler);
@@ -13564,7 +13400,7 @@ let Grid = Grid_1 = class Grid extends Component {
         EventHandler.remove(this.getContent(), 'touchstart', this.tapEvent);
     }
     /**
-     * @hidden
+
      */
     addListener() {
         if (this.isDestroyed) {
@@ -13579,7 +13415,7 @@ let Grid = Grid_1 = class Grid extends Component {
         this.on(contentReady, this.blazorTemplate, this);
     }
     /**
-     * @hidden
+
      */
     removeListener() {
         if (this.isDestroyed) {
@@ -13637,8 +13473,8 @@ let Grid = Grid_1 = class Grid extends Component {
     /**
      * Get current visible data of grid.
      * @return {Object[]}
-     * @hidden
-     * @isGenericType true
+
+
      */
     getCurrentViewRecords() {
         if (isGroupAdaptive(this)) {
@@ -13764,7 +13600,7 @@ let Grid = Grid_1 = class Grid extends Component {
         });
     }
     /**
-     * @hidden
+
      */
     isDetail() {
         return !isNullOrUndefined(this.detailTemplate) || !isNullOrUndefined(this.childGrid);
@@ -13808,7 +13644,7 @@ let Grid = Grid_1 = class Grid extends Component {
         }
     }
     /**
-     * @hidden
+
      */
     setInjectedModules(modules) {
         this.injectedModules = modules;
@@ -13822,7 +13658,7 @@ let Grid = Grid_1 = class Grid extends Component {
     /**
      * Gets the foreign columns from Grid.
      * @return {Column[]}
-     * @blazorType List<GridColumn>
+
      */
     getForeignKeyColumns() {
         return this.getColumns().filter((col) => {
@@ -13830,7 +13666,7 @@ let Grid = Grid_1 = class Grid extends Component {
         });
     }
     /**
-     * @hidden
+
      */
     getRowHeight() {
         return this.rowHeight ? this.rowHeight : getRowHeight(this.element);
@@ -13851,7 +13687,7 @@ let Grid = Grid_1 = class Grid extends Component {
      * @param  {workbook} workbook - Defines the Workbook if multiple export is enabled.
      * @param  {boolean} isBlob - If 'isBlob' set to true, then it will be returned as blob data.
      * @return {Promise<any>}
-     * @blazorType void
+
      */
     excelExport(excelExportProperties, isMultipleExport, 
     /* tslint:disable-next-line:no-any */
@@ -13866,7 +13702,7 @@ let Grid = Grid_1 = class Grid extends Component {
      * @param  {workbook} workbook - Defines the Workbook if multiple export is enabled.
      * @param  {boolean} isBlob - If 'isBlob' set to true, then it will be returned as blob data.
      * @return {Promise<any>}
-     * @blazorType void
+
      */
     csvExport(excelExportProperties, 
     /* tslint:disable-next-line:no-any */
@@ -13881,7 +13717,7 @@ let Grid = Grid_1 = class Grid extends Component {
      * @param  {pdfDoc} pdfDoc - Defined the Pdf Document if multiple export is enabled.
      * @param  {boolean} isBlob - If 'isBlob' set to true, then it will be returned as blob data.
      * @return {Promise<any>}
-     * @blazorType void
+
      */
     pdfExport(pdfExportProperties, 
     /* tslint:disable-next-line:no-any */
@@ -14034,13 +13870,13 @@ let Grid = Grid_1 = class Grid extends Component {
         }
     }
     /**
-     * @hidden
+
      */
     isContextMenuOpen() {
         return this.contextMenuModule && this.contextMenuModule.isOpen;
     }
     /**
-     * @hidden
+
      */
     ensureModuleInjected(module) {
         return this.getInjectedModules().indexOf(module) >= 0;
@@ -14054,14 +13890,14 @@ let Grid = Grid_1 = class Grid extends Component {
         this.clearTemplate(propertyNames, index);
     }
     /**
-     * @hidden
+
      * @private
      */
     log(type, args) {
         this.loggerModule ? this.loggerModule.log(type, args) : (() => 0)();
     }
     /**
-     * @hidden
+
      */
     applyBiggerTheme(element) {
         if (this.element.classList.contains('e-bigger')) {
@@ -14069,7 +13905,7 @@ let Grid = Grid_1 = class Grid extends Component {
         }
     }
     /**
-     * @hidden
+
      */
     getPreviousRowData() {
         let previousRowData = this.getRowsObject()[this.getRows().length - 1].data;
@@ -14110,7 +13946,7 @@ let Grid = Grid_1 = class Grid extends Component {
     }
     ;
     /**
-    * @hidden
+
     */
     // Need to have all columns while filtering with ColumnVirtualization.
     grabColumnByFieldFromAllCols(field) {
@@ -14125,7 +13961,7 @@ let Grid = Grid_1 = class Grid extends Component {
         return column;
     }
     /**
-    * @hidden
+
     */
     // Need to have all columns while filtering with ColumnVirtualization.
     grabColumnByUidFromAllCols(uid) {
@@ -14144,7 +13980,7 @@ let Grid = Grid_1 = class Grid extends Component {
         return /iphone|ipod|ipad/.test(userAgent);
     }
     /**
-     * @hidden
+
      */
     // Need to have all columns while filtering with ColumnVirtualization.
     tapEvent(e) {
@@ -14532,7 +14368,7 @@ Grid = Grid_1 = __decorate([
 class Sort {
     /**
      * Constructor for Grid sorting module
-     * @hidden
+
      */
     constructor(parent, sortSettings, sortedColumns, locator) {
         this.contentRefresh = true;
@@ -14548,7 +14384,7 @@ class Sort {
     /**
      * The function used to update sortSettings
      * @return {void}
-     * @hidden
+
      */
     updateModel() {
         let sortedColumn = { field: this.columnName, direction: this.direction };
@@ -14592,7 +14428,7 @@ class Sort {
     /**
      * The function used to trigger onActionComplete
      * @return {void}
-     * @hidden
+
      */
     onActionComplete(e) {
         let args = !this.isRemove ? {
@@ -14665,7 +14501,7 @@ class Sort {
         }
     }
     /**
-     * @hidden
+
      */
     onPropertyChanged(e) {
         if (e.module !== this.getModuleName()) {
@@ -14714,7 +14550,7 @@ class Sort {
      * Remove sorted column by field name.
      * @param {string} field - Defines the column field name to remove sort.
      * @return {void}
-     * @hidden
+
      */
     removeSortColumn(field) {
         let gObj = this.parent;
@@ -14778,7 +14614,7 @@ class Sort {
         }
     }
     /**
-     * @hidden
+
      */
     addEventListener() {
         if (this.parent.isDestroyed) {
@@ -14793,7 +14629,7 @@ class Sort {
         this.parent.on(cancelBegin, this.cancelBeginEvent, this);
     }
     /**
-     * @hidden
+
      */
     removeEventListener() {
         if (this.parent.isDestroyed) {
@@ -14809,7 +14645,7 @@ class Sort {
     /**
      * To destroy the sorting
      * @return {void}
-     * @hidden
+
      */
     destroy() {
         this.isModelChanged = false;
@@ -14994,14 +14830,14 @@ class Sort {
 class NumericContainer {
     /**
      * Constructor for numericContainer module
-     * @hidden
+
      */
     constructor(pagerModule) {
         this.pagerModule = pagerModule;
     }
     /**
      * The function is used to render numericContainer
-     * @hidden
+
      */
     render() {
         this.pagerElement = this.pagerModule.element;
@@ -15021,7 +14857,7 @@ class NumericContainer {
     }
     /**
      * The function is used to refresh refreshNumericLinks
-     * @hidden
+
      */
     refreshNumericLinks() {
         let link;
@@ -15045,14 +14881,14 @@ class NumericContainer {
     }
     /**
      * Binding events to the element while component creation
-     * @hidden
+
      */
     wireEvents() {
         EventHandler.add(this.pagerElement, 'click', this.clickHandler, this);
     }
     /**
      * Unbinding events from the element while component destroy
-     * @hidden
+
      */
     unwireEvents() {
         EventHandler.remove(this.pagerModule.element, 'click', this.clickHandler);
@@ -15061,7 +14897,7 @@ class NumericContainer {
      * To destroy the PagerMessage
      * @method destroy
      * @return {void}
-     * @hidden
+
      */
     destroy() {
         this.unwireEvents();
@@ -15269,14 +15105,14 @@ class NumericContainer {
 class PagerMessage {
     /**
      * Constructor for externalMessage module
-     * @hidden
+
      */
     constructor(pagerModule) {
         this.pagerModule = pagerModule;
     }
     /**
      * The function is used to render pager message
-     * @hidden
+
      */
     render() {
         let div = createElement('div', { className: 'e-parentmsgbar', attrs: { 'aria-label': 'Pager Information' } });
@@ -15321,7 +15157,7 @@ class PagerMessage {
      * To destroy the PagerMessage
      * @method destroy
      * @return {void}
-     * @hidden
+
      */
     destroy() {
         //destroy
@@ -15357,14 +15193,14 @@ var __decorate$4 = (undefined && undefined.__decorate) || function (decorators, 
 let Pager = class Pager extends Component {
     /**
      * Constructor for creating the component.
-     * @hidden
+
      */
     constructor(options, element) {
         super(options, element);
     }
     /**
      * To provide the array of modules needed for component rendering
-     * @hidden
+
      */
     requiredModules() {
         let modules = [];
@@ -15384,7 +15220,7 @@ let Pager = class Pager extends Component {
     }
     /**
      * Initialize the event handler
-     * @hidden
+
      */
     preRender() {
         //preRender
@@ -15434,7 +15270,7 @@ let Pager = class Pager extends Component {
     }
     /**
      * Get the properties to be maintained in the persisted state.
-     * @hidden
+
      */
     getPersistData() {
         let keyEntity = ['currentPage', 'pageSize'];
@@ -15460,7 +15296,7 @@ let Pager = class Pager extends Component {
     }
     /**
      * Called internally if any of the property value changed.
-     * @hidden
+
      */
     onPropertyChanged(newProp, oldProp) {
         if (this.isDestroyed) {
@@ -15550,7 +15386,7 @@ let Pager = class Pager extends Component {
         }
     }
     /**
-     * @hidden
+
      */
     setPageSize(pageSize) {
         this.pageSize = pageSize;
@@ -15600,12 +15436,10 @@ let Pager = class Pager extends Component {
         result = this.getPagerTemplate()(data);
         appendChildren(this.element, result);
     }
-    /** @hidden */
     updateTotalPages() {
         this.totalPages = (this.totalRecordsCount % this.pageSize === 0) ? (this.totalRecordsCount / this.pageSize) :
             (parseInt((this.totalRecordsCount / this.pageSize).toString(), 10) + 1);
     }
-    /** @hidden */
     getPagerTemplate() {
         return this.templateFn;
     }
@@ -15754,7 +15588,7 @@ Pager = __decorate$4([
 class PagerDropDown {
     /**
      * Constructor for pager module
-     * @hidden
+
      */
     constructor(pagerModule) {
         this.pagerModule = pagerModule;
@@ -15762,14 +15596,14 @@ class PagerDropDown {
     /**
      * For internal use only - Get the module name.
      * @private
-     * @hidden
+
      */
     getModuleName() {
         return 'pagerdropdown';
     }
     /**
      * The function is used to render pager dropdown
-     * @hidden
+
      */
     render() {
         let pagerObj = this.pagerModule;
@@ -15805,7 +15639,7 @@ class PagerDropDown {
     /**
      * For internal use only - Get the pagesize.
      * @private
-     * @hidden
+
      */
     onChange(e) {
         if (this.dropDownListObject.value === this.pagerModule.getLocalizedLabel('All')) {
@@ -15853,7 +15687,7 @@ class PagerDropDown {
      * To destroy the Pagerdropdown
      * @method destroy
      * @return {void}
-     * @hidden
+
      */
     destroy(args) {
         if (this.dropDownListObject && !this.dropDownListObject.isDestroyed) {
@@ -15872,7 +15706,7 @@ class ExternalMessage {
      * Constructor for externalMessage module
      * @param  {Pager} pagerModule?
      * @returns defaultType
-     * @hidden
+
      */
     constructor(pagerModule) {
         this.pagerModule = pagerModule;
@@ -15886,7 +15720,7 @@ class ExternalMessage {
     }
     /**
      * The function is used to render pager externalMessage
-     * @hidden
+
      */
     render() {
         this.element = createElement('div', { className: 'e-pagerexternalmsg', attrs: { 'aria-label': 'Pager external message' } });
@@ -15923,7 +15757,7 @@ class ExternalMessage {
      * To destroy the PagerMessage
      * @method destroy
      * @return {void}
-     * @hidden
+
      */
     destroy() {
         remove(this.element);
@@ -15936,7 +15770,7 @@ class ExternalMessage {
 class Page {
     /**
      * Constructor for the Grid paging module
-     * @hidden
+
      */
     constructor(parent, pageSettings) {
         Pager.Inject(ExternalMessage, PagerDropDown);
@@ -15954,7 +15788,7 @@ class Page {
     /**
      * The function used to render pager from grid pageSettings
      * @return {void}
-     * @hidden
+
      */
     render() {
         let gObj = this.parent;
@@ -16026,7 +15860,7 @@ class Page {
         this.pagerObj.goToPage(pageNo);
     }
     /**
-     * @hidden
+
      */
     setPageSize(pageSize) {
         this.pagerObj.setPageSize(pageSize);
@@ -16034,7 +15868,7 @@ class Page {
     /**
      * The function used to update pageSettings model
      * @return {void}
-     * @hidden
+
      */
     updateModel(e) {
         this.parent.pageSettings.totalRecordsCount = e.count;
@@ -16043,7 +15877,7 @@ class Page {
     /**
      * The function used to trigger onActionComplete
      * @return {void}
-     * @hidden
+
      */
     onActionComplete(e) {
         this.parent.trigger(actionComplete, extend(e, {
@@ -16052,7 +15886,7 @@ class Page {
         }));
     }
     /**
-     * @hidden
+
      */
     onPropertyChanged(e) {
         if (e.module !== this.getModuleName()) {
@@ -16132,7 +15966,7 @@ class Page {
         }
     }
     /**
-     * @hidden
+
      */
     addEventListener() {
         this.handlers = {
@@ -16156,7 +15990,7 @@ class Page {
         this.parent.on(keyPressed, this.handlers.keyPress, this);
     }
     /**
-     * @hidden
+
      */
     removeEventListener() {
         if (this.parent.isDestroyed) {
@@ -16173,7 +16007,7 @@ class Page {
     /**
      * To destroy the pager
      * @return {void}
-     * @hidden
+
      */
     destroy() {
         this.removeEventListener();
@@ -16187,7 +16021,7 @@ class Page {
     }
 }
 /**
- * @hidden
+
  */
 const keyActions = {
     pageUp: '.e-prev',
@@ -16200,7 +16034,7 @@ const keyActions = {
 
 /**
  * FilterCellRenderer class which responsible for building filter cell.
- * @hidden
+
  */
 class FilterCellRenderer extends CellRenderer {
     constructor() {
@@ -16332,7 +16166,7 @@ class FilterCellRenderer extends CellRenderer {
 
 /**
  * `filter operators` render boolean column.
- * @hidden
+
  */
 class FlMenuOptrUI {
     constructor(parent, customFltrOperators, serviceLocator, filterSettings) {
@@ -16342,7 +16176,7 @@ class FlMenuOptrUI {
         this.customFilterOperators = customFltrOperators;
     }
     /**
-     * @hidden
+
      */
     renderOperatorUI(dlgConetntEle, target, column, dlgObj) {
         this.dialogObj = dlgObj;
@@ -16393,7 +16227,7 @@ class FlMenuOptrUI {
         return selValue;
     }
     /**
-     * @hidden
+
      */
     getFlOperator() {
         return this.dropOptr.value;
@@ -16402,7 +16236,7 @@ class FlMenuOptrUI {
 
 /**
  * `string filterui` render string column.
- * @hidden
+
  */
 class StringFilterUI {
     constructor(parent, serviceLocator, filterSettings) {
@@ -16438,8 +16272,8 @@ class StringFilterUI {
             actionComplete: (e) => {
                 e.result = e.result.filter((obj, index, arr) => {
                     return arr.map((mapObj) => {
-                        return mapObj[this.actObj.fields.value];
-                    }).indexOf(obj[this.actObj.fields.value]) === index;
+                        return (getValue(this.actObj.fields.value, mapObj));
+                    }).indexOf(getValue((this.actObj.fields.value), obj)) === index;
                 });
             }
         }, args.column.filter.params));
@@ -16471,7 +16305,7 @@ class StringFilterUI {
 
 /**
  * `numberfilterui` render number column.
- * @hidden
+
  */
 class NumberFilterUI {
     constructor(parent, serviceLocator, filterSettings) {
@@ -16504,7 +16338,7 @@ class NumberFilterUI {
 
 /**
  * `boolfilterui` render boolean column.
- * @hidden
+
  */
 class BooleanFilterUI {
     constructor(parent, serviceLocator, filterSettings) {
@@ -16553,7 +16387,7 @@ class BooleanFilterUI {
 
 /**
  * `datefilterui` render date column.
- * @hidden
+
  */
 class DateFilterUI {
     constructor(parent, serviceLocator, filterSettings) {
@@ -16608,7 +16442,7 @@ class DateFilterUI {
 
 /**
  * `filter menu` render boolean column.
- * @hidden
+
  */
 class FilterMenuRenderer {
     constructor(parent, filterSettings, serviceLocator, customFltrOperators, fltrObj) {
@@ -16842,13 +16676,13 @@ class FilterMenuRenderer {
 }
 
 /**
- * @hidden
+
  * `ExcelFilter` module is used to handle filtering action.
  */
 class ExcelFilter extends CheckBoxFilter {
     /**
      * Constructor for excel filtering module
-     * @hidden
+
      */
     constructor(parent, filterSettings, serviceLocator, customFltrOperators) {
         super(parent, filterSettings, serviceLocator);
@@ -16887,7 +16721,7 @@ class ExcelFilter extends CheckBoxFilter {
     /**
      * To destroy the filter bar.
      * @return {void}
-     * @hidden
+
      */
     destroy() {
         if (this.dlg) {
@@ -17561,7 +17395,7 @@ class ExcelFilter extends CheckBoxFilter {
 class Filter {
     /**
      * Constructor for Grid filtering module
-     * @hidden
+
      */
     constructor(parent, filterSettings, serviceLocator) {
         this.predicate = 'and';
@@ -17585,7 +17419,7 @@ class Filter {
     /**
      * To render filter bar when filtering enabled.
      * @return {void}
-     * @hidden
+
      */
     render(e) {
         if (DataUtil.getObject('args.isFrozen', e)) {
@@ -17630,7 +17464,7 @@ class Filter {
     /**
      * To destroy the filter bar.
      * @return {void}
-     * @hidden
+
      */
     destroy() {
         let gridElement = this.parent.element;
@@ -17694,7 +17528,7 @@ class Filter {
     /**
      * To update filterSettings when applying filter.
      * @return {void}
-     * @hidden
+
      */
     updateModel() {
         let col = this.parent.getColumnByField(this.fieldName);
@@ -17726,7 +17560,7 @@ class Filter {
     /**
      * To trigger action complete event.
      * @return {void}
-     * @hidden
+
      */
     onActionComplete(e) {
         let args = !this.isRemove ? {
@@ -17768,7 +17602,7 @@ class Filter {
         }
     }
     /**
-     * @hidden
+
      */
     addEventListener() {
         if (this.parent.isDestroyed) {
@@ -17787,7 +17621,7 @@ class Filter {
         this.parent.on(click, this.filterIconClickHandler, this);
     }
     /**
-     * @hidden
+
      */
     removeEventListener() {
         EventHandler.remove(document, 'click', this.clickHandler);
@@ -18047,7 +17881,7 @@ class Filter {
      * @param  {string} field - Defines column field name to remove filter.
      * @param  {boolean} isClearFilterBar -  Specifies whether the filter bar value needs to be cleared.
      * @return {void}
-     * @hidden
+
      */
     removeFilteredColsByField(field, isClearFilterBar) {
         let fCell;
@@ -18510,13 +18344,13 @@ const resizeClassList = {
 };
 /**
  * `Resize` module is used to handle Resize to fit for columns.
- * @hidden
+
  * @private
  */
 class Resize {
     /**
      * Constructor for the Grid resize module
-     * @hidden
+
      */
     constructor(parent) {
         this.tapped = false;
@@ -18663,7 +18497,7 @@ class Resize {
     /**
      * To destroy the resize
      * @return {void}
-     * @hidden
+
      */
     destroy() {
         let gridElement = this.parent.element;
@@ -18692,7 +18526,7 @@ class Resize {
     }
     /**
      * To create table for autofit
-     * @hidden
+
      */
     createTable(table, text, tag) {
         let myTableDiv = this.parent.createElement('div');
@@ -18719,7 +18553,7 @@ class Resize {
         return Math.ceil(offsetWidthValue);
     }
     /**
-     * @hidden
+
      */
     addEventListener() {
         if (this.parent.isDestroyed) {
@@ -18730,7 +18564,7 @@ class Resize {
         this.parent.on(contentReady, this.autoFit, this);
     }
     /**
-     * @hidden
+
      */
     removeEventListener() {
         if (this.parent.isDestroyed) {
@@ -18740,7 +18574,7 @@ class Resize {
         this.parent.off(initialEnd, this.wireEvents);
     }
     /**
-     * @hidden
+
      */
     render() {
         this.unwireEvents();
@@ -19161,7 +18995,7 @@ class Resize {
 class Reorder {
     /**
      * Constructor for the Grid reorder module
-     * @hidden
+
      */
     constructor(parent) {
         this.parent = parent;
@@ -19494,7 +19328,7 @@ class Reorder {
     /**
      * The function used to trigger onActionComplete
      * @return {void}
-     * @hidden
+
      */
     onActionComplete(e) {
         this.parent.trigger(actionComplete, extend(e, { type: actionComplete }));
@@ -19502,7 +19336,7 @@ class Reorder {
     /**
      * To destroy the reorder
      * @return {void}
-     * @hidden
+
      */
     destroy() {
         let gridElement = this.parent.element;
@@ -19623,12 +19457,12 @@ class Reorder {
 /**
  *
  * Reorder module is used to handle row reordering.
- * @hidden
+
  */
 class RowDD {
     /**
      * Constructor for the Grid print module
-     * @hidden
+
      */
     constructor(parent) {
         this.selectedRows = [];
@@ -19827,13 +19661,34 @@ class RowDD {
             this.isRefresh = false;
             let selectedIndexes = this.parent.getSelectedRowIndexes();
             if (gObj.isRowDragable()) {
-                if (!this.parent.rowDropSettings.targetID &&
-                    this.startedRow.querySelector('td.e-selectionbackground') && selectedIndexes.length > 1 &&
-                    selectedIndexes.length !== this.parent.getCurrentViewRecords().length) {
-                    this.reorderRows(selectedIndexes, args.dropIndex);
+                if (!isBlazor()) {
+                    if (!this.parent.rowDropSettings.targetID &&
+                        this.startedRow.querySelector('td.e-selectionbackground') && selectedIndexes.length > 1 &&
+                        selectedIndexes.length !== this.parent.getCurrentViewRecords().length) {
+                        this.reorderRows(selectedIndexes, args.dropIndex);
+                    }
+                    else {
+                        this.reorderRows([parseInt(this.startedRow.getAttribute('aria-rowindex'), 10)], this.dragTarget);
+                    }
                 }
                 else {
-                    this.reorderRows([parseInt(this.startedRow.getAttribute('aria-rowindex'), 10)], this.dragTarget);
+                    let fromIdx = parseInt(this.startedRow.getAttribute('aria-rowindex'), 10);
+                    let currentVdata = [];
+                    currentVdata[0] = this.parent.currentViewData[fromIdx];
+                    let draggedData = this.parent.getSelectedRecords().length ? this.parent.getSelectedRecords() : (currentVdata);
+                    let changeRecords = {
+                        addedRecords: [],
+                        deletedRecords: draggedData,
+                        changedRecords: []
+                    };
+                    let toIdx = this.dragTarget ? this.dragTarget : args.dropIndex;
+                    let dragDropDestinationIndex = 'dragDropDestinationIndex';
+                    let query = new Query;
+                    query[dragDropDestinationIndex] = toIdx;
+                    this.saveChange(changeRecords, query);
+                    changeRecords.deletedRecords = [];
+                    changeRecords.addedRecords = draggedData;
+                    this.saveChange(changeRecords, query);
                 }
                 this.dragTarget = null;
                 if (!gObj.rowDropSettings.targetID) {
@@ -19859,6 +19714,16 @@ class RowDD {
         this.onDataBoundFn = this.onDataBound.bind(this);
         this.parent.addEventListener(dataBound, this.onDataBoundFn);
         this.parent.on(uiUpdate, this.enableAfterRender, this);
+    }
+    saveChange(changeRecords, query) {
+        this.parent.getDataModule().saveChanges(changeRecords, this.parent.getPrimaryKeyFieldNames()[0], {}, query)
+            .then(() => {
+            this.parent.notify(modelChanged, {
+                type: actionBegin, requestType: 'rowdraganddrop'
+            });
+        }).catch((e) => {
+            this.parent.trigger(actionFailure, { error: e });
+        });
     }
     reorderRows(fromIndexes, toIndex) {
         let selectedIndexes = this.parent.getSelectedRowIndexes();
@@ -20136,7 +20001,7 @@ class RowDD {
     /**
      * To destroy the print
      * @return {void}
-     * @hidden
+
      */
     destroy() {
         let gridElement = this.parent.element;
@@ -20179,7 +20044,7 @@ class RowDD {
 class Group {
     /**
      * Constructor for Grid group module
-     * @hidden
+
      */
     constructor(parent, groupSettings, sortedColumns, serviceLocator) {
         this.isAppliedGroup = false;
@@ -20284,7 +20149,7 @@ class Group {
         }
     }
     /**
-     * @hidden
+
      */
     addEventListener() {
         if (this.parent.isDestroyed) {
@@ -20307,7 +20172,7 @@ class Group {
         this.parent.on(groupAggregates, this.onGroupAggregates, this);
     }
     /**
-     * @hidden
+
      */
     removeEventListener() {
         if (this.parent.isDestroyed) {
@@ -20548,7 +20413,7 @@ class Group {
     /**
      * The function is used to render grouping
      * @return {Element}
-     * @hidden
+
      */
     render() {
         this.l10n = this.serviceLocator.getService('localization');
@@ -20669,7 +20534,7 @@ class Group {
     /**
      * The function used to update groupSettings
      * @return {void}
-     * @hidden
+
      */
     updateModel() {
         let gObj = this.parent;
@@ -20682,7 +20547,7 @@ class Group {
     /**
      * The function used to trigger onActionComplete
      * @return {void}
-     * @hidden
+
      */
     onActionComplete(e) {
         let gObj = this.parent;
@@ -20866,7 +20731,7 @@ class Group {
     /**
      * To destroy the reorder
      * @return {void}
-     * @hidden
+
      */
     destroy() {
         let gridElement = this.parent.element;
@@ -21012,7 +20877,7 @@ class Group {
 class DetailRow {
     /**
      * Constructor for the Grid detail template module
-     * @hidden
+
      */
     constructor(parent, locator) {
         //Internal variables
@@ -21137,7 +21002,7 @@ class DetailRow {
         }
     }
     /**
-     * @hidden
+
      * @param gObj
      * @param rowObj
      */
@@ -21287,7 +21152,7 @@ class DetailRow {
 
 /**
  * The `Toolbar` module is used to handle ToolBar actions.
- * @hidden
+
  */
 class Toolbar$1 {
     constructor(parent, serviceLocator) {
@@ -21330,7 +21195,7 @@ class Toolbar$1 {
     /**
      * Gets the toolbar of the Grid.
      * @return {Element}
-     * @hidden
+
      */
     getToolbar() {
         return this.toolbar.element;
@@ -21468,7 +21333,7 @@ class Toolbar$1 {
      * @param {string[]} items - Defines the collection of itemID of ToolBar items.
      * @param {boolean} isEnable - Defines the items to be enabled or disabled.
      * @return {void}
-     * @hidden
+
      */
     enableItems(items, isEnable) {
         for (let item of items) {
@@ -21597,7 +21462,7 @@ class Toolbar$1 {
 
 /**
  * Footer module is used to render grid content
- * @hidden
+
  */
 class FooterRenderer extends ContentRender {
     constructor(gridModule, serviceLocator) {
@@ -21676,7 +21541,7 @@ class FooterRenderer extends ContentRender {
             fragment.appendChild(tr);
         }
         table.tFoot.appendChild(fragment);
-        this.aggregates = e;
+        this.aggregates = !isNullOrUndefined(e) ? e : this.aggregates;
     }
     refresh(e) {
         if (this.parent.getFrozenColumns()) {
@@ -21754,60 +21619,57 @@ class FooterRenderer extends ContentRender {
         let aggregates = this.onAggregates(editedData);
         this.refresh(aggregates);
     }
+    getIndexByKey(data, ds) {
+        let key = this.parent.getPrimaryKeyFieldNames()[0];
+        for (let i = 0; i < ds.length; i++) {
+            if (ds[i][key] === data[key]) {
+                return i;
+            }
+        }
+        return -1;
+    }
     onAggregates(editedData) {
         editedData = editedData instanceof Array ? editedData : [];
-        let field = this.parent.getPrimaryKeyFieldNames()[0];
-        let deletedCols = [];
-        let data = 'dataSource';
-        let mergeds;
-        let rows = this.parent.frozenColumns > 0 ? this.parent.getMovableRowsObject() : this.parent.getRowsObject();
-        let initds = this.parent.dataSource instanceof Array ? this.parent.dataSource : this.parent.dataSource[data].json.length
-            ? this.parent.dataSource[data].json : this.parent.getCurrentViewRecords();
-        let addrow = [];
-        let changeds = rows.map((row) => {
-            if (row.changes && row.edit === 'add') {
-                addrow.push(row.changes);
+        let mergeds = [];
+        let dataSource = [];
+        let isModified = false;
+        let gridData = 'dataSource';
+        let changedRecords = 'changedRecords';
+        let addedRecords = 'addedRecords';
+        let deletedRecords = 'deletedRecords';
+        let currentViewData = this.parent.dataSource instanceof Array ?
+            this.parent.dataSource : this.parent.dataSource[gridData].json.length
+            ? this.parent.dataSource[gridData].json : this.parent.getCurrentViewRecords();
+        let batchChanges = this.parent.editModule.getBatchChanges();
+        if (Object.keys(batchChanges).length) {
+            for (let i = 0; i < currentViewData.length; i++) {
+                isModified = false;
+                if (batchChanges[changedRecords].length && this.getIndexByKey(currentViewData[i], batchChanges[changedRecords]) > -1) {
+                    isModified = true;
+                    dataSource.push(batchChanges[changedRecords][this.getIndexByKey(currentViewData[i], batchChanges[changedRecords])]);
+                }
+                if (batchChanges[deletedRecords].length && this.getIndexByKey(currentViewData[i], batchChanges[deletedRecords]) > -1) {
+                    isModified = true;
+                }
+                else if (!isModified) {
+                    dataSource.push(currentViewData[i]);
+                }
             }
-            if (row.edit === 'delete') {
-                deletedCols.push(row.data);
+            if (batchChanges[addedRecords].length) {
+                for (let i = 0; i < batchChanges[addedRecords].length; i++) {
+                    dataSource.push(batchChanges[addedRecords][i]);
+                }
             }
-            return row.isDirty && row.changes ? row.changes : row.data;
-        });
-        changeds = editedData.length === 0 ? changeds : editedData;
-        mergeds = initds.map((item) => {
-            let idVal = DataUtil.getObject(field, item);
-            let value;
-            let hasVal = changeds.some((cItem) => {
-                value = cItem;
-                return idVal === DataUtil.getObject(field, cItem);
-            });
-            return hasVal ? value : item;
-        });
-        let currentData = this.parent.groupSettings.columns.length > 0 && 'records' in this.parent.currentViewData ?
-            this.parent.getCurrentViewRecords() : this.parent.currentViewData;
-        let currentds;
-        currentds = currentData.map((item) => {
-            let idVal = DataUtil.getObject(field, item);
-            let value;
-            let hasVal = mergeds.some((cItem) => {
-                value = cItem;
-                return idVal === DataUtil.getObject(field, cItem);
-            });
-            return hasVal ? value : item;
-        });
-        if (addrow.length > 0) {
-            addrow.forEach((row) => { mergeds.push(row); currentds.push(row); });
+        }
+        else {
+            if (editedData.length) {
+                mergeds.push(editedData[0]);
+            }
+            dataSource = editedData ? extend(currentViewData, mergeds) : currentViewData;
         }
         let eData = editedData;
-        if (!(eData.type && eData.type === 'cancel') && deletedCols.length > 0) {
-            deletedCols.forEach((row) => {
-                let index = mergeds.indexOf(row);
-                let curIndx = currentData.indexOf(row);
-                mergeds.splice(index, 1);
-                if (currentds && currentds.length) {
-                    currentds.splice(curIndx, 1);
-                }
-            });
+        if ((eData.type && eData.type === 'cancel')) {
+            dataSource = currentViewData;
         }
         let aggregate = {};
         let agrVal;
@@ -21816,14 +21678,14 @@ class FooterRenderer extends ContentRender {
             row.columns.forEach((col) => {
                 let data = [];
                 let type = col.type.toString();
-                data = type.toLowerCase() === 'custom' && !isNullOrUndefined(currentds) ? currentds : mergeds;
+                data = dataSource;
                 agrVal = calculateAggregate(type, data, col, this.parent);
                 aggregate[col.field + ' - ' + type.toLowerCase()] = agrVal;
             });
         });
         let result = {
-            result: this.parent.groupSettings.columns.length > 0 ? mergeds : currentds,
-            count: mergeds.length,
+            result: dataSource,
+            count: dataSource.length,
             aggregates: aggregate
         };
         return result;
@@ -21832,7 +21694,7 @@ class FooterRenderer extends ContentRender {
 
 /**
  * SummaryCellRenderer class which responsible for building summary cell content.
- * @hidden
+
  */
 class SummaryCellRenderer extends CellRenderer {
     constructor() {
@@ -21991,7 +21853,7 @@ function summaryIterator(aggregates, callback) {
 
 /**
  * InterSectionObserver - class watch whether it enters the viewport.
- * @hidden
+
  */
 class InterSectionObserver {
     constructor(element, options) {
@@ -22268,7 +22130,7 @@ class VirtualRowModelGenerator {
 
 /**
  * VirtualContentRenderer
- * @hidden
+
  */
 class VirtualContentRenderer extends ContentRender {
     constructor(parent, locator) {
@@ -22708,7 +22570,7 @@ class VirtualContentRenderer extends ContentRender {
     }
 }
 /**
- * @hidden
+
  */
 class VirtualHeaderRenderer extends HeaderRender {
     constructor(parent, locator) {
@@ -22778,7 +22640,7 @@ class VirtualHeaderRenderer extends HeaderRender {
     }
 }
 /**
- * @hidden
+
  */
 class VirtualElementHandler {
     renderWrapper(height) {
@@ -22859,7 +22721,7 @@ class VirtualScroll {
 
 /**
  * Edit render module is used to render grid edit row.
- * @hidden
+
  */
 class InlineEditRender {
     /**
@@ -23081,7 +22943,7 @@ class InlineEditRender {
 
 /**
  * Edit render module is used to render grid edit row.
- * @hidden
+
  */
 class BatchEditRender {
     /**
@@ -23117,7 +22979,7 @@ class BatchEditRender {
 
 /**
  * Edit render module is used to render grid edit row.
- * @hidden
+
  */
 class DialogEditRender {
     /**
@@ -23245,7 +23107,7 @@ class DialogEditRender {
 
 /**
  * Edit render module is used to render grid edit row.
- * @hidden
+
  */
 class EditRender {
     /**
@@ -23396,7 +23258,8 @@ class EditRender {
             if (col.editTemplate) {
                 input = this.parent.createElement('span', { attrs: { 'e-mappinguid': col.uid } });
                 let tempID = this.parent.element.id + col.uid + 'editTemplate';
-                appendChildren(input, col.getEditTemplate()(args.rowData, this.parent, 'editTemplate', tempID));
+                let tempData = extend({}, {}, args.rowData, true);
+                appendChildren(input, col.getEditTemplate()(tempData, this.parent, 'editTemplate', tempID));
                 if (isBlazor()) {
                     updateBlazorTemplate(tempID, 'EditTemplate', col);
                 }
@@ -23440,7 +23303,7 @@ class EditRender {
 
 /**
  * `BooleanEditCell` is used to handle boolean cell type editing.
- * @hidden
+
  */
 class BooleanEditCell {
     constructor(parent) {
@@ -23514,7 +23377,7 @@ class BooleanEditCell {
 
 /**
  * `DropDownEditCell` is used to handle dropdown cell type editing.
- * @hidden
+
  */
 class DropDownEditCell {
     constructor(parent) {
@@ -23579,7 +23442,7 @@ class DropDownEditCell {
 
 /**
  * `NumericEditCell` is used to handle numeric cell type editing.
- * @hidden
+
  */
 class NumericEditCell {
     constructor(parent) {
@@ -23621,7 +23484,7 @@ class NumericEditCell {
 
 /**
  * `DefaultEditCell` is used to handle default cell type editing.
- * @hidden
+
  */
 class DefaultEditCell {
     constructor(parent) {
@@ -23657,7 +23520,7 @@ class DefaultEditCell {
 
 /**
  * `NormalEdit` module is used to handle normal('inline, dialog, external') editing actions.
- * @hidden
+
  */
 class NormalEdit {
     constructor(parent, serviceLocator, renderer) {
@@ -23687,7 +23550,7 @@ class NormalEdit {
     /**
      * The function used to trigger editComplete
      * @return {void}
-     * @hidden
+
      */
     editComplete(e) {
         this.parent.isEdit = false;
@@ -24068,7 +23931,7 @@ class NormalEdit {
         }
     }
     /**
-     * @hidden
+
      */
     addEventListener() {
         if (this.parent.isDestroyed) {
@@ -24083,7 +23946,7 @@ class NormalEdit {
         this.parent.on(saveComplete, this.editComplete, this);
     }
     /**
-     * @hidden
+
      */
     removeEventListener() {
         if (this.parent.isDestroyed) {
@@ -24098,7 +23961,7 @@ class NormalEdit {
         this.parent.off(saveComplete, this.editComplete);
     }
     /**
-     * @hidden
+
      */
     destroy() {
         this.removeEventListener();
@@ -24108,7 +23971,7 @@ class NormalEdit {
 
 /**
  * `InlineEdit` module is used to handle inline editing actions.
- * @hidden
+
  */
 class InlineEdit extends NormalEdit {
     constructor(parent, serviceLocator, renderer) {
@@ -24139,7 +24002,7 @@ class InlineEdit extends NormalEdit {
 
 /**
  * `BatchEdit` module is used to handle batch editing actions.
- * @hidden
+
  */
 class BatchEdit {
     constructor(parent, serviceLocator, renderer) {
@@ -24151,7 +24014,7 @@ class BatchEdit {
         this.addEventListener();
     }
     /**
-     * @hidden
+
      */
     addEventListener() {
         if (this.parent.isDestroyed) {
@@ -24168,7 +24031,7 @@ class BatchEdit {
         this.parent.on(editNextValCell, this.editNextValCell, this);
     }
     /**
-     * @hidden
+
      */
     removeEventListener() {
         if (this.parent.isDestroyed) {
@@ -24187,7 +24050,7 @@ class BatchEdit {
         this.parent.notify(toolbarRefresh, {});
     }
     /**
-     * @hidden
+
      */
     destroy() {
         this.removeEventListener();
@@ -24494,7 +24357,7 @@ class BatchEdit {
         }
     }
     /**
-     * @hidden
+
      */
     removeRowObjectFromUID(uid) {
         let rows = this.parent.getRowsObject();
@@ -24507,7 +24370,7 @@ class BatchEdit {
         rows.splice(i, 1);
     }
     /**
-     * @hidden
+
      */
     addRowObject(row) {
         let isTop = this.parent.editSettings.newRowPosition === 'Top';
@@ -25063,7 +24926,7 @@ class BatchEdit {
         }
     }
     /**
-     * @hidden
+
      */
     addCancelWhilePaging() {
         if (this.validateFormObj()) {
@@ -25076,7 +24939,7 @@ class BatchEdit {
 
 /**
  * `DialogEdit` module is used to handle dialog editing actions.
- * @hidden
+
  */
 class DialogEdit extends NormalEdit {
     constructor(parent, serviceLocator, renderer) {
@@ -25112,7 +24975,7 @@ class DialogEdit extends NormalEdit {
 
 /**
  * `DatePickerEditCell` is used to handle datepicker cell type editing.
- * @hidden
+
  */
 class DatePickerEditCell {
     constructor(parent) {
@@ -25163,7 +25026,7 @@ function dateanddatetimerender(args, mode, rtl) {
 
 /**
  * `TemplateEditCell` is used to handle template cell.
- * @hidden
+
  */
 class TemplateEditCell {
     constructor(parent) {
@@ -25186,7 +25049,7 @@ class TemplateEditCell {
 class Edit {
     /**
      * Constructor for the Grid editing module
-     * @hidden
+
      */
     constructor(parent, serviceLocator) {
         this.editType = { 'Inline': InlineEdit, 'Normal': InlineEdit, 'Batch': BatchEdit, 'Dialog': DialogEdit };
@@ -25219,7 +25082,7 @@ class Edit {
         return 'edit';
     }
     /**
-     * @hidden
+
      */
     onPropertyChanged(e) {
         if (e.module !== this.getModuleName()) {
@@ -25536,7 +25399,7 @@ class Edit {
         this.dlgCancel();
     }
     /**
-     * @hidden
+
      */
     addEventListener() {
         if (this.parent.isDestroyed) {
@@ -25555,7 +25418,7 @@ class Edit {
         this.parent.addEventListener(actionComplete, this.actionCompleteFunction);
     }
     /**
-     * @hidden
+
      */
     removeEventListener() {
         if (this.parent.isDestroyed) {
@@ -25579,7 +25442,7 @@ class Edit {
         this.refreshToolbar();
     }
     /**
-     * @hidden
+
      */
     getCurrentEditedData(form, editedData) {
         let gObj = this.parent;
@@ -25634,7 +25497,8 @@ class Edit {
         return editedData;
     }
     getValue(col, input, editedData) {
-        let value = input.value;
+        let value = col.isForeignColumn() ? (input.ej2_instances ?
+            input.ej2_instances[0].value : input.value) : input.value;
         let gObj = this.parent;
         let temp = col.edit.read;
         if (col.type === 'checkbox' || col.type === 'boolean') {
@@ -25653,7 +25517,7 @@ class Edit {
         return value;
     }
     /**
-     * @hidden
+
      */
     onActionBegin(e) {
         let restrictedRequestTypes = ['filterafteropen', 'filterbeforeopen', 'filterchoicerequest', 'save'];
@@ -25664,7 +25528,7 @@ class Edit {
         }
     }
     /**
-     * @hidden
+
      */
     destroyWidgets(cols) {
         let gObj = this.parent;
@@ -25701,7 +25565,7 @@ class Edit {
         });
     }
     /**
-     * @hidden
+
      */
     destroyForm() {
         this.destroyToolTip();
@@ -25713,7 +25577,7 @@ class Edit {
     /**
      * To destroy the editing.
      * @return {void}
-     * @hidden
+
      */
     destroy() {
         let gridElement = this.parent.element;
@@ -25779,7 +25643,7 @@ class Edit {
         this.preventObj.handler.call(this.preventObj.instance, this.preventObj.arg1, this.preventObj.arg2, this.preventObj.arg3, this.preventObj.arg4, this.preventObj.arg5, this.preventObj.arg6, this.preventObj.arg7, this.preventObj.arg8);
     }
     /**
-     * @hidden
+
      */
     applyFormValidation(cols) {
         let gObj = this.parent;
@@ -25935,13 +25799,13 @@ class Edit {
         }
     }
     /**
-     * @hidden
+
      */
     checkColumnIsGrouped(col) {
         return !col.visible && !(this.parent.groupSettings.columns.indexOf(col.field) > -1);
     }
     /**
-     * @hidden
+
      */
     static AddEditors(editors) {
         Edit.editCellType = extend(Edit.editCellType, editors);
@@ -25960,7 +25824,7 @@ Edit.editCellType = {
 class ColumnChooser {
     /**
      * Constructor for the Grid ColumnChooser module
-     * @hidden
+
      */
     constructor(parent, serviceLocator) {
         this.showColumn = [];
@@ -26009,7 +25873,7 @@ class ColumnChooser {
         }
     }
     /**
-     * @hidden
+
      */
     addEventListener() {
         if (this.parent.isDestroyed) {
@@ -26023,7 +25887,7 @@ class ColumnChooser {
         this.parent.on(rtlUpdated, this.rtlUpdate, this);
     }
     /**
-     * @hidden
+
      */
     removeEventListener() {
         if (this.parent.isDestroyed) {
@@ -26085,7 +25949,7 @@ class ColumnChooser {
     /**
      * To render columnChooser when showColumnChooser enabled.
      * @return {void}
-     * @hidden
+
      */
     renderColumnChooser(x, y, target) {
         if (!this.dlgObj.visible && (this.parent.detailTemplate || this.parent.childGrid)) {
@@ -26579,7 +26443,7 @@ class ColumnChooser {
 }
 
 /**
- * @hidden
+
  * `ExportHelper` for `PdfExport` & `ExcelExport`
  */
 class ExportHelper {
@@ -26807,7 +26671,7 @@ class ExportHelper {
     }
 }
 /**
- * @hidden
+
  * `ExportValueFormatter` for `PdfExport` & `ExcelExport`
  */
 class ExportValueFormatter {
@@ -26886,13 +26750,13 @@ class ExportValueFormatter {
 }
 
 /**
- * @hidden
+
  * `ExcelExport` module is used to handle the Excel export action.
  */
 class ExcelExport {
     /**
      * Constructor for the Grid Excel Export module.
-     * @hidden
+
      */
     constructor(parent, locator) {
         /* tslint:disable-next-line:no-any */
@@ -27769,7 +27633,7 @@ class ExcelExport {
     /**
      * To destroy the excel export
      * @return {void}
-     * @hidden
+
      */
     destroy() {
         //destroy for exporting
@@ -27778,12 +27642,12 @@ class ExcelExport {
 
 /**
  * `PDF Export` module is used to handle the exportToPDF action.
- * @hidden
+
  */
 class PdfExport {
     /**
      * Constructor for the Grid PDF Export module
-     * @hidden
+
      */
     constructor(parent) {
         this.hideColumnInclude = false;
@@ -28291,7 +28155,7 @@ class PdfExport {
         let value = content.value.toString();
         let x = content.position.x * 0.75;
         let y = content.position.y * 0.75;
-        let format;
+        let format = new PdfStringFormat();
         let result = this.setContentFormat(content, format);
         if (result !== null && !isNullOrUndefined(result.format) && !isNullOrUndefined(result.size)) {
             pageTemplate.graphics.drawString(value, font, pen, brush, x, y, result.size.width, result.size.height, result.format);
@@ -28769,8 +28633,8 @@ class PdfExport {
     }
     /* tslint:disable-next-line:no-any */
     getFont(content) {
-        if (content.style.font) {
-            return content.style.font;
+        if (content.font) {
+            return content.font;
         }
         let fontSize = (!isNullOrUndefined(content.style.fontSize)) ? (content.style.fontSize * 0.75) : 9.75;
         let fontFamily = (!isNullOrUndefined(content.style.fontFamily)) ?
@@ -28978,7 +28842,7 @@ class PdfExport {
     /**
      * To destroy the pdf export
      * @return {void}
-     * @hidden
+
      */
     destroy() {
         //destroy for exporting
@@ -28987,7 +28851,7 @@ class PdfExport {
 
 /**
  * `CommandColumn` used to render command column in grid
- * @hidden
+
  */
 class CommandColumnRenderer extends CellRenderer {
     constructor(parent, locator) {
@@ -29059,7 +28923,7 @@ class CommandColumnRenderer extends CellRenderer {
 
 /**
  * `CommandColumn` used to handle the command column actions.
- * @hidden
+
  */
 class CommandColumn {
     constructor(parent, locator) {
@@ -29219,7 +29083,7 @@ class ContextMenu$1 {
         this.addEventListener();
     }
     /**
-     * @hidden
+
      */
     addEventListener() {
         if (this.parent.isDestroyed) {
@@ -29229,7 +29093,7 @@ class ContextMenu$1 {
         this.parent.on(initialLoad, this.render, this);
     }
     /**
-     * @hidden
+
      */
     removeEventListener() {
         if (this.parent.isDestroyed) {
@@ -29309,7 +29173,7 @@ class ContextMenu$1 {
         this.isOpen = true;
     }
     /**
-     * @hidden
+
      */
     contextMenuItemClick(args) {
         let item = this.getKeyFromId(args.item.id);
@@ -29611,7 +29475,7 @@ class ContextMenu$1 {
      * Destroys the context menu component in the Grid.
      * @method destroy
      * @return {void}
-     * @hidden
+
      */
     destroy() {
         let gridElement = this.parent.element;
@@ -29748,7 +29612,7 @@ class ContextMenu$1 {
 
 /**
  * FreezeRowModelGenerator is used to generate grid data rows with freeze row and column.
- * @hidden
+
  */
 class FreezeRowModelGenerator {
     constructor(parent) {
@@ -29774,7 +29638,7 @@ class FreezeRowModelGenerator {
 
 /**
  * Freeze module is used to render grid content with frozen rows and columns
- * @hidden
+
  */
 class FreezeContentRender extends ContentRender {
     constructor(parent, locator) {
@@ -29978,12 +29842,14 @@ class FreezeRender extends HeaderRender {
             }
             fRowHgt = height[i];
             mRowHgt = width[i];
-            if (fRows[i].childElementCount && ((isWrap && fRowHgt < mRowHgt) || (!isWrap && fRowHgt < mRowHgt) ||
-                (this.parent.allowResizing && this.parent.resizeModule && !this.parent.resizeModule.isFrozenColResized))) {
+            if (!isNullOrUndefined(fRows[i]) && fRows[i].childElementCount && ((isWrap && fRowHgt < mRowHgt) ||
+                (!isWrap && fRowHgt < mRowHgt) || (this.parent.allowResizing && this.parent.resizeModule &&
+                !this.parent.resizeModule.isFrozenColResized))) {
                 fRows[i].style.height = mRowHgt + 'px';
             }
-            if (mRows[i].childElementCount && ((isWrap && fRowHgt > mRowHgt) || (!isWrap && fRowHgt > mRowHgt) ||
-                (this.parent.allowResizing && this.parent.resizeModule && this.parent.resizeModule.isFrozenColResized))) {
+            if (!isNullOrUndefined(mRows[i]) && mRows[i].childElementCount && ((isWrap && fRowHgt > mRowHgt) ||
+                (!isWrap && fRowHgt > mRowHgt) || (this.parent.allowResizing && this.parent.resizeModule &&
+                this.parent.resizeModule.isFrozenColResized))) {
                 mRows[i].style.height = fRowHgt + 'px';
             }
         }
@@ -30071,7 +29937,7 @@ class FreezeRender extends HeaderRender {
 
 /**
  * `Freeze` module is used to handle Frozen rows and columns.
- * @hidden
+
  */
 class Freeze {
     constructor(parent, locator) {
@@ -30109,7 +29975,7 @@ class Freeze {
 
 /**
  * 'column menu module used to handle column menu actions'
- * @hidden
+
  */
 class ColumnMenu {
     constructor(parent, serviceLocator) {
@@ -30146,7 +30012,7 @@ class ColumnMenu {
     /**
      * To destroy the resize
      * @return {void}
-     * @hidden
+
      */
     destroy() {
         let gridElement = this.parent.element;
@@ -30205,7 +30071,7 @@ class ColumnMenu {
         return [].slice.call(this.parent.getHeaderTable().querySelectorAll('.' + this.ROOT));
     }
     /**
-     * @hidden
+
      */
     addEventListener() {
         if (this.parent.isDestroyed) {
@@ -30220,7 +30086,7 @@ class ColumnMenu {
         this.parent.on(click, this.columnMenuHandlerClick, this);
     }
     /**
-     * @hidden
+
      */
     removeEventListener() {
         if (this.parent.isDestroyed) {
@@ -30500,7 +30366,7 @@ class ColumnMenu {
             id.replace(this.gridID + '_colmenu_' + (append$$1 ? append$$1 : ''), '');
     }
     /**
-     * @hidden
+
      */
     getColumnMenu() {
         return this.element;
@@ -31171,7 +31037,7 @@ let ajaxErrorHandler = (args, parent) => {
 
 /**
  * `AutoCompleteEditCell` is used to handle autocomplete cell type editing.
- * @hidden
+
  */
 class AutoCompleteEditCell {
     constructor(parent) {
@@ -31224,7 +31090,7 @@ class AutoCompleteEditCell {
 
 /**
  * `ComboBoxEditCell` is used to handle ComboBoxEdit cell type editing.
- * @hidden
+
  */
 class ComboboxEditCell {
     constructor(parentObject) {
@@ -31275,7 +31141,7 @@ class ComboboxEditCell {
 
 /**
  * `MultiSelectEditCell` is used to handle multiselect dropdown cell type editing.
- * @hidden
+
  */
 class MultiSelectEditCell {
     constructor(parentObj) {
@@ -31317,7 +31183,7 @@ class MultiSelectEditCell {
 
 /**
  * `TimePickerEditCell` is used to handle Timepicker cell type editing.
- * @hidden
+
  */
 class TimePickerEditCell {
     constructor(grid) {
@@ -31358,7 +31224,7 @@ class TimePickerEditCell {
 
 /**
  * `ToggleEditCell` is used to handle boolean cell type editing.
- * @hidden
+
  */
 class ToggleEditCell {
     constructor(parentObject) {
@@ -31432,7 +31298,7 @@ class ToggleEditCell {
 
 /**
  * `MaskedTextBoxCellEdit` is used to handle masked input cell type editing.
- * @hidden
+
  */
 class MaskedTextBoxCellEdit {
     constructor(parentInstance) {

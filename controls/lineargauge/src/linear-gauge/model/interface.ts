@@ -47,7 +47,7 @@ export interface IAnimationCompleteEventArgs extends ILinearGaugeEventArgs {
 }
 /**
  * Gauge axis label rendering event arguments
- * @deprecated
+
  */
 export interface IAxisLabelRenderEventArgs extends ILinearGaugeEventArgs {
     /**
@@ -66,7 +66,7 @@ export interface IAxisLabelRenderEventArgs extends ILinearGaugeEventArgs {
 
 /**
  * Gauge tooltip event arguments
- * @deprecated
+
  */
 export interface ITooltipRenderEventArgs extends ILinearGaugeEventArgs {
     /**

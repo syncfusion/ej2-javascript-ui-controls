@@ -10,7 +10,7 @@ import { refreshAggregateCell } from '../base/constant';
 
 /**
  * SummaryCellRenderer class which responsible for building summary cell content. 
- * @hidden
+
  */
 export class SummaryCellRenderer extends CellRenderer implements ICellRenderer<AggregateColumnModel> {
 

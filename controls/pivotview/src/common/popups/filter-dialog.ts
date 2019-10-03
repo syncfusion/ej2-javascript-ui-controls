@@ -18,24 +18,24 @@ import { PivotUtil } from '../../base/util';
 /**
  * `FilterDialog` module to create filter dialog.
  */
-/** @hidden */
+
 export class FilterDialog {
     public parent: PivotCommon;
-    /** @hidden */
+
     public dropMenu: DropDownButton;
-    /** @hidden */
+
     public memberTreeView: TreeView;
-    /** @hidden */
+
     public allMemberSelect: TreeView;
-    /** @hidden */
+
     public editorSearch: MaskedTextBox;
-    /** @hidden */
+
     public dialogPopUp: Dialog;
-    /** @hidden */
+
     public tabObj: Tab;
-    /** @hidden */
+
     public allowExcelLikeFilter: boolean;
-    /** @hidden */
+
     public isSearchEnabled: boolean;
     public filterObject: IFilter;
     /* tslint:disable-next-line:no-any */
@@ -43,7 +43,7 @@ export class FilterDialog {
 
     /**
      * Constructor for the dialog action.
-     * @hidden
+
      */
     constructor(parent?: PivotCommon) {
         this.parent = parent;
@@ -53,7 +53,7 @@ export class FilterDialog {
      * Creates the member filter dialog for the selected field.
      * @method createFilterDialog
      * @return {void}
-     * @hidden
+
      */
     public createFilterDialog(treeData: { [key: string]: Object }[], fieldName: string, fieldCaption: string, target: HTMLElement): void {
         let editorDialog: HTMLElement = createElement('div', {
@@ -155,7 +155,7 @@ export class FilterDialog {
             className: cls.SELECT_ALL_WRAPPER_CLASS
         });
         let selectAllContainer: HTMLElement = createElement('div', { className: cls.SELECT_ALL_CLASS });
-        let treeOuterDiv: HTMLElement = createElement('div', { className: cls.EDITOR_TREE_CONTAINER_CLASS + '-outer-div' })
+        let treeOuterDiv: HTMLElement = createElement('div', { className: cls.EDITOR_TREE_CONTAINER_CLASS + '-outer-div' });
         let treeViewContainer: HTMLElement = createElement('div', { className: cls.EDITOR_TREE_CONTAINER_CLASS });
         let promptDiv: HTMLElement = createElement('div', {
             className: cls.EMPTY_MEMBER_CLASS + ' ' + cls.ICON_DISABLE,
@@ -488,7 +488,18 @@ export class FilterDialog {
             let engineModule: OlapEngine = this.parent.engineModule as OlapEngine;
             let levels: IOlapField[] = engineModule.fieldList[fieldName].levels;
             if ((this.parent.engineModule as OlapEngine).fieldList[fieldName].isHierarchy) {
-                levelOptions.push({ value: fieldName, text: engineModule.fieldList[fieldName].name });
+                let levelObj: IOlapField;
+                let fieldlistData: IOlapField[] = (this.parent.engineModule as OlapEngine).fieldListData;
+                for (let item of fieldlistData) {
+                    if (item && item.pid === fieldName) {
+                        levelObj = item;
+                        break;
+                    }
+                }
+                levelOptions.push({
+                    value: levelObj ? levelObj.id : fieldName,
+                    text: levelObj ? levelObj.caption : engineModule.fieldList[fieldName].name
+                });
                 selectedLevelIndex = 0;
                 if (filterObject && filterObject.name === fieldName && filterObject.type.toLowerCase() === type) {
                     levelOptions[levelOptions.length - 1]['iconClass'] = cls.ICON + ' ' + cls.SELECTED_LEVEL_ICON_CLASS;
@@ -824,7 +835,7 @@ export class FilterDialog {
     }
     /**
      * Update filter state while Member check/uncheck.
-     * @hidden
+
      */
     public updateCheckedState(fieldCaption?: string): void {
         let filterDialog: Element = this.dialogPopUp.element;
@@ -921,7 +932,7 @@ export class FilterDialog {
     }
     /**
      * To close filter dialog.
-     * @hidden
+
      */
     public closeFilterDialog(): void {
         if (this.allowExcelLikeFilter) {

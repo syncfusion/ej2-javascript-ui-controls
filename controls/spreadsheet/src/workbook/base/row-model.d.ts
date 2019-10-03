@@ -25,4 +25,10 @@ export interface RowModel {
      */
     height?: number;
 
+    /**
+     * specifies custom height of the row.
+     * @default false
+     */
+    customHeight?: boolean;
+
 }

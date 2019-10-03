@@ -7,34 +7,34 @@ export interface DataModel {
 
     /**
      * Specifies the provided datasource is an JSON data. 
-     * @default false
+
      */
 
     isJsonData?: boolean;
 
     /**
      * specifies Adaptor type
-     * @default None
+
      */
     adaptorType?: AdaptorType;
 
     /**
      * Specifies xAxis mapping. 
-     * @default ''
+
      */
 
     xDataMapping?: string;
 
     /**
      * Specifies yAxis mapping. 
-     * @default ''
+
      */
 
     yDataMapping?: string;
 
     /**
      * Specifies value mapping. 
-     * @default ''
+
      */
 
     valueMapping?: string;

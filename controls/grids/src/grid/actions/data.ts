@@ -14,7 +14,7 @@ import { SortDirection } from '../base/enum';
 
 /**
  * Grid data module is used to generate query and data source.
- * @hidden
+
  */
 export class Data implements IDataProcessor {
     //Internal variables   
@@ -27,7 +27,7 @@ export class Data implements IDataProcessor {
 
     /**
      * Constructor for data module.
-     * @hidden
+
      */
     constructor(parent?: IGrid, serviceLocator?: ServiceLocator) {
         this.parent = parent;
@@ -67,7 +67,7 @@ export class Data implements IDataProcessor {
     /**
      * The function is used to generate updated Query from Grid model.
      * @return {Query}
-     * @hidden
+
      */
     public generateQuery(skipPage?: boolean): Query {
         let gObj: IGrid = this.parent;
@@ -313,7 +313,7 @@ export class Data implements IDataProcessor {
      * The function is used to get dataManager promise by executing given Query. 
      * @param  {Query} query - Defines the query which will execute along with data processing. 
      * @return {Promise<Object>} 
-     * @hidden
+
      */
     public getData(
         args: {
@@ -422,7 +422,7 @@ export class Data implements IDataProcessor {
     }
 
 
-    /** @hidden */
+
     public saveChanges(changes: Object, key: string, original: Object, query: Query = this.generateQuery()): Promise<Object> {
         query.requiresCount();
         if ('result' in this.parent.dataSource) {
@@ -450,7 +450,7 @@ export class Data implements IDataProcessor {
         return undefined;
     }
 
-    /** @hidden */
+
     public isRemote(): boolean {
         return this.dataManager.dataSource.offline !== true && this.dataManager.dataSource.url !== undefined &&
         this.dataManager.dataSource.url !== '';
@@ -523,6 +523,9 @@ export class Data implements IDataProcessor {
                 this.parent.trigger(events.dataSourceChanged, editArgs);
                 deff.promise.then((e: ReturnType) => {
                     this.setState({ isPending: true, resolver: def.resolve, group: state.group, aggregates: state.aggregates });
+                    if (editArgs.requestType === 'save') {
+                        this.parent.notify(events.recordAdded, editArgs);
+                    }
                     this.parent.trigger(events.dataStateChange, state);
                 })
                 .catch(() => void 0);

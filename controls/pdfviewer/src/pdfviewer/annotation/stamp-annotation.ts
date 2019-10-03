@@ -5,7 +5,7 @@ import { splitArrayCollection, processPathData } from '@syncfusion/ej2-drawings'
 
 
 /**
- * @hidden
+
  */
 export interface IStampAnnotation {
     stampAnnotationPath: string;
@@ -39,7 +39,7 @@ interface IRectangles {
     width: number;
 }
 /**
- * @hidden
+
  */
 interface IstampCollection {
     iconName: string;
@@ -54,7 +54,7 @@ interface IstampCollection {
     modifiedDate?: string;
 }
 /**
- * @hidden
+
  */
 interface IRectCollection {
     left: number;
@@ -64,7 +64,7 @@ interface IRectCollection {
 }
 /**
  * The `StampAnnotation` module is used to handle annotation actions of PDF viewer.
- * @hidden
+
  */
 export class StampAnnotation {
     private pdfViewer: PdfViewer;

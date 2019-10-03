@@ -19,7 +19,7 @@ import { getConnectorPoints, updateSegmentElement, getSegmentElement, updateDeco
 
 /**
  * Renderer module is used to render basic diagram elements
- * @hidden
+
  */
 export class Drawing {
     private pdfViewer: PdfViewer;
@@ -358,11 +358,11 @@ export class Drawing {
                 freeTextEle.style.fontFamily = obj.fontFamily;
                 freeTextEle.style.fontSize = obj.fontSize;
                 freeTextEle.style.textAlign = 'Left';
-                if (obj.textAlign === 'center') {
+                if (obj.textAlign.toLowerCase() === 'center') {
                     freeTextEle.style.textAlign = 'Center';
-                } else if (obj.textAlign === 'right') {
+                } else if (obj.textAlign.toLowerCase() === 'right') {
                     freeTextEle.style.textAlign = 'Right';
-                } else if (obj.textAlign === 'justify') {
+                } else if (obj.textAlign.toLowerCase() === 'justify') {
                     freeTextEle.style.textAlign = 'Justify';
                 }
                 freeTextEle.style.color = obj.fontColor;
@@ -1560,6 +1560,20 @@ export class Drawing {
                 let children: any[] = actualObject.wrapper.children;
                 if (children[1].childNodes.length > 1 && actualObject.textAlign === 'Justify') {
                     children[1].horizontalAlignment = 'Center';
+                } else if (children[1].childNodes.length === 1) {
+                    if (actualObject.textAlign === 'Justify') {
+                        children[1].horizontalAlignment = 'Left';
+                        children[1].setOffsetWithRespectToBounds(0, 0, null);
+                    } else if (actualObject.textAlign === 'Right') {
+                        children[1].horizontalAlignment = 'Right';
+                        children[1].setOffsetWithRespectToBounds(0.97, 0, null);
+                    } else if (actualObject.textAlign === 'Left') {
+                        children[1].horizontalAlignment = 'Left';
+                        children[1].setOffsetWithRespectToBounds(0, 0, null);
+                    } else if (actualObject.textAlign === 'Center') {
+                        children[1].horizontalAlignment = 'Center';
+                        children[1].setOffsetWithRespectToBounds(0.46, 0, null);
+                    }
                 }
                 for (let i: number = 0; i < children.length; i++) {
                     if (children[i].textNodes && children[i].textNodes.length > 0) {
@@ -1590,6 +1604,18 @@ export class Drawing {
             actualObject.wrapper.arrange(actualObject.wrapper.desiredSize);
         }
         this.pdfViewer.renderDrawing(undefined, actualObject.pageIndex);
+        if (actualObject && actualObject.shapeAnnotationType === "FreeText") {
+            if (actualObject.wrapper && actualObject.wrapper.children && actualObject.wrapper.children.length) {
+                let children: any[] = actualObject.wrapper.children;
+                if (children[1].childNodes.length == 1 && actualObject.textAlign === 'Justify') {
+                    children[1].horizontalAlignment = 'Left';
+                    children[1].setOffsetWithRespectToBounds(0.5, 0, null);
+                } else if (children[1].childNodes.length > 1 && actualObject.textAlign === 'Justify') {
+                    children[1].horizontalAlignment = 'Center';
+                    children[1].setOffsetWithRespectToBounds(0, 0, null);
+                }
+            }
+        }
     }
     /* tslint:disable */
     private setLineDistance(actualObject: any, points: any, segment: any, leader: boolean): void {
@@ -1899,6 +1925,15 @@ export class Drawing {
                 ty = point.y - connector.vertexPoints[i].y;
                 connector.vertexPoints[i].x += tx;
                 connector.vertexPoints[i].y += ty;
+                if (connector.vertexPoints.length > 2 && (obj as PdfAnnotationBaseModel).measureType !== 'Perimeter') {
+                    if (parseFloat(endPoint.split('_')[1]) === 0) {
+                        connector.vertexPoints[connector.vertexPoints.length - 1].x += tx;
+                        connector.vertexPoints[connector.vertexPoints.length - 1].y += ty;
+                    } else if (parseFloat(endPoint.split('_')[1]) === connector.vertexPoints.length - 1) {
+                        connector.vertexPoints[0].x += tx;
+                        connector.vertexPoints[0].y += ty;
+                    }
+                }
             }
             this.nodePropertyChange(connector, { vertexPoints: connector.vertexPoints } as PdfAnnotationBaseModel);
             this.renderSelector(connector.pageIndex);
@@ -2079,7 +2114,7 @@ export class Drawing {
     }
 }
 /**
- * @hidden
+
  */
 export interface Transforms {
     tx: number;
@@ -2087,7 +2122,7 @@ export interface Transforms {
     scale: number;
 }
 /**
- * @hidden
+
  */
 export interface ClipBoardObject {
     pasteIndex?: number;

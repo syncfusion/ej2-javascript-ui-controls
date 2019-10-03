@@ -424,6 +424,42 @@ describe('AutoComplete', () => {
                 }, 450);
             });
         });
+
+        describe('external searching using filter', () => {
+            let atcObj: any;
+            let activeElement: HTMLElement[];
+            let e: any = { preventDefault: function () { }, target: null };
+            let element: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'autocomplete' });
+            beforeAll(() => {
+                document.body.appendChild(element);
+                atcObj = new AutoComplete({
+                    dataSource: languageData,
+                    fields: { text: 'text', value: 'id' },
+                    filtering: (e: FilteringEventArgs) => {
+                        let query = new Query();
+                        query = (e.text != "") ? query.where("text", "startswith", e.text, true) : query;
+                        atcObj.filter(languageData, query);
+                    }
+                });
+                atcObj.appendTo(element);
+            });
+            afterAll(() => {
+                atcObj.destroy();
+                element.remove();
+            });
+
+            it('Searching a value ', (done) => {
+                atcObj.inputElement.value = 'java';
+                e.keyCode = 72;
+                atcObj.onInput();
+                atcObj.onFilterUp(e);
+                setTimeout(() => {
+                    activeElement = atcObj.list.querySelectorAll('li');
+                    expect(activeElement[0].textContent).toBe('JAVA');
+                    done();
+                }, 450)
+            });
+        });
     });
     describe('Highlight and AutoFill', () => {
         let atcObj: any;

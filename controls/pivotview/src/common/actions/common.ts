@@ -7,7 +7,7 @@ import { Browser } from '@syncfusion/ej2-base';
 /**
  * Module for PivotCommon rendering
  */
-/** @hidden */
+
 export class Common implements IAction {
     /**
      * Module declarations
@@ -66,7 +66,7 @@ export class Common implements IAction {
     }
 
     /**
-     * @hidden
+
      */
     public addEventListener(): void {
         this.handlers = {
@@ -82,7 +82,7 @@ export class Common implements IAction {
     }
 
     /**
-     * @hidden
+
      */
     public removeEventListener(): void {
         if (this.parent.isDestroyed) { return; }
@@ -92,7 +92,7 @@ export class Common implements IAction {
     /**
      * To destroy the groupingbar 
      * @return {void}
-     * @hidden
+
      */
     public destroy(): void {
         this.removeEventListener();

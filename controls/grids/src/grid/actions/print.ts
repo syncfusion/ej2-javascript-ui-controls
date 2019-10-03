@@ -7,7 +7,7 @@ import * as events from '../base/constant';
 import { Deferred } from '@syncfusion/ej2-data';
 
 /**
- * @hidden
+
  */
 export function getCloneProperties(): string[] {
     return ['aggregates', 'allowGrouping', 'allowFiltering', 'allowMultiSorting', 'allowReordering', 'allowSorting',
@@ -34,7 +34,7 @@ export class Print {
 
     /**
      * Constructor for the Grid print module
-     * @hidden
+
      */
     constructor(parent?: IGrid, scrollModule?: Scroll) {
         this.parent = parent;
@@ -203,6 +203,12 @@ export class Print {
             (<HTMLElement>groupCaption[i]).setAttribute('colspan', colSpan);
         }
         let colGroups: NodeList = element.querySelectorAll(`colgroup${id}colGroup`);
+        let contentColGroups: NodeList = element.querySelector('.e-content').querySelectorAll('colgroup');
+        this.hideColGroup(colGroups, depth);
+        this.hideColGroup(contentColGroups, depth);
+    }
+
+    private hideColGroup(colGroups: NodeList, depth: number): void {
         for (let i: number = 0; i < colGroups.length; i++) {
             for (let j: number = 0; j < depth; j++) {
                 (<HTMLElement>colGroups[i].childNodes[j]).style.display = 'none';
@@ -217,7 +223,7 @@ export class Print {
     /**
      * To destroy the print 
      * @return {void}
-     * @hidden
+
      */
     public destroy(): void {
         if (this.parent.isDestroyed) { return; }

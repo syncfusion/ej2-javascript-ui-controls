@@ -18,7 +18,7 @@ import { isGroupAdaptive } from '../base/util';
 import { setStyleAttribute } from '@syncfusion/ej2-base';
 /**
  * VirtualContentRenderer
- * @hidden
+
  */
 export class VirtualContentRenderer extends ContentRender implements IRenderer {
     private count: number;
@@ -491,7 +491,7 @@ export class VirtualContentRenderer extends ContentRender implements IRenderer {
     }
 }
 /**
- * @hidden
+
  */
 export class VirtualHeaderRenderer extends HeaderRender implements IRenderer {
     public virtualEle: VirtualElementHandler = new VirtualElementHandler();
@@ -567,7 +567,7 @@ export class VirtualHeaderRenderer extends HeaderRender implements IRenderer {
     }
 }
 /**
- * @hidden
+
  */
 export class VirtualElementHandler {
     public wrapper: HTMLElement;

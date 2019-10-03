@@ -52,8 +52,8 @@ var QuietZone;
  * * Size12x36
  * * Size16x36
  * * Size16x48
- * @aspNumberEnum
- * @blazorNumberEnum
+
+
  * @IgnoreSingular
  */
 var DataMatrixSize;
@@ -226,8 +226,8 @@ var DataMatrixSize;
  * * Version38
  * * Version39
  * * Version40
- * @aspNumberEnum
- * @blazorNumberEnum
+
+
  * @IgnoreSingular
  */
 var QRCodeVersion;
@@ -403,8 +403,8 @@ var QRCodeVersion;
  * * Medium
  * * Quartile
  * * High
- * @aspNumberEnum
- * @blazorNumberEnum
+
+
  * @IgnoreSingular
  */
 var ErrorCorrectionLevel;
@@ -618,22 +618,22 @@ class Rect {
     constructor(x, y, width, height) {
         /**
          * Sets the x-coordinate of the starting point of a rectangular region
-         * @default 0
+    
          */
         this.x = Number.MAX_VALUE;
         /**
          * Sets the y-coordinate of the starting point of a rectangular region
-         * @default 0
+    
          */
         this.y = Number.MAX_VALUE;
         /**
          * Sets the width of a rectangular region
-         * @default 0
+    
          */
         this.width = 0;
         /**
          * Sets the height of a rectangular region
-         * @default 0
+    
          */
         this.height = 0;
         this.x = x;

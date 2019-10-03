@@ -41,3 +41,13 @@ export const openFailure: string = 'openFailure';
 export const sheetCreated: string = 'sheetCreated';
 /** @hidden */
 export const sheetsDestroyed: string = 'sheetsDestroyed';
+/** @hidden */
+export const aggregateComputation: string = 'aggregateComputation';
+/** @hidden */
+export const beforeSort: string = 'beforeSort';
+/** @hidden */
+export const initiateSort: string = 'initiateSort';
+/** @hidden */
+export const sortComplete: string = 'sortComplete';
+/** @hidden */
+export const validateSortRange: string = 'validateSortRange';

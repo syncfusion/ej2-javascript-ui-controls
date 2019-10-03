@@ -9,7 +9,7 @@ import * as events from '../../common/base/constant';
 /**
  * PivotView Keyboard interaction
  */
-/** @hidden */
+
 export class KeyboardInteraction {
     private parent: PivotView;
     private keyConfigs: { [key: string]: string } = {

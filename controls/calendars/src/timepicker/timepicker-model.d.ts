@@ -9,14 +9,14 @@ export interface TimePickerModel extends ComponentModel{
 
     /**
      * Gets or sets the width of the TimePicker component. The width of the popup is based on the width of the component.
-     * @default null
+
      */
     width?: string | number;
 
     /**
      * Specifies the root CSS class of the TimePicker that allows to
      * customize the appearance by overriding the styles.
-     * @default null
+
      */
     cssClass?: string;
 
@@ -25,7 +25,7 @@ export interface TimePickerModel extends ComponentModel{
      * resets to previous value. By default, strictMode is in false.
      * > For more details refer to 
      * [`Strict Mode`](../../timepicker/strict-mode/) documentation.
-     * @default false
+
      */
     strictMode?: boolean;
 
@@ -84,8 +84,8 @@ export interface TimePickerModel extends ComponentModel{
      * alt+uparrow<br/></td></tr> 
      * </table>
      * 
-     * @default null
-     * @blazorType object 
+
+
      */
     keyConfigs?: { [key: string]: string };
 
@@ -94,28 +94,28 @@ export interface TimePickerModel extends ComponentModel{
      * based on the culture. 
      * > For more details refer to 
      * [`Format`](../../timepicker/getting-started#setting-the-time-format) documentation.
-     * @default null
-     * @aspType string
-     * @blazorType string
+
+
+
      */
     format?: string | TimeFormatObject;
 
     /**
      * Specifies whether the component to be disabled or not.
-     * @default true
+
      */
     enabled?: boolean;
 
     /**
      * Specifies the component in readonly state. 
-     * @default false
+
      */
     readonly?: boolean;
 
     /**
      * You can add the additional html attributes such as disabled, value etc., to the element.
      * If you configured both property and equivalent html attribute then the component considers the property value.
-     * @default {}
+
      */
     htmlAttributes?: { [key: string]: string; };
 
@@ -125,37 +125,37 @@ export interface TimePickerModel extends ComponentModel{
      * Never: The label will never float in the input when the placeholder is available.
      * Always: The floating label will always float above the input.
      * Auto: The floating label will float above the input after focusing or entering a value in the input.
-     * @default Syncfusion.EJ2.Inputs.FloatLabelType.Never
-     * @aspType Syncfusion.EJ2.Inputs.FloatLabelType
-     * @blazorType Syncfusion.EJ2.Inputs.FloatLabelType
-     * @isEnumeration true
+
+
+
+
      */
     floatLabelType?: FloatLabelType | string;
 
     /**
      * Specifies the placeholder text that is displayed in textbox.
-     * @default null
+
      */
     placeholder?: string;
 
     /**
      * specifies the z-index value of the timePicker popup element.
-     * @default 1000
-     * @aspType int
-     * @blazorType int
+
+
+
      */
     zIndex?: number;
 
     /**
      * Enable or disable the persisting component's state between the page reloads. If enabled, following list of states will be persisted.
      * 1. Value
-     * @default false
+
      */
     enablePersistence?: boolean;
 
     /**
      * Specifies whether to show or hide the clear icon.
-     * @default true
+
      */
     showClearButton?: boolean;
 
@@ -163,8 +163,8 @@ export interface TimePickerModel extends ComponentModel{
      * Specifies the time interval between the two adjacent time values in the popup list. 
      * > For more details refer to 
      * [`Format`](../../timepicker/getting-started#setting-the-time-format)documentation.
-     * @default 30
-     * @blazorType int
+
+
      * 
      */
     step?: number;
@@ -174,15 +174,15 @@ export interface TimePickerModel extends ComponentModel{
      *  the given value is not present in the popup list.
      * > For more details refer to 
      * [`Time Duration`](https://ej2.syncfusion.com/demos/#/material/timepicker/list-formatting.html) sample. 
-     * @default null
-     * @isBlazorNullableType true
+
+
      */
     scrollTo?: Date;
 
     /**
      * Gets or sets the value of the component. The value is parsed based on the culture specific time format.
-     * @default null
-     * @isBlazorNullableType true
+
+
      */
     value?: Date;
 
@@ -190,8 +190,8 @@ export interface TimePickerModel extends ComponentModel{
      * Gets or sets the minimum time value that can be allowed to select in TimePicker.
      * > For more details refer to 
      * [`Time Range`](../../timepicker/time-range/) documentation.
-     * @default 00:00
-     * @blazorDefaultValue new DateTime(1900, 01, 01, 00, 00, 00)
+
+
      */
     min?: Date;
 
@@ -199,8 +199,8 @@ export interface TimePickerModel extends ComponentModel{
      * Gets or sets the maximum time value that can be allowed to select in TimePicker.
      * > For more details refer to 
      * [`Time Range`](../../timepicker/time-range/) documentation.
-     * @default 00:00
-     * @blazorDefaultValue new DateTime(2099, 12, 31, 23, 59, 59)
+
+
      */
     max?: Date;
 
@@ -210,49 +210,49 @@ export interface TimePickerModel extends ComponentModel{
      * 
      * Specifies whether the input textbox is editable or not. Here the user can select the value from the 
      * popup and cannot edit in the input textbox.
-     * @default true
+
      */
     allowEdit?: boolean;
 
     /**
      * Triggers when the value is changed.
      * @event  
-     * @blazorProperty 'ValueChange'
+
      */
     change?: EmitType<ChangeEventArgs>;
 
     /**
      * Triggers when the component is created.
      * @event
-     * @blazorProperty 'Created'
+
      */
     created?: EmitType<Object>;
 
     /**
      * Triggers when the component is destroyed.
      * @event
-     * @blazorProperty 'Destroyed'
+
      */
     destroyed?: EmitType<Object>;
 
     /**
      * Triggers when the popup is opened.
      * @event
-     * @blazorProperty 'OnOpen'
+
      */
     open?: EmitType<PopupEventArgs>;
 
     /**
      * Triggers while rendering the each popup list item.
      * @event
-     * @blazorProperty 'OnItemRender'
+
      */
     itemRender?: EmitType<ItemEventArgs>;
 
     /**
      * Triggers when the popup is closed.
      * @event
-     * @blazorProperty 'OnClose'
+
      */
     close?: EmitType<PopupEventArgs>;
 

@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 17.3.14 (2019-10-03)
+
+### File Manager
+
+#### Bug Fixes
+
+- The issue with `the fileOpen event that was not triggered for folder navigation through navigation pane` has been fixed.
+
 ## 17.3.9-beta (2019-09-20)
 
 ### File Manager

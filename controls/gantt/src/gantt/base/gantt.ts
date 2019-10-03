@@ -12,7 +12,7 @@ import { Toolbar } from '../actions/toolbar';
 import { IGanttData, IWorkingTimeRange, IQueryTaskbarInfoEventArgs, BeforeTooltipRenderEventArgs, IDependencyEventArgs } from './interface';
 import { ITaskbarEditedEventArgs, IParent, ITaskData, ISplitterResizedEventArgs, ICollapsingEventArgs, CellEditArgs } from './interface';
 import { IConnectorLineObject, IValidateArgs, IValidateMode, ITaskAddedEventArgs, IKeyPressedEventArgs } from './interface';
-import { ZoomEventArgs, IActionBeginEventArgs, CellSelectingEventArgs } from './interface';
+import { ZoomEventArgs, IActionBeginEventArgs, CellSelectingEventArgs, RowDeselectEventArgs } from './interface';
 import { ITimeSpanEventArgs, ZoomTimelineSettings, QueryCellInfoEventArgs, RowDataBoundEventArgs, RowSelectEventArgs } from './interface';
 import { TaskFieldsModel, TimelineSettingsModel, SplitterSettingsModel, SortSettings, SortSettingsModel } from '../models/models';
 import { EventMarkerModel, AddDialogFieldSettingsModel, EditDialogFieldSettingsModel, EditSettingsModel } from '../models/models';
@@ -30,7 +30,7 @@ import { Column, ColumnModel } from '../models/column';
 import { TreeGrid, FilterSettingsModel as TreeGridFilterSettingModel } from '@syncfusion/ej2-treegrid';
 import { Sort } from '../actions/sort';
 import { CellSelectEventArgs, ISelectedCell, ContextMenuItemModel } from '@syncfusion/ej2-grids';
-import { RowDeselectEventArgs, CellDeselectEventArgs, IIndex, FailureEventArgs } from '@syncfusion/ej2-grids';
+import { CellDeselectEventArgs, IIndex, FailureEventArgs } from '@syncfusion/ej2-grids';
 import { HeaderCellInfoEventArgs, ColumnMenuClickEventArgs, ColumnMenuOpenEventArgs } from '@syncfusion/ej2-grids';
 import { ColumnMenuItemModel, ExcelQueryCellInfoEventArgs } from '@syncfusion/ej2-grids';
 import { ExcelExportProperties, ExcelExportCompleteArgs, ExcelHeaderQueryCellInfoEventArgs } from '@syncfusion/ej2-grids';
@@ -51,6 +51,7 @@ import { DayMarkers } from '../actions/day-markers';
 import { ContextMenu } from './../actions/context-menu';
 import { RowSelectingEventArgs } from './interface';
 import { ContextMenuOpenEventArgs as CMenuOpenEventArgs, ContextMenuClickEventArgs as CMenuClickEventArgs } from './interface';
+import { ColumnMenu } from '../actions/column-menu';
 
 /**
  *
@@ -226,6 +227,10 @@ export class Gantt extends Component<HTMLElement>
      * The `contextMenuModule` is used to invoke context menu in Gantt.
      */
     public contextMenuModule: ContextMenu;
+    /**
+     * The `columnMenuModule` is used to manipulate column menu items in Gantt.
+     */
+    public columnMenuModule: ColumnMenu;
     /** @hidden */
     public staticSelectedRowIndex: number = -1;
     protected needsID: boolean = true;
@@ -441,6 +446,7 @@ export class Gantt extends Component<HTMLElement>
     /**
      * To show notes column cell values inside the cell or in tooltip.
      * @default false
+     * @deprecated
      */
     @Property(false)
     public showInlineNotes: boolean;
@@ -820,8 +826,7 @@ export class Gantt extends Component<HTMLElement>
 
     /** 
      * This event will be triggered when taskbar was in dragging state.
-     * @deprecated
-     * @event 
+     * @event 
      */
     @Event()
     public taskbarEditing: EmitType<ITaskbarEditedEventArgs>;
@@ -936,7 +941,6 @@ export class Gantt extends Component<HTMLElement>
     /**
      * Triggers when a selected row is deselected.
      * @event
-     * @blazorType Syncfusion.EJ2.Blazor.Grids.RowDeselectEventArgs<TValue>
      */
     @Event()
     public rowDeselected: EmitType<RowDeselectEventArgs>;
@@ -1108,7 +1112,7 @@ export class Gantt extends Component<HTMLElement>
                 if (!isNullOrUndefined(this.editModule) && !isNullOrUndefined(this.editModule.cellEditModule) &&
                     this.editModule.cellEditModule.isCellEdit === true) {
                     this.editModule.cellEditModule.isCellEdit = false;
-                    this.treeGrid.endEdit();
+                    this.treeGrid.grid.saveCell();
                     let focussedElement: HTMLElement = <HTMLElement>this.element.querySelector('.e-treegrid');
                     focussedElement.focus();
                 }
@@ -1520,7 +1524,7 @@ export class Gantt extends Component<HTMLElement>
     /**
      * Get expanded records from given record collection.
      * @param {IGanttData[]} records - Defines record collection.
-     * @isGenericType true
+     * @deprecated
      */
     public getExpandedRecords(records: IGanttData[]): IGanttData[] {
         let expandedRecords: IGanttData[] = records.filter((record: IGanttData) => {
@@ -2071,6 +2075,12 @@ export class Gantt extends Component<HTMLElement>
                 args: [this]
             });
         }
+        if (this.showColumnMenu) {
+            modules.push({
+                member: 'columnMenu',
+                args: [this]
+            });
+        }
         return modules;
     }
     /** 
@@ -2081,7 +2091,9 @@ export class Gantt extends Component<HTMLElement>
      * @return {void} 
      */
     public sortColumn(columnName: string, direction: SortDirection, isMultiSort?: boolean): void {
-        this.sortModule.sortColumn(columnName, direction, isMultiSort);
+        if (this.sortModule && this.allowSorting) {
+            this.sortModule.sortColumn(columnName, direction, isMultiSort);
+        }
     }
 
     /**  
@@ -2366,7 +2378,7 @@ export class Gantt extends Component<HTMLElement>
     /**
      * Get parent task by clone parent item.
      * @param {IParent} cloneParent - Defines the clone parent item.
-     * @isGenericType true
+     * @hidden
      */
     public getParentTask(cloneParent: IParent): IGanttData {
         if (!isNullOrUndefined(cloneParent)) {
@@ -2412,6 +2424,7 @@ export class Gantt extends Component<HTMLElement>
      * @param  {workbook} workbook - Defines the Workbook if multiple export is enabled.
      * @param  {boolean} isBlob - If 'isBlob' set to true, then it will be returned as blob data.
      * @return {Promise<any>}
+     * @blazorType void
      */
     public excelExport(
         excelExportProperties?: ExcelExportProperties, isMultipleExport?: boolean,
@@ -2427,6 +2440,7 @@ export class Gantt extends Component<HTMLElement>
      * @param  {workbook} workbook - Defines the Workbook if multiple export is enabled.
      * @param  {boolean} isBlob - If 'isBlob' set to true, then it will be returned as blob data.
      * @return {Promise<any>}
+     * @blazorType void
      */
     public csvExport(
         excelExportProperties?: ExcelExportProperties,
@@ -2457,7 +2471,7 @@ export class Gantt extends Component<HTMLElement>
      * @private
      */
     public renderWorkingDayCell(args: RenderDayCellEventArgs): void {
-        let nonWorkingDays: number[] = this.nonWorkingDayIndex;
+        let nonWorkingDays: number[] = !this.includeWeekend ? this.nonWorkingDayIndex : [];
         let holidays: number[] = this.totalHolidayDates;
         if (nonWorkingDays.length > 0 && nonWorkingDays.indexOf(args.date.getDay()) !== -1) {
             args.isDisabled = true;
@@ -2498,7 +2512,7 @@ export class Gantt extends Component<HTMLElement>
      * @return {void}
      * @public
      */
-    public updateProjectDates(startDate: Date, endDate: Date, isTimelineRoundOff: boolean): void {
+    public updateProjectDates(startDate: Date, endDate: Date, isTimelineRoundOff: boolean, isFrom?: string): void {
         if (isBlazor()) {
             startDate = this.dataOperation.getDateFromFormat(startDate);
             endDate = this.dataOperation.getDateFromFormat(endDate);
@@ -2518,7 +2532,9 @@ export class Gantt extends Component<HTMLElement>
         if (this.taskFields.dependency) {
             this.ganttChartModule.reRenderConnectorLines();
         }
-        this.notify('selectRowByIndex', {});
+        if (isFrom !== 'beforeAdd') {
+            this.notify('selectRowByIndex', {});
+        }
     }
 
     /**
@@ -2775,7 +2791,7 @@ export class Gantt extends Component<HTMLElement>
      */
     public addPredecessor(id: number, predecessorString: string): void {
         let ganttRecord: IGanttData = this.getRecordByID(id.toString());
-        if (this.editModule && !isNullOrUndefined(ganttRecord)) {
+        if (this.editModule && !isNullOrUndefined(ganttRecord) && this.editSettings.allowTaskbarEditing) {
             this.connectorLineEditModule.addPredecessor(ganttRecord, predecessorString);
         }
     }
@@ -2787,7 +2803,7 @@ export class Gantt extends Component<HTMLElement>
      */
     public removePredecessor(id: number): void {
         let ganttRecord: IGanttData = this.getRecordByID(id.toString());
-        if (this.editModule && !isNullOrUndefined(ganttRecord)) {
+        if (this.editModule && !isNullOrUndefined(ganttRecord) && this.editSettings.allowTaskbarEditing) {
             this.connectorLineEditModule.removePredecessor(ganttRecord);
         }
     }
@@ -2800,7 +2816,7 @@ export class Gantt extends Component<HTMLElement>
      */
     public updatePredecessor(id: number, predecessorString: string): void {
         let ganttRecord: IGanttData = this.getRecordByID(id.toString());
-        if (this.editModule && !isNullOrUndefined(ganttRecord)) {
+        if (this.editModule && !isNullOrUndefined(ganttRecord) && this.editSettings.allowTaskbarEditing) {
             this.connectorLineEditModule.updatePredecessor(ganttRecord, predecessorString);
         }
     }
@@ -2935,8 +2951,10 @@ export class Gantt extends Component<HTMLElement>
      * @param {string} keyVal - Defines key value to search.
      */
     public search(keyVal: string): void {
-        this.searchSettings.key = keyVal;
-        this.dataBind();
+        if (this.filterModule) {
+            this.searchSettings.key = keyVal;
+            this.dataBind();
+        }
     }
 
     /**
@@ -2968,10 +2986,13 @@ export class Gantt extends Component<HTMLElement>
     /**
      * Method to update data source.
      * @return {void}
+     * @param dataSource - Defines a collection of data.
+     * @param args - Defines the projectStartDate and projectEndDate values.
      * @public
      */
     public updateDataSource(dataSource: object[], args: object): void {
-        for (let prop of Object.keys(args)) {
+        if (!isNullOrUndefined(args)) {
+            for (let prop of Object.keys(args)) {
             switch (prop) {
                 case 'projectStartDate':
                     this.setProperties({ projectStartDate: args[prop] }, true);
@@ -2981,6 +3002,7 @@ export class Gantt extends Component<HTMLElement>
                     break;
             }
         }
+    }
         this.dataSource = dataSource;
     }
 
@@ -3031,7 +3053,7 @@ export class Gantt extends Component<HTMLElement>
      * @return {void}
      * @public
      */
-    public ShowColumn(keys: string | string[], showBy?: string): void {
+    public showColumn(keys: string | string[], showBy?: string): void {
         this.treeGrid.showColumns(keys, showBy);
     }
 
@@ -3129,6 +3151,15 @@ export class Gantt extends Component<HTMLElement>
       if (this.toolbarModule) {
           this.toolbarModule.enableItems(items, isEnable);
       }
+    }
+    /**
+     * Deselects the current selected rows and cells.
+     * @return {void}
+     */
+    public clearSelection(): void {
+        if (this.selectionModule) {
+            this.selectionModule.clearSelection();
+        }
     }
     /**
      * @param args

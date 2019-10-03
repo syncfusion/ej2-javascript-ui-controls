@@ -1,6 +1,7 @@
 import { Spreadsheet } from '../base/index';
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
 import { spreadsheetDestroyed, beforeContentLoaded, beforeVirtualContentLoaded, virtualContentLoaded, RefreshType } from '../common/index';
+import { colWidthChanged } from '../common/index';
 import { IScrollArgs, onVerticalScroll, onHorizontalScroll, rowHeightChanged, beforeHeaderLoaded, deInitProperties } from '../common/index';
 import { SheetModel, getRowHeight, getRowsHeight, getColumnWidth, getColumnsWidth } from './../../workbook/index';
 import { getCellAddress } from '../../workbook/common/index';
@@ -180,9 +181,7 @@ export class VirtualScroll {
     private checkLastIdx(idx: number, layout: string): number {
         if (this.parent.scrollSettings.isFinite) {
             let count: number = this.parent.getActiveSheet()[layout + 'Count'] - 1;
-            if (idx > count) {
-                idx = count;
-            }
+            if (idx > count) { idx = count; }
         }
         return idx;
     }
@@ -273,7 +272,7 @@ export class VirtualScroll {
         if (args.refresh === 'Column' || args.refresh === 'ColumnPart') {
             let translateX: number = this.parent.enableRtl ? -this.translateX : this.translateX;
             this.content.style.transform = `translate(${translateX}px, ${this.translateY}px)`;
-            if (sheet.showHeaders) { this.colHeader.style.transform = `translate(${this.translateX}px, 0px)`; }
+            if (sheet.showHeaders) { this.colHeader.style.transform = `translate(${translateX}px, 0px)`; }
         }
     }
 
@@ -339,6 +338,19 @@ export class VirtualScroll {
         }
     }
 
+    private updateVTrackWidth(args: { colIdx: number, threshold: number }): void {
+        if (args.colIdx < this.parent.getActiveSheet().colCount) {
+            let hdrVTrack: HTMLElement = this.parent.getColumnHeaderContent().getElementsByClassName('e-virtualtrack')[0] as HTMLElement;
+            hdrVTrack.style.width = parseInt(hdrVTrack.style.width, 10) + args.threshold + 'px';
+            let cntVTrack: HTMLElement = this.parent.getMainContent().getElementsByClassName('e-virtualtrack')[0] as HTMLElement;
+            cntVTrack.style.width = parseInt(cntVTrack.style.width, 10) + args.threshold + 'px';
+            let hdrColumn: HTMLElement = this.parent.getColumnHeaderContent().getElementsByClassName('e-virtualable')[0] as HTMLElement;
+            hdrColumn.style.width = parseInt(hdrColumn.style.width, 10) + args.threshold + 'px';
+            let cntColumn: HTMLElement = this.parent.getMainContent().getElementsByClassName('e-virtualable')[0] as HTMLElement;
+            cntColumn.style.width = parseInt(cntColumn.style.width, 10) + args.threshold + 'px';
+        }
+    }
+
     private updateVTrack(header: HTMLElement, size: number, sizeStr: string): void {
         if (this.parent.getActiveSheet().showHeaders) { (header.nextElementSibling as HTMLElement).style[sizeStr] = `${size}px`; }
         (this.content.nextElementSibling as HTMLElement).style[sizeStr] = `${size}px`;
@@ -372,6 +384,7 @@ export class VirtualScroll {
         this.parent.on(onHorizontalScroll, this.onHorizontalScroll, this);
         this.parent.on(updateUsedRange, this.updateUsedRange, this);
         this.parent.on(rowHeightChanged, this.updateVTrackHeight, this);
+        this.parent.on(colWidthChanged, this.updateVTrackWidth, this);
         this.parent.on(beforeHeaderLoaded, this.createHeaderElement, this);
         this.parent.on(deInitProperties, this.deInitProps, this);
         this.parent.on(sheetsDestroyed, this.sliceScrollProps, this);
@@ -394,6 +407,7 @@ export class VirtualScroll {
             this.parent.off(onHorizontalScroll, this.onHorizontalScroll);
             this.parent.off(updateUsedRange, this.updateUsedRange);
             this.parent.off(rowHeightChanged, this.updateVTrackHeight);
+            this.parent.off(colWidthChanged, this.updateVTrackWidth);
             this.parent.off(beforeHeaderLoaded, this.createHeaderElement);
             this.parent.off(sheetsDestroyed, this.sliceScrollProps);
             this.parent.off(sheetCreated, this.updateScrollProps);

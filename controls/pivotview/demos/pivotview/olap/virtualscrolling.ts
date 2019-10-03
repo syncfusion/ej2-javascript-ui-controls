@@ -9,7 +9,7 @@ let pivotGridObj: PivotView = new PivotView({
         catalog: 'Adventure Works DW 2008R2',
         cube: 'Adventure Works',
         providerType: 'SSAS',
-        url: 'https://bi.syncfusion.com/olap/msmdpump.dll',
+        url: 'https://demos.telerik.com/olap/msmdpump.dll',
         localeIdentifier: 1033,
         rows: [
             { name: '[Customer].[Customer]', caption: 'Customer' },

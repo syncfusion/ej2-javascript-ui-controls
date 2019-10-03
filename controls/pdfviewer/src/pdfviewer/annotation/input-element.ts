@@ -6,7 +6,7 @@ import { PdfAnnotationBaseModel } from '../../diagram/pdf-annotation-model';
 
 
 /**
- * @hidden
+
  */
 export class InputElement {
     private pdfViewer: PdfViewer;
@@ -73,7 +73,14 @@ export class InputElement {
             }
             if (annotation.wrapper.bounds.top) {
                 // tslint:disable-next-line:max-line-length
-                this.inputBoxElement.style.top = ((annotation.wrapper.bounds.top + (annotation.wrapper.bounds.height / 2) - (this.maxHeight / 2)) * zoomFactor) + 'px';
+                if (annotation.shapeAnnotationType === 'Line' || annotation.shapeAnnotationType === 'LineWidthArrowHead' ||
+                    annotation.shapeAnnotationType === 'Distance' || annotation.shapeAnnotationType === 'Polygon') {
+                    // tslint:disable-next-line:max-line-length
+                    this.inputBoxElement.style.top = ((annotation.wrapper.bounds.top + (annotation.wrapper.bounds.height / 2) - (this.maxHeight)) * zoomFactor) + 'px';
+                } else {
+                    // tslint:disable-next-line:max-line-length
+                    this.inputBoxElement.style.top = ((annotation.wrapper.bounds.top + (annotation.wrapper.bounds.height / 2) - (this.maxHeight / 2)) * zoomFactor) + 'px';
+                }
             }
             this.inputBoxElement.maxLength = annotation.labelMaxLength;
             this.inputBoxElement.fontFamily = annotation.fontFamily;

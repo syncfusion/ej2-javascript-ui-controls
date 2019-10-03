@@ -330,7 +330,7 @@ describe('PivotView spec', () => {
                 pivotGridObj.loadPersistData(persistdata);
                 expect(document.getElementsByClassName('e-pivotview')).toBeTruthy();
             });
-            
+
             it('Mouse hover event testing - Value cell', (done: Function) => {
                 let target: HTMLElement = pivotGridObj.element.querySelector('td[aria-colindex="3"]');
                 triggerMouseEvent(target, 'mouseover');
@@ -2204,10 +2204,10 @@ describe('PivotView spec', () => {
                     pivotGridObj.pivotValues = pivotGridObj.engineModule.pivotValues;
                 });
                 it('With Single Measure', () => {
-                    expect(document.querySelectorAll('td[aria-colindex="1"]')[0].classList.contains('formatPivotGrid9')).toBeTruthy();
+                    expect(document.querySelectorAll('td[aria-colindex="1"]')[0].classList.contains('formatPivotGrid6')).toBeTruthy();
                 });
                 it('With Single Measure', () => {
-                    expect(document.querySelectorAll('td[aria-colindex="2"]')[0].classList.contains('formatPivotGrid9')).toBeTruthy();
+                    expect(document.querySelectorAll('td[aria-colindex="2"]')[0].classList.contains('formatPivotGrid6')).toBeTruthy();
                     pivotGridObj.dataSourceSettings = {
                         dataSource: pivot_dataset as IDataSet[],
                         expandAll: false,
@@ -3719,12 +3719,12 @@ describe('PivotView spec', () => {
                 it('product quantity > 100', (done: Function) => {
                     pivotGridObj.dataSourceSettings.filterSettings = [
                         { name: 'product', type: 'Value', condition: 'GreaterThan', measure: 'quantity', value1: '100' }],
-                    setTimeout(() => {
-                        expect(document.querySelectorAll('.e-movableheader th')[4].textContent).toBe('brown');
-                        expect(document.querySelectorAll('.e-movableheader th')[3].textContent).toBe('green');
-                        expect(document.querySelectorAll('.e-movablecontent tr')[0].querySelector('td .e-cellvalue').textContent).toBe('$27,813.73');
-                        done();
-                    }, 5000);
+                        setTimeout(() => {
+                            expect(document.querySelectorAll('.e-movableheader th')[4].textContent).toBe('brown');
+                            expect(document.querySelectorAll('.e-movableheader th')[3].textContent).toBe('green');
+                            expect(document.querySelectorAll('.e-movablecontent tr')[0].querySelector('td .e-cellvalue').textContent).toBe('$27,813.73');
+                            done();
+                        }, 5000);
                 });
                 // it('eyeColor blue quantity < 100', (done: Function) => {
                 //     pivotGridObj.dataSource.filterSettings = [
@@ -9459,7 +9459,6 @@ describe('PivotView spec', () => {
     describe('Pivot Grid Toolbar', () => {
         describe(' -  Initial Rendering and Basic Operations', () => {
             let pivotGridObj: PivotView;
-            PivotView.Inject(FieldList, CalculatedField, Toolbar, ConditionalFormatting, PivotChart);
             let elem: HTMLElement = createElement('div', { id: 'PivotGrid', styles: 'height:500px; width:100%' });
             afterAll(() => {
                 if (pivotGridObj) {
@@ -9472,6 +9471,7 @@ describe('PivotView spec', () => {
                     document.body.appendChild(elem);
                 }
                 let dataBound: EmitType<Object> = () => { done(); };
+                PivotView.Inject(FieldList, CalculatedField, Toolbar, ConditionalFormatting, PivotChart);
                 pivotGridObj = new PivotView({
                     dataSourceSettings: {
                         dataSource: pivot_dataset as IDataSet[],
@@ -9517,7 +9517,21 @@ describe('PivotView spec', () => {
                     done();
                 }, 1000);
             });
+            it('Save Report Dialog-check', () => {
+                expect(window.getComputedStyle(document.querySelector('.e-pivotview-report-dialog')).display === 'none').toBeTruthy();
+                (document.querySelector('.e-pivot-toolbar .e-remove-report') as HTMLElement).click();
+            });
+            it('Remove Report Dialog - Cancel', (done: Function) => {
+                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                setTimeout(() => {
+                    expect(window.getComputedStyle(document.querySelector('.e-pivot-error-dialog')).display !== 'none').toBeTruthy();
+                    (document.querySelectorAll('.e-pivot-error-dialog .e-btn')[1] as HTMLElement).click();
+                    done();
+                }, 1000);
+            });
             it('Save Report Dialog', (done: Function) => {
+                expect(window.getComputedStyle(document.querySelector('.e-pivotview-report-dialog')).display === 'none').toBeTruthy();
+                (pivotGridObj.element.querySelector('.e-pivot-toolbar .e-save-report') as HTMLElement).click();
                 jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
                 setTimeout(() => {
                     expect(window.getComputedStyle(document.querySelector('.e-pivotview-report-dialog')).display !== 'none').toBeTruthy();
@@ -9881,14 +9895,13 @@ describe('PivotView spec', () => {
                     (document.querySelectorAll('.e-menu-popup li')[3] as HTMLElement).click();
                     let li: HTMLElement = document.getElementById('PivotGridgrandtotal_menu').children[0] as HTMLElement;
                     expect(li.classList.contains('e-menu-caret-icon')).toBeTruthy();
-                    pivotGridObj.toolbarModule.refreshToolbar();
+                    // pivotGridObj.toolbarModule.refreshToolbar();
                     done();
                 }, 1000);
             });
         });
         describe(' -  Chart and Grid with grouping bar', () => {
             let pivotGridObj: PivotView;
-            PivotView.Inject(Toolbar, PivotChart, GroupingBar, FieldList, CalculatedField);
             let elem: HTMLElement = createElement('div', { id: 'PivotGrid', styles: 'height:500px; width:100%' });
             afterAll(() => {
                 if (pivotGridObj) {
@@ -9901,6 +9914,7 @@ describe('PivotView spec', () => {
                     document.body.appendChild(elem);
                 }
                 let dataBound: EmitType<Object> = () => { done(); };
+                PivotView.Inject(Toolbar, PivotChart, GroupingBar, FieldList, CalculatedField);
                 pivotGridObj = new PivotView({
                     dataSourceSettings: {
                         dataSource: pivot_dataset as IDataSet[],
@@ -10198,7 +10212,6 @@ describe('PivotView spec', () => {
                     done();
                 }, 2000);
             });
-
             it('chart type changed to stackingarea100', (done: Function) => {
                 pivotGridObj.chartSettings.chartSeries.type = 'StackingArea100';
                 setTimeout(() => {
@@ -10214,34 +10227,33 @@ describe('PivotView spec', () => {
                 }, 2000);
             });
 
-            it('load y axis properties', (done: Function) => {
+            it('load y axis properties', () => {
                 pivotGridObj.setProperties({ chartSettings: { primaryYAxis: { labelFormat: 'C', title: 'Custom title', plotOffset: 30 } } }, true);
                 pivotGridObj.chartModule.refreshChart();
-                setTimeout(function () {
-                    expect(document.getElementById('PivotView_chart_Series_0_Point_0').getAttribute('aria-label')).toBe('Grand Total:600');
-                    expect(document.getElementById('PivotView_chart_Series_5_Point_0').getAttribute('aria-label')).toBe('Grand Total:2');
-                    expect(document.getElementById('PivotView_chart_AxisTitle_0').textContent).toBe('');
-                    expect(document.getElementById('PivotView_chart_AxisTitle_1').textContent).toBe('Custom title');
-                    expect(document.getElementById('PivotView_chart_chart_legend_text_0').textContent).toBe('FY 2005 - Bike | Amount');
-                    expect(document.getElementById('PivotView_chart_chart_legend_text_3').textContent).toBe('FY 2005 - Van | Quantity');
-                    done();
-                }, 2000);
             });
-            it('customize tooltip, legend and zoom properties', (done: Function) => {
+            it('load y axis properties-update', () => {
+                expect(document.getElementById('PivotView_chart_Series_0_Point_0').getAttribute('aria-label')).toBe('Grand Total:600');
+                expect(document.getElementById('PivotView_chart_Series_5_Point_0').getAttribute('aria-label')).toBe('Grand Total:2');
+                expect(document.getElementById('PivotView_chart_AxisTitle_0').textContent).toBe('');
+                expect(document.getElementById('PivotView_chart_AxisTitle_1').textContent).toBe('Custom title');
+                expect(document.getElementById('PivotView_chart_chart_legend_text_0').textContent).toBe('FY 2005 - Bike | Amount');
+                expect(document.getElementById('PivotView_chart_chart_legend_text_3').textContent).toBe('FY 2005 - Van | Quantity');
+            });
+            it('customize tooltip, legend and zoom properties', () => {
                 pivotGridObj.chartSettings = {
                     legendSettings: { padding: 20, shapePadding: 15 },
                     value: 'Amount',
                     chartSeries: { type: 'Column', animation: { enable: false } }
                 };
-                setTimeout(function () {
-                    expect(document.getElementById('PivotView_chart_Series_0_Point_0').getAttribute('aria-label')).toBe('Grand Total:600');
-                    expect(document.getElementById('PivotView_chart_Series_5_Point_0').getAttribute('aria-label')).toBe('Grand Total:2');
-                    expect(document.getElementById('PivotView_chart_AxisTitle_0').textContent).toBe('');
-                    expect(document.getElementById('PivotView_chart_AxisTitle_1').textContent).toBe('Custom title');
-                    expect(document.getElementById('PivotView_chart_chart_legend_text_0').textContent).toBe('FY 2005 - Bike | Amount');
-                    expect(document.getElementById('PivotView_chart_chart_legend_text_3').textContent).toBe('FY 2005 - Van | Quantity');
-                    done();
-                }, 2000);
+                expect(true).toBeTruthy();
+            });
+            it('customize tooltip, legend and zoom properties-update', () => {
+                expect(document.getElementById('PivotView_chart_Series_0_Point_0').getAttribute('aria-label')).toBe('Grand Total:600');
+                expect(document.getElementById('PivotView_chart_Series_5_Point_0').getAttribute('aria-label')).toBe('Grand Total:2');
+                expect(document.getElementById('PivotView_chart_AxisTitle_0').textContent).toBe('');
+                expect(document.getElementById('PivotView_chart_AxisTitle_1').textContent).toBe('Custom title');
+                expect(document.getElementById('PivotView_chart_chart_legend_text_0').textContent).toBe('FY 2005 - Bike | Amount');
+                expect(document.getElementById('PivotView_chart_chart_legend_text_3').textContent).toBe('FY 2005 - Van | Quantity');
             });
             it('display option view as both', (done: Function) => {
                 pivotGridObj.displayOption = { view: 'Both' };
@@ -10393,22 +10405,27 @@ describe('PivotView spec', () => {
                 pivotGridObj.chartSettings.chartSeries.type = 'Radar';
                 setTimeout(() => {
                     expect(document.getElementById('PivotView_chart_scrollBarThumb_primaryXAxis')).toBe(null);
-                    pivotGridObj.chartModule.destroy();
+                    // pivotGridObj.chartModule.destroy();
                     done();
                 }, 2000);
             });
-            it('onResize', () => {
+            it('onResize', (done: Function) => {
                 (pivotGridObj.chartModule as any).resized({
                     chart: pivotGridObj.chart,
                     currentSize: { height: 800, width: 800 },
                     previousSize: { height: 500, width: 500 },
                     name: 'resized'
                 } as IResizeEventArgs);
+                setTimeout(() => {
+                    expect(true).toBeTruthy();
+                    done();
+                }, 2000);
             })
             it('onExport', (done: Function) => {
                 pivotGridObj.chartExport('JPEG', 'jp');
                 setTimeout(() => {
-                    expect(true).toBeTruthy();
+                    pivotGridObj.chartModule.destroy();
+                    expect(pivotGridObj.chart.isDestroyed).toBeTruthy(true);
                     done();
                 }, 2000);
             })
@@ -12521,7 +12538,7 @@ describe('PivotView spec', () => {
         });
     });
 
-     describe('Grouping bar sort icon deferupdate', () => {
+    describe('Grouping bar sort icon deferupdate', () => {
         let pivotGridObj: PivotView;
         let elem: HTMLElement = createElement('div', { id: 'PivotGrid' });
         let cf: any;

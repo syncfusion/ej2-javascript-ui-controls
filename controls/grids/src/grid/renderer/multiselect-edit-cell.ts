@@ -5,7 +5,7 @@ import { MultiSelect } from '@syncfusion/ej2-dropdowns';
 import {  getComplexFieldID, } from '../base/util';
 /**
  * `MultiSelectEditCell` is used to handle multiselect dropdown cell type editing.
- * @hidden
+
  */
 export class MultiSelectEditCell implements IEditCell {
     private parent: IGrid;

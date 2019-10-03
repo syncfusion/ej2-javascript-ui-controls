@@ -8,25 +8,25 @@ export interface AnimationModel {
 
     /**
      * Specify the type of animation
-     * @default : 'FadeIn';
+
      */
     name?: Effect;
 
     /**
      * Specify the duration to animate
-     * @default : 400;
+
      */
     duration?: number;
 
     /**
      * Specify the animation timing function
-     * @default : 'ease';
+
      */
     timingFunction?: string;
 
     /**
      * Specify the delay to start animation
-     * @default : 0;
+
      */
     delay?: number;
 

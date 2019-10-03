@@ -30,14 +30,16 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
     public rightBracket: string = String.fromCharCode(161);
     /** @hidden */
     public leftBracket: string = String.fromCharCode(162);
-    private sheetToken: string = '!';
+    /** @hidden */
+    public sheetToken: string = '!';
     private emptyString: string = '';
     private leftBrace: string = '{';
     private rightBrace: string = '}';
     private cell: string = this.emptyString;
     private cellPrefix: string = '!0!A';
     private treatEmptyStringAsZero: boolean = false;
-    private parentObject: Object | Calculate;
+    /** @hidden */
+    public parentObject: Object | Calculate;
     /** @hidden */
     public tic: string = '\"';
     /** @hidden */
@@ -56,6 +58,15 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
     public minValue: number = Number.MIN_SAFE_INTEGER;
     public maxValue: number = Number.MAX_SAFE_INTEGER;
     public categoryCollection: string[] = ['All'];
+    private dependencyLevel: number = 0;
+    private refreshedCells: Map<string, string[]> = new Map<string, string[]>();
+    private computedValues: Map<string, string | number> = null;
+    /** @hidden */
+    public randomValues: Map<string, string> = new Map<string, string>();
+    /** @hidden */
+    public isRandomVal: boolean = false;
+    /** @hidden */
+    public randCollection: string[] = [];
 
     /**
      * @hidden
@@ -629,6 +640,10 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
         } else {
             return this.emptyString;
         }
+    }
+
+    public getNamedRanges(): Map<string, string> {
+        return this.namedRanges;
     }
 
     /**
@@ -1371,7 +1386,7 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
                 return s;
             }
         } catch (ex) {
-            if (this.getErrorStrings().indexOf(ex) > -1) {
+            if (this.getErrorStrings().indexOf(ex) > -1 || this.formulaErrorStrings.indexOf(ex) > -1) {
                 throw ex;
             }
             throw new FormulaError(this.formulaErrorStrings[FormulasErrorsStrings.invalid_expression]);
@@ -1962,6 +1977,9 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
         }
         let saveCell: string = (this.cell === '' || this.cell === null) ? '' : this.cell;
         this.cell = val;
+        if (saveCell === this.cell) {
+            throw this.formulaErrorStrings[FormulasErrorsStrings.circular_reference];
+        }
         let cValue: string | number = this.getParentCellValue(row, col, this.grid);
         this.grid = grid;
         this.cell = saveCell;
@@ -2031,13 +2049,38 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
     public valueChanged(grid: string, changeArgs: ValueChangedArgs, isCalculate?: boolean): void {
         let pgrid: string = grid;
         this.grid = grid;
-        let isComputedValueChanged: boolean = false;
+        let isComputedValueChanged: boolean = true;
         let isCompute: boolean = true;
         let calcFamily: CalcSheetFamilyItem = this.getSheetFamilyItem(pgrid);
         let cellTxt: string = getAlphalabel(changeArgs.getColIndex()) + changeArgs.getRowIndex().toString();
         if (calcFamily.sheetNameToParentObject !== null && calcFamily.sheetNameToParentObject.size > 0) {
             let token: string = calcFamily.parentObjectToToken.get(pgrid);
             cellTxt = token + cellTxt;
+        }
+        let argVal: string = changeArgs.getValue().toUpperCase();
+        if (argVal.indexOf('=RAND()') > - 1 || argVal.indexOf('RAND()') > - 1 || argVal.indexOf('=RANDBETWEEN(') > - 1 ||
+            argVal.indexOf('RANDBETWEEN(') > - 1 || this.randomValues.has(cellTxt)) {
+            let randStrVal: string = this.randCollection.toString();
+            if (!this.randomValues.has(cellTxt)) {
+                this.randomValues.set(cellTxt, changeArgs.getValue());
+                this.randCollection.push(cellTxt);
+                this.isRandomVal = true;
+            } else if (this.randomValues.has(cellTxt)) {
+                if (argVal.indexOf('=RAND()') > -1 || argVal.indexOf('RAND()') > -1 || argVal.indexOf('=RANDBETWEEN(') > - 1 ||
+                    argVal.indexOf('RANDBETWEEN(') > - 1) {
+                    this.randomValues.set(cellTxt, changeArgs.getValue());
+                } else if (changeArgs.getValue().toUpperCase() !== this.randomValues.get(cellTxt.toUpperCase())) {
+                    this.randomValues.delete(cellTxt);
+                    randStrVal = randStrVal.split(cellTxt + this.parseArgumentSeparator).join('').split(
+                        this.parseArgumentSeparator + cellTxt).join('').split(cellTxt).join('');
+                    this.randCollection = randStrVal.split(this.parseArgumentSeparator);
+                }
+                if (this.randomValues.size === 0 && this.randCollection.length) {
+                    this.isRandomVal = false;
+                    this.randomValues.clear();
+                    this.randCollection = [];
+                }
+            }
         }
         if (changeArgs.getValue() && changeArgs.getValue()[0] === this.getFormulaCharacter()) {
             this.cell = cellTxt;
@@ -2101,10 +2144,19 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
                 this.clearFormulaDependentCells(cellTxt);
             }
         }
-        if (isCompute && isComputedValueChanged && this.getDependentCells().has(cellTxt)) {
-            // this.getComputedValue().clear();
-            // this.refresh(cellTxt);
+        if (isCompute && isComputedValueChanged && this.getDependentCells().has(cellTxt) &&
+            this.getDependentCells().get(cellTxt).toString() !== cellTxt) {
+            this.getComputedValue().clear();
+            this.refresh(cellTxt);
         }
+    }
+
+    /** @hidden */
+    public getComputedValue(): Map<string, string | number> {
+        if (this.computedValues === null) {
+            this.computedValues = new Map<string, string | number>();
+        }
+        return this.computedValues;
     }
 
     /**
@@ -2320,13 +2372,51 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
         this.lFormulas.clear();
     }
 
+    public refreshRandValues(cellRef: string): void {
+        let rowIdx: number;
+        let colIdx: number;
+        let value: string | number;
+        let tokenRef: string = '';
+        let stringCollection: string = this.randCollection.toString();
+        let family: CalcSheetFamilyItem;
+        if (this.randomValues.has(cellRef)) {
+            this.randomValues.delete(cellRef);
+            stringCollection = stringCollection.split(cellRef + this.parseArgumentSeparator).join('').split(
+                this.parseArgumentSeparator + cellRef).join('').split(cellRef).join('');
+            if (this.randomValues.size === 0 && stringCollection === '') {
+                this.randomValues.clear();
+                this.randCollection = [];
+            } else {
+                this.randCollection = stringCollection.split(this.parseArgumentSeparator);
+            }
+        }
+        for (let i: number = 0; i < this.randomValues.size; i++) {
+            rowIdx = this.rowIndex(this.randCollection[i]);
+            colIdx = this.colIndex(this.randCollection[i]);
+            tokenRef = (parseFloat(this.getSheetToken(this.randCollection[i]).split(this.sheetToken).join('')) + 1).toString();
+            family = this.getSheetFamilyItem(tokenRef);
+            this.grid = family.sheetNameToParentObject.get(tokenRef);
+            value = this.randomValues.get(this.randCollection[i]);
+            value = this.computeFormula(value);
+            if ((<{ setValueRowCol: Function }>this.parentObject).setValueRowCol === undefined) {
+                this.setValueRowCol(this.getSheetID(this.grid) + 1, value, rowIdx, colIdx);
+            } else {
+                (<{ setValueRowCol: Function }>this.parentObject).setValueRowCol(
+                    this.getSheetID(this.grid) + 1, value, rowIdx, colIdx);
+            }
+        }
+    }
+
     public refresh(cellRef: string): void {
+        if (this.dependencyLevel === 0) {
+            this.refreshedCells.clear();
+        }
         if (this.getDependentCells().has(cellRef) && this.getDependentCells().get(cellRef) !== null) {
             let family: CalcSheetFamilyItem = this.getSheetFamilyItem(this.grid);
+            this.dependencyLevel = this.dependencyLevel + 1;
             try {
                 let dependentCells: string[] = this.getDependentCells().get(cellRef);
                 let i: number;
-
                 for (i = 0; i < dependentCells.length; i++) {
                     let dCell: string = dependentCells[i];
                     let token: string = this.getSheetToken(dCell);
@@ -2334,23 +2424,30 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
                     if (token.length) {
                         this.grid = family.tokenToParentObject.get(token);
                     }
-
                     try {
                         let rowIdx: number = this.rowIndex(dCell);
                         let colIdx: number = this.colIndex(dCell);
-
                         let formulaInfo: FormulaInfo = this.getFormulaInfoTable().get(dCell);
+                        let result: string | number;
                         if (formulaInfo) {
                             this.cell = dCell;
-                            let result: string | number = this.computeFormula(formulaInfo.getFormulaText());
+                            if (!this.getComputedValue().has(dCell)) {
+                                result = this.computeFormula(formulaInfo.getFormulaText());
+                                this.computedValues.set(dCell, result);
+                            } else {
+                                result = this.getComputedValue().get(dCell);
+                            }
                             formulaInfo.setFormulaValue(result);
                         }
-
                         if ((<{ setValueRowCol: Function }>this.parentObject).setValueRowCol === undefined) {
                             this.setValueRowCol(this.getSheetID(this.grid) + 1, formulaInfo.getFormulaValue(), rowIdx, colIdx);
                         } else {
                             (<{ setValueRowCol: Function }>this.parentObject).setValueRowCol(
                                 this.getSheetID(this.grid) + 1, formulaInfo.getFormulaValue(), rowIdx, colIdx);
+                        }
+                        if (!this.refreshedCells.has(dCell)) {
+                            this.refreshedCells.set(dCell, []);
+                            this.refresh(dCell);
                         }
                     } catch (ex) {
                         continue;
@@ -2358,6 +2455,10 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
                 }
             } finally {
                 this.grid = family.tokenToParentObject.get(this.getSheetToken(cellRef));
+                this.dependencyLevel--;
+                if (this.dependencyLevel === 0) {
+                    this.refreshedCells.clear();
+                }
             }
         }
     }

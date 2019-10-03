@@ -18,7 +18,7 @@ import { Axis } from '../axis/axis';
 export class CellSettings extends ChildProperty<CellSettings> {
     /**
      * Toggles the visibility of data label over the heatmap cells.
-     * @default true
+
      */
 
     @Property(true)
@@ -26,7 +26,7 @@ export class CellSettings extends ChildProperty<CellSettings> {
 
     /**
      * Specifies the formatting options for the data label. 
-     * @default ''
+
      */
 
     @Property('')
@@ -34,28 +34,28 @@ export class CellSettings extends ChildProperty<CellSettings> {
 
     /**
      * Enable or disable the cell highlighting on mouse hover
-     * @default true
+
      */
     @Property(true)
     public enableCellHighlighting: Boolean;
 
     /**
      * Specifies the minimum and maximum radius value of the cell in percentage.
-     * @default ''
+
      */
     @Complex<BubbleSizeModel>({}, BubbleSize)
     public bubbleSize: BubbleSizeModel;
 
     /**
      * Specifies the cell border style. 
-     * @default ''
+
      */
     @Complex<BorderModel>({}, Border)
     public border: BorderModel;
 
     /**
      * Specifies the cell label style. 
-     * @default ''
+
      */
     @Complex<FontModel>(Theme.rectLabelFont, Font)
     public textStyle: FontModel;
@@ -64,7 +64,7 @@ export class CellSettings extends ChildProperty<CellSettings> {
      * Defines cell Type. They are
      * * Rect: Render a HeatMap cells in rectangle shape.
      * * Bubble: Render a HeatMap cells in bubble shape.
-     * @default 'Rect'
+
      */
     @Property('Rect')
     public tileType: CellType;
@@ -75,14 +75,14 @@ export class CellSettings extends ChildProperty<CellSettings> {
      * * Color: Define the bubble type is color.
      * * Sector: Define the bubble type is sector.
      * * SizeAndColor: Define the bubble type is sizeandcolor.
-     * @default 'Color'
+
      */
     @Property('Color')
     public bubbleType: BubbleType;
 
     /**
      * Enable or disable the bubble to display in inverse
-     * @default true
+
      */
     @Property(false)
     public isInversedBubbleSize: boolean;
@@ -179,6 +179,10 @@ export class Series {
                         (circleRadius * 2) - 12, (circleRadius * 2) - 6, displayText); // 6, 12 - circle padding
                 } else if (!isNullOrUndefined(this.text) && (cellSetting.bubbleType === 'Size' || cellSetting.bubbleType === 'SizeAndColor')
                     && this.text.toString() !== '') { // Bubble by same color and different size Series
+                    if (this.heatMap.paletteSettings.colorGradientMode !== 'Table' && this.heatMap.paletteSettings.type === 'Gradient') {
+                        this.heatMap.minColorValue = this.heatMap.dataSourceMinValue;
+                        this.heatMap.maxColorValue = this.heatMap.dataSourceMaxValue;
+                    }
                     let tempCircleRadius: number = this.getRadiusBypercentage(
                         parseFloat(this.text.toString()), heatMap.dataSourceMinValue, heatMap.dataSourceMaxValue, circleRadius);
                     this.renderBubbleCell(rectPosition, tempBorder, x, this.color, borderColor, tempCircleRadius);

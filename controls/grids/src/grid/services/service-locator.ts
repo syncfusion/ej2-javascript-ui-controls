@@ -2,7 +2,7 @@ import { isNullOrUndefined } from '@syncfusion/ej2-base';
 
 /**
  * ServiceLocator
- * @hidden
+
  */
 export class ServiceLocator {
 

@@ -2,10 +2,10 @@
  * Gantt base spec
  */
 import { createElement, remove } from '@syncfusion/ej2-base';
-import { Gantt, Selection, Toolbar, DayMarkers, Edit, Filter,  ContextMenu, Sort } from '../../src/index';
+import { Gantt, Selection, Toolbar, DayMarkers, Edit, Filter,  ContextMenu, Sort, ColumnMenu } from '../../src/index';
 import { unscheduledData } from '../base/data-source.spec';
 import { createGantt, destroyGantt } from './gantt-util.spec';
-Gantt.Inject(Edit, Selection, ContextMenu, Sort, Toolbar, Filter, DayMarkers);
+Gantt.Inject(Edit, Selection, ContextMenu, Sort, Toolbar, Filter, DayMarkers, ColumnMenu);
 describe('Gantt - Base', () => {
 
     describe('Gantt base module', () => {
@@ -46,7 +46,7 @@ describe('Gantt - Base', () => {
              expect(ganttObj.element.querySelector('.e-hide').getElementsByClassName('e-headertext')[0].textContent).toBe('Duration');
          });
          it('Show column method testing', () => {
-             ganttObj.ShowColumn('Duration','field');
+             ganttObj.showColumn('Duration','field');
              expect(ganttObj.element.querySelectorAll('.e-headercell')[4].classList.contains('e-hide')).toBe(false);
          });
         it('control class testing', () => {

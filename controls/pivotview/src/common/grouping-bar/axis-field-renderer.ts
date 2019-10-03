@@ -9,7 +9,7 @@ import { createElement, prepend } from '@syncfusion/ej2-base';
 /**
  * Module to render Axis Fields
  */
-/** @hidden */
+
 export class AxisFields {
     public parent: PivotView;
     private pivotButton: PivotButton;

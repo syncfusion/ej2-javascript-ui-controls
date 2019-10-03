@@ -20,7 +20,7 @@ import { Print } from '../actions/print';
  * @param  {Object} target
  * @param  {string} checkFor
  * @returns no
- * @hidden
+
  */
 export function doesImplementInterface(target: Object, checkFor: string): boolean {
     /* tslint:disable:no-any */
@@ -31,7 +31,7 @@ export function doesImplementInterface(target: Object, checkFor: string): boolea
  * @param  {string} field
  * @param  {Object} data
  * @param  {IColumn} column
- * @hidden
+
  */
 export function valueAccessor(field: string, data: Object, column: ColumnModel): Object {
     return (isNullOrUndefined(field) || field === '') ? '' : DataUtil.getObject(field, data);
@@ -41,7 +41,7 @@ export function valueAccessor(field: string, data: Object, column: ColumnModel):
  * The function used to update Dom using requestAnimationFrame.
  * @param  {Function} fn - Function that contains the actual action
  * @return {Promise<T>}
- * @hidden
+
  */
 export function getUpdateUsingRaf<T>(updateFunction: Function, callBack: Function): void {
     requestAnimationFrame(() => {
@@ -53,7 +53,7 @@ export function getUpdateUsingRaf<T>(updateFunction: Function, callBack: Functio
     });
 }
 /**
- * @hidden
+
  */
 export function updatecloneRow(grid: IGrid): void {
     let nRows: Row<Column>[] = []; let actualRows: Row<Column>[] = grid.vRows;
@@ -72,7 +72,7 @@ export function updatecloneRow(grid: IGrid): void {
 
 
 /**
- * @hidden
+
  */
 let count: number = 0;
 export function getCollapsedRowsCount(val: Row<Column>, grid: IGrid): number {
@@ -122,7 +122,7 @@ export function getCollapsedRowsCount(val: Row<Column>, grid: IGrid): number {
 }
 
 /**
- * @hidden
+
  */
 export function recursive(row: Object[]): void {
     let items: string = 'items';
@@ -138,7 +138,7 @@ export function recursive(row: Object[]): void {
 
 
 /**
- * @hidden
+
  */
 export function iterateArrayOrObject<T, U>(collection: U[], predicate: (item: Object, index: number) => T): T[] {
     let result: T[] = [];
@@ -151,7 +151,7 @@ export function iterateArrayOrObject<T, U>(collection: U[], predicate: (item: Ob
     return result;
 }
 
-/** @hidden */
+
 export function iterateExtend(array: Object[]): Object[] {
     let obj: Object[] = [];
     for (let i: number = 0; i < array.length; i++) {
@@ -160,7 +160,7 @@ export function iterateExtend(array: Object[]): Object[] {
     return obj;
 }
 
-/** @hidden */
+
 export function templateCompiler(template: string): Function {
     if (template) {
         let e: Object;
@@ -175,7 +175,7 @@ export function templateCompiler(template: string): Function {
     return undefined;
 }
 
-/** @hidden */
+
 export function setStyleAndAttributes(node: Element, customAttributes: { [x: string]: Object }): void {
     let copyAttr: { [x: string]: Object } = {}; let literals: string[] = ['style', 'class'];
 
@@ -194,7 +194,7 @@ export function setStyleAndAttributes(node: Element, customAttributes: { [x: str
 
     attributes(node, copyAttr as { [x: string]: string });
 }
-/** @hidden */
+
 export function extend(copied: Object, first: Object, second?: Object, exclude?: string[]): Object {
     let moved: Object = baseExtend(copied, first, second);
 
@@ -207,7 +207,7 @@ export function extend(copied: Object, first: Object, second?: Object, exclude?:
     return moved;
 }
 
-/** @hidden */
+
 export function setColumnIndex (columnModel: Column[] , ind: number = 0 ): number {
     for (let i: number = 0, len: number = columnModel.length; i < len; i++) {
         if ((columnModel[i] as Column).columns) {
@@ -223,7 +223,7 @@ export function setColumnIndex (columnModel: Column[] , ind: number = 0 ): numbe
     return ind;
  }
 
-/** @hidden */
+
 export function prepareColumns(columns: Column[] | string[] | ColumnModel[], autoWidth?: boolean): Column[] {
     for (let c: number = 0, len: number = columns.length; c < len; c++) {
 
@@ -261,7 +261,7 @@ export function prepareColumns(columns: Column[] | string[] | ColumnModel[], aut
     return columns as Column[];
 }
 
-/** @hidden */
+
 export function setCssInGridPopUp(popUp: HTMLElement, e: MouseEvent | TouchEvent, className: string): void {
     let popUpSpan: HTMLElement = popUp.querySelector('span');
     let position: { top: number, left: number, right: number } = popUp.parentElement.getBoundingClientRect();
@@ -282,7 +282,7 @@ export function setCssInGridPopUp(popUp: HTMLElement, e: MouseEvent | TouchEvent
         (popUp.querySelector('.e-uptail') as HTMLElement).style.display = '';
     }
 }
-/** @hidden */
+
 function getPopupLeftPosition(
     popup: HTMLElement, e: MouseEvent | TouchEvent, targetPosition: { top: number, left: number, right: number }, left: number): number {
     let width: number = popup.offsetWidth / 2;
@@ -295,7 +295,7 @@ function getPopupLeftPosition(
         return x - left - width;
     }
 }
-/** @hidden */
+
 export function getActualProperties<T>(obj: T): T {
     if (obj instanceof ChildProperty) {
         return <T>getValue('properties', obj);
@@ -303,7 +303,7 @@ export function getActualProperties<T>(obj: T): T {
         return obj;
     }
 }
-/** @hidden */
+
 export function parentsUntil(elem: Element, selector: string, isID?: boolean): Element {
     let parent: Element = elem;
     while (parent) {
@@ -314,7 +314,7 @@ export function parentsUntil(elem: Element, selector: string, isID?: boolean): E
     }
     return parent;
 }
-/** @hidden */
+
 export function getElementIndex(element: Element, elements: Element[]): number {
     let index: number = -1;
     for (let i: number = 0, len: number = elements.length; i < len; i++) {
@@ -325,7 +325,7 @@ export function getElementIndex(element: Element, elements: Element[]): number {
     }
     return index;
 }
-/** @hidden */
+
 export function inArray(value: Object, collection: Object[]): number {
     for (let i: number = 0, len: number = collection.length; i < len; i++) {
         if (collection[i] === value) {
@@ -335,7 +335,7 @@ export function inArray(value: Object, collection: Object[]): number {
     return -1;
 }
 
-/** @hidden */
+
 export function getActualPropFromColl(collection: Object[]): Object[] {
     let coll: Object[] = [];
     for (let i: number = 0, len: number = collection.length; i < len; i++) {
@@ -348,7 +348,7 @@ export function getActualPropFromColl(collection: Object[]): Object[] {
     return coll;
 }
 
-/** @hidden */
+
 export function removeElement(target: Element, selector: string): void {
     let elements: HTMLElement[] = [].slice.call(target.querySelectorAll(selector));
     for (let i: number = 0; i < elements.length; i++) {
@@ -356,7 +356,7 @@ export function removeElement(target: Element, selector: string): void {
     }
 }
 
-/** @hidden */
+
 export function getPosition(e: MouseEvent | TouchEvent): IPosition {
     let position: IPosition = {} as IPosition;
     position.x = (isNullOrUndefined((e as MouseEvent).clientX) ? (e as TouchEvent).changedTouches[0].clientX :
@@ -368,12 +368,12 @@ export function getPosition(e: MouseEvent | TouchEvent): IPosition {
 
 
 let uid: number = 0;
-/** @hidden */
+
 export function getUid(prefix: string): string {
     return prefix + uid++;
 }
 
-/** @hidden */
+
 export function appendChildren(elem: Element | DocumentFragment, children: Element[] | NodeList): Element {
     for (let i: number = 0, len: number = children.length; i < len; i++) {
         if (len === children.length) {
@@ -385,7 +385,7 @@ export function appendChildren(elem: Element | DocumentFragment, children: Eleme
     return elem as Element;
 }
 
-/** @hidden */
+
 export function parents(elem: Element, selector: string, isID?: boolean): Element[] {
     let parent: Element = elem;
     let parents: Element[] = [];
@@ -398,7 +398,7 @@ export function parents(elem: Element, selector: string, isID?: boolean): Elemen
     return parents;
 }
 
-/** @hidden */
+
 export function calculateAggregate(type: AggregateType | string, data: Object, column?: AggregateColumnModel, context?: Object): Object {
     if (type === 'Custom') {
         let temp: Function = column.customAggregate as Function;
@@ -409,10 +409,10 @@ export function calculateAggregate(type: AggregateType | string, data: Object, c
     }
     return (column.field in data || data instanceof Array) ? DataUtil.aggregates[type.toLowerCase()](data, column.field) : null;
 }
-/** @hidden */
+
 let scrollWidth: number = null;
 
-/** @hidden */
+
 export function getScrollBarWidth(): number {
     if (scrollWidth !== null) { return scrollWidth; }
     let divNode: HTMLDivElement = document.createElement('div');
@@ -424,9 +424,9 @@ export function getScrollBarWidth(): number {
     return scrollWidth = value;
 }
 
-/** @hidden */
+
 let rowHeight: number;
-/** @hidden */
+
 export function getRowHeight(element?: HTMLElement): number {
     if (rowHeight !== undefined) {
         return rowHeight;
@@ -440,20 +440,20 @@ export function getRowHeight(element?: HTMLElement): number {
     return rowHeight;
 }
 
-/** @hidden */
+
 export function isComplexField(field: string): boolean {
     return field.split('.').length > 1;
 }
-/** @hidden */
+
 export function getComplexFieldID(field: string = ''): string {
     return field.replace(/\./g, '___');
 }
-/** @hidden */
+
 export function setComplexFieldID(field: string = ''): string {
     return field.replace(/___/g, '.');
 }
 
-/** @hidden */
+
 export function isEditable(col: Column, type: string, elem: Element): boolean {
     let row: Element = parentsUntil(elem, 'e-row');
     let isOldRow: boolean = !row ? true : row && !row.classList.contains('e-insertedrow');
@@ -472,7 +472,7 @@ export function isEditable(col: Column, type: string, elem: Element): boolean {
     }
 }
 
-/** @hidden */
+
 export function isActionPrevent(inst: IGrid): boolean {
     let dlg: HTMLElement = inst.element.querySelector('#' + inst.element.id + 'EditConfirm') as HTMLElement;
     return inst.editSettings.mode === 'Batch' &&
@@ -480,7 +480,7 @@ export function isActionPrevent(inst: IGrid): boolean {
         (dlg ? dlg.classList.contains('e-popup-close') : true);
 }
 
-/** @hidden */
+
 export function wrap(elem: any, action: boolean): void {
     let clName: string = 'e-wrap';
     elem = elem instanceof Array ? elem : [elem];
@@ -489,7 +489,7 @@ export function wrap(elem: any, action: boolean): void {
     }
 }
 
-/** @hidden */
+
 export function setFormatter(serviceLocator?: ServiceLocator, column?: Column): void {
     let fmtr: IValueFormatter = serviceLocator.getService<IValueFormatter>('valueFormatter');
     switch (column.type) {
@@ -514,7 +514,7 @@ export function setFormatter(serviceLocator?: ServiceLocator, column?: Column): 
     }
 }
 
-/** @hidden */
+
 export function addRemoveActiveClasses(cells: Element[], add: boolean, ...args: string[]): void {
     for (let i: number = 0, len: number = cells.length; i < len; i++) {
         if (add) {
@@ -527,7 +527,7 @@ export function addRemoveActiveClasses(cells: Element[], add: boolean, ...args: 
     }
 }
 
-/** @hidden */
+
 export function distinctStringValues(result: string[]): string[] {
     let temp: Object = {};
     let res: string[] = [];
@@ -540,7 +540,7 @@ export function distinctStringValues(result: string[]): string[] {
     return res;
 }
 
-/** @hidden */
+
 
 export function getFilterMenuPostion(target: Element, dialogObj: Dialog, grid: IGrid): void {
     let elementVisible: string = dialogObj.element.style.display;
@@ -570,19 +570,19 @@ export function getFilterMenuPostion(target: Element, dialogObj: Dialog, grid: I
     }
 }
 
-/** @hidden */
+
 export function getZIndexCalcualtion(args: { popup: Popup }, dialogObj: Dialog): void {
     args.popup.element.style.zIndex = (dialogObj.zIndex + 1).toString();
 }
 
-/** @hidden */
+
 export function toogleCheckbox(elem: Element): void {
     let span: Element = elem.querySelector('.e-frame');
     span.classList.contains('e-check') ? classList(span, ['e-uncheck'], ['e-check']) :
         classList(span, ['e-check'], ['e-uncheck']);
 }
 
-/** @hidden */
+
 export function createCboxWithWrap(uid: string, elem: Element, className?: string): Element {
     let div: Element = createElement('div', { className: className });
     div.appendChild(elem);
@@ -590,7 +590,7 @@ export function createCboxWithWrap(uid: string, elem: Element, className?: strin
     return div;
 }
 
-/** @hidden */
+
 export function removeAddCboxClasses(elem: Element, checked: boolean): void {
     removeClass([elem], ['e-check', 'e-stop', 'e-uncheck']);
     if (checked) {
@@ -605,7 +605,7 @@ export function removeAddCboxClasses(elem: Element, checked: boolean): void {
  * @param row - Grid Row model object.
  * @param columns - Foreign columns array.
  * @param data - Updated Row data.
- * @hidden
+
  */
 export function refreshForeignData(row: IRow<Column>, columns: Column[], data: Object): void {
     columns.forEach((col: Column) => {
@@ -625,7 +625,7 @@ export function refreshForeignData(row: IRow<Column>, columns: Column[], data: O
  * @param data - Row data.
  * @param lValue - cell value.
  * @param foreignData - foreign data source.
- * @hidden
+
  */
 export function getForeignData(column: Column, data?: Object, lValue?: string | number, foreignKeyData?: Object[]): Object[] {
     let fField: string = column.foreignKeyField;
@@ -646,7 +646,7 @@ export function getForeignData(column: Column, data?: Object, lValue?: string | 
  * To use to get the column's object by the foreign key value.
  * @param foreignKeyValue - Defines ForeignKeyValue.
  * @param columns - Array of column object.
- * @hidden
+
  */
 export function getColumnByForeignKeyValue(foreignKeyValue: string, columns: Column[]): Column {
     let column: Column;
@@ -657,7 +657,7 @@ export function getColumnByForeignKeyValue(foreignKeyValue: string, columns: Col
 }
 
 /**
- * @hidden
+
  * @param filterObject - Defines predicate model object
  */
 export function getDatePredicate(filterObject: PredicateModel, type?: string): Predicate {
@@ -708,7 +708,7 @@ export function getDatePredicate(filterObject: PredicateModel, type?: string): P
 }
 
 /**
- * @hidden
+
  */
 
 export function renderMovable(ele: Element, frzCols: number): Element {
@@ -723,7 +723,7 @@ export function renderMovable(ele: Element, frzCols: number): Element {
 }
 
 /**
- * @hidden
+
  */
 export function isGroupAdaptive(grid: IGrid): boolean {
 
@@ -731,7 +731,7 @@ export function isGroupAdaptive(grid: IGrid): boolean {
 }
 
 /**
- * @hidden
+
  */
 export function getObject(field: string = '', object?: Object): any {
     if (field) {
@@ -744,7 +744,7 @@ export function getObject(field: string = '', object?: Object): any {
     }
 }
 /**
- * @hidden
+
  */
 export function getCustomDateFormat(format: string | Object, colType: string): string {
     let intl: Internationalization = new Internationalization();
@@ -763,7 +763,7 @@ export function getCustomDateFormat(format: string | Object, colType: string): s
     return formatvalue;
 }
 /**
- * @hidden
+
  */
 export function getExpandedState(gObj: IGrid, hierarchyPrintMode: HierarchyGridPrintMode): {[index: number]: IExpandedRow} {
     let rows: Row<Column>[] = gObj.getRowsObject();
@@ -781,7 +781,7 @@ export function getExpandedState(gObj: IGrid, hierarchyPrintMode: HierarchyGridP
     return obj;
 }
 /**
- * @hidden
+
  */
 export function getPrintGridModel(gObj: IGrid, hierarchyPrintMode: HierarchyGridPrintMode = 'Expanded'): IGrid {
     let printGridModel: IGrid = {} as IGrid;
@@ -803,7 +803,7 @@ export function getPrintGridModel(gObj: IGrid, hierarchyPrintMode: HierarchyGrid
     return printGridModel;
 }
 /**
- * @hidden
+
  */
 export function extendObjWithFn(copied: Object, first: Object, second?: Object, deep?: boolean): Object {
     let res: IKeyValue = copied as IKeyValue || {} as IKeyValue;
@@ -838,7 +838,7 @@ export function extendObjWithFn(copied: Object, first: Object, second?: Object, 
     return res;
 }
 /**
- * @hidden
+
  */
 function getPrototypesOfObj(obj: Object): string[] {
     let keys: string[] = [];
@@ -849,7 +849,7 @@ function getPrototypesOfObj(obj: Object): string[] {
     return keys;
 }
 /**
- * @hidden
+
  */
 export function measureColumnDepth(column: Column[]): number {
     let max: number = 0;
@@ -862,7 +862,7 @@ export function measureColumnDepth(column: Column[]): number {
     return max + 1;
 }
 /**
- * @hidden
+
  */
 export function checkDepth(col: Column, index: number): number {
     let max: number = index;
@@ -882,7 +882,7 @@ export function checkDepth(col: Column, index: number): number {
     return index;
 }
 /**
- * @hidden
+
  */
 export function refreshFilteredColsUid(gObj: IGrid, filteredCols: PredicateModel[]): void {
     for (let i: number = 0; i < filteredCols.length; i++) {
@@ -892,7 +892,7 @@ export function refreshFilteredColsUid(gObj: IGrid, filteredCols: PredicateModel
     }
 }
 
-/** @hidden */
+
 export namespace Global {
     export let timer: Object = null;
 }

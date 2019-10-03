@@ -22,6 +22,14 @@ export class AutoComplete implements IComponent {
         this.compObj = new EJ2AutoComplete(this.parent.model as AutoCompleteModel, e.target);
     }
 
+    /**
+
+     */
+    public showPopup(): void {
+        this.compObj.focusIn();
+        this.compObj.showPopup();
+    }
+
     public focus(): void {
         this.compObj.element.focus();
     }
@@ -37,7 +45,7 @@ export class AutoComplete implements IComponent {
      * Destroys the module.
      * @method destroy
      * @return {void}
-     * @hidden
+
      */
     public destroy(): void {
         this.base.destroy();

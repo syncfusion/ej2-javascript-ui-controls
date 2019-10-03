@@ -1,5 +1,6 @@
 import { formatUnit, EventHandler, getValue} from '@syncfusion/ej2-base';
 import { Gantt } from '../base/gantt';
+import { ScrollArgs } from '../base/interface';
 
 /**
  * To handle scroll event on chart and from TreeGrid
@@ -8,6 +9,7 @@ import { Gantt } from '../base/gantt';
 export class ChartScroll {
     private parent: Gantt;
     private element: HTMLElement;
+    private isFromTreeGrid: boolean;
     public previousScroll: { top: number, left: number } = { top: 0, left: 0 };
     /**
      * Constructor for the scrolling.
@@ -38,20 +40,29 @@ export class ChartScroll {
      */
     private gridScrollHandler(args: object): void {
         this.element.scrollTop = getValue('top', args);
-        this.previousScroll.top = this.element.scrollTop;
+        this.isFromTreeGrid = true;
     }
     /**
      * Scroll event handler
      */
     private onScroll(): void {
+        let scrollArgs: ScrollArgs = {};
         if (this.element.scrollTop !== this.previousScroll.top) {
-            this.parent.notify('chartScroll', { top: this.element.scrollTop });
+            !this.isFromTreeGrid ? this.parent.notify('chartScroll', { top: this.element.scrollTop }) : (this.isFromTreeGrid = false);
+            scrollArgs.previousScrollTop = this.previousScroll.top;
             this.previousScroll.top = this.element.scrollTop;
+            scrollArgs.scrollTop = this.element.scrollTop;
+            scrollArgs.scrollDirection = 'Vertical';
         }
         if (this.element.scrollLeft !== this.previousScroll.left) {
             this.parent.ganttChartModule.chartTimelineContainer.scrollLeft = this.element.scrollLeft;
+            scrollArgs.previousScrollLeft = this.previousScroll.left;
             this.previousScroll.left = this.element.scrollLeft;
+            scrollArgs.scrollLeft = this.element.scrollLeft;
+            scrollArgs.scrollDirection = 'Horizontal';
         }
+        scrollArgs.requestType = 'scroll';
+        this.parent.trigger('actionComplete', scrollArgs);
     }
     /**
      * To set height for chart scroll container

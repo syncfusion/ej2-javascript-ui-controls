@@ -12,7 +12,7 @@ import { HtmlEditor, Image, Link, MarkdownEditor, QuickToolbar, RichTextEditor, 
  */
 var intl = new Internationalization();
 /**
- * @hidden
+
  */
 function parseValue(type, val, model) {
     if (isNullOrUndefined(val) || val === '') {
@@ -83,18 +83,13 @@ function getCompValue(type, val) {
 /**
  * InPlace-Editor events defined here.
  */
-/** @hidden */
 var render = 'render';
-/** @hidden */
 var update = 'update';
-/** @hidden */
 var destroy = 'destroy';
-/** @hidden */
 var setFocus = 'set-focus';
-/** @hidden */
 var accessValue = 'access-value';
-/** @hidden */
 var destroyModules = 'destroy-modules';
+var showPopup = 'show-popup';
 
 var __extends = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -132,7 +127,7 @@ var PopupSettings = /** @__PURE__ @class */ (function (_super) {
     return PopupSettings;
 }(ChildProperty));
 /**
- * @hidden
+
  */
 var modulesList = {
     'AutoComplete': 'auto-complete',
@@ -145,7 +140,7 @@ var modulesList = {
     'Time': 'time-picker'
 };
 /**
- * @hidden
+
  */
 var localeConstant = {
     'Click': { 'editAreaClick': 'Click to edit' },
@@ -155,65 +150,35 @@ var localeConstant = {
 /**
  * InPlace-Editor classes defined here.
  */
-/** @hidden */
 var ROOT = 'e-inplaceeditor';
-/** @hidden */
 var ROOT_TIP = 'e-inplaceeditor-tip';
-/** @hidden */
 var VALUE_WRAPPER = 'e-editable-value-wrapper';
-/** @hidden */
 var VALUE = 'e-editable-value';
-/** @hidden */
 var OVERLAY_ICON = 'e-editable-overlay-icon';
-/** @hidden */
 var TIP_TITLE = 'e-editable-tip-title';
-/** @hidden */
 var TITLE = 'e-editable-title';
-/** @hidden */
 var INLINE = 'e-editable-inline';
-/** @hidden */
 var POPUP = 'e-editable-popup';
-/** @hidden */
 var WRAPPER = 'e-editable-wrapper';
-/** @hidden */
 var LOADING = 'e-editable-loading';
-/** @hidden */
 var FORM = 'e-editable-form';
-/** @hidden */
 var CTRL_GROUP = 'e-component-group';
-/** @hidden */
 var INPUT = 'e-editable-component';
-/** @hidden */
 var BUTTONS = 'e-editable-action-buttons';
-/** @hidden */
 var EDITABLE_ERROR = 'e-editable-error';
-/** @hidden */
 var ELEMENTS = 'e-editable-elements';
-/** @hidden */
 var OPEN = 'e-editable-open';
-/** @hidden */
 var BTN_SAVE = 'e-btn-save';
-/** @hidden */
 var BTN_CANCEL = 'e-btn-cancel';
-/** @hidden */
 var RTE_SPIN_WRAP = 'e-rte-spin-wrap';
-/** @hidden */
 var CTRL_OVERLAY = 'e-control-overlay';
-/** @hidden */
 var DISABLE = 'e-disable';
-/** @hidden */
 var ICONS = 'e-icons';
-/** @hidden */
 var PRIMARY = 'e-primary';
-/** @hidden */
 var SHOW = 'e-show';
-/** @hidden */
 var HIDE = 'e-hide';
-/** @hidden */
 var RTL = 'e-rtl';
-/** @hidden */
 var ERROR = 'e-error';
-/** @hidden */
 var LOAD = 'e-loading';
 
 var __extends$1 = (undefined && undefined.__extends) || (function () {
@@ -272,7 +237,7 @@ var InPlaceEditor = /** @__PURE__ @class */ (function (_super) {
         _this.dropDownEle = ['AutoComplete', 'ComboBox', 'DropDownList', 'MultiSelect'];
         _this.moduleList = ['AutoComplete', 'Color', 'ComboBox', 'DateRange', 'MultiSelect', 'RTE', 'Slider', 'Time'];
         /**
-         * @hidden
+    
          */
         _this.needsID = true;
         return _this;
@@ -347,8 +312,12 @@ var InPlaceEditor = /** @__PURE__ @class */ (function (_super) {
             addClass([this.valueWrap], [HIDE]);
             this.inlineWrapper = this.createElement('div', { className: INLINE });
             this.element.appendChild(this.inlineWrapper);
-            this.renderControl(this.inlineWrapper);
-            this.afterOpenHandler(null);
+            if (['AutoComplete', 'ComboBox', 'DropDownList', 'MultiSelect'].indexOf(this.type) > -1) {
+                this.checkRemoteData(this.model);
+            }
+            else {
+                this.renderAndOpen();
+            }
         }
         else {
             if (!isNullOrUndefined(this.popupSettings.model) && this.popupSettings.model.afterOpen) {
@@ -376,6 +345,37 @@ var InPlaceEditor = /** @__PURE__ @class */ (function (_super) {
         this.initRender = false;
         addClass([this.valueWrap], [OPEN]);
         this.setProperties({ enableEditMode: true }, true);
+    };
+    InPlaceEditor.prototype.renderAndOpen = function () {
+        this.renderControl(this.inlineWrapper);
+        this.afterOpenHandler(null);
+    };
+    InPlaceEditor.prototype.checkRemoteData = function (model) {
+        var _this = this;
+        if (model.dataSource instanceof DataManager) {
+            model.dataBound = function () {
+                _this.afterOpenHandler(null);
+            };
+            this.renderControl(this.inlineWrapper);
+            if ((isNullOrUndefined(model.value) && isNullOrUndefined(this.value)) || (model.value === this.value
+                && model.value.length === 0)) {
+                this.showDropDownPopup();
+            }
+        }
+        else {
+            this.renderAndOpen();
+        }
+    };
+    InPlaceEditor.prototype.showDropDownPopup = function () {
+        if (this.type === 'DropDownList') {
+            this.componentObj.focusIn();
+            this.componentObj.showPopup();
+        }
+        else {
+            if (this.isExtModule) {
+                this.notify(showPopup, {});
+            }
+        }
     };
     InPlaceEditor.prototype.setAttribute = function (ele, attr) {
         var value = this.name && this.name.length !== 0 ? this.name : this.element.id;
@@ -968,7 +968,13 @@ var InPlaceEditor = /** @__PURE__ @class */ (function (_super) {
         var eventArgs = { mode: this.mode, cancelFocus: false };
         this.trigger('beginEdit', eventArgs);
         if (!eventArgs.cancelFocus) {
-            this.setFocus();
+            if (this.mode === 'Inline' && (['AutoComplete', 'ComboBox', 'DropDownList', 'MultiSelect'].indexOf(this.type) > -1)
+                && this.model.dataSource instanceof DataManager) {
+                this.showDropDownPopup();
+            }
+            else {
+                this.setFocus();
+            }
         }
         if (this.afterOpenEvent) {
             this.tipObj.setProperties({ afterOpen: this.afterOpenEvent }, true);
@@ -1134,7 +1140,7 @@ var InPlaceEditor = /** @__PURE__ @class */ (function (_super) {
     /**
      * To provide the array of modules needed for component rendering
      * @return {ModuleDeclaration[]}
-     * @hidden
+
      */
     InPlaceEditor.prototype.requiredModules = function () {
         var modules = [];
@@ -1308,6 +1314,9 @@ var Base = /** @__PURE__ @class */ (function () {
     Base.prototype.render = function (e) {
         this.module.render(e);
     };
+    Base.prototype.showPopup = function () {
+        this.module.showPopup();
+    };
     Base.prototype.focus = function () {
         this.module.focus();
     };
@@ -1331,6 +1340,7 @@ var Base = /** @__PURE__ @class */ (function () {
     Base.prototype.addEventListener = function () {
         this.parent.on(render, this.render, this);
         this.parent.on(setFocus, this.focus, this);
+        this.parent.on(showPopup, this.showPopup, this);
         this.parent.on(update, this.update, this);
         this.parent.on(accessValue, this.getValue, this);
         this.parent.on(destroyModules, this.destroyComponent, this);
@@ -1342,6 +1352,7 @@ var Base = /** @__PURE__ @class */ (function () {
         }
         this.parent.off(render, this.render);
         this.parent.off(setFocus, this.focus);
+        this.parent.off(showPopup, this.showPopup);
         this.parent.off(update, this.update);
         this.parent.off(accessValue, this.getValue);
         this.parent.off(destroyModules, this.destroyComponent);
@@ -1363,6 +1374,13 @@ var AutoComplete$1 = /** @__PURE__ @class */ (function () {
     AutoComplete$$1.prototype.render = function (e) {
         this.compObj = new AutoComplete(this.parent.model, e.target);
     };
+    /**
+
+     */
+    AutoComplete$$1.prototype.showPopup = function () {
+        this.compObj.focusIn();
+        this.compObj.showPopup();
+    };
     AutoComplete$$1.prototype.focus = function () {
         this.compObj.element.focus();
     };
@@ -1376,7 +1394,7 @@ var AutoComplete$1 = /** @__PURE__ @class */ (function () {
      * Destroys the module.
      * @method destroy
      * @return {void}
-     * @hidden
+
      */
     AutoComplete$$1.prototype.destroy = function () {
         this.base.destroy();
@@ -1416,7 +1434,7 @@ var ColorPicker$1 = /** @__PURE__ @class */ (function () {
      * Destroys the module.
      * @method destroy
      * @return {void}
-     * @hidden
+
      */
     ColorPicker$$1.prototype.destroy = function () {
         this.base.destroy();
@@ -1446,6 +1464,13 @@ var ComboBox$1 = /** @__PURE__ @class */ (function () {
     ComboBox$$1.prototype.focus = function () {
         this.compObj.element.focus();
     };
+    /**
+
+     */
+    ComboBox$$1.prototype.showPopup = function () {
+        this.compObj.focusIn();
+        this.compObj.showPopup();
+    };
     ComboBox$$1.prototype.updateValue = function (e) {
         if (this.compObj && e.type === 'ComboBox') {
             this.parent.setProperties({ value: this.compObj.value }, true);
@@ -1456,7 +1481,7 @@ var ComboBox$1 = /** @__PURE__ @class */ (function () {
      * Destroys the module.
      * @method destroy
      * @return {void}
-     * @hidden
+
      */
     ComboBox$$1.prototype.destroy = function () {
         this.base.destroy();
@@ -1497,7 +1522,7 @@ var DateRangePicker$1 = /** @__PURE__ @class */ (function () {
      * Destroys the module.
      * @method destroy
      * @return {void}
-     * @hidden
+
      */
     DateRangePicker$$1.prototype.destroy = function () {
         this.base.destroy();
@@ -1524,6 +1549,13 @@ var MultiSelect$1 = /** @__PURE__ @class */ (function () {
     MultiSelect$$1.prototype.render = function (e) {
         this.compObj = new MultiSelect(this.parent.model, e.target);
     };
+    /**
+
+     */
+    MultiSelect$$1.prototype.showPopup = function () {
+        this.compObj.focusIn();
+        this.compObj.showPopup();
+    };
     MultiSelect$$1.prototype.focus = function () {
         closest(this.compObj.element, '.e-multi-select-wrapper').dispatchEvent(new MouseEvent('mousedown'));
     };
@@ -1540,7 +1572,7 @@ var MultiSelect$1 = /** @__PURE__ @class */ (function () {
      * Destroys the module.
      * @method destroy
      * @return {void}
-     * @hidden
+
      */
     MultiSelect$$1.prototype.destroy = function () {
         this.base.destroy();
@@ -1595,7 +1627,7 @@ var Rte = /** @__PURE__ @class */ (function () {
      * Destroys the rte module.
      * @method destroy
      * @return {void}
-     * @hidden
+
      */
     Rte.prototype.destroy = function () {
         this.base.destroy();
@@ -1638,7 +1670,7 @@ var Slider$1 = /** @__PURE__ @class */ (function () {
      * Destroys the slider module.
      * @method destroy
      * @return {void}
-     * @hidden
+
      */
     Slider$$1.prototype.destroy = function () {
         this.base.destroy();
@@ -1678,7 +1710,7 @@ var TimePicker$1 = /** @__PURE__ @class */ (function () {
      * Destroys the module.
      * @method destroy
      * @return {void}
-     * @hidden
+
      */
     TimePicker$$1.prototype.destroy = function () {
         this.base.destroy();
@@ -1704,5 +1736,5 @@ var TimePicker$1 = /** @__PURE__ @class */ (function () {
  *
  */
 
-export { parseValue, getCompValue, render, update, destroy, setFocus, accessValue, destroyModules, PopupSettings, modulesList, localeConstant, ROOT, ROOT_TIP, VALUE_WRAPPER, VALUE, OVERLAY_ICON, TIP_TITLE, TITLE, INLINE, POPUP, WRAPPER, LOADING, FORM, CTRL_GROUP, INPUT, BUTTONS, EDITABLE_ERROR, ELEMENTS, OPEN, BTN_SAVE, BTN_CANCEL, RTE_SPIN_WRAP, CTRL_OVERLAY, DISABLE, ICONS, PRIMARY, SHOW, HIDE, RTL, ERROR, LOAD, InPlaceEditor, Base, AutoComplete$1 as AutoComplete, ColorPicker$1 as ColorPicker, ComboBox$1 as ComboBox, DateRangePicker$1 as DateRangePicker, MultiSelect$1 as MultiSelect, Rte, Slider$1 as Slider, TimePicker$1 as TimePicker };
+export { parseValue, getCompValue, render, update, destroy, setFocus, accessValue, destroyModules, showPopup, PopupSettings, modulesList, localeConstant, ROOT, ROOT_TIP, VALUE_WRAPPER, VALUE, OVERLAY_ICON, TIP_TITLE, TITLE, INLINE, POPUP, WRAPPER, LOADING, FORM, CTRL_GROUP, INPUT, BUTTONS, EDITABLE_ERROR, ELEMENTS, OPEN, BTN_SAVE, BTN_CANCEL, RTE_SPIN_WRAP, CTRL_OVERLAY, DISABLE, ICONS, PRIMARY, SHOW, HIDE, RTL, ERROR, LOAD, InPlaceEditor, Base, AutoComplete$1 as AutoComplete, ColorPicker$1 as ColorPicker, ComboBox$1 as ComboBox, DateRangePicker$1 as DateRangePicker, MultiSelect$1 as MultiSelect, Rte, Slider$1 as Slider, TimePicker$1 as TimePicker };
 //# sourceMappingURL=ej2-inplace-editor.es5.js.map

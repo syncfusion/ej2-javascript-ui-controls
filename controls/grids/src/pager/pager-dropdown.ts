@@ -4,7 +4,7 @@ import { DropDownList, ChangeEventArgs } from '@syncfusion/ej2-dropdowns';
 
 /**
  * IPager interface
- * @hidden
+
  */
 export interface IPager {
     newProp: {
@@ -23,7 +23,7 @@ export class PagerDropDown {
     private pagerModule: Pager;
     /**
      * Constructor for pager module
-     * @hidden
+
      */
     constructor(pagerModule?: Pager) {
         this.pagerModule = pagerModule;
@@ -32,7 +32,7 @@ export class PagerDropDown {
     /**
      * For internal use only - Get the module name. 
      * @private
-     * @hidden
+
      */
     protected getModuleName(): string {
         return 'pagerdropdown';
@@ -40,7 +40,7 @@ export class PagerDropDown {
 
     /**
      * The function is used to render pager dropdown
-     * @hidden
+
      */
     public render(): void {
         let pagerObj: Pager = this.pagerModule;
@@ -76,7 +76,7 @@ export class PagerDropDown {
     /**
      * For internal use only - Get the pagesize. 
      * @private
-     * @hidden
+
      */
     private onChange(e: ChangeEventArgs): void {
         if (this.dropDownListObject.value === this.pagerModule.getLocalizedLabel('All')) {
@@ -126,7 +126,7 @@ export class PagerDropDown {
      * To destroy the Pagerdropdown
      * @method destroy
      * @return {void} 
-     * @hidden 
+
      */
     public destroy(args?: { requestType: string }): void {
         if (this.dropDownListObject && !this.dropDownListObject.isDestroyed) {

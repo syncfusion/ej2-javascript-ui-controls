@@ -3,6 +3,105 @@ import { SvgRenderer, Tooltip } from '@syncfusion/ej2-svg-base';
 import { PdfBitmap, PdfDocument, PdfPageOrientation } from '@syncfusion/ej2-pdf-export';
 import { DataManager, Query } from '@syncfusion/ej2-data';
 
+/**
+ * TreeMap constants doc
+ */
+/**
+ * Specifies TreeMap load event name.
+ * @private
+ */
+const load = 'load';
+/**
+ * Specifies TreeMap loaded event name.
+ * @private
+ */
+const loaded = 'loaded';
+/**
+ * Specifies TreeMap beforePrint event name.
+ * @private
+ */
+const beforePrint = 'beforePrint';
+/**
+ * Specifies the itemRendering event name.
+ * @private
+ */
+const itemRendering = 'itemRendering';
+/**
+ * Specifies the drilldown start event name.
+ * @private
+ */
+const drillStart = 'drillStart';
+/**
+ * Specifies the drilldown end event name.
+ * @private
+ */
+const drillEnd = 'drillEnd';
+/**
+ * Specifies the item selected event name.
+ * @private
+ */
+const itemSelected = 'itemSelected';
+/**
+ * Specifies the item highlight event name.
+ * @private
+ */
+const itemHighlight = 'itemHighlight';
+/**
+ * Specifies the tooltip rendering event name.
+ * @private
+ */
+const tooltipRendering = 'tooltipRendering';
+/**
+ * Specifies the item click event name.
+ * @private
+ */
+const itemClick = 'itemClick';
+/**
+ * Specifies the item move event name.
+ * @private
+ */
+const itemMove = 'itemMove';
+/**
+ * Specifies the mouse click event name.
+ * @private
+ */
+const click = 'click';
+/**
+ * Specifies maps double click event name.
+ * @private
+ */
+const doubleClick = 'doubleClick';
+/**
+ * Specifies maps right click event name.
+ * @private
+ */
+const rightClick = 'rightClick';
+/**
+ * Specifies the mouse move event name.
+ * @private
+ */
+const mouseMove = 'mouseMove';
+/**
+ * Specifies legend item rendering event name.
+ * @private
+ */
+const legendItemRendering = 'legendItemRendering';
+/**
+ * Specifies legend rendering event name.
+ * @private
+ */
+const legendRendering = 'legendRendering';
+/**
+ * Specifies treemap resize event name.
+ * @private
+ */
+const resize = 'resize';
+/**
+ * Specifies the font family
+ * @private
+ */
+const defaultFont = 'Roboto, Segoe UI, Noto, Sans-serif';
+
 var __decorate$1 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
@@ -49,7 +148,7 @@ __decorate$1([
     Property(null)
 ], Font.prototype, "color", void 0);
 __decorate$1([
-    Property(null)
+    Property(defaultFont)
 ], Font.prototype, "fontFamily", void 0);
 __decorate$1([
     Property('Normal')
@@ -275,10 +374,10 @@ __decorate$1([
     Property(null)
 ], TooltipSettings.prototype, "format", void 0);
 __decorate$1([
-    Property(null)
+    Property('#000816')
 ], TooltipSettings.prototype, "fill", void 0);
 __decorate$1([
-    Property(null)
+    Property(0.75)
 ], TooltipSettings.prototype, "opacity", void 0);
 __decorate$1([
     Property(['Circle'])
@@ -287,7 +386,7 @@ __decorate$1([
     Complex({}, Border)
 ], TooltipSettings.prototype, "border", void 0);
 __decorate$1([
-    Complex({ fontFamily: null, size: '13px' }, Font)
+    Complex({ fontFamily: defaultFont, size: '13px' }, Font)
 ], TooltipSettings.prototype, "textStyle", void 0);
 class SelectionSettings extends ChildProperty {
 }
@@ -1264,100 +1363,6 @@ function pushCollection(collection, index, number, legendElement, shapeElement, 
     });
 }
 
-/**
- * TreeMap constants doc
- */
-/**
- * Specifies TreeMap load event name.
- * @private
- */
-const load = 'load';
-/**
- * Specifies TreeMap loaded event name.
- * @private
- */
-const loaded = 'loaded';
-/**
- * Specifies TreeMap beforePrint event name.
- * @private
- */
-const beforePrint = 'beforePrint';
-/**
- * Specifies the itemRendering event name.
- * @private
- */
-const itemRendering = 'itemRendering';
-/**
- * Specifies the drilldown start event name.
- * @private
- */
-const drillStart = 'drillStart';
-/**
- * Specifies the drilldown end event name.
- * @private
- */
-const drillEnd = 'drillEnd';
-/**
- * Specifies the item selected event name.
- * @private
- */
-const itemSelected = 'itemSelected';
-/**
- * Specifies the item highlight event name.
- * @private
- */
-const itemHighlight = 'itemHighlight';
-/**
- * Specifies the tooltip rendering event name.
- * @private
- */
-const tooltipRendering = 'tooltipRendering';
-/**
- * Specifies the item click event name.
- * @private
- */
-const itemClick = 'itemClick';
-/**
- * Specifies the item move event name.
- * @private
- */
-const itemMove = 'itemMove';
-/**
- * Specifies the mouse click event name.
- * @private
- */
-const click = 'click';
-/**
- * Specifies maps double click event name.
- * @private
- */
-const doubleClick = 'doubleClick';
-/**
- * Specifies maps right click event name.
- * @private
- */
-const rightClick = 'rightClick';
-/**
- * Specifies the mouse move event name.
- * @private
- */
-const mouseMove = 'mouseMove';
-/**
- * Specifies legend item rendering event name.
- * @private
- */
-const legendItemRendering = 'legendItemRendering';
-/**
- * Specifies legend rendering event name.
- * @private
- */
-const legendRendering = 'legendRendering';
-/**
- * Specifies treemap resize event name.
- * @private
- */
-const resize = 'resize';
-
 var __rest$1 = (undefined && undefined.__rest) || function (s, e) {
     var t = {};
     for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p) && e.indexOf(p) < 0)
@@ -1841,7 +1846,7 @@ class LayoutPanel {
                 !item['isDrilled'] ? treeMap.enableRtl ? renderText + ' [+]' : '[+] ' + renderText :
                     treeMap.enableRtl ? renderText + ' [-]' : '[-] ' + renderText : renderText;
             textStyle = (isLeafItem ? leaf.labelStyle : levels[index].headerStyle);
-            textStyle.fontFamily = textStyle.fontFamily || this.treemap.themeStyle.labelFontFamily;
+            textStyle.fontFamily = this.treemap.themeStyle.labelFontFamily || textStyle.fontFamily;
             border = isLeafItem ? leaf.border : levels[index].border;
             position = !isLeafItem ? (levels[index].headerAlignment) === 'Near' ? 'TopLeft' : (levels[index].headerAlignment) === 'Center' ?
                 'TopCenter' : 'TopRight' : leaf.labelPosition;
@@ -2191,15 +2196,11 @@ function getThemeStyle(theme) {
                 backgroundColor: color,
                 titleFontColor: '#FFFFFF',
                 subTitleFontColor: '#FFFFFF',
-                tooltipFillColor: 'rgba(0, 8, 22, 0.75)',
+                tooltipFillColor: '#363F4C',
                 tooltipFontColor: '#ffffff',
-                tooltipFillOpacity: 0.75,
                 legendTitleColor: '#DADADA',
                 legendTextColor: '#DADADA',
-                fontFamily: 'Roboto, Noto, Sans-serif',
-                labelFontFamily: 'Roboto, Segoe UI, Noto, Sans-serif',
-                borderWidth: 0.5,
-                borderColor: '#cccccc'
+                fontFamily: 'Roboto, Noto, Sans-serif'
             };
             break;
         case 'highcontrast':
@@ -2207,15 +2208,11 @@ function getThemeStyle(theme) {
                 backgroundColor: '#000000',
                 titleFontColor: '#FFFFFF',
                 subTitleFontColor: '#FFFFFF',
-                tooltipFillColor: 'rgba(0, 8, 22, 0.75)',
+                tooltipFillColor: '#363F4C',
                 tooltipFontColor: '#ffffff',
-                tooltipFillOpacity: 0.75,
                 legendTitleColor: '#FFFFFF',
                 legendTextColor: '#FFFFFF',
-                fontFamily: 'Roboto, Noto, Sans-serif',
-                labelFontFamily: 'Roboto, Segoe UI, Noto, Sans-serif',
-                borderWidth: 0.5,
-                borderColor: '#cccccc'
+                fontFamily: 'Roboto, Noto, Sans-serif'
             };
             break;
         case 'bootstrap4':
@@ -2223,7 +2220,7 @@ function getThemeStyle(theme) {
                 backgroundColor: '#FFFFFF',
                 titleFontColor: '#212529',
                 subTitleFontColor: '#212529',
-                tooltipFillColor: 'rgba(0, 8, 22, 0.75)',
+                tooltipFillColor: '#000000',
                 tooltipFontColor: '#FFFFFF',
                 tooltipFillOpacity: 1,
                 tooltipTextOpacity: 0.9,
@@ -2232,9 +2229,7 @@ function getThemeStyle(theme) {
                 fontFamily: 'HelveticaNeue-Medium',
                 fontSize: '16px',
                 legendFontSize: '14px',
-                labelFontFamily: 'HelveticaNeue',
-                borderWidth: 0.5,
-                borderColor: '#cccccc'
+                labelFontFamily: 'HelveticaNeue'
             };
             break;
         default:
@@ -2242,14 +2237,11 @@ function getThemeStyle(theme) {
                 backgroundColor: '#FFFFFF',
                 titleFontColor: '#424242',
                 subTitleFontColor: '#424242',
-                tooltipFillColor: 'rgba(0, 8, 22, 0.75)',
+                tooltipFillColor: '#363F4C',
                 tooltipFontColor: '#ffffff',
                 legendTitleColor: '#353535',
                 legendTextColor: '#353535',
-                fontFamily: 'Roboto, Noto, Sans-serif',
-                labelFontFamily: 'Roboto, Segoe UI, Noto, Sans-serif',
-                borderWidth: 0.5,
-                borderColor: '#cccccc'
+                fontFamily: 'Roboto, Noto, Sans-serif'
             };
             break;
     }
@@ -4699,11 +4691,11 @@ class TreeMapTooltip {
                 }
                 location = getMousePosition(pageX, pageY, this.treemap.svgObject);
                 location.y = (this.tooltipSettings.template) ? location.y + 10 : location.y;
-                this.tooltipSettings.textStyle.fontFamily = this.tooltipSettings.textStyle.fontFamily
-                    || this.treemap.themeStyle.fontFamily;
-                this.tooltipSettings.textStyle.color = this.tooltipSettings.textStyle.color
-                    || this.treemap.themeStyle.tooltipFontColor;
-                this.tooltipSettings.textStyle.opacity = this.tooltipSettings.textStyle.opacity;
+                this.tooltipSettings.textStyle.fontFamily = this.treemap.themeStyle.fontFamily;
+                this.tooltipSettings.textStyle.color = this.treemap.themeStyle.tooltipFontColor
+                    || this.tooltipSettings.textStyle.color;
+                this.tooltipSettings.textStyle.opacity = this.treemap.themeStyle.tooltipTextOpacity
+                    || this.tooltipSettings.textStyle.opacity;
                 tootipArgs = {
                     cancel: false, name: tooltipRendering, item: item,
                     options: {
@@ -4741,8 +4733,6 @@ class TreeMapTooltip {
     addTooltip(tootipArgs, markerFill, tooltipEle, eventArgs) {
         let cancel;
         let args;
-        let width = this.treemap.tooltipSettings.border.width;
-        let color = this.treemap.tooltipSettings.border.color;
         if (!isNullOrUndefined(tootipArgs)) {
             let { cancel: c } = tootipArgs, otherArgs = __rest$3(tootipArgs, ["cancel"]);
             cancel = c;
@@ -4766,10 +4756,7 @@ class TreeMapTooltip {
                 textStyle: args['textStyle'],
                 blazorTemplate: { name: 'TooltipTemplate', parent: this.treemap.tooltipSettings }
             });
-            this.svgTooltip.opacity = this.treemap.tooltipSettings.opacity || this.treemap.themeStyle.tooltipFillOpacity;
-            this.svgTooltip.fill = this.treemap.tooltipSettings.fill || this.treemap.themeStyle.tooltipFillColor;
-            this.svgTooltip.border.width = (width === 0) ? this.treemap.themeStyle.borderWidth : width;
-            this.svgTooltip.border.color = (color === '#808080') ? this.treemap.themeStyle.borderColor : color;
+            this.svgTooltip.opacity = this.treemap.themeStyle.tooltipFillOpacity || this.svgTooltip.opacity;
             this.svgTooltip.appendTo(tooltipEle);
         }
         else {
@@ -4833,5 +4820,5 @@ class TreeMapTooltip {
  * exporting all modules from tree map index
  */
 
-export { TreeMap, LevelsData, Border, Margin, Font, CommonTitleSettings, SubTitleSettings, TitleSettings, ColorMapping, LegendSettings, InitialDrillSettings, LeafItemSettings, TooltipSettings, SelectionSettings, HighlightSettings, LevelSettings, load, loaded, beforePrint, itemRendering, drillStart, drillEnd, itemSelected, itemHighlight, tooltipRendering, itemClick, itemMove, click, doubleClick, rightClick, mouseMove, legendItemRendering, legendRendering, resize, Theme, getThemeStyle, Size, stringToNumber, Rect, RectOption, PathOption, measureText, TextOption, textTrim, Location, findPosition, createTextStyle, renderTextElement, getElement, itemsToOrder, isContainsData, findChildren, findHightLightItems, getTemplateFunction, convertElement, findLabelLocation, measureElement, getArea, getShortestEdge, convertToContainer, convertToRect, getMousePosition, colorMap, deSaturationColor, colorCollections, rgbToHex, getColorByValue, getGradientColor, getPercentageColor, getPercentage, wordWrap, textWrap, hide, orderByArea, removeClassNames, applyOptions, textFormatter, formatValue, ColorValue, convertToHexCode, componentToHex, convertHexToColor, colorNameToHex, drawSymbol, renderLegendShape, isParentItem, TreeMapAjax, removeShape, removeLegend, setColor, removeSelectionWithHighlight, getLegendIndex, pushCollection, ExportUtils, TreeMapLegend, LayoutPanel, TreeMapHighlight, TreeMapSelection, TreeMapTooltip };
+export { TreeMap, LevelsData, Border, Margin, Font, CommonTitleSettings, SubTitleSettings, TitleSettings, ColorMapping, LegendSettings, InitialDrillSettings, LeafItemSettings, TooltipSettings, SelectionSettings, HighlightSettings, LevelSettings, load, loaded, beforePrint, itemRendering, drillStart, drillEnd, itemSelected, itemHighlight, tooltipRendering, itemClick, itemMove, click, doubleClick, rightClick, mouseMove, legendItemRendering, legendRendering, resize, defaultFont, Theme, getThemeStyle, Size, stringToNumber, Rect, RectOption, PathOption, measureText, TextOption, textTrim, Location, findPosition, createTextStyle, renderTextElement, getElement, itemsToOrder, isContainsData, findChildren, findHightLightItems, getTemplateFunction, convertElement, findLabelLocation, measureElement, getArea, getShortestEdge, convertToContainer, convertToRect, getMousePosition, colorMap, deSaturationColor, colorCollections, rgbToHex, getColorByValue, getGradientColor, getPercentageColor, getPercentage, wordWrap, textWrap, hide, orderByArea, removeClassNames, applyOptions, textFormatter, formatValue, ColorValue, convertToHexCode, componentToHex, convertHexToColor, colorNameToHex, drawSymbol, renderLegendShape, isParentItem, TreeMapAjax, removeShape, removeLegend, setColor, removeSelectionWithHighlight, getLegendIndex, pushCollection, ExportUtils, TreeMapLegend, LayoutPanel, TreeMapHighlight, TreeMapSelection, TreeMapTooltip };
 //# sourceMappingURL=ej2-treemap.es2015.js.map

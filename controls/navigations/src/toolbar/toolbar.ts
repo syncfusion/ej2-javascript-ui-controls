@@ -87,7 +87,7 @@ export interface ClickEventArgs extends BaseEventArgs {
     item: ItemModel;
     /** 
      * Defines the current Event arguments. 
-     * @blazorType MouseEventArgs
+
      */
     originalEvent: Event;
     /** Defines the prevent action. */
@@ -107,46 +107,46 @@ export interface BeforeCreateArgs extends BaseEventArgs {
 export class Item extends ChildProperty<Item>  {
     /**
      * Specifies the unique ID to be used with button or input element of Toolbar items.
-     * @default ""
+
      */
     @Property('')
     public id: string;
     /**
      * Specifies the text to be displayed on the Toolbar button.
-     * @default ""
+
      */
     @Property('')
     public text: string;
     /**
      * Specifies the width of the Toolbar button commands.
-     * @default 'auto'
+
      */
     @Property('auto')
     public width: number | string;
     /**
      * Defines single/multiple classes (separated by space) to be used for customization of commands.
-     * @default ""
+
      */
     @Property('')
     public cssClass: string;
     /**
      * Defines the priority of items to display it in popup always.
      * It allows to maintain toolbar item on popup always but it does not work for toolbar priority items.
-     * @default false
+
      */
     @Property(false)
     public showAlwaysInPopup: boolean;
     /**
      * Defines single/multiple classes separated by space used to specify an icon for the button.
      * The icon will be positioned before the text content if text is available, otherwise the icon alone will be rendered.
-     * @default ""
+
      */
     @Property('')
     public prefixIcon: string;
     /**
      * Defines single/multiple classes separated by space used to specify an icon for the button.
      * The icon will be positioned after the text content if text is available.
-     * @default ""
+
      */
     @Property('')
     public suffixIcon: string;
@@ -156,7 +156,7 @@ export class Item extends ChildProperty<Item>  {
      * - Show:  Always shows the item as the primary priority on the *Toolbar*. 
      * - Hide: Always shows the item as the secondary priority on the *popup*.
      * - None: No priority for display, and as per normal order moves to popup when content exceeds.
-     * @default 'None'
+
      */
     @Property('None')
     public overflow: OverflowOption;
@@ -165,7 +165,7 @@ export class Item extends ChildProperty<Item>  {
      * ```
      * E.g - items: [{ template: '<input placeholder="Search"/>' },{ template: '#checkbox1' }]
      * ```
-     * @default ""
+
      */
     @Property('')
     public template: string | Object;
@@ -176,7 +176,7 @@ export class Item extends ChildProperty<Item>  {
      * - Separator: Adds a horizontal line that separates the Toolbar commands.
      * - Input: Creates an input element that is applicable to template rendering with Syncfusion controls like DropDownList,
      * AutoComplete, etc.
-     * @default 'Button'
+
      */
     @Property('Button')
     public type: ItemType;
@@ -186,20 +186,20 @@ export class Item extends ChildProperty<Item>  {
      * - Toolbar:  Text will be displayed on *Toolbar* only.
      * - Overflow: Text will be displayed only when content overflows to *popup*.
      * - Both: Text will be displayed on *popup* and *Toolbar*.
-     * @default 'Both'
+
      */
     @Property('Both')
     public showTextOn: DisplayMode;
     /**
      * Defines htmlAttributes used to add custom attributes to Toolbar command.
      * Supports HTML attributes such as style, class, etc.
-     * @default null
+
      */
     @Property(null)
     public htmlAttributes: { [key: string]: string; };
     /**
      * Specifies the text to be displayed on the Toolbar button.
-     * @default ""
+
      */
     @Property('')
     public tooltipText: string;
@@ -223,14 +223,14 @@ export class Item extends ChildProperty<Item>  {
      * });
      * toolbar.appendTo('#element');
      * ```
-     * @default "Left"
+
      */
     @Property('Left')
     public align: ItemAlign;
     /**
      * Event triggers when `click` the toolbar item.
      * @event
-     * @blazorProperty 'OnClick'
+
      */
     @Event()
     public click: EmitType<ClickEventArgs>;
@@ -250,17 +250,17 @@ export class Toolbar extends Component<HTMLElement> implements INotifyPropertyCh
     private trgtEle: HTEle;
     private ctrlTem: HTEle;
 
-    /** @hidden */
+
     private popObj: Popup;
-    /** @hidden */
+
     private tbarEle: HTMLElement[];
-    /** @hidden */
+
     private tbarAlgEle: ToolbarItemAlignIn;
-    /** @hidden */
+
     private tbarAlign: boolean;
-    /** @hidden */
+
     private tbarEleMrgn: number;
-    /** @hidden */
+
     private tbResize: boolean;
     private offsetWid: number;
     private keyModule: KeyboardEvents;
@@ -289,19 +289,19 @@ export class Toolbar extends Component<HTMLElement> implements INotifyPropertyCh
     };
     /**
      * An array of items that is used to configure Toolbar commands.
-     * @default []
+
      */
     @Collection<ItemModel>([], Item)
     public items: ItemModel[];
     /**
      * Specifies the width of the Toolbar in pixels/numbers/percentage. Number value is considered as pixels.
-     * @default 'auto'
+
      */
     @Property('auto')
     public width: string | number;
     /**
      * Specifies the height of the Toolbar in pixels/number/percentage. Number value is considered as pixels.
-     * @default 'auto'
+
      */
     @Property('auto')
     public height: string | number;
@@ -313,48 +313,48 @@ export class Toolbar extends Component<HTMLElement> implements INotifyPropertyCh
      * - MultiRow: Displays the overflow toolbar items as an in-line of a toolbar.
      * - Extended: Hide the overflowing toolbar items in the next row.  Show the overflowing toolbar items when you click the expand icons.
      * If the popup content overflows the height of the page, the rest of the elements will be hidden.
-     * @default 'Scrollable'
+
      */
     @Property('Scrollable')
     public overflowMode: OverflowMode;
     /**  
      * Specifies the scrolling distance in scroller.
-     * @default null  
+
      */
     @Property()
     public scrollStep: number;
     /**
      * Enable or disable the popup collision.
-     * @default true
+
      */
     @Property(true)
     public enableCollision: boolean;
     /**
      * The event will be fired on clicking the Toolbar elements.
      * @event
-     * @blazorProperty 'Clicked'
+
      */
     @Event()
     public clicked: EmitType<ClickEventArgs>;
     /**
      * The event will be fired when the control is rendered.
      * @event
-     * @blazorProperty 'Created'
+
      */
     @Event()
     public created: EmitType<Event>;
     /**
      * The event will be fired when the control gets destroyed.
      * @event
-     * @blazorProperty 'Destroyed'
+
      */
     @Event()
     public destroyed: EmitType<Event>;
     /**
      * The event will be fired before the control is rendered on a page.
      * @event
-     * @blazorProperty 'OnCreate'
-     * @deprecated
+
+
      */
     @Event()
     public beforeCreate: EmitType<BeforeCreateArgs>;
@@ -782,7 +782,7 @@ export class Toolbar extends Component<HTMLElement> implements INotifyPropertyCh
             this.popupRefresh(this.popObj.element, false);
         }
     }
-    /** @hidden */
+
     public changeOrientation(): void {
         let ele: HTEle = this.element;
         if (this.isVertical) {

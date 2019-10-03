@@ -39,6 +39,10 @@ export class CellEdit {
         let data: IGanttData = args.rowData;
         let field: string = args.columnName;
         let taskSettings: TaskFieldsModel = this.parent.taskFields;
+        if (this.parent.editSettings.mode === 'Dialog') {
+            args.cancel = true;
+            return;
+        }
         if (data.hasChildRecords && (field === taskSettings.endDate || field === taskSettings.duration
             || field === taskSettings.dependency || field === taskSettings.progress)) {
             args.cancel = true;
@@ -112,9 +116,12 @@ export class CellEdit {
         let editedArgs: ITaskbarEditedEventArgs = {};
         editedArgs.action = 'CellEditing';
         editedArgs.data = this.parent.getTaskByUniqueID(data.uniqueID);
-        let editedValue: object = data[column.field];
         let previousValue: object = getValue('previousData', args);
-        if (this.isValueChange(args, column.field)) {
+        let tempEditedValue: boolean = column.editType === 'stringedit' &&
+         column.field === 'Duration' ? data[column.field] !== '' : !isNOU(data[column.field]);
+        let editedValue: object = this.parent.allowUnscheduledTasks ? data[column.field] : tempEditedValue ? data[column.field] :
+            previousValue;
+        if (!isNOU(data)) {
             data[column.field] = previousValue;
             editedArgs.data[column.field] = previousValue;
             this.parent.initiateEditAction(true);
@@ -398,5 +405,6 @@ export class CellEdit {
      */
     public destroy(): void {
         // Destroy Method
+        this.parent.editModule.cellEditModule = undefined;
     }
 }

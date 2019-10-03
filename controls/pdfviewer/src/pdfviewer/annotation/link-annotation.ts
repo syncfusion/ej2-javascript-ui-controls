@@ -4,7 +4,7 @@ import { LineTool, PolygonDrawingTool } from '../../diagram/tools';
 
 /**
  * The `LinkAnnotation` module is used to handle link annotation actions of PDF viewer.
- * @hidden
+
  */
 export class LinkAnnotation {
     private pdfViewer: PdfViewer;

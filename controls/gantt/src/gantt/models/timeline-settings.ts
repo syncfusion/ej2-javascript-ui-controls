@@ -89,11 +89,13 @@ export class TimelineSettings extends ChildProperty<TimelineSettings> {
     public weekendBackground: string;
     /**
      * Enables or disables tooltip for timeline cells.
+     * @default true
      */
     @Property(true)
     public showTooltip: boolean;
     /**
      * Enables or disables timeline auto update on editing action.
+     * @default true
      */
     @Property(true)
     public updateTimescaleView: boolean;

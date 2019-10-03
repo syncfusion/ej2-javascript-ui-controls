@@ -180,6 +180,17 @@ export class Toolbar {
     private getItems(): ItemModel[] {
         let items: ItemModel[] = [];
         let toolbarItems: (ToolbarItem | string | ItemModel)[] = this.parent.toolbar;
+        let searchIndex: number = -1;
+        toolbarItems.forEach((item: string | ItemModel, index: number) => {
+            if ((typeof (item) === 'string' && item === 'Search') ||
+                ((typeof (item) === 'object') && item.text === 'Search')) {
+                searchIndex = index;
+            }
+        });
+        if (searchIndex > -1) {
+            let searchItem: (string | ItemModel)[] = toolbarItems.splice(searchIndex, 1);
+            toolbarItems.push(searchItem[0]);
+        }
         for (let item of toolbarItems) {
             switch (typeof item) {
                 case 'string':
@@ -206,7 +217,7 @@ export class Toolbar {
         extend(args, { cancel: false });
         gObj.trigger(events.toolbarClick, args, (args: ClickEventArgs) => {
             if (args.cancel) {
-              return;
+                return;
             } else {
                 if (this.parent.isAdaptive === true) {
                     if (args.item.id === gID + '_edit' || args.item.id === gID + '_add' || args.item.id === gID + '_delete'
@@ -226,7 +237,7 @@ export class Toolbar {
                         break;
                     case gID + '_update':
                         gObj.editModule.cellEditModule.isCellEdit = false;
-                        gObj.treeGrid.endEdit();
+                        gObj.treeGrid.grid.saveCell();
                         break;
                     case gID + '_cancel':
                         gObj.cancelEdit();
@@ -249,7 +260,7 @@ export class Toolbar {
                         let searchButtonId: string = getValue('originalEvent.target.id', args);
                         if (searchButtonId === this.parent.element.id + '_searchbutton' && this.parent.filterModule) {
                             let keyVal: string =
-                            (<HTMLInputElement>this.element.querySelector('#' + this.parent.element.id + '_searchbar')).value;
+                                (<HTMLInputElement>this.element.querySelector('#' + this.parent.element.id + '_searchbar')).value;
                             if (this.parent.searchSettings.key !== keyVal) {
                                 this.parent.searchSettings.key = keyVal;
                                 this.parent.dataBind();
@@ -284,7 +295,7 @@ export class Toolbar {
                         break;
                 }
             }
-          });
+        });
     }
     /**
      *

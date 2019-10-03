@@ -54,110 +54,110 @@ export class Sparkline extends Component<HTMLElement> implements INotifyProperty
     public border: SparklineBorderModel;
     /**
      * To configure Sparkline series type.
-     * @default 'Line'
+
      */
     @Property('Line')
     public type: SparklineType;
     /**
      * To configure sparkline data source.
-     * @isGenericType true
-     * @default null
+
+
      */
     @Property(null)
     public dataSource: Object[] | DataManager;
     /**
      * Specifies the query for filter the data.
-     * @default null
+
      */
     @Property(null)
     public query: Query;
     /**
      * To configure sparkline series value type.
-     * @default 'Numeric'
+
      */
     @Property('Numeric')
     public valueType: SparklineValueType;
     /**
      * To configure sparkline series xName.
-     * @default null
+
      */
     @Property(null)
     public xName: string;
     /**
      * To configure sparkline series yName.
-     * @default null
+
      */
     @Property(null)
     public yName: string;
     /**
      * To configure sparkline series fill.
-     * @default '#00bdae'
+
      */
     @Property('#00bdae')
     public fill: string;
     /**
      * To configure sparkline series highest y value point color.
-     * @default ''
+
      */
     @Property('')
     public highPointColor: string;
     /**
      * To configure sparkline series lowest y value point color.
-     * @default ''
+
      */
     @Property('')
     public lowPointColor: string;
     /**
      * To configure sparkline series first x value point color.
-     * @default ''
+
      */
     @Property('')
     public startPointColor: string;
     /**
      * To configure sparkline series last x value point color.
-     * @default ''
+
      */
     @Property('')
     public endPointColor: string;
     /**
      * To configure sparkline series negative y value point color.
-     * @default ''
+
      */
     @Property('')
     public negativePointColor: string;
     /**
      * To configure sparkline winloss series tie y value point color.
-     * @default ''
+
      */
     @Property('')
     public tiePointColor: string;
     /**
      * To configure sparkline series color palette. It applicable to column and pie type series.
-     * @default []
+
      */
     @Property([])
     public palette: string[];
     /**
      * To configure sparkline line series width.
-     * @default '1'
+
      */
     @Property(1)
     public lineWidth: number;
     /**
      * To configure sparkline line series opacity.
-     * @default '1'
+
      */
     @Property(1)
     public opacity: number;
     /**
      * To apply internationalization for sparkline.
-     * @default null
+
      */
     @Property(null)
     public format: string;
     /**
      * To enable the separator
-     * @default false
+
      */
     @Property(false)
     public useGroupingSeparator: boolean;
@@ -198,7 +198,7 @@ export class Sparkline extends Component<HTMLElement> implements INotifyProperty
     public padding: PaddingModel;
     /**
      * To configure sparkline theme.
-     * @default 'Material'
+
      */
     @Property('Material')
     public theme: SparklineTheme;
@@ -208,7 +208,7 @@ export class Sparkline extends Component<HTMLElement> implements INotifyProperty
     /**
      * Triggers after sparkline rendered.
      * @event
-     * @blazorProperty 'Loaded'
+
      */
     @Event()
     public loaded: EmitType<ISparklineLoadedEventArgs>;
@@ -216,7 +216,7 @@ export class Sparkline extends Component<HTMLElement> implements INotifyProperty
     /**
      * Triggers before sparkline render.
      * @event
-     * @blazorProperty 'OnLoad'
+
      */
     @Event()
     public load: EmitType<ISparklineLoadEventArgs>;
@@ -224,8 +224,8 @@ export class Sparkline extends Component<HTMLElement> implements INotifyProperty
     /**
      * Triggers before sparkline tooltip render.
      * @event
-     * @deprecated
-     * @blazorProperty 'OnTooltipInitialize'
+
+
      */
     @Event()
     public tooltipInitialize: EmitType<ITooltipRenderingEventArgs>;
@@ -233,7 +233,7 @@ export class Sparkline extends Component<HTMLElement> implements INotifyProperty
     /**
      * Triggers before sparkline series render.
      * @event
-     * @blazorProperty 'SeriesRendering'
+
      */
     @Event()
     public seriesRendering: EmitType<ISeriesRenderingEventArgs>;
@@ -241,8 +241,8 @@ export class Sparkline extends Component<HTMLElement> implements INotifyProperty
     /**
      * Triggers before sparkline axis render.
      * @event
-     * @deprecated
-     * @blazorProperty 'AxisRendering'
+
+
      */
     @Event()
     public axisRendering: EmitType<IAxisRenderingEventArgs>;
@@ -250,8 +250,8 @@ export class Sparkline extends Component<HTMLElement> implements INotifyProperty
     /**
      * Triggers before sparkline points render.
      * @event
-     * @deprecated
-     * @blazorProperty 'PointRendering'
+
+
      */
     @Event()
     public pointRendering: EmitType<ISparklinePointEventArgs>;
@@ -259,7 +259,7 @@ export class Sparkline extends Component<HTMLElement> implements INotifyProperty
     /**
      * Triggers while mouse move on the sparkline point region.
      * @event
-     * @blazorProperty 'OnPointRegionMouseMove'
+
      */
     @Event()
     public pointRegionMouseMove: EmitType<IPointRegionEventArgs>;
@@ -267,7 +267,7 @@ export class Sparkline extends Component<HTMLElement> implements INotifyProperty
     /**
      * Triggers while mouse click on the sparkline point region.
      * @event
-     * @blazorProperty 'OnPointRegionMouseClick'
+
      */
     @Event()
     public pointRegionMouseClick: EmitType<IPointRegionEventArgs>;
@@ -275,7 +275,7 @@ export class Sparkline extends Component<HTMLElement> implements INotifyProperty
     /**
      * Triggers while mouse move on the sparkline container.
      * @event
-     * @blazorProperty 'OnSparklineMouseMove'
+
      */
     @Event()
     public sparklineMouseMove: EmitType<ISparklineMouseEventArgs>;
@@ -283,7 +283,7 @@ export class Sparkline extends Component<HTMLElement> implements INotifyProperty
     /**
      * Triggers while mouse click on the sparkline container.
      * @event
-     * @blazorProperty 'OnSparklineMouseClick'
+
      */
     @Event()
     public sparklineMouseClick: EmitType<ISparklineMouseEventArgs>;
@@ -291,8 +291,8 @@ export class Sparkline extends Component<HTMLElement> implements INotifyProperty
     /**
      * Triggers before the sparkline datalabel render.
      * @event
-     * @deprecated
-     * @blazorProperty 'DataLabelRendering'
+
+
      */
     @Event()
     public dataLabelRendering: EmitType<IDataLabelRenderingEventArgs>;
@@ -300,15 +300,15 @@ export class Sparkline extends Component<HTMLElement> implements INotifyProperty
     /**
      * Triggers before the sparkline marker render.
      * @event
-     * @deprecated
-     * @blazorProperty 'MarkerRendering'
+
+
      */
     @Event()
     public markerRendering: EmitType<IMarkerRenderingEventArgs>;
     /**
      * Triggers on resizing the sparkline.
      * @event
-     * @blazorProperty 'Resizing'
+
      */
     @Event()
     public resize: EmitType<ISparklineResizeEventArgs>;

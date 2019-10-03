@@ -4,7 +4,7 @@ import { DrawingElement, TextElement, PointModel, Point, BaseAttributes, rotateM
 import { Transforms } from './drawing';
 import { getValue } from '@syncfusion/ej2-base';
 /**
- * @hidden
+
  */
 export function isLineShapes(obj: PdfAnnotationBaseModel): boolean {
     if (obj.shapeAnnotationType === 'Line' || obj.shapeAnnotationType === 'LineWidthArrowHead'
@@ -14,7 +14,7 @@ export function isLineShapes(obj: PdfAnnotationBaseModel): boolean {
     return false;
 }
 /**
- * @hidden
+
  */
 export function setElementStype(obj: PdfAnnotationBaseModel, element: DrawingElement): void {
     if (obj && element) {
@@ -28,7 +28,7 @@ export function setElementStype(obj: PdfAnnotationBaseModel, element: DrawingEle
     }
 }
 /**
- * @hidden
+
  */
 export function findPointsLength(points: PointModel[]): number {
     let length: number = 0;
@@ -39,7 +39,7 @@ export function findPointsLength(points: PointModel[]): number {
 }
 
 /**
- * @hidden 
+
  */
 export function findPerimeterLength(points: PointModel[]): number {
     let length: number = Point.getLengthFromListOfPoints(points);
@@ -176,7 +176,7 @@ export function getInternalProperties(propName: string): string[] {
     return [];
 }
 /**
- * @hidden
+
  */
 export function isLeader(obj: PdfAnnotationBaseModel, position: string): Leader {
     let rotatedPoint: PointModel;
@@ -209,7 +209,7 @@ export function isLeader(obj: PdfAnnotationBaseModel, position: string): Leader 
     return { leader: '', point: rotatedPoint };
 }
 /**
- * @hidden
+
  */
 export interface Leader {
     leader: string;

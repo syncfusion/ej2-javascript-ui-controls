@@ -40,8 +40,10 @@ export class Annotations {
         });
         if (parentElement && element.childElementCount) {
             parentElement.appendChild(element);
-            for (let i: number = 0; i < this.gauge.axes[index].annotations.length; i++) {
-                updateBlazorTemplate(this.gauge.element.id + '_Axis' + index + '_ContentTemplate' + i, 'ContentTemplate', this.gauge.axes[index].annotations[i]);
+            if (this.gauge.isBlazor) {
+                for (let i: number = 0; i < this.gauge.axes[index].annotations.length; i++) {
+                    updateBlazorTemplate(this.gauge.element.id + '_Axis' + index + '_ContentTemplate' + i, 'ContentTemplate', this.gauge.axes[index].annotations[i]);
+                }
             }
         }
     }
@@ -70,19 +72,17 @@ export class Annotations {
             let templateElement: HTMLCollection;
             let blazor: string = 'Blazor';
             if (!argsData.cancel) {
-                templateFn = getTemplateFunction(argsData.content);
+                templateFn = getTemplateFunction(argsData.content, this.gauge);
                 if (templateFn && (!window[blazor] ? templateFn(axis, null, null, this.gauge.element.id + '_Axis' + axisIndex + '_ContentTemplate' + annotationIndex).length : {})) {
                     templateElement = Array.prototype.slice.call(templateFn(!window[blazor] ? axis : {}, null, null, this.gauge.element.id + '_Axis' + axisIndex + '_ContentTemplate' + annotationIndex));
                     let length: number = templateElement.length;
                     for (let i: number = 0; i < length; i++) {
-                        if (window[blazor] && templateElement[i].innerHTML && argsData.content.indexOf('ContentTemplate') === -1) {
-                            templateElement[i].innerHTML = argsData.content;
-                        }
                         childElement.appendChild(templateElement[i]);
                     }
                 } else {
                     childElement.appendChild(createElement('div', {
                         innerHTML: argsData.content,
+                        id: 'StringTemplate',
                         styles: getFontStyle(argsData.textStyle)
                     }));
                 }

@@ -106,14 +106,14 @@ export class DatePicker extends Calendar implements IInput {
     protected mobilePopupWrapper: HTMLElement;
     /**
      * Specifies the width of the DatePicker component.
-     * @default null
+
      */
     @Property(null)
     public width: number | string;
     /**
      * Specifies the root CSS class of the DatePicker that allows to
      * customize the appearance by overriding the styles.
-     * @default null
+
      */
     @Property(null)
     public cssClass: string;
@@ -121,7 +121,7 @@ export class DatePicker extends Calendar implements IInput {
      * Specifies the component to act as strict. So that, it allows to enter only a valid date  value within a specified range or else it 
      * will resets to previous value. By default, strictMode is in false.
      * it allows invalid or out-of-range date value with highlighted error class.
-     * @default false
+
      * > For more details refer to 
      * [`Strict Mode`](../../datepicker/strict-mode/) documentation.
      */
@@ -129,42 +129,42 @@ export class DatePicker extends Calendar implements IInput {
     public strictMode: boolean;
     /**
      * Specifies the format of the value that to be displayed in component. By default, the format is based on the culture.
-     * @default null
-     * @aspType string
-     * @blazorType string
+
+
+
      */
     @Property(null)
     public format: string | FormatObject;
     /**
      * Specifies the component to be disabled or not.
-     * @default true
+
      */
     @Property(true)
     public enabled: boolean;
     /**
      * You can add the additional html attributes such as disabled, value etc., to the element.
      * If you configured both property and equivalent html attribute then the component considers the property value.
-     * @default {}
+
      */
     @Property({})
     public htmlAttributes: { [key: string]: string; };
     /**
      * Gets or sets multiple selected dates of the calendar.
-     * @default null
+
      * @private
      */
     @Property(null)
     public values: Date[];
     /**
      * Specifies the option to enable the multiple dates selection of the calendar.
-     * @default false
+
      * @private
      */
     @Property(false)
     public isMultiSelection: boolean;
     /**
      * Specifies whether to show or hide the clear icon in textbox.
-     * @default true
+
      */
     @Property(true)
     public showClearButton: boolean;
@@ -174,7 +174,7 @@ export class DatePicker extends Calendar implements IInput {
      * 
      * Specifies whether the input textbox is editable or not. Here the user can select the value from the 
      * popup and cannot edit in the input textbox.
-     * @default true
+
      */
     @Property(true)
     public allowEdit: boolean;
@@ -287,35 +287,35 @@ export class DatePicker extends Calendar implements IInput {
      * alt+leftarrow<br/></td></tr> 
      * </table>
      * 
-     * @default null
-     * @blazorType object 
+
+
      */
     @Property(null)
     public keyConfigs: { [key: string]: string };
     /** 
      * Enable or disable persisting component's state between page reloads. If enabled, following list of states will be persisted.
      * 1. value
-     * @default false
+
      */
     @Property(false)
     public enablePersistence: boolean;
     /**
      * specifies the z-index value of the datePicker popup element.
-     * @default 1000
-     * @aspType int
-     * @blazorType int
+
+
+
      */
     @Property(1000)
     public zIndex: number;
     /**
      * Specifies the component in readonly state. When the Component is readonly it does not allow user input.
-     * @default false
+
      */
     @Property(false)
     public readonly: boolean;
     /**
      * Specifies the placeholder text that displayed in textbox.
-     * @default null
+
      */
     @Property(null)
     public placeholder: string;
@@ -325,10 +325,10 @@ export class DatePicker extends Calendar implements IInput {
      * Never: The label will never float in the input when the placeholder is available.
      * Always: The floating label will always float above the input.
      * Auto: The floating label will float above the input after focusing or entering a value in the input.
-     * @default Syncfusion.EJ2.Inputs.FloatLabelType.Never
-     * @aspType Syncfusion.EJ2.Inputs.FloatLabelType
-     * @blazorType Syncfusion.EJ2.Inputs.FloatLabelType
-     * @isEnumeration true
+
+
+
+
      */
     @Property('Never')
     public floatLabelType: FloatLabelType | string;
@@ -336,16 +336,16 @@ export class DatePicker extends Calendar implements IInput {
     /** 
      * Triggers when the popup is opened.
      * @event
-     * @blazorProperty 'OnOpen'
-     * @blazorType PopupObjectArgs
+
+
      */
     @Event()
     public open: EmitType<PreventableEventArgs | PopupObjectArgs>;
     /** 
      * Triggers when the popup is closed.
      * @event
-     * @blazorProperty 'OnClose'
-     * @blazorType PopupObjectArgs
+
+
      */
     @Event()
     public close: EmitType<PreventableEventArgs | PopupObjectArgs>;
@@ -364,14 +364,14 @@ export class DatePicker extends Calendar implements IInput {
     /** 
      * Triggers when the component is created.
      * @event 
-     * @blazorProperty 'Created'
+
      */
     @Event()
     public created: EmitType<Object>;
     /** 
      * Triggers when the component is destroyed.
      * @event
-     * @blazorProperty 'Destroyed'
+
      */
     @Event()
     public destroyed: EmitType<Object>;
@@ -1771,7 +1771,7 @@ export interface PopupObjectArgs {
     preventDefault?: Function;
     /** 
      * Defines the DatePicker popup element. 
-     * @deprecated
+
      */
     popup?: Popup;
     /**

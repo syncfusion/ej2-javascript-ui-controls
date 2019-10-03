@@ -78,14 +78,14 @@ export class KeyboardEvents extends Base<HTMLElement> implements INotifyProperty
 
     /**
      * Specifies key combination and it respective action name.
-     * @default null
+
      */
     @Property({})
     public keyConfigs: { [key: string]: string };
 
     /**
      * Specifies on which event keyboardEvents class should listen for key press. For ex., `keyup`, `keydown` or `keypress`
-     * @default keyup
+
      */
     @Property('keyup')
     public eventName: string;

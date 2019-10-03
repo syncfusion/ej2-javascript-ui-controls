@@ -5,7 +5,7 @@ import { Column } from '../models/column';
 
 /**
  * ExpandCellRenderer class which responsible for building group expand cell. 
- * @hidden
+
  */
 export class ExpandCellRenderer extends IndentCellRenderer implements ICellRenderer<Column> {
     /**

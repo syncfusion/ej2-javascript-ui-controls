@@ -37,37 +37,37 @@ import { DataMappingItemsModel } from './data-mapping-model';
 export class CrudAction extends ChildProperty<CrudAction> {
     /**
      * set an URL to get a data from database
-     * @default ''
+
      */
     @Property('')
     public read: string;
 
     /**
      * set an URL to add a data into database
-     * @default ''
+
      */
     @Property('')
     public create: string;
 
     /**
      * set an URL to update the existing data in database
-     * @default ''
+
      */
     @Property('')
     public update: string;
 
     /**
      * set an URL to remove an data in database
-     * @default ''
+
      */
     @Property('')
     public destroy: string;
 
     /**
      * Add custom fields to node
-     * @aspDefaultValueIgnore
-     * @blazorDefaultValueIgnore
-     * @default undefined
+
+
+
      */
     @Property()
     public customFields: Object[];
@@ -76,65 +76,65 @@ export class CrudAction extends ChildProperty<CrudAction> {
 export class ConnectionDataSource extends ChildProperty<ConnectionDataSource> {
     /**
      * set an id for connector dataSource
-     * @default ''
+
      */
     @Property('')
     public id: string;
 
     /**
      * define sourceID to connect with connector
-     * @default ''
+
      */
     @Property('')
     public sourceID: string;
 
     /**
      * define targetID to connect with connector
-     * @default ''
+
      */
     @Property('')
     public targetID: string;
 
     /**
      * define sourcePoint to render connector startPoint
-     * @default null
+
      */
     @Property(null)
     public sourcePointX: number;
 
     /**
      * define sourcePoint to render connector startPoint
-     * @default null
+
      */
     @Property(null)
     public sourcePointY: number;
 
     /**
      * define targetPoint to render connector targetPoint
-     * @default null
+
      */
     @Property(null)
     public targetPointX: number;
 
     /**
      * define targetPoint to render connector targetPoint
-     * @default null
+
      */
     @Property(null)
     public targetPointY: number;
 
     /**
      * Sets the data source either as a collection of objects or as an URL of DataManager
-     * @default null
+
      */
     @Property(null)
     public dataManager: DataManager;
 
     /**
      * Add CrudAction to connector data source
-     * @aspDefaultValueIgnore
-     * @blazorDefaultValueIgnore
-     * @default undefined
+
+
+
      */
     @Complex<CrudActionModel>({}, CrudAction)
     public crudAction: CrudActionModel;
@@ -144,7 +144,7 @@ export class ConnectionDataSource extends ChildProperty<ConnectionDataSource> {
 export class DataSource extends ChildProperty<DataSource> {
     /**
      * Sets the unique id of the data source items
-     * @default ''
+
      */
 
     @Property('')
@@ -152,8 +152,8 @@ export class DataSource extends ChildProperty<DataSource> {
 
     /**
      * Sets the data source either as a collection of objects or as an URL of DataManager
-     * @default null
-     * @deprecated
+
+
      */
 
     @Property(null)
@@ -161,7 +161,7 @@ export class DataSource extends ChildProperty<DataSource> {
 
     /**
      * Sets the data source either as a collection of objects or as an URL of DataManager
-     * @default null
+
      */
 
     @Property(null)
@@ -169,49 +169,49 @@ export class DataSource extends ChildProperty<DataSource> {
 
     /**
      * Sets the unique id of the root data source item
-     * @default ''
+
      */
     @Property('')
     public root: string;
 
     /**
      * Sets the unique id that defines the relationship between the data source items
-     * @default ''
+
      */
     @Property('')
     public parentId: string;
 
     /**
      * Binds the custom data with node model
-     * @aspDefaultValueIgnore
-     * @blazorDefaultValueIgnore
-     * @default undefined
-     * @deprecated
+
+
+
+
      */
     @Property()
     public doBinding: Function | string;
 
     /**
      * A collection of JSON objects where each object represents an Data Map Items.
-     * @default []
+
      */
     @Collection<DataMappingItems>([], DataMappingItems)
     public dataMapSettings: DataMappingItemsModel[];
 
     /**
      * Add CrudAction to data source
-     * @aspDefaultValueIgnore
-     * @blazorDefaultValueIgnore
-     * @default undefined
+
+
+
      */
     @Complex<CrudActionModel>({}, CrudAction)
     public crudAction: CrudActionModel;
 
     /**
      * define connectorDataSource collection
-     * @aspDefaultValueIgnore
-     * @blazorDefaultValueIgnore
-     * @default undefined
+
+
+
      */
     @Complex<ConnectionDataSourceModel>({}, ConnectionDataSource)
     public connectionDataSource: ConnectionDataSourceModel;

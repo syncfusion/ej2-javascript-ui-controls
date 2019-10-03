@@ -14,7 +14,7 @@ export interface AutoCompleteModel extends ComboBoxModel{
      * * groupBy - Group the list items with it's related items by mapping groupBy field
      * 
      * > For more details about the field mapping refer to [`Data binding`](../../auto-complete/data-binding) documentation.
-     * @default { value: null, iconCss: null, groupBy: null}
+
      */
     fields?: FieldSettingsModel;
 
@@ -22,28 +22,28 @@ export interface AutoCompleteModel extends ComboBoxModel{
      * When set to ‘false’, consider the [`case-sensitive`](../../auto-complete/filtering/#case-sensitive-filtering)
      * on performing the search to find suggestions.
      * By default consider the casing.
-     * @default true
+
      */
     ignoreCase?: boolean;
 
     /**
      * Allows you to either show or hide the popup button on the component.
-     * @default false
+
      */
     showPopupButton?: boolean;
 
     /**
      * When set to ‘true’, highlight the searched characters on suggested list items.
      * > For more details about the highlight refer to [`Custom highlight search`](../../auto-complete/how-to/custom-search) documentation.
-     * @default false
+
      */
     highlight?: boolean;
 
     /**
      * Supports the [`specified number`](../../auto-complete/filtering#filter-item-count)
      * of list items on the suggestion popup.
-     * @default 20
-     * @blazorType int
+
+
      */
     suggestionCount?: number;
 
@@ -54,7 +54,7 @@ export interface AutoCompleteModel extends ComboBoxModel{
      * {% codeBlock src="autocomplete/html-attributes-api/index.ts" %}{% endcodeBlock %}
      * 
      * {% codeBlock src="autocomplete/html-attributes-api/index.html" %}{% endcodeBlock %}
-     * @default {}
+
      */
     htmlAttributes?: { [key: string]: string; };
 
@@ -65,7 +65,7 @@ export interface AutoCompleteModel extends ComboBoxModel{
      * {% codeBlock src="autocomplete/query-api/index.ts" %}{% endcodeBlock %}
      * 
      * {% codeBlock src="autocomplete/query-api/index.html" %}{% endcodeBlock %}
-     * @default null
+
      */
     query?: Query;
 
@@ -73,8 +73,8 @@ export interface AutoCompleteModel extends ComboBoxModel{
      * Allows you to set [`the minimum search character length']
      * (../../auto-complete/filtering#limit-the-minimum-filter-character),
      * the search action will perform after typed minimum characters.
-     * @default 1
-     * @blazorType int
+
+
      */
     minLength?: number;
 
@@ -111,23 +111,23 @@ export interface AutoCompleteModel extends ComboBoxModel{
      * {% codeBlock src="autocomplete/filter-type-api/index.html" %}{% endcodeBlock %}
      * 
      * The default value set to `Contains`, all the suggestion items which contain typed characters to listed in the suggestion popup.
-     * @default 'Contains'
+
      */
     filterType?: FilterType;
 
     /**
      * Triggers on typing a character in the component.
      * @event
-     * @blazorProperty 'Filtering'
+
      */
     filtering?: EmitType<FilteringEventArgs>;
 
     /**
      * Not applicable to this component.
-     * @default null
+
      * @private
-     * @blazorType int
-     * @isBlazorNullableType true
+
+
      */
     index?: number;
 
@@ -142,37 +142,37 @@ export interface AutoCompleteModel extends ComboBoxModel{
      * 
      * {% codeBlock src="autocomplete/float-label-type-api/index.html" %}{% endcodeBlock %}
      * 
-     * @default Syncfusion.EJ2.Inputs.FloatLabelType.Never
-     * @aspType Syncfusion.EJ2.Inputs.FloatLabelType
-     * @isEnumeration true
-     * @blazorType Syncfusion.EJ2.Inputs.FloatLabelType
+
+
+
+
      */
     floatLabelType?: FloatLabelType;
 
     /**
      * Not applicable to this component.
-     * @default null
+
      * @private
      */
     valueTemplate?: string;
 
     /**
      * Not applicable to this component.
-     * @default null
+
      * @private
      */
     filterBarPlaceholder?: string;
 
     /**
      * Not applicable to this component. 
-     * @default false
+
      * @private
      */
     allowFiltering?: boolean;
 
     /**
      * Not applicable to this component. 
-     * @default null
+
      * @private
      */
     text?: string;

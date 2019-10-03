@@ -12,42 +12,42 @@ class Column {
         /**
          * If `allowEditing` set to false, then it disables editing of a particular column.
          * By default all columns are editable.
-         * @default true
+    
          */
         this.allowEditing = true;
         /**
          * Defines the `IEditCell` object to customize default edit cell.
-         * @default {}
+    
          */
         this.edit = {};
         /**
          * If `allowReordering` set to false, then it disables reorder of a particular column.
          * By default all columns can be reorder.
-         * @default true
+    
          */
         this.allowReordering = true;
         /**
          * If `showColumnMenu` set to false, then it disable the column menu of a particular column.
          * By default column menu will show for all columns
-         * @default true
+    
          */
         this.showColumnMenu = true;
         /**
          * If `allowFiltering` set to false, then it disables filtering option and filter bar element of a particular column.
          * By default all columns are filterable.
-         * @default true
+    
          */
         this.allowFiltering = true;
         /**
          * If `allowSorting` set to false, then it disables sorting option of a particular column.
          * By default all columns are sortable.
-         * @default true
+    
          */
         this.allowSorting = true;
         /**
          * If `allowResizing` is set to false, it disables resize option of a particular column.
          * By default all the columns can be resized.
-         * @default true
+    
          */
         this.allowResizing = true;
         /**
@@ -58,7 +58,7 @@ class Column {
          * * ui.read -  It is used for read the value from the component.
          * * ui.write - It is used to apply component model as dynamically.
          *
-         *  @default null
+    
          */
         this.filter = {};
         merge(this, options);
@@ -158,124 +158,66 @@ __decorate$2([
 ], TextWrapSettings.prototype, "wrapMode", void 0);
 
 /**
- *  @hidden
+
  */
 const load = 'load';
-/** @hidden */
 const rowDataBound = 'rowDataBound';
-/** @hidden */
 const dataBound = 'dataBound';
-/** @hidden */
 const queryCellInfo = 'queryCellInfo';
-/** @hidden */
 const beforeDataBound = 'beforeDataBound';
-/** @hidden */
 const actionBegin = 'actionBegin';
-/** @hidden */
 const dataStateChange = 'dataStateChange';
-/** @hidden */
 const actionComplete = 'actionComplete';
-/** @hidden */
 const rowSelecting = 'rowSelecting';
-/** @hidden */
 const rowSelected = 'rowSelected';
-/** @hidden */
 const checkboxChange = 'checkboxChange';
-/** @hidden */
 const rowDeselected = 'rowDeselected';
-/** @hidden */
 const toolbarClick = 'toolbarClick';
-/** @hidden */
 const beforeExcelExport = 'beforeExcelExport';
-/** @hidden */
 const beforePdfExport = 'beforePdfExport';
-/** @hidden */
 const resizeStop = 'resizeStop';
-/** @hidden */
 const expanded = 'expanded';
-/** @hidden */
 const expanding = 'expanding';
-/** @hidden */
 const collapsed = 'collapsed';
-/** @hidden */
 const collapsing = 'collapsing';
-/** @hidden */
 const remoteExpand = 'remoteExpand';
-/** @hidden */
 const localPagedExpandCollapse = 'localPagedExpandCollapse';
-/** @hidden */
 const pagingActions = 'pagingActions';
-/** @hidden */
 const printGridInit = 'printGrid-Init';
-/** @hidden */
 const contextMenuOpen = 'contextMenuOpen';
-/** @hidden */
 const contextMenuClick = 'contextMenuClick';
-/** @hidden */
 const savePreviousRowPosition = 'savePreviousRowPosition';
-/** @hidden */
 const crudAction = 'crudAction';
-/** @hidden */
 const beginEdit = 'beginEdit';
-/** @hidden */
 const beginAdd = 'beginAdd';
-/** @hidden */
 const recordDoubleClick = 'recordDoubleClick';
-/** @hidden */
 const cellSave = 'cellSave';
-/** @hidden */
 const cellSaved = 'cellSaved';
-/** @hidden */
 const cellEdit = 'cellEdit';
-/** @hidden */
 const batchDelete = 'batchDelete';
-/** @hidden */
 const batchCancel = 'batchCancel';
-/** @hidden */
 const batchAdd = 'batchAdd';
-/** @hidden */
 const beforeBatchAdd = 'beforeBatchAdd';
-/** @hidden */
 const beforeBatchSave = 'beforeBatchSave';
-/** @hidden */
 const batchSave = 'batchSave';
-/** @hidden */
 const keyPressed = 'key-pressed';
-/** @hidden */
 const updateData = 'update-data';
-/** @hidden */
 const doubleTap = 'double-tap';
-/** @hidden */
 const virtualColumnIndex = 'virtualColumnIndex';
-/** @hidden */
 const virtualActionArgs = 'virtual-action-args';
-/** @hidden */
 const dataListener = 'data-listener';
-/** @hidden */
 const indexModifier = 'index-modifier';
-/** @hidden */
 const beforeStartEdit = 'edit-form';
-/** @hidden */
 const beforeBatchCancel = 'before-batch-cancel';
-/** @hidden */
 const batchEditFormRendered = 'batcheditform-rendered';
-/** @hidden */
 const detailDataBound = 'detailDataBound';
-/** @hidden */
 const rowDrag = 'rowDrag';
-/** @hidden */
 const rowDragStartHelper = 'rowDragStartHelper';
-/** @hidden */
 const rowDrop = 'rowDrop';
-/** @hidden */
 const rowDragStart = 'rowDragStart';
-/** @hidden */
 const rowsAdd = 'rows-add';
-/** @hidden */
 const rowsRemove = 'rows-remove';
-/** @hidden */
 const rowdraging = 'row-draging';
-/** @hidden */
 const rowDropped = 'row-dropped';
 
 function isRemoteData(parent) {
@@ -303,7 +245,7 @@ function isFilterChildHierarchy(parent) {
     return false;
 }
 /**
- * @hidden
+
  */
 function findParentRecords(records) {
     let datas;
@@ -318,7 +260,7 @@ function findParentRecords(records) {
     return datas;
 }
 /**
- * @hidden
+
  */
 function getExpandStatus(parent, record, parents) {
     let parentRecord = isNullOrUndefined(record.parentItem) ? null :
@@ -357,7 +299,7 @@ function getExpandStatus(parent, record, parents) {
     }
 }
 /**
- * @hidden
+
  */
 function findChildrenRecords(records) {
     let datas = [];
@@ -417,7 +359,7 @@ function getParentData(parent, value, requireFilter) {
 
 /**
  * TreeGrid Selection module
- * @hidden
+
  */
 class Selection {
     /**
@@ -454,7 +396,7 @@ class Selection {
     /**
      * To destroy the Selection
      * @return {void}
-     * @hidden
+  
      */
     destroy() {
         this.removeEventListener();
@@ -616,10 +558,14 @@ class Selection {
         let checkChildRecords = 0;
         if (!isNullOrUndefined(record)) {
             for (let i = 0; i < childRecords.length; i++) {
-                if (childRecords[i].checkboxState === 'indeterminate') {
+                let childRecord = this.parent.getCurrentViewRecords().filter((e) => {
+                    return e.uniqueID === childRecords[i].uniqueID;
+                });
+                let checkBoxRecord = isBlazor() ? childRecord[0] : childRecords[i];
+                if (checkBoxRecord.checkboxState === 'indeterminate') {
                     indeter++;
                 }
-                else if (childRecords[i].checkboxState === 'check') {
+                else if (checkBoxRecord.checkboxState === 'check') {
                     checkChildRecords++;
                 }
             }
@@ -686,6 +632,7 @@ class Selection {
             return e.uniqueID === currentRecord.uniqueID;
         });
         let recordIndex = this.parent.getCurrentViewRecords().indexOf(record[0]);
+        let checkboxRecord = isBlazor() ? record[0] : currentRecord;
         let checkbox;
         if (recordIndex > -1) {
             let tr = this.parent.getRows()[recordIndex];
@@ -699,25 +646,25 @@ class Selection {
                 removeClass([checkbox], ['e-check', 'e-stop', 'e-uncheck']);
             }
         }
-        currentRecord.checkboxState = checkState;
+        checkboxRecord.checkboxState = checkState;
         if (checkState === 'check' && isNullOrUndefined(currentRecord.isSummaryRow)) {
             if (recordIndex !== -1 && this.selectedIndexes.indexOf(recordIndex) === -1) {
                 this.selectedIndexes.push(recordIndex);
             }
-            if (this.selectedItems.indexOf(currentRecord) === -1 && (recordIndex !== -1 &&
+            if (this.selectedItems.indexOf(checkboxRecord) === -1 && (recordIndex !== -1 &&
                 (!isNullOrUndefined(this.parent.filterModule) && this.parent.filterModule.filteredResult.length > 0))) {
-                this.selectedItems.push(currentRecord);
+                this.selectedItems.push(checkboxRecord);
             }
-            if (this.selectedItems.indexOf(currentRecord) === -1 && (!isNullOrUndefined(this.parent.filterModule) &&
+            if (this.selectedItems.indexOf(checkboxRecord) === -1 && (!isNullOrUndefined(this.parent.filterModule) &&
                 this.parent.filterModule.filteredResult.length === 0)) {
-                this.selectedItems.push(currentRecord);
+                this.selectedItems.push(checkboxRecord);
             }
-            if (this.selectedItems.indexOf(currentRecord) === -1 && isNullOrUndefined(this.parent.filterModule)) {
-                this.selectedItems.push(currentRecord);
+            if (this.selectedItems.indexOf(checkboxRecord) === -1 && isNullOrUndefined(this.parent.filterModule)) {
+                this.selectedItems.push(checkboxRecord);
             }
         }
         else if ((checkState === 'uncheck' || checkState === 'indeterminate') && isNullOrUndefined(currentRecord.isSummaryRow)) {
-            let index = this.selectedItems.indexOf(currentRecord);
+            let index = this.selectedItems.indexOf(checkboxRecord);
             if (index !== -1) {
                 this.selectedItems.splice(index, 1);
             }
@@ -796,7 +743,7 @@ class Selection {
 
 /**
  * TreeGrid Print module
- * @hidden
+
  */
 class Print$1 {
     /**
@@ -815,7 +762,7 @@ class Print$1 {
         return 'print';
     }
     /**
-     * @hidden
+
      */
     addEventListener() {
         this.parent.grid.on(printGridInit, this.printTreeGrid, this);
@@ -837,7 +784,7 @@ class Print$1 {
     /**
      * To destroy the Print
      * @return {void}
-     * @hidden
+
      */
     destroy() {
         this.removeEventListener();
@@ -903,7 +850,7 @@ __decorate$4([
 
 /**
  * TreeGrid render module
- * @hidden
+
  */
 class Render {
     /**
@@ -1093,7 +1040,7 @@ class Render {
 
 /**
  * Internal dataoperations for tree grid
- * @hidden
+
  */
 class DataManipulation {
     constructor(grid) {
@@ -1109,7 +1056,7 @@ class DataManipulation {
         this.isSelfReference = !isNullOrUndefined(this.parent.parentIdMapping);
     }
     /**
-     * @hidden
+
      */
     addEventListener() {
         this.parent.on('updateRemoteLevel', this.updateParentRemoteData, this);
@@ -1119,7 +1066,7 @@ class DataManipulation {
         this.parent.on('dataProcessor', this.dataProcessor, this);
     }
     /**
-     * @hidden
+
      */
     removeEventListener() {
         if (this.parent.isDestroyed) {
@@ -1134,12 +1081,11 @@ class DataManipulation {
     /**
      * To destroy the dataModule
      * @return {void}
-     * @hidden
+
      */
     destroy() {
         this.removeEventListener();
     }
-    /** @hidden */
     isRemote() {
         if (!(this.parent.dataSource instanceof DataManager)) {
             return false;
@@ -1150,7 +1096,7 @@ class DataManipulation {
     }
     /**
      * Function to manipulate datasource
-     * @hidden
+    
      */
     convertToFlatData(data) {
         this.parent.flatData = (Object.keys(data).length === 0 && !(this.parent.dataSource instanceof DataManager) ?
@@ -1258,7 +1204,7 @@ class DataManipulation {
     }
     /**
      * Function to update the zeroth level parent records in remote binding
-     * @hidden
+  
      */
     updateParentRemoteData(args) {
         let records = args.result;
@@ -1291,7 +1237,7 @@ class DataManipulation {
     }
     /**
      * Function to manipulate datasource
-     * @hidden
+  
      */
     collectExpandingRecs(rowDetails) {
         let gridRows = this.parent.getRows();
@@ -1419,7 +1365,7 @@ class DataManipulation {
     }
     /**
      * Function to perform filtering/sorting action for local data
-     * @hidden
+  
      */
     dataProcessor(args) {
         let isExport = getObject('isExport', args);
@@ -1553,7 +1499,7 @@ class DataManipulation {
 
 /**
  * Defines Predefined toolbar items.
- * @hidden
+
  */
 var ToolbarItem;
 (function (ToolbarItem) {
@@ -1574,7 +1520,7 @@ var ToolbarItem;
 })(ToolbarItem || (ToolbarItem = {}));
 /**
  * Defines predefined contextmenu items.
- * @hidden
+
  */
 var ContextMenuItems;
 (function (ContextMenuItems) {
@@ -1648,7 +1594,7 @@ class AggregateColumn extends ChildProperty {
         this.templateFn = {};
     }
     /**
-     * @hidden
+ 
      */
     setFormatter(cultureName) {
         if (this.format && (this.format.skeleton || this.format.format)) {
@@ -1656,7 +1602,7 @@ class AggregateColumn extends ChildProperty {
         }
     }
     /**
-     * @hidden
+  
      */
     getFormatFunction(format) {
         if (format.type) {
@@ -1667,13 +1613,13 @@ class AggregateColumn extends ChildProperty {
         }
     }
     /**
-     * @hidden
+    
      */
     getFormatter() {
         return this.formatFn;
     }
     /**
-     * @hidden
+ 
      */
     setTemplate(helper = {}) {
         if (this.footerTemplate !== undefined) {
@@ -1682,13 +1628,13 @@ class AggregateColumn extends ChildProperty {
         }
     }
     /**
-     * @hidden
+  
      */
     getTemplate(type) {
         return this.templateFn[getEnumValue(CellType, type)];
     }
     /**
-     * @hidden
+  
      */
     setPropertiesSilent(prop) {
         this.setProperties(prop, true);
@@ -1910,7 +1856,7 @@ let TreeGrid = TreeGrid_1 = class TreeGrid extends Component {
      * Remove sorted column by field name.
      * @param {string} field - Defines the column field name to remove sort.
      * @return {void}
-     * @hidden
+  
      */
     removeSortColumn(field) {
         this.sortModule.removeSortColumn(field);
@@ -2064,7 +2010,7 @@ let TreeGrid = TreeGrid_1 = class TreeGrid extends Component {
     }
     /**
      * Binding events to the element while component creation.
-     * @hidden
+  
      */
     wireEvents() {
         EventHandler.add(this.element, 'click', this.mouseClickHandler, this);
@@ -2081,7 +2027,7 @@ let TreeGrid = TreeGrid_1 = class TreeGrid extends Component {
     /**
      * To provide the array of modules needed for component rendering
      * @return {ModuleDeclaration[]}
-     * @hidden
+
      */
     requiredModules() {
         let modules = [];
@@ -2196,7 +2142,7 @@ let TreeGrid = TreeGrid_1 = class TreeGrid extends Component {
     }
     /**
      * Unbinding events from the element while component destroy.
-     * @hidden
+
      */
     unwireEvents() {
         EventHandler.remove(this.element, 'click', this.mouseClickHandler);
@@ -2683,7 +2629,7 @@ let TreeGrid = TreeGrid_1 = class TreeGrid extends Component {
     }
     /**
      * AutoGenerate TreeGrid columns from first record
-     * @hidden
+  
      */
     autoGenerateColumns() {
         if (!this.columns.length && (!this.dataModule.isRemote() && Object.keys(this.dataSource).length)) {
@@ -2730,7 +2676,7 @@ let TreeGrid = TreeGrid_1 = class TreeGrid extends Component {
     }
     /**
      * Defines grid toolbar from treegrid toolbar model
-     * @hidden
+  
      */
     getContextMenu() {
         if (this.contextMenuItems) {
@@ -2754,7 +2700,7 @@ let TreeGrid = TreeGrid_1 = class TreeGrid extends Component {
     }
     /**
      * Defines grid toolbar from treegrid toolbar model
-     * @hidden
+  
      */
     getGridToolbar() {
         if (this.toolbar) {
@@ -2811,7 +2757,7 @@ let TreeGrid = TreeGrid_1 = class TreeGrid extends Component {
     }
     /**
      * Convert TreeGrid ColumnModel to Grid Column
-     * @hidden
+  
      */
     getGridColumns(columns) {
         let column = columns;
@@ -2842,7 +2788,7 @@ let TreeGrid = TreeGrid_1 = class TreeGrid extends Component {
     }
     /**
      * Called internally if any of the property value changed.
-     * @hidden
+  
      */
     /* tslint:disable-next-line:max-line-length */
     // tslint:disable-next-line:max-func-body-length
@@ -3053,7 +2999,7 @@ let TreeGrid = TreeGrid_1 = class TreeGrid extends Component {
     /**
      * Get the properties to be maintained in the persisted state.
      * @return {string}
-     * @hidden
+  
      */
     getPersistData() {
         let keyEntity = ['pageSettings', 'sortSettings',
@@ -3398,7 +3344,7 @@ let TreeGrid = TreeGrid_1 = class TreeGrid extends Component {
     /**
      * Get current visible data of TreeGrid.
      * @return {Object[]}
-     * @isGenericType true
+
      */
     getCurrentViewRecords() {
         return this.grid.currentViewData;
@@ -3475,7 +3421,7 @@ let TreeGrid = TreeGrid_1 = class TreeGrid extends Component {
     /**
      * Get the records of checked rows.
      * @return {Object[]}
-     * @isGenericType true
+  
      */
     getCheckedRecords() {
         return this.selectionModule.getCheckedrecords();
@@ -3509,7 +3455,7 @@ let TreeGrid = TreeGrid_1 = class TreeGrid extends Component {
     /**
      * Expands or collapse child records
      * @return {string}
-     * @hidden
+  
      */
     expandCollapseRequest(target) {
         if (this.rowTemplate) {
@@ -3701,6 +3647,7 @@ let TreeGrid = TreeGrid_1 = class TreeGrid extends Component {
                 displayAction = 'table-row';
                 if (!isChild) {
                     record.expanded = true;
+                    this.uniqueIDCollection[record.uniqueID].expanded = record.expanded;
                 }
                 let targetEle = row.getElementsByClassName('e-treegridcollapse')[0];
                 if (isNullOrUndefined(targetEle)) {
@@ -3713,6 +3660,7 @@ let TreeGrid = TreeGrid_1 = class TreeGrid extends Component {
                 displayAction = 'none';
                 if (!isChild) {
                     record.expanded = false;
+                    this.uniqueIDCollection[record.uniqueID].expanded = record.expanded;
                 }
                 let targetEle = row.getElementsByClassName('e-treegridexpand')[0];
                 if (isNullOrUndefined(targetEle)) {
@@ -3905,7 +3853,7 @@ let TreeGrid = TreeGrid_1 = class TreeGrid extends Component {
         }
     }
     /**
-     * @hidden
+
      */
     addListener() {
         this.on('updateResults', this.updateResultModel, this);
@@ -3914,7 +3862,7 @@ let TreeGrid = TreeGrid_1 = class TreeGrid extends Component {
         this.dataResults = returnResult;
     }
     /**
-     * @hidden
+
      */
     removeListener() {
         if (this.isDestroyed) {
@@ -3951,7 +3899,7 @@ let TreeGrid = TreeGrid_1 = class TreeGrid extends Component {
      * @param  {string} field - Defines column field name to remove filter.
      * @param  {boolean} isClearFilterBar -  Specifies whether the filter bar value needs to be cleared.
      * @return {void}
-     * @hidden
+  
      */
     removeFilteredColsByField(field, isClearFilterBar) {
         this.grid.removeFilteredColsByField(field, isClearFilterBar);
@@ -4028,7 +3976,7 @@ let TreeGrid = TreeGrid_1 = class TreeGrid extends Component {
         return this.grid.getMovableRows();
     }
     /**
-     * @hidden
+  
      */
     getFrozenColumns() {
         return this.getFrozenCount(this.columns, 0);
@@ -4062,7 +4010,7 @@ let TreeGrid = TreeGrid_1 = class TreeGrid extends Component {
     }
     /**
      * Gets the collection of selected records.
-     * @isGenericType true
+  
      * @return {Object[]}
      */
     getSelectedRecords() {
@@ -4415,7 +4363,7 @@ TreeGrid = TreeGrid_1 = __decorate([
 
 /**
  * TreeGrid Reorder module
- * @hidden
+
  */
 class Reorder$1 {
     /**
@@ -4434,7 +4382,7 @@ class Reorder$1 {
         return 'reorder';
     }
     /**
-     * @hidden
+
      */
     addEventListener() {
         this.parent.on('getColumnIndex', this.getTreeColumn, this);
@@ -4448,7 +4396,7 @@ class Reorder$1 {
     /**
      * To destroy the Reorder
      * @return {void}
-     * @hidden
+
      */
     destroy() {
         this.removeEventListener();
@@ -4471,7 +4419,7 @@ class Reorder$1 {
 
 /**
  * TreeGrid Resize module
- * @hidden
+
  */
 class Resize$1 {
     /**
@@ -4778,7 +4726,7 @@ function updateParentRow(key, record, action, control, isSelfReference, child) {
 
 /**
  * TreeGrid RowDragAndDrop module
- * @hidden
+
  */
 class RowDD$1 {
     /**
@@ -4786,11 +4734,8 @@ class RowDD$1 {
      * Constructor for render module
      */
     constructor(parent) {
-        /** @hidden */
         this.canDrop = true;
-        /** @hidden */
         this.isDraggedWithChild = false;
-        /** @hidden */
         this.isaddtoBottom = false;
         Grid.Inject(RowDD);
         this.parent = parent;
@@ -4812,7 +4757,7 @@ class RowDD$1 {
         return record;
     }
     /**
-     * @hidden
+
      */
     addEventListener() {
         this.parent.on(rowdraging, this.Rowdraging, this);
@@ -5655,7 +5600,7 @@ class RowDD$1 {
         this.removeEventListener();
     }
     /**
-     * @hidden
+
      */
     removeEventListener() {
         if (this.parent.isDestroyed) {
@@ -5688,7 +5633,7 @@ class RowDD$1 {
 
 /**
  * RowModelGenerator is used to generate grid data rows.
- * @hidden
+
  */
 class TreeVirtualRowModelGenerator extends VirtualRowModelGenerator {
     constructor(parent) {
@@ -5729,7 +5674,7 @@ class TreeVirtualRowModelGenerator extends VirtualRowModelGenerator {
 
 /**
  * TreeGrid Filter module will handle filtering action
- * @hidden
+
  */
 class Filter$1 {
     /**
@@ -5754,20 +5699,20 @@ class Filter$1 {
     /**
      * To destroy the Filter module
      * @return {void}
-     * @hidden
+
      */
     destroy() {
         this.removeEventListener();
     }
     /**
-     * @hidden
+
      */
     addEventListener() {
         this.parent.on('updateFilterRecs', this.updatedFilteredRecord, this);
         this.parent.on('clearFilters', this.clearFilterLevel, this);
     }
     /**
-     * @hidden
+
      */
     removeEventListener() {
         if (this.parent.isDestroyed) {
@@ -5778,7 +5723,7 @@ class Filter$1 {
     }
     /**
      * Function to update filtered records
-     *  @hidden
+
      */
     updatedFilteredRecord(dataDetails) {
         setValue('uniqueIDFilterCollection', {}, this.parent);
@@ -5930,7 +5875,7 @@ class Filter$1 {
 
 /**
  * TreeGrid Excel Export module
- * @hidden
+
  */
 class ExcelExport$1 {
     /**
@@ -5950,7 +5895,7 @@ class ExcelExport$1 {
         return 'ExcelExport';
     }
     /**
-     * @hidden
+
      */
     addEventListener() {
         this.parent.on('updateResults', this.updateExcelResultModel, this);
@@ -5959,13 +5904,13 @@ class ExcelExport$1 {
     /**
      * To destroy the Excel Export
      * @return {void}
-     * @hidden
+
      */
     destroy() {
         this.removeEventListener();
     }
     /**
-     * @hidden
+
      */
     removeEventListener() {
         if (this.parent.isDestroyed) {
@@ -6056,7 +6001,7 @@ class ExcelExport$1 {
     }
     /**
      * TreeGrid Excel Export cell modifier
-     * @hidden
+
      */
     excelQueryCellInfo(args) {
         if (this.parent.grid.getColumnIndexByUid(args.column.uid) === this.parent.treeColumnIndex) {
@@ -6077,7 +6022,7 @@ class ExcelExport$1 {
 
 /**
  * TreeGrid PDF Export module
- * @hidden
+
  */
 class PdfExport$1 {
     /**
@@ -6097,14 +6042,14 @@ class PdfExport$1 {
         return 'PdfExport';
     }
     /**
-     * @hidden
+
      */
     addEventListener() {
         this.parent.on('pdfCellInfo', this.pdfQueryCellInfo, this);
         this.parent.on('updateResults', this.updatePdfResultModel, this);
     }
     /**
-     * @hidden
+
      */
     removeEventListener() {
         if (this.parent.isDestroyed) {
@@ -6116,7 +6061,7 @@ class PdfExport$1 {
     /**
      * To destroy the PDF Export
      * @return {void}
-     * @hidden
+
      */
     destroy() {
         this.removeEventListener();
@@ -6204,7 +6149,7 @@ class PdfExport$1 {
     }
     /**
      * TreeGrid PDF Export cell modifier
-     * @hidden
+
      */
     pdfQueryCellInfo(args) {
         if (this.parent.grid.getColumnIndexByUid(args.column.uid) === this.parent.treeColumnIndex) {
@@ -6222,7 +6167,7 @@ class PdfExport$1 {
 
 /**
  * The `Page` module is used to render pager and handle paging action.
- * @hidden
+
  */
 class Page$1 {
     constructor(parent) {
@@ -6231,14 +6176,14 @@ class Page$1 {
         this.addEventListener();
     }
     /**
-     * @hidden
+
      */
     addEventListener() {
         this.parent.on(localPagedExpandCollapse, this.collapseExpandPagedchilds, this);
         this.parent.on(pagingActions, this.pageAction, this);
     }
     /**
-     * @hidden
+
      */
     removeEventListener() {
         if (this.parent.isDestroyed) {
@@ -6264,7 +6209,7 @@ class Page$1 {
     /**
      * To destroy the pager
      * @return {void}
-     * @hidden
+
      */
     destroy() {
         this.removeEventListener();
@@ -6286,7 +6231,7 @@ class Page$1 {
         this.parent.grid.pagerModule.updateExternalMessage(message);
     }
     /**
-     * @hidden
+
      */
     collapseExpandPagedchilds(rowDetails) {
         rowDetails.record.expanded = rowDetails.action === 'collapse' ? false : true;
@@ -6369,7 +6314,7 @@ class Page$1 {
 
 /**
  * Toolbar Module for TreeGrid
- * @hidden
+
  */
 class Toolbar$1 {
     constructor(parent) {
@@ -6385,14 +6330,14 @@ class Toolbar$1 {
         return 'toolbar';
     }
     /**
-     * @hidden
+
      */
     addEventListener() {
         this.parent.on(rowSelected, this.refreshToolbar, this);
         this.parent.on(toolbarClick, this.toolbarClickHandler, this);
     }
     /**
-     * @hidden
+
      */
     removeEventListener() {
         if (this.parent.isDestroyed) {
@@ -6472,7 +6417,7 @@ class Toolbar$1 {
     /**
      * Gets the toolbar of the TreeGrid.
      * @return {Element}
-     * @hidden
+
      */
     getToolbar() {
         return this.parent.grid.toolbarModule.getToolbar();
@@ -6482,7 +6427,7 @@ class Toolbar$1 {
      * @param {string[]} items - Defines the collection of itemID of ToolBar items.
      * @param {boolean} isEnable - Defines the items to be enabled or disabled.
      * @return {void}
-     * @hidden
+
      */
     enableItems(items, isEnable) {
         this.parent.grid.toolbarModule.enableItems(items, isEnable);
@@ -6499,7 +6444,7 @@ class Toolbar$1 {
 
 /**
  * TreeGrid Aggregate module
- * @hidden
+
  */
 class Aggregate$1 {
     /**
@@ -6525,7 +6470,7 @@ class Aggregate$1 {
     }
     /**
      * Function to calculate summary values
-     *  @hidden
+
      */
     calculateSummaryValue(summaryQuery, filteredData, isSort) {
         this.summaryQuery = summaryQuery;
@@ -6690,7 +6635,7 @@ class Aggregate$1 {
     /**
      * To destroy the Aggregate module
      * @return {void}
-     * @hidden
+
      */
     destroy() {
         this.removeEventListener();
@@ -6699,7 +6644,7 @@ class Aggregate$1 {
 
 /**
  * Internal dataoperations for TreeGrid
- * @hidden
+
  */
 class Sort$1 {
     constructor(grid) {
@@ -6719,14 +6664,14 @@ class Sort$1 {
         return 'sort';
     }
     /**
-     * @hidden
+  
      */
     addEventListener() {
         this.parent.on('updateModel', this.updateModel, this);
         this.parent.on('createSort', this.createdSortedRecords, this);
     }
     /**
-     * @hidden
+  
      */
     removeEventListener() {
         if (this.parent.isDestroyed) {
@@ -6777,7 +6722,7 @@ class Sort$1 {
     /**
      * The function used to update sortSettings of TreeGrid.
      * @return {void}
-     * @hidden
+  
      */
     updateModel() {
         this.parent.setProperties({ sortSettings: getActualProperties(this.parent.grid.sortSettings) }, true);
@@ -6802,7 +6747,7 @@ class Sort$1 {
 
 /**
  * TreeGrid ColumnMenu module
- * @hidden
+
  */
 class ColumnMenu$1 {
     /**
@@ -6829,7 +6774,7 @@ class ColumnMenu$1 {
 
 /**
  * ContextMenu Module for TreeGrid
- * @hidden
+
  */
 class ContextMenu$1 {
     constructor(parent) {
@@ -6838,14 +6783,14 @@ class ContextMenu$1 {
         this.addEventListener();
     }
     /**
-     * @hidden
+
      */
     addEventListener() {
         this.parent.on('contextMenuOpen', this.contextMenuOpen, this);
         this.parent.on('contextMenuClick', this.contextMenuClick, this);
     }
     /**
-     * @hidden
+
      */
     removeEventListener() {
         if (this.parent.isDestroyed) {
@@ -6927,7 +6872,7 @@ class Edit$1 {
         return 'edit';
     }
     /**
-     * @hidden
+
      */
     addEventListener() {
         this.parent.on(crudAction, this.crudAction, this);
@@ -6942,6 +6887,8 @@ class Edit$1 {
         this.parent.on('actionBegin', this.editActionEvents, this);
         this.parent.on('actionComplete', this.editActionEvents, this);
         this.parent.grid.on(doubleTap, this.recordDoubleClick, this);
+        this.parent.grid.on('dblclick', this.gridDblClick, this);
+        this.parent.grid.on('click', this.gridSingleClick, this);
         this.parent.on('savePreviousRowPosition', this.savePreviousRowPosition, this);
         // this.parent.on(events.beforeDataBound, this.beforeDataBound, this);
         // this.parent.on(events.cellSaved, this.cellSaved, this);
@@ -6954,6 +6901,17 @@ class Edit$1 {
         this.parent.grid.on(beforeBatchCancel, this.beforeBatchCancel, this);
         //this.parent.grid.on(events.batchEditFormRendered, this.batchEditFormRendered, this);
     }
+    gridDblClick(e) {
+        this.doubleClickTarget = e.target;
+    }
+    gridSingleClick(e) {
+        let targetElement = e.target;
+        if (targetElement && this.parent.grid.isEdit && (targetElement.classList.contains('e-treegridexpand') ||
+            targetElement.classList.contains('e-treegridcollapse'))) {
+            this.parent.grid.closeEdit();
+            return;
+        }
+    }
     beforeStartEdit(args) {
         this.parent.trigger(actionBegin, args);
     }
@@ -6964,7 +6922,7 @@ class Edit$1 {
       this.parent.trigger(events.actionComplete, args);
     }*/
     /**
-     * @hidden
+
      */
     removeEventListener() {
         if (this.parent.isDestroyed) {
@@ -6985,18 +6943,20 @@ class Edit$1 {
         this.parent.off('savePreviousRowPosition', this.savePreviousRowPosition);
         this.parent.grid.off(beforeStartEdit, this.beforeStartEdit);
         this.parent.grid.off(beforeBatchCancel, this.beforeBatchCancel);
+        this.parent.grid.off('dblclick', this.gridDblClick);
+        this.parent.grid.off('click', this.gridSingleClick);
         //this.parent.grid.off(events.batchEditFormRendered, this.batchEditFormRendered);
     }
     /**
      * To destroy the editModule
      * @return {void}
-     * @hidden
+
      */
     destroy() {
         this.removeEventListener();
     }
     /**
-     * @hidden
+
      */
     applyFormValidation(cols) {
         this.parent.grid.editModule.applyFormValidation(cols);
@@ -7028,7 +6988,6 @@ class Edit$1 {
     }
     recordDoubleClick(args) {
         let target = args.target;
-        this.doubleClickTarget = target;
         if (isNullOrUndefined(target.closest('td.e-rowcell'))) {
             return;
         }
@@ -7499,7 +7458,7 @@ class Edit$1 {
         return this.parent.grid.editModule.editFormValidate();
     }
     /**
-     * @hidden
+
      */
     destroyForm() {
         this.parent.grid.editModule.destroyForm();
@@ -7528,7 +7487,7 @@ class Edit$1 {
 
 /**
  * Command Column Module for TreeGrid
- * @hidden
+
  */
 class CommandColumn$1 {
     constructor(parent) {
@@ -7554,7 +7513,7 @@ class CommandColumn$1 {
 
 /**
  * TreeGrid Detail Row module
- * @hidden
+
  */
 class DetailRow$1 {
     constructor(parent) {
@@ -7563,7 +7522,7 @@ class DetailRow$1 {
         this.addEventListener();
     }
     /**
-     * @hidden
+  
      */
     /**
      * For internal use only - Get the module name.
@@ -7580,7 +7539,7 @@ class DetailRow$1 {
         this.parent.on('actioncomplete', this.actioncomplete, this);
     }
     /**
-     * @hidden
+  
      */
     removeEventListener() {
         if (this.parent.isDestroyed) {
@@ -7848,7 +7807,7 @@ class TreeInterSectionObserver extends InterSectionObserver {
 
 /**
  * TreeGrid Virtual Scroll module will handle Virtualization
- * @hidden
+
  */
 class VirtualScroll$1 {
     /**
@@ -7872,14 +7831,14 @@ class VirtualScroll$1 {
         return 'virtualScroll';
     }
     /**
-     * @hidden
+
      */
     addEventListener() {
         this.parent.on(localPagedExpandCollapse, this.collapseExpandVirtualchilds, this);
         this.parent.on(pagingActions, this.virtualPageAction, this);
     }
     /**
-     * @hidden
+
      */
     removeEventListener() {
         if (this.parent.isDestroyed) {
@@ -7961,7 +7920,7 @@ class VirtualScroll$1 {
     /**
      * To destroy the virtualScroll module
      * @return {void}
-     * @hidden
+
      */
     destroy() {
         this.removeEventListener();
@@ -7995,7 +7954,7 @@ class TreeVirtual extends VirtualScroll {
 
 /**
  * TreeGrid Freeze module
- * @hidden
+
  */
 class Freeze$1 {
     /**
@@ -8021,9 +7980,30 @@ class Freeze$1 {
     }
     rowExpandCollapse(args) {
         let movableRows = this.parent.getMovableDataRows();
-        let frozenrows = movableRows.filter((e) => e.classList.contains('e-gridrowindex' + args.record.index + 'level' + (args.record.level + 1)));
-        for (let i = 0; i < frozenrows.length; i++) {
-            frozenrows[i].style.display = args.action;
+        let frozenrows = this.parent.getRows();
+        let rows;
+        if (!args.detailrows.length) {
+            rows = movableRows.filter((e) => e.classList.contains('e-gridrowindex' + args.record.index + 'level' + (args.record.level + 1)));
+        }
+        else {
+            rows = args.detailrows;
+        }
+        for (let i = 0; i < rows.length; i++) {
+            let rData = this.parent.grid.getRowObjectFromUID(rows[i].getAttribute('data-Uid')).data;
+            rows[i].style.display = args.action;
+            let queryselector = args.action === 'none' ? '.e-treecolumn-container .e-treegridcollapse'
+                : '.e-treecolumn-container .e-treegridexpand';
+            if (frozenrows[rows[i].rowIndex].querySelector(queryselector)) {
+                let cRow = [];
+                for (let i = 0; i < movableRows.length; i++) {
+                    if (movableRows[i].classList.contains('e-gridrowindex' + rData.index + 'level' + (rData.level + 1))) {
+                        cRow.push(movableRows[i]);
+                    }
+                }
+                if (cRow.length) {
+                    this.rowExpandCollapse({ detailrows: cRow, action: args.action });
+                }
+            }
         }
     }
     dblClickHandler(e) {

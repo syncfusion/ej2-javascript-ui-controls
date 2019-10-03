@@ -7,7 +7,7 @@ import { FocusStrategy } from '@syncfusion/ej2-grids/src/grid/services/focus-str
 
 /**
  * TreeGrid Detail Row module
- * @hidden
+
  */
 export class DetailRow {
   private parent: TreeGrid;
@@ -17,7 +17,7 @@ export class DetailRow {
     this.addEventListener();
   }
   /**
-   * @hidden
+
    */
   /**
    * For internal use only - Get the module name.
@@ -34,7 +34,7 @@ export class DetailRow {
     this.parent.on('actioncomplete', this.actioncomplete, this);
   }
   /**
-   * @hidden
+
    */
   public removeEventListener(): void {
     if (this.parent.isDestroyed) { return; }

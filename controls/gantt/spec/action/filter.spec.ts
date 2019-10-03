@@ -1,13 +1,13 @@
 /**
  * Gantt filter spec
  */
-import { Gantt, Filter, Toolbar } from '../../src/index';
+import { Gantt, Filter, Toolbar, ColumnMenu } from '../../src/index';
 import { projectData1, projectResources } from '../base/data-source.spec';
 import { createGantt, destroyGantt, triggerMouseEvent } from '../base/gantt-util.spec';
 
 describe('Gantt filter support', () => {
     describe('Gantt filter action', () => {
-        Gantt.Inject(Filter, Toolbar);
+        Gantt.Inject(Filter, Toolbar, ColumnMenu);
         let ganttObj: Gantt;
         beforeAll((done: Function) => {
             ganttObj = createGantt(

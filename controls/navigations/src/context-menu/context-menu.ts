@@ -29,23 +29,23 @@ export class ContextMenu extends MenuBase implements INotifyPropertyChanged {
 
     /**
      * Specifies target element selector in which the ContextMenu should be opened.
-     * @default ''  
+
      */
     @Property('')
     public target: string;
 
     /**
      * Specifies the filter selector for elements inside the target in that the context menu will be opened.
-     * @default ''    
+
      */
     @Property('')
     public filter: string;
 
     /**
      * Specifies menu items with its properties which will be rendered as ContextMenu.
-     * @default []
-     * @aspType object
-     * @blazorType object
+
+
+
      */
     @Collection<MenuItemModel>([], MenuItem)
     public items: MenuItemModel[];

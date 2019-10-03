@@ -1,7 +1,8 @@
-$spreadsheet-border-color: #e5e5e5 !default;
+//default
+$sheet-skin: 'bootstrap' !default;
+$spreadsheet-border-color: $grey-e6 !default;
 $spreadsheet-border-width: 1px;
 $spreadsheet-border: $spreadsheet-border-width solid $spreadsheet-border-color !default;
-$spreadsheet-bg-color: $grey-white !default;
 $header-cell-bg-color: $grey-f5 !default;
 $header-cell-color: $gray !default;
 $select-all-size: 26px !default;
@@ -11,6 +12,8 @@ $select-all-active-bg-color: $brand-primary !default;
 $cell-background: #fff !default;
 $cell-color: #000 !default;
 $cell-border-color: #e0e0e0 !default;
+$hdr-cell-border-color: $cell-border-color !default;
+//enddefault
 //selection
 $selection-bg-color: rgba($brand-primary, .12) !default;
 $selection-border-color: $brand-primary !default;
@@ -33,24 +36,22 @@ $select-icon-color: $brand-primary !default;
 $right-tbar-height: 39px !default;
 //End Tab
 //Formula bar
+$formula-bar-bg-color: $grey-white !default;
 $formula-bar-font-size: 14px !default;
-$formula-bar-height: 24px !default;
+$bigger-formula-bar-font-size: 15px !default;
 $name-box-width: 124px !default;
 $namebox-icon-size: 8px !default;
-$formula-textarea-width: calc(100% - 178px) !default;
+$formula-textarea-width: calc(100% - 180px) !default;
 $formula-bar-color: $sheet-tab-color !default;
-$insert-fn-icon-color: $gray-light !default;
 $mformula-bar-height: 42px !default;
 $expand-icon-margin: 4px !default;
 //End formula bar
 //Insert dialog box
-$dlg-list-border-color: 1px solid #e0e0e0;
-$dlg-list-active: #f5f5f5;
-$dlg-list-color: #000;
-$dlg-description-font-weight: 550;
-$dlg-content-padding: 15px;
-$dlg-category-margin-bottom: 5px;
-$dlg-min-height: 510px;
+$dlg-list-border: 1px solid $grey-dd !default;
+$dlg-description-font-weight: 550 !default;
+$dlg-content-padding: 15px !default;
+$dlg-category-margin-bottom: 5px !default;
+$dlg-min-height: 510px !default;
 //End Insert dialogbox
 //Ribbon
 $fontsize-btn-width: 52px !default;
@@ -73,3 +74,7 @@ $ribbon-item-active-border-color: $tbar-focus-border-color !default;
 $font-family-collection: ('Arial', 'Arial Black', 'Axettac Demo', 'Batang', 'Book Antiqua', 'Calibri', 'Courier', 'Courier New', 'Din Condensed', 'Georgia', 'Helvetica', 'Helvetica New', 'Roboto', 'Tahoma', 'Times New Roman', 'Verdana') !default;
 $normal-btn-padding: 8px !default;
 //End Ribbon
+//Sorting
+$sort-error-bg-color: #fce7e9;
+$sort-error-font-color: #333;
+//End Sorting

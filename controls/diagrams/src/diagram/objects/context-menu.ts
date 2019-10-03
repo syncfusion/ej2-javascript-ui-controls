@@ -88,7 +88,7 @@ export class DiagramContextMenu {
         this.addEventListener();
     }
     /**
-     * @hidden
+
      * @private
      */
     public addEventListener(): void {
@@ -97,7 +97,7 @@ export class DiagramContextMenu {
     }
 
     /**
-     * @hidden
+
      * @private
      */
     public removeEventListener(): void {

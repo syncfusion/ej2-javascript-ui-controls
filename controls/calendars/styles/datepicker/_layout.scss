@@ -5,7 +5,7 @@
     display: flex;
   }
 
-  .e-date-wrapper {
+  .e-date-wrapper:not(.e-filled) {
     & .e-date-icon.e-icons {
       @if $skin-name == 'material' or $skin-name == 'material-dark' {
         box-sizing: $datepicker-box-sizing;

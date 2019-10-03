@@ -5,7 +5,7 @@ import { Column } from '../models/column';
 
 /**
  * HeaderIndentCellRenderer class which responsible for building header indent cell. 
- * @hidden
+
  */
 export class HeaderIndentCellRenderer extends CellRenderer implements ICellRenderer<Column> {
 

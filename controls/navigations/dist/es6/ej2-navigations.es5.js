@@ -2155,7 +2155,7 @@ var MenuBase = /** @__PURE__ @class */ (function (_super) {
         if (this.showSubMenu) {
             var idx = this.navIdx.concat(this.cliIdx);
             var item = this.getItem(idx);
-            if (item[this.getField('children', idx.length - 1)] &&
+            if (item && item[this.getField('children', idx.length - 1)] &&
                 item[this.getField('children', idx.length - 1)].length) {
                 if (e.type === 'mouseover' || (Browser.isDevice && this.isMenu)) {
                     this.setLISelected(this.cli);
@@ -2202,6 +2202,13 @@ var MenuBase = /** @__PURE__ @class */ (function (_super) {
             items = items[navIdx[i]][this.getField('children', i)];
         }
         return items;
+    };
+    MenuBase.prototype.setItems = function (newItems, navIdx) {
+        var items = this.getItems(navIdx);
+        items.splice(0, items.length);
+        for (var i = 0; i < newItems.length; i++) {
+            items.splice(i, 0, newItems[i]);
+        }
     };
     MenuBase.prototype.getIdx = function (ul, li, skipHdr) {
         if (skipHdr === void 0) { skipHdr = true; }
@@ -2313,8 +2320,8 @@ var MenuBase = /** @__PURE__ @class */ (function (_super) {
                                 idx = navIdx.pop();
                                 item = this_1.getItems(navIdx);
                                 this_1.insertAfter([item[idx]], item[idx].text);
-                                item = this_1.getItems(navIdx);
                                 this_1.removeItem(item, navIdx, idx);
+                                this_1.setItems(item, navIdx);
                             }
                             navIdx.length = 0;
                         }
@@ -3429,7 +3436,6 @@ var Toolbar = /** @__PURE__ @class */ (function (_super) {
             this.popupRefresh(this.popObj.element, false);
         }
     };
-    /** @hidden */
     Toolbar.prototype.changeOrientation = function () {
         var ele = this.element;
         if (this.isVertical) {
@@ -5290,11 +5296,11 @@ var Accordion = /** @__PURE__ @class */ (function (_super) {
                     var ctn = _this.contentRendering(index);
                     ele.appendChild(ctn);
                 });
-                this.updateContentBlazorTemplate(eventArgs.item, index);
             }
             else {
                 acrdnItem.appendChild(this.contentRendering(index));
             }
+            this.updateContentBlazorTemplate(eventArgs.item, index);
             this.ariaAttrUpdate(acrdnItem);
         }
         this.trigger('clicked', eventArgs);
@@ -8481,7 +8487,7 @@ var TreeView = /** @__PURE__ @class */ (function (_super) {
     /**
      * Get the properties to be maintained in the persisted state.
      * @returns string
-     * @hidden
+
      */
     TreeView.prototype.getPersistData = function () {
         var keyEntity = ['selectedNodes', 'checkedNodes', 'expandedNodes'];
@@ -12416,7 +12422,7 @@ var TreeView = /** @__PURE__ @class */ (function (_super) {
      * of the corresponding node otherwise it will return the entire updated data source of TreeView.
      * * The updated data source also contains custom attributes if you specified in data source.
      * @param  {string | Element} node - Specifies ID of TreeView node/TreeView node.
-     * @isGenericType true
+
      */
     TreeView.prototype.getTreeData = function (node) {
         var id = this.getId(node);

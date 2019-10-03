@@ -479,4 +479,103 @@ describe('Chart Control', () => {
             chartObj.refresh();
         });
     });
+
+    describe('Checking axis padding with rows', () => {
+        let chartElem: Chart;
+        beforeAll((): void => {
+            ele = createElement('div', { id: 'chartContainer' });
+            document.body.appendChild(ele);
+            chartElem = new Chart({
+                primaryXAxis: {
+                    valueType: 'Category',
+                    interval: 1,
+                    majorGridLines: { width: 0 },
+                    enableTrim: true
+                  },
+                  zoomSettings: {
+                    enableSelectionZooming: true,
+                    enableScrollbar: true
+                  },
+                  chartArea: { border: { width: 0 } },
+                  rows: [{ height: '33%' }, { height: '33%' }, { height: '33%' }],
+                  axes: [ { rowIndex: 0, name: 'yAxis', labelFormat: '{value}°C',
+                            title: 'Weather 1 - reportererer', plotOffset: 20 },
+                        { rowIndex: 1, name: 'yAxis1', labelFormat: '{value}°C',
+                            title: 'Weather 2 - reportererer', plotOffset: 20, plotOffsetTop: 50},
+                        { rowIndex: 2, name: 'yAxis2', labelFormat: '{value}°C',
+                            title: 'Weather 3 - reportererer', plotOffset: 20} ],
+                  series: [
+                    {
+                      type: 'Column',
+                      dataSource: [
+                        { x: 'Sun', y: 30 }, { x: 'Mon', y: 28 },
+                        { x: 'Tue', y: 29 }, { x: 'Wed', y: 30 }, { x: 'Thu', y: 33 }, { x: 'Fri', y: 32 },
+                        { x: 'Sat', y: 34 }
+                      ], animation: {enable: false},
+                      xName: 'x', yName: 'y',
+                      name: 'Germany',
+                      yAxisName: 'yAxis',
+                    },
+                    {
+                      type: 'Column',
+                      dataSource: [
+                        { x: 'Sun', y: 30 }, { x: 'Mon', y: 28 },
+                        { x: 'Tue', y: 29 }, { x: 'Wed', y: 30 }, { x: 'Thu', y: 33 }, { x: 'Fri', y: 32 },
+                        { x: 'Sat', y: 34 }
+                      ],
+                      xName: 'x', yName: 'y',
+                      yAxisName: 'yAxis1',
+                      name: 'Japan', animation: {enable: false}
+                    },
+                    {
+                      type: 'Column',
+                      dataSource: [
+                        { x: 'Sun', y: 30 }, { x: 'Mon', y: 28 },
+                        { x: 'Tue', y: 29 }, { x: 'Wed', y: 30 }, { x: 'Thu', y: 33 }, { x: 'Fri', y: 32 },
+                        { x: 'Sat', y: 34 }
+                      ],
+                      xName: 'x', yName: 'y',
+                      yAxisName: 'yAxis2',
+                      name: 'Japan', animation: {enable: false}
+                    }
+                  ],
+                  tooltip: { enable: true },
+                  height: '500'
+            });
+        });
+
+        afterAll((): void => {
+            chartElem.destroy();
+            ele.remove();
+        });
+        it('Axis title trim Checking', (done: Function) => {
+            loaded = (args: Object): void => {
+                let svg: HTMLElement = document.getElementById('chartContainer_AxisTitle_1');
+                expect(svg.textContent.indexOf('...') > -1 == true);
+                svg = document.getElementById('chartContainer_AxisTitle_2');
+                expect(svg.textContent.indexOf('...') > -1 == true);
+                svg = document.getElementById('chartContainer_AxisTitle_3');
+                expect(svg.textContent.indexOf('...') > -1 == true);
+                done();
+            };
+            chartElem.loaded = loaded;
+            chartElem.appendTo('#chartContainer');
+        });
+        it('Axis position Checking', (done: Function) => {
+            loaded = (args: Object): void => {
+                let svg: HTMLElement = document.getElementById('chartContainer_AxisTitle_1');
+                expect(svg.getAttribute('y') == '356.9525' || svg.getAttribute('y') == '355.2825').toBe(true);
+                expect(svg.getAttribute('x') == '26.5' || svg.getAttribute('x') == '29.5' ).toBe(true);
+                svg = document.getElementById('chartContainer_AxisTitle_2');
+                expect(svg.getAttribute('y') == '232.85749999999996' || svg.getAttribute('y') == '231.8475').toBe(true);
+                expect(svg.getAttribute('x') == '26.5' || svg.getAttribute('x') == '29.5' ).toBe(true);
+                svg = document.getElementById('chartContainer_AxisTitle_3');
+                expect(svg.getAttribute('y') == '76.65499999999999' || svg.getAttribute('y') == '76.315').toBe(true);
+                expect(svg.getAttribute('x') == '26.5' || svg.getAttribute('x') == '29.5' ).toBe(true);
+                done();
+            };
+            chartElem.loaded = loaded;
+            chartElem.appendTo('#chartContainer');
+        });
+    });
 });

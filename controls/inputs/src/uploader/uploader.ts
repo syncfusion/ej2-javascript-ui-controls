@@ -22,6 +22,7 @@ const FILE_TYPE: string = 'e-file-type';
 const FILE_SIZE: string = 'e-file-size';
 const REMOVE_ICON: string = 'e-file-remove-btn';
 const DELETE_ICON: string = 'e-file-delete-btn';
+const SPINNER_PANE: string = 'e-spinner-pane';
 const ABORT_ICON: string = 'e-file-abort-btn';
 const RETRY_ICON: string = 'e-file-reload-btn';
 const DRAG_HOVER: string = 'e-upload-drag-hover';
@@ -1644,7 +1645,11 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
         if (item.length !== 1) { return; }
         let pasteFile: DataTransferItem = [].slice.call(item)[0];
         if ((pasteFile.kind === 'file') && pasteFile.type.match('^image/')) {
-            this.renderSelectedFiles(event, [pasteFile.getAsFile()], false, true);
+            if (isBlazor()) {
+                this.renderSelectedFiles(event, [pasteFile.getAsFile()], false, true);
+            } else {
+                this._renderSelectedFiles(event, [pasteFile.getAsFile()], false, true);
+            }
         }
     }
 
@@ -1843,7 +1848,11 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
                     let path: string = item.fullPath;
                     files.push({'path': path, 'file': fileObj});
                 });
-                this.renderSelectedFiles(event, files, true);
+                if (isBlazor()) {
+                    this.renderSelectedFiles(event, files, true);
+                } else {
+                    this._renderSelectedFiles(event, files, true);
+                }
             } else if (item.isDirectory) {
                 this.traverseFileTree(item, event);
             }
@@ -1870,7 +1879,11 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
                     files.push({'path': path, 'file': fileObj});
                 });
             }
-            this.renderSelectedFiles(event, files, true);
+            if (isBlazor()) {
+                this.renderSelectedFiles(event, files, true);
+            } else {
+                this._renderSelectedFiles(event, files, true);
+            }
         } else if (item.isFile) {
             this.filesEntries.push(item);
         } else if (item.isDirectory) {
@@ -1897,13 +1910,23 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
                 this.getFilesFromFolder(args);
             } else {
                 let files: FileList = this.sortFilesList = (<DragEvent>args).dataTransfer.files;
-                this.element.files = files;
+                if (this.browserName !== 'msie' && this.browserName !== 'edge') {
+                    this.element.files = files;
+                }
                 targetFiles = this.multiple ? this.sortFileList(files) : [files[0]];
-                this.renderSelectedFiles(args, targetFiles);
+                if (isBlazor()) {
+                    this.renderSelectedFiles(args, targetFiles);
+                } else {
+                    this._renderSelectedFiles(args, targetFiles);
+                }
             }
         } else {
             targetFiles = [].slice.call((<HTMLInputElement>args.target).files);
-            this.renderSelectedFiles(args, targetFiles);
+            if (isBlazor()) {
+                this.renderSelectedFiles(args, targetFiles);
+            } else {
+                this._renderSelectedFiles(args, targetFiles);
+            }
         }
     }
      /* istanbul ignore next */
@@ -1917,10 +1940,12 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
     }
 
     /* istanbul ignore next */
+    /* tslint:ignore */
     private async renderSelectedFiles(
         args: MouseEvent | TouchEvent | DragEvent | ClipboardEvent,
         // tslint:disable-next-line
         targetFiles: any, directory?: boolean, paste?: boolean): Promise<void> {
+        // tslint:disable-next-line
         let eventArgs: SelectedEventArgs = {
             event: args,
             cancel: false,
@@ -1951,68 +1976,122 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
                 let data: string = await this.getBase64(file);
                 this.base64String.push(data);
             }
-            let fileName: string = directory ? targetFiles[i].path.substring(1, targetFiles[i].path.length) : paste ?
-            getUniqueID(file.name.substring(0, file.name.lastIndexOf('.'))) + '.' + this.getFileType(file.name) :
-            this.directoryUpload ? targetFiles[i].webkitRelativePath : file.name;
-            let fileDetails: FileInfo = {
-                name: fileName,
-                rawFile: file,
-                size: file.size,
-                status: this.localizedTexts('readyToUploadMessage'),
-                type: this.getFileType(file.name),
-                validationMessages: this.validatedFileSize(file.size),
-                statusCode: '1'
-            };
-            /* istanbul ignore next */
-            if (paste) { fileDetails.fileSource = 'paste'; }
-            fileDetails.status = fileDetails.validationMessages.minSize !== '' ? this.localizedTexts('invalidMinFileSize') :
-            fileDetails.validationMessages.maxSize !== '' ? this.localizedTexts('invalidMaxFileSize') : fileDetails.status;
-            if (fileDetails.validationMessages.minSize !== '' || fileDetails.validationMessages.maxSize !== '') {
-                fileDetails.statusCode = '0';
-                this.checkActionComplete(true);
-            }
-            fileData.push(fileDetails);
+            this.updateInitialFileDetails(args, targetFiles, file, i, fileData, directory, paste);
         }
         eventArgs.filesData = fileData;
         if (this.allowedExtensions.indexOf('*') > -1) { this.allTypes = true; }
         if (!this.allTypes) { fileData =  this.checkExtension(fileData); }
         this.trigger('selected', eventArgs, (eventArgs: SelectedEventArgs) => {
-            if (!eventArgs.cancel) {
-                 /* istanbul ignore next */
-                if (isBlazor()) {
-                    this.currentRequestHeader = eventArgs.currentRequest;
-                    this.customFormDatas = eventArgs.customFormData;
-                }
-                this.selectedFiles = fileData;
-                this.btnTabIndex = this.disableKeyboardNavigation ? '-1' : '0';
-                if (this.showFileList) {
-                    if (eventArgs.isModified && eventArgs.modifiedFilesData.length > 0) {
-                        let dataFiles: FileInfo[] = this.allTypes ? eventArgs.modifiedFilesData :
-                            this.checkExtension(eventArgs.modifiedFilesData);
-                        this.updateSortedFileList(dataFiles);
-                        this.filesData = dataFiles;
-                        if (!this.isForm || this.allowUpload()) {
-                            this.checkAutoUpload(dataFiles);
-                        }
-                    } else {
-                        this.createFileList(fileData);
-                        this.filesData = this.filesData.concat(fileData);
-                        if (!this.isForm || this.allowUpload()) {
-                            this.checkAutoUpload(fileData);
-                        }
-                    }
-                    if (!isNullOrUndefined(eventArgs.progressInterval) && eventArgs.progressInterval !== '') {
-                        this.progressInterval = eventArgs.progressInterval;
-                    }
-                } else {
-                    this.filesData = this.filesData.concat(fileData);
-                    if (this.autoUpload) {
-                        this.upload(this.filesData, true);
-                    }
-                }
-                this.raiseActionComplete();
-            }
+            this._internalRenderSelect(eventArgs, fileData);
         });
+    }
+
+    /* istanbul ignore next */
+    /* tslint: ignore*/
+    private _renderSelectedFiles(
+        args: MouseEvent | TouchEvent | DragEvent | ClipboardEvent,
+        // tslint:disable-next-line
+        targetFiles: any, directory?: boolean, paste?: boolean): void {
+        // tslint:disable-next-line
+        let eventArg: SelectedEventArgs = {
+            event: args,
+            cancel: false,
+            filesData: [],
+            isModified: false,
+            modifiedFilesData: [],
+            progressInterval: '',
+            isCanceled: false,
+            currentRequest: null,
+            customFormData: null
+        };
+        /* istanbul ignore next */
+        if (targetFiles.length < 1) {
+            eventArg.isCanceled = true;
+            this.trigger('selected', eventArg);
+            return;
+        }
+        this.flag = true;
+        // tslint:disable-next-line
+        let fileData: FileInfo[] = [];
+        // tslint:disable-next-line
+        if (!this.multiple) {
+            this.clearData(true);
+            targetFiles = [targetFiles[0]];
+        }
+        for (let i: number = 0; i < targetFiles.length; i++) {
+            let file: File = directory ? targetFiles[i].file : targetFiles[i];
+            this.updateInitialFileDetails(args, targetFiles, file, i, fileData, directory, paste);
+        }
+        eventArg.filesData = fileData;
+        if (this.allowedExtensions.indexOf('*') > -1) { this.allTypes = true; }
+        if (!this.allTypes) { fileData =  this.checkExtension(fileData); }
+        this.trigger('selected', eventArg, (eventArg: SelectedEventArgs ) => {
+            this._internalRenderSelect(eventArg, fileData);
+        });
+    }
+
+    private updateInitialFileDetails(args: MouseEvent | TouchEvent | DragEvent | ClipboardEvent,
+        // tslint:disable-next-line
+        targetFiles: any, file: File, i: number, fileData: FileInfo[], directory?: boolean, paste?: boolean): void {
+        let fileName: string = directory ? targetFiles[i].path.substring(1, targetFiles[i].path.length) : paste ?
+            getUniqueID(file.name.substring(0, file.name.lastIndexOf('.'))) + '.' + this.getFileType(file.name) :
+            this.directoryUpload ? targetFiles[i].webkitRelativePath : file.name;
+        let fileDetails: FileInfo = {
+            name: fileName,
+            rawFile: file,
+            size: file.size,
+            status: this.localizedTexts('readyToUploadMessage'),
+            type: this.getFileType(file.name),
+            validationMessages: this.validatedFileSize(file.size),
+            statusCode: '1'
+        };
+        /* istanbul ignore next */
+        if (paste) { fileDetails.fileSource = 'paste'; }
+        fileDetails.status = fileDetails.validationMessages.minSize !== '' ? this.localizedTexts('invalidMinFileSize') :
+            fileDetails.validationMessages.maxSize !== '' ? this.localizedTexts('invalidMaxFileSize') : fileDetails.status;
+        if (fileDetails.validationMessages.minSize !== '' || fileDetails.validationMessages.maxSize !== '') {
+            fileDetails.statusCode = '0';
+            this.checkActionComplete(true);
+        }
+        fileData.push(fileDetails);
+    }
+
+    private _internalRenderSelect(eventArgs: SelectedEventArgs, fileData: FileInfo[]): void {
+        if (!eventArgs.cancel) {
+            /* istanbul ignore next */
+           if (isBlazor()) {
+               this.currentRequestHeader = eventArgs.currentRequest;
+               this.customFormDatas = eventArgs.customFormData;
+           }
+           this.selectedFiles = fileData;
+           this.btnTabIndex = this.disableKeyboardNavigation ? '-1' : '0';
+           if (this.showFileList) {
+               if (eventArgs.isModified && eventArgs.modifiedFilesData.length > 0) {
+                   let dataFiles: FileInfo[] = this.allTypes ? eventArgs.modifiedFilesData :
+                       this.checkExtension(eventArgs.modifiedFilesData);
+                   this.updateSortedFileList(dataFiles);
+                   this.filesData = dataFiles;
+                   if (!this.isForm || this.allowUpload()) {
+                       this.checkAutoUpload(dataFiles);
+                   }
+               } else {
+                   this.createFileList(fileData);
+                   this.filesData = this.filesData.concat(fileData);
+                   if (!this.isForm || this.allowUpload()) {
+                       this.checkAutoUpload(fileData);
+                   }
+               }
+               if (!isNullOrUndefined(eventArgs.progressInterval) && eventArgs.progressInterval !== '') {
+                   this.progressInterval = eventArgs.progressInterval;
+               }
+           } else {
+               this.filesData = this.filesData.concat(fileData);
+               if (this.autoUpload) {
+                   this.upload(this.filesData, true);
+               }
+           }
+           this.raiseActionComplete();
+       }
     }
 
     private allowUpload(): boolean {
@@ -2140,7 +2219,7 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
             this.listParent.appendChild(liElement);
             this.fileList.push(liElement);
         }
-        updateBlazorTemplate(this.element.id + 'Template', 'Template', this);
+        updateBlazorTemplate(this.element.id + 'Template', 'Template', this, false);
     }
 
     private createParentUL() : void {
@@ -2484,6 +2563,14 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
         let args: Object = {
             e, response: response, operation: 'upload', file: this.updateStatus(file, statusMessage, '2', false), statusText: statusMessage
         };
+        let liElement: HTMLElement = this.getLiElement(file);
+        if (!isNullOrUndefined(liElement)) {
+            let spinnerEle: HTMLElement = liElement.querySelector('.' + SPINNER_PANE) as HTMLElement;
+            if (!isNullOrUndefined(spinnerEle)) {
+                hideSpinner(liElement);
+                detach(spinnerEle);
+            }
+        }
         this.trigger('success', args, (args: Object) => {
             // tslint:disable-next-line
             this.updateStatus(file, (args as any).statusText, '2');

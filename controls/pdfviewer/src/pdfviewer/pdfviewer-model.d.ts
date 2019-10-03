@@ -1,4 +1,4 @@
-import { Component, INotifyPropertyChanged, NotifyPropertyChanges, ChildProperty, L10n, Collection, Complex } from '@syncfusion/ej2-base';import { ModuleDeclaration, isNullOrUndefined, Property, Event, EmitType } from '@syncfusion/ej2-base';import { PdfViewerBase } from './index';import { Navigation } from './index';import { Magnification } from './index';import { Toolbar } from './index';import { ToolbarItem } from './index';import { LinkTarget, InteractionMode, AnnotationType, AnnotationToolbarItem, LineHeadStyle, ContextMenuAction } from './base/types';import { Annotation } from './index';import { LinkAnnotation } from './index';import { ThumbnailView } from './index';import { BookmarkView } from './index';import { TextSelection } from './index';import { TextSearch } from './index';import { FormFields } from './index';import { Print, CalibrationUnit } from './index';import { UnloadEventArgs, LoadEventArgs, LoadFailedEventArgs, AjaxRequestFailureEventArgs, PageChangeEventArgs, PageClickEventArgs, ZoomChangeEventArgs, HyperlinkClickEventArgs, HyperlinkMouseOverArgs } from './index';import { AnnotationAddEventArgs, AnnotationRemoveEventArgs, AnnotationPropertiesChangeEventArgs, AnnotationResizeEventArgs, AnnotationSelectEventArgs } from './index';import { PdfAnnotationBase, ZOrderPageTable } from '../diagram/pdf-annotation';import { PdfAnnotationBaseModel } from '../diagram/pdf-annotation-model';import { Drawing, ClipBoardObject } from '../diagram/drawing';import { Selector } from '../diagram/selector';import { SelectorModel } from '../diagram/selector-model';import { PointModel, IElement, Rect } from '@syncfusion/ej2-drawings';import { renderAdornerLayer } from '../diagram/dom-util';import { ThumbnailClickEventArgs } from './index';
+import { Component, INotifyPropertyChanged, NotifyPropertyChanges, ChildProperty, L10n, Collection, Complex } from '@syncfusion/ej2-base';import { ModuleDeclaration, isNullOrUndefined, Property, Event, EmitType } from '@syncfusion/ej2-base';import { PdfViewerBase } from './index';import { Navigation } from './index';import { Magnification } from './index';import { Toolbar } from './index';import { ToolbarItem } from './index';import { LinkTarget, InteractionMode, AnnotationType, AnnotationToolbarItem, LineHeadStyle, ContextMenuAction, FontStyle, TextAlignment } from './base/types';import { Annotation } from './index';import { LinkAnnotation } from './index';import { ThumbnailView } from './index';import { BookmarkView } from './index';import { TextSelection } from './index';import { TextSearch } from './index';import { FormFields } from './index';import { Print, CalibrationUnit } from './index';import { UnloadEventArgs, LoadEventArgs, LoadFailedEventArgs, AjaxRequestFailureEventArgs, PageChangeEventArgs, PageClickEventArgs, ZoomChangeEventArgs, HyperlinkClickEventArgs, HyperlinkMouseOverArgs } from './index';import { AnnotationAddEventArgs, AnnotationRemoveEventArgs, AnnotationPropertiesChangeEventArgs, AnnotationResizeEventArgs, AnnotationSelectEventArgs } from './index';import { PdfAnnotationBase, ZOrderPageTable } from '../diagram/pdf-annotation';import { PdfAnnotationBaseModel } from '../diagram/pdf-annotation-model';import { Drawing, ClipBoardObject } from '../diagram/drawing';import { Selector } from '../diagram/selector';import { SelectorModel } from '../diagram/selector-model';import { PointModel, IElement, Rect } from '@syncfusion/ej2-drawings';import { renderAdornerLayer } from '../diagram/dom-util';import { ThumbnailClickEventArgs } from './index';
 import {IAjaxHeaders} from "./pdfviewer";
 import {ComponentModel} from '@syncfusion/ej2-base';
 
@@ -114,6 +114,16 @@ export interface ServerActionSettingsModel {
      * specifies the export annotations action of PdfViewer.
      */
     exportAnnotations?: string;
+
+    /**
+     * specifies the imports action of PdfViewer.
+     */
+    importFormFields?: string;
+
+    /**
+     * specifies the export action of PdfViewer.
+     */
+    exportFormFields?: string;
 
 }
 
@@ -918,6 +928,21 @@ export interface FreeTextSettingsModel {
      */
     fontFamily?: string;
 
+    /**
+     * setting the default text for annotation.
+     */
+    defaultText?: string;
+
+    /**
+     * applying the font styles for the text.
+     */
+    fontStyle?: FontStyle;
+
+    /**
+     * Aligning the text in the annotation.
+     */
+    textAlignment?: TextAlignment;
+
 }
 
 /**
@@ -937,163 +962,163 @@ export interface PdfViewerModel extends ComponentModel{
 
     /**
      * Defines the scrollable height of the PdfViewer control.
-     * @default 'auto'
+
      */
     height?: string | number;
 
     /**
      * Defines the scrollable width of the PdfViewer control.
-     * @default 'auto'
+
      */
     width?: string | number;
 
     /**
      * Enable or disables the toolbar of PdfViewer.
-     * @default true
+
      */
     enableToolbar?: boolean;
 
     /**
      * Enable or disables the Navigation toolbar of PdfViewer.
-     * @default true
+
      */
     enableNavigationToolbar?: boolean;
 
     /**
      * Enable or disables the download option of PdfViewer.
-     * @default true
+
      */
     enableDownload?: boolean;
 
     /**
      * Enable or disables the print option of PdfViewer.
-     * @default true
+
      */
     enablePrint?: boolean;
 
     /**
      * Enables or disables the thumbnail view in the PDF viewer
-     * @default true
+
      */
     enableThumbnail?: boolean;
 
     /**
      * Enables or disables the bookmark view in the PDF viewer
-     * @default true
+
      */
     enableBookmark?: boolean;
 
     /**
      * Enables or disables the hyperlinks in PDF document.
-     * @default true
+
      */
     enableHyperlink?: boolean;
 
     /**
      * Specifies the open state of the hyperlink in the PDF document.
-     * @default CurrentTab
+
      */
     hyperlinkOpenState?: LinkTarget;
 
     /**
      * Specifies the state of the ContextMenu in the PDF document.
-     * @default RightClick
+
      */
     contextMenuOption?: ContextMenuAction;
 
     /**
      * Enable or disables the Navigation module of PdfViewer.
-     * @default true
+
      */
     enableNavigation?: boolean;
 
     /**
      * Enable or disables the Magnification module of PdfViewer.
-     * @default true
+
      */
     enableMagnification?: boolean;
 
     /**
      * Enable or disables the Label for shapeAnnotations of PdfViewer.
-     * @default false
+
      */
     enableShapeLabel?: boolean;
 
     /**
      * Enable or disables the Pinch zoom of PdfViewer.
-     * @default true
+
      */
     enablePinchZoom?: boolean;
 
     /**
      * Enable or disables the text selection in the PdfViewer.
-     * @default true
+
      */
     enableTextSelection?: boolean;
 
     /**
      * Enable or disables the text search in the PdfViewer.
-     * @default true
+
      */
     enableTextSearch?: boolean;
 
     /**
      * Enable or disable the annotation in the Pdfviewer.
-     * @default true
+
      */
     enableAnnotation?: boolean;
 
     /**
      * Enable or disable the form fields in the Pdfviewer.
-     * @default true
+
      */
     enableFormFields?: boolean;
 
     /**
      * Enable or disable the free text annotation in the Pdfviewer.
-     * @default true
+
      */
     enableFreeText?: boolean;
 
     /**
      * Enable or disables the text markup annotation in the PdfViewer.
-     * @default true
+
      */
     enableTextMarkupAnnotation?: boolean;
 
     /**
      * Enable or disables the shape annotation in the PdfViewer.
-     * @default true
+
      */
     enableShapeAnnotation?: boolean;
 
     /**
      * Enable or disables the calibrate annotation in the PdfViewer.
-     * @default true
+
      */
     enableMeasureAnnotation?: boolean;
 
     /**
      * Enables and disables the stamp annotations when the PDF viewer control is loaded initially.
-     * @default true
+
      */
     enableStampAnnotations?: boolean;
 
     /**
      * Enables and disables the stickyNotes annotations when the PDF viewer control is loaded initially.
-     * @default true
+
      */
     enableStickyNotesAnnotation?: boolean;
 
     /**
      * Opens the annotation toolbar when the PDF document is loaded in the PDF Viewer control initially.
-     * @default false
+
      */
     enableAnnotationToolbar?: boolean;
 
     /**
      * Sets the interaction mode of the PdfViewer
-     * @default TextSelection
+
      */
     interactionMode?: InteractionMode;
 
@@ -1239,118 +1264,119 @@ export interface PdfViewerModel extends ComponentModel{
 
     /**
      * Defines the collection of selected items, size and position of the selector
-     * @default {}
+
      */
     selectedItems?: SelectorModel;
 
     /**
      * Triggers while loading document into PdfViewer.
      * @event
-     * @blazorProperty 'DocumentLoaded'
+
      */
     documentLoad?: EmitType<LoadEventArgs>;
 
     /**
      * Triggers while close the document
      * @event
-     * @blazorProperty 'DocumentUnloaded'
+
      */
     documentUnload?: EmitType<UnloadEventArgs>;
 
     /**
      * Triggers while loading document got failed in PdfViewer.
      * @event
-     * @blazorProperty 'DocumentLoadFailed'
+
      */
     documentLoadFailed?: EmitType<LoadFailedEventArgs>;
 
     /**
      * Triggers when the AJAX request is failed.
      * @event
-     * @blazorProperty 'AjaxRequestFailed'
+
      */
     ajaxRequestFailed?: EmitType<AjaxRequestFailureEventArgs>;
 
     /**
      * Triggers when the mouse click is performed over the page of the PDF document.
      * @event
-     * @blazorProperty 'OnPageClick'
+
      */
     pageClick?: EmitType<PageClickEventArgs>;
 
     /**
      * Triggers when there is change in current page number.
      * @event
-     * @blazorProperty 'PageChanged'
+
      */
     pageChange?: EmitType<PageChangeEventArgs>;
 
     /**
      * Triggers when hyperlink in the PDF Document is clicked
      * @event
-     * @blazorProperty 'OnHyperlinkClick'
+
      */
     hyperlinkClick?: EmitType<HyperlinkClickEventArgs>;
 
     /**
      * Triggers when hyperlink in the PDF Document is hovered
      * @event
-     * @blazorProperty 'OnHyperlinkMouseOver'
+
      */
     hyperlinkMouseOver?: EmitType<HyperlinkMouseOverArgs>;
 
     /**
      * Triggers when there is change in the magnification value.
      * @event
-     * @blazorProperty 'ZoomChanged'
+
      */
     zoomChange?: EmitType<ZoomChangeEventArgs>;
 
     /**
      * Triggers when an annotation is added over the page of the PDF document.
      * @event
-     * @blazorProperty 'AnnotationAdded'
+
      */
     annotationAdd?: EmitType<AnnotationAddEventArgs>;
 
     /**
      * Triggers when an annotation is removed from the page of the PDF document.
      * @event 
-     * @blazorProperty 'AnnotationRemoved'
+
      */
     annotationRemove?: EmitType<AnnotationRemoveEventArgs>;
 
     /**
      * Triggers when the property of the annotation is changed in the page of the PDF document.
      * @event
-     * @blazorProperty 'AnnotationPropertiesChanged'
+
      */
     annotationPropertiesChange?: EmitType<AnnotationPropertiesChangeEventArgs>;
 
     /**
      * Triggers when an annotation is resized over the page of the PDF document.
      * @event
-     * @blazorProperty 'AnnotationResized'
+
      */
     annotationResize?: EmitType<AnnotationResizeEventArgs>;
 
     /**
      * Triggers when an annotation is selected over the page of the PDF document.
      * @event
-     * @blazorProperty 'AnnotationSelected'
+
      */
     annotationSelect?: EmitType<AnnotationSelectEventArgs>;
 
     /**
      * Triggers an event when the thumbnail is clicked in the thumbnail panel of PDF Viewer.
      * @event
-     * @blazorProperty 'OnThumbnailClick'
+
      */
     thumbnailClick?: EmitType<ThumbnailClickEventArgs>;
 
     /**
      * Triggers when the property of the annotation is changed in the page of the PDF document.
      * @event
+     * @private
      */
     annotations?: PdfAnnotationBaseModel[];
 

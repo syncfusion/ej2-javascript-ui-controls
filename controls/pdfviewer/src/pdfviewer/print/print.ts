@@ -63,7 +63,8 @@ export class Print {
             pageNumber: pageIndex, documentId: this.pdfViewerBase.documentId,
             hashId: this.pdfViewerBase.hashId, zoomFactor: 1,
             action: 'PrintImages',
-            elementId: this.pdfViewer.element.id
+            elementId: this.pdfViewer.element.id,
+            uniqueId: this.pdfViewerBase.documentId
         };
         if (this.pdfViewerBase.jsonDocumentId) {
             // tslint:disable-next-line
@@ -92,7 +93,7 @@ export class Print {
                     }
                 }
             }
-            if (printImage) {
+            if (printImage && printImage.uniqueId === proxy.pdfViewerBase.documentId) {
                 let annotationSource: string = '';
                 if (printImage.textMarkupAnnotation && proxy.pdfViewerBase.isTextMarkupAnnotationModule()) {
                     // tslint:disable-next-line

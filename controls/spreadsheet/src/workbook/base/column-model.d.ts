@@ -19,4 +19,10 @@ export interface ColumnModel {
      */
     width?: number;
 
+    /**
+     * specifies custom width of the column.
+     * @default false
+     */
+    customWidth?: boolean;
+
 }

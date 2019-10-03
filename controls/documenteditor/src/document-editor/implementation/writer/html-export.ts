@@ -82,14 +82,25 @@ export class HtmlExport {
                 blockStyle += this.serializeImageContainer(inline);
             } else if (inline.hasOwnProperty('fieldType')) {
                 if (inline.fieldType === 0) {
-                    this.fieldCheck = 1;
-                    let tagAttributes: string[] = [];
-                    tagAttributes.push('style="' + this.serializeInlineStyle(inline.characterFormat, '') + '"');
-                    blockStyle += this.createAttributesTag('a', tagAttributes);
+                    let fieldCode: any = paragraph.inlines[i + 1];
+                    if (!isNullOrUndefined(fieldCode) && (fieldCode.text.indexOf('TOC') >= 0 || fieldCode.text.indexOf('HYPERLINK') >= 0)) {
+                        this.fieldCheck = 1;
+                        let tagAttributes: string[] = [];
+                        tagAttributes.push('style="' + this.serializeInlineStyle(inline.characterFormat, '') + '"');
+                        blockStyle += this.createAttributesTag('a', tagAttributes);
+                    } else {
+                        this.fieldCheck = undefined;
+                    }
                 } else if (inline.fieldType === 2) {
-                    this.fieldCheck = 2;
+                    if (!isNullOrUndefined(this.fieldCheck)) {
+                        this.fieldCheck = 2;
+                    } else {
+                        this.fieldCheck = 0;
+                    }
                 } else {
-                    blockStyle += this.endTag('a');
+                    if (!isNullOrUndefined(this.fieldCheck) && this.fieldCheck !== 0) {
+                        blockStyle += this.endTag('a');
+                    }
                     this.fieldCheck = 0;
                 }
             } else {
@@ -98,7 +109,7 @@ export class HtmlExport {
                     blockStyle += this.serializeSpan(text, inline.characterFormat);
                 }
                 if (this.fieldCheck === 1) {
-                    let hyperLink: string = text.replace('\"', '');
+                    let hyperLink: string = text.replace(/"/g, '');
                     blockStyle += ' href= \"' + hyperLink.replace('HYPERLINK', '').trim();
                     blockStyle += '\"';
                     blockStyle += '>';
@@ -121,7 +132,7 @@ export class HtmlExport {
         if (spanText.indexOf('\v') !== -1) {
             spanClass += '<br>';
             return spanClass.toString();
-         } else if (spanText.indexOf('\f') !== -1) {
+        } else if (spanText.indexOf('\f') !== -1) {
             spanClass += '<br style = "page-break-after:always;"/>';
             return spanClass.toString();
         }

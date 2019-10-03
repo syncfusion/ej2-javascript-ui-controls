@@ -20,14 +20,14 @@ import { Alignment } from '../utils/enum';
 export class Location extends ChildProperty<Location>  {
     /**
      * X coordinate of the legend in pixels.
-     * @default 0
+
      */
     @Property(0)
     public x: number;
 
     /**
      * Y coordinate of the legend in pixels.
-     * @default 0
+
      */
     @Property(0)
     public y: number;
@@ -40,21 +40,21 @@ export class LegendSettings extends ChildProperty<LegendSettings> {
 
     /**
      * If set to true, legend will be visible.
-     * @default true
+
      */
     @Property(true)
     public visible: boolean;
 
     /**
      * The height of the legend in pixels.
-     * @default null
+
      */
     @Property(null)
     public height: string;
 
     /**
      * The width of the legend in pixels.
-     * @default null
+
      */
     @Property(null)
     public width: string;
@@ -89,14 +89,14 @@ export class LegendSettings extends ChildProperty<LegendSettings> {
      * * Bottom: Displays the legend at the bottom of the chart.
      * * Right: Displays the legend at the right of the chart.
      * * Custom: Displays the legend  based on the given x and y values.
-     * @default 'Auto'
+
      */
     @Property('Auto')
     public position: LegendPosition;
 
     /**
      * Option to customize the padding between legend items.
-     * @default 8
+
      */
     @Property(8)
     public padding: number;
@@ -106,7 +106,7 @@ export class LegendSettings extends ChildProperty<LegendSettings> {
      * * Near: Aligns the legend to the left of the chart.
      * * Center: Aligns the legend to the center of the chart.
      * * Far: Aligns the legend to the right of the chart.
-     * @default 'Center'
+
      */
     @Property('Center')
     public alignment: Alignment;
@@ -119,14 +119,14 @@ export class LegendSettings extends ChildProperty<LegendSettings> {
 
     /**
      * Shape height of the legend in pixels.
-     * @default 10
+
      */
     @Property(10)
     public shapeHeight: number;
 
     /**
      * Shape width of the legend in pixels.
-     * @default 10
+
      */
     @Property(10)
     public shapeWidth: number;
@@ -146,42 +146,42 @@ export class LegendSettings extends ChildProperty<LegendSettings> {
 
     /**
      * Padding between the legend shape and text.
-     * @default 5
+
      */
     @Property(5)
     public shapePadding: number;
 
     /**
      * The background color of the legend that accepts value in hex and rgba as a valid CSS color string.
-     * @default 'transparent'
+
      */
     @Property('transparent')
     public background: string;
 
     /**
      * Opacity of the legend.
-     * @default 1
+
      */
     @Property(1)
     public opacity: number;
 
     /**
      * If set to true, series' visibility collapses based on the legend visibility.
-     * @default true
+
      */
     @Property(true)
     public toggleVisibility: boolean;
 
     /**
      * Description for legends.
-     * @default null
+
      */
     @Property(null)
     public description: string;
 
     /**
      * TabIndex value for the legend.
-     * @default 3
+
      */
     @Property(3)
     public tabIndex: number;

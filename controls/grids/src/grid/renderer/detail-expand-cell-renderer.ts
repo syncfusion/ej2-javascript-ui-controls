@@ -6,7 +6,7 @@ import { Cell } from '../models/cell';
 
 /**
  * ExpandCellRenderer class which responsible for building group expand cell. 
- * @hidden
+
  */
 export class DetailExpandCellRenderer extends CellRenderer implements ICellRenderer<Column> {
 

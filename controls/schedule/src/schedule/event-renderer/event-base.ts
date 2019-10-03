@@ -4,7 +4,7 @@ import { DataManager, Query, Predicate } from '@syncfusion/ej2-data';
 import { EventFieldsMapping, EventClickArgs, CellClickEventArgs, TdData, SelectEventArgs } from '../base/interface';
 import { Schedule } from '../base/schedule';
 import { ResourcesModel } from '../models/resources-model';
-import { generate } from '../../recurrence-editor/date-generator';
+import { generate, getDateFromRecurrenceDateString } from '../../recurrence-editor/date-generator';
 import { CalendarType } from '../../common/calendar-util';
 import * as util from '../base/util';
 import * as cls from '../base/css-constant';
@@ -49,13 +49,13 @@ export class EventBase {
             if (timeZonePropChanged) {
                 this.processTimezoneChange(event, oldTimezone);
             } else {
-                this.processTimezone(event);
+                event = this.processTimezone(event);
             }
             if (!isNullOrUndefined(event[fields.recurrenceRule]) && event[fields.recurrenceRule] === '') {
                 event[fields.recurrenceRule] = null;
             }
             if (!isNullOrUndefined(event[fields.recurrenceRule]) && isNullOrUndefined(event[fields.recurrenceID])) {
-                processed = processed.concat(this.generateOccurrence(event, null, oldTimezone));
+                processed = processed.concat(this.generateOccurrence(event, null, oldTimezone, true));
             } else {
                 event.Guid = this.generateGuid();
                 processed.push(event);
@@ -79,7 +79,7 @@ export class EventBase {
         for (let event of eventCollection as { [key: string]: Object }[]) {
             if (!isNullOrUndefined(event[this.parent.eventFields.recurrenceRule]) &&
                 isNullOrUndefined(event[this.parent.eventFields.recurrenceID])) {
-                processed = processed.concat(this.parent.eventBase.generateOccurrence(event));
+                processed = processed.concat(this.generateOccurrence(event));
             } else {
                 processed.push(event);
             }
@@ -126,22 +126,42 @@ export class EventBase {
         }
     }
 
-    private processTimezone(event: { [key: string]: Object }): void {
+    public processTimezone(event: { [key: string]: Object }, isReverse: boolean = false): { [key: string]: Object } {
         let fields: EventFieldsMapping = this.parent.eventFields;
         if (event[fields.startTimezone] || event[fields.endTimezone]) {
             let startTimezone: string = <string>event[fields.startTimezone] || <string>event[fields.endTimezone];
             let endTimezone: string = <string>event[fields.endTimezone] || <string>event[fields.startTimezone];
-            event[fields.startTime] = this.parent.tzModule.add(<Date>event[fields.startTime], startTimezone);
-            event[fields.endTime] = this.parent.tzModule.add(<Date>event[fields.endTime], endTimezone);
-            if (this.parent.timezone) {
-                let zone: number & string = <number & string>this.parent.timezone;
-                event[fields.startTime] = this.parent.tzModule.convert(<Date>event[fields.startTime], <number & string>startTimezone, zone);
-                event[fields.endTime] = this.parent.tzModule.convert(<Date>event[fields.endTime], <number & string>endTimezone, zone);
+            let zone: number & string = <number & string>this.parent.timezone;
+            if (isReverse) {
+                if (this.parent.timezone) {
+                    event[fields.startTime] =
+                        this.parent.tzModule.convert(<Date>event[fields.startTime], <number & string>startTimezone, zone);
+                    event[fields.endTime] = this.parent.tzModule.convert(<Date>event[fields.endTime], <number & string>endTimezone, zone);
+                    event[fields.startTime] = this.parent.tzModule.remove(<Date>event[fields.startTime], zone);
+                    event[fields.endTime] = this.parent.tzModule.remove(<Date>event[fields.endTime], zone);
+                } else {
+                    event[fields.startTime] = this.parent.tzModule.remove(<Date>event[fields.startTime], startTimezone);
+                    event[fields.endTime] = this.parent.tzModule.remove(<Date>event[fields.endTime], endTimezone);
+                }
+            } else {
+                event[fields.startTime] = this.parent.tzModule.add(<Date>event[fields.startTime], startTimezone);
+                event[fields.endTime] = this.parent.tzModule.add(<Date>event[fields.endTime], endTimezone);
+                if (this.parent.timezone) {
+                    event[fields.startTime] =
+                        this.parent.tzModule.convert(<Date>event[fields.startTime], <number & string>startTimezone, zone);
+                    event[fields.endTime] = this.parent.tzModule.convert(<Date>event[fields.endTime], <number & string>endTimezone, zone);
+                }
             }
         } else if (this.parent.timezone) {
-            event[fields.startTime] = this.parent.tzModule.add(<Date>event[fields.startTime], this.parent.timezone);
-            event[fields.endTime] = this.parent.tzModule.add(<Date>event[fields.endTime], this.parent.timezone);
+            if (isReverse) {
+                event[fields.startTime] = this.parent.tzModule.remove(<Date>event[fields.startTime], this.parent.timezone);
+                event[fields.endTime] = this.parent.tzModule.remove(<Date>event[fields.endTime], this.parent.timezone);
+            } else {
+                event[fields.startTime] = this.parent.tzModule.add(<Date>event[fields.startTime], this.parent.timezone);
+                event[fields.endTime] = this.parent.tzModule.add(<Date>event[fields.endTime], this.parent.timezone);
+            }
         }
+        return event;
     }
 
     public filterBlockEvents(eventObj: { [key: string]: Object }): Object[] {
@@ -611,9 +631,9 @@ export class EventBase {
             this.parent.trigger(event.eventClick, args, (eventClickArgs: EventClickArgs) => {
                 if (isBlazor()) {
                     let eventFields: EventFieldsMapping = this.parent.eventFields;
-                    let eventObj: { [key: string]: Object } = eventClickArgs.event as { [key: string]: Object };
-                    (eventObj[eventFields.startTime] as Date) = this.parent.getDateTime(eventObj[eventFields.startTime] as Date);
-                    (eventObj[eventFields.endTime] as Date) = this.parent.getDateTime(eventObj[eventFields.endTime] as Date);
+                    let eventObj: { [key: string]: Date } = eventClickArgs.event as { [key: string]: Date };
+                    eventObj[eventFields.startTime] = this.parent.getDateTime(eventObj[eventFields.startTime]);
+                    eventObj[eventFields.endTime] = this.parent.getDateTime(eventObj[eventFields.endTime]);
                     if (eventClickArgs.element) {
                         eventClickArgs.element = getElement(eventClickArgs.element);
                     }
@@ -638,7 +658,6 @@ export class EventBase {
         this.removeSelectedAppointmentClass();
         if (!isNullOrUndefined(this.parent.activeEventData.event) &&
             isNullOrUndefined((<{ [key: string]: Object }>this.parent.activeEventData.event)[this.parent.eventFields.recurrenceID])) {
-            this.parent.currentAction = 'Save';
             this.parent.eventWindow.openEditor(this.parent.activeEventData.event, 'Save');
         } else {
             this.parent.currentAction = 'EditOccurrence';
@@ -706,7 +725,7 @@ export class EventBase {
         this.parent.activeEventData = { event: eventObject, element: target } as EventClickArgs;
     }
 
-    public generateOccurrence(event: { [key: string]: Object }, viewDate?: Date, oldTimezone?: string): Object[] {
+    public generateOccurrence(event: { [key: string]: Object }, viewDate?: Date, oldTimezone?: string, isMaxCount?: boolean): Object[] {
         let startDate: Date = event[this.parent.eventFields.startTime] as Date;
         let endDate: Date = event[this.parent.eventFields.endTime] as Date;
         let eventRule: string = event[this.parent.eventFields.recurrenceRule] as string;
@@ -714,7 +733,7 @@ export class EventBase {
         viewDate = new Date((viewDate || this.parent.activeView.startDate()).getTime() - duration);
         let exception: string = event[this.parent.eventFields.recurrenceException] as string;
         let maxCount: number;
-        if (this.parent.currentView !== 'Agenda') {
+        if (this.parent.currentView !== 'Agenda' && isMaxCount) {
             maxCount = util.getDateCount(this.parent.activeView.startDate(), this.parent.activeView.endDate()) + 1;
         }
         let newTimezone: string = this.parent.timezone || this.parent.tzModule.getLocalTimezoneName();
@@ -740,6 +759,8 @@ export class EventBase {
             clonedObject[this.parent.eventFields.startTime] = new Date(date);
             clonedObject[this.parent.eventFields.endTime] = new Date(new Date(date).setMilliseconds(duration));
             clonedObject[this.parent.eventFields.recurrenceID] = clonedObject[this.parent.eventFields.id];
+            delete clonedObject[this.parent.eventFields.recurrenceException];
+            delete clonedObject[this.parent.eventFields.followingID];
             clonedObject.Guid = this.generateGuid();
             occurrenceCollection.push(clonedObject);
         }
@@ -753,22 +774,79 @@ export class EventBase {
         return parentApp[0];
     }
 
-    public getParentEvent(event: { [key: string]: Object }): { [key: string]: Object } {
-        let fields: EventFieldsMapping = this.parent.eventFields;
+    public getParentEvent(eventObj: { [key: string]: Object }, isParent: boolean = false): { [key: string]: Object } {
         let parentEvent: { [key: string]: Object };
-        let parentEventQuery: Predicate;
-        let followingId: string = event[fields.followingID] as string;
-        let recurrenceID: string = event[fields.recurrenceID] === event[fields.id] ? null : event[fields.recurrenceID] as string;
-        let futureEvents: { [key: string]: Object }[];
         do {
-            parentEventQuery = (new Predicate(fields.id, 'equal', followingId).or(new Predicate(fields.id, 'equal', recurrenceID)));
-            futureEvents = this.getFilterEventsList(this.parent.eventsData, parentEventQuery);
-            parentEvent = futureEvents.slice(-1)[0];
-            followingId = parentEvent[fields.followingID] as string;
-            recurrenceID = parentEvent[fields.recurrenceID] as string;
-        } while (futureEvents.length === 1 && (!isNullOrUndefined(followingId) || !isNullOrUndefined(recurrenceID)));
-
+            eventObj = this.getFollowingEvent(eventObj);
+            if (eventObj) {
+                parentEvent = extend({}, eventObj, null, true) as { [key: string]: Object };
+            }
+        } while (eventObj && isParent);
+        if (isParent && parentEvent) {
+            let collection: { [key: string]: Object[] } = this.getEventCollections(parentEvent);
+            let followObj: { [key: string]: Object } = collection.follow.slice(-1)[0] as { [key: string]: Object };
+            if (collection.occurrence.length > 0 && !parentEvent[this.parent.eventFields.recurrenceException]) {
+                followObj = collection.occurrence.slice(-1)[0] as { [key: string]: Object };
+            }
+            if (followObj) {
+                parentEvent[this.parent.eventFields.recurrenceRule] = followObj[this.parent.eventFields.recurrenceRule];
+            }
+        }
         return parentEvent;
+    }
+
+    public getEventCollections(parentObj: { [key: string]: Object }, childObj?: { [key: string]: Object }): { [key: string]: Object[] } {
+        let followingCollection: Object[] = [];
+        let occurrenceCollection: Object[] = [];
+        let followingEvent: { [key: string]: Object } = parentObj;
+        do {
+            followingEvent = this.getFollowingEvent(followingEvent, true);
+            if (followingEvent) {
+                followingCollection.push(followingEvent);
+            }
+            occurrenceCollection = occurrenceCollection.concat(this.getOccurrenceEvent(followingEvent || parentObj));
+        } while (followingEvent);
+        let collections: { [key: string]: Object[] } = {};
+        if (childObj) {
+            let fields: EventFieldsMapping = this.parent.eventFields;
+            collections = {
+                follow: followingCollection.filter((eventData: { [key: string]: Object }) =>
+                    eventData[fields.startTime] >= childObj[fields.startTime]),
+                occurrence: occurrenceCollection.filter((eventData: { [key: string]: Object }) =>
+                    eventData[fields.startTime] >= childObj[fields.startTime])
+            };
+        } else {
+            collections = { follow: followingCollection, occurrence: occurrenceCollection };
+        }
+        return collections;
+    }
+
+    public getFollowingEvent(parentObj: { [key: string]: Object }, isReverse?: boolean): { [key: string]: Object } {
+        let fields: EventFieldsMapping = this.parent.eventFields;
+        let fieldValue: string | number;
+        if (isReverse) {
+            fieldValue = parentObj[fields.id] as string | number;
+        } else {
+            fieldValue = (parentObj[fields.recurrenceID] || parentObj[fields.followingID]) as string | number;
+        }
+        let filterQuery: Query = new Query().where(isReverse ? fields.followingID : fields.id, 'equal', fieldValue);
+        let parentApp: Object[] = new DataManager(this.parent.eventsData).executeLocal(filterQuery);
+        return parentApp.shift() as { [key: string]: Object };
+    }
+
+    public isFollowingEvent(parentObj: { [key: string]: Object }, childObj: { [key: string]: Object }): boolean {
+        let parentStart: Date = parentObj[this.parent.eventFields.startTime] as Date;
+        let childStart: Date = childObj[this.parent.eventFields.startTime] as Date;
+        return parentStart.getHours() === childStart.getHours() && parentStart.getMinutes() === childStart.getMinutes() &&
+            parentStart.getSeconds() === childStart.getSeconds();
+    }
+
+    public getOccurrenceEvent(eventObj: { [key: string]: Object }, isGuid: boolean = false, isFollowing: boolean = false): Object[] {
+        let idField: string = isGuid ? 'Guid' : (isFollowing) ? this.parent.eventFields.followingID : this.parent.eventFields.recurrenceID;
+        let fieldKey: string = isGuid ? 'Guid' : this.parent.eventFields.id;
+        let filterQuery: Query = new Query().where(idField, 'equal', eventObj[fieldKey] as string | number);
+        let dataSource: Object[] = isGuid ? this.parent.eventsProcessed : this.parent.eventsData;
+        return new DataManager(dataSource).executeLocal(filterQuery);
     }
 
     public getOccurrencesByID(id: number | string): Object[] {
@@ -797,8 +875,41 @@ export class EventBase {
         return filter;
     }
 
-    public applyResourceColor(
-        element: HTMLElement, eventData: { [key: string]: Object }, type: string, groupOrder?: string[], alpha?: string): void {
+    public getDeletedOccurrences(recurrenceData: string | number | { [key: string]: Object }): Object[] {
+        let fields: EventFieldsMapping = this.parent.eventFields;
+        let parentObject: { [key: string]: Object };
+        let deletedOccurrences: Object[] = [];
+        if (typeof recurrenceData === 'string' || typeof recurrenceData === 'number') {
+            parentObject = this.parent.eventsData.filter((obj: { [key: string]: Object }) =>
+                obj[fields.id] === recurrenceData)[0] as { [key: string]: Object };
+        } else {
+            parentObject = extend({}, recurrenceData, null, true) as { [key: string]: Object };
+        }
+        if (parentObject[fields.recurrenceException]) {
+            let exDateString: string[] = (<string>parentObject[fields.recurrenceException]).split(',');
+            exDateString.forEach((date: string) => {
+                let edited: Object[] = this.parent.eventsData.filter((eventObj: { [key: string]: Object }) =>
+                    eventObj[fields.recurrenceID] === parentObject[fields.id] && eventObj[fields.recurrenceException] === date);
+                if (edited.length === 0) {
+                    let exDate: Date = getDateFromRecurrenceDateString(date);
+                    let childObject: { [key: string]: Object } = extend({}, recurrenceData, null, true) as { [key: string]: Object };
+                    childObject[fields.recurrenceID] = parentObject[fields.id];
+                    delete childObject[fields.followingID];
+                    childObject[fields.recurrenceException] = date;
+                    let startDate: Date = new Date(exDate.getTime());
+                    let time: number = (<Date>parentObject[fields.endTime]).getTime() - (<Date>parentObject[fields.startTime]).getTime();
+                    let endDate: Date = new Date(startDate.getTime());
+                    endDate.setMilliseconds(time);
+                    childObject[fields.startTime] = new Date(startDate.getTime());
+                    childObject[fields.endTime] = new Date(endDate.getTime());
+                    deletedOccurrences.push(childObject);
+                }
+            });
+        }
+        return deletedOccurrences;
+    }
+
+    public applyResourceColor(element: HTMLElement, data: { [key: string]: Object }, type: string, index?: string[], alpha?: string): void {
         if (!this.parent.resourceBase) {
             return;
         }
@@ -809,7 +920,8 @@ export class EventBase {
             const b: number = parseInt(color.substring(2 * color.length / 3, 3 * color.length / 3), 16);
             return `rgba(${r}, ${g}, ${b}, ${alpha})`;
         };
-        let color: string = this.parent.resourceBase.getResourceColor(eventData, groupOrder);
+        // index refers groupOrder
+        let color: string = this.parent.resourceBase.getResourceColor(data, index);
         if (color) {
             // tslint:disable-next-line:no-any
             element.style[<any>type] = !isNullOrUndefined(alpha) ? alphaColor(color, alpha) : color;
@@ -862,14 +974,14 @@ export class EventBase {
         let fields: EventFieldsMapping = this.parent.eventFields;
         eventCollection.forEach((event: { [key: string]: Object }) => {
             let dataCol: Object[] = [];
-            if (!isNullOrUndefined(event[fields.recurrenceRule]) && (isNullOrUndefined(event[fields.recurrenceID])
-                || event[fields.id] !== event[fields.recurrenceID])) {
-                dataCol = this.parent.eventBase.generateOccurrence(event);
+            if (!isNullOrUndefined(event[fields.recurrenceRule]) &&
+                (isNullOrUndefined(event[fields.recurrenceID]) || event[fields.id] === event[fields.recurrenceID])) {
+                dataCol = this.generateOccurrence(event);
             } else {
                 dataCol.push(event);
             }
             for (let data of dataCol) {
-                let filterBlockEvents: Object[] = this.parent.eventBase.filterBlockEvents(data as { [key: string]: Object });
+                let filterBlockEvents: Object[] = this.filterBlockEvents(data as { [key: string]: Object });
                 if (filterBlockEvents.length > 0) {
                     isBlockAlert = true;
                     break;

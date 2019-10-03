@@ -123,7 +123,7 @@ export type TextAlign =
 
 /** 
  * Defines types of Cell 
- * @hidden
+
  */
 export enum CellType {
     /**  Defines CellType as Data */
@@ -186,7 +186,7 @@ export type GridLine =
 
 /** 
  * Defines types of Render 
- * @hidden
+
  */
 export enum RenderType {
     /**  Defines RenderType as Header */
@@ -310,7 +310,7 @@ export type MultipleExportType =
 
 /**
  * Defines Predefined toolbar items.
- * @hidden
+
  */
 export type ToolbarItems =
     /** Add new record */
@@ -436,7 +436,7 @@ export type ColumnMenuItem =
 
 /**
  * Defines Predefined toolbar items.
- * @hidden
+
  */
 export enum ToolbarItem {
     Add,

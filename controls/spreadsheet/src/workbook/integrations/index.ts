@@ -6,3 +6,4 @@ export * from './open';
 export * from './save';
 export * from './formula';
 export * from './number-format';
+export * from './sort';

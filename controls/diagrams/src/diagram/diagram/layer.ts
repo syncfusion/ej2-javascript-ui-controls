@@ -8,28 +8,28 @@ import { Property, ChildProperty } from '@syncfusion/ej2-base';
 export class Layer extends ChildProperty<Layer> {
     /**
      * Defines the id of a diagram layer 
-     * @default ''
+
      */
     @Property('')
     public id: string;
     /**
      * Enables or disables the visibility of objects in a particular layer
-     * @default true
+
      */
     @Property(true)
     public visible: boolean;
     /**
      * Enables or disables editing objects in a particular layer
-     * @default false
+
      */
     @Property(false)
     public lock: boolean;
 
     /**
      * Defines the collection of the objects that are added to a particular layer
-     * @aspDefaultValueIgnore
-     * @blazorDefaultValueIgnore
-     * @default undefined
+
+
+
      */
     @Property()
     public objects: string[];
@@ -66,15 +66,15 @@ export class Layer extends ChildProperty<Layer> {
      * });
      * diagram.appendTo('#diagram');
      * ```
-     * @aspDefaultValueIgnore
-     * @blazorDefaultValueIgnore
-     * @default undefined
+
+
+
      */
     @Property()
     public addInfo: Object;
     /**
      * Defines the zOrder of the layer
-     * @default -1
+
      */
     @Property(-1)
     public zIndex: number;

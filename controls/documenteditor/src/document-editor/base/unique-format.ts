@@ -409,6 +409,12 @@ export class WUniqueFormat {
         if (property === 'bidi') {
             return 11;
         }
+        if (property === 'restartPageNumbering') {
+            return 12;
+        }
+        if (property === 'pageStartingNumber') {
+            return 13;
+        }
         return 0;
     }
     /**
@@ -735,6 +741,12 @@ export class WUniqueFormat {
             return false;
         }
         if (this.isNotEqual('bidi', source, modifiedProperty, modifiedValue, 10)) {
+            return false;
+        }
+        if (this.isNotEqual('restartPageNumbering', source, modifiedProperty, modifiedValue, 10)) {
+            return false;
+        }
+        if (this.isNotEqual('pageStartingNumber', source, modifiedProperty, modifiedValue, 10)) {
             return false;
         }
         return true;

@@ -203,5 +203,40 @@
         content: '\e739';
       }
     }
+}
+
+  .e-sort-ddb,
+  .e-spreadsheet-contextmenu {
+    & .e-sort-icon {
+      &::before {
+        content: '\e812';
+      }
+    }
+
+    & .e-sort-asc {
+      &::before {
+        content: '\e812';
+      }
+    }
+
+    & .e-sort-desc {
+      &::before {
+        content: '\e811';
+      }
+    }
+
+    & .e-sort-custom {
+      &::before {
+        content: '\e810';
+      }
+    }
+  }
+
+  .e-spreadsheet {
+    & .e-sort-delete {
+      &::before {
+        content: '\e773';
+      }
+    }
   }
 }

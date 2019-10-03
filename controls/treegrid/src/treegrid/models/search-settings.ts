@@ -8,7 +8,7 @@ import { FilterHierarchyMode } from '../enum';
 export class SearchSettings extends ChildProperty<SearchSettings> {
     /**
      * Specifies the columns to be searched at initial rendering of the TreeGrid. You can also get the columns that were currently filtered.
-     * @default []
+
      */
     @Property()
     public fields: string[];
@@ -16,7 +16,7 @@ export class SearchSettings extends ChildProperty<SearchSettings> {
      * If ignoreCase set to true, then search ignores the diacritic characters or accents while filtering.
      *
      * > Check the [`Diacritics`](../filtering/#diacritics) filtering.
-     * @default false
+
      */
     @Property(false)
     public ignoreCase: boolean;
@@ -48,7 +48,7 @@ export class SearchSettings extends ChildProperty<SearchSettings> {
      * notequal<br/></td><td colspan=1 rowspan=1> 
      * Checks for strings not equal to the specified string. <br/></td></tr> 
      * </table> 
-     * @default 'contains' 
+
      */
     @Property('contains')
     public operator: string;
@@ -63,7 +63,7 @@ export class SearchSettings extends ChildProperty<SearchSettings> {
      * Defines the filter types. The available options are,
      * * `Parent`: Initiates filter operation after Enter key is pressed.
      * * `Child`: Initiates filter operation after a certain time interval. By default, time interval is 1500 ms.
-     * @default Parent
+
      */
     @Property()
     public hierarchyMode: FilterHierarchyMode;

@@ -6,7 +6,7 @@ import { Column } from '../models/column';
 
 /**
  * ColumnWidthService
- * @hidden
+
  */
 export class ColumnWidthService {
     private parent: IGrid;

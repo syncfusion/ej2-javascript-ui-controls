@@ -8,25 +8,25 @@ export interface LayoutModel {
 
     /**
      * Sets the name of the node with respect to which all other nodes will be translated
-     * @default ''
+
      */
     fixedNode?: string;
 
     /**
      * Sets the space that has to be horizontally left between the nodes
-     * @default 30
+
      */
     horizontalSpacing?: number;
 
     /**
      * Sets the space that has to be Vertically left between the nodes
-     * @default 30
+
      */
     verticalSpacing?: number;
 
     /**
      * Sets the Maximum no of iteration of the symmetrical layout
-     * @default 30
+
      */
     maxIteration?: number;
 
@@ -44,19 +44,19 @@ export interface LayoutModel {
      * });
      * diagram.appendTo('#diagram');
      * ```
-     * @default 40
+
      */
     springFactor?: number;
 
     /**
      * Sets how long edges should be, ideally of the symmetrical layout
-     * @default 50
+
      */
     springLength?: number;
 
     /**
      * * Defines the space between the viewport and the layout
-     * @default { left: 50, top: 50, right: 0, bottom: 0 }
+
      */
     margin?: MarginModel;
 
@@ -67,7 +67,7 @@ export interface LayoutModel {
      * * Right - Aligns the diagram element at the right of its immediate parent
      * * Center - Aligns the diagram element at the center of its immediate parent
      * * Auto - Aligns the diagram element based on the characteristics of its immediate parent
-     * @default 'Auto'
+
      */
     horizontalAlignment?: HorizontalAlignment;
 
@@ -78,7 +78,7 @@ export interface LayoutModel {
      * * Bottom - Aligns the diagram element at the bottom of its immediate parent
      * * Center - Aligns the diagram element at the center of its immediate parent
      * * Auto - Aligns the diagram element based on the characteristics of its immediate parent
-     * @default 'Auto'
+
      */
     verticalAlignment?: VerticalAlignment;
 
@@ -88,7 +88,7 @@ export interface LayoutModel {
      * * BottomToTop - Renders the layout from bottom to top
      * * LeftToRight - Renders the layout from left to right
      * * RightToLeft - Renders the layout from right to left
-     * @default 'TopToBottom'
+
      */
     orientation?: LayoutOrientation;
 
@@ -97,7 +97,7 @@ export interface LayoutModel {
      * * Auto - Defines the first segment direction based on the type of the layout
      * * Orientation - Defines the first segment direction based on the orientation of the layout
      * * Custom - Defines the first segment direction dynamically by the user
-     * @default 'Auto'
+
      */
     connectionDirection?: ConnectionDirection;
 
@@ -105,7 +105,7 @@ export interface LayoutModel {
      * Sets whether the segments have to be customized based on the layout or not
      *  * Default - Routes the connectors like a default diagram
      *  * Layout - Routes the connectors based on the type of the layout
-     * @default 'Default'
+
      */
     connectorSegments?: ConnectorSegments;
 
@@ -116,7 +116,7 @@ export interface LayoutModel {
      * * OrganizationalChart - Defines the type of the layout as Organizational Chart
      * * ComplexHierarchicalTree - Defines the type of the layout as complex HierarchicalTree
      * * RadialTree - Defines the type of the layout as Radial tree
-     * @default 'None'
+
      */
     type?: LayoutType;
 
@@ -161,10 +161,10 @@ export interface LayoutModel {
      * });
      * diagram.appendTo('#diagram');
      * ```
-     * @aspDefaultValueIgnore
-     * @blazorDefaultValueIgnore
-     * @default undefined
-     * @deprecated
+
+
+
+
      */
     getLayoutInfo?: Function | string;
 
@@ -175,18 +175,18 @@ export interface LayoutModel {
 
     /**
      * Defines whether an object should be at the left/right of the mind map. Applicable only for the direct children of the root node
-     * @aspDefaultValueIgnore
-     * @blazorDefaultValueIgnore
-     * @default undefined
-     * @deprecated
+
+
+
+
      */
     getBranch?: Function | string;
 
     /**
      * Aligns the layout within the given bounds
-     * @aspDefaultValueIgnore
-     * @blazorDefaultValueIgnore
-     * @default undefined
+
+
+
      */
     bounds?: Rect;
 
@@ -226,13 +226,13 @@ export interface LayoutModel {
      * });
      * diagram.appendTo('#diagram');
      * ```
-     * @default true
+
      */
     enableAnimation?: boolean;
 
     /**
      * Defines the root of the hierarchical tree layout
-     * @default ''
+
      */
     root?: string;
 

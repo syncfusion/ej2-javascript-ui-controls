@@ -161,3 +161,22 @@ describe('Autocorrection with arithmetic formulas', () => {
         expect(calculate.storedData.get('F').getFormulaValue() === 'improper formula').toBeTruthy;
     });
 });
+describe('Cell dependency handling', () => {
+    let calculate: Calculate = new Calculate();
+    it('Check multiple cell dependency', () => {
+        let sheetId: number = 1;
+        let cellRef1: string = calculate.sheetToken + sheetId + calculate.sheetToken + 'A1';
+        calculate.updateDependentCell(cellRef1);
+        calculate.getDependentCells().set(cellRef1,['10']);
+        let cellRef2: string= calculate.sheetToken + sheetId + calculate.sheetToken + 'A2';
+        calculate.updateDependentCell(cellRef2);
+        calculate.getDependentCells().set(cellRef2,['A1']);
+        let cellRef3: string= calculate.sheetToken + sheetId + calculate.sheetToken + 'A3';
+        calculate.updateDependentCell(cellRef3);
+        calculate.getDependentCells().set(cellRef3,['A2']);
+        expect(calculate.getDependentCells().get(cellRef1).toString() === '10').toBeTruthy;
+        expect(calculate.getDependentCells().get(cellRef2).toString() === '10').toBeTruthy;
+        expect(calculate.getDependentCells().get(cellRef3).toString() === '10').toBeTruthy;
+        calculate.getDependentCells().get(cellRef1)
+        });
+});

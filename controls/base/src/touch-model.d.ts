@@ -44,19 +44,19 @@ export interface TouchModel {
 
     /**
      * Specifies the time delay for tap.
-     * @default 350
+
      */
     tapThreshold?: number;
 
     /**
      * Specifies the time delay for tap hold.
-     * @default 750
+
      */
     tapHoldThreshold?: number;
 
     /**
      * Customize the swipe event configuration.
-     * @default { swipeThresholdDistance: 50 }
+
      */
     swipeSettings?: SwipeSettingsModel;
 

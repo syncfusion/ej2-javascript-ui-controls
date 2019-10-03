@@ -1,6 +1,6 @@
 import { Popup } from '@syncfusion/ej2-popups';
 import { CLS_QUICK_POP } from '../base/classes';
-import { IRenderer, IRichTextEditor, QuickToolbarArgs } from '../base/interface';
+import { IRenderer, IRichTextEditor, QuickToolbarEventArgs } from '../base/interface';
 import { BaseQuickToolbar } from '../actions/base-quick-toolbar';
 import { isBlazor } from '@syncfusion/ej2-base';
 import * as events from '../base/constant';
@@ -21,7 +21,7 @@ export class PopupRenderer implements IRenderer {
     }
 
     private quickToolbarOpen(): void {
-        let args: QuickToolbarArgs | Popup = isBlazor() ? { element: this.popupObj.element } : this.popupObj;
+        let args: QuickToolbarEventArgs | Popup = isBlazor() ? { element: this.popupObj.element } : this.popupObj;
         this.parent.trigger(events.quickToolbarOpen, args);
     }
 

@@ -9,16 +9,16 @@ export interface DropDownListModel extends DropDownBaseModel{
 
     /**
      * Sets CSS classes to the root element of the component that allows customization of appearance.
-     * @default null
+
      */
     cssClass?: string;
 
     /**
      * Specifies the width of the component. By default, the component width sets based on the width of 
      * its parent container. You can also set the width in pixel values.
-     * @default '100%'
-     * @aspType string
-     * @blazorType string
+
+
+
      */
     width?: string | number;
 
@@ -26,9 +26,9 @@ export interface DropDownListModel extends DropDownBaseModel{
      * Specifies the height of the popup list.  
      * > For more details about the popup configuration refer to 
      * [`Popup Configuration`](../../drop-down-list/getting-started#configure-the-popup-list) documentation.
-     * @default '300px'
-     * @aspType string
-     * @blazorType string
+
+
+
      */
     popupHeight?: string | number;
 
@@ -37,21 +37,21 @@ export interface DropDownListModel extends DropDownBaseModel{
      * the component.
      * > For more details about the popup configuration refer to 
      * [`Popup Configuration`](../../drop-down-list/getting-started#configure-the-popup-list) documentation.
-     * @default '100%'
-     * @aspType string
-     * @blazorType string
+
+
+
      */
     popupWidth?: string | number;
 
     /**
      * Specifies a short hint that describes the expected value of the DropDownList component.
-     * @default null
+
      */
     placeholder?: string;
 
     /**
      * Accepts the value to be displayed as a watermark text on the filter bar. 
-     * @default null
+
      */
     filterBarPlaceholder?: string;
 
@@ -63,7 +63,7 @@ export interface DropDownListModel extends DropDownBaseModel{
      * 
      * {% codeBlock src="dropdownlist/html-attributes-api/index.html" %}{% endcodeBlock %}
      *
-     * @default {}
+
      */
     htmlAttributes?: { [key: string]: string; };
 
@@ -75,7 +75,7 @@ export interface DropDownListModel extends DropDownBaseModel{
      * 
      * {% codeBlock src="dropdownlist/query-api/index.html" %}{% endcodeBlock %}
      * 
-     * @default null
+
      */
     query?: Query;
 
@@ -87,21 +87,21 @@ export interface DropDownListModel extends DropDownBaseModel{
      * We have built-in `template engine`
      * which provides options to compile template string into a executable function.
      * For EX: We have expression evolution as like ES6 expression string literals.
-     * @default null
+
      */
     valueTemplate?: string;
 
     /**
      * Accepts the template design and assigns it to the header container of the popup list.
      * > For more details about the available template options refer to [`Template`](../../drop-down-list/templates) documentation.
-     * @default null
+
      */
     headerTemplate?: string;
 
     /**
      * Accepts the template design and assigns it to the footer container of the popup list.
      * > For more details about the available template options refer to [`Template`](../../drop-down-list/templates) documentation.
-     * @default null
+
      */
     footerTemplate?: string;
 
@@ -116,26 +116,26 @@ export interface DropDownListModel extends DropDownBaseModel{
      * {% codeBlock src="dropdownlist/allow-filtering-api/index.ts" %}{% endcodeBlock %}
      * 
      * {% codeBlock src="dropdownlist/allow-filtering-api/index.html" %}{% endcodeBlock %}
-     * @default false
+
      */
     allowFiltering?: boolean;
 
     /**
      * When set to true, the user interactions on the component are disabled.
-     * @default false
+
      */
     readonly?: boolean;
 
     /**
      * Gets or sets the display text of the selected item in the component.
-     * @default null
+
      */
     text?: string;
 
     /**
      * Gets or sets the value of the selected item in the component.
-     * @default null
-     * @isGenericType true
+
+
      */
     value?: number | string | boolean;
 
@@ -146,9 +146,9 @@ export interface DropDownListModel extends DropDownBaseModel{
      * 
      * {% codeBlock src="dropdownlist/index-api/index.html" %}{% endcodeBlock %}
      * 
-     * @default null
-     * @blazorType int
-     * @isBlazorNullableType true
+
+
+
      */
     index?: number;
 
@@ -163,17 +163,17 @@ export interface DropDownListModel extends DropDownBaseModel{
      * 
      * {% codeBlock src="dropdownlist/float-label-type-api/index.html" %}{% endcodeBlock %}
      * 
-     * @default Syncfusion.EJ2.Inputs.FloatLabelType.Never
-     * @aspType Syncfusion.EJ2.Inputs.FloatLabelType
-     * @isEnumeration true
-     * @blazorType Syncfusion.EJ2.Inputs.FloatLabelType
+
+
+
+
      */
     floatLabelType?: FloatLabelType;
 
     /**
      * Specifies whether to show or hide the clear button. 
      * When the clear button is clicked, `value`, `text`, and `index` properties are reset to null.
-     * @default false
+
      */
     showClearButton?: boolean;
 
@@ -184,7 +184,7 @@ export interface DropDownListModel extends DropDownBaseModel{
      * > For more details about the filtering refer to [`Filtering`](../../drop-down-list/filtering) documentation.
      * 
      * @event
-     * @blazorProperty 'Filtering'
+
      */
     filtering?: EmitType<FilteringEventArgs>;
 
@@ -193,29 +193,29 @@ export interface DropDownListModel extends DropDownBaseModel{
      * Use change event to 
      * [`Configure the Cascading DropDownList`](../../drop-down-list/how-to/cascading)
      * @event
-     * @blazorProperty 'ValueChange'
+
      */
     change?: EmitType<ChangeEventArgs>;
 
     /**
      * Triggers when the popup before opens.
      * @event
-     * @blazorProperty 'OnOpen'
-     * @blazorType BeforeOpenEventArgs
+
+
      */
     beforeOpen?: EmitType<Object>;
 
     /**
      * Triggers when the popup opens.
      * @event
-     * @blazorProperty 'Opened'
+
      */
     open?: EmitType<PopupEventArgs>;
 
     /**
      * Triggers when the popup is closed.
      * @event
-     * @blazorProperty 'OnClose'
+
      */
     close?: EmitType<PopupEventArgs>;
 

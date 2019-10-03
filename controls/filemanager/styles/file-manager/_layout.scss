@@ -718,6 +718,17 @@
 
       .e-grid.e-rtl {
 
+        .e-row.e-focused {
+
+          td:first-child {
+            box-shadow: $fe-grid-row-lc-ie-box-shadow;
+          }
+
+          td:last-child {
+            box-shadow: $fe-grid-row-fc-ie-box-shadow;
+          }
+        }
+
         .e-gridheader,
         .e-gridcontent {
 

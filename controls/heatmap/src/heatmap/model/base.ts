@@ -10,14 +10,14 @@ export class Font extends ChildProperty<Font> {
 
     /**
      * Font size for the text.
-     * @default '16px'
+
      */
     @Property('16px')
     public size: string;
 
     /**
      * Color for the text.
-     * @default ''
+
      */
     @Property('')
     public color: string;
@@ -30,28 +30,28 @@ export class Font extends ChildProperty<Font> {
 
     /**
      * FontWeight for the text.
-     * @default 'Normal'
+
      */
     @Property('Normal')
     public fontWeight: string;
 
     /**
      * FontStyle for the text.
-     * @default 'Normal'
+
      */
     @Property('Normal')
     public fontStyle: string;
 
     /**
      * text alignment
-     * @default 'Center'
+
      */
     @Property('Center')
     public textAlignment: Alignment;
 
     /**
      * Specifies the heat map text overflow
-     * @default 'Trim'
+
      */
     @Property('Trim')
     public textOverflow: TextOverflow;
@@ -65,28 +65,28 @@ export class Margin extends ChildProperty<Margin> {
 
     /**
      * Left margin in pixels.
-     * @default 10
+
      */
     @Property(10)
     public left: number;
 
     /**
      * Right margin in pixels.
-     * @default 10
+
      */
     @Property(10)
     public right: number;
 
     /**
      * Top margin in pixels.
-     * @default 10
+
      */
     @Property(10)
     public top: number;
 
     /**
      * Bottom margin in pixels.
-     * @default 10
+
      */
     @Property(10)
     public bottom: number;
@@ -99,21 +99,21 @@ export class Border extends ChildProperty<Border> {
 
     /**
      * The color of the border that accepts value in hex and rgba as a valid CSS color string.
-     * @default ''
+
      */
     @Property('')
     public color: string;
 
     /**
      * The width of the border in pixels.
-     * @default 1
+
      */
     @Property(1)
     public width: number;
 
     /**
      * The radius of the border in pixels.
-     * @default ''
+
      */
     @Property('')
     public radius: number;
@@ -127,14 +127,14 @@ export class TooltipBorder extends ChildProperty<TooltipBorder> {
 
     /**
      * The color of the border that accepts value in hex and rgba as a valid CSS color string.
-     * @default ''
+
      */
     @Property('')
     public color: string;
 
     /**
      * The width of the border in pixels.
-     * @default 0
+
      */
     @Property(0)
     public width: number;
@@ -147,14 +147,14 @@ export class BubbleData extends ChildProperty<BubbleData> {
 
     /**
      * Mapping property to set size.
-     * @default null
+
      */
     @Property(null)
     public size: string;
 
     /**
      * Mapping property to set color.
-     * @default null
+
      */
     @Property(null)
     public color: string;
@@ -167,7 +167,7 @@ export class BubbleData extends ChildProperty<BubbleData> {
 export class Title extends ChildProperty<Title> {
     /**
      * Title text
-     * @default ''
+
      */
     @Property('')
     public text: string;
@@ -184,20 +184,20 @@ export class Title extends ChildProperty<Title> {
 export class PaletteCollection extends ChildProperty<PaletteCollection> {
     /**
      * Palette color value
-     * @default null
+
      */
     @Property(null)
     public value: number;
 
     /**
      * Palette color text
-     * @default ''
+
      */
     @Property(null)
     public color: string;
     /**
      * Palette color label
-     * @default ''
+
      */
     @Property(null)
     public label: string;
@@ -209,14 +209,14 @@ export class AxisLabelBorder extends ChildProperty<AxisLabelBorder> {
 
     /**
      * The color of the border that accepts value in hex and rgba as a valid CSS color string.
-     * @default ''
+
      */
     @Property('#b5b5b5')
     public color: string;
 
     /**
      * The width of the border in pixels.
-     * @default 1
+
      */
     @Property(1)
     public width: number;
@@ -229,7 +229,7 @@ export class AxisLabelBorder extends ChildProperty<AxisLabelBorder> {
      * * Without Border
      * * Without Bottom Border
      * * Brace
-     * @default 'Rectangle'
+
      */
     @Property('Rectangle')
     public type: BorderType;
@@ -238,14 +238,14 @@ export class AxisLabelBorder extends ChildProperty<AxisLabelBorder> {
 export class BubbleSize extends ChildProperty<BubbleSize> {
     /**
      * Specifies the minimum radius value of the cell in percentage.
-     * @default '0%'
+
      */
     @Property('0%')
     public minimum: string;
 
     /**
      * Specifies the maximum radius value of the cell in percentage.
-     * @default '100%'
+
      */
 
     @Property('100%')
@@ -259,32 +259,32 @@ export class MultiLevelCategories extends ChildProperty<MultiLevelCategories> {
 
     /**
      * Start value of the multi level labels
-     * @default null
-     * @aspDefaultValueIgnore
-     * @blazorDefaultValueIgnore
+
+
+
      */
     @Property(null)
     public start: number | Date | string;
     /**
      * End value of the multi level labels
-     * @default null
-     * @aspDefaultValueIgnore
-     * @blazorDefaultValueIgnore
+
+
+
      */
     @Property(null)
     public end: number | Date | string;
     /**
      * multi level labels text.
-     * @default ''
+
      */
     @Property('')
     public text: string;
 
     /**
      * Maximum width of the text for multi level labels.
-     * @default null
-     * @aspDefaultValueIgnore
-     * @blazorDefaultValueIgnore
+
+
+
      */
     @Property(null)
     public maximumTextWidth: number;
@@ -301,7 +301,7 @@ export class MultiLevelLabels extends ChildProperty<MultiLevelLabels[]> {
      * * Near: Places the multi level labels at Near.
      * * Center: Places the multi level labels at Center.
      * * Far: Places the multi level labels at Far.
-     * @default 'Center'
+
      */
     @Property('Center')
     public alignment: Alignment;
@@ -311,7 +311,7 @@ export class MultiLevelLabels extends ChildProperty<MultiLevelLabels[]> {
      * * Trim: Trim textOverflow for multi level labels.
      * * Wrap: Wrap textOverflow for multi level labels.
      * * none: None textOverflow for multi level labels.
-     * @default 'Wrap'
+
      */
     @Property('Wrap')
     public overflow: TextOverflow;

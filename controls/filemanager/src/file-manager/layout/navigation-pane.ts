@@ -5,7 +5,7 @@ import { KeyboardEvents, KeyboardEventArgs, Touch, closest } from '@syncfusion/e
 import { DataManager, Query } from '@syncfusion/ej2-data';
 import * as events from '../base/constant';
 import * as CLS from '../base/classes';
-import { IFileManager, ReadArgs, FileLoadEventArgs, NotifyArgs } from '../base/interface';
+import { IFileManager, ReadArgs, FileLoadEventArgs, NotifyArgs, FileOpenEventArgs } from '../base/interface';
 import { read, Download, GetDetails, Delete } from '../common/operations';
 import { createDialog } from '../pop-up/dialog';
 import { updatePath, getPath, getDirectories } from '../common/utility';
@@ -36,7 +36,7 @@ export class NavigationPane {
     private renameParent: string = null;
     /**
      * Constructor for the TreeView module
-     * @hidden
+
      */
     constructor(parent?: IFileManager) {
         this.parent = parent;
@@ -179,8 +179,14 @@ export class NavigationPane {
         if (!args.isInteracted && !this.isPathDragged && !this.isRenameParent) { return; }
         this.activeNode = args.node;
         this.parent.activeModule = 'navigationpane';
+        let nodeData: Object[] = this.getTreeData(getValue('id', args.nodeData));
+        if (!this.renameParent) {
+            let eventArgs: FileOpenEventArgs = { cancel: false, fileDetails: nodeData[0], module: 'NavigationPane' };
+            delete eventArgs.cancel;
+            this.parent.trigger('fileOpen', eventArgs);
+        }
         this.parent.selectedItems = [];
-        this.parent.itemData = this.getTreeData(getValue('id', args.nodeData));
+        this.parent.itemData = nodeData;
         updatePath(args.node, this.parent.itemData[0], this.parent);
         this.expandNodeTarget = null;
         if (args.node.querySelector('.' + CLS.ICONS) && args.node.querySelector('.' + CLS.LIST_ITEM) === null) {

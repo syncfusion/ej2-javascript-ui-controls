@@ -1,7 +1,7 @@
 import { Ribbon as RibbonComponent, RibbonItemModel, ExpandCollapseEventArgs } from '../../ribbon/index';
 import { Spreadsheet } from '../base/index';
 import { ribbon, MenuSelectArgs, selectionComplete, beforeRibbonCreate, dialog, IRenderer, destroyComponent } from '../common/index';
-import { enableRibbonItems, ribbonClick, paste, locale, refreshSheetTabs } from '../common/index';
+import { enableRibbonItems, ribbonClick, paste, locale, refreshSheetTabs, initiateCustomSort } from '../common/index';
 import { tabSwitch, getUpdateUsingRaf, enableToolbar } from '../common/index';
 import { MenuEventArgs, BeforeOpenCloseMenuEventArgs, ClickEventArgs, Toolbar, Menu, MenuItemModel } from '@syncfusion/ej2-navigations';
 import { SelectingEventArgs } from '@syncfusion/ej2-navigations';
@@ -10,8 +10,8 @@ import { SheetModel, getCellIndexes, CellModel, getFormatFromType, getTypeFromFo
 import { DropDownButton, OpenCloseMenuEventArgs, SplitButton, ItemModel } from '@syncfusion/ej2-splitbuttons';
 import { calculatePosition, OffsetPosition } from '@syncfusion/ej2-popups';
 import { applyNumberFormatting, getFormattedCellObject, activeCellChanged, textDecorationUpdate } from '../../workbook/common/index';
-import { sheetsDestroyed } from '../../workbook/common/index';
-import { NumberFormatType, getCell, FontFamily, VerticalAlign, TextAlign, CellStyleModel, setCellFormat } from '../../workbook/index';
+import { sheetsDestroyed, SortOrder, NumberFormatType } from '../../workbook/common/index';
+import { getCell, FontFamily, VerticalAlign, TextAlign, CellStyleModel, setCellFormat } from '../../workbook/index';
 import { Button } from '@syncfusion/ej2-buttons';
 import { ColorPicker } from './color-picker';
 import { Dialog } from '../services';
@@ -27,6 +27,7 @@ export class Ribbon {
     private fontNameDdb: DropDownButton;
     private textAlignDdb: DropDownButton;
     private verticalAlignDdb: DropDownButton;
+    private sortingDdb: DropDownButton;
     private fontNameIndex: number = 5;
     private numPopupWidth: number = 0;
     private activeTab: number = 1;
@@ -50,7 +51,7 @@ export class Ribbon {
         }
     }
     private getRibbonItems(): RibbonItemModel[] {
-        let text: string; let id: string = this.parent.element.id;
+        let id: string = this.parent.element.id;
         let l10n: L10n = this.parent.serviceLocator.getService(locale);
         let items: RibbonItemModel[] = [
             {
@@ -78,29 +79,20 @@ export class Ribbon {
                 content: [
                     { prefixIcon: 'e-cut-icon', tooltipText: `${l10n.getConstant('Cut')} (Ctrl+X)`, id: id + '_cut' },
                     { prefixIcon: 'e-copy-icon', tooltipText: `${l10n.getConstant('Copy')} (Ctrl+C)`, id: id + '_copy' },
-                    { tooltipText: `${l10n.getConstant('Paste')} (Ctrl+V)`, template: this.getPasteBtn() },
+                    { tooltipText: `${l10n.getConstant('Paste')} (Ctrl+V)`, template: this.getPasteBtn(id) },
                     { type: 'Separator' },
-                    { template: this.parent.createElement('button', { id: id + '_number_format' }),
-                        tooltipText: l10n.getConstant('NumberFormat') }, { type: 'Separator' },
-                    { template: this.parent.createElement('button', { id: id + '_font_name' }),
-                        tooltipText: l10n.getConstant('Font') }, { type: 'Separator' },
-                    { template: this.parent.createElement('button', { id: id + '_font_size' }),
-                        tooltipText: l10n.getConstant('FontSize') }, { type: 'Separator' },
-                    { template: this.parent.createElement('button', { id: id + '_bold' }),
-                        tooltipText: `${l10n.getConstant('Bold')} (Ctrl+B)` },
-                    { template: this.parent.createElement('button', { id: id + '_italic' }),
-                        tooltipText: `${l10n.getConstant('Italic')} (Ctrl+I)` },
-                    { template: this.parent.createElement('button', { id: id + '_line-through' }),
-                        tooltipText: `${l10n.getConstant('Strikethrough')} (Ctrl+5)` },
-                    { template: this.parent.createElement('button', { id: id + '_underline' }),
-                        tooltipText: `${l10n.getConstant('Underline')} (Ctrl+U)` },
+                    { template: this.getNumFormatDDB(id), tooltipText: l10n.getConstant('NumberFormat') }, { type: 'Separator' },
+                    { template: this.getFontNameDDB(id), tooltipText: l10n.getConstant('Font') }, { type: 'Separator' },
+                    { template: this.getFontSizeDDB(id), tooltipText: l10n.getConstant('FontSize') }, { type: 'Separator' },
+                    { template: this.getBtn(id, 'bold'), tooltipText: `${l10n.getConstant('Bold')} (Ctrl+B)` },
+                    { template: this.getBtn(id, 'italic'), tooltipText: `${l10n.getConstant('Italic')} (Ctrl+I)` },
+                    { template: this.getBtn(id, 'line-through'), tooltipText: `${l10n.getConstant('Strikethrough')} (Ctrl+5)` },
+                    { template: this.getBtn(id, 'underline'), tooltipText: `${l10n.getConstant('Underline')} (Ctrl+U)` },
                     { template: document.getElementById(`${id}_font_color_picker`), tooltipText: l10n.getConstant('TextColor') },
                     { type: 'Separator' },
                     { template: document.getElementById(`${id}_fill_color_picker`), tooltipText: l10n.getConstant('FillColor') },
-                    { type: 'Separator' }, { template: this.parent.createElement('button', { id: id + '_text_align' }),
-                        tooltipText: l10n.getConstant('HorizontalAlignment') },
-                    { template: this.parent.createElement('button', { id: id + '_vertical_align' }),
-                        tooltipText: l10n.getConstant('VerticalAlignment') }]
+                    { type: 'Separator' }, { template: this.getTextAlignDDB(id), tooltipText: l10n.getConstant('HorizontalAlignment') },
+                    { template: this.getVerticalAlignDDB(id), tooltipText: l10n.getConstant('VerticalAlignment') }]
             },
             {
                 header: { text: l10n.getConstant('Formulas') },
@@ -112,12 +104,19 @@ export class Ribbon {
                     { prefixIcon: 'e-hide-headers', text: this.getLocaleText(l10n, 'Headers'), id: id + '_headers'}, { type: 'Separator' },
                     { prefixIcon: 'e-hide-gridlines', text: this.getLocaleText(l10n, 'GridLines'), id: id + '_gridlines' }]
             }];
+        if (this.parent.allowSorting) {
+            items.find((x: RibbonItemModel) => x.header && x.header.text === l10n.getConstant('Home')).content.push(
+                { type: 'Separator' },
+                {
+                    template: this.getSortingDDB(id), tooltipText: l10n.getConstant('Sort')
+                });
+        }
         return items;
     }
 
-    private getPasteBtn(): Element {
+    private getPasteBtn(id: string): Element {
         let btn: HTMLElement = this.parent.element.appendChild(
-            this.parent.createElement('button', { id: this.parent.element.id + '_paste' }));
+            this.parent.createElement('button', { id: id + '_paste' }));
         let l10n: L10n = this.parent.serviceLocator.getService(locale);
         let pasteSplitBtn: SplitButton = new SplitButton(
             {
@@ -161,7 +160,8 @@ export class Ribbon {
             clicked: this.toolbarClicked.bind(this),
             created: this.ribbonCreated.bind(this),
             selecting: this.tabSelecting.bind(this),
-            expandCollapse: this.expandCollapseHandler.bind(this)
+            expandCollapse: this.expandCollapseHandler.bind(this),
+            beforeFileItemRender: this.beforeRenderHandler.bind(this)
         });
         this.ribbon.createElement = this.parent.createElement;
         if (args && args.uiUpdate) {
@@ -180,12 +180,22 @@ export class Ribbon {
             this.parent.notify(tabSwitch, { idx: args.selectingIndex });
         }
     }
-    private ribbonCreated(): void {
-        let id: string = this.parent.element.id; let l10n: L10n = this.parent.serviceLocator.getService(locale);
-        let numFormatBtn: HTMLElement = document.getElementById(id + '_number_format');
+
+    private beforeRenderHandler(args: MenuEventArgs): void {
+        let l10n: L10n = this.parent.serviceLocator.getService(locale);
+        if (args.item.text === l10n.getConstant('Open') && (!this.parent.openUrl || !this.parent.allowOpen)) {
+            args.element.classList.add('e-disabled');
+        }
+        if (args.item.text === l10n.getConstant('SaveAs') && (!this.parent.saveUrl || !this.parent.allowSave)) {
+            args.element.classList.add('e-disabled');
+        }
+    }
+
+    private getNumFormatDDB(id: string): Element {
+        let numFormatBtn: HTMLElement = this.parent.createElement('button', { id: id + '_number_format' });
         numFormatBtn.appendChild(this.parent.createElement('span', { className: 'e-tbar-btn-text', innerHTML: 'General' }));
         this.numFormatDDB = new DropDownButton({
-            items: this.getNumFormatDdbItems(l10n, id),
+            items: this.getNumFormatDdbItems(id),
             content: '',
             select: (args: MenuEventArgs): void => this.numDDBSelect(args),
             open: (args: OpenCloseMenuEventArgs): void => this.numDDBOpen(args),
@@ -196,7 +206,10 @@ export class Ribbon {
         });
         this.numFormatDDB.createElement = this.parent.createElement;
         this.numFormatDDB.appendTo(numFormatBtn);
-        if (this.parent.enableClipboard) { this.enableRibbonItems({ id: id + '_paste', isEnable: false }); }
+        return numFormatBtn;
+    }
+
+    private getFontSizeDDB(id: string): Element {
         this.fontSizeDdb = new DropDownButton({
             cssClass: 'e-font-size-ddb',
             content: '11',
@@ -215,8 +228,12 @@ export class Ribbon {
             close: (): void => this.parent.element.focus()
         });
         this.fontSizeDdb.createElement = this.parent.createElement;
-        this.fontSizeDdb.appendTo('#' + id + '_font_size');
-        let fontNameBtn: HTMLElement = document.getElementById(id + '_font_name');
+        this.fontSizeDdb.appendTo(this.parent.createElement('button', { id: id + '_font_size' }));
+        return this.fontSizeDdb.element;
+    }
+
+    private getFontNameDDB(id: string): Element {
+        let fontNameBtn: HTMLElement = this.parent.createElement('button', { id: id + '_font_name' });
         fontNameBtn.appendChild(this.parent.createElement('span', { className: 'e-tbar-btn-text', innerHTML: 'Calibri' }));
         this.fontNameDdb = new DropDownButton({
             cssClass: 'e-font-family',
@@ -230,6 +247,18 @@ export class Ribbon {
         });
         this.fontNameDdb.createElement = this.parent.createElement;
         this.fontNameDdb.appendTo(fontNameBtn);
+        return fontNameBtn;
+    }
+
+    private getBtn(id: string, name: string): Element {
+        let btnObj: Button = new Button({ iconCss: `e-icons e-${name}-icon`, isToggle: true });
+        btnObj.createElement = this.parent.createElement;
+        btnObj.appendTo(this.parent.createElement('button', { id: `${id}_${name}` }));
+        btnObj.element.addEventListener('click', this.toggleBtnClicked.bind(this));
+        return btnObj.element;
+    }
+
+    private getTextAlignDDB(id: string): Element {
         this.textAlignDdb = new DropDownButton({
             cssClass: 'e-align-ddb',
             iconCss: 'e-icons e-left-icon',
@@ -247,7 +276,11 @@ export class Ribbon {
             close: (): void => this.parent.element.focus()
         });
         this.textAlignDdb.createElement = this.parent.createElement;
-        this.textAlignDdb.appendTo('#' + id + '_text_align');
+        this.textAlignDdb.appendTo(this.parent.createElement('button', { id: id + '_text_align' }));
+        return this.textAlignDdb.element;
+    }
+
+    private getVerticalAlignDDB(id: string): Element {
         this.verticalAlignDdb = new DropDownButton({
             cssClass: 'e-align-ddb',
             iconCss: 'e-icons e-bottom-icon',
@@ -265,16 +298,45 @@ export class Ribbon {
             close: (): void => this.parent.element.focus()
         });
         this.verticalAlignDdb.createElement = this.parent.createElement;
-        this.verticalAlignDdb.appendTo('#' + id + '_vertical_align');
-        let btn: HTMLElement;
-        ['bold', 'italic', 'line-through', 'underline'].forEach((name: string): void => {
-            let btnObj: Button = new Button({ iconCss: `e-icons e-${name}-icon`, isToggle: true });
-            btnObj.createElement = this.parent.createElement;
-            btn = document.getElementById(`${id}_${name}`); btnObj.appendTo(btn);
-            btnObj.element.addEventListener('click', this.toggleBtnClicked.bind(this));
-        });
-        (this.ribbon.element.querySelector('.e-drop-icon') as HTMLElement).title = l10n.getConstant('CollapseToolbar');
+        this.verticalAlignDdb.appendTo(this.parent.createElement('button', { id: id + '_vertical_align' }));
+        return this.verticalAlignDdb.element;
     }
+
+    private getSortingDDB(id: string): Element {
+        let l10n: L10n = this.parent.serviceLocator.getService(locale);
+        this.sortingDdb = new DropDownButton({
+            cssClass: 'e-sort-ddb',
+            iconCss: 'e-icons e-sort-icon',
+            items: [
+                { text: l10n.getConstant('SortAscending'), iconCss: 'e-icons e-sort-asc' },
+                { text: l10n.getConstant('SortDescending'), iconCss: 'e-icons e-sort-desc' },
+                { text: l10n.getConstant('CustomSort') + '...', iconCss: 'e-icons e-sort-custom' }],
+            // beforeItemRender: this.alignItemRender.bind(this),
+            beforeOpen: (args: BeforeOpenCloseMenuEventArgs): void => {
+                this.refreshSelected(this.sortingDdb, args.element, 'iconCss');
+            },
+            select: (args: MenuEventArgs): void => {
+                if (args.item.text === l10n.getConstant('CustomSort') + '...') {
+                    this.parent.notify(initiateCustomSort, null);
+                } else {
+                    let direction: SortOrder = args.item.text === l10n.getConstant('SortAscending') ? 'Ascending' : 'Descending';
+                    this.sortingDdb.iconCss = args.item.iconCss; this.sortingDdb.dataBind();
+                    this.parent.sort({ sortDescriptors: { order: direction } });
+                }
+            },
+            close: (): void => this.parent.element.focus()
+        });
+        this.sortingDdb.createElement = this.parent.createElement;
+        this.sortingDdb.appendTo(this.parent.createElement('button', { id: id + '_sorting' }));
+        return this.sortingDdb.element;
+    }
+
+    private ribbonCreated(): void {
+        if (this.parent.enableClipboard) { this.enableRibbonItems({ id: this.parent.element.id + '_paste', isEnable: false }); }
+        (this.ribbon.element.querySelector('.e-drop-icon') as HTMLElement).title
+            = (this.parent.serviceLocator.getService(locale) as L10n).getConstant('CollapseToolbar');
+    }
+
     private alignItemRender(args: MenuEventArgs): void {
         let text: string = args.item.iconCss.split(' e-')[1].split('-icon')[0];
         text = text[0].toUpperCase() + text.slice(1, text.length);
@@ -335,19 +397,20 @@ export class Ribbon {
         }
         this.parent.setPanelSize();
     }
-    private getNumFormatDdbItems(l10n: L10n, id: string): ItemModel[] {
+    private getNumFormatDdbItems(id: string): ItemModel[] {
+        let l10n: L10n = this.parent.serviceLocator.getService(locale);
         return [
-            { id: id + 'item1', text: l10n.getConstant(NumberFormatType.General) },
-            { id: id + 'item2', text: l10n.getConstant(NumberFormatType.Number) },
-            { id: id + 'item3', text: l10n.getConstant(NumberFormatType.Currency) },
-            { id: id + 'item4', text: l10n.getConstant(NumberFormatType.Accounting) },
-            { id: id + 'item5', text: l10n.getConstant(NumberFormatType.ShortDate) },
-            { id: id + 'item6', text: l10n.getConstant(NumberFormatType.LongDate) },
-            { id: id + 'item7', text: l10n.getConstant(NumberFormatType.Time) },
-            { id: id + 'item8', text: l10n.getConstant(NumberFormatType.Percentage) },
-            { id: id + 'item9', text: l10n.getConstant(NumberFormatType.Fraction) },
-            { id: id + 'item10', text: l10n.getConstant(NumberFormatType.Scientific) },
-            { id: id + 'item11', text: l10n.getConstant(NumberFormatType.Text) }
+            { id: id + 'item1', text: l10n.getConstant('General') },
+            { id: id + 'item2', text: l10n.getConstant('Number') },
+            { id: id + 'item3', text: l10n.getConstant('Currency') },
+            { id: id + 'item4', text: l10n.getConstant('Accounting') },
+            { id: id + 'item5', text: l10n.getConstant('ShortDate') },
+            { id: id + 'item6', text: l10n.getConstant('LongDate') },
+            { id: id + 'item7', text: l10n.getConstant('Time') },
+            { id: id + 'item8', text: l10n.getConstant('Percentage') },
+            { id: id + 'item9', text: l10n.getConstant('Fraction') },
+            { id: id + 'item10', text: l10n.getConstant('Scientific') },
+            { id: id + 'item11', text: l10n.getConstant('Text') }
         ];
     }
     private getFontFamilyItems(): ItemModel[] {
@@ -363,7 +426,7 @@ export class Ribbon {
 
     private numDDBSelect(args: MenuEventArgs): void {
         this.parent.notify(applyNumberFormatting, {
-            format: getFormatFromType(args.item.text),
+            format: getFormatFromType(args.item.text as NumberFormatType),
             range: this.parent.getActiveSheet().selectedRange
         });
         this.parent.notify(selectionComplete, <MouseEvent>{ type: 'mousedown' });
@@ -398,7 +461,7 @@ export class Ribbon {
             type: args.item.text,
             formattedText: '',
             value: cell && cell.value ? cell.value : '',
-            format: getFormatFromType(args.item.text),
+            format: getFormatFromType(args.item.text as NumberFormatType),
             sheetIndex: this.parent.activeSheetTab,
             onLoad: true
         };
@@ -438,7 +501,7 @@ export class Ribbon {
         let l10n: L10n = this.parent.serviceLocator.getService(locale);
         let cell: CellModel = getCell(actCell[0], actCell[1], this.parent.getActiveSheet(), true);
         cell = cell ? cell : {};
-        let type: string = getTypeFromFormat(cell.format ? cell.format : NumberFormatType.General);
+        let type: string = getTypeFromFormat(cell.format ? cell.format : 'General');
         if (this.numFormatDDB) {
             this.refreshNumFormatSelection(l10n.getConstant(type));
         }
@@ -737,6 +800,7 @@ export class Ribbon {
         destroyComponent(parentElem.querySelector('#' + id + '_font_name'), DropDownButton);
         destroyComponent(parentElem.querySelector('#' + id + '_text_align'), DropDownButton);
         destroyComponent(parentElem.querySelector('#' + id + '_vertical_align'), DropDownButton);
+        destroyComponent(parentElem.querySelector('#' + id + '_sorting'), DropDownButton);
         ['bold', 'italic', 'line-through', 'underline'].forEach((name: string): void => {
             destroyComponent(parentElem.querySelector('#' + `${id}_${name}`), Button);
         });

@@ -436,6 +436,7 @@ const RIPPLECHECK = 'e-ripple-check';
 const RIPPLEINDETERMINATE = 'e-ripple-stop';
 const RTL = 'e-rtl';
 const WRAPPER = 'e-checkbox-wrapper';
+const containerAttr = ['title', 'class', 'style', 'disabled', 'readonly', 'name', 'value'];
 /**
  * The CheckBox is a graphical user interface element that allows you to select one or more options from the choices.
  * It contains checked, unchecked, and indeterminate states.
@@ -456,8 +457,6 @@ let CheckBox = class CheckBox extends Component {
         super(options, element);
         this.isFocused = false;
         this.isMouseClick = false;
-        this.start = 0;
-        this.end = 0;
     }
     changeState(state) {
         let ariaState;
@@ -497,12 +496,6 @@ let CheckBox = class CheckBox extends Component {
         this.getWrapper().setAttribute('aria-checked', ariaState);
     }
     clickHandler(event) {
-        if ((this.end - this.start) > 750) {
-            this.end = 0;
-            this.end = 0;
-            event.stopPropagation();
-            return;
-        }
         if (this.isMouseClick) {
             this.focusOutHandler();
             this.isMouseClick = false;
@@ -594,6 +587,7 @@ let CheckBox = class CheckBox extends Component {
         if (this.disabled) {
             this.setDisabled();
         }
+        this.updateHtmlAttributeToWrapper();
     }
     initWrapper() {
         let wrapper = this.element.parentElement;
@@ -709,6 +703,9 @@ let CheckBox = class CheckBox extends Component {
                 case 'value':
                     this.element.setAttribute('value', newProp.value);
                     break;
+                case 'htmlAttributes':
+                    this.updateHtmlAttributeToWrapper();
+                    break;
             }
         }
     }
@@ -766,23 +763,12 @@ let CheckBox = class CheckBox extends Component {
     changeHandler(e) {
         e.stopPropagation();
     }
-    touchStartHandler(e) {
-        this.start = new Date().getTime();
-    }
-    touchEndHandler(e) {
-        this.end = new Date().getTime();
-    }
     formResetHandler() {
         this.checked = this.initialCheckedValue;
         this.element.checked = this.initialCheckedValue;
     }
     unWireEvents() {
         let wrapper = this.getWrapper();
-        let iOS = !!navigator.platform && /iPad|iPhone|iPod/.test(navigator.platform);
-        if (iOS) {
-            EventHandler.remove(wrapper, 'touchstart', this.touchStartHandler);
-            EventHandler.remove(wrapper, 'touchend', this.touchEndHandler);
-        }
         EventHandler.remove(this.element, 'click', this.clickHandler);
         EventHandler.remove(this.element, 'keyup', this.keyUpHandler);
         EventHandler.remove(this.element, 'focus', this.focusHandler);
@@ -799,11 +785,6 @@ let CheckBox = class CheckBox extends Component {
     }
     wireEvents() {
         let wrapper = this.getWrapper();
-        let iOS = !!navigator.platform && /iPad|iPhone|iPod/.test(navigator.platform);
-        if (iOS) {
-            EventHandler.add(wrapper, 'touchstart', this.touchStartHandler, this);
-            EventHandler.add(wrapper, 'touchend', this.touchEndHandler, this);
-        }
         EventHandler.add(this.element, 'click', this.clickHandler, this);
         EventHandler.add(this.element, 'keyup', this.keyUpHandler, this);
         EventHandler.add(this.element, 'focus', this.focusHandler, this);
@@ -816,6 +797,28 @@ let CheckBox = class CheckBox extends Component {
         }
         if (this.tagName === 'EJS-CHECKBOX') {
             EventHandler.add(this.element, 'change', this.changeHandler, this);
+        }
+    }
+    updateHtmlAttributeToWrapper() {
+        if (!isNullOrUndefined(this.htmlAttributes)) {
+            for (let key of Object.keys(this.htmlAttributes)) {
+                if (containerAttr.indexOf(key) > -1) {
+                    let wrapper = this.getWrapper();
+                    if (key === 'class') {
+                        addClass([wrapper], this.htmlAttributes[key].split(' '));
+                    }
+                    else if (key === 'title') {
+                        wrapper.setAttribute(key, this.htmlAttributes[key]);
+                    }
+                    else if (key === 'style') {
+                        let frameSpan = this.getWrapper().getElementsByClassName(FRAME)[0];
+                        frameSpan.setAttribute(key, this.htmlAttributes[key]);
+                    }
+                    else {
+                        this.element.setAttribute(key, this.htmlAttributes[key]);
+                    }
+                }
+            }
         }
     }
     /**
@@ -865,6 +868,9 @@ __decorate$1([
 __decorate$1([
     Property('')
 ], CheckBox.prototype, "value", void 0);
+__decorate$1([
+    Property({})
+], CheckBox.prototype, "htmlAttributes", void 0);
 CheckBox = __decorate$1([
     NotifyPropertyChanges
 ], CheckBox);

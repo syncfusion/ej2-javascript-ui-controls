@@ -21,7 +21,7 @@ import { getFilterMenuPostion, toogleCheckbox, createCboxWithWrap, removeAddCbox
 import { InputArgs } from '@syncfusion/ej2-inputs';
 import { SearchSettingsModel} from '../base/grid-model';
 /**
- * @hidden
+
  * `CheckBoxFilter` module is used to handle filtering action.
  */
 export class CheckBoxFilter {
@@ -60,7 +60,7 @@ export class CheckBoxFilter {
     private searchHandler: Function;
     /**
      * Constructor for checkbox filtering module
-     * @hidden
+
      */
     constructor(parent?: IGrid, filterSettings?: FilterSettings, serviceLocator?: ServiceLocator) {
         this.parent = parent;
@@ -89,7 +89,7 @@ export class CheckBoxFilter {
     /** 
      * To destroy the filter bar. 
      * @return {void} 
-     * @hidden
+
      */
     public destroy(): void {
         this.closeDialog();

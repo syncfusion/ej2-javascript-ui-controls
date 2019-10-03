@@ -33,7 +33,7 @@ describe('Calculate SUM Formula', () => {
     afterEach(() => {
         calculate.dispose();
         calculate = null;
-        document.body.querySelectorAll('input').forEach((elem: HTMLInputElement) => elem.remove() );
+        document.body.querySelectorAll('input').forEach((elem: HTMLInputElement) => elem.remove());
     });
 
     it('Simple formula using key values ', () => {
@@ -303,7 +303,7 @@ describe('Calculate PRODUCT Formula', () => {
     afterEach(() => {
         calculate.dispose();
         calculate = null;
-        document.body.querySelectorAll('input').forEach((elem: HTMLInputElement) => elem.remove() );
+        document.body.querySelectorAll('input').forEach((elem: HTMLInputElement) => elem.remove());
     });
 
     it('Simple formula using key values ', () => {
@@ -484,7 +484,7 @@ describe('Calculate COUNT Formula ', () => {
     afterEach(() => {
         calculate.dispose();
         calculate = null;
-        document.body.querySelectorAll('input').forEach((elem: HTMLInputElement) => elem.remove() );
+        document.body.querySelectorAll('input').forEach((elem: HTMLInputElement) => elem.remove());
     });
 
     it('Simple formula using key values ', () => {
@@ -580,7 +580,7 @@ describe('Calculate COUNTA Formula', () => {
     afterEach(() => {
         calculate.dispose();
         calculate = null;
-        document.body.querySelectorAll('input').forEach((elem: HTMLInputElement) => elem.remove() );
+        document.body.querySelectorAll('input').forEach((elem: HTMLInputElement) => elem.remove());
     });
 
     it('Simple formula using key values ', () => {
@@ -671,7 +671,7 @@ describe('Calculate IF Formula', () => {
     afterEach(() => {
         calculate.dispose();
         calculate = null;
-        document.body.querySelectorAll('input').forEach((elem: HTMLInputElement) => elem.remove() );
+        document.body.querySelectorAll('input').forEach((elem: HTMLInputElement) => elem.remove());
     });
 
     it('Simple formula using key values ', () => {
@@ -798,7 +798,7 @@ describe('Calculate ABS Formula', () => {
     afterEach(() => {
         calculate.dispose();
         calculate = null;
-        document.body.querySelectorAll('input').forEach((elem: HTMLInputElement) => elem.remove() );
+        document.body.querySelectorAll('input').forEach((elem: HTMLInputElement) => elem.remove());
     });
 
     it('positive arguments with Key value', () => {
@@ -886,7 +886,7 @@ describe('Calculate MIN Formula', () => {
     afterEach(() => {
         calculate.dispose();
         calculate = null;
-        document.body.querySelectorAll('input').forEach((elem: HTMLInputElement) => elem.remove() );
+        document.body.querySelectorAll('input').forEach((elem: HTMLInputElement) => elem.remove());
     });
 
     it('Find Minimum value using given Key values', () => {
@@ -959,7 +959,7 @@ describe('Calculate MAX Formula', () => {
     afterEach(() => {
         calculate.dispose();
         calculate = null;
-        document.body.querySelectorAll('input').forEach((elem: HTMLInputElement) => elem.remove() );
+        document.body.querySelectorAll('input').forEach((elem: HTMLInputElement) => elem.remove());
     });
 
     it('Find Maximum value using given Key values', () => {
@@ -1032,7 +1032,7 @@ describe('Calculate AND Formula', () => {
     afterEach(() => {
         calculate.dispose();
         calculate = null;
-        document.body.querySelectorAll('input').forEach((elem: HTMLInputElement) => elem.remove() );
+        document.body.querySelectorAll('input').forEach((elem: HTMLInputElement) => elem.remove());
     });
 
     it('Check AND using given Key values', () => {
@@ -1135,7 +1135,7 @@ describe('Calculate RAND Formula', () => {
     afterEach(() => {
         calculate.dispose();
         calculate = null;
-        document.body.querySelectorAll('input').forEach((elem: HTMLInputElement) => elem.remove() );
+        document.body.querySelectorAll('input').forEach((elem: HTMLInputElement) => elem.remove());
     });
 
     it('check rand formula', () => {
@@ -1164,7 +1164,7 @@ describe('Calculate DATE Formula', () => {
     afterEach(() => {
         calculate.dispose();
         calculate = null;
-        document.body.querySelectorAll('input').forEach((elem: HTMLInputElement) => elem.remove() );
+        document.body.querySelectorAll('input').forEach((elem: HTMLInputElement) => elem.remove());
     });
     it('check the date in formula', () => {
         formula.value = '=DATE(2019,10,9)';
@@ -1258,7 +1258,7 @@ describe('Calculate AVERAGE Formula', () => {
     afterEach(() => {
         calculate.dispose();
         calculate = null;
-        document.body.querySelectorAll('input').forEach((elem: HTMLInputElement) => elem.remove() );
+        document.body.querySelectorAll('input').forEach((elem: HTMLInputElement) => elem.remove());
     });
     it('Simple formula using key values ', () => {
         formula.value = '=Average(A,B,C,D)';
@@ -1371,7 +1371,7 @@ describe('Calculate FIND Formula', () => {
     afterEach(() => {
         calculate.dispose();
         calculate = null;
-        document.body.querySelectorAll('input').forEach((elem: HTMLInputElement) => elem.remove() );
+        document.body.querySelectorAll('input').forEach((elem: HTMLInputElement) => elem.remove());
     });
     it('Simple formula using key values ', () => {
         formula.value = '=find("M",A1)';
@@ -1472,7 +1472,7 @@ describe('Calculate IFS Formula', () => {
     afterEach(() => {
         calculate.dispose();
         calculate = null;
-        document.body.querySelectorAll('input').forEach((elem: HTMLInputElement) => elem.remove() );
+        document.body.querySelectorAll('input').forEach((elem: HTMLInputElement) => elem.remove());
     });
     it('Simple formula using key values ', () => {
         formula.value = '=ifs(A<5,"A",B>6,"B",C<9,"C",D>7,"D")';
@@ -1589,7 +1589,7 @@ describe('Calculate CONCATENATE Formula', () => {
     afterEach(() => {
         calculate.dispose();
         calculate = null;
-        document.body.querySelectorAll('input').forEach((elem: HTMLInputElement) => elem.remove() );
+        document.body.querySelectorAll('input').forEach((elem: HTMLInputElement) => elem.remove());
     });
     it('Simple formula using key values ', () => {
         formula.value = '=CONCATENATE("Hello ""World")';
@@ -1676,7 +1676,7 @@ describe('Calculate CONCAT Formula', () => {
     afterEach(() => {
         calculate.dispose();
         calculate = null;
-        document.body.querySelectorAll('input').forEach((elem: HTMLInputElement) => elem.remove() );
+        document.body.querySelectorAll('input').forEach((elem: HTMLInputElement) => elem.remove());
     });
     it('Simple formula using key values ', () => {
         formula.value = '=CONCAT("Hello ""World")';
@@ -1773,7 +1773,7 @@ describe('Calculate IFERROR Formula', () => {
     afterEach(() => {
         calculate.dispose();
         calculate = null;
-        document.body.querySelectorAll('input').forEach((elem: HTMLInputElement) => elem.remove() );
+        document.body.querySelectorAll('input').forEach((elem: HTMLInputElement) => elem.remove());
     });
     it('Simple formula using key values ', () => {
         formula.value = '=IFERROR(A2/B2, "Error in calculation")';
@@ -1870,7 +1870,7 @@ describe('Calculate SUMIF Formula', () => {
     afterEach(() => {
         calculate.dispose();
         calculate = null;
-        document.body.querySelectorAll('input').forEach((elem: HTMLInputElement) => elem.remove() );
+        document.body.querySelectorAll('input').forEach((elem: HTMLInputElement) => elem.remove());
     });
 
     it('Simple formula using key values ', () => {
@@ -1944,7 +1944,7 @@ describe('Calculate AVERAGEIF Formula', () => {
     afterEach(() => {
         calculate.dispose();
         calculate = null;
-        document.body.querySelectorAll('input').forEach((elem: HTMLInputElement) => elem.remove() );
+        document.body.querySelectorAll('input').forEach((elem: HTMLInputElement) => elem.remove());
     });
     it('Invalid arguments ', () => {
         formula.value = '=averageif("")';
@@ -2017,7 +2017,7 @@ describe('Calculate COUNTIF Formula', () => {
     afterEach(() => {
         calculate.dispose();
         calculate = null;
-        document.body.querySelectorAll('input').forEach((elem: HTMLInputElement) => elem.remove() );
+        document.body.querySelectorAll('input').forEach((elem: HTMLInputElement) => elem.remove());
     });
     it('Check invalid arguments ', () => {
         formula.value = '=countif()';
@@ -2108,7 +2108,7 @@ describe('Calculate AVERAGEA Formula', () => {
     afterEach(() => {
         calculate.dispose();
         calculate = null;
-        document.body.querySelectorAll('input').forEach((elem: HTMLInputElement) => elem.remove() );
+        document.body.querySelectorAll('input').forEach((elem: HTMLInputElement) => elem.remove());
     });
     it('Simple formula using key values ', () => {
         formula.value = '=Averagea(A,B,C,D)';
@@ -2245,7 +2245,7 @@ describe('Calculate CHOOSE Formula', () => {
     afterEach(() => {
         calculate.dispose();
         calculate = null;
-        document.body.querySelectorAll('input').forEach((elem: HTMLInputElement) => elem.remove() );
+        document.body.querySelectorAll('input').forEach((elem: HTMLInputElement) => elem.remove());
     });
     it('Simple formula using key values ', () => {
         formula.value = '=choose(2,A,B,C,D)';
@@ -2384,7 +2384,7 @@ describe('Calculate SUMIFS Formula', () => {
     afterEach(() => {
         calculate.dispose();
         calculate = null;
-        document.body.querySelectorAll('input').forEach((elem: HTMLInputElement) => elem.remove() );
+        document.body.querySelectorAll('input').forEach((elem: HTMLInputElement) => elem.remove());
     });
 
     it('Invalid arguments', () => {
@@ -2452,7 +2452,7 @@ describe('Calculate AVERAGEIFS Formula', () => {
     afterEach(() => {
         calculate.dispose();
         calculate = null;
-        document.body.querySelectorAll('input').forEach((elem: HTMLInputElement) => elem.remove() );
+        document.body.querySelectorAll('input').forEach((elem: HTMLInputElement) => elem.remove());
     });
 
     it('Invalid arguments ', () => {
@@ -2520,7 +2520,7 @@ describe('Calculate COUNTIFS Formula', () => {
     afterEach(() => {
         calculate.dispose();
         calculate = null;
-        document.body.querySelectorAll('input').forEach((elem: HTMLInputElement) => elem.remove() );
+        document.body.querySelectorAll('input').forEach((elem: HTMLInputElement) => elem.remove());
     });
 
     it('Invalid arguments ', () => {
@@ -2588,7 +2588,7 @@ describe('Calculate INDEX Formula', () => {
     afterEach(() => {
         calculate.dispose();
         calculate = null;
-        document.body.querySelectorAll('input').forEach((elem: HTMLInputElement) => elem.remove() );
+        document.body.querySelectorAll('input').forEach((elem: HTMLInputElement) => elem.remove());
     });
     it('check the index in formula', () => {
         formula.value = '=index(E2:H4,2,3)';
@@ -2657,7 +2657,7 @@ describe('Calculate FLOOR Formula', () => {
     afterEach(() => {
         calculate.dispose();
         calculate = null;
-        document.body.querySelectorAll('input').forEach((elem: HTMLInputElement) => elem.remove() );
+        document.body.querySelectorAll('input').forEach((elem: HTMLInputElement) => elem.remove());
     });
     it('check the floor in formula using key values', () => {
         formula.value = '=floor(A,B)';
@@ -2767,7 +2767,7 @@ describe('Calculate CEILING Formula', () => {
     afterEach(() => {
         calculate.dispose();
         calculate = null;
-        document.body.querySelectorAll('input').forEach((elem: HTMLInputElement) => elem.remove() );
+        document.body.querySelectorAll('input').forEach((elem: HTMLInputElement) => elem.remove());
     });
     it('check the ceiling in formula using key values', () => {
         formula.value = '=ceiling(A,B)';
@@ -2859,7 +2859,7 @@ describe('Calculate DAYS Formula', () => {
     afterEach(() => {
         calculate.dispose();
         calculate = null;
-        document.body.querySelectorAll('input').forEach((elem: HTMLInputElement) => elem.remove() );
+        document.body.querySelectorAll('input').forEach((elem: HTMLInputElement) => elem.remove());
     });
     it('check the days in formula', () => {
         formula.value = '=DAYS("3/15/11","2/1/11")';
@@ -2895,7 +2895,7 @@ describe('Calculate DAYS Formula', () => {
     afterEach(() => {
         calculate.dispose();
         calculate = null;
-        document.body.querySelectorAll('input').forEach((elem: HTMLInputElement) => elem.remove() );
+        document.body.querySelectorAll('input').forEach((elem: HTMLInputElement) => elem.remove());
     });
     it('check Invalid error', () => {
         formula.value = '=DAY("3/15/11")';
@@ -2951,7 +2951,7 @@ describe('Calculate OR Formula', () => {
     afterEach(() => {
         calculate.dispose();
         calculate = null;
-        document.body.querySelectorAll('input').forEach((elem: HTMLInputElement) => elem.remove() );
+        document.body.querySelectorAll('input').forEach((elem: HTMLInputElement) => elem.remove());
     });
 
     it('Check OR using given Key values', () => {
@@ -3088,7 +3088,7 @@ describe('Calculate LOOKUP Formula', () => {
     afterEach(() => {
         calculate.dispose();
         calculate = null;
-        document.body.querySelectorAll('input').forEach((elem: HTMLInputElement) => elem.remove() );
+        document.body.querySelectorAll('input').forEach((elem: HTMLInputElement) => elem.remove());
     });
 
     it('Simple formula using key values ', () => {
@@ -3168,7 +3168,7 @@ describe('Calculate MATCH Formula', () => {
     afterEach(() => {
         calculate.dispose();
         calculate = null;
-        document.body.querySelectorAll('input').forEach((elem: HTMLInputElement) => elem.remove() );
+        document.body.querySelectorAll('input').forEach((elem: HTMLInputElement) => elem.remove());
     });
 
     it('Simple formula using key values ', () => {
@@ -3284,7 +3284,7 @@ describe('Calculate VLOOKUP Formula', () => {
     afterEach(() => {
         calculate.dispose();
         calculate = null;
-        document.body.querySelectorAll('input').forEach((elem: HTMLInputElement) => elem.remove() );
+        document.body.querySelectorAll('input').forEach((elem: HTMLInputElement) => elem.remove());
     });
 
     it('Simple formula using key values ', () => {
@@ -3376,7 +3376,7 @@ describe('Calculate SUBTOTAL Formula', () => {
     afterEach(() => {
         calculate.dispose();
         calculate = null;
-        document.body.querySelectorAll('input').forEach((elem: HTMLInputElement) => elem.remove() );
+        document.body.querySelectorAll('input').forEach((elem: HTMLInputElement) => elem.remove());
     });
     it('Simple formula using key values ', () => {
         formula.value = '=subtotal()';
@@ -3438,7 +3438,7 @@ describe('Calculate RADIANS Formula', () => {
     afterEach(() => {
         calculate.dispose();
         calculate = null;
-        document.body.querySelectorAll('input').forEach((elem: HTMLInputElement) => elem.remove() );
+        document.body.querySelectorAll('input').forEach((elem: HTMLInputElement) => elem.remove());
     });
 
     it('Arguments with Key value', () => {
@@ -3511,6 +3511,68 @@ describe('Calculate RADIANS Formula', () => {
         document.body.appendChild(formula);
         result = calculate.computeFormula(formula.value);
         expect(result === '#NAME?').toBeTruthy;
+    });
+});
+describe('Calculate RANDBETWEEN Formula', () => {
+    let calculate: Calculate;
+    let result: string | number;
+    let formula: any;
+    beforeEach(() => {
+        calculate = new Calculate();
+        formula = createElement('input', { id: 'formula' });
+    });
+    afterEach(() => {
+        calculate.dispose();
+        calculate = null;
+        document.body.querySelectorAll('input').forEach((elem: HTMLInputElement) => elem.remove());
+    });
+    it('Greater than two arguments', () => {
+        formula.value = '=randbetween(100,200,300)';
+        document.body.appendChild(formula);
+        result = calculate.computeFormula(formula.value);
+        expect(result === 'wrong number of arguments').toBeTruthy;
+    });
+    it('Less than two arguments', () => {
+        formula.value = '=randbetween(100)';
+        document.body.appendChild(formula);
+        result = calculate.computeFormula(formula.value);
+        expect(result === 'wrong number of arguments').toBeTruthy;
+    });
+    it('Without arguments', () => {
+        formula.value = '=randbetween()';
+        document.body.appendChild(formula);
+        result = calculate.computeFormula(formula.value);
+        expect(result === 'wrong number of arguments').toBeTruthy;
+    });
+    it('Empty string arguments', () => {
+        formula.value = '=randbetween("")';
+        document.body.appendChild(formula);
+        result = calculate.computeFormula(formula.value);
+        expect(result === 'wrong number of arguments').toBeTruthy;
+    });
+    it('String arguments', () => {
+        formula.value = '=randbetween(100,str)';
+        document.body.appendChild(formula);
+        result = calculate.computeFormula(formula.value);
+        expect(result === '#NAME?').toBeTruthy;
+    });
+    it('String arguments', () => {
+        formula.value = '=randbetween(100,"str")';
+        document.body.appendChild(formula);
+        result = calculate.computeFormula(formula.value);
+        expect(result === '#VALUE!').toBeTruthy;
+    });
+    it('Maximum random value is smaller than minimum random value', () => {
+        formula.value = '=randbetween(200,100)';
+        document.body.appendChild(formula);
+        result = calculate.computeFormula(formula.value);
+        expect(result === '#NUM!').toBeTruthy;
+    });
+     it('String arguments', () => {
+        formula.value = '=randbetween("200","string")';
+        document.body.appendChild(formula);
+        result = calculate.computeFormula(formula.value);
+        expect(result === '#VALUE!').toBeTruthy;
     });
 });
 

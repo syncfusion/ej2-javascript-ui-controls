@@ -35,29 +35,35 @@ export class ConnectorEditing extends ToolBase {
 
     /**   @private  */
     public mouseDown(args: MouseEventArgs): void {
-        this.inAction = true;
-        this.undoElement = cloneObject(args.source);
-        super.mouseDown(args);
         let connectors: ConnectorModel;
+        let edit: boolean = true;
         if (args.source && (args.source as SelectorModel).connectors) {
             connectors = (args.source as SelectorModel).connectors[0];
         }
-        // Sets the selected segment         
-        for (let i: number = 0; i < connectors.segments.length; i++) {
-            let segment: BezierSegment = connectors.segments[i] as BezierSegment;
-            if (this.endPoint === 'OrthoThumb') {
-                for (let j: number = 0; j < segment.points.length - 1; j++) {
-                    let segPoint: PointModel = { x: 0, y: 0 };
-                    segPoint.x = ((segment.points[j].x + segment.points[j + 1].x) / 2);
-                    segPoint.y = ((segment.points[j].y + segment.points[j + 1].y) / 2);
-                    if (contains(this.currentPosition, segPoint, 30)) {
-                        this.selectedSegment = segment;
-                        this.segmentIndex = j;
+        if (args.info) {
+            edit = args.info.ctrlKey && (args.actualObject as ConnectorModel).type !== 'Orthogonal';
+        }
+        if (connectors && edit) {
+            this.inAction = true;
+            this.undoElement = cloneObject(args.source);
+            super.mouseDown(args);
+            // Sets the selected segment         
+            for (let i: number = 0; i < connectors.segments.length; i++) {
+                let segment: BezierSegment = connectors.segments[i] as BezierSegment;
+                if (this.endPoint === 'OrthoThumb') {
+                    for (let j: number = 0; j < segment.points.length - 1; j++) {
+                        let segPoint: PointModel = { x: 0, y: 0 };
+                        segPoint.x = ((segment.points[j].x + segment.points[j + 1].x) / 2);
+                        segPoint.y = ((segment.points[j].y + segment.points[j + 1].y) / 2);
+                        if (contains(this.currentPosition, segPoint, 30)) {
+                            this.selectedSegment = segment;
+                            this.segmentIndex = j;
+                        }
                     }
-                }
-            } else {
-                if (contains(this.currentPosition, segment.point, 10)) {
-                    this.selectedSegment = segment;
+                } else {
+                    if (contains(this.currentPosition, segment.point, 10)) {
+                        this.selectedSegment = segment;
+                    }
                 }
             }
         }
@@ -183,7 +189,7 @@ export class ConnectorEditing extends ToolBase {
         let first: OrthogonalSegment = connector.segments[index - 1] as OrthogonalSegment;
         let last: OrthogonalSegment = connector.segments[index + 2] as OrthogonalSegment;
         let next: OrthogonalSegment = connector.segments[index + 1] as OrthogonalSegment;
-        let removeSegments: OrthogonalSegmentModel[]; let args: ISegmentCollectionChangeEventArgs|IBlazorSegmentCollectionChangeEventArgs;
+        let removeSegments: OrthogonalSegmentModel[]; let args: ISegmentCollectionChangeEventArgs | IBlazorSegmentCollectionChangeEventArgs;
         if (next.length || next.length === 0) {
             removeSegments = connector.segments.slice(index, 2);
             args = {
@@ -407,7 +413,7 @@ export class ConnectorEditing extends ToolBase {
             segments.push(insertseg);
 
         }
-        let args: ISegmentCollectionChangeEventArgs|IBlazorSegmentCollectionChangeEventArgs = {
+        let args: ISegmentCollectionChangeEventArgs | IBlazorSegmentCollectionChangeEventArgs = {
             element: obj, addSegments: segments, type: 'Addition', cancel: false
         };
         if (isBlazor()) {

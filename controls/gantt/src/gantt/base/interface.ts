@@ -1,7 +1,8 @@
 import { ContextMenuType } from './enum';
 import { ContextMenuOpenEventArgs, ContextMenuClickEventArgs } from '@syncfusion/ej2-grids';
 import { RowSelectingEventArgs as GridRowSelectingEventArgs } from '@syncfusion/ej2-grids';
-import { CellSelectingEventArgs as GridCellSelectingEventArgs} from '@syncfusion/ej2-grids';
+import { CellSelectingEventArgs as GridCellSelectingEventArgs } from '@syncfusion/ej2-grids';
+import { RowDeselectEventArgs as GridRowDeselectEventArgs} from '@syncfusion/ej2-grids';
 import { RowSelectEventArgs as GridRowSelectEventArgs, RowDataBoundEventArgs as GridRowDataBoundEventArgs } from '@syncfusion/ej2-grids';
 import { Gantt } from '../base/gantt';
 import { IGanttData, IValidateMode } from '../base/interface';
@@ -510,6 +511,19 @@ export interface RowDataBoundEventArgs extends GridRowDataBoundEventArgs {
     data: IGanttData;
 }
 
+export interface RowDeselectEventArgs extends GridRowDeselectEventArgs {
+     /** Defines the selected/deselected row index.
+      * @blazorType double[]
+      */
+     rowIndex?: number;
+     /** Defines the data collections. */
+     data?: IGanttData[];
+      /** Defines the selected/deselected row.
+       * @blazorType List<DOM>
+       */
+      row?: Element;
+}
+
 export interface ActionCompleteArgs extends ZoomEventArgs, IKeyPressedEventArgs {
     element?: HTMLElement;
     requestType?: string;
@@ -584,4 +598,19 @@ export interface CellSelectingEventArgs extends GridCellSelectingEventArgs {
      * @blazorType object
      */
     previousRowCellIndex?: number;
+}
+
+export interface ScrollArgs {
+    /** Defines the action type. */
+    requestType?: string;
+    /** Defines the scroll direction. */
+    scrollDirection?: string;
+    /** Defines the scroll left value. */
+    scrollLeft?: number;
+    /** Defines the scroll top value. */
+    scrollTop?: number;
+    /** Defines the previous scroll top value. */
+    previousScrollTop?: number;
+    /** Defines the previous scroll left value. */
+    previousScrollLeft?: number;
 }

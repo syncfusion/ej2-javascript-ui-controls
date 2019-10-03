@@ -12,25 +12,25 @@ export type FilterType = 'StartsWith' | 'EndsWith' | 'Contains';
 export class FieldSettings extends ChildProperty<FieldSettings> {
     /**
      * Maps the text column from data table for each list item
-     * @default null
+
      */
     @Property()
     public text: string;
     /**
      * Maps the value column from data table for each list item
-     * @default null
+
      */
     @Property()
     public value: string;
     /**
      * Maps the icon class column from data table for each list item.
-     * @default null
+
      */
     @Property()
     public iconCss: string;
     /** 
      * Group the list items with it's related items by mapping groupBy field.
-     * @default null
+
      */
     @Property()
     public groupBy: string;
@@ -38,7 +38,7 @@ export class FieldSettings extends ChildProperty<FieldSettings> {
     /**
      * Allows additional attributes such as title, disabled, etc., to configure the elements 
      * in various ways to meet the criteria.
-     * @default null
+
      */
     @Property()
     public htmlAttributes: string;
@@ -93,7 +93,7 @@ export interface SelectEventArgs {
     item: HTMLLIElement;
     /**
      * Returns the selected item as JSON Object from the data source.
-     * @blazorType object
+
      */
     itemData: FieldSettingsModel;
     /**
@@ -121,7 +121,7 @@ export interface ActionBeginEventArgs {
     query: Query;
     /**
      *  Set the data source to action begin
-     * @blazorType object
+
      */
     data: { [key: string]: Object }[] | DataManager | string[] | number[] | boolean[];
     /**
@@ -137,7 +137,7 @@ export interface ActionCompleteEventArgs {
     cancel?: boolean;
     /**
      * Returns the selected items as JSON Object from the data source.
-     * @blazorType object
+
      */
     result?: ResultData;
     /**
@@ -173,7 +173,7 @@ export interface ActionCompleteEventArgs {
 export interface DataBoundEventArgs {
     /**
      * Returns the selected items as JSON Object from the data source.
-     * @blazorType object
+
      */
     items: { [key: string]: Object }[] | DataManager | string[] | number[] | boolean[];
     /**
@@ -231,7 +231,7 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
      *   });
      *   customers.appendTo("#list");
      * ```
-     * @default {text: null, value: null, iconCss: null, groupBy: null}
+
      */
     @Complex<FieldSettingsModel>({ text: null, value: null, iconCss: null, groupBy: null }, FieldSettings)
     public fields: FieldSettingsModel;
@@ -239,7 +239,7 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
      * Enable or disable persisting component's state between page reloads. 
      * If enabled, following list of states will be persisted.
      * 1. value
-     * @default false
+
      */
     @Property(false)
     public enablePersistence: boolean;
@@ -249,27 +249,27 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
      * 
      * which provides options to compile template string into a executable function. 
      * For EX: We have expression evolution as like ES6 expression string literals. 
-     * @default null
+
      */
     @Property(null)
     public itemTemplate: string;
     /**
      * Accepts the template design and assigns it to the group headers present in the popup list.
-     * @default null
+
      */
     @Property(null)
     public groupTemplate: string;
     /**
      * Accepts the template design and assigns it to popup list of component
      * when no data is available on the component.
-     * @default 'No Records Found'
+
      */
     @Property('No Records Found')
     public noRecordsTemplate: string;
     /**
      * Accepts the template and assigns it to the popup list content of the component
      * when the data fetch request from the remote server fails.
-     * @default 'The Request Failed'
+
      */
     @Property('The Request Failed')
     public actionFailureTemplate: string;
@@ -278,13 +278,13 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
      * * `None` - The data source is not sorting.
      * * `Ascending` - The data source is sorting with ascending order.
      * * `Descending` - The data source is sorting with descending order.
-     * @default None
+
      */
     @Property<SortOrder>('None')
     public sortOrder: SortOrder;
     /**
      * Specifies a value that indicates whether the component is enabled or not.
-     * @default true
+
      */
     @Property(true)
     public enabled: boolean;
@@ -292,14 +292,14 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
      * Accepts the list items either through local or remote service and binds it to the component.
      * It can be an array of JSON Objects or an instance of
      * `DataManager`.
-     * @default []
+
      */
     @Property([])
     public dataSource: { [key: string]: Object }[] | DataManager | string[] | number[] | boolean[];
     /**
      * Accepts the external `Query`
      * which will execute along with the data processing.
-     * @default null
+
      */
     @Property(null)
     public query: Query;
@@ -331,20 +331,20 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
      * </table>
      * 
      * The default value set to `StartsWith`, all the suggestion items which contain typed characters to listed in the suggestion popup.
-     * @default 'StartsWith'
+
      */
     @Property('StartsWith')
     public filterType: FilterType;
     /**
      * When set to ‘false’, consider the `case-sensitive` on performing the search to find suggestions.
      * By default consider the casing.
-     * @default true
+
      */
     @Property(true)
     public ignoreCase: boolean;
     /**
      * specifies the z-index value of the component popup element.
-     * @default 1000
+
      */
     @Property(1000)
     public zIndex: number;
@@ -355,59 +355,59 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
     public ignoreAccent: boolean;
     /**
      * Overrides the global culture and localization value for this component. Default global culture is 'en-US'.
-     * @default 'en-US'
+
      */
     @Property()
     public locale: string;
     /**
      * Triggers before fetching data from the remote server.
      * @event
-     * @blazorProperty 'OnActionBegin'
-     * @blazorType ActionBeginEventArgs
+
+
      */
     @Event()
     public actionBegin: EmitType<Object>;
     /**
      * Triggers after data is fetched successfully from the remote server.
      * @event
-     * @blazorProperty 'OnActionComplete'
-     * @blazorType ActionCompleteEventArgs
+
+
      */
     @Event()
     public actionComplete: EmitType<Object>;
     /**
      * Triggers when the data fetch request from the remote server fails.
      * @event
-     * @blazorProperty 'OnActionFailure'
+
      */
     @Event()
     public actionFailure: EmitType<Object>;
     /**
      * Triggers when an item in the popup is selected by the user either with mouse/tap or with keyboard navigation.
      * @event
-     * @blazorProperty 'OnValueSelect'
+
      */
     @Event()
     public select: EmitType<SelectEventArgs>;
     /**
      * Triggers when data source is populated in the popup list..
      * @event
-     * @blazorProperty 'DataBound'
-     * @blazorType DataBoundEventArgs
+
+
      */
     @Event()
     public dataBound: EmitType<Object>;
     /** 
      * Triggers when the component is created.
      * @event 
-     * @blazorProperty 'Created'
+
      */
     @Event()
     public created: EmitType<Object>;
     /** 
      * Triggers when the component is destroyed.
      * @event
-     * @blazorProperty 'Destroyed'
+
      */
     @Event()
     public destroyed: EmitType<Object>;
@@ -892,6 +892,7 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
         e?: Object): void {
         this.listData = list;
         this.list.innerHTML = '';
+        this.fixedHeaderElement = isNullOrUndefined(this.fixedHeaderElement) ? this.fixedHeaderElement : null;
         this.list.appendChild(ulElement);
         this.liCollections = <HTMLElement[] & NodeListOf<Element>>this.list.querySelectorAll('.' + dropDownBaseClasses.li);
         this.ulElement = this.list.querySelector('ul');
@@ -992,7 +993,7 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
         let target: Element = <Element>e.target;
         let liHeight: number = parseInt(getComputedStyle(this.liCollections[0], null).getPropertyValue('height'), 10);
         let topIndex: number = Math.round(target.scrollTop / liHeight);
-        let liCollections: NodeListOf<Element> = <NodeListOf<Element>>this.ulElement.querySelectorAll('li');
+        let liCollections: NodeListOf<Element> = <NodeListOf<Element>>this.list.querySelectorAll('li');
         for (let i: number = topIndex; i > -1; i--) {
             if (!isNullOrUndefined(liCollections[i]) && liCollections[i].classList.contains(dropDownBaseClasses.group)) {
                 let currentLi: HTMLElement = liCollections[i] as HTMLElement;
@@ -1273,6 +1274,8 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
             liCollections.push(li);
             (this.listData as { [key: string]: Object }[]).push(item as { [key: string]: Object });
             this.updateActionCompleteData(li, item as { [key: string]: Object });
+            //Listbox event
+            this.trigger('beforeItemRender', {element: li, item: item});
         }
         if (itemsCount === 0 && isNullOrUndefined(this.list.querySelector('ul'))) {
             this.list.innerHTML = '';
@@ -1320,7 +1323,7 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
      * Gets the data Object that matches the given value. 
      * @param { string | number } value - Specifies the value of the list item.
      * @returns Object.
-     * @blazorType object
+
      */
     public getDataByValue(value: string | number | boolean)
         : { [key: string]: Object } | string | number | boolean {
@@ -1395,7 +1398,7 @@ export interface FilteringEventArgs {
 export interface PopupEventArgs {
     /**
      * Specifies the popup Object.
-     * @deprecated
+
      */
     popup: Popup;
     /**

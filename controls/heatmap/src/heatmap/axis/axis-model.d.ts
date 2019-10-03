@@ -7,13 +7,13 @@ export interface AxisModel {
 
     /**
      * Title of heat map axis
-     * @default ''
+
      */
     title?: TitleModel;
 
     /**
      * If set to true, the axis will render at the opposite side of its default position.
-     * @default false
+
      */
 
     opposedPosition?: boolean;
@@ -30,14 +30,14 @@ export interface AxisModel {
 
     /**
      * The angle to rotate the axis label
-     * @default 0
+
      */
 
     labelRotation?: number;
 
     /**
      * It specifies whether the axis to be rendered in inversed manner or not.
-     * @default false
+
      */
 
     isInversed?: boolean;
@@ -47,17 +47,17 @@ export interface AxisModel {
      * * Numeric:  Renders a numeric axis.
      * * DateTime: Renders a dateTime axis.
      * * Category: Renders a category axis.
-     * @default Category
-     * @aspType Syncfusion.EJ2.HeatMap.ValueType
-     * @blazorType Syncfusion.EJ2.HeatMap.ValueType
-     * @isEnumeration true
+
+
+
+
      */
 
     valueType?: ValueType;
 
     /**
      * Specifies the increment for an axis label.
-     * @default 1
+
      */
 
     increment?: number;
@@ -69,28 +69,28 @@ export interface AxisModel {
      * * Months: Define the axis labels display in every month.
      * * Days: Define the axis labels display in every day.
      * * Hours: Define the axis labels display in every hour. 
-     * @default 'None'
+
      */
 
     showLabelOn?: LabelType;
 
     /**
      * Specifies the minimum range of an axis.
-     * @default null
+
      */
 
     minimum?: Object;
 
     /**
      * Specifies the maximum range of an axis.
-     * @default null
+
      */
 
     maximum?: Object;
 
     /**
      * Specifies the interval for an axis.
-     * @default null
+
      */
 
     interval?: number;
@@ -98,7 +98,7 @@ export interface AxisModel {
     /**
      * Used to format the axis label that accepts any global string format like 'C', 'n1', 'P' etc.
      * It also accepts placeholder like '{value}°C' in which value represent the axis label, e.g, 20°C.
-     * @default ''
+
      */
 
     labelFormat?: string;
@@ -110,7 +110,7 @@ export interface AxisModel {
      * * Days: Defines the interval of the axis in days.
      * * Hours: Defines the interval of the axis in hours.
      * * Minutes: Defines the interval of the axis in minutes.
-     * @default 'Days'
+
      */
 
     intervalType?: IntervalType;
@@ -120,7 +120,7 @@ export interface AxisModel {
      * * None: Shows all the labels.
      * * Rotate45: Rotates the label to 45 degree when it intersects.
      * * Trim : Trim the label when label text width exceed the label width
-     * @default Trim
+
      */
 
     labelIntersectAction?: LabelIntersectAction;

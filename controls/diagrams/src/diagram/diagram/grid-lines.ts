@@ -9,19 +9,19 @@ import { SnapConstraints } from '../enum/enum';
 export class Gridlines extends ChildProperty<Gridlines> {
     /**
      * Sets the line color of gridlines
-     * @default ''
+
      */
     @Property('lightgray')
     public lineColor: string;
     /**
      * Defines the pattern of dashes and gaps used to stroke horizontal grid lines
-     * @default ''
+
      */
     @Property('')
     public lineDashArray: string;
     /**
      * A pattern of lines and gaps that defines a set of horizontal/vertical gridlines
-     * @default [1.25, 18.75, 0.25, 19.75, 0.25, 19.75, 0.25, 19.75, 0.25, 19.75]
+
      */
     @Property([1.25, 18.75, 0.25, 19.75, 0.25, 19.75, 0.25, 19.75, 0.25, 19.75])
     public lineIntervals: number[];
@@ -41,7 +41,7 @@ export class Gridlines extends ChildProperty<Gridlines> {
      * });
      * diagram.appendTo('#diagram');
      * ```
-     * @default [20]
+
      */
     @Property([20])
     public snapIntervals: number[];
@@ -52,7 +52,7 @@ export class Gridlines extends ChildProperty<Gridlines> {
 
 /** 
  * Defines the gridlines and defines how and when the objects have to be snapped
- * @default {}
+
  */
 export class SnapSettings extends ChildProperty<SnapSettings> {
     /**
@@ -71,13 +71,13 @@ export class SnapSettings extends ChildProperty<SnapSettings> {
      * });
      * diagram.appendTo('#diagram');
      * ```
-     * @default {}
+
      */
     @Complex<GridlinesModel>({}, Gridlines)
     public horizontalGridlines: GridlinesModel;
     /**
      * Defines the vertical gridlines
-     * @default {}
+
      */
     @Complex<GridlinesModel>({}, Gridlines)
     public verticalGridlines: GridlinesModel;
@@ -91,21 +91,21 @@ export class SnapSettings extends ChildProperty<SnapSettings> {
      * * SnapToVerticalLines - Enables the object to snap only with horizontal gridlines.
      * * SnapToLines - Enables the object to snap with both horizontal and Vertical gridlines.
      * * snapToObject - Enables the object to snap with the other objects in the diagram.
-     * @default 'All'
-     * @aspNumberEnum
-     * @blazorNumberEnum
+
+
+
      */
     @Property(SnapConstraints.All)
     public constraints: SnapConstraints;
     /**
      * Defines the angle by which the object needs to be snapped
-     * @default 5
+
      */
     @Property(5)
     public snapAngle: number;
     /**
      * Sets the minimum distance between the selected object and the nearest object
-     * @default 5
+
      */
     @Property(5)
     public snapObjectDistance: number;

@@ -143,7 +143,7 @@ export class TextPosition {
     public setPosition(line: LineWidget, positionAtStart: boolean): void {
         this.currentWidget = line;
         this.offset = positionAtStart ? this.selection.getStartOffset(line.paragraph)
-            : this.selection.getParagraphLength(line.paragraph) + 1;
+            : (line.paragraph.lastChild as LineWidget).getEndOffset() + 1;
         this.updatePhysicalPosition(true);
     }
     /**
@@ -1504,7 +1504,7 @@ export class TextPosition {
     public moveDown(selection: Selection, left: number): void {
         //Moves text position to end of line.
         let prevParagraph: ParagraphWidget = this.currentWidget.paragraph;
-        let prevOffset: number = this.offset;
+        let currentLine: LineWidget = this.currentWidget;
         this.moveToLineEndInternal(selection, true);
         let length: number = this.selection.getParagraphLength(this.currentWidget.paragraph);
         if (this.offset > length) {
@@ -1554,7 +1554,9 @@ export class TextPosition {
         }
         //Moves till the Up/Down selection width.
         let top: number = this.selection.getTop(nextLine);
-        this.selection.updateTextPositionWidget(nextLine, new Point(left, top), this, false);
+        if (nextLine !== currentLine) {
+            this.selection.updateTextPositionWidget(nextLine, new Point(left, top), this, false);
+        }
     }
     /**
      * Moves the text position to start of the line.

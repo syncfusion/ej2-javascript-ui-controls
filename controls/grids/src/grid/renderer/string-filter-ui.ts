@@ -4,7 +4,7 @@ import { FilterSettings } from '../base/grid';
 import { PredicateModel } from '../base/grid-model';
 import { AutoComplete } from '@syncfusion/ej2-dropdowns';
 import { DataManager } from '@syncfusion/ej2-data';
-import { Browser, isNullOrUndefined, extend } from '@syncfusion/ej2-base';
+import { Browser, isNullOrUndefined, extend, getValue } from '@syncfusion/ej2-base';
 import { ServiceLocator } from '../services/service-locator';
 import { Filter } from '../actions/filter';
 import { Dialog, Popup } from '@syncfusion/ej2-popups';
@@ -12,7 +12,7 @@ import { getZIndexCalcualtion } from '../base/util';
 
 /**
  * `string filterui` render string column.
- * @hidden
+
  */
 
 export class StringFilterUI implements IFilterMUI {
@@ -62,8 +62,8 @@ export class StringFilterUI implements IFilterMUI {
             actionComplete: (e: { result: { [key: string]: Object; }[] }) => {
                 e.result = e.result.filter((obj: { [key: string]: Object; }, index: number, arr: { [key: string]: Object; }[]) => {
                     return arr.map((mapObj: Object) => {
-                        return mapObj[this.actObj.fields.value];
-                    }).indexOf(obj[this.actObj.fields.value]) === index;
+                        return (getValue(this.actObj.fields.value, mapObj));
+                    }).indexOf(getValue((this.actObj.fields.value), obj)) === index;
                 });
             }
         },

@@ -107,14 +107,14 @@ import { ExportUtils } from '../common/utils/export';
 export class CrosshairSettings extends ChildProperty<CrosshairSettings> {
     /**
      * If set to true, crosshair line becomes visible.
-     * @default false
+
      */
     @Property(false)
     public enable: boolean;
 
     /**
      * DashArray for crosshair.
-     * @default ''
+
      */
     @Property('')
     public dashArray: string;
@@ -131,7 +131,7 @@ export class CrosshairSettings extends ChildProperty<CrosshairSettings> {
      * * Both: Shows both vertical and horizontal crosshair lines.
      * * Vertical: Shows the vertical line.
      * * Horizontal: Shows the horizontal line.
-     * @default Both
+
      */
     @Property('Both')
     public lineType: LineType;
@@ -144,7 +144,7 @@ export class ZoomSettings extends ChildProperty<ZoomSettings> {
 
     /**
      * If set to true, chart can be zoomed by a rectangular selecting region on the plot area.
-     * @default false
+
      */
 
     @Property(false)
@@ -152,7 +152,7 @@ export class ZoomSettings extends ChildProperty<ZoomSettings> {
 
     /**
      * If to true, chart can be pinched to zoom in / zoom out.
-     * @default false
+
      */
 
     @Property(false)
@@ -160,7 +160,7 @@ export class ZoomSettings extends ChildProperty<ZoomSettings> {
 
     /**
      * If set to true, chart can be zoomed by using mouse wheel.
-     * @default false
+
      */
 
     @Property(false)
@@ -182,7 +182,7 @@ export class ZoomSettings extends ChildProperty<ZoomSettings> {
      * });
      * chart.appendTo('#Chart');
      * ```
-     * @default true
+
      */
 
     @Property(true)
@@ -208,7 +208,7 @@ export class ZoomSettings extends ChildProperty<ZoomSettings> {
      * });
      * chart.appendTo('#Chart');
      * ```
-     * @default 'XY'
+
      */
     @Property('XY')
     public mode: ZoomMode;
@@ -220,7 +220,7 @@ export class ZoomSettings extends ChildProperty<ZoomSettings> {
      * * ZoomOut
      * * Pan
      * * Reset
-     * @default '["Zoom", "ZoomIn", "ZoomOut", "Pan", "Reset"]'
+
      */
 
     @Property(['Zoom', 'ZoomIn', 'ZoomOut', 'Pan', 'Reset'])
@@ -228,7 +228,7 @@ export class ZoomSettings extends ChildProperty<ZoomSettings> {
 
     /**
      * Specifies whether chart needs to be panned by default.
-     * @default false.
+
      */
 
     @Property(false)
@@ -236,7 +236,7 @@ export class ZoomSettings extends ChildProperty<ZoomSettings> {
 
     /**
      * Specifies whether axis needs to have scrollbar.
-     * @default false.
+
      */
 
     @Property(false)
@@ -496,7 +496,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
     /**
      * The width of the chart as a string accepts input as both like '100px' or '100%'.
      * If specified as '100%, chart renders to the full width of its parent element.
-     * @default null
+
      */
 
     @Property(null)
@@ -505,7 +505,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
     /**
      * The height of the chart as a string accepts input both as '100px' or '100%'.
      * If specified as '100%, chart renders to the full height of its parent element.
-     * @default null
+
      */
 
     @Property(null)
@@ -513,7 +513,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
 
     /**
      * Title of the chart
-     * @default ''
+
      */
 
     @Property('')
@@ -541,7 +541,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
      * });
      * chart.appendTo('#Chart');
      * ```
-     * @default ''
+
      */
 
     @Property('')
@@ -556,7 +556,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
 
     /**
      * SubTitle of the chart
-     * @default ''
+
      */
 
     @Property('')
@@ -584,7 +584,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
 
     /**
      * The background color of the chart that accepts value in hex and rgba as a valid CSS color string.
-     * @default null
+
      */
     @Property(null)
     public background: string;
@@ -651,14 +651,14 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
 
     /**
      * Palette for the chart series.
-     * @default []
+
      */
     @Property([])
     public palettes: string[];
 
     /**
      * Specifies the theme for the chart.
-     * @default 'Material'
+
      */
     @Property('Material')
     public theme: ChartTheme;
@@ -699,28 +699,28 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
      * * dragX: selects points by dragging with respect to horizontal axis.
      * * dragY: selects points by dragging with respect to vertical axis.
      * * lasso: selects points by dragging with respect to free form.
-     * @default None
+
      */
     @Property('None')
     public selectionMode: SelectionMode;
 
     /**
      * If set true, enables the multi selection in chart. It requires `selectionMode` to be `Point` | `Series` | or `Cluster`.
-     * @default false
+
      */
     @Property(false)
     public isMultiSelect: boolean;
 
     /**
      * If set true, enables the multi drag selection in chart. It requires `selectionMode` to be `Dragx` | `DragY` | or `DragXY`.
-     * @default false
+
      */
     @Property(false)
     public allowMultiSelection: boolean;
 
     /**
      * To enable export feature in chart.
-     * @default true
+
      */
     @Property(true)
     public enableExport: boolean;
@@ -741,28 +741,28 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
      * });
      * chart.appendTo('#Chart');
      * ```
-     * @default []
+
      */
     @Collection<IndexesModel>([], Indexes)
     public selectedDataIndexes: IndexesModel[];
 
     /**
      * Specifies whether a grouping separator should be used for a number.
-     * @default false
+
      */
     @Property(false)
     public useGroupingSeparator: boolean;
 
     /**
      * It specifies whether the chart should be render in transposed manner or not.
-     * @default false
+
      */
     @Property(false)
     public isTransposed: boolean;
 
      /**
       * It specifies whether the chart should be rendered in canvas mode
-      * @default false
+
       */
     @Property(false)
     public enableCanvas: boolean;
@@ -775,28 +775,28 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
 
     /**
      * If set true, Animation process will be executed.
-     * @default true
+
      */
     @Property(true)
     public enableAnimation: boolean;
 
     /**
      * Description for chart.
-     * @default null
+
      */
     @Property(null)
     public description: string;
 
     /**
      * TabIndex value for the chart.
-     * @default 1
+
      */
     @Property(1)
     public tabIndex: number;
 
     /**
      * To enable the side by side placing the points for column type series.
-     * @default true
+
      */
     @Property(true)
     public enableSideBySidePlacement: boolean;
@@ -804,7 +804,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
     /**
      * Triggers after resizing of chart
      * @event
-     * @blazorProperty 'Resized'
+
      */
     @Event()
     public resized: EmitType<IResizeEventArgs>;
@@ -812,7 +812,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
     /**
      * Triggers before the annotation gets rendered.
      * @event
-     * @deprecated
+
      */
 
     @Event()
@@ -821,7 +821,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
     /**
      * Triggers before the prints gets started.
      * @event
-     * @blazorProperty 'OnPrint'
+
      */
 
     @Event()
@@ -830,7 +830,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
     /**
      * Triggers after chart load.
      * @event
-     * @blazorProperty 'Loaded'
+
      */
     @Event()
     public loaded: EmitType<ILoadedEventArgs>;
@@ -838,7 +838,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
     /**
      * Triggers before chart load.
      * @event
-     * @deprecated
+
      */
     @Event()
     public load: EmitType<ILoadedEventArgs>;
@@ -846,7 +846,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
     /**
      * Triggers after animation is completed for the series.
      * @event
-     * @blazorProperty 'OnAnimationComplete'
+
      */
     @Event()
     public animationComplete: EmitType<IAnimationCompleteEventArgs>;
@@ -854,7 +854,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
     /**
      * Triggers before the legend is rendered.
      * @event
-     * @deprecated
+
      */
     @Event()
     public legendRender: EmitType<ILegendRenderEventArgs>;
@@ -862,7 +862,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
     /**
      * Triggers before the data label for series is rendered.
      * @event
-     * @deprecated
+
      */
 
     @Event()
@@ -871,7 +871,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
     /**
      * Triggers before each points for the series is rendered.
      * @event
-     * @deprecated
+
      */
 
     @Event()
@@ -880,7 +880,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
     /**
      * Triggers before the series is rendered.
      * @event
-     * @deprecated
+
      */
 
     @Event()
@@ -888,21 +888,21 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
     /**
      * Triggers before each axis label is rendered.
      * @event
-     * @deprecated
+
      */
     @Event()
     public axisLabelRender: EmitType<IAxisLabelRenderEventArgs>;
     /**
      * Triggers before each axis range is rendered.
      * @event
-     * @deprecated
+
      */
     @Event()
     public axisRangeCalculated: EmitType<IAxisRangeCalculatedEventArgs>;
     /**
      * Triggers before each axis multi label is rendered.
      * @event
-     * @deprecated
+
      */
     @Event()
     public axisMultiLabelRender: EmitType<IAxisMultiLabelRenderEventArgs>;
@@ -930,7 +930,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
     /**
      * Triggers on hovering the chart.
      * @event
-     * @blazorProperty 'OnChartMouseMove'
+
      */
 
     @Event()
@@ -939,7 +939,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
     /**
      * Triggers on clicking the chart.
      * @event
-     * @blazorProperty 'OnChartMouseClick'
+
      */
 
     @Event()
@@ -948,7 +948,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
     /**
      * Triggers on point click.
      * @event
-     * @blazorProperty 'OnPointClick'
+
      */
 
     @Event()
@@ -957,7 +957,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
     /**
      * Triggers on point move.
      * @event
-     * @blazorProperty 'PointMoved'
+
      */
 
     @Event()
@@ -967,7 +967,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
     /**
      * Triggers when cursor leaves the chart.
      * @event
-     * @blazorProperty 'OnChartMouseLeave'
+
      */
 
     @Event()
@@ -976,7 +976,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
     /**
      * Triggers on mouse down.
      * @event
-     * @blazorProperty 'OnChartMouseDown'
+
      */
 
     @Event()
@@ -985,7 +985,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
     /**
      * Triggers on mouse up.
      * @event
-     * @blazorProperty 'OnChartMouseUp'
+
      */
 
     @Event()
@@ -994,7 +994,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
     /**
      * Triggers after the drag selection is completed.
      * @event
-     * @blazorProperty 'OnDragComplete'
+
      */
 
     @Event()
@@ -1003,7 +1003,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
     /**
      * Triggers after the selection is completed.
      * @event
-     * @blazorProperty 'OnSelectionComplete'
+
      */
 
     @Event()
@@ -1012,7 +1012,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
     /**
      * Triggers after the zoom selection is completed.
      * @event
-     * @deprecated
+
      */
 
     @Event()
@@ -1021,7 +1021,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
     /**
      * Triggers when start the scroll.
      * @event
-     * @blazorProperty 'OnScrollStart'
+
      */
     @Event()
     public scrollStart: EmitType<IScrollEventArgs>;
@@ -1029,7 +1029,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
     /**
      * Triggers after the scroll end.
      * @event
-     * @blazorProperty 'OnScrollEnd'
+
      */
     @Event()
     public scrollEnd: EmitType<IScrollEventArgs>;
@@ -1037,7 +1037,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
     /**
      * Triggers when change the scroll.
      * @event
-     * @blazorProperty 'ScrollChanged'
+
      */
     @Event()
     public scrollChanged: EmitType<IScrollEventArgs>;
@@ -1066,7 +1066,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
     /**
      * Defines the currencyCode format of the chart
      * @private
-     * @aspType string
+
      */
     @Property('USD')
     private currencyCode: string;
@@ -1089,32 +1089,32 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
 
     /**
      * Gets the current visible axis of the Chart.
-     * @hidden
+
      */
     public axisCollections: Axis[];
     /**
      * Gets the current visible series of the Chart.
-     * @hidden
+
      */
     public visibleSeries: Series[];
     /**
      * Render panel for chart.
-     * @hidden
+
      */
     public chartAxisLayoutPanel: CartesianAxisLayoutPanel | PolarRadarPanel;
     /**
      * Gets all the horizontal axis of the Chart.
-     * @hidden
+
      */
     public horizontalAxes: Axis[];
     /**
      * Gets all the vertical axis of the Chart.
-     * @hidden
+
      */
     public verticalAxes: Axis[];
     /**
      * Gets the inverted chart.
-     * @hidden
+
      */
     public requireInvertedAxis: boolean;
     /** @private */
@@ -1221,7 +1221,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
 
     /**
      * Constructor for creating the widget
-     * @hidden
+
      */
     constructor(options?: ChartModel, element?: string | HTMLElement) {
         super(options, <HTMLElement | string>element);
@@ -2395,9 +2395,15 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
     }
     private titleTooltip(event: Event, x: number, y: number, isTouch?: boolean): void {
         let targetId: string = (<HTMLElement>event.target).id;
-        let id: boolean = (targetId === (this.element.id + '_ChartTitle') || targetId === (this.element.id + '_ChartSubTitle'));
+        let id: boolean = (targetId === (this.element.id + '_ChartTitle') || targetId === (this.element.id + '_ChartSubTitle') ||
+                           targetId.indexOf('_AxisTitle') > -1);
+        let index: number = 0;
+        if (targetId.indexOf('_AxisTitle') > -1) {
+           index = parseInt(((targetId.replace(this.element.id, '')).replace('AxisLabel_', '')).split('_')[2], 10);
+        }
         if (id && ((<HTMLElement>event.target).textContent.indexOf('...') > -1)) {
-            let title: string = (targetId === (this.element.id + '_ChartTitle')) ? this.title : this.subTitle;
+            let title: string = (targetId === (this.element.id + '_ChartTitle')) ? this.title :
+                                 targetId.indexOf('_AxisTitle') > -1 ? this.axisCollections[index].title : this.subTitle;
             showTooltip(
                 title, x, y, this.element.offsetWidth, this.element.id + '_EJ2_Title_Tooltip',
                 getElement(this.element.id + '_Secondary_Element'), isTouch

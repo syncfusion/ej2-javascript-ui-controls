@@ -60,7 +60,7 @@ export class SparklineFont extends ChildProperty<SparklineFont> {
 
     /**
      * Opacity for the text.
-     * @default 1
+
      */
     @Property(1)
     public opacity: number;
@@ -71,7 +71,7 @@ export class SparklineFont extends ChildProperty<SparklineFont> {
 export class TrackLineSettings extends ChildProperty<TrackLineSettings> {
     /**
      * Toggle the tracker line visibility.
-     * @default false
+
      */
     @Property(false)
     public visible: boolean;
@@ -82,7 +82,7 @@ export class TrackLineSettings extends ChildProperty<TrackLineSettings> {
     public color: string;
     /**
      * To config the tracker line width.
-     * @default 1
+
      */
     @Property(1)
     public width: number;
@@ -93,7 +93,7 @@ export class TrackLineSettings extends ChildProperty<TrackLineSettings> {
 export class SparklineTooltipSettings extends ChildProperty<SparklineTooltipSettings> {
     /**
      * Toggle the tooltip visibility.
-     * @default false
+
      */
     @Property(false)
     public visible: boolean;
@@ -135,7 +135,7 @@ export class SparklineTooltipSettings extends ChildProperty<SparklineTooltipSett
 export class ContainerArea extends ChildProperty<ContainerArea> {
     /**
      * To configure Sparkline background color.
-     * @default 'transparent'
+
      */
     @Property('transparent')
     public background: string;
@@ -151,7 +151,7 @@ export class ContainerArea extends ChildProperty<ContainerArea> {
 export class LineSettings extends ChildProperty<LineSettings> {
     /**
      * To toggle the axis line visibility.
-     * @default `false`
+
      */
     @Property(false)
     public visible: boolean;
@@ -162,19 +162,19 @@ export class LineSettings extends ChildProperty<LineSettings> {
     public color: string;
     /**
      * To configure the sparkline axis line dashArray.
-     * @default ''
+
      */
     @Property('')
     public dashArray: string;
     /**
      * To configure the sparkline axis line width.
-     * @default 1.
+
      */
     @Property(1)
     public width: number;
     /**
      * To configure the sparkline axis line opacity.
-     * @default 1.
+
      */
     @Property(1)
     public opacity: number;
@@ -185,13 +185,13 @@ export class LineSettings extends ChildProperty<LineSettings> {
 export class RangeBandSettings extends ChildProperty<RangeBandSettings> {
     /**
      * To configure sparkline start range
-     * @aspDefaultValueIgnore 
+
      */
     @Property(null)
     public startRange: number;
     /**
      * To configure sparkline end range
-     * @aspDefaultValueIgnore 
+
      */
     @Property(null)
     public endRange: number;
@@ -202,7 +202,7 @@ export class RangeBandSettings extends ChildProperty<RangeBandSettings> {
     public color: string;
     /**
      * To configure sparkline rangeband opacity
-     * @default 1
+
      */
     @Property(1)
     public opacity: number;
@@ -213,36 +213,36 @@ export class RangeBandSettings extends ChildProperty<RangeBandSettings> {
 export class AxisSettings extends ChildProperty<AxisSettings> {
     /**
      * To configure Sparkline x axis min value.
-     * @aspDefaultValueIgnore
-     * @blazorDefaultValue null
+
+
      */
     @Property(null)
     public minX: number;
     /**
      * To configure Sparkline x axis max value.
-     * @aspDefaultValueIgnore
-     * @blazorDefaultValue null
+
+
      */
     @Property(null)
     public maxX: number;
     /**
      * To configure Sparkline y axis min value.
-     * @aspDefaultValueIgnore
-     * @blazorDefaultValue null
+
+
      */
     @Property(null)
     public minY: number;
     /**
      * To configure Sparkline y axis max value.
-     * @aspDefaultValueIgnore
-     * @blazorDefaultValue null
+
+
      */
     @Property(null)
     public maxY: number;
     /**
      * To configure Sparkline horizontal axis line position.
-     * @default 0
-     * @blazorDefaultValue 0
+
+
      */
     @Property(0)
     public value: number;
@@ -259,25 +259,25 @@ export class Padding extends ChildProperty<Padding> {
 
     /**
      * To configure Sparkline left padding.
-     * @default 5
+
      */
     @Property(5)
     public left: number;
     /**
      * To configure Sparkline right padding.
-     * @default 5
+
      */
     @Property(5)
     public right: number;
     /**
      * To configure Sparkline bottom padding.
-     * @default 5
+
      */
     @Property(5)
     public bottom: number;
     /**
      * To configure Sparkline top padding.
-     * @default 5
+
      */
     @Property(5)
     public top: number;
@@ -288,25 +288,25 @@ export class Padding extends ChildProperty<Padding> {
 export class SparklineMarkerSettings extends ChildProperty<SparklineMarkerSettings> {
     /**
      * To toggle the marker visibility.
-     * @default `[]`.
+
      */
     @Property([])
     public visible: VisibleType[];
     /**
      * To configure the marker opacity.
-     * @default 1
+
      */
     @Property(1)
     public opacity: number;
     /**
      * To configure the marker size.
-     * @default 5
+
      */
     @Property(5)
     public size: number;
     /**
      * To configure the marker fill color.
-     * @default '#00bdae'
+
      */
     @Property('#00bdae')
     public fill: string;
@@ -337,25 +337,25 @@ export class LabelOffset extends ChildProperty<LabelOffset> {
 export class SparklineDataLabelSettings extends ChildProperty<SparklineDataLabelSettings> {
     /**
      * To toggle the dataLabel visibility.
-     * @default `[]`.
+
      */
     @Property([])
     public visible: VisibleType[];
     /**
      * To configure the dataLabel opacity.
-     * @default 1
+
      */
     @Property(1)
     public opacity: number;
     /**
      * To configure the dataLabel fill color.
-     * @default 'transparent'
+
      */
     @Property('transparent')
     public fill: string;
     /**
      * To configure the dataLabel format the value.
-     * @default ''
+
      */
     @Property('')
     public format: string;
@@ -377,7 +377,7 @@ export class SparklineDataLabelSettings extends ChildProperty<SparklineDataLabel
     public offset: LabelOffsetModel;
     /**
      * To change the edge dataLabel placement.
-     * @default 'None'.
+
      */
     @Property('None')
     public edgeLabelMode: EdgeLabelMode;

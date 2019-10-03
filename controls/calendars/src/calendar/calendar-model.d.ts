@@ -10,23 +10,23 @@ export interface CalendarBaseModel extends ComponentModel{
 
     /**
      * Gets or sets the minimum date that can be selected in the Calendar.
-     * @default new Date(1900, 00, 01)
-     * @blazorDefaultValue new DateTime(1900, 01, 01)
+
+
      */
     min?: Date;
 
     /**
      * Gets or sets the maximum date that can be selected in the Calendar.
-     * @default new Date(2099, 11, 31)
-     * @blazorDefaultValue new DateTime(2099, 12, 31)
+
+
      */
     max?: Date;
 
     /**
      * Gets or sets the Calendar's first day of the week. By default, the first day of the week will be based on the current culture.
-     * @default 0
-     * @aspType int
-     * @blazorType int
+
+
+
      * > For more details about firstDayOfWeek refer to 
      * [`First day of week`](../../calendar/how-to/first-day-of-week#change-the-first-day-of-the-week) documentation.
      */
@@ -34,14 +34,14 @@ export interface CalendarBaseModel extends ComponentModel{
 
     /**
      * Gets or sets the Calendar's Type like gregorian or islamic.
-     * @default Gregorian
+
      */
     calendarMode?: CalendarType;
 
     /**
      * Specifies the initial view of the Calendar when it is opened.
      * With the help of this property, initial view can be changed to year or decade view.
-     * @default Month
+
      *  
      * <table>
      * <tr>
@@ -70,7 +70,7 @@ export interface CalendarBaseModel extends ComponentModel{
     /**
      * Sets the maximum level of view such as month, year, and decade in the Calendar.
      * Depth view should be smaller than the start view to restrict its view navigation.
-     * @default Month
+
      * 
      * <table> 
      * <tr> 
@@ -98,7 +98,7 @@ export interface CalendarBaseModel extends ComponentModel{
 
     /**
      * Determines whether the week number of the year is to be displayed in the calendar or not.
-     * @default false
+
      * > For more details about weekNumber refer to 
      * [`Calendar with week number`](../../calendar/how-to/render-the-calendar-with-week-numbers)documentation.
      */
@@ -106,7 +106,7 @@ export interface CalendarBaseModel extends ComponentModel{
 
     /**
      * Specifies whether the today button is to be displayed or not.
-     * @default true
+
      */
     showTodayButton?: boolean;
 
@@ -117,14 +117,14 @@ export interface CalendarBaseModel extends ComponentModel{
      * * `Narrow` - Sets the single character of day name (like S ) in day header.
      * * `Abbreviated` - Sets the min format of day name (like Sun ) in day header.
      * * `Wide` - Sets the long format of day name (like Sunday ) in day header.
-     * @default Short
+
      */
     dayHeaderFormat?: DayHeaderFormats;
 
     /**
      * Enable or disable persisting component's state between page reloads. If enabled, following list of states will be persisted.
      * 1. value
-     * @default false
+
      */
     enablePersistence?: boolean;
 
@@ -215,36 +215,36 @@ export interface CalendarBaseModel extends ComponentModel{
      * rightarrow<br/></td></tr> 
      * </table>
      * 
-     * @default null
-     * @blazorType object
+
+
      */
     keyConfigs?: { [key: string]: string };
 
     /**
      * Triggers when Calendar is created.
      * @event
-     * @blazorProperty 'Created'
+
      */
     created?: EmitType<Object>;
 
     /**
      * Triggers when Calendar is destroyed.
      * @event
-     * @blazorProperty 'Destroyed'
+
      */
     destroyed?: EmitType<Object>;
 
     /**
      * Triggers when the Calendar is navigated to another level or within the same level of view.
      * @event
-     * @blazorProperty 'Navigated'
+
      */
     navigated?: EmitType<NavigatedEventArgs>;
 
     /**
      * Triggers when each day cell of the Calendar is rendered.
      * @event
-     * @blazorProperty 'OnRenderDayCell'
+
      */
     renderDayCell?: EmitType<RenderDayCellEventArgs>;
 
@@ -257,27 +257,27 @@ export interface CalendarModel extends CalendarBaseModel{
 
     /**
      * Gets or sets the selected date of the Calendar.
-     * @default null
-     * @isBlazorNullableType true
+
+
      */
     value?: Date;
 
     /**
      * Gets or sets multiple selected dates of the calendar.
-     * @default null
+
      */
     values?: Date[];
 
     /**
      * Specifies the option to enable the multiple dates selection of the calendar.
-     * @default false
+
      */
     isMultiSelection?: boolean;
 
     /**
      * Triggers when the Calendar value is changed.
      * @event
-     * @blazorProperty 'ValueChange'
+
      */
     change?: EmitType<ChangedEventArgs>;
 

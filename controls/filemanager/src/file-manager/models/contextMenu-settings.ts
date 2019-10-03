@@ -12,28 +12,28 @@ export const layoutItems: string[] = [
 export class ContextMenuSettings extends ChildProperty<ContextMenuSettings> {
     /**
      * Specifies the array of string or object that is used to configure file items.
-     * @default fileItems
+
      */
     @Property(fileItems)
     public file: string[];
 
     /**
      * An array of string or object that is used to configure folder items.
-     * @default folderItems
+
      */
     @Property(folderItems)
     public folder: string[];
 
     /**
      * An array of string or object that is used to configure layout items.
-     * @default layoutItems
+
      */
     @Property(layoutItems)
     public layout: string[];
 
     /**
      * Enables or disables the ContextMenu.
-     * @default true
+
      */
     @Property(true)
     public visible: boolean;

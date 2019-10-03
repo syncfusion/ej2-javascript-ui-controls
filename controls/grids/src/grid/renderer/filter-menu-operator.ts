@@ -10,7 +10,7 @@ import { Dialog, Popup } from '@syncfusion/ej2-popups';
 
 /**
  * `filter operators` render boolean column.
- * @hidden
+
  */
 
 export class FlMenuOptrUI {
@@ -32,7 +32,7 @@ export class FlMenuOptrUI {
     }
 
     /**
-     * @hidden
+
      */
     public renderOperatorUI(dlgConetntEle: Element, target: Element, column: Column, dlgObj: Dialog): void {
         this.dialogObj = dlgObj;
@@ -88,7 +88,7 @@ export class FlMenuOptrUI {
     }
 
     /**
-     * @hidden
+
      */
     public getFlOperator(): string {
         return (this.dropOptr.value as string);

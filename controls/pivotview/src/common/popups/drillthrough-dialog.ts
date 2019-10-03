@@ -12,12 +12,12 @@ import { OlapEngine } from '../../base/olap/engine';
 /**
  * `DrillThroughDialog` module to create drill-through dialog.
  */
-/** @hidden */
+
 export class DrillThroughDialog {
     public parent: PivotView;
-    /** @hidden */
+
     public dialogPopUp: Dialog;
-    /** @hidden */
+
     public drillThroughGrid: Grid;
     private isUpdated: boolean = false;
     private gridIndexObjects: INumberIndex = {};
@@ -26,14 +26,14 @@ export class DrillThroughDialog {
 
     /**
      * Constructor for the dialog action.
-     * @hidden
+
      */
     constructor(parent?: PivotView) {
         this.parent = parent;
         this.engine = this.parent.dataType === 'olap' ? this.parent.olapEngineModule : this.parent.engineModule;
     }
 
-    /** @hidden */
+
     public showDrillThroughDialog(eventArgs: DrillThroughEventArgs): void {
         this.gridData = eventArgs.rawData;
         this.removeDrillThroughDialog();

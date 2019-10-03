@@ -7,13 +7,13 @@ export interface CustomCursorActionModel {
 
     /**
      * Defines the property of a Data Map Items 
-     * @blazorDefaultValueIgnore
+
      */
     action?: Actions;
 
     /**
      * Defines the Fields for the Data Map Items 
-     * @default ''
+
      */
     cursor?: string;
 

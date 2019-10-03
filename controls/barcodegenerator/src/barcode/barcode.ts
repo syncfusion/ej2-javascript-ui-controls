@@ -52,7 +52,7 @@ export class BarcodeGenerator extends Component<HTMLElement> implements INotifyP
      * width:'1000px', height:'500px' });
      * barcode.appendTo('#barcode');
      * ```
-     * @default '100%'
+
      */
     @Property('100%')
     public width: string | number;
@@ -68,7 +68,7 @@ export class BarcodeGenerator extends Component<HTMLElement> implements INotifyP
      * height:'1000px', height:'500px' });
      * barcode.appendTo('#barcode');
      * ```
-     * @default '100'
+
      */
     @Property('100px')
     public height: string | number;
@@ -78,56 +78,56 @@ export class BarcodeGenerator extends Component<HTMLElement> implements INotifyP
      * Defines the barcode rendering mode.
      * * SVG - Renders the bar-code objects as SVG elements
      * * Canvas - Renders the bar-code in a canvas
-     * @default 'SVG'
+
      */
     @Property('SVG')
     public mode: RenderingMode;
 
     /**
      * Defines the type of barcode to be rendered.
-     * @default 'Code128'
+
      */
     @Property('Code128')
     public type: BarcodeType;
 
     /**
      * Defines the value of the barcode to be rendered.
-     * @default undefined
+
      */
     @Property(undefined)
     public value: string;
 
     /**
      * Defines the checksum for the barcode.
-     * @default 'true'
+
      */
     @Property(true)
     public enableCheckSum: boolean;
 
     /**
      * Defines the text properties for the barcode.
-     * @default ''
+
      */
     @Complex<DisplayTextModel>({}, DisplayText)
     public displayText: DisplayTextModel;
 
     /**
      * Defines the margin properties for the barcode.
-     * @default ''
+
      */
     @Complex<MarginModel>({}, Margin)
     public margin: MarginModel;
 
     /**
      * Defines the background color of the barcode.
-     * @default 'white'
+
      */
     @Property('white')
     public backgroundColor: string;
 
     /**
      * Defines the forecolor of the barcode.
-     * @default 'black'
+
      */
     @Property('black')
     public foreColor: string;

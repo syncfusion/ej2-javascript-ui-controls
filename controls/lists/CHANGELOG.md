@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 17.3.14 (2019-10-03)
+
+### ListView
+
+#### Bug Fixes
+
+- Issue of rendering a listview with new data in virtualization has been fixed.
+
 ## 17.1.47 (2019-05-14)
 
 ### ListView

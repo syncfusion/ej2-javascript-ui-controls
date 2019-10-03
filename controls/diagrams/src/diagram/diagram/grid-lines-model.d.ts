@@ -7,19 +7,19 @@ export interface GridlinesModel {
 
     /**
      * Sets the line color of gridlines
-     * @default ''
+
      */
     lineColor?: string;
 
     /**
      * Defines the pattern of dashes and gaps used to stroke horizontal grid lines
-     * @default ''
+
      */
     lineDashArray?: string;
 
     /**
      * A pattern of lines and gaps that defines a set of horizontal/vertical gridlines
-     * @default [1.25, 18.75, 0.25, 19.75, 0.25, 19.75, 0.25, 19.75, 0.25, 19.75]
+
      */
     lineIntervals?: number[];
 
@@ -39,7 +39,7 @@ export interface GridlinesModel {
      * });
      * diagram.appendTo('#diagram');
      * ```
-     * @default [20]
+
      */
     snapIntervals?: number[];
 
@@ -66,13 +66,13 @@ export interface SnapSettingsModel {
      * });
      * diagram.appendTo('#diagram');
      * ```
-     * @default {}
+
      */
     horizontalGridlines?: GridlinesModel;
 
     /**
      * Defines the vertical gridlines
-     * @default {}
+
      */
     verticalGridlines?: GridlinesModel;
 
@@ -86,21 +86,21 @@ export interface SnapSettingsModel {
      * * SnapToVerticalLines - Enables the object to snap only with horizontal gridlines.
      * * SnapToLines - Enables the object to snap with both horizontal and Vertical gridlines.
      * * snapToObject - Enables the object to snap with the other objects in the diagram.
-     * @default 'All'
-     * @aspNumberEnum
-     * @blazorNumberEnum
+
+
+
      */
     constraints?: SnapConstraints;
 
     /**
      * Defines the angle by which the object needs to be snapped
-     * @default 5
+
      */
     snapAngle?: number;
 
     /**
      * Sets the minimum distance between the selected object and the nearest object
-     * @default 5
+
      */
     snapObjectDistance?: number;
 

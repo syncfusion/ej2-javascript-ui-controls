@@ -16,6 +16,7 @@ const RIPPLECHECK: string = 'e-ripple-check';
 const RIPPLEINDETERMINATE: string = 'e-ripple-stop';
 const RTL: string = 'e-rtl';
 const WRAPPER: string = 'e-checkbox-wrapper';
+const containerAttr: string[] = ['title', 'class', 'style', 'disabled', 'readonly', 'name', 'value'];
 
 /**
  * The CheckBox is a graphical user interface element that allows you to select one or more options from the choices.
@@ -36,12 +37,11 @@ export class CheckBox extends Component<HTMLInputElement> implements INotifyProp
     private keyboardModule: KeyboardEvents;
     private formElement: HTMLElement;
     private initialCheckedValue: boolean;
-    private start: number = 0;
-    private end: number = 0;
+
     /**
      * Triggers when the CheckBox state has been changed by user interaction.
      * @event
-     * @blazorProperty 'ValueChange'
+
      */
     @Event()
     public change: EmitType<ChangeEventArgs>;
@@ -49,7 +49,7 @@ export class CheckBox extends Component<HTMLInputElement> implements INotifyProp
     /**
      * Triggers once the component rendering is completed.
      * @event
-     * @blazorProperty 'Created'
+
      */
     @Event()
     public created: EmitType<Event>;
@@ -57,7 +57,7 @@ export class CheckBox extends Component<HTMLInputElement> implements INotifyProp
     /**
      * Specifies a value that indicates whether the CheckBox is `checked` or not.
      * When set to `true`, the CheckBox will be in `checked` state.
-     * @default false
+
      */
     @Property(false)
     public checked: boolean;
@@ -65,7 +65,7 @@ export class CheckBox extends Component<HTMLInputElement> implements INotifyProp
     /**
      * Defines class/multiple classes separated by a space in the CheckBox element.
      * You can add custom styles to the CheckBox by using this property.
-     * @default ''
+
      */
     @Property('')
     public cssClass: string;
@@ -73,7 +73,7 @@ export class CheckBox extends Component<HTMLInputElement> implements INotifyProp
     /**
      * Specifies a value that indicates whether the CheckBox is `disabled` or not.
      * When set to `true`, the CheckBox will be in `disabled` state.
-     * @default false
+
      */
     @Property(false)
     public disabled: boolean;
@@ -81,14 +81,14 @@ export class CheckBox extends Component<HTMLInputElement> implements INotifyProp
     /**
      * Specifies a value that indicates whether the CheckBox is in `indeterminate` state or not.
      * When set to `true`, the CheckBox will be in `indeterminate` state.
-     * @default false
+
      */
     @Property(false)
     public indeterminate: boolean;
 
     /**
      * Defines the caption for the CheckBox, that describes the purpose of the CheckBox.
-     * @default ''
+
      */
     @Property('')
     public label: string;
@@ -98,7 +98,7 @@ export class CheckBox extends Component<HTMLInputElement> implements INotifyProp
      * The possible values are:
      * * Before - The label is positioned to left of the CheckBox.
      * * After - The label is positioned to right of the CheckBox.
-     * @default 'After'
+
      */
     @Property('After')
     public labelPosition: LabelPosition;
@@ -106,7 +106,7 @@ export class CheckBox extends Component<HTMLInputElement> implements INotifyProp
     /**
      * Defines `name` attribute for the CheckBox.
      * It is used to reference form data (CheckBox value) after a form is submitted.
-     * @default ''
+
      */
     @Property('')
     public name: string;
@@ -114,10 +114,18 @@ export class CheckBox extends Component<HTMLInputElement> implements INotifyProp
     /**
      * Defines `value` attribute for the CheckBox.
      * It is a form data passed to the server when submitting the form.
-     * @default ''
+
      */
     @Property('')
     public value: string;
+
+    /**
+     * You can add the additional html attributes such as disabled, value etc., to the element.
+     * If you configured both property and equivalent html attribute then the component considers the property value.
+
+     */
+    @Property({})
+    public htmlAttributes: { [key: string]: string; };
 
     /**
      * Constructor for creating the widget
@@ -164,11 +172,6 @@ export class CheckBox extends Component<HTMLInputElement> implements INotifyProp
     }
 
     private clickHandler(event: Event): void {
-        if ((this.end - this.start) > 750) {
-            this.end = 0; this.end = 0;
-            event.stopPropagation();
-            return;
-        }
         if (this.isMouseClick) {
             this.focusOutHandler();
             this.isMouseClick = false;
@@ -264,6 +267,7 @@ export class CheckBox extends Component<HTMLInputElement> implements INotifyProp
         if (this.disabled) {
             this.setDisabled();
         }
+        this.updateHtmlAttributeToWrapper();
     }
 
     private initWrapper(): void {
@@ -378,6 +382,10 @@ export class CheckBox extends Component<HTMLInputElement> implements INotifyProp
                 case 'value':
                     this.element.setAttribute('value', newProp.value);
                     break;
+                case 'htmlAttributes':
+                    this.updateHtmlAttributeToWrapper();
+                    break;
+
             }
         }
     }
@@ -439,14 +447,6 @@ export class CheckBox extends Component<HTMLInputElement> implements INotifyProp
         e.stopPropagation();
     }
 
-    private touchStartHandler(e: TouchEvent): void {
-        this.start = new Date().getTime();
-    }
-
-    private touchEndHandler(e: TouchEvent): void {
-        this.end = new Date().getTime();
-    }
-
     private formResetHandler(): void {
         this.checked = this.initialCheckedValue;
         this.element.checked = this.initialCheckedValue;
@@ -454,11 +454,6 @@ export class CheckBox extends Component<HTMLInputElement> implements INotifyProp
 
     protected unWireEvents(): void {
         let wrapper: Element = this.getWrapper();
-        let iOS: boolean = !!navigator.platform && /iPad|iPhone|iPod/.test(navigator.platform);
-        if (iOS) {
-            EventHandler.remove(wrapper, 'touchstart', this.touchStartHandler);
-            EventHandler.remove(wrapper, 'touchend', this.touchEndHandler);
-        }
         EventHandler.remove(this.element, 'click', this.clickHandler);
         EventHandler.remove(this.element, 'keyup', this.keyUpHandler);
         EventHandler.remove(this.element, 'focus', this.focusHandler);
@@ -477,11 +472,6 @@ export class CheckBox extends Component<HTMLInputElement> implements INotifyProp
 
     protected wireEvents(): void {
         let wrapper: Element = this.getWrapper();
-        let iOS: boolean = !!navigator.platform && /iPad|iPhone|iPod/.test(navigator.platform);
-        if (iOS) {
-            EventHandler.add(wrapper, 'touchstart', this.touchStartHandler, this);
-            EventHandler.add(wrapper, 'touchend', this.touchEndHandler, this);
-        }
         EventHandler.add(this.element, 'click', this.clickHandler, this);
         EventHandler.add(this.element, 'keyup', this.keyUpHandler, this);
         EventHandler.add(this.element, 'focus', this.focusHandler, this);
@@ -494,6 +484,26 @@ export class CheckBox extends Component<HTMLInputElement> implements INotifyProp
         }
         if (this.tagName === 'EJS-CHECKBOX') {
             EventHandler.add(this.element, 'change', this.changeHandler, this);
+        }
+    }
+
+    protected updateHtmlAttributeToWrapper(): void {
+        if (!isNullOrUndefined(this.htmlAttributes)) {
+            for (let key of Object.keys(this.htmlAttributes)) {
+                if (containerAttr.indexOf(key) > -1) {
+                    let wrapper: Element = this.getWrapper();
+                    if (key === 'class') {
+                        addClass([wrapper], this.htmlAttributes[key].split(' '));
+                    } else if (key === 'title') {
+                        wrapper.setAttribute(key, this.htmlAttributes[key]);
+                    } else if (key === 'style') {
+                        let frameSpan: Element = this.getWrapper().getElementsByClassName(FRAME)[0];
+                        frameSpan.setAttribute(key, this.htmlAttributes[key]);
+                    } else {
+                        this.element.setAttribute(key, this.htmlAttributes[key]);
+                    }
+                }
+            }
         }
     }
 

@@ -18,7 +18,7 @@ import { Column } from '../models/column';
 import { DatePicker, DateTimePicker } from '@syncfusion/ej2-calendars';
 import { OffsetPosition } from '@syncfusion/ej2-popups';
 /**
- * @hidden
+
  * `ExcelFilter` module is used to handle filtering action.
  */
 export class ExcelFilter extends CheckBoxFilter {
@@ -42,7 +42,7 @@ export class ExcelFilter extends CheckBoxFilter {
 
     /**
      * Constructor for excel filtering module
-     * @hidden
+
      */
     constructor(parent?: IGrid, filterSettings?: FilterSettings, serviceLocator?: ServiceLocator, customFltrOperators?: Object) {
         super(parent, filterSettings, serviceLocator);
@@ -81,7 +81,7 @@ export class ExcelFilter extends CheckBoxFilter {
     /** 
      * To destroy the filter bar. 
      * @return {void} 
-     * @hidden
+
      */
     public destroy(): void {
         if (this.dlg) {

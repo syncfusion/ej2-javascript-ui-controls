@@ -25,6 +25,14 @@ export class ComboBox implements IComponent {
         this.compObj.element.focus();
     }
 
+    /**
+
+     */
+    public showPopup(): void {
+        this.compObj.focusIn();
+        this.compObj.showPopup();
+    }
+
     public updateValue(e: NotifyParams): void {
         if (this.compObj && e.type === 'ComboBox') {
             this.parent.setProperties({ value: this.compObj.value }, true);
@@ -36,7 +44,7 @@ export class ComboBox implements IComponent {
      * Destroys the module.
      * @method destroy
      * @return {void}
-     * @hidden
+
      */
     public destroy(): void {
         this.base.destroy();

@@ -526,4 +526,180 @@ describe('Diagram Control', () => {
             expect(memory).toBeLessThan(profile.samples[0] + 0.25);
         })
     });
+    describe('Port Visiblity in swimlane child nodes', () => {
+        let diagram: Diagram;
+        let ele: HTMLElement;
+
+        let mouseEvents: MouseEvents = new MouseEvents();
+
+        beforeAll((): void => {
+            const isDef = (o: any) => o !== undefined && o !== null;
+            if (!isDef(window.performance)) {
+                console.log("Unsupported environment, window.performance.memory is unavailable");
+                this.skip(); //Skips test (in Chai)
+                return;
+            }
+            ele = createElement('div', { id: 'diagram123' });
+            document.body.appendChild(ele);
+            let nodes: NodeModel[] = [
+                {
+                    id: 'swimlane',
+                    shape: {
+                        type: 'SwimLane',
+                        header: {
+                            annotation: { content: 'ONLINE PURCHASE STATUS', style: { fill: '#111111' } },
+                            height: 50, style: { fontSize: 11 },
+                            orientation: 'Horizontal',
+                        },
+                        lanes: [
+                            {
+                                id: 'stackCanvas1',
+                                header: {
+                                    annotation: { content: 'CUSTOMER' }, width: 50,
+                                    style: { fontSize: 11 }
+                                },
+                                height: 100,
+                                children: [
+                                    {
+                                        id: 'Order',
+                                        ports:[{id:'port1',visibility:PortVisibility.Hover}],
+                                        //shape: { type: 'Path', data: pathData },
+                                        annotations: [
+                                            {
+                                                content: 'ORDER',
+                                                style: { fontSize: 11 }
+                                            }
+                                        ],
+                                        margin: { left: 60, top: 20 },
+                                        height: 40, width: 100
+                                    }
+                                ],
+                            },
+                            {
+                                id: 'stackCanvas2',
+                                header: {
+                                    annotation: { content: 'ONLINE' }, width: 50,
+                                    style: { fontSize: 11 }
+                                },
+                                height: 100,
+                                children: [
+                                    {
+                                        id: 'selectItemaddcart',
+                                        annotations: [{ content: 'Select item\nAdd cart' }],
+                                        margin: { left: 190, top: 20 },
+                                        height: 40, width: 100
+                                    },
+                                    {
+                                        id: 'paymentondebitcreditcard',
+                                        annotations: [{ content: 'Payment on\nDebit/Credit Card' }],
+                                        margin: { left: 350, top: 20 },
+                                        height: 40, width: 100
+                                    }
+                                ],
+                            },
+                            {
+                                id: 'stackCanvas3',
+                                header: {
+                                    annotation: { content: 'SHOP' }, width: 50,
+                                    style: { fontSize: 11 }
+                                },
+                                height: 100,
+                                children: [
+                                    {
+                                        id: 'getmaildetailaboutorder',
+                                        annotations: [{ content: 'Get mail detail\nabout order' }],
+                                        margin: { left: 190, top: 20 },
+                                        height: 40, width: 100
+                                    },
+                                    {
+                                        id: 'pakingitem',
+                                        annotations: [{ content: 'Paking item' }],
+                                        margin: { left: 350, top: 20 },
+                                        height: 40, width: 100
+                                    }
+                                ],
+                            },
+                            {
+                                id: 'stackCanvas4',
+                                header: {
+                                    annotation: { content: 'DELIVERY' }, width: 50,
+                                    style: { fontSize: 11 }
+                                },
+                                height: 100,
+                                children: [
+                                    {
+                                        id: 'sendcourieraboutaddress',
+                                        annotations: [{ content: 'Send Courier\n about Address' }],
+                                        margin: { left: 190, top: 20 },
+                                        height: 40, width: 100
+                                    },
+                                    {
+                                        id: 'deliveryonthataddress',
+                                        annotations: [{ content: 'Delivery on that\n Address' }],
+                                        margin: { left: 350, top: 20 },
+                                        height: 40, width: 100
+                                    },
+                                    {
+                                        id: 'getitItem',
+                                        //shape: { type: 'Path', data: pathData },
+                                        annotations: [{ content: 'GET IT ITEM', style: { fontSize: 11 } }],
+                                        margin: { left: 500, top: 20 },
+                                        height: 40, width: 100
+                                    }
+                                ],
+                            },
+                        ],
+                        phases: [
+                            {
+                                id: 'phase1', offset: 170,
+                                header: { content: { content: 'Phase' } }
+                            },
+                            {
+                                id: 'phase2', offset: 450,
+                                header: { content: { content: 'Phase' } }
+                            },
+                        ],
+                        phaseSize: 20,
+                    },
+                    offsetX: 420, offsetY: 270,
+                    height: 100,
+                    width: 650
+                },
+            ];
+            
+            diagram = new Diagram({
+                width: '100%', height: 900, nodes: nodes,
+            });
+
+            diagram.appendTo('#diagram123');
+
+        });
+
+        afterAll((): void => {
+            diagram.destroy();
+            ele.remove();
+        });
+
+        it('Checking PortVisibility - Hover in swimlane childnodes', (done: Function) => {
+            let mouseEvents: MouseEvents = new MouseEvents();
+            let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+            var childrenNode = diagram.nameTable["Order"];
+            mouseEvents.mouseMoveEvent(diagramCanvas, 40 + childrenNode.offsetX, childrenNode.offsetY + 20);
+            var portElement = document.getElementById(childrenNode.id + "_port1_groupElement")
+            expect(portElement.children[0].getAttribute('visibility') === 'visible').toBe(true) 
+            mouseEvents.mouseMoveEvent(diagramCanvas, 140 + childrenNode.offsetX, childrenNode.offsetY + 20);
+            var check = document.getElementById(childrenNode.id + "_port1_groupElement")
+            expect(check.children[0].getAttribute('visibility') === 'hidden').toBe(true)
+            done();
+        });
+        it('memory leak', () => {
+            profile.sample();
+            let average: any = inMB(profile.averageChange)
+            //Check average change in memory samples to not be over 10MB
+            expect(average).toBeLessThan(10);
+            let memory: any = inMB(getMemoryProfile())
+            //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
+            expect(memory).toBeLessThan(profile.samples[0] + 0.25);
+        })
+    });
 });

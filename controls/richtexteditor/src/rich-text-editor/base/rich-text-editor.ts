@@ -11,7 +11,7 @@ import { Render } from '../renderer/render';
 import { ViewSource } from '../renderer/view-source';
 import { IRenderer, IFormatter, PrintEventArgs, ActionCompleteEventArgs, ActionBeginEventArgs} from './interface';
 import { BeforeQuickToolbarOpenArgs } from './interface';
-import { IExecutionGroup, executeGroup, CommandName, ResizeArgs, QuickToolbarArgs } from './interface';
+import { IExecutionGroup, executeGroup, CommandName, ResizeArgs, QuickToolbarEventArgs } from './interface';
 import { ILinkCommandsArgs, IImageCommandsArgs, BeforeSanitizeHtmlArgs } from './interface';
 import { ServiceLocator } from '../services/service-locator';
 import { RendererFactory } from '../services/renderer-factory';
@@ -57,7 +57,7 @@ export interface ChangeEventArgs {
     name?: string;
 }
 
-export interface RichTextEditorDialogOpenEvent {
+export interface DialogOpenEventArgs {
     /**
      * Defines whether the current action can be prevented.
      */
@@ -76,7 +76,7 @@ export interface RichTextEditorDialogOpenEvent {
     name?: string;
 }
 
-export interface RichTextEditorDialogCloseEvent {
+export interface DialogCloseEventArgs {
     /**
      * Defines whether the current action can be prevented.
      */
@@ -111,7 +111,7 @@ export interface RichTextEditorDialogCloseEvent {
     target: HTMLElement | String;
 }
 
-export interface ToolbarStatusUpdateEvent {
+export interface ToolbarUpdateEventArgs {
     /**
      * Specify the name of the event.
      */
@@ -126,13 +126,14 @@ export interface ToolbarStatusUpdateEvent {
     undo: boolean;
 }
 
-export interface ImageUploadSuccessEvent {
+export interface ImageSuccessEventArgs {
     /**
      * Returns the original event arguments.
      */
     e?: object;
     /**
      * Returns the details about upload file.
+     * @blazorType Syncfusion.EJ2.Blazor.Inputs.FileInfo
      */
     file: FileInfo;
     /**
@@ -145,6 +146,7 @@ export interface ImageUploadSuccessEvent {
     operation: string;
     /**
      * Returns the upload event operation.
+     * @blazorType ResponseEventArgs
      */
     response?: ResponseEventArgs;
     /**
@@ -153,13 +155,14 @@ export interface ImageUploadSuccessEvent {
     name?: string;
 }
 
-export interface ImageUploadFailedEvent {
+export interface ImageFailedEventArgs {
     /**
      * Returns the original event arguments.
      */
     e?: object;
     /**
      * Returns the details about upload file.
+     * @blazorType Syncfusion.EJ2.Blazor.Inputs.FileInfo
      */
     file: FileInfo;
     /**
@@ -172,6 +175,7 @@ export interface ImageUploadFailedEvent {
     operation: string;
     /**
      * Returns the upload event operation.
+     * @blazorType ResponseEventArgs
      */
     response?: ResponseEventArgs;
     /**
@@ -180,7 +184,7 @@ export interface ImageUploadFailedEvent {
     name?: string;
 }
 
-interface ResponseEventArgs {
+export interface ResponseEventArgs {
     headers?: string;
     readyState?: object;
     statusCode?: object;
@@ -188,7 +192,7 @@ interface ResponseEventArgs {
     withCredentials?: boolean;
 }
 
-export interface DestroyedEvent {
+export interface DestroyedEventArgs {
     /**
      * Specify the name of the event.
      */
@@ -199,7 +203,7 @@ export interface DestroyedEvent {
     cancel: boolean;
 }
 
-export interface BlurEvent {
+export interface BlurEventArgs {
     /**
      * Returns the original event arguments.
      */
@@ -214,13 +218,14 @@ export interface BlurEvent {
     name?: string;
 }
 
-export interface RichTextEditorToolbarClickEvent {
+export interface ToolbarClickEventArgs {
     /**
      * Defines whether the current action can be prevented.
      */
     cancel: boolean;
     /**
      * Defines the current Toolbar Item Object.
+     * @blazorType Syncfusion.EJ2.Blazor.Navigations.ItemModel
      */
     item: ItemModel;
     /**
@@ -237,7 +242,7 @@ export interface RichTextEditorToolbarClickEvent {
     name?: string;
 }
 
-export interface RichTextEditorFocusEvent {
+export interface FocusEventArgs {
     /**
      * Returns the original event arguments.
      */
@@ -371,6 +376,8 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
      * * items: Specifies the array of items aligned horizontally in the toolbar.
      * > | and - can insert a vertical and horizontal separator lines in the toolbar.
      * * itemConfigs: Modify the default toolbar item configuration like icon class.
+     * 
+     * > By default, The toolbar is rendered with scrollable in mobile devices and does not support the toolbar type.
      * @default
      * {
      *  enable: true,
@@ -782,7 +789,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
      * Event triggers when a dialog is opened.
      * @event
      * @blazorProperty 'DialogOpened'
-     * @blazorType RichTextEditorDialogOpenEvent
+     * @blazorType DialogOpenEventArgs
      */
     @Event()
     public dialogOpen: EmitType<Object>;
@@ -790,7 +797,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
      * Event triggers after the dialog has been closed.
      * @event
      * @blazorProperty 'DialogClosed'
-     * @blazorType RichTextEditorDialogCloseEvent
+     * @blazorType DialogCloseEventArgs
      */
     @Event()
     public dialogClose: EmitType<Object>;
@@ -806,7 +813,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
      * Event triggers when a quick toolbar is opened.
      * @event
      * @blazorProperty 'QuickToolbarOpened'
-     * @blazorType QuickToolbarArgs
+     * @blazorType QuickToolbarEventArgs
      */
     @Event()
     public quickToolbarOpen: EmitType<Object>;
@@ -814,14 +821,14 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
      * Event triggers after the quick toolbar has been closed.
      * @event
      * @blazorProperty 'QuickToolbarClosed'
-     * @blazorType QuickToolbarArgs
+     * @blazorType QuickToolbarEventArgs
      */
     @Event()
     public quickToolbarClose: EmitType<Object>;
     /** 
      * Triggers when the undo and redo status is updated.
      * @event
-     * @blazorType ToolbarStatusUpdateEvent
+     * @blazorType ToolbarUpdateEventArgs
      */
     @Event()
     private toolbarStatusUpdate: EmitType<Object>;
@@ -843,7 +850,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
      * Event triggers when the image is successfully uploaded to the server side.
      * @event
      * @blazorProperty 'OnImageUploadSuccess'
-     * @blazorType ImageUploadSuccessEvent
+     * @blazorType ImageSuccessEventArgs
      */
     @Event()
     public imageUploadSuccess: EmitType<Object>;
@@ -851,7 +858,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
      * Event triggers when there is an error in the image upload.
      * @event
      * @blazorProperty 'OnImageUploadFailed'
-     * @blazorType ImageUploadFailedEvent
+     * @blazorType ImageFailedEventArgs
      */
     @Event()
     public imageUploadFailed: EmitType<Object>;
@@ -873,7 +880,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
      * Triggers when the RichTextEditor is destroyed.
      * @event 
      * @blazorProperty 'Destroyed'
-     * @blazorType DestroyedEvent
+     * @blazorType DestroyedEventArgs
      */
     @Event()
     public destroyed: EmitType<Object>;
@@ -887,7 +894,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
     /**
      * Triggers when RichTextEditor is focused out.
      * @event
-     * @blazorType BlurEvent
+     * @blazorType BlurEventArgs
      */
     @Event()
     public blur: EmitType<Object>;
@@ -895,14 +902,14 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
      * Triggers when RichTextEditor Toolbar items is clicked.
      * @event
      * @blazorProperty 'OnToolbarClick'
-     * @blazorType RichTextEditorToolbarClickEvent
+     * @blazorType ToolbarClickEventArgs
      */
     @Event()
     public toolbarClick: EmitType<Object>;
     /** 
      * Triggers when RichTextEditor is focused in
      * @event
-     * @blazorType RichTextEditorFocusEvent
+     * @blazorType FocusEventArgs
      */
     @Event()
     public focus: EmitType<Object>;
@@ -1051,6 +1058,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
 
     private persistData (): void {
         if (this.enablePersistence && this.originalElement.tagName === 'TEXTAREA') {
+            this.element.id = this.originalElement.id + '_wrapper';
             let data: string = window.localStorage.getItem(this.getModuleName() + this.element.id);
             if (!(isNOU(data) || (data === ''))) {
                 this.setProperties(JSON.parse(data), true);
@@ -1529,6 +1537,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
         this.removeHtmlAttributes();
         this.removeAttributes();
         super.destroy();
+        if (this.enablePersistence) { window.localStorage.removeItem(this.getModuleName() + this.element.id); }
     }
 
     private removeHtmlAttributes(): void {
@@ -2155,7 +2164,10 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
             }
             let active: Element = document.activeElement;
             if (active === this.element || active === this.getToolbarElement() || active === this.contentModule.getEditPanel()
-                || (this.iframeSettings.enable && active === this.contentModule.getPanel())
+                || ((this.iframeSettings.enable && active === this.contentModule.getPanel()) &&
+                    !(e.target as HTMLElement).classList.contains('e-img-inner')
+                    && (e.target && (e.target as HTMLElement).parentElement
+                    && !(e.target as HTMLElement).parentElement.classList.contains('e-img-wrap')))
                 || active.closest('.e-rte-toolbar') === this.getToolbarElement()) {
                 (this.contentModule.getEditPanel() as HTMLElement).focus();
                 if (!isNOU(this.getToolbarElement())) {

@@ -16,13 +16,13 @@ export class Axis extends ChildProperty<Axis> {
 
     /**
      * Title of heat map axis
-     * @default ''
+
      */
     @Complex<TitleModel>({ text: '', textStyle: Theme.axisTitleFont }, Title)
     public title: TitleModel;
     /**
      * If set to true, the axis will render at the opposite side of its default position.
-     * @default false
+
      */
 
     @Property(false)
@@ -43,7 +43,7 @@ export class Axis extends ChildProperty<Axis> {
 
     /**
      * The angle to rotate the axis label
-     * @default 0
+
      */
 
     @Property(0)
@@ -51,7 +51,7 @@ export class Axis extends ChildProperty<Axis> {
 
     /**
      * It specifies whether the axis to be rendered in inversed manner or not.
-     * @default false
+
      */
 
     @Property(false)
@@ -62,10 +62,10 @@ export class Axis extends ChildProperty<Axis> {
      * * Numeric:  Renders a numeric axis.
      * * DateTime: Renders a dateTime axis.
      * * Category: Renders a category axis.
-     * @default Category
-     * @aspType Syncfusion.EJ2.HeatMap.ValueType
-     * @blazorType Syncfusion.EJ2.HeatMap.ValueType
-     * @isEnumeration true
+
+
+
+
      */
 
     @Property('Category')
@@ -73,7 +73,7 @@ export class Axis extends ChildProperty<Axis> {
 
     /**
      * Specifies the increment for an axis label.
-     * @default 1
+
      */
 
     @Property(1)
@@ -86,7 +86,7 @@ export class Axis extends ChildProperty<Axis> {
      * * Months: Define the axis labels display in every month.
      * * Days: Define the axis labels display in every day.
      * * Hours: Define the axis labels display in every hour. 
-     * @default 'None'
+
      */
 
     @Property('None')
@@ -94,7 +94,7 @@ export class Axis extends ChildProperty<Axis> {
 
     /**
      * Specifies the minimum range of an axis.
-     * @default null
+
      */
 
     @Property(null)
@@ -102,7 +102,7 @@ export class Axis extends ChildProperty<Axis> {
 
     /**
      * Specifies the maximum range of an axis.
-     * @default null
+
      */
 
     @Property(null)
@@ -110,7 +110,7 @@ export class Axis extends ChildProperty<Axis> {
 
     /**
      * Specifies the interval for an axis.
-     * @default null
+
      */
 
     @Property(null)
@@ -119,7 +119,7 @@ export class Axis extends ChildProperty<Axis> {
     /**
      * Used to format the axis label that accepts any global string format like 'C', 'n1', 'P' etc.
      * It also accepts placeholder like '{value}°C' in which value represent the axis label, e.g, 20°C.
-     * @default ''
+
      */
 
     @Property('')
@@ -132,7 +132,7 @@ export class Axis extends ChildProperty<Axis> {
      * * Days: Defines the interval of the axis in days.
      * * Hours: Defines the interval of the axis in hours.
      * * Minutes: Defines the interval of the axis in minutes.
-     * @default 'Days'
+
      */
 
     @Property('Days')
@@ -143,7 +143,7 @@ export class Axis extends ChildProperty<Axis> {
      * * None: Shows all the labels.
      * * Rotate45: Rotates the label to 45 degree when it intersects.
      * * Trim : Trim the label when label text width exceed the label width
-     * @default Trim
+
      */
 
     @Property('Trim')

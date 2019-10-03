@@ -6,7 +6,7 @@ import { createElement, Browser, isNullOrUndefined } from '@syncfusion/ej2-base'
 import { ColorPicker, ChangeEventArgs } from '@syncfusion/ej2-inputs';
 
 /**
- * @hidden
+
  */
 export interface ITextMarkupAnnotation {
     textMarkupAnnotationType: string;
@@ -29,7 +29,7 @@ export interface ITextMarkupAnnotation {
 }
 
 /**
- * @hidden
+
  */
 export interface IPageAnnotationBounds {
     pageIndex: number;
@@ -40,7 +40,7 @@ export interface IPageAnnotationBounds {
 
 /**
  * The `TextMarkupAnnotation` module is used to handle text markup annotation actions of PDF viewer.
- * @hidden
+
  */
 export class TextMarkupAnnotation {
     private pdfViewer: PdfViewer;

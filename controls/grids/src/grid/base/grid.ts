@@ -82,23 +82,23 @@ import { ILogger } from '../actions/logger';
 export class SortDescriptor extends ChildProperty<SortDescriptor> {
     /** 
      * Defines the field name of sort column. 
-     * @default ''
+
      */
     @Property()
     public field: string;
 
     /** 
      * Defines the direction of sort column. 
-     * @default ''
-     * @blazorDefaultValue null
+
+
      */
     @Property()
     public direction: SortDirection;
 
     /** 
-     * @hidden
+
      * Defines the sorted column whether or from grouping operation. 
-     * @default false
+
      */
     @Property(false)
     public isFromGroup: boolean;
@@ -112,14 +112,14 @@ export class SortSettings extends ChildProperty<SortSettings> {
     /** 
      * Specifies the columns to sort at initial rendering of Grid.
      * Also user can get current sorted columns. 
-     * @default []
+
      */
     @Collection<SortDescriptorModel>([], SortDescriptor)
     public columns: SortDescriptorModel[];
 
     /**
      * If `allowUnsort` set to false the user can not get the grid in unsorted state by clicking the sorted column header.
-     * @default true
+
      */
     @Property(true)
     public allowUnsort: boolean;
@@ -132,7 +132,7 @@ export class Predicate extends ChildProperty<Predicate> {
 
     /**  
      * Defines the field name of the filter column.  
-     * @default ''
+
      */
     @Property()
     public field: string;
@@ -191,16 +191,16 @@ export class Predicate extends ChildProperty<Predicate> {
      * Checks whether the value is less than or equal to the specified value.<br/><br/></td><td colspan=1 rowspan=1> 
      * <br/>Number | Date<br/></td></tr> 
      * </table> 
-     * @default null
-     * @blazorType Syncfusion.EJ2.Blazor.Operator
-     * @blazorDefaultValue Syncfusion.EJ2.Blazor.Operator.None
+
+
+
      */
     @Property()
     public operator: string;
 
     /**  
      * Defines the value used to filter records. 
-     * @default ''
+
      */
     @Property()
     public value: string | number | Date | boolean;
@@ -208,62 +208,62 @@ export class Predicate extends ChildProperty<Predicate> {
     /**  
      * If match case set to true, then filter records with exact match or else  
      * filter records with case insensitive(uppercase and lowercase letters treated as same).  
-     * @default null
+
      */
     @Property()
     public matchCase: boolean;
 
     /**
      * If ignoreAccent is set to true, then filter ignores the diacritic characters or accents while filtering.
-     * @default false
+
      */
     @Property()
     public ignoreAccent: boolean;
 
     /**   
      * Defines the relationship between one filter query and another by using AND or OR predicate.   
-     * @default null
+
      */
     @Property()
     public predicate: string;
 
     /**  
-     * @hidden 
+
      * Defines the actual filter value for the filter column.  
      */
     @Property({})
     public actualFilterValue: Object;
 
     /**  
-     * @hidden 
+
      * Defines the actual filter operator for the filter column.  
      */
     @Property({})
     public actualOperator: Object;
 
     /**
-     * @hidden 
+
      * Defines the type of the filter column.  
      */
     @Property()
     public type: string;
 
     /**  
-     * @hidden 
+
      * Defines the predicate of filter column.  
      */
     @Property()
     public ejpredicate: Object;
 
     /**  
-     * @hidden 
+
      * Defines the UID of filter column.  
      */
     @Property()
     public uid: string;
 
     /**  
-     * @hidden 
+
      * Defines the foreignKey availability in filtered columns.
      */
     @Property()
@@ -277,7 +277,7 @@ export class Predicate extends ChildProperty<Predicate> {
 export class FilterSettings extends ChildProperty<FilterSettings> {
     /**  
      * Specifies the columns to be filtered at initial rendering of the Grid. You can also get the columns that were currently filtered.
-     * @default []
+
      */
     @Collection<PredicateModel[]>([], Predicate)
     public columns: PredicateModel[];
@@ -288,7 +288,7 @@ export class FilterSettings extends ChildProperty<FilterSettings> {
      * * `CheckBox` - Specifies the filter type as checkbox.      
      * * `FilterBar` - Specifies the filter type as filterbar.  
      * * `Excel` - Specifies the filter type as checkbox.      
-     * @default FilterBar 
+
      */
     @Property('FilterBar')
     public type: FilterType;
@@ -297,21 +297,21 @@ export class FilterSettings extends ChildProperty<FilterSettings> {
      * Defines the filter bar modes. The available options are,
      * * `OnEnter`: Initiates filter operation after Enter key is pressed. 
      * * `Immediate`: Initiates filter operation after a certain time interval. By default, time interval is 1500 ms. 
-     * @default OnEnter
+
      */
     @Property()
     public mode: FilterBarMode;
 
     /**  
      * Shows or hides the filtered status message on the pager.  
-     * @default true
+
      */
     @Property(true)
     public showFilterBarStatus: boolean;
 
     /**  
      * Defines the time delay (in milliseconds) in filtering records when the `Immediate` mode of filter bar is set. 
-     * @default 1500 
+
      */
     @Property(1500)
     public immediateModeDelay: number;
@@ -321,7 +321,7 @@ export class FilterSettings extends ChildProperty<FilterSettings> {
      * (string, number, date and boolean). Based on the column type, this customize operator list will render in filter menu.
      * 
      * > Check the [`Filter Menu Operator`](../../grid/how-to/#customizing-filter-menu-operators-list/) customization.
-     * @default null
+
      */
     @Property()
     public operators: ICustomOptr;
@@ -330,7 +330,7 @@ export class FilterSettings extends ChildProperty<FilterSettings> {
      * If ignoreAccent set to true, then filter ignores the diacritic characters or accents while filtering.
      * 
      * > Check the [`Diacritics`](../../grid/filtering/#diacritics/) filtering.
-     * @default false
+
      */
     @Property(false)
     public ignoreAccent: boolean;
@@ -339,7 +339,7 @@ export class FilterSettings extends ChildProperty<FilterSettings> {
      * If `enableCaseSensitivity` is set to true then searches grid records with exact match based on the filter
      * operator. It will have no effect on number, boolean and Date fields. 
      * 
-     * @default false
+
      */
     @Property(false)
     public enableCaseSensitivity: boolean;
@@ -352,7 +352,7 @@ export class FilterSettings extends ChildProperty<FilterSettings> {
 export class SelectionSettings extends ChildProperty<SelectionSettings> {
     /**  
      * Grid supports row, cell, and both (row and cell) selection mode. 
-     * @default Row
+
      */
     @Property('Row')
     public mode: SelectionMode;
@@ -363,7 +363,7 @@ export class SelectionSettings extends ChildProperty<SelectionSettings> {
      * * `Flow`: Selects the range of cells between start index and end index that also includes the other cells of the selected rows.
      * * `Box`: Selects the range of cells within the start and end column indexes that includes in between cells of rows within the range.
      * * `BoxWithBorder`: Selects the range of cells as like Box mode with borders.
-     * @default Flow
+
      */
     @Property('Flow')
     public cellSelectionMode: CellSelectionMode;
@@ -372,7 +372,7 @@ export class SelectionSettings extends ChildProperty<SelectionSettings> {
      * Defines options for selection type. They are 
      * * `Single`: Allows selection of only a row or a cell. 
      * * `Multiple`: Allows selection of multiple rows or cells. 
-     * @default Single 
+
      */
     @Property('Single')
     public type: SelectionType;
@@ -381,7 +381,7 @@ export class SelectionSettings extends ChildProperty<SelectionSettings> {
      * If 'checkboxOnly' set to true, then the Grid selection is allowed only through checkbox.
      * 
      * > To enable checkboxOnly selection, should specify the column type as`checkbox`.
-     * @default false 
+
      */
     @Property(false)
     public checkboxOnly: boolean;
@@ -389,7 +389,7 @@ export class SelectionSettings extends ChildProperty<SelectionSettings> {
     /**
      * If 'persistSelection' set to true, then the Grid selection is persisted on all operations.
      * For persisting selection in the Grid, any one of the column should be enabled as a primary key.
-     * @default false 
+
      */
     @Property(false)
     public persistSelection: boolean;
@@ -399,21 +399,21 @@ export class SelectionSettings extends ChildProperty<SelectionSettings> {
      * * `Default`: This is the default value of the checkboxMode. In this mode, user can select multiple rows by clicking rows one by one.
      * * `ResetOnRowClick`: In ResetOnRowClick mode, on clicking a row it will reset previously selected row and also multiple
      *  rows can be selected by using CTRL or SHIFT key.
-     * @default Default
+
      */
     @Property('Default')
     public checkboxMode: CheckboxSelectionType;
 
     /**
      * If 'enableSimpleMultiRowSelection' set to true, then the user can able to perform multiple row selection with single clicks.
-     * @default false
+
      */
     @Property(false)
     public enableSimpleMultiRowSelection: boolean;
 
     /**
      * If 'enableToggle' set to true, then the user can able to perform toggle for the selected row.
-     * @default true
+
      */
     @Property(true)
     public enableToggle: boolean;
@@ -425,7 +425,7 @@ export class SelectionSettings extends ChildProperty<SelectionSettings> {
 export class SearchSettings extends ChildProperty<SearchSettings> {
     /**     
      * Specifies the collection of fields included in search operation. By default, bounded columns of the Grid are included.  
-     * @default []
+
      */
     @Property([])
     public fields: string[];
@@ -433,7 +433,7 @@ export class SearchSettings extends ChildProperty<SearchSettings> {
     /**    
      * Specifies the key value to search Grid records at initial rendering. 
      * You can also get the current search key.
-     * @default ''
+
      */
     @Property('')
     public key: string;
@@ -466,9 +466,9 @@ export class SearchSettings extends ChildProperty<SearchSettings> {
      * notequal<br/></td><td colspan=1 rowspan=1> 
      * Checks for strings not equal to the specified string. <br/></td></tr> 
      * </table> 
-     * @default 'contains'
-     * @blazorType Syncfusion.EJ2.Blazor.Operator
-     * @blazorDefaultValue Syncfusion.EJ2.Blazor.Operator.Contains
+
+
+
      */
     @Property('contains')
     public operator: string;
@@ -476,7 +476,7 @@ export class SearchSettings extends ChildProperty<SearchSettings> {
     /**  
      * If `ignoreCase` is set to false, searches records that match exactly, else  
      * searches records that are case insensitive(uppercase and lowercase letters treated the same).  
-     * @default true 
+
      */
     @Property(true)
     public ignoreCase: boolean;
@@ -485,7 +485,7 @@ export class SearchSettings extends ChildProperty<SearchSettings> {
      * If ignoreAccent set to true, then filter ignores the diacritic characters or accents while filtering.
      * 
      * > Check the [`Diacritics`](../../grid/filtering/#diacritics/) filtering.
-     * @default false
+
      */
     @Property(false)
     public ignoreAccent: boolean;
@@ -498,7 +498,7 @@ export class SearchSettings extends ChildProperty<SearchSettings> {
 export class RowDropSettings extends ChildProperty<RowDropSettings> {
     /**   
      * Defines the ID of droppable component on which row drop should occur.   
-     * @default null
+
      */
     @Property()
     public targetID: string;
@@ -514,7 +514,7 @@ export class TextWrapSettings extends ChildProperty<TextWrapSettings> {
      * * `Both`: Wraps both the header and content. 
      * * `Content`: Wraps the header alone.
      * * `Header`: Wraps the content alone. 
-     * @default Both
+
      */
     @Property('Both')
     public wrapMode: WrapMode;
@@ -527,7 +527,7 @@ export class TextWrapSettings extends ChildProperty<TextWrapSettings> {
 export class GroupSettings extends ChildProperty<GroupSettings> {
     /**   
      * If `showDropArea` is set to true, the group drop area element will be visible at the top of the Grid.     
-     * @default true 
+
      */
     @Property(true)
     public showDropArea: boolean;
@@ -535,14 +535,14 @@ export class GroupSettings extends ChildProperty<GroupSettings> {
     /**   
      * If `showToggleButton` set to true, then the toggle button will be showed in the column headers which can be used to group
      * or ungroup columns by clicking them.
-     * @default false   
+
      */
     @Property(false)
     public showToggleButton: boolean;
 
     /**   
      * If `showGroupedColumn` is set to false, it hides the grouped column after grouping.  
-     * @default false  
+
      */
     @Property(false)
     public showGroupedColumn: boolean;
@@ -550,7 +550,7 @@ export class GroupSettings extends ChildProperty<GroupSettings> {
     /**   
      * If `showUngroupButton` set to false, then ungroup button is hidden in dropped element.  
      * It can be used to ungroup the grouped column when click on ungroup button. 
-     * @default true 
+
      */
     @Property(true)
     public showUngroupButton: boolean;
@@ -559,7 +559,7 @@ export class GroupSettings extends ChildProperty<GroupSettings> {
      * If `disablePageWiseAggregates` set to true, then the group aggregate value will
      * be calculated from the whole data instead of paged data and two requests will be made for each page
      * when Grid bound with remote service.
-     * @default false
+
      */
     @Property(false)
     public disablePageWiseAggregates: boolean;
@@ -567,7 +567,7 @@ export class GroupSettings extends ChildProperty<GroupSettings> {
     /**   
      * Specifies the column names to group at initial rendering of the Grid.  
      * You can also get the currently grouped columns.   
-     * @default []  
+
      */
     @Property([])
     public columns: string[];
@@ -576,7 +576,7 @@ export class GroupSettings extends ChildProperty<GroupSettings> {
      * The Caption Template allows user to display the string or HTML element in group caption.
      * > It accepts either the
      * [template string](http://ej2.syncfusion.com/documentation/common/template-engine/) or the HTML element ID.
-     * @default ''
+
      */
     @Property()
     public captionTemplate: string;
@@ -591,21 +591,21 @@ export class GroupSettings extends ChildProperty<GroupSettings> {
 export class EditSettings extends ChildProperty<EditSettings> {
     /**   
      * If `allowAdding` is set to true, new records can be added to the Grid.  
-     * @default false 
+
      */
     @Property(false)
     public allowAdding: boolean;
 
     /**   
      * If `allowEditing` is set to true, values can be updated in the existing record.  
-     * @default false 
+
      */
     @Property(false)
     public allowEditing: boolean;
 
     /**   
      * If `allowDeleting` is set to true, existing record can be deleted from the Grid.    
-     * @default false 
+
      */
     @Property(false)
     public allowDeleting: boolean;
@@ -615,36 +615,36 @@ export class EditSettings extends ChildProperty<EditSettings> {
      * * Normal
      * * Dialog
      * * Batch
-     * @default Normal 
+
      */
     @Property('Normal')
     public mode: EditMode;
 
     /**   
      * If `allowEditOnDblClick` is set to false, Grid will not allow editing of a record on double click. 
-     * @default true 
+
      */
     @Property(true)
     public allowEditOnDblClick: boolean;
 
     /**   
      * if `showConfirmDialog` is set to false, confirm dialog does not show when batch changes are saved or discarded.
-     * @default true 
+
      */
     @Property(true)
     public showConfirmDialog: boolean;
 
     /**   
      * If `showDeleteConfirmDialog` is set to true, confirm dialog will show delete action. You can also cancel delete command.
-     * @default false 
+
      */
     @Property(false)
     public showDeleteConfirmDialog: boolean;
 
     /**
      * Defines the custom edit elements for the dialog template.
-     * @default ''
-     * @aspType string
+
+
      */
     @Property('')
     public template: string | Object;
@@ -653,21 +653,21 @@ export class EditSettings extends ChildProperty<EditSettings> {
      * Defines the position of adding a new row. The available position are:
      * * Top
      * * Bottom
-     * @default Top 
+
      */
     @Property('Top')
     public newRowPosition: NewRowPosition;
 
     /**   
      * Defines the dialog params to edit.
-     * @default {}
+
      */
     @Property({})
     public dialog: IDialogUI;
 
     /**
      * If allowNextRowEdit is set to true, editing is done to next row. By default allowNextRowEdit is set to false.
-     * @default false
+
      */
     @Property(false)
     public allowNextRowEdit: boolean;
@@ -700,57 +700,57 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     private getShowHideService: ShowHide;
     private mediaColumn: Column[];
     private media: {[key: string]: MediaQueryList} = {};
-    /** @hidden */
+
     public invokedFromMedia: boolean;
     private dataBoundFunction: Function;
     private freezeRefresh: Function = Component.prototype.refresh;
-    /** @hidden */
+
     public recordsCount: number;
-    /** @hidden */
+
     public isVirtualAdaptive: boolean = false;
-    /** @hidden */
+
     public vRows: Row<Column>[] = [];
-    /** @hidden */
+
     public vcRows: Row<Column>[] = [];
-    /** @hidden */
+
     public vGroupOffsets: { [x: number]: number } = {};
-    /** @hidden */
+
     public isInitialLoad: boolean;
     /**
-     * @hidden
+
      */
     public mergeCells: { [key: string]: number };
     /**
-     * @hidden
+
      */
     public checkAllRows: CheckState;
     /**
-     * @hidden
+
      */
     public isCheckBoxSelection: boolean;
     /**
-     * @hidden
+
      */
     public isPersistSelection: boolean;
     /**
      * Gets the currently visible records of the Grid.
      */
     public currentViewData: Object[] = [];
-    /** @hidden */
+
     public parentDetails: ParentDetails;
-    /** @hidden */
+
     public currentAction: Action;
-    /** @hidden */
+
     public isEdit: boolean;
-    /** @hidden */
+
     public commonQuery: Query;
-    /** @hidden */
+
     public scrollPosition: ScrollPositionType;
-    /** @hidden */
+
     public isLastCellPrimaryKey: boolean;
-    /** @hidden */
+
     public filterOperators: IFilterOperator;
-    /** @hidden */
+
     public localeObj: L10n;
     public isSelectedRowIndexUpdating: boolean;
     private defaultLocale: Object;
@@ -759,36 +759,36 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     private toolTipObj: Tooltip;
     private prevElement: HTMLElement;
     private stackedColumn: Column;
-    /** @hidden */
+
     public lockcolPositionCount: number = 0;
-    /** @hidden */
+
     public prevPageMoving: boolean = false;
-    /** @hidden */
+
     public pageTemplateChange: boolean = false;
 
     //Module Declarations
     /**
-     * @hidden
+
      */
     public renderModule: Render;
     /**
-     * @hidden
+
      */
     public headerModule: IRenderer;
     /**
-     * @hidden
+
      */
     public contentModule: IRenderer;
     /**
-     * @hidden
+
      */
     public valueFormatterService: IValueFormatter;
     /**
-     * @hidden
+
      */
     public serviceLocator: ServiceLocator;
     /**
-     * @hidden
+
      */
     public ariaService: AriaService;
     /**
@@ -796,7 +796,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      */
     public keyboardModule: KeyboardEvents;
     /**
-     * @hidden
+
      */
     public widthService: ColumnWidthService;
 
@@ -838,7 +838,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     public reorderModule: Reorder;
     /**
      * `resizeModule` is used to manipulate resizing in the Grid.
-     * @hidden
+
      */
     public resizeModule: Resize;
     /**
@@ -860,7 +860,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
 
     /**
      * `detailRowModule` is used to handle detail rows rendering in the Grid.
-     * @hidden
+
      */
     public detailRowModule: DetailRow;
 
@@ -891,13 +891,13 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
 
     /**
      * `columnchooserModule` is used to dynamically show or hide the Grid columns.
-     * @hidden
+
      */
     public columnChooserModule: ColumnChooser;
 
     /**
      * The `aggregateModule` is used to manipulate aggregate functionality in the Grid.
-     * @hidden
+
      */
     public aggregateModule: Aggregate;
 
@@ -914,7 +914,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     /**     
      * Defines the schema of dataSource. 
      * If the `columns` declaration is empty or undefined then the `columns` are automatically generated from data source.     
-     * @default []   
+
      */
     @Property([])
     public columns: Column[] | string[] | ColumnModel[];
@@ -922,14 +922,14 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     /**     
      * If `enableAltRow` is set to true, the grid will render with `e-altrow` CSS class to the alternative tr elements.    
      * > Check the [`AltRow`](../../grid/row/#styling-alternate-rows/) to customize the styles of alternative rows.
-     * @default true 
+
      */
     @Property(true)
     public enableAltRow: boolean;
 
     /**     
      * If `enableHover` is set to true, the row hover is enabled in the Grid.
-     * @default true     
+
      */
     @Property(true)
     public enableHover: boolean;
@@ -937,15 +937,15 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     /**     
      * If `enableAutoFill` is set to true, then the auto fill icon will displayed on cell selection for copy cells.
      * It requires the selection `mode` to be Cell and `cellSelectionMode` to be `Box`.
-     * @default false 
+
      */
     @Property(false)
     public enableAutoFill: boolean;
 
     /**
      * Enables or disables the key board interaction of Grid.          
-     * @hidden 
-     * @default true     
+
+
      */
     @Property(true)
     public allowKeyboard: boolean;
@@ -953,14 +953,14 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     /**   
      * If `allowTextWrap` set to true,  
      * then text content will wrap to the next line when its text content exceeds the width of the Column Cells. 
-     * @default false     
+
      */
     @Property(false)
     public allowTextWrap: boolean;
 
     /**     
      * Configures the text wrap in the Grid.  
-     * @default {wrapMode:"Both"}     
+
      */
     @Complex<TextWrapSettingsModel>({}, TextWrapSettings)
     public textWrapSettings: TextWrapSettingsModel;
@@ -969,14 +969,14 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      * If `allowPaging` is set to true, the pager renders at the footer of the Grid. It is used to handle page navigation in the Grid.
      * 
      * > Check the [`Paging`](../../grid/paging/) to configure the grid pager.
-     * @default false     
+
      */
     @Property(false)
     public allowPaging: boolean;
 
     /**     
      * Configures the pager in the Grid.  
-     * @default {currentPage: 1, pageSize: 12, pageCount: 8, enableQueryString: false, pageSizes: false, template: null}     
+
      */
     @Complex<PageSettingsModel>({}, PageSettings)
     public pageSettings: PageSettingsModel;
@@ -984,7 +984,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     /**    
      * If `enableVirtualization` set to true, then the Grid will render only the rows visible within the view-port
      * and load subsequent rows on vertical scrolling. This helps to load large dataset in Grid.
-     * @default false
+
      */
     @Property(false)
     public enableVirtualization: boolean;
@@ -992,7 +992,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     /**    
      * If `enableColumnVirtualization` set to true, then the Grid will render only the columns visible within the view-port
      * and load subsequent columns on horizontal scrolling. This helps to load large dataset of columns in Grid.
-     * @default false
+
      */
     @Property(false)
     public enableColumnVirtualization: boolean;
@@ -1000,7 +1000,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
 
     /**    
      * Configures the search behavior in the Grid. 
-     * @default { ignoreCase: true, fields: [], operator: 'contains', key: '' }    
+
      */
     @Complex<SearchSettingsModel>({}, SearchSettings)
     public searchSettings: SearchSettingsModel;
@@ -1009,7 +1009,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      * If `allowSorting` is set to true, it allows sorting of grid records when column header is clicked.  
      * 
      * > Check the [`Sorting`](../../grid/sorting/) to customize its default behavior.
-     * @default false    
+
      */
     @Property(false)
     public allowSorting: boolean;
@@ -1017,7 +1017,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     /**
      * If `allowMultiSorting` set to true, then it will allow the user to sort multiple column in the grid.
      * > `allowSorting` should be true.
-     * @default false
+
      */
     @Property(true)
     public allowMultiSorting: boolean;
@@ -1026,7 +1026,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      * If `allowExcelExport` set to true, then it will allow the user to export grid to Excel file.
      * 
      * > Check the [`ExcelExport`](../../grid/excel-exporting/) to configure exporting document.
-     * @default false    
+
      */
     @Property(false)
     public allowExcelExport: boolean;
@@ -1034,20 +1034,20 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      * If `allowPdfExport` set to true, then it will allow the user to export grid to Pdf file.
      * 
      * > Check the [`Pdfexport`](../../grid/pdf-export/) to configure the exporting document.
-     * @default false    
+
      */
     @Property(false)
     public allowPdfExport: boolean;
     /**    
      * Configures the sort settings.  
-     * @default {columns:[]}    
+
      */
     @Complex<SortSettingsModel>({}, SortSettings)
     public sortSettings: SortSettingsModel;
 
     /**    
      * If `allowSelection` is set to true, it allows selection of (highlight row) Grid records by clicking it.  
-     * @default true        
+
      */
     @Property(true)
     public allowSelection: boolean;
@@ -1055,14 +1055,14 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     /**    
      * The `selectedRowIndex` allows you to select a row at initial rendering. 
      * You can also get the currently selected row index.
-     * @default -1        
+
      */
     @Property(-1)
     public selectedRowIndex: number;
 
     /**    
      * Configures the selection settings.  
-     * @default {mode: 'Row', cellSelectionMode: 'Flow', type: 'Single'}    
+
      */
     @Complex<SelectionSettingsModel>({}, SelectionSettings)
     public selectionSettings: SelectionSettingsModel;
@@ -1073,7 +1073,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      * Filter bar allows the user to filter grid records with required criteria.   
      * 
      * > Check the [`Filtering`](../../grid/filtering/) to customize its default behavior.     
-     * @default false    
+
      */
     @Property(false)
     public allowFiltering: boolean;
@@ -1082,35 +1082,35 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      * If `allowReordering` is set to true, Grid columns can be reordered. 
      * Reordering can be done by drag and drop of a particular column from one index to another index.  
      * > If Grid is rendered with stacked headers, reordering is allowed only at the same level as the column headers.
-     * @default false    
+
      */
     @Property(false)
     public allowReordering: boolean;
 
     /**    
      * If `allowResizing` is set to true, Grid columns can be resized.      
-     * @default false    
+
      */
     @Property(false)
     public allowResizing: boolean;
 
     /**    
      * If `allowRowDragAndDrop` is set to true, you can drag and drop grid rows at another grid.    
-     * @default false    
+
      */
     @Property(false)
     public allowRowDragAndDrop: boolean;
 
     /**   
      * Configures the row drop settings.  
-     * @default {targetID: ''}   
+
      */
     @Complex<RowDropSettingsModel>({}, RowDropSettings)
     public rowDropSettings: RowDropSettingsModel;
 
     /**    
      * Configures the filter settings of the Grid.  
-     * @default {columns: [], type: 'FilterBar', mode: 'Immediate', showFilterBarStatus: true, immediateModeDelay: 1500 , operators: {}}    
+
      */
     @Complex<FilterSettingsModel>({}, FilterSettings)
     public filterSettings: FilterSettingsModel;
@@ -1120,7 +1120,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      * Grouping can be done by drag and drop columns from column header to group drop area. 
      * 
      * > Check the [`Grouping`](../../grid/grouping/) to customize its default behavior.
-     * @default false    
+
      */
     @Property(false)
     public allowGrouping: boolean;
@@ -1129,21 +1129,21 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      * If `showColumnMenu` set to true, then it will enable the column menu options in each columns.
      * 
      * > Check the [`Column menu`](../../grid/columns/#column-menu/) for its configuration.
-     * @default false    
+
      */
     @Property(false)
     public showColumnMenu: boolean;
 
     /**    
      * Configures the group settings. 
-     * @default {showDropArea: true, showToggleButton: false, showGroupedColumn: false, showUngroupButton: true, columns: []}    
+
      */
     @Complex<GroupSettingsModel>({}, GroupSettings)
     public groupSettings: GroupSettingsModel;
 
     /**    
      * Configures the edit settings. 
-     * @default { allowAdding: false, allowEditing: false, allowDeleting: false, mode:'Normal',
+
      * allowEditOnDblClick: true, showConfirmDialog: true, showDeleteConfirmDialog: false }    
      */
     @Complex<EditSettingsModel>({}, EditSettings)
@@ -1152,7 +1152,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     /**
      * Configures the Grid aggregate rows.
      * > Check the [`Aggregates`](../../grid/aggregates/) for its configuration.
-     * @default []
+
      */
     @Collection<AggregateRowModel>([], AggregateRow)
     public aggregates: AggregateRowModel[];
@@ -1161,21 +1161,21 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      * If `showColumnChooser` is set to true, it allows you to dynamically show or hide columns.  
      * 
      * > Check the [`ColumnChooser`](../../grid/columns/#column-chooser/) for its configuration.
-     * @default false    
+
      */
     @Property(false)
     public showColumnChooser: boolean;
 
     /**    
      * Defines the scrollable height of the grid content.    
-     * @default 'auto'    
+
      */
     @Property('auto')
     public height: string | number;
 
     /**    
      * Defines the Grid width.    
-     * @default 'auto'    
+
      */
     @Property('auto')
     public width: string | number;
@@ -1187,7 +1187,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      * * `Horizontal`: Displays the horizontal grid lines only. 
      * * `Vertical`: Displays the vertical grid lines only.
      * * `Default`: Displays grid lines based on the theme.
-     * @default Default
+
      */
     @Property('Default')
     public gridLines: GridLine;
@@ -1219,7 +1219,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      * and child relationship. 
      * 
      * > Check the [`Child Grid`](../../grid/hierarchy-grid/) for its configuration.
-     * @blazorType GridModel<object>
+
      */
     @Property()
     public childGrid: GridModel;
@@ -1234,7 +1234,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      * Defines the print modes. The available print modes are   
      * * `AllPages`: Prints all pages of the Grid. 
      * * `CurrentPage`: Prints the current page of the Grid.
-     * @default AllPages
+
      */
     @Property('AllPages')
     public printMode: PrintMode;
@@ -1244,7 +1244,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      * * `Expanded` - Prints the master grid with expanded child grids. 
      * * `All` - Prints the master grid with all the child grids.
      * * `None` - Prints the master grid alone.
-     * @default Expanded
+
      */
     @Property('Expanded')
     public hierarchyPrintMode: HierarchyGridPrintMode;
@@ -1258,15 +1258,15 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      *  the Grid will not initialize a new one. 
      * 
      * > Check the available [`Adaptors`](../../data/adaptors/) to customize the data operation.
-     * @default []    
-     * @isGenericType true
+
+
      */
     @Property([])
     public dataSource: Object | DataManager | DataResult;
 
     /**
      * Defines the height of Grid rows.
-     * @default null
+
      */
     @Property(null)
     public rowHeight: number;
@@ -1274,7 +1274,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     /**    
      * Defines the external [`Query`](https://ej2.syncfusion.com/documentation/data/api-query.html) 
      * that will be executed along with data processing.    
-     * @default null    
+
      */
     @Property()
     public query: Query;
@@ -1308,7 +1308,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      *  > Check the [`Toolbar`](../../grid/tool-bar/#custom-toolbar-items/) to customize its default items.
      * 
      * {% codeBlock src="grid/toolbar-api/index.ts" %}{% endcodeBlock %}
-     * @default null
+
      */
     @Property()
     public toolbar: (ToolbarItems | string | ItemModel | ToolbarItem)[];
@@ -1336,7 +1336,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      * * `LastPage` - Go to the last page.
      * * `NextPage` - Go to the next page.
      * 
-     * @default null
+
      */
     @Property()
     public contextMenuItems: ContextMenuItem[] | ContextMenuItemModel[];
@@ -1352,35 +1352,35 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      * * `SortAscending` - Sort the current column in ascending order.
      * * `SortDescending` - Sort the current column in descending order.
      * * `Filter` - Filter options will show based on filterSettings property like checkbox filter, excel filter, menu filter.
-     * @default null
+
      */
     @Property()
     public columnMenuItems: ColumnMenuItem[] | ColumnMenuItemModel[];
 
     /**
      * It used to render toolbar template
-     * @default null
+
      */
     @Property()
     public toolbarTemplate: string;
 
     /**
      * It used to render pager template
-     * @default null
+
      */
     @Property()
     public pagerTemplate: string;
 
     /**
      * Gets or sets the number of frozen rows.
-     * @default 0
+
      */
     @Property(0)
     public frozenRows: number;
 
     /**
      * Gets or sets the number of frozen columns.
-     * @default 0
+
      */
     @Property(0)
     public frozenColumns: number;
@@ -1390,7 +1390,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      * * `All`: It Retrives whole datasource.
      * * `Schema`: Retrives data for all the defined columns in grid from the datasource. 
      * * `ExcludeHidden`: Retrives data only for visible columns of grid from the dataSource. 
-     * @default All
+
      */
     @Property('All')
     public columnQueryMode: ColumnQueryModeType;
@@ -1398,7 +1398,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     /** 
      * Triggers when the component is created.
      * @event 
-     * @blazorProperty 'Created'
+
      */
     @Event()
     public created: EmitType<Object>;
@@ -1406,7 +1406,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     /** 
      * Triggers when the component is destroyed. 
      * @event 
-     * @blazorProperty 'Destroyed'
+
      */
     @Event()
     public destroyed: EmitType<Object>;
@@ -1414,7 +1414,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     /** 
      * This event allows customization of Grid properties before rendering.
      * @event 
-     * @blazorProperty 'OnLoad'
+
      */
     @Event()
     public load: EmitType<Object>;
@@ -1422,7 +1422,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      * Triggered every time a request is made to access row information, element, or data. 
      * This will be triggered before the row element is appended to the Grid element.
      * @event 
-     * @blazorProperty 'RowDataBound'
+
      */
     @Event()
     public rowDataBound: EmitType<RowDataBoundEventArgs>;
@@ -1431,7 +1431,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      * Triggered every time a request is made to access cell information, element, or data.
      * This will be triggered before the cell element is appended to the Grid element.
      * @event
-     * @blazorProperty 'QueryCellInfo'
+
      */
     @Event()
     public queryCellInfo: EmitType<QueryCellInfoEventArgs>;
@@ -1439,7 +1439,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     /** 
      * Triggered for stacked header.
      * @event 
-     * @blazorProperty 'HeaderCellInfo'
+
      */
     @Event()
     public headerCellInfo: EmitType<HeaderCellInfoEventArgs>;
@@ -1448,7 +1448,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     /** 
      * Triggers when Grid actions such as sorting, filtering, paging, grouping etc., starts. 
      * @event
-     * @blazorProperty 'OnActionBegin'
+
      */
     @Event()
     public actionBegin: EmitType<PageEventArgs | GroupEventArgs | FilterEventArgs | SearchEventArgs | SortEventArgs | AddEventArgs | SaveEventArgs | EditEventArgs | DeleteEventArgs | ActionEventArgs>;
@@ -1456,7 +1456,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     /** 
      * Triggers when Grid actions such as sorting, filtering, paging, grouping etc. are completed. 
      * @event 
-     * @blazorProperty 'OnActionComplete'
+
      */
     @Event()
     public actionComplete: EmitType<PageEventArgs | GroupEventArgs | FilterEventArgs | SearchEventArgs | SortEventArgs | AddEventArgs | SaveEventArgs | EditEventArgs | DeleteEventArgs | ActionEventArgs>;
@@ -1465,7 +1465,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     /** 
      * Triggers when any Grid action failed to achieve the desired results. 
      * @event 
-     * @blazorProperty 'OnActionFailure'
+
      */
     @Event()
     public actionFailure: EmitType<FailureEventArgs>;
@@ -1473,7 +1473,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     /** 
      * Triggers when data source is populated in the Grid.
      * @event 
-     * @blazorProperty 'DataBound'
+
      */
     @Event()
     public dataBound: EmitType<Object>;
@@ -1481,7 +1481,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     /** 
      * Triggers when record is double clicked.
      * @event 
-     * @blazorProperty 'OnRecordDoubleClick'
+
      */
     @Event()
     public recordDoubleClick: EmitType<RecordDoubleClickEventArgs>;
@@ -1489,7 +1489,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     /** 
      * Triggers before row selection occurs.
      * @event 
-     * @blazorProperty 'RowSelecting'
+
      */
     @Event()
     public rowSelecting: EmitType<RowSelectingEventArgs>;
@@ -1497,7 +1497,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     /** 
      * Triggers after a row is selected.
      * @event 
-     * @blazorProperty 'RowSelected'
+
      */
     @Event()
     public rowSelected: EmitType<RowSelectEventArgs>;
@@ -1505,7 +1505,6 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     /** 
      * Triggers before deselecting the selected row.
      * @event 
-     * @deprecated  
      */
     @Event()
     public rowDeselecting: EmitType<RowDeselectEventArgs>;
@@ -1513,7 +1512,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     /** 
      * Triggers when a selected row is deselected.
      * @event 
-     * @blazorProperty 'RowDeselected'
+
      */
     @Event()
     public rowDeselected: EmitType<RowDeselectEventArgs>;
@@ -1521,7 +1520,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     /** 
      * Triggers before any cell selection occurs.
      * @event 
-     * @blazorProperty 'CellSelecting'
+
      */
     @Event()
     public cellSelecting: EmitType<CellSelectingEventArgs>;
@@ -1529,7 +1528,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     /** 
      * Triggers after a cell is selected.
      * @event 
-     * @blazorProperty 'CellSelected'
+
      */
     @Event()
     public cellSelected: EmitType<CellSelectEventArgs>;
@@ -1537,7 +1536,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     /** 
      * Triggers before the selected cell is deselecting.
      * @event 
-     * @deprecated  
+
      */
     @Event()
     public cellDeselecting: EmitType<CellDeselectEventArgs>;
@@ -1545,7 +1544,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     /** 
      * Triggers when a particular selected cell is deselected.
      * @event 
-     * @deprecated  
+
      */
     @Event()
     public cellDeselected: EmitType<CellDeselectEventArgs>;
@@ -1553,7 +1552,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     /**  
      * Triggers when column header element drag (move) starts. 
      * @event
-     * @deprecated  
+
      */
     @Event()
     public columnDragStart: EmitType<ColumnDragEventArgs>;
@@ -1561,7 +1560,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     /**  
      * Triggers when column header element is dragged (moved) continuously. 
      * @event
-     * @deprecated
+
      */
     @Event()
     public columnDrag: EmitType<ColumnDragEventArgs>;
@@ -1569,7 +1568,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     /**  
      * Triggers when a column header element is dropped on the target column. 
      * @event
-     * @deprecated
+
      */
     @Event()
     public columnDrop: EmitType<ColumnDragEventArgs>;
@@ -1577,7 +1576,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     /** 
      * Triggers after print action is completed.  
      * @event 
-     * @deprecated  
+
      */
     @Event()
     public printComplete: EmitType<PrintEventArgs>;
@@ -1585,7 +1584,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     /** 
      * Triggers before the print action starts.  
      * @event
-     * @deprecated
+
      */
     @Event()
     public beforePrint: EmitType<PrintEventArgs>;
@@ -1593,7 +1592,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     /** 
      * Triggers before exporting each cell to PDF document. You can also customize the PDF cells.
      * @event
-     * @deprecated 
+
      */
     @Event()
     public pdfQueryCellInfo: EmitType<PdfQueryCellInfoEventArgs>;
@@ -1601,7 +1600,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     /** 
      * Triggers before exporting each header cell to PDF document. You can also customize the PDF cells.
      * @event
-     * @deprecated 
+
      */
     @Event()
     public pdfHeaderQueryCellInfo: EmitType<PdfHeaderQueryCellInfoEventArgs>;
@@ -1609,7 +1608,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     /** 
      * Triggers before exporting each detail Grid to PDF document.
      * @event
-     * @deprecated 
+
      */
     @Event()
     public exportDetailDataBound: EmitType<ExportDetailDataBoundEventArgs>;
@@ -1618,7 +1617,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      * Triggers before exporting each cell to Excel file.
      * You can also customize the Excel cells.
      * @event
-     * @deprecated
+
      */
     @Event()
     public excelQueryCellInfo: EmitType<ExcelQueryCellInfoEventArgs>;
@@ -1627,7 +1626,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      * Triggers before exporting each header cell to Excel file.
      * You can also customize the Excel cells.
      * @event
-     * @deprecated
+
      */
     @Event()
     public excelHeaderQueryCellInfo: EmitType<ExcelHeaderQueryCellInfoEventArgs>;
@@ -1635,7 +1634,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     /**
      * Triggers before Grid data is exported to Excel file.
      * @event
-     * @deprecated
+
      */
     @Event()
     public beforeExcelExport: EmitType<Object>;
@@ -1643,7 +1642,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     /**
      * Triggers after Grid data is exported to Excel file.
      * @event
-     * @deprecated
+
      */
     @Event()
     public excelExportComplete: EmitType<ExcelExportCompleteArgs>;
@@ -1651,7 +1650,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     /**
      * Triggers before Grid data is exported to PDF document.
      * @event
-     * @blazorProperty 'OnPdfExport'
+
      */
     @Event()
     public beforePdfExport: EmitType<Object>;
@@ -1659,7 +1658,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     /**
      * Triggers after Grid data is exported to PDF document.
      * @event
-     * @deprecated
+
      */
     @Event()
     public pdfExportComplete: EmitType<PdfExportCompleteArgs>;
@@ -1667,7 +1666,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     /**
      * Triggers when row element's before drag(move).
      * @event
-     * @deprecated
+
      */
     @Event()
     public rowDragStartHelper: EmitType<RowDragEventArgs>;
@@ -1676,7 +1675,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      * Triggers after detail row expands.
      * > This event triggers at initial expand.  
      * @event 
-     * @blazorProperty 'DetailDataBound'
+
      */
     @Event()
     public detailDataBound: EmitType<DetailDataBoundEventArgs>;
@@ -1684,7 +1683,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     /**  
      * Triggers when row element's drag(move) starts. 
      * @event
-     * @deprecated  
+
      */
     @Event()
     public rowDragStart: EmitType<RowDragEventArgs>;
@@ -1692,7 +1691,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     /**  
      * Triggers when row elements are dragged (moved) continuously. 
      * @event
-     * @deprecated  
+
      */
     @Event()
     public rowDrag: EmitType<RowDragEventArgs>;
@@ -1700,7 +1699,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     /**  
      * Triggers when row elements are dropped on the target row. 
      * @event
-     * @deprecated 
+
      */
     @Event()
     public rowDrop: EmitType<RowDragEventArgs>;
@@ -1708,8 +1707,8 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     /**      
      * Triggers when toolbar item is clicked.
      * @event
-     * @blazorProperty 'OnToolbarClick'
-     * @blazorType Syncfusion.EJ2.Blazor.Navigations.ClickEventArgs
+
+
      */
     @Event()
     public toolbarClick: EmitType<ClickEventArgs>;
@@ -1717,7 +1716,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     /** 
      * Triggers before the columnChooser open.
      * @event
-     * @deprecated
+
      */
     @Event()
     public beforeOpenColumnChooser: EmitType<ColumnChooserEventArgs>;
@@ -1725,7 +1724,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     /** 
      * Triggers when records are added in batch mode.   
      * @event
-     * @deprecated
+
      */
     @Event()
     public batchAdd: EmitType<BatchAddArgs>;
@@ -1733,7 +1732,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     /** 
      * Triggers when records are deleted in batch mode.
      * @event
-     * @deprecated
+
      */
     @Event()
     public batchDelete: EmitType<BatchDeleteArgs>;
@@ -1741,7 +1740,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     /** 
      * Triggers when cancel the batch edit changes batch mode.
      * @event
-     * @deprecated
+
      */
     @Event()
     public batchCancel: EmitType<BatchCancelArgs>;
@@ -1749,7 +1748,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     /** 
      * Triggers before records are added in batch mode.
      * @event
-     * @blazorProperty 'OnBatchAdd'
+
      */
     @Event()
     public beforeBatchAdd: EmitType<BeforeBatchAddArgs>;
@@ -1757,7 +1756,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     /** 
      * Triggers before records are deleted in batch mode.
      * @event
-     * @blazorProperty 'OnBatchDelete'
+
      */
     @Event()
     public beforeBatchDelete: EmitType<BeforeBatchDeleteArgs>;
@@ -1765,7 +1764,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     /** 
      * Triggers before records are saved in batch mode.
      * @event
-     * @blazorProperty 'OnBatchSave'
+
      */
     @Event()
     public beforeBatchSave: EmitType<BeforeBatchSaveArgs>;
@@ -1773,7 +1772,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     /** 
      * Triggers before the record is to be edit.
      * @event
-     * @blazorProperty 'OnBeginEdit'
+
      */
     @Event()
     public beginEdit: EmitType<BeginEditArgs>;
@@ -1781,7 +1780,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     /** 
      * Triggers when command button is clicked.
      * @event
-     * @blazorProperty 'CommandClicked'
+
      */
     @Event()
     public commandClick: EmitType<CommandClickEventArgs>;
@@ -1789,7 +1788,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     /** 
      * Triggers when the cell is being edited.
      * @event
-     * @blazorProperty 'OnCellEdit'
+
      */
     @Event()
     public cellEdit: EmitType<CellEditArgs>;
@@ -1797,7 +1796,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     /** 
      * Triggers when cell is saved.
      * @event
-     * @blazorProperty 'OnCellSave'
+
      */
     @Event()
     public cellSave: EmitType<CellSaveArgs>;
@@ -1805,7 +1804,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     /** 
      * Triggers when cell is saved.
      * @event
-     * @blazorProperty 'CellSaved'
+
      */
     @Event()
     public cellSaved: EmitType<CellSaveArgs>;
@@ -1813,7 +1812,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     /** 
      * Triggers when column resize starts.
      * @event
-     * @deprecated
+
      */
     @Event()
     public resizeStart: EmitType<ResizeArgs>;
@@ -1821,7 +1820,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     /** 
      * Triggers on column resizing.
      * @event
-     * @deprecated
+
      */
     @Event()
     public resizing: EmitType<ResizeArgs>;
@@ -1829,7 +1828,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     /** 
      * Triggers when column resize ends.
      * @event
-     * @deprecated
+
      */
     @Event()
     public resizeStop: EmitType<ResizeArgs>;
@@ -1837,7 +1836,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     /** 
      * Triggers when any keyboard keys are pressed inside the grid.
      * @event
-     * @deprecated
+
      */
     @Event()
     public keyPressed: EmitType<KeyboardEventArgs>;
@@ -1845,7 +1844,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     /** 
      * Triggers before data is bound to Grid.
      * @event
-     * @blazorProperty 'OnDataBound'
+
      */
     @Event()
     public beforeDataBound: EmitType<BeforeDataBoundArgs>;
@@ -1853,7 +1852,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     /** 
      * Triggers before context menu opens.
      * @event
-     * @deprecated
+
      */
     @Event()
     public contextMenuOpen: EmitType<BeforeOpenCloseMenuEventArgs>;
@@ -1861,8 +1860,8 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     /** 
      * Triggers when click on context menu.
      * @event
-     * @blazorProperty 'ContextMenuItemClicked'
-     * @blazorType Syncfusion.EJ2.Blazor.Navigations.MenuEventArgs
+
+
      */
     @Event()
     public contextMenuClick: EmitType<MenuEventArgs>;
@@ -1870,7 +1869,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     /** 
      * Triggers before column menu opens.
      * @event
-     * @deprecated  
+
      */
     @Event()
     public columnMenuOpen: EmitType<ColumnMenuOpenEventArgs>;
@@ -1878,8 +1877,8 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     /** 
      * Triggers when click on column menu.
      * @event
-     * @blazorProperty 'ColumnMenuItemClicked'
-     * @blazorType Syncfusion.EJ2.Blazor.Navigations.MenuEventArgs
+
+
      */
     @Event()
     public columnMenuClick: EmitType<MenuEventArgs>;
@@ -1887,7 +1886,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     /** 
      * Triggers when the check box state change in checkbox column.
      * @event
-     * @deprecated
+
      */
     @Event()
     public checkBoxChange: EmitType<CheckBoxChangeEventArgs>;
@@ -1895,7 +1894,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     /** 
      * Triggers before Grid copy action.
      * @event
-     * @deprecated
+
      */
     @Event()
     public beforeCopy: EmitType<BeforeCopyEventArgs>;
@@ -1903,7 +1902,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     /** 
      * Triggers before Grid paste action.
      * @event
-     * @deprecated 
+
      */
     @Event()
     public beforePaste: EmitType<BeforePasteEventArgs>;
@@ -1912,7 +1911,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      * Triggers when the grid actions such as Sorting, Paging, Grouping etc., are done.
      * In this event,the current view data and total record count should be assigned to the `dataSource` based on the action performed.
      * @event
-     * @deprecated  
+
      */
     @Event()
     public dataStateChange: EmitType<DataStateChangeEventArgs>;
@@ -1921,14 +1920,14 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      * Triggers when the grid data is added, deleted and updated.
      * Invoke the done method from the argument to start render after edit operation.
      * @event
-     * @deprecated 
+
      */
     @Event()
     public dataSourceChanged: EmitType<DataSourceChangedEventArgs>;
 
     /**
      * Constructor for creating the component
-     * @hidden
+
      */
     constructor(options?: GridModel, element?: string | HTMLElement) {
         super(options, <HTMLElement | string>element);
@@ -1939,7 +1938,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     /**
      * Get the properties to be maintained in the persisted state.
      * @return {string}
-     * @hidden
+
      */
     public getPersistData(): string {
         let keyEntity: string[] = ['pageSettings', 'sortSettings',
@@ -1968,7 +1967,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     /**
      * To provide the array of modules needed for component rendering
      * @return {ModuleDeclaration[]}
-     * @hidden
+
      */
     public requiredModules(): ModuleDeclaration[] {
         let modules: ModuleDeclaration[] = [];
@@ -2339,7 +2338,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     }
 
     /**
-     * @hidden
+
      */
     public updateMediaColumns(col: Column): void {
         if (!this.enableColumnVirtualization) {
@@ -2355,7 +2354,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     }
 
     /**
-     * @hidden
+
      */
     public mediaQueryUpdate(columnIndex: number, e?: MediaQueryList): void {
         let col: Column = this.getColumns()[columnIndex];
@@ -2444,7 +2443,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
 
     /**
      * Called internally if any of the property value changed.
-     * @hidden
+
      */
 
     /* tslint:disable-next-line:max-line-length */
@@ -2693,7 +2692,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     }
 
     /**
-     * @hidden   
+
      */
     public updateDefaultCursor(): void {
         let headerRows: Element[] = [].slice.call(this.element.querySelectorAll('.e-columnheader'));
@@ -2760,7 +2759,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     /**
      * Gets the columns from the Grid.
      * @return {Column[]} 
-     * @blazorType List<GridColumn>
+
      */
     public getColumns(isRefresh?: boolean): Column[] {
         let inview: number[] = this.inViewIndexes.map((v: number) => v - this.groupSettings.columns.length).filter((v: number) => v > -1);
@@ -2823,7 +2822,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     /**
      * Gets the visible columns from the Grid.
      * @return {Column[]} 
-     * @blazorType List<GridColumn>
+
      */
     public getVisibleColumns(): Column[] {
         let cols: Column[] = [];
@@ -3029,7 +3028,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     }
 
     /**
-     * @hidden   
+
      */
     public addMovableRows(fRows: HTMLElement[], mrows: HTMLElement[]): HTMLElement[] {
         for (let i: number = 0, len: number = mrows.length; i < len; i++) {
@@ -3193,7 +3192,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     }
 
     /**
-     * @hidden   
+
      */
     public getRowObjectFromUID(uid: string): Row<Column> {
         let rows: Row<Column>[] = this.contentModule.getRows() as Row<Column>[];
@@ -3217,14 +3216,14 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     }
 
     /**
-     * @hidden   
+
      */
     public getRowsObject(): Row<Column>[] {
         return this.contentModule.getRows() as Row<Column>[];
     }
 
     /**
-     * @hidden   
+
      */
     public getMovableRowsObject(): Row<Column>[] {
         return this.contentModule.getMovableRows() as Row<Column>[];
@@ -3249,8 +3248,8 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     }
 
     /**
-     * @hidden
-     * @blazorType GridColumn
+
+
      */
 
     public getColumnByIndex(index: number): Column {
@@ -3266,7 +3265,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      * Gets a Column by column name.
      * @param  {string} field - Specifies the column name.
      * @return {Column}
-     * @blazorType GridColumn
+
      */
     public getColumnByField(field: string): Column {
         return iterateArrayOrObject<Column, Column>(<Column[]>this.getColumns(), (item: Column, index: number) => {
@@ -3296,7 +3295,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      * Gets a column by UID.
      * @param  {string} uid - Specifies the column UID.
      * @return {Column}
-     * @blazorType GridColumn
+
      */
     public getColumnByUid(uid: string): Column {
         return iterateArrayOrObject<Column, Column>(
@@ -3310,7 +3309,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     }
 
     /**
-     * @hidden   
+
      */
     public getStackedColumns(columns: Column[], stackedColumn: Column[] = []): Column[] {
         for (const column of columns) {
@@ -3479,7 +3478,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     /**
      * Gets the collection of selected records. 
      * @return {Object[]}
-     * @isGenericType true
+
      */
     public getSelectedRecords(): Object[] {
         return this.selectionModule ? this.selectionModule.getSelectedRecords() : [];
@@ -3516,14 +3515,14 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     }
 
     /** 
-     * @hidden
+
      */
     public getFrozenColumns(): number {
         return this.frozenColumns + this.getFrozenCount(this.columns as Column[], 0);
     }
 
     /** 
-     * @hidden
+
      */
     public getVisibleFrozenColumns(): number {
         return this.getVisibleFrozenColumnsCount() + this.getVisibleFrozenCount(this.columns as Column[], 0);
@@ -3615,7 +3614,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      * Remove sorted column by field name. 
      * @param {string} field - Defines the column field name to remove sort.  
      * @return {void} 
-     * @hidden
+
      */
     public removeSortColumn(field: string): void {
         if (this.sortModule) {
@@ -3663,7 +3662,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      * @param  {string} field - Defines column field name to remove filter. 
      * @param  {boolean} isClearFilterBar -  Specifies whether the filter bar value needs to be cleared.     
      * @return {void} 
-     * @hidden
+
      */
     public removeFilteredColsByField(field: string, isClearFilterBar?: boolean): void {
         if (this.filterModule) {
@@ -3891,7 +3890,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     }
 
     /**    
-     * @hidden
+
      */
     public recalcIndentWidth(): void {
         if (!this.getHeaderTable().querySelector('.e-emptycell')) {
@@ -3932,7 +3931,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     }
 
     /**    
-     * @hidden
+
      */
     public isRowDragable(): boolean {
         return this.allowRowDragAndDrop && !this.rowDropSettings.targetID;
@@ -3990,14 +3989,14 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     }
 
     /** 
-     * @hidden
+
      */
     public refreshDataSource(e: ReturnType, args: NotifyArgs): void {
         this.notify('refreshdataSource', e);
     }
 
     /** 
-     * @hidden
+
      */
     public disableRowDD(enable: boolean): void {
         let headerTable: Element = this.getHeaderTable();
@@ -4047,7 +4046,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     }
 
     /** 
-     * @hidden
+
      */
     public createColumnchooser(x: number, y: number, target: Element): void {
         if (this.columnChooserModule) {
@@ -4205,7 +4204,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     /**
      * The function is used to apply text wrap
      * @return {void}
-     * @hidden
+
      */
     public applyTextWrap(): void {
         if (this.allowTextWrap) {
@@ -4232,7 +4231,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     /**
      * The function is used to remove text wrap
      * @return {void}
-     * @hidden
+
      */
     public removeTextWrap(): void {
         wrap(this.element, false);
@@ -4244,7 +4243,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     /**
      * The function is used to add Tooltip to the grid cell that has ellipsiswithtooltip clip mode.
      * @return {void}
-     * @hidden
+
      */
     public createTooltip(): void {
         this.toolTipObj = new Tooltip({ opensOn: 'custom', content: '' }, this.element);
@@ -4314,7 +4313,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     }
     /**
      * To create table for ellipsiswithtooltip 
-     * @hidden
+
      */
     protected createTable(table: Element, tag: string, type: string): HTMLDivElement {
         let myTableDiv: HTMLDivElement = this.createElement('div') as HTMLDivElement;
@@ -4344,7 +4343,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
 
     /**
      * Binding events to the element while component creation.
-     * @hidden
+
      */
     public wireEvents(): void {
         EventHandler.add(this.element, 'click', this.mouseClickHandler, this);
@@ -4370,7 +4369,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
 
     /**
      * Unbinding events from the element while component destroy.
-     * @hidden
+
      */
     public unwireEvents(): void {
         EventHandler.remove(this.element, 'click', this.mouseClickHandler);
@@ -4383,7 +4382,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
         EventHandler.remove(this.getContent(), 'touchstart', this.tapEvent);
     }
     /**
-     * @hidden
+
      */
     public addListener(): void {
         if (this.isDestroyed) { return; }
@@ -4396,7 +4395,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
         this.on(events.contentReady, this.blazorTemplate, this);
     }
     /**
-     * @hidden
+
      */
     public removeListener(): void {
         if (this.isDestroyed) { return; }
@@ -4457,8 +4456,8 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     /** 
      * Get current visible data of grid.
      * @return {Object[]}
-     * @hidden
-     * @isGenericType true
+
+
      */
     public getCurrentViewRecords(): Object[] {
         if (isGroupAdaptive(this)) {
@@ -4589,7 +4588,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     }
 
     /** 
-     * @hidden
+
      */
     public isDetail(): boolean {
         return !isNullOrUndefined(this.detailTemplate) || !isNullOrUndefined(this.childGrid);
@@ -4637,7 +4636,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
         }
     }
     /**
-     * @hidden
+
      */
     public setInjectedModules(modules: Function[]): void {
         this.injectedModules = modules;
@@ -4652,7 +4651,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     /**
      * Gets the foreign columns from Grid.
      * @return {Column[]}
-     * @blazorType List<GridColumn>
+
      */
     public getForeignKeyColumns(): Column[] {
         return this.getColumns().filter((col: Column) => {
@@ -4661,7 +4660,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     }
 
     /**
-     * @hidden
+
      */
     public getRowHeight(): number {
         return this.rowHeight ? this.rowHeight : getRowHeight(this.element);
@@ -4683,7 +4682,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      * @param  {workbook} workbook - Defines the Workbook if multiple export is enabled.
      * @param  {boolean} isBlob - If 'isBlob' set to true, then it will be returned as blob data.
      * @return {Promise<any>} 
-     * @blazorType void
+
      */
     public excelExport(
         excelExportProperties?: ExcelExportProperties, isMultipleExport?: boolean,
@@ -4700,7 +4699,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      * @param  {workbook} workbook - Defines the Workbook if multiple export is enabled.
      * @param  {boolean} isBlob - If 'isBlob' set to true, then it will be returned as blob data.
      * @return {Promise<any>} 
-     * @blazorType void
+
      */
     public csvExport(
         excelExportProperties?: ExcelExportProperties,
@@ -4716,7 +4715,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      * @param  {pdfDoc} pdfDoc - Defined the Pdf Document if multiple export is enabled.
      * @param  {boolean} isBlob - If 'isBlob' set to true, then it will be returned as blob data.
      * @return {Promise<any>} 
-     * @blazorType void
+
      */
     public pdfExport(
         pdfExportProperties?: PdfExportProperties,
@@ -4883,14 +4882,14 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     }
 
     /** 
-     * @hidden
+
      */
     public isContextMenuOpen(): boolean {
         return this.contextMenuModule && this.contextMenuModule.isOpen;
     }
 
     /** 
-     * @hidden
+
      */
     public ensureModuleInjected(module: Function): boolean {
         return this.getInjectedModules().indexOf(module) >= 0;
@@ -4906,7 +4905,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     }
 
     /**
-     * @hidden
+
      * @private
      */
     public log(type: string | string[], args?: Object): void {
@@ -4914,7 +4913,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     }
 
     /**
-     * @hidden
+
      */
     public applyBiggerTheme(element:Element) :void{
         if(this.element.classList.contains('e-bigger')) {      
@@ -4923,7 +4922,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     }
 
     /** 
-     * @hidden
+
      */
     public getPreviousRowData(): Object {
         let previousRowData: Object = this.getRowsObject()[this.getRows().length - 1].data;
@@ -4965,7 +4964,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
         return -1;
     };
      /** 
-     * @hidden
+
      */
     // Need to have all columns while filtering with ColumnVirtualization.
     public grabColumnByFieldFromAllCols(field: string): Column {
@@ -4980,7 +4979,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
         return column;
     }
      /** 
-     * @hidden
+
      */
      // Need to have all columns while filtering with ColumnVirtualization.
     public grabColumnByUidFromAllCols(uid: string): Column {
@@ -5001,7 +5000,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     }
 
     /** 
-     * @hidden
+
      */
      // Need to have all columns while filtering with ColumnVirtualization.
      public tapEvent(e: TouchEventArgs){

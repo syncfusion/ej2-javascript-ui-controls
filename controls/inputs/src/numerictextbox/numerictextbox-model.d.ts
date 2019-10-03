@@ -29,6 +29,7 @@ export interface NumericTextBoxModel extends ComponentModel{
      * @default null
      * @aspType object
      * @isGenericType true
+     * @blazorDefaultValue EjsBase.GetNumericValue<TValue>("MinValue")
      */
     min?: number;
 
@@ -39,6 +40,7 @@ export interface NumericTextBoxModel extends ComponentModel{
      * @default null
      * @aspType object
      * @isGenericType true
+     * @blazorDefaultValue EjsBase.GetNumericValue<TValue>("MaxValue")
      */
     max?: number;
 
@@ -48,6 +50,7 @@ export interface NumericTextBoxModel extends ComponentModel{
      * [step](../../numerictextbox/getting-started/#range-validation).
      * @default 1
      * @isGenericType true
+     * @blazorDefaultValue EjsBase.GetNumericValue<TValue>("Step")
      */
     step?: number;
 

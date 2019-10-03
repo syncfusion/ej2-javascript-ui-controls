@@ -1,7 +1,7 @@
 import { Workbook, SheetModel, CellModel, getCell, getSheet } from '../base/index';
 import { workbookEditOperation, checkDateFormat, workbookFormulaOperation } from '../common/event';
 import { getRangeIndexes } from '../common/index';
-import { isNullOrUndefined } from '@syncfusion/ej2-base';
+import { isNullOrUndefined, getNumericObject } from '@syncfusion/ej2-base';
 import { checkIsFormula } from '../../workbook/common/index';
 
 /**
@@ -9,6 +9,8 @@ import { checkIsFormula } from '../../workbook/common/index';
  */
 export class WorkbookEdit {
     private parent: Workbook;
+    private localeObj: Object;
+    private decimalSep: string;
 
     /**
      * Constructor for edit module in Workbook.
@@ -16,6 +18,9 @@ export class WorkbookEdit {
      */
     constructor(workbook: Workbook) {
         this.parent = workbook;
+        this.localeObj = getNumericObject(this.parent.locale);
+        /* tslint:disable:no-any */
+        this.decimalSep = (<any>this.localeObj).decimal;
         this.addEventListener();
     }
 
@@ -56,6 +61,16 @@ export class WorkbookEdit {
                     <string>args.address, <string>args.value, <number>args.sheetIndex, <boolean>args.isValueOnly);
                 break;
         }
+    }
+
+    private checkDecimalPoint(value: string): string {
+        if (Number(value)) {
+            let decIndex: number = value.toString().indexOf(this.decimalSep) + 1;
+            let checkDec: boolean = value.toString().substr(decIndex).length <= 6;
+            value = checkDec ? decIndex < 7 ? value : (parseFloat(value)).toFixed(0) : decIndex > 7 ? (parseFloat(value)).toFixed(0) :
+                (parseFloat(value)).toFixed(6 - decIndex + 2);
+        }
+        return value;
     }
 
     private updateCellValue(
@@ -110,8 +125,12 @@ export class WorkbookEdit {
                 this.parent.setProperties({ 'sheets': this.parent.sheets }, true);
             }
         } else {
+            if (value.toString().indexOf(this.decimalSep) > -1) {
+                value = this.checkDecimalPoint(value);
+            }
             cell.value = value;
             this.parent.setProperties({ 'sheets': this.parent.sheets }, true);
         }
+        this.parent.setUsedRange(range[0], range[1]);
     }
 }

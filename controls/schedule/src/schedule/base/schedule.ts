@@ -46,7 +46,7 @@ import { Print } from '../exports/print';
 import { IRenderer, ActionEventArgs, NavigatingEventArgs, CellClickEventArgs, RenderCellEventArgs, ScrollCss } from '../base/interface';
 import { EventClickArgs, EventRenderedArgs, PopupOpenEventArgs, UIStateArgs, DragEventArgs, ResizeEventArgs } from '../base/interface';
 import { EventFieldsMapping, TdData, ResourceDetails, ResizeEdges, StateArgs, ExportOptions, SelectEventArgs } from '../base/interface';
-import { ViewsData, PopupCloseEventArgs, HoverEventArgs } from '../base/interface';
+import { ViewsData, PopupCloseEventArgs, HoverEventArgs, MoreEventsClickArgs } from '../base/interface';
 import { CalendarUtil, Gregorian, Islamic, CalendarType } from '../../common/calendar-util';
 import { ResourceBase } from '../base/resource';
 import { Timezone } from '../timezone/timezone';
@@ -138,14 +138,13 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
     public uiStateValues: UIStateArgs;
     public timeFormat: string;
     public calendarUtil: CalendarUtil;
-    public isMorePopup: boolean;
 
     // Schedule Options
     /**
      * Sets the `width` of the Schedule component, accepting both string and number values.
      * The string value can be either pixel or percentage format.
      * When set to `auto`, the Schedule width gets auto-adjusted and display its content related to the viewable screen size.
-     * @default 'auto'
+
      */
     @Property('auto')
     public width: string | number;
@@ -154,21 +153,21 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
      * The string type includes either pixel or percentage values.
      * When `height` is set with specific pixel value, then the Schedule will be rendered to that specified space.
      * In case, if `auto` value is set, then the height of the Schedule gets auto-adjusted within the given container.
-     * @default 'auto'
+
      */
     @Property('auto')
     public height: string | number;
     /**
      * When set to `false`, hides the header bar of the Schedule from UI. By default,
      *  the header bar holds the date and view navigation options, to which the user can add their own custom items onto it.
-     * @default true
+
      */
     @Property(true)
     public showHeaderBar: boolean;
     /**
      * When set to `false`, hides the current time indicator from the Schedule. Otherwise,
      *  it visually depicts the live current system time appropriately on the user interface.
-     * @default true
+
      */
     @Property(true)
     public showTimeIndicator: boolean;
@@ -185,7 +184,7 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
      * * TimelineWeek
      * * TimelineWorkWeek
      * * TimelineMonth
-     * @default 'Week'
+
      */
     @Property('Week')
     public currentView: View;
@@ -197,16 +196,16 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
      * {% codeBlock src="schedule/view-api/index.ts" %}{% endcodeBlock %}
      * Example for array of view objects:
      * {% codeBlock src="schedule/view-api/array.ts" %}{% endcodeBlock %}
-     * @default '['Day', 'Week', 'WorkWeek', 'Month', 'Agenda']'
+
      */
     @Property(['Day', 'Week', 'WorkWeek', 'Month', 'Agenda'])
     public views: View[] | ViewsModel[];
     /**
      * To mark the active (current) date on the Schedule, `selectedDate` property can be defined.
      *  Usually, it defaults to the current System date.
-     * @default 'new Date()'
-     * @aspDefaultValue DateTime.Now
-     * @blazorDefaultValue DateTime.Now
+
+
+
      */
     @Property(new Date())
     public selectedDate: Date;
@@ -215,7 +214,7 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
      *  It is also possible to manually set specific date format by using the `dateFormat` property. 
      * The format of the date range label in the header bar depends on the `dateFormat` value or else based on the 
      * locale assigned to the Schedule. 
-     * @default null
+
      */
     @Property()
     public dateFormat: string;
@@ -223,7 +222,7 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
      *  It allows the Scheduler to display in other calendar modes. 
      * By default, Scheduler is displayed in `Gregorian` calendar mode. 
      * To change the mode, you can set either `Gregorian` or `Islamic` as a value to this `calendarMode` property. 
-     * @default 'Gregorian'
+
      */
     @Property('Gregorian')
     public calendarMode: CalendarType;
@@ -233,7 +232,7 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
      * Note: By default, this option is not applicable on `Work Week` view.
      * For example, if the working days are defined as [1, 2, 3, 4], then the remaining days of that week will be considered as
      *  the weekend days and will be hidden on all the views.
-     * @default true
+
      */
     @Property(true)
     public showWeekend: boolean;
@@ -241,36 +240,36 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
      * This option allows the user to set the first day of a week on Schedule. It should be based on the locale set to it and each culture
      *  defines its own first day of week values. If needed, the user can set it manually on his own by defining the value through
      *  this property. It usually accepts the integer values, whereby 0 is always denoted as Sunday, 1 as Monday and so on.
-     * @default 0
+
      */
     @Property(0)
     public firstDayOfWeek: number;
     /**
      * It is used to set the working days on Schedule. The only days that are defined in this collection will be rendered on the `workWeek`
      *  view whereas on other views, it will display all the usual days and simply highlights the working days with different shade.
-     * @default '[1, 2, 3, 4, 5]'
-     * @aspType int[]
-     * @blazorType int[]
+
+
+
      */
     @Property([1, 2, 3, 4, 5])
     public workDays: number[];
     /**
      * It is used to specify the starting hour, from which the Schedule starts to display. It accepts the time string in a short skeleton
      *  format and also, hides the time beyond the specified start time.
-     * @default '00:00'
+
      */
     @Property('00:00')
     public startHour: string;
     /**
      * It is used to specify the end hour, at which the Schedule ends. It too accepts the time string in a short skeleton format.
-     * @default '24:00'
+
      */
     @Property('24:00')
     public endHour: string;
     /**
      * When set to `true`, allows the resizing of appointments. It allows the rescheduling of appointments either by changing the
      *  start or end time by dragging the event resize handlers.
-     * @default true
+
      */
     @Property(true)
     public allowResizing: boolean;
@@ -278,7 +277,7 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
      * The working hours should be highlighted on Schedule with different color shade and an additional option must be provided to
      *  highlight it or not. This functionality is handled through `workHours` property and the start work hour should be 9 AM by default
      *  and end work hour should point to 6 PM. The start and end working hours needs to be provided as Time value of short skeleton type.
-     * @default { highlight: true, start: '09:00', end: '18:00' }
+
      */
     @Complex<WorkHoursModel>({}, WorkHours)
     public workHours: WorkHoursModel;
@@ -286,20 +285,20 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
      * Allows to set different time duration on Schedule along with the customized grid count. It also has template option to
      *  customize the time slots with required time values in its own format.
      * {% codeBlock src="schedule/timescale-api/index.ts" %}{% endcodeBlock %}
-     * @default { enable: true, interval: 60, slotCount: 2, majorSlotTemplate: null, minorSlotTemplate: null }
+
      */
     @Complex<TimeScaleModel>({}, TimeScale)
     public timeScale: TimeScaleModel;
     /**
      * When set to `true`, allows the keyboard interaction to take place on Schedule.
-     * @default true
+
      */
     @Property(true)
     public allowKeyboardInteraction: boolean;
     /**
      * When set to `true`, allows the appointments to move over the time slots. When an appointment is dragged, both its start
      *  and end time tends to change simultaneously allowing it to reschedule the appointment on some other time.
-     * @default true
+
      */
     @Property(true)
     public allowDragAndDrop: boolean;
@@ -307,14 +306,14 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
      * It accepts either the string or HTMLElement as template design content and parse it appropriately before displaying it onto
      *  the date header cells. The field that can be accessed via this template is `date`.
      * {% codeBlock src="schedule/date-header-api/index.ts" %}{% endcodeBlock %}
-     * @default null
+
      */
     @Property()
     public dateHeaderTemplate: string;
     /**
      * It accepts either the string or HTMLElement as template design content and parse it appropriately before displaying it onto
      *  the month date cells. This template is only applicable for month view day cells.
-     * @default null
+
      */
     @Property()
     public cellHeaderTemplate: string;
@@ -327,34 +326,34 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
      *  * type
      * {% codeBlock src="schedule/cell-template-api/index.html" %}{% endcodeBlock %}
      * {% codeBlock src="schedule/cell-template-api/index.ts" %}{% endcodeBlock %}
-     * @default null
+
      */
     @Property()
     public cellTemplate: string;
     /**
      * When set to `true`, makes the Schedule to render in a read only mode. No CRUD actions will be allowed at this time.
-     * @default false
+
      */
     @Property(false)
     public readonly: boolean;
     /**
      * When set to `true`, displays a quick popup with cell or event details on single clicking over the cells or on events.
      *  By default, it is set to `true`.
-     * @default true
+
      */
     @Property(true)
     public showQuickInfo: boolean;
     /**
      * When set to `true`, displays the week number of the current view date range.
      *  By default, it is set to `false`.
-     * @default false
+
      */
     @Property(false)
     public showWeekNumber: boolean;
     /**
      * when set to `true`, allows the height of the work-cells to adjust automatically 
      * based on the number of appointments present in those time ranges. 
-     * @default false
+
      */
     @Property(false)
     public rowAutoHeight: boolean;
@@ -363,7 +362,7 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
      *  with `e-field` class, so as to fetch and process it from internally.
      * {% codeBlock src="schedule/editor-api/index.html" %}{% endcodeBlock %}
      * {% codeBlock src="schedule/editor-api/index.ts" %}{% endcodeBlock %}
-     * @default null
+
      */
     @Property()
     public editorTemplate: string;
@@ -372,21 +371,21 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
      *  and footer can be easily customized with individual template option.
      * {% codeBlock src="schedule/quick-info-template-api/index.html" %}{% endcodeBlock %}
      * {% codeBlock src="schedule/quick-info-template-api/index.ts" %}{% endcodeBlock %}
-     * @default null
+
      */
     @Complex<QuickInfoTemplatesModel>({}, QuickInfoTemplates)
     public quickInfoTemplates: QuickInfoTemplatesModel;
     /**
      * Sets the number of days to be displayed by default in Agenda View and in case of virtual scrolling,
      *  the number of days will be fetched on each scroll-end based on this count.
-     * @default 7
+
      */
     @Property(7)
     public agendaDaysCount: number;
     /**
      * The days which does not has even a single event to display will be hidden from the UI of Agenda View by default.
      *  When this property is set to `false`, the empty dates will also be displayed on the Schedule.
-     * @default true
+
      */
     @Property(true)
     public hideEmptyAgendaDays: boolean;
@@ -394,7 +393,7 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
     /**
      * The recurrence validation will be done by default
      *  When this property is set to `false`, the recurrence validation will be skipped.
-     * @default true
+
      */
     @Property(true)
     public enableRecurrenceValidation: boolean;
@@ -405,14 +404,14 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
      *  Whenever the Schedule is bound to remote data services, it is always recommended to set specific timezone to Schedule to make the
      *  events on it to display on the same time irrespective of the system timezone. It usually accepts
      *  the valid [IANA](https://en.wikipedia.org/wiki/List_of_tz_database_time_zones) timezone names.
-     * @default null
+
      */
     @Property()
     public timezone: string;
     /**
      * Complete set of settings related to Schedule events to bind it to local or remote dataSource, map applicable database fields and
      *  other validation to be carried out on the available fields.
-     * @default null
+
      */
     @Complex<EventSettingsModel>({}, EventSettings)
     public eventSettings: EventSettingsModel;
@@ -424,7 +423,7 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
      * * resourceData - object collection of current resource.
      * {% codeBlock src="schedule/resource-header-api/index.html" %}{% endcodeBlock %}
      * {% codeBlock src="schedule/resource-header-api/index.ts" %}{% endcodeBlock %}
-     * @default null
+
      */
     @Property()
     public resourceHeaderTemplate: string;
@@ -432,7 +431,7 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
      * Allows defining the group related settings of multiple resources. When this property is non-empty, it means
      *  that the resources will be grouped on the schedule layout based on the provided resource names.
      * {% codeBlock src="schedule/group-api/index.ts" %}{% endcodeBlock %}
-     * @default {}
+
      */
     @Complex<GroupModel>({}, Group)
     public group: GroupModel;
@@ -440,7 +439,7 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
      * Allows defining the collection of resources to be displayed on the Schedule. The resource collection needs to be defined
      *  with unique resource names to identify it along with the respective dataSource and field mapping options.
      * {% codeBlock src="schedule/resources-api/index.ts" %}{% endcodeBlock %}
-     * @default []
+
      */
     @Collection<ResourcesModel>([], Resources)
     public resources: ResourcesModel[];
@@ -448,14 +447,14 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
      * Allows defining the collection of custom header rows to display the year, month, week, date and hour label as an individual row
      *  on the timeline view of the scheduler.
      * {% codeBlock src="schedule/header-rows-api/index.ts" %}{% endcodeBlock %}
-     * @default []
+
      */
     @Collection<HeaderRowsModel>([], HeaderRows)
     public headerRows: HeaderRowsModel[];
     /**
      * It is used to customize the Schedule which accepts custom CSS class names that defines specific user-defined styles and themes
      *  to be applied on the Schedule element.
-     * @default null
+
      */
     @Property()
     public cssClass: string;
@@ -463,188 +462,196 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
      * It enables the external drag and drop support for appointments on scheduler, to be able to move them out of the scheduler layout.
      *  When the drag area is explicitly set with specific DOM element name,
      *  the appointments can be dragged anywhere within the specified drag area location.
-     * @default null
+
      */
     @Property()
     public eventDragArea: string;
     /**
      * Triggers after the scheduler component is created.
      * @event
-     * @blazorproperty 'Created'
+
      */
     @Event()
     public created: EmitType<Object>;
     /**
      * Triggers when the scheduler component is destroyed.
      * @event
-     * @blazorproperty 'Destroyed'
+
      */
     @Event()
     public destroyed: EmitType<Object>;
     /**
      * Triggers when the scheduler cells are single clicked or on single tap on the same cells in mobile devices.
      * @event
-     * @blazorproperty 'OnCellClick'
+
      */
     @Event()
     public cellClick: EmitType<CellClickEventArgs>;
     /**
      * Triggers when the scheduler cells are double clicked.
      * @event
-     * @blazorproperty 'OnCellDoubleClick'
+
      */
     @Event()
     public cellDoubleClick: EmitType<CellClickEventArgs>;
     /**
+     * Triggers when the more events indicator are clicked.
+     * @event
+
+     */
+    @Event()
+    public moreEventsClick: EmitType<MoreEventsClickArgs>;
+    /**
      * Triggers when the scheduler elements are hovered.
      * @event
-     * @blazorproperty 'OnHover'
+
+
      */
     @Event()
     public hover: EmitType<HoverEventArgs>;
     /**
      * Triggers when multiple cells or events are selected on the Scheduler.
      * @event
-     * @blazorproperty 'OnSelect'
-     * @deprecated
+
+
      */
     @Event()
     public select: EmitType<SelectEventArgs>;
     /**
      * Triggers on beginning of every scheduler action.
      * @event
-     * @blazorproperty 'OnActionBegin'
-     * @deprecated
+
+
      */
     @Event()
     public actionBegin: EmitType<ActionEventArgs>;
     /**
      * Triggers on successful completion of the scheduler actions.
      * @event
-     * @blazorproperty 'ActionCompleted'
-     * @blazorType Syncfusion.EJ2.Blazor.Schedule.ActionEventArgs<TValue>
+
+
      */
     @Event()
     public actionComplete: EmitType<ActionEventArgs>;
     /**
      * Triggers when a scheduler action gets failed or interrupted and an error information will be returned.
      * @event
-     * @blazorproperty 'OnActionFailure'
-     * @blazorType Syncfusion.EJ2.Blazor.Schedule.ActionEventArgs<TValue>
+
+
      */
     @Event()
     public actionFailure: EmitType<ActionEventArgs>;
     /**
      * Triggers before the date or view navigation takes place on scheduler.
      * @event
-     * @blazorproperty 'Navigating'
+
      */
     @Event()
     public navigating: EmitType<NavigatingEventArgs>;
     /**
      * Triggers before each element of the schedule rendering on the page.
      * @event
-     * @blazorproperty 'OnRenderCell'
-     * @deprecated
+
+
      */
     @Event()
     public renderCell: EmitType<RenderCellEventArgs>;
     /**
      * Triggers when the events are single clicked or on single tapping the events on the mobile devices.
      * @event
-     * @blazorproperty 'OnEventClick'
-     * @blazorType Syncfusion.EJ2.Blazor.Schedule.EventClickArgs<TValue>
+
+
      */
     @Event()
     public eventClick: EmitType<EventClickArgs>;
     /**
      * Triggers before each of the event getting rendered on the scheduler user interface.
      * @event
-     * @blazorproperty 'EventRendered'
-     * @blazorType Syncfusion.EJ2.Blazor.Schedule.EventRenderedArgs<TValue>
+
+
      */
     @Event()
     public eventRendered: EmitType<EventRenderedArgs>;
     /**
      * Triggers before the data binds to the scheduler.
      * @event
-     * @blazorproperty 'DataBinding'
-     * @blazorType Syncfusion.EJ2.Blazor.Schedule.DataBindingEventArgs<TValue>
+
+
      */
     @Event()
     public dataBinding: EmitType<ReturnType>;
     /**
      * Triggers before any of the scheduler popups opens on the page.
      * @event
-     * @blazorproperty 'OnPopupOpen'
-     * @blazorType Syncfusion.EJ2.Blazor.Schedule.PopupOpenEventArgs<TValue>
+
+
      */
     @Event()
     public popupOpen: EmitType<PopupOpenEventArgs>;
     /**
      * Triggers before any of the scheduler popups close on the page.
      * @event
-     * @blazorproperty 'OnPopupClose'
-     * @blazorType Syncfusion.EJ2.Blazor.Schedule.PopupCloseEventArgs<TValue>
+
+
      */
     @Event()
     public popupClose: EmitType<PopupCloseEventArgs>;
     /**
      * Triggers when an appointment is started to drag.
      * @event
-     * @blazorproperty 'OnDragStart'
+
      */
     @Event()
     public dragStart: EmitType<DragEventArgs>;
     /**
      * Triggers when an appointment is being in a dragged state.
      * @event
-     * @blazorproperty 'Dragging'
-     * @deprecated
+
+
      */
     @Event()
     public drag: EmitType<DragEventArgs>;
     /**
      * Triggers when the dragging of appointment is stopped.
      * @event
-     * @blazorproperty 'Dragged'
+
      */
     @Event()
     public dragStop: EmitType<DragEventArgs>;
     /**
      * Triggers when an appointment is started to resize.
      * @event
-     * @blazorproperty 'OnResizeStart'
+
      */
     @Event()
     public resizeStart: EmitType<ResizeEventArgs>;
     /**
      * Triggers when an appointment is being in a resizing action.
      * @event
-     * @blazorproperty 'Resizing'
-     * @deprecated
+
+
      */
     @Event()
     public resizing: EmitType<ResizeEventArgs>;
     /**
      * Triggers when the resizing of appointment is stopped.
      * @event
-     * @blazorproperty 'Resized'
+
      */
     @Event()
     public resizeStop: EmitType<ResizeEventArgs>;
     /**
      * Triggers once the event data is bound to the scheduler.
      * @event
-     * @blazorproperty 'DataBound'
-     * @blazorType Syncfusion.EJ2.Blazor.Schedule.DataBoundEventArgs<TValue>
+
+
      */
     @Event()
     public dataBound: EmitType<ReturnType>;
 
     /**
      * Constructor for creating the Schedule widget
-     * @hidden
+
      */
     constructor(options?: ScheduleModel, element?: string | HTMLElement) {
         super(options, <HTMLElement | string>element);
@@ -694,9 +701,7 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
     }
 
     public renderCompleted(): void {
-        if (isBlazor()) {
-            this.renderComplete();
-        }
+        this.renderComplete();
     }
 
     public updateLayoutTemplates(): void {
@@ -1105,7 +1110,7 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
     /**
      * To provide the array of modules needed for control rendering
      * @return {ModuleDeclaration[]}
-     * @hidden
+
      */
     public requiredModules(): ModuleDeclaration[] {
         let modules: ModuleDeclaration[] = [];
@@ -1172,7 +1177,6 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
         this.resourceCollection = [];
         this.currentAction = null;
         this.selectedElements = [];
-        this.isMorePopup = true;
         this.setViewOptions();
     }
 
@@ -1251,13 +1255,13 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
             timelineYear: 'Timeline Year',
             editFollowingEvent: 'Following Events',
             deleteTitle: 'Delete Event',
-            editTitle: 'Edit Event',
+            editTitle: 'Edit Event'
         };
     }
 
     /**
      * Binding events to the Schedule element.
-     * @hidden
+
      */
     private wireEvents(): void {
         let resize: string = 'onorientationchange' in window ? 'orientationchange' : 'resize';
@@ -1440,7 +1444,7 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
 
     /**
      * Unbinding events from the element on widget destroy.
-     * @hidden
+
      */
     private unwireEvents(): void {
         let resize: string = 'onorientationchange' in window ? 'orientationchange' : 'resize';
@@ -1860,11 +1864,7 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
         let duration: number = endDateFromColSpan ? parseInt(lastTd.getAttribute('colSpan'), 10) : 1;
         if (!this.activeViewOptions.timeScale.enable || endDateFromColSpan || lastTd.classList.contains(cls.ALLDAY_CELLS_CLASS) ||
             lastTd.classList.contains(cls.HEADER_CELLS_CLASS)) {
-            let startDate: Date = new Date(startTime.getTime());
-            if (lastTd.classList.contains(cls.ALLDAY_CELLS_CLASS)) {
-                startDate = new Date(endTime.getTime());
-            }
-            endTime = util.addDays(startDate, duration);
+            endTime = util.addDays(new Date(endTime.getTime()), duration);
         } else {
             endTime = this.activeView.getEndDateFromStartDate(endTime);
         }
@@ -1885,7 +1885,7 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
      * Retrieves the resource details based on the provided resource index.
      * @param {number} index index of the resources at the last level.
      * @returns {ResourceDetails} Object An object holding the details of resource and resourceData.
-     * @isGenericType true
+
      */
     public getResourcesByIndex(index: number): ResourceDetails {
         if (this.resourceBase && this.resourceBase.lastResourceLevel) {
@@ -2015,7 +2015,7 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
      * Retrieves the entire collection of events bound to the Schedule.
      * @method getEvents
      * @returns {Object[]} Returns the collection of event objects from the Schedule.
-     * @isGenericType true
+
      */
     public getEvents(startDate?: Date, endDate?: Date, includeOccurrences?: boolean): Object[] {
         let eventCollections: Object[] = [];
@@ -2038,7 +2038,7 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
      * Retrieves the entire collection of events bound to the Schedule.
      * @method getBlockEvents
      * @returns {Object[]} Returns the collection of block event objects from the Schedule.
-     * @isGenericType true
+
      */
     public getBlockEvents(startDate?: Date, endDate?: Date, includeOccurrences?: boolean): Object[] {
         let eventCollections: Object[] = [];
@@ -2062,7 +2062,7 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
      * @method getOccurrencesByID
      * @param {number} eventID ID of the parent recurrence data from which the occurrences are fetched.
      * @returns {Object[]} Returns the collection of occurrence event objects.
-     * @isGenericType true
+
      */
     public getOccurrencesByID(eventID: number | string): Object[] {
         return this.eventBase.getOccurrencesByID(eventID);
@@ -2074,7 +2074,7 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
      * @param {Date} startTime Denotes the start time range.
      * @param {Date} endTime Denotes the end time range.
      * @returns {Object[]} Returns the collection of occurrence event objects that lies between the provided start and end time.
-     * @isGenericType true
+
      */
     public getOccurrencesByRange(startTime: Date, endTime: Date): Object[] {
         startTime = this.getDateTime(startTime);
@@ -2094,16 +2094,30 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
     /**
      * Set the recurrence editor instance from custom editor template.
      * @method setRecurrenceEditor
+     * @param {RecurrenceEditor} recurrenceEditor instance has passed to fetch the instance in event window.
+     * @returns {void}
      */
     public setRecurrenceEditor(recurrenceEditor: RecurrenceEditor): void {
         this.eventWindow.setRecurrenceEditor(recurrenceEditor);
     }
 
     /**
+     * Get deleted occurrences from given recurrence series.
+     * @method getDeletedOccurrences
+     * @param {{[key: string]: Object}} recurrenceData Accepts the parent event object.
+     * @param {string | number} recurrenceData Accepts the parent ID of the event object.
+     * @returns {Object[]} Returns the collection of deleted occurrence events.
+
+     */
+    public getDeletedOccurrences(recurrenceData: string | number | { [key: string]: Object }): Object[] {
+        return this.eventBase.getDeletedOccurrences(recurrenceData);
+    }
+
+    /**
      * Retrieves the events that lies on the current date range of the active view of Schedule.
      * @method getCurrentViewEvents
      * @returns {Object[]} Returns the collection of events.
-     * @isGenericType true
+
      */
     public getCurrentViewEvents(): Object[] {
         return this.eventsProcessed;
@@ -2127,7 +2141,7 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
      * @method getEventDetails
      * @param {Element} element Denotes the event UI element on the Schedule.
      * @returns {Object} Returns the event details.
-     * @isGenericType true
+
      */
     public getEventDetails(element: Element): Object {
         element = getElement(element);

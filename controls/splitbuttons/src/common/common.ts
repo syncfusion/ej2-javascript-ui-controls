@@ -20,35 +20,35 @@ export class Item extends ChildProperty<Item> {
     /**
      * Defines class/multiple classes separated by a space for the item that is used to include an icon.
      * Action item can include font icon and sprite image.
-     * @default ''
+
      */
     @Property('')
     public iconCss: string;
 
     /**
      * Specifies the id for item.
-     * @default ''
+
      */
     @Property('')
     public id: string;
 
     /**
      * Specifies separator between the items. Separator are horizontal lines used to group action items.
-     * @default false
+
      */
     @Property(false)
     public separator: boolean;
 
     /**
      * Specifies text for item.
-     * @default ''
+
      */
     @Property('')
     public text: string;
 
     /**
      * Specifies url for item that creates the anchor link to navigate to the url provided.
-     * @default ''
+
      */
     @Property('')
     public url: string;

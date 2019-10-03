@@ -17,8 +17,8 @@ describe('Workbook All module checking ->', () => {
     });
 
     //As of now, checking for code coverage.
-    it('Initialization checking', () => {
-        helper = new WorkbookHelper(model);
-    });
+    // it('Initialization checking', () => {
+    //     helper = new WorkbookHelper(model);
+    // });
 
 });

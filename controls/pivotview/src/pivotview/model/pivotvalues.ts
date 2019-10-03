@@ -5,7 +5,7 @@ import { AxisSetModel } from './pivotvalues-model';
 /** 
  * Configures the properties in pivotvalues fields. 
  */
-/** @hidden */
+
 export class AxisSet extends ChildProperty<AxisSet> implements IAxisSet {
 
     /**
@@ -112,7 +112,7 @@ export class AxisSet extends ChildProperty<AxisSet> implements IAxisSet {
 }
 
 /**
- * @hidden
+
  */
 export interface PivotValues extends IPivotValues {
     [key: number]: {

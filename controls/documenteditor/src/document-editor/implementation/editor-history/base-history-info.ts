@@ -701,8 +701,16 @@ export class BaseHistoryInfo {
                     value = new WParagraphStyle();
                     (value as WParagraphStyle).copyStyle(previousFormat.baseStyle as WParagraphStyle);
                     this.currentPropertyIndex++;
+                    if (!isNullOrUndefined(format.baseStyle)) {
+                        previousFormat.baseStyle = new WParagraphStyle();
+                        (previousFormat.baseStyle as WParagraphStyle).copyStyle(format.baseStyle as WParagraphStyle);
+                    }
                     return value;
                 } else {
+                    if (!isNullOrUndefined(format.baseStyle)) {
+                        previousFormat.baseStyle = new WParagraphStyle();
+                        (previousFormat.baseStyle as WParagraphStyle).copyStyle(format.baseStyle as WParagraphStyle);
+                    }
                     return undefined;
                 }
             }

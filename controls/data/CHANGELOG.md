@@ -2,7 +2,56 @@
 
 ## [Unreleased]
 
-## 17.2.48-beta (2019-08-28)
+## 17.3.14 (2019-10-03)
+
+### DataManager
+
+#### Breaking Changes
+
+- `#235197`, `#249206` - By default UTC time zone values are converted into local time zones without the use of `serverTimezoneOffset`.
+
+## 17.2.39 (2019-07-30)
+
+### DataManager
+
+#### Bug Fixes
+
+- `242189` - CRUD Operations now function properly when using Batch Edit mode in `OdataV4Adaptor`.
+- Support to enable or disable the date object parsing with `serverTimeZoneOffset` is now handled with `timeZoneHandling` property or `DataUtil.timeZoneHandling` globally.
+
+## 17.2.36 (2019-07-24)
+
+### DataManager
+
+#### Bug Fixes
+
+- `241939` - In Predicate or function , Date type has been added to give support for filtering Date values.
+
+## 17.2.35 (2019-07-17)
+
+### DataManager
+
+#### Bug Fixes
+
+- `#144418`, `#234444`, `#238765`, `#241262`, `#241163` - Date value is handled based on the server time zone offset.
+
+## 17.2.28-beta (2019-06-27)
+
+### DataManager
+
+#### Bug Fixes
+
+- #237039 - Delete operation is working properly when date column is assigned as primary key field.
+
+## 17.1.50 (2019-06-04)
+
+### DataManager
+
+#### Bug Fixes
+
+- #233040- Provided support to get the service root url from `odata` context field to use during batch operation.
+
+## 17.1.41 (2019-04-16)
 
 ### DataManager
 

@@ -1,4 +1,5 @@
 import { DocumentEditor } from '../../src/document-editor/document-editor';
+import { TableOfContentsSettings, ParagraphWidget } from '../../src/document-editor/index';
 import { createElement } from '@syncfusion/ej2-base';
 import { Editor, TableCellWidget, TextElementBox, TextHelper, RtlInfo, ListTextElementBox, LineWidget, TabElementBox, TextPosition } from '../../src/index';
 import { TestHelper } from '../test-helper.spec';
@@ -896,6 +897,126 @@ describe('Rtl text with list format validation 2', () => {
     it('Test redo applied on the last element', () => {
         editor.editorHistory.redo();
         expect((editor.selection.start.currentWidget.children[0] as TabElementBox).text).toBe('\t');
+    });
+});
+
+describe('Paste content validation', () => {
+    let editor: DocumentEditor = undefined;
+    beforeAll(() => {
+        document.body.innerHTML = '';
+        let ele: HTMLElement = createElement('div', { id: 'container' });
+        document.body.appendChild(ele);
+        editor = new DocumentEditor({ enableEditor: true, enableEditorHistory: true, isReadOnly: false, enableLocalPaste: false });
+        DocumentEditor.Inject(Editor, Selection, EditorHistory);
+        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        editor.appendTo('#container');
+    });
+    afterAll((done) => {
+        editor.destroy();
+        document.body.removeChild(document.getElementById('container'));
+        editor = undefined;
+        document.body.innerHTML = '';
+        setTimeout(() => {
+            done();
+        }, 1000);
+    });
+    it('Paste content validation if the result is null', () => {
+        (editor.editor as any).copiedTextContent = "Hello world";
+        (editor.editor as any).pasteFormattedContent({ data: null });
+        expect(((editor.selection.start.currentWidget as LineWidget).children[0] as TextElementBox).text).toBe('Hello world');
+    });
+});
+
+describe('Paste Text Formatting formatting option', () => {
+    let editor: DocumentEditor = undefined;
+    beforeAll(() => {
+        document.body.innerHTML = '';
+        let ele: HTMLElement = createElement('div', { id: 'container' });
+        document.body.appendChild(ele);
+        editor = new DocumentEditor({ enableEditor: true, enableEditorHistory: true, isReadOnly: false });
+        DocumentEditor.Inject(Editor, Selection, EditorHistory);
+        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        editor.appendTo('#container');
+    });
+    afterAll((done) => {
+        editor.destroy();
+        document.body.removeChild(document.getElementById('container'));
+        editor = undefined;
+        document.body.innerHTML = '';
+        setTimeout(() => {
+            done();
+        }, 1000);
+    });
+    it('Paste Text Formatting formatting option', () => {
+        (editor.editor as any).copiedTextContent = 'Welcome to the new world';
+        (editor.editor as any).copiedContent = '';
+        (editor.editor as any).pasteContents((editor.editor as any).copiedTextContent);
+        (editor.editor as any).applyPasteOptions('KeepSourceFormatting');
+        expect((editor.selection.start.paragraph.childWidgets[0] as LineWidget).children.length).toBe(1);
+    });
+});
+
+/**
+ * Toc content creation validation.
+ */
+describe('Toc content creation validation', () => {
+    let editor: DocumentEditor = undefined;
+    let tocSettings: TableOfContentsSettings = {
+        startLevel: 1,
+        endLevel: 3,
+        includeHyperlink: true,
+        includePageNumber: true,
+        rightAlign: true
+    };
+    let text: string = "welcome";
+    beforeAll(() => {
+        document.body.innerHTML = '';
+        let ele: HTMLElement = createElement('div', { id: 'container' });
+        document.body.appendChild(ele);
+        editor = new DocumentEditor({ enableEditor: true, enableSelection: true, enableEditorHistory: true, isReadOnly: false });
+        DocumentEditor.Inject(Editor, Selection, EditorHistory);
+        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        editor.appendTo('#container');
+    });
+    afterAll((done) => {
+        editor.destroy();
+        document.body.removeChild(document.getElementById('container'));
+        editor = undefined;
+        document.body.innerHTML = '';
+        setTimeout(() => {
+            done();
+        }, 1000);
+    });
+    it('Applying style on selection including para mark and inserting Toc', () => {
+        editor.editor.insertText(text);
+        editor.selection.selectAll();
+        editor.editor.applyStyle('Heading 1');
+        editor.selection.handleHomeKey();
+        editor.editor.handleEnterKey();
+        editor.selection.handleUpKey();
+        editor.editor.insertTableOfContents(tocSettings);
+        expect((((editor.viewer.pages[0].bodyWidgets[0].childWidgets[0] as ParagraphWidget).childWidgets[0] as LineWidget).children[6] as TextElementBox).text).toBe(text);
+    });
+    it('Applying style on selection not including para mark and inserting Toc', () => {
+        editor.openBlank();
+        editor.editor.insertText(text);
+        editor.selection.handleHomeKey();
+        editor.selection.selectCurrentWord();
+        editor.editor.applyStyle('Heading 1');
+        editor.selection.handleHomeKey();
+        editor.editor.handleEnterKey();
+        editor.selection.handleUpKey();
+        editor.editor.insertTableOfContents(tocSettings);
+        expect((((editor.viewer.pages[0].bodyWidgets[0].childWidgets[0] as ParagraphWidget).childWidgets[0] as LineWidget).children[6] as TextElementBox).text).toBe(text);
     });
 });
 

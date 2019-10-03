@@ -10,12 +10,12 @@ import { PdfAnnotationBase } from './pdf-annotation';
 
 /**
  * Defines the size and position of selected items and defines the appearance of selector
- * @hidden
+
  */
 export class Selector extends ChildProperty<Selector> implements IElement {
     /**
      * Defines the size and position of the container
-     * @default null
+
      */
     @Property(null)
     public wrapper: Container;
@@ -29,44 +29,44 @@ export class Selector extends ChildProperty<Selector> implements IElement {
 
     /**
      * Sets/Gets the width of the container
-     * @aspDefaultValueIgnore
-     * @default undefined
+
+
      */
     @Property()
     public width: number;
 
     /**
      * Sets/Gets the height of the container
-     * @aspDefaultValueIgnore
-     * @default undefined
+
+
      */
     @Property()
     public height: number;
 
     /**
      * Sets the rotate angle of the container
-     * @default 0
+
      */
     @Property(0)
     public rotateAngle: number;
 
     /**
      * Sets the positionX of the container
-     * @default 0
+
      */
     @Property(0)
     public offsetX: number;
 
     /**
      * Sets the positionY of the container
-     * @default 0
+
      */
     @Property(0)
     public offsetY: number;
 
     /**
      * Sets the pivot of the selector
-     * @default { x: 0.5, y: 0.5 }
+
      */
     @Complex<PointModel>({ x: 0.5, y: 0.5 }, Point)
     public pivot: PointModel;
@@ -85,7 +85,7 @@ export class Selector extends ChildProperty<Selector> implements IElement {
      * * ResizeNorthWest - Enable ResizeNorthWest Resize
      * * ResizeNorth - Enable ResizeNorth Resize
      * @private
-     * @aspNumberEnum
+
      */
     public thumbsConstraints: ThumbsConstraints;
     /**

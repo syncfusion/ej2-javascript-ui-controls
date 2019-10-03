@@ -17,7 +17,7 @@ import { FreeTextAnnotation } from './free-text-annotation';
 import { InputElement } from './input-element';
 
 /**
- * @hidden
+
  */
 export interface IActionElements {
     pageIndex: number;
@@ -35,7 +35,7 @@ export interface IActionElements {
 }
 
 /**
- * @hidden
+
  */
 export interface IPoint {
     x: number;
@@ -43,7 +43,7 @@ export interface IPoint {
 }
 
 /**
- * @hidden
+
  */
 export interface IPageAnnotations {
     pageIndex: number;
@@ -178,12 +178,20 @@ export class Annotation {
             if (this.measureAnnotationModule) {
                 this.measureAnnotationModule.setAnnotationType(type);
             }
+        } else if (type === 'FreeText' && this.freeTextAnnotationModule) {
+            this.freeTextAnnotationModule.setAnnotationType('FreeText');
+            this.freeTextAnnotationModule.isNewFreeTextAnnot = true;
+            this.freeTextAnnotationModule.isNewAddedAnnot = true;
         }
     }
 
     private clearAnnotationMode(): void {
         if (this.textMarkupAnnotationModule) {
             this.textMarkupAnnotationModule.isTextMarkupAnnotationMode = false;
+        }
+        if (this.freeTextAnnotationModule) {
+            this.freeTextAnnotationModule.isNewFreeTextAnnot = true;
+            this.freeTextAnnotationModule.isNewAddedAnnot = true;
         }
     }
 
@@ -1654,7 +1662,7 @@ export class Annotation {
             if (this.pdfViewer.textSelectionModule && !this.pdfViewerBase.isPanMode) {
                 this.pdfViewer.textSelectionModule.enableTextSelectionMode();
             }
-            if (this.pdfViewer.toolbar && this.pdfViewer.toolbar.annotationToolbarModule) {
+            if (this.pdfViewer.toolbar && this.pdfViewer.toolbar.annotationToolbarModule && !Browser.isDevice) {
                 // tslint:disable-next-line:max-line-length
                 if (this.pdfViewer.annotation.freeTextAnnotationModule && !this.pdfViewer.annotation.freeTextAnnotationModule.isInuptBoxInFocus) {
                     this.pdfViewer.toolbar.annotationToolbarModule.enableAnnotationPropertiesTools(false);
@@ -2519,49 +2527,51 @@ export class Annotation {
     public updateAnnotationAuthor(annotationType: string, annotationSubType?: string): string {
         let annotationAuthor: string;
         if (annotationType === 'sticky') {
-            annotationAuthor = this.pdfViewer.stickyNotesSettings.author;
+            annotationAuthor = this.pdfViewer.stickyNotesSettings.author ? this.pdfViewer.stickyNotesSettings.author : 'Guest';
         } else if (annotationType === 'stamp') {
-            annotationAuthor = this.pdfViewer.stampSettings.author;
+            annotationAuthor = this.pdfViewer.stampSettings.author ? this.pdfViewer.stampSettings.author : 'Guest';
         } else if (annotationType === 'shape') {
             if (annotationSubType === 'Line') {
-                annotationAuthor = this.pdfViewer.lineSettings.author;
+                annotationAuthor = this.pdfViewer.lineSettings.author ? this.pdfViewer.lineSettings.author : 'Guest';
             } else if (annotationSubType === 'LineWidthArrowHead' || annotationSubType === 'Arrow') {
-                annotationAuthor = this.pdfViewer.arrowSettings.author;
+                annotationAuthor = this.pdfViewer.arrowSettings.author ? this.pdfViewer.arrowSettings.author : 'Guest';
             } else if (annotationSubType === 'Circle' || annotationSubType === 'Ellipse' || annotationSubType === 'Oval') {
-                annotationAuthor = this.pdfViewer.circleSettings.author;
+                annotationAuthor = this.pdfViewer.circleSettings.author ? this.pdfViewer.circleSettings.author : 'Guest';
             } else if (annotationSubType === 'Rectangle' || annotationSubType === 'Square') {
-                annotationAuthor = this.pdfViewer.rectangleSettings.author;
+                annotationAuthor = this.pdfViewer.rectangleSettings.author ? this.pdfViewer.rectangleSettings.author : 'Guest';
             } else if (annotationSubType === 'Polygon') {
-                annotationAuthor = this.pdfViewer.polygonSettings.author;
+                annotationAuthor = this.pdfViewer.polygonSettings.author ? this.pdfViewer.polygonSettings.author : 'Guest';
             } else {
-                annotationAuthor = this.pdfViewer.rectangleSettings.author;
+                annotationAuthor = this.pdfViewer.rectangleSettings.author ? this.pdfViewer.rectangleSettings.author : 'Guest';
             }
         } else if (annotationType === 'measure') {
             if (annotationSubType === 'Distance' || annotationSubType === 'Distance calculation') {
-                annotationAuthor = this.pdfViewer.distanceSettings.author;
+                annotationAuthor = this.pdfViewer.distanceSettings.author ? this.pdfViewer.distanceSettings.author : 'Guest';
             } else if (annotationSubType === 'Perimeter' || annotationSubType === 'Perimeter calculation') {
-                annotationAuthor = this.pdfViewer.perimeterSettings.author;
+                annotationAuthor = this.pdfViewer.perimeterSettings.author ? this.pdfViewer.perimeterSettings.author : 'Guest';
             } else if (annotationSubType === 'Radius' || annotationSubType === 'Radius calculation') {
-                annotationAuthor = this.pdfViewer.radiusSettings.author;
+                annotationAuthor = this.pdfViewer.radiusSettings.author ? this.pdfViewer.radiusSettings.author : 'Guest';
             } else if (annotationSubType === 'Area' || annotationSubType === 'Area calculation') {
-                annotationAuthor = this.pdfViewer.areaSettings.author;
+                annotationAuthor = this.pdfViewer.areaSettings.author ? this.pdfViewer.areaSettings.author : 'Guest';
             } else if (annotationSubType === 'Volume' || annotationSubType === 'Volume calculation') {
-                annotationAuthor = this.pdfViewer.volumeSettings.author;
+                annotationAuthor = this.pdfViewer.volumeSettings.author ? this.pdfViewer.volumeSettings.author : 'Guest';
             } else {
-                annotationAuthor = this.pdfViewer.distanceSettings.author;
+                annotationAuthor = this.pdfViewer.distanceSettings.author ? this.pdfViewer.distanceSettings.author : 'Guest';
             }
         } else if (annotationType === 'textMarkup') {
             if (annotationSubType === 'Highlight') {
-                annotationAuthor = this.pdfViewer.highlightSettings.author;
+                annotationAuthor = this.pdfViewer.highlightSettings.author ? this.pdfViewer.highlightSettings.author : 'Guest';
             } else if (annotationSubType === 'Underline') {
-                annotationAuthor = this.pdfViewer.underlineSettings.author;
+                annotationAuthor = this.pdfViewer.underlineSettings.author ? this.pdfViewer.underlineSettings.author : 'Guest';
             } else if (annotationSubType === 'Strikethrough') {
-                annotationAuthor = this.pdfViewer.strikethroughSettings.author;
+                annotationAuthor = this.pdfViewer.strikethroughSettings.author ? this.pdfViewer.strikethroughSettings.author : 'Guest';
             } else {
-                annotationAuthor = this.pdfViewer.highlightSettings.author;
+                annotationAuthor = this.pdfViewer.highlightSettings.author ? this.pdfViewer.highlightSettings.author : 'Guest';
             }
+        } else if (annotationType === 'freeText') {
+            annotationAuthor = this.pdfViewer.freeTextSettings.author ? this.pdfViewer.freeTextSettings.author : 'Guest';
         } else {
-            annotationAuthor = this.pdfViewer.stickyNotesSettings.author;
+            annotationAuthor = this.pdfViewer.stickyNotesSettings.author ? this.pdfViewer.stickyNotesSettings.author : 'Guest';
         }
         return annotationAuthor;
     }

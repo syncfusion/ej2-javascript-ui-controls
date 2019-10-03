@@ -24,7 +24,7 @@ export class NumericContainer implements IRender {
 
     /**
      * Constructor for numericContainer module
-     * @hidden
+
      */
     constructor(pagerModule?: Pager) {
         this.pagerModule = pagerModule;
@@ -32,7 +32,7 @@ export class NumericContainer implements IRender {
 
     /**
      * The function is used to render numericContainer
-     * @hidden
+
      */
     public render(): void {
         this.pagerElement = this.pagerModule.element;
@@ -54,7 +54,7 @@ export class NumericContainer implements IRender {
 
     /**
      * The function is used to refresh refreshNumericLinks
-     * @hidden
+
      */
     public refreshNumericLinks(): void {
         let link: HTMLElement;
@@ -79,7 +79,7 @@ export class NumericContainer implements IRender {
 
     /**
      * Binding events to the element while component creation
-     * @hidden
+
      */
     public wireEvents(): void {
         EventHandler.add(this.pagerElement, 'click', this.clickHandler, this);
@@ -87,7 +87,7 @@ export class NumericContainer implements IRender {
 
     /**
      * Unbinding events from the element while component destroy
-     * @hidden
+
      */
     public unwireEvents(): void {
         EventHandler.remove(this.pagerModule.element, 'click', this.clickHandler);
@@ -97,7 +97,7 @@ export class NumericContainer implements IRender {
      * To destroy the PagerMessage
      * @method destroy
      * @return {void}  
-     * @hidden
+
      */
     public destroy(): void {
         this.unwireEvents();

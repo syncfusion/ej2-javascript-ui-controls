@@ -47,7 +47,9 @@
       border-style: $datetime-time-icon-border-style;
       margin: $datetime-time-icon-margin;
     }
+  }
 
+  .e-datetime-wrapper:not(.e-outline) {
     &.e-rtl .e-input-group-icon.e-time-icon {
       margin: $datetime-time-rtl-icon-margin;
     }
@@ -120,7 +122,10 @@
         min-width: $datetime-bigger-min-width;
       }
     }
+  }
 
+  .e-bigger.e-datetime-wrapper:not(.e-outline),
+  &.e-bigger .e-datetime-wrapper:not(.e-outline) {
     &.e-rtl .e-input-group-icon.e-time-icon {
       margin: $datetime-time-rtl-bigger-icon-margin;
     }

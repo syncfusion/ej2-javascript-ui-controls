@@ -4,7 +4,7 @@ import { addClass, removeClass, EmitType, Complex, formatUnit, detach, L10n, isN
 import { MenuItemModel, BeforeOpenCloseMenuEventArgs } from '@syncfusion/ej2-navigations';
 import { initialLoad, mouseDown, spreadsheetDestroyed, keyUp, keyDown, getSiblingsHeight } from '../common/index';
 import { defaultLocale, locale, setAriaOptions } from '../common/index';
-import { CellEditEventArgs, CellSaveEventArgs, ribbon, formulaBar, sheetTabs } from '../common/index';
+import { CellEditEventArgs, CellSaveEventArgs, ribbon, formulaBar, sheetTabs, formulaOperation } from '../common/index';
 import { addContextMenuItems, removeContextMenuItems, enableContextMenuItems, selectRange } from '../common/index';
 import { cut, copy, paste, PasteSpecialType, dialog, editOperation, activeSheetChanged } from '../common/index';
 import { Render } from '../renderer/render';
@@ -12,16 +12,19 @@ import { Scroll, VirtualScroll, Edit, CellFormat, Selection, KeyboardNavigation,
 import { CellRenderEventArgs, IRenderer, IViewport, OpenOptions, MenuSelectArgs, click } from '../common/index';
 import { ServiceLocator, Dialog } from '../services/index';
 import { SheetModel, getCellPosition, getColumnsWidth, getSheetIndex, getSheetNameFromAddress, DataBind } from './../../workbook/index';
-import { getSheetIndexFromId, WorkbookEdit, WorkbookOpen, WorkbookSave, WorkbookCellFormat } from './../../workbook/index';
+import { BeforeSortEventArgs, SortOptions, beforeSort } from './../../workbook/index';
+import { getSheetIndexFromId, WorkbookEdit, WorkbookOpen, WorkbookSave, WorkbookCellFormat, WorkbookSort } from './../../workbook/index';
 import { Workbook } from '../../workbook/base/workbook';
 import { SpreadsheetModel } from './spreadsheet-model';
+import { Resize } from '../actions/index';
 import { getRequiredModules, setStyleAttribute, ScrollSettings, ScrollSettingsModel, SelectionSettingsModel } from '../common/index';
 import { SelectionSettings, BeforeSelectEventArgs, SelectEventArgs, getStartEvent } from '../common/index';
 import { createSpinner, showSpinner, hideSpinner } from '@syncfusion/ej2-popups';
 import { setRowHeight, getRowsHeight } from './../../workbook/base/row';
 import { getRangeIndexes, getIndexesFromAddress, getCellIndexes, WorkbookNumberFormat, WorkbookFormula } from '../../workbook/index';
 import { RefreshValueArgs, Ribbon, FormulaBar, SheetTabs, Open, ContextMenu, Save, NumberFormat, Formula } from '../integrations/index';
-import { isNumber } from '../../workbook/common/math';
+import { Sort } from '../integrations/index';
+import { isNumber } from '../../workbook/index';
 
 /**
  * Represents the Spreadsheet component. 
@@ -60,6 +63,13 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
      */
     @Property(true)
     public allowScrolling: boolean;
+
+    /**
+     * If `allowResizing` is set to true, spreadsheet columns and rows can be resized.
+     * @default true
+     */
+    @Property(true)
+    public allowResizing: boolean;
 
     /**
      * It enables or disables the clipboard operations (cut, copy, and paste) of the Spreadsheet.
@@ -424,7 +434,7 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
         Spreadsheet.Inject(
             Ribbon, FormulaBar, SheetTabs, Selection, Edit, KeyboardNavigation, KeyboardShortcut, Clipboard, DataBind, Open, ContextMenu,
             Save, NumberFormat, CellFormat, Formula, WorkbookEdit, WorkbookOpen, WorkbookSave, WorkbookCellFormat,
-            WorkbookNumberFormat, WorkbookFormula
+            WorkbookNumberFormat, WorkbookFormula, Sort, WorkbookSort, Resize
         );
         if (element) {
             this.appendTo(element);
@@ -477,7 +487,6 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
     protected render(): void {
         super.render();
         this.element.setAttribute('tabindex', '0');
-        this.element.focus();
         setAriaOptions(this.element, { role: 'grid' });
         this.renderModule = new Render(this);
         this.notify(initialLoad, null);
@@ -660,15 +669,6 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
     }
 
     /**
-     * Gets the Cell index in the Spreadsheet.     
-     * @return {Element}
-     * @hidden
-     */
-    public getCellIndex(cell: Element): number[] {
-        return [parseInt(cell.parentElement.getAttribute('aria-rowindex'), 10), parseInt(cell.getAttribute('aria-colindex'), 10)];
-    }
-
-    /**
      * To get the backup element count for row and column virtualization.
      * @hidden
      */
@@ -689,8 +689,32 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
         return val;
     }
 
+    /**
+     * Sorts the range of cells in the active sheet.
+     * @param sortOptions - options for sorting.
+     * @param range - address of the data range.
+     */
+     public sort(sortOptions?: SortOptions, range?: string): void {
+        if (!range) {
+            range = this.getActiveSheet().selectedRange;
+        }
+        sortOptions = sortOptions || { sortDescriptors: {} };
+        let args: BeforeSortEventArgs = { range: range, sortOptions: sortOptions, cancel: false };
+        this.trigger(beforeSort, args);
+        if (args.cancel) { return; }
+        this.notify(beforeSort, args);
+        super.sort(args.sortOptions, range);
+    }
+
     /** @hidden */
     public setValueRowCol(sheetIndex: number, value: string | number, rowIndex: number, colIndex: number): void {
+        if (value === 'circular reference: ') {
+            let circularArgs: { action: string, argValue: string } = {
+                action: 'isCircularReference', argValue: value
+            };
+            this.notify(formulaOperation, circularArgs);
+            value = circularArgs.argValue;
+        }
         super.setValueRowCol(sheetIndex, value, rowIndex, colIndex);
         sheetIndex = getSheetIndexFromId(this, sheetIndex);
         this.notify(

@@ -14,7 +14,7 @@ import * as events from '../../common/base/constant';
  * Module to render Conditional Formatting Dialog
  */
 
-/** @hidden */
+
 export class ConditionalFormatting {
     public parent: PivotView;
 
@@ -441,7 +441,7 @@ export class ConditionalFormatting {
     /**
      * To check is Hex or not.
      * @returns boolean
-     * @hidden
+
      */
     public isHex(h: string): boolean {
         let a: number = parseInt(h, 16);
@@ -454,7 +454,7 @@ export class ConditionalFormatting {
     /**
      * To convert hex to RGB.
      * @returns { r: number, g: number, b: number } | null
-     * @hidden
+
      */
     public hexToRgb(hex: string): { r: number, g: number, b: number } | null {
         let result: RegExpExecArray = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
@@ -468,7 +468,7 @@ export class ConditionalFormatting {
     /**
      * To convert color to hex.
      * @returns string
-     * @hidden
+
      */
     public colourNameToHex(colour: string): string {
         let colours: { [key: string]: string } = {
@@ -539,7 +539,7 @@ export class ConditionalFormatting {
     /**
      * To destroy the Conditional Formatting dialog
      * @returns void
-     * @hidden
+
      */
     public destroy(): void {
         if (this.dialog && !this.dialog.isDestroyed) {

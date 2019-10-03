@@ -20,67 +20,67 @@ MultiSelect.Inject(CheckBoxSelection);
 export class Columns extends ChildProperty<Columns> {
     /**
      * Specifies the fields in columns.
-     * @default null
+
      */
     @Property(null)
     public field: string;
     /**
      * Specifies the labels name in columns
-     * @default null
+
      */
     @Property(null)
     public label: string;
     /**
      * Specifies the types in columns field
-     * @default null
+
      */
     @Property(null)
     public type: string;
     /**
      * Specifies the values in columns or bind the values from sub controls.
-     * @default null
+
      */
     @Property(null)
     public values: string[] | number[] | boolean[];
     /**
      * Specifies the operators in columns.
-     * @default null
+
      */
     @Property(null)
     public operators: { [key: string]: Object }[];
     /**
      * Specifies the template for value field such as slider or any other widgets.
-     * @default null
+
      */
     @Property(null)
     public template: TemplateColumn;
     /**
      * Specifies the validation for columns (text, number and date).
-     * @default  { isRequired: true , min: 0, max: Number.MAX_VALUE }
+
      */
     @Property({ isRequired: true , min: 0, max: Number.MAX_VALUE })
     public validation: Validation;
     /**
      * Specifies the date format for columns.
-     * @default null
+
      */
     @Property(null)
     public format: string;
     /**
      * Specifies the step value(numeric textbox) for columns.
-     * @default null
+
      */
     @Property(null)
     public step: number;
     /**
      * Specifies the default value for columns.
-     * @default null
+
      */
     @Property(null)
     public value:  string[] | number[] | string | number | boolean | Date;
     /**
      * Specifies the category for columns.
-     * @default null
+
      */
     @Property(null)
     public category: string;
@@ -88,43 +88,43 @@ export class Columns extends ChildProperty<Columns> {
 export class Rule extends ChildProperty<Rule> {
     /**
      * Specifies the condition value in group.
-     * @default null
+
      */
     @Property(null)
     public condition: string;
     /**
      * Specifies the rules in group.
-     * @default []
+
      */
     @Collection<RuleModel>([], Rule)
     public rules: RuleModel[];
     /**
      * Specifies the field value in group.
-     * @default null
+
      */
     @Property(null)
     public field: string;
     /**
      * Specifies the label value in group.
-     * @default null
+
      */
     @Property(null)
     public label: string;
     /**
      * Specifies the type value in group.
-     * @default null
+
      */
     @Property(null)
     public type: string;
     /**
      * Specifies the operator value in group.
-     * @default null
+
      */
     @Property(null)
     public operator: string;
     /**
      * Specifies the sub controls value in group.
-     * @default null
+
      */
     @Property(null)
     public value: string[] | number[] | string | number | boolean;
@@ -133,19 +133,19 @@ export class Rule extends ChildProperty<Rule> {
 export class ShowButtons extends ChildProperty<ShowButtons> {
     /**
      * Specifies the boolean value in ruleDelete that the enable/disable the buttons in rule.
-     * @default true
+
      */
     @Property(true)
     public ruleDelete: boolean;
     /**
      * Specifies the boolean value in groupInsert that the enable/disable the buttons in group.
-     * @default true
+
      */
     @Property(true)
     public groupInsert: boolean;
     /**
      * Specifies the boolean value in groupDelete that the enable/disable the buttons in group.
-     * @default true
+
      */
     @Property(true)
     public groupDelete: boolean;
@@ -201,118 +201,118 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
     /** 
      * Triggers when the component is created.
      * @event
-     * @blazorProperty 'Created'
+
      */
     @Event()
     public created: EmitType<Event>;
     /**
      * Triggers before the condition (And/Or), field, operator, value is changed.
      * @event
-     * @blazorProperty 'OnValueChange'
+
      */
     @Event()
     public beforeChange: EmitType<ChangeEventArgs>;
     /**
      * Triggers when changing the condition(AND/OR), field, value, operator is changed
      * @event
-     * @blazorProperty 'Changed'
+
      */
     @Event()
     public change: EmitType<ChangeEventArgs>;
     /**
      * Triggers when changing the condition(AND/OR), field, value, operator is changed
      * @event
-     * @blazorProperty 'RuleChanged'
+
      */
     @Event()
     public ruleChange: EmitType<RuleChangeEventArgs>;
     /**
      * Specifies the showButtons settings of the query builder component.
      * The showButtons can be enable Enables or disables the ruleDelete, groupInsert, and groupDelete buttons.
-     * @default { ruleDelete: true , groupInsert: true, groupDelete: true }
+
      */
     @Property({ ruleDelete: true, groupInsert: true, groupDelete: true })
     public showButtons: ShowButtonsModel;
     /**
      * Shows or hides the filtered query.
-     * @default false
+
      */
     @Property(false)
     public summaryView: boolean;
     /**
      * Enables or disables the validation.
-     * @default false
+
      */
     @Property(false)
     public allowValidation: boolean;
     /**
      * Specifies columns to create filters.
-     * @default {}
+
      */
     @Property([])
     public columns: ColumnsModel[];
     /**
      * Defines class or multiple classes, which are separated by a space in the QueryBuilder element.
      * You can add custom styles to the QueryBuilder using the cssClass property.
-     * @default ''
+
      */
     @Property('')
     public cssClass: string;
     /**
      * Binds the column name from data source in query-builder.
      * The `dataSource` is an array of JavaScript objects.
-     * @default []
+
      */
     @Property([])
     public dataSource: Object[] | Object | DataManager;
     /**
      * Specifies the displayMode as Horizontal or Vertical.
-     * @default 'Horizontal'
+
      */
     @Property('Horizontal')
     public displayMode: DisplayMode;
     /**
      * Enable or disable persisting component's state between page reloads. 
      * If enabled, filter states will be persisted.
-     * @default false.
+
      */
     @Property(false)
     public enablePersistence: boolean;
     /**
      * Specifies the sort direction of the field names.
-     * @default 'Default'
+
      */
     @Property('Default')
     public sortDirection: SortDirection;
     /**
      * Specifies the maximum group count or restricts the group count.
-     * @default 5
+
      */
     @Property(5)
     public maxGroupCount: number;
     /**
      * Specifies the height of the query builder.
-     * @default 'auto'
+
      */
     @Property('auto')
     public height: string;
     /**
      * Specifies the width of the query builder.
-     * @default 'auto'
+
      */
     @Property('auto')
     public width: string;
     /**
      * If match case is set to true, the grid filters the records with exact match. 
      * if false, it filters case insensitive records (uppercase and lowercase letters treated the same).
-     * @default false
+
      */
     @Property(false)
     public matchCase: boolean;
     /**
      * Defines rules in the QueryBuilder.
      * Specifies the initial rule, which is JSON data.
-     * @default {}
+
      */
     @Complex<RuleModel>({ condition: 'and', rules: [] }, Rule)
     public rule: RuleModel;
@@ -2366,7 +2366,7 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
     /**
      * return the Query from current rules collection.
      * @returns Promise.
-     * @blazorType object
+
      */
     public getFilteredRecords(): Promise<Object> | object {
         let predicate: Predicate = this.getPredicate(this.getValidRules(this.rule));
@@ -2957,34 +2957,34 @@ export interface Level {
 export interface TemplateColumn {
     /**
      * Creates the custom component.
-     * @default null
+
      */
     create?: Element | Function | string;
     /**
      * Wire events for the custom component.
-     * @default null
+
      */
     write?: void | Function | string;
     /**
      * Destroy the custom component.
-     * @default null
+
      */
     destroy?: Function | string;
 }
 export interface Validation {
     /**
      * Specifies the minimum value in textbox validation.
-     * @default 2
+
      */
     min?: number;
     /**
      * Specifies the maximum value in textbox validation.
-     * @default 10
+
      */
     max?: number;
     /**
      * Specifies whether the value is required or not
-     * @default true
+
      */
     isRequired: boolean;
 }

@@ -10,35 +10,35 @@ export class SmithchartFont extends ChildProperty<SmithchartFont> {
     public fontFamily: string;
     /**
      * font style for text.
-     * @default 'Normal'
+
      */
     @Property('Normal')
     public fontStyle: string;
 
     /**
      * font weight for text.
-     * @default 'Regular'
+
      */
     @Property('Regular')
     public fontWeight: string;
 
     /**
      * Color for the text.
-     * @default ''
+
      */
     @Property('')
     public color: string;
 
     /**
      * font size for text.
-     * @default '12px'
+
      */
     @Property('12px')
     public size: string;
 
     /**
      * font opacity for text.
-     * @default 1
+
      */
     @Property(1)
     public opacity: number;
@@ -47,21 +47,21 @@ export class SmithchartFont extends ChildProperty<SmithchartFont> {
 export class SmithchartMargin extends ChildProperty<SmithchartMargin> {
     /**
      * top margin of chartArea.
-     * @default 10
+
      */
     @Property(10)
     public top: number;
 
     /**
      * bottom margin of chartArea.
-     * @default 10
+
      */
     @Property(10)
     public bottom: number;
 
     /**
      * right margin of chartArea.
-     * @default 10
+
      */
 
     @Property(10)
@@ -69,7 +69,7 @@ export class SmithchartMargin extends ChildProperty<SmithchartMargin> {
 
     /**
      * left margin of chartArea.
-     * @default 10
+
      */
 
     @Property(10)
@@ -81,7 +81,7 @@ export class SmithchartBorder extends ChildProperty<SmithchartBorder> {
 
     /**
      * width for smithchart border.
-     * @default 0
+
      */
 
     @Property(0)
@@ -89,14 +89,14 @@ export class SmithchartBorder extends ChildProperty<SmithchartBorder> {
 
     /**
      * opacity for smithchart border.
-     * @default 1
+
      */
     @Property(1)
     public opacity: number;
 
     /**
      * color for smithchart border .
-     * @default 'transparent'
+
      */
 
     @Property('transparent')

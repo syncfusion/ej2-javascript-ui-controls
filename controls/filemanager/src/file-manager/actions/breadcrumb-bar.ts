@@ -1,7 +1,7 @@
 import { EventHandler, closest, isNullOrUndefined, KeyboardEvents, KeyboardEventArgs } from '@syncfusion/ej2-base';
 import { getValue, addClass, removeClass, remove, createElement, DragEventArgs } from '@syncfusion/ej2-base';
 import { TextBox, ChangedEventArgs } from '@syncfusion/ej2-inputs';
-import { IFileManager, NotifyArgs, ReadArgs } from '../base/interface';
+import { IFileManager, NotifyArgs, ReadArgs, FileOpenEventArgs } from '../base/interface';
 import { DropDownButton, MenuEventArgs } from '@syncfusion/ej2-splitbuttons';
 import { read } from '../common/operations';
 import { getLocaleText, searchWordHandler } from '../common/utility';
@@ -26,7 +26,7 @@ export class BreadCrumbBar {
     private searchWrapWidth: number = null;
     /**
      * constructor for addressbar module
-     * @hidden
+
      */
     constructor(parent?: IFileManager) {
         this.parent = parent;
@@ -240,12 +240,21 @@ export class BreadCrumbBar {
             if (!isNullOrUndefined(node)) {
                 this.parent.isFiltered = false;
                 let currentPath: string = this.updatePath((<HTMLElement>node));
-                this.liClick(currentPath);
+                this.parent.itemData = [getValue(this.parent.pathId[this.parent.pathId.length - 1], this.parent.feParent)];
+                this.triggerFileOpen(this.parent.itemData[0]);
+                read(this.parent, events.pathChanged, currentPath);
                 let treeNodeId: string = this.parent.pathId[this.parent.pathId.length - 1];
                 this.parent.notify(events.updateTreeSelection, { module: 'treeview', selectedNode: treeNodeId });
             }
         }
     }
+
+    private triggerFileOpen(data: Object): void {
+        let eventArgs: FileOpenEventArgs = { cancel: false, fileDetails: data, module: 'BreadCrumbBar' };
+        delete eventArgs.cancel;
+        this.parent.trigger('fileOpen', eventArgs);
+    }
+
     /* istanbul ignore next */
     private onShowInput(): void {
         if (this.parent.isMobile) {
@@ -315,10 +324,6 @@ export class BreadCrumbBar {
         this.onPathChange();
     }
 
-    private liClick(currentPath: string): void {
-        this.parent.itemData = [getValue(this.parent.pathId[this.parent.pathId.length - 1], this.parent.feParent)];
-        read(this.parent, events.pathChanged, currentPath);
-    }
     private addEventListener(): void {
         this.keyboardModule = new KeyboardEvents(
             this.parent.breadCrumbBarNavigation,
@@ -379,6 +384,7 @@ export class BreadCrumbBar {
             let liEle: Element = args.target.closest('li');
             this.parent.dropPath = this.updatePath(<HTMLElement>(liEle.children[0]));
             this.parent.dropData = getValue(this.parent.pathId[this.parent.pathId.length - 1], this.parent.feParent);
+            this.triggerFileOpen(this.parent.dropData);
             let treeNodeId: string = this.parent.pathId[this.parent.pathId.length - 1];
             this.parent.notify(events.updateTreeSelection, { module: 'treeview', selectedNode: treeNodeId });
         }

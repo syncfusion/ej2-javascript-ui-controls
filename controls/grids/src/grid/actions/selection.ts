@@ -23,27 +23,27 @@ import { iterateExtend } from '../base/util';
 export class Selection implements IAction {
     //Internal letiables       
     /**
-     * @hidden
+
      */
     public selectedRowIndexes: number[] = [];
     /**
-     * @hidden
+
      */
     public selectedRowCellIndexes: ISelectedCell[] = [];
     /**
-     * @hidden
+
      */
     public selectedRecords: Element[] = [];
     /**
-     * @hidden
+
      */
     public isRowSelected: boolean;
     /**
-     * @hidden
+
      */
     public isCellSelected: boolean;
     /**
-     * @hidden
+
      */
     public preventFocus: boolean = false;
     private selectionSettings: SelectionSettings;
@@ -54,6 +54,8 @@ export class Selection implements IAction {
     private isMultiShiftRequest: boolean = false;
     private isMultiCtrlRequest: boolean = false;
     private enableSelectMultiTouch: boolean = false;
+    private clearRowCheck: boolean = false;
+    private selectRowCheck: boolean = false;
     private element: HTMLElement;
     private autofill: HTMLElement;
     private isAutoFillSel: boolean;
@@ -99,6 +101,10 @@ export class Selection implements IAction {
     private bdrAFBottom: HTMLElement;
     private isInteracted: boolean;
     private checkSelectAllClicked: boolean;
+    private index: number;
+    private toggle: boolean;
+    private data: Object;
+    private removed: boolean;
     //Module declarations
     private parent: IGrid;
     private focus: FocusStrategy;
@@ -111,7 +117,7 @@ export class Selection implements IAction {
 
     /**
      * Constructor for the Grid selection module
-     * @hidden
+
      */
     constructor(parent?: IGrid, selectionSettings?: SelectionSettings, locator?: ServiceLocator) {
         this.parent = parent;
@@ -130,7 +136,7 @@ export class Selection implements IAction {
     /**
      * The function used to trigger onActionBegin
      * @return {void}
-     * @hidden
+
      */
     public onActionBegin(args: Object, type: string): void {
         this.parent.trigger(<string>type, this.fDataUpdate(args));
@@ -148,7 +154,7 @@ export class Selection implements IAction {
     /**
      * The function used to trigger onActionComplete
      * @return {void}
-     * @hidden
+
      */
     public onActionComplete(args: Object, type: string): void {
         this.parent.trigger(<string>type, this.fDataUpdate(args));
@@ -165,7 +171,7 @@ export class Selection implements IAction {
     /**
      * To destroy the selection 
      * @return {void}
-     * @hidden
+
      */
     public destroy(): void {
         let gridElement: Element = this.parent.element;
@@ -269,13 +275,31 @@ export class Selection implements IAction {
         if (!isNullOrUndefined(args) && args[can] === true) {
             return;
         }
+        this.index = index;  this.toggle =  isToggle; this.data =  selectData; this.removed = isRemoved;
+
         if (isRowSelected && this.selectionSettings.persistSelection) {
             this.clearSelectedRow(index);
             isRemoved = true;
+            this.removed = isRemoved;
+            this.selectRowCallBack();
+        } else if (!isRowSelected && this.selectionSettings.persistSelection) {
+            this.selectRowCallBack();
         }
         if (!this.selectionSettings.persistSelection) {
+            this.selectRowCheck = true;
             this.clearRow();
         }
+    }
+
+    private selectRowCallBack(): void  {
+        let gObj: IGrid =  this.parent;
+        let args: Object;
+        let index: number = this.index;
+        let isToggle: boolean = this.toggle;
+        let selectData: Object = this.data;
+        let isRemoved: boolean = this.removed;
+        let selectedRow: Element = gObj.getRowByIndex(index);
+        let selectedMovableRow: Element = this.getSelectedMovableRow(index);
         if (!isToggle && !isRemoved) {
             if (this.selectedRowIndexes.indexOf(index) <= -1) {
                 this.updateRowSelection(selectedRow, index);
@@ -357,7 +381,7 @@ export class Selection implements IAction {
         args = {
             rowIndexes: rowIndexes, row: selectedRow, rowIndex: rowIndex, target: this.actualTarget,
             prevRow: gObj.getRows()[this.prevRowIndex], previousRowIndex: this.prevRowIndex,
-            data: selectedData
+            data: this.getSelectedRecords(), isInteracted: this.isInteracted
         };
         args = this.addMovableArgs(args, selectedMovableRow);
         this.onActionComplete(args, events.rowSelected);
@@ -367,7 +391,7 @@ export class Selection implements IAction {
      * Select rows with existing row selection by passing row indexes. 
      * @param  {number} startIndex - Specifies the row indexes. 
      * @return {void} 
-     * @hidden
+
      */
     public addRowsToSelection(rowIndexes: number[]): void {
         let gObj: IGrid = this.parent;
@@ -452,7 +476,11 @@ export class Selection implements IAction {
     }
 
     private clearRow(): void {
+        this.clearRowCheck = true;
         this.clearRowSelection();
+    }
+
+    private clearRowCallBack(): void  {
         if (this.isCancelDeSelect && this.parent.checkAllRows !== 'Check') {
             return;
         }
@@ -607,7 +635,7 @@ export class Selection implements IAction {
             if (this.selectionSettings.persistSelection) {
                 this.isInteracted = this.checkSelectAllClicked ? true : false;
             }
-            this.rowDeselect(events.rowDeselecting, rowIndex, data, row, foreignKeyData, target, mRow);
+            this.rowDeselect(events.rowDeselecting, rowIndex, data, row, foreignKeyData, target, mRow, () => {
             if (this.isCancelDeSelect && (this.isInteracted || this.checkSelectAllClicked)) {
                 if (this.parent.isPersistSelection) {
                     if (this.getCheckAllStatus(this.parent.element.querySelector('.e-checkselectall')) === 'Intermediate') {
@@ -617,6 +645,14 @@ export class Selection implements IAction {
                     } else {
                         this.parent.checkAllRows = 'Check';
                         this.updatePersistSelectedData(true);
+                    }
+                }
+                if (this.clearRowCheck) {
+                    this.clearRowCallBack();
+                    this.clearRowCheck = false;
+                    if (this.selectRowCheck) {
+                        this.selectRowCallBack();
+                        this.selectRowCheck =  false;
                     }
                 }
                 return;
@@ -645,12 +681,30 @@ export class Selection implements IAction {
             this.selectRowIndex(-1);
             this.rowDeselect(events.rowDeselected, rowIndex, data, row, foreignKeyData, target, mRow);
             this.isInteracted = false;
+            if (this.clearRowCheck) {
+                this.clearRowCallBack();
+                this.clearRowCheck =  false;
+                if (this.selectRowCheck) {
+                    this.selectRowCallBack();
+                    this.selectRowCheck = false;
+                }
+            }
+        });
+        } else {
+            if (this.clearRowCheck) {
+                this.clearRowCallBack();
+                this.clearRowCheck = false;
+                if (this.selectRowCheck) {
+                    this.selectRowCallBack();
+                    this.selectRowCheck =  false;
+                }
+            }
         }
     }
 
     private rowDeselect(
         type: string, rowIndex: number[], data: Object, row: Element[],
-        foreignKeyData: Object[], target: Element, mRow?: Element[]): void {
+        foreignKeyData: Object[], target: Element, mRow?: Element[], rowDeselectCallBack?: Function): void {
         if ((this.selectionSettings.persistSelection && this.isInteracted) || !this.selectionSettings.persistSelection) {
             let cancl: string = 'cancel';
             let rowDeselectObj: Object = {
@@ -666,11 +720,20 @@ export class Selection implements IAction {
                 rowDeselectObj[rowIndex] = rowDeselectObj[rowIndex][rowDeselectObj[rowIndex].length - 1];
                 rowDeselectObj[data] = rowDeselectObj[data][rowDeselectObj[data].length - 1];
             }
-            this.parent.trigger(type, this.parent.getFrozenColumns() ? { ...rowDeselectObj, ...{ mRow: mRow } } : rowDeselectObj);
-            this.isCancelDeSelect = rowDeselectObj[cancl];
-            if (!this.isCancelDeSelect || (!this.isInteracted && !this.checkSelectAllClicked)) {
-                this.updatePersistCollection(row[0], false);
-                this.updateCheckBoxes(row[0], undefined, rowIndex[0]);
+            this.parent.trigger(type, this.parent.getFrozenColumns() ? { ...rowDeselectObj, ...{ mRow: mRow } } : rowDeselectObj,
+                                (args: Object) => {
+                this.isCancelDeSelect = args[cancl];
+                if (!this.isCancelDeSelect || (!this.isInteracted && !this.checkSelectAllClicked)) {
+                    this.updatePersistCollection(row[0], false);
+                    this.updateCheckBoxes(row[0], undefined, rowIndex[0]);
+                }
+                if (rowDeselectCallBack !== undefined) {
+                    rowDeselectCallBack();
+                }
+            });
+        } else if (this.selectionSettings.persistSelection && !this.isInteracted) {
+            if (rowDeselectCallBack !== undefined) {
+                rowDeselectCallBack();
             }
         }
     }
@@ -935,7 +998,7 @@ export class Selection implements IAction {
      * Select cells with existing cell selection by passing row and column index. 
      * @param  {IIndex} startIndex - Defines the collection of row and column index.
      * @return {void}
-     * @hidden
+
      */
     public addCellsToSelection(cellIndexes: IIndex[]): void {
         if (!this.isCellType()) { return; }
@@ -1551,7 +1614,7 @@ export class Selection implements IAction {
         }
     }
     /**
-     * @hidden
+
      */
     public updateAutoFillPosition(): void {
         if (this.parent.enableAutoFill && !this.parent.isEdit &&
@@ -1657,7 +1720,7 @@ export class Selection implements IAction {
     }
 
     /**
-     * @hidden
+
      */
     public addEventListener(): void {
         if (this.parent.isDestroyed) { return; }
@@ -1679,7 +1742,7 @@ export class Selection implements IAction {
         this.addEventListener_checkbox();
     }
     /**
-     * @hidden
+
      */
     public removeEventListener(): void {
         if (this.parent.isDestroyed) { return; }
@@ -2380,7 +2443,7 @@ export class Selection implements IAction {
     /**
      * Apply ctrl + A key selection
      * @return {void}
-     * @hidden
+
      */
     public ctrlPlusA(): void {
         if (this.isRowType() && !this.isSingleSel()) {
@@ -2464,7 +2527,7 @@ export class Selection implements IAction {
     /**
      * Apply shift+down key selection
      * @return {void}
-     * @hidden
+
      */
     public shiftDownKey(rowIndex?: number, cellIndex?: number): void {
         let gObj: IGrid = this.parent;

@@ -438,6 +438,13 @@ describe('Gantt taskbar editing', () => {
             element = ganttObj.element.querySelector('#' + ganttObj.element.id + 'GanttTaskTableBody > tr:nth-child(4) > td > div.e-taskbar-main-container') as Element;
             ganttObj.editModule.taskbarEditModule.showHideTaskBarEditingElements(null, element, true);
         });
+        it('Converting to milestone', () => {
+            let dragElement: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + 'GanttTaskTableBody > tr:nth-child(5) > td > div.e-taskbar-main-container > div.e-taskbar-right-resizer.e-icon') as HTMLElement;
+            triggerMouseEvent(dragElement, 'mousedown', dragElement.offsetLeft, dragElement.offsetTop);
+            triggerMouseEvent(dragElement, 'mousemove', -400, 0);
+            triggerMouseEvent(dragElement, 'mouseup');
+            expect(ganttObj.flatData[4].ganttProperties.duration).toBe(0);
+        });
 
         afterAll(() => {
             if (ganttObj) {

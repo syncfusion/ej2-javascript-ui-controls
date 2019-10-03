@@ -20,6 +20,13 @@ export class Column extends ChildProperty<Column> {
      */
     @Property(64)
     public width: number;
+
+    /**
+     * specifies custom width of the column.
+     * @default false
+     */
+    @Property(false)
+    public customWidth: boolean;
 }
 
 /**
@@ -41,7 +48,11 @@ export function getColumn(sheet: SheetModel, colIndex: number): ColumnModel {
  * @hidden
  */
 export function getColumnWidth(sheet: SheetModel, index: number): number {
-    return (sheet && sheet.columns && sheet.columns[index] && sheet.columns[index].width) || 64;
+    if (sheet && sheet.columns && sheet.columns[index] && (sheet.columns[index].width || sheet.columns[index].customWidth)) {
+        return sheet.columns[index].width;
+    } else {
+        return 64;
+    }
 }
 
 /**

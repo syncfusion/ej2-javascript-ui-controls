@@ -74,11 +74,11 @@ export interface KeyGestureModel {
      * * The Minus
      * * The Plus
      * * The Star
-     * @aspDefaultValueIgnore
-     * @blazorDefaultValueIgnore
-     * @aspNumberEnum
-     * @blazorNumberEnum
-     * @default undefined
+
+
+
+
+
      */
     key?: Keys;
 
@@ -89,11 +89,11 @@ export interface KeyGestureModel {
      * * Meta - meta key im mac
      * * Alt - alt key
      * * Shift - shift key
-     * @aspDefaultValueIgnore
-     * @blazorDefaultValueIgnore
-     * @aspNumberEnum
-     * @blazorNumberEnum
-     * @default undefined
+
+
+
+
+
      */
     keyModifiers?: KeyModifiers;
 
@@ -106,25 +106,25 @@ export interface CommandModel {
 
     /**
      * Defines the name of the command
-     * @default ''
+
      */
     name?: string;
 
     /**
      * Check the command is executable at the moment or not
-     * @aspDefaultValueIgnore
-     * @blazorDefaultValueIgnore
-     * @default undefined
-     * @deprecated
+
+
+
+
      */
     canExecute?: Function | string;
 
     /**
      * Defines what to be executed when the key combination is recognized
-     * @aspDefaultValueIgnore
-     * @blazorDefaultValueIgnore
-     * @default undefined
-     * @deprecated
+
+
+
+
      */
     execute?: Function | string;
 
@@ -170,13 +170,13 @@ export interface CommandModel {
      * });
      * diagram.appendTo('#diagram');
      * ```
-     * @default {}
+
      */
     gesture?: KeyGestureModel;
 
     /**
      * Defines any additional parameters that are required at runtime
-     * @default ''
+
      */
     parameter?: string;
 
@@ -189,7 +189,7 @@ export interface CommandManagerModel {
 
     /**
      * Stores the multiple command names with the corresponding command objects
-     * @default []
+
      */
     commands?: CommandModel[];
 
@@ -202,17 +202,17 @@ export interface ContextMenuSettingsModel {
 
     /**
      * Enables/Disables the context menu items
-     * @aspDefaultValueIgnore
-     * @blazorDefaultValueIgnore
-     * @default undefined
+
+
+
      */
     show?: boolean;
 
     /**
      * Shows only the custom context menu items
-     * @aspDefaultValueIgnore
-     * @blazorDefaultValueIgnore
-     * @default undefined
+
+
+
      */
     showCustomMenuOnly?: boolean;
 
@@ -233,9 +233,9 @@ export interface ContextMenuSettingsModel {
      * });
      * diagram.appendTo('#diagram');
      * ```
-     * @aspDefaultValueIgnore
-     * @blazorDefaultValueIgnore
-     * @default undefined
+
+
+
      */
     items?: ContextMenuItemModel[];
 

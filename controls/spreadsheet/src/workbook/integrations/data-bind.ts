@@ -1,6 +1,6 @@
 import { DataManager, Query, Deferred, ReturnOption, QueryOptions } from '@syncfusion/ej2-data';
 import { Workbook, Sheet, getCell, CellModel, RangeSettingModel, RowModel, SheetModel, setCell } from '../base/index';
-import { getRangeIndexes, checkIsFormula, NumberFormatType, ExtendedSheet } from '../common/index';
+import { getRangeIndexes, checkIsFormula, ExtendedSheet } from '../common/index';
 import { checkDateFormat } from '../common/event';
 import { getFormatFromType } from './number-format';
 
@@ -170,21 +170,21 @@ export class DataBind {
             this.parent.notify(checkDateFormat, dateEventArgs);
             if (dateEventArgs.isDate) {
                 if (args.cell) {
-                    args.cell.format = getFormatFromType(NumberFormatType.ShortDate);
+                    args.cell.format = getFormatFromType('ShortDate');
                     args.cell.value = <string>dateEventArgs.updatedVal;
                 } else {
                     args.args.sheet.rows[args.rowIndex]
-                        .cells[args.colIndex].format = getFormatFromType(NumberFormatType.ShortDate);
+                        .cells[args.colIndex].format = getFormatFromType('ShortDate');
                     args.args.sheet.rows[args.rowIndex]
                         .cells[args.colIndex].value = <string>dateEventArgs.updatedVal;
                 }
             } else if (dateEventArgs.isTime) {
                 if (args.cell) {
-                    args.cell.format = getFormatFromType(NumberFormatType.Time);
+                    args.cell.format = getFormatFromType('Time');
                     args.cell.value = <string>dateEventArgs.updatedVal;
                 } else {
                     args.args.sheet.rows[args.rowIndex]
-                        .cells[args.colIndex].format = getFormatFromType(NumberFormatType.Time);
+                        .cells[args.colIndex].format = getFormatFromType('Time');
                     args.args.sheet.rows[args.rowIndex]
                         .cells[args.colIndex].value = <string>dateEventArgs.updatedVal;
                 }

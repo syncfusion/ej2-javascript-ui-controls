@@ -22,7 +22,7 @@ export class Page implements IAction {
 
     //Module declarations
     private parent: IGrid;
-    /** @hidden */
+
     public pagerObj: Pager;
     private handlers: {
         load: Function,
@@ -36,7 +36,7 @@ export class Page implements IAction {
 
     /**
      * Constructor for the Grid paging module
-     * @hidden
+
      */
     constructor(parent?: IGrid, pageSettings?: PageSettingsModel) {
         Pager.Inject(ExternalMessage, PagerDropDown);
@@ -56,7 +56,7 @@ export class Page implements IAction {
     /**
      * The function used to render pager from grid pageSettings
      * @return {void}
-     * @hidden
+
      */
     public render(): void {
         let gObj: IGrid = this.parent;
@@ -137,7 +137,7 @@ export class Page implements IAction {
     }
 
     /**
-     * @hidden
+
      */
     public setPageSize(pageSize: number): void {
         this.pagerObj.setPageSize(pageSize);
@@ -146,7 +146,7 @@ export class Page implements IAction {
     /**
      * The function used to update pageSettings model
      * @return {void}
-     * @hidden
+
      */
     public updateModel(e?: NotifyArgs): void {
         this.parent.pageSettings.totalRecordsCount = e.count;
@@ -156,7 +156,7 @@ export class Page implements IAction {
     /**
      * The function used to trigger onActionComplete
      * @return {void}
-     * @hidden
+
      */
     public onActionComplete(e: NotifyArgs): void {
         this.parent.trigger(events.actionComplete, extend(e, {
@@ -165,7 +165,7 @@ export class Page implements IAction {
         }));
     }
     /**
-     * @hidden
+
      */
     public onPropertyChanged(e: NotifyArgs): void {
         if (e.module !== this.getModuleName()) {
@@ -250,7 +250,7 @@ export class Page implements IAction {
         }
     }
     /**
-     * @hidden
+
      */
     public addEventListener(): void {
         this.handlers = {
@@ -273,7 +273,7 @@ export class Page implements IAction {
     }
 
     /**
-     * @hidden
+
      */
     public removeEventListener(): void {
         if (this.parent.isDestroyed) { return; }
@@ -289,7 +289,7 @@ export class Page implements IAction {
     /**
      * To destroy the pager 
      * @return {void}
-     * @hidden
+
      */
     public destroy(): void {
         this.removeEventListener();
@@ -306,7 +306,7 @@ export class Page implements IAction {
 }
 
 /**
- * @hidden
+
  */
 const keyActions: {
     pageDown: string;

@@ -40,7 +40,7 @@ export class Font extends ChildProperty<Font> {
 
     /**
      * Opacity for text.
-     * @blazorDefaultValue 1
+
      */
     @Property(1)
     public opacity: number;
@@ -54,28 +54,28 @@ export class Margin extends ChildProperty<Margin> {
 
     /**
      * Left margin in pixels.
-     * @default 10
+
      */
     @Property(10)
     public left: number;
 
     /**
      * Right margin in pixels.
-     * @default 10
+
      */
     @Property(10)
     public right: number;
 
     /**
      * Top margin in pixels.
-     * @default 10
+
      */
     @Property(10)
     public top: number;
 
     /**
      * Bottom margin in pixels.
-     * @default 10
+
      */
     @Property(10)
     public bottom: number;
@@ -94,7 +94,7 @@ export class Border extends ChildProperty<Border> {
 
     /**
      * The width of the border in pixels.
-     * @default 0
+
      */
     @Property(0)
     public width: number;
@@ -127,21 +127,21 @@ export class Annotation extends ChildProperty<Annotation> {
 
     /**
      * Specifies the vertical alignment of annotation.
-     * @default None
+
      */
     @Property('None')
     public verticalAlignment: Placement;
 
     /**
      * Specifies the horizontal alignment of annotation.
-     * @default None
+
      */
     @Property('None')
     public horizontalAlignment: Placement;
 
     /**
      * Specifies the zIndex of the annotation.
-     * @default '-1'
+
      */
     @Property('-1')
     public zIndex: string;
@@ -155,15 +155,15 @@ export class Annotation extends ChildProperty<Annotation> {
 
     /**
      * Specifies the index of axis.
-     * @aspDefaultValueIgnore
+
      */
     @Property(null)
     public axisIndex: number;
 
     /**
      * Specifies the value of axis.
-     * @aspDefaultValueIgnore
-     * @blazorDefaultValue null
+
+
      */
     @Property(null)
     public axisValue: number;
@@ -177,28 +177,28 @@ export class Annotation extends ChildProperty<Annotation> {
 export class Container extends ChildProperty<Container> {
     /**
      * Specifies the type of container.
-     * @default Normal
+
      */
     @Property('Normal')
     public type: ContainerType;
 
     /**
      * Specifies the height of the container.
-     * @default 0
+
      */
     @Property(0)
     public height: number;
 
     /**
      * Specifies the width of the container.
-     * @default 0
+
      */
     @Property(0)
     public width: number;
 
     /**
      * Specifies the corner radius for rounded rectangle.
-     * @default 10
+
      */
     @Property(10)
     public roundedCornerRadius: number;
@@ -217,7 +217,7 @@ export class Container extends ChildProperty<Container> {
 
     /**
      * Specifies to move the container.
-     * @blazorDefaultValue 0
+
      */
     @Property(0)
     public offset: number;
@@ -230,7 +230,7 @@ export class Container extends ChildProperty<Container> {
 export class TooltipSettings extends ChildProperty<TooltipSettings> {
     /**
      * Enable / Disable the visibility of tooltip.
-     * @default false
+
      */
 
     @Property(false)
@@ -252,7 +252,7 @@ export class TooltipSettings extends ChildProperty<TooltipSettings> {
 
     /**
      * Format of the tooltip content.
-     * @default null
+
      */
 
     @Property(null)
@@ -260,7 +260,7 @@ export class TooltipSettings extends ChildProperty<TooltipSettings> {
 
     /**
      * Custom template to format the tooltip content. Use ${x} and ${y} as a placeholder text to display the corresponding data point.
-     * @default null
+
      */
 
     @Property(null)
@@ -268,7 +268,7 @@ export class TooltipSettings extends ChildProperty<TooltipSettings> {
 
     /**
      * If set true, tooltip will animate, while moving from one point to another.
-     * @default true
+
      */
     @Property(true)
     public enableAnimation: boolean;

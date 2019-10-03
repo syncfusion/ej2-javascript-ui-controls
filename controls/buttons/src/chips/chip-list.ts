@@ -200,77 +200,77 @@ export interface ChipDataArgs {
 export class ChipList extends Component<HTMLElement> implements INotifyPropertyChanged {
     /**
      * This chips property helps to render ChipList component.
-     * @default []
+
      */
     @Property([])
     public chips: string[] | number[] | ChipModel[];
 
     /**
      * This text property helps to render Chip component.
-     * @default ''
+
      */
     @Property('')
     public text: string;
 
     /**
      * This avatarText property helps to customize avatar content.
-     * @default ''
+
      */
     @Property('')
     public avatarText: string;
 
     /**
      * This avatarIconCss property helps to customize avatar element.
-     * @default ''
+
      */
     @Property('')
     public avatarIconCss: string;
 
     /**
      * This leadingIconCss property helps to customize leading icon element.
-     * @default ''
+
      */
     @Property('')
     public leadingIconCss: string;
 
     /**
      * This trailingIconCss property helps to customize trailing icon element.
-     * @default ''
+
      */
     @Property('')
     public trailingIconCss: string;
 
     /**
      * This cssClass property helps to customize ChipList component.
-     * @default ''
+
      */
     @Property('')
     public cssClass: string;
 
     /**
      * This enabled property helps to enable/disable ChipList component.
-     * @default true
+
      */
     @Property(true)
     public enabled: boolean;
 
     /**
      * This selectedChips property helps to select chip items.
-     * @default []
+
      */
     @Property([])
     public selectedChips: number[] | number;
 
     /**
      * This selection property enables chip selection type.
-     * @default 'None'
+
      */
     @Property('None')
     public selection: Selection;
 
     /**
      * This enableDelete property helps to enable delete functionality.
-     * @default false
+
      */
     @Property(false)
     public enableDelete: boolean;
@@ -278,7 +278,7 @@ export class ChipList extends Component<HTMLElement> implements INotifyPropertyC
     /**
      * This created event will get triggered once the component rendering is completed.
      * @event
-     * @blazorProperty 'Created'
+
      */
     @Event()
     public created: EmitType<Event>;
@@ -286,7 +286,7 @@ export class ChipList extends Component<HTMLElement> implements INotifyPropertyC
     /**
      * This click event will get triggered once the chip is clicked.
      * @event
-     * @blazorProperty 'OnClick'
+
      */
     @Event()
     public click: EmitType<ClickEventArgs>;
@@ -294,7 +294,7 @@ export class ChipList extends Component<HTMLElement> implements INotifyPropertyC
     /**
      * This delete event will get triggered before removing the chip.
      * @event
-     * @blazorProperty 'OnDelete'
+
      */
     @Event()
     public delete: EmitType<DeleteEventArgs>;

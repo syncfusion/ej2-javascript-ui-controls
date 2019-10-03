@@ -6,7 +6,7 @@ import { isEditable, getComplexFieldID, getObject } from '../base/util';
 
 /**
  * `TimePickerEditCell` is used to handle Timepicker cell type editing.
- * @hidden
+
  */
 export class TimePickerEditCell implements IEditCell {
     private parent: IGrid;

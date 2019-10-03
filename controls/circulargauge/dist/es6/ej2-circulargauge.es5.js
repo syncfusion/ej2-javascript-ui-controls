@@ -333,9 +333,14 @@ function getElement(id) {
  * @returns Function
  * @private
  */
-function getTemplateFunction(template) {
+function getTemplateFunction(template, gauge) {
     var templateFn = null;
     try {
+        if (gauge.isBlazor) {
+            var numb = template.match(/\d+/g).toString();
+            template = numb ? template.replace(numb, '') : template;
+            template = template.indexOf('/') !== -1 ? template.replace('/', '') : template;
+        }
         if (document.querySelectorAll(template).length) {
             if ((template.charAt(0) !== 'a' || template.charAt(0) !== 'A') && template.length !== 1) {
                 templateFn = compile(document.querySelector(template).innerHTML.trim());
@@ -373,7 +378,7 @@ function getPointer(targetId, gauge) {
 function getElementSize(template, gauge, parent) {
     var elementSize;
     var element;
-    var templateFn = getTemplateFunction(template);
+    var templateFn = getTemplateFunction(template, gauge);
     var tooltipData = templateFn ? templateFn({}, null, null, gauge.element.id + 'Template') : [];
     if (templateFn && tooltipData.length) {
         element = gauge.createElement('div', { id: gauge.element.id + '_Measure_Element' });
@@ -1230,8 +1235,8 @@ var Axis = /** @__PURE__ @class */ (function (_super) {
     function Axis() {
         /**
          * Specifies the minimum value of an axis.
-         * @aspDefaultValueIgnore
-         * @default null
+    
+    
          */
         var _this = _super !== null && _super.apply(this, arguments) || this;
         /** @private */
@@ -1363,8 +1368,10 @@ var Annotations = /** @__PURE__ @class */ (function () {
         });
         if (parentElement && element.childElementCount) {
             parentElement.appendChild(element);
-            for (var i = 0; i < this.gauge.axes[index].annotations.length; i++) {
-                updateBlazorTemplate(this.gauge.element.id + '_Axis' + index + '_ContentTemplate' + i, 'ContentTemplate', this.gauge.axes[index].annotations[i]);
+            if (this.gauge.isBlazor) {
+                for (var i = 0; i < this.gauge.axes[index].annotations.length; i++) {
+                    updateBlazorTemplate(this.gauge.element.id + '_Axis' + index + '_ContentTemplate' + i, 'ContentTemplate', this.gauge.axes[index].annotations[i]);
+                }
             }
         }
     };
@@ -1393,20 +1400,18 @@ var Annotations = /** @__PURE__ @class */ (function () {
             var templateElement;
             var blazor = 'Blazor';
             if (!argsData.cancel) {
-                templateFn = getTemplateFunction(argsData.content);
+                templateFn = getTemplateFunction(argsData.content, _this.gauge);
                 if (templateFn && (!window[blazor] ? templateFn(axis, null, null, _this.gauge.element.id + '_Axis' + axisIndex + '_ContentTemplate' + annotationIndex).length : {})) {
                     templateElement = Array.prototype.slice.call(templateFn(!window[blazor] ? axis : {}, null, null, _this.gauge.element.id + '_Axis' + axisIndex + '_ContentTemplate' + annotationIndex));
                     var length_1 = templateElement.length;
                     for (var i = 0; i < length_1; i++) {
-                        if (window[blazor] && templateElement[i].innerHTML && argsData.content.indexOf('ContentTemplate') === -1) {
-                            templateElement[i].innerHTML = argsData.content;
-                        }
                         childElement.appendChild(templateElement[i]);
                     }
                 }
                 else {
                     childElement.appendChild(createElement('div', {
                         innerHTML: argsData.content,
+                        id: 'StringTemplate',
                         styles: getFontStyle(argsData.textStyle)
                     }));
                 }
@@ -1584,7 +1589,7 @@ var GaugeTooltip = /** @__PURE__ @class */ (function () {
             var rangeContent = customLabelFormat ?
                 rangeTooltipFormat.replace(/{start}/g, startData).replace(/{end}/g, endData) :
                 'Start : ' + rangeFormat(roundStartValue) + '<br>' + 'End : ' + rangeFormat(roundEndValue);
-            location = getLocationFromAngle(rangeAngle, this.currentAxis.currentRadius, this.gauge.midPoint);
+            location = getLocationFromAngle(rangeAngle, this.currentRange.currentRadius, this.gauge.midPoint);
             location.x = (this.tooltip.rangeSettings.template && ((rangeAngle >= 150 && rangeAngle <= 250) ||
                 (rangeAngle >= 330 && rangeAngle <= 360) ||
                 (rangeAngle >= 0 && rangeAngle <= 45))) ? (location.x + 10) : location.x;
@@ -1644,11 +1649,7 @@ var GaugeTooltip = /** @__PURE__ @class */ (function () {
             this.currentAxis = this.gauge.axes[currentAnnotation.axisIndex];
             this.currentAnnotation = (this.currentAxis.annotations)[currentAnnotation.pointerIndex];
             var annotationAngle = (this.currentAnnotation.angle - 90);
-            this.tooltipEle = createElement('div', {
-                id: this.tooltipId,
-                className: 'EJ2-CircularGauge-Tooltip',
-                styles: 'position: absolute;pointer-events:none;'
-            });
+            this.tooltipElement();
             document.getElementById(this.gauge.element.id + '_Secondary_Element').appendChild(this.tooltipEle);
             var annotationContent = (this.gauge.tooltip.annotationSettings.format !== null) ?
                 this.gauge.tooltip.annotationSettings.format : '';
@@ -3684,7 +3685,7 @@ var CircularGauge = /** @__PURE__ @class */ (function (_super) {
     __extends(CircularGauge, _super);
     /**
      * Constructor for creating the widget
-     * @hidden
+
      */
     function CircularGauge(options, element) {
         var _this = _super.call(this, options, element) || this;
@@ -3698,7 +3699,7 @@ var CircularGauge = /** @__PURE__ @class */ (function (_super) {
     //tslint:disable
     CircularGauge.prototype.preRender = function () {
         var blazor = 'Blazor';
-        this.isBlazor = window[blazor];
+        this.isBlazor = Object.keys(window).indexOf(blazor) >= 0;
         this.unWireEvents();
         this.trigger(load, this.isBlazor ? null : { gauge: this });
         this.initPrivateVariable();

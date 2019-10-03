@@ -6,7 +6,7 @@ import { RichTextEditor } from '../../../src/rich-text-editor/base/rich-text-edi
 import { PasteCleanup } from '../../../src/rich-text-editor/actions/paste-clean-up';
 import { renderRTE, setCursorPoint } from '../../rich-text-editor/render.spec';
 import {
-  CLS_RTE_PASTE_KEEP_FORMAT, CLS_RTE_PASTE_OK,
+  CLS_RTE_PASTE_KEEP_FORMAT, CLS_RTE_PASTE_REMOVE_FORMAT, CLS_RTE_PASTE_OK,
 } from '../../../src/rich-text-editor/base/classes';
 import { createElement } from '@syncfusion/ej2-base';
 RichTextEditor.Inject(PasteCleanup);
@@ -654,6 +654,145 @@ Symbol'><span style='mso-list:Ignore'>·<span style='font:7.0pt &quot;Times New 
       let expectedElem: string = `<ul level="1" style="list-style: disc;"><li>One Node-10</li></ul><h2></h2><ul level="1" style="list-style: disc;"><li>Two Node-10</li><li>Three Node-10</li></ul>`;
       if (allElem[0].parentElement.innerHTML.trim().replace(/>\s+</g, '><') !== expectedElem) {
         expected = false;
+      }
+      expect(expected).toBe(true);
+      done();
+    }, 100);
+  });
+
+  it('Paste content from Excel along with Col group', (done) => {
+    let localElem: string = `<html xmlns:v="urn:schemas-microsoft-com:vml"
+    xmlns:o="urn:schemas-microsoft-com:office:office"
+    xmlns:x="urn:schemas-microsoft-com:office:excel"
+    xmlns="http://www.w3.org/TR/REC-html40">
+    
+    <head>
+    <meta http-equiv=Content-Type content="text/html; charset=utf-8">
+    <meta name=ProgId content=Excel.Sheet>
+    <meta name=Generator content="Microsoft Excel 15">
+    <link id=Main-File rel=Main-File
+    href="file:///C:/Users/REVANT~2/AppData/Local/Temp/msohtmlclip1/01/clip.htm">
+    <link rel=File-List
+    href="file:///C:/Users/REVANT~2/AppData/Local/Temp/msohtmlclip1/01/clip_filelist.xml">
+    <style>
+    <!--table
+      {mso-displayed-decimal-separator:"\.";
+      mso-displayed-thousand-separator:"\,";}
+    @page
+      {margin:.75in .7in .75in .7in;
+      mso-header-margin:.3in;
+      mso-footer-margin:.3in;}
+    tr
+      {mso-height-source:auto;}
+    col
+      {mso-width-source:auto;}
+    br
+      {mso-data-placement:same-cell;}
+    td
+      {padding-top:1px;
+      padding-right:1px;
+      padding-left:1px;
+      mso-ignore:padding;
+      color:black;
+      font-size:11.0pt;
+      font-weight:400;
+      font-style:normal;
+      text-decoration:none;
+      font-family:Calibri, sans-serif;
+      mso-font-charset:0;
+      mso-number-format:General;
+      text-align:general;
+      vertical-align:bottom;
+      border:none;
+      mso-background-source:auto;
+      mso-pattern:auto;
+      mso-protection:locked visible;
+      white-space:nowrap;
+      mso-rotate:0;}
+    .xl65
+      {border-top:.5pt solid black;
+      border-right:1.0pt solid windowtext;
+      border-bottom:.5pt solid black;
+      border-left:.5pt solid black;
+      background:#D9D9D9;
+      mso-pattern:#D9D9D9 none;}
+    .xl66
+      {border:.5pt solid black;
+      background:#D9D9D9;
+      mso-pattern:#D9D9D9 none;}
+    .xl67
+      {mso-number-format:0;
+      border:.5pt solid black;
+      background:#D9D9D9;
+      mso-pattern:#D9D9D9 none;}
+    .xl68
+      {border-top:.5pt solid black;
+      border-right:1.0pt solid windowtext;
+      border-bottom:.5pt solid black;
+      border-left:.5pt solid black;}
+    .xl69
+      {border:.5pt solid black;}
+    .xl70
+      {mso-number-format:0;
+      border:.5pt solid black;}
+    -->
+    </style>
+    </head>
+    
+    <body link="#0563C1" vlink="#954F72">
+    
+    <table border=0 cellpadding=0 cellspacing=0 width=425 style='border-collapse:
+     collapse;width:319pt'>
+    <!--StartFragment-->
+     <col width=233 style='mso-width-source:userset;mso-width-alt:8145;width:175pt'>
+     <col width=64 span=3 style='width:48pt'>
+     <tr height=19 style='height:14.5pt'>
+      <td height=19 class=xl65 width=233 style='height:14.5pt;width:175pt'>Hauptansicht
+      mit Panelverwaltung</td>
+      <td class=xl66 align=right width=64 style='width:48pt'>10</td>
+      <td class=xl66 align=right width=64 style='border-left:none;width:48pt'>84</td>
+      <td class=xl67 align=right width=64 style='border-left:none;width:48pt'>0</td>
+     </tr>
+     <tr height=19 style='height:14.5pt'>
+      <td height=19 class=xl68 style='height:14.5pt;border-top:none'>Bericht</td>
+      <td class=xl69 align=right style='border-top:none'>20</td>
+      <td class=xl69 align=right style='border-top:none;border-left:none'>168</td>
+      <td class=xl70 align=right style='border-top:none;border-left:none'>0</td>
+     </tr>
+     <tr height=19 style='height:14.5pt'>
+      <td height=19 class=xl65 style='height:14.5pt;border-top:none'>Filterauswahl</td>
+      <td class=xl66 align=right style='border-top:none'>5</td>
+      <td class=xl66 align=right style='border-top:none;border-left:none'>42</td>
+      <td class=xl67 align=right style='border-top:none;border-left:none'>0</td>
+     </tr>
+    <!--EndFragment-->
+    </table>
+    
+    </body>
+    
+    </html>`;
+    keyBoardEvent.clipboardData = {
+      getData: () => {
+        return localElem;
+      },
+      items: []
+    };
+    (rteObj as any).inputElement.focus();
+    setCursorPoint((rteObj as any).inputElement, 0);
+    rteObj.onPaste(keyBoardEvent);
+    setTimeout(() => {
+      if (rteObj.pasteCleanupSettings.prompt) {
+        let cleanFormat: any = document.getElementById(rteObj.getID() + '_pasteCleanupDialog').getElementsByClassName(CLS_RTE_PASTE_REMOVE_FORMAT);
+        cleanFormat[0].click();
+        let pasteOK: any = document.getElementById(rteObj.getID() + '_pasteCleanupDialog').getElementsByClassName(CLS_RTE_PASTE_OK);
+        pasteOK[0].click();
+      }
+      let allElem: any = (rteObj as any).inputElement.firstElementChild.querySelectorAll('*');
+      let expected: boolean = false;
+      let expectedElem: string = `<table border="0" cellpadding="0" cellspacing="0" width="425"><tbody><tr height="19"><td height="19" width="233">Hauptansicht
+      mit Panelverwaltung</td><td align="right" width="64">10</td><td align="right" width="64">84</td><td align="right" width="64">0</td></tr><tr height="19"><td height="19">Bericht</td><td align="right">20</td><td align="right">168</td><td align="right">0</td></tr><tr height="19"><td height="19">Filterauswahl</td><td align="right">5</td><td align="right">42</td><td align="right">0</td></tr></tbody></table>`;
+      if (allElem[0].parentElement.innerHTML.trim().replace(/>\s+</g, '><') === expectedElem) {
+        expected = true;
       }
       expect(expected).toBe(true);
       done();

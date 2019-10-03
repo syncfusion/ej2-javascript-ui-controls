@@ -21,7 +21,7 @@ import { DataUtil } from '@syncfusion/ej2-data';
 
 /**
  * `BatchEdit` module is used to handle batch editing actions.
- * @hidden
+
  */
 export class BatchEdit {
     private parent: IGrid;
@@ -49,7 +49,7 @@ export class BatchEdit {
     }
 
     /**
-     * @hidden
+
      */
     public addEventListener(): void {
         if (this.parent.isDestroyed) { return; }
@@ -65,7 +65,7 @@ export class BatchEdit {
     }
 
     /**
-     * @hidden
+
      */
     public removeEventListener(): void {
         if (this.parent.isDestroyed) { return; }
@@ -84,7 +84,7 @@ export class BatchEdit {
     }
 
     /**
-     * @hidden
+
      */
     public destroy(): void {
         this.removeEventListener();
@@ -407,7 +407,7 @@ export class BatchEdit {
     }
 
     /**
-     * @hidden   
+
      */
     public removeRowObjectFromUID(uid: string): void {
         let rows: Row<Column>[] = this.parent.getRowsObject() as Row<Column>[];
@@ -421,7 +421,7 @@ export class BatchEdit {
     }
 
     /**
-     * @hidden   
+
      */
     public addRowObject(row: Row<Column>): void {
         let isTop: Boolean = this.parent.editSettings.newRowPosition === 'Top';
@@ -987,7 +987,7 @@ export class BatchEdit {
     }
 
     /**
-     * @hidden   
+
      */
     public addCancelWhilePaging(): void {
         if (this.validateFormObj()) {

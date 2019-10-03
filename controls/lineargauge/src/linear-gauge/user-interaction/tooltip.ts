@@ -136,8 +136,7 @@ export class GaugeTooltip {
                 }
             });
         } else {
-            clearTimeout(this.clearTimeout);
-            this.clearTimeout = setTimeout(this.removeTooltip.bind(this), 2000);
+            this.removeTooltip();
         }
     }
 

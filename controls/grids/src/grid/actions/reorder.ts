@@ -23,7 +23,7 @@ export class Reorder implements IAction {
 
     /**
      * Constructor for the Grid reorder module
-     * @hidden
+
      */
     constructor(parent?: IGrid) {
         this.parent = parent;
@@ -372,7 +372,7 @@ export class Reorder implements IAction {
     /**
      * The function used to trigger onActionComplete
      * @return {void}
-     * @hidden
+
      */
     public onActionComplete(e: NotifyArgs): void {
         this.parent.trigger(events.actionComplete, extend(e, { type: events.actionComplete }));
@@ -381,7 +381,7 @@ export class Reorder implements IAction {
     /**
      * To destroy the reorder 
      * @return {void}
-     * @hidden
+
      */
     public destroy(): void {
         let gridElement: Element = this.parent.element;

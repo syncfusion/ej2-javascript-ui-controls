@@ -26,7 +26,7 @@ export class DetailRow {
 
     /**
      * Constructor for the Grid detail template module
-     * @hidden
+
      */
     constructor(parent?: IGrid, locator?: ServiceLocator) {
         this.parent = parent;
@@ -146,7 +146,7 @@ export class DetailRow {
         }
     }
     /**
-     * @hidden
+
      * @param gObj 
      * @param rowObj 
      */

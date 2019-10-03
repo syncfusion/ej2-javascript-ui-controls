@@ -37,10 +37,10 @@ const VARP: string = 'PopulationVar';
 const CALC: string = 'CalculatedField';
 const AGRTYPE: string = 'AggregateType';
 
-/** @hidden */
+
 export class CalculatedField implements IAction {
     public parent: PivotView | PivotFieldList;
-    /** @hidden */
+
     public isFormula: boolean = false;
 
     /**
@@ -490,7 +490,7 @@ export class CalculatedField implements IAction {
         }
     }
 
-    /** @hidden */
+
     public showError(): void {
         if (this.parent.engineModule.fieldList[this.field]) {
             delete this.parent.engineModule.fieldList[this.field];
@@ -1343,7 +1343,7 @@ export class CalculatedField implements IAction {
     /**
      * To create calculated field dialog elements.
      * @returns void
-     * @hidden
+
      */
     public createCalculatedFieldDialog(): void {
         if (this.parent.isAdaptive && this.parent.getModuleName() === 'pivotfieldlist') {
@@ -1386,7 +1386,7 @@ export class CalculatedField implements IAction {
      * Creates the error dialog for the unexpected action done.
      * @method createConfirmDialog
      * @return {void}
-     * @hidden
+
      */
     private createConfirmDialog(title: string, description: string): void {
         let errorDialog: HTMLElement = createElement('div', {
@@ -1479,7 +1479,7 @@ export class CalculatedField implements IAction {
     /**
      * To add event listener.
      * @returns void
-     * @hidden
+
      */
     public addEventListener(): void {
         if (this.parent.isDestroyed) { return; }
@@ -1489,7 +1489,7 @@ export class CalculatedField implements IAction {
     /**
      * To remove event listener.
      * @returns void
-     * @hidden
+
      */
     public removeEventListener(): void {
         if (this.parent.isDestroyed) { return; }
@@ -1499,7 +1499,7 @@ export class CalculatedField implements IAction {
     /**
      * To destroy the calculated field dialog
      * @returns void
-     * @hidden
+
      */
     public destroy(): void {
         this.removeEventListener();

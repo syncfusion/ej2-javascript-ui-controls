@@ -10,7 +10,7 @@ import { createCheckBox } from '@syncfusion/ej2-buttons';
 import { headerCellInfo } from '../base/constant';
 /**
  * HeaderCellRenderer class which responsible for building header cell content. 
- * @hidden
+
  */
 export class HeaderCellRenderer extends CellRenderer implements ICellRenderer<Column> {
 

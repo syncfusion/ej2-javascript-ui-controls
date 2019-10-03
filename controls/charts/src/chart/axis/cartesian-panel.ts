@@ -174,6 +174,7 @@ export class CartesianAxisLayoutPanel {
         let size: number = 0;
 
         let x: number; let y: number;
+        let axisOffset: number;
 
         this.calculateRowSize(rect);
 
@@ -182,6 +183,7 @@ export class CartesianAxisLayoutPanel {
             nearCount = 0; farCount = 0;
             for (let j: number = 0, len: number = row.axes.length; j < len; j++) {
                 axis = row.axes[j];
+                axisOffset = axis.plotOffset;
                 if (axis.rect.height === 0) {
                     axis.rect.height = row.computedHeight;
                     size = 0;
@@ -189,8 +191,9 @@ export class CartesianAxisLayoutPanel {
                         definition = <Row>chart.rows[k];
                         size += definition.computedHeight;
                     }
-                    axis.rect.y = (row.computedTop - size) + axis.plotOffset;
-                    axis.rect.height = (axis.rect.height + size) - (2 * axis.plotOffset);
+                    axis.rect.y = (row.computedTop - size) + (axis.plotOffsetTop ? axis.plotOffsetTop : axisOffset);
+                    axis.rect.height = (axis.rect.height + size) -
+                                      (this.getAxisOffsetValue(axis.plotOffsetTop, axis.plotOffsetBottom, axis.plotOffset));
                     axis.rect.width = 0;
                 }
                 if (axis.opposedPosition) {
@@ -214,13 +217,14 @@ export class CartesianAxisLayoutPanel {
             farCount = 0;
             for (let j: number = 0, len: number = column.axes.length; j < len; j++) {
                 axis = column.axes[j];
+                axisOffset = axis.plotOffset;
                 if (axis.rect.width === 0) {
                     for (let k: number = i, len: number = (i + axis.span); k < len; k++) {
                         definition = <Column>chart.columns[k];
                         axis.rect.width += definition.computedWidth;
                     }
-                    axis.rect.x = column.computedLeft + axis.plotOffset;
-                    axis.rect.width -= (2 * axis.plotOffset);
+                    axis.rect.x = column.computedLeft + (axis.plotOffsetLeft ? axis.plotOffsetLeft : axisOffset);
+                    axis.rect.width -= (this.getAxisOffsetValue(axis.plotOffsetLeft, axis.plotOffsetRight, axis.plotOffset));
                     axis.rect.height = 0;
                 }
                 if (axis.opposedPosition) {
@@ -276,6 +280,12 @@ export class CartesianAxisLayoutPanel {
                 chart.columns[actualIndex] = column;
             }
         }
+    }
+
+    private getAxisOffsetValue(position1: number, position2: number, plotOffset: number): number {
+        let rangeOffset: number = position1 ? (position1 + (position2 ? position2 :
+            plotOffset)) : (position2 ? position2 + plotOffset : 2 * plotOffset);
+        return rangeOffset;
     }
 
     private crossAt(chart: Chart): void {
@@ -865,12 +875,11 @@ export class CartesianAxisLayoutPanel {
 
         let y: number = rect.y + rect.height * 0.5;
 
-
         let options: TextOption = new TextOption(
             chart.element.id + '_AxisTitle_' + index, x, y - this.padding, 'middle',
             axis.title, 'rotate(' + labelRotation + ',' + (x) + ',' + (y) + ')', null, labelRotation
         );
-
+        options.text = textTrim( axis.updatedRect.height, options.text as string, axis.titleStyle);
         let element: Element = textElement(
             chart.renderer, options, axis.titleStyle, axis.titleStyle.color || chart.themeStyle.axisTitle, parent
         );
@@ -1276,7 +1285,7 @@ export class CartesianAxisLayoutPanel {
             chart.element.id + '_AxisTitle_' + index, rect.x + rect.width * 0.5,
             rect.y + padding, 'middle', axis.title
         );
-
+        options.text = textTrim( axis.updatedRect.width, options.text as string, axis.titleStyle);
         let element: Element = textElement(
             chart.renderer, options, axis.titleStyle, axis.titleStyle.color || chart.themeStyle.axisTitle, parent
         );

@@ -881,8 +881,6 @@ export class Timeline {
             'background-color:' + this.customTimelineSettings.weekendBackground + ';' : '';
         td += '"><div class="' + cls.timelineHeaderCellLabel + textClassName + '" style="width:' +
             (thWidth - 1) + 'px;' + (this.parent.timelineSettings.showTooltip ? '"title="' + date : '');
-        td += isWeekendCell && this.customTimelineSettings.weekendBackground ?
-            'background-color:' + this.customTimelineSettings.weekendBackground + ';' : '';
         td += '">' + (isNullOrUndefined(formatter) ? this.formatDateHeader(format, scheduleWeeks) :
             this.customFormat(scheduleWeeks, format, tier, mode, formatter)) + '</div>';
         parentTr += td;
@@ -1165,7 +1163,7 @@ export class Timeline {
         }
         let args: ITimeSpanEventArgs = this.timeSpanActionEvent('actionBegin', type, isFrom);
         if (!args.cancel) {
-            this.parent.updateProjectDates(args.projectStartDate, args.ProjectEndDate, args.isTimelineRoundOff);
+            this.parent.updateProjectDates(args.projectStartDate, args.ProjectEndDate, args.isTimelineRoundOff, isFrom);
             if (type === 'prevTimeSpan' && isFrom === 'publicMethod') {
                 this.parent.ganttChartModule.updateScrollLeft(0);
             } else if (type === 'nextTimeSpan' && isFrom === 'publicMethod') {

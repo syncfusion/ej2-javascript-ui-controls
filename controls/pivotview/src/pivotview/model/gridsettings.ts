@@ -16,7 +16,7 @@ export class PivotSelectionSettings extends ChildProperty<PivotSelectionSettings
 
      /**
       * Pivot widget supports row, column, cell, and both (row and column) selection mode. 
-      * @default Row
+
       */
      @Property('Row')
      public mode: SelectionMode;
@@ -27,7 +27,7 @@ export class PivotSelectionSettings extends ChildProperty<PivotSelectionSettings
       * * `Flow`: Selects the range of cells between start index and end index that also includes the other cells of the selected rows.
       * * `Box`: Selects the range of cells within the start and end column indexes that includes in between cells of rows within the range.
       * * `BoxWithBorder`: Selects the range of cells as like Box mode with borders.
-      * @default Flow
+
       */
      @Property('Flow')
      public cellSelectionMode: PivotCellSelectionMode;
@@ -36,8 +36,8 @@ export class PivotSelectionSettings extends ChildProperty<PivotSelectionSettings
       * Defines options for selection type. They are 
       * * `Single`: Allows selection of only a row or a column or a cell. 
       * * `Multiple`: Allows selection of multiple rows or columns or cells. 
-      * @blazorType PivotSelectionType
-      * @default Single 
+
+
       */
      @Property('Single')
      public type: SelectionType;
@@ -46,7 +46,7 @@ export class PivotSelectionSettings extends ChildProperty<PivotSelectionSettings
       * If 'checkboxOnly' set to true, then the selection is allowed only through checkbox.
       * 
       * > To enable checkboxOnly selection, should specify the column type as`checkbox`.
-      * @default false 
+
       */
      @Property(false)
      public checkboxOnly: boolean;
@@ -54,7 +54,7 @@ export class PivotSelectionSettings extends ChildProperty<PivotSelectionSettings
      /**
       * If 'persistSelection' set to true, then the selection is persisted on all operations.
       * For persisting selection, any one of the column should be enabled as a primary key.
-      * @default false 
+
       */
      @Property(false)
      public persistSelection: boolean;
@@ -64,15 +64,15 @@ export class PivotSelectionSettings extends ChildProperty<PivotSelectionSettings
       * * `Default`: This is the default value of the checkboxMode. In this mode, user can select multiple rows by clicking rows one by one.
       * * `ResetOnRowClick`: In ResetOnRowClick mode, on clicking a row it will reset previously selected row and also multiple
       *  rows can be selected by using CTRL or SHIFT key.
-      * @blazorType PivotCheckboxSelectionType
-      * @default Default
+
+
       */
      @Property('Default')
      public checkboxMode: CheckboxSelectionType;
 
      /**
       * If 'enableSimpleMultiRowSelection' set to true, then the user can able to perform multiple row selection with single clicks.
-      * @default false
+
       */
      @Property(false)
      public enableSimpleMultiRowSelection: boolean;
@@ -85,14 +85,14 @@ export class GridSettings extends ChildProperty<GridSettings> {
 
      /**
       * Defines the content height of Grid.
-      * @default 'auto'
+
       */
      @Property('auto')
      public height: number | string;
 
      /**
       * Defines the content width of Grid.
-      * @default 'auto'
+
       */
      @Property('auto')
      public width: number | string;
@@ -104,8 +104,8 @@ export class GridSettings extends ChildProperty<GridSettings> {
       * * `Horizontal`: Displays the horizontal grid lines only.
       * * `Vertical`: Displays the vertical grid lines only.
       * * `Default`: Displays grid lines based on the theme.
-      * @blazorType PivotGridLine
-      * @default Both
+
+
       */
      @Property('Both')
      public gridLines: GridLine;
@@ -113,7 +113,7 @@ export class GridSettings extends ChildProperty<GridSettings> {
      /**
       * If `allowTextWrap` set to true,  
       * then text content will wrap to the next line when its text content exceeds the width of the Column Cells. 
-      * @default false     
+
       */
      @Property(false)
      public allowTextWrap: boolean;
@@ -122,28 +122,28 @@ export class GridSettings extends ChildProperty<GridSettings> {
       * If `allowReordering` is set to true, Grid columns can be reordered.
       * Reordering can be done by drag and drop of a particular column from one index to another index.
       * > If Grid is rendered with stacked headers, reordering is allowed only at the same level as the column headers.
-      * @default false
+
       */
      @Property(false)
      public allowReordering: boolean;
 
      /**
       * If `allowResizing` is set to true, Grid columns can be resized.
-      * @default true
+
       */
      @Property(true)
      public allowResizing: boolean;
 
      /**
       * Defines the height of Grid rows.
-      * @default null
+
       */
      @Property(null)
      public rowHeight: number;
 
      /**
       * Defines the height of Grid rows.
-      * @default 110
+
       */
      @Property(110)
      public columnWidth: number;
@@ -154,15 +154,15 @@ export class GridSettings extends ChildProperty<GridSettings> {
       * * `Ellipsis` -  Displays ellipsis when the cell content overflows its area.
       * * `EllipsisWithTooltip` - Displays ellipsis when the cell content overflows its area
       * also it will display tooltip while hover on ellipsis applied cell.
-      * @blazorType PivotClipMode
-      * @default Ellipsis
+
+
       */
      @Property('Ellipsis')
      public clipMode: ClipMode;
 
      /**
       * If `allowSelection` is set to true, it allows selection of (highlight row) Grid records by clicking it.
-      * @default false
+
       */
      @Property(false)
      public allowSelection: boolean;
@@ -170,21 +170,21 @@ export class GridSettings extends ChildProperty<GridSettings> {
      /**
       * The `selectedRowIndex` allows you to select a row at initial rendering.
       * You can also get the currently selected row index.
-      * @default -1
+
       */
      @Property(-1)
      public selectedRowIndex: number;
 
      /**
       * Configures the selection settings.
-      * @default {mode: 'Row', cellSelectionMode: 'Flow', type: 'Single'}
+
       */
      @Property({ mode: 'Row', cellSelectionMode: 'Flow', type: 'Single' })
      public selectionSettings: SelectionSettingsModel | SelectionSettings;
 
      /**
       * Configures the text wrap settings of the Grid.
-      * @default { WrapMode: 'Both'}
+
       */
      @Property({ WrapMode: 'Both' })
      public textWrapSettings: TextWrapSettings;
@@ -193,16 +193,16 @@ export class GridSettings extends ChildProperty<GridSettings> {
       * Defines the print modes. The available print modes are
       * * `AllPages`: Prints all pages of the Grid.
       * * `CurrentPage`: Prints the current page of the Grid.
-      * @blazorType PivotPrintMode
-      * @default AllPages
+
+
       */
      @Property('AllPages')
      public printMode: PrintMode;
 
      /**    
       * `contextMenuItems` defines both built-in and custom context menu items.
-      * @blazorType List<PivotContextMenuItem>       
-      * @default null
+
+
       */
      @Property()
      public contextMenuItems: PivotContextMenuItem[] | ContextMenuItemModel[];
@@ -210,8 +210,8 @@ export class GridSettings extends ChildProperty<GridSettings> {
      /**
       * Triggers before Grid copy action.
       * @event
-      * @blazorType Syncfusion.EJ2.Blazor.Grids.BeforeCopyEventArgs
-      * @deprecated
+
+
       */
      @Event()
      public beforeCopy: EmitType<BeforeCopyEventArgs>;
@@ -219,8 +219,8 @@ export class GridSettings extends ChildProperty<GridSettings> {
      /**
       * Triggers after print action is completed.
       * @event
-      * @blazorType Syncfusion.EJ2.Blazor.Grids.PrintEventArgs
-      * @deprecated
+
+
       */
      @Event()
      public printComplete: EmitType<PrintEventArgs>;
@@ -228,8 +228,8 @@ export class GridSettings extends ChildProperty<GridSettings> {
      /**
       * Triggers before the print action starts.
       * @event
-      * @blazorType Syncfusion.EJ2.Blazor.Grids.PrintEventArgs
-      * @deprecated
+
+
       */
      @Event()
      public beforePrint: EmitType<PrintEventArgs>;
@@ -237,8 +237,8 @@ export class GridSettings extends ChildProperty<GridSettings> {
      /** 
       * Triggers before context menu opens.
       * @event
-      * @blazorType Syncfusion.EJ2.Blazor.Navigations.BeforeOpenCloseMenuEventArgs
-      * @deprecated
+
+
       */
      @Event()
      public contextMenuOpen: EmitType<BeforeOpenCloseMenuEventArgs>;
@@ -246,9 +246,9 @@ export class GridSettings extends ChildProperty<GridSettings> {
      /** 
       * Triggers when click on context menu.
       * @event
-      * @blazorProperty 'ContextMenuItemClicked'
-      * @blazorType Syncfusion.EJ2.Blazor.Navigations.MenuEventArgs
-      * @deprecated
+
+
+
       */
      @Event()
      public contextMenuClick: EmitType<MenuEventArgs>;
@@ -257,8 +257,8 @@ export class GridSettings extends ChildProperty<GridSettings> {
       * Triggered every time a request is made to access cell information, element, or data.
       * This will be triggered before the cell element is appended to the Grid element.
       * @event
-      * @blazorType Syncfusion.EJ2.Blazor.Grids.QueryCellInfoEventArgs<TValue>
-      * @deprecated
+
+
       */
      @Event()
      public queryCellInfo: EmitType<QueryCellInfoEventArgs>;
@@ -267,8 +267,8 @@ export class GridSettings extends ChildProperty<GridSettings> {
       * Triggered for column header.
       * This will be triggered before the cell element is appended to the Grid element.
       * @event
-      * @blazorType Syncfusion.EJ2.Blazor.Grids.HeaderCellInfoEventArgs
-      * @deprecated
+
+
       */
      @Event()
      public headerCellInfo: EmitType<HeaderCellInfoEventArgs>;
@@ -276,8 +276,8 @@ export class GridSettings extends ChildProperty<GridSettings> {
      /** 
       * Triggers before row selection occurs.
       * @event
-      * @blazorType Syncfusion.EJ2.Blazor.Grids.RowSelectEventArgs<TValue>
-      * @deprecated
+
+
       */
      @Event()
      public rowSelecting: EmitType<RowSelectEventArgs>;
@@ -285,8 +285,8 @@ export class GridSettings extends ChildProperty<GridSettings> {
      /** 
       * Triggers after a row is selected.
       * @event
-      * @blazorType Syncfusion.EJ2.Blazor.Grids.RowSelectEventArgs<TValue>
-      * @deprecated
+
+
       */
      @Event()
      public rowSelected: EmitType<RowSelectEventArgs>;
@@ -294,8 +294,8 @@ export class GridSettings extends ChildProperty<GridSettings> {
      /** 
       * Triggers before deselecting the selected row.
       * @event
-      * @blazorType Syncfusion.EJ2.Blazor.Grids.RowDeselectEventArgs<TValue>
-      * @deprecated
+
+
       */
      @Event()
      public rowDeselecting: EmitType<RowDeselectEventArgs>;
@@ -303,8 +303,8 @@ export class GridSettings extends ChildProperty<GridSettings> {
      /** 
       * Triggers when a selected row is deselected.
       * @event
-      * @blazorType Syncfusion.EJ2.Blazor.Grids.RowDeselectEventArgs<TValue>
-      * @deprecated
+
+
       */
      @Event()
      public rowDeselected: EmitType<RowDeselectEventArgs>;
@@ -312,8 +312,8 @@ export class GridSettings extends ChildProperty<GridSettings> {
      /** 
       * Triggers before any cell selection occurs.
       * @event
-      * @blazorType Syncfusion.EJ2.Blazor.Grids.CellSelectingEventArgs<TValue>
-      * @deprecated
+
+
       */
      @Event()
      public cellSelecting: EmitType<CellSelectingEventArgs>;
@@ -321,8 +321,8 @@ export class GridSettings extends ChildProperty<GridSettings> {
      /** 
       * Triggers after a cell is selected.
       * @event
-      * @blazorType Syncfusion.EJ2.Blazor.Grids.CellSelectEventArgs<TValue>
-      * @deprecated
+
+
       */
      @Event()
      public cellSelected: EmitType<CellSelectEventArgs>;
@@ -330,8 +330,8 @@ export class GridSettings extends ChildProperty<GridSettings> {
      /** 
       * Triggers before the selected cell is deselecting.
       * @event
-      * @blazorType Syncfusion.EJ2.Blazor.Grids.CellDeselectEventArgs<TValue>
-      * @deprecated
+
+
       */
      @Event()
      public cellDeselecting: EmitType<CellDeselectEventArgs>;
@@ -339,8 +339,8 @@ export class GridSettings extends ChildProperty<GridSettings> {
      /** 
       * Triggers when a particular selected cell is deselected.
       * @event
-      * @blazorType Syncfusion.EJ2.Blazor.Grids.CellDeselectEventArgs<TValue>
-      * @deprecated
+
+
       */
      @Event()
      public cellDeselected: EmitType<CellDeselectEventArgs>;
@@ -348,8 +348,8 @@ export class GridSettings extends ChildProperty<GridSettings> {
      /** 
       * Triggers when column resize starts.
       * @event
-      * @blazorType Syncfusion.EJ2.Blazor.Grids.ResizeArgs
-      * @deprecated
+
+
       */
      @Event()
      public resizeStart: EmitType<ResizeArgs>;
@@ -357,8 +357,8 @@ export class GridSettings extends ChildProperty<GridSettings> {
      /** 
       * Triggers on column resizing.
       * @event
-      * @blazorType Syncfusion.EJ2.Blazor.Grids.ResizeArgs
-      * @deprecated
+
+
       */
      @Event()
      public resizing: EmitType<ResizeArgs>;
@@ -366,8 +366,8 @@ export class GridSettings extends ChildProperty<GridSettings> {
      /** 
       * Triggers when column resize ends.
       * @event
-      * @blazorType Syncfusion.EJ2.Blazor.Grids.ResizeArgs
-      * @deprecated
+
+
       */
      @Event()
      public resizeStop: EmitType<ResizeArgs>;
@@ -375,8 +375,8 @@ export class GridSettings extends ChildProperty<GridSettings> {
      /** 
       * Triggers before exporting each header cell to PDF document. You can also customize the PDF cells.
       * @event
-      * @blazorType Syncfusion.EJ2.Blazor.Grids.PdfHeaderQueryCellInfoEventArgs
-      * @deprecated
+
+
       */
      @Event()
      public pdfHeaderQueryCellInfo: EmitType<PdfHeaderQueryCellInfoEventArgs>;
@@ -384,8 +384,8 @@ export class GridSettings extends ChildProperty<GridSettings> {
      /** 
       * Triggers before exporting each cell to PDF document. You can also customize the PDF cells.
       * @event
-      * @blazorType Syncfusion.EJ2.Blazor.Grids.PdfQueryCellInfoEventArgs
-      * @deprecated
+
+
       */
      @Event()
      public pdfQueryCellInfo: EmitType<PdfQueryCellInfoEventArgs>;
@@ -394,8 +394,8 @@ export class GridSettings extends ChildProperty<GridSettings> {
       * Triggers before exporting each header cell to Excel file.
       * You can also customize the Excel cells.
       * @event
-      * @blazorType Syncfusion.EJ2.Blazor.Grids.ExcelHeaderQueryCellInfoEventArgs
-      * @deprecated
+
+
       */
      @Event()
      public excelHeaderQueryCellInfo: EmitType<ExcelHeaderQueryCellInfoEventArgs>;
@@ -404,8 +404,8 @@ export class GridSettings extends ChildProperty<GridSettings> {
       * Triggers before exporting each cell to Excel file.
       * You can also customize the Excel cells.
       * @event
-      * @blazorType Syncfusion.EJ2.Blazor.Grids.ExcelQueryCellInfoEventArgs
-      * @deprecated
+
+
       */
      @Event()
      public excelQueryCellInfo: EmitType<ExcelQueryCellInfoEventArgs>;
@@ -413,8 +413,8 @@ export class GridSettings extends ChildProperty<GridSettings> {
      /**  
       * Triggers when column header element drag (move) starts. 
       * @event
-      * @blazorType Syncfusion.EJ2.Blazor.Grids.ColumnDragEventArgs
-      * @deprecated
+
+
       */
      @Event()
      public columnDragStart: EmitType<ColumnDragEventArgs>;
@@ -422,8 +422,8 @@ export class GridSettings extends ChildProperty<GridSettings> {
      /**  
       * Triggers when column header element is dragged (moved) continuously. 
       * @event
-      * @blazorType Syncfusion.EJ2.Blazor.Grids.ColumnDragEventArgs
-      * @deprecated
+
+
       */
      @Event()
      public columnDrag: EmitType<ColumnDragEventArgs>;
@@ -431,8 +431,8 @@ export class GridSettings extends ChildProperty<GridSettings> {
      /**  
       * Triggers when a column header element is dropped on the target column. 
       * @event
-      * @blazorType Syncfusion.EJ2.Blazor.Grids.ColumnDragEventArgs
-      * @deprecated
+
+
       */
      @Event()
      public columnDrop: EmitType<ColumnDragEventArgs>;
@@ -440,7 +440,7 @@ export class GridSettings extends ChildProperty<GridSettings> {
      /**
       * This allows to configure the column before it renders.
       * @event
-      * @deprecated
+
       */
      @Event()
      public columnRender: EmitType<ColumnRenderEventArgs>;

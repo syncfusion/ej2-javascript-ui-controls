@@ -8,26 +8,26 @@ export interface SmithchartModel extends ComponentModel{
 
     /**
      * render type of smithchart.
-     * @default Impedance
+
      */
 
     renderType?: RenderType;
 
     /**
      * width for smithchart.
-     * @default ''
+
      */
     width?: string;
 
     /**
      * height for smithchart.
-     * @default ''
+
      */
     height?: string;
 
     /**
      * theme for smithchart.
-     * @default Material
+
      */
 
     theme?: SmithchartTheme;
@@ -85,14 +85,14 @@ export interface SmithchartModel extends ComponentModel{
 
     /**
      *  Spacing between elements
-     * @default 10
+
      */
 
     elementSpacing?: number;
 
     /**
      *  Spacing between elements
-     * @default 1
+
      */
 
     radius?: number;
@@ -100,63 +100,63 @@ export interface SmithchartModel extends ComponentModel{
     /**
      * Triggers before the prints gets started.
      * @event
-     * @blazorProperty 'OnPrint'
+
      */
     beforePrint?: EmitType<ISmithchartPrintEventArgs>;
 
     /**
      * Triggers after the animation completed.
      * @event
-     * @blazorProperty 'AnimationCompleted'
+
      */
     animationComplete?: EmitType<ISmithchartAnimationCompleteEventArgs>;
 
     /**
      * Triggers before smithchart rendered.
      * @event
-     * @blazorProperty 'OnLoad'
+
      */
     load?: EmitType<ISmithchartLoadEventArgs>;
 
     /**
      * Triggers after smithchart rendered.
      * @event
-     * @blazorProperty 'Loaded'
+
      */
     loaded?: EmitType<ISmithchartLoadedEventArgs>;
 
     /**
      * Triggers before the legend is rendered.
      * @event
-     * @blazorProperty 'LegendRendering'
+
      */
     legendRender?: EmitType<ISmithchartLegendRenderEventArgs>;
 
     /**
      * Triggers before the title is rendered.
      * @event
-     * @blazorProperty 'TitleRendering'
+
      */
     titleRender?: EmitType<ITitleRenderEventArgs>;
 
     /**
      * Triggers before the sub-title is rendered.
      * @event
-     * @blazorProperty 'SubtitleRendering'
+
      */
     subtitleRender?: EmitType<ISubTitleRenderEventArgs>;
 
     /**
      * Triggers before the datalabel text is rendered.
      * @event
-     * @blazorProperty 'TextRendering'
+
      */
     textRender?: EmitType<ISmithchartTextRenderEventArgs>;
 
     /**
      * Triggers before the axis label is rendered
      * @event
-     * @blazorProperty 'AxisLabelRendering'
+
      */
     axisLabelRender?: EmitType<ISmithchartAxisLabelRenderEventArgs>;
 

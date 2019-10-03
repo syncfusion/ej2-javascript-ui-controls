@@ -103,21 +103,21 @@ export interface AddEventArgs extends BaseEventArgs {
 export class TabActionSettings extends ChildProperty<TabActionSettings> {
     /**
      * Specifies the animation effect for displaying Tab content.
-     * @default 'SlideLeftIn'
-     * @aspType string
-     * @blazorType string
+
+
+
      */
     @Property('SlideLeftIn')
     public effect: 'None' | Effect;
     /**
      * Specifies the time duration to transform content.
-     * @default 600
+
      */
     @Property(600)
     public duration: number;
     /**
      * Specifies easing effect applied while transforming content.
-     * @default 'ease'
+
      */
     @Property('ease')
     public easing: string;
@@ -125,13 +125,13 @@ export class TabActionSettings extends ChildProperty<TabActionSettings> {
 export class TabAnimationSettings extends ChildProperty<TabAnimationSettings> {
     /**
      * Specifies the animation to appear while moving to previous Tab content.
-     * @default { effect: 'SlideLeftIn', duration: 600, easing: 'ease' }
+
      */
     @Complex<TabActionSettingsModel>({ effect: 'SlideLeftIn', duration: 600, easing: 'ease' }, TabActionSettings)
     public previous: TabActionSettingsModel;
     /**
      * Specifies the animation to appear while moving to next Tab content.
-     * @default { effect: 'SlideRightIn', duration: 600, easing: 'ease' }
+
      */
     @Complex<TabActionSettingsModel>({ effect: 'SlideRightIn', duration: 600, easing: 'ease' }, TabActionSettings)
     public next: TabActionSettingsModel;
@@ -142,13 +142,13 @@ export class TabAnimationSettings extends ChildProperty<TabAnimationSettings> {
 export class Header extends ChildProperty<Header> {
     /**
      * Specifies the display text of the Tab item header.
-     * @default ''
+
      */
     @Property('')
     public text: string | HTMLElement;
     /**
      * Specifies the icon class that is used to render an icon in the Tab header.
-     * @default ''
+
      */
     @Property('')
     public iconCss: string;
@@ -159,7 +159,7 @@ export class Header extends ChildProperty<Header> {
      * - Top: Places the icon on the `top` of the item.
      * - Right: Places the icon to the `right` end of the item.
      * - Bottom: Places the icon at the `bottom` of the item.
-     * @default 'left'
+
      */
     @Property('left')
     public iconPosition: string;
@@ -170,31 +170,31 @@ export class Header extends ChildProperty<Header> {
 export class TabItem extends ChildProperty<TabItem> {
     /**
      * The object used for configuring the Tab item header properties.
-     * @default {}
+
      */
     @Complex<HeaderModel>({}, Header)
     public header: HeaderModel;
     /**
      * Specifies the header text of Tab item.
-     * @default null
+
      */
     @Property(null)
     public headerTemplate: string;
     /**
      * Specifies the content of Tab item, that is displayed when concern item header is selected.
-     * @default ''
+
      */
     @Property('')
     public content: string | HTMLElement;
     /**
      * Sets the CSS classes to the Tab item to customize its styles.
-     * @default ''
+
      */
     @Property('')
     public cssClass: string;
     /**
      * Sets true to disable user interactions of the Tab item.
-     * @default false
+
      */
     @Property(false)
     public disabled: boolean;
@@ -279,26 +279,26 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
      *   });
      *   tabObj.appendTo('#tab');
      * ```
-     * @default []
+
      */
     @Collection<TabItemModel>([], TabItem)
     public items: TabItemModel[];
     /**
      * Specifies the width of the Tab component. Default, Tab width sets based on the width of its parent.
-     * @default '100%'
+
      */
     @Property('100%')
     public width: string | number;
     /**
      * Specifies the height of the Tab component. By default, Tab height is set based on the height of its parent.
      * To use height property, heightAdjustMode must be set to 'None'.
-     * @default 'auto'
+
      */
     @Property('auto')
     public height: string | number;
     /**
      * Sets the CSS classes to root element of the Tab that helps to customize component styles.
-     * @default ''
+
      */
     @Property('')
     public cssClass: string;
@@ -314,7 +314,7 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
      *   });
      *   tabObj.appendTo('#tab');
      * ```
-     * @default 0
+
      */
     @Property(0)
     public selectedItem: number;
@@ -325,7 +325,7 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
      * - Bottom: Places the Tab header at the bottom.
      * - Left: Places the Tab header on the left.
      * - Right: Places the Tab header at the right.
-     * @default 'Top'
+
      */
     @Property('Top')
     public headerPlacement: HeaderPosition;
@@ -336,7 +336,7 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
      * - Auto: Tallest panel height of a given Tab content is set to all the other panels.
      * - Content: Based on the corresponding content height, the content panel height is set.
      * - Fill: Based on the parent height, the content panel height is set.
-     * @default 'Content'
+
      */
     @Property('Content')
     public heightAdjustMode: HeightStyles;
@@ -346,7 +346,7 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
      * - Scrollable: All the elements are displayed in a single line with horizontal scrolling enabled.
      * - Popup: Tab container holds the items that can be placed within the available space and rest of the items are moved to the popup.
      * If the popup content overflows the height of the page, the rest of the elements can be viewed by scrolling the popup.
-     * @default 'Scrollable'
+
      */
     @Property('Scrollable')
     public overflowMode: OverflowMode;
@@ -354,25 +354,25 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
      * Enable or disable persisting component's state between page reloads. 
      * If enabled, following list of states will be persisted.
      * 1. selectedItem
-     * @default false
+
      */
     @Property(false)
     public enablePersistence: boolean;
     /**
      * Specifies whether to show the close button for header items to remove the item from the Tab.
-     * @default false
+
      */
     @Property(false)
     public showCloseButton: boolean;
     /**  
      * Specifies the scrolling distance in scroller.
-     * @default null  
+
      */
     @Property()
     public scrollStep: number;
     /**
      * Specifies the animation configuration settings while showing the content of the Tab.
-     * @default 
+
      * { previous: { effect: 'SlideLeftIn', duration: 600, easing: 'ease' },
      *   next: { effect: 'SlideRightIn', duration: 600, easing: 'ease' } }
      */
@@ -381,56 +381,56 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
     /**
      * The event will be fired once the component rendering is completed.
      * @event
-     * @blazorProperty 'Created'
+
      */
     @Event()
     public created: EmitType<Event>;
     /**
      * The event will be fired before adding the item to the Tab.
      * @event
-     * @blazorProperty 'Adding'
+
      */
     @Event()
     public adding: EmitType<AddEventArgs>;
     /**
      * The event will be fired after adding the item to the Tab.
      * @event
-     * @blazorProperty 'Added'
+
      */
     @Event()
     public added: EmitType<AddEventArgs>;
     /**
      * The event will be fired before the item gets selected.
      * @event
-     * @blazorProperty 'Selecting'
+
      */
     @Event()
     public selecting: EmitType<SelectingEventArgs>;
     /**
      * The event will be fired after the item gets selected.
      * @event
-     * @blazorProperty 'Selected'
+
      */
     @Event()
     public selected: EmitType<SelectEventArgs>;
     /**
      * The event will be fired before removing the item from the Tab.
      * @event
-     * @blazorProperty 'Removing'
+
      */
     @Event()
     public removing: EmitType<RemoveEventArgs>;
     /**
      * The event will be fired after removing the item from the Tab.
      * @event
-     * @blazorProperty 'Removed'
+
      */
     @Event()
     public removed: EmitType<RemoveEventArgs>;
     /**
      * The event will be fired when the component gets destroyed.
      * @event
-     * @blazorProperty 'Destroyed'
+
      */
     @Event()
     public destroyed: EmitType<Event>;

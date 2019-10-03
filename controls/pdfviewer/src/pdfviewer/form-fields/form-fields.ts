@@ -1,6 +1,6 @@
 import { PdfViewer } from '../index';
 import { PdfViewerBase } from '../index';
-import { createElement } from '@syncfusion/ej2-base';
+import { createElement, Browser } from '@syncfusion/ej2-base';
 import { PdfAnnotationBaseModel } from '../../diagram/pdf-annotation-model';
 import { Dialog } from '@syncfusion/ej2-popups';
 import { PdfAnnotationBase } from '../../diagram/pdf-annotation';
@@ -10,7 +10,7 @@ import { CheckBox } from '@syncfusion/ej2-buttons';
 
 /**
  * The `FormFields` module is to render formfields in the PDF document.
- * @hidden
+
  */
 export class FormFields {
     private pdfViewer: PdfViewer;
@@ -569,14 +569,20 @@ export class FormFields {
         let zoomvalue: number = this.pdfViewerBase.getZoomFactor();
         span.style.left = left * zoomvalue + 'px';
         span.style.top = top * zoomvalue + 'px';
-        span.style.height = 10 + 'px';
-        span.style.width = 19 + 'px';
+        if (Browser.isDevice) {
+            span.style.height = 5 + 'px';
+            span.style.width = 10 + 'px';
+            span.style.fontSize = '3px';
+        } else {
+            span.style.height = 10 + 'px';
+            span.style.width = 19 + 'px';
+            span.style.fontSize = '8px';
+        }
         span.style.padding = '2px';
         span.style.textAlign = 'center';
         span.style.boxSizing = 'content-box';
         span.innerHTML = 'Sign';
         span.style.backgroundColor = 'red';
-        span.style.fontSize = '8px';
         textLayer.appendChild(span);
         this.addSignaturePath(data);
         return inputField;

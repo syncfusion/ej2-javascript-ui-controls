@@ -16,7 +16,7 @@ import { getComplexFieldID, getObject, appendChildren } from '../base/util';
 import * as events from '../base/constant';
 /**
  * Edit render module is used to render grid edit row.
- * @hidden
+
  */
 export class EditRender {
     //Internal variables               
@@ -176,7 +176,8 @@ export class EditRender {
             if (col.editTemplate) {
                 input = this.parent.createElement('span', {attrs: {'e-mappinguid': col.uid}});
                 let tempID: string = this.parent.element.id + col.uid + 'editTemplate';
-                appendChildren(input, col.getEditTemplate()(args.rowData, this.parent, 'editTemplate', tempID));
+                let tempData: object = extend({}, {}, args.rowData, true);
+                appendChildren(input, col.getEditTemplate()(tempData, this.parent, 'editTemplate', tempID));
                 if (isBlazor()) {
                     updateBlazorTemplate(tempID, 'EditTemplate', col);
                 }

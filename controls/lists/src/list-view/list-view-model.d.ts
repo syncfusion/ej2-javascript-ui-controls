@@ -85,35 +85,35 @@ export interface ListViewModel extends ComponentModel{
     /**
      * This cssClass property helps to use custom skinning option for ListView component,
      *  by adding the mentioned class name into root element of ListView.
-     * @default ''
+
      */
     cssClass?: string;
 
     /**
      * It enables UI virtualization which will increase ListView performance on loading large number of data.
      *
-     * @default false
+
      */
     enableVirtualization?: boolean;
 
     /**
      * Defines the HTML attributes such as id, class, etc., for the ListView.
-     * @default {}
+
      */
     htmlAttributes?: { [key: string]: string; };
 
     /**
      * It specifies enabled state of ListView component.
-     * @default true
+
      */
     enable?: boolean;
 
     /**
      * It provides the data to render the ListView component which is mapped
      *  with the fields of ListView.
-     * @isGenericType true
+
      * {% codeBlock src="listview/datasource-api/index.ts" %}{% endcodeBlock %}
-     * @default []
+
      */
     dataSource?: { [key: string]: Object }[] | string[] | number[] | DataManager;
 
@@ -124,7 +124,7 @@ export interface ListViewModel extends ComponentModel{
      *  to know more about this property with demo.
      *
      * {% codeBlock src="listview/query-api/index.ts" %}{% endcodeBlock %}
-     * @default null
+
      */
     query?: Query;
 
@@ -133,13 +133,13 @@ export interface ListViewModel extends ComponentModel{
      *  with specified mapped with the column fields to render the ListView.
      *
      * {% codeBlock src="listview/fields-api/index.ts" %}{% endcodeBlock %}
-     * @default ListBase.defaultMappedFields
+
      */
     fields?: FieldSettingsModel;
 
     /**
      * It is used to apply the animation to sub list navigation of list items.
-     * @default { effect: 'SlideLeft', duration: 400, easing: 'ease' }
+
      */
     animation?: AnimationSettings;
 
@@ -147,7 +147,7 @@ export interface ListViewModel extends ComponentModel{
      * It is used to enable the sorting of list items to be ascending or descending.
      *
      * {% codeBlock src="listview/sortorder-api/index.ts" %}{% endcodeBlock %}
-     * @default 'None'
+
      */
     sortOrder?: SortOrder;
 
@@ -155,7 +155,7 @@ export interface ListViewModel extends ComponentModel{
      * Using this property, we can show or hide the icon of list item.
      *
      * {% codeBlock src="listview/showicon-api/index.ts" %}{% endcodeBlock %}
-     * @default false
+
      */
     showIcon?: boolean;
 
@@ -163,13 +163,13 @@ export interface ListViewModel extends ComponentModel{
      * Using this property, we can show or hide the `checkbox`.
      *
      * {% codeBlock src="listview/showcheckbox-api/index.ts" %}{% endcodeBlock %}
-     * @default false
+
      */
     showCheckBox?: boolean;
 
     /**
      * It is used to set the position of check box in an item.
-     * @default 'Left'
+
      */
     checkBoxPosition?: checkBoxPosition;
 
@@ -177,7 +177,7 @@ export interface ListViewModel extends ComponentModel{
      * It is used to set the title of ListView component.
      *
      * {% codeBlock src="listview/fields-api/index.ts" %}{% endcodeBlock %}
-     * @default ""
+
      */
     headerTitle?: string;
 
@@ -185,19 +185,19 @@ export interface ListViewModel extends ComponentModel{
      * Using this property, we can show or hide the header of ListView component.
      *
      * {% codeBlock src="listview/fields-api/index.ts" %}{% endcodeBlock %}
-     * @default false
+
      */
     showHeader?: boolean;
 
     /**
      * It is used to set the height of the ListView component.
-     * @default ''
+
      */
     height?: number | string;
 
     /**
      * It sets the width to the ListView component.
-     * @default ''
+
      */
     width?: number | string;
 
@@ -207,7 +207,7 @@ export interface ListViewModel extends ComponentModel{
      *  to know more about this property with demo.
      *
      * {% codeBlock src="listview/template-api/index.ts" %}{% endcodeBlock %}
-     * @default null
+
      */
     template?: string;
 
@@ -218,7 +218,7 @@ export interface ListViewModel extends ComponentModel{
      *  to know more about this property with demo.
      *
      * {% codeBlock src="listview/headertemplate-api/index.ts" %}{% endcodeBlock %}
-     * @default null
+
      */
     headerTemplate?: string;
 
@@ -229,21 +229,21 @@ export interface ListViewModel extends ComponentModel{
      *  to know more about this property with demo.
      *
      * {% codeBlock src="listview/grouptemplate-api/index.ts" %}{% endcodeBlock %}
-     * @default null
+
      */
     groupTemplate?: string;
 
     /**
      * We can trigger the `select` event when we select the list item in the component.
      * @event
-     * @blazorProperty 'Selected'
+
      */
     select?: EmitType<SelectEventArgs>;
 
     /**
      * We can trigger `actionBegin` event before every ListView action starts.
      * @event
-     * @blazorProperty 'OnActionBegin'
+
      */
     actionBegin?: EmitType<Object>;
 
@@ -251,7 +251,7 @@ export interface ListViewModel extends ComponentModel{
      * We can trigger `actionComplete` event for every ListView action success event
      *  with the dataSource parameter.
      * @event
-     * @blazorProperty 'OnActionComplete'
+
      */
     actionComplete?: EmitType<Object>;
 
@@ -259,7 +259,7 @@ export interface ListViewModel extends ComponentModel{
      * We can trigger `actionFailure` event for every ListView action failure event
      *  with the dataSource parameter.
      * @event
-     * @blazorProperty 'OnActionFailure'
+
      */
     actionFailure?: EmitType<Object>;
 

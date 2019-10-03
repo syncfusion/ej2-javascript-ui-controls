@@ -14,10 +14,10 @@ import { IOlapField } from '../../base/olap/engine';
 /**
  * Module to render Field List
  */
-/** @hidden */
+
 export class TreeViewRenderer implements IAction {
     public parent: PivotFieldList;
-    /** @hidden */
+
     public fieldTable: TreeView;
 
     private parentElement: HTMLElement;
@@ -248,6 +248,7 @@ export class TreeViewRenderer implements IAction {
         });
         let editorSearch: HTMLInputElement = createElement('input', { attrs: { 'type': 'text' } }) as HTMLInputElement;
         searchWrapper.appendChild(editorSearch);
+        let treeOuterDiv: HTMLElement = createElement('div', { className: cls.EDITOR_TREE_CONTAINER_CLASS + '-outer-div' });
         let treeViewContainer: HTMLElement = createElement('div', {
             className: cls.EDITOR_TREE_CONTAINER_CLASS + ' ' + (this.parent.dataType === 'olap' ? 'e-olap-field-list-tree' : '')
         });
@@ -266,7 +267,8 @@ export class TreeViewRenderer implements IAction {
             innerHTML: this.parent.localeObj.getConstant('noMatches')
         });
         editorTreeWrapper.appendChild(promptDiv);
-        editorTreeWrapper.appendChild(treeViewContainer);
+        treeOuterDiv.appendChild(treeViewContainer);
+        editorTreeWrapper.appendChild(treeOuterDiv);
         this.fieldTable = new TreeView({
             /* tslint:disable-next-line:max-line-length */
             fields: { dataSource: treeData, id: 'id', text: 'caption', isChecked: 'isSelected', parentID: 'pid', iconCss: 'spriteCssClass' },
@@ -558,7 +560,9 @@ export class TreeViewRenderer implements IAction {
                 if (axis === 3) {
                     if ((item.id as string).toLowerCase() !== '[measures]' &&
                         ((item.id as string).toLowerCase().indexOf('[measures]') === 0 ||
-                            (item.spriteCssClass && item.spriteCssClass.indexOf('e-measureCDB') !== -1))) {
+                            (item.spriteCssClass && item.spriteCssClass.indexOf('e-measureCDB') !== -1)) ||
+                        ((item.id as string).toLowerCase() === '[calculated members].[_0]' ||
+                            (item.spriteCssClass && item.spriteCssClass.indexOf('e-calc-measure-icon') !== -1))) {
                         framedSet = {
                             id: item.id, caption: item.caption, hasChildren: item.hasChildren,
                             type: item.type, aggregateType: item.aggregateType,
@@ -579,7 +583,8 @@ export class TreeViewRenderer implements IAction {
                     }
                 } else {
                     if (!((item.id as string).toLowerCase().indexOf('[measures]') === 0) &&
-                        !(item.spriteCssClass && item.spriteCssClass.indexOf('e-measureCDB') !== -1)) {
+                        !(item.spriteCssClass && item.spriteCssClass.indexOf('e-measureCDB') !== -1) &&
+                        !(item.spriteCssClass && item.spriteCssClass.indexOf('e-calc-measure-icon') !== -1)) {
                         framedSet = {
                             id: item.id, caption: item.caption, hasChildren: item.hasChildren,
                             type: item.type, aggregateType: item.aggregateType,
@@ -706,14 +711,14 @@ export class TreeViewRenderer implements IAction {
     }
 
     /**
-     * @hidden
+
      */
     public addEventListener(): void {
         this.parent.on(events.treeViewUpdate, this.refreshTreeView, this);
     }
 
     /**
-     * @hidden
+
      */
     public removeEventListener(): void {
         if (this.parent.isDestroyed) { return; }
@@ -723,7 +728,7 @@ export class TreeViewRenderer implements IAction {
     /**
      * To destroy the tree view event listener 
      * @return {void}
-     * @hidden
+
      */
 
     public destroy(): void {

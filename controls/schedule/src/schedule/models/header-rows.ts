@@ -12,7 +12,7 @@ export class HeaderRows extends ChildProperty<HeaderRows> {
      * * Week
      * * Date
      * * Hour
-     * @default null
+
      */
     @Property()
     public option: HeaderRowType;
@@ -21,7 +21,7 @@ export class HeaderRows extends ChildProperty<HeaderRows> {
      * Template option to customize the individual header rows. It accepts either the string or HTMLElement as template design
      *  content and parse it appropriately before displaying it onto the header cells. The field that
      *  can be accessed via this template is `date`.
-     * @default null
+
      */
     @Property()
     public template: string;

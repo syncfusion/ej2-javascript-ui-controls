@@ -34,7 +34,7 @@ export function isFilterChildHierarchy(parent: TreeGrid): boolean {
 }
 
 /**
- * @hidden
+
  */
 export function findParentRecords(records: Object): Object {
   let datas: Object[]; datas = [];
@@ -48,7 +48,7 @@ export function findParentRecords(records: Object): Object {
   return datas;
 }
 /**
- * @hidden
+
  */
 export function getExpandStatus (parent: TreeGrid, record: ITreeData, parents: ITreeData[]) : boolean {
   let parentRecord: ITreeData = isNullOrUndefined(record.parentItem) ? null :
@@ -82,7 +82,7 @@ export function getExpandStatus (parent: TreeGrid, record: ITreeData, parents: I
   }
 }
 /**
- * @hidden
+
  */
 export function findChildrenRecords(records: ITreeData): Object[] {
   let datas: Object[] = [];

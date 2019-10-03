@@ -36,9 +36,9 @@ describe('PivotFieldList spec', () => {
         (treeObj as any).checkNode((li).getAttribute('data-uid'));
     }
 
-	function fieldListRefreshed(args: FieldListRefreshedEventArgs) {
+    function fieldListRefreshed(args: FieldListRefreshedEventArgs) {
         isRefresh = true;
-	}
+    }
 
     function copyObject(source: any, destiation: any): Object {
         for (let prop of source) {

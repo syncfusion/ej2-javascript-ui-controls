@@ -24,25 +24,25 @@ export class Thickness {
 
     /**
      * Sets the left value of the thickness
-     * @default 0
+
      */
     public left: number;
 
     /**
      * Sets the right value of the thickness
-     * @default 0
+
      */
     public right: number;
 
     /**
      * Sets the top value of the thickness
-     * @default 0
+
      */
     public top: number;
 
     /**
      * Sets the bottom value of the thickness
-     * @default 0
+
      */
     public bottom: number;
 
@@ -60,32 +60,32 @@ export class Thickness {
 export class Margin extends ChildProperty<Margin> {
     /**
      * Sets the space to be left from the left side of the immediate parent of an element
-     * @default 0
-     * @isBlazorNullableType true
+
+
      */
     @Property(0)
     public left: number;
 
     /**
      * Sets the space to be left from the right side of the immediate parent of an element
-     * @default 0
-     * @isBlazorNullableType true
+
+
      */
     @Property(0)
     public right: number;
 
     /**
      * Sets the space to be left from the top side of the immediate parent of an element
-     * @default 0
-     * @isBlazorNullableType true
+
+
      */
     @Property(0)
     public top: number;
 
     /**
      * Sets the space to be left from the bottom side of the immediate parent of an element
-     * @default 0
-     * @isBlazorNullableType true
+
+
      */
     @Property(0)
     public bottom: number;
@@ -112,25 +112,25 @@ export class Margin extends ChildProperty<Margin> {
 export class Shadow extends ChildProperty<Shadow> {
     /**
      * Defines the angle of Shadow
-     * @default 45
+
      */
     @Property(45)
     public angle: number;
     /**
      * Defines the distance of Shadow
-     * @default 5
+
      */
     @Property(5)
     public distance: number;
     /**
      * Defines the opacity of Shadow
-     * @default 0.7
+
      */
     @Property(0.7)
     public opacity: number;
     /**
      * Defines the color of Shadow
-     * @default ''
+
      */
     @Property('lightgrey')
     public color: string;
@@ -163,20 +163,20 @@ export class Shadow extends ChildProperty<Shadow> {
 export class Stop extends ChildProperty<Stop> {
     /**
      * Sets the color to be filled over the specified region
-     * @default ''
+
      */
     @Property('')
     public color: string;
     /**
      * Sets the position where the previous color transition ends and a new color transition starts
-     * @default 0
-     * @isBlazorNullableType true
+
+
      */
     @Property(0)
     public offset: number;
     /**
      * Describes the transparency level of the region
-     * @default 1
+
      */
     @Property(1)
     public opacity: number;
@@ -196,7 +196,7 @@ export class Stop extends ChildProperty<Stop> {
 export class Gradient extends ChildProperty<Gradient> {
     /**
      * Defines the stop collection of gradient
-     * @default []
+
      */
     @Collection<StopModel>([], Stop)
     public stops: StopModel[];
@@ -204,14 +204,14 @@ export class Gradient extends ChildProperty<Gradient> {
      * Defines the type of gradient
      * * Linear - Sets the type of the gradient as Linear
      * * Radial - Sets the type of the gradient as Radial
-     * @default 'None'
+
      */
     @Property('None')
     public type: GradientType;
 
     /**
      * Defines the id of gradient
-     * @default ''
+
      */
     @Property('')
     public id: string;
@@ -248,25 +248,25 @@ export class Gradient extends ChildProperty<Gradient> {
 export class LinearGradient extends Gradient {
     /**
      * Defines the x1 value of linear gradient
-     * @default 0
+
      */
     @Property(0)
     public x1: number;
     /**
      * Defines the x2 value of linear gradient
-     * @default 0
+
      */
     @Property(0)
     public x2: number;
     /**
      * Defines the y1 value of linear gradient
-     * @default 0
+
      */
     @Property(0)
     public y1: number;
     /**
      * Defines the y2 value of linear gradient
-     * @default 0
+
      */
     @Property(0)
     public y2: number;
@@ -299,31 +299,31 @@ export class LinearGradient extends Gradient {
 export class RadialGradient extends Gradient {
     /**
      * Defines the cx value of radial gradient
-     * @default 0
+
      */
     @Property(0)
     public cx: number;
     /**
      * Defines the cy value of radial gradient
-     * @default cy
+
      */
     @Property(0)
     public cy: number;
     /**
      * Defines the fx value of radial gradient
-     * @default 0
+
      */
     @Property(0)
     public fx: number;
     /**
      * Defines the fy value of radial gradient
-     * @default fy
+
      */
     @Property(0)
     public fy: number;
     /**
      * Defines the r value of radial gradient
-     * @default 50
+
      */
     @Property(50)
     public r: number;
@@ -334,14 +334,14 @@ export class RadialGradient extends Gradient {
 export class ShapeStyle extends ChildProperty<ShapeStyle> {
     /**
      * Sets the fill color of a shape/path
-     * @default 'white'
+
      */
     @Property('white')
     public fill: string;
 
     /**
      * Sets the stroke color of a shape/path
-     * @default 'black'
+
      */
     @Property('black')
     public strokeColor: string;
@@ -363,29 +363,29 @@ export class ShapeStyle extends ChildProperty<ShapeStyle> {
      * });
      * diagram.appendTo('#diagram');
      * ```
-     * @default ''
+
      */
     @Property('')
     public strokeDashArray: string;
 
     /**
      * Defines the stroke width of the path/shape
-     * @default 1
+
      */
     @Property(1)
     public strokeWidth: number;
 
     /**
      * Sets the opacity of a shape/path
-     * @default 1
+
      */
     @Property(1)
     public opacity: number;
 
     /**
      * Defines the gradient of a shape/path
-     * @default null
-     * @aspType object
+
+
      */
     @ComplexFactory(getGradientType)
     public gradient: GradientModel | LinearGradientModel | RadialGradientModel;
@@ -398,7 +398,7 @@ export class ShapeStyle extends ChildProperty<ShapeStyle> {
 export class StrokeStyle extends ShapeStyle {
     /**
      * Sets the fill color of a shape/path
-     * @default 'transparent'
+
      */
     @Property('transparent')
     public fill: string;
@@ -431,35 +431,35 @@ export class TextStyle extends ShapeStyle {
 
     /**
      * Sets the font color of a text
-     * @default 'black'
+
      */
     @Property('black')
     public color: string;
 
     /**
      * Sets the font type of a text
-     * @default 'Arial'
+
      */
     @Property('Arial')
     public fontFamily: string;
 
     /**
      * Defines the font size of a text
-     * @default 12
+
      */
     @Property(12)
     public fontSize: number;
 
     /**
      * Enables/disables the italic style of text
-     * @default false
+
      */
     @Property(false)
     public italic: boolean;
 
     /**
      * Enables/disables the bold style of text
-     * @default false
+
      */
     @Property(false)
     public bold: boolean;
@@ -469,7 +469,7 @@ export class TextStyle extends ShapeStyle {
      * * PreserveAll - Preserves all empty spaces and empty lines
      * * CollapseSpace - Collapses the consequent spaces into one
      * * CollapseAll - Collapses all consequent empty spaces and empty lines
-     * @default 'CollapseSpace'
+
      */
     @Property('CollapseSpace')
     public whiteSpace: WhiteSpace;
@@ -479,7 +479,7 @@ export class TextStyle extends ShapeStyle {
      * * WrapWithOverflow - Wraps the text so that no word is broken
      * * Wrap - Wraps the text and breaks the word, if necessary
      * * NoWrap - Text will no be wrapped
-     * @default  'WrapWithOverflow'
+
      */
     @Property('WrapWithOverflow')
     public textWrapping: TextWrap;
@@ -490,7 +490,7 @@ export class TextStyle extends ShapeStyle {
      * * Right - Aligns the text at the right of the text bounds
      * * Center - Aligns the text at the center of the text bounds
      * * Justify - Aligns the text in a justified manner
-     * @default 'Center'
+
      */
     @Property('Center')
     public textAlign: TextAlign;
@@ -501,7 +501,7 @@ export class TextStyle extends ShapeStyle {
      * * Underline - Decorates the text with an underline
      * * LineThrough - Decorates the text by striking it with a line
      * * None - Text will not have any specific decoration
-     * @default 'None'
+
      */
     @Property('None')
     public textDecoration: TextDecoration;
@@ -511,14 +511,14 @@ export class TextStyle extends ShapeStyle {
      * * Wrap - Wraps the text to next line, when it exceeds its bounds
      * * Ellipsis - It truncates the overflown text and represents the clipping with an ellipsis
      * * Clip - It clips the overflow text
-     * @default 'Wrap'
+
      */
     @Property('Wrap')
     public textOverflow: TextOverflow;
 
     /**
      * Sets the fill color of a shape/path
-     * @default 'transparent'
+
      */
     @Property('transparent')
     public fill: string;

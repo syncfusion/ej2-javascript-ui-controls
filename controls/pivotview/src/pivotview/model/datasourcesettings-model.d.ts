@@ -24,7 +24,7 @@ export interface FieldOptionsModel {
      * * `Percentage`: The summary cells displays in percentage format.
      * * `Avg`: The summary cells calculated by the average of its cells.
      * * `CalculatedField`: It should set to include calculated fields.
-     * @default Sum
+
      */
     type?: SummaryTypes;
 
@@ -35,7 +35,7 @@ export interface FieldOptionsModel {
 
     /**
      * It allows to display all the items of its field even any items haven't data in its row/column intersection in data source.
-     * @default false
+
      */
     showNoDataItems?: boolean;
 
@@ -51,21 +51,21 @@ export interface FieldOptionsModel {
 
     /**
      * It allows to disable or enable sub totals in row/column axis.
-     * @default true
+
      */
     showSubTotals?: boolean;
 
     /**
      * It allows to show a field has named set type.
      * Note: This option is applicable only for OLAP data source.
-     * @default false
+
      */
     isNamedSet?: boolean;
 
     /**
      * It allows to show a field has calculated member type.
      * Note: This option is applicable only for OLAP data source.
-     * @default false
+
      */
     isCalculatedField?: boolean;
 
@@ -117,7 +117,7 @@ export interface FilterModel {
 
     /**
      * It allows to set the filter type.
-     * @default Include
+
      */
     type?: FilterType;
 
@@ -128,7 +128,7 @@ export interface FilterModel {
 
     /**
      * It allows to set the filter conditions to the field.
-     * @default DoesNotEquals
+
      */
     condition?: Operators;
 
@@ -150,7 +150,7 @@ export interface FilterModel {
     /**
      * It allows to set level count of the field to fetch data from the cube.
      * Note: This option is applicable only for user-defined hierarchies.
-     * @default 1
+
      */
     levelCount?: number;
 
@@ -219,7 +219,7 @@ export interface SortModel {
      * * `Ascending`: It allows to display the field members in ascending order. 
      * * `Descending`: It allows to display the field members in descending order.
      * * `None`: It allows to display the field members based on JSON order. 
-     * @default Ascending
+
      */
     order?: Sorting;
 
@@ -257,7 +257,7 @@ export interface FormatSettingsModel {
 
     /**
      * It allows to specify whether to use grouping or not in formatted value,
-     * @default true
+
      */
     useGrouping?: boolean;
 
@@ -315,7 +315,7 @@ export interface GroupSettingsModel {
 
     /**
      * It allows to set the type of field.
-     * @default Date
+
      */
     type?: GroupType;
 
@@ -389,7 +389,7 @@ export interface ValueSortSettingsModel {
 
     /**
      * It allows to set the delimiters to separate the members.
-     * @default '.'
+
      */
     headerDelimiter?: string;
 
@@ -397,7 +397,7 @@ export interface ValueSortSettingsModel {
      * It allows to set the sort order. The types are,
      * * `Ascending`: It allows to display the field members in ascending order. 
      * * `Descending`: It allows to display the field members in descending order.
-     * @default None
+
      */
     sortOrder?: Sorting;
 
@@ -425,7 +425,7 @@ export interface DataSourceSettingsModel {
 
     /**
      * It allows to set the provider type.
-     * @default Relational
+
      */
     providerType?: ProviderType;
 
@@ -436,151 +436,151 @@ export interface DataSourceSettingsModel {
 
     /**
      * It allows to set the locale code.
-     * @default 1033
+
      */
     localeIdentifier?: number;
 
     /**
      * It allows to set the data source.
-     * @isGenericType true
+
      */
     dataSource?: IDataSet[] | DataManager;
 
     /**
      * It allows to set the row fields.
-     * @default []
+
      */
     rows?: FieldOptionsModel[];
 
     /**
      * It allows to set the column fields.
-     * @default []
+
      */
     columns?: FieldOptionsModel[];
 
     /**
      * It allows to set the value fields.
-     * @default []
+
      */
     values?: FieldOptionsModel[];
 
     /**
      * It allows to set the filter fields.
-     * @default []
+
      */
     filters?: FieldOptionsModel[];
 
     /**
      * It allows to hide fields from fieldlist.
-     * @default []
+
      */
     excludeFields?: string[];
 
     /**
      * It allows to set the expanded state of headers.
-     * @default false
+
      */
     expandAll?: boolean;
 
     /**
      * It allows to set the value fields in both column and row axis.
-     * @default 'column'
+
      */
     valueAxis?: string;
 
     /**
      * It allows to set the settings of filtering operation.
-     * @default []
+
      */
     filterSettings?: FilterModel[];
 
     /**
      * It allows to set the settings of sorting operation.
-     * @default []
+
      */
     sortSettings?: SortModel[];
 
     /**
      * It allows sorting operation UI.
-     * @default true
+
      */
     enableSorting?: boolean;
 
     /**
      * It allows excel-like label filtering operation.
-     * @default false
+
      */
     allowLabelFilter?: boolean;
 
     /**
      * It allows excel-like value filtering operation.
-     * @default false
+
      */
     allowValueFilter?: boolean;
 
     /**
      * It allows enable/disable sub total in pivot table.
-     * @default true
+
      */
     showSubTotals?: boolean;
 
     /**
      * It allows enable/disable row sub total in pivot table.
-     * @default true
+
      */
     showRowSubTotals?: boolean;
 
     /**
      * It allows enable/disable column sub total in pivot table.
-     * @default true
+
      */
     showColumnSubTotals?: boolean;
 
     /**
      * It allows enable/disable grand total in pivot table.
-     * @default true
+
      */
     showGrandTotals?: boolean;
 
     /**
      * It allows enable/disable row grand total in pivot table.
-     * @default true
+
      */
     showRowGrandTotals?: boolean;
 
     /**
      * It allows enable/disable column grand total in pivot table.
-     * @default true
+
      */
     showColumnGrandTotals?: boolean;
 
     /**
      * It allows enable/disable single measure headers in pivot table.
-     * @default false
+
      */
     alwaysShowValueHeader?: boolean;
 
     /**
      * If `showHeaderWhenEmpty` is set to false, then it will hide blank headers in pivot table.
-     * @default true
+
      */
     showHeaderWhenEmpty?: boolean;
 
     /**
      * It allows enable/disable show aggregation on PivotButton.
-     * @default true
+
      */
     showAggregationOnValueField?: boolean;
 
     /**
      * It allows to set the settings of number formatting.
-     * @default []
+
      */
     formatSettings?: FormatSettingsModel[];
 
     /**
      * It allows to set the drilled state for desired field members.
-     * @default []
+
      */
     drilledMembers?: DrillOptionsModel[];
 
@@ -591,13 +591,13 @@ export interface DataSourceSettingsModel {
 
     /**
      * It allows to set the settings of calculated field operation.
-     * @default []
+
      */
     calculatedFieldSettings?: CalculatedFieldSettingsModel[];
 
     /**
      * It allows to set the settings of Conditional Format operation.
-     * @default []
+
      */
     conditionalFormatSettings?: ConditionalFormatSettingsModel[];
 
@@ -608,7 +608,7 @@ export interface DataSourceSettingsModel {
 
     /**
      * It allows to set the settings for grouping the date.
-     * @default []
+
      */
     groupSettings?: GroupSettingsModel[];
 

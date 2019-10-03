@@ -1,10 +1,10 @@
 import { PivotView } from '../base/pivotview';
 import { contentReady } from '../../common/base/constant';
 import * as events from '../../common/base/constant';
-import { IAxisSet, IDataSet, PivotEngine, OlapEngine } from '../../base';
+import { IAxisSet, IDataSet, PivotEngine, OlapEngine, ITupInfo } from '../../base';
 import { DrillThroughEventArgs } from '../../common';
 import { DrillThroughDialog } from '../../common/popups/drillthrough-dialog';
-import { EventHandler, isBlazor } from '@syncfusion/ej2-base';
+import { EventHandler, isBlazor, isNullOrUndefined } from '@syncfusion/ej2-base';
 
 /**
  * `DrillThrough` module.
@@ -12,13 +12,13 @@ import { EventHandler, isBlazor } from '@syncfusion/ej2-base';
 export class DrillThrough {
     private parent: PivotView;
     /**
-     * @hidden
+
      */
     public drillThroughDialog: DrillThroughDialog;
 
     /**
      * Constructor.
-     * @hidden
+
      */
     constructor(parent?: PivotView) {
         this.parent = parent;
@@ -29,7 +29,7 @@ export class DrillThrough {
     /**
      * It returns the Module name.
      * @returns string
-     * @hidden
+
      */
     public getModuleName(): string {
         return 'drillthrough';
@@ -74,9 +74,15 @@ export class DrillThrough {
         let valueCaption: string = '';
         let aggType: string = '';
         let rawData: IDataSet[] = [];
-        if (pivotValue.rowHeaders !== undefined && pivotValue.columnHeaders !== undefined && pivotValue.value !== undefined) {
+        if (pivotValue.rowHeaders !== undefined && pivotValue.columnHeaders !== undefined && !isNullOrUndefined(pivotValue.value)) {
             if (this.parent.dataType === 'olap') {
-                let measureName: string = pivotValue.actualText as string;
+                let tupleInfo: ITupInfo;
+                if (this.parent.dataSourceSettings.valueAxis === 'row') {
+                    tupleInfo = (engine as OlapEngine).tupRowInfo[pivotValue.rowOrdinal];
+                } else {
+                    tupleInfo = (engine as OlapEngine).tupColumnInfo[pivotValue.colOrdinal];
+                }
+                let measureName: string = tupleInfo ? tupleInfo.measureName : pivotValue.actualText as string;
                 if (engine.fieldList[measureName] && (engine as OlapEngine).fieldList[measureName].isCalculatedField) {
                     this.parent.pivotCommon.errorDialog.createErrorDialog(
                         this.parent.localeObj.getConstant('error'), this.parent.localeObj.getConstant('drillError'));

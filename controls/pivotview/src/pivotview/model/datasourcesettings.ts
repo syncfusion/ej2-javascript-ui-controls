@@ -34,7 +34,7 @@ export class FieldOptions extends ChildProperty<FieldOptions> implements IFieldO
      * * `Percentage`: The summary cells displays in percentage format.
      * * `Avg`: The summary cells calculated by the average of its cells.
      * * `CalculatedField`: It should set to include calculated fields.
-     * @default Sum
+
      */
     @Property('Sum')
     public type: SummaryTypes;
@@ -47,7 +47,7 @@ export class FieldOptions extends ChildProperty<FieldOptions> implements IFieldO
 
     /**
      * It allows to display all the items of its field even any items haven't data in its row/column intersection in data source.
-     * @default false
+
      */
     @Property(false)
     public showNoDataItems: boolean;
@@ -66,7 +66,7 @@ export class FieldOptions extends ChildProperty<FieldOptions> implements IFieldO
 
     /**
      * It allows to disable or enable sub totals in row/column axis.
-     * @default true
+
      */
     @Property(true)
     public showSubTotals: boolean;
@@ -74,7 +74,7 @@ export class FieldOptions extends ChildProperty<FieldOptions> implements IFieldO
     /**
      * It allows to show a field has named set type.
      * Note: This option is applicable only for OLAP data source.
-     * @default false
+
      */
     @Property(false)
     public isNamedSet: boolean;
@@ -82,7 +82,7 @@ export class FieldOptions extends ChildProperty<FieldOptions> implements IFieldO
     /**
      * It allows to show a field has calculated member type.
      * Note: This option is applicable only for OLAP data source.
-     * @default false
+
      */
     @Property(false)
     public isCalculatedField: boolean;
@@ -132,7 +132,7 @@ export class Filter extends ChildProperty<Filter> implements IFilter {
 
     /**
      * It allows to set the filter type.
-     * @default Include
+
      */
     @Property('Include')
     public type: FilterType;
@@ -145,7 +145,7 @@ export class Filter extends ChildProperty<Filter> implements IFilter {
 
     /**
      * It allows to set the filter conditions to the field.
-     * @default DoesNotEquals
+
      */
     @Property('DoesNotEquals')
     public condition: Operators;
@@ -171,7 +171,7 @@ export class Filter extends ChildProperty<Filter> implements IFilter {
     /**
      * It allows to set level count of the field to fetch data from the cube.
      * Note: This option is applicable only for user-defined hierarchies.
-     * @default 1
+
      */
     @Property(1)
     public levelCount: number;
@@ -248,7 +248,7 @@ export class Sort extends ChildProperty<Sort> implements ISort {
      * * `Ascending`: It allows to display the field members in ascending order. 
      * * `Descending`: It allows to display the field members in descending order.
      * * `None`: It allows to display the field members based on JSON order. 
-     * @default Ascending
+
      */
     @Property('Ascending')
     public order: Sorting;
@@ -291,7 +291,7 @@ export class FormatSettings extends ChildProperty<FormatSettings> implements Num
 
     /**
      * It allows to specify whether to use grouping or not in formatted value,
-     * @default true
+
      */
     @Property(true)
     public useGrouping: boolean;
@@ -358,7 +358,7 @@ export class GroupSettings extends ChildProperty<GroupSettings> implements IGrou
 
     /**
      * It allows to set the type of field.
-     * @default Date
+
      */
     @Property('Date')
     public type: GroupType;
@@ -439,7 +439,7 @@ export class ValueSortSettings extends ChildProperty<ValueSortSettings> implemen
 
     /**
      * It allows to set the delimiters to separate the members.
-     * @default '.'
+
      */
     @Property('.')
     public headerDelimiter: string;
@@ -448,12 +448,12 @@ export class ValueSortSettings extends ChildProperty<ValueSortSettings> implemen
      * It allows to set the sort order. The types are,
      * * `Ascending`: It allows to display the field members in ascending order. 
      * * `Descending`: It allows to display the field members in descending order.
-     * @default None
+
      */
     @Property('None')
     public sortOrder: Sorting;
 
-    /** @hidden */
+
     public columnIndex: number;
 
     /**
@@ -482,7 +482,7 @@ export class DataSourceSettings extends ChildProperty<DataSourceSettings> implem
 
     /**
      * It allows to set the provider type.
-     * @default Relational
+
      */
     @Property('Relational')
     public providerType: ProviderType;
@@ -495,175 +495,175 @@ export class DataSourceSettings extends ChildProperty<DataSourceSettings> implem
 
     /**
      * It allows to set the locale code.
-     * @default 1033
+
      */
     @Property(1033)
     public localeIdentifier: number;
 
     /**
      * It allows to set the data source.
-     * @isGenericType true
+
      */
     @Property()
     public dataSource: IDataSet[] | DataManager;
 
     /**
      * It allows to set the row fields.
-     * @default []
+
      */
     @Collection<FieldOptionsModel[]>([], FieldOptions)
     public rows: FieldOptionsModel[];
 
     /**
      * It allows to set the column fields.
-     * @default []
+
      */
     @Collection<FieldOptionsModel[]>([], FieldOptions)
     public columns: FieldOptionsModel[];
 
     /**
      * It allows to set the value fields.
-     * @default []
+
      */
     @Collection<FieldOptionsModel[]>([], FieldOptions)
     public values: FieldOptionsModel[];
 
     /**
      * It allows to set the filter fields.
-     * @default []
+
      */
     @Collection<FieldOptionsModel[]>([], FieldOptions)
     public filters: FieldOptionsModel[];
 
     /**
      * It allows to hide fields from fieldlist.
-     * @default []
+
      */
     @Property([])
     public excludeFields: string[];
 
     /**
      * It allows to set the expanded state of headers.
-     * @default false
+
      */
     @Property(false)
     public expandAll: boolean;
 
     /**
      * It allows to set the value fields in both column and row axis.
-     * @default 'column'
+
      */
     @Property('column')
     public valueAxis: string;
 
     /**
      * It allows to set the settings of filtering operation.
-     * @default []
+
      */
     @Collection<FilterModel[]>([], Filter)
     public filterSettings: FilterModel[];
 
     /**
      * It allows to set the settings of sorting operation.
-     * @default []
+
      */
     @Collection<SortModel[]>([], Sort)
     public sortSettings: SortModel[];
 
     /**
      * It allows sorting operation UI.
-     * @default true
+
      */
     @Property(true)
     public enableSorting: boolean;
 
     /**
      * It allows excel-like label filtering operation.
-     * @default false
+
      */
     @Property(false)
     public allowLabelFilter: boolean;
 
     /**
      * It allows excel-like value filtering operation.
-     * @default false
+
      */
     @Property(false)
     public allowValueFilter: boolean;
 
     /**
      * It allows enable/disable sub total in pivot table.
-     * @default true
+
      */
     @Property(true)
     public showSubTotals: boolean;
 
     /**
      * It allows enable/disable row sub total in pivot table.
-     * @default true
+
      */
     @Property(true)
     public showRowSubTotals: boolean;
 
     /**
      * It allows enable/disable column sub total in pivot table.
-     * @default true
+
      */
     @Property(true)
     public showColumnSubTotals: boolean;
 
     /**
      * It allows enable/disable grand total in pivot table.
-     * @default true
+
      */
     @Property(true)
     public showGrandTotals: boolean;
 
     /**
      * It allows enable/disable row grand total in pivot table.
-     * @default true
+
      */
     @Property(true)
     public showRowGrandTotals: boolean;
 
     /**
      * It allows enable/disable column grand total in pivot table.
-     * @default true
+
      */
     @Property(true)
     public showColumnGrandTotals: boolean;
 
     /**
      * It allows enable/disable single measure headers in pivot table.
-     * @default false
+
      */
     @Property(false)
     public alwaysShowValueHeader: boolean;
 
     /**
      * If `showHeaderWhenEmpty` is set to false, then it will hide blank headers in pivot table.
-     * @default true
+
      */
     @Property(true)
     public showHeaderWhenEmpty: boolean;
 
     /**
      * It allows enable/disable show aggregation on PivotButton.
-     * @default true
+
      */
     @Property(true)
     public showAggregationOnValueField: boolean;
 
     /**
      * It allows to set the settings of number formatting.
-     * @default []
+
      */
     @Collection<FormatSettingsModel[]>([], FormatSettings)
     public formatSettings: FormatSettingsModel[];
 
     /**
      * It allows to set the drilled state for desired field members.
-     * @default []
+
      */
     @Collection<DrillOptionsModel[]>([], DrillOptions)
     public drilledMembers: DrillOptionsModel[];
@@ -676,14 +676,14 @@ export class DataSourceSettings extends ChildProperty<DataSourceSettings> implem
 
     /**
      * It allows to set the settings of calculated field operation.
-     * @default []
+
      */
     @Collection<CalculatedFieldSettingsModel[]>([], CalculatedFieldSettings)
     public calculatedFieldSettings: CalculatedFieldSettingsModel[];
 
     /**
      * It allows to set the settings of Conditional Format operation.
-     * @default []
+
      */
     @Collection<ConditionalFormatSettingsModel[]>([], ConditionalFormatSettings)
     public conditionalFormatSettings: ConditionalFormatSettingsModel[];
@@ -696,7 +696,7 @@ export class DataSourceSettings extends ChildProperty<DataSourceSettings> implem
 
     /**
      * It allows to set the settings for grouping the date.
-     * @default []
+
      */
     @Collection<GroupSettingsModel[]>([], GroupSettings)
     public groupSettings: GroupSettingsModel[];

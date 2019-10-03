@@ -1,4 +1,4 @@
-import { Component, Property, NotifyPropertyChanges, INotifyPropertyChanged, Event, Browser } from '@syncfusion/ej2-base';
+import { Component, Property, NotifyPropertyChanges, INotifyPropertyChanged, Event, Browser, isBlazor } from '@syncfusion/ej2-base';
 import { EmitType, getDefaultDateObject, getValue, cldrData, L10n, isNullOrUndefined, removeClass, addClass } from '@syncfusion/ej2-base';
 import { DropDownList, ChangeEventArgs } from '@syncfusion/ej2-dropdowns';
 import { NumericTextBox } from '@syncfusion/ej2-inputs';
@@ -141,74 +141,74 @@ export class RecurrenceEditor extends Component<HTMLElement> implements INotifyP
     // RecurrenceEditor Options
     /**
      * Sets the recurrence pattern on the editor.
-     * @default ['none', 'daily', 'weekly', 'monthly', 'yearly']
+
      */
     @Property(['none', 'daily', 'weekly', 'monthly', 'yearly'])
     public frequencies: RepeatType[];
     /**
      * Sets the first day of the week.
-     * @default 0
+
      */
     @Property(0)
     public firstDayOfWeek: number;
     /**
      * Sets the start date on recurrence editor.
-     * @default new Date()
-     * @aspDefaultValue DateTime.Now
-     * @blazorDefaultValue DateTime.Now
+
+
+
      */
     @Property(new Date())
     public startDate: Date;
     /**
      * Sets the user specific date format on recurrence editor.
-     * @default null
+
      */
     @Property()
     public dateFormat: string;
     /**
      * Sets the specific calendar type to be applied on recurrence editor.
-     * @default 'Gregorian'
+
      */
     @Property('Gregorian')
     public calendarMode: CalendarType;
     /**
      * Allows styling with custom class names.
-     * @default null
+
      */
     @Property()
     public cssClass: string;
     /**
      * Sets the recurrence rule as its output values.
-     * @default null
+
      */
     @Property()
     public value: String;
     /**
      * Sets the minimum date on recurrence editor.
-     * @default new Date(1900, 1, 1)
-     * @aspDefaultValue new DateTime(1900, 0, 1)
-     * @blazorDefaultValue new DateTime(1900, 0, 1)
+
+
+
      */
-    @Property(new Date(1900, 1, 1))
+    @Property(new Date(1900, 0, 1))
     public minDate: Date;
     /**
      * Sets the maximum date on recurrence editor.
-     * @default new Date(2099, 12, 31)
-     * @aspDefaultValue new DateTime(2099, 11, 31)
-     * @blazorDefaultValue new DateTime(2099, 11, 31)
+
+
+
      */
-    @Property(new Date(2099, 12, 31))
+    @Property(new Date(2099, 11, 31))
     public maxDate: Date;
     /**
      * Sets the current repeat type to be set on the recurrence editor.
-     * @default 0
+
      */
     @Property(0)
     public selectedType: Number;
     /**
      * Triggers for value changes on every sub-controls rendered within the recurrence editor.
      * @event
-     * @blazorproperty 'OnChange'
+
      */
     @Event()
     public change: EmitType<RecurrenceEditorChangeEventArgs>;
@@ -538,6 +538,7 @@ export class RecurrenceEditor extends Component<HTMLElement> implements INotifyP
         this.untilDateObj = new DatePicker({
             firstDayOfWeek: this.firstDayOfWeek,
             enableRtl: this.enableRtl,
+            locale: this.locale,
             min: this.minDate,
             max: this.maxDate,
             change: (args: ChangedEventArgs) => {
@@ -932,6 +933,12 @@ export class RecurrenceEditor extends Component<HTMLElement> implements INotifyP
         return generateSummary(rule, this.localeObj, this.locale, this.calendarMode);
     }
     public getRecurrenceDates(startDate: Date, rule: string, excludeDate?: string, maximumCount?: number, viewDate?: Date): number[] {
+        if (isBlazor()) {
+            startDate = new Date('' + startDate);
+            if (viewDate) {
+                viewDate = new Date('' + viewDate);
+            }
+        }
         viewDate = isNullOrUndefined(viewDate) ? this.startDate : viewDate;
         return generate(startDate, rule, excludeDate, this.firstDayOfWeek, maximumCount, viewDate, this.calendarMode);
     }
@@ -965,6 +972,9 @@ export class RecurrenceEditor extends Component<HTMLElement> implements INotifyP
         return ruleData;
     }
     public setRecurrenceRule(rule: string, startDate: Date = this.startDate): void {
+        if (isBlazor()) {
+            startDate = new Date('' + startDate);
+        }
         if (!rule) {
             this.repeatType.setProperties({ value: NONE });
             return;
@@ -1035,6 +1045,7 @@ export class RecurrenceEditor extends Component<HTMLElement> implements INotifyP
         this.initialize();
         this.rtlClass(this.enableRtl);
         this.renderStatus = true;
+        this.renderComplete();
     }
     /**
      * Called internally, if any of the property value changed.

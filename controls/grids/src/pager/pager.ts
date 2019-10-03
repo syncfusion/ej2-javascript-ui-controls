@@ -9,7 +9,7 @@ import { PagerMessage } from './pager-message';
 import { ExternalMessage } from './external-message';
 import { appendChildren } from '../grid/base/util';
 
-/** @hidden */
+
 export interface IRender {
     render(): void;
     refresh(): void;
@@ -30,15 +30,15 @@ export interface IRender {
 @NotifyPropertyChanges
 export class Pager extends Component<HTMLElement> implements INotifyPropertyChanged {
     //Internal variables     
-    /*** @hidden */
+
     public totalPages: number;
     private templateFn: Function;
-    /*** @hidden */
+
     public previousPageNo: number;
     private defaultConstants: Object;
 
     //Module declarations
-    /*** @hidden */
+
     public localeObj: L10n;
     /**
      * `containerModule` is used to manipulate numeric container behavior of Pager.
@@ -53,7 +53,7 @@ export class Pager extends Component<HTMLElement> implements INotifyPropertyChan
      */
     public externalMessageModule: ExternalMessage;
     /**
-     * @hidden 
+
      * `pagerdropdownModule` is used to manipulate pageSizes of Pager.
      */
     public pagerdropdownModule: PagerDropDown;
@@ -62,56 +62,56 @@ export class Pager extends Component<HTMLElement> implements INotifyPropertyChan
     /**   
      * If `enableQueryString` set to true,   
      * then it pass current page information as a query string along with the URL while navigating to other page.  
-     * @default false  
+
      */
     @Property(false)
     public enableQueryString: boolean;
 
     /**  
      * If `enableExternalMessage` set to true, then it adds the message to Pager.  
-     * @default false  
+
      */
     @Property(false)
     public enableExternalMessage: boolean;
 
     /**  
      * If `enablePagerMessage` set to true, then it adds the pager information.  
-     * @default true  
+
      */
     @Property(true)
     public enablePagerMessage: boolean;
 
     /**  
      * Defines the records count of visible page.  
-     * @default 12  
+
      */
     @Property(12)
     public pageSize: number;
 
     /**  
      * Defines the number of pages to display in pager container.   
-     * @default 10  
+
      */
     @Property(10)
     public pageCount: number;
 
     /**  
      * Defines the current page number of pager.   
-     * @default 1  
+
      */
     @Property(1)
     public currentPage: number;
 
     /**  
      * Gets or Sets the total records count which is used to render numeric container.   
-     * @default null  
+
      */
     @Property()
     public totalRecordsCount: number;
 
     /**  
      * Defines the external message of Pager.  
-     * @default null  
+
      */
     @Property()
     public externalMessage: string;
@@ -119,49 +119,49 @@ export class Pager extends Component<HTMLElement> implements INotifyPropertyChan
     /**
      * If `pageSizes` set to true or Array of values,
      * It renders DropDownList in the pager which allow us to select pageSize from DropDownList.    
-     * @default false    
+
      */
     @Property(false)
     public pageSizes: boolean | (number | string)[];
 
     /**    
      *  Defines the template as string or HTML element ID which renders customized elements in pager instead of default elements.    
-     * @default null    
+
      */
     @Property()
     public template: string;
 
     /**  
      * Defines the customized text to append with numeric items.  
-     * @default null  
+
      */
     @Property('')
     public customText: string;
 
     /**  
      * Triggers when click on the numeric items.   
-     * @default null  
+
      */
     @Event()
     public click: EmitType<Object>;
 
     /**  
      * Triggers after pageSize is selected in DropDownList.   
-     * @default null  
+
      */
     @Event()
     public dropDownChanged: EmitType<Object>;
 
     /**  
      * Triggers when Pager is created.   
-     * @default null  
+
      */
     @Event()
     public created: EmitType<Object>;
 
     /**
      * Constructor for creating the component.
-     * @hidden
+
      */
     constructor(options?: PagerModel, element?: string | HTMLElement) {
         super(options, <HTMLElement | string>element);
@@ -169,7 +169,7 @@ export class Pager extends Component<HTMLElement> implements INotifyPropertyChan
 
     /**
      * To provide the array of modules needed for component rendering
-     * @hidden
+
      */
     protected requiredModules(): ModuleDeclaration[] {
         let modules: ModuleDeclaration[] = [];
@@ -191,7 +191,7 @@ export class Pager extends Component<HTMLElement> implements INotifyPropertyChan
 
     /**
      * Initialize the event handler
-     * @hidden
+
      */
     protected preRender(): void {
         //preRender
@@ -242,7 +242,7 @@ export class Pager extends Component<HTMLElement> implements INotifyPropertyChan
 
     /**
      * Get the properties to be maintained in the persisted state.
-     * @hidden
+
      */
     public getPersistData(): string {
         let keyEntity: string[] = ['currentPage', 'pageSize'];
@@ -271,7 +271,7 @@ export class Pager extends Component<HTMLElement> implements INotifyPropertyChan
 
     /**
      * Called internally if any of the property value changed.
-     * @hidden
+
      */
     public onPropertyChanged(newProp: PagerModel, oldProp: PagerModel): void {
         if (this.isDestroyed) { return; }
@@ -360,7 +360,7 @@ export class Pager extends Component<HTMLElement> implements INotifyPropertyChan
     }
 
     /**
-     * @hidden
+
      */
     public setPageSize(pageSize: number): void {
         this.pageSize = pageSize;
@@ -415,13 +415,13 @@ export class Pager extends Component<HTMLElement> implements INotifyPropertyChan
         appendChildren(this.element, result);
     }
 
-    /** @hidden */
+
     public updateTotalPages(): void {
         this.totalPages = (this.totalRecordsCount % this.pageSize === 0) ? (this.totalRecordsCount / this.pageSize) :
             (parseInt((this.totalRecordsCount / this.pageSize).toString(), 10) + 1);
     }
 
-    /** @hidden */
+
     public getPagerTemplate(): Function {
         return this.templateFn;
     }

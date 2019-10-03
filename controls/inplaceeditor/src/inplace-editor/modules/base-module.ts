@@ -20,6 +20,10 @@ export class Base {
         this.module.render(e);
     }
 
+    private showPopup(): void {
+        this.module.showPopup();
+    }
+
     private focus(): void {
         this.module.focus();
     }
@@ -46,6 +50,7 @@ export class Base {
     protected addEventListener(): void {
         this.parent.on(events.render, this.render, this);
         this.parent.on(events.setFocus, this.focus, this);
+        this.parent.on(events.showPopup, this.showPopup, this);
         this.parent.on(events.update, this.update, this);
         this.parent.on(events.accessValue, this.getValue, this);
         this.parent.on(events.destroyModules, this.destroyComponent, this);
@@ -56,6 +61,7 @@ export class Base {
         if (this.parent.isDestroyed) { return; }
         this.parent.off(events.render, this.render);
         this.parent.off(events.setFocus, this.focus);
+        this.parent.off(events.showPopup, this.showPopup);
         this.parent.off(events.update, this.update);
         this.parent.off(events.accessValue, this.getValue);
         this.parent.off(events.destroyModules, this.destroyComponent);

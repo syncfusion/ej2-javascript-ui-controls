@@ -2060,7 +2060,7 @@ let ListView = class ListView extends Component {
     /**
      * It is used to get the currently [here](./api-selectedItem)
      *  item details from the list items.
-     * @blazorType ListSelectedItem<TValue>
+
      */
     getSelectedItems() {
         // tslint:disable-next-line:no-any
@@ -2192,7 +2192,7 @@ let ListView = class ListView extends Component {
     /**
      * It is used to find out an item details from the current list.
      * @param  {Fields | HTMLElement | Element} obj - We can pass element Object or Fields as Object with ID and Text fields.
-     * @blazorType TValue
+
      */
     findItem(obj) {
         return this.getItemData(obj);
@@ -2280,7 +2280,7 @@ let ListView = class ListView extends Component {
      * For example fields: { text: 'Name', tooltip: 'Name', id:'id'}
      * @param  {{[key:string]:Object}[]} data - JSON Array Data that need to add.
      * @param  {Fields} fields - Target item to add the given data as its children (can be null).
-     * @blazorArgsType data|List<TValue>,fields|TValue
+
      */
     addItem(data, fields = undefined) {
         const dataSource = this.dataSource instanceof DataManager

@@ -14,7 +14,7 @@ export type FilterHierarchyMode =
 
 /**
  * Defines Predefined toolbar items.
- * @hidden
+
  */
 export type ToolbarItems =
     /** Add new record */
@@ -43,7 +43,7 @@ export type ToolbarItems =
     'Print';
 /**
  * Defines Predefined toolbar items.
- * @hidden
+
  */
 export enum ToolbarItem {
     Add,
@@ -74,7 +74,7 @@ export type PageSizeMode =
 
 /**
  * Defines predefined contextmenu items.
- * @hidden
+
  */
 export type ContextMenuItem =
     /** `AutoFitAll` - Auto fit the size of all columns. */
@@ -112,7 +112,7 @@ export type ContextMenuItem =
 
 /**
  * Defines predefined contextmenu items.
- * @hidden
+
  */
 export enum ContextMenuItems {
 AutoFit,

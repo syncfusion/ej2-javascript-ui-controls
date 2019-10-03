@@ -7,13 +7,13 @@ export interface LocationModel {
 
     /**
      * X coordinate of the legend in pixels.
-     * @default 0
+
      */
     x?: number;
 
     /**
      * Y coordinate of the legend in pixels.
-     * @default 0
+
      */
     y?: number;
 
@@ -26,13 +26,13 @@ export interface LegendSettingsModel {
 
     /**
      * If set to true, legend will be visible.
-     * @default false
+
      */
     visible?: boolean;
 
     /**
      * If set to true, series' visibility collapses based on the legend visibility.
-     * @default true
+
      */
     toggleVisibility?: boolean;
 
@@ -41,7 +41,7 @@ export interface LegendSettingsModel {
      * * Near: Aligns the legend to the left of the chart.
      * * Center: Aligns the legend to the center of the chart.
      * * Far: Aligns the legend to the right of the chart.
-     * @default 'Center'
+
      */
     alignment?: Alignment;
 
@@ -57,13 +57,13 @@ export interface LegendSettingsModel {
 
     /**
      * Option to customize the padding between legend items.
-     * @default 8
+
      */
     padding?: number;
 
     /**
      * Opacity of the legend.
-     * @default 1
+
      */
     opacity?: number;
 
@@ -74,25 +74,25 @@ export interface LegendSettingsModel {
      * * Left: Displays the legend at the left of the circular this.gauge.
      * * Bottom: Displays the legend at the bottom of the circular this.gauge.
      * * Right: Displays the legend at the right of the circular this.gauge.
-     * @default 'Auto'
+
      */
     position?: LegendPosition;
 
     /**
      * Customize the legend shape of the maps.
-     * @default Circle
+
      */
     shape?: GaugeShape;
 
     /**
      * The height of the legend in pixels.
-     * @default null
+
      */
     height?: string;
 
     /**
      * The width of the legend in pixels.
-     * @default null
+
      */
     width?: string;
 
@@ -103,19 +103,19 @@ export interface LegendSettingsModel {
 
     /**
      * Height of the shape
-     * @default 10
+
      */
     shapeHeight?: number;
 
     /**
      * Width of the shape
-     * @default 10
+
      */
     shapeWidth?: number;
 
     /**
      * Padding for the shape
-     * @default 5
+
      */
     shapePadding?: number;
 
@@ -142,7 +142,7 @@ export interface LegendSettingsModel {
 
     /**
      * Options to customize the legend background
-     * @default 'transparent'
+
      */
     background?: string;
 

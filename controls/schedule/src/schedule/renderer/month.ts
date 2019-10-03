@@ -77,6 +77,10 @@ export class Month extends ViewBase implements IRenderer {
         if (args.scrollPosition) {
             content.scrollTop = args.scrollPosition.top as number;
             content.scrollLeft = args.scrollPosition.left as number;
+        }else {
+            let headerCell: HTMLElement = document.querySelector('.' + cls.HEADER_CELLS_CLASS + '[data-date="'
+                + this.parent.selectedDate.getTime() + '"]');
+            content.scrollLeft = headerCell !== null ? headerCell.offsetLeft : 0;
         }
     }
     public setContentHeight(content: HTMLElement, leftPanelElement: HTMLElement, height: number): void {

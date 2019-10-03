@@ -6,7 +6,7 @@ import { isEditable, getComplexFieldID, getObject, getCustomDateFormat } from '.
 
 /**
  * `DatePickerEditCell` is used to handle datepicker cell type editing.
- * @hidden
+
  */
 export class DatePickerEditCell implements IEditCell {
     private parent: IGrid;

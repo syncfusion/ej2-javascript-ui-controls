@@ -2,6 +2,15 @@
 
 ## [Unreleased]
 
+## 17.3.14 (2019-10-03)
+
+### Spreadsheet
+
+#### New Features
+
+- **Sorting:** Helps you to arrange the data to particular order in a selected range of cells.
+- **Resize:** Allows you to change the row height and column width. Auto fit the rows and columns based on its content.
+
 ## 17.3.9-beta (2019-09-20)
 
 ### Spreadsheet

@@ -5,7 +5,7 @@ import * as cls from '../base/css-constant';
 /**
  * Keyboard interaction
  */
-/** @hidden */
+
 export class CommonKeyboardInteraction {
     private parent: PivotCommon;
     private keyConfigs: { [key: string]: string } = {

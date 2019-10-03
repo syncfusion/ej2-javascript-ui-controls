@@ -16,35 +16,35 @@ export class RangeNavigatorSeries extends ChildProperty<RangeNavigatorSeries> {
 
     /**
      * It defines the data source for a series.
-     * @default null
+
      */
     @Property(null)
     public dataSource: Object | DataManager;
 
     /**
      * It defines the xName for the series
-     * @default null
+
      */
     @Property(null)
     public xName: string;
 
     /**
      * It defines the yName for the series
-     * @default  null
+
      */
     @Property(null)
     public yName: string;
 
     /**
      * It defines the query for the data source
-     * @default null
+
      */
     @Property()
     public query: Query;
 
     /**
      * It defines the series type of the range navigator
-     * @default 'Line'
+
      */
     @Property('Line')
     public type: RangeNavigatorType;
@@ -66,7 +66,7 @@ export class RangeNavigatorSeries extends ChildProperty<RangeNavigatorSeries> {
      * The fill color for the series that accepts value in hex and rgba as a valid CSS color string.
      * It also represents the color of the signal lines in technical indicators.
      * For technical indicators, the default value is 'blue' and for series, it has null.
-     * @default null
+
      */
 
     @Property(null)
@@ -75,7 +75,7 @@ export class RangeNavigatorSeries extends ChildProperty<RangeNavigatorSeries> {
     /**
      * The stroke width for the series that is applicable only for `Line` type series.
      * It also represents the stroke width of the signal lines in technical indicators.
-     * @default 1
+
      */
 
     @Property(1)
@@ -83,7 +83,7 @@ export class RangeNavigatorSeries extends ChildProperty<RangeNavigatorSeries> {
 
     /**
      * The opacity for the background.
-     * @default 1
+
      */
 
     @Property(1)
@@ -91,7 +91,7 @@ export class RangeNavigatorSeries extends ChildProperty<RangeNavigatorSeries> {
 
     /**
      * Defines the pattern of dashes and gaps to stroke the lines in `Line` type series.
-     * @default '0'
+
      */
     @Property('0')
     public dashArray: string;
@@ -121,16 +121,16 @@ export class RangeNavigatorSeries extends ChildProperty<RangeNavigatorSeries> {
 export class ThumbSettings extends ChildProperty<ThumbSettings> {
     /**
      * width of thumb
-     * @default null
-     * @aspDefaultValueIgnore
+
+
      */
     @Property(null)
     public width: number;
 
     /**
      * height of thumb
-     * @default null
-     * @aspDefaultValueIgnore
+
+
      */
     @Property(null)
     public height: number;
@@ -143,14 +143,14 @@ export class ThumbSettings extends ChildProperty<ThumbSettings> {
 
     /**
      * fill color for the thumb
-     * @default null
+
      */
     @Property(null)
     public fill: string;
 
     /**
      * type of thumb
-     * @default `Circle`
+
      */
     @Property('Circle')
     public type: ThumbType;
@@ -168,14 +168,14 @@ export class StyleSettings extends ChildProperty<StyleSettings> {
 
     /**
      * Selected region color
-     * @default null
+
      */
     @Property(null)
     public selectedRegionColor: string;
 
     /**
      * Un Selected region color
-     * @default null
+
      */
     @Property(null)
     public unselectedRegionColor: string;
@@ -189,7 +189,7 @@ export class StyleSettings extends ChildProperty<StyleSettings> {
 export class RangeTooltipSettings extends ChildProperty<RangeTooltipSettings> {
     /**
      * Enables / Disables the visibility of the tooltip.
-     * @default false.
+
      */
 
     @Property(false)
@@ -197,7 +197,7 @@ export class RangeTooltipSettings extends ChildProperty<RangeTooltipSettings> {
 
     /**
      * The fill color of the tooltip that accepts value in hex and rgba as a valid CSS color string. 
-     * @default 0.85
+
      */
 
     @Property(0.85)
@@ -205,7 +205,7 @@ export class RangeTooltipSettings extends ChildProperty<RangeTooltipSettings> {
 
     /**
      * The fill color of the tooltip that accepts value in hex and rgba as a valid CSS color string. 
-     * @default null
+
      */
 
     @Property(null)
@@ -213,7 +213,7 @@ export class RangeTooltipSettings extends ChildProperty<RangeTooltipSettings> {
 
     /**
      * Format the ToolTip content.
-     * @default null.
+
      */
 
     @Property(null)
@@ -228,7 +228,7 @@ export class RangeTooltipSettings extends ChildProperty<RangeTooltipSettings> {
 
     /**
      * Custom template to format the ToolTip content. Use ${value} as the placeholder text to display the corresponding data point.
-     * @default null.
+
      */
 
     @Property(null)
@@ -242,7 +242,7 @@ export class RangeTooltipSettings extends ChildProperty<RangeTooltipSettings> {
 
     /**
      * It defines display mode for tooltip
-     * @default 'OnDemand'
+
      */
     @Property('OnDemand')
     public displayMode: TooltipDisplayMode;

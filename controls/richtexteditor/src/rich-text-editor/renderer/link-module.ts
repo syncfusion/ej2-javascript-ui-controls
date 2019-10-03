@@ -134,7 +134,8 @@ export class Link {
             target = this.getAnchorNode(target);
             this.contentModule = this.rendererFactory.getRenderer(RenderType.Content);
             let isPopupOpen: boolean = this.quickToolObj.linkQTBar.element.classList.contains('e-rte-pop');
-            if (target.nodeName === 'A' && !target.contains(target.querySelector('img'))) {
+            if (target.nodeName === 'A' && (target.childNodes.length > 0 && target.childNodes[0].nodeName !== 'IMG') &&
+            ((e.args as MouseEvent).target as HTMLElement).nodeName !== 'IMG') {
                 if (isPopupOpen) { return; }
                 this.showLinkQuickToolbar({
                     args: args,

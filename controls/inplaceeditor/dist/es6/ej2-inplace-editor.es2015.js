@@ -12,7 +12,7 @@ import { HtmlEditor, Image, Link, MarkdownEditor, QuickToolbar, RichTextEditor, 
  */
 let intl = new Internationalization();
 /**
- * @hidden
+
  */
 function parseValue(type, val, model) {
     if (isNullOrUndefined(val) || val === '') {
@@ -83,18 +83,13 @@ function getCompValue(type, val) {
 /**
  * InPlace-Editor events defined here.
  */
-/** @hidden */
 const render = 'render';
-/** @hidden */
 const update = 'update';
-/** @hidden */
 const destroy = 'destroy';
-/** @hidden */
 const setFocus = 'set-focus';
-/** @hidden */
 const accessValue = 'access-value';
-/** @hidden */
 const destroyModules = 'destroy-modules';
+const showPopup = 'show-popup';
 
 var __decorate = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
@@ -114,7 +109,7 @@ __decorate([
     Property(null)
 ], PopupSettings.prototype, "model", void 0);
 /**
- * @hidden
+
  */
 let modulesList = {
     'AutoComplete': 'auto-complete',
@@ -127,7 +122,7 @@ let modulesList = {
     'Time': 'time-picker'
 };
 /**
- * @hidden
+
  */
 let localeConstant = {
     'Click': { 'editAreaClick': 'Click to edit' },
@@ -137,65 +132,35 @@ let localeConstant = {
 /**
  * InPlace-Editor classes defined here.
  */
-/** @hidden */
 const ROOT = 'e-inplaceeditor';
-/** @hidden */
 const ROOT_TIP = 'e-inplaceeditor-tip';
-/** @hidden */
 const VALUE_WRAPPER = 'e-editable-value-wrapper';
-/** @hidden */
 const VALUE = 'e-editable-value';
-/** @hidden */
 const OVERLAY_ICON = 'e-editable-overlay-icon';
-/** @hidden */
 const TIP_TITLE = 'e-editable-tip-title';
-/** @hidden */
 const TITLE = 'e-editable-title';
-/** @hidden */
 const INLINE = 'e-editable-inline';
-/** @hidden */
 const POPUP = 'e-editable-popup';
-/** @hidden */
 const WRAPPER = 'e-editable-wrapper';
-/** @hidden */
 const LOADING = 'e-editable-loading';
-/** @hidden */
 const FORM = 'e-editable-form';
-/** @hidden */
 const CTRL_GROUP = 'e-component-group';
-/** @hidden */
 const INPUT = 'e-editable-component';
-/** @hidden */
 const BUTTONS = 'e-editable-action-buttons';
-/** @hidden */
 const EDITABLE_ERROR = 'e-editable-error';
-/** @hidden */
 const ELEMENTS = 'e-editable-elements';
-/** @hidden */
 const OPEN = 'e-editable-open';
-/** @hidden */
 const BTN_SAVE = 'e-btn-save';
-/** @hidden */
 const BTN_CANCEL = 'e-btn-cancel';
-/** @hidden */
 const RTE_SPIN_WRAP = 'e-rte-spin-wrap';
-/** @hidden */
 const CTRL_OVERLAY = 'e-control-overlay';
-/** @hidden */
 const DISABLE = 'e-disable';
-/** @hidden */
 const ICONS = 'e-icons';
-/** @hidden */
 const PRIMARY = 'e-primary';
-/** @hidden */
 const SHOW = 'e-show';
-/** @hidden */
 const HIDE = 'e-hide';
-/** @hidden */
 const RTL = 'e-rtl';
-/** @hidden */
 const ERROR = 'e-error';
-/** @hidden */
 const LOAD = 'e-loading';
 
 var __decorate$1 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
@@ -240,7 +205,7 @@ let InPlaceEditor = class InPlaceEditor extends Component {
         this.dropDownEle = ['AutoComplete', 'ComboBox', 'DropDownList', 'MultiSelect'];
         this.moduleList = ['AutoComplete', 'Color', 'ComboBox', 'DateRange', 'MultiSelect', 'RTE', 'Slider', 'Time'];
         /**
-         * @hidden
+    
          */
         this.needsID = true;
     }
@@ -314,8 +279,12 @@ let InPlaceEditor = class InPlaceEditor extends Component {
             addClass([this.valueWrap], [HIDE]);
             this.inlineWrapper = this.createElement('div', { className: INLINE });
             this.element.appendChild(this.inlineWrapper);
-            this.renderControl(this.inlineWrapper);
-            this.afterOpenHandler(null);
+            if (['AutoComplete', 'ComboBox', 'DropDownList', 'MultiSelect'].indexOf(this.type) > -1) {
+                this.checkRemoteData(this.model);
+            }
+            else {
+                this.renderAndOpen();
+            }
         }
         else {
             if (!isNullOrUndefined(this.popupSettings.model) && this.popupSettings.model.afterOpen) {
@@ -343,6 +312,36 @@ let InPlaceEditor = class InPlaceEditor extends Component {
         this.initRender = false;
         addClass([this.valueWrap], [OPEN]);
         this.setProperties({ enableEditMode: true }, true);
+    }
+    renderAndOpen() {
+        this.renderControl(this.inlineWrapper);
+        this.afterOpenHandler(null);
+    }
+    checkRemoteData(model) {
+        if (model.dataSource instanceof DataManager) {
+            model.dataBound = () => {
+                this.afterOpenHandler(null);
+            };
+            this.renderControl(this.inlineWrapper);
+            if ((isNullOrUndefined(model.value) && isNullOrUndefined(this.value)) || (model.value === this.value
+                && model.value.length === 0)) {
+                this.showDropDownPopup();
+            }
+        }
+        else {
+            this.renderAndOpen();
+        }
+    }
+    showDropDownPopup() {
+        if (this.type === 'DropDownList') {
+            this.componentObj.focusIn();
+            this.componentObj.showPopup();
+        }
+        else {
+            if (this.isExtModule) {
+                this.notify(showPopup, {});
+            }
+        }
     }
     setAttribute(ele, attr) {
         let value = this.name && this.name.length !== 0 ? this.name : this.element.id;
@@ -932,7 +931,13 @@ let InPlaceEditor = class InPlaceEditor extends Component {
         let eventArgs = { mode: this.mode, cancelFocus: false };
         this.trigger('beginEdit', eventArgs);
         if (!eventArgs.cancelFocus) {
-            this.setFocus();
+            if (this.mode === 'Inline' && (['AutoComplete', 'ComboBox', 'DropDownList', 'MultiSelect'].indexOf(this.type) > -1)
+                && this.model.dataSource instanceof DataManager) {
+                this.showDropDownPopup();
+            }
+            else {
+                this.setFocus();
+            }
         }
         if (this.afterOpenEvent) {
             this.tipObj.setProperties({ afterOpen: this.afterOpenEvent }, true);
@@ -1097,7 +1102,7 @@ let InPlaceEditor = class InPlaceEditor extends Component {
     /**
      * To provide the array of modules needed for component rendering
      * @return {ModuleDeclaration[]}
-     * @hidden
+
      */
     requiredModules() {
         let modules = [];
@@ -1269,6 +1274,9 @@ class Base {
     render(e) {
         this.module.render(e);
     }
+    showPopup() {
+        this.module.showPopup();
+    }
     focus() {
         this.module.focus();
     }
@@ -1292,6 +1300,7 @@ class Base {
     addEventListener() {
         this.parent.on(render, this.render, this);
         this.parent.on(setFocus, this.focus, this);
+        this.parent.on(showPopup, this.showPopup, this);
         this.parent.on(update, this.update, this);
         this.parent.on(accessValue, this.getValue, this);
         this.parent.on(destroyModules, this.destroyComponent, this);
@@ -1303,6 +1312,7 @@ class Base {
         }
         this.parent.off(render, this.render);
         this.parent.off(setFocus, this.focus);
+        this.parent.off(showPopup, this.showPopup);
         this.parent.off(update, this.update);
         this.parent.off(accessValue, this.getValue);
         this.parent.off(destroyModules, this.destroyComponent);
@@ -1323,6 +1333,13 @@ class AutoComplete$1 {
     render(e) {
         this.compObj = new AutoComplete(this.parent.model, e.target);
     }
+    /**
+
+     */
+    showPopup() {
+        this.compObj.focusIn();
+        this.compObj.showPopup();
+    }
     focus() {
         this.compObj.element.focus();
     }
@@ -1336,7 +1353,7 @@ class AutoComplete$1 {
      * Destroys the module.
      * @method destroy
      * @return {void}
-     * @hidden
+
      */
     destroy() {
         this.base.destroy();
@@ -1375,7 +1392,7 @@ class ColorPicker$1 {
      * Destroys the module.
      * @method destroy
      * @return {void}
-     * @hidden
+
      */
     destroy() {
         this.base.destroy();
@@ -1404,6 +1421,13 @@ class ComboBox$1 {
     focus() {
         this.compObj.element.focus();
     }
+    /**
+
+     */
+    showPopup() {
+        this.compObj.focusIn();
+        this.compObj.showPopup();
+    }
     updateValue(e) {
         if (this.compObj && e.type === 'ComboBox') {
             this.parent.setProperties({ value: this.compObj.value }, true);
@@ -1414,7 +1438,7 @@ class ComboBox$1 {
      * Destroys the module.
      * @method destroy
      * @return {void}
-     * @hidden
+
      */
     destroy() {
         this.base.destroy();
@@ -1454,7 +1478,7 @@ class DateRangePicker$1 {
      * Destroys the module.
      * @method destroy
      * @return {void}
-     * @hidden
+
      */
     destroy() {
         this.base.destroy();
@@ -1480,6 +1504,13 @@ class MultiSelect$1 {
     render(e) {
         this.compObj = new MultiSelect(this.parent.model, e.target);
     }
+    /**
+
+     */
+    showPopup() {
+        this.compObj.focusIn();
+        this.compObj.showPopup();
+    }
     focus() {
         closest(this.compObj.element, '.e-multi-select-wrapper').dispatchEvent(new MouseEvent('mousedown'));
     }
@@ -1496,7 +1527,7 @@ class MultiSelect$1 {
      * Destroys the module.
      * @method destroy
      * @return {void}
-     * @hidden
+
      */
     destroy() {
         this.base.destroy();
@@ -1550,7 +1581,7 @@ class Rte {
      * Destroys the rte module.
      * @method destroy
      * @return {void}
-     * @hidden
+
      */
     destroy() {
         this.base.destroy();
@@ -1592,7 +1623,7 @@ class Slider$1 {
      * Destroys the slider module.
      * @method destroy
      * @return {void}
-     * @hidden
+
      */
     destroy() {
         this.base.destroy();
@@ -1631,7 +1662,7 @@ class TimePicker$1 {
      * Destroys the module.
      * @method destroy
      * @return {void}
-     * @hidden
+
      */
     destroy() {
         this.base.destroy();
@@ -1656,5 +1687,5 @@ class TimePicker$1 {
  *
  */
 
-export { parseValue, getCompValue, render, update, destroy, setFocus, accessValue, destroyModules, PopupSettings, modulesList, localeConstant, ROOT, ROOT_TIP, VALUE_WRAPPER, VALUE, OVERLAY_ICON, TIP_TITLE, TITLE, INLINE, POPUP, WRAPPER, LOADING, FORM, CTRL_GROUP, INPUT, BUTTONS, EDITABLE_ERROR, ELEMENTS, OPEN, BTN_SAVE, BTN_CANCEL, RTE_SPIN_WRAP, CTRL_OVERLAY, DISABLE, ICONS, PRIMARY, SHOW, HIDE, RTL, ERROR, LOAD, InPlaceEditor, Base, AutoComplete$1 as AutoComplete, ColorPicker$1 as ColorPicker, ComboBox$1 as ComboBox, DateRangePicker$1 as DateRangePicker, MultiSelect$1 as MultiSelect, Rte, Slider$1 as Slider, TimePicker$1 as TimePicker };
+export { parseValue, getCompValue, render, update, destroy, setFocus, accessValue, destroyModules, showPopup, PopupSettings, modulesList, localeConstant, ROOT, ROOT_TIP, VALUE_WRAPPER, VALUE, OVERLAY_ICON, TIP_TITLE, TITLE, INLINE, POPUP, WRAPPER, LOADING, FORM, CTRL_GROUP, INPUT, BUTTONS, EDITABLE_ERROR, ELEMENTS, OPEN, BTN_SAVE, BTN_CANCEL, RTE_SPIN_WRAP, CTRL_OVERLAY, DISABLE, ICONS, PRIMARY, SHOW, HIDE, RTL, ERROR, LOAD, InPlaceEditor, Base, AutoComplete$1 as AutoComplete, ColorPicker$1 as ColorPicker, ComboBox$1 as ComboBox, DateRangePicker$1 as DateRangePicker, MultiSelect$1 as MultiSelect, Rte, Slider$1 as Slider, TimePicker$1 as TimePicker };
 //# sourceMappingURL=ej2-inplace-editor.es2015.js.map

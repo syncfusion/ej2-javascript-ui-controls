@@ -12,72 +12,41 @@ import { Workbook } from '@syncfusion/ej2-excel-export';
 /**
  * Constants
  */
-/** @hidden */
 var cellClick = 'cellClick';
-/** @hidden */
 var cellDoubleClick = 'cellDoubleClick';
-/** @hidden */
+var moreEventsClick = 'moreEventsClick';
 var select = 'select';
-/** @hidden */
 var hover = 'hover';
-/** @hidden */
 var actionBegin = 'actionBegin';
-/** @hidden */
 var actionComplete = 'actionComplete';
-/** @hidden */
 var actionFailure = 'actionFailure';
-/** @hidden */
 var navigating = 'navigating';
-/** @hidden */
 var renderCell = 'renderCell';
-/** @hidden */
 var eventClick = 'eventClick';
-/** @hidden */
 var eventRendered = 'eventRendered';
-/** @hidden */
 var dataBinding = 'dataBinding';
-/** @hidden */
 var dataBound = 'dataBound';
-/** @hidden */
 var popupOpen = 'popupOpen';
-/** @hidden */
 var popupClose = 'popupClose';
-/** @hidden */
 var dragStart = 'dragStart';
-/** @hidden */
 var drag = 'drag';
-/** @hidden */
 var dragStop = 'dragStop';
-/** @hidden */
 var resizeStart = 'resizeStart';
-/** @hidden */
 var resizing = 'resizing';
-/** @hidden */
 var resizeStop = 'resizeStop';
 /**
  * Specifies schedule internal events
  */
-/** @hidden */
 var initialLoad = 'initial-load';
-/** @hidden */
 var initialEnd = 'initial-end';
-/** @hidden */
 var dataReady = 'data-ready';
-/** @hidden */
 var eventsLoaded = 'events-loaded';
-/** @hidden */
 var contentReady = 'content-ready';
-/** @hidden */
 var scroll = 'scroll';
-/** @hidden */
 var virtualScroll = 'virtual-scroll';
-/** @hidden */
 var scrollUiUpdate = 'scroll-ui-update';
-/** @hidden */
 var uiUpdate = 'ui-update';
-/** @hidden */
 var documentClick = 'document-click';
-/** @hidden */
 var cellMouseDown = 'cell-mouse-down';
 
 /**
@@ -189,9 +158,7 @@ function getDateFromString(date) {
     return date.indexOf('Date') !== -1 ? new Date(parseInt(date.match(/\d+/g).toString(), 10)) :
         date.indexOf('T') !== -1 ? new Date(date) : new Date(date.replace(/-/g, '/'));
 }
-/** @hidden */
 var scrollWidth = null;
-/** @hidden */
 function getScrollBarWidth() {
     if (scrollWidth !== null) {
         return scrollWidth;
@@ -227,439 +194,222 @@ function removeChildren(element) {
 /**
  * CSS Constants
  */
-/** @hidden */
 var ROOT = 'e-schedule';
-/** @hidden */
 var RTL = 'e-rtl';
-/** @hidden */
 var DEVICE_CLASS = 'e-device';
-/** @hidden */
 var ICON = 'e-icons';
-/** @hidden */
 var ENABLE_CLASS = 'e-enable';
-/** @hidden */
 var DISABLE_CLASS = 'e-disable';
-/** @hidden */
 var TABLE_CONTAINER_CLASS = 'e-table-container';
-/** @hidden */
 var SCHEDULE_TABLE_CLASS = 'e-schedule-table';
-/** @hidden */
 var ALLDAY_CELLS_CLASS = 'e-all-day-cells';
-/** @hidden */
 var HEADER_POPUP_CLASS = 'e-header-popup';
-/** @hidden */
 var HEADER_CALENDAR_CLASS = 'e-header-calendar';
-/** @hidden */
 var ALLDAY_ROW_CLASS = 'e-all-day-row';
-/** @hidden */
 var CONTENT_TABLE_CLASS = 'e-content-table';
-/** @hidden */
 var WORK_CELLS_CLASS = 'e-work-cells';
-/** @hidden */
 var WORK_HOURS_CLASS = 'e-work-hours';
-/** @hidden */
 var POPUP_OPEN = 'e-popup-open';
-/** @hidden */
 var DATE_HEADER_WRAP_CLASS = 'e-date-header-wrap';
-/** @hidden */
 var DATE_HEADER_CONTAINER_CLASS = 'e-date-header-container';
-/** @hidden */
 var HEADER_CELLS_CLASS = 'e-header-cells';
-/** @hidden */
 var WORKDAY_CLASS = 'e-work-days';
-/** @hidden */
 var OTHERMONTH_CLASS = 'e-other-month';
-/** @hidden */
 var CURRENT_DAY_CLASS = 'e-current-day';
-/** @hidden */
 var CURRENTDATE_CLASS = 'e-current-date';
-/** @hidden */
 var CURRENT_PANEL_CLASS = 'e-current-panel';
-/** @hidden */
 var PREVIOUS_PANEL_CLASS = 'e-previous-panel';
-/** @hidden */
 var NEXT_PANEL_CLASS = 'e-next-panel';
-/** @hidden */
 var TRANSLATE_CLASS = 'e-translate';
-/** @hidden */
 var LEFT_INDENT_CLASS = 'e-left-indent';
-/** @hidden */
 var LEFT_INDENT_WRAP_CLASS = 'e-left-indent-wrap';
-/** @hidden */
 var EVENT_TABLE_CLASS = 'e-event-table';
-/** @hidden */
 var RESOURCE_LEFT_TD_CLASS = 'e-resource-left-td';
-/** @hidden */
 var RESOURCE_GROUP_CELLS_CLASS = 'e-resource-group-cells';
-/** @hidden */
 var RESOURCE_TEXT_CLASS = 'e-resource-text';
-/** @hidden */
 var RESOURCE_COLUMN_WRAP_CLASS = 'e-resource-column-wrap';
-/** @hidden */
 var RESOURCE_COLUMN_TABLE_CLASS = 'e-resource-column-table';
-/** @hidden */
 var RESOURCE_CHILD_CLASS = 'e-child-node';
-/** @hidden */
 var RESOURCE_PARENT_CLASS = 'e-parent-node';
-/** @hidden */
 var RESOURCE_EXPAND_CLASS = 'e-resource-expand';
-/** @hidden */
 var RESOURCE_COLLAPSE_CLASS = 'e-resource-collapse';
-/** @hidden */
 var RESOURCE_TREE_ICON_CLASS = 'e-resource-tree-icon';
-/** @hidden */
 var RESOURCE_CELLS_CLASS = 'e-resource-cells';
-/** @hidden */
 var TIME_CELLS_WRAP_CLASS = 'e-time-cells-wrap';
-/** @hidden */
 var TIME_CELLS_CLASS = 'e-time-cells';
-/** @hidden */
 var TIME_SLOT_CLASS = 'e-time-slots';
-/** @hidden */
 var ALTERNATE_CELLS_CLASS = 'e-alternate-cells';
-/** @hidden */
 var CURRENT_TIME_CLASS = 'e-current-time';
-/** @hidden */
 var CURRENT_TIMELINE_CLASS = 'e-current-timeline';
-/** @hidden */
 var PREVIOUS_TIMELINE_CLASS = 'e-previous-timeline';
-/** @hidden */
 var HIDE_CHILDS_CLASS = 'e-hide-childs';
-/** @hidden */
 var SCROLL_CONTAINER_CLASS = 'e-scroll-container';
-/** @hidden */
 
-/** @hidden */
 var TIMELINE_WRAPPER_CLASS = 'e-timeline-wrapper';
-/** @hidden */
 var APPOINTMENT_WRAPPER_CLASS = 'e-appointment-wrapper';
-/** @hidden */
 var DAY_WRAPPER_CLASS = 'e-day-wrapper';
-/** @hidden */
 var TOOLBAR_CONTAINER = 'e-schedule-toolbar-container';
-/** @hidden */
 var RESOURCE_TOOLBAR_CONTAINER = 'e-schedule-resource-toolbar-container';
-/** @hidden */
 var HEADER_TOOLBAR = 'e-schedule-toolbar';
-/** @hidden */
 var RESOURCE_HEADER_TOOLBAR = 'e-schedule-resource-toolbar';
-/** @hidden */
 var SELECTED_CELL_CLASS = 'e-selected-cell';
-/** @hidden */
 var WEEK_NUMBER_WRAPPER_CLASS = 'e-week-number-wrapper';
-/** @hidden */
 var WEEK_NUMBER_CLASS = 'e-week-number';
-/** @hidden */
 var APPOINTMENT_WRAP_CLASS = 'e-appointment-wrap';
-/** @hidden */
 var WRAPPER_CONTAINER_CLASS = 'e-wrapper-container';
-/** @hidden */
 var APPOINTMENT_CONTAINER_CLASS = 'e-appointment-container';
-/** @hidden */
 var APPOINTMENT_CLASS = 'e-appointment';
-/** @hidden */
 var BLOCK_APPOINTMENT_CLASS = 'e-block-appointment';
-/** @hidden */
 var BLOCK_INDICATOR_CLASS = 'e-block-indicator';
-/** @hidden */
 var APPOINTMENT_BORDER = 'e-appointment-border';
-/** @hidden */
 var APPOINTMENT_DETAILS = 'e-appointment-details';
-/** @hidden */
 var SUBJECT_WRAP = 'e-subject-wrap';
-/** @hidden */
 var RESOURCE_NAME = 'e-resource-name';
-/** @hidden */
 var APPOINTMENT_TIME = 'e-time';
-/** @hidden */
 var TABLE_WRAP_CLASS = 'e-table-wrap';
-/** @hidden */
 var OUTER_TABLE_CLASS = 'e-outer-table';
-/** @hidden */
 var CONTENT_WRAP_CLASS = 'e-content-wrap';
-/** @hidden */
 var VIRTUAL_TRACK_CLASS = 'e-virtual-track';
-/** @hidden */
 var AGENDA_CELLS_CLASS = 'e-agenda-cells';
-/** @hidden */
 var AGENDA_CURRENT_DAY_CLASS = 'e-current-day';
-/** @hidden */
 var AGENDA_SELECTED_CELL = 'e-active-appointment-agenda';
-/** @hidden */
 var MONTH_HEADER_CLASS = 'e-month-header';
-/** @hidden */
 var AGENDA_HEADER_CLASS = 'e-day-date-header';
-/** @hidden */
 var AGENDA_RESOURCE_CLASS = 'e-resource-column';
-/** @hidden */
 var AGENDA_DATE_CLASS = 'e-date-column';
-/** @hidden */
 var NAVIGATE_CLASS = 'e-navigate';
-/** @hidden */
 var DATE_HEADER_CLASS = 'e-date-header';
-/** @hidden */
 var AGENDA_DAY_BORDER_CLASS = 'e-day-border';
-/** @hidden */
 var DATE_BORDER_CLASS = 'e-date-border';
-/** @hidden */
 var AGENDA_DAY_PADDING_CLASS = 'e-day-padding';
-/** @hidden */
 var DATE_TIME_CLASS = 'e-date-time';
-/** @hidden */
 var DATE_TIME_WRAPPER_CLASS = 'e-date-time-wrapper';
-/** @hidden */
 var AGENDA_EMPTY_EVENT_CLASS = 'e-empty-event';
-/** @hidden */
 var AGENDA_NO_EVENT_CLASS = 'e-no-event';
-/** @hidden */
 var APPOINTMENT_INDICATOR_CLASS = 'e-appointment-indicator';
-/** @hidden */
 var EVENT_INDICATOR_CLASS = 'e-indicator';
-/** @hidden */
 var EVENT_ICON_UP_CLASS = 'e-up-icon';
-/** @hidden */
 var EVENT_ICON_DOWN_CLASS = 'e-down-icon';
-/** @hidden */
 var EVENT_ICON_LEFT_CLASS = 'e-left-icon';
-/** @hidden */
 var EVENT_ICON_RIGHT_CLASS = 'e-right-icon';
-/** @hidden */
 var EVENT_ACTION_CLASS = 'e-event-action';
-/** @hidden */
 var NEW_EVENT_CLASS = 'e-new-event';
-/** @hidden */
 var CLONE_ELEMENT_CLASS = 'e-schedule-event-clone';
-/** @hidden */
 var MONTH_CLONE_ELEMENT_CLASS = 'e-month-event';
-/** @hidden */
 var CLONE_TIME_INDICATOR_CLASS = 'e-clone-time-indicator';
-/** @hidden */
 var DRAG_CLONE_CLASS = 'e-drag-clone';
-/** @hidden */
 var EVENT_RESIZE_CLASS = 'e-event-resize';
-/** @hidden */
 var RESIZE_CLONE_CLASS = 'e-resize-clone';
-/** @hidden */
 var LEFT_RESIZE_HANDLER = 'e-left-handler';
-/** @hidden */
 var RIGHT_RESIZE_HANDLER = 'e-right-handler';
-/** @hidden */
 var TOP_RESIZE_HANDLER = 'e-top-handler';
-/** @hidden */
 var BOTTOM_RESIZE_HANDLER = 'e-bottom-handler';
-/** @hidden */
 var EVENT_RECURRENCE_ICON_CLASS = 'e-recurrence-icon';
-/** @hidden */
 var EVENT_RECURRENCE_EDIT_ICON_CLASS = 'e-recurrence-edit-icon';
-/** @hidden */
 var HEADER_ROW_CLASS = 'e-header-row';
-/** @hidden */
 var ALLDAY_APPOINTMENT_WRAPPER_CLASS = 'e-all-day-appointment-wrapper';
-/** @hidden */
 var ALLDAY_APPOINTMENT_CLASS = 'e-all-day-appointment';
-/** @hidden */
 var EVENT_COUNT_CLASS = 'e-appointment-hide';
-/** @hidden */
 var ROW_COUNT_WRAPPER_CLASS = 'e-row-count-wrapper';
-/** @hidden */
 var ALLDAY_APPOINTMENT_SECTION_CLASS = 'e-all-day-appointment-section';
-/** @hidden */
 var APPOINTMENT_ROW_EXPAND_CLASS = 'e-appointment-expand';
-/** @hidden */
 var APPOINTMENT_ROW_COLLAPSE_CLASS = 'e-appointment-collapse';
-/** @hidden */
 var MORE_INDICATOR_CLASS = 'e-more-indicator';
-/** @hidden */
 var CELL_POPUP_CLASS = 'e-cell-popup';
-/** @hidden */
 var EVENT_POPUP_CLASS = 'e-event-popup';
-/** @hidden */
 var MULTIPLE_EVENT_POPUP_CLASS = 'e-multiple-event-popup';
-/** @hidden */
 var POPUP_HEADER_CLASS = 'e-popup-header';
-/** @hidden */
 var POPUP_HEADER_ICON_WRAPPER = 'e-header-icon-wrapper';
-/** @hidden */
 var POPUP_CONTENT_CLASS = 'e-popup-content';
-/** @hidden */
 var POPUP_FOOTER_CLASS = 'e-popup-footer';
-/** @hidden */
 var DATE_TIME_DETAILS_CLASS = 'e-date-time-details';
-/** @hidden */
 var RECURRENCE_SUMMARY_CLASS = 'e-recurrence-summary';
-/** @hidden */
 var QUICK_POPUP_EVENT_DETAILS_CLASS = 'e-event-details';
-/** @hidden */
 var EVENT_CREATE_CLASS = 'e-event-create';
-/** @hidden */
 var EDIT_EVENT_CLASS = 'e-event-edit';
-/** @hidden */
 var DELETE_EVENT_CLASS = 'e-event-delete';
-/** @hidden */
 var TEXT_ELLIPSIS = 'e-text-ellipsis';
-/** @hidden */
 var MORE_POPUP_WRAPPER_CLASS = 'e-more-popup-wrapper';
-/** @hidden */
 var MORE_EVENT_POPUP_CLASS = 'e-more-event-popup';
-/** @hidden */
 var MORE_EVENT_HEADER_CLASS = 'e-more-event-header';
-/** @hidden */
 var MORE_EVENT_DATE_HEADER_CLASS = 'e-more-event-date-header';
-/** @hidden */
 var MORE_EVENT_HEADER_DAY_CLASS = 'e-header-day';
-/** @hidden */
 var MORE_EVENT_HEADER_DATE_CLASS = 'e-header-date';
-/** @hidden */
 var MORE_EVENT_CLOSE_CLASS = 'e-more-event-close';
-/** @hidden */
 var MORE_EVENT_CONTENT_CLASS = 'e-more-event-content';
-/** @hidden */
 var MORE_EVENT_WRAPPER_CLASS = 'e-more-appointment-wrapper';
-/** @hidden */
 var QUICK_DIALOG_CLASS = 'e-quick-dialog';
-/** @hidden */
 var QUICK_DIALOG_OCCURRENCE_CLASS = 'e-quick-dialog-occurrence-event';
-/** @hidden */
 var QUICK_DIALOG_SERIES_CLASS = 'e-quick-dialog-series-event';
-/** @hidden */
 var QUICK_DIALOG_FOLLOWING_EVENTS_CLASS = 'e-quick-dialog-following-events';
-/** @hidden */
 var FOLLOWING_EVENTS_DIALOG = 'e-following-events-dialog';
-/** @hidden */
 var QUICK_DIALOG_DELETE_CLASS = 'e-quick-dialog-delete';
-/** @hidden */
 var QUICK_DIALOG_CANCEL_CLASS = 'e-quick-dialog-cancel';
-/** @hidden */
 var QUICK_DIALOG_ALERT_OK = 'e-quick-alertok';
-/** @hidden */
 var QUICK_DIALOG_ALERT_CANCEL = 'e-quick-alertcancel';
-/** @hidden */
 var QUICK_DIALOG_ALERT_FOLLOWING = 'e-quick-alertfollowing';
-/** @hidden */
 var QUICK_DIALOG_ALERT_BTN_CLASS = 'e-quick-dialog-alert-btn';
-/** @hidden */
 var EVENT_WINDOW_DIALOG_CLASS = 'e-schedule-dialog';
-/** @hidden */
 var FORM_CONTAINER_CLASS = 'e-form-container';
-/** @hidden */
 var FORM_CLASS = 'e-schedule-form';
-/** @hidden */
 var EVENT_WINDOW_ALLDAY_TZ_DIV_CLASS = 'e-all-day-time-zone-row';
-/** @hidden */
 var EVENT_WINDOW_ALL_DAY_CLASS = 'e-all-day';
-/** @hidden */
 var TIME_ZONE_CLASS = 'e-time-zone';
-/** @hidden */
 var TIME_ZONE_ICON_CLASS = 'e-time-zone-icon';
-/** @hidden */
 var TIME_ZONE_DETAILS_CLASS = 'e-time-zone-details';
-/** @hidden */
 var EVENT_WINDOW_REPEAT_DIV_CLASS = 'e-repeat-parent-row';
-/** @hidden */
 var EVENT_WINDOW_REPEAT_CLASS = 'e-repeat';
-/** @hidden */
 var EVENT_WINDOW_TITLE_LOCATION_DIV_CLASS = 'e-title-location-row';
-/** @hidden */
 var SUBJECT_CLASS = 'e-subject';
-/** @hidden */
 var LOCATION_CLASS = 'e-location';
-/** @hidden */
 var LOCATION_ICON_CLASS = 'e-location-icon';
-/** @hidden */
 var LOCATION_DETAILS_CLASS = 'e-location-details';
-/** @hidden */
 var EVENT_WINDOW_START_END_DIV_CLASS = 'e-start-end-row';
-/** @hidden */
 var EVENT_WINDOW_START_CLASS = 'e-start';
-/** @hidden */
 var EVENT_WINDOW_END_CLASS = 'e-end';
-/** @hidden */
 var EVENT_WINDOW_RESOURCES_DIV_CLASS = 'e-resources-row';
-/** @hidden */
 var DESCRIPTION_CLASS = 'e-description';
-/** @hidden */
 var DESCRIPTION_ICON_CLASS = 'e-description-icon';
-/** @hidden */
 var DESCRIPTION_DETAILS_CLASS = 'e-description-details';
-/** @hidden */
 var EVENT_WINDOW_TIME_ZONE_DIV_CLASS = 'e-time-zone-row';
-/** @hidden */
 var EVENT_WINDOW_START_TZ_CLASS = 'e-start-time-zone';
-/** @hidden */
 var EVENT_WINDOW_END_TZ_CLASS = 'e-end-time-zone';
-/** @hidden */
 var EVENT_WINDOW_BACK_ICON_CLASS = 'e-back-icon';
-/** @hidden */
 var EVENT_WINDOW_SAVE_ICON_CLASS = 'e-save-icon';
-/** @hidden */
 var EVENT_WINDOW_CANCEL_BUTTON_CLASS = 'e-event-cancel';
-/** @hidden */
 var EVENT_WINDOW_SAVE_BUTTON_CLASS = 'e-event-save';
-/** @hidden */
 var EVENT_WINDOW_DIALOG_PARENT_CLASS = 'e-dialog-parent';
-/** @hidden */
 var EVENT_WINDOW_TITLE_TEXT_CLASS = 'e-title-text';
-/** @hidden */
 var EVENT_WINDOW_ICON_DISABLE_CLASS = 'e-icon-disable';
-/** @hidden */
 var EDIT_CLASS = 'e-edit';
-/** @hidden */
 var EDIT_ICON_CLASS = 'e-edit-icon';
-/** @hidden */
 var DELETE_CLASS = 'e-delete';
-/** @hidden */
 var DELETE_ICON_CLASS = 'e-delete-icon';
-/** @hidden */
 var CLOSE_CLASS = 'e-close';
-/** @hidden */
 var CLOSE_ICON_CLASS = 'e-close-icon';
-/** @hidden */
 var ERROR_VALIDATION_CLASS = 'e-schedule-error';
-/** @hidden */
 var EVENT_TOOLTIP_ROOT_CLASS = 'e-schedule-event-tooltip';
-/** @hidden */
 var ALLDAY_ROW_ANIMATE_CLASS = 'e-animate';
-/** @hidden */
 var TIMESCALE_DISABLE = 'e-timescale-disable';
-/** @hidden */
 var DISABLE_DATE = 'e-disable-date';
-/** @hidden */
 var HIDDEN_CLASS = 'e-hidden';
-/** @hidden */
 var POPUP_WRAPPER_CLASS = 'e-quick-popup-wrapper';
-/** @hidden */
 var POPUP_TABLE_CLASS = 'e-popup-table';
-/** @hidden */
 var RESOURCE_MENU = 'e-resource-menu';
-/** @hidden */
 var RESOURCE_MENU_ICON = 'e-icon-menu';
-/** @hidden */
 var RESOURCE_LEVEL_TITLE = 'e-resource-level-title';
-/** @hidden */
 var RESOURCE_TREE = 'e-resource-tree';
-/** @hidden */
 var RESOURCE_TREE_POPUP_OVERLAY = 'e-resource-tree-popup-overlay';
-/** @hidden */
 var RESOURCE_TREE_POPUP = 'e-resource-tree-popup';
-/** @hidden */
 var RESOURCE_CLASS = 'e-resource';
-/** @hidden */
 var RESOURCE_ICON_CLASS = 'e-resource-icon';
-/** @hidden */
 var RESOURCE_DETAILS_CLASS = 'e-resource-details';
-/** @hidden */
 var DATE_TIME_ICON_CLASS = 'e-date-time-icon';
-/** @hidden */
 var VIRTUAL_SCROLL_CLASS = 'e-virtual-scroll';
-/** @hidden */
 var ICON_DISABLE_CLASS = 'e-icon-disable';
-/** @hidden */
 var AUTO_HEIGHT = 'e-auto-height';
-/** @hidden */
 var EVENT_TEMPLATE = 'e-template';
-/** @hidden */
 var READ_ONLY = 'e-read-only';
-/** @hidden */
 var MONTH_HEADER_WRAPPER = 'e-month-header-wrapper';
 
 /**
@@ -688,7 +438,6 @@ var HeaderRenderer = /** @__PURE__ @class */ (function () {
         }
         this.hideHeaderPopup();
     };
-    /** @hidden */
     HeaderRenderer.prototype.hideHeaderPopup = function () {
         if (this.headerPopup) {
             this.headerPopup.hide();
@@ -1095,7 +844,7 @@ var HeaderRenderer = /** @__PURE__ @class */ (function () {
 var Scroll = /** @__PURE__ @class */ (function () {
     /**
      * Constructor for the scrolling.
-     * @hidden
+
      */
     function Scroll(parent) {
         this.parent = parent;
@@ -1109,33 +858,33 @@ var Scroll = /** @__PURE__ @class */ (function () {
         return 'scroll';
     };
     /**
-     * @hidden
+
      */
     Scroll.prototype.setWidth = function () {
         this.parent.element.style.width = formatUnit(this.parent.width);
     };
     /**
-     * @hidden
+
      */
     Scroll.prototype.setHeight = function () {
         this.parent.element.style.height = formatUnit(this.parent.height);
     };
     /**
-     * @hidden
+
      */
     Scroll.prototype.addEventListener = function () {
         this.parent.on(contentReady, this.setDimensions, this);
         this.parent.on(uiUpdate, this.onPropertyChanged, this);
     };
     /**
-     * @hidden
+
      */
     Scroll.prototype.removeEventListener = function () {
         this.parent.off(contentReady, this.setDimensions);
         this.parent.off(uiUpdate, this.onPropertyChanged);
     };
     /**
-     * @hidden
+
      */
     Scroll.prototype.setDimensions = function () {
         this.setWidth();
@@ -1144,13 +893,13 @@ var Scroll = /** @__PURE__ @class */ (function () {
         this.parent.notify(scrollUiUpdate, data);
     };
     /**
-     * @hidden
+
      */
     Scroll.prototype.onPropertyChanged = function (e) {
         this.setDimensions();
     };
     /**
-     * @hidden
+
      */
     Scroll.prototype.destroy = function () {
         this.removeEventListener();
@@ -1366,7 +1115,7 @@ var ScheduleTouch = /** @__PURE__ @class */ (function () {
         removeClass([this.element], TRANSLATE_CLASS);
     };
     /**
-     * @hidden
+
      */
     ScheduleTouch.prototype.destroy = function () {
         this.touchObj.destroy();
@@ -1660,7 +1409,6 @@ var KeyboardInteraction = /** @__PURE__ @class */ (function () {
     KeyboardInteraction.prototype.isInverseTableSelect = function () {
         return this.parent.activeView.isInverseTableSelect;
     };
-    /** @hidden */
     KeyboardInteraction.prototype.selectCells = function (isMultiple, targetCell) {
         var _this = this;
         this.parent.removeSelectedClass();
@@ -2141,7 +1889,7 @@ var KeyboardInteraction = /** @__PURE__ @class */ (function () {
 
 /**
  * data module is used to generate query and data source.
- * @hidden
+
  */
 var Data = /** @__PURE__ @class */ (function () {
     /**
@@ -3898,13 +3646,13 @@ var EventBase = /** @__PURE__ @class */ (function () {
                 this.processTimezoneChange(event_1, oldTimezone);
             }
             else {
-                this.processTimezone(event_1);
+                event_1 = this.processTimezone(event_1);
             }
             if (!isNullOrUndefined(event_1[fields.recurrenceRule]) && event_1[fields.recurrenceRule] === '') {
                 event_1[fields.recurrenceRule] = null;
             }
             if (!isNullOrUndefined(event_1[fields.recurrenceRule]) && isNullOrUndefined(event_1[fields.recurrenceID])) {
-                processed = processed.concat(this.generateOccurrence(event_1, null, oldTimezone));
+                processed = processed.concat(this.generateOccurrence(event_1, null, oldTimezone, true));
             }
             else {
                 event_1.Guid = this.generateGuid();
@@ -3930,7 +3678,7 @@ var EventBase = /** @__PURE__ @class */ (function () {
             var event_2 = _a[_i];
             if (!isNullOrUndefined(event_2[this.parent.eventFields.recurrenceRule]) &&
                 isNullOrUndefined(event_2[this.parent.eventFields.recurrenceID])) {
-                processed = processed.concat(this.parent.eventBase.generateOccurrence(event_2));
+                processed = processed.concat(this.generateOccurrence(event_2));
             }
             else {
                 processed.push(event_2);
@@ -3974,23 +3722,47 @@ var EventBase = /** @__PURE__ @class */ (function () {
             event[fields.endTime] = this.parent.tzModule.remove(event[fields.endTime], oldTimezone);
         }
     };
-    EventBase.prototype.processTimezone = function (event) {
+    EventBase.prototype.processTimezone = function (event, isReverse) {
+        if (isReverse === void 0) { isReverse = false; }
         var fields = this.parent.eventFields;
         if (event[fields.startTimezone] || event[fields.endTimezone]) {
             var startTimezone = event[fields.startTimezone] || event[fields.endTimezone];
             var endTimezone = event[fields.endTimezone] || event[fields.startTimezone];
-            event[fields.startTime] = this.parent.tzModule.add(event[fields.startTime], startTimezone);
-            event[fields.endTime] = this.parent.tzModule.add(event[fields.endTime], endTimezone);
-            if (this.parent.timezone) {
-                var zone = this.parent.timezone;
-                event[fields.startTime] = this.parent.tzModule.convert(event[fields.startTime], startTimezone, zone);
-                event[fields.endTime] = this.parent.tzModule.convert(event[fields.endTime], endTimezone, zone);
+            var zone = this.parent.timezone;
+            if (isReverse) {
+                if (this.parent.timezone) {
+                    event[fields.startTime] =
+                        this.parent.tzModule.convert(event[fields.startTime], startTimezone, zone);
+                    event[fields.endTime] = this.parent.tzModule.convert(event[fields.endTime], endTimezone, zone);
+                    event[fields.startTime] = this.parent.tzModule.remove(event[fields.startTime], zone);
+                    event[fields.endTime] = this.parent.tzModule.remove(event[fields.endTime], zone);
+                }
+                else {
+                    event[fields.startTime] = this.parent.tzModule.remove(event[fields.startTime], startTimezone);
+                    event[fields.endTime] = this.parent.tzModule.remove(event[fields.endTime], endTimezone);
+                }
+            }
+            else {
+                event[fields.startTime] = this.parent.tzModule.add(event[fields.startTime], startTimezone);
+                event[fields.endTime] = this.parent.tzModule.add(event[fields.endTime], endTimezone);
+                if (this.parent.timezone) {
+                    event[fields.startTime] =
+                        this.parent.tzModule.convert(event[fields.startTime], startTimezone, zone);
+                    event[fields.endTime] = this.parent.tzModule.convert(event[fields.endTime], endTimezone, zone);
+                }
             }
         }
         else if (this.parent.timezone) {
-            event[fields.startTime] = this.parent.tzModule.add(event[fields.startTime], this.parent.timezone);
-            event[fields.endTime] = this.parent.tzModule.add(event[fields.endTime], this.parent.timezone);
+            if (isReverse) {
+                event[fields.startTime] = this.parent.tzModule.remove(event[fields.startTime], this.parent.timezone);
+                event[fields.endTime] = this.parent.tzModule.remove(event[fields.endTime], this.parent.timezone);
+            }
+            else {
+                event[fields.startTime] = this.parent.tzModule.add(event[fields.startTime], this.parent.timezone);
+                event[fields.endTime] = this.parent.tzModule.add(event[fields.endTime], this.parent.timezone);
+            }
         }
+        return event;
     };
     EventBase.prototype.filterBlockEvents = function (eventObj) {
         var eStart = eventObj[this.parent.eventFields.startTime];
@@ -4483,7 +4255,6 @@ var EventBase = /** @__PURE__ @class */ (function () {
         this.removeSelectedAppointmentClass();
         if (!isNullOrUndefined(this.parent.activeEventData.event) &&
             isNullOrUndefined(this.parent.activeEventData.event[this.parent.eventFields.recurrenceID])) {
-            this.parent.currentAction = 'Save';
             this.parent.eventWindow.openEditor(this.parent.activeEventData.event, 'Save');
         }
         else {
@@ -4549,7 +4320,7 @@ var EventBase = /** @__PURE__ @class */ (function () {
         }
         this.parent.activeEventData = { event: eventObject, element: target };
     };
-    EventBase.prototype.generateOccurrence = function (event, viewDate, oldTimezone) {
+    EventBase.prototype.generateOccurrence = function (event, viewDate, oldTimezone, isMaxCount) {
         var startDate = event[this.parent.eventFields.startTime];
         var endDate = event[this.parent.eventFields.endTime];
         var eventRule = event[this.parent.eventFields.recurrenceRule];
@@ -4557,7 +4328,7 @@ var EventBase = /** @__PURE__ @class */ (function () {
         viewDate = new Date((viewDate || this.parent.activeView.startDate()).getTime() - duration);
         var exception = event[this.parent.eventFields.recurrenceException];
         var maxCount;
-        if (this.parent.currentView !== 'Agenda') {
+        if (this.parent.currentView !== 'Agenda' && isMaxCount) {
             maxCount = getDateCount(this.parent.activeView.startDate(), this.parent.activeView.endDate()) + 1;
         }
         var newTimezone = this.parent.timezone || this.parent.tzModule.getLocalTimezoneName();
@@ -4584,6 +4355,8 @@ var EventBase = /** @__PURE__ @class */ (function () {
             clonedObject[this.parent.eventFields.startTime] = new Date(date);
             clonedObject[this.parent.eventFields.endTime] = new Date(new Date(date).setMilliseconds(duration));
             clonedObject[this.parent.eventFields.recurrenceID] = clonedObject[this.parent.eventFields.id];
+            delete clonedObject[this.parent.eventFields.recurrenceException];
+            delete clonedObject[this.parent.eventFields.followingID];
             clonedObject.Guid = this.generateGuid();
             occurrenceCollection.push(clonedObject);
         }
@@ -4595,21 +4368,82 @@ var EventBase = /** @__PURE__ @class */ (function () {
             executeLocal(new Query().where(eventFields.id, 'equal', eventData[eventFields.recurrenceID]));
         return parentApp[0];
     };
-    EventBase.prototype.getParentEvent = function (event) {
-        var fields = this.parent.eventFields;
+    EventBase.prototype.getParentEvent = function (eventObj, isParent) {
+        if (isParent === void 0) { isParent = false; }
         var parentEvent;
-        var parentEventQuery;
-        var followingId = event[fields.followingID];
-        var recurrenceID = event[fields.recurrenceID] === event[fields.id] ? null : event[fields.recurrenceID];
-        var futureEvents;
         do {
-            parentEventQuery = (new Predicate(fields.id, 'equal', followingId).or(new Predicate(fields.id, 'equal', recurrenceID)));
-            futureEvents = this.getFilterEventsList(this.parent.eventsData, parentEventQuery);
-            parentEvent = futureEvents.slice(-1)[0];
-            followingId = parentEvent[fields.followingID];
-            recurrenceID = parentEvent[fields.recurrenceID];
-        } while (futureEvents.length === 1 && (!isNullOrUndefined(followingId) || !isNullOrUndefined(recurrenceID)));
+            eventObj = this.getFollowingEvent(eventObj);
+            if (eventObj) {
+                parentEvent = extend({}, eventObj, null, true);
+            }
+        } while (eventObj && isParent);
+        if (isParent && parentEvent) {
+            var collection = this.getEventCollections(parentEvent);
+            var followObj = collection.follow.slice(-1)[0];
+            if (collection.occurrence.length > 0 && !parentEvent[this.parent.eventFields.recurrenceException]) {
+                followObj = collection.occurrence.slice(-1)[0];
+            }
+            if (followObj) {
+                parentEvent[this.parent.eventFields.recurrenceRule] = followObj[this.parent.eventFields.recurrenceRule];
+            }
+        }
         return parentEvent;
+    };
+    EventBase.prototype.getEventCollections = function (parentObj, childObj) {
+        var followingCollection = [];
+        var occurrenceCollection = [];
+        var followingEvent = parentObj;
+        do {
+            followingEvent = this.getFollowingEvent(followingEvent, true);
+            if (followingEvent) {
+                followingCollection.push(followingEvent);
+            }
+            occurrenceCollection = occurrenceCollection.concat(this.getOccurrenceEvent(followingEvent || parentObj));
+        } while (followingEvent);
+        var collections = {};
+        if (childObj) {
+            var fields_1 = this.parent.eventFields;
+            collections = {
+                follow: followingCollection.filter(function (eventData) {
+                    return eventData[fields_1.startTime] >= childObj[fields_1.startTime];
+                }),
+                occurrence: occurrenceCollection.filter(function (eventData) {
+                    return eventData[fields_1.startTime] >= childObj[fields_1.startTime];
+                })
+            };
+        }
+        else {
+            collections = { follow: followingCollection, occurrence: occurrenceCollection };
+        }
+        return collections;
+    };
+    EventBase.prototype.getFollowingEvent = function (parentObj, isReverse) {
+        var fields = this.parent.eventFields;
+        var fieldValue;
+        if (isReverse) {
+            fieldValue = parentObj[fields.id];
+        }
+        else {
+            fieldValue = (parentObj[fields.recurrenceID] || parentObj[fields.followingID]);
+        }
+        var filterQuery = new Query().where(isReverse ? fields.followingID : fields.id, 'equal', fieldValue);
+        var parentApp = new DataManager(this.parent.eventsData).executeLocal(filterQuery);
+        return parentApp.shift();
+    };
+    EventBase.prototype.isFollowingEvent = function (parentObj, childObj) {
+        var parentStart = parentObj[this.parent.eventFields.startTime];
+        var childStart = childObj[this.parent.eventFields.startTime];
+        return parentStart.getHours() === childStart.getHours() && parentStart.getMinutes() === childStart.getMinutes() &&
+            parentStart.getSeconds() === childStart.getSeconds();
+    };
+    EventBase.prototype.getOccurrenceEvent = function (eventObj, isGuid, isFollowing) {
+        if (isGuid === void 0) { isGuid = false; }
+        if (isFollowing === void 0) { isFollowing = false; }
+        var idField = isGuid ? 'Guid' : (isFollowing) ? this.parent.eventFields.followingID : this.parent.eventFields.recurrenceID;
+        var fieldKey = isGuid ? 'Guid' : this.parent.eventFields.id;
+        var filterQuery = new Query().where(idField, 'equal', eventObj[fieldKey]);
+        var dataSource = isGuid ? this.parent.eventsProcessed : this.parent.eventsData;
+        return new DataManager(dataSource).executeLocal(filterQuery);
     };
     EventBase.prototype.getOccurrencesByID = function (id) {
         var fields = this.parent.eventFields;
@@ -4637,7 +4471,44 @@ var EventBase = /** @__PURE__ @class */ (function () {
         });
         return filter;
     };
-    EventBase.prototype.applyResourceColor = function (element, eventData, type, groupOrder, alpha) {
+    EventBase.prototype.getDeletedOccurrences = function (recurrenceData) {
+        var _this = this;
+        var fields = this.parent.eventFields;
+        var parentObject;
+        var deletedOccurrences = [];
+        if (typeof recurrenceData === 'string' || typeof recurrenceData === 'number') {
+            parentObject = this.parent.eventsData.filter(function (obj) {
+                return obj[fields.id] === recurrenceData;
+            })[0];
+        }
+        else {
+            parentObject = extend({}, recurrenceData, null, true);
+        }
+        if (parentObject[fields.recurrenceException]) {
+            var exDateString = parentObject[fields.recurrenceException].split(',');
+            exDateString.forEach(function (date) {
+                var edited = _this.parent.eventsData.filter(function (eventObj) {
+                    return eventObj[fields.recurrenceID] === parentObject[fields.id] && eventObj[fields.recurrenceException] === date;
+                });
+                if (edited.length === 0) {
+                    var exDate = getDateFromRecurrenceDateString(date);
+                    var childObject = extend({}, recurrenceData, null, true);
+                    childObject[fields.recurrenceID] = parentObject[fields.id];
+                    delete childObject[fields.followingID];
+                    childObject[fields.recurrenceException] = date;
+                    var startDate = new Date(exDate.getTime());
+                    var time = parentObject[fields.endTime].getTime() - parentObject[fields.startTime].getTime();
+                    var endDate = new Date(startDate.getTime());
+                    endDate.setMilliseconds(time);
+                    childObject[fields.startTime] = new Date(startDate.getTime());
+                    childObject[fields.endTime] = new Date(endDate.getTime());
+                    deletedOccurrences.push(childObject);
+                }
+            });
+        }
+        return deletedOccurrences;
+    };
+    EventBase.prototype.applyResourceColor = function (element, data, type, index, alpha) {
         if (!this.parent.resourceBase) {
             return;
         }
@@ -4648,7 +4519,8 @@ var EventBase = /** @__PURE__ @class */ (function () {
             var b = parseInt(color.substring(2 * color.length / 3, 3 * color.length / 3), 16);
             return "rgba(" + r + ", " + g + ", " + b + ", " + alpha + ")";
         };
-        var color = this.parent.resourceBase.getResourceColor(eventData, groupOrder);
+        // index refers groupOrder
+        var color = this.parent.resourceBase.getResourceColor(data, index);
         if (color) {
             // tslint:disable-next-line:no-any
             element.style[type] = !isNullOrUndefined(alpha) ? alphaColor(color, alpha) : color;
@@ -4699,16 +4571,16 @@ var EventBase = /** @__PURE__ @class */ (function () {
         var fields = this.parent.eventFields;
         eventCollection.forEach(function (event) {
             var dataCol = [];
-            if (!isNullOrUndefined(event[fields.recurrenceRule]) && (isNullOrUndefined(event[fields.recurrenceID])
-                || event[fields.id] !== event[fields.recurrenceID])) {
-                dataCol = _this.parent.eventBase.generateOccurrence(event);
+            if (!isNullOrUndefined(event[fields.recurrenceRule]) &&
+                (isNullOrUndefined(event[fields.recurrenceID]) || event[fields.id] === event[fields.recurrenceID])) {
+                dataCol = _this.generateOccurrence(event);
             }
             else {
                 dataCol.push(event);
             }
             for (var _i = 0, dataCol_1 = dataCol; _i < dataCol_1.length; _i++) {
                 var data = dataCol_1[_i];
-                var filterBlockEvents = _this.parent.eventBase.filterBlockEvents(data);
+                var filterBlockEvents = _this.filterBlockEvents(data);
                 if (filterBlockEvents.length > 0) {
                     isBlockAlert = true;
                     break;
@@ -4841,7 +4713,7 @@ var FieldValidator = /** @__PURE__ @class */ (function () {
         }
     };
     /**
-     * @hidden
+
      */
     FieldValidator.prototype.destroy = function () {
         if (this.formObj && this.formObj.element && !this.formObj.isDestroyed) {
@@ -5376,7 +5248,7 @@ var QuickPopups = /** @__PURE__ @class */ (function () {
         var headerTemplate = createElement('div', { className: POPUP_HEADER_CLASS });
         if (this.isQuickTemplate(headerType) && this.parent.quickInfoTemplates.header) {
             var headerArgs = extend({}, headerData, { elementType: headerType.toLowerCase() }, true);
-            var templateId = this.parent.element.id + '_';
+            var templateId = this.parent.element.id;
             var headerTemp = this.parent.getQuickInfoTemplatesHeader()(headerArgs, this.parent, 'header', templateId + '_headerTemplate', false);
             append([].slice.call(headerTemp), headerTemplate);
         }
@@ -5406,7 +5278,7 @@ var QuickPopups = /** @__PURE__ @class */ (function () {
         var contentTemplate = createElement('div', { className: POPUP_CONTENT_CLASS });
         if (this.isQuickTemplate(type) && this.parent.quickInfoTemplates.content) {
             var contentArgs = extend({}, data, { elementType: type.toLowerCase() }, true);
-            var templateId = this.parent.element.id + '_';
+            var templateId = this.parent.element.id;
             var contentTemp = this.parent.getQuickInfoTemplatesContent()(contentArgs, this.parent, 'content', templateId + '_contentTemplate', false);
             append([].slice.call(contentTemp), contentTemplate);
         }
@@ -5427,23 +5299,34 @@ var QuickPopups = /** @__PURE__ @class */ (function () {
                     break;
                 case 'Event':
                     var args_1 = this.getFormattedString(data);
-                    content = "<div class=\"" + DATE_TIME_CLASS + "\">" +
-                        ("<div class=\"" + DATE_TIME_ICON_CLASS + " " + ICON + "\"></div><div class=\"" + DATE_TIME_WRAPPER_CLASS + " ") +
-                        (TEXT_ELLIPSIS + "\"><div class=\"" + DATE_TIME_DETAILS_CLASS + " " + TEXT_ELLIPSIS + "\">" + args_1.details + "</div>") +
-                        ((data[this.parent.eventFields.recurrenceRule] ? "<div class=\"" + RECURRENCE_SUMMARY_CLASS + " " +
-                            (TEXT_ELLIPSIS + "\">" + this.getRecurrenceSummary(data) + "</div>") : '') + "</div></div>") +
-                        ("" + (data[this.parent.eventFields.location] ? "<div class=\"" + LOCATION_CLASS + "\"><div class=\"" +
-                            (LOCATION_ICON_CLASS + " " + ICON + "\"></div>") +
-                            ("<div class=\"" + LOCATION_DETAILS_CLASS + " " + TEXT_ELLIPSIS + "\">") +
-                            (data[this.parent.eventFields.location] + "</div></div>") : '')) +
-                        ("" + (data[this.parent.eventFields.startTimezone] || data[this.parent.eventFields.endTimezone] ? +("<div class=\"" + TIME_ZONE_CLASS + "\"><div class=\"" + TIME_ZONE_ICON_CLASS + " " + ICON + "\"></div><div class=") +
-                            ("\"" + TIME_ZONE_DETAILS_CLASS + " " + TEXT_ELLIPSIS + "\">" + this.getTimezone(data) + " </div></div>") : '')) +
-                        ("" + (data[this.parent.eventFields.description] ? "<div class=\"" + DESCRIPTION_CLASS + "\"><div class=\"" +
-                            (DESCRIPTION_ICON_CLASS + " " + ICON + "\"></div><div class=\"" + DESCRIPTION_DETAILS_CLASS + " ") +
-                            (TEXT_ELLIPSIS + "\">" + data[this.parent.eventFields.description] + "</div></div>") : '')) +
-                        ("" + (this.parent.resourceCollection.length > 0 ? "<div class=\"" + RESOURCE_CLASS + "\"><div class=\"" +
-                            (RESOURCE_ICON_CLASS + " " + ICON + "\"></div>") +
-                            ("<div class=\"" + RESOURCE_DETAILS_CLASS + " " + TEXT_ELLIPSIS + "\">" + resourceText + "</div></div>") : ''));
+                    content = '<div class="' + DATE_TIME_CLASS + '"><div class="' + DATE_TIME_ICON_CLASS + ' ' + ICON +
+                        '"></div><div class="' + DATE_TIME_WRAPPER_CLASS + ' ' + TEXT_ELLIPSIS + '"><div class="' +
+                        DATE_TIME_DETAILS_CLASS + ' ' + TEXT_ELLIPSIS + '">' + args_1.details + '</div>';
+                    if (data[this.parent.eventFields.recurrenceRule]) {
+                        content += '<div class="' + RECURRENCE_SUMMARY_CLASS + ' ' + TEXT_ELLIPSIS + '">' +
+                            this.getRecurrenceSummary(data) + '</div>';
+                    }
+                    content += '</div></div>';
+                    if (data[this.parent.eventFields.location]) {
+                        content += '<div class="' + LOCATION_CLASS + '"><div class="' + LOCATION_ICON_CLASS + ' ' +
+                            ICON + '"></div><div class="' + LOCATION_DETAILS_CLASS + ' ' + TEXT_ELLIPSIS + '">' +
+                            data[this.parent.eventFields.location] + '</div></div>';
+                    }
+                    if (data[this.parent.eventFields.startTimezone] || data[this.parent.eventFields.endTimezone]) {
+                        content += '<div class="' + TIME_ZONE_CLASS + '"><div class="' + TIME_ZONE_ICON_CLASS + ' ' + ICON +
+                            '"></div><div class="' + TIME_ZONE_DETAILS_CLASS + ' ' + TEXT_ELLIPSIS + '">' +
+                            this.getTimezone(data) + '</div></div>';
+                    }
+                    if (data[this.parent.eventFields.description]) {
+                        content += '<div class="' + DESCRIPTION_CLASS + '"><div class="' + DESCRIPTION_ICON_CLASS + ' ' + ICON +
+                            '"></div><div class="' + DESCRIPTION_DETAILS_CLASS + ' ' + TEXT_ELLIPSIS + '">' +
+                            data[this.parent.eventFields.description] + '</div></div>';
+                    }
+                    if (this.parent.resourceCollection.length > 0) {
+                        content += '<div class="' + RESOURCE_CLASS + '"><div class="' + RESOURCE_ICON_CLASS + ' ' + ICON +
+                            '"></div><div class="' + RESOURCE_DETAILS_CLASS + ' ' + TEXT_ELLIPSIS + '">' +
+                            resourceText + '</div></div>';
+                    }
                     break;
             }
             var templateWrapper = createElement('div', { innerHTML: content });
@@ -5455,7 +5338,7 @@ var QuickPopups = /** @__PURE__ @class */ (function () {
         var footerTemplate = createElement('div', { className: POPUP_FOOTER_CLASS });
         if (this.isQuickTemplate(footerType) && this.parent.quickInfoTemplates.footer) {
             var footerArgs = extend({}, footerData, { elementType: footerType.toLowerCase() }, true);
-            var templateId = this.parent.element.id + '_';
+            var templateId = this.parent.element.id;
             var footerTemp = this.parent.getQuickInfoTemplatesFooter()(footerArgs, this.parent, 'footer', templateId + '_footerTemplate', false);
             append([].slice.call(footerTemp), footerTemplate);
         }
@@ -5724,16 +5607,7 @@ var QuickPopups = /** @__PURE__ @class */ (function () {
             this.parent.currentAction = (this.parent.currentAction === 'Delete') ? 'DeleteSeries' : 'EditSeries';
             switch (this.parent.currentAction) {
                 case 'EditSeries':
-                    var parentEvent = void 0;
-                    var fields = this.parent.eventFields;
-                    if (this.parent.eventSettings.editFollowingEvents && (!isNullOrUndefined(eventData[fields.followingID]) ||
-                        (!isNullOrUndefined(eventData[fields.recurrenceID]) && eventData[fields.recurrenceID] !== eventData[fields.id]))) {
-                        parentEvent = this.parent.eventBase.getParentEvent(eventData);
-                    }
-                    else {
-                        parentEvent = this.parent.eventBase.getRecurrenceEvent(eventData);
-                    }
-                    this.parent.eventWindow.openEditor(parentEvent, this.parent.currentAction);
+                    this.parent.eventWindow.openEditor(this.parent.eventBase.getParentEvent(eventData, true), this.parent.currentAction);
                     break;
                 case 'DeleteSeries':
                     this.parent.crudModule.deleteEvent(eventData, this.parent.currentAction);
@@ -5987,7 +5861,7 @@ var QuickPopups = /** @__PURE__ @class */ (function () {
     QuickPopups.prototype.documentClick = function (e) {
         var target = e.event.target;
         var classNames = '.' + POPUP_WRAPPER_CLASS + ',.' + HEADER_CELLS_CLASS + ',.' + ALLDAY_CELLS_CLASS +
-            ',.' + WORK_CELLS_CLASS + ',.' + APPOINTMENT_CLASS;
+            ',.' + WORK_CELLS_CLASS + ',.' + APPOINTMENT_CLASS + ',.e-popup';
         if (closest(target, '.' + APPOINTMENT_CLASS + ',.' + HEADER_CELLS_CLASS)) {
             this.parent.removeNewEventElement();
         }
@@ -6662,6 +6536,7 @@ var RecurrenceEditor = /** @__PURE__ @class */ (function (_super) {
         this.untilDateObj = new DatePicker({
             firstDayOfWeek: this.firstDayOfWeek,
             enableRtl: this.enableRtl,
+            locale: this.locale,
             min: this.minDate,
             max: this.maxDate,
             change: function (args) {
@@ -7065,6 +6940,12 @@ var RecurrenceEditor = /** @__PURE__ @class */ (function (_super) {
         return generateSummary(rule, this.localeObj, this.locale, this.calendarMode);
     };
     RecurrenceEditor.prototype.getRecurrenceDates = function (startDate, rule, excludeDate, maximumCount, viewDate) {
+        if (isBlazor()) {
+            startDate = new Date('' + startDate);
+            if (viewDate) {
+                viewDate = new Date('' + viewDate);
+            }
+        }
         viewDate = isNullOrUndefined(viewDate) ? this.startDate : viewDate;
         return generate(startDate, rule, excludeDate, this.firstDayOfWeek, maximumCount, viewDate, this.calendarMode);
     };
@@ -7099,6 +6980,9 @@ var RecurrenceEditor = /** @__PURE__ @class */ (function (_super) {
     };
     RecurrenceEditor.prototype.setRecurrenceRule = function (rule, startDate) {
         if (startDate === void 0) { startDate = this.startDate; }
+        if (isBlazor()) {
+            startDate = new Date('' + startDate);
+        }
         if (!rule) {
             this.repeatType.setProperties({ value: NONE });
             return;
@@ -7167,6 +7051,7 @@ var RecurrenceEditor = /** @__PURE__ @class */ (function (_super) {
         this.initialize();
         this.rtlClass(this.enableRtl);
         this.renderStatus = true;
+        this.renderComplete();
     };
     /**
      * Called internally, if any of the property value changed.
@@ -7235,10 +7120,10 @@ var RecurrenceEditor = /** @__PURE__ @class */ (function (_super) {
         Property()
     ], RecurrenceEditor.prototype, "value", void 0);
     __decorate$1([
-        Property(new Date(1900, 1, 1))
+        Property(new Date(1900, 0, 1))
     ], RecurrenceEditor.prototype, "minDate", void 0);
     __decorate$1([
-        Property(new Date(2099, 12, 31))
+        Property(new Date(2099, 11, 31))
     ], RecurrenceEditor.prototype, "maxDate", void 0);
     __decorate$1([
         Property(0)
@@ -7269,6 +7154,7 @@ var EventWindow = /** @__PURE__ @class */ (function () {
         this.parent = parent;
         this.l10n = this.parent.localeObj;
         this.fields = this.parent.eventFields;
+        this.eventWindowTime = { startTime: new Date(), endTime: new Date() };
         this.fieldValidator = new FieldValidator();
         this.renderEventWindow();
     }
@@ -7350,8 +7236,29 @@ var EventWindow = /** @__PURE__ @class */ (function () {
         }
     };
     EventWindow.prototype.openEditor = function (data, type, isEventData, repeatType) {
+        this.parent.currentAction = type;
         this.parent.removeNewEventElement();
         this.parent.quickPopup.quickPopupHide(true);
+        if (type === 'Add') {
+            var eventObj = {};
+            this.cellClickAction = !isEventData;
+            this.parent.activeCellsData = data;
+            var event_1 = data;
+            if (this.cellClickAction) {
+                this.convertToEventData(event_1, eventObj);
+            }
+            else {
+                this.parent.activeCellsData = {
+                    startTime: (event_1.startTime || event_1[this.fields.startTime]),
+                    endTime: (event_1.endTime || event_1[this.fields.endTime]),
+                    isAllDay: (event_1.isAllDay || event_1[this.fields.isAllDay]),
+                    element: event_1.element,
+                    groupIndex: event_1.groupIndex
+                };
+                eventObj = event_1;
+            }
+            data = eventObj;
+        }
         if (!isNullOrUndefined(this.parent.editorTemplate)) {
             this.renderFormElements(this.element.querySelector('.e-schedule-form'), data);
             this.updateEditorTemplate();
@@ -7364,8 +7271,6 @@ var EventWindow = /** @__PURE__ @class */ (function () {
         }
         switch (type) {
             case 'Add':
-                this.cellClickAction = !isEventData;
-                this.parent.activeCellsData = data;
                 this.onCellDetailsUpdate(data, repeatType);
                 break;
             case 'Save':
@@ -7428,6 +7333,9 @@ var EventWindow = /** @__PURE__ @class */ (function () {
     };
     EventWindow.prototype.onBeforeClose = function (args) {
         var _this = this;
+        if (args.isInteracted) {
+            this.isCrudAction = false;
+        }
         var eventProp = {
             type: 'Editor',
             data: this.eventCrudData,
@@ -7437,6 +7345,20 @@ var EventWindow = /** @__PURE__ @class */ (function () {
         };
         var callBackPromise = new Deferred();
         this.parent.trigger(popupClose, eventProp, function (popupArgs) {
+            if (isBlazor()) {
+                var eventFields = _this.parent.eventFields;
+                if (popupArgs.data) {
+                    var eventObj = popupArgs.data;
+                    eventObj[eventFields.startTime] = _this.parent.getDateTime(eventObj[eventFields.startTime]);
+                    eventObj[eventFields.endTime] = _this.parent.getDateTime(eventObj[eventFields.endTime]);
+                }
+                if (popupArgs.element) {
+                    popupArgs.element = getElement(popupArgs.element);
+                }
+                if (popupArgs.target) {
+                    popupArgs.target = getElement(popupArgs.target);
+                }
+            }
             args.cancel = popupArgs.cancel;
             if (!popupArgs.cancel) {
                 if (_this.isCrudAction) {
@@ -7598,11 +7520,16 @@ var EventWindow = /** @__PURE__ @class */ (function () {
             var duration = 0;
             if (this.cellClickAction) {
                 duration = MS_PER_MINUTE * this.duration;
+                this.eventWindowTime.startTime = startObj.value;
             }
             else {
                 duration = this.eventData[this.fields.endTime].getTime() - this.eventData[this.fields.startTime].getTime();
             }
-            endObj.value = new Date(startObj.value.getTime() + duration);
+            var endDate = new Date(startObj.value.getTime() + duration);
+            if (this.cellClickAction) {
+                this.eventWindowTime.endTime = endDate;
+            }
+            endObj.value = endDate;
             endObj.dataBind();
         }
     };
@@ -7945,26 +7872,12 @@ var EventWindow = /** @__PURE__ @class */ (function () {
     EventWindow.prototype.repeatOpenDialog = function () {
         this.repeatTempRule = this.recurrenceEditor.getRecurrenceRule();
     };
-    EventWindow.prototype.onCellDetailsUpdate = function (event, repeatType) {
+    EventWindow.prototype.onCellDetailsUpdate = function (eventObj, repeatType) {
         if (!this.parent.eventSettings.allowAdding) {
             return;
         }
         this.element.querySelector('.' + FORM_CLASS).removeAttribute('data-id');
         this.element.querySelector('.' + EVENT_WINDOW_TITLE_TEXT_CLASS).innerHTML = this.l10n.getConstant('newEvent');
-        var eventObj = {};
-        if (this.cellClickAction) {
-            this.convertToEventData(event, eventObj);
-        }
-        else {
-            this.parent.activeCellsData = {
-                startTime: (event.startTime || event[this.fields.startTime]),
-                endTime: (event.endTime || event[this.fields.endTime]),
-                isAllDay: (event.isAllDay || event[this.fields.isAllDay]),
-                element: event.element,
-                groupIndex: event.groupIndex
-            };
-            eventObj = event;
-        }
         eventObj.Timezone = false;
         this.repeatStartDate = eventObj[this.fields.startTime];
         this.repeatRule = '';
@@ -8111,17 +8024,19 @@ var EventWindow = /** @__PURE__ @class */ (function () {
         var startDate;
         var endDate;
         if (allDayStatus) {
-            startDate = resetTime(new Date(this.parent.activeCellsData.startTime.getTime()));
+            startDate = resetTime(new Date(this.eventWindowTime.startTime.getTime()));
             if (this.parent.activeCellsData.isAllDay) {
-                var temp = addDays(new Date(this.parent.activeCellsData.endTime.getTime()), -1).getTime();
-                endDate = (+this.parent.activeCellsData.startTime > temp) ? this.parent.activeCellsData.endTime : new Date(temp);
+                var temp = addDays(new Date(this.eventWindowTime.endTime.getTime()), -1).getTime();
+                endDate = (+this.eventWindowTime.startTime > temp) ? this.eventWindowTime.endTime : new Date(temp);
             }
             else {
-                endDate = resetTime(new Date(this.parent.activeCellsData.endTime.getTime()));
+                endDate = resetTime(new Date(this.eventWindowTime.endTime.getTime()));
             }
         }
         else {
-            startDate = new Date(this.parent.activeCellsData.startTime.getTime());
+            var start = this.parent.activeCellsData.startTime;
+            startDate = new Date(this.eventWindowTime.startTime.getTime());
+            startDate.setHours(start.getHours(), start.getMinutes(), start.getSeconds());
             if (this.parent.activeCellsData.isAllDay) {
                 var startHour = this.parent.getStartEndTime(this.parent.workHours.start);
                 startDate.setHours(startHour.getHours(), startHour.getMinutes(), startHour.getSeconds());
@@ -8129,9 +8044,11 @@ var EventWindow = /** @__PURE__ @class */ (function () {
                 endDate.setMilliseconds(MS_PER_MINUTE * this.getSlotDuration());
             }
             else {
-                endDate = new Date(this.parent.activeCellsData.endTime.getTime());
+                endDate = new Date(startDate.getTime());
+                endDate.setMilliseconds(this.parent.activeCellsData.endTime.getTime() - this.parent.activeCellsData.startTime.getTime());
             }
         }
+        this.eventWindowTime = { startTime: new Date(startDate.getTime()), endTime: new Date(endDate.getTime()) };
         startObj.value = startDate;
         endObj.value = endDate;
         startObj.dataBind();
@@ -8458,8 +8375,8 @@ var EventWindow = /** @__PURE__ @class */ (function () {
                     excludedEvents = this.parent.eventBase.getEditedOccurrences(seriesEvents, eventStartTime);
                 }
                 else {
-                    var event_1 = this.parent.eventBase.getEventById(activeEvent[this.parent.eventFields.id]);
-                    excludedEvents = this.parent.eventBase.getEditedOccurrences([event_1], eventStartTime);
+                    var event_2 = this.parent.eventBase.getEventById(activeEvent[this.parent.eventFields.id]);
+                    excludedEvents = this.parent.eventBase.getEditedOccurrences([event_2], eventStartTime);
                 }
                 if (this.parent.currentAction === 'EditSeries'
                     && !isNullOrUndefined(this.eventData[this.parent.eventFields.recurrenceException])) {
@@ -8638,10 +8555,10 @@ var EventWindow = /** @__PURE__ @class */ (function () {
                     var field = this_1.parent.resourceBase.resourceCollection[index].field;
                     if (events[field] instanceof Array && events[field].length > 1) {
                         for (var k = 0; k < events[field].length; k++) {
-                            var event_2 = extend({}, events, null, true);
-                            event_2[field] = eventObj[field][k];
-                            event_2[lastResouceData.field] = resourceData[i];
-                            temp.push(event_2);
+                            var event_3 = extend({}, events, null, true);
+                            event_3[field] = eventObj[field][k];
+                            event_3[lastResouceData.field] = resourceData[i];
+                            temp.push(event_3);
                         }
                     }
                     else {
@@ -8670,9 +8587,9 @@ var EventWindow = /** @__PURE__ @class */ (function () {
         }
         if (eventList.length > 0) {
             for (var _i = 0, eventList_1 = eventList; _i < eventList_1.length; _i++) {
-                var event_3 = eventList_1[_i];
-                event_3[this.fields.recurrenceException] = null;
-                event_3[this.fields.recurrenceID] = null;
+                var event_4 = eventList_1[_i];
+                event_4[this.fields.recurrenceException] = null;
+                event_4[this.fields.recurrenceID] = null;
             }
             this.parent.addEvent(eventList);
         }
@@ -8741,6 +8658,12 @@ var EventWindow = /** @__PURE__ @class */ (function () {
         }
         else if (element.classList.contains('e-datetimepicker')) {
             var instance = element.ej2_instances[0];
+            if (instance.element.classList.contains(EVENT_WINDOW_START_CLASS)) {
+                this.eventWindowTime.startTime = new Date('' + value);
+            }
+            else {
+                this.eventWindowTime.endTime = new Date('' + value);
+            }
             instance.value = value;
             instance.dataBind();
         }
@@ -8777,7 +8700,9 @@ var EventWindow = /** @__PURE__ @class */ (function () {
         }
         else if (element.classList.contains('e-datetimepicker')) {
             var instance = element.ej2_instances[0];
-            instance.value = this.parent.getCurrentTime();
+            var dateValue = this.parent.getCurrentTime();
+            this.eventWindowTime = { startTime: dateValue, endTime: dateValue };
+            instance.value = dateValue;
             instance.dataBind();
         }
         else if (element.classList.contains('e-dropdownlist')) {
@@ -8821,6 +8746,9 @@ var EventWindow = /** @__PURE__ @class */ (function () {
                 break;
             case 'EditSeries':
                 this.parent.currentAction = 'DeleteSeries';
+                break;
+            case 'Save':
+                this.parent.currentAction = 'Delete';
                 break;
         }
         this.isCrudAction = false;
@@ -9407,20 +9335,22 @@ var Crud = /** @__PURE__ @class */ (function () {
             deletedRecords: args.editParms.deletedRecords
         };
         if (this.parent.dataModule.dataManager.dataSource.offline) {
-            this.parent.trigger(actionComplete, actionArgs);
-            this.parent.renderModule.refreshDataManager();
-            return;
+            this.parent.trigger(actionComplete, actionArgs, function (offlineArgs) {
+                if (!offlineArgs.cancel) {
+                    _this.parent.renderModule.refreshDataManager();
+                }
+            });
         }
         else {
             args.promise.then(function (e) {
                 if (_this.parent.isDestroyed) {
                     return;
                 }
-                _this.parent.trigger(actionComplete, actionArgs);
-                if (actionArgs.cancel) {
-                    return;
-                }
-                _this.parent.renderModule.refreshDataManager();
+                _this.parent.trigger(actionComplete, actionArgs, function (onlineArgs) {
+                    if (!onlineArgs.cancel) {
+                        _this.parent.renderModule.refreshDataManager();
+                    }
+                });
             }).catch(function (e) {
                 if (_this.parent.isDestroyed) {
                     return;
@@ -9430,507 +9360,431 @@ var Crud = /** @__PURE__ @class */ (function () {
         }
     };
     Crud.prototype.addEvent = function (eventData) {
-        if (!this.parent.eventSettings.allowAdding) {
-            return;
-        }
-        if (this.parent.eventBase.isBlockRange(eventData)) {
-            var data = (eventData instanceof Array) ? [eventData] : eventData;
-            this.parent.quickPopup.openValidationError('blockAlert', data);
-            return;
-        }
-        var fields = this.parent.eventFields;
-        var promise = null;
-        var editParms = { addedRecords: [], changedRecords: [], deletedRecords: [] };
-        var args = {
-            cancel: false,
-            data: (eventData instanceof Array) ? eventData : [eventData],
-            requestType: 'eventCreate'
-        };
-        this.parent.trigger(actionBegin, args);
-        if (args.cancel) {
-            return;
-        }
-        if (eventData instanceof Array) {
-            for (var _i = 0, _a = eventData; _i < _a.length; _i++) {
-                var event_1 = _a[_i];
-                this.processCrudTimezone(event_1);
-                editParms.addedRecords.push(event_1);
-            }
-            promise =
-                this.parent.dataModule.dataManager.saveChanges(editParms, fields.id, this.getTable(), this.getQuery());
-        }
-        else {
-            this.processCrudTimezone(eventData);
-            editParms.addedRecords.push(eventData);
-            promise = this.parent.dataModule.dataManager.insert(eventData, this.getTable(), this.getQuery());
-        }
-        var crudArgs = {
-            requestType: 'eventCreated', cancel: false, data: eventData, promise: promise, editParms: editParms
-        };
-        this.refreshData(crudArgs);
-    };
-    Crud.prototype.saveEvent = function (event, action) {
-        if (!this.parent.eventSettings.allowEditing) {
-            return;
-        }
-        if (this.parent.eventBase.isBlockRange(event)) {
-            var data_1 = (event instanceof Array) ? [event] : event;
-            this.parent.quickPopup.openValidationError('blockAlert', data_1);
-            return;
-        }
-        this.parent.currentAction = action;
-        var fields = this.parent.eventFields;
-        var promise = null;
-        var editParms = { addedRecords: [], changedRecords: [], deletedRecords: [] };
-        var args = { requestType: 'eventChange', cancel: false };
-        var data = event;
-        if (isNullOrUndefined(action)) {
-            args.data = data;
-            this.parent.trigger(actionBegin, args);
-            if (args.cancel) {
+        var _this = this;
+        if (this.parent.eventSettings.allowAdding) {
+            if (this.parent.eventBase.isBlockRange(eventData)) {
+                this.parent.quickPopup.openValidationError('blockAlert', (eventData instanceof Array) ? [eventData] : eventData);
                 return;
             }
-            this.processCrudTimezone(data);
-            if ((event instanceof Array)) {
-                editParms.changedRecords = event;
-                promise = this.parent.dataModule.dataManager.saveChanges(editParms, fields.id, this.getTable(), this.getQuery());
-            }
-            else {
-                editParms.changedRecords.push(event);
-                promise = this.parent.dataModule.dataManager.update(fields.id, event, this.getTable(), this.getQuery());
-            }
-        }
-        else {
-            var parentEvent = this.getParentEvent(data);
-            switch (action) {
-                case 'EditOccurrence':
-                    args.data = { occurrence: event, parent: parentEvent };
-                    this.parent.trigger(actionBegin, args);
-                    if (args.cancel) {
-                        return;
-                    }
-                    var edited = this.getEditedOccurrence(data.Guid);
-                    if (edited.length === 0) {
-                        edited.push(event);
-                    }
-                    var exDate = this.excludeDateCheck(edited[0][fields.startTime], parentEvent[fields.recurrenceException]);
-                    if (exDate !== parentEvent[fields.recurrenceException]) {
-                        parentEvent[fields.recurrenceException] = exDate;
-                        data[fields.recurrenceID] = parentEvent[fields.id];
-                        if (!isNullOrUndefined(data[fields.followingID])) {
-                            delete (data[fields.followingID]);
+            var addEvents = (eventData instanceof Array) ? eventData : [eventData];
+            var args = {
+                requestType: 'eventCreate', cancel: false, data: addEvents,
+                addedRecords: addEvents, changedRecords: [], deletedRecords: []
+            };
+            this.parent.trigger(actionBegin, args, function (addArgs) {
+                if (!addArgs.cancel) {
+                    var fields = _this.parent.eventFields;
+                    var editParms = { addedRecords: [], changedRecords: [], deletedRecords: [] };
+                    var promise = void 0;
+                    if (eventData instanceof Array) {
+                        for (var _i = 0, _a = eventData; _i < _a.length; _i++) {
+                            var event_1 = _a[_i];
+                            editParms.addedRecords.push(_this.parent.eventBase.processTimezone(event_1, true));
                         }
-                        this.processCrudTimezone(parentEvent);
-                        editParms.changedRecords.push(parentEvent);
-                        this.processCrudTimezone(data);
-                        editParms.addedRecords.push(data);
+                        // tslint:disable-next-line:max-line-length
+                        promise = _this.parent.dataModule.dataManager.saveChanges(editParms, fields.id, _this.getTable(), _this.getQuery());
                     }
                     else {
-                        this.processCrudTimezone(data);
-                        editParms.changedRecords.push(data);
+                        var event_2 = _this.parent.eventBase.processTimezone(eventData, true);
+                        editParms.addedRecords.push(event_2);
+                        promise = _this.parent.dataModule.dataManager.insert(event_2, _this.getTable(), _this.getQuery());
                     }
-                    break;
-                case 'EditFollowingEvents':
-                    if (!this.processEditFutureOccurence(data, parentEvent, editParms)) {
-                        return;
-                    }
-                    break;
-                case 'EditSeries':
-                    if (!this.processEditSeries(data, parentEvent, editParms)) {
-                        return;
-                    }
-                    this.parent.uiStateValues.isIgnoreOccurrence = false;
-                    break;
-            }
-            promise =
-                this.parent.dataModule.dataManager.saveChanges(editParms, fields.id, this.getTable(), this.getQuery());
-        }
-        // if (!this.parent.activeView.isTimelineView()) {
-        //     this.parent.eventBase.selectWorkCellByTime(dataObj);
-        // }
-        var crudArgs = { requestType: 'eventChanged', cancel: false, data: args.data, promise: promise, editParms: editParms };
-        this.refreshData(crudArgs);
-    };
-    Crud.prototype.processEditFutureOccurence = function (data, parentEvent, editParms) {
-        var args = { requestType: 'eventChange', cancel: false };
-        args.data = data;
-        var edited = this.getEditedOccurrence(data.Guid);
-        var fields = this.parent.eventFields;
-        this.parent.trigger(actionBegin, args);
-        if (args.cancel) {
-            return false;
-        }
-        var isEventStart = edited[0][fields.startTime].getTime() === parentEvent[fields.startTime].getTime();
-        var date;
-        var immediateParentEvent;
-        if (edited[0][fields.id] === parentEvent[fields.id] && isEventStart) {
-            data[fields.id] = parentEvent[fields.id];
-            immediateParentEvent = extend({}, parentEvent);
-        }
-        else {
-            immediateParentEvent = extend({}, this.parent.eventBase.getEventById(edited[0][fields.id]));
-        }
-        var initialRecRule = immediateParentEvent[fields.recurrenceRule];
-        if (data[fields.startTime] !== immediateParentEvent[fields.startTime]) {
-            immediateParentEvent[fields.recurrenceRule] = this.getUpdatedParentRule(immediateParentEvent, edited[0]);
-        }
-        data[fields.recurrenceID] = null;
-        var deleteRecurrenceEventList = [];
-        var deleteFutureEditEventList = this.parent.eventBase.getSeriesEvents(immediateParentEvent, edited[0][fields.startTime]);
-        if (deleteFutureEditEventList.length > 0) {
-            initialRecRule = deleteFutureEditEventList.slice(-1)[0][fields.recurrenceRule];
-        }
-        if ((data[fields.recurrenceRule].indexOf('COUNT') > -1
-            || data[fields.recurrenceRule].indexOf('UNTIL') > -1)) {
-            var datecollection = generate(parentEvent[fields.startTime], initialRecRule, null, 0);
-            date = datecollection[datecollection.length - 1];
-        }
-        deleteRecurrenceEventList = deleteRecurrenceEventList.concat(this.parent.eventBase.getEditedOccurrences(edited, edited[0][fields.startTime]));
-        // To reset following id when start/end time changed or when doing following edit from 1st occurrence of the series
-        if (new Date('' + data[fields.startTime]).getTime() !== new Date('' + edited[0][fields.startTime]).getTime()
-            || new Date('' + data[fields.endTime]).getTime() !== new Date('' + edited[0][fields.endTime]).getTime() || isEventStart) {
-            delete (data[fields.followingID]);
-        }
-        // To update recurrencce exception 
-        data[fields.recurrenceException] = this.parent.uiStateValues.isIgnoreOccurrence
-            ? this.updateRecurrenceException(deleteFutureEditEventList, data, parentEvent) : null;
-        // To get the update recurrence rule
-        data = this.updateRecurrenceRule(deleteFutureEditEventList, data, date);
-        if (!isEventStart) {
-            this.processCrudTimezone(immediateParentEvent);
-            editParms.changedRecords.push(immediateParentEvent);
-            this.processCrudTimezone(data);
-            editParms.addedRecords.push(data);
-        }
-        else {
-            this.processCrudTimezone(data);
-            editParms.changedRecords.push(data);
-        }
-        if (!this.parent.uiStateValues.isIgnoreOccurrence) {
-            this.updateParentRecurrentException(immediateParentEvent, edited[0], editParms);
-            deleteRecurrenceEventList = deleteRecurrenceEventList.concat(this.parent.eventBase.getEditedOccurrences(deleteFutureEditEventList, edited[0][fields.startTime]));
-            editParms.deletedRecords = editParms.deletedRecords.concat(deleteRecurrenceEventList);
-        }
-        else {
-            // to delete the existing events when edit events using following events
-            var deleteFutureEditEvents = new Predicate(fields.recurrenceID, 'equal', null);
-            deleteFutureEditEventList = this.parent.eventBase.getFilterEventsList(deleteFutureEditEventList, deleteFutureEditEvents);
-        }
-        // to update the edited event recurrence id & recurrence exception when delele the events
-        this.updateRecurrenceIdAfterFollowingSeriesEdit(data, deleteRecurrenceEventList, edited[0], editParms);
-        // To delete the existing events after updating futuer edit series.
-        editParms.deletedRecords = editParms.deletedRecords.concat(deleteFutureEditEventList);
-        this.parent.uiStateValues.isIgnoreOccurrence = false;
-        return true;
-    };
-    Crud.prototype.processEditSeries = function (data, parentEvent, editParms) {
-        var args = { requestType: 'eventChange', cancel: false };
-        var fields = this.parent.eventFields;
-        args.data = data;
-        this.parent.trigger(actionBegin, args);
-        if (args.cancel) {
-            return false;
-        }
-        if (!this.parent.eventSettings.editFollowingEvents) {
-            this.editSeries(data, parentEvent, editParms);
-            return true;
-        }
-        var deleteRecurrenceEventList = [];
-        var deleteExistingEvents = this.parent.eventBase.getSeriesEvents(parentEvent);
-        if (deleteExistingEvents.length === 0) {
-            this.editSeries(data, parentEvent, editParms);
-            return true;
-        }
-        else {
-            if (data[fields.recurrenceRule] === parentEvent[fields.recurrenceRule]) {
-                data[fields.recurrenceRule] = deleteExistingEvents.slice(-1)[0][fields.recurrenceRule];
-            }
-            deleteRecurrenceEventList = this.parent.eventBase.getEditedOccurrences(deleteExistingEvents);
-            data[fields.recurrenceException] = this.parent.uiStateValues.isIgnoreOccurrence
-                ? this.updateRecurrenceException(deleteRecurrenceEventList, data, parentEvent) : null;
-        }
-        data[fields.id] = parentEvent[fields.id];
-        data[fields.recurrenceID] = null;
-        if (!isNullOrUndefined(data[fields.followingID])) {
-            delete (data[fields.followingID]);
-        }
-        this.processCrudTimezone(data);
-        editParms.changedRecords.push(data);
-        // to update the edited event recurrence id & recurrence exception when delele the events
-        this.updateRecurrenceIdAfterFollowingSeriesEdit(data, deleteRecurrenceEventList, parentEvent, editParms);
-        if (!this.parent.uiStateValues.isIgnoreOccurrence) {
-            editParms.deletedRecords = editParms.deletedRecords.concat(deleteRecurrenceEventList);
-        }
-        for (var _i = 0, deleteExistingEvents_1 = deleteExistingEvents; _i < deleteExistingEvents_1.length; _i++) {
-            var event_2 = deleteExistingEvents_1[_i];
-            if (data[fields.id] !== event_2[fields.id]) {
-                editParms.deletedRecords.push(event_2);
-            }
-        }
-        return true;
-    };
-    Crud.prototype.editSeries = function (data, parentEvent, editParms) {
-        var fields = this.parent.eventFields;
-        var query = new Query().where(fields.recurrenceID, 'equal', parentEvent[fields.id]);
-        var delApp = new DataManager(this.parent.eventsData).executeLocal(query);
-        data[fields.id] = parentEvent[fields.id];
-        data[fields.recurrenceException] = this.parent.uiStateValues.isIgnoreOccurrence ?
-            parentEvent[fields.recurrenceException] : null;
-        data[fields.recurrenceID] = null;
-        this.processCrudTimezone(data);
-        editParms.changedRecords.push(data);
-        if (!this.parent.uiStateValues.isIgnoreOccurrence) {
-            for (var _i = 0, delApp_1 = delApp; _i < delApp_1.length; _i++) {
-                var event_3 = delApp_1[_i];
-                editParms.deletedRecords.push(event_3);
-            }
-        }
-    };
-    Crud.prototype.updateRecurrenceIdAfterFollowingSeriesEdit = function (data, eventsList, edited, editParms) {
-        var fields = this.parent.eventFields;
-        var updateRecurrenceId = (new Predicate(fields.recurrenceID, 'notequal', null)).
-            and(new Predicate(fields.startTime, 'greaterthanorequal', edited[fields.startTime]));
-        var eventsToUpdateRecurrenceId = this.parent.eventBase.getFilterEventsList(eventsList, updateRecurrenceId);
-        for (var _i = 0, eventsToUpdateRecurrenceId_1 = eventsToUpdateRecurrenceId; _i < eventsToUpdateRecurrenceId_1.length; _i++) {
-            var event_4 = eventsToUpdateRecurrenceId_1[_i];
-            event_4[fields.recurrenceID] = data[fields.id];
-            event_4[fields.recurrenceException] = data[fields.recurrenceException];
-            event_4[fields.followingID] = null;
-            editParms.changedRecords.push(event_4);
-        }
-    };
-    Crud.prototype.updateRecurrenceRule = function (followingEventsList, data, lastEventDate) {
-        var fields = this.parent.eventFields;
-        if (followingEventsList.length > 0) {
-            data[fields.recurrenceRule] = followingEventsList.slice(-1)[0][fields.recurrenceRule];
-        }
-        if (!isNullOrUndefined(lastEventDate) && (data[fields.recurrenceRule].indexOf('COUNT') > -1
-            || data[fields.recurrenceRule].indexOf('UNTIL') > -1)) {
-            var date = new Date(lastEventDate);
-            var startTime = new Date(date.setDate((new Date(lastEventDate)).getDate()));
-            data[fields.recurrenceRule] = this.formatRecurrenceRule(data, startTime);
-        }
-        return data;
-    };
-    Crud.prototype.updateRecurrenceException = function (ignoreFutureEventList, data, parentEvent) {
-        var fields = this.parent.eventFields;
-        for (var _i = 0, ignoreFutureEventList_1 = ignoreFutureEventList; _i < ignoreFutureEventList_1.length; _i++) {
-            var event_5 = ignoreFutureEventList_1[_i];
-            if (isNullOrUndefined(event_5[fields.recurrenceException])) {
-                var followingEvent = new Predicate(fields.id, 'equal', event_5[fields.recurrenceID]);
-                var recParentEvent = this.parent.eventBase.getFilterEventsList(this.parent.eventsData, followingEvent);
-                event_5[fields.recurrenceException] = recParentEvent.length > 0 ?
-                    recParentEvent[0][fields.recurrenceException] : event_5[fields.recurrenceException];
-            }
-            if (!isNullOrUndefined(data[fields.recurrenceException]) && !isNullOrUndefined(event_5[fields.recurrenceException]) &&
-                data[fields.recurrenceException].indexOf(event_5[fields.recurrenceException]) === -1) {
-                data[fields.recurrenceException] = data[fields.recurrenceException] + ',' + event_5[fields.recurrenceException];
-            }
-            else if (isNullOrUndefined(data[fields.recurrenceException])) {
-                data[fields.recurrenceException] = !isNullOrUndefined(parentEvent[fields.recurrenceException])
-                    ? parentEvent[fields.recurrenceException] : event_5[fields.recurrenceException];
-            }
-        }
-        return data[fields.recurrenceException];
-    };
-    Crud.prototype.updateParentRecurrentException = function (parentEvent, edited, editParms) {
-        var fields = this.parent.eventFields;
-        var recurrenceString = isNullOrUndefined(parentEvent[fields.recurrenceException])
-            ? [] : parentEvent[fields.recurrenceException].split(',');
-        var flag = 0;
-        var parentExceptionUpdated = false;
-        for (var _i = 0, recurrenceString_1 = recurrenceString; _i < recurrenceString_1.length; _i++) {
-            var recucrrence = recurrenceString_1[_i];
-            flag++;
-            var recurrenceDate = getDateFromRecurrenceDateString(recucrrence);
-            if (recurrenceDate >= edited[fields.startTime]) {
-                var replaceString = flag > 1 ? ',' + recucrrence : recucrrence;
-                parentEvent[fields.recurrenceException] = parentEvent[fields.recurrenceException]
-                    .replace(replaceString, '');
-                parentEvent[fields.recurrenceException] = parentEvent[fields.recurrenceException] === '' ? null
-                    : parentEvent[fields.recurrenceException];
-                parentExceptionUpdated = true;
-            }
-        }
-        if (parentExceptionUpdated) {
-            editParms.changedRecords.push(parentEvent);
-        }
-    };
-    Crud.prototype.deleteEvent = function (id, action) {
-        if (!this.parent.eventSettings.allowDeleting) {
-            return;
-        }
-        var fields = this.parent.eventFields;
-        var editParms = { addedRecords: [], changedRecords: [], deletedRecords: [] };
-        var dataObj = [];
-        var normalEvent = [];
-        var recEvent = [];
-        this.parent.currentAction = action;
-        switch (typeof id) {
-            case 'string':
-            case 'number':
-                dataObj = new DataManager(this.parent.eventsData).executeLocal(new Query().where(fields.id, 'equal', id));
-                break;
-            case 'object':
-                dataObj = (id instanceof Array) ? id : [id];
-                break;
-        }
-        for (var _i = 0, _a = dataObj; _i < _a.length; _i++) {
-            var event_6 = _a[_i];
-            (!isNullOrUndefined(event_6[fields.recurrenceRule])) ? recEvent.push(event_6) : normalEvent.push(event_6);
-        }
-        var args = { requestType: 'eventRemove', cancel: false };
-        if (action !== 'DeleteOccurrence') {
-            args.data = dataObj;
-            this.parent.trigger(actionBegin, args);
-            if (args.cancel) {
-                return;
-            }
-        }
-        if (isNullOrUndefined(action) || normalEvent.length > 0) {
-            for (var _b = 0, normalEvent_1 = normalEvent; _b < normalEvent_1.length; _b++) {
-                var event_7 = normalEvent_1[_b];
-                editParms.deletedRecords.push(event_7);
-            }
-        }
-        if (recEvent.length > 0) {
-            switch (action) {
-                case 'Delete':
-                case 'DeleteOccurrence':
-                    for (var i = 0; i < recEvent.length; i++) {
-                        var parentEvent = this.getParentEvent(recEvent[i]);
-                        args.data = { occurrence: recEvent[i], parent: parentEvent };
-                        this.parent.trigger(actionBegin, args);
-                        if (args.cancel) {
-                            return;
-                        }
-                        parentEvent[fields.recurrenceException] =
-                            this.excludeDateCheck(recEvent[i][fields.startTime], parentEvent[fields.recurrenceException]);
-                        this.processCrudTimezone(parentEvent);
-                        editParms.changedRecords.push(parentEvent);
-                        if (recEvent[i][fields.id] !== parentEvent[fields.id]) {
-                            editParms.deletedRecords.push(recEvent[i]);
-                        }
-                    }
-                    break;
-                case 'DeleteFollowingEvents':
-                case 'DeleteSeries':
-                    if (!this.parent.eventSettings.editFollowingEvents) {
-                        for (var _c = 0, recEvent_1 = recEvent; _c < recEvent_1.length; _c++) {
-                            var app = recEvent_1[_c];
-                            var predicate = new Predicate(fields.id, 'equal', (app[fields.recurrenceID] || id)).
-                                or(new Predicate(fields.recurrenceID, 'equal', (app[fields.recurrenceID] || id)));
-                            var delApp = new DataManager(this.parent.eventsData).executeLocal(new Query().where(predicate));
-                            for (var _d = 0, delApp_2 = delApp; _d < delApp_2.length; _d++) {
-                                var event_8 = delApp_2[_d];
-                                editParms.deletedRecords.push(event_8);
-                            }
-                        }
-                    }
-                    else {
-                        editParms = this.processDeleteSeries(recEvent, editParms, id);
-                    }
-                    break;
-            }
-        }
-        var promise;
-        if (editParms.deletedRecords.length === 1 && editParms.changedRecords.length === 0) {
-            var deleteEvent = editParms.deletedRecords[0];
-            promise =
-                this.parent.dataModule.dataManager.remove(fields.id, deleteEvent, this.getTable(), this.getQuery());
-        }
-        else {
-            promise =
-                this.parent.dataModule.dataManager.saveChanges(editParms, fields.id, this.getTable(), this.getQuery());
-        }
-        this.parent.eventBase.selectWorkCellByTime(dataObj);
-        var crudArgs = { requestType: 'eventRemoved', cancel: false, data: args.data, promise: promise, editParms: editParms };
-        this.refreshData(crudArgs);
-    };
-    Crud.prototype.processDeleteSeries = function (recEvent, editParms, id) {
-        var fields = this.parent.eventFields;
-        for (var _i = 0, recEvent_2 = recEvent; _i < recEvent_2.length; _i++) {
-            var app = recEvent_2[_i];
-            // To set recurrenceID when directly call deleteEvent, Since the parent event is taken based on recucrrence id.
-            app[fields.recurrenceID] = isNullOrUndefined(app[fields.recurrenceID]) ? app[fields.id] : app[fields.recurrenceID];
-            var parentEvent = void 0;
-            var followingEvents = [];
-            var delApp = void 0;
-            var eventID = void 0;
-            var recurrenceEvent = void 0;
-            if (this.parent.currentAction === 'DeleteFollowingEvents') {
-                parentEvent = this.parent.eventBase.getRecurrenceEvent(app);
-                eventID = app[fields.id];
-                // To update until date for every future delete occurences 
-                parentEvent[fields.recurrenceRule] = this.getUpdatedParentRule(parentEvent, app);
-                this.processCrudTimezone(parentEvent);
-                editParms.changedRecords = editParms.changedRecords.concat(parentEvent);
-                // To ignore the past date of clicked event's from edit 
-                var delEventQuery = new Predicate(fields.id, 'equal', eventID).
-                    and(new Predicate(fields.startTime, 'lessthanorequal', app[fields.startTime]));
-                followingEvents = this.parent.eventBase.getSeriesEvents(parentEvent, app[fields.startTime]);
-                this.updateParentRecurrentException(parentEvent, app, editParms);
-                var currentEvent = this.parent.eventBase.getFilterEventsList(this.parent.eventsProcessed, delEventQuery);
-                if (currentEvent.length === 1) {
-                    editParms.deletedRecords = editParms.deletedRecords.concat(app);
+                    var crudArgs = {
+                        requestType: 'eventCreated', cancel: false, data: eventData, promise: promise, editParms: editParms
+                    };
+                    _this.refreshData(crudArgs);
                 }
-                recurrenceEvent = (new Predicate(fields.recurrenceID, 'equal', eventID).and(new Predicate(fields.startTime, 'greaterthanorequal', app[fields.startTime])));
-            }
-            else {
-                parentEvent = this.getParentEvent(app);
-                eventID = parentEvent[fields.id];
-                followingEvents = this.parent.eventBase.getSeriesEvents(parentEvent);
-                editParms.deletedRecords = editParms.deletedRecords.concat(parentEvent);
-                recurrenceEvent = (new Predicate(fields.recurrenceID, 'equal', eventID));
-            }
-            if (followingEvents.length === 0) {
-                delApp = this.parent.eventBase.getFilterEventsList(this.parent.eventsData, recurrenceEvent);
-            }
-            else {
-                delApp = followingEvents.concat(this.parent.eventBase.getEditedOccurrences(followingEvents, parentEvent[fields.startTime]));
-            }
-            editParms.deletedRecords = editParms.deletedRecords.concat(delApp);
+            });
         }
-        return editParms;
     };
-    Crud.prototype.getParentEvent = function (event) {
-        var fields = this.parent.eventFields;
-        var parentEvent;
-        if (this.parent.eventSettings.editFollowingEvents && (!isNullOrUndefined(event[fields.followingID]) ||
-            (!isNullOrUndefined(fields.recurrenceID) && event[fields.recurrenceID] !== event[fields.id])) &&
-            this.parent.currentAction !== 'EditOccurrence' && this.parent.currentAction !== 'DeleteOccurrence') {
-            parentEvent = this.parent.eventBase.getParentEvent(event);
+    Crud.prototype.saveEvent = function (eventData, action) {
+        var _this = this;
+        if (this.parent.eventSettings.allowEditing) {
+            if (this.parent.eventBase.isBlockRange(eventData)) {
+                this.parent.quickPopup.openValidationError('blockAlert', (eventData instanceof Array) ? [eventData] : eventData);
+                return;
+            }
+            this.parent.currentAction = action;
+            if (action) {
+                switch (action) {
+                    case 'EditOccurrence':
+                        this.processOccurrences(eventData, action);
+                        break;
+                    case 'EditFollowingEvents':
+                        this.processFollowSeries(eventData, action);
+                        break;
+                    case 'EditSeries':
+                        this.processEntireSeries(eventData, action);
+                        break;
+                }
+            }
+            else {
+                var updateEvents = (eventData instanceof Array) ? eventData : [eventData];
+                var args = {
+                    requestType: 'eventChange', cancel: false, data: eventData,
+                    addedRecords: [], changedRecords: updateEvents, deletedRecords: []
+                };
+                this.parent.trigger(actionBegin, args, function (saveArgs) {
+                    if (!saveArgs.cancel) {
+                        var promise = void 0;
+                        var fields = _this.parent.eventFields;
+                        var editParms = { addedRecords: [], changedRecords: [], deletedRecords: [] };
+                        if (eventData instanceof Array) {
+                            for (var _i = 0, eventData_1 = eventData; _i < eventData_1.length; _i++) {
+                                var event_3 = eventData_1[_i];
+                                editParms.changedRecords.push(_this.parent.eventBase.processTimezone(event_3, true));
+                            }
+                            // tslint:disable-next-line:max-line-length
+                            promise = _this.parent.dataModule.dataManager.saveChanges(editParms, fields.id, _this.getTable(), _this.getQuery());
+                        }
+                        else {
+                            var event_4 = _this.parent.eventBase.processTimezone(eventData, true);
+                            editParms.changedRecords.push(event_4);
+                            // tslint:disable-next-line:max-line-length
+                            promise = _this.parent.dataModule.dataManager.update(fields.id, event_4, _this.getTable(), _this.getQuery());
+                        }
+                        var crudArgs = {
+                            requestType: 'eventChanged', cancel: false, data: saveArgs.data, promise: promise, editParms: editParms
+                        };
+                        _this.refreshData(crudArgs);
+                    }
+                });
+            }
+        }
+    };
+    Crud.prototype.deleteEvent = function (eventData, action) {
+        var _this = this;
+        if (this.parent.eventSettings.allowDeleting) {
+            this.parent.currentAction = action;
+            var deleteEvents_1 = [];
+            if (typeof eventData === 'string' || typeof eventData === 'number') {
+                deleteEvents_1 = this.parent.eventsData.filter(function (eventObj) {
+                    return eventObj[_this.parent.eventFields.id] === eventData;
+                });
+            }
+            else {
+                deleteEvents_1 = (eventData instanceof Array ? eventData : [eventData]);
+            }
+            if (action) {
+                switch (action) {
+                    case 'Delete':
+                        this.processEventDelete(deleteEvents_1);
+                        break;
+                    case 'DeleteOccurrence':
+                        this.processOccurrences(deleteEvents_1, action);
+                        break;
+                    case 'DeleteFollowingEvents':
+                        this.processFollowSeries(deleteEvents_1, action);
+                        break;
+                    case 'DeleteSeries':
+                        this.processEntireSeries(deleteEvents_1, action);
+                        break;
+                }
+            }
+            else {
+                var args = {
+                    requestType: 'eventRemove', cancel: false, data: eventData,
+                    addedRecords: [], changedRecords: [], deletedRecords: deleteEvents_1
+                };
+                this.parent.trigger(actionBegin, args, function (deleteArgs) {
+                    if (!deleteArgs.cancel) {
+                        var promise = void 0;
+                        var fields = _this.parent.eventFields;
+                        var editParms = { addedRecords: [], changedRecords: [], deletedRecords: [] };
+                        if (deleteEvents_1.length > 1) {
+                            for (var _i = 0, deleteEvents_2 = deleteEvents_1; _i < deleteEvents_2.length; _i++) {
+                                var eventObj = deleteEvents_2[_i];
+                                editParms.deletedRecords.push(eventObj);
+                            }
+                            // tslint:disable-next-line:max-line-length
+                            promise = _this.parent.dataModule.dataManager.saveChanges(editParms, fields.id, _this.getTable(), _this.getQuery());
+                        }
+                        else {
+                            editParms.deletedRecords.push(deleteEvents_1[0]);
+                            // tslint:disable-next-line:max-line-length
+                            promise = _this.parent.dataModule.dataManager.remove(fields.id, deleteEvents_1[0], _this.getTable(), _this.getQuery());
+                        }
+                        _this.parent.eventBase.selectWorkCellByTime(deleteEvents_1);
+                        var crudArgs = {
+                            requestType: 'eventRemoved', cancel: false, data: deleteArgs.data, promise: promise, editParms: editParms
+                        };
+                        _this.refreshData(crudArgs);
+                    }
+                });
+            }
+        }
+    };
+    Crud.prototype.processOccurrences = function (eventData, action) {
+        var _this = this;
+        var occurenceData = [];
+        if (eventData instanceof Array) {
+            for (var _i = 0, eventData_2 = eventData; _i < eventData_2.length; _i++) {
+                var event_5 = eventData_2[_i];
+                occurenceData.push({ occurrence: event_5, parent: this.getParentEvent(event_5) });
+            }
         }
         else {
-            parentEvent = this.parent.eventBase.getRecurrenceEvent(event);
+            occurenceData = { occurrence: eventData, parent: this.getParentEvent(eventData) };
         }
-        if (parentEvent[fields.startTimezone] || parentEvent[fields.endTimezone]) {
+        var updateEvents = (eventData instanceof Array) ? eventData : [eventData];
+        var args = {
+            requestType: 'eventChange', cancel: false, data: occurenceData,
+            addedRecords: [], changedRecords: updateEvents, deletedRecords: []
+        };
+        this.parent.trigger(actionBegin, args, function (occurenceArgs) {
+            if (!occurenceArgs.cancel) {
+                var fields = _this.parent.eventFields;
+                var editParms = { addedRecords: [], changedRecords: [], deletedRecords: [] };
+                var occurrenceEvents = (occurenceData instanceof Array ? occurenceData : [occurenceData]);
+                var _loop_1 = function (a, count) {
+                    var childEvent = updateEvents[a];
+                    var parentEvent = occurrenceEvents[a].parent;
+                    var parentException = parentEvent[fields.recurrenceException];
+                    switch (action) {
+                        case 'EditOccurrence':
+                            var editedData = _this.parent.eventsProcessed.filter(function (event) { return event.Guid === childEvent.Guid; })[0];
+                            var exceptionDate = _this.excludeDateCheck(editedData[fields.startTime], parentException);
+                            if (exceptionDate !== parentEvent[fields.recurrenceException]) {
+                                parentEvent[fields.recurrenceException] = exceptionDate;
+                                childEvent[fields.recurrenceException] = getRecurrenceStringFromDate(editedData[fields.startTime]);
+                                childEvent[fields.recurrenceID] = parentEvent[fields.id];
+                                childEvent[fields.followingID] = null;
+                                editParms.changedRecords.push(_this.parent.eventBase.processTimezone(parentEvent, true));
+                                editParms.addedRecords.push(_this.parent.eventBase.processTimezone(childEvent, true));
+                            }
+                            else {
+                                editParms.changedRecords.push(_this.parent.eventBase.processTimezone(childEvent, true));
+                            }
+                            break;
+                        case 'DeleteOccurrence':
+                            if (!childEvent[fields.recurrenceException]) {
+                                parentEvent[fields.recurrenceException] =
+                                    _this.excludeDateCheck(childEvent[fields.startTime], parentException);
+                                editParms.changedRecords.push(_this.parent.eventBase.processTimezone(parentEvent, true));
+                            }
+                            if (childEvent[fields.id] !== parentEvent[fields.id]) {
+                                editParms.deletedRecords.push(childEvent);
+                            }
+                            break;
+                    }
+                };
+                for (var a = 0, count = updateEvents.length; a < count; a++) {
+                    _loop_1(a, count);
+                }
+                // tslint:disable-next-line:max-line-length
+                var promise = _this.parent.dataModule.dataManager.saveChanges(editParms, fields.id, _this.getTable(), _this.getQuery());
+                _this.parent.eventBase.selectWorkCellByTime(updateEvents);
+                var crudArgs = {
+                    requestType: 'eventChanged', cancel: false, data: occurenceArgs.data, promise: promise, editParms: editParms
+                };
+                _this.refreshData(crudArgs);
+            }
+        });
+    };
+    Crud.prototype.processFollowSeries = function (eventData, action) {
+        var _this = this;
+        var followData = [];
+        if (eventData instanceof Array) {
+            for (var _i = 0, eventData_3 = eventData; _i < eventData_3.length; _i++) {
+                var event_6 = eventData_3[_i];
+                followData.push({ occurrence: event_6, parent: this.getParentEvent(event_6) });
+            }
+        }
+        else {
+            followData = { occurrence: eventData, parent: this.getParentEvent(eventData) };
+        }
+        var updateFollowEvents = (eventData instanceof Array) ? eventData : [eventData];
+        var args = {
+            requestType: 'eventChange', cancel: false, data: followData,
+            addedRecords: [], changedRecords: updateFollowEvents, deletedRecords: []
+        };
+        this.parent.trigger(actionBegin, args, function (followArgs) {
+            if (!followArgs.cancel) {
+                var fields_1 = _this.parent.eventFields;
+                var editParms = { addedRecords: [], changedRecords: [], deletedRecords: [] };
+                var followEvents = (followData instanceof Array ? followData : [followData]);
+                var _loop_2 = function (a, count) {
+                    var childEvent = updateFollowEvents[a];
+                    var parentEvent = followEvents[a].parent;
+                    var followData_1 = _this.parent.eventBase.getEventCollections(parentEvent, childEvent);
+                    switch (action) {
+                        case 'EditFollowingEvents':
+                            _this.processRecurrenceRule(parentEvent, childEvent);
+                            var isSplitted = !_this.parent.eventBase.isFollowingEvent(parentEvent, childEvent);
+                            childEvent[fields_1.followingID] = isSplitted ? null : parentEvent[fields_1.id];
+                            childEvent[fields_1.recurrenceID] = null;
+                            editParms.addedRecords.push(_this.parent.eventBase.processTimezone(childEvent, true));
+                            editParms.changedRecords.push(_this.parent.eventBase.processTimezone(parentEvent, true));
+                            if (!_this.parent.uiStateValues.isIgnoreOccurrence) {
+                                childEvent[fields_1.recurrenceException] = null;
+                                if (followData_1.occurrence.length > 0) {
+                                    childEvent[fields_1.recurrenceRule] =
+                                        followData_1.occurrence.slice(-1)[0][fields_1.recurrenceRule];
+                                }
+                                if (followData_1.follow.length > 0) {
+                                    childEvent[fields_1.recurrenceRule] =
+                                        followData_1.follow.slice(-1)[0][fields_1.recurrenceRule];
+                                    editParms.deletedRecords = editParms.deletedRecords.concat(followData_1.follow);
+                                }
+                                if (isSplitted) {
+                                    followData_1.occurrence = followData_1.occurrence.filter(function (eventObj) {
+                                        return eventObj[fields_1.recurrenceID] === childEvent[fields_1.id];
+                                    });
+                                }
+                                editParms.deletedRecords = editParms.deletedRecords.concat(followData_1.occurrence);
+                            }
+                            break;
+                        case 'DeleteFollowingEvents':
+                            _this.processRecurrenceRule(parentEvent, childEvent[fields_1.startTime]);
+                            editParms.changedRecords.push(_this.parent.eventBase.processTimezone(parentEvent, true));
+                            editParms.deletedRecords =
+                                editParms.deletedRecords.concat(followData_1.occurrence).concat(followData_1.follow);
+                            break;
+                    }
+                };
+                for (var a = 0, count = updateFollowEvents.length; a < count; a++) {
+                    _loop_2(a, count);
+                }
+                // tslint:disable-next-line:max-line-length
+                var promise = _this.parent.dataModule.dataManager.saveChanges(editParms, fields_1.id, _this.getTable(), _this.getQuery());
+                _this.parent.eventBase.selectWorkCellByTime(updateFollowEvents);
+                var crudArgs = {
+                    requestType: 'eventChanged', cancel: false, data: followArgs.data, promise: promise, editParms: editParms
+                };
+                _this.refreshData(crudArgs);
+            }
+        });
+    };
+    Crud.prototype.processEntireSeries = function (eventData, action) {
+        var _this = this;
+        var seriesData = [];
+        if (eventData instanceof Array) {
+            for (var _i = 0, eventData_4 = eventData; _i < eventData_4.length; _i++) {
+                var event_7 = eventData_4[_i];
+                seriesData.push(this.getParentEvent(event_7, true));
+            }
+        }
+        else {
+            seriesData = this.getParentEvent(eventData, true);
+        }
+        var updateSeriesEvents = (eventData instanceof Array) ? eventData : [eventData];
+        var args = {
+            requestType: 'eventChange', cancel: false, data: seriesData,
+            addedRecords: [], changedRecords: updateSeriesEvents, deletedRecords: []
+        };
+        this.parent.trigger(actionBegin, args, function (seriesArgs) {
+            if (!seriesArgs.cancel) {
+                var fields_2 = _this.parent.eventFields;
+                var editParms = { addedRecords: [], changedRecords: [], deletedRecords: [] };
+                var seriesEvents = (seriesData instanceof Array ? seriesData : [seriesData]);
+                var _loop_3 = function (a, count) {
+                    var childEvent = updateSeriesEvents[a];
+                    var parentEvent = seriesEvents[a];
+                    var eventCollections = _this.parent.eventBase.getEventCollections(parentEvent);
+                    var deletedEvents = eventCollections.follow.concat(eventCollections.occurrence);
+                    switch (action) {
+                        case 'EditSeries':
+                            childEvent[fields_2.id] = parentEvent[fields_2.id];
+                            childEvent[fields_2.recurrenceID] = null;
+                            childEvent[fields_2.followingID] = null;
+                            if (_this.parent.uiStateValues.isIgnoreOccurrence && childEvent[fields_2.recurrenceException]) {
+                                var originalParent = _this.parent.eventsData.filter(function (eventObj) {
+                                    return eventObj[fields_2.id] === childEvent[fields_2.id];
+                                });
+                                if (originalParent.length > 0) {
+                                    childEvent[fields_2.recurrenceRule] = originalParent[0][fields_2.recurrenceRule];
+                                }
+                            }
+                            else {
+                                childEvent[fields_2.recurrenceException] = null;
+                                editParms.deletedRecords = editParms.deletedRecords.concat(deletedEvents);
+                            }
+                            editParms.changedRecords.push(_this.parent.eventBase.processTimezone(childEvent, true));
+                            _this.parent.uiStateValues.isIgnoreOccurrence = false;
+                            break;
+                        case 'DeleteSeries':
+                            editParms.deletedRecords = editParms.deletedRecords.concat(deletedEvents.concat(parentEvent));
+                            break;
+                    }
+                };
+                for (var a = 0, count = updateSeriesEvents.length; a < count; a++) {
+                    _loop_3(a, count);
+                }
+                // tslint:disable-next-line:max-line-length
+                var promise = _this.parent.dataModule.dataManager.saveChanges(editParms, fields_2.id, _this.getTable(), _this.getQuery());
+                _this.parent.eventBase.selectWorkCellByTime(updateSeriesEvents);
+                var crudArgs = {
+                    requestType: 'eventChanged', cancel: false, data: seriesArgs.data, promise: promise, editParms: editParms
+                };
+                _this.refreshData(crudArgs);
+            }
+        });
+    };
+    Crud.prototype.processEventDelete = function (eventData) {
+        var _this = this;
+        var deleteData = [];
+        for (var _i = 0, eventData_5 = eventData; _i < eventData_5.length; _i++) {
+            var eventObj = eventData_5[_i];
+            if (eventObj[this.parent.eventFields.recurrenceRule]) {
+                deleteData.push({ occurrence: eventObj, parent: this.getParentEvent(eventObj) });
+            }
+            else {
+                deleteData.push(eventObj);
+            }
+        }
+        var args = {
+            requestType: 'eventRemove', cancel: false, data: deleteData,
+            addedRecords: [], changedRecords: [], deletedRecords: eventData
+        };
+        this.parent.trigger(actionBegin, args, function (deleteArgs) {
+            if (!deleteArgs.cancel) {
+                var fields_3 = _this.parent.eventFields;
+                var editParms = { addedRecords: [], changedRecords: [], deletedRecords: [] };
+                var _loop_4 = function (a, count) {
+                    var isDelete = isNullOrUndefined(eventData[a][_this.parent.eventFields.recurrenceRule]);
+                    if (!isDelete) {
+                        var parentEvent_1 = deleteData[a].parent;
+                        var isEdited = editParms.changedRecords.filter(function (obj) {
+                            return obj[fields_3.id] === parentEvent_1[fields_3.id];
+                        });
+                        var editedDate = eventData[a][fields_3.startTime];
+                        if (isEdited.length > 0) {
+                            var editedData = isEdited[0];
+                            editedData[fields_3.recurrenceException] =
+                                _this.excludeDateCheck(editedDate, editedData[fields_3.recurrenceException]);
+                        }
+                        else {
+                            parentEvent_1[fields_3.recurrenceException] =
+                                _this.excludeDateCheck(editedDate, parentEvent_1[fields_3.recurrenceException]);
+                        }
+                        if (isEdited.length === 0) {
+                            editParms.changedRecords.push(_this.parent.eventBase.processTimezone(parentEvent_1, true));
+                        }
+                        isDelete = (eventData[a][fields_3.id] !== parentEvent_1[fields_3.id]);
+                    }
+                    if (isDelete) {
+                        editParms.deletedRecords.push(eventData[a]);
+                    }
+                };
+                for (var a = 0, count = eventData.length; a < count; a++) {
+                    _loop_4(a, count);
+                }
+                // tslint:disable-next-line:max-line-length
+                var promise = _this.parent.dataModule.dataManager.saveChanges(editParms, fields_3.id, _this.getTable(), _this.getQuery());
+                var crudArgs = {
+                    requestType: 'eventRemoved', cancel: false, data: deleteArgs.data, promise: promise, editParms: editParms
+                };
+                _this.refreshData(crudArgs);
+            }
+        });
+    };
+    Crud.prototype.getParentEvent = function (event, isParent) {
+        if (isParent === void 0) { isParent = false; }
+        var parentEvent = this.parent.eventBase.getParentEvent(event, isParent) || event;
+        if (parentEvent[this.parent.eventFields.startTimezone] || parentEvent[this.parent.eventFields.endTimezone]) {
             this.parent.eventBase.timezoneConvert(parentEvent);
         }
         return parentEvent;
-    };
-    Crud.prototype.processCrudTimezone = function (events) {
-        var fields = this.parent.eventFields;
-        if (events[fields.startTimezone] || events[fields.endTimezone]) {
-            var startTimezone = events[fields.startTimezone] || events[fields.endTimezone];
-            var endTimezone = events[fields.endTimezone] || events[fields.startTimezone];
-            if (this.parent.timezone) {
-                var zone = this.parent.timezone;
-                events[fields.startTime] =
-                    this.parent.tzModule.convert(events[fields.startTime], startTimezone, zone);
-                events[fields.endTime] = this.parent.tzModule.convert(events[fields.endTime], endTimezone, zone);
-                events[fields.startTime] = this.parent.tzModule.remove(events[fields.startTime], zone);
-                events[fields.endTime] = this.parent.tzModule.remove(events[fields.endTime], zone);
-            }
-            else {
-                events[fields.startTime] = this.parent.tzModule.remove(events[fields.startTime], startTimezone);
-                events[fields.endTime] = this.parent.tzModule.remove(events[fields.endTime], endTimezone);
-            }
-        }
-        else if (this.parent.timezone) {
-            events[fields.startTime] = this.parent.tzModule.remove(events[fields.startTime], this.parent.timezone);
-            events[fields.endTime] = this.parent.tzModule.remove(events[fields.endTime], this.parent.timezone);
-        }
     };
     Crud.prototype.excludeDateCheck = function (eventStartTime, exceptionDateList) {
         var exDate = getRecurrenceStringFromDate(eventStartTime);
@@ -9944,45 +9798,43 @@ var Crud = /** @__PURE__ @class */ (function () {
         }
         return exceptionDateList;
     };
-    Crud.prototype.getEditedOccurrence = function (guid) {
-        var query = new Query().where('Guid', 'equal', guid);
-        return new DataManager(this.parent.eventsProcessed).executeLocal(query);
-    };
-    Crud.prototype.getUpdatedParentRule = function (parentEvent, edited) {
+    Crud.prototype.processRecurrenceRule = function (parentEvent, followEvent) {
         var fields = this.parent.eventFields;
-        var date = new Date('' + edited[fields.startTime]);
-        var startTime = new Date(date.setDate(date.getDate() + (-1)));
-        return this.formatRecurrenceRule(parentEvent, startTime);
-    };
-    Crud.prototype.formatRecurrenceRule = function (event, startTime) {
-        var fields = this.parent.eventFields;
-        var untilDate = getRecurrenceStringFromDate(startTime);
-        var rule = '';
-        var splitRecRule = event[fields.recurrenceRule].split(';');
-        if (event[fields.recurrenceRule].indexOf('UNTIL') > -1) {
-            for (var _i = 0, splitRecRule_1 = splitRecRule; _i < splitRecRule_1.length; _i++) {
-                var recProperty = splitRecRule_1[_i];
-                if (recProperty.indexOf('COUNT') === -1 && recProperty !== '') {
-                    if (recProperty.indexOf('UNTIL') > -1) {
-                        recProperty = recProperty.replace(recProperty, 'UNTIL=' + untilDate);
-                    }
-                    rule = rule + recProperty + ';';
-                }
-            }
+        var recurrenceRule = parentEvent[fields.recurrenceRule];
+        var endDate;
+        if (followEvent instanceof Date) {
+            endDate = new Date(+followEvent);
         }
         else {
-            var updatedRecRule = void 0;
-            var countProp = void 0;
-            for (var _a = 0, splitRecRule_2 = splitRecRule; _a < splitRecRule_2.length; _a++) {
-                var prop = splitRecRule_2[_a];
-                countProp = prop.indexOf('COUNT') > -1 ? prop.replace(';', '') : countProp;
-            }
-            updatedRecRule = event[fields.recurrenceRule];
-            var lastChar = updatedRecRule.slice(-1)[0];
-            rule = lastChar === ';' ? updatedRecRule + 'UNTIL=' + untilDate + ';' : updatedRecRule + ';UNTIL=' + untilDate + ';';
-            rule = rule.indexOf('UNTIL') > -1 ? rule.replace(countProp + ';', '') : rule;
+            endDate = followEvent[fields.startTime];
+            var startDate = parentEvent[fields.startTime];
+            var ruleException = followEvent[fields.recurrenceException];
+            var dateCollection = generate(startDate, recurrenceRule, ruleException, this.parent.activeViewOptions.firstDayOfWeek);
+            var untilDate = new Date(dateCollection.slice(-1)[0]);
+            followEvent[fields.recurrenceRule] = this.getUpdatedRecurrenceRule(recurrenceRule, new Date(+untilDate), false);
         }
-        return rule;
+        parentEvent[fields.recurrenceRule] =
+            this.getUpdatedRecurrenceRule(recurrenceRule, addDays(new Date(endDate.getTime()), -1), true);
+    };
+    Crud.prototype.getUpdatedRecurrenceRule = function (recurrenceRule, untilDate, isParent) {
+        var splitRule = recurrenceRule.split(';');
+        var updatedRule = '';
+        for (var _i = 0, splitRule_1 = splitRule; _i < splitRule_1.length; _i++) {
+            var rule = splitRule_1[_i];
+            if (rule !== '') {
+                var ruleKey = rule.split('=')[0];
+                var ruleValue = rule.split('=')[1];
+                if (ruleKey === 'COUNT' || ruleKey === 'UNTIL') {
+                    ruleValue = getRecurrenceStringFromDate(untilDate);
+                    rule = rule.replace(rule, 'UNTIL=' + ruleValue);
+                }
+                updatedRule += rule + ';';
+            }
+        }
+        if (isParent && updatedRule.indexOf('UNTIL') === -1) {
+            updatedRule += 'UNTIL=' + getRecurrenceStringFromDate(untilDate);
+        }
+        return updatedRule;
     };
     return Crud;
 }());
@@ -10076,7 +9928,8 @@ var WorkCellInteraction = /** @__PURE__ @class */ (function () {
     };
     WorkCellInteraction.prototype.onHover = function (e) {
         var targetSelector = '.' + WORK_CELLS_CLASS + ',.' + TIME_SLOT_CLASS + ',.' + ALLDAY_CELLS_CLASS + ',.' +
-            HEADER_CELLS_CLASS + ',.' + RESOURCE_CELLS_CLASS + ',.' + APPOINTMENT_CLASS + ',.' + WEEK_NUMBER_CLASS;
+            HEADER_CELLS_CLASS + ',.' + RESOURCE_CELLS_CLASS + ',.' + APPOINTMENT_CLASS + ',.' + WEEK_NUMBER_CLASS +
+            ',.' + MONTH_HEADER_CLASS;
         var hoverTarget = closest(e.target, targetSelector);
         if (hoverTarget) {
             var hoverArgs = { element: hoverTarget, event: e };
@@ -11122,13 +10975,13 @@ var ResourceBase = /** @__PURE__ @class */ (function () {
         }
     };
     ResourceBase.prototype.getResourceColor = function (eventObj, groupOrder) {
-        this.colorIndex = (this.parent.activeView.isTimelineView() && !isNullOrUndefined(groupOrder)) ?
-            groupOrder.length - 1 : this.colorIndex;
-        var resource = this.resourceCollection[this.colorIndex];
+        var colorFieldIndex = (!isNullOrUndefined(groupOrder) &&
+            this.colorIndex > groupOrder.length - 1) ? groupOrder.length - 1 : this.colorIndex;
+        var resource = this.resourceCollection[colorFieldIndex];
         if (isNullOrUndefined(groupOrder) && this.parent.activeViewOptions.group.allowGroupEdit && resource.allowMultiple) {
             return undefined;
         }
-        var id = isNullOrUndefined(groupOrder) ? eventObj[resource.field] : groupOrder[this.colorIndex];
+        var id = isNullOrUndefined(groupOrder) ? eventObj[resource.field] : groupOrder[colorFieldIndex];
         var data = this.filterData(resource.dataSource, resource.idField, 'equal', id);
         if (data.length > 0) {
             return data[0][resource.colorField];
@@ -11270,7 +11123,7 @@ var Schedule = /** @__PURE__ @class */ (function (_super) {
     __extends(Schedule, _super);
     /**
      * Constructor for creating the Schedule widget
-     * @hidden
+
      */
     function Schedule(options, element) {
         return _super.call(this, options, element) || this;
@@ -11320,9 +11173,7 @@ var Schedule = /** @__PURE__ @class */ (function (_super) {
         this.initializeResources();
     };
     Schedule.prototype.renderCompleted = function () {
-        if (isBlazor()) {
-            this.renderComplete();
-        }
+        this.renderComplete();
     };
     Schedule.prototype.updateLayoutTemplates = function () {
         var view = this.views[this.viewIndex];
@@ -11736,7 +11587,7 @@ var Schedule = /** @__PURE__ @class */ (function (_super) {
     /**
      * To provide the array of modules needed for control rendering
      * @return {ModuleDeclaration[]}
-     * @hidden
+
      */
     Schedule.prototype.requiredModules = function () {
         var modules = [];
@@ -11804,7 +11655,6 @@ var Schedule = /** @__PURE__ @class */ (function (_super) {
         this.resourceCollection = [];
         this.currentAction = null;
         this.selectedElements = [];
-        this.isMorePopup = true;
         this.setViewOptions();
     };
     Schedule.prototype.getDefaultLocale = function () {
@@ -11882,12 +11732,12 @@ var Schedule = /** @__PURE__ @class */ (function (_super) {
             timelineYear: 'Timeline Year',
             editFollowingEvent: 'Following Events',
             deleteTitle: 'Delete Event',
-            editTitle: 'Edit Event',
+            editTitle: 'Edit Event'
         };
     };
     /**
      * Binding events to the Schedule element.
-     * @hidden
+
      */
     Schedule.prototype.wireEvents = function () {
         var resize = 'onorientationchange' in window ? 'orientationchange' : 'resize';
@@ -12071,7 +11921,7 @@ var Schedule = /** @__PURE__ @class */ (function (_super) {
     };
     /**
      * Unbinding events from the element on widget destroy.
-     * @hidden
+
      */
     Schedule.prototype.unwireEvents = function () {
         var resize = 'onorientationchange' in window ? 'orientationchange' : 'resize';
@@ -12503,11 +12353,7 @@ var Schedule = /** @__PURE__ @class */ (function (_super) {
         var duration = endDateFromColSpan ? parseInt(lastTd.getAttribute('colSpan'), 10) : 1;
         if (!this.activeViewOptions.timeScale.enable || endDateFromColSpan || lastTd.classList.contains(ALLDAY_CELLS_CLASS) ||
             lastTd.classList.contains(HEADER_CELLS_CLASS)) {
-            var startDate = new Date(startTime.getTime());
-            if (lastTd.classList.contains(ALLDAY_CELLS_CLASS)) {
-                startDate = new Date(endTime.getTime());
-            }
-            endTime = addDays(startDate, duration);
+            endTime = addDays(new Date(endTime.getTime()), duration);
         }
         else {
             endTime = this.activeView.getEndDateFromStartDate(endTime);
@@ -12528,7 +12374,7 @@ var Schedule = /** @__PURE__ @class */ (function (_super) {
      * Retrieves the resource details based on the provided resource index.
      * @param {number} index index of the resources at the last level.
      * @returns {ResourceDetails} Object An object holding the details of resource and resourceData.
-     * @isGenericType true
+
      */
     Schedule.prototype.getResourcesByIndex = function (index) {
         if (this.resourceBase && this.resourceBase.lastResourceLevel) {
@@ -12653,7 +12499,7 @@ var Schedule = /** @__PURE__ @class */ (function (_super) {
      * Retrieves the entire collection of events bound to the Schedule.
      * @method getEvents
      * @returns {Object[]} Returns the collection of event objects from the Schedule.
-     * @isGenericType true
+
      */
     Schedule.prototype.getEvents = function (startDate, endDate, includeOccurrences) {
         var eventCollections = [];
@@ -12676,7 +12522,7 @@ var Schedule = /** @__PURE__ @class */ (function (_super) {
      * Retrieves the entire collection of events bound to the Schedule.
      * @method getBlockEvents
      * @returns {Object[]} Returns the collection of block event objects from the Schedule.
-     * @isGenericType true
+
      */
     Schedule.prototype.getBlockEvents = function (startDate, endDate, includeOccurrences) {
         var eventCollections = [];
@@ -12700,7 +12546,7 @@ var Schedule = /** @__PURE__ @class */ (function (_super) {
      * @method getOccurrencesByID
      * @param {number} eventID ID of the parent recurrence data from which the occurrences are fetched.
      * @returns {Object[]} Returns the collection of occurrence event objects.
-     * @isGenericType true
+
      */
     Schedule.prototype.getOccurrencesByID = function (eventID) {
         return this.eventBase.getOccurrencesByID(eventID);
@@ -12711,7 +12557,7 @@ var Schedule = /** @__PURE__ @class */ (function (_super) {
      * @param {Date} startTime Denotes the start time range.
      * @param {Date} endTime Denotes the end time range.
      * @returns {Object[]} Returns the collection of occurrence event objects that lies between the provided start and end time.
-     * @isGenericType true
+
      */
     Schedule.prototype.getOccurrencesByRange = function (startTime, endTime) {
         startTime = this.getDateTime(startTime);
@@ -12729,15 +12575,28 @@ var Schedule = /** @__PURE__ @class */ (function (_super) {
     /**
      * Set the recurrence editor instance from custom editor template.
      * @method setRecurrenceEditor
+     * @param {RecurrenceEditor} recurrenceEditor instance has passed to fetch the instance in event window.
+     * @returns {void}
      */
     Schedule.prototype.setRecurrenceEditor = function (recurrenceEditor) {
         this.eventWindow.setRecurrenceEditor(recurrenceEditor);
     };
     /**
+     * Get deleted occurrences from given recurrence series.
+     * @method getDeletedOccurrences
+     * @param {{[key: string]: Object}} recurrenceData Accepts the parent event object.
+     * @param {string | number} recurrenceData Accepts the parent ID of the event object.
+     * @returns {Object[]} Returns the collection of deleted occurrence events.
+
+     */
+    Schedule.prototype.getDeletedOccurrences = function (recurrenceData) {
+        return this.eventBase.getDeletedOccurrences(recurrenceData);
+    };
+    /**
      * Retrieves the events that lies on the current date range of the active view of Schedule.
      * @method getCurrentViewEvents
      * @returns {Object[]} Returns the collection of events.
-     * @isGenericType true
+
      */
     Schedule.prototype.getCurrentViewEvents = function () {
         return this.eventsProcessed;
@@ -12759,7 +12618,7 @@ var Schedule = /** @__PURE__ @class */ (function (_super) {
      * @method getEventDetails
      * @param {Element} element Denotes the event UI element on the Schedule.
      * @returns {Object} Returns the event details.
-     * @isGenericType true
+
      */
     Schedule.prototype.getEventDetails = function (element) {
         element = getElement(element);
@@ -13047,6 +12906,9 @@ var Schedule = /** @__PURE__ @class */ (function (_super) {
     __decorate([
         Event()
     ], Schedule.prototype, "cellDoubleClick", void 0);
+    __decorate([
+        Event()
+    ], Schedule.prototype, "moreEventsClick", void 0);
     __decorate([
         Event()
     ], Schedule.prototype, "hover", void 0);
@@ -13916,19 +13778,36 @@ var MonthEvent = /** @__PURE__ @class */ (function (_super) {
         return (appIndex === -1) ? 0 : appIndex;
     };
     MonthEvent.prototype.moreIndicatorClick = function (event) {
+        var _this = this;
         var target = closest(event.target, '.' + MORE_INDICATOR_CLASS);
         var startDate = new Date(parseInt(target.getAttribute('data-start-date'), 10));
-        if (!isNullOrUndefined(startDate) && !this.parent.isMorePopup) {
-            this.parent.setProperties({ selectedDate: startDate }, true);
-            this.parent.changeView(this.parent.getNavigateView(), event);
+        var endDate = new Date(parseInt(target.getAttribute('data-end-date'), 10));
+        var groupIndex = target.getAttribute('data-group-index');
+        var moreArgs = {
+            cancel: false, event: event, element: target, isPopupOpen: true,
+            startTime: startDate, endTime: endDate, viewName: this.parent.getNavigateView()
+        };
+        if (groupIndex) {
+            moreArgs.groupIndex = parseInt(groupIndex, 10);
         }
-        else {
-            var endDate = new Date(parseInt(target.getAttribute('data-end-date'), 10));
-            var groupIndex = target.getAttribute('data-group-index');
-            var filteredEvents = this.getFilteredEvents(startDate, endDate, groupIndex);
-            var moreEventArgs = { date: startDate, event: filteredEvents, element: event.target };
-            this.parent.quickPopup.moreEventClick(moreEventArgs, endDate, groupIndex);
-        }
+        this.parent.trigger(moreEventsClick, moreArgs, function (clickArgs) {
+            if (isBlazor()) {
+                clickArgs.startTime = new Date('' + clickArgs.startTime);
+                clickArgs.endTime = new Date('' + clickArgs.endTime);
+                clickArgs.element = getElement(clickArgs.element);
+            }
+            if (!clickArgs.cancel) {
+                if (clickArgs.isPopupOpen) {
+                    var filteredEvents = _this.getFilteredEvents(startDate, endDate, groupIndex);
+                    var moreEventArgs = { date: startDate, event: filteredEvents, element: event.target };
+                    _this.parent.quickPopup.moreEventClick(moreEventArgs, endDate, groupIndex);
+                }
+                else {
+                    _this.parent.setProperties({ selectedDate: startDate }, true);
+                    _this.parent.changeView(clickArgs.viewName, event);
+                }
+            }
+        });
     };
     MonthEvent.prototype.renderEventElement = function (event, appointmentElement, cellTd) {
         var _this = this;
@@ -14829,6 +14708,664 @@ var TimelineEvent = /** @__PURE__ @class */ (function (_super) {
     return TimelineEvent;
 }(MonthEvent));
 
+var __extends$15 = (undefined && undefined.__extends) || (function () {
+    var extendStatics = function (d, b) {
+        extendStatics = Object.setPrototypeOf ||
+            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+        return extendStatics(d, b);
+    };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+/**
+ * Vertical view appointment rendering
+ */
+var VerticalEvent = /** @__PURE__ @class */ (function (_super) {
+    __extends$15(VerticalEvent, _super);
+    /**
+     * Constructor for vertical view
+     */
+    function VerticalEvent(parent) {
+        var _this = _super.call(this, parent) || this;
+        _this.dateRender = [];
+        _this.renderedEvents = [];
+        _this.renderedAllDayEvents = [];
+        _this.overlapEvents = [];
+        _this.moreEvents = [];
+        _this.overlapList = [];
+        _this.allDayEvents = [];
+        _this.slotCount = _this.parent.activeViewOptions.timeScale.slotCount;
+        _this.interval = _this.parent.activeViewOptions.timeScale.interval;
+        _this.allDayLevel = 0;
+        _this.startHour = _this.parent.activeView.getStartHour();
+        _this.endHour = _this.parent.activeView.getEndHour();
+        _this.element = _this.parent.activeView.getPanel();
+        _this.fields = _this.parent.eventFields;
+        _this.animation = new Animation({ progress: _this.animationUiUpdate.bind(_this) });
+        _this.addEventListener();
+        return _this;
+    }
+    VerticalEvent.prototype.renderAppointments = function () {
+        var wrapperElements = [].slice.call(this.parent.element.querySelectorAll('.' + BLOCK_APPOINTMENT_CLASS +
+            ',.' + APPOINTMENT_CLASS + ',.' + ROW_COUNT_WRAPPER_CLASS));
+        wrapperElements.forEach(function (element) { return remove(element); });
+        if (!this.element.querySelector('.' + WORK_CELLS_CLASS)) {
+            return;
+        }
+        this.allDayElement = [].slice.call(this.element.querySelectorAll('.' + ALLDAY_CELLS_CLASS));
+        this.setAllDayRowHeight(0);
+        if (this.parent.eventsProcessed.length === 0 && this.parent.blockProcessed.length === 0) {
+            return;
+        }
+        var expandCollapse = this.element.querySelector('.' + ALLDAY_APPOINTMENT_SECTION_CLASS);
+        EventHandler.remove(expandCollapse, 'click', this.rowExpandCollapse);
+        EventHandler.add(expandCollapse, 'click', this.rowExpandCollapse, this);
+        this.renderedEvents = [];
+        this.renderedAllDayEvents = [];
+        this.initializeValues();
+        this.processBlockEvents();
+        this.renderEvents('normalEvents');
+        if (this.allDayEvents.length > 0) {
+            this.allDayEvents = this.allDayEvents.filter(function (item, index, arr) {
+                return index === arr.map(function (item) { return item.Guid; }).indexOf(item.Guid);
+            });
+            removeClass(this.allDayElement, ALLDAY_ROW_ANIMATE_CLASS);
+            this.slots.push(this.parent.activeView.renderDates.map(function (date) { return +date; }));
+            this.renderEvents('allDayEvents');
+        }
+        this.parent.notify(contentReady, {});
+        addClass(this.allDayElement, ALLDAY_ROW_ANIMATE_CLASS);
+    };
+    VerticalEvent.prototype.initializeValues = function () {
+        var _this = this;
+        this.resources = (this.parent.activeViewOptions.group.resources.length > 0) ? this.parent.uiStateValues.isGroupAdaptive ?
+            [this.parent.resourceBase.lastResourceLevel[this.parent.uiStateValues.groupIndex]] :
+            this.parent.resourceBase.lastResourceLevel : [];
+        this.cellHeight = parseFloat(this.element.querySelector('.e-content-wrap tbody tr').getBoundingClientRect().height.toFixed(2));
+        this.dateRender[0] = this.parent.activeView.renderDates;
+        if (this.parent.activeViewOptions.group.resources.length > 0) {
+            this.resources.forEach(function (resource, index) { return _this.dateRender[index] = resource.renderDates; });
+        }
+    };
+    VerticalEvent.prototype.isValidEvent = function (eventObj, start, end, schedule) {
+        var isHourRange = end.getTime() > schedule.startHour.getTime() && start.getTime() < schedule.endHour.getTime();
+        var isSameRange = schedule.startHour.getTime() <= start.getTime() &&
+            eventObj[this.fields.startTime].getTime() >= schedule.startHour.getTime() &&
+            eventObj[this.fields.endTime].getTime() < schedule.endHour.getTime() && start.getTime() === end.getTime();
+        return isHourRange || isSameRange;
+    };
+    VerticalEvent.prototype.getHeight = function (start, end) {
+        var appHeight = (end.getTime() - start.getTime()) / (60 * 1000) * (this.cellHeight * this.slotCount) / this.interval;
+        appHeight = (appHeight < this.cellHeight) ? this.cellHeight : appHeight;
+        return appHeight;
+    };
+    VerticalEvent.prototype.appendEvent = function (eventObj, appointmentElement, index, appLeft) {
+        var appointmentWrap = [].slice.call(this.element.querySelectorAll('.' + APPOINTMENT_WRAPPER_CLASS));
+        if (this.parent.enableRtl) {
+            setStyleAttribute(appointmentElement, { 'right': appLeft });
+        }
+        else {
+            setStyleAttribute(appointmentElement, { 'left': appLeft });
+        }
+        var eventType = appointmentElement.classList.contains(BLOCK_APPOINTMENT_CLASS) ? 'blockEvent' : 'event';
+        var args = { data: eventObj, element: appointmentElement, cancel: false, type: eventType };
+        this.parent.trigger(eventRendered, args, function (eventArgs) {
+            if (!eventArgs.cancel) {
+                appointmentWrap[index].appendChild(appointmentElement);
+            }
+        });
+    };
+    VerticalEvent.prototype.processBlockEvents = function () {
+        var resources = this.getResourceList();
+        var dateCount = 0;
+        for (var _i = 0, resources_1 = resources; _i < resources_1.length; _i++) {
+            var resource = resources_1[_i];
+            var renderDates = this.dateRender[resource];
+            for (var day = 0, length_1 = renderDates.length; day < length_1; day++) {
+                var startDate = new Date(renderDates[day].getTime());
+                var endDate = addDays(renderDates[day], 1);
+                var filterEvents = this.filterEvents(startDate, endDate, this.parent.blockProcessed, this.resources[resource]);
+                for (var _a = 0, filterEvents_1 = filterEvents; _a < filterEvents_1.length; _a++) {
+                    var event_1 = filterEvents_1[_a];
+                    if (this.parent.resourceBase) {
+                        this.setValues(event_1, resource);
+                    }
+                    this.renderBlockEvents(event_1, day, resource, dateCount);
+                    this.cssClass = null;
+                    this.groupOrder = null;
+                }
+                dateCount += 1;
+            }
+        }
+    };
+    VerticalEvent.prototype.renderBlockEvents = function (eventObj, dayIndex, resource, dayCount) {
+        var spannedData = this.isSpannedEvent(eventObj, dayIndex, resource);
+        var eStart = spannedData[this.fields.startTime];
+        var eEnd = spannedData[this.fields.endTime];
+        var currentDate = resetTime(new Date(this.dateRender[resource][dayIndex].getTime()));
+        var schedule = getStartEndHours(currentDate, this.startHour, this.endHour);
+        if (eStart <= eEnd && this.isValidEvent(eventObj, eStart, eEnd, schedule)) {
+            var blockTop = void 0;
+            var blockHeight = void 0;
+            if (spannedData[this.fields.isAllDay]) {
+                var contentWrap = this.parent.element.querySelector('.' + CONTENT_WRAP_CLASS + ' table');
+                blockHeight = formatUnit(contentWrap.offsetHeight);
+                blockTop = formatUnit(0);
+            }
+            else {
+                blockHeight = formatUnit(this.getHeight(eStart, eEnd));
+                blockTop = formatUnit(this.getTopValue(eStart, dayIndex, resource));
+            }
+            var appointmentElement = this.createBlockAppointmentElement(eventObj, resource);
+            setStyleAttribute(appointmentElement, { 'width': '100%', 'height': blockHeight, 'top': blockTop });
+            var index = this.parent.activeViewOptions.group.byDate ? (this.resources.length * dayIndex) + resource : dayCount;
+            this.appendEvent(eventObj, appointmentElement, index, '0px');
+        }
+    };
+    VerticalEvent.prototype.renderEvents = function (eventType) {
+        removeClass(this.allDayElement, ALLDAY_ROW_ANIMATE_CLASS);
+        var eventCollection = (eventType === 'allDayEvents') ? this.sortByDateTime(this.allDayEvents) : undefined;
+        var resources = this.getResourceList();
+        var dateCount = 0;
+        for (var _i = 0, resources_2 = resources; _i < resources_2.length; _i++) {
+            var resource = resources_2[_i];
+            this.slots = [];
+            var renderDates = this.dateRender[resource];
+            this.slots.push(renderDates.map(function (date) { return +date; }));
+            for (var day = 0, length_2 = renderDates.length; day < length_2; day++) {
+                this.renderedEvents = [];
+                var startDate = new Date(renderDates[day].getTime());
+                var endDate = addDays(renderDates[day], 1);
+                var filterEvents = this.filterEvents(startDate, endDate, eventCollection, this.resources[resource]);
+                for (var _a = 0, filterEvents_2 = filterEvents; _a < filterEvents_2.length; _a++) {
+                    var event_2 = filterEvents_2[_a];
+                    if (this.parent.resourceBase) {
+                        this.setValues(event_2, resource);
+                    }
+                    if (eventType === 'allDayEvents') {
+                        this.renderAllDayEvents(event_2, day, resource, dateCount);
+                    }
+                    else {
+                        if (this.isAllDayAppointment(event_2)) {
+                            this.allDayEvents.push(extend({}, event_2, null, true));
+                        }
+                        else {
+                            this.renderNormalEvents(event_2, day, resource, dateCount);
+                        }
+                    }
+                    this.cssClass = null;
+                    this.groupOrder = null;
+                }
+                dateCount += 1;
+            }
+        }
+    };
+    VerticalEvent.prototype.setValues = function (event, resourceIndex) {
+        if (this.parent.activeViewOptions.group.resources.length > 0) {
+            this.cssClass = this.resources[resourceIndex].cssClass;
+            this.groupOrder = this.resources[resourceIndex].groupOrder;
+        }
+        else {
+            this.cssClass = this.parent.resourceBase.getCssClass(event);
+        }
+    };
+    VerticalEvent.prototype.getResourceList = function () {
+        var resources = Array.apply(null, {
+            length: (this.parent.activeViewOptions.group.resources.length > 0 && !this.parent.uiStateValues.isGroupAdaptive) ?
+                this.resources.length : 1
+        }).map(function (value, index) { return index; });
+        return resources;
+    };
+    VerticalEvent.prototype.createAppointmentElement = function (record, isAllDay, data, resource) {
+        var fieldMapping = this.parent.eventFields;
+        var recordSubject = (record[fieldMapping.subject] || this.parent.eventSettings.fields.subject.default);
+        var appointmentWrapper = createElement('div', {
+            className: APPOINTMENT_CLASS,
+            attrs: {
+                'data-id': 'Appointment_' + record[fieldMapping.id],
+                'data-guid': record.Guid,
+                'role': 'button',
+                'tabindex': '0',
+                'aria-readonly': this.parent.eventBase.getReadonlyAttribute(record),
+                'aria-selected': 'false',
+                'aria-grabbed': 'true',
+                'aria-label': recordSubject
+            }
+        });
+        if (record[this.fields.isReadonly]) {
+            addClass([appointmentWrapper], 'e-read-only');
+        }
+        var appointmentDetails = createElement('div', { className: APPOINTMENT_DETAILS });
+        appointmentWrapper.appendChild(appointmentDetails);
+        if (this.parent.activeViewOptions.group.resources.length > 0) {
+            var resourceIndex = this.parent.uiStateValues.isGroupAdaptive ? this.parent.uiStateValues.groupIndex : resource;
+            appointmentWrapper.setAttribute('data-group-index', resourceIndex.toString());
+        }
+        var templateElement;
+        var eventData = data;
+        if (!isNullOrUndefined(this.parent.activeViewOptions.eventTemplate)) {
+            var elementId = this.parent.element.id + '_';
+            var viewName = this.parent.activeViewOptions.eventTemplateName;
+            var templateId = elementId + viewName + 'eventTemplate';
+            templateElement = this.parent.getAppointmentTemplate()(record, this.parent, 'eventTemplate', templateId, false);
+        }
+        else {
+            var appointmentSubject = createElement('div', { className: SUBJECT_CLASS, innerHTML: recordSubject });
+            if (isAllDay) {
+                if (record[fieldMapping.isAllDay]) {
+                    templateElement = [appointmentSubject];
+                }
+                else {
+                    templateElement = [];
+                    var appointmentStartTime = createElement('div', {
+                        className: APPOINTMENT_TIME + (this.parent.isAdaptive ? ' ' + DISABLE_CLASS : ''),
+                        innerHTML: this.parent.getTimeString(record[fieldMapping.startTime])
+                    });
+                    var appointmentEndTime = createElement('div', {
+                        className: APPOINTMENT_TIME + (this.parent.isAdaptive ? ' ' + DISABLE_CLASS : ''),
+                        innerHTML: this.parent.getTimeString(record[fieldMapping.endTime]),
+                    });
+                    addClass([appointmentSubject], 'e-text-center');
+                    if (!eventData.isLeft) {
+                        templateElement.push(appointmentStartTime);
+                    }
+                    templateElement.push(appointmentSubject);
+                    if (!eventData.isRight) {
+                        templateElement.push(appointmentEndTime);
+                    }
+                }
+            }
+            else {
+                var timeStr = this.parent.getTimeString(record[fieldMapping.startTime]) + ' - ' +
+                    this.parent.getTimeString(record[fieldMapping.endTime]);
+                var appointmentTime = createElement('div', {
+                    className: APPOINTMENT_TIME + (this.parent.isAdaptive ? ' ' + DISABLE_CLASS : ''),
+                    innerHTML: timeStr,
+                });
+                var appointmentLocation = createElement('div', {
+                    className: LOCATION_CLASS,
+                    innerHTML: (record[fieldMapping.location] || this.parent.eventSettings.fields.location.default || '')
+                });
+                templateElement = [appointmentSubject, appointmentTime, appointmentLocation];
+            }
+        }
+        append(templateElement, appointmentDetails);
+        if (!this.parent.isAdaptive &&
+            (!isNullOrUndefined(record[fieldMapping.recurrenceRule]) || !isNullOrUndefined(record[fieldMapping.recurrenceID]))) {
+            var iconClass = (record[fieldMapping.id] === record[fieldMapping.recurrenceID]) ?
+                EVENT_RECURRENCE_ICON_CLASS : EVENT_RECURRENCE_EDIT_ICON_CLASS;
+            var recurrenceIcon = createElement('div', { className: ICON + ' ' + iconClass });
+            isAllDay ? appointmentDetails.appendChild(recurrenceIcon) : appointmentWrapper.appendChild(recurrenceIcon);
+        }
+        this.renderSpannedIcon(isAllDay ? appointmentDetails : appointmentWrapper, eventData);
+        if (!isNullOrUndefined(this.cssClass)) {
+            addClass([appointmentWrapper], this.cssClass);
+        }
+        this.applyResourceColor(appointmentWrapper, record, 'backgroundColor', this.groupOrder);
+        this.renderResizeHandler(appointmentWrapper, eventData, record[this.fields.isReadonly]);
+        return appointmentWrapper;
+    };
+    VerticalEvent.prototype.createMoreIndicator = function (allDayRow, count, currentDay) {
+        var index = currentDay + count;
+        var countWrapper = allDayRow[index];
+        if (countWrapper.childElementCount <= 0) {
+            var innerCountWrap = createElement('div', {
+                className: ROW_COUNT_WRAPPER_CLASS,
+                id: ROW_COUNT_WRAPPER_CLASS + '-' + index.toString()
+            });
+            var moreIndicatorElement = createElement('div', {
+                className: MORE_INDICATOR_CLASS,
+                attrs: { 'tabindex': '0', 'data-index': index.toString(), 'data-count': '1' },
+                innerHTML: '+1&nbsp;' + (this.parent.isAdaptive ? '' : this.parent.localeObj.getConstant('more'))
+            });
+            innerCountWrap.appendChild(moreIndicatorElement);
+            countWrapper.appendChild(innerCountWrap);
+            EventHandler.add(moreIndicatorElement, 'click', this.rowExpandCollapse, this);
+        }
+        else {
+            var countCell = countWrapper.querySelector('.' + MORE_INDICATOR_CLASS);
+            var moreCount = parseInt(countCell.getAttribute('data-count'), 10) + 1;
+            countCell.setAttribute('data-count', moreCount.toString());
+            countCell.innerHTML = '+' + moreCount + '&nbsp;' + (this.parent.isAdaptive ? '' : this.parent.localeObj.getConstant('more'));
+        }
+    };
+    VerticalEvent.prototype.renderSpannedIcon = function (element, spanEvent) {
+        var iconElement = createElement('div', { className: EVENT_INDICATOR_CLASS + ' ' + ICON });
+        if (spanEvent.isLeft) {
+            var iconLeft = iconElement.cloneNode();
+            addClass([iconLeft], EVENT_ICON_LEFT_CLASS);
+            prepend([iconLeft], element);
+        }
+        if (spanEvent.isRight) {
+            var iconRight = iconElement.cloneNode();
+            addClass([iconRight], EVENT_ICON_RIGHT_CLASS);
+            append([iconRight], element);
+        }
+        if (spanEvent.isTop) {
+            var iconTop = iconElement.cloneNode();
+            addClass([iconTop], EVENT_ICON_UP_CLASS);
+            prepend([iconTop], element);
+        }
+        if (spanEvent.isBottom) {
+            var iconBottom = iconElement.cloneNode();
+            addClass([iconBottom], EVENT_ICON_DOWN_CLASS);
+            append([iconBottom], element);
+        }
+    };
+    VerticalEvent.prototype.isSpannedEvent = function (record, day, resource) {
+        var currentDate = resetTime(this.dateRender[resource][day]);
+        var fieldMapping = this.parent.eventFields;
+        var startEndHours = getStartEndHours(currentDate, this.startHour, this.endHour);
+        var event = extend({}, record, null, true);
+        event.isSpanned = { isBottom: false, isTop: false };
+        if (record[fieldMapping.startTime].getTime() < startEndHours.startHour.getTime()) {
+            event[fieldMapping.startTime] = startEndHours.startHour;
+            event.isSpanned.isTop = true;
+        }
+        if (record[fieldMapping.endTime].getTime() > startEndHours.endHour.getTime()) {
+            event[fieldMapping.endTime] = startEndHours.endHour;
+            event.isSpanned.isBottom = true;
+        }
+        return event;
+    };
+    VerticalEvent.prototype.renderAllDayEvents = function (eventObj, dayIndex, resource, dayCount) {
+        var _this = this;
+        var currentDates = this.dateRender[resource];
+        if (this.parent.activeViewOptions.group.byDate) {
+            this.slots[0] = [this.dateRender[resource][dayIndex].getTime()];
+            currentDates = [this.dateRender[resource][dayIndex]];
+        }
+        var record = this.splitEvent(eventObj, currentDates)[0];
+        var allDayRowCell = this.element.querySelector('.' + ALLDAY_CELLS_CLASS + ':first-child');
+        var cellTop = allDayRowCell.offsetTop;
+        var eStart = new Date(record[this.parent.eventFields.startTime].getTime());
+        var eEnd = new Date(record[this.parent.eventFields.endTime].getTime());
+        var appWidth = 0;
+        var topValue = 1;
+        var isDateRange = currentDates[0].getTime() <= eStart.getTime() &&
+            addDays(currentDates.slice(-1)[0], 1).getTime() >= eStart.getTime();
+        if (eStart <= eEnd && isDateRange) {
+            var isAlreadyRendered = [];
+            if (this.renderedAllDayEvents[resource]) {
+                isAlreadyRendered = this.renderedAllDayEvents[resource].filter(function (event) {
+                    return event.Guid === eventObj.Guid;
+                });
+                if (this.parent.activeViewOptions.group.byDate) {
+                    isAlreadyRendered = isAlreadyRendered.filter(function (event) {
+                        return event[_this.parent.eventFields.startTime] >= currentDates[dayIndex] &&
+                            event[_this.parent.eventFields.endTime] <= addDays(new Date(+currentDates[dayIndex]), 1);
+                    });
+                }
+            }
+            if (isAlreadyRendered.length === 0) {
+                var allDayDifference_1 = record.data.count;
+                var allDayIndex_1 = this.getOverlapIndex(record, dayIndex, true, resource);
+                record.Index = allDayIndex_1;
+                this.allDayLevel = (this.allDayLevel < allDayIndex_1) ? allDayIndex_1 : this.allDayLevel;
+                var widthAdjustment = record.data.isRight ? 0 :
+                    this.parent.currentView === 'Day' ? 4 : 7;
+                if (allDayDifference_1 >= 0) {
+                    appWidth = (allDayDifference_1 * 100) - widthAdjustment;
+                }
+                if (isNullOrUndefined(this.renderedAllDayEvents[resource])) {
+                    this.renderedAllDayEvents[resource] = [];
+                }
+                this.renderedAllDayEvents[resource].push(extend({}, record, null, true));
+                var allDayRow_1 = [].slice.call(this.element.querySelector('.' + ALLDAY_ROW_CLASS).children);
+                var wIndex_1 = this.parent.activeViewOptions.group.byDate ? (this.resources.length * dayIndex) + resource : dayCount;
+                var eventWrapper_1 = this.element.querySelector('.' + ALLDAY_APPOINTMENT_WRAPPER_CLASS +
+                    ':nth-child(' + (wIndex_1 + 1) + ')');
+                var appointmentElement_1 = this.createAppointmentElement(eventObj, true, record.data, resource);
+                addClass([appointmentElement_1], ALLDAY_APPOINTMENT_CLASS);
+                var args = { data: eventObj, element: appointmentElement_1, cancel: false };
+                this.parent.trigger(eventRendered, args, function (eventArgs) {
+                    if (!eventArgs.cancel) {
+                        eventWrapper_1.appendChild(appointmentElement_1);
+                        var appHeight = appointmentElement_1.offsetHeight;
+                        topValue += (allDayIndex_1 === 0 ? cellTop : (cellTop + (allDayIndex_1 * appHeight))) + 1;
+                        setStyleAttribute(appointmentElement_1, { 'width': appWidth + '%', 'top': formatUnit(topValue) });
+                        if (allDayIndex_1 > 1) {
+                            _this.moreEvents.push(appointmentElement_1);
+                            for (var count = 0, length_3 = allDayDifference_1; count < length_3; count++) {
+                                _this.createMoreIndicator(allDayRow_1, count, wIndex_1);
+                            }
+                        }
+                        allDayRowCell.setAttribute('data-count', _this.allDayLevel.toString());
+                        var allDayRowHeight = ((!_this.parent.uiStateValues.expand && _this.allDayLevel > 2) ?
+                            (3 * appHeight) : ((_this.allDayLevel + 1) * appHeight)) + 4;
+                        _this.setAllDayRowHeight(allDayRowHeight);
+                        _this.addOrRemoveClass();
+                        _this.wireAppointmentEvents(appointmentElement_1, true, eventObj);
+                    }
+                });
+            }
+        }
+    };
+    VerticalEvent.prototype.renderNormalEvents = function (eventObj, dayIndex, resource, dayCount) {
+        var record = this.isSpannedEvent(eventObj, dayIndex, resource);
+        var eStart = record[this.fields.startTime];
+        var eEnd = record[this.fields.endTime];
+        var appWidth = '0%';
+        var appLeft = '0%';
+        var topValue = 0;
+        var currentDate = resetTime(new Date(this.dateRender[resource][dayIndex].getTime()));
+        var schedule = getStartEndHours(currentDate, this.startHour, this.endHour);
+        var isValidEvent = this.isValidEvent(eventObj, eStart, eEnd, schedule);
+        if (eStart <= eEnd && isValidEvent) {
+            var appHeight = this.getHeight(eStart, eEnd);
+            if (eStart.getTime() > schedule.startHour.getTime()) {
+                topValue = this.getTopValue(eStart, dayIndex, resource);
+            }
+            var appIndex = this.getOverlapIndex(record, dayIndex, false, resource);
+            record.Index = appIndex;
+            this.overlapList.push(record);
+            if (this.overlapList.length > 1) {
+                if (isNullOrUndefined(this.overlapEvents[appIndex])) {
+                    this.overlapEvents[appIndex] = [];
+                }
+                this.overlapEvents[appIndex].push(record);
+            }
+            else {
+                this.overlapEvents = [];
+                this.overlapEvents.push([record]);
+            }
+            appWidth = this.getEventWidth();
+            var argsData = {
+                index: appIndex, left: appLeft, width: appWidth,
+                day: dayIndex, dayIndex: dayCount, record: record, resource: resource
+            };
+            var tempData = this.adjustOverlapElements(argsData);
+            appWidth = (tempData.appWidth);
+            if (isNullOrUndefined(this.renderedEvents[resource])) {
+                this.renderedEvents[resource] = [];
+            }
+            this.renderedEvents[resource].push(extend({}, record, null, true));
+            var appointmentElement = this.createAppointmentElement(eventObj, false, record.isSpanned, resource);
+            setStyleAttribute(appointmentElement, { 'width': tempData.appWidth, 'height': appHeight + 'px', 'top': topValue + 'px' });
+            var iconHeight = appointmentElement.querySelectorAll('.' + EVENT_INDICATOR_CLASS).length * 15;
+            var maxHeight = appHeight - 40 - iconHeight;
+            var subjectElement = appointmentElement.querySelector('.' + SUBJECT_CLASS);
+            if (!this.parent.isAdaptive && subjectElement) {
+                subjectElement.style.maxHeight = formatUnit(maxHeight);
+            }
+            var index = this.parent.activeViewOptions.group.byDate ? (this.resources.length * dayIndex) + resource : dayCount;
+            this.appendEvent(eventObj, appointmentElement, index, tempData.appLeft);
+            this.wireAppointmentEvents(appointmentElement, false, eventObj);
+        }
+    };
+    VerticalEvent.prototype.getEventWidth = function () {
+        var width = this.parent.currentView === 'Day' ? 97 : 94;
+        var tempWidth = ((width - this.overlapEvents.length) / this.overlapEvents.length);
+        return (tempWidth < 0 ? 0 : tempWidth) + '%';
+    };
+    VerticalEvent.prototype.getEventLeft = function (appWidth, index) {
+        var tempLeft = (parseFloat(appWidth) + 1) * index;
+        return (tempLeft > 99 ? 99 : tempLeft) + '%';
+    };
+    VerticalEvent.prototype.getTopValue = function (date, day, resource) {
+        var startEndHours = getStartEndHours(resetTime(this.dateRender[resource][day]), this.startHour, this.endHour);
+        var startHour = startEndHours.startHour;
+        var diffInMinutes = ((date.getHours() - startHour.getHours()) * 60) + (date.getMinutes() - startHour.getMinutes());
+        return (diffInMinutes * this.cellHeight * this.slotCount) / this.interval;
+    };
+    VerticalEvent.prototype.getOverlapIndex = function (record, day, isAllDay, resource) {
+        var _this = this;
+        var fieldMapping = this.parent.eventFields;
+        var predicate;
+        var eventsList = [];
+        var appIndex = -1;
+        this.overlapEvents = [];
+        if (isAllDay) {
+            if (!isNullOrUndefined(this.renderedAllDayEvents[resource])) {
+                var date_1 = resetTime(new Date(this.dateRender[resource][day].getTime()));
+                eventsList = this.renderedAllDayEvents[resource].filter(function (app) {
+                    return resetTime(app[fieldMapping.startTime]).getTime() <= date_1.getTime() &&
+                        resetTime(app[fieldMapping.endTime]).getTime() >= date_1.getTime();
+                });
+                if (this.parent.activeViewOptions.group.resources.length > 0) {
+                    eventsList = this.filterEventsByResource(this.resources[resource], eventsList);
+                }
+            }
+        }
+        else {
+            var appointmentList_1 = !isNullOrUndefined(this.renderedEvents[resource]) ? this.renderedEvents[resource] : [];
+            var appointment_1 = [];
+            predicate = new Predicate(fieldMapping.endTime, 'greaterthan', record[fieldMapping.startTime]).
+                and(new Predicate(fieldMapping.startTime, 'lessthan', record[fieldMapping.endTime]));
+            this.overlapList = new DataManager({ json: appointmentList_1 }).executeLocal(new Query().where(predicate));
+            if (this.parent.activeViewOptions.group.resources.length > 0) {
+                this.overlapList = this.filterEventsByResource(this.resources[resource], this.overlapList);
+            }
+            this.overlapList.forEach(function (obj) {
+                predicate = new Predicate(fieldMapping.endTime, 'greaterthanorequal', obj[fieldMapping.startTime]).
+                    and(new Predicate(fieldMapping.startTime, 'lessthanorequal', obj[fieldMapping.endTime]));
+                var filterList = new DataManager({ json: appointmentList_1 }).executeLocal(new Query().where(predicate));
+                if (_this.parent.activeViewOptions.group.resources.length > 0) {
+                    filterList = _this.filterEventsByResource(_this.resources[resource], filterList);
+                }
+                var collection = _this.overlapList.filter(function (val) { return filterList.indexOf(val) === -1; });
+                return appointment_1.concat(collection);
+            });
+            this.overlapList = this.overlapList.concat(appointment_1);
+            eventsList = this.overlapList;
+            for (var _i = 0, eventsList_1 = eventsList; _i < eventsList_1.length; _i++) {
+                var event_3 = eventsList_1[_i];
+                var record_1 = event_3;
+                var index = record_1.Index;
+                (isNullOrUndefined(this.overlapEvents[index])) ? this.overlapEvents[index] = [event_3] :
+                    this.overlapEvents[index].push(event_3);
+            }
+        }
+        if (eventsList.length > 0) {
+            var appLevel = eventsList.map(function (obj) { return obj.Index; });
+            appIndex = (appLevel.length > 0) ? this.getSmallestMissingNumber(appLevel) : 0;
+        }
+        return (appIndex === -1) ? 0 : appIndex;
+    };
+    VerticalEvent.prototype.adjustOverlapElements = function (args) {
+        var data = { appWidth: args.width, appLeft: args.left };
+        for (var i = 0, length1 = this.overlapEvents.length; i < length1; i++) {
+            if (!isNullOrUndefined(this.overlapEvents[i])) {
+                for (var j = 0, length2 = this.overlapEvents[i].length; j < length2; j++) {
+                    var dayCount = this.parent.activeViewOptions.group.byDate ? (this.resources.length * args.day) + args.resource :
+                        args.dayIndex;
+                    var element = this.element.querySelector('#e-appointment-wrapper-' + dayCount);
+                    if (element.childElementCount > 0) {
+                        var eleGuid = this.overlapEvents[i][j].Guid;
+                        if (element.querySelectorAll('div[data-guid="' + eleGuid + '"]').length > 0 && eleGuid !== args.record.Guid) {
+                            var apps = element.querySelector('div[data-guid="' + eleGuid + '"]');
+                            if (parseFloat(args.width) <= parseFloat(apps.style.width)) {
+                                (this.parent.enableRtl) ? apps.style.right = this.getEventLeft(args.width, i) :
+                                    apps.style.left = this.getEventLeft(args.width, i);
+                                apps.style.width = ((parseFloat(args.width))) + '%';
+                                data.appWidth = apps.style.width;
+                            }
+                        }
+                        else {
+                            var appWidth = args.width;
+                            if (isNullOrUndefined(this.overlapEvents[i - 1])) {
+                                appWidth = this.getEventWidth();
+                            }
+                            data.appWidth = appWidth;
+                            data.appLeft = this.getEventLeft(appWidth, args.index);
+                        }
+                    }
+                }
+            }
+        }
+        return data;
+    };
+    VerticalEvent.prototype.setAllDayRowHeight = function (height) {
+        for (var _i = 0, _a = this.allDayElement; _i < _a.length; _i++) {
+            var element = _a[_i];
+            element.style.height = (height / 12) + 'em';
+        }
+        this.animation.animate(this.allDayElement[0]);
+    };
+    VerticalEvent.prototype.addOrRemoveClass = function () {
+        var _this = this;
+        this.moreEvents.filter(function (element) {
+            if (!_this.parent.uiStateValues.expand && _this.allDayLevel > 2) {
+                addClass([element], EVENT_COUNT_CLASS);
+                element.setAttribute('tabindex', '-1');
+            }
+            else {
+                removeClass([element], EVENT_COUNT_CLASS);
+                element.setAttribute('tabindex', '0');
+            }
+        });
+        var moreEventCount = this.element.querySelector('.' + ALLDAY_APPOINTMENT_SECTION_CLASS);
+        if (this.parent.uiStateValues.expand) {
+            removeClass([moreEventCount], APPOINTMENT_ROW_EXPAND_CLASS);
+            addClass([moreEventCount], APPOINTMENT_ROW_COLLAPSE_CLASS);
+        }
+        else {
+            removeClass([moreEventCount], APPOINTMENT_ROW_COLLAPSE_CLASS);
+            addClass([moreEventCount], APPOINTMENT_ROW_EXPAND_CLASS);
+        }
+        (this.allDayLevel > 2) ? removeClass([moreEventCount], DISABLE_CLASS) : addClass([moreEventCount], DISABLE_CLASS);
+        var countCell = [].slice.call(this.element.querySelectorAll('.' + ROW_COUNT_WRAPPER_CLASS));
+        countCell.filter(function (element) {
+            (!_this.parent.uiStateValues.expand && _this.allDayLevel > 2) ? removeClass([element], DISABLE_CLASS) :
+                addClass([element], DISABLE_CLASS);
+        });
+    };
+    VerticalEvent.prototype.getEventHeight = function () {
+        var eventElement = createElement('div', { className: APPOINTMENT_CLASS, styles: 'visibility:hidden' });
+        var eventWrapper = this.element.querySelector('.' + ALLDAY_APPOINTMENT_WRAPPER_CLASS + ':first-child');
+        eventWrapper.appendChild(eventElement);
+        var height = eventElement.offsetHeight;
+        remove(eventElement);
+        return height;
+    };
+    VerticalEvent.prototype.rowExpandCollapse = function () {
+        var target = this.element.querySelector('.' + ALLDAY_APPOINTMENT_SECTION_CLASS);
+        this.parent.uiStateValues.expand = target.classList.contains(APPOINTMENT_ROW_EXPAND_CLASS);
+        var rowHeight;
+        if (this.parent.uiStateValues.expand) {
+            target.setAttribute('title', 'Collapse-all-day-section');
+            target.setAttribute('aria-label', 'Collapse section');
+            rowHeight = ((this.allDayLevel + 1) * this.getEventHeight()) + 4;
+        }
+        else {
+            target.setAttribute('title', 'Expand-all-day-section');
+            target.setAttribute('aria-label', 'Expand section');
+            rowHeight = (3 * this.getEventHeight()) + 4;
+        }
+        this.setAllDayRowHeight(rowHeight);
+        this.addOrRemoveClass();
+        this.animation.animate(target);
+    };
+    VerticalEvent.prototype.animationUiUpdate = function () {
+        this.parent.notify(contentReady, {});
+    };
+    return VerticalEvent;
+}(EventBase));
+
 var __extends$13 = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
@@ -14851,10 +15388,12 @@ var DragAndDrop = /** @__PURE__ @class */ (function (_super) {
     function DragAndDrop() {
         var _this = _super !== null && _super.apply(this, arguments) || this;
         _this.widthUptoCursorPoint = 0;
+        _this.heightUptoCursorPoint = 0;
         _this.cursorPointIndex = 0;
         _this.isHeaderRows = false;
         _this.isTimelineDayProcess = false;
         _this.widthPerMinute = 0;
+        _this.heightPerMinute = 0;
         _this.minDiff = 0;
         _this.isStepDragging = false;
         _this.isMorePopupOpened = false;
@@ -14862,16 +15401,16 @@ var DragAndDrop = /** @__PURE__ @class */ (function (_super) {
         return _this;
     }
     DragAndDrop.prototype.wireDragEvent = function (element, isAllDay) {
-        var dragAreaTarget = this.parent.activeView.isTimelineView() ? CONTENT_TABLE_CLASS : CURRENT_PANEL_CLASS;
         new Draggable(element, {
             abort: '.' + EVENT_RESIZE_CLASS,
             clone: true,
+            isDragScroll: true,
             enableTapHold: this.parent.isAdaptive,
             enableTailMode: (this.parent.eventDragArea) ? true : false,
             cursorAt: (this.parent.eventDragArea) ? { left: -20, top: -20 } : { left: 0, top: 0 },
             dragArea: (this.parent.eventDragArea) ?
                 document.querySelector(this.parent.eventDragArea) :
-                this.parent.element.querySelector('.' + dragAreaTarget),
+                this.parent.element.querySelector('.' + CONTENT_TABLE_CLASS),
             dragStart: this.dragStart.bind(this),
             drag: this.drag.bind(this),
             dragStop: this.dragStop.bind(this),
@@ -14932,7 +15471,9 @@ var DragAndDrop = /** @__PURE__ @class */ (function (_super) {
                     pointerEvents: 'none'
                 });
             }
-            topValue = formatUnit(Math.ceil(parseInt(e.top, 10) / cellHeight) * cellHeight);
+            var top_1 = parseInt(e.top, 10);
+            top_1 = top_1 < 0 ? 0 : top_1;
+            topValue = formatUnit(Math.ceil(top_1 / cellHeight) * cellHeight);
             var scrollHeight = this.parent.element.querySelector('.e-content-wrap').scrollHeight;
             var cloneBottom = parseInt(topValue, 10) + this.actionObj.clone.offsetHeight;
             if (cloneBottom > scrollHeight) {
@@ -14993,7 +15534,9 @@ var DragAndDrop = /** @__PURE__ @class */ (function (_super) {
             var viewElement = _this.parent.element.querySelector('.' + CONTENT_WRAP_CLASS);
             _this.scrollArgs = { element: viewElement, width: viewElement.scrollWidth, height: viewElement.scrollHeight };
             _this.widthPerMinute = (_this.actionObj.cellWidth / _this.actionObj.slotInterval) * _this.actionObj.interval;
+            _this.heightPerMinute = (_this.actionObj.cellHeight / _this.actionObj.slotInterval) * _this.actionObj.interval;
             _this.widthUptoCursorPoint = 0;
+            _this.heightUptoCursorPoint = 0;
             _this.cursorPointIndex = -1;
             _this.isHeaderRows = false;
             _this.isTimelineDayProcess = false;
@@ -15022,6 +15565,9 @@ var DragAndDrop = /** @__PURE__ @class */ (function (_super) {
                 _this.updateOriginalElement(_this.actionObj.clone);
                 _this.monthEvent = new MonthEvent(_this.parent);
             }
+            if (_this.parent.currentView === 'Day' || _this.parent.currentView === 'Week' || _this.parent.currentView === 'WorkWeek') {
+                _this.verticalEvent = new VerticalEvent(_this.parent);
+            }
         });
     };
     DragAndDrop.prototype.drag = function (e) {
@@ -15035,6 +15581,9 @@ var DragAndDrop = /** @__PURE__ @class */ (function (_super) {
             Math.ceil((Math.abs(this.actionObj.clone.getBoundingClientRect().left - this.actionObj.X) / this.widthPerMinute)) *
                 this.widthPerMinute : this.widthUptoCursorPoint;
         this.widthUptoCursorPoint = this.isMorePopupOpened ? this.actionObj.cellWidth : this.widthUptoCursorPoint;
+        this.heightUptoCursorPoint = (this.heightUptoCursorPoint === 0) ?
+            Math.ceil((Math.abs(this.actionObj.clone.getBoundingClientRect().top - this.actionObj.Y) / this.heightPerMinute)) *
+                this.heightPerMinute : this.heightUptoCursorPoint;
         this.isAllDayDrag = this.actionObj.clone.classList.contains(ALLDAY_APPOINTMENT_CLASS);
         if (this.isStepDragging && this.minDiff === 0) {
             this.calculateMinutesDiff(eventObj);
@@ -15057,7 +15606,6 @@ var DragAndDrop = /** @__PURE__ @class */ (function (_super) {
             else {
                 if (!(this.parent.currentView === 'Week' || this.parent.currentView === 'WorkWeek'
                     || this.parent.currentView === 'Day')) {
-                    this.actionObj.clone.style.height = formatUnit(this.actionObj.element.offsetHeight);
                     this.actionObj.clone.style.width = formatUnit(this.actionObj.element.offsetWidth);
                 }
             }
@@ -15269,13 +15817,13 @@ var DragAndDrop = /** @__PURE__ @class */ (function (_super) {
             * this.actionObj.cellHeight;
         offsetTop = offsetTop < 0 ? 0 : offsetTop;
         if (this.scrollEdges.top || this.scrollEdges.bottom) {
-            offsetTop = this.scrollEdges.top ? dragArea.scrollTop :
-                dragArea.scrollTop + dragArea.offsetHeight - this.actionObj.clone.offsetHeight;
+            offsetTop = this.scrollEdges.top ? dragArea.scrollTop - this.heightUptoCursorPoint + this.actionObj.cellHeight :
+                (dragArea.scrollTop + dragArea.offsetHeight - this.actionObj.clone.offsetHeight) +
+                    (this.actionObj.clone.offsetHeight - this.heightUptoCursorPoint);
             offsetTop = Math.round(offsetTop / this.actionObj.cellHeight) * this.actionObj.cellHeight;
             this.actionObj.clone.style.top = formatUnit(offsetTop);
         }
         var rowIndex = offsetTop / this.actionObj.cellHeight;
-        var heightPerMinute = this.actionObj.cellHeight / this.actionObj.slotInterval;
         var diffInMinutes = parseInt(this.actionObj.clone.style.top, 0) - offsetTop;
         var tr;
         if (this.isAllDayDrag) {
@@ -15309,10 +15857,9 @@ var DragAndDrop = /** @__PURE__ @class */ (function (_super) {
                 spanHours = addDays(resetTime(new Date(startTime.getTime())), 1).getTime() - startTime.getTime();
             }
             dragStart$$1 = new Date(parseInt(td.getAttribute('data-date'), 10));
-            dragStart$$1.setMinutes(dragStart$$1.getMinutes() + (diffInMinutes * heightPerMinute));
+            dragStart$$1.setMinutes(dragStart$$1.getMinutes() + (diffInMinutes * this.heightPerMinute));
             dragStart$$1.setMilliseconds(-spanHours);
             dragStart$$1 = this.calculateIntervalTime(dragStart$$1);
-            dragStart$$1.setMilliseconds(spanHours);
             dragEnd = new Date(dragStart$$1.getTime());
             if (this.actionObj.element.classList.contains(ALLDAY_APPOINTMENT_CLASS)) {
                 dragEnd.setMinutes(dragEnd.getMinutes() + this.actionObj.slotInterval);
@@ -15335,7 +15882,25 @@ var DragAndDrop = /** @__PURE__ @class */ (function (_super) {
         }
         this.actionObj.start = new Date(+dragStart$$1);
         this.actionObj.end = new Date(+dragEnd);
+        var event = this.getUpdatedEvent(this.actionObj.start, this.actionObj.end, this.actionObj.event);
+        this.updateEventHeight(event);
         this.updateTimePosition(this.actionObj.start);
+    };
+    DragAndDrop.prototype.updateEventHeight = function (event) {
+        this.verticalEvent.initializeValues();
+        var datesCount = 0;
+        for (var i = 0; i < this.actionObj.groupIndex; i++) {
+            datesCount = datesCount + this.verticalEvent.dateRender[i].length;
+        }
+        var dayIndex = this.actionObj.index - datesCount;
+        var record = this.verticalEvent.isSpannedEvent(event, dayIndex, this.actionObj.groupIndex);
+        var eStart = record[this.verticalEvent.fields.startTime];
+        var eEnd = record[this.verticalEvent.fields.endTime];
+        var topValue = 0;
+        var appHeight = this.verticalEvent.getHeight(eStart, eEnd);
+        topValue = this.verticalEvent.getTopValue(eStart, dayIndex, this.actionObj.groupIndex);
+        this.actionObj.clone.style.top = formatUnit(topValue);
+        this.actionObj.clone.style.height = formatUnit(appHeight);
     };
     DragAndDrop.prototype.updateAllDayEvents = function (startDate, endDate, colIndex) {
         var _this = this;
@@ -16136,668 +16701,10 @@ var __extends$17 = (undefined && undefined.__extends) || (function () {
     };
 })();
 /**
- * Vertical view appointment rendering
- */
-var VerticalEvent = /** @__PURE__ @class */ (function (_super) {
-    __extends$17(VerticalEvent, _super);
-    /**
-     * Constructor for vertical view
-     */
-    function VerticalEvent(parent) {
-        var _this = _super.call(this, parent) || this;
-        _this.dateRender = [];
-        _this.renderedEvents = [];
-        _this.renderedAllDayEvents = [];
-        _this.overlapEvents = [];
-        _this.moreEvents = [];
-        _this.overlapList = [];
-        _this.allDayEvents = [];
-        _this.slotCount = _this.parent.activeViewOptions.timeScale.slotCount;
-        _this.interval = _this.parent.activeViewOptions.timeScale.interval;
-        _this.allDayLevel = 0;
-        _this.startHour = _this.parent.activeView.getStartHour();
-        _this.endHour = _this.parent.activeView.getEndHour();
-        _this.element = _this.parent.activeView.getPanel();
-        _this.fields = _this.parent.eventFields;
-        _this.animation = new Animation({ progress: _this.animationUiUpdate.bind(_this) });
-        _this.addEventListener();
-        return _this;
-    }
-    VerticalEvent.prototype.renderAppointments = function () {
-        var wrapperElements = [].slice.call(this.parent.element.querySelectorAll('.' + BLOCK_APPOINTMENT_CLASS +
-            ',.' + APPOINTMENT_CLASS + ',.' + ROW_COUNT_WRAPPER_CLASS));
-        wrapperElements.forEach(function (element) { return remove(element); });
-        if (!this.element.querySelector('.' + WORK_CELLS_CLASS)) {
-            return;
-        }
-        this.allDayElement = [].slice.call(this.element.querySelectorAll('.' + ALLDAY_CELLS_CLASS));
-        this.setAllDayRowHeight(0);
-        if (this.parent.eventsProcessed.length === 0 && this.parent.blockProcessed.length === 0) {
-            return;
-        }
-        var expandCollapse = this.element.querySelector('.' + ALLDAY_APPOINTMENT_SECTION_CLASS);
-        EventHandler.remove(expandCollapse, 'click', this.rowExpandCollapse);
-        EventHandler.add(expandCollapse, 'click', this.rowExpandCollapse, this);
-        this.renderedEvents = [];
-        this.renderedAllDayEvents = [];
-        this.initializeValues();
-        this.processBlockEvents();
-        this.renderEvents('normalEvents');
-        if (this.allDayEvents.length > 0) {
-            this.allDayEvents = this.allDayEvents.filter(function (item, index, arr) {
-                return index === arr.map(function (item) { return item.Guid; }).indexOf(item.Guid);
-            });
-            removeClass(this.allDayElement, ALLDAY_ROW_ANIMATE_CLASS);
-            this.slots.push(this.parent.activeView.renderDates.map(function (date) { return +date; }));
-            this.renderEvents('allDayEvents');
-        }
-        this.parent.notify(contentReady, {});
-        addClass(this.allDayElement, ALLDAY_ROW_ANIMATE_CLASS);
-    };
-    VerticalEvent.prototype.initializeValues = function () {
-        var _this = this;
-        this.resources = (this.parent.activeViewOptions.group.resources.length > 0) ? this.parent.uiStateValues.isGroupAdaptive ?
-            [this.parent.resourceBase.lastResourceLevel[this.parent.uiStateValues.groupIndex]] :
-            this.parent.resourceBase.lastResourceLevel : [];
-        this.cellHeight = parseFloat(this.element.querySelector('.e-content-wrap tbody tr').getBoundingClientRect().height.toFixed(2));
-        this.dateRender[0] = this.parent.activeView.renderDates;
-        if (this.parent.activeViewOptions.group.resources.length > 0) {
-            this.resources.forEach(function (resource, index) { return _this.dateRender[index] = resource.renderDates; });
-        }
-    };
-    VerticalEvent.prototype.isValidEvent = function (eventObj, start, end, schedule) {
-        var isHourRange = end.getTime() > schedule.startHour.getTime() && start.getTime() < schedule.endHour.getTime();
-        var isSameRange = schedule.startHour.getTime() <= start.getTime() &&
-            eventObj[this.fields.startTime].getTime() >= schedule.startHour.getTime() &&
-            eventObj[this.fields.endTime].getTime() < schedule.endHour.getTime() && start.getTime() === end.getTime();
-        return isHourRange || isSameRange;
-    };
-    VerticalEvent.prototype.getHeight = function (start, end) {
-        var appHeight = (end.getTime() - start.getTime()) / (60 * 1000) * (this.cellHeight * this.slotCount) / this.interval;
-        appHeight = (appHeight < this.cellHeight) ? this.cellHeight : appHeight;
-        return appHeight;
-    };
-    VerticalEvent.prototype.appendEvent = function (eventObj, appointmentElement, index, appLeft) {
-        var appointmentWrap = [].slice.call(this.element.querySelectorAll('.' + APPOINTMENT_WRAPPER_CLASS));
-        if (this.parent.enableRtl) {
-            setStyleAttribute(appointmentElement, { 'right': appLeft });
-        }
-        else {
-            setStyleAttribute(appointmentElement, { 'left': appLeft });
-        }
-        var eventType = appointmentElement.classList.contains(BLOCK_APPOINTMENT_CLASS) ? 'blockEvent' : 'event';
-        var args = { data: eventObj, element: appointmentElement, cancel: false, type: eventType };
-        this.parent.trigger(eventRendered, args, function (eventArgs) {
-            if (!eventArgs.cancel) {
-                appointmentWrap[index].appendChild(appointmentElement);
-            }
-        });
-    };
-    VerticalEvent.prototype.processBlockEvents = function () {
-        var resources = this.getResourceList();
-        var dateCount = 0;
-        for (var _i = 0, resources_1 = resources; _i < resources_1.length; _i++) {
-            var resource = resources_1[_i];
-            var renderDates = this.dateRender[resource];
-            for (var day = 0, length_1 = renderDates.length; day < length_1; day++) {
-                var startDate = new Date(renderDates[day].getTime());
-                var endDate = addDays(renderDates[day], 1);
-                var filterEvents = this.filterEvents(startDate, endDate, this.parent.blockProcessed, this.resources[resource]);
-                for (var _a = 0, filterEvents_1 = filterEvents; _a < filterEvents_1.length; _a++) {
-                    var event_1 = filterEvents_1[_a];
-                    if (this.parent.resourceBase) {
-                        this.setValues(event_1, resource);
-                    }
-                    this.renderBlockEvents(event_1, day, resource, dateCount);
-                    this.cssClass = null;
-                    this.groupOrder = null;
-                }
-                dateCount += 1;
-            }
-        }
-    };
-    VerticalEvent.prototype.renderBlockEvents = function (eventObj, dayIndex, resource, dayCount) {
-        var spannedData = this.isSpannedEvent(eventObj, dayIndex, resource);
-        var eStart = spannedData[this.fields.startTime];
-        var eEnd = spannedData[this.fields.endTime];
-        var currentDate = resetTime(new Date(this.dateRender[resource][dayIndex].getTime()));
-        var schedule = getStartEndHours(currentDate, this.startHour, this.endHour);
-        if (eStart <= eEnd && this.isValidEvent(eventObj, eStart, eEnd, schedule)) {
-            var blockTop = void 0;
-            var blockHeight = void 0;
-            if (spannedData[this.fields.isAllDay]) {
-                var contentWrap = this.parent.element.querySelector('.' + CONTENT_WRAP_CLASS + ' table');
-                blockHeight = formatUnit(contentWrap.offsetHeight);
-                blockTop = formatUnit(0);
-            }
-            else {
-                blockHeight = formatUnit(this.getHeight(eStart, eEnd));
-                blockTop = formatUnit(this.getTopValue(eStart, dayIndex, resource));
-            }
-            var appointmentElement = this.createBlockAppointmentElement(eventObj, resource);
-            setStyleAttribute(appointmentElement, { 'width': '100%', 'height': blockHeight, 'top': blockTop });
-            var index = this.parent.activeViewOptions.group.byDate ? (this.resources.length * dayIndex) + resource : dayCount;
-            this.appendEvent(eventObj, appointmentElement, index, '0px');
-        }
-    };
-    VerticalEvent.prototype.renderEvents = function (eventType) {
-        removeClass(this.allDayElement, ALLDAY_ROW_ANIMATE_CLASS);
-        var eventCollection = (eventType === 'allDayEvents') ? this.sortByDateTime(this.allDayEvents) : undefined;
-        var resources = this.getResourceList();
-        var dateCount = 0;
-        for (var _i = 0, resources_2 = resources; _i < resources_2.length; _i++) {
-            var resource = resources_2[_i];
-            this.slots = [];
-            var renderDates = this.dateRender[resource];
-            this.slots.push(renderDates.map(function (date) { return +date; }));
-            for (var day = 0, length_2 = renderDates.length; day < length_2; day++) {
-                this.renderedEvents = [];
-                var startDate = new Date(renderDates[day].getTime());
-                var endDate = addDays(renderDates[day], 1);
-                var filterEvents = this.filterEvents(startDate, endDate, eventCollection, this.resources[resource]);
-                for (var _a = 0, filterEvents_2 = filterEvents; _a < filterEvents_2.length; _a++) {
-                    var event_2 = filterEvents_2[_a];
-                    if (this.parent.resourceBase) {
-                        this.setValues(event_2, resource);
-                    }
-                    if (eventType === 'allDayEvents') {
-                        this.renderAllDayEvents(event_2, day, resource, dateCount);
-                    }
-                    else {
-                        if (this.isAllDayAppointment(event_2)) {
-                            this.allDayEvents.push(extend({}, event_2, null, true));
-                        }
-                        else {
-                            this.renderNormalEvents(event_2, day, resource, dateCount);
-                        }
-                    }
-                    this.cssClass = null;
-                    this.groupOrder = null;
-                }
-                dateCount += 1;
-            }
-        }
-    };
-    VerticalEvent.prototype.setValues = function (event, resourceIndex) {
-        if (this.parent.activeViewOptions.group.resources.length > 0) {
-            this.cssClass = this.resources[resourceIndex].cssClass;
-            this.groupOrder = this.resources[resourceIndex].groupOrder;
-        }
-        else {
-            this.cssClass = this.parent.resourceBase.getCssClass(event);
-        }
-    };
-    VerticalEvent.prototype.getResourceList = function () {
-        var resources = Array.apply(null, {
-            length: (this.parent.activeViewOptions.group.resources.length > 0 && !this.parent.uiStateValues.isGroupAdaptive) ?
-                this.resources.length : 1
-        }).map(function (value, index) { return index; });
-        return resources;
-    };
-    VerticalEvent.prototype.createAppointmentElement = function (record, isAllDay, data, resource) {
-        var fieldMapping = this.parent.eventFields;
-        var recordSubject = (record[fieldMapping.subject] || this.parent.eventSettings.fields.subject.default);
-        var appointmentWrapper = createElement('div', {
-            className: APPOINTMENT_CLASS,
-            attrs: {
-                'data-id': 'Appointment_' + record[fieldMapping.id],
-                'data-guid': record.Guid,
-                'role': 'button',
-                'tabindex': '0',
-                'aria-readonly': this.parent.eventBase.getReadonlyAttribute(record),
-                'aria-selected': 'false',
-                'aria-grabbed': 'true',
-                'aria-label': recordSubject
-            }
-        });
-        if (record[this.fields.isReadonly]) {
-            addClass([appointmentWrapper], 'e-read-only');
-        }
-        var appointmentDetails = createElement('div', { className: APPOINTMENT_DETAILS });
-        appointmentWrapper.appendChild(appointmentDetails);
-        if (this.parent.activeViewOptions.group.resources.length > 0) {
-            var resourceIndex = this.parent.uiStateValues.isGroupAdaptive ? this.parent.uiStateValues.groupIndex : resource;
-            appointmentWrapper.setAttribute('data-group-index', resourceIndex.toString());
-        }
-        var templateElement;
-        var eventData = data;
-        if (!isNullOrUndefined(this.parent.activeViewOptions.eventTemplate)) {
-            var elementId = this.parent.element.id + '_';
-            var viewName = this.parent.activeViewOptions.eventTemplateName;
-            var templateId = elementId + viewName + 'eventTemplate';
-            templateElement = this.parent.getAppointmentTemplate()(record, this.parent, 'eventTemplate', templateId, false);
-        }
-        else {
-            var appointmentSubject = createElement('div', { className: SUBJECT_CLASS, innerHTML: recordSubject });
-            if (isAllDay) {
-                if (record[fieldMapping.isAllDay]) {
-                    templateElement = [appointmentSubject];
-                }
-                else {
-                    templateElement = [];
-                    var appointmentStartTime = createElement('div', {
-                        className: APPOINTMENT_TIME + (this.parent.isAdaptive ? ' ' + DISABLE_CLASS : ''),
-                        innerHTML: this.parent.getTimeString(record[fieldMapping.startTime])
-                    });
-                    var appointmentEndTime = createElement('div', {
-                        className: APPOINTMENT_TIME + (this.parent.isAdaptive ? ' ' + DISABLE_CLASS : ''),
-                        innerHTML: this.parent.getTimeString(record[fieldMapping.endTime]),
-                    });
-                    addClass([appointmentSubject], 'e-text-center');
-                    if (!eventData.isLeft) {
-                        templateElement.push(appointmentStartTime);
-                    }
-                    templateElement.push(appointmentSubject);
-                    if (!eventData.isRight) {
-                        templateElement.push(appointmentEndTime);
-                    }
-                }
-            }
-            else {
-                var timeStr = this.parent.getTimeString(record[fieldMapping.startTime]) + ' - ' +
-                    this.parent.getTimeString(record[fieldMapping.endTime]);
-                var appointmentTime = createElement('div', {
-                    className: APPOINTMENT_TIME + (this.parent.isAdaptive ? ' ' + DISABLE_CLASS : ''),
-                    innerHTML: timeStr,
-                });
-                var appointmentLocation = createElement('div', {
-                    className: LOCATION_CLASS,
-                    innerHTML: (record[fieldMapping.location] || this.parent.eventSettings.fields.location.default || '')
-                });
-                templateElement = [appointmentSubject, appointmentTime, appointmentLocation];
-            }
-        }
-        append(templateElement, appointmentDetails);
-        if (!this.parent.isAdaptive &&
-            (!isNullOrUndefined(record[fieldMapping.recurrenceRule]) || !isNullOrUndefined(record[fieldMapping.recurrenceID]))) {
-            var iconClass = (record[fieldMapping.id] === record[fieldMapping.recurrenceID]) ?
-                EVENT_RECURRENCE_ICON_CLASS : EVENT_RECURRENCE_EDIT_ICON_CLASS;
-            var recurrenceIcon = createElement('div', { className: ICON + ' ' + iconClass });
-            isAllDay ? appointmentDetails.appendChild(recurrenceIcon) : appointmentWrapper.appendChild(recurrenceIcon);
-        }
-        this.renderSpannedIcon(isAllDay ? appointmentDetails : appointmentWrapper, eventData);
-        if (!isNullOrUndefined(this.cssClass)) {
-            addClass([appointmentWrapper], this.cssClass);
-        }
-        this.applyResourceColor(appointmentWrapper, record, 'backgroundColor', this.groupOrder);
-        this.renderResizeHandler(appointmentWrapper, eventData, record[this.fields.isReadonly]);
-        return appointmentWrapper;
-    };
-    VerticalEvent.prototype.createMoreIndicator = function (allDayRow, count, currentDay) {
-        var index = currentDay + count;
-        var countWrapper = allDayRow[index];
-        if (countWrapper.childElementCount <= 0) {
-            var innerCountWrap = createElement('div', {
-                className: ROW_COUNT_WRAPPER_CLASS,
-                id: ROW_COUNT_WRAPPER_CLASS + '-' + index.toString()
-            });
-            var moreIndicatorElement = createElement('div', {
-                className: MORE_INDICATOR_CLASS,
-                attrs: { 'tabindex': '0', 'data-index': index.toString(), 'data-count': '1' },
-                innerHTML: '+1&nbsp;' + (this.parent.isAdaptive ? '' : this.parent.localeObj.getConstant('more'))
-            });
-            innerCountWrap.appendChild(moreIndicatorElement);
-            countWrapper.appendChild(innerCountWrap);
-            EventHandler.add(moreIndicatorElement, 'click', this.rowExpandCollapse, this);
-        }
-        else {
-            var countCell = countWrapper.querySelector('.' + MORE_INDICATOR_CLASS);
-            var moreCount = parseInt(countCell.getAttribute('data-count'), 10) + 1;
-            countCell.setAttribute('data-count', moreCount.toString());
-            countCell.innerHTML = '+' + moreCount + '&nbsp;' + (this.parent.isAdaptive ? '' : this.parent.localeObj.getConstant('more'));
-        }
-    };
-    VerticalEvent.prototype.renderSpannedIcon = function (element, spanEvent) {
-        var iconElement = createElement('div', { className: EVENT_INDICATOR_CLASS + ' ' + ICON });
-        if (spanEvent.isLeft) {
-            var iconLeft = iconElement.cloneNode();
-            addClass([iconLeft], EVENT_ICON_LEFT_CLASS);
-            prepend([iconLeft], element);
-        }
-        if (spanEvent.isRight) {
-            var iconRight = iconElement.cloneNode();
-            addClass([iconRight], EVENT_ICON_RIGHT_CLASS);
-            append([iconRight], element);
-        }
-        if (spanEvent.isTop) {
-            var iconTop = iconElement.cloneNode();
-            addClass([iconTop], EVENT_ICON_UP_CLASS);
-            prepend([iconTop], element);
-        }
-        if (spanEvent.isBottom) {
-            var iconBottom = iconElement.cloneNode();
-            addClass([iconBottom], EVENT_ICON_DOWN_CLASS);
-            append([iconBottom], element);
-        }
-    };
-    VerticalEvent.prototype.isSpannedEvent = function (record, day, resource) {
-        var currentDate = resetTime(this.dateRender[resource][day]);
-        var fieldMapping = this.parent.eventFields;
-        var startEndHours = getStartEndHours(currentDate, this.startHour, this.endHour);
-        var event = extend({}, record, null, true);
-        event.isSpanned = { isBottom: false, isTop: false };
-        if (record[fieldMapping.startTime].getTime() < startEndHours.startHour.getTime()) {
-            event[fieldMapping.startTime] = startEndHours.startHour;
-            event.isSpanned.isTop = true;
-        }
-        if (record[fieldMapping.endTime].getTime() > startEndHours.endHour.getTime()) {
-            event[fieldMapping.endTime] = startEndHours.endHour;
-            event.isSpanned.isBottom = true;
-        }
-        return event;
-    };
-    VerticalEvent.prototype.renderAllDayEvents = function (eventObj, dayIndex, resource, dayCount) {
-        var _this = this;
-        var currentDates = this.dateRender[resource];
-        if (this.parent.activeViewOptions.group.byDate) {
-            this.slots[0] = [this.dateRender[resource][dayIndex].getTime()];
-            currentDates = [this.dateRender[resource][dayIndex]];
-        }
-        var record = this.splitEvent(eventObj, currentDates)[0];
-        var allDayRowCell = this.element.querySelector('.' + ALLDAY_CELLS_CLASS + ':first-child');
-        var cellTop = allDayRowCell.offsetTop;
-        var eStart = new Date(record[this.parent.eventFields.startTime].getTime());
-        var eEnd = new Date(record[this.parent.eventFields.endTime].getTime());
-        var appWidth = 0;
-        var topValue = 1;
-        var isDateRange = currentDates[0].getTime() <= eStart.getTime() &&
-            addDays(currentDates.slice(-1)[0], 1).getTime() >= eStart.getTime();
-        if (eStart <= eEnd && isDateRange) {
-            var isAlreadyRendered = [];
-            if (this.renderedAllDayEvents[resource]) {
-                isAlreadyRendered = this.renderedAllDayEvents[resource].filter(function (event) {
-                    return event.Guid === eventObj.Guid;
-                });
-                if (this.parent.activeViewOptions.group.byDate) {
-                    isAlreadyRendered = isAlreadyRendered.filter(function (event) {
-                        return event[_this.parent.eventFields.startTime] >= currentDates[dayIndex] &&
-                            event[_this.parent.eventFields.endTime] <= addDays(new Date(+currentDates[dayIndex]), 1);
-                    });
-                }
-            }
-            if (isAlreadyRendered.length === 0) {
-                var allDayDifference_1 = record.data.count;
-                var allDayIndex_1 = this.getOverlapIndex(record, dayIndex, true, resource);
-                record.Index = allDayIndex_1;
-                this.allDayLevel = (this.allDayLevel < allDayIndex_1) ? allDayIndex_1 : this.allDayLevel;
-                var widthAdjustment = record.data.isRight ? 0 :
-                    this.parent.currentView === 'Day' ? 4 : 7;
-                if (allDayDifference_1 >= 0) {
-                    appWidth = (allDayDifference_1 * 100) - widthAdjustment;
-                }
-                if (isNullOrUndefined(this.renderedAllDayEvents[resource])) {
-                    this.renderedAllDayEvents[resource] = [];
-                }
-                this.renderedAllDayEvents[resource].push(extend({}, record, null, true));
-                var allDayRow_1 = [].slice.call(this.element.querySelector('.' + ALLDAY_ROW_CLASS).children);
-                var wIndex_1 = this.parent.activeViewOptions.group.byDate ? (this.resources.length * dayIndex) + resource : dayCount;
-                var eventWrapper_1 = this.element.querySelector('.' + ALLDAY_APPOINTMENT_WRAPPER_CLASS +
-                    ':nth-child(' + (wIndex_1 + 1) + ')');
-                var appointmentElement_1 = this.createAppointmentElement(eventObj, true, record.data, resource);
-                addClass([appointmentElement_1], ALLDAY_APPOINTMENT_CLASS);
-                var args = { data: eventObj, element: appointmentElement_1, cancel: false };
-                this.parent.trigger(eventRendered, args, function (eventArgs) {
-                    if (!eventArgs.cancel) {
-                        eventWrapper_1.appendChild(appointmentElement_1);
-                        var appHeight = appointmentElement_1.offsetHeight;
-                        topValue += (allDayIndex_1 === 0 ? cellTop : (cellTop + (allDayIndex_1 * appHeight))) + 1;
-                        setStyleAttribute(appointmentElement_1, { 'width': appWidth + '%', 'top': formatUnit(topValue) });
-                        if (allDayIndex_1 > 1) {
-                            _this.moreEvents.push(appointmentElement_1);
-                            for (var count = 0, length_3 = allDayDifference_1; count < length_3; count++) {
-                                _this.createMoreIndicator(allDayRow_1, count, wIndex_1);
-                            }
-                        }
-                        allDayRowCell.setAttribute('data-count', _this.allDayLevel.toString());
-                        var allDayRowHeight = ((!_this.parent.uiStateValues.expand && _this.allDayLevel > 2) ?
-                            (3 * appHeight) : ((_this.allDayLevel + 1) * appHeight)) + 4;
-                        _this.setAllDayRowHeight(allDayRowHeight);
-                        _this.addOrRemoveClass();
-                        _this.wireAppointmentEvents(appointmentElement_1, true, eventObj);
-                    }
-                });
-            }
-        }
-    };
-    VerticalEvent.prototype.renderNormalEvents = function (eventObj, dayIndex, resource, dayCount) {
-        var record = this.isSpannedEvent(eventObj, dayIndex, resource);
-        var eStart = record[this.fields.startTime];
-        var eEnd = record[this.fields.endTime];
-        var appWidth = '0%';
-        var appLeft = '0%';
-        var topValue = 0;
-        var currentDate = resetTime(new Date(this.dateRender[resource][dayIndex].getTime()));
-        var schedule = getStartEndHours(currentDate, this.startHour, this.endHour);
-        var isValidEvent = this.isValidEvent(eventObj, eStart, eEnd, schedule);
-        if (eStart <= eEnd && isValidEvent) {
-            var appHeight = this.getHeight(eStart, eEnd);
-            if (eStart.getTime() > schedule.startHour.getTime()) {
-                topValue = this.getTopValue(eStart, dayIndex, resource);
-            }
-            var appIndex = this.getOverlapIndex(record, dayIndex, false, resource);
-            record.Index = appIndex;
-            this.overlapList.push(record);
-            if (this.overlapList.length > 1) {
-                if (isNullOrUndefined(this.overlapEvents[appIndex])) {
-                    this.overlapEvents[appIndex] = [];
-                }
-                this.overlapEvents[appIndex].push(record);
-            }
-            else {
-                this.overlapEvents = [];
-                this.overlapEvents.push([record]);
-            }
-            appWidth = this.getEventWidth();
-            var argsData = {
-                index: appIndex, left: appLeft, width: appWidth,
-                day: dayIndex, dayIndex: dayCount, record: record, resource: resource
-            };
-            var tempData = this.adjustOverlapElements(argsData);
-            appWidth = (tempData.appWidth);
-            if (isNullOrUndefined(this.renderedEvents[resource])) {
-                this.renderedEvents[resource] = [];
-            }
-            this.renderedEvents[resource].push(extend({}, record, null, true));
-            var appointmentElement = this.createAppointmentElement(eventObj, false, record.isSpanned, resource);
-            setStyleAttribute(appointmentElement, { 'width': tempData.appWidth, 'height': appHeight + 'px', 'top': topValue + 'px' });
-            var iconHeight = appointmentElement.querySelectorAll('.' + EVENT_INDICATOR_CLASS).length * 15;
-            var maxHeight = appHeight - 40 - iconHeight;
-            var subjectElement = appointmentElement.querySelector('.' + SUBJECT_CLASS);
-            if (!this.parent.isAdaptive && subjectElement) {
-                subjectElement.style.maxHeight = formatUnit(maxHeight);
-            }
-            var index = this.parent.activeViewOptions.group.byDate ? (this.resources.length * dayIndex) + resource : dayCount;
-            this.appendEvent(eventObj, appointmentElement, index, tempData.appLeft);
-            this.wireAppointmentEvents(appointmentElement, false, eventObj);
-        }
-    };
-    VerticalEvent.prototype.getEventWidth = function () {
-        var width = this.parent.currentView === 'Day' ? 97 : 94;
-        var tempWidth = ((width - this.overlapEvents.length) / this.overlapEvents.length);
-        return (tempWidth < 0 ? 0 : tempWidth) + '%';
-    };
-    VerticalEvent.prototype.getEventLeft = function (appWidth, index) {
-        var tempLeft = (parseFloat(appWidth) + 1) * index;
-        return (tempLeft > 99 ? 99 : tempLeft) + '%';
-    };
-    VerticalEvent.prototype.getTopValue = function (date, day, resource) {
-        var startEndHours = getStartEndHours(resetTime(this.dateRender[resource][day]), this.startHour, this.endHour);
-        var startHour = startEndHours.startHour;
-        var diffInMinutes = ((date.getHours() - startHour.getHours()) * 60) + (date.getMinutes() - startHour.getMinutes());
-        return (diffInMinutes * this.cellHeight * this.slotCount) / this.interval;
-    };
-    VerticalEvent.prototype.getOverlapIndex = function (record, day, isAllDay, resource) {
-        var _this = this;
-        var fieldMapping = this.parent.eventFields;
-        var predicate;
-        var eventsList = [];
-        var appIndex = -1;
-        this.overlapEvents = [];
-        if (isAllDay) {
-            if (!isNullOrUndefined(this.renderedAllDayEvents[resource])) {
-                var date_1 = resetTime(new Date(this.dateRender[resource][day].getTime()));
-                eventsList = this.renderedAllDayEvents[resource].filter(function (app) {
-                    return resetTime(app[fieldMapping.startTime]).getTime() <= date_1.getTime() &&
-                        resetTime(app[fieldMapping.endTime]).getTime() >= date_1.getTime();
-                });
-                if (this.parent.activeViewOptions.group.resources.length > 0) {
-                    eventsList = this.filterEventsByResource(this.resources[resource], eventsList);
-                }
-            }
-        }
-        else {
-            var appointmentList_1 = !isNullOrUndefined(this.renderedEvents[resource]) ? this.renderedEvents[resource] : [];
-            var appointment_1 = [];
-            predicate = new Predicate(fieldMapping.endTime, 'greaterthan', record[fieldMapping.startTime]).
-                and(new Predicate(fieldMapping.startTime, 'lessthan', record[fieldMapping.endTime]));
-            this.overlapList = new DataManager({ json: appointmentList_1 }).executeLocal(new Query().where(predicate));
-            if (this.parent.activeViewOptions.group.resources.length > 0) {
-                this.overlapList = this.filterEventsByResource(this.resources[resource], this.overlapList);
-            }
-            this.overlapList.forEach(function (obj) {
-                predicate = new Predicate(fieldMapping.endTime, 'greaterthanorequal', obj[fieldMapping.startTime]).
-                    and(new Predicate(fieldMapping.startTime, 'lessthanorequal', obj[fieldMapping.endTime]));
-                var filterList = new DataManager({ json: appointmentList_1 }).executeLocal(new Query().where(predicate));
-                if (_this.parent.activeViewOptions.group.resources.length > 0) {
-                    filterList = _this.filterEventsByResource(_this.resources[resource], filterList);
-                }
-                var collection = _this.overlapList.filter(function (val) { return filterList.indexOf(val) === -1; });
-                return appointment_1.concat(collection);
-            });
-            this.overlapList = this.overlapList.concat(appointment_1);
-            eventsList = this.overlapList;
-            for (var _i = 0, eventsList_1 = eventsList; _i < eventsList_1.length; _i++) {
-                var event_3 = eventsList_1[_i];
-                var record_1 = event_3;
-                var index = record_1.Index;
-                (isNullOrUndefined(this.overlapEvents[index])) ? this.overlapEvents[index] = [event_3] :
-                    this.overlapEvents[index].push(event_3);
-            }
-        }
-        if (eventsList.length > 0) {
-            var appLevel = eventsList.map(function (obj) { return obj.Index; });
-            appIndex = (appLevel.length > 0) ? this.getSmallestMissingNumber(appLevel) : 0;
-        }
-        return (appIndex === -1) ? 0 : appIndex;
-    };
-    VerticalEvent.prototype.adjustOverlapElements = function (args) {
-        var data = { appWidth: args.width, appLeft: args.left };
-        for (var i = 0, length1 = this.overlapEvents.length; i < length1; i++) {
-            if (!isNullOrUndefined(this.overlapEvents[i])) {
-                for (var j = 0, length2 = this.overlapEvents[i].length; j < length2; j++) {
-                    var dayCount = this.parent.activeViewOptions.group.byDate ? (this.resources.length * args.day) + args.resource :
-                        args.dayIndex;
-                    var element = this.element.querySelector('#e-appointment-wrapper-' + dayCount);
-                    if (element.childElementCount > 0) {
-                        var eleGuid = this.overlapEvents[i][j].Guid;
-                        if (element.querySelectorAll('div[data-guid="' + eleGuid + '"]').length > 0 && eleGuid !== args.record.Guid) {
-                            var apps = element.querySelector('div[data-guid="' + eleGuid + '"]');
-                            if (parseFloat(args.width) <= parseFloat(apps.style.width)) {
-                                (this.parent.enableRtl) ? apps.style.right = this.getEventLeft(args.width, i) :
-                                    apps.style.left = this.getEventLeft(args.width, i);
-                                apps.style.width = ((parseFloat(args.width))) + '%';
-                                data.appWidth = apps.style.width;
-                            }
-                        }
-                        else {
-                            var appWidth = args.width;
-                            if (isNullOrUndefined(this.overlapEvents[i - 1])) {
-                                appWidth = this.getEventWidth();
-                            }
-                            data.appWidth = appWidth;
-                            data.appLeft = this.getEventLeft(appWidth, args.index);
-                        }
-                    }
-                }
-            }
-        }
-        return data;
-    };
-    VerticalEvent.prototype.setAllDayRowHeight = function (height) {
-        for (var _i = 0, _a = this.allDayElement; _i < _a.length; _i++) {
-            var element = _a[_i];
-            element.style.height = (height / 12) + 'em';
-        }
-        this.animation.animate(this.allDayElement[0]);
-    };
-    VerticalEvent.prototype.addOrRemoveClass = function () {
-        var _this = this;
-        this.moreEvents.filter(function (element) {
-            if (!_this.parent.uiStateValues.expand && _this.allDayLevel > 2) {
-                addClass([element], EVENT_COUNT_CLASS);
-                element.setAttribute('tabindex', '-1');
-            }
-            else {
-                removeClass([element], EVENT_COUNT_CLASS);
-                element.setAttribute('tabindex', '0');
-            }
-        });
-        var moreEventCount = this.element.querySelector('.' + ALLDAY_APPOINTMENT_SECTION_CLASS);
-        if (this.parent.uiStateValues.expand) {
-            removeClass([moreEventCount], APPOINTMENT_ROW_EXPAND_CLASS);
-            addClass([moreEventCount], APPOINTMENT_ROW_COLLAPSE_CLASS);
-        }
-        else {
-            removeClass([moreEventCount], APPOINTMENT_ROW_COLLAPSE_CLASS);
-            addClass([moreEventCount], APPOINTMENT_ROW_EXPAND_CLASS);
-        }
-        (this.allDayLevel > 2) ? removeClass([moreEventCount], DISABLE_CLASS) : addClass([moreEventCount], DISABLE_CLASS);
-        var countCell = [].slice.call(this.element.querySelectorAll('.' + ROW_COUNT_WRAPPER_CLASS));
-        countCell.filter(function (element) {
-            (!_this.parent.uiStateValues.expand && _this.allDayLevel > 2) ? removeClass([element], DISABLE_CLASS) :
-                addClass([element], DISABLE_CLASS);
-        });
-    };
-    VerticalEvent.prototype.getEventHeight = function () {
-        var eventElement = createElement('div', { className: APPOINTMENT_CLASS, styles: 'visibility:hidden' });
-        var eventWrapper = this.element.querySelector('.' + ALLDAY_APPOINTMENT_WRAPPER_CLASS + ':first-child');
-        eventWrapper.appendChild(eventElement);
-        var height = eventElement.offsetHeight;
-        remove(eventElement);
-        return height;
-    };
-    VerticalEvent.prototype.rowExpandCollapse = function () {
-        var target = this.element.querySelector('.' + ALLDAY_APPOINTMENT_SECTION_CLASS);
-        this.parent.uiStateValues.expand = target.classList.contains(APPOINTMENT_ROW_EXPAND_CLASS);
-        var rowHeight;
-        if (this.parent.uiStateValues.expand) {
-            target.setAttribute('title', 'Collapse-all-day-section');
-            target.setAttribute('aria-label', 'Collapse section');
-            rowHeight = ((this.allDayLevel + 1) * this.getEventHeight()) + 4;
-        }
-        else {
-            target.setAttribute('title', 'Expand-all-day-section');
-            target.setAttribute('aria-label', 'Expand section');
-            rowHeight = (3 * this.getEventHeight()) + 4;
-        }
-        this.setAllDayRowHeight(rowHeight);
-        this.addOrRemoveClass();
-        this.animation.animate(target);
-    };
-    VerticalEvent.prototype.animationUiUpdate = function () {
-        this.parent.notify(contentReady, {});
-    };
-    return VerticalEvent;
-}(EventBase));
-
-var __extends$16 = (undefined && undefined.__extends) || (function () {
-    var extendStatics = function (d, b) {
-        extendStatics = Object.setPrototypeOf ||
-            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
-        return extendStatics(d, b);
-    };
-    return function (d, b) {
-        extendStatics(d, b);
-        function __() { this.constructor = d; }
-        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-    };
-})();
-/**
  * vertical view
  */
 var VerticalView = /** @__PURE__ @class */ (function (_super) {
-    __extends$16(VerticalView, _super);
+    __extends$17(VerticalView, _super);
     /**
      * Constructor for vertical view
      */
@@ -17502,7 +17409,7 @@ var VerticalView = /** @__PURE__ @class */ (function (_super) {
     return VerticalView;
 }(ViewBase));
 
-var __extends$15 = (undefined && undefined.__extends) || (function () {
+var __extends$16 = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -17519,7 +17426,7 @@ var __extends$15 = (undefined && undefined.__extends) || (function () {
  * day view
  */
 var Day = /** @__PURE__ @class */ (function (_super) {
-    __extends$15(Day, _super);
+    __extends$16(Day, _super);
     /**
      * Constructor for day view
      */
@@ -17691,6 +17598,11 @@ var Month = /** @__PURE__ @class */ (function (_super) {
         if (args.scrollPosition) {
             content.scrollTop = args.scrollPosition.top;
             content.scrollLeft = args.scrollPosition.left;
+        }
+        else {
+            var headerCell = document.querySelector('.' + HEADER_CELLS_CLASS + '[data-date="'
+                + this.parent.selectedDate.getTime() + '"]');
+            content.scrollLeft = headerCell !== null ? headerCell.offsetLeft : 0;
         }
     };
     Month.prototype.setContentHeight = function (content, leftPanelElement, height) {
@@ -20727,7 +20639,7 @@ var ExcelExport = /** @__PURE__ @class */ (function () {
         var _loop_1 = function (event_1) {
             var columnData = [];
             fields.forEach(function (field, n) {
-                var columnRule = { index: n + 1, value: event_1[field || ''] };
+                var columnRule = { index: n + 1, value: event_1[field] || '' };
                 if (field === _this.parent.eventFields.startTime || field === _this.parent.eventFields.endTime) {
                     var styleRule = { fontSize: 12, numberFormat: 'm/d/yyyy h:mm AM/PM' };
                     columnRule = extend({}, columnRule, { style: styleRule }, true);
@@ -20849,5 +20761,5 @@ var Print = /** @__PURE__ @class */ (function () {
  * Export Schedule components
  */
 
-export { Schedule, cellClick, cellDoubleClick, select, hover, actionBegin, actionComplete, actionFailure, navigating, renderCell, eventClick, eventRendered, dataBinding, dataBound, popupOpen, popupClose, dragStart, drag, dragStop, resizeStart, resizing, resizeStop, initialLoad, initialEnd, dataReady, eventsLoaded, contentReady, scroll, virtualScroll, scrollUiUpdate, uiUpdate, documentClick, cellMouseDown, WEEK_LENGTH, MS_PER_DAY, MS_PER_MINUTE, getElementHeightFromClass, getTranslateY, getWeekFirstDate, getWeekLastDate, firstDateOfMonth, lastDateOfMonth, getWeekNumber, setTime, resetTime, getDateInMs, getDateCount, addDays, addMonths, addYears, getStartEndHours, getMaxDays, getDaysCount, getDateFromString, getScrollBarWidth, findIndexInData, getOuterHeight, removeChildren, Resize, DragAndDrop, HeaderRenderer, ViewHelper, ViewBase, Day, Week, WorkWeek, Month, Agenda, MonthAgenda, TimelineViews, TimelineMonth, TimelineYear, Timezone, timezoneData, ICalendarExport, ICalendarImport, ExcelExport, Print, RecurrenceEditor, Gregorian, Islamic };
+export { Schedule, cellClick, cellDoubleClick, moreEventsClick, select, hover, actionBegin, actionComplete, actionFailure, navigating, renderCell, eventClick, eventRendered, dataBinding, dataBound, popupOpen, popupClose, dragStart, drag, dragStop, resizeStart, resizing, resizeStop, initialLoad, initialEnd, dataReady, eventsLoaded, contentReady, scroll, virtualScroll, scrollUiUpdate, uiUpdate, documentClick, cellMouseDown, WEEK_LENGTH, MS_PER_DAY, MS_PER_MINUTE, getElementHeightFromClass, getTranslateY, getWeekFirstDate, getWeekLastDate, firstDateOfMonth, lastDateOfMonth, getWeekNumber, setTime, resetTime, getDateInMs, getDateCount, addDays, addMonths, addYears, getStartEndHours, getMaxDays, getDaysCount, getDateFromString, getScrollBarWidth, findIndexInData, getOuterHeight, removeChildren, Resize, DragAndDrop, HeaderRenderer, ViewHelper, ViewBase, Day, Week, WorkWeek, Month, Agenda, MonthAgenda, TimelineViews, TimelineMonth, TimelineYear, Timezone, timezoneData, ICalendarExport, ICalendarImport, ExcelExport, Print, RecurrenceEditor, generateSummary, generate, getDateFromRecurrenceDateString, extractObjectFromRule, getCalendarUtil, getRecurrenceStringFromDate, Gregorian, Islamic };
 //# sourceMappingURL=ej2-schedule.es5.js.map

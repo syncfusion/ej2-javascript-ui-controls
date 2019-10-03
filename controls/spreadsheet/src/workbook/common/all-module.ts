@@ -1,5 +1,5 @@
 import { Workbook, DataBind } from '../../workbook/index';
-import { WorkbookSave, WorkbookNumberFormat, WorkbookFormula, WorkbookOpen } from '../integrations/index';
+import { WorkbookSave, WorkbookNumberFormat, WorkbookFormula, WorkbookOpen, WorkbookSort } from '../integrations/index';
 import { WorkbookEdit, WorkbookCellFormat } from '../actions/index';
 /**
  * Workbook all module.
@@ -13,7 +13,7 @@ export class WorkbookAllModule {
     constructor() {
         Workbook.Inject(
             DataBind, WorkbookSave, WorkbookNumberFormat, WorkbookCellFormat, WorkbookEdit,
-            WorkbookFormula, WorkbookOpen);
+            WorkbookFormula, WorkbookOpen, WorkbookSort);
     }
 
     /**

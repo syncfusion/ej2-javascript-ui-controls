@@ -1,6 +1,8 @@
 import { DocumentEditor } from '../../../src/document-editor/document-editor';
+import { WCharacterFormat } from '../../../src/document-editor/implementation/format/character-format';
 import { createElement } from '@syncfusion/ej2-base';
-import { Editor, TableWidget } from '../../../src/index';
+import { Editor, TableWidget, TextElementBox, ParagraphWidget, LineWidget, DocumentEditorContainer } from '../../../src/index';
+import { Toolbar } from '../../../src/document-editor-container/tool-bar/tool-bar';
 import { TestHelper } from '../../test-helper.spec';
 import { Selection, SelectionCharacterFormat } from '../../../src/index';
 import { EditorHistory } from '../../../src/document-editor/implementation/editor-history/editor-history';
@@ -111,4 +113,77 @@ describe('Paste Validation with history with multiple options', () => {
         expect(editor.selection.characterFormat.bold).toBe(true);
     });
 
+});
+
+describe('Merge Formatting Validation', () => {
+    let editor: DocumentEditor = undefined;
+    let format: SelectionCharacterFormat;
+    beforeAll(() => {
+        document.body.innerHTML = '';
+        let ele: HTMLElement = createElement('div', { id: 'container' });
+        document.body.appendChild(ele);
+        DocumentEditor.Inject(Editor, Selection, EditorHistory);
+        editor = new DocumentEditor({ enableEditor: true, isReadOnly: false, enableEditorHistory: true });
+        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        editor.appendTo('#container');
+        editor.open(pasteContent);
+    });
+    afterAll((done) => {
+        editor.destroy();
+        document.body.removeChild(document.getElementById('container'));
+        editor = undefined;
+        document.body.innerHTML = '';
+        setTimeout(() => {
+            done();
+        }, 1000);
+    });
+    it('Script Error validation', () => {
+        let paragraph: ParagraphWidget = new ParagraphWidget();
+        paragraph.index = 0;
+        paragraph.characterFormat = new WCharacterFormat(paragraph);
+        let line: LineWidget = new LineWidget(paragraph);
+        let element: TextElementBox = new TextElementBox();
+        element.text = 'Adventure Works Cycles';
+        line.children.push(element);
+        element.line = line;
+        paragraph.childWidgets.push(line);
+        expect(() => { (element.characterFormat as any).documentCharacterFormat(); }).not.toThrowError();
+    });
+});
+
+describe('Paste Validation with List Formatting', () => {
+    let container: DocumentEditorContainer;
+    let element: HTMLElement;
+    beforeAll(() => {
+        element = createElement('div');
+        document.body.appendChild(element);
+        DocumentEditorContainer.Inject(Toolbar);
+        container = new DocumentEditorContainer({ showPropertiesPane: false, enableLocalPaste: true });
+        container.appendTo(element);
+    });
+    afterAll(() => {
+        container.destroy();
+        expect(element.childNodes.length).toBe(0);
+        document.body.removeChild(element);
+        expect(() => { container.destroy(); }).not.toThrowError();
+        element = undefined;
+        container = undefined;
+    });
+    it('paste with list formatting', () => {
+        let editor: DocumentEditor = container.documentEditor;
+        editor.editorModule.insertText('1');
+        editor.editorModule.insertText('.');
+        editor.editorModule.insertText(' ');
+        editor.editorModule.insertText('Adventure');
+        (editor.editorModule as any).selection.extendToLineStart();
+        (editor.editorModule as any).selection.copy();
+        (editor.editorModule as any).selection.extendToLineEnd();
+        editor.editor.handleEnterKey();
+        editor.editor.handleEnterKey();
+        editor.editorModule.paste();
+        expect(editor.selection.paragraphFormat.listId).not.toBe(-1);
+    });
 });

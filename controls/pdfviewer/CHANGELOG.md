@@ -2,6 +2,28 @@
 
 ## [Unreleased]
 
+## 17.3.14 (2019-10-03)
+
+### PDF Viewer
+
+#### New Features
+
+- `#227046`, `#230887`, `#142366`, `#231973`, `#237847`, `#244849`, `#238686`, `#239233`, `#241638`, `#241638`, `#242232`, `#239221`, `#240051`, `#245255` – The support has been provided for filling the form fields.
+- `#233655`, `#236240`, `#236825`, `#238694`, `#241974`, `#243864`, `#245087` – The support has been provided for free text annotation.
+- `#246059` - Exposed the thumbnailClick event to identify the thumbnail clicks action.
+- `#246767` – The support has been provided to export the annotation details as JSON object in client-side.
+- `#245008` – The support has been provided to update the existing calibrate annotation if we modify the scale value.
+- Improved the scrolling performance in mobile devices.
+
+#### Bug Fixes
+
+- `#247914` – The perimeter annotation will be rendered properly when the line is ended in the starting point.
+- `#248062` – Extra edge will not be added to the polygon shapes when rendered in the page.
+- `#248092` – Contents will not be swapped if you switch randomly between two documents.
+- `#248093` – Script error will no longer be thrown if you switch randomly between two documents.
+- `#247787` – The searched text will be highlighted properly in the provided document.
+- `#146785` – Script error will no longer be thrown when the PDF Viewer control is used in the React application.
+
 ## 17.3.9-beta (2019-09-20)
 
 ### PDF Viewer

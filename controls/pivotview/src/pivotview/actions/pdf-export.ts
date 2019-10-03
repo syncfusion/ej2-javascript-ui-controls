@@ -13,7 +13,7 @@ import { OlapEngine } from '../../base/olap/engine';
 import { PivotUtil } from '../../base/util';
 
 /**
- * @hidden
+
  * `PDFExport` module is used to handle the PDF export action.
  */
 export class PDFExport {
@@ -23,7 +23,7 @@ export class PDFExport {
 
     /**
      * Constructor for the PivotGrid PDF Export module.
-     * @hidden
+
      */
     constructor(parent?: PivotView) {
         this.parent = parent;
@@ -178,7 +178,7 @@ export class PDFExport {
 
     /**
      * Method to perform pdf export.
-     * @hidden
+
      */
     /* tslint:disable:max-func-body-length */
     public exportToPDF(): void {
@@ -444,7 +444,7 @@ export class PDFExport {
     /**
      * To destroy the pdf export module
      * @returns void
-     * @hidden
+
      */
     /* tslint:disable:no-empty */
     public destroy(): void {
@@ -452,7 +452,7 @@ export class PDFExport {
 }
 
 /**
- * @hidden
+
  */
 interface ITheme {
     fontColor?: string;

@@ -28,15 +28,15 @@ export class AggregateColumn extends ChildProperty<AggregateColumn> {
      * * falsecount
      * * custom
      * > Specify the `type` value as `custom` to use custom aggregation.
-     * @aspType string
-     * @default null
+
+
      */
     @Property()
     public type: AggregateType | AggregateType[] | string;
 
     /**
      * Defines the column name to perform aggregation.
-     * @default null
+
      */
     @Property()
     public field: string;
@@ -44,7 +44,7 @@ export class AggregateColumn extends ChildProperty<AggregateColumn> {
     /**
      * Defines the column name to display the aggregate value. If `columnName` is not defined,
      * then `field` name value will be assigned to the `columnName` property.
-     * @default null
+
      */
     @Property()
     public columnName: string;
@@ -54,9 +54,9 @@ export class AggregateColumn extends ChildProperty<AggregateColumn> {
      * Gets the format from the user, which can be standard or custom
      * [`number`](../../common/internationalization/#number-formatting/)
      * and [`date`](../../common/internationalization/#number-formatting/) formats.
-     * @aspType string
-     * @blazorType string
-     * @default null    
+
+
+
      */
     @Property()
     public format: string | NumberFormatOptions | DateFormatOptions;
@@ -66,7 +66,7 @@ export class AggregateColumn extends ChildProperty<AggregateColumn> {
      * The `type` name should be used to access aggregate values inside the template.
      * 
      * {% codeBlock src="grid/footer-template-api/index.ts" %}{% endcodeBlock %}
-     * @default null
+
      */
     @Property()
     public footerTemplate: string;
@@ -79,7 +79,7 @@ export class AggregateColumn extends ChildProperty<AggregateColumn> {
      * * **key**: The current grouped value.
      * 
      * {% codeBlock src="grid/group-footer-api/index.ts" %}{% endcodeBlock %}
-     * @default null
+
      */
     @Property()
     public groupFooterTemplate: string;
@@ -92,7 +92,7 @@ export class AggregateColumn extends ChildProperty<AggregateColumn> {
      * * **key**: The current grouped field value.
      * 
      * {% codeBlock src="grid/group-caption-api/index.ts" %}{% endcodeBlock %}
-     * @default null
+
      */
     @Property()
     public groupCaptionTemplate: string;
@@ -103,12 +103,12 @@ export class AggregateColumn extends ChildProperty<AggregateColumn> {
      * **Total aggregation**: The custom function will be called with the whole data and the current `AggregateColumn` object.
      * **Group aggregation**: This will be called with the current group details and the `AggregateColumn` object.
      * 
-     * @default null
+
      */
     @Property()
     public customAggregate: CustomSummaryType | string;
     /**
-     * @hidden
+
      */
     public setFormatter(cultureName: string): void {
         let valueFormatter: ValueFormatter = new ValueFormatter(cultureName);
@@ -117,13 +117,13 @@ export class AggregateColumn extends ChildProperty<AggregateColumn> {
         }
     }
     /**
-     * @hidden
+
      */
     public getFormatter(): Function {
         return this.formatFn;
     }
     /**
-     * @hidden
+
      */
     public setTemplate(helper: Object = {}): void {
         if (this.footerTemplate !== undefined) {
@@ -143,14 +143,14 @@ export class AggregateColumn extends ChildProperty<AggregateColumn> {
         }
     }
     /**
-     * @hidden
+
      */
     public getTemplate(type: CellType): { fn: Function, property: string } {
         return this.templateFn[getEnumValue(CellType, type)];
     }
 
     /**
-     * @hidden
+
      */
     public setPropertiesSilent(prop: Object): void {
         this.setProperties(prop, true);
@@ -165,7 +165,7 @@ export class AggregateRow extends ChildProperty<AggregateRow> {
 
     /**
      * Configures the aggregate columns. 
-     * @default []
+
      */
     @Collection<AggregateColumnModel>([], AggregateColumn)
     public columns: AggregateColumnModel[];

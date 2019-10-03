@@ -668,6 +668,7 @@ var DropDownBase = /** @__PURE__ @class */ (function (_super) {
     DropDownBase.prototype.onActionComplete = function (ulElement, list, e) {
         this.listData = list;
         this.list.innerHTML = '';
+        this.fixedHeaderElement = isNullOrUndefined(this.fixedHeaderElement) ? this.fixedHeaderElement : null;
         this.list.appendChild(ulElement);
         this.liCollections = this.list.querySelectorAll('.' + dropDownBaseClasses.li);
         this.ulElement = this.list.querySelector('ul');
@@ -758,7 +759,7 @@ var DropDownBase = /** @__PURE__ @class */ (function (_super) {
         var target = e.target;
         var liHeight = parseInt(getComputedStyle(this.liCollections[0], null).getPropertyValue('height'), 10);
         var topIndex = Math.round(target.scrollTop / liHeight);
-        var liCollections = this.ulElement.querySelectorAll('li');
+        var liCollections = this.list.querySelectorAll('li');
         for (var i = topIndex; i > -1; i--) {
             if (!isNullOrUndefined(liCollections[i]) && liCollections[i].classList.contains(dropDownBaseClasses.group)) {
                 var currentLi = liCollections[i];
@@ -1041,6 +1042,8 @@ var DropDownBase = /** @__PURE__ @class */ (function (_super) {
             liCollections.push(li);
             this.listData.push(item);
             this.updateActionCompleteData(li, item);
+            //Listbox event
+            this.trigger('beforeItemRender', { element: li, item: item });
         }
         if (itemsCount === 0 && isNullOrUndefined(this.list.querySelector('ul'))) {
             this.list.innerHTML = '';
@@ -1090,7 +1093,7 @@ var DropDownBase = /** @__PURE__ @class */ (function (_super) {
      * Gets the data Object that matches the given value.
      * @param { string | number } value - Specifies the value of the list item.
      * @returns Object.
-     * @blazorType object
+
      */
     DropDownBase.prototype.getDataByValue = function (value) {
         if (!isNullOrUndefined(this.listData)) {
@@ -2247,6 +2250,9 @@ var DropDownList = /** @__PURE__ @class */ (function (_super) {
             };
             this.trigger('change', eventArgs);
         }
+        if ((isNullOrUndefined(this.value) || this.value === '') && this.floatLabelType !== 'Always') {
+            removeClass([this.inputWrapper.container], 'e-valid-input');
+        }
     };
     DropDownList.prototype.setHiddenValue = function () {
         if (!isNullOrUndefined(this.value)) {
@@ -2332,7 +2338,7 @@ var DropDownList = /** @__PURE__ @class */ (function (_super) {
     };
     DropDownList.prototype.getQuery = function (query) {
         var filterQuery;
-        if (!this.isCustomFilter && this.allowFiltering) {
+        if (!this.isCustomFilter && this.allowFiltering && this.filterInput) {
             filterQuery = query ? query.clone() : this.query ? this.query.clone() : new Query();
             var filterType = this.typedString === '' ? 'contains' : this.filterType;
             var dataType = this.typeOfData(this.dataSource).typeof;
@@ -2700,6 +2706,9 @@ var DropDownList = /** @__PURE__ @class */ (function (_super) {
                     }
                 });
             }
+            else {
+                _this.beforePopupOpen = false;
+            }
         });
     };
     DropDownList.prototype.checkCollision = function (popupEle) {
@@ -2741,6 +2750,13 @@ var DropDownList = /** @__PURE__ @class */ (function (_super) {
             open: function () {
                 EventHandler.add(document, 'mousedown', _this.onDocumentClick, _this);
                 _this.isPopupOpen = true;
+                var actionList = _this.actionCompleteData && _this.actionCompleteData.ulElement &&
+                    _this.actionCompleteData.ulElement.querySelector('li');
+                var ulElement = _this.list.querySelector('ul li');
+                if (_this.isFiltering() && _this.itemTemplate && (_this.element.tagName === _this.getNgDirective()) &&
+                    (actionList && ulElement && actionList.textContent !== ulElement.textContent)) {
+                    _this.cloneElements();
+                }
                 if (_this.isFilterLayout()) {
                     removeClass([_this.inputWrapper.container], [dropDownListClasses.inputFocus]);
                     _this.isFilterFocus = true;
@@ -3313,11 +3329,17 @@ var DropDownList = /** @__PURE__ @class */ (function (_super) {
         };
     };
     DropDownList.prototype.setCssClass = function (newProp, oldProp) {
-        this.inputWrapper.container.classList.remove(oldProp.cssClass);
+        if (!isNullOrUndefined(oldProp.cssClass) && oldProp.cssClass !== '') {
+            removeClass([this.inputWrapper.container], oldProp.cssClass.split(' '));
+        }
         Input.setCssClass(newProp.cssClass, [this.inputWrapper.container]);
         if (this.popupObj) {
-            this.popupObj.element.classList.remove(oldProp.cssClass);
-            this.popupObj.element.classList.add(newProp.cssClass);
+            if (!isNullOrUndefined(oldProp.cssClass) && oldProp.cssClass !== '') {
+                removeClass([this.popupObj.element], oldProp.cssClass.split(' '));
+            }
+            if (!isNullOrUndefined(newProp.cssClass) && newProp.cssClass !== '') {
+                addClass([this.popupObj.element], newProp.cssClass.split(' '));
+            }
         }
     };
     /**
@@ -4374,6 +4396,17 @@ var AutoComplete = /** @__PURE__ @class */ (function (_super) {
             }
         });
     };
+    /**
+     * To filter the data from given data source by using query
+     * @param  {Object[] | DataManager } dataSource - Set the data source to filter.
+     * @param  {Query} query - Specify the query to filter the data.
+     * @param  {FieldSettingsModel} fields - Specify the fields to map the column in the data table.
+     * @return {void}.
+     */
+    AutoComplete.prototype.filter = function (dataSource, query, fields) {
+        this.isFiltered = true;
+        this.filterAction(dataSource, query, fields);
+    };
     AutoComplete.prototype.filterAction = function (dataSource, query, fields) {
         this.beforePopupOpen = true;
         if (this.queryString !== '' && (this.queryString.length >= this.minLength)) {
@@ -4918,9 +4951,9 @@ var MultiSelect = /** @__PURE__ @class */ (function (_super) {
         }
     };
     MultiSelect.prototype.updateCssClass = function () {
-        if (this.cssClass) {
-            this.popupWrapper.classList.add(this.cssClass);
-            this.overAllWrapper.classList.add(this.cssClass);
+        if (!isNullOrUndefined(this.cssClass) && this.cssClass !== '') {
+            addClass([this.overAllWrapper], this.cssClass.split(' '));
+            addClass([this.popupWrapper], this.cssClass.split(' '));
         }
     };
     MultiSelect.prototype.onPopupShown = function () {
@@ -5947,7 +5980,7 @@ var MultiSelect = /** @__PURE__ @class */ (function (_super) {
         var nextBottom = selectedLI.offsetTop + selectedLI.offsetHeight - this.list.scrollTop;
         var nextOffset = this.list.scrollTop + nextBottom - currentOffset;
         var boxRange = (selectedLI.offsetTop + selectedLI.offsetHeight - this.list.scrollTop);
-        boxRange = this.fields.groupBy && !isUndefined(this.fixedHeaderElement) ?
+        boxRange = this.fields.groupBy && !isNullOrUndefined(this.fixedHeaderElement) ?
             boxRange - this.fixedHeaderElement.offsetHeight : boxRange;
         if (activeIndex === 0) {
             this.list.scrollTop = 0;
@@ -7332,7 +7365,7 @@ var MultiSelect = /** @__PURE__ @class */ (function (_super) {
             });
             var compiledString = compile(remainContent);
             var totalCompiledString = compile(l10n.getConstant('totalCountTemplate'));
-            raminElement.appendChild(compiledString({ 'count': this.value.length })[0]);
+            raminElement.appendChild(compiledString({ 'count': this.value.length }, null, null, null, !this.isStringTemplate)[0]);
             this.viewWrapper.appendChild(raminElement);
             var remainSize = raminElement.offsetWidth;
             remove(raminElement);
@@ -7405,8 +7438,8 @@ var MultiSelect = /** @__PURE__ @class */ (function (_super) {
         }
         raminElement.innerHTML = '';
         raminElement.appendChild((viewWrapper.firstChild && viewWrapper.firstChild.nodeType === 3) ?
-            compiledString({ 'count': remaining })[0] :
-            totalCompiledString({ 'count': remaining })[0]);
+            compiledString({ 'count': remaining }, null, null, null, !this.isStringTemplate)[0] :
+            totalCompiledString({ 'count': remaining }, null, null, null, !this.isStringTemplate)[0]);
         if (viewWrapper.firstChild && viewWrapper.firstChild.nodeType === 3) {
             viewWrapper.classList.remove(TOTAL_COUNT_WRAPPER);
         }
@@ -7633,6 +7666,7 @@ var MultiSelect = /** @__PURE__ @class */ (function (_super) {
             this.isFirstClick = false;
         }
         if (this.getModuleName() === 'multiselect') {
+            this.filterAction = false;
             this.setUpdateInitial(['fields', 'query', 'dataSource'], newProp);
         }
         for (var _i = 0, _a = Object.keys(newProp); _i < _a.length; _i++) {
@@ -7679,8 +7713,10 @@ var MultiSelect = /** @__PURE__ @class */ (function (_super) {
                     this.updateData(newProp.delimiterChar);
                     break;
                 case 'cssClass':
-                    this.popupWrapper.classList.remove(oldProp.cssClass);
-                    this.overAllWrapper.classList.remove(oldProp.cssClass);
+                    if (!isNullOrUndefined(oldProp.cssClass) && oldProp.cssClass !== '') {
+                        removeClass([this.overAllWrapper], oldProp.cssClass.split(' '));
+                        removeClass([this.popupWrapper], oldProp.cssClass.split(' '));
+                    }
                     this.updateCssClass();
                     break;
                 case 'enableRtl':
@@ -8492,8 +8528,10 @@ var CheckBoxSelection = /** @__PURE__ @class */ (function () {
         clearElement.parentElement.insertBefore(this.filterInput, clearElement);
     };
     CheckBoxSelection.prototype.targetElement = function () {
-        this.parent.targetInputElement = this.filterInput;
-        this.clearIconElement.style.visibility = this.parent.targetInputElement.value === '' ? 'hidden' : 'visible';
+        if (!isNullOrUndefined(this.clearIconElement)) {
+            this.parent.targetInputElement = this.filterInput;
+            this.clearIconElement.style.visibility = this.parent.targetInputElement.value === '' ? 'hidden' : 'visible';
+        }
         return this.parent.targetInputElement.value;
     };
     CheckBoxSelection.prototype.onBlur = function (e) {
@@ -8668,6 +8706,7 @@ var __decorate$5 = (undefined && undefined.__decorate) || function (decorators, 
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 };
 /// <reference path='../drop-down-base/drop-down-base-model.d.ts'/>
+var ITEMTEMPLATE_PROPERTY$1 = 'ItemTemplate';
 var SelectionSettings = /** @__PURE__ @class */ (function (_super) {
     __extends$5(SelectionSettings, _super);
     function SelectionSettings() {
@@ -8748,7 +8787,9 @@ var ListBox = /** @__PURE__ @class */ (function (_super) {
      * @private
      */
     ListBox.prototype.render = function () {
+        this.inputString = '';
         this.initLoad = true;
+        this.isCustomFiltering = false;
         this.initialSelectedOptions = this.value;
         _super.prototype.render.call(this);
         this.renderComplete();
@@ -8930,15 +8971,20 @@ var ListBox = /** @__PURE__ @class */ (function (_super) {
         this.initWrapper();
         this.setSelection();
         this.initDraggable();
+        this.mainList = this.ulElement;
         if (this.initLoad) {
             this.initToolbarAndStyles();
             this.wireEvents();
-            this.mainList = this.ulElement;
             if (this.showCheckbox) {
                 this.setCheckboxPosition();
             }
             if (this.allowFiltering) {
                 this.setFiltering();
+            }
+        }
+        else {
+            if (this.allowFiltering) {
+                this.list.getElementsByClassName('e-input-filter')[0].focus();
             }
         }
         this.initLoad = false;
@@ -8956,13 +9002,16 @@ var ListBox = /** @__PURE__ @class */ (function (_super) {
         if (Browser.isIos) {
             this.list.style.overflow = 'hidden';
         }
-        this.trigger('dragStart', args, function (args) {
-            _this.allowDragAll = args.dragSelected;
+        this.trigger('dragStart', args, function (dragEventArgs) {
+            _this.allowDragAll = dragEventArgs.dragSelected;
             if (!_this.allowDragAll) {
                 badge = _this.ulElement.getElementsByClassName('e-list-badge')[0];
                 if (badge) {
                     detach(badge);
                 }
+            }
+            if (isBlazor()) {
+                args.bindEvents(args.dragElement);
             }
         });
     };
@@ -8980,7 +9029,8 @@ var ListBox = /** @__PURE__ @class */ (function (_super) {
         var dropValue = this.getFormattedValue(args.droppedElement.getAttribute('data-value'));
         var droppedData;
         var listObj = this.getComponent(args.droppedElement);
-        var dragArgs = extend({}, this.getDragArgs({ target: args.droppedElement }, true), { target: args.target });
+        var getArgs = this.getDragArgs({ target: args.droppedElement }, true);
+        var dragArgs = extend({}, getArgs, { target: args.target });
         if (Browser.isIos) {
             this.list.style.overflow = '';
         }
@@ -9139,6 +9189,72 @@ var ListBox = /** @__PURE__ @class */ (function (_super) {
     ListBox.prototype.addItems = function (items, itemIndex) {
         _super.prototype.addItem.call(this, items, itemIndex);
     };
+    /**
+     * Removes a item from the list. By default, removed the last item in the list,
+     * but you can remove based on the index parameter.
+     * @param  { Object[] } items - Specifies an array of JSON data or a JSON data.
+     * @param { number } itemIndex - Specifies the index to remove the item from the list.
+     * @returns {void}.
+     */
+    ListBox.prototype.removeItems = function (items, itemIndex) {
+        this.removeItem(items, itemIndex);
+    };
+    /**
+     * Removes a item from the list. By default, removed the last item in the list,
+     * but you can remove based on the index parameter.
+     * @param  { Object[] } items - Specifies an array of JSON data or a JSON data.
+     * @param { number } itemIndex - Specifies the index to remove the item from the list.
+     * @returns {void}.
+     */
+    ListBox.prototype.removeItem = function (items, itemIndex) {
+        var liCollections = [];
+        var liElement = this.list.querySelectorAll('.' + dropDownBaseClasses.li);
+        if (items) {
+            items = (items instanceof Array ? items : [items]);
+            var fields = this.fields;
+            var dataValue = void 0;
+            var objValue = void 0;
+            var dupData = [];
+            var itemIdx = void 0;
+            extend(dupData, [], this.listData);
+            for (var j = 0; j < items.length; j++) {
+                if (items[j] instanceof Object) {
+                    dataValue = getValue(fields.value, items[j]);
+                }
+                else {
+                    dataValue = items[j].toString();
+                }
+                for (var i = 0, len = dupData.length; i < len; i++) {
+                    if (dupData[i] instanceof Object) {
+                        objValue = getValue(fields.value, dupData[i]);
+                    }
+                    else {
+                        objValue = dupData[i].toString();
+                    }
+                    if (objValue === dataValue) {
+                        itemIdx = this.getIndexByValue(dataValue);
+                        liCollections.push(liElement[itemIdx]);
+                        this.listData.splice(i, 1);
+                        this.updateLiCollection(itemIdx);
+                    }
+                }
+            }
+        }
+        else {
+            itemIndex = itemIndex ? itemIndex : 0;
+            liCollections.push(liElement[itemIndex]);
+            this.listData.splice(itemIndex, 1);
+            this.updateLiCollection(itemIndex);
+        }
+        for (var i = 0; i < liCollections.length; i++) {
+            this.ulElement.removeChild(liCollections[i]);
+        }
+    };
+    ListBox.prototype.updateLiCollection = function (index) {
+        var tempLi = [].slice.call(this.liCollections);
+        tempLi.splice(index, 1);
+        this.liCollections = tempLi;
+    };
     ListBox.prototype.selectAllItems = function (state, event) {
         var _this = this;
         [].slice.call(this.getItems()).forEach(function (li) {
@@ -9270,22 +9386,40 @@ var ListBox = /** @__PURE__ @class */ (function (_super) {
             this.notify('checkSelectAll', { module: 'CheckBoxSelection', value: (searchCount === len) ? 'check' : 'uncheck' });
         }
     };
+    ListBox.prototype.getQuery = function (query) {
+        var filterQuery = query ? query.clone() : this.query ? this.query.clone() : new Query();
+        if (this.allowFiltering) {
+            var filterType = this.inputString === '' ? 'contains' : this.filterType;
+            var dataType = this.typeOfData(this.dataSource).typeof;
+            if (!(this.dataSource instanceof DataManager) && dataType === 'string' || dataType === 'number') {
+                filterQuery.where('', filterType, this.inputString, this.ignoreCase, this.ignoreAccent);
+            }
+            else {
+                var fields = (this.fields.text) ? this.fields.text : '';
+                filterQuery.where(fields, filterType, this.inputString, this.ignoreCase, this.ignoreAccent);
+            }
+        }
+        else {
+            filterQuery = query ? query : this.query ? this.query : new Query();
+        }
+        return filterQuery;
+    };
     ListBox.prototype.setFiltering = function () {
         if (isNullOrUndefined(this.filterParent)) {
             this.filterParent = this.createElement('span', {
                 className: 'e-filter-parent'
             });
-            var filterInput = this.createElement('input', {
+            this.filterInput = this.createElement('input', {
                 attrs: { type: 'text' },
                 className: 'e-input-filter'
             });
-            this.element.parentNode.insertBefore(filterInput, this.element);
+            this.element.parentNode.insertBefore(this.filterInput, this.element);
             var filterInputObj = Input.createInput({
-                element: filterInput
+                element: this.filterInput
             }, this.createElement);
             append([filterInputObj.container], this.filterParent);
             prepend([this.filterParent], this.list);
-            attributes(filterInput, {
+            attributes(this.filterInput, {
                 'aria-disabled': 'false',
                 'aria-owns': this.element.id + '_options',
                 'role': 'listbox',
@@ -9295,9 +9429,10 @@ var ListBox = /** @__PURE__ @class */ (function (_super) {
                 'autocapitalize': 'off',
                 'spellcheck': 'false'
             });
-            EventHandler.add(filterInput, 'input', this.onInput, this);
-            EventHandler.add(filterInput, 'keyup', this.KeyUp, this);
-            EventHandler.add(filterInput, 'keydown', this.onKeyDown, this);
+            this.inputString = this.filterInput.value;
+            EventHandler.add(this.filterInput, 'input', this.onInput, this);
+            EventHandler.add(this.filterInput, 'keyup', this.KeyUp, this);
+            EventHandler.add(this.filterInput, 'keydown', this.onKeyDown, this);
             return filterInputObj;
         }
     };
@@ -9342,8 +9477,8 @@ var ListBox = /** @__PURE__ @class */ (function (_super) {
                 this.list.setAttribute('aria-activedescendant', li.id);
             }
             if (!isKey && (this.maximumSelectionLength > (this.value && this.value.length) || !isSelect) &&
-                (this.maximumSelectionLength >= this.value.length || !isSelect) &&
-                !(this.maximumSelectionLength < this.value.length)) {
+                (this.maximumSelectionLength >= (this.value && this.value.length) || !isSelect) &&
+                !(this.maximumSelectionLength < (this.value && this.value.length))) {
                 this.notify('updatelist', { li: li, e: e });
             }
             if (this.allowFiltering && !isKey) {
@@ -9641,10 +9776,17 @@ var ListBox = /** @__PURE__ @class */ (function (_super) {
         else {
             elems = [args.target];
         }
-        return { elements: elems, items: this.getDataByElems(elems) };
+        if (isBlazor()) {
+            return { elements: elems, items: this.getDataByElems(elems), bindEvents: args.bindEvents,
+                dragElement: args.dragElement };
+        }
+        else {
+            return { elements: elems, items: this.getDataByElems(elems) };
+        }
     };
     ListBox.prototype.onKeyDown = function (e) {
         this.keyDownHandler(e);
+        event.stopPropagation();
     };
     ListBox.prototype.keyDownHandler = function (e) {
         if ([32, 35, 36, 37, 38, 39, 40, 65].indexOf(e.keyCode) > -1 && !this.allowFiltering) {
@@ -9671,6 +9813,11 @@ var ListBox = /** @__PURE__ @class */ (function (_super) {
                 }
             }
             else if (e.keyCode !== 37 && e.keyCode !== 39) {
+                this.upDownKeyHandler(e);
+            }
+        }
+        else if (this.allowFiltering) {
+            if (e.keyCode === 40 || e.keyCode === 38) {
                 this.upDownKeyHandler(e);
             }
         }
@@ -9731,17 +9878,36 @@ var ListBox = /** @__PURE__ @class */ (function (_super) {
                             event: e,
                             cancel: false
                         };
-                        this.trigger('filtering', eventArgsData_1);
-                        if (eventArgsData_1.cancel) {
-                            return;
-                        }
-                        if (!this.isFiltered && !eventArgsData_1.preventDefaultAction) {
-                            this.dataUpdater(this.dataSource, null, this.fields);
-                        }
-                        this.list.getElementsByClassName('e-input-filter')[0].focus();
+                        this.trigger('filtering', eventArgsData_1, function (args) {
+                            _this.isDataFetched = false;
+                            if (eventArgsData_1.cancel || (_this.filterInput.value !== '' && _this.isFiltered)) {
+                                return;
+                            }
+                            if (!eventArgsData_1.cancel && !_this.isCustomFiltering && !eventArgsData_1.preventDefaultAction) {
+                                _this.inputString = _this.filterInput.value;
+                                _this.filteringAction(_this.dataSource, null, _this.fields);
+                            }
+                            if (!_this.isFiltered && !_this.isCustomFiltering && !eventArgsData_1.preventDefaultAction) {
+                                _this.dataUpdater(_this.dataSource, null, _this.fields);
+                            }
+                        });
                     }
             }
         }
+    };
+    /**
+     * To filter the data from given data source by using query
+     * @param  {Object[] | DataManager } dataSource - Set the data source to filter.
+     * @param  {Query} query - Specify the query to filter the data.
+     * @param  {FieldSettingsModel} fields - Specify the fields to map the column in the data table.
+     * @return {void}.
+     */
+    ListBox.prototype.filter = function (dataSource, query, fields) {
+        this.isCustomFiltering = true;
+        this.filteringAction(dataSource, query, fields);
+    };
+    ListBox.prototype.filteringAction = function (dataSource, query, fields) {
+        this.resetList(dataSource, fields, query);
     };
     ListBox.prototype.targetElement = function () {
         this.targetInputElement = this.list.getElementsByClassName('e-input-filter')[0];
@@ -9975,6 +10141,9 @@ var ListBox = /** @__PURE__ @class */ (function (_super) {
     };
     
     ListBox.prototype.destroy = function () {
+        if (this.itemTemplate) {
+            resetBlazorTemplate("" + this.element.id + ITEMTEMPLATE_PROPERTY$1, ITEMTEMPLATE_PROPERTY$1);
+        }
         this.unwireEvents();
         if (this.element.tagName === 'EJS-LISTBOX') {
             this.element.innerHTML = '';
@@ -10132,9 +10301,6 @@ var ListBox = /** @__PURE__ @class */ (function (_super) {
     __decorate$5([
         Property('')
     ], ListBox.prototype, "scope", void 0);
-    __decorate$5([
-        Property('StartsWith')
-    ], ListBox.prototype, "filterType", void 0);
     __decorate$5([
         Property(true)
     ], ListBox.prototype, "ignoreCase", void 0);

@@ -5867,4 +5867,44 @@ describe('Diagram Control', () => {
         });
 
     });
+
+
+    describe('checking Swimlane , No width Given', () => {
+        let diagram: Diagram;
+        let ele: HTMLElement;
+        beforeAll((): void => {
+            ele = createElement('div', { id: 'diagramSwimlane1' });
+            document.body.appendChild(ele);
+            let nodes: NodeModel[] = [
+                {
+                    shape: {
+                        type: 'SwimLane',
+                        header: {
+                            annotation: { content: 'Pool', },
+                            orientation: 'Horizontal',
+                        },
+
+                    },
+                    id: "pool",
+                    offsetX: 200,
+                    offsetY: 200,
+
+                }
+            ];
+            diagram = new Diagram({ width: 1000, height: 1000, nodes: nodes, });
+            diagram.appendTo('#diagramSwimlane1');
+
+        });
+        afterAll((): void => {
+            diagram.destroy();
+            ele.remove();
+        });
+
+        it('checking Swimlane , No width Given', (done: Function) => {
+            expect(diagram.nodes[0].wrapper.actualSize.width===100
+                &&diagram.nodes[0].wrapper.actualSize.height===50).toBe(true)
+            done();
+        });
+
+    });
 });

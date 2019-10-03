@@ -11,16 +11,16 @@ import { IOlapField } from '../../base/olap/engine';
 /**
  * Module to render Pivot Field List Dialog
  */
-/** @hidden */
+
 export class DialogRenderer {
     public parent: PivotFieldList;
-    /** @hidden */
+
     public parentElement: HTMLElement;
-    /** @hidden */
+
     public fieldListDialog: Dialog;
-    /** @hidden */
+
     public deferUpdateCheckBox: CheckBox;
-    /** @hidden */
+
     public adaptiveElement: Tab;
     private deferUpdateApplyButton: Button;
     private deferUpdateCancelButton: Button;
@@ -296,7 +296,7 @@ export class DialogRenderer {
 
     /**
      * Called internally if any of the field added to axis.
-     * @hidden
+
      */
     public updateDataSource(selectedNodes: string[]): void {
         let axis: string[] = ['filters', 'columns', 'rows', 'values'];

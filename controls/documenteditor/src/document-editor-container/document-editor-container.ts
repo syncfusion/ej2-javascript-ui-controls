@@ -14,6 +14,7 @@ import { StatusBar } from './properties-pane/status-bar';
 import { ViewChangeEventArgs, RequestNavigateEventArgs, ContainerContentChangeEventArgs, ContainerSelectionChangeEventArgs, ContainerDocumentChangeEventArgs, CustomContentMenuEventArgs, BeforeOpenCloseCustomContentMenuEventArgs } from '../document-editor/base';
 import { createSpinner } from '@syncfusion/ej2-popups';
 import { ContainerServerActionSettingsModel } from '../document-editor/document-editor-model';
+import { CharacterFormatProperties, ParagraphFormatProperties } from '../document-editor/implementation';
 
 /**
  * Document Editor container component.
@@ -22,51 +23,51 @@ import { ContainerServerActionSettingsModel } from '../document-editor/document-
 export class DocumentEditorContainer extends Component<HTMLElement> implements INotifyPropertyChanged {
     /**
      * Show or hide properties pane.
-     * @default true
+
      */
     @Property(true)
     public showPropertiesPane: boolean;
     /**
      * Enable or disable toolbar in document editor container.
-     * @default true
+
      */
     @Property(true)
     public enableToolbar: boolean;
     /**
      * Restrict editing operation.
-     * @default false
+
      */
     @Property(false)
     public restrictEditing: boolean;
     /**
      * Enable or disable spell checker in document editor container.
-     * @default false
+
      */
     @Property(false)
     public enableSpellCheck: boolean;
     /**
      * Enable local paste
-     * @default true
+
      */
     @Property(true)
     public enableLocalPaste: boolean;
     /**
      * Sfdt service URL.
-     * @default ''
+
      */
     @Property()
     public serviceUrl: string;
     /**
      * Triggers when the component is created
      * @event
-     * @blazorproperty 'Created'
+
      */
     @Event()
     public created: EmitType<Object>;
     /**
      * Triggers when the component is destroyed.
      * @event
-     * @blazorproperty 'Destroyed'
+
      */
     @Event()
     public destroyed: EmitType<Object>;
@@ -74,35 +75,35 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
     /**
      * Triggers whenever the content changes in the document editor container.
      * @event
-     * @blazorproperty 'ContentChanged'
+
      */
     @Event()
     public contentChange: EmitType<ContainerContentChangeEventArgs>;
     /**
      * Triggers whenever selection changes in the document editor container.
      * @event
-     * @blazorproperty 'SelectionChanged'
+
      */
     @Event()
     public selectionChange: EmitType<ContainerSelectionChangeEventArgs>;
     /**
      * Triggers whenever document changes in the document editor container.
      * @event
-     * @blazorproperty 'DocumentChanged'
+
      */
     @Event()
     public documentChange: EmitType<ContainerDocumentChangeEventArgs>;
     /**
      * Triggers while selecting the custom context-menu option.
      * @event
-     * @blazorproperty 'ContextMenuItemSelected'
+
      */
     @Event()
     public customContextMenuSelect: EmitType<CustomContentMenuEventArgs>;
     /**
      * Triggers before opening the custom context-menu option.
      * @event
-     * @blazorproperty 'OnContextMenuOpen'
+
      */
     @Event()
     public customContextMenuBeforeOpen: EmitType<BeforeOpenCloseCustomContentMenuEventArgs>;
@@ -172,6 +173,14 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
      */
     public previousContext: string = '';
     /**
+     * @private
+     */
+    public characterFormat: CharacterFormatProperties;
+    /**
+     * @private
+     */
+    public paragraphFormat: ParagraphFormatProperties;
+    /**
      * Defines the settings of the DocumentEditorContainer service.
      */
     // tslint:disable-next-line:max-line-length
@@ -179,8 +188,8 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
     public serverActionSettings: ContainerServerActionSettingsModel;
     /**
      * Gets DocumentEditor instance.
-     * @aspType DocumentEditor
-     * @blazorType DocumentEditor
+
+
      */
     public get documentEditor(): DocumentEditor {
         return this.documentEditorInternal;
@@ -413,6 +422,15 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
         this.renderComplete();
     }
 
+    private setFormat(): void {
+        if (this.characterFormat) {
+            this.documentEditor.setDefaultCharacterFormat(this.characterFormat);
+        }
+        if (this.paragraphFormat) {
+            this.documentEditor.setDefaultParagraphFormat(this.paragraphFormat);
+        }
+    }
+
     private setserverActionSettings(): void {
         if (this.serviceUrl) {
             this.documentEditor.serviceUrl = this.serviceUrl;
@@ -494,6 +512,7 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
         });
         this.documentEditor.enableAllModules();
         this.editorContainer.insertBefore(documentEditorTarget, this.editorContainer.firstChild);
+        this.setFormat();
         this.documentEditor.appendTo(documentEditorTarget);
         this.documentEditor.resize();
     }
@@ -660,6 +679,23 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
         this.headerFooterProperties.showHeaderFooterPane(property === 'headerfooter');
         this.tocProperties.showTocPane(property === 'toc');
     }
+
+    /**
+     * Set the default character format for document editor container
+     * @param characterFormat
+     */
+    public setDefaultCharacterFormat(characterFormat: CharacterFormatProperties): void {
+        this.characterFormat = characterFormat;
+    }
+
+    /**
+     * Set the default paragraph format for document editor container
+     * @param paragraphFormat
+     */
+    public setDefaultParagraphFormat(paragraphFormat: ParagraphFormatProperties): void {
+        this.paragraphFormat = paragraphFormat;
+    }
+
     /**
      * Destroys all managed resources used by this object. 
      */

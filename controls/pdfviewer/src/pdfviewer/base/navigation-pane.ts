@@ -7,7 +7,7 @@ import { Toast, ToastCloseArgs } from '@syncfusion/ej2-notifications';
 
 /**
  * The `NavigationPane` module is used to handle navigation pane for thumbnail and bookmark navigation of PDF viewer.
- * @hidden
+
  */
 export class NavigationPane {
 

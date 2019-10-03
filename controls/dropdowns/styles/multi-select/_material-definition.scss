@@ -1,5 +1,4 @@
 $ddl-chip-mobile-close-font: 16px !default;
-
 $ddl-multiselect-skin-name: 'material' !default;
 $ddl-delim-font-size: 14px !default;
 $ddl-rtl-wrapper: 0 2px 0 32px !default;
@@ -116,7 +115,7 @@ $ddl-multiselect-group-list-item-rtl-padding-right: 25px !default;
 $ddl-bigger-multiselect-group-list-item-rtl-padding-right: 25px !default;
 $ddl-multiselect-group-list-group-item-padding-left: 16px !default;
 $ddl-multiselect-group-checkbox-wrapper-padding-left: 14px !default;
-$ddl-bigger-multiselect-group-checkbox-wrapper-padding-left: $ddl-multiselect-group-checkbox-wrapper-padding-left;
+$ddl-bigger-multiselect-group-checkbox-wrapper-padding-left: $ddl-multiselect-group-checkbox-wrapper-padding-left !default;
 $ddl-multiselect-group-list-group-item-rtl-padding-right: 16px !default;
 // Small size
 $ddl-select-all-height-small: 26px !default;

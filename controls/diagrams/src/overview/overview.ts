@@ -39,21 +39,21 @@ export class Overview extends Component<HTMLElement> implements INotifyPropertyC
 
     /**
      * Defines the width of the overview
-     * @default '100%'
+
      */
     @Property('100%')
     public width: string | number;
 
     /**
      * Defines the height of the overview
-     * @default '100%'
+
      */
     @Property('100%')
     public height: string | number;
 
     /**
      * Defines the ID of the overview
-     * @default ''
+
      */
     @Property('')
     public sourceID: string;
@@ -61,7 +61,7 @@ export class Overview extends Component<HTMLElement> implements INotifyPropertyC
     /**
      * Triggers after render the diagram elements
      * @event
-     * @blazorProperty 'Created'
+
      */
     @Event()
     public created: EmitType<Object>;
@@ -191,8 +191,8 @@ export class Overview extends Component<HTMLElement> implements INotifyPropertyC
         let attribute: Object = {
             'id': this.element.id + '_canvas', 'class': 'drawing',
             'style': 'position:relative; height:' + this.getSizeValue(this.model.height) + '; width:' +
-            this.getSizeValue(this.model.width) +
-            ';style:-ms-touch-action: none;touch-action: none;'
+                this.getSizeValue(this.model.width) +
+                ';style:-ms-touch-action: none;touch-action: none;'
         };
         setAttributeHtml(canvas, attribute);
         this.element.setAttribute('tabindex', String(0));
@@ -821,8 +821,8 @@ export class Overview extends Component<HTMLElement> implements INotifyPropertyC
             (): void => {
                 let element: HTMLElement = document.getElementById(this.element.id);
                 let bRect: ClientRect = element.getBoundingClientRect();
-                this.model.width = bRect.width;
-                this.model.height = bRect.height;
+                this.model.width = bRect.width > 0 ? bRect.width : this.model.width;
+                this.model.height = bRect.height > 0 ? bRect.height : this.model.height;
                 this.renderCanvas();
                 this.setParent(this.sourceID);
             },

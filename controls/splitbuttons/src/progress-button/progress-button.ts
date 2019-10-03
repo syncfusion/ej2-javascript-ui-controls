@@ -12,13 +12,13 @@ const CONTENTCLS: string = 'e-btn-content';
 export class SpinSettings extends ChildProperty<SpinSettings> {
     /**
      * Specifies the template content to be displayed in a spinner.
-     * @default null
+
      */
     @Property(null)
     public template: string;
     /**
      * Sets the width of a spinner.
-     * @default '16'
+
      */
     @Property(16)
     public width: string | number;
@@ -29,10 +29,10 @@ export class SpinSettings extends ChildProperty<SpinSettings> {
      * * Top: The spinner will be positioned at the top of the text content.
      * * Bottom: The spinner will be positioned at the bottom of the text content.
      * * Center: The spinner will be positioned at the center of the progress button.
-     * @default 'Left'
-     * @aspType Syncfusion.EJ2.SplitButtons.SpinPosition
-     * @blazorType Syncfusion.EJ2.SplitButtons.SpinPosition
-     * @isEnumeration true
+
+
+
+
      */
     @Property('Left')
     public position: SpinPosition;
@@ -41,22 +41,22 @@ export class SpinSettings extends ChildProperty<SpinSettings> {
 export class AnimationSettings extends ChildProperty<AnimationSettings> {
     /**
      * Specifies the duration taken to animate.
-     * @default 400
+
      */
     @Property(400)
     public duration: number;
     /**
      * Specifies the effect of animation.
-     * @default 'None'
-     * @aspType Syncfusion.EJ2.SplitButtons.AnimationEffect
-     * @blazorType Syncfusion.EJ2.SplitButtons.AnimationEffect
-     * @isEnumeration true
+
+
+
+
      */
     @Property('None')
     public effect: AnimationEffect;
     /**
      * Specifies the animation timing function.
-     * @default 'ease'
+
      */
     @Property('ease')
     public easing: string;
@@ -87,14 +87,14 @@ export class ProgressButton extends Button implements INotifyPropertyChanged {
 
     /**
      * Enables or disables the background filler UI in the progress button.
-     * @default false
+
      */
     @Property(false)
     public enableProgress: boolean;
 
     /**
      * Specifies the duration of progression in the progress button.
-     * @default 2000
+
      */
     @Property(2000)
     public duration: number;
@@ -105,7 +105,7 @@ export class ProgressButton extends Button implements INotifyPropertyChanged {
      * * Right: The icon will be positioned to the right of the text content.
      * * Top: The icon will be positioned at the top of the text content.
      * * Bottom: The icon will be positioned at the bottom of the text content.
-     * @default "Left"
+
      */
     @Property('Left')
     public iconPosition: IconPosition;
@@ -113,21 +113,21 @@ export class ProgressButton extends Button implements INotifyPropertyChanged {
     /**
      * Defines class/multiple classes separated by a space for the progress button that is used to include an icon.
      * Progress button can also include font icon and sprite image.
-     * @default ""
+
      */
     @Property('')
     public iconCss: string;
 
     /**
      * Enables or disables the progress button.
-     * @default false.
+
      */
     @Property(false)
     public disabled: boolean;
 
     /**
      * Allows the appearance of the progress button to be enhanced and visually appealing when set to `true`.
-     * @default false
+
      */
     @Property(false)
     public isPrimary: boolean;
@@ -135,21 +135,21 @@ export class ProgressButton extends Button implements INotifyPropertyChanged {
     /**
      * Specifies the root CSS class of the progress button that allows customization of component’s appearance.
      * The progress button types, styles, and size can be achieved by using this property.
-     * @default ""
+
      */
     @Property('')
     public cssClass: string;
 
     /**
      * Defines the text `content` of the progress button element.
-     * @default ""
+
      */
     @Property('')
     public content: string;
 
     /**
      * Makes the progress button toggle, when set to `true`. When you click it, the state changes from normal to active.
-     * @default false
+
      */
     @Property(false)
     public isToggle: boolean;
@@ -169,7 +169,7 @@ export class ProgressButton extends Button implements INotifyPropertyChanged {
     /**
      * Triggers once the component rendering is completed.
      * @event
-     * @blazorProperty 'Created'
+
      */
     @Event()
     public created: EmitType<Event>;
@@ -177,7 +177,7 @@ export class ProgressButton extends Button implements INotifyPropertyChanged {
     /**
      * Triggers when the progress starts.
      * @event
-     * @blazorProperty 'OnBegin'
+
      */
     @Event()
     public begin: EmitType<ProgressEventArgs>;
@@ -185,7 +185,7 @@ export class ProgressButton extends Button implements INotifyPropertyChanged {
     /**
      * Triggers in specified intervals.
      * @event
-     * @blazorProperty 'Progressing'
+
      */
     @Event()
     public progress: EmitType<ProgressEventArgs>;
@@ -193,7 +193,7 @@ export class ProgressButton extends Button implements INotifyPropertyChanged {
     /**
      * Triggers when the progress is completed.
      * @event
-     * @blazorProperty 'OnEnd'
+
      */
     @Event()
     public end: EmitType<ProgressEventArgs>;
@@ -201,7 +201,7 @@ export class ProgressButton extends Button implements INotifyPropertyChanged {
     /**
      * Triggers when the progress is incomplete.
      * @event
-     * @blazorProperty 'OnFailure'
+
      */
     @Event()
     public fail: EmitType<Event>;
@@ -644,7 +644,7 @@ export interface ProgressEventArgs extends BaseEventArgs {
     currentDuration: number;
     /**
      * Specifies the interval.
-     * @default 1
+
      */
     step: number;
 }

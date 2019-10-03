@@ -94,6 +94,8 @@ export const beforeRibbonCreate: string = 'beforeRibbonCreate';
 /** @hidden */
 export const rowHeightChanged: string = 'rowHeightChanged';
 /** @hidden */
+export const colWidthChanged: string = 'colWidthChanged';
+/** @hidden */
 export const beforeHeaderLoaded: string = 'beforeHeaderLoaded';
 /** @hidden */
 export const onContentScroll: string = 'onContentScroll';
@@ -105,3 +107,5 @@ export const activeSheetChanged: string = 'activeSheetChanged';
 export const renameSheet: string = 'renameSheet';
 /** @hidden */
 export const enableToolbar: string = 'enableToolbar';
+/** @hidden */
+export const initiateCustomSort: string = 'initiateCustomSort';

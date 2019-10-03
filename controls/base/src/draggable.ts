@@ -190,7 +190,7 @@ export class Draggable extends Base<HTMLElement> implements INotifyPropertyChang
     public cursorAt: PositionModel;
     /**
      * If `clone` set to true, drag operations are performed in duplicate element of the draggable element. 
-     * @default true
+
      */
     @Property(true)
     public clone: boolean;
@@ -199,6 +199,11 @@ export class Draggable extends Base<HTMLElement> implements INotifyPropertyChang
      */
     @Property()
     public dragArea: HTMLElement | string;
+    /**
+     * Defines the dragArea is scrollable or not.
+     */
+    @Property()
+    public isDragScroll: boolean;
     /**
      * Specifies the callback function for drag event.
      * @event
@@ -219,7 +224,7 @@ export class Draggable extends Base<HTMLElement> implements INotifyPropertyChang
     public dragStop: Function;
     /**
      * Defines the minimum distance draggable element to be moved to trigger the drag operation.
-     * @default 1
+
      */
     @Property(1)
     public distance: number;
@@ -296,7 +301,7 @@ export class Draggable extends Base<HTMLElement> implements INotifyPropertyChang
     public enableTapHold: boolean;
     /**
      * Specifies the time delay for tap hold.
-     * @default 750
+
      *  @private
      */
     @Property(750)
@@ -470,7 +475,7 @@ export class Draggable extends Base<HTMLElement> implements INotifyPropertyChang
             }
         }
         this.offset = this.calculateParentPosition(element);
-        this.position = this.getMousePosition(evt);
+        this.position = this.getMousePosition(evt, this.isDragScroll);
         let x: number = this.initialPosition.x - intCordinate.pageX;
         let y: number = this.initialPosition.y - intCordinate.pageY;
         let distance: number = Math.sqrt((x * x) + (y * y));
@@ -572,7 +577,7 @@ export class Draggable extends Base<HTMLElement> implements INotifyPropertyChang
         }
         let left: number;
         let top: number;
-        this.position = this.getMousePosition(evt);
+        this.position = this.getMousePosition(evt, this.isDragScroll);
         let docHeight: number = this.getDocumentWidthHeight('Height');
         if (docHeight < this.position.top) {
             this.position.top = docHeight;
@@ -610,9 +615,9 @@ export class Draggable extends Base<HTMLElement> implements INotifyPropertyChang
             if (this.pageX !== pagex || this.skipDistanceCheck) {
                 let helperWidth: number = helperElement.offsetWidth + (parseFloat(styles.marginLeft)
                     + parseFloat(styles.marginRight));
-                if (this.dragLimit.left + window.pageXOffset > dLeft) {
+                if (this.dragLimit.left + window.pageXOffset > dLeft && dLeft > 0) {
                     left = this.dragLimit.left;
-                } else if (this.dragLimit.right + window.pageXOffset < dLeft + helperWidth) {
+                } else if (this.dragLimit.right + window.pageXOffset < dLeft + helperWidth && dLeft > 0) {
                     left = dLeft - (dLeft - this.dragLimit.right) + window.pageXOffset - helperWidth;
                 } else {
                     left = dLeft;
@@ -621,9 +626,9 @@ export class Draggable extends Base<HTMLElement> implements INotifyPropertyChang
             if (this.pageY !== pagey || this.skipDistanceCheck) {
                 let helperHeight: number = helperElement.offsetHeight + (parseFloat(styles.marginTop)
                     + parseFloat(styles.marginBottom));
-                if (this.dragLimit.top + window.pageYOffset > dTop) {
+                if (this.dragLimit.top + window.pageYOffset > dTop && dTop > 0) {
                     top = this.dragLimit.top;
-                } else if (this.dragLimit.bottom + window.pageYOffset < dTop + helperHeight) {
+                } else if (this.dragLimit.bottom + window.pageYOffset < dTop + helperHeight && dTop > 0) {
                     top = dTop - (dTop - this.dragLimit.bottom) + window.pageYOffset - helperHeight;
                 } else {
                     top = dTop;
@@ -737,8 +742,8 @@ export class Draggable extends Base<HTMLElement> implements INotifyPropertyChang
         }
         if (ele) {
             let elementArea: ClientRect = ele.getBoundingClientRect();
-            eleWidthBound = elementArea.width ? elementArea.width : elementArea.right - elementArea.left;
-            eleHeightBound = elementArea.height ? elementArea.height : elementArea.bottom - elementArea.top;
+            eleWidthBound = ele.scrollWidth ? ele.scrollWidth : elementArea.right - elementArea.left;
+            eleHeightBound = ele.scrollHeight ? ele.scrollHeight : elementArea.bottom - elementArea.top;
             let keys: string[] = ['Top', 'Left', 'Bottom', 'Right'];
             let styles: any = getComputedStyle(ele);
             for (let i: number = 0; i < keys.length; i++) {
@@ -770,10 +775,21 @@ export class Draggable extends Base<HTMLElement> implements INotifyPropertyChang
         }
         return ele;
     }
-    private getMousePosition(evt: MouseEvent & TouchEvent): PositionModel {
+    private getMousePosition(evt: MouseEvent & TouchEvent, isdragscroll?: boolean): PositionModel {
+        /* tslint:disable no-any */
+        let dragEle: any = evt.srcElement;
         let intCoord: Coordinates = this.getCoordinates(evt);
-        let pageX: number = this.clone ? intCoord.pageX : (intCoord.clientX + window.pageXOffset) - this.relativeXPosition;
-        let pageY: number = this.clone ? intCoord.pageY : (intCoord.clientY + window.pageYOffset) - this.relativeYPosition;
+        let pageX: number;
+        let pageY: number;
+        if (isdragscroll) {
+            pageX = this.clone ? intCoord.pageX :
+                (intCoord.pageX + dragEle.offsetParent.scrollLeft) - this.relativeXPosition;
+            pageY = this.clone ? intCoord.pageY :
+                (intCoord.pageY + dragEle.offsetParent.scrollTop) - this.relativeYPosition;
+        } else {
+            pageX = this.clone ? intCoord.pageX : (intCoord.pageX + window.pageXOffset) - this.relativeXPosition;
+            pageY = this.clone ? intCoord.pageY : (intCoord.pageY + window.pageYOffset) - this.relativeYPosition;
+        }
         return {
             left: pageX - (this.margin.left + this.cursorAt.left),
             top: pageY - (this.margin.top + this.cursorAt.top)

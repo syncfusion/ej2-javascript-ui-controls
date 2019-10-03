@@ -269,7 +269,9 @@ var Toast = /** @__PURE__ @class */ (function (_super) {
             return;
         }
         if (isNullOrUndefined(element)) {
-            element = (this.newestOnTop ? this.toastContainer.lastElementChild : this.toastContainer.firstElementChild);
+            element = (this.newestOnTop ? this.toastContainer.lastElementChild.classList.contains('blazor-template') ?
+                this.toastContainer.lastElementChild.previousSibling : this.toastContainer.lastElementChild :
+                this.toastContainer.firstElementChild);
         }
         this.destroyToast(element);
     };
@@ -601,7 +603,9 @@ var Toast = /** @__PURE__ @class */ (function (_super) {
     };
     Toast.prototype.clickHandler = function (e) {
         var _this = this;
-        e.stopPropagation();
+        if (!isBlazor()) {
+            e.stopPropagation();
+        }
         var target = e.target;
         var toastEle = closest(target, '.' + ROOT);
         var clickArgs = isBlazor() ? {

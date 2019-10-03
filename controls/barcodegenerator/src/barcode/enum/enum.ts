@@ -110,8 +110,8 @@ export type DataMatrixEncoding =
  * * Size12x36 
  * * Size16x36 
  * * Size16x48 
- * @aspNumberEnum
- * @blazorNumberEnum
+
+
  * @IgnoreSingular
  */
 
@@ -358,8 +358,8 @@ export type QRInputMode =
  * * Version38 
  * * Version39 
  * * Version40 
- * @aspNumberEnum
- * @blazorNumberEnum
+
+
  * @IgnoreSingular
  */
 
@@ -537,8 +537,8 @@ export enum QRCodeVersion {
  * * Medium
  * * Quartile
  * * High
- * @aspNumberEnum
- * @blazorNumberEnum
+
+
  * @IgnoreSingular
  */
 export enum ErrorCorrectionLevel {

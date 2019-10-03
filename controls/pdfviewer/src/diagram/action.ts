@@ -180,7 +180,7 @@ export function findActivePage(event: MouseEvent, pdfBase: PdfViewerBase): numbe
     return activePageID;
 }
 /**
- * @hidden
+
  */
 export class ActiveElements {
 

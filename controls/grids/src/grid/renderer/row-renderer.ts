@@ -12,7 +12,7 @@ import { ServiceLocator } from '../services/service-locator';
 import { CellMergeRender } from './cell-merge-renderer';
 /**
  * RowRenderer class which responsible for building row content. 
- * @hidden
+
  */
 export class RowRenderer<T> implements IRowRenderer<T> {
 
