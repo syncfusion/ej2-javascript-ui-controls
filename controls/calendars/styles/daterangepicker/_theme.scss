@@ -1,0 +1,128 @@
+@include export-module('daterangepicker-theme') {
+  /*! daterangepicker theme */
+  .e-date-range-wrapper {
+    & .e-input-group-icon.e-icons.e-active {
+      @if $skin-name == 'bootstrap4' {
+        background: $range-icon-active-bg-color;
+        border-color: $range-active-border-color;
+      }
+      color: $range-active-icon-color;
+    }
+
+    &.e-input-group:not(.e-disabled) .e-input-group-icon.e-active:active {
+      color: $range-active-state-icon-color;
+    }
+  }
+
+  #{&}.e-daterangepicker,
+  .e-bigger.e-small #{&}.e-daterangepicker {
+    &.e-popup {
+      background: $range-background;
+
+      & .e-calendar {
+        background-color: $range-background;
+
+        & .e-header .e-title,
+        & .e-header .e-title:hover {
+          color: $range-calendar-header-dark-color;
+          text-decoration: none;
+        }& .e-content .e-range-hover {
+          background-color: $range-hover-color;
+          color: $range-calendar-dark-color;
+        }& .e-content.e-month .e-today.e-range-hover span {
+          background-color: $range-today-color;
+          border: $range-today-border-color;
+          color: $range-calendar-today-color;
+        }& .e-content .e-range-hover span {
+          background: $range-hover-color;
+          border: $range-calendar-selection-border;
+          color: $range-calendar-dark-color;
+        }& .e-range-hover:not(.e-selected):hover span.e-day,
+        & .e-range-hover.e-focused-date:not(.e-selected) span.e-day,
+        & .e-range-hover.e-focused-date.e-today span.e-day {
+          background-color: $range-hover-content-color;
+          border: $range-calendar-hover-border-color;
+          color: $range-calendar-dark-color;
+        }& .e-range-hover.e-today:hover span.e-day,
+        & .e-range-hover.e-focused-date.e-today span.e-day,
+        & .e-range-hover.e-start-date.e-selected.e-today span.e-day,
+        & .e-range-hover.e-end-date.e-selected.e-today span.e-day {
+          border: $range-calendar-active-border;
+        }& .e-range-hover.e-selected.e-today:hover span.e-day {
+          border: $range-calendar-today-start-color;
+        }& .e-content .e-other-month.e-range-hover,
+        & .e-content .e-other-month.e-today.e-range-hover span,
+        & .e-content .e-other-month.e-range-hover span,
+        & .e-content .e-other-month.e-range-hover:hover span.e-day,
+        & .e-content .e-other-month.e-selected,
+        & .e-content .e-other-month.e-selected span {
+          background-color: $range-other-hover-color;
+          border: $range-calendar-other-month-border;
+          color: $range-other-month-date;
+        }& .e-content .e-other-month.e-range-hover,
+        & .e-content .e-other-month.e-selected {
+          background-color: $range-other-hover-color;
+          border: $range-calendar-other-normal-border;
+          color: $range-other-month-date;
+        }& .e-end-date.e-selected.e-range-hover span.e-day,
+        & .e-start-date.e-selected.e-range-hover span.e-day {
+          background-color: $range-selection-bg;
+          color: $range-active-font-color;
+        }& .e-start-date.e-selected.e-range-hover.e-today span.e-day {
+          background-color: $range-selection-bg;
+          color: $range-active-font-color;
+        }& .e-other-month.e-selected span {
+          color: $range-primary-font-color;
+        }
+      }& .e-presets {
+        background-color: $range-presets-bg;
+        color: $range-preset-normal-font-color;
+
+        & .e-list-item.e-active {
+          background-color: $range-presets-bg-color;
+          color: $range-presets-font-color;
+        }& .e-list-item.e-hover {
+          background-color: $range-presets-hover-bg;
+          color: $range-list-hover-color;
+        }
+      }& .e-start-label,
+      & .e-end-label {
+        color: $range-calendar-header-text-color;
+      }& .e-change-icon {
+        color: $range-change-icon-color;
+      }& .e-day-span {
+        color: $range-calendar-medium-color;
+      }& .e-separator {
+        background-color: $range-separator-color;
+      }& .e-footer {
+        background-color: $range-background;
+      }
+    }
+  }
+
+  //bigger style
+  .e-bigger #{&}.e-daterangepicker,
+  &.e-bigger#{&}.e-daterangepicker,
+  &.e-device#{&}.e-daterangepicker {
+    background-color: $range-bg-color;
+    padding: $range-popup-padding;
+
+    & .e-calendar th {
+      color: $range-calendar-light-color;
+    }& .e-start-btn,
+    & .e-end-btn {
+      background: $range-bg-color;
+      @if $skin-name == 'bootstrap4' {
+        color: $range-button-font-color;
+      }
+    }& .e-start-btn.e-active,
+    & .e-start-btn.e-active:active,
+    & .e-end-btn.e-active,
+    & .e-end-btn.e-active:active:not([disabled]),
+    & .e-start-btn.e-active:hover,
+    & .e-end-btn.e-active:hover {
+      background: $range-primary-color;
+      color: $range-primary-font-color;
+    }
+  }
+}

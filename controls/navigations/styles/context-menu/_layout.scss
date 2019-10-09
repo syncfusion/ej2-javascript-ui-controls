@@ -1,0 +1,70 @@
+@import 'layout-mixin.scss';
+@include export-module('contextmenu-layout') {
+  /*! contextmenu layout */
+  .e-contextmenu-wrapper {
+    @at-root {
+      & ul {
+        @include ul-layout;
+        @include ul-size;
+        border: $cmenu-ul-border;
+        border-radius: $cmenu-ul-border-radius;
+        box-shadow: $cmenu-sub-ul-box-shadow;
+        display: none;
+        min-width: $cmenu-min-width;
+        position: absolute;
+
+        &.e-contextmenu {
+          box-shadow: $cmenu-parent-ul-box-shadow;
+        }
+
+        &.e-ul {
+          font-family: $font-family;
+        }
+
+        & .e-menu-item  {
+          @include li-layout;
+          @include li-size;
+
+          & .e-caret {
+            font-size: $cmenu-caret-font-size;
+          }
+
+          & .e-previous {
+            margin-right: $cmenu-back-icon-margin;
+          }
+
+          &.e-disabled {
+            cursor: auto;
+            pointer-events: none;
+          }
+        }
+      }
+    }
+  }
+
+  .e-rtl.e-contextmenu-wrapper .e-menu-item {
+    @include rtl-li-layout;
+    @include rtl-li-size;
+  }
+
+  .e-bigger .e-contextmenu-wrapper ul,
+  .e-bigger.e-contextmenu-wrapper ul {
+    @include bigger-ul-size;
+    box-shadow: $cmenu-parent-ul-box-shadow;
+    max-width: $cmenu-bigger-max-width;
+    min-width: $cmenu-bigger-min-width;
+
+    & .e-menu-item  {
+      @include bigger-li-size;
+
+      & .e-caret {
+        font-size: $cmenu-bigger-caret-font-size;
+      }
+    }
+  }
+
+  .e-bigger .e-contextmenu-wrapper.e-rtl ul .e-blankicon,
+  .e-bigger.e-contextmenu-wrapper.e-rtl ul .e-blankicon {
+    @include bigger-rtl-blank-icon;
+  }
+}

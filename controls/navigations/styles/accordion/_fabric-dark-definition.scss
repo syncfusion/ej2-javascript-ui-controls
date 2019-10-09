@@ -1,0 +1,74 @@
+//default 
+
+$acrdn-skin: 'fabric' !default;
+$acrdn-icon-font-size: $font-size !default;
+$acrdn-header-font-bgr-size: 16px !default;
+$acrdn-content-font-bgr-size: 14px !default;
+$acrdn-nest-header-font-size: 14px !default;
+$acrdn-bgr-icn-minwidth: 30px !default;
+$acrdn-slct-header-font-weight: normal !default;
+$acrdn-nrml-icn-minwidth: 24px !default;
+$acrdn-bg-color: $default-bg-color !default;
+$acrdn-item-border-color: $neutral-white !default;
+$acrdn-item-header-border-color: $neutral-white !default;
+$acrdn-item-exp-hdr-focus-border-color: $neutral-secondary !default;
+$acrdn-content-line-height: 1.5 !default;
+$acrdn-tab-highlight-color:  rgba(0, 0, 0, 0) !default;
+$acrdn-active-bg: $default-bg-color !default;
+$acrdn-nested-header-font: $header-font-color !default;
+$acrdn-nrml-header-minheight: 40px !default;
+$acrdn-bgr-header-minheight: 50px !default;
+$acrdn-nrml-header-lineheight: 39px !default;
+$acrdn-bgr-header-lineheight: 49px !default;
+$acrdn-nrml-header-paddingpix: 12px !default;
+$acrdn-bgr-header-paddingpix: 12px !default;
+
+$acrdn-nrml-header-padding: 0 42px 0 $acrdn-nrml-header-paddingpix !default;
+$acrdn-bgr-header-padding: $acrdn-nrml-header-padding !default;
+$acrdn-nest-nrml-header-padding: 0 42px 0 24px !default;
+$acrdn-nest-bgr-header-padding: $acrdn-nest-nrml-header-padding !default;
+$acrdn-nest-second-nrml-header-padding: 0 42px 0  36px !default;
+$acrdn-nest-second-bgr-header-padding: $acrdn-nest-second-nrml-header-padding !default;
+$acrdn-rtl-nrml-header-padding: 0 $acrdn-nrml-header-paddingpix 0 42px !default;
+$acrdn-rtl-bgr-header-padding: $acrdn-rtl-nrml-header-padding !default;
+$acrdn-rtl-nest-nrml-header-padding: 0 24px 0 42px  !default;
+$acrdn-rtl-nest-bgr-header-padding: $acrdn-rtl-nest-nrml-header-padding !default;
+$acrdn-rtl-nest-second-nrml-header-padding: 0  36px 0 42px  !default;
+$acrdn-rtl-nest-second-bgr-header-padding: $acrdn-rtl-nest-second-nrml-header-padding !default;
+$acrdn-nrml-content-padding: 15px !default;
+$acrdn-bgr-content-padding: 19px !default;
+$acrdn-nest-nrml-content-padding: 15px 15px 15px 45px !default;
+$acrdn-nest-bgr-content-padding: 19px 19px 19px 45px !default;
+$acrdn-nest-second-nrml-content-padding: 15px 15px 15px 60px !default;
+$acrdn-nest-second-bgr-content-padding: 19px 19px 19px 60px !default;
+$acrdn-rtl-nest-nrml-content-padding: 15px 45px 15px 15px !default;
+$acrdn-rtl-nest-bgr-content-padding: 19px 45px 19px 19px !default;
+$acrdn-rtl-nest-second-nrml-content-padding: 15px 60px 15px 15px !default;
+$acrdn-rtl-nest-second-bgr-content-padding: 19px 60px 19px 19px !default;
+
+
+$acrdn-nrml-header-icon-padding: 8px !default;
+$acrdn-bgr-header-icon-padding: 14px !default;
+$acrdn-nrml-icon-container: 16px !default;
+$acrdn-bgr-icon-container: 20px !default;
+$acrdn-selected-header-font-color: $neutral-light-fontalt !default;
+$acrdn-selected-icon-color: $acrdn-selected-header-font-color !default;
+$acrdn-icon-color: $neutral-light-font !default;
+$acrdn-content-color: $neutral-light-font !default;
+$acrdn-header-font: $neutral-light-font !default;
+$acrdn-header-font-weight: normal !default;
+$acrdn-header-font-size: 14px !default;
+$acrdn-content-font-size: 13px !default;
+$acrdn-header-focus-bg: $neutral-light !default;
+$acrdn-header-hover-bg: $neutral-light !default;
+$acrdn-header-active-bg: $neutral-quintenary !default;
+$acrdn-selected-header-color: $neutral-quintenary !default;
+$acrdn-border-type: $border-type !default;
+$acrdn-border-size: $border-size !default;
+$acrdn-default-border: $neutral-light !default;
+$acrdn-selected-border-size: $border-size !default;
+$acrdn-item-padding-size: '' !default;
+$acrdn-selected-border-type: $border-type !default;
+$acrdn-selected-border-color: $neutral-light !default;
+
+//enddefault

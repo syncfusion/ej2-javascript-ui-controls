@@ -1,0 +1,243 @@
+@import '../context-menu/theme-mixin.scss';
+@include export-module('menu-theme') {
+  /*! menu theme */
+  .e-menu-wrapper {
+    background-color: $menu-ul-bgcolor;
+
+    @at-root {
+      & ul {
+        @if $skin-name == 'bootstrap4' {
+          background-color: $cmenu-ul-bgcolor;
+        }
+        @else {
+          background-color: inherit;
+        }
+        color: $menu-color;
+
+        &.e-menu {
+          &:not(.e-vertical) {
+            & .e-separator {
+              border-right-color: $menu-seperator-border-color;
+            }
+          }
+        }
+
+        & .e-menu-item  {
+          @if $skin-name == 'bootstrap4' {
+            & .e-caret {
+              color: $menu-caret-color;
+            }
+
+            & .e-menu-icon {
+              color: $menu-icon-color;
+            }
+          }
+          @else {
+            @include icon-color;
+          }
+
+          &.e-menu-header {
+            border-bottom-color: $cmenu-li-border-color;
+          }
+
+          & .e-menu-url {
+            color: $menu-color;
+          }
+
+          &.e-focused {
+            color: $menu-icon-hover-color;
+            outline: $menu-li-hover-outline;
+            outline-offset: $menu-li-hover-outline-offset;
+            @if $skin-name == 'bootstrap4' {
+              background-color: $menu-ul-bgcolor;
+
+              & .e-caret {
+                color: $menu-caret-color;
+              }
+
+              & .e-menu-icon {
+                color: $menu-icon-hover-color;
+              }
+            }
+            @else {
+              @include focused-icon-color;
+              background-color: $menu-li-bgcolor;
+            }
+          }
+
+          &.e-selected {
+            color: $menu-selected-color;
+            outline: $menu-li-selected-outline;
+            outline-offset: $menu-li-selected-outline-offset;
+            @if $skin-name == 'bootstrap4' {
+              background-color: $menu-ul-bgcolor;
+            }
+            @else {
+              background-color: $menu-li-selection-bgcolor;
+            }
+
+            & .e-caret {
+              color: $menu-caret-color;
+            }
+
+            & .e-menu-icon {
+              color: $menu-icon-hover-color;
+            }
+          }
+
+          &.e-separator {
+            border-bottom-color: $menu-seperator-border-color;
+          }
+        }
+
+        @include disabled-color;
+      }
+
+      & .e-ul {
+        background-color: inherit;
+        color: $submenu-color;
+
+        & .e-menu-item {
+          @if $skin-name == 'bootstrap4' {
+            & .e-caret {
+              color: $submenu-color;
+            }
+
+            & .e-menu-icon {
+              color: $submenu-color;
+            }
+        }
+
+          &.e-focused {
+            @if $skin-name == 'bootstrap4' {
+              & .e-caret {
+                color: $menu-caret-color;
+              }
+
+              & .e-menu-icon {
+                color: $submenu-color;
+              }
+            }
+          }
+
+          &.e-selected {
+            @if $skin-name == 'bootstrap4' {
+              & .e-caret {
+                color: $menu-icon-focussed-color;
+              }
+
+              & .e-menu-icon {
+                color: $menu-icon-focussed-color;
+              }
+            }
+          }
+
+          & .e-menu-url {
+            color: $submenu-color;
+          }
+
+          &.e-focused {
+            @include focused-color;
+          }
+
+          &.e-selected {
+            @include selected-color;
+          }
+
+          &.e-separator {
+            border-bottom-color: $cmenu-li-border-color;
+          }
+        }
+      }
+    }
+
+    &.e-menu-popup {
+      background-color: $cmenu-ul-bgcolor;
+    }
+
+    & .e-menu-hscroll.e-hscroll .e-scroll-nav {
+      background: $menu-ul-bgcolor;
+
+      & .e-nav-arrow.e-icons {
+        color: $cmenu-caret-color;
+      }
+
+      &:hover {
+        @if $skin-name == 'bootstrap4' {
+          background-color: darken($gray-600, 7.5%);
+          border: 1px inside darken($gray-600, 10%);
+
+          & .e-icons {
+            color: $menu-icon-focussed-color;
+          }
+        }
+        @else {
+          background: $menu-li-bgcolor;
+        }
+      }
+
+      &:focus {
+        @if $skin-name == 'bootstrap4' {
+          background-color: darken($gray-600, 7.5%);
+          border-color: darken($gray-600, 10%);
+
+          & .e-icons {
+            color: $menu-icon-focussed-color;
+          }
+        }
+        @else {
+          background: $menu-li-bgcolor;
+        }
+      }
+
+      &:active {
+        @if $skin-name == 'bootstrap4' {
+          background-color: darken($gray-600, 7.5%);
+          border: 1px inside darken($gray-600, 10%);
+        }
+        @else {
+          background: $menu-li-bgcolor;
+        }
+      }
+    }
+
+    &.e-menu-popup .e-menu-vscroll.e-vscroll .e-scroll-nav {
+      background: $cmenu-ul-bgcolor;
+      border-color: $menu-seperator-border-color;
+
+      & .e-icons {
+        color: $cmenu-color;
+      }
+
+      &:hover,
+      &:focus {
+        background: $cmenu-li-bgcolor;
+      }
+
+      &:active {
+        background: $cmenu-li-selection-bgcolor;
+      }
+    }
+  }
+
+  .e-menu-wrapper.e-hamburger {
+    & .e-menu-header {
+      color: $submenu-color;
+
+      & .e-menu-icon {
+        color: $submenu-color;
+      }
+    }
+
+    & ul {
+      color: $submenu-color;
+
+      @if $skin-name == 'bootstrap4' {
+        & .e-selected .e-caret,
+        & .e-caret {
+          color: $submenu-color;
+        }
+      }
+    }
+  }
+}

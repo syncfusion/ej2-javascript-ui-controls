@@ -1,0 +1,456 @@
+@include export-module('radiobutton-layout') {
+  /*! radiobutton layout */
+
+  .e-radio-wrapper {
+    display: inline-block;
+    line-height: 1;
+  }
+
+  // sass-lint:disable no-vendor-prefixes
+  #{&}.e-radio {
+    -webkit-appearance: none;
+    height: 1px;
+    opacity: 0;
+    position: absolute;
+    width: 1px;
+
+    +label {
+      -webkit-tap-highlight-color: transparent;
+      cursor: pointer;
+      display: inline-block;
+      margin: 0;
+      position: relative;
+      user-select: none;
+      vertical-align: middle;
+      white-space: nowrap;
+
+      & .e-label {
+        display: inline-block;
+        font-family: $font-family;
+        font-size: $radio-btn-font-size;
+        font-weight: normal;
+        line-height: $radio-btn-line-height;
+        padding-left: $radio-btn-padding-left;
+        vertical-align: text-top;
+        white-space: normal;
+      }
+
+      &::before {
+        border: $radio-btn-border;
+        border-radius: 50%;
+        box-sizing: border-box;
+        content: '';
+        height: $radio-btn-height;
+        left: 0;
+        position: absolute;
+        top: 0;
+        width: $radio-btn-width;
+      }
+
+      &:focus {
+        &::before {
+          box-shadow: $radio-btn-focussed-box-shadow;
+        }
+      }
+
+      &::after {
+        border: 1px solid;
+        border-radius: 50%;
+        box-sizing: border-box;
+        content: '';
+        height: $radio-btn-icon-height;
+        left: $radio-btn-icon-left;
+        position: absolute;
+        top: $radio-btn-icon-top;
+        transform: scale(0);
+        width: $radio-btn-icon-width;
+      }
+
+      & .e-ripple-container {
+        border-radius: 50%;
+        height: $radio-btn-ripple-size;
+        left: $radio-btn-ripple-position;
+        position: absolute;
+        top:  $radio-btn-ripple-position;
+        width: $radio-btn-ripple-size;
+        z-index: 1;
+      }
+
+      &.e-right,
+      &.e-rtl {
+        & .e-label {
+          padding-left: 0;
+          padding-right: $radio-btn-padding-left;
+        }
+
+        &::before {
+          left: auto;
+          right: 0;
+        }
+
+        &::after {
+          left: auto;
+          right: $radio-btn-icon-right;
+        }
+
+        & .e-ripple-container {
+          left: auto;
+          right: $radio-btn-ripple-position;
+        }
+      }
+
+      &.e-right {
+        &.e-rtl {
+          & .e-label {
+            padding-left: $radio-btn-padding-left;
+            padding-right: 0;
+          }
+
+          &::before {
+            left: 0;
+            right: auto;
+          }
+
+          &::after {
+            left: $radio-btn-icon-right;
+            right: auto;
+          }
+
+          & .e-ripple-container {
+            left: -8px;
+            right: auto;
+            }
+        }
+      }
+
+      &.e-small {
+
+        & .e-label {
+          line-height: $radio-btn-small-line-height;
+          padding-left: $radio-btn-small-padding;
+        }
+
+        &::before {
+          height: $radio-btn-small-height;
+          width: $radio-btn-small-width;
+        }
+
+        &::after {
+          height: $radio-btn-small-icon-height;
+          left: $radio-btn-small-icon-left;
+          top: $radio-btn-small-icon-top;
+          width: $radio-btn-small-icon-width;
+        }
+
+        & .e-ripple-container {
+          left: $radio-btn-small-ripple-position;
+          top: $radio-btn-small-ripple-position;
+        }
+
+        &.e-right,
+        &.e-rtl {
+          & .e-label {
+            padding-left: 0;
+            padding-right: $radio-btn-small-padding;
+          }
+
+          &::after {
+            left: auto;
+            right: $radio-btn-small-icon-right;
+          }
+
+          & .e-ripple-container {
+            left: auto;
+            right: $radio-btn-small-ripple-position;
+          }
+        }
+
+        &.e-right {
+          &.e-rtl {
+            & .e-label {
+              padding-left: $radio-btn-small-padding;
+              padding-right: 0;
+            }
+
+            &::after {
+              left: $radio-btn-small-icon-right;
+              right: auto;
+            }
+
+            & .e-ripple-container {
+              left: -10px;
+              right: auto;
+            }
+          }
+        }
+      }
+    }
+
+    &:checked {
+      +label {
+        &::after {
+          transform: scale(1);
+          transition: $radio-btn-check-transition;
+        }
+      }
+    }
+  }
+
+  .e-small #{&}.e-radio+label,
+  #{&}.e-radio+label.e-small {
+
+    & .e-label {
+      line-height: $radio-btn-small-line-height;
+      padding-left: $radio-btn-small-padding;
+    }
+
+    &::before {
+      height: $radio-btn-small-height;
+      width: $radio-btn-small-width;
+    }
+
+    &::after {
+      height: $radio-btn-small-icon-height;
+      left: $radio-btn-small-icon-left;
+      top: $radio-btn-small-icon-top;
+      width: $radio-btn-small-icon-width;
+    }
+
+    & .e-ripple-container {
+      left: $radio-btn-small-ripple-position;
+      top: $radio-btn-small-ripple-position;
+    }
+
+    &.e-right,
+    &.e-rtl {
+      & .e-label {
+        padding-left: 0;
+        padding-right: $radio-btn-small-padding;
+      }
+
+      &::after {
+        left: auto;
+        right: $radio-btn-small-icon-right;
+      }
+
+      & .e-ripple-container {
+        left: auto;
+        right: $radio-btn-small-ripple-position;
+      }
+    }
+
+    &.e-right {
+      &.e-rtl {
+        & .e-label {
+          padding-left: $radio-btn-small-padding;
+          padding-right: 0;
+        }
+
+        &::after {
+          left: $radio-btn-small-icon-right;
+          right: auto;
+        }
+
+        & .e-ripple-container {
+          left: -10px;
+          right: auto;
+        }
+      }
+    }
+}
+
+  .e-bigger.e-small #{&}.e-radio+label,
+  #{&}.e-radio+label.e-bigger.e-small {
+
+    & .e-label {
+      line-height: $radio-btn-bigger-small-line-height;
+      padding-left: $radio-btn-bigger-small-padding;
+    }
+
+    &::before {
+      height: $radio-btn-bigger-small-height;
+      width: $radio-btn-bigger-small-width;
+    }
+
+    &::after {
+      height: $radio-btn-bigger-small-icon-height;
+      left: $radio-btn-bigger-small-icon-left;
+      top: $radio-btn-bigger-small-icon-top;
+      width: $radio-btn-bigger-small-icon-width;
+    }
+
+    & .e-ripple-container {
+      height: $radio-btn-bigger-small-ripple-size;
+      left: $radio-btn-bigger-ripple-position;
+      top: $radio-btn-bigger-ripple-position;
+      width: $radio-btn-bigger-small-ripple-size;
+    }
+
+    &.e-right,
+    &.e-rtl {
+      & .e-label {
+        padding-left: 0;
+        padding-right: $radio-btn-bigger-small-padding;
+      }
+
+      &::after {
+        left: auto;
+        right: $radio-btn-bigger-small-icon-right;
+      }
+
+      & .e-ripple-container {
+        left: auto;
+        right: $radio-btn-small-ripple-position;
+      }
+    }
+
+    &.e-right {
+      &.e-rtl {
+        & .e-label {
+          padding-left: $radio-btn-bigger-small-padding;
+          padding-right: 0;
+        }
+
+        &::after {
+          left: $radio-btn-bigger-small-icon-right;
+          right: auto;
+        }
+
+        & .e-ripple-container {
+          left: -10px;
+          right: auto;
+        }
+      }
+    }
+  }
+
+  .e-bigger #{&}.e-radio+label,
+  #{&}.e-radio+label.e-bigger {
+
+    & .e-label {
+      font-size: $radio-btn-bigger-font-size;
+      line-height: $radio-btn-bigger-line-height;
+      padding-left: $radio-btn-bigger-padding;
+    }
+
+    &::before {
+      height: $radio-btn-bigger-height;
+      width: $radio-btn-bigger-width;
+    }
+
+    &::after {
+      height: $radio-btn-bigger-icon-height;
+      left: $radio-btn-bigger-icon-left;
+      top: $radio-btn-bigger-icon-top;
+      width: $radio-btn-bigger-icon-width;
+    }
+
+    & .e-ripple-container {
+      height: $radio-btn-bigger-ripple-size;
+      left: $radio-btn-bigger-ripple-position;
+      top: $radio-btn-bigger-ripple-position;
+      width: $radio-btn-bigger-ripple-size;
+    }
+
+    &.e-right,
+    &.e-rtl {
+      & .e-label {
+        padding-left: 0;
+        padding-right: $radio-btn-bigger-padding;
+      }
+
+      &::after {
+        left: auto;
+        right: $radio-btn-bigger-icon-right;
+      }
+
+      & .e-ripple-container {
+        left: auto;
+        right: $radio-btn-bigger-ripple-position;
+      }
+    }
+
+    &.e-right {
+      &.e-rtl {
+        & .e-label {
+          padding-left: $radio-btn-bigger-padding;
+          padding-right: 0;
+        }
+
+        &::after {
+          left: $radio-btn-bigger-icon-right;
+          right: auto;
+        }
+
+        & .e-ripple-container {
+          left: -12px;
+          right: auto;
+        }
+      }
+    }
+
+    &.e-small {
+
+      & .e-label {
+        line-height: $radio-btn-bigger-small-line-height;
+        padding-left: $radio-btn-bigger-small-padding;
+      }
+
+      &::before {
+        height: $radio-btn-bigger-small-height;
+        width: $radio-btn-bigger-small-width;
+      }
+
+      &::after {
+        height: $radio-btn-bigger-small-icon-height;
+        left: $radio-btn-bigger-small-icon-left;
+        top: $radio-btn-bigger-small-icon-top;
+        width: $radio-btn-bigger-small-icon-width;
+      }
+
+      & .e-ripple-container {
+        height: $radio-btn-bigger-small-ripple-size;
+        left: $radio-btn-bigger-ripple-position;
+        top: $radio-btn-bigger-ripple-position;
+        width: $radio-btn-bigger-small-ripple-size;
+      }
+
+      &.e-right,
+      &.e-rtl {
+        & .e-label {
+          padding-left: 0;
+          padding-right: $radio-btn-bigger-small-padding;
+        }
+
+        &::after {
+          left: auto;
+          right: $radio-btn-bigger-small-icon-right;
+        }
+
+        & .e-ripple-container {
+          left: auto;
+          right: $radio-btn-small-ripple-position;
+        }
+      }
+
+      &.e-right {
+        &.e-rtl {
+          & .e-label {
+            padding-left: $radio-btn-bigger-small-padding;
+            padding-right: 0;
+          }
+
+          &::after {
+            left: $radio-btn-bigger-small-icon-right;
+            right: auto;
+          }
+
+          & .e-ripple-container {
+            left: -10px;
+            right: auto;
+          }
+        }
+      }
+    }
+  }
+}

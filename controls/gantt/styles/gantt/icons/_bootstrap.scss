@@ -1,0 +1,101 @@
+@include export-module('gantt-bootstrap-icons') {
+  #{&}.e-gantt {
+    .e-add::before {
+      content: '\e823';
+    }
+
+    .e-edit::before {
+      content: '\e944';
+    }
+
+    .e-delete::before {
+      content: '\e84e';
+    }
+
+    .e-cancel::before {
+      content: '\e842';
+    }
+
+    .e-save::before {
+      content: '\e964';
+    }
+
+    .e-update::before {
+      content: '\e735';
+    }
+
+    .e-search-icon::before {
+      content: '\e961';
+    }
+
+    .e-cancel-icon::before {
+      content: '\e842';
+    }
+
+    .e-notes-info::before {
+      content: '\1F6C8';
+    }
+
+    .e-left-resize-gripper::before,
+    .e-right-resize-gripper::before {
+      content: '\ebc7';
+    }
+
+    .e-expandall::before {
+      content: '\e558';
+    }
+
+    .e-collapseall::before {
+      content: '\e557';
+    }
+
+    .e-prevtimespan::before {
+      content: '\e85b';
+    }
+
+    .e-nexttimespan::before {
+      content: '\e85f';
+    }
+
+    .e-zoomin::before {
+      content: '\e349';
+    }
+
+    .e-zoomout::before {
+      content: '\e351';
+    }
+
+    .e-zoomtofit::before {
+      content: '\e657';
+    }
+
+    .e-csvexport::before {
+      content: '\e241';
+    }
+
+    .e-excelexport::before {
+      content: '\e242';
+    }
+
+    .e-add-above::before {
+      content: '\e658';
+    }
+
+    .e-add-below::before {
+      content: '\e659';
+    }
+  }
+
+  #{&}.e-gantt.e-device {
+    .e-backarrowspan::before,
+    .e-icon-dlg-close::before {
+      content: '\e85b';
+      }
+
+    .e-left-resize-gripper::before,
+    .e-right-resize-gripper::before {
+      content: '\e903';
+      }
+   }
+}
+  

@@ -1,0 +1,23 @@
+$progress-btn-color: $content-font !default;
+$progress-btn-bgcolor: rgba($bg-base-0, .3) !default;
+$progress-btn-bgcolor-normal: rgba($bg-base-100, .3) !default;
+$progress-btn-warning-progress-color: $progress-btn-bgcolor !default;
+$progress-btn-circle-opacity: 1 !default;
+
+$progress-btn-transition: all .3s linear !default;
+
+$progress-btn-spinner-padding: 12px !default;
+$progress-btn-spinner-padding-small: 10px !default;
+$progress-btn-spinner-padding-bigger: 14px !default;
+$progress-btn-spinner-padding-bigger-small: 12px !default;
+
+$progress-btn-spin-btn-padding: 20px !default;
+$progress-btn-small-spin-btn-padding: 16px !default;
+$progress-btn-bigger-spin-btn-padding: 24px !default;
+$progress-btn-bigger-small-spin-btn-padding: 22px !default;
+
+$progress-btn-flat-primary-progress-color: $bg-base-0 !default;
+$progress-btn-flat-success-progress-color: $bg-base-0 !default;
+$progress-btn-flat-info-progress-color: $bg-base-0 !default;
+$progress-btn-flat-warning-progress-color: $bg-base-0 !default;
+$progress-btn-flat-danger-progress-color: $bg-base-0 !default;

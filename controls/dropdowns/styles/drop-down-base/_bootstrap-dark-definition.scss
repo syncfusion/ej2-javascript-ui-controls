@@ -1,0 +1,64 @@
+//default 
+$ddl-last-child-bottom-border: 0 !default;
+$ddl-default-font-family: inherit !default;
+$ddl-list-border-size: 1px !default;
+$ddl-default-header-font-color: $default-font-color !default;
+$ddl-list-bottom-border: $ddl-list-border-size !default;
+
+$ddl-list-border-color: $grey-44 !default;
+$ddl-list-font-family: inherit !default;
+$ddl-list-gradient-color: $grey-white !default;
+$ddl-list-bg-color: $grey-dark !default;
+$ddl-list-header-bg-color: $grey-white !default;
+$ddl-list-header-border-color: 1px $grey-base !default;
+$ddl-list-default-font-color: $grey-dark-font !default;
+$ddl-list-active-border-color: $grey-white !default;
+$ddl-list-active-font-color: $brand-primary-font !default;
+$ddl-list-active-bg-color: $brand-primary !default;
+$ddl-list-hover-bg-color: $grey-44 !default;
+$ddl-list-hover-border-color: $grey-white !default;
+$ddl-list-hover-font-color: $grey-dark-font !default;
+$ddl-nodata-font-color: $grey-d4 !default;
+$ddl-group-list-padding-left: 30px !default;
+$ddl-header-font-weight: normal !default;
+$ddl-list-header-padding-left: 20px !default;
+$ddl-list-font-size: 14px !default;
+$ddl-group-list-font-size: 12px !default;
+$ddl-list-header-font-color: lighten($brand-primary, 15%) !default;
+$ddl-list-text-indent: 20px !default;
+$ddl-list-rtl-padding-right: 0 !default;
+$ddl-list-line-height: 26px !default;
+$ddl-list-padding-right: 20px !default;
+$ddl-list-rtl-padding-left: 20px !default;
+$ddl-bigger-list-header-font-size: $ddl-list-font-size !default;
+$ddl-multi-column-border-width: 0 0 1px 0 !default;
+$ddl-multi-column-border-color: $grey-88 !default;
+
+// small size
+$ddl-small-icon-font-size: 14px !default;
+$ddl-small-line-height: 22px !default;
+$ddl-small-list-font-color: $grey-dark-font !default;
+$ddl-small-list-text-indent: 12px !default;
+
+// Touch Small
+
+$ddl-bigger-small-icon-font-size: 18px !default;
+$ddl-bigger-small-line-height: 34px !default;
+$ddl-bigger-small-list-font-color: $grey-dark-font !default;
+$ddl-bigger-small-list-text-indent: 16px !default;
+$ddl-bigger-small-list-header-font-size: 14px !default;
+
+@include export-module('dropdownbase-bootstrap-dark') {
+  .e-dropdownbase .e-list-item .e-list-icon {
+    padding: 0 10px 0 0;
+  }
+
+  .e-bigger .e-dropdownbase .e-list-item .e-list-icon,
+  .e-bigger.e-small .e-dropdownbase .e-list-item .e-list-icon {
+    padding: 0 12px 0 0;
+  }
+
+  .e-small .e-dropdownbase .e-list-item .e-list-icon {
+    padding: 0 8px 0 0;
+  }
+}

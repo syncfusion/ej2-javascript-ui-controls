@@ -1,0 +1,115 @@
+@include export-module('datepicker-layout') {
+
+  .e-input-group.e-control-wrapper.e-date-wrapper.e-non-edit.e-input-focus .e-input:focus ~ .e-clear-icon,
+  .e-float-input.e-control-wrapper.e-input-group.e-date-wrapper.e-non-edit.e-input-focus input:focus ~ .e-clear-icon {
+    display: flex;
+  }
+
+  .e-date-wrapper:not(.e-filled) {
+    & .e-date-icon.e-icons {
+      @if $skin-name == 'material' or $skin-name == 'material-dark' {
+        box-sizing: $datepicker-box-sizing;
+      }
+    }
+  }
+
+  #{&}.e-datepicker {
+
+    & .e-calendar {
+
+      & .e-content table tbody tr.e-month-hide:last-child {
+        display: $datepicker-othermonth-row;
+	}
+    }
+
+    &.e-popup-wrapper {
+      border-radius: $datepicker-popup-border-radius;
+      overflow-y: hidden;
+      pointer-events: auto;
+    }
+
+    &.e-date-modal {
+      background-color: $datepicker-overlay;
+      height: 100%;
+      left: 0;
+      opacity: .5;
+      pointer-events: auto;
+      position: fixed;
+      top: 0;
+      width: 100%;
+      z-index: 999;
+	}
+
+    & .e-model-header {
+      background-color: $datepicker-modal-header-bg;
+      color: $datepicker-modal-header-color;
+      cursor: default;
+      display: $datepicker-modal-header-display;
+      padding: 10px 10px 10px 15px;
+
+      & .e-model-year {
+        font-size: 14px;
+        font-weight: 500;
+        line-height: 32px;
+        margin: 0;
+    }
+}
+
+    & .e-model-month,
+    & .e-model-day {
+      font-size: 20px;
+      font-weight: 500;
+      line-height: 32px;
+      margin: 0;
+    }
+}
+}
+
+// sass-lint:disable-all
+.e-date-overflow {
+  overflow: hidden !important;
+}
+
+.e-datepick-mob-popup-wrap {
+  align-items: center;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  justify-content: center;
+  left: 0;
+  max-height: 100%;
+  position: fixed;
+  top: 0;
+  width: 100%;
+  z-index: 1002;
+
+  .e-datepicker.e-popup-wrapper.e-lib.e-popup.e-control.e-popup-open {
+    position: relative;
+    top:0 !important;
+    left: 0 !important;
+  }
+}
+
+.e-content-placeholder.e-datepicker.e-placeholder-datepicker {
+  background-size: 250px 33px;
+  min-height: 33px;
+}
+
+.e-bigger .e-content-placeholder.e-datepicker.e-placeholder-datepicker,
+.e-bigger.e-content-placeholder.e-datepicker.e-placeholder-datepicker {
+  background-size: 250px 40px;
+  min-height: 40px;
+}
+
+// sass-lint:enable-all
+
+
+@media screen and (orientation: landscape) and (max-device-height: 360px) {
+
+  .e-datepicker .e-calendar .e-month table tbody {
+    display: inline-block;
+    height: $datepicker-calendar-tbody-landscape-height;
+    overflow: auto;
+}
+}
+

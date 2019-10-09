@@ -1,0 +1,137 @@
+//default
+// sass-lint:disable-all
+$treeview-skin-name: 'highcontrast';
+
+
+$treeview-icon-color: $content-font;
+$treeview-text-color: $content-font;
+$treeview-item-border-color: transparent;
+$treeview-item-active-bg: $selection-bg;
+$treeview-icon-active-color: $selection-font;
+$treeview-text-active-color: $selection-font;
+$treeview-item-active-border-color: $selection-bg;
+$treeview-item-hover-bg: $hover-bg;
+$treeview-icon-hover-color: $hover-font;
+$treeview-text-hover-color: $hover-font;
+$treeview-item-hover-border-color: $hover-border;
+$treeview-item-active-hover-bg: $selection-bg;
+$treeview-icon-active-hover-color: $selection-font;
+$treeview-text-active-hover-color: $selection-font;
+$treeview-item-active-hover-border-color: $hover-border;
+$treeview-text-disable-color: $disable;
+$treeview-icon-disable-color: $disable;
+$treeview-drag-line-bg: $content-font;
+$treeview-drag-line-color: $content-font;
+$treeview-popup-bg-color: $hover-bg;
+$treeview-popup-border-color: $hover-border;
+$treeview-drop-count-bg: $bg-base-0;
+$treeview-drop-count-border: $border-fg;
+$treeview-drop-count-color: $border-fg;
+$treeview-drag-item-bg: $selection-bg;
+$treeview-drag-item-color: $selection-font;
+$treeview-drag-icon-color: $selection-font;
+
+$treeview-checkmark-bgcolor: $selection-font;
+$treeview-checkmark-border-color: $selection-font;
+$treeview-checkmark-color: $selection-bg;
+//enddefault
+//dimensions
+$treeview-font-size: 14px;
+$treeview-icon-font-size: 10px;
+$treeview-image-font-size: 16px;
+$treeview-item-height: 32px;
+$treeview-text-height: 30px;
+$treeview-input-height: 30px;
+$treeview-root-ul-padding: 0 0 0 24px;
+$treeview-rtl-root-ul-padding: 0 24px 0 0;
+$treeview-child-ul-padding: 0 0 0 24px;
+$treeview-rtl-child-ul-padding: 0 24px 0 0;
+$treeview-text-wrap-padding: 0 0 0 24px;
+$treeview-rtl-text-wrap-padding: 0 24px 0 0;
+$treeview-icon-size: 24px;
+$treeview-icon-margin: 0 0 0 -24px;
+$treeview-rtl-icon-margin: 0 -24px 0 0;
+$treeview-icon-padding: 7px;
+$treeview-text-padding: 0 5px;
+$treeview-text-margin: 0;
+$treeview-image-size: 18px;
+$treeview-image-margin: 0 0 0 5px;
+$treeview-rtl-image-margin: 0 5px 0 0;
+$treeview-input-padding: 0 7px;
+$treeview-image-text-padding: 0 10px;
+$treeview-icon-image-margin: 0 0 0 10px;
+$treeview-rtl-icon-image-margin: 0 10px 0 0;
+$treeview-check-margin: 0 0 0 5px;
+$treeview-rtl-check-margin: 0 5px 0 0;
+$treeview-check-text-padding: 0 10px;
+$treeview-check-image-margin: 0 0 0 12px;
+$treeview-rtl-check-image-margin: 0 12px 0 0;
+$treeview-border-shadow: 0 -1px 2px $hover-border, 0 1px 2px $hover-border;
+$treeview-drop-count-border-size: 2px;
+$treeview-drop-count-font-size: 12px;
+$treeview-active-font-weight: 600;
+
+$treeview-big-font-size: 15px;
+$treeview-big-icon-font-size: 12px;
+
+$treeview-big-item-height: 40px;
+$treeview-big-text-height: 38px;
+$treeview-big-input-height: 38px;
+$treeview-big-text-padding: 0 10px;
+$treeview-big-input-padding: 0 9px;
+$treeview-big-icon-padding: 6px;
+$treeview-big-image-margin: 0 0 0 10px;
+$treeview-big-rtl-image-margin: 0 10px 0 0;
+$treeview-big-icon-image-margin: 0 0 0 10px;
+$treeview-big-rtl-icon-image-margin: 0 10px 0 0;
+$treeview-big-check-margin: 0 0 0 10px;
+$treeview-big-rtl-check-margin: 0 10px 0 0;
+$treeview-big-check-image-margin: 0 0 0 16px;
+$treeview-big-rtl-check-image-margin: 0 16px 0 0;
+$treeview-drag-icon-padding: 6px;
+$treeview-font-family: $font-family;
+$treeview-drag-icon-font-size: 12px;
+
+$treeview-font-family: $font-family !default;
+$treeview-drag-icon-font-size: 12px !default;
+$treeview-drag-icon-padding: 6px !default;
+
+$ripple-size: -7px !default;
+$ripple-height: 32px !default;
+$ripple-width: 32px !default;
+
+#{&}.e-treeview {
+
+  .e-list-item {
+
+    div.e-icons.interaction {
+      -webkit-transition: -webkit-transform .3s ease-in-out;
+      border-radius: 15px;
+      transition: -webkit-transform .3s ease-in-out;
+      transition: transform .3s ease-in-out;
+      transition: transform .3s ease-in-out, -webkit-transform .3s ease-in-out;
+    }
+
+    .e-icons.e-icon-collapsible {
+      -webkit-transform: rotate(90deg);
+      transform: rotate(90deg);
+    }
+  }
+
+  &.e-drag-item {
+
+    &.e-rtl {
+
+      .e-icons.e-drop-next {
+        transform: rotate(180deg);
+      }
+    }
+  }
+
+  &.e-rtl {
+
+    div.e-icons {
+      transform: rotate(180deg);
+    }
+  }
+}

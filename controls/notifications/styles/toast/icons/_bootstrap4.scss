@@ -1,0 +1,7 @@
+@include export-module('toast-bootstrap4-icons') {
+  #{&}.e-toast {
+    .e-toast-close-icon::before {
+      content: $toast-close-icon;
+    }
+  }
+}

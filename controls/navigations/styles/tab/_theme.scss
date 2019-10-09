@@ -1,0 +1,1751 @@
+@include export-module('tab-theme') {
+  /*! tab theme */
+  #{&}.e-tab {
+    background: $tab-bg-color;
+    border: $tab-border;
+
+    .e-tab-header {
+      background: inherit;
+      border: 0;
+      border-radius: 0;
+
+      @if $tab-skin == 'bootstrap' or $tab-skin == 'bootstrap4' {
+
+        &::before {
+          border-color: $tab-hdr-bdr-color;
+          border-style: solid;
+        }
+
+        &:not(.e-vertical) {
+
+          &::before {
+            border-width: 0 0 1px;
+          }
+        }
+
+        &[style*= 'overflow: hidden'] {
+          border: 0;
+        }
+      }
+      @else {
+        border-bottom: $tab-hdr-border;
+      }
+
+      &:not(.e-vertical) {
+
+        .e-toolbar-item.e-active {
+          border-bottom: $tab-active-item-hide-border;
+        }
+      }
+
+      .e-toolbar-items {
+        background: inherit;
+      }
+
+      .e-indicator {
+        background: $tab-border-color;
+      }
+
+      .e-toolbar-item {
+        background: inherit;
+        border: $tab-item-border;
+
+        .e-ripple-element {
+          background: $tab-ripple-bg-color;
+        }
+
+        .e-tab-wrap {
+          border-radius: $tab-item-wrap-border-radius;
+          color: $tab-text-color;
+
+          @if $tab-skin == 'fabric' {
+            border: 1px solid $tab-wrap-border-color;
+          }
+          @else if $tab-skin == 'highcontrast' {
+            border: 2px solid $tab-wrap-border-color;
+          }
+
+          @if $tab-skin == 'bootstrap4' {
+            border: $tab-vscroll-nav-border;
+          }
+
+          .e-tab-icon {
+            color: $tab-text-color;
+          }
+
+          @media screen and (max-width: 480px) {
+            color: $tab-mob-text-color;
+
+            .e-tab-icon {
+              color: $tab-mob-text-color;
+            }
+
+            .e-close-icon {
+              color: $tab-mob-close-icon-color;
+            }
+          }
+
+          &:hover {
+            background: $tab-item-hover-bg-color;
+
+            @if $tab-skin == 'bootstrap4' {
+              border: 1px solid $tab-hover-border-color;
+              border-radius: $tab-top-active-item-border-radius;
+            }
+
+            @media screen and (max-width: 480px) {
+              background: $tab-mob-item-hover-bg-color;
+            }
+
+            .e-tab-text,
+            .e-tab-icon {
+              color: $tab-hover-text-color;
+            }
+          }
+        }
+
+        &.e-active {
+          border: $tab-active-item-border;
+          border-radius: $tab-top-active-item-border-radius;
+
+          .e-tab-wrap {
+
+            &:hover {
+
+              .e-tab-text,
+              .e-tab-icon {
+                color: $tab-active-text-color;
+              }
+            }
+
+            @if $tab-skin == 'bootstrap4' {
+              border: 0;
+            }
+          }
+
+          .e-text-wrap {
+            @if $tab-skin == 'fabric' or $tab-skin == 'highcontrast' {
+              position: relative;
+
+              &::before {
+                border: 1px solid $tab-active-line-color;
+                content: '';
+                display: block;
+                position: absolute;
+                top: 95%;
+                width: 100%;
+              }
+            }
+          }
+
+          .e-tab-text,
+          .e-tab-icon {
+            color: $tab-active-text-color;
+          }
+
+          &.e-ileft,
+          &.e-iright {
+
+            .e-tab-icon {
+              color: $tab-comb-icon-color;
+            }
+
+            .e-tab-text {
+              color: $tab-comb-text-color;
+            }
+          }
+        }
+
+        .e-close-icon {
+          color: $tab-close-icon-color;
+
+          &:hover {
+            color: $tab-close-icon-hover-color;
+          }
+
+          &:active {
+            color: $tab-close-icon-active-color;
+          }
+        }
+
+        &.e-disable.e-overlay {
+          background: inherit;
+          opacity: 1;
+          pointer-events: none;
+
+          .e-tab-text,
+          .e-tab-icon {
+            color: $tab-disable-text-color;
+          }
+        }
+      }
+
+      .e-toolbar-pop {
+        background: $tab-pop-bg-color;
+        border: $tab-pop-border;
+        border-radius: $tab-pop-border-radius;
+        box-shadow: $tab-pop-box-shadow;
+        overflow-y: auto;
+
+        &[e-animate = 'true'] {
+          overflow-y: hidden;
+        }
+
+        @media screen and (max-width: 480px) {
+          box-shadow: $tab-pop-box-shadow;
+        }
+
+        .e-toolbar-item {
+
+          .e-tab-wrap {
+
+            .e-tab-text,
+            .e-tab-icon {
+              color: $tab-pop-text-color;
+            }
+
+            &:hover {
+              background: $tab-hover-bg-color;
+
+              @if $tab-skin == 'fabric' or $tab-skin == 'highcontrast' {
+                border-color: $tab-wrap-hover-border-color;
+              }
+
+              @if $tab-skin == 'highcontrast' {
+                background: $tab-wrap-hover-bg-color;
+              }
+
+              @if $tab-skin == 'bootstrap4' {
+                border: $tab-vscroll-nav-border;
+                border-radius: 0;
+              }
+
+              .e-tab-text,
+              .e-tab-icon,
+              .e-close-icon {
+                color: $tab-hover-text-color;
+              }
+            }
+
+            &:active {
+              background: $tab-active-bg-color;
+
+              @if $tab-skin == 'fabric' or $tab-skin == 'highcontrast' {
+                border-color: $tab-wrap-active-border-color;
+              }
+              @if $tab-skin == 'highcontrast' {
+
+                .e-tab-text,
+                .e-tab-icon {
+                  color: $tab-wrap-active-color;
+                }
+              }
+              @if $tab-skin == 'bootstrap4' {
+
+                .e-tab-text,
+                .e-tab-icon {
+                  color: $tab-alt-active-text-color;
+                }
+              }
+            }
+          }
+        }
+      }
+
+      .e-scroll-nav,
+      .e-hscroll:not(.e-scroll-device) .e-scroll-nav {
+        background: inherit;
+        border: 0;
+
+
+        .e-nav-arrow {
+          color: $tab-nav-icon-color;
+
+          @if $tab-skin == 'fabric' {
+            border: 1px solid $tab-wrap-border-color;
+          }
+
+          @if $tab-skin == 'highcontrast' {
+            border: 2px solid $tab-wrap-border-color;
+          }
+
+          &:hover {
+            background: $tab-hover-nav-bg-color;
+            color: $tab-hover-nav-icon-color;
+
+            @if $tab-skin == 'highcontrast' {
+              border: 2px solid $tab-wrap-hover-border-color;
+            }
+          }
+
+          &:active {
+            box-shadow: none;
+
+            @if $tab-skin == 'fabric' {
+              border: 1px solid $tab-wrap-active-border-color;
+            }
+          }
+        }
+
+        &:focus {
+
+          .e-nav-arrow {
+            background: $tab-nav-focus-bg-color;
+            color: $tab-nav-focus-icon-color;
+
+            @if $tab-skin == 'fabric' {
+              border: 1px solid $tab-wrap-focus-border-color;
+            }
+
+            @if $tab-skin == 'highcontrast' {
+              border: 2px solid $tab-wrap-focus-border-color;
+            }
+
+            &:hover {
+              background: $tab-hover-nav-bg-color;
+              color: $tab-hover-nav-icon-color;
+
+              @if $tab-skin == 'highcontrast' {
+                border: 2px solid $tab-nav-focus-hover-border-color;
+              }
+            }
+
+            &:active {
+              @if $tab-skin == 'highcontrast' {
+                background: $tab-nav-focus-active-bg-color;
+                border-color: $tab-nav-focus-active-border-color;
+                color: $tab-nav-focus-active-color;
+              }
+            }
+          }
+        }
+
+        &:active {
+
+          @if $tab-skin == 'bootstrap'  {
+            box-shadow: $tab-nav-active-box-shadow;
+          }
+
+          @if $tab-skin == 'bootstrap4' {
+            border: $tab-nav-pop-press-active-border;
+          }
+        }
+
+        &.e-overlay {
+
+          .e-nav-arrow {
+            color: $tab-disable-nav-icon-color;
+
+            &:hover {
+              color: $tab-disable-nav-icon-color;
+
+              @if $tab-skin == 'highcontrast' {
+                background: $tab-nav-disable-hover-bg-color;
+                border-color: $tab-nav-disable-hover-border-color;
+              }
+            }
+          }
+        }
+      }
+
+      .e-hor-nav,
+      .e-hor-nav:not(.e-expended-nav) {
+        background: transparent;
+        border: 0;
+
+        @if $tab-skin == 'bootstrap4' {
+          border: $tab-nav-pop-press-border;
+        }
+
+        .e-popup-up-icon,
+        .e-popup-down-icon {
+          color: $tab-pop-icon-color;
+
+          @if $tab-skin == 'fabric' {
+            border: 1px solid $tab-wrap-border-color;
+          }
+
+          @if $tab-skin == 'highcontrast' {
+            border: 2px solid $tab-wrap-border-color;
+          }
+
+          @if $tab-skin == 'bootstrap4' {
+            border: $tab-active-text-item-border;
+          }
+
+          &:hover {
+            background: $tab-pop-icon-hover-bg-color;
+            border: $tab-pop-icon-hover-border;
+            border-radius: $tab-active-item-border-radius;
+
+            @if $tab-skin == 'fabric' {
+              border: 1px solid $tab-wrap-hover-border-color;
+            }
+
+            @if $tab-skin == 'highcontrast' {
+              border: 2px solid $tab-wrap-hover-border-color;
+            }
+
+            @if $tab-skin == 'bootstrap4' {
+              border: $tab-active-text-item-border;
+            }
+          }
+        }
+
+        .e-popup-down-icon {
+
+          &:hover {
+            color: $tab-hover-nav-icon-color;
+
+            @if $tab-skin == 'bootstrap4' {
+              border: $tab-active-text-item-border;
+            }
+          }
+        }
+
+        &:focus {
+
+          .e-popup-up-icon,
+          .e-popup-down-icon {
+            background: $tab-nav-focus-bg-color;
+            border: $tab-pop-icon-focus-border;
+            border-radius: $tab-active-item-border-radius;
+            color: $tab-nav-focus-icon-color;
+
+            @if $tab-skin == 'fabric' {
+              border: 1px solid $tab-nav-focus-border-color;
+            }
+
+            @if $tab-skin == 'bootstrap' {
+              background: $tab-nav-focus-bg-color;
+            }
+
+            @if $tab-skin == 'bootstrap4' {
+              border: $tab-active-text-item-border;
+            }
+
+            @if $tab-skin == 'highcontrast' {
+              border: 2px solid $tab-wrap-focus-border-color;
+            }
+
+            &:hover {
+              background: $tab-pop-icon-hover-bg-color;
+              border: $tab-pop-icon-hover-border;
+              border-radius: $tab-active-item-border-radius;
+
+              @if $tab-skin == 'fabric' {
+                border: 1px solid $tab-nav-focus-hover-border-color;
+              }
+
+              @if $tab-skin == 'highcontrast' {
+                border: 2px solid $tab-nav-focus-hover-border-color;
+              }
+
+              @if $tab-skin == 'bootstrap4' {
+                border: $tab-active-text-item-border;
+              }
+            }
+
+            &:active {
+              background: $tab-pop-icon-hover-bg-color;
+              border: $tab-pop-icon-active-border;
+              border-radius: $tab-active-item-border-radius;
+              box-shadow: $tab-pop-border-box-shadow;
+
+              @if $tab-skin == 'fabric' {
+                border: 1px solid $tab-nav-focus-active-border-color;
+              }
+
+              @if $tab-skin == 'bootstrap4' {
+                border: $tab-active-text-item-border;
+              }
+
+              @if $tab-skin == 'highcontrast' {
+                background: $tab-nav-focus-active-bg-color;
+                border: 2px solid $tab-nav-focus-active-border-color;
+                color: $tab-nav-focus-active-color;
+              }
+            }
+          }
+        }
+
+        &:hover {
+          border: 0;
+
+          @if $tab-skin == 'bootstrap4' {
+            border: $tab-nav-pop-press-border;
+          }
+
+          &:active {
+            background: transparent;
+          }
+        }
+
+        &:active {
+
+          @if $tab-skin == 'bootstrap' {
+            box-shadow: $tab-nav-active-box-shadow;
+          }
+        }
+
+        &.e-nav-active {
+          background: inherit;
+          border: 0;
+          box-shadow: none;
+
+          @if $tab-skin == 'bootstrap4' {
+            background: $tab-nav-focus-bg-color;
+            border: $tab-nav-pop-press-active-border;
+            border-radius: $tab-active-item-border-radius;
+          }
+
+          @if $tab-skin == 'highcontrast' {
+            .e-icons {
+              color: $tab-nav-pop-arrow-active-color;
+            }
+
+            &:focus {
+              border: $tab-nav-pop-arrow-active-focus-border;
+              @if $tab-skin == 'bootstrap4' {
+                border: 0;
+              }
+            }
+          }
+        }
+      }
+
+      &.e-horizontal-bottom {
+
+        @if $tab-skin == 'bootstrap' or $tab-skin == 'bootstrap4' {
+
+          &[style*= 'overflow: hidden'] {
+            border: 0;
+          }
+
+          &[style*= 'overflow: hidden'] .e-toolbar-items {
+            border-bottom: 0;
+            border-top: $tab-items-border;
+          }
+        }
+        @else {
+          border-bottom: 0;
+          border-top: $tab-hdr-border;
+        }
+
+        .e-toolbar-item {
+
+          &.e-active {
+            border-bottom: 0;
+            border-radius: $tab-bottom-active-item-border-radius;
+            border-top: $tab-active-item-hide-border;
+            border-top-color: $tab-active-item-border-color;
+
+            @if $tab-skin == 'bootstrap' or $tab-skin == 'bootstrap4' {
+              border-bottom: 1px solid $tab-even-active-item-bottom-border-color;
+            }
+          }
+        }
+      }
+
+      &.e-vertical {
+
+        &::before {
+          border-width: 0 1px 0 0;
+        }
+
+        .e-toolbar-item {
+
+          &.e-active {
+            border-bottom: $tab-hdr-border;
+            border-top: $tab-hdr-border;
+          }
+        }
+
+        &.e-vertical-left {
+
+          .e-toolbar-item {
+
+            &.e-active {
+              border-radius: $tab-left-active-item-border-radius;
+              border-right: $tab-active-item-hide-border;
+            }
+          }
+        }
+
+        &.e-vertical-right {
+
+          .e-toolbar-item {
+
+            &.e-active {
+              border-left: $tab-active-item-hide-border;
+              border-radius: $tab-right-active-item-border-radius;
+            }
+          }
+        }
+
+        .e-toolbar-pop {
+          box-shadow: $tab-v-popup-box-shadow;
+        }
+
+        .e-scroll-nav {
+          background: inherit;
+          border: $tab-vscroll-nav-border;
+
+          &.e-scroll-up-nav {
+            border-bottom-color: $tab-vscroll-nav-border-color;
+          }
+
+          &.e-scroll-down-nav {
+            border-top-color: $tab-vscroll-nav-border-color;
+          }
+
+          .e-nav-arrow {
+            border: 0;
+
+            &:hover {
+              background: none;
+            }
+          }
+
+          &:hover {
+            background: $tab-v-nav-hover-bg-color;
+
+            @if $tab-skin == 'highcontrast' {
+              border-color: $border-fg;
+
+              &:active:focus {
+                background: $selection-bg;
+              }
+            }
+
+            .e-nav-arrow {
+              color: $tab-hover-nav-icon-color;
+
+              &:hover {
+                background: none;
+              }
+            }
+          }
+
+          &:focus {
+            background: $tab-v-nav-focus-bg-color;
+
+            &:hover:active {
+
+              .e-nav-arrow {
+
+                @if $tab-skin == 'highcontrast' {
+                  color: $selection-font;
+                }
+              }
+            }
+
+            .e-nav-arrow {
+              background: none;
+
+              &:hover {
+                background: none;
+                border: 0;
+              }
+            }
+          }
+        }
+
+        .e-hor-nav {
+
+          .e-popup-up-icon,
+          .e-popup-down-icon {
+            border: 0;
+
+            &:hover {
+              background: inherit;
+              border: 0;
+              @if $tab-skin == 'bootstrap4' {
+                color: $gray-900;
+              }
+            }
+          }
+
+          &:focus {
+
+            .e-popup-up-icon,
+            .e-popup-down-icon {
+              background: inherit;
+              border: 0;
+
+              &:hover,
+              &:active,
+              &:active:hover {
+                background: inherit;
+                border: 0;
+                box-shadow: none;
+              }
+
+              &:active {
+
+                @if $tab-skin == 'highcontrast' {
+                  color: $content-font;
+                }
+              }
+            }
+          }
+
+          &:hover {
+
+            .e-popup-up-icon,
+            .e-popup-down-icon {
+              border: 0;
+            }
+          }
+        }
+      }
+    }
+
+    &.e-focused .e-tab-header {
+
+      .e-toolbar-item {
+
+        .e-tab-wrap:focus {
+          background: $tab-focus-bg-color;
+
+          @if $tab-skin == 'fabric' or $tab-skin == 'highcontrast' {
+            border-color: $tab-focused-wrap-focus-border-color;
+          }
+
+          @if $tab-skin == 'highcontrast' {
+            border-style: solid;
+          }
+
+          .e-tab-icon,
+          .e-tab-text {
+            color: $tab-focus-text-color;
+          }
+        }
+      }
+
+      .e-scroll-nav {
+
+        &:focus {
+
+          .e-nav-arrow {
+            color: $tab-nav-focus-icon-color;
+
+            @if $tab-skin == 'highcontrast' {
+              background: inherit;
+              border: 2px solid $tab-focused-nav-focus-border-color;
+            }
+          }
+        }
+      }
+
+      .e-hor-nav {
+
+        &:focus {
+
+          .e-popup-up-icon,
+          .e-popup-down-icon {
+            color: $tab-nav-focus-icon-color;
+
+            @if $tab-skin == 'highcontrast' {
+              background: inherit;
+              border: 2px solid $tab-focused-nav-focus-border-color;
+            }
+          }
+        }
+      }
+
+      &.e-vertical {
+
+        .e-scroll-nav {
+
+          &:focus {
+
+            @if $tab-skin == 'fabric' {
+              border-color: $neutral-secondary-alt;
+            }
+
+            @if $tab-skin == 'highcontrast' {
+              border-color: $tab-focused-nav-focus-border-color;
+            }
+
+            .e-nav-arrow {
+              border: 0;
+            }
+          }
+        }
+
+        .e-hor-nav {
+
+          .e-popup-up-icon,
+          .e-popup-down-icon {
+            border: 0;
+          }
+
+          &:focus {
+            outline: $tab-v-pop-focus-outline;
+
+            .e-popup-up-icon,
+            .e-popup-down-icon {
+
+              @if $tab-skin == 'fabric' {
+                border-color: $neutral-secondary-alt;
+              }
+
+              @if $tab-skin == 'highcontrast' {
+                border-color: $tab-focused-nav-focus-border-color;
+              }
+            }
+          }
+        }
+      }
+    }
+
+    &.e-disable {
+      pointer-events: none;
+
+      .e-tab-header {
+
+        .e-indicator {
+          background: $tab-disable-border-color;
+        }
+
+        .e-toolbar-item {
+
+          .e-tab-wrap {
+            color: $tab-disable-text-color;
+          }
+
+          &.e-active {
+
+            .e-tab-text,
+            .e-tab-icon {
+              color: $tab-disable-active-text-color;
+            }
+          }
+        }
+      }
+
+      .e-content {
+        opacity: $tab-disable-cnt-opacity;
+      }
+    }
+
+    &.e-fill {
+
+      .e-tab-header {
+        border-bottom: $tab-fill-hdr-border;
+
+        @if $tab-skin == 'bootstrap' or $tab-skin == 'bootstrap4' {
+          .e-toolbar-items.e-hscroll {
+            border: 0;
+          }
+        }
+
+        .e-toolbar-item {
+          border: $tab-alt-item-border;
+
+          .e-ripple-element {
+            background: $tab-fill-ripple-bg-color;
+          }
+
+          .e-tab-wrap {
+            color: $tab-text-color;
+
+            &:hover .e-tab-text,
+            &:hover .e-tab-icon {
+              color: $tab-hover-text-color;
+            }
+          }
+
+          .e-text-wrap {
+            margin-top: 0;
+          }
+
+          &.e-active {
+            border: 0;
+
+            .e-tab-wrap {
+              background: $tab-fill-active-bg-color;
+              border-radius: $tab-active-item-border-radius;
+
+              @if $tab-skin == 'fabric' or $tab-skin == 'highcontrast' {
+                border-color: $tab-fill-active-wrap-border-color;
+              }
+
+              &:hover .e-tab-text,
+              &:hover .e-tab-icon {
+                color: $tab-alt-active-text-color;
+              }
+            }
+
+            .e-text-wrap {
+              margin-top: 0;
+            }
+
+            .e-text-wrap::before {
+              @if $tab-skin == 'fabric' or $tab-skin == 'highcontrast' {
+                border: 0;
+              }
+            }
+
+            .e-tab-text,
+            .e-tab-icon {
+              color: $tab-alt-active-text-color;
+            }
+
+            .e-close-icon {
+              color: $tab-alt-active-close-icon-color;
+            }
+
+            .e-close-icon:hover {
+              color: $tab-alt-active-hover-close-icon-color;
+            }
+          }
+        }
+
+        .e-toolbar-pop {
+
+          .e-toolbar-item:active:hover {
+
+            @if $tab-skin == 'highcontrast' {
+              .e-tab-text,
+              .e-tab-icon {
+                color: $tab-fill-pop-item-active-hover-color;
+              }
+            }
+          }
+
+          .e-tab-wrap {
+            &:hover {
+              @if $tab-skin == 'bootstrap4' {
+
+                background: $tab-active-bg-color;
+
+                .e-tab-text,
+                .e-tab-icon,
+                .e-close-icon {
+                  color: $tab-alt-active-close-icon-color;
+                }
+              }
+            }
+          }
+        }
+
+        &.e-horizontal-bottom {
+          border-bottom: 0;
+          border-top: $tab-fill-hdr-border;
+
+          .e-toolbar-item {
+
+            &.e-active .e-text-wrap {
+              margin-top: 0;
+            }
+          }
+        }
+
+        &.e-vertical {
+          border-bottom: 0;
+
+          &.e-vertical-left {
+            border-right: $tab-fill-hdr-border;
+          }
+
+          &.e-vertical-right {
+            border-left: $tab-fill-hdr-border;
+          }
+        }
+      }
+
+      &.e-corner {
+
+        .e-tab-header {
+
+          .e-toolbar-item {
+
+            &.e-active .e-tab-wrap {
+              border-radius: $tab-fill-active-wrap-corner;
+            }
+          }
+
+          &.e-horizontal-bottom {
+
+            .e-toolbar-item.e-active .e-tab-wrap {
+              border-radius: $tab-fill-even-active-wrap-corner;
+            }
+          }
+        }
+      }
+
+      &.e-disable {
+
+        .e-tab-header {
+          border-bottom: $tab-fill-disable-hdr-border;
+
+          .e-toolbar-item {
+
+            .e-tab-wrap {
+              color: $tab-disable-text-color;
+            }
+
+            &.e-active {
+              opacity: $tab-alt-disable-active-item-opacity;
+
+              .e-tab-wrap,
+              .e-tab-wrap:focus {
+                background: $tab-fill-disable-active-bg-color;
+              }
+
+              .e-tab-wrap .e-tab-text,
+              .e-tab-wrap .e-tab-icon,
+              .e-tab-wrap:focus .e-tab-text,
+              .e-tab-wrap:focus .e-tab-icon {
+                color: $tab-alt-disable-active-text-color;
+              }
+            }
+          }
+
+          &.e-horizontal-bottom {
+            border-bottom: 0;
+            border-top: $tab-fill-disable-hdr-border;
+          }
+        }
+      }
+
+      &.e-focused .e-tab-header {
+
+        .e-toolbar-item {
+
+          .e-tab-wrap:focus .e-tab-icon,
+          .e-tab-wrap:focus .e-tab-text,
+          .e-tab-wrap:focus .e-close-icon {
+            color: $tab-alt-hover-text-color;
+          }
+
+          &.e-active .e-tab-wrap:focus {
+            background: $tab-fill-focus-bg-color;
+
+            @if $tab-skin == 'fabric' or $tab-skin == 'highcontrast' {
+              border-color: $tab-fill-focused-active-wrap-focus-border-color;
+            }
+
+            @if $tab-skin == 'bootstrap' or $tab-skin == 'bootstrap4' {
+
+              .e-tab-text,
+              .e-close-icon {
+                color: $tab-fill-focused-active-wrap-focus-color;
+              }
+            }
+
+            @if $tab-skin == 'highcontrast' {
+              border-style: solid;
+            }
+
+            .e-tab-text,
+            .e-tab-icon {
+              color: $tab-alt-active-hover-text-color;
+              @if $tab-skin == 'bootstrap4' {
+                color: $tab-alt-active-style-hover-text-color;
+              }
+            }
+          }
+        }
+      }
+    }
+
+    &.e-background {
+
+      .e-tab-header {
+        background: $tab-alt-hdr-bg-color;
+        border: 0;
+
+        .e-toolbar-items {
+          background: $tab-alt-item-bg-color;
+        }
+
+        @if $tab-skin == 'bootstrap' or $tab-skin == 'bootstrap4' {
+          .e-toolbar-items.e-hscroll {
+            border: 0;
+          }
+        }
+
+        .e-indicator {
+          background: $tab-alt-border-color;
+        }
+
+        .e-toolbar-item {
+          border: $tab-alt-item-border;
+
+          .e-ripple-element {
+            background: $tab-alt-ripple-bg-color;
+          }
+
+          .e-tab-wrap {
+            background: $tab-alt-item-bg-color;
+
+            @if $tab-skin == 'fabric' or $tab-skin == 'highcontrast' {
+              border-color: $tab-alt-wrap-border-color;
+            }
+
+            &:hover {
+              background: $tab-item-hover-bg-color;
+
+              .e-tab-text,
+              .e-tab-icon {
+                color: $tab-alt-active-text-color;
+
+                @if $tab-skin == 'fabric' or $tab-skin == 'highcontrast' {
+                  color: $tab-alt-wrap-hover-color;
+                }
+              }
+
+              @if $tab-skin == 'material' {
+                .e-close-icon {
+
+                  &:hover,
+                  &:active {
+                    color: $tab-alt-wrap-hover-close-icon-focus-or-active-color;
+                  }
+                }
+              }
+
+              @if $tab-skin == 'bootstrap' {
+                .e-tab-text,
+                .e-close-icon {
+                  color: $tab-alt-wrap-hover-color;
+                }
+              }
+              @if $tab-skin == 'bootstrap4' {
+                .e-tab-text {
+                  color: $tab-alt-wrap-hover-color;
+                }
+
+                .e-close-icon {
+                  color: $tab-close-icon-color;
+                }
+              }
+
+              @if $tab-skin == 'highcontrast' {
+                background-color: $tab-alt-wrap-hover-bg-color;
+                border-color: $tab-alt-wrap-hover-border-color;
+
+                .e-tab-text,
+                .e-close-icon {
+                  color: $tab-alt-wrap-hover-color;
+                }
+
+                .e-close-icon {
+
+                  &:hover,
+                  &:active {
+                    color: $tab-alt-wrap-hover-close-active-or-hover-color;
+                  }
+                }
+              }
+            }
+          }
+
+          .e-tab-text,
+          .e-tab-icon,
+          .e-close-icon {
+            color: $tab-alt-text-color;
+          }
+
+          .e-close-icon {
+            color: $tab-alt-close-icon-color;
+          }
+
+          .e-close-icon:hover {
+            color: $tab-alt-hover-text-color;
+          }
+
+          &.e-active {
+            border: 0;
+
+            .e-tab-wrap {
+              background: $tab-alt-active-bg-color;
+              border-radius: $tab-active-item-border-radius;
+
+              @if $tab-skin == 'fabric' or $tab-skin == 'highcontrast' {
+                border-color: $tab-alt-active-wrap-border-color;
+              }
+
+              &:hover {
+
+                .e-tab-text,
+                .e-tab-icon {
+                  color: $tab-alt-active-text-color;
+                }
+
+                @if $tab-skin == 'fabric' {
+                  background: $tab-alt-active-wrap-hover-bg-color;
+                }
+
+                @if $tab-skin == 'bootstrap' or $tab-skin == 'bootstrap4' {
+                  .e-close-icon {
+                    color: $tab-alt-active-wrap-hover-close-color;
+                  }
+                }
+
+                @if $tab-skin == 'highcontrast' {
+                  background: $tab-alt-active-wrap-hover-bg-color;
+                  border-color: $tab-alt-active-wrap-hover-border-color;
+
+                  .e-tab-icon,
+                  .e-tab-text,
+                  .e-close-icon {
+                    color: $tab-alt-active-wrap-hover-color;
+                  }
+
+                  .e-close-icon {
+
+                    &:hover,
+                    &:active {
+                      color: $tab-alt-active-wrap-hover-close-hover-or-active-color;
+                    }
+                  }
+
+                  &:focus {
+                    background: $tab-alt-active-wrap-hover-focus-bg-color;
+
+                    .e-tab-icon,
+                    .e-tab-text {
+                      color: $tab-alt-active-wrap-hover-focus-color;
+                    }
+                  }
+                }
+              }
+
+              &:focus {
+                background: $tab-alt-active-focus-bg-color;
+
+                .e-tab-text,
+                .e-tab-icon {
+                  color: $tab-alt-active-text-color;
+                  @if $tab-skin == 'bootstrap4' {
+                    color: $tab-alt-active-hover-text-color;
+                  }
+                }
+              }
+
+              &:focus:hover {
+
+                @if $tab-skin == 'bootstrap' or $tab-skin == 'bootstrap4' {
+
+                  .e-tab-text,
+                  .e-close-icon {
+                    color: $tab-alt-active-text-color;
+                  }
+                }
+              }
+            }
+
+            @if $tab-skin == 'fabric' or $tab-skin == 'highcontrast' {
+              .e-text-wrap::before {
+                border: 0;
+              }
+            }
+
+            .e-tab-text,
+            .e-tab-icon {
+              color: $tab-alt-active-text-color;
+            }
+
+            .e-close-icon {
+              color: $tab-alt-active-close-icon-color;
+            }
+
+            .e-close-icon:hover {
+              color: $tab-alt-active-hover-close-icon-color;
+            }
+
+            &.e-itop .e-tab-wrap,
+            &.e-ibottom .e-tab-wrap {
+              background: $tab-alt-tb-active-bg-color;
+            }
+          }
+
+          &.e-disable {
+            .e-tab-text,
+            .e-tab-icon,
+            .e-close-icon {
+              color: $tab-alt-disable-text-color;
+            }
+          }
+        }
+
+        .e-toolbar-pop {
+
+          .e-toolbar-item {
+            background: $tab-alt-item-bg-color;
+
+            .e-tab-wrap {
+
+              .e-tab-text,
+              .e-tab-icon {
+                color: $tab-alt-text-color;
+              }
+
+              &:hover {
+                background: $tab-alt-hover-bg-color;
+
+                @if $tab-skin == 'bootstrap4' {
+                  background: $tab-active-bg-color;
+                }
+
+                .e-tab-text,
+                .e-tab-icon,
+                .e-close-icon {
+                  color: $tab-alt-active-text-color;
+
+                  @if $tab-skin == 'fabric' or $tab-skin == 'bootstrap' or $tab-skin == 'highcontrast' {
+                    color: $tab-alt-pop-wrap-hover-color;
+                  }
+                }
+              }
+
+              &:active {
+                @if $tab-skin == 'highcontrast' {
+                  background: $tab-alt-pop-wrap-active-bg-color;
+
+                  .e-tab-text,
+                  .e-close-icon {
+                    color: $tab-alt-pop-wrap-active-color;
+                  }
+                }
+                @if $tab-skin == 'bootstrap4' {
+                  .e-tab-text,
+                  .e-tab-icon {
+                    color: $primary-font;
+                  }
+                }
+              }
+            }
+          }
+        }
+
+        .e-scroll-nav {
+
+          .e-nav-arrow {
+            color: $tab-alt-nav-icon-color;
+
+            @if $tab-skin == 'fabric' {
+              border: 1px solid $tab-alt-nav-border-color;
+            }
+
+            @if $tab-skin == 'highcontrast' {
+              border: 2px solid $tab-alt-nav-border-color;
+            }
+
+            &:hover {
+              background: $tab-bg-hover-nav-bg-color;
+              color: $tab-bg-hover-nav-icon-color;
+
+              @if $tab-skin == 'highcontrast' {
+                border-color: $tab-alt-nav-hover-border-color;
+                color: $tab-alt-nav-hover-color;
+              }
+            }
+
+            &:active {
+
+              @if $tab-skin == 'highcontrast' {
+                background: $tab-alt-nav-active-bg-color;
+                color: $tab-alt-nav-active-color;
+              }
+
+              .e-icons {
+                @if $tab-skin == 'highcontrast' {
+                  color: $tab-alt-nav-active-color;
+                }
+              }
+            }
+          }
+
+          &:focus {
+
+            .e-nav-arrow {
+              color: $tab-bg-hover-nav-icon-color;
+
+              @if $tab-skin == 'fabric' {
+                border: 1px solid $tab-nav-focus-border-color;
+              }
+
+              @if $tab-skin == 'highcontrast' {
+                background: transparent;
+                border: 2px solid $tab-alt-nav-focus-border-color;
+              }
+
+              &:hover {
+                background: $tab-bg-hover-nav-bg-color;
+                color: $tab-bg-hover-nav-icon-color;
+
+                @if $tab-skin == 'highcontrast' {
+                  border: 2px solid $tab-nav-focus-hover-border-color;
+                  color: $tab-alt-nav-focus-hover-color;
+                }
+              }
+
+              &:active {
+                @if $tab-skin == 'highcontrast' {
+                  background: $tab-nav-focus-active-bg-color;
+                  border-color: $tab-nav-focus-active-border-color;
+                  color: $tab-nav-focus-active-color;
+                }
+              }
+            }
+          }
+
+          &:active::after {
+            @include hscroll-alt-btn-animation-after;
+          }
+        }
+
+        .e-hor-nav {
+
+          .e-popup-up-icon,
+          .e-popup-down-icon {
+            color: $tab-alt-nav-icon-color;
+
+            @if $tab-skin == 'fabric' {
+              border: 1px solid $tab-alt-nav-border-color;
+            }
+
+            @if $tab-skin == 'highcontrast' {
+              border: 2px solid $tab-alt-nav-border-color;
+            }
+
+            &:hover {
+              background: $tab-bg-hover-nav-bg-color;
+              color: $tab-bg-hover-nav-icon-color;
+
+              @if $tab-skin == 'bootstrap' or $tab-skin == 'bootstrap4' {
+                background: $tab-alt-nav-hover-bg-color;
+              }
+
+              @if $tab-skin == 'bootstrap4' {
+                background: $tab-pop-icon-hover-bg-color;
+              }
+
+              @if $tab-skin == 'highcontrast' {
+                border-color: $tab-alt-nav-hover-border-color;
+                color: $tab-alt-nav-hover-color;
+              }
+            }
+
+            &:active {
+
+              .e-icons {
+                @if $tab-skin == 'highcontrast' {
+                  color: $tab-alt-nav-active-color;
+                }
+              }
+
+              &:hover {
+
+                @if $tab-skin == 'highcontrast' {
+                  background: $tab-alt-nav-active-bg-color;
+                  color: $tab-alt-nav-active-color;
+                }
+              }
+            }
+          }
+
+          &:focus {
+
+            .e-popup-up-icon,
+            .e-popup-down-icon {
+              color: $tab-bg-hover-nav-icon-color;
+
+              @if $tab-skin == 'fabric' {
+                border: 1px solid $tab-nav-focus-border-color;
+              }
+
+              @if $tab-skin == 'highcontrast' {
+                background: $tab-alt-nav-focus-bg-color;
+                border: 2px solid $tab-alt-nav-focus-border-color;
+              }
+
+              &:hover {
+
+                @if $tab-skin == 'highcontrast' {
+                  background: $tab-alt-nav-focus-hover-bg-color;
+                  border: 2px solid $tab-nav-focus-hover-border-color;
+                  color: $tab-alt-nav-focus-hover-color;
+                }
+              }
+
+              &:active {
+                @if $tab-skin == 'highcontrast' {
+                  background: $tab-nav-focus-active-bg-color;
+                  border-color: $tab-nav-focus-active-border-color;
+                  color: $tab-nav-focus-active-color;
+                }
+              }
+            }
+          }
+
+          &:active::after {
+            @include tbar-alt-btn-animation-after;
+          }
+
+          &.e-nav-active {
+
+            .e-popup-up-icon {
+              color: $tab-bg-hover-nav-icon-color;
+            }
+          }
+        }
+
+        &.e-vertical {
+
+          .e-scroll-nav {
+
+            .e-nav-arrow {
+              border: 0;
+            }
+
+            &:focus {
+
+              .e-nav-arrow {
+                border: 0;
+
+                &:hover {
+                  background: none;
+                }
+              }
+            }
+
+            &:hover {
+
+              .e-nav-arrow {
+                color: $tab-bg-hover-nav-icon-color;
+              }
+            }
+          }
+
+          .e-hor-nav {
+
+            &:focus {
+
+              .e-popup-up-icon,
+              .e-popup-down-icon {
+                background: inherit;
+                border-color: transparent;
+
+                &:hover {
+                  background: inherit;
+                  border-color: transparent;
+                }
+              }
+            }
+
+            .e-popup-up-icon,
+            .e-popup-down-icon {
+
+              &:hover {
+                background: inherit;
+                border-color: transparent;
+              }
+            }
+          }
+        }
+      }
+
+      &.e-disable .e-tab-header {
+
+        .e-indicator {
+          background: $tab-alt-disable-border-color;
+        }
+
+        .e-toolbar-item {
+
+          .e-tab-wrap {
+            color: $tab-alt-disable-text-color;
+
+            .e-tab-text,
+            .e-tab-icon {
+              color: $tab-alt-disable-text-color;
+            }
+
+            &:focus {
+
+              .e-tab-text,
+              .e-tab-icon {
+                color: $tab-alt-disable-text-color;
+              }
+            }
+          }
+
+          &.e-active {
+            opacity: $tab-alt-disable-active-item-opacity;
+
+            .e-tab-wrap,
+            .e-tab-wrap:focus {
+              background: $tab-alt-disable-active-bg-color;
+              color: $tab-alt-disable-active-text-color;
+
+              .e-tab-text,
+              .e-tab-icon {
+                color: $tab-alt-disable-active-text-color;
+              }
+            }
+          }
+        }
+      }
+
+      &.e-accent .e-tab-header {
+
+        .e-indicator {
+          background: $tab-border-color;
+        }
+
+        &.e-disable {
+
+          .e-indicator {
+            background: $tab-disable-border-color;
+          }
+        }
+      }
+
+      &.e-focused .e-tab-header {
+
+        .e-toolbar-item {
+
+          .e-tab-wrap:focus {
+
+            @if $tab-skin == 'material' or $tab-skin == 'bootstrap' {
+              background: $tab-alt-hover-bg-color;
+            }
+
+            @if $tab-skin == 'fabric' or $tab-skin == 'highcontrast' {
+              border-color: $tab-wrap-focus-border-color;
+            }
+
+            @if $tab-skin == 'highcontrast' {
+              border-style: solid;
+            }
+
+            @if $tab-skin == 'bootstrap4' {
+              background: $tab-active-bg-color;
+            }
+
+            .e-tab-icon,
+            .e-tab-text,
+            .e-close-icon {
+              color: $tab-alt-text-color;
+            }
+          }
+
+          &.e-active {
+
+            .e-tab-wrap:focus {
+
+              @if $tab-skin == 'material' or $tab-skin == 'bootstrap' or $tab-skin == 'bootstrap4' {
+                background: $tab-key-alt-active-focus-bg-color;
+              }
+
+              @if $tab-skin == 'fabric' or $tab-skin == 'highcontrast' {
+                border-color: $tab-alt-focused-active-wrap-focus-border-color;
+              }
+
+              @if $tab-skin == 'highcontrast' {
+                border-style: solid;
+              }
+            }
+
+            .e-tab-wrap:focus .e-tab-text,
+            .e-tab-wrap:focus .e-tab-icon {
+              color: $tab-alt-active-hover-text-color;
+            }
+
+            .e-tab-wrap:hover {
+
+              @if $tab-skin == 'fabric' {
+                background: $tab-alt-focused-active-wrap-hover-bg-color;
+              }
+
+              @if $tab-skin == 'bootstrap4' {
+                border: 1px solid $tab-hover-border-color;
+                border-radius: $tab-top-active-item-border-radius;
+            }
+            }
+
+            .e-tab-wrap:focus,
+            .e-tab-wrap:hover {
+
+              @if $tab-skin == 'bootstrap' or $tab-skin == 'bootstrap4' {
+                .e-tab-text,
+                .e-close-icon {
+                  color: $tab-alt-focused-active-wrap-focus-or-hover-color;
+                }
+              }
+            }
+
+            .e-tab-wrap:focus:hover {
+
+              @if $tab-skin == 'bootstrap' or $tab-skin == 'bootstrap4' {
+
+                .e-tab-text,
+                .e-close-icon {
+                  color: $tab-alt-focused-active-wrap-focus-and-hover-color;
+                }
+              }
+            }
+
+            &.e-itop .e-tab-wrap,
+            &.e-ibottom .e-tab-wrap {
+              background: $tab-alt-tb-active-bg-color;
+
+              &:focus {
+                background: $tab-key-alt-active-focus-bg-color;
+              }
+            }
+          }
+        }
+
+        .e-scroll-nav {
+
+          &:focus {
+
+            .e-nav-arrow {
+              color: $tab-bg-nav-focus-icon-color;
+            }
+          }
+        }
+
+        .e-hor-nav {
+
+          &:focus {
+
+            .e-popup-up-icon,
+            .e-popup-down-icon {
+              color: $tab-bg-nav-focus-icon-color;
+            }
+          }
+        }
+      }
+    }
+
+    &.e-rtl {
+
+      .e-tab-header {
+
+        .e-hscroll.e-rtl {
+
+          .e-scroll-nav {
+            border: 0;
+          }
+        }
+      }
+    }
+
+    .e-content {
+      background: inherit;
+
+      .e-item {
+        background: inherit;
+        color: $tab-content-font-color;
+      }
+    }
+  }
+}

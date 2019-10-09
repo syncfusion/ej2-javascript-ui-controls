@@ -1,0 +1,204 @@
+@include export-module('dashboardlayout-layout') {
+  .e-dashboardlayout.e-control {
+
+    .e-dashboard-gridline-table {
+      background: $gridline-background;
+      border-collapse: collapse;
+      height: $panel-full-height;
+      width: $panel-full-width;
+    }
+
+    .e-dashboard-gridline-table tbody tr td.e-dashboard-gridline {
+      border: 1px dotted $gridline-border;
+      position: absolute;
+    }
+
+    &.e-responsive {
+      width: $element-width-complete;
+    }
+
+    &.e-prevent {
+      user-select: $panel-drag-prevent;
+    }
+
+    & .e-panel {
+
+      &:hover {
+        border: $panel-hover-border;
+
+        & .e-panel-container {
+          & .e-resize {
+            display: block;
+          }
+        }
+      }
+
+      &:active {
+        border: $panel-active-border;
+      }
+
+      & .e-panel-container {
+        & .e-resize {
+          display: none;
+        }
+      }
+
+      @if $skin-name != 'highcontrast' {
+        border-radius: $panel-border-radius;
+      }
+
+      &.e-panel-transition {
+        transition: top .5s, left .5s;
+      }
+
+      & .e-panel-header {
+        border-bottom: $panel-header-border-bottom;
+        color: $panel-header-color;
+        font-family: $panel-header-font-family;
+        font-size: $panel-header-font-size;
+        font-weight: $panel-header-font-weight;
+        height: $panel-header-height;
+        padding: $panel-header-padding;
+
+        & div {
+          overflow: $panel-header-overflow;
+          text-overflow: $panel-header-text-overflow;
+          white-space: $panel-header-white-space;
+        }
+
+        & .e-header-content {
+          display: inline-block;
+        }
+
+        & .e-header-template {
+          float: right;
+        }
+      }
+
+      & .e-panel-container {
+        height: $panel-full-height;
+        width: $panel-full-width;
+
+        & .e-panel-content .e-blazor-template {
+          height: $panel-content-template-height;
+          width: $panel-content-template-width;
+        }
+      }
+    }
+
+    & .e-panel {
+
+      border: $panel-border;
+      height: $panel-full-height;
+      user-select: none;
+      width: $panel-full-width;
+
+      & .e-resize.e-single,
+      & .e-resize.e-double {
+        position: $panel-position;
+        touch-action: none;
+
+        &.e-east,
+        &.e-west,
+        &.e-north,
+        &.e-south {
+          border: $panel-resize-one-dimensional-icon-border;
+        }
+
+        &.e-east:hover {
+          cursor: e-resize;
+        }
+
+        &.e-west:hover {
+          cursor: w-resize;
+        }
+
+        &.e-north:hover {
+          cursor: n-resize;
+        }
+
+        &.e-south:hover {
+          cursor: s-resize;
+        }
+
+        &.e-north-west:hover {
+          cursor: nw-resize;
+        }
+
+        &.e-north-east:hover {
+          cursor: ne-resize;
+        }
+
+        &.e-south-west:hover {
+          cursor: sw-resize;
+        }
+
+        &.e-south-east:hover {
+          cursor: se-resize;
+        }
+      }
+
+      & .e-resize.e-single::before,
+      & .e-resize.e-double::before {
+        font-family: 'e-icons';
+        position: $panel-position;
+      }
+    }
+
+    & .e-panel.e-draggable {
+
+      &:hover {
+        cursor: $panel-dragging-cursor;
+      }
+
+    }
+
+    & .e-panel.e-dragging,
+    & .e-panel.e-item-moving {
+      cursor: $panel-dragging-cursor;
+      z-index: $panel-dragging-zindex;
+    }
+
+    & .e-panel.e-rtl {
+
+      & .e-panel-header {
+
+        & .e-header-template {
+          float: left;
+        }
+
+      }
+
+    }
+
+    .e-holder {
+
+      background: $panel-drop-background;
+      border: $panel-drop-border;
+      border-radius: $panel-drop-border-radius;
+      position: $panel-position;
+
+      &.e-holder-transition {
+        transition: top .3s, left .3s;
+      }
+
+      @if $skin-name != 'highcontrast' {
+        border-radius: $panel-border-radius;
+      }
+    }
+
+    .e-panel.e-bigger {
+      &.e-panel-header {
+        font-size: $panel-bigger-header-font-size;
+        font-weight: $panel-bigger-header-font-weight;
+        height: $panel-bigger-header-height;
+        padding: $panel-bigger-header-padding;
+      }
+    }
+  }
+
+  .e-content-placeholder.e-dashboardlayout.e-placeholder-dashboardlayout {
+    height: $panel-full-height;
+    width: $panel-full-width;
+  }
+}

@@ -1,0 +1,21 @@
+$skin-name: 'highcontrast' !default;
+$navigation-arrow-background: #d4d1c3 !default;
+$navigation-icon-background-hover: #ffd939 !default;
+$navigation-icon-border-hover: rgba(255, 217, 57, .5) !default;
+$splitter-border-color: $border-fg !default;
+$splitpane-font-size: 13px !default;
+$splitpane-font-weight: normal !default;
+$splitpane-font-family: $font-family !default;
+$splitpane-font-color: $content-font !default;
+$splitbar-border-color: $border-fg !default;
+$splitbar-hover-border-color: $selection-bg !default;
+$splitbar-icon-color: $content-font !default;
+$splitbar-icon-size: 14px !default;
+$collapse-icon-bg-color: $bg-base-0 !default;
+$splitbar-icon-gap: 18px !default;
+$resize-icon-bg-color: $bg-base-0 !default;
+$split-bar-border: none !default;
+// Bigger style
+$bigger-splitbar-icon-gap: 20px !default;
+$bigger-splitpane-font-size: 13px !default;
+$bigger-splitbar-icon-size: 16px !default;

@@ -1,0 +1,14 @@
+.e-numeric-container {
+  width: 100%;
+}
+
+.e-content-placeholder.e-numeric.e-placeholder-numeric {
+  background-size: 300px 33px;
+  min-height: 33px;
+}
+
+.e-bigger.e-content-placeholder.e-numeric.e-placeholder-numeric,
+.e-bigger .e-content-placeholder.e-numeric.e-placeholder-numeric {
+  background-size: 300px 40px;
+  min-height: 40px;
+}

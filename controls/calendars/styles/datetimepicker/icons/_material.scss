@@ -1,0 +1,61 @@
+@include export-module('datetimepicker-material-icons') {
+  /*! component icons */
+  .e-datetime-wrapper {
+
+    & .e-time-icon.e-icons::before {
+      content: '\e20c';
+      font-family: 'e-icons';
+    }
+  }
+
+  // Outline textbox icon configuration
+
+  .e-datetime-wrapper.e-outline .e-input-group-icon.e-date-icon,
+  .e-datetime-wrapper.e-control-wrapper.e-outline .e-input-group-icon.e-date-icon,
+  .e-datetime-wrapper.e-outline .e-input-group-icon.e-time-icon,
+  .e-datetime-wrapper.e-control-wrapper.e-outline .e-input-group-icon.e-time-icon {
+    min-height: $zero-value;
+    min-width: 20px;
+  }
+
+  .e-bigger .e-datetime-wrapper.e-outline .e-input-group-icon.e-date-icon,
+  .e-datetime-wrapper.e-control-wrapper.e-bigger.e-outline .e-input-group-icon.e-date-icon,
+  .e-bigger .e-datetime-wrapper.e-control-wrapper.e-outline .e-input-group-icon.e-date-icon,
+  .e-bigger .e-datetime-wrapper.e-outline .e-input-group-icon.e-time-icon,
+  .e-datetime-wrapper.e-control-wrapper.e-bigger.e-outline .e-input-group-icon.e-time-icon,
+  .e-bigger .e-datetime-wrapper.e-control-wrapper.e-outline .e-input-group-icon.e-time-icon {
+    min-height: $zero-value;
+    min-width: 24px;
+  }
+
+  .e-small .e-datetime-wrapper.e-outline .e-input-group-icon.e-date-icon,
+  .e-datetime-wrapper.e-control-wrapper.e-small.e-outline .e-input-group-icon.e-date-icon,
+  .e-small .e-datetime-wrapper.e-control-wrapper.e-outline .e-input-group-icon.e-date-icon,
+  .e-small .e-datetime-wrapper.e-outline .e-input-group-icon.e-time-icon,
+  .e-datetime-wrapper.e-control-wrapper.e-small.e-outline .e-input-group-icon.e-time-icon,
+  .e-small .e-datetime-wrapper.e-control-wrapper.e-outline .e-input-group-icon.e-time-icon {
+    min-height: $zero-value;
+    min-width: 18px;
+  }
+
+  .e-bigger.e-small .e-outline.e-datetime-wrapper .e-input-group-icon.e-date-icon,
+  .e-bigger.e-small.e-outline.e-datetime-wrapper .e-input-group-icon.e-date-icon,
+  .e-datetime-wrapper.e-control-wrapper.e-bigger.e-small.e-outline .e-input-group-icon.e-date-icon,
+  .e-bigger.e-small .e-datetime-wrapper.e-control-wrapper.e-outline .e-input-group-icon.e-date-icon,
+  .e-bigger.e-small .e-outline.e-datetime-wrapper .e-input-group-icon.e-time-icon,
+  .e-bigger.e-small.e-outline.e-datetime-wrapper .e-input-group-icon.e-time-icon,
+  .e-datetime-wrapper.e-control-wrapper.e-bigger.e-small.e-outline .e-input-group-icon.e-time-icon,
+  .e-bigger.e-small .e-datetime-wrapper.e-control-wrapper.e-outline .e-input-group-icon.e-time-icon {
+    min-height: $zero-value;
+    min-width: 20px;
+  }
+
+  .e-datetime-wrapper.e-filled .e-input-group-icon.e-time-icon,
+  .e-datetime-wrapper.e-control-wrapper.e-filled .e-input-group-icon.e-time-icon,
+  .e-rtl.e-datetime-wrapper.e-filled .e-input-group-icon.e-time-icon,
+  .e-rtl.e-datetime-wrapper.e-control-wrapper.e-filled .e-input-group-icon.e-time-icon,
+  .e-rtl .e-datetime-wrapper.e-filled .e-input-group-icon.e-time-icon,
+  .e-rtl .e-datetime-wrapper.e-control-wrapper.e-filled .e-input-group-icon.e-time-icon {
+    margin: $zero-value;
+  }
+}

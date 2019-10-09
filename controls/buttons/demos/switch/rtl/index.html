@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <title> Typescript Components</title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Typescript UI Controls" />
+    <meta name="author" content="Syncfusion" />
+    <link href="https://fonts.googleapis.com/css?family=Roboto" rel="stylesheet" />
+    <link href="../../theme-files/material.css" rel="stylesheet" />
+    
+    <script>
+        window.require = {
+            config: function (json) {
+                window.rsConfig = json;
+                window.rsConfig.baseUrl = '';
+            }
+        };
+    </script>
+    <script src="./../../demo-config.js"></script>
+    <script src="./../../../node_modules/requirejs/require.js" data-main="./rtl"></script>
+    <script>
+        require.config(window.rsConfig);
+    </script>
+</head>
+
+<body>
+    <div class="control-section">
+        <div class="switch-control" id="rtl">
+            <h4 class="row">RTL Support</h4>
+            <div class="row">
+                <input id="switch1" type="checkbox">
+            </div>
+            <div class="row">
+                <input id="switch2" type="checkbox">
+            </div>
+        </div>
+    </div>
+
+    <style>
+        .e-rtl{
+            direction: rtl;
+        }
+        /* Switch Styles */
+        .switch-control {
+            min-height: 350px;
+            border: 1px solid #dddddd;
+            border-radius: 3px;
+            margin: auto 25%;
+            text-align: center;
+        }
+
+        .control-section .row {
+            margin: 5% 40%;
+        }
+
+        .control-section .switch-control h4 {
+            color: rgba(0, 0, 0, 0.64);
+            margin: 5% 40%;
+        }
+    
+        @media only screen and (max-width: 800px) {
+            .switch-control {
+                margin-left: 35%;
+                margin-top: 8%;
+            }
+    
+            .control-section {
+                min-height: 200px;
+            }
+
+            .control-section .switch-control .row {
+                margin: 8% 34%;
+            }
+
+            .control-section .switch-control h4 {
+                margin: 5% 18%;
+            }
+        }
+    
+        @media only screen and (max-width: 500px) {
+            .switch-control {
+                margin-top: 20%;
+                margin-left: 18%;
+                margin-bottom: 27%;
+            }
+
+            .control-section .switch-control .row {
+                margin: 15% 23%;
+            }
+
+            .control-section .switch-control h4 {
+                margin: 5% 6%;
+            }
+        }
+    </style>
+</body>
+
+</html>

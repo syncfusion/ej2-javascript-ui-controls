@@ -1,0 +1,562 @@
+
+@include export-module('gantt-theme') {
+  /*! Gantt theme */
+  .e-gantt {
+    .e-gantt-splitter {
+      border-color: $gantt-header-border-color;
+      border-radius: $gantt-header-border-radius;
+    }
+
+    .e-gantt-toolbar + .e-gantt-splitter {
+      border-top-left-radius: $gantt-splitter-border-top-left-radius;
+      border-top-right-radius: $gantt-splitter-border-top-right-radius;
+    }
+
+    .e-gantt-dialog {
+
+      .e-dlg-header {
+        color: $gantt-dialog-header-font-color;
+      }
+
+      .e-dlg-header-content {
+        background: $gantt-dialog-tab-background;
+      }
+
+      .e-icon-dlg-close {
+        color: $gantt-dialog-icon-color;
+      }
+
+      .e-btn.e-dlg-closeicon-btn:hover {
+        background-color: $gantt-dialog-icon-hover-color;
+
+        .e-icon-dlg-close {
+          color: $gantt-dialog-close-icon-hover-color;
+        }
+
+      }
+
+      .e-tab {
+
+        .e-tab-header {
+          background: $gantt-dialog-tab-background;
+
+          .e-indicator {
+            background: $gantt-tab-selection-indicator-color;
+          }
+
+          .e-toolbar-item.e-active {
+            background-color: $gantt-dialog-active-tab-background;
+
+            .e-tab-wrap {
+              .e-tab-text {
+                color: $gantt-tab-header-active-font-color;
+              }
+            }
+
+          }
+
+          .e-toolbar-item {
+
+            .e-tab-wrap {
+              border-color: $gantt-dialog-tab-header-border-no-color;
+
+              .e-tab-text {
+                color: $gantt-tab-header-font-color;
+              }
+
+            }
+
+          }
+
+          .e-toolbar-item:not(.e-active) .e-tab-wrap:hover {
+            background: $gantt-tab-header-hover-color;
+            border-bottom: $gantt-dialog-tab-hover-border-bottom;
+            border-bottom-left-radius: $gantt-dialog-tab-hover-border-bottom-radius;
+            border-bottom-right-radius: $gantt-dialog-tab-hover-border-bottom-radius;
+            border-color: $gantt-dialog-tab-hover-border-color;
+
+            .e-tab-text {
+              color: $gantt-tab-header-hover-font-color;
+            }
+
+          }
+
+        }
+
+      }
+
+    }
+
+    .e-temp-content {
+      border-color: $gantt-header-border-color;
+    }
+
+    .e-splitter-box {
+      border-color: $gantt-header-border-color;
+    }
+
+    .e-gantt-temp-header {
+      border-color: $gantt-header-border-color;
+    }
+
+    .e-gantt-chart-pane {
+      border-color: $gantt-header-border-color;
+    }
+
+    .e-gantt-tree-grid-pane {
+      .e-timeline-single-header-outer-div {
+        height: $gantt-timeline-single-header-outer-div !important; // sass-lint:disable-line no-important
+      }
+
+      .e-grid td.e-active {
+        background: $gantt-active-background;
+      }
+    }
+
+    .e-gantt-chart {
+      .e-timeline-header-container {
+        background: $gantt-header-bg-color;
+        border-bottom-color: $gantt-header-border-color;
+        border-bottom-width: $gantt-header-border-bottom-width;
+        border-right-color: $gantt-header-border-color;
+        color: $gantt-header-color;
+        height: $gantt-header-border-height;
+      }
+
+      .e-timeline-top-header-cell,
+      .e-timeline-single-header-cell {
+        border-color: $gantt-header-border-color;
+        color: $gantt-header-color;
+      }
+
+      .e-timeline-single-header-cell {
+        height: $gantt-chart-timeline-single-header-outer-div;
+        line-height: $gantt-chart-timeline-single-header-outer-div;
+      }
+
+      .e-timeline-single-header-outer-div {
+        height: $gantt-chart-timeline-single-header-outer-div !important; // sass-lint:disable-line no-important
+      }
+
+      .e-timeline-top-header-cell {
+        height: $gantt-timeline-top-header-cell-height;
+      }
+
+      .e-chart-root-container {
+        background-color: $gantt-table-background;
+        border-color: $gantt-header-border-color;
+      }
+
+      .e-timeline-header-table-body {
+        border-spacing: $gantt-header-border-spacing;
+      }
+
+      .e-chart-row-border {
+        border-top-color: $gantt-grid-line-color;
+      }
+
+      .e-chart-row-cell {
+        color: $gantt-content-color;
+      }
+
+      .e-chart-row-border.e-lastrow {
+        border-bottom-color: $gantt-grid-line-color;
+      }
+
+      .e-line-container-cell {
+        border-color: $gantt-line-container-cell-border-color;
+      }
+
+      .e-gantt-child-taskbar-inner-div {
+        background-color: $gantt-child-task-bar;
+        border: $gantt-child-task-bar-border;
+        border-radius: $gantt-parent-progress-bar-border-radius;
+      }
+
+      .e-gantt-parent-taskbar-inner-div {
+        background-color: $gantt-parent-task-bar;
+        border: $gantt-parent-task-bar-border;
+        border-radius: $gantt-parent-progress-bar-border-radius;
+      }
+
+      .e-gantt-parent-progressbar-inner-div {
+        background-color: $gantt-parent-progress-bar;
+        border: $gantt-parent-progress-bar-border;
+        //margin-left: $gantt-child-progress-margin-left;
+      }
+
+      .e-gantt-child-progressbar-inner-div {
+        background-color: $gantt-child-progress-bar;
+        border: $gantt-child-progress-bar-border;
+        //margin-left: $gantt-child-progress-margin-left;
+      }
+
+      .e-holiday {
+        background: $holiday-background;
+
+        .e-span {
+          color: $holiday-label-color;
+          font-size: $holiday-label-font-size;
+        }
+      }
+
+      .e-weekend {
+        background: $weekend-background;
+      }
+
+      .e-weekend-header-cell {
+        background: $weekend-background;
+      }
+
+      .e-event-markers {
+        border-left-color: $event-marker-line-color;
+
+        .e-span-label {
+          background-color: $event-marker-label-color;
+          color: $event-marker-label-font-color;
+          font-size: $event-marker-label-font-size;
+        }
+
+        .e-gantt-right-arrow {
+          border-right-color: $event-marker-label-color;
+        }
+      }
+
+      .e-gantt-unscheduled-taskbar {
+        background: $gantt-unscheduled-taskbar-background;
+        background-color: $gantt-unscheduled-taskbar-background-color;
+        border: $gantt-unscheduled-taskbar-border;
+        border-radius: $gantt-unscheduled-taskbar-border-radius;
+      }
+
+      .e-unscheduled-milestone-top {
+        border-bottom-color: $gantt-unscheduled-milestone-top-border;
+      }
+
+      .e-unscheduled-milestone-bottom {
+        border-top-color: $gantt-unscheduled-milestone-bottom-border;
+      }
+
+      .e-progress-resize-gripper {
+
+        .e-progressbar-handler {
+          background: $progress-handler-background;
+          border-color: $progress-handler-outline;
+        }
+
+        .e-progressbar-handler-element {
+          border-bottom-color: $progress-handler-outline;
+        }
+
+        .e-progressbar-handler-after {
+          border-bottom-color: $progress-handler-background;
+        }
+
+      }
+
+      .e-gantt-dependency-view-container {
+        display: block;
+        z-index: 5;
+      }
+
+      .e-line {
+        border-color: $connector-line-color;
+      }
+
+      .e-connector-line-right-arrow {
+        border-left-color: $connector-line-color;
+      }
+
+      .e-connector-line-left-arrow {
+        border-right-color: $connector-line-color;
+      }
+
+      .e-connector-line-right-arrow-hover {
+        border-left-color: $connector-line-hover-color;
+      }
+
+      .e-connector-line-left-arrow-hover {
+        border-right-color: $connector-line-hover-color;
+      }
+
+      .e-connector-line-hover {
+        border-color: $connector-line-hover-color;
+        outline-color: $connector-line-hover-color;
+      }
+
+      .e-gantt-false-line {
+        border-top-color: $connector-false-line-color;
+      }
+
+      .e-connectorpoint-left-hover,
+      .e-connectorpoint-right-hover {
+        background-color: $connector-point-hover-color;
+        border-color: $connector-point-border-color;
+      }
+
+      .e-connectorpoint-left-hover:hover,
+      .e-connectorpoint-right-hover:hover {
+        background-color: $connector-point-hover-bg-color;
+        border-color: $connector-point-hover-border-color;
+      }
+
+      .e-left-label-inner-div,
+      .e-right-label-inner-div {
+        color: $gantt-label-color;
+        font-size: $gantt-label-size;
+      }
+
+      .e-left-label-temp-container {
+        color: $gantt-label-font-color;
+        font-size: $gantt-label-font-size;
+        padding-right: $gantt-right-label-container-margin-left;
+      }
+
+      .e-right-label-temp-container {
+        color: $gantt-label-font-color;
+        font-size: $gantt-label-font-size;
+        margin-left: $gantt-right-label-container-margin-left;
+      }
+
+      .e-right-label-container {
+        margin-left: $gantt-right-label-container-margin-left;
+      }
+
+      .e-left-label-container {
+        padding-right: $gantt-right-label-container-margin-left;
+      }
+
+      .e-connectorpoint-right {
+        margin-left: $gantt-connector-point-right-margin-left;
+      }
+
+      .e-right-connectorpoint-outer-div,
+      .e-left-connectorpoint-outer-div {
+        height: $gantt-connector-point-height;
+        width: $gantt-connector-point-width;
+      }
+
+      .e-left-connectorpoint-outer-div {
+        left: $gantt-connector-left-point-left;
+      }
+
+      .e-gantt-unscheduled-taskbar-left,
+      .e-gantt-unscheduled-taskbar-right {
+        border-right: transparent;
+        border-width: $gantt-unscheduled-taskbar-left;
+      }
+
+      .e-gantt-unscheduled-taskbar-right {
+        border-bottom-left-radius: $gantt-unscheduled-taskbar-left-radius;
+        border-bottom-right-radius: $gantt-unscheduled-taskbar-right-radius;
+        border-top-left-radius: $gantt-unscheduled-taskbar-left-radius;
+        border-top-right-radius: $gantt-unscheduled-taskbar-right-radius;
+      }
+
+      .e-gantt-unscheduled-taskbar-left {
+        border-bottom-left-radius: $gantt-progress-bar-left-radius;
+        border-top-left-radius: $gantt-progress-bar-left-radius;
+      }
+
+      .e-task-label {
+        color: $gantt-task-label-font-color;
+        font-size: $gantt-task-label-font-size;
+      }
+
+      .e-icon {
+        color: $gantt-edit-icon-color;
+      }
+
+      .e-milestone-top {
+        border-bottom-color: $gantt-milestone-border-color;
+      }
+
+      .e-milestone-bottom {
+        border-top-color: $gantt-milestone-border-color;
+      }
+
+      .e-label {
+        color: $gantt-label-font-color;
+        font-size: $gantt-label-font-size;
+      }
+
+      .e-active {
+        background: $gantt-active-background;
+        color: $gantt-active-color;
+        opacity: $gantt-active-color-opacity;
+      }
+
+      .e-active .e-label {
+        color: $gantt-active-color;
+      }
+
+      .e-baseline-bar {
+        background-color: $gantt-baseline-color;
+      }
+
+      .e-baseline-milestone-top {
+        border-bottom-color: $gantt-baseline-color;
+      }
+
+      .e-baseline-milestone-bottom {
+        border-top-color: $gantt-baseline-color;
+      }
+
+      .e-uptail::before {
+        border-bottom-color: $gantt-uptail-border;
+      }
+
+      .e-downtail::after {
+        border-top-color: $progress-handler-outline;
+      }
+
+      .e-downtail::before {
+        border-top-color: $gantt-uptail-border;
+      }
+
+      .e-content {
+        background-color: $progress-handler-outline;
+        border-color: $gantt-uptail-border;
+      }
+
+      .e-spanclicked,
+      .e-grid .e-gridpopup .e-spanclicked {
+        border-color: $gantt-gridpopup-span;
+      }
+
+      .e-active-parent-task {
+        border-radius: 4px;
+        box-shadow: 4px 4px 3px 0 $gantt-active-parent-shadow;
+
+        .e-gantt-parent-taskbar-inner-div {
+          background: $gantt-active-parent-task;
+          border: $gantt-active-parent-task;
+        }
+
+        .e-gantt-parent-progressbar-inner-div {
+          background-color: transparent;
+          border: transparent;
+        }
+
+        .e-task-label {
+          color: transparent;
+        }
+
+      }
+
+      .e-predecessor-touch-mode {
+
+        .e-task-label {
+          color: transparent !important; // sass-lint:disable-line no-important
+        }
+
+        .e-line {
+          border-color: $gantt-inactive-parent !important; // sass-lint:disable-line no-important
+        }
+
+        .e-connector-line-right-arrow {
+          border-left-color: $gantt-inactive-parent !important; // sass-lint:disable-line no-important
+        }
+
+        .e-connector-line-left-arrow {
+          border-right-color: $gantt-inactive-parent !important; // sass-lint:disable-line no-important
+        }
+
+        .e-gantt-child-taskbar-inner-div {
+          background: $gantt-inactive-child !important; // sass-lint:disable-line no-important
+          border: $gantt-inactive-child !important; // sass-lint:disable-line no-important
+        }
+
+        .e-gantt-child-progressbar-inner-div {
+          background-color: transparent !important; // sass-lint:disable-line no-important
+          border: transparent !important; // sass-lint:disable-line no-important
+        }
+
+        .e-milestone-top {
+          border-bottom-color: $gantt-inactive-child !important; // sass-lint:disable-line no-important
+        }
+
+        .e-milestone-bottom {
+          border-top-color: $gantt-inactive-child !important; // sass-lint:disable-line no-important
+        }
+
+        .e-gantt-parent-taskbar-inner-div {
+          background-color: $gantt-inactive-parent !important; // sass-lint:disable-line no-important
+          border: $gantt-inactive-parent !important; // sass-lint:disable-line no-important
+        }
+
+        .e-gantt-parent-progressbar-inner-div {
+          background-color: transparent !important; // sass-lint:disable-line no-important
+          border: transparent !important; // sass-lint:disable-line no-important
+        }
+
+        .e-active-child-task {
+
+          .e-gantt-child-taskbar-inner-div {
+            background: $gantt-child-progress-bar !important; // sass-lint:disable-line no-important
+            border: $gantt-child-progress-bar !important; // sass-lint:disable-line no-important
+          }
+
+          .e-milestone-top {
+            border-bottom-color: $gantt-child-progress-bar !important; // sass-lint:disable-line no-important
+          }
+
+          .e-milestone-bottom {
+            border-top-color: $gantt-child-progress-bar !important; // sass-lint:disable-line no-important
+          }
+
+        }
+
+        .e-active-connected-task {
+
+          .e-gantt-child-taskbar-inner-div {
+            background: $gantt-connected-task !important; // sass-lint:disable-line no-important
+            border: $gantt-connected-task !important; // sass-lint:disable-line no-important
+          }
+
+          .e-milestone-top {
+            border-bottom-color: $gantt-connected-task !important; // sass-lint:disable-line no-important
+          }
+
+          .e-milestone-bottom {
+            border-top-color: $gantt-connected-task !important; // sass-lint:disable-line no-important
+          }
+
+          .e-line {
+            border-color: $gantt-child-progress-bar !important; // sass-lint:disable-line no-important
+          }
+
+          .e-connector-line-right-arrow {
+            border-left-color: $gantt-child-progress-bar !important; // sass-lint:disable-line no-important
+          }
+
+          .e-connector-line-left-arrow {
+            border-right-color: $gantt-child-progress-bar !important; // sass-lint:disable-line no-important
+          }
+
+        }
+
+      }
+
+    }
+
+    .e-grid .e-icons {
+      color: $gantt-header-color !important; // sass-lint:disable-line no-important
+    }
+
+  }
+
+  .e-gantt.e-device {
+    .e-left-resize-gripper,
+    .e-right-resize-gripper {
+      border-color: $gantt-left-resize-gripper-border;
+      color: $gantt-left-resize-gripper-color;
+    }
+
+    .e-backarrowspan {
+      color: $gantt-gridpopup-span;
+    }
+
+  }
+
+}

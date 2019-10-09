@@ -1,0 +1,433 @@
+@mixin button-focus {
+  background-color: $btn-focus-bgcolor;
+  border-color: $btn-focus-border-color;
+  color: $btn-focus-color;
+  outline: $btn-focus-outline;
+  outline-offset: $btn-focus-outline-offset;
+  @if $skin-name == 'bootstrap4' {
+    $color-rgba: rgba(mix(lighten($btn-focus-bgcolor, 50%), $btn-focus-border-color, .15), .5);
+    box-shadow: 0 0 0 .25em $color-rgba;
+  }
+  @else {
+    box-shadow: $btn-hover-focus-box-shadow;
+  }
+}
+
+@mixin button-active {
+  background-color: $btn-active-bgcolor;
+  border-color: $btn-active-border-color;
+  color: $btn-active-color;
+  outline: $btn-active-outline;
+  outline-offset: $btn-active-outline-offset;
+  @if $skin-name == 'bootstrap4' {
+    $color-rgba: rgba(mix(lighten($btn-active-bgcolor, 50%), $btn-active-border-color, .15), .5);
+    box-shadow: 0 0 0 .25em $color-rgba;
+  }
+  @else {
+    box-shadow: $btn-active-box-shadow;
+  }
+}
+
+@mixin primary-focus {
+  background-color: $btn-primary-focus-bgcolor;
+  border-color: $btn-primary-focus-border-color;
+  color: $btn-primary-focus-color;
+  outline: $btn-primary-outline;
+  @if $skin-name == 'bootstrap4' {
+    $color-rgba: rgba(mix(lighten($btn-primary-focus-bgcolor, 50%), $btn-primary-focus-border-color, .15), .5);
+    box-shadow: 0 0 0 .25em $color-rgba;
+  }
+  @else {
+    box-shadow: $btn-hover-focus-box-shadow;
+  }
+}
+
+@mixin primary-active {
+  background-color: $btn-primary-active-bgcolor;
+  border-color: $btn-primary-active-border-color;
+  color: $btn-primary-active-color;
+  outline: $btn-active-outline;
+  @if $skin-name == 'bootstrap4' {
+    $color-rgba: rgba(mix(lighten($btn-primary-active-bgcolor, 50%), $btn-primary-active-border-color, .15), .5);
+    box-shadow: 0 0 0 .25em $color-rgba;
+  }
+  @else {
+    box-shadow: $btn-active-box-shadow;
+  }
+}
+
+@mixin primary-disabled {
+  background-color: $btn-primary-disabled-bgcolor;
+  border-color: $btn-primary-disabled-border-color;
+  box-shadow: $btn-flat-box-shadow;
+  color: $btn-primary-disabled-color;
+}
+
+@mixin outline-focus {
+  background-color: $btn-outline-focus-bgcolor;
+  border-color: $btn-outline-default-focus-border-color;
+  color: $btn-outline-focus-color;
+  @if $skin-name == 'bootstrap4' {
+    $color-rgba: rgba(mix(lighten($btn-outline-focus-bgcolor, 50%), $btn-outline-default-focus-border-color, .15), .5);
+    box-shadow: 0 0 0 .25em $color-rgba;
+  }
+  @else {
+    box-shadow: $btn-hover-focus-box-shadow;
+  }
+}
+
+@mixin outline-active {
+  @if $skin-name == 'bootstrap4' {
+    background-color: $btn-bgcolor;
+    border-color: none;
+    $color-rgba: rgba(mix(lighten($btn-outline-active-bgcolor, 50%), $btn-outline-active-border-color, .15), .5);
+    box-shadow: 0 0 0 .25em $color-rgba;
+  }
+  @else {
+    background-color: $btn-outline-active-bgcolor;
+    border-color: $btn-outline-active-border-color;
+    box-shadow: $btn-outline-active-box-shadow;
+  }
+  color: $btn-outline-active-color;
+}
+
+@mixin outline-primary-focus {
+  background-color: $btn-outline-primary-focus-bgcolor;
+  border-color: $btn-outline-primary-focus-border-color;
+  color: $btn-outline-primary-focus-color;
+  @if $skin-name == 'bootstrap4' {
+    $color-rgba: rgba(mix(lighten($btn-outline-primary-focus-bgcolor, 50%), $btn-outline-primary-focus-border-color, .15), .5);
+    box-shadow: 0 0 0 .25em $color-rgba;
+  }
+}
+
+@mixin outline-primary-active {
+  @if $skin-name == 'bootstrap4' {
+    background-color: $btn-primary-bgcolor;
+    border-color: none;
+    $color-rgba: rgba(mix(lighten($btn-primary-active-bgcolor, 50%), $btn-outline-primary-active-border-color, .15), .5);
+    box-shadow: 0 0 0 .25em $color-rgba;
+  }
+  @else {
+    background-color: $btn-primary-active-bgcolor;
+    border-color: $btn-outline-primary-active-border-color;
+    box-shadow: $btn-outline-active-box-shadow;
+  }
+  color: $btn-primary-active-color;
+}
+
+@mixin outline-success-focus {
+  background-color: $btn-success-focus-bgcolor;
+  border-color: $btn-success-focus-border-color;
+  color: $btn-success-focus-color;
+  @if $skin-name == 'bootstrap4' {
+    $color-rgba: rgba(mix(lighten($btn-success-focus-bgcolor, 50%), $btn-success-focus-border-color, .15), .5);
+    box-shadow: 0 0 0 .25em $color-rgba;
+  }
+}
+
+@mixin outline-success-active {
+  @if $skin-name == 'bootstrap4' {
+    background-color: $btn-success-bgcolor;
+    border-color: none;
+    $color-rgba: rgba(mix(lighten($btn-success-active-bgcolor, 50%), $btn-success-active-border-color, .15), .5);
+    box-shadow: 0 0 0 .25em $color-rgba;
+  }
+  @else {
+    background-color: $btn-success-active-bgcolor;
+    border-color: $btn-success-active-border-color;
+    box-shadow: $btn-outline-active-box-shadow;
+  }
+  color: $btn-success-active-color;
+}
+
+@mixin outline-info-focus {
+  background-color: $btn-info-hover-bgcolor;
+  border-color: $btn-info-focus-border-color;
+  color: $btn-info-color;
+  @if $skin-name == 'bootstrap4' {
+    $color-rgba: rgba(mix(lighten($btn-info-hover-bgcolor, 50%), $btn-info-focus-border-color, .15), .5);
+    box-shadow: 0 0 0 .25em $color-rgba;
+  }
+}
+
+@mixin outline-info-active {
+  @if $skin-name == 'bootstrap4' {
+    background-color: $btn-info-bgcolor;
+    border-color: none;
+    $color-rgba: rgba(mix(lighten($btn-info-active-bgcolor, 50%), $btn-info-active-border-color, .15), .5);
+    box-shadow: 0 0 0 .25em $color-rgba;
+  }
+  @else {
+    background-color: $btn-info-active-bgcolor;
+    border-color: $btn-info-active-border-color;
+    box-shadow: $btn-outline-active-box-shadow;
+  }
+  color: $btn-info-active-color;
+}
+
+@mixin outline-warning-focus {
+  background-color: $btn-warning-hover-bgcolor;
+  border-color: $btn-warning-focus-border-color;
+  color: $btn-warning-color;
+  @if $skin-name == 'bootstrap4' {
+    $color-rgba: rgba(mix(lighten($btn-warning-hover-bgcolor, 50%), $btn-warning-focus-border-color, .15), .5);
+    box-shadow: 0 0 0 .25em $color-rgba;
+  }
+}
+
+@mixin outline-warning-active {
+  @if $skin-name == 'bootstrap4' {
+    background-color: $btn-warning-bgcolor;
+    border-color: none;
+    $color-rgba: rgba(mix(lighten($btn-warning-active-bgcolor, 50%), $btn-warning-active-border-color, .15), .5);
+    box-shadow: 0 0 0 .25em $color-rgba;
+  }
+  @else {
+    background-color: $btn-warning-active-bgcolor;
+    border-color: $btn-warning-active-border-color;
+    box-shadow: $btn-outline-active-box-shadow;
+  }
+  color: $btn-warning-active-color;
+}
+
+@mixin outline-danger-focus {
+  background-color: $btn-danger-hover-bgcolor;
+  border-color: $btn-danger-focus-border-color;
+  color: $btn-danger-color;
+  @if $skin-name == 'bootstrap4' {
+    $color-rgba: rgba(mix(lighten($btn-danger-hover-bgcolor, 50%), $btn-danger-focus-border-color, .15), .5);
+    box-shadow: 0 0 0 .25em $color-rgba;
+  }
+}
+
+@mixin outline-danger-active {
+  @if $skin-name == 'bootstrap4' {
+    background-color: $btn-danger-bgcolor;
+    border-color: none;
+    $color-rgba: rgba(mix(lighten($btn-danger-active-bgcolor, 50%), $btn-danger-active-border-color, .15), .5);
+    box-shadow: 0 0 0 .25em $color-rgba;
+  }
+  @else {
+    background-color: $btn-danger-active-bgcolor;
+    border-color: $btn-danger-active-border-color;
+    box-shadow: $btn-outline-active-box-shadow;
+  }
+  color: $btn-danger-active-color;
+}
+
+@mixin outline-disabled {
+  background-color: $btn-outline-bgcolor;
+  @if $skin-name == 'bootstrap4' {
+    border-color: $btn-outline-disabled-border-color;
+    color: $btn-outline-disabled-color;
+  }
+  @else {
+    border-color: $btn-outline-primary-disabled-border-color;
+    box-shadow: $btn-flat-box-shadow;
+    color: $btn-outline-primary-disabled-color;
+  }
+}
+
+@mixin outline-primary-disabled {
+  background-color: $btn-outline-bgcolor;
+  border-color: $btn-outline-primary-disabled-border-color;
+  box-shadow: $btn-flat-box-shadow;
+  color: $btn-outline-primary-disabled-color;
+}
+
+@mixin outline-success-disabled {
+  background-color: $btn-outline-bgcolor;
+  border-color: $btn-outline-success-disabled-border-color;
+  box-shadow: $btn-flat-box-shadow;
+  color: $btn-outline-success-disabled-color;
+}
+
+@mixin outline-info-disabled {
+  background-color: $btn-outline-bgcolor;
+  border-color: $btn-outline-info-disabled-border-color;
+  box-shadow: $btn-flat-box-shadow;
+  color: $btn-outline-info-disabled-color;
+}
+
+@mixin outline-warning-disabled {
+  background-color: $btn-outline-bgcolor;
+  border-color: $btn-outline-warning-disabled-border-color;
+  box-shadow: $btn-flat-box-shadow;
+  color: $btn-outline-warning-disabled-color;
+}
+
+@mixin outline-danger-disabled {
+  background-color: $btn-outline-bgcolor;
+  border-color: $btn-outline-danger-disabled-border-color;
+  box-shadow: $btn-flat-box-shadow;
+  color: $btn-outline-danger-disabled-color;
+}
+
+@mixin success-focus {
+  background-color: $btn-success-focus-bgcolor;
+  border-color: $btn-success-focus-border-color;
+  color: $btn-success-hover-color;
+  @if $skin-name == 'bootstrap4' {
+    $color-rgba: rgba(mix(lighten($btn-success-focus-bgcolor, 50%), $btn-success-focus-border-color, .15), .5);
+    box-shadow: 0 0 0 .25em $color-rgba;
+  }
+  @else {
+    box-shadow: $btn-hover-focus-box-shadow;
+  }
+}
+
+@mixin success-active {
+  background-color: $btn-success-active-bgcolor;
+  border-color: $btn-success-active-border-color;
+  color: $btn-success-active-color;
+  @if $skin-name == 'bootstrap4' {
+    $color-rgba: rgba(mix(lighten($btn-success-active-bgcolor, 50%), $btn-success-active-border-color, .15), .5);
+    box-shadow: 0 0 0 .25em $color-rgba;
+  }
+  @else {
+    box-shadow: $btn-active-box-shadow;
+  }
+}
+
+@mixin info-focus {
+  background-color: $btn-info-focus-bgcolor;
+  border-color: $btn-info-focus-border-color;
+  color: $btn-info-hover-color;
+  @if $skin-name == 'bootstrap4' {
+    $color-rgba: rgba(mix(lighten($btn-info-focus-bgcolor, 50%), $btn-info-focus-border-color, .15), .5);
+    box-shadow: 0 0 0 .25em $color-rgba;
+  }
+  @else {
+    box-shadow: $btn-hover-focus-box-shadow;
+  }
+}
+
+@mixin info-active {
+  background-color: $btn-info-active-bgcolor;
+  border-color: $btn-info-active-border-color;
+  color: $btn-info-active-color;
+  @if $skin-name == 'bootstrap4' {
+    $color-rgba: rgba(mix(lighten($btn-info-active-bgcolor, 50%), $btn-info-active-border-color, .15), .5);
+    box-shadow: 0 0 0 .25em $color-rgba;
+  }
+  @else {
+    box-shadow: $btn-active-box-shadow;
+  }
+}
+
+@mixin warning-focus {
+  background-color: $btn-warning-focus-bgcolor;
+  border-color: $btn-warning-focus-border-color;
+  color: $btn-warning-hover-color;
+  @if $skin-name == 'bootstrap4' {
+    $color-rgba: rgba(mix(lighten($btn-warning-focus-bgcolor, 50%), $btn-warning-focus-border-color, .15), .5);
+    box-shadow: 0 0 0 .25em $color-rgba;
+  }
+  @else {
+    box-shadow: $btn-hover-focus-box-shadow;
+  }
+}
+
+@mixin warning-active {
+  background-color: $btn-warning-active-bgcolor;
+  border-color: $btn-warning-active-border-color;
+  color: $btn-warning-active-color;
+  @if $skin-name == 'bootstrap4' {
+    $color-rgba: rgba(mix(lighten($btn-warning-active-bgcolor, 50%), $btn-warning-active-border-color, .15), .5);
+    box-shadow: 0 0 0 .25em $color-rgba;
+  }
+  @else {
+    box-shadow: $btn-active-box-shadow;
+  }
+}
+
+@mixin danger-focus {
+  background-color: $btn-danger-focus-bgcolor;
+  border-color: $btn-danger-focus-border-color;
+  color: $btn-danger-hover-color;
+  @if $skin-name == 'bootstrap4' {
+    $color-rgba: rgba(mix(lighten($btn-danger-focus-bgcolor, 50%), $btn-danger-focus-border-color, .15), .5);
+    box-shadow: 0 0 0 .25em $color-rgba;
+  }
+  @else {
+    box-shadow: $btn-hover-focus-box-shadow;
+  }
+}
+
+@mixin danger-active {
+  background-color: $btn-danger-active-bgcolor;
+  border-color: $btn-danger-active-border-color;
+  color: $btn-danger-active-color;
+  @if $skin-name == 'bootstrap4' {
+    $color-rgba: rgba(mix(lighten($btn-danger-active-bgcolor, 50%), $btn-danger-active-border-color, .15), .5);
+    box-shadow: 0 0 0 .25em $color-rgba;
+  }
+  @else {
+    box-shadow: $btn-active-box-shadow;
+  }
+}
+
+@mixin link-focus {
+  border-radius: 0;
+  text-decoration: underline;
+  @if $skin-name == 'bootstrap4' {
+    background-color: $btn-link-bgcolor;
+    border-color: $btn-link-border-color;
+    box-shadow: none;
+    color: $btn-link-hover-color;
+  }
+  @else {
+    color: $btn-link-hover-color;
+  }
+}
+
+@mixin link-hover {
+  border-radius: 0;
+  color: $btn-link-hover-color;
+  text-decoration: underline;
+  @if $skin-name == 'bootstrap4' {
+    background-color: transparent;
+    border-color: transparent;
+  }
+}
+
+@mixin success-disabled {
+  background-color: $btn-success-disabled-bgcolor;
+  border-color: $btn-disabled-border-color;
+  box-shadow: $btn-flat-box-shadow;
+  color: $btn-success-disabled-color;
+}
+
+@mixin info-disabled {
+  background-color: $btn-info-disabled-bgcolor;
+  border-color: $btn-disabled-border-color;
+  box-shadow: $btn-flat-box-shadow;
+  color: $btn-info-disabled-color;
+}
+
+@mixin warning-disabled {
+  background-color: $btn-warning-disabled-bgcolor;
+  border-color: $btn-disabled-border-color;
+  box-shadow: $btn-flat-box-shadow;
+  color: $btn-warning-disabled-color;
+}
+
+@mixin danger-disabled {
+  background-color: $btn-danger-disabled-bgcolor;
+  border-color: $btn-disabled-border-color;
+  box-shadow: $btn-flat-box-shadow;
+  color: $btn-danger-disabled-color;
+}
+
+@mixin link-disabled {
+  @if $skin-name == 'bootstrap4' {
+    color: $btn-bgcolor;
+  }
+  @else {
+    color: $btn-disabled-color;
+  }
+  background-color: $btn-link-disabled-bgcolor;
+  box-shadow: $btn-flat-box-shadow;
+  text-decoration: none;
+}

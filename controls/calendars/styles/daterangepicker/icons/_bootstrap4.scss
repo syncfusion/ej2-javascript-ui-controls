@@ -1,0 +1,69 @@
+@include export-module('daterangepicker-bootstrap4-icons') {
+  /*! component icons */
+  .e-input-group-icon.e-range-icon,
+  &.e-control-wrapper .e-input-group-icon.e-range-icon {
+    border-bottom-right-radius: $range-icon-bottom-right-radius;
+    @if $skin-name == 'bootstrap4' {
+      border-right: $range-control-border-right;
+    }
+    border-top-right-radius: $range-icon-top-right-radius;
+    font-size: $range-icon-font-size;
+    margin: $range-icon-margin;
+    min-height: $range-icon-container-min-height;
+    min-width: $range-icon-container-min-width;
+    outline: none;
+
+    &::before {
+      content: '\e7d7';
+      font-family: 'e-icons';
+  }
+
+    &:focus {
+      background: $range-icon-hover-color;
+      border-radius: $range-icon-border-radius;
+  }
+}
+
+  .e-daterangepicker {
+    & .e-calendar .e-header .e-date-icon-next::before {
+      content: '\e76a';
+    }& .e-calendar .e-header .e-date-icon-prev::before {
+      content: '\e70d';
+    }& .e-change-icon::before {
+      content: '\e7ce';
+    }& .e-calendar.e-rtl .e-header .e-date-icon-next::before {
+      content: '\e70d';
+    }& .e-calendar.e-rtl .e-header .e-date-icon-prev::before {
+      content: '\e76a';
+    }&.e-rtl .e-start-end .e-change-icon::before {
+      content: '\e7c1';
+    }
+  }
+
+  .e-bigger {
+    & .e-input-group-icon.e-range-icon,
+    &.e-control-wrapper .e-input-group-icon.e-range-icon,
+    & .e-control-wrapper .e-input-group-icon.e-range-icon {
+      font-size: $range-bigger-icon-font-size;
+      margin: $range-icon-bigger-margin;
+      min-height: $range-bigger-icon-container-min-height;
+      min-width: $range-bigger-icon-container-min-width;
+      outline: none;
+    }
+  }
+
+  // mouse small icon
+  .e-small .e-input-group-icon.e-range-icon,
+  &.e-control-wrapper.e-small .e-input-group-icon.e-range-icon,
+  &.e-small .e-control-wrapper .e-input-group-icon.e-range-icon {
+    font-size: $range-small-icon-font-size;
+  }
+
+  // Touch small icon
+  .e-small.e-bigger .e-input-group-icon.e-range-icon,
+  &.e-control-wrapper.e-small.e-bigger .e-input-group-icon.e-range-icon,
+  &.e-small.e-bigger .e-control-wrapper .e-input-group-icon.e-range-icon {
+    font-size: $range-bigger-small-icon-font-size;
+  }
+}
+

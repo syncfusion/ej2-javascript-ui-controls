@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <title> Typescript Components</title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Typescript UI Controls" />
+    <meta name="author" content="Syncfusion" />
+    <link href="https://fonts.googleapis.com/css?family=Roboto" rel="stylesheet" />
+    <link id="theme" href="../../theme-files/material.css" rel="stylesheet" />
+    
+    <script>
+        window.require = {
+            config: function (json) {
+                window.rsConfig = json;
+                window.rsConfig.baseUrl = '';
+            }
+        };
+    </script>
+    <script src="./../../demo-config.js"></script>
+    <script src="./../../../node_modules/requirejs/require.js" data-main="./default"></script>
+    <script>
+        require.config(window.rsConfig);
+    </script>
+</head>
+
+<body>
+    <table>
+        <tbody>
+            <tr>
+                <td> <button id="material" >Material</button> </td>
+                <td> <button id="fabric" >Fabric</button> </td>
+                <td> <button id="bootstrap">Bootstrap</button> </td>
+                <td> <button id="highcontrast">Highcontrast</button> </td>
+                <td> <button id="materialdark">Material Dark</button> </td>
+                <td> <button id="fabricdark">Fabric Dark</button> </td>
+                <td> <button id="bootstrapdark">Bootstrap Dark</button> </td>
+                <td> <button id="bootstrap4">Bootstrap4</button> </td>
+                <!-- <td> <button id="highcontrastlight">Highcontrast Light</button> </td> -->
+            </tr>
+        </tbody>
+    </table>                                   
+    <div class="control-section">
+        <div class="radio-control" id="radio">
+            <h4 class="row">Select a payment method</h4>
+            <div class="row">
+                <input id="radio1" type="radio">
+            </div>
+            <div class="row">
+                <input id="radio2" type="radio">
+            </div>
+            <div class="row">
+                <input id="radio3" type="radio">
+            </div>
+            <div class="row">
+                <input id="radio4" type="radio">
+            </div>
+        </div>
+    </div>
+
+    <style>
+        /* RadioButton Styles */
+        .radio-control {
+            width: 544px;
+            min-height: 350px;
+            border: 1px solid #dddddd;
+            margin: 0 auto; 
+        }
+
+        .control-section .row {
+            margin: 5% 37%;
+        }
+
+        .darkBG {
+            background-color: #000;
+            color:#fff;
+        }
+    </style>
+</body>
+
+</html>

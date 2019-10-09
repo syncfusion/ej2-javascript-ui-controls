@@ -1,0 +1,126 @@
+/*! TreeView's fabric theme wise override definitions and variables */
+// sass-lint:disable-all
+$treeview-skin-name: 'fabric' !default;
+$treeview-font-size: $font-size !default;
+$treeview-icon-font-size: 10px !default;
+$treeview-image-font-size: 16px !default;
+
+$treeview-big-font-size: 15px !default;
+$treeview-big-icon-font-size: 12px !default;
+
+$treeview-icon-color: $neutral-light-font !default;
+$treeview-text-color: $neutral-light-font !default;
+$treeview-item-border-color: transparent !default;
+$treeview-item-active-bg: $theme-lighter !default;
+$treeview-icon-active-color: $theme-light-font !default;
+$treeview-text-active-color: $theme-light-font !default;
+$treeview-item-active-border-color: $theme-lighter !default;
+$treeview-item-hover-bg: $neutral-lighter !default;
+$treeview-icon-hover-color: $neutral-light-font !default;
+$treeview-text-hover-color: $neutral-light-font !default;
+$treeview-item-hover-border-color: $neutral-lighter !default;
+$treeview-item-active-hover-bg: $theme-lighter !default;
+$treeview-icon-active-hover-color: $theme-light-font !default;
+$treeview-text-active-hover-color: $theme-light-font !default;
+$treeview-item-active-hover-border-color: $neutral-secondary !default;
+$treeview-text-disable-color: $neutral-tertiary !default;
+$treeview-icon-disable-color: $neutral-tertiary !default;
+$treeview-drag-line-bg: $theme-primary !default;
+$treeview-drag-line-color: $neutral-tertiary-alt !default;
+$treeview-popup-bg-color: $theme-primary-font !default;
+$treeview-popup-border-color: $neutral-tertiary !default;
+$treeview-drop-count-bg: $theme-primary !default;
+$treeview-drop-count-border: $theme-primary-font !default;
+$treeview-drop-count-color: $theme-primary-font !default;
+$treeview-drag-item-bg: $theme-lighter !default;
+$treeview-drag-item-color: $theme-light-font !default;
+$treeview-drag-icon-color: $theme-light-font !default;
+
+$treeview-item-height: 32px !default;
+$treeview-text-height: 30px !default;
+$treeview-input-height: 30px !default;
+$treeview-root-ul-padding: 0 0 0 24px !default;
+$treeview-rtl-root-ul-padding: 0 24px 0 0 !default;
+$treeview-child-ul-padding: 0 0 0 24px !default;
+$treeview-rtl-child-ul-padding: 0 24px 0 0 !default;
+$treeview-text-wrap-padding: 0 0 0 24px !default;
+$treeview-rtl-text-wrap-padding: 0 24px 0 0 !default;
+$treeview-icon-size: 24px !default;
+$treeview-icon-margin: 0 0 0 -24px !default;
+$treeview-rtl-icon-margin: 0 -24px 0 0 !default;
+$treeview-icon-padding: 7px !default;
+$treeview-text-padding: 0 5px !default;
+$treeview-text-margin: 0 !default;
+$treeview-image-size: 18px !default;
+$treeview-image-margin: 0 0 0 5px !default;
+$treeview-rtl-image-margin: 0 5px 0 0 !default;
+$treeview-input-padding: 0 7px !default;
+$treeview-image-text-padding: 0 10px !default;
+$treeview-icon-image-margin: 0 0 0 10px !default;
+$treeview-rtl-icon-image-margin: 0 10px 0 0 !default;
+$treeview-check-margin: 0 0 0 5px !default;
+$treeview-rtl-check-margin: 0 5px 0 0 !default;
+$treeview-check-text-padding: 0 10px !default;
+$treeview-check-image-margin: 0 0 0 12px !default;
+$treeview-rtl-check-image-margin: 0 12px 0 0 !default;
+$treeview-drop-count-border-size: 1px !default;
+$treeview-drop-count-font-size: 13px !default;
+
+$treeview-big-item-height: 40px !default;
+$treeview-big-text-height: 38px !default;
+$treeview-big-input-height: 38px !default;
+$treeview-big-text-padding: 0 10px !default;
+$treeview-big-input-padding: 0 9px !default;
+$treeview-big-icon-padding: 6px !default;
+$treeview-big-image-margin: 0 0 0 10px !default;
+$treeview-big-rtl-image-margin: 0 10px 0 0 !default;
+$treeview-big-icon-image-margin: 0 0 0 10px !default;
+$treeview-big-rtl-icon-image-margin: 0 10px 0 0 !default;
+$treeview-big-check-margin: 0 0 0 10px !default;
+$treeview-big-rtl-check-margin: 0 10px 0 0 !default;
+$treeview-big-check-image-margin: 0 0 0 16px !default;
+$treeview-big-rtl-check-image-margin: 0 16px 0 0 !default;
+
+$treeview-font-family: $font-family !default;
+$treeview-drag-icon-font-size: 12px !default;
+$treeview-drag-icon-padding: 6px !default;
+
+$ripple-size: -7px !default;
+$ripple-height: 32px !default;
+$ripple-width: 32px !default;
+
+#{&}.e-treeview {
+
+  .e-list-item {
+
+    div.e-icons.interaction {
+      -webkit-transition: -webkit-transform .3s ease-in-out;
+      border-radius: 15px;
+      transition: -webkit-transform .3s ease-in-out;
+      transition: transform .3s ease-in-out;
+      transition: transform .3s ease-in-out, -webkit-transform .3s ease-in-out;
+    }
+
+    .e-icons.e-icon-collapsible {
+      -webkit-transform: rotate(90deg);
+      transform: rotate(90deg);
+    }
+  }
+
+  &.e-drag-item {
+
+    &.e-rtl {
+
+      .e-icons.e-drop-next {
+        transform: rotate(180deg);
+      }
+    }
+  }
+
+  &.e-rtl {
+
+    div.e-icons {
+      transform: rotate(180deg);
+    }
+  }
+}

@@ -1,0 +1,127 @@
+@include export-module('menu-highcontrast-icons') {
+  /*! menu layout */
+  .e-menu-wrapper {
+    @at-root {
+      & ul {
+        &.e-vertical .e-menu-item {
+          & .e-caret {
+            &::before {
+              content: '\e219';
+            }
+          }
+        }
+
+        & .e-menu-item  {
+          & .e-caret {
+            &::before {
+              content: '\e966';
+            }
+          }
+        }
+      }
+
+      & .e-ul .e-menu-item {
+        & .e-caret {
+          &::before {
+            content: '\e219';
+          }
+        }
+      }
+    }
+
+    &.e-hamburger {
+
+      & .e-menu-header {
+
+        & .e-menu-icon::before {
+          content: '\e94c';
+        }
+      }
+
+      &.e-close-icon {
+        & .e-menu-header {
+
+          & .e-menu-icon::before {
+            content: '\e60a';
+          }
+        }
+      }
+
+      & .e-vertical .e-menu-item .e-caret,
+      & .e-menu-item .e-caret {
+        &::before {
+          content: '\e966';
+        }
+      }
+    }
+
+    &.e-rtl.e-hamburger ul {
+      &.e-ul {
+        & .e-caret {
+          &::before {
+            content: '\e966';
+          }
+        }
+      }
+    }
+
+    & .e-menu-hscroll.e-hscroll .e-nav-right-arrow::before,
+    & .e-menu-hscroll.e-hscroll .e-nav-left-arrow::before {
+      content: '\e219';
+    }
+
+    & .e-menu-vscroll.e-vscroll .e-nav-up-arrow::before,
+    & .e-menu-vscroll.e-vscroll .e-nav-down-arrow::before {
+      content: '\e966';
+    }
+  }
+
+  .e-rtl.e-menu-wrapper ul {
+    &.e-vertical {
+      & .e-caret {
+        &::before {
+          content: '\e937';
+        }
+      }
+    }
+
+    &.e-ul {
+      & .e-caret {
+        &::before {
+          content: '\e937';
+        }
+      }
+    }
+  }
+
+  .e-bigger .e-rtl.e-menu-wrapper ul,
+  .e-bigger.e-rtl.e-menu-wrapper ul {
+    &.e-vertical {
+      & .e-caret {
+        &::before {
+          content: '\e937';
+        }
+      }
+    }
+
+    &.e-ul {
+      & .e-caret {
+        &::before {
+          content: '\e937';
+        }
+      }
+    }
+  }
+
+  .e-bigger .e-rtl.e-menu-wrapper.e-hamburger ul,
+  .e-bigger.e-rtl.e-menu-wrapper.e-hamburger ul {
+
+    &.e-ul {
+      & .e-caret {
+        &::before {
+          content: '\e219';
+        }
+      }
+    }
+  }
+}

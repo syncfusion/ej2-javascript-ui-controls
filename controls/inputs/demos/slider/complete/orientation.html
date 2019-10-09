@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <title>Slider</title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Typescript UI Controls" />
+    <meta name="author" content="Syncfusion" />
+    <link href="../../../node_modules/@syncfusion/ej2-buttons/styles/material.css" rel="stylesheet" />
+    <link href="../../../node_modules/@syncfusion/ej2-popups/styles/material.css" rel="stylesheet" />
+    <link rel="stylesheet" type="text/css" href="../../../styles/slider/material.css" />
+    <script src="../../../node_modules/requirejs/require.js" data-main="orientation"></script>
+    <script>
+        require.config({
+            packages: [{
+                name: '@syncfusion/ej2-base',
+                location: '../../../node_modules/@syncfusion/ej2-base/dist',
+                main: 'ej2-base.umd.min.js'
+            }, {
+                name: '@syncfusion/ej2-buttons',
+                location: '../../../node_modules/@syncfusion/ej2-buttons/dist',
+                main: 'ej2-buttons.umd.min.js'
+            }, {
+                name: '@syncfusion/ej2-popups',
+                location: '../../../node_modules/@syncfusion/ej2-popups/dist',
+                main: 'ej2-popups.umd.min.js'
+            }, ]
+        });
+    </script>
+</head>
+
+<body>
+    <div class="col-lg-12 control-section">
+        <div class="content-wrapper">
+            <div class="sliderwrap">
+                <div id="slider1" class="slider-button">
+                    <div class="slider01">
+                        <div id="default"></div>
+                    </div>
+                </div>
+                <label class="labeltext"> Default Slider</label>
+                <button id="showbutton"> Show Buttons</button>
+                <button id="bothticks"> Both Ticks </button>
+                <button id="beforeticks"> Before Ticks </button>
+                <button id="afterticks"> After Ticks </button>
+                <button id="disable"> Disable </button>
+            </div>
+
+            <div class="sliderwrap">
+                <div id="slider2" class="slider-button">
+                    <div class="slider01">
+                        <div id="rangeslider"></div>
+                    </div>
+                </div>
+                <label class="labeltext"> Range Slider </label>
+            </div>
+
+            <div class="sliderwrap">
+                <div id="slider3" class="slider-button">
+                    <div class="slider01">
+                        <div id="minrange"></div>
+                    </div>
+                </div>
+                <label class="labeltext"> Min-Range Slider</label>
+            </div>
+        </div>
+    </div>
+
+
+    <style>
+        .content-wrapper {
+            width: 100%;
+            margin: 0 auto;
+            min-width: 185px;
+            display: block;
+            padding: 0px 0px 0px 60px;
+        }
+
+        .sliderwrap {
+            margin-top: 40px;
+            height: 500px;
+            float: left;
+            width: 10%;
+            margin: 0;
+        }
+
+        .slider01 {
+            height: 300px;
+            margin: 0 28%;
+        }
+
+        .sliderwrap label {
+            padding-bottom: 26px;
+            font-size: 13px;
+            font-weight: 100;
+            margin-top: 20px;
+            display: block;
+        }
+
+        #ticks {
+            margin-top: 5px;
+        }
+    </style>
+
+</body>
+
+</html>
+
+</html>

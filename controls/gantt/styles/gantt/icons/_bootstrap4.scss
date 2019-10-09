@@ -1,0 +1,101 @@
+@include export-module('gantt-bootstrap4-icons') {
+  #{&}.e-gantt {
+    .e-add::before {
+      content: '\e759';
+    }
+
+    .e-edit::before {
+      content: '\e78f';
+    }
+
+    .e-delete::before {
+      content: '\e773';
+    }
+
+    .e-cancel::before {
+      content: '\e745';
+    }
+
+    .e-save::before {
+      content: '\e74d';
+    }
+
+    .e-update::before {
+      content: '\e74d';
+    }
+
+    .e-search-icon::before {
+      content: '\e724';
+    }
+
+    .e-cancel-icon::before {
+      content: '\e745';
+    }
+
+    .e-notes-info::before {
+      content: '\e760';
+    }
+
+    .e-left-resize-gripper::before,
+    .e-right-resize-gripper::before {
+      content: '\e781';
+    }
+
+    .e-expandall::before {
+      content: '\e7db';
+    }
+
+    .e-collapseall::before {
+      content: '\e7dc';
+    }
+
+    .e-prevtimespan::before {
+      content: '\e7c1';
+    }
+
+    .e-nexttimespan::before {
+      content: '\e7ce';
+    }
+
+    .e-zoomin::before {
+      content: '\e70a';
+    }
+
+    .e-zoomout::before {
+      content: '\e74a';
+    }
+
+    .e-zoomtofit::before {
+      content: '\e657';
+    }
+
+    .e-csvexport::before {
+      content: '\e725';
+    }
+
+    .e-excelexport::before {
+      content: '\e74e';
+    }
+
+    .e-add-above::before {
+      content: '\e658';
+    }
+
+    .e-add-below::before {
+      content: '\e659';
+    }
+  }
+
+  #{&}.e-gantt.e-device {
+    .e-backarrowspan::before,
+    .e-icon-dlg-close::before {
+      content: '\e85b';
+      }
+
+    .e-left-resize-gripper::before,
+    .e-right-resize-gripper::before {
+      content: '\e903';
+      }
+   }
+}
+  

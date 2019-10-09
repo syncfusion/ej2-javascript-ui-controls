@@ -1,0 +1,12 @@
+@include export-module('calendar-highcontrast-icons') {
+  /*! component icons */
+  .e-calendar .e-header {
+    & .e-date-icon-prev::before {
+      content: '\e85e';
+      }
+
+    & .e-date-icon-next::before {
+      content: '\e84f';
+    }
+  }
+}
