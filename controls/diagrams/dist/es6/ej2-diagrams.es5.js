@@ -10288,6 +10288,8 @@ function updateCanvasBounds(diagram, obj, position, isBoundsUpdate) {
 function removeChildInContainer(diagram, obj, position, isBoundsUpdate) {
     var container;
     if (checkParentAsContainer(diagram, obj, true)) {
+        var isProtectedOnChange = 'isProtectedOnChange';
+        var propertyChangeValue = diagram[isProtectedOnChange];
         diagram.protectPropertyChange(true);
         container = diagram.nameTable[obj.parentId];
         var wrapper = container.wrapper;
@@ -10309,6 +10311,7 @@ function removeChildInContainer(diagram, obj, position, isBoundsUpdate) {
                 }
             }
         }
+        diagram.protectPropertyChange(propertyChangeValue);
     }
 }
 /** @private */
@@ -10474,6 +10477,11 @@ function addChildToContainer(diagram, parent, node, isUndo, historyAction) {
                 var currentParentId = canvasId.substring(0, canvasId.length - 1);
                 for (var i = 0; i < lanes.length; i++) {
                     if (container.isLane && currentParentId === lanes[i].id) {
+                        // tslint:disable-next-line:no-any
+                        if (!(node.parentObj instanceof Diagram)) {
+                            // tslint:disable-next-line:no-any
+                            node.parentObj = lanes[i];
+                        }
                         lanes[i].children.push(node);
                     }
                 }
@@ -10549,6 +10557,7 @@ function updateLaneBoundsAfterAddChild(container, swimLane, node, diagram, isBou
         checkLaneSize(swimLane);
     }
     considerSwimLanePadding(diagram, node, padding);
+    diagram.updateDiagramElementQuad();
     return isGroupAction;
 }
 //#endregion
@@ -11312,6 +11321,7 @@ function laneInterChanged(diagram, obj, target, position) {
             diagram.updateDiagramObject(swimLane);
         }
     }
+    diagram.updateDiagramElementQuad();
 }
 /** @private */
 function updateSwimLaneObject(diagram, obj, swimLane, helperObject) {
@@ -17135,6 +17145,13 @@ function createMeasureElements() {
         window[measureElement] = divElement;
         window[measureElement].usageCount = 1;
         document.body.appendChild(divElement);
+        var measureElementCount = 'measureElementCount';
+        if (!window[measureElementCount]) {
+            window[measureElementCount] = 1;
+        }
+        else {
+            window[measureElementCount]++;
+        }
     }
     else {
         window[measureElement].usageCount += 1;
@@ -18589,7 +18606,8 @@ var SvgRenderer = /** @__PURE__ @class */ (function () {
             }
         }
         if (!htmlElement) {
-            parentHtmlElement = canvas.querySelector(('#' + element.id + '_html_element'));
+            parentHtmlElement = canvas.querySelector(('#' + element.id + '_html_element')) ||
+                canvas.querySelector(('#' + element.nodeId + '_html_element'));
             if (!parentHtmlElement) {
                 var attr_1 = {
                     'id': element.nodeId + '_html_element',
@@ -19859,9 +19877,13 @@ var DiagramRenderer = /** @__PURE__ @class */ (function () {
         if (attr) {
             if (element && element.children &&
                 element.children.length && (element.children[0] instanceof DiagramHtmlElement)) {
-                var layer = getHTMLLayer(this.diagramId).children[0];
+                var id = canvas.id.split('_preview');
+                var layer = document.getElementById(id[0] + '_html_div') ||
+                    getHTMLLayer(this.diagramId).children[0];
                 canvas = layer.querySelector(('#' + element.id + '_content_html_element'));
-                canvas.style.transform = 'scale(' + scaleX + ',' + scaleY + ')';
+                if (canvas) {
+                    canvas.style.transform = 'scale(' + scaleX + ',' + scaleY + ')';
+                }
             }
             else {
                 setAttributeSvg(canvas, attr);
@@ -24324,6 +24346,10 @@ var DiagramEventHandler = /** @__PURE__ @class */ (function () {
         this.commandHandler.removeSnap();
         this.inAction = false;
         this.eventArgs = {};
+        if (this.diagram.selectedObject && this.diagram.selectedObject.helperObject) {
+            this.diagram.remove(this.diagram.selectedObject.helperObject);
+            this.diagram.selectedObject = { helperObject: undefined, actualObject: undefined };
+        }
         this.tool = null;
         removeRulerMarkers();
         if (this.action === 'Rotate') {
@@ -24512,6 +24538,9 @@ var DiagramEventHandler = /** @__PURE__ @class */ (function () {
                     break;
             }
             this.eventArgs.position = { x: point.x, y: point.y };
+            this.currentPosition = this.eventArgs.position;
+            var objects = this.objectFinder.findObjectsUnderMouse(this.currentPosition, this.diagram, this.eventArgs, null, this.action);
+            this.eventArgs.target = this.diagram.findObjectUnderMouse(objects, this.action, this.inAction);
             this.tool.mouseMove(this.eventArgs);
             this.diagram.scroller.zoom(1, -left, -top_1, pos);
         }
@@ -24924,7 +24953,7 @@ var DiagramEventHandler = /** @__PURE__ @class */ (function () {
                 this.diagram.updateSelector();
                 if (obj.isLane || obj.isPhase) {
                     this.diagram.clearSelection();
-                    this.commandHandler.select(obj);
+                    this.commandHandler.selectObjects([obj]);
                 }
             }
         }
@@ -25038,6 +25067,10 @@ var DiagramEventHandler = /** @__PURE__ @class */ (function () {
                 updateConnectorsProperties(connectors, this.diagram);
                 history.hasStack = hasGroup;
             }
+        }
+        if (obj && (obj.isPhase || obj.isLane ||
+            (obj.shape && obj.shape.type === 'SwimLane'))) {
+            this.diagram.updateDiagramElementQuad();
         }
         return history;
     };
@@ -26134,6 +26167,12 @@ var CommandHandler = /** @__PURE__ @class */ (function () {
             selectedItems = selectedItems.concat(this.diagram.selectedItems.nodes);
             for (var j = 0; j < this.diagram.selectedItems.nodes.length; j++) {
                 var node = cloneObject(this.diagram.selectedItems.nodes[j]);
+                if (node.wrapper && (node.offsetX !== node.wrapper.offsetX)) {
+                    node.offsetX = node.wrapper.offsetX;
+                }
+                if (node.wrapper && (node.offsetY !== node.wrapper.offsetY)) {
+                    node.offsetY = node.wrapper.offsetY;
+                }
                 this.copyProcesses(node);
                 obj.push(cloneObject(node));
                 var matrix = identityMatrix();
@@ -28028,7 +28067,7 @@ var CommandHandler = /** @__PURE__ @class */ (function () {
                         var newOffset = transformPointByMatrix(matrix, { x: obj.offsetX, y: obj.offsetY });
                         obj.offsetX = newOffset.x;
                         obj.offsetY = newOffset.y;
-                        this.diagram.nodePropertyChange(obj, oldValues, { rotateAngle: obj.rotateAngle });
+                        this.diagram.nodePropertyChange(obj, {}, { offsetX: obj.offsetX, offsetY: obj.offsetY, rotateAngle: obj.rotateAngle });
                     }
                     if (obj.processId) {
                         var parent_1 = this.diagram.nameTable[obj.processId];
@@ -31247,7 +31286,9 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
             var measureElement = 'measureElement';
             if (window[measureElement]) {
                 window[measureElement].usageCount -= 1;
-                if (window[measureElement].usageCount === 0) {
+                var measureElementCount = 'measureElementCount';
+                window[measureElementCount]--;
+                if (window[measureElementCount] === 0) {
                     window[measureElement].parentNode.removeChild(window[measureElement]);
                     window[measureElement] = null;
                 }
@@ -32055,6 +32096,7 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
             this.historyManager.endGroupAction();
             this.protectPropertyChange(false);
         }
+        this.updateDiagramElementQuad();
     };
     /**
      * Shows tooltip for corresponding diagram object
@@ -33183,6 +33225,7 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
                 index += 1;
             }
         }
+        this.updateDiagramElementQuad();
     };
     /**
      * Add a phase to a swimLane at runtime
@@ -33192,18 +33235,21 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
         for (var i = 0; i < phases.length; i++) {
             addPhase(this, node, phases[i]);
         }
+        this.updateDiagramElementQuad();
     };
     /**
      * Remove dynamic Lanes to swimLane at runtime
      */
     Diagram.prototype.removeLane = function (node, lane) {
         removeLane(this, undefined, node, lane);
+        this.updateDiagramElementQuad();
     };
     /**
      * Remove a phase to a swimLane at runtime
      */
     Diagram.prototype.removePhase = function (node, phase) {
         removePhase(this, undefined, node, phase);
+        this.updateDiagramElementQuad();
     };
     Diagram.prototype.removelabelExtension = function (obj, labels, j, wrapper) {
         for (var i = 0; i < wrapper.children.length; i++) {
@@ -34128,6 +34174,7 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
             obj.wrapper.children[0] instanceof GridPanel) {
             swimLaneMeasureAndArrange(obj);
             arrangeChildNodesInSwimLane(this, obj);
+            this.updateDiagramElementQuad();
         }
         else {
             canvas.measure(new Size(obj.width, obj.height));
@@ -34150,6 +34197,12 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
         }
         if (obj.container && obj.container.type === 'Grid' && obj.children && obj.children.length > 0) {
             this.updateChildPosition(obj);
+        }
+    };
+    /** @private */
+    Diagram.prototype.updateDiagramElementQuad = function () {
+        for (var i = 0; i < this.nodes.length; i++) {
+            this.updateQuad(this.nodes[i]);
         }
     };
     Diagram.prototype.updateChildPosition = function (obj) {
@@ -47973,12 +48026,6 @@ var HierarchicalLayoutUtil = /** @__PURE__ @class */ (function () {
             horizontalSpacing: layoutProp.horizontalSpacing, verticalSpacing: layoutProp.verticalSpacing,
             orientation: layoutProp.orientation, marginX: layoutProp.margin.left, marginY: layoutProp.margin.top
         };
-        if (layout.orientation === 'BottomToTop') {
-            layout.marginY = -layoutProp.margin.top;
-        }
-        else if (layout.orientation === 'RightToLeft') {
-            layout.marginX = -layoutProp.margin.left;
-        }
         this.vertices = [];
         var filledVertexSet = {};
         for (var i = 0; i < nodes.length; i++) {
@@ -48009,7 +48056,7 @@ var HierarchicalLayoutUtil = /** @__PURE__ @class */ (function () {
             limit = this.placementStage(model, limit.marginX, limit.marginY);
         }
         var modelBounds = this.getModelBounds(this.vertices);
-        var trnsX = (viewPort.x - modelBounds.width) / 2;
+        this.updateMargin(layoutProp, layout, modelBounds, viewPort);
         for (var i = 0; i < this.vertices.length; i++) {
             var clnode = this.vertices[i];
             if (clnode) { //Check what is node.source/node.target -  && !clnode.source && !clnode.target) {
@@ -48027,9 +48074,85 @@ var HierarchicalLayoutUtil = /** @__PURE__ @class */ (function () {
                 else if (layout.orientation === 'RightToLeft') {
                     x = modelBounds.width - dx;
                 }
-                x += trnsX;
+                // x += trnsX;
                 dnode.offsetX += x - dnode.offsetX;
                 dnode.offsetY += y - dnode.offsetY;
+            }
+        }
+    };
+    HierarchicalLayoutUtil.prototype.updateMargin = function (layoutProp, layout, modelBounds, viewPort) {
+        var viewPortBounds = { x: 0, y: 0, width: viewPort.x, height: viewPort.y };
+        var layoutBounds;
+        var bounds = {
+            x: modelBounds.x, y: modelBounds.y,
+            right: modelBounds.x + modelBounds.width,
+            bottom: modelBounds.y + modelBounds.height
+        };
+        layoutBounds = layoutProp.bounds ? layoutProp.bounds : viewPortBounds;
+        if (layout.orientation === 'TopToBottom' || layout.orientation === 'BottomToTop') {
+            switch (layoutProp.horizontalAlignment) {
+                case 'Auto':
+                case 'Left':
+                    layout.marginX = (layoutBounds.x - bounds.x) + layoutProp.margin.left;
+                    break;
+                case 'Right':
+                    layout.marginX = layoutBounds.x + layoutBounds.width - layoutProp.margin.right - bounds.right;
+                    break;
+                case 'Center':
+                    layout.marginX = layoutBounds.x + layoutBounds.width / 2 - (bounds.x + bounds.right) / 2;
+                    break;
+            }
+            switch (layoutProp.verticalAlignment) {
+                case 'Top':
+                    var top_1;
+                    top_1 = layoutBounds.y + layoutProp.margin.top;
+                    layout.marginY = layout.orientation === 'TopToBottom' ? top_1 : -top_1;
+                    break;
+                case 'Bottom':
+                    var bottom = void 0;
+                    bottom = layoutBounds.y + layoutBounds.height - layoutProp.margin.bottom;
+                    layout.marginY = layout.orientation === 'TopToBottom' ? bottom - bounds.bottom : -(bottom - bounds.bottom);
+                    break;
+                case 'Auto':
+                case 'Center':
+                    var center = void 0;
+                    center = layoutBounds.y + layoutBounds.height / 2;
+                    layout.marginY = layout.orientation === 'TopToBottom' ?
+                        center - (bounds.y + bounds.bottom) / 2 : -center + (bounds.y + bounds.bottom) / 2;
+                    break;
+            }
+        }
+        else {
+            switch (layoutProp.horizontalAlignment) {
+                case 'Auto':
+                case 'Left':
+                    var left = void 0;
+                    left = layoutBounds.x + layoutProp.margin.left;
+                    layout.marginX = layout.orientation === 'LeftToRight' ? left : -left;
+                    break;
+                case 'Right':
+                    var right = void 0;
+                    right = layoutBounds.x + layoutBounds.width - layoutProp.margin.right;
+                    layout.marginX = layout.orientation === 'LeftToRight' ? right - bounds.right : bounds.right - right;
+                    break;
+                case 'Center':
+                    var center = void 0;
+                    center = layoutBounds.width / 2 + layoutBounds.x;
+                    layout.marginX = layout.orientation === 'LeftToRight' ?
+                        center - (bounds.y + bounds.bottom) / 2 : -center + (bounds.x + bounds.right) / 2;
+                    break;
+            }
+            switch (layoutProp.verticalAlignment) {
+                case 'Top':
+                    layout.marginY = layoutBounds.y + layoutProp.margin.top - bounds.x;
+                    break;
+                case 'Auto':
+                case 'Center':
+                    layout.marginY = layoutBounds.y + layoutBounds.height / 2 - (bounds.y + bounds.bottom) / 2;
+                    break;
+                case 'Bottom':
+                    layout.marginY = layoutBounds.y + layoutBounds.height - layoutProp.margin.bottom - bounds.bottom;
+                    break;
             }
         }
     };
@@ -49693,7 +49816,9 @@ var SymbolPalette = /** @__PURE__ @class */ (function (_super) {
                 var measureElemnt = 'measureElement';
                 if (window[measureElemnt]) {
                     window[measureElemnt].usageCount -= 1;
-                    if (window[measureElemnt].usageCount === 0) {
+                    var measureElementCount = 'measureElementCount';
+                    window[measureElementCount]--;
+                    if (window[measureElementCount] === 0) {
                         window[measureElemnt].parentNode.removeChild(window[measureElemnt]);
                         window[measureElemnt] = null;
                     }

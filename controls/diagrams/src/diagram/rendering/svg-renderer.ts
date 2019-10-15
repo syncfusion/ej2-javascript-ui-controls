@@ -421,7 +421,8 @@ export class SvgRenderer implements IRenderer {
             }
         }
         if (!htmlElement) {
-            parentHtmlElement = canvas.querySelector(('#' + element.id + '_html_element'));
+            parentHtmlElement = canvas.querySelector(('#' + element.id + '_html_element')) ||
+                canvas.querySelector(('#' + element.nodeId + '_html_element'));
             if (!parentHtmlElement) {
                 let attr: Object = {
                     'id': element.nodeId + '_html_element',

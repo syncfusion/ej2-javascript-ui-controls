@@ -21,6 +21,7 @@ export class ScatterSeries {
      */
 
     public render(series: Series, xAxis: Axis, yAxis: Axis, isInverted: boolean): void {
+		// Scatter series DataLabel is not rendered after selecting StackingColumn
         series.isRectSeries = false;
         let marker: MarkerSettingsModel = series.marker;
         let visiblePoints: Points[] = series.points;

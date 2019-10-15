@@ -222,6 +222,7 @@ export class Switch extends Component<HTMLInputElement> implements INotifyProper
             handle.appendChild(rippleSpan);
             rippleEffect(rippleSpan, { duration: 400, isCenterRipple: true });
         }
+        wrapper.classList.add('e-wrapper');
         if (this.enableRtl) {
             wrapper.classList.add(RTL);
         }

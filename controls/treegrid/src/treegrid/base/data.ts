@@ -224,6 +224,11 @@ public isRemote(): boolean {
   private collectExpandingRecs(rowDetails: {record: ITreeData,
     rows: HTMLTableRowElement[], parentRow: HTMLTableRowElement}): void {
     let gridRows: HTMLTableRowElement[] = this.parent.getRows();
+    if (this.parent.rowTemplate) {
+      let rows: HTMLCollection = (this.parent.getContentTable() as HTMLTableElement).rows;
+      gridRows = [].slice.call(rows);
+    }
+    let childRecord: ITreeData;
     let adaptorName: string = 'adaptorName';
     let args: RowExpandedEventArgs = {row: rowDetails.parentRow, data: rowDetails.record};
     if (rowDetails.rows.length > 0) {
@@ -236,7 +241,8 @@ public isRemote(): boolean {
             addClass([targetEle], 'e-treegridexpand');
             removeClass([targetEle], 'e-treegridcollapse');
           }
-          let childRecord: ITreeData = this.parent.grid.getRowObjectFromUID(rowDetails.rows[i].getAttribute('data-Uid')).data;
+          childRecord = this.parent.rowTemplate ? this.parent.grid.getCurrentViewRecords()[rowDetails.rows[i].rowIndex] :
+              this.parent.grid.getRowObjectFromUID(rowDetails.rows[i].getAttribute('data-Uid')).data;
           let childRows: HTMLTableRowElement[] = gridRows.filter(
             (r: HTMLTableRowElement) =>
               r.classList.contains(

@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 17.3.16 (2019-10-09)
+
+### TextBox
+
+#### Bug Fixes
+
+- Issue with `Material2 outline layout` has been resolved.
+
 ## 17.3.14 (2019-10-03)
 
 ### TextBox

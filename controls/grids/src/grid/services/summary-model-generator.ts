@@ -101,7 +101,10 @@ export class SummaryModelGenerator implements IModelGenerator<AggregateColumnMod
         let sColumn: AggregateColumnModel = summaryRow.columns.filter(
             (scolumn: AggregateColumnModel) => scolumn.columnName === column.field)
         [0];
-        let attrs: { style: Object, class?: string } = { 'style': { 'textAlign': column.textAlign } };
+        let attrs: { style: Object, 'e-mappinguid': string, index: number, class?: string } = {
+            'style': { 'textAlign': column.textAlign },
+            'e-mappinguid': column.uid, index: column.index
+        };
 
         if (indent) {
             attrs.class = indent;

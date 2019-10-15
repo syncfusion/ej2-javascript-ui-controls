@@ -1,4 +1,4 @@
-import { Animation, Browser, ChildProperty, Collection, Complex, Component, Event, EventHandler, Internationalization, L10n, NotifyPropertyChanges, Property, Touch, compile, createElement, extend, getValue, isNullOrUndefined, merge, print, remove, resetBlazorTemplate, setValue, updateBlazorTemplate } from '@syncfusion/ej2-base';
+import { Animation, Browser, ChildProperty, Collection, Complex, Component, Event, EventHandler, Internationalization, L10n, NotifyPropertyChanges, Property, Touch, compile, createElement, extend, getValue, isBlazor, isNullOrUndefined, merge, print, remove, resetBlazorTemplate, setValue, updateBlazorTemplate } from '@syncfusion/ej2-base';
 import { CanvasRenderer, PathOption, Rect, Size, SvgRenderer, TextOption, Tooltip, findDirection, measureText, removeElement } from '@syncfusion/ej2-svg-base';
 import { DataManager, DataUtil, Query } from '@syncfusion/ej2-data';
 import { PdfBitmap, PdfDocument, PdfPageOrientation, SizeF } from '@syncfusion/ej2-pdf-export';
@@ -508,6 +508,12 @@ __decorate$1([
 __decorate$1([
     Property(true)
 ], TooltipSettings.prototype, "enableAnimation", void 0);
+__decorate$1([
+    Property(1000)
+], TooltipSettings.prototype, "duration", void 0);
+__decorate$1([
+    Property(1000)
+], TooltipSettings.prototype, "fadeOutDuration", void 0);
 __decorate$1([
     Complex({ color: '#cccccc', width: 0.5 }, Border)
 ], TooltipSettings.prototype, "border", void 0);
@@ -2670,7 +2676,7 @@ function createTemplate(childElement, pointIndex, content, chart, point, series,
     templateFn = getTemplateFunction(content);
     try {
         let blazor = 'Blazor';
-        let tempObject = window[blazor] ? point : { chart: chart, series: series, point: point };
+        let tempObject = window[blazor] ? (dataLabelId ? point : { point: point }) : { chart: chart, series: series, point: point };
         let elementData = templateFn ? templateFn(tempObject, null, null, dataLabelId ||
             childElement.id.replace(/[^a-zA-Z0-9]/g, '')) : [];
         if (elementData.length) {
@@ -2921,6 +2927,7 @@ function getMedian(values) {
 function calculateLegendShapes(location, size, shape, options) {
     let padding = 10;
     let dir = '';
+    let space = 2;
     let height = size.height;
     let width = size.width;
     let lx = location.x;
@@ -2946,7 +2953,6 @@ function calculateLegendShapes(location, size, shape, options) {
             merge(options, { 'd': dir });
             break;
         case 'RightArrow':
-            let space = 2;
             dir = 'M' + ' ' + (lx + (-width / 2)) + ' ' + (ly - (height / 2)) + ' ' +
                 'L' + ' ' + (lx + (width / 2)) + ' ' + (ly) + ' ' + 'L' + ' ' +
                 (lx + (-width / 2)) + ' ' + (ly + (height / 2)) + ' L' + ' ' + (lx + (-width / 2)) + ' ' +
@@ -2957,7 +2963,6 @@ function calculateLegendShapes(location, size, shape, options) {
         case 'LeftArrow':
             options.fill = options.stroke;
             options.stroke = 'transparent';
-            space = 2;
             dir = 'M' + ' ' + (lx + (width / 2)) + ' ' + (ly - (height / 2)) + ' ' +
                 'L' + ' ' + (lx + (-width / 2)) + ' ' + (ly) + ' ' + 'L' + ' ' +
                 (lx + (width / 2)) + ' ' + (ly + (height / 2)) + ' ' + 'L' + ' ' +
@@ -4981,6 +4986,12 @@ class Trendline extends ChildProperty {
 __decorate$4([
     Property('')
 ], Trendline.prototype, "name", void 0);
+__decorate$4([
+    Property('0')
+], Trendline.prototype, "dashArray", void 0);
+__decorate$4([
+    Property(true)
+], Trendline.prototype, "visible", void 0);
 __decorate$4([
     Property('Linear')
 ], Trendline.prototype, "type", void 0);
@@ -7568,8 +7579,15 @@ let Chart = class Chart extends Component {
      * @private
      */
     renderSeries() {
+        let visibility;
         for (let item of this.visibleSeries) {
-            if (item.visible) {
+            if (item.category === 'TrendLine') {
+                visibility = this.series[item.sourceIndex].trendlines[item.index].visible;
+            }
+            else {
+                visibility = item.visible;
+            }
+            if (visibility) {
                 findClipRect(item);
                 if (this.enableCanvas) {
                     // To render scatter and bubble series in canvas
@@ -7593,6 +7611,9 @@ let Chart = class Chart extends Component {
             'stroke-width': 1,
             'stroke': 'Gray'
         };
+        if (!this.seriesElements) {
+            return;
+        }
         if (!this.enableCanvas) {
             this.seriesElements.appendChild(appendClipElement(this.redraw, options, this.renderer));
         }
@@ -8046,6 +8067,7 @@ let Chart = class Chart extends Component {
         this.verticalAxes = [];
         this.visibleSeries = [];
         this.axisCollections = [];
+        this.seriesElements = null;
         this.chartAxisLayoutPanel = null;
         this.dataLabelCollections = null;
         this.dataLabelElements = null;
@@ -11362,6 +11384,10 @@ class BarSeries extends ColumnBase {
 }
 
 class PolarRadarPanel extends LineBase {
+    constructor() {
+        super(...arguments);
+        this.xAxisVisibleLabels = [];
+    }
     /**
      * Measure the polar radar axis size.
      * @return {void}
@@ -11525,9 +11551,15 @@ class PolarRadarPanel extends LineBase {
         let anchor = 'middle';
         let radius;
         let padding = 5;
+        let isIntersect;
+        let labelRegions = [];
+        let isLabelVisible = [];
+        isLabelVisible[0] = true;
+        let intersectType = axis.labelIntersectAction;
         let labelElement = chart.renderer.createGroup({ id: chart.element.id + 'AxisLabels' + index });
         vector = CoefficientToVector(valueToPolarCoefficient(axis.visibleLabels[0].value, axis), this.startAngle);
         for (let i = 0, len = axis.visibleLabels.length; i < len; i++) {
+            isIntersect = false;
             radius = chart.radius * valueToCoefficient(axis.visibleLabels[i].value, axis);
             elementSize = axis.visibleLabels[i].size;
             radius = chart.radius * valueToCoefficient(axis.visibleLabels[i].value, axis);
@@ -11535,7 +11567,35 @@ class PolarRadarPanel extends LineBase {
                 * (Math.cos(angle * Math.PI / 180)) * (axis.labelPosition === 'Inside' ? 1 : -1));
             pointY = (this.centerY + radius * vector.y) + ((axis.majorTickLines.height + elementSize.height / 2)
                 * (Math.sin(angle * Math.PI / 180)) * (axis.labelPosition === 'Inside' ? 1 : -1));
-            options = new TextOption(chart.element.id + index + '_AxisLabel_' + i, pointX, pointY + (elementSize.height / 4), anchor, axis.visibleLabels[i].text);
+            pointY += (elementSize.height / 4);
+            labelRegions[i] = this.getLabelRegion(pointX, pointY, axis.visibleLabels[i], anchor);
+            if (i !== 0 && intersectType === 'Hide') {
+                for (let j = i; j >= 0; j--) {
+                    j = (j === 0) ? 0 : (j === i) ? (j - 1) : j;
+                    if (isLabelVisible[j] && isOverlap(labelRegions[i], labelRegions[j])) {
+                        isIntersect = true;
+                        isLabelVisible[i] = false;
+                        break;
+                    }
+                    else {
+                        isLabelVisible[i] = true;
+                    }
+                }
+                if (isIntersect) {
+                    continue; // If the label is intersect, the label render is ignored.
+                }
+                // To check Y axis label with visible X axis label
+                for (let j = 0; j < this.xAxisVisibleLabels.length; j++) {
+                    if (isOverlap(labelRegions[i], this.xAxisVisibleLabels[j])) {
+                        isIntersect = true;
+                        break;
+                    }
+                }
+                if (isIntersect) {
+                    continue;
+                }
+            }
+            options = new TextOption(chart.element.id + index + '_AxisLabel_' + i, pointX, pointY, anchor, axis.visibleLabels[i].text);
             textElement(chart.renderer, options, axis.labelStyle, axis.labelStyle.color || chart.themeStyle.axisLabel, labelElement, false, chart.redraw, true, true);
         }
         chart.yAxisElements.appendChild(labelElement);
@@ -11689,11 +11749,17 @@ class PolarRadarPanel extends LineBase {
         let lastLabelX;
         let label;
         let textAnchor = '';
+        let isIntersect;
+        let labelRegions = [];
+        let isLabelVisible = [];
+        isLabelVisible[0] = true;
+        let intersectType = axis.labelIntersectAction;
         let ticksbwtLabel = axis.valueType === 'Category' && axis.labelPlacement === 'BetweenTicks'
             && chart.visibleSeries[0].type !== 'Radar' ? 0.5 : 0;
         let radius = chart.radius + axis.majorTickLines.height;
         radius = (islabelInside) ? -radius : radius;
         for (let i = 0, len = axis.visibleLabels.length; i < len; i++) {
+            isIntersect = false;
             vector = CoefficientToVector(valueToPolarCoefficient(axis.visibleLabels[i].value + ticksbwtLabel, axis), this.startAngle);
             if (!isNaN(vector.x) && !isNaN(vector.y)) {
                 pointX = this.centerX + (radius + axis.majorTickLines.height + padding) * vector.x;
@@ -11704,6 +11770,7 @@ class PolarRadarPanel extends LineBase {
             labelText = axis.visibleLabels[i].text;
             // fix for label style not working in axisLabelRender event issue
             label = axis.visibleLabels[i];
+            labelRegions[i] = this.getLabelRegion(pointX, pointY, label, textAnchor);
             if (i === 0) {
                 firstLabelX = pointX;
             }
@@ -11713,9 +11780,51 @@ class PolarRadarPanel extends LineBase {
                 labelText = (lastLabelX > firstLabelX) ? '' : labelText;
             }
             options = new TextOption(chart.element.id + index + '_AxisLabel_' + i, pointX, pointY, textAnchor, labelText, '', 'central');
+            // Label intersect action (Hide) perform here
+            if (i !== 0 && intersectType === 'Hide') {
+                for (let j = i; j >= 0; j--) {
+                    j = (j === 0) ? 0 : ((j === i) ? (j - 1) : j);
+                    if (isLabelVisible[j] && isOverlap(labelRegions[i], labelRegions[j])) {
+                        isIntersect = true;
+                        isLabelVisible[i] = false;
+                        break;
+                    }
+                    else {
+                        isLabelVisible[i] = true;
+                    }
+                }
+            }
+            if (isIntersect) {
+                continue; // If the label is intersect, the label render is ignored.
+            }
             textElement(chart.renderer, options, label.labelStyle, label.labelStyle.color || chart.themeStyle.axisLabel, labelElement, false, chart.redraw, true, true);
         }
+        for (let i = 0; i < isLabelVisible.length; i++) {
+            if (isLabelVisible[i]) {
+                this.xAxisVisibleLabels.push(labelRegions[i]);
+            }
+        }
         this.element.appendChild(labelElement);
+    }
+    /**
+     * Getting axis label bounds
+     * @param pointX
+     * @param pointY
+     * @param label
+     * @param anchor
+     */
+    getLabelRegion(pointX, pointY, label, anchor) {
+        if (anchor === 'middle') {
+            pointX -= (label.size.width / 2);
+        }
+        else if (anchor === 'end') {
+            pointX -= label.size.width;
+        }
+        else {
+            pointX = pointX;
+        }
+        pointY -= (label.size.height / 2);
+        return new Rect(pointX, pointY, label.size.width, label.size.height);
     }
     renderTickLine(axis, index, majorTickLine, minorTickLine, gridIndex) {
         let tickOptions;
@@ -11808,9 +11917,11 @@ class PolarSeries extends PolarRadarPanel {
         let isStacking = series.drawType === 'StackingColumn';
         let direction = '';
         let sumofYValues = 0;
+        let arcValue;
         let interval = (series.points[1] ? series.points[1].xValue : 2 * series.points[0].xValue) - series.points[0].xValue;
-        let ticks = xAxis.valueType === 'Category' &&
-            (xAxis.labelPlacement === 'BetweenTicks' || (xAxis.labelPlacement === 'OnTicks' && series.type === 'Radar')) ? 0 : interval / 2;
+        //customer issue ID-I249730, Polar columnSeries in OnTicks with inversed axis and Radar StackedColumn with OnTicks
+        let ticks = xAxis.valueType === 'Category' && (xAxis.labelPlacement === 'BetweenTicks' || (xAxis.labelPlacement ===
+            'OnTicks' && series.type === 'Radar')) ? 0 : xAxis.isInversed ? -interval / 2 : interval / 2;
         let rangeInterval = xAxis.valueType === 'DateTime' ? xAxis.dateTimeInterval : 1;
         this.getSeriesPosition(series);
         let position = xAxis.isInversed ? (series.rectCount - 1 - series.position) : series.position;
@@ -11828,6 +11939,13 @@ class PolarSeries extends PolarRadarPanel {
                     ((interval / series.rectCount) * position - ticks) + (sumofYValues / 360 * xAxis.startAngle);
                 itemCurrentXPos = (((itemCurrentXPos) / (sumofYValues)));
                 startAngle = 2 * Math.PI * (itemCurrentXPos + xAxis.startAngle);
+                if (startAngle === 0 && endAngle === 0) {
+                    endAngle = 2 * Math.PI;
+                    arcValue = '1';
+                }
+                else {
+                    arcValue = '0';
+                }
                 endAngle = 2 * Math.PI * ((itemCurrentXPos + xAxis.startAngle) + (interval / series.rectCount) / (sumofYValues));
                 pointStartAngle = startAngle;
                 pointEndAngle = endAngle;
@@ -11850,7 +11968,7 @@ class PolarSeries extends PolarRadarPanel {
                     dEndY = centerY + innerRadius * Math.sin(endAngle);
                     if (isPolar) {
                         direction = ('M' + ' ' + x1 + ' ' + y1 + ' ' + 'A' + ' ' + radius + ' ' + radius + ' ' + '0' + ' '
-                            + '0' + ' ' + 1 + ' ' + x2 + ' ' + y2 + ' ' + 'L' + ' ' + dEndX + ' ' + dEndY + ' ' +
+                            + arcValue + ' ' + 1 + ' ' + x2 + ' ' + y2 + ' ' + 'L' + ' ' + dEndX + ' ' + dEndY + ' ' +
                             'A' + ' ' + innerRadius + ' ' + innerRadius + ' ' + '1' + ' ' + '0' + ' ' + '0' + ' '
                             + dStartX + ' ' + dStartY + ' ' + 'Z');
                     }
@@ -11870,8 +11988,7 @@ class PolarSeries extends PolarRadarPanel {
                     y2 = centerY + radius * Math.sin(endAngle);
                     if (isPolar) {
                         direction = ('M' + ' ' + x1 + ' ' + y1 + ' ' + 'A' + ' ' + radius + ' ' + radius + ' ' + '0' + ' ' +
-                            '0' + ' ' + 1 + ' ' + x2 + ' ' + y2 + ' ' + 'L' + ' ' + centerX + ' ' +
-                            centerY + ' ' + 'Z');
+                            arcValue + ' ' + 1 + ' ' + x2 + ' ' + y2 + ' ' + 'L' + ' ' + centerX + ' ' + centerY + ' ' + 'Z');
                     }
                     else {
                         direction = ('M' + ' ' + x1 + ' ' + y1 + ' ' + 'L' + ' ' + x2 + ' ' + y2 + ' ' + 'L' + ' '
@@ -12732,6 +12849,7 @@ class ScatterSeries {
      * @private
      */
     render(series, xAxis, yAxis, isInverted) {
+        // Scatter series DataLabel is not rendered after selecting StackingColumn
         series.isRectSeries = false;
         let marker = series.marker;
         let visiblePoints = series.points;
@@ -15160,6 +15278,7 @@ class Trendlines {
         series.yName = 'y';
         series.fill = fill || 'blue';
         series.width = width;
+        series.dashArray = trendline.dashArray;
         series.clipRectElement = trendline.clipRectElement;
         series.points = [];
         series.enableTooltip = trendline.enableTooltip;
@@ -16424,7 +16543,7 @@ class Tooltip$1 extends BaseTooltip {
         }
     }
     mouseLeaveHandler() {
-        this.removeTooltip(1000);
+        this.removeTooltip(this.chart.tooltip.fadeOutDuration);
     }
     mouseMoveHandler() {
         let chart = this.chart;
@@ -16518,7 +16637,7 @@ class Tooltip$1 extends BaseTooltip {
         }
         else {
             if (!data.point && this.isRemove) {
-                this.removeTooltip(1000);
+                this.removeTooltip(this.chart.tooltip.duration);
                 this.isRemove = false;
             }
             else {
@@ -16534,8 +16653,9 @@ class Tooltip$1 extends BaseTooltip {
         }
     }
     triggerTooltipRender(point, isFirst, textCollection, headerText, firstText = true) {
+        let template;
         let argsData = {
-            cancel: false, name: tooltipRender, text: textCollection, headerText: headerText,
+            cancel: false, name: tooltipRender, text: textCollection, headerText: headerText, template: template,
             series: this.chart.isBlazor ? {} : point.series, textStyle: this.textStyle, point: point.point,
             data: { pointX: point.point.x, pointY: point.point.y, seriesIndex: point.series.index, seriesName: point.series.name,
                 pointIndex: point.point.index, pointText: point.point.text }
@@ -16559,6 +16679,9 @@ class Tooltip$1 extends BaseTooltip {
         };
         chartTooltipSuccess.bind(this, point);
         this.chart.trigger(tooltipRender, argsData, chartTooltipSuccess);
+        if (argsData.template) {
+            this.chart.tooltip.template = argsData.template;
+        }
     }
     findMarkerHeight(pointData) {
         if (!this.chart.tooltip.enableMarker) {
@@ -20243,7 +20366,8 @@ class Legend extends BaseLegend {
             if (series.category !== 'Indicator') {
                 seriesType = (chart.chartAreaType === 'PolarRadar') ? series.drawType :
                     series.type;
-                this.legendCollections.push(new LegendOptions(series.name, series.interior, series.legendShape, series.visible, seriesType, series.marker.shape, series.marker.visible));
+                this.legendCollections.push(new LegendOptions(series.name, series.interior, series.legendShape, (series.category === 'TrendLine' ?
+                    this.chart.series[series.sourceIndex].trendlines[series.index].visible : series.visible), seriesType, series.marker.shape, series.marker.visible));
             }
         }
     }
@@ -20344,13 +20468,24 @@ class Legend extends BaseLegend {
             selectedDataIndexes = extend([], chart.selectionModule.selectedDataIndexes, null, true);
         }
         if (chart.legendSettings.toggleVisibility) {
-            if (!series.visible) {
-                series.visible = true;
+            if (series.category === 'TrendLine') {
+                if (!chart.series[series.sourceIndex].trendlines[series.index].visible) {
+                    chart.series[series.sourceIndex].trendlines[series.index].visible = true;
+                }
+                else {
+                    chart.series[series.sourceIndex].trendlines[series.index].visible = false;
+                }
             }
             else {
-                series.visible = false;
+                if (!series.visible) {
+                    series.visible = true;
+                }
+                else {
+                    series.visible = false;
+                }
             }
-            legend.visible = (series.visible);
+            legend.visible = series.category === 'TrendLine' ? chart.series[series.sourceIndex].trendlines[series.index].visible :
+                (series.visible);
             if ((chart.svgObject.childNodes.length > 0) && !chart.enableAnimation && !chart.enableCanvas) {
                 while (chart.svgObject.lastChild) {
                     chart.svgObject.removeChild(chart.svgObject.lastChild);
@@ -26292,7 +26427,7 @@ class AccumulationTooltip extends BaseTooltip {
         this.accumulation.on(Browser.touchEndEvent, this.mouseUpHandler, this);
     }
     mouseLeaveHandler(e) {
-        this.removeTooltip(1000);
+        this.removeTooltip(this.accumulation.tooltip.fadeOutDuration);
     }
     mouseUpHandler(e) {
         let control = this.accumulation;
@@ -26334,7 +26469,7 @@ class AccumulationTooltip extends BaseTooltip {
         }
         else {
             if (!data.point && this.isRemove) {
-                this.removeTooltip(1000);
+                this.removeTooltip(this.accumulation.tooltip.duration);
                 this.isRemove = false;
             }
         }
@@ -34763,8 +34898,7 @@ let Smithchart = class Smithchart extends Component {
      * Initialize the event handler.
      */
     preRender() {
-        let blazor = 'Blazor';
-        this.isBlazor = window[blazor];
+        this.isBlazor = isBlazor();
         this.trigger(load$1, { smithchart: !this.isBlazor ? this : null });
         this.unWireEVents();
         this.initPrivateVariable();
@@ -35886,10 +36020,14 @@ function stringToNumber$2(value, containerSize) {
  * Method to calculate the width and height of the sparkline
  */
 function calculateSize$2(sparkline) {
-    let containerWidth = sparkline.element.clientWidth;
-    let containerHeight = sparkline.element.clientHeight;
-    sparkline.availableSize = new Size$1(stringToNumber$2(sparkline.width, containerWidth) || containerWidth || 100, stringToNumber$2(sparkline.height, containerHeight) || containerHeight || (sparkline.isDevice ?
-        Math.min(window.innerWidth, window.innerHeight) : 50));
+    let containerWidth;
+    let containerHeight;
+    containerWidth = !sparkline.element.clientWidth ? (!sparkline.element.parentElement ? 100 :
+        sparkline.element.parentElement.clientWidth) : sparkline.element.clientWidth;
+    containerHeight = !sparkline.element.clientHeight ? (!sparkline.element.parentElement ? 50 :
+        sparkline.element.parentElement.clientHeight) : sparkline.element.clientHeight;
+    sparkline.availableSize = new Size$1(stringToNumber$2(sparkline.width, containerWidth) || containerWidth, stringToNumber$2(sparkline.height, containerHeight) || containerHeight || (sparkline.isDevice ?
+        Math.min(window.innerWidth, window.innerHeight) : containerHeight));
 }
 /**
  * Method to create svg for sparkline.
@@ -36971,8 +37109,7 @@ let Sparkline = class Sparkline extends Component {
      * Initializing pre-required values for sparkline.
      */
     preRender() {
-        let blazor = 'Blazor';
-        this.isBlazor = window[blazor];
+        this.isBlazor = isBlazor();
         this.unWireEvents();
         this.trigger('load', { sparkline: !this.isBlazor ? this : null });
         this.sparkTheme = getThemeColor$2(this.theme);

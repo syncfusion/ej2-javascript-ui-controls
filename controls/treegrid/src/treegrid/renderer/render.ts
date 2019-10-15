@@ -86,7 +86,8 @@ export class Render {
         let totalIconsWidth: number = 0; let cellElement: HTMLElement;
         let column: Column = this.parent.getColumnByField(args.column.field);
         let summaryRow: boolean = data.isSummaryRow;
-        if (grid.getColumnIndexByUid(args.column.uid) === this.parent.treeColumnIndex) {
+        if (grid.getColumnIndexByUid(args.column.uid) === this.parent.treeColumnIndex
+         && isNullOrUndefined(args.cell.querySelector('.e-treecell'))) {
             let container: Element = createElement('div', {
                 className: 'e-treecolumn-container'
             });

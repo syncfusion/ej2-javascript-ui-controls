@@ -248,6 +248,13 @@ describe('Restrict editing Add edit region inside Table', () => {
         editor.selection.navigateNextEditRegion();
         editor.selection.navigateNextEditRegion();
     });
+    it('BackSpace Validation', () => {
+        editor.selection.navigateNextEditRegion();
+        editor.editor.insertText('T');
+        editor.editor.onBackSpace();
+        editor.editor.onBackSpace();
+        expect(editor.selection.isSelectionIsAtEditRegion(false)).toBe(true);
+    });
 });
 
 describe('Restrict editing add and remove with history preservation', () => {

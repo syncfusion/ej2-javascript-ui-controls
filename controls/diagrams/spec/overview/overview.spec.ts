@@ -1123,7 +1123,7 @@ describe('Overview', () => {
 
         it('Overview - For window resize', (done: Function) => {
             let htmlOverView = document.getElementById('overview_htmlLayer');
-            expect(htmlOverView.style.transform === "scale(0.0821449) translate(731.609px, 790.805px)").toBe(true);
+            expect(htmlOverView.style.transform === "scale(0.0821449) translate(731.609px, 790.805px)" || htmlOverView.style.transform === "scale(0.0821449) translate(734.139px, 797.163px)").toBe(true);
             done();
         });
 

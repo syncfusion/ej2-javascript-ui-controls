@@ -533,14 +533,16 @@ export class TextBox extends Component<HTMLInputElement | HTMLTextAreaElement> i
         } else {
             this.resetValue(this.initialValue);
         }
-        let label: HTMLElement = this.textboxWrapper.container.querySelector('.e-float-text');
-        if (!isNullOrUndefined(label)) {
-            if ((isNullOrUndefined(this.initialValue) || this.initialValue === '')) {
-                label.classList.add('e-label-bottom');
-                label.classList.remove('e-label-top');
-            } else if (this.initialValue !== '') {
-                label.classList.add('e-label-top');
-                label.classList.remove('e-label-bottom');
+        if (!isNullOrUndefined(this.textboxWrapper)) {
+            let label: HTMLElement = this.textboxWrapper.container.querySelector('.e-float-text');
+            if (!isNullOrUndefined(label)) {
+                if ((isNullOrUndefined(this.initialValue) || this.initialValue === '')) {
+                    label.classList.add('e-label-bottom');
+                    label.classList.remove('e-label-top');
+                } else if (this.initialValue !== '') {
+                    label.classList.add('e-label-top');
+                    label.classList.remove('e-label-bottom');
+                }
             }
         }
     }

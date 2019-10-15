@@ -36,20 +36,13 @@ export class CellRenderer implements ICellRenderer {
         let td: HTMLElement = this.element.cloneNode() as HTMLElement;
         td.className = 'e-cell';
         attributes(td, { 'role': 'gridcell', 'aria-colindex': (args.colIdx + 1).toString(), 'tabindex': '-1' });
-        let eventArgs: CellRenderEventArgs = { cell: args.cell, element: td, address: args.address };
-        this.parent.trigger('beforeCellRender', eventArgs);
-        this.updateCell(
-            args.rowIdx, args.colIdx, td, args.cell, eventArgs, args.lastCell, args.row, args.hRow, args.isHeightCheckNeeded);
-        return eventArgs.element;
+        this.updateCell(args.rowIdx, args.colIdx, td, args.cell, args.lastCell, args.row, args.hRow, args.isHeightCheckNeeded);
+        this.parent.trigger('beforeCellRender', <CellRenderEventArgs>{ cell: args.cell, element: td, address: args.address });
+        return td;
     }
     private updateCell(
-        rowIdx: number, colIdx: number, td: Element, cell: CellModel,
-        eventArgs?: { cell: CellModel, element: HTMLElement }, lastCell?: boolean, row?: HTMLElement, hRow?: HTMLElement,
-        isHeightCheckNeeded?: boolean, isRefresh?: boolean
-    ): void {
-        if (!eventArgs) {
-            eventArgs = { cell: cell, element: td as HTMLElement };
-        }
+        rowIdx: number, colIdx: number, td: HTMLElement, cell: CellModel,
+        lastCell?: boolean, row?: HTMLElement, hRow?: HTMLElement, isHeightCheckNeeded?: boolean, isRefresh?: boolean): void {
         if (cell && cell.formula && !cell.value) {
             let isFormula: boolean = checkIsFormula(cell.formula);
             let eventArgs: { [key: string]: string | number | boolean } = {
@@ -69,7 +62,7 @@ export class CellRenderer implements ICellRenderer {
         if (cell) {
             this.parent.notify(getFormattedCellObject, formatArgs);
         }
-        td.textContent = eventArgs.cell ? <string>formatArgs.formattedText : '';
+        td.textContent = td ? <string>formatArgs.formattedText : '';
         this.parent.refreshNode(td, {
             type: formatArgs.type as string,
             result: formatArgs.formattedText as string,
@@ -78,25 +71,25 @@ export class CellRenderer implements ICellRenderer {
             value: <string>formatArgs.value || ''
         });
         let style: CellStyleModel = {};
-        if (eventArgs.cell && eventArgs.cell.style) {
-            if ((eventArgs.cell.style as CellStyleExtendedModel).properties) {
-                style = skipDefaultValue(eventArgs.cell.style, true);
+        if (cell && cell.style) {
+            if ((cell.style as CellStyleExtendedModel).properties) {
+                style = skipDefaultValue(cell.style, true);
             } else {
-                style = eventArgs.cell.style;
+                style = cell.style;
             }
         }
         if (Object.keys(style).length || Object.keys(this.parent.commonCellStyle).length || lastCell) {
             if (isRefresh) {
-                this.removeStyle(eventArgs.element);
+                this.removeStyle(td);
                 this.parent.notify(setCellFormat, { style: style, range: getCellAddress(rowIdx, colIdx) });
             } else {
                 this.parent.notify(applyCellFormat, <CellFormatArgs>{
-                    style: extend({}, this.parent.commonCellStyle, style), rowIdx: rowIdx, colIdx: colIdx, cell: eventArgs.element,
+                    style: extend({}, this.parent.commonCellStyle, style), rowIdx: rowIdx, colIdx: colIdx, cell: td,
                     lastCell: lastCell, row: row, hRow: hRow, isHeightCheckNeeded: isHeightCheckNeeded, manualUpdate: false
                 });
             }
         } else {
-            if (isRefresh) { this.removeStyle(eventArgs.element); }
+            if (isRefresh) { this.removeStyle(td); }
         }
     }
     private removeStyle(element: HTMLElement): void {
@@ -110,7 +103,7 @@ export class CellRenderer implements ICellRenderer {
             for (let i: number = cRange[0]; i <= cRange[2]; i++) {
                 for (let j: number = cRange[1]; j <= cRange[3]; j++) {
                     this.updateCell(
-                        i, j, this.parent.getCell(i, j), getCell(i, j, sheet), null, false, null,
+                        i, j, this.parent.getCell(i, j), getCell(i, j, sheet), false, null,
                         null, true, true);
                 }
             }

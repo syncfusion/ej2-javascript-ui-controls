@@ -557,7 +557,7 @@ export type LabelPosition =
 export type LabelIntersectAction =
     /** Shows all the labels. */
     'None' |
-    /** Hide the label when it intersect. */
+    /** Hide the label when it intersect. It is also applicable for polar radar chart */
     'Hide' |
     /** Trim the label when it intersect. */
     'Trim' |

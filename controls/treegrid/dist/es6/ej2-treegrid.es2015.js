@@ -554,15 +554,18 @@ class Selection {
         }
     }
     selectCheckboxes(rowIndexes) {
+        let adaptorName = 'adaptorName';
         for (let i = 0; i < rowIndexes.length; i++) {
             let record = this.parent.getCurrentViewRecords()[rowIndexes[i]];
+            let flatRecord = getParentData(this.parent, record.uniqueID);
+            record = (isBlazor() && this.parent.dataSource[adaptorName] === 'BlazorAdaptor') ?
+                record : flatRecord;
             let checkboxState = (record.checkboxState === 'uncheck') ? 'check' : 'uncheck';
             record.checkboxState = checkboxState;
             let keys = Object.keys(record);
-            let data = getParentData(this.parent, record.uniqueID);
             for (let j = 0; j < keys.length; j++) {
-                if (data.hasOwnProperty(keys[j])) {
-                    data[keys[j]] = record[keys[j]];
+                if (flatRecord.hasOwnProperty(keys[j])) {
+                    flatRecord[keys[j]] = record[keys[j]];
                 }
             }
             this.traverSelection(record, checkboxState, false);
@@ -601,6 +604,7 @@ class Selection {
         return filteredChildRecords;
     }
     updateParentSelection(parentRecord) {
+        let adaptorName = 'adaptorName';
         let length = 0;
         let childRecords = [];
         let record = getParentData(this.parent, parentRecord.uniqueID);
@@ -619,7 +623,9 @@ class Selection {
                 let childRecord = this.parent.getCurrentViewRecords().filter((e) => {
                     return e.uniqueID === childRecords[i].uniqueID;
                 });
-                let checkBoxRecord = isBlazor() ? childRecord[0] : childRecords[i];
+                let currentRecord = getParentData(this.parent, childRecords[i].uniqueID);
+                let checkBoxRecord = (isBlazor() && this.parent.dataSource[adaptorName] === 'BlazorAdaptor') ?
+                    childRecord[0] : currentRecord;
                 if (checkBoxRecord.checkboxState === 'indeterminate') {
                     indeter++;
                 }
@@ -643,11 +649,14 @@ class Selection {
         }
     }
     headerSelection(checkAll) {
+        let adaptorName = 'adaptorName';
         let index = -1;
         let length = 0;
         let data = (!isNullOrUndefined(this.parent.filterModule) &&
             this.parent.filterModule.filteredResult.length > 0) ? this.parent.filterModule.filteredResult :
             this.parent.flatData;
+        data = (isBlazor() && this.parent.dataSource[adaptorName] === 'BlazorAdaptor') ?
+            this.parent.getCurrentViewRecords() : data;
         if (!isNullOrUndefined(checkAll)) {
             for (let i = 0; i < data.length; i++) {
                 if (checkAll) {
@@ -689,8 +698,10 @@ class Selection {
         let record = this.parent.getCurrentViewRecords().filter((e) => {
             return e.uniqueID === currentRecord.uniqueID;
         });
+        let checkedRecord;
+        let adaptorName = 'adaptorName';
         let recordIndex = this.parent.getCurrentViewRecords().indexOf(record[0]);
-        let checkboxRecord = isBlazor() ? record[0] : currentRecord;
+        let checkboxRecord = getParentData(this.parent, currentRecord.uniqueID);
         let checkbox;
         if (recordIndex > -1) {
             let tr = this.parent.getRows()[recordIndex];
@@ -704,25 +715,30 @@ class Selection {
                 removeClass([checkbox], ['e-check', 'e-stop', 'e-uncheck']);
             }
         }
-        checkboxRecord.checkboxState = checkState;
+        checkedRecord = (isBlazor() && this.parent.dataSource[adaptorName] === 'BlazorAdaptor') ?
+            record[0] : checkboxRecord;
+        if (isNullOrUndefined(checkedRecord)) {
+            checkedRecord = currentRecord;
+        }
+        checkedRecord.checkboxState = checkState;
         if (checkState === 'check' && isNullOrUndefined(currentRecord.isSummaryRow)) {
             if (recordIndex !== -1 && this.selectedIndexes.indexOf(recordIndex) === -1) {
                 this.selectedIndexes.push(recordIndex);
             }
-            if (this.selectedItems.indexOf(checkboxRecord) === -1 && (recordIndex !== -1 &&
+            if (this.selectedItems.indexOf(checkedRecord) === -1 && (recordIndex !== -1 &&
                 (!isNullOrUndefined(this.parent.filterModule) && this.parent.filterModule.filteredResult.length > 0))) {
-                this.selectedItems.push(checkboxRecord);
+                this.selectedItems.push(checkedRecord);
             }
-            if (this.selectedItems.indexOf(checkboxRecord) === -1 && (!isNullOrUndefined(this.parent.filterModule) &&
+            if (this.selectedItems.indexOf(checkedRecord) === -1 && (!isNullOrUndefined(this.parent.filterModule) &&
                 this.parent.filterModule.filteredResult.length === 0)) {
-                this.selectedItems.push(checkboxRecord);
+                this.selectedItems.push(checkedRecord);
             }
-            if (this.selectedItems.indexOf(checkboxRecord) === -1 && isNullOrUndefined(this.parent.filterModule)) {
-                this.selectedItems.push(checkboxRecord);
+            if (this.selectedItems.indexOf(checkedRecord) === -1 && isNullOrUndefined(this.parent.filterModule)) {
+                this.selectedItems.push(checkedRecord);
             }
         }
         else if ((checkState === 'uncheck' || checkState === 'indeterminate') && isNullOrUndefined(currentRecord.isSummaryRow)) {
-            let index = this.selectedItems.indexOf(checkboxRecord);
+            let index = this.selectedItems.indexOf(checkedRecord);
             if (index !== -1) {
                 this.selectedItems.splice(index, 1);
             }
@@ -986,7 +1002,8 @@ class Render {
         let cellElement;
         let column = this.parent.getColumnByField(args.column.field);
         let summaryRow = data.isSummaryRow;
-        if (grid.getColumnIndexByUid(args.column.uid) === this.parent.treeColumnIndex) {
+        if (grid.getColumnIndexByUid(args.column.uid) === this.parent.treeColumnIndex
+            && isNullOrUndefined(args.cell.querySelector('.e-treecell'))) {
             let container = createElement('div', {
                 className: 'e-treecolumn-container'
             });
@@ -1300,6 +1317,11 @@ class DataManipulation {
      */
     collectExpandingRecs(rowDetails) {
         let gridRows = this.parent.getRows();
+        if (this.parent.rowTemplate) {
+            let rows = this.parent.getContentTable().rows;
+            gridRows = [].slice.call(rows);
+        }
+        let childRecord;
         let adaptorName = 'adaptorName';
         let args = { row: rowDetails.parentRow, data: rowDetails.record };
         if (rowDetails.rows.length > 0) {
@@ -1312,7 +1334,8 @@ class DataManipulation {
                         addClass([targetEle], 'e-treegridexpand');
                         removeClass([targetEle], 'e-treegridcollapse');
                     }
-                    let childRecord = this.parent.grid.getRowObjectFromUID(rowDetails.rows[i].getAttribute('data-Uid')).data;
+                    childRecord = this.parent.rowTemplate ? this.parent.grid.getCurrentViewRecords()[rowDetails.rows[i].rowIndex] :
+                        this.parent.grid.getRowObjectFromUID(rowDetails.rows[i].getAttribute('data-Uid')).data;
                     let childRows = gridRows.filter((r) => r.classList.contains('e-gridrowindex' + childRecord.index + 'level' + (childRecord.level + 1)));
                     if (childRows.length) {
                         this.collectExpandingRecs({ record: childRecord, rows: childRows, parentRow: rowDetails.parentRow });
@@ -4805,10 +4828,8 @@ class RowDD$1 {
     }
     getChildrecordsByParentID(id) {
         let treeGridDataSource;
-        if (this.parent.dataSource instanceof DataManager && (!isRemoteData(this.parent))) {
-            if (this.parent.dataSource.dataSource.offline && this.parent.dataSource.dataSource.json) {
-                treeGridDataSource = this.parent.dataSource.dataSource.json;
-            }
+        if (this.parent.dataSource instanceof DataManager && isOffline(this.parent)) {
+            treeGridDataSource = this.parent.grid.dataSource.dataSource.json;
         }
         else {
             treeGridDataSource = this.parent.grid.dataSource;
@@ -4927,10 +4948,8 @@ class RowDD$1 {
         let proxy = this.parent;
         let tempDataSource;
         let idx;
-        if (proxy.dataSource instanceof DataManager) {
-            if (proxy.dataSource.dataSource.offline && proxy.dataSource.dataSource.json) {
-                tempDataSource = proxy.dataSource.dataSource.json;
-            }
+        if (this.parent.dataSource instanceof DataManager && isOffline(this.parent)) {
+            tempDataSource = proxy.dataSource.dataSource.json;
         }
         else {
             tempDataSource = proxy.dataSource;
@@ -5378,7 +5397,7 @@ class RowDD$1 {
                             this.treeGridData.splice(recordIndex1 + count + 1, 0, this.draggedRecord);
                         }
                         draggedRecord.parentItem = this.treeGridData[recordIndex1].parentItem;
-                        draggedRecord.parentUniqueID = tObj.grid.dataSource[recordIndex1].parentUniqueID;
+                        draggedRecord.parentUniqueID = this.treeGridData[recordIndex1].parentUniqueID;
                         draggedRecord.level = this.treeGridData[recordIndex1].level;
                         if (draggedRecord.hasChildRecords) {
                             let level = 1;
@@ -5490,9 +5509,8 @@ class RowDD$1 {
         }
     }
     deleteDragRow() {
-        if (this.parent.dataSource instanceof RemoteSaveAdaptor
-            || this.parent.dataSource instanceof JsonAdaptor) {
-            this.treeGridData = this.parent.dataSource.dataSource.json;
+        if (this.parent.dataSource instanceof DataManager && isOffline(this.parent)) {
+            this.treeGridData = this.parent.grid.dataSource.dataSource.json;
         }
         else {
             this.treeGridData = this.parent.grid.dataSource;
@@ -5546,7 +5564,13 @@ class RowDD$1 {
     }
     removeRecords(record) {
         let tObj = this.parent;
-        let dataSource = tObj.dataSource;
+        let dataSource;
+        if (this.parent.dataSource instanceof DataManager && isOffline(this.parent)) {
+            dataSource = this.parent.dataSource.dataSource.json;
+        }
+        else {
+            dataSource = this.parent.dataSource;
+        }
         let deletedRow = record;
         let isSelfReference = !isNullOrUndefined(tObj.parentIdMapping);
         let flatParentData = this.getChildrecordsByParentID(deletedRow.parentUniqueID)[0];
@@ -5611,7 +5635,13 @@ class RowDD$1 {
         let idx;
         for (let i = 0; i < record.childRecords.length; i++) {
             currentRecord = record.childRecords[i];
-            let treeGridData = tObj.dataSource;
+            let treeGridData;
+            if (this.parent.dataSource instanceof DataManager && isOffline(this.parent)) {
+                treeGridData = this.parent.dataSource.dataSource.json;
+            }
+            else {
+                treeGridData = this.parent.dataSource;
+            }
             for (let i = 0; i < treeGridData.length; i++) {
                 if (treeGridData[i][this.parent.idMapping] === currentRecord.taskData[this.parent.idMapping]) {
                     idx = i;
@@ -7091,6 +7121,10 @@ class Edit$1 {
                 if (!celleditArgs.cancel && this.parent.editSettings.mode === 'Cell') {
                     this.enableToolbarItems('edit');
                 }
+                else if (celleditArgs.cancel && this.parent.editSettings.mode === 'Cell') {
+                    this.isOnBatch = false;
+                    this.updateGridEditMode('Normal');
+                }
                 if (!isNullOrUndefined(prom)) {
                     prom.resolve(celleditArgs);
                 }
@@ -8005,6 +8039,9 @@ class TreeVirtual extends VirtualScroll {
     ensurePageSize() {
         let parentGrid = getValue('parent', this);
         let rowHeight = parentGrid.getRowHeight();
+        if (!isNullOrUndefined(parentGrid.height) && typeof (parentGrid.height) === 'string' && parentGrid.height.indexOf('%') !== -1) {
+            parentGrid.element.style.height = parentGrid.height;
+        }
         let vHeight = parentGrid.height.toString().indexOf('%') < 0 ? parentGrid.height :
             parentGrid.element.getBoundingClientRect().height;
         let blockSize = ~~(vHeight / rowHeight);

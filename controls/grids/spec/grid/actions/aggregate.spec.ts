@@ -1254,4 +1254,102 @@ describe('Aggregates Functionality testing', () => {
             grid = null;
         });
     });
+
+    describe('Aggregates with mapping uid and index', () => {
+        let grid: Grid;
+        beforeAll((done: Function) => {
+            grid = createGrid(
+                {
+                    editSettings: { allowEditing: true, allowAdding: true, allowDeleting: true, mode: 'Batch', showConfirmDialog: true, showDeleteConfirmDialog: false },
+                    toolbar: ['Add', 'Edit', 'Delete', 'Update', 'Cancel'],
+                    allowPaging: true,
+                    pageSettings: { pageSize: 8 },
+                    frozenRows: 2,
+                    frozenColumns: 2,
+                    columns: [
+                        {
+                            field: 'OrderID', headerText: 'Order ID', headerTextAlign: 'Right', isPrimaryKey: true,
+                            textAlign: 'Right'
+                        },
+                        { field: 'CustomerID', headerText: 'Customer ID', textAlign: 'Right' },
+                        { field: 'Freight', format: 'C1' },
+                        { field: 'OrderDate', format: 'yMd', type: 'datetime' },
+                        { field: 'EmployeeID', headerText: 'Employee ID', textAlign: 'Right' }
+                    ],
+
+                    aggregates: [{
+                        columns: [{
+                            type: 'Sum',
+                            field: 'Freight',
+                            footerTemplate: 'Sum: ${Sum}'
+                        }]
+
+                    }
+                    ]
+
+                },
+                done
+            );
+        });
+
+        it('checking index and mapping uid of the column', () => {
+            expect(grid.getFooterContent().querySelector('.e-summarycell').getAttribute('index')).toBe('0');
+            expect(grid.getFooterContent().querySelector('.e-summarycell').hasAttribute('e-mappinguid')).toBeTruthy();
+        });
+        afterAll(() => {
+            destroy(grid);
+            grid = null;
+        });
+    });
+
+    describe('Aggregates with setRow method', () => {
+        let grid: Grid;
+        let rowDataBound: (args: any) => void;
+        let localdata = [
+            { OrderID: 10248, Customer: { ID: "VINET" }, EmployeeID: 5, Freight: 32.38 },
+            { OrderID: 10249, Customer: { ID: "TOMSP" }, EmployeeID: 6, Freight: 11.61 },
+            { OrderID: 10250, Customer: { ID: "HANAR" }, EmployeeID: 2, Freight: 65.83 }
+        ];
+        beforeAll((done: Function) => {
+            grid = createGrid(
+                {
+                    columns: [
+                        {
+                            field: 'OrderID', headerText: 'Order ID', headerTextAlign: 'Right', isPrimaryKey: true,
+                            textAlign: 'Right'
+                        },
+                        { field: 'Customer.ID', headerText: 'Customer ID', textAlign: 'Right' },
+                        { field: 'Freight', format: 'C1' },
+                        { field: 'OrderDate', format: 'yMd', type: 'datetime' },
+                        { field: 'EmployeeID', headerText: 'Employee ID', textAlign: 'Right' }
+                    ],
+                    aggregates: [{
+                        columns: [{
+                            type: 'Sum',
+                            field: 'Freight',
+                            footerTemplate: 'Sum: ${Sum}'
+                        }]
+                    }
+                    ],
+                },
+                done
+            );
+        });
+
+        it('checking index and mapping uid of the column', (done: Function) => {
+            rowDataBound = (args:any)=>{
+                expect((grid.getRowByIndex(0) as any).cells[2].innerHTML).toBe('$32.4');
+                done();
+            }
+            localdata[0].Freight = 100; 
+            var tempdata = localdata[0];
+            grid.rowDataBound = rowDataBound;
+            grid.setRowData(10248,tempdata);
+            expect((grid.getRowByIndex(0) as any).cells[2].innerHTML).toBe('$100.0');
+        });
+        afterAll(() => {
+            destroy(grid);
+            grid = null;
+        });
+    });    
 });

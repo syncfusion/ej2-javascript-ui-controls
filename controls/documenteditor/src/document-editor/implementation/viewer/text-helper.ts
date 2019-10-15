@@ -128,7 +128,11 @@ export class TextHelper {
         textHeight = spanElement.offsetHeight;
         // Calculate the text element's baseline offset.
         let textTopVal: number = spanElement.offsetTop;
-        let tempDivTopVal: number = tempDiv.offsetTop + (parentDiv.offsetWidth - spanElement.offsetWidth);
+        let tempDivTopVal: number = tempDiv.offsetTop;
+        let width: number = (parentDiv.offsetWidth - spanElement.offsetWidth);
+        if ((textTopVal - width) === 1) {
+            tempDivTopVal += width;
+        }
         baselineOffset = tempDivTopVal - textTopVal;
         document.body.removeChild(parentDiv);
         return { 'Height': textHeight, 'BaselineOffset': baselineOffset };

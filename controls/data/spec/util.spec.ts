@@ -17,6 +17,12 @@ describe('DataUtil', () => {
         { OrderID: 10251, CustomerID: 'VINET', EmployeeID: 7, Freight: 70.63, Guid: 'f89dee73-af9f-4cd4-b330-db93c25ff3c8' },
         { OrderID: 10252, CustomerID: 'SUPRD', EmployeeID: null, Freight: 45.45, Guid: 'f89dee73-af9f-4cd4-b330-db93c25ff3c9' }
     ] as Object) as JSON[];
+    let sData: Object[] = [
+        { OrderID: null, EmployeeID: null},
+        { OrderID: null, EmployeeID: null},
+        { OrderID: null, EmployeeID: null},
+        { OrderID: null, EmployeeID: 23},
+    ];
     describe('sorting for null data method', () => {
         it('To check null value sorting in ascending.', () => {
             dataManager = new DataManager(data);
@@ -29,6 +35,30 @@ describe('DataUtil', () => {
             query = new Query().sortBy('EmployeeID', 'descending');
             result = query.executeLocal(dataManager);
             expect(result[0] >= result[1]).toBe(true);
+        });
+        it('To check null value column sorting - ascending', () => {
+            dataManager = new DataManager(sData);
+            query = new Query().sortBy('OrderID', 'ascending');
+            result = query.executeLocal(dataManager);
+            expect(result[sData.length - 1]['EmployeeID']).toBe(23);
+        });
+        it('To check null value column sorting - descending', () => {
+            dataManager = new DataManager(sData);
+            query = new Query().sortBy('OrderID', 'descending');
+            result = query.executeLocal(dataManager);
+            expect(result[sData.length - 1]['EmployeeID']).toBe(23);
+        });
+        it('Ensure sensitivity of the locale compare method - ascending', () => {
+            let str1: string = 'réservé';
+            let str2: string = 'RESERVE';
+            let value: number = DataUtil.fnAscending(str1, str2, 'en', { sensitivity: 'base' });
+            expect(value).toBe(0);
+        });
+        it('Ensure sensitivity of the locale compare method - descending', () => {
+            let str1: string = 'réservé';
+            let str2: string = 'RESERVE';
+            let value: number = DataUtil.fnDescending(str1, str2, 'en', { sensitivity: 'base' });
+            expect(value).toBe(0);
         });
     });
     describe('getValue method', () => {

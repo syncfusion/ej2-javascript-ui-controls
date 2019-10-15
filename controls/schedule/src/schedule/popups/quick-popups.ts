@@ -1,5 +1,6 @@
 import { L10n, closest, EventHandler, isNullOrUndefined, formatUnit, append, AnimationModel, isBlazor } from '@syncfusion/ej2-base';
 import { addClass, removeClass, createElement, remove, extend, updateBlazorTemplate, resetBlazorTemplate } from '@syncfusion/ej2-base';
+import { getElement } from '@syncfusion/ej2-base';
 import { Dialog, Popup, isCollide, ButtonPropsModel } from '@syncfusion/ej2-popups';
 import { Button } from '@syncfusion/ej2-buttons';
 import { Input, FormValidator } from '@syncfusion/ej2-inputs';
@@ -7,7 +8,7 @@ import { Schedule } from '../base/schedule';
 import { ResourcesModel } from '../models/models';
 import { RecurrenceEditor } from '../../recurrence-editor/index';
 import {
-    CellClickEventArgs, EventClickArgs, EventFieldsMapping, PopupOpenEventArgs, EventRenderedArgs, EJ2Instance, TdData
+    CellClickEventArgs, EventClickArgs, EventFieldsMapping, PopupOpenEventArgs, EventRenderedArgs, EJ2Instance, TdData, PopupCloseEventArgs
 } from '../base/interface';
 import { PopupType, TemplateType } from '../base/type';
 import { FieldValidator } from './form-validator';
@@ -28,6 +29,7 @@ export class QuickPopups {
     public quickPopup: Popup;
     public morePopup: Popup;
     private fieldValidator: FieldValidator;
+    private isCrudAction: boolean = false;
 
     /**
      * Constructor for QuickPopups
@@ -795,22 +797,7 @@ export class QuickPopups {
     }
 
     private saveClick(): void {
-        if (!((this.quickPopup.element.querySelector('.' + cls.FORM_CLASS) as EJ2Instance).ej2_instances[0] as FormValidator).validate()) {
-            return;
-        }
-        let fields: EventFieldsMapping = this.parent.eventFields;
-        let saveObj: { [key: string]: Object } =
-            extend({}, this.parent.eventWindow.getObjectFromFormData(cls.POPUP_WRAPPER_CLASS)) as { [key: string]: Object };
-        this.parent.eventWindow.setDefaultValueToObject(saveObj);
-        saveObj[fields.id] = this.parent.eventBase.getEventMaxID();
-        saveObj[fields.startTime] = this.parent.activeCellsData.startTime;
-        saveObj[fields.endTime] = this.parent.activeCellsData.endTime;
-        saveObj[fields.isAllDay] = this.parent.activeCellsData.isAllDay;
-        if (this.parent.resourceBase) {
-            this.parent.resourceBase.setResourceValues(saveObj, true);
-        }
-        this.parent.currentAction = 'Add';
-        this.parent.crudModule.addEvent(saveObj);
+        this.isCrudAction = true;
         this.quickPopupHide();
     }
 
@@ -1133,17 +1120,68 @@ export class QuickPopups {
     }
 
     public quickPopupHide(hideAnimation?: Boolean): void {
-        if (this.quickPopup.element.classList.contains('e-popup-open')) {
-            if (hideAnimation) {
-                let animation: AnimationModel = this.quickPopup.hideAnimation;
-                this.quickPopup.hideAnimation = null;
-                this.quickPopup.hide();
-                this.quickPopup.hideAnimation = animation;
-            } else {
-                this.quickPopup.hide();
+        let isCellPopup: Element = this.quickPopup.element.querySelector('.' + cls.CELL_POPUP_CLASS);
+        let popupData: Object;
+        if (isCellPopup) {
+            let formvalidator: Element = this.quickPopup.element.querySelector('.e-formvalidator');
+            if (formvalidator && !((formvalidator as EJ2Instance).ej2_instances[0] as FormValidator).validate()) {
+                return;
             }
-            this.isMultipleEventSelect = false;
+            let fields: EventFieldsMapping = this.parent.eventFields;
+            let saveObj: { [key: string]: Object } = this.parent.eventWindow.getObjectFromFormData(cls.POPUP_WRAPPER_CLASS) as
+                { [key: string]: Object };
+            this.parent.eventWindow.setDefaultValueToObject(saveObj);
+            saveObj[fields.id] = this.parent.eventBase.getEventMaxID();
+            saveObj[fields.startTime] = this.parent.activeCellsData.startTime;
+            saveObj[fields.endTime] = this.parent.activeCellsData.endTime;
+            saveObj[fields.isAllDay] = this.parent.activeCellsData.isAllDay;
+            if (this.parent.resourceBase) {
+                this.parent.resourceBase.setResourceValues(saveObj, true);
+            }
+            popupData = saveObj;
+        } else {
+            popupData = this.parent.activeEventData.event;
         }
+        let isEventPopup: Element = this.quickPopup.element.querySelector('.' + cls.EVENT_POPUP_CLASS);
+        let args: PopupCloseEventArgs = {
+            type: this.parent.isAdaptive ? isEventPopup ? 'ViewEventInfo' : 'EditEventInfo' : 'QuickInfo',
+            cancel: false, data: popupData, element: this.quickPopup.element,
+            target: (isCellPopup ? this.parent.activeCellsData.element : this.parent.activeEventData.element) as Element
+        };
+        this.parent.trigger(event.popupClose, args, (popupCloseArgs: PopupCloseEventArgs) => {
+            if (isBlazor()) {
+                let eventFields: EventFieldsMapping = this.parent.eventFields;
+                if (popupCloseArgs.data) {
+                    let eventObj: { [key: string]: Date } = popupCloseArgs.data as { [key: string]: Date };
+                    eventObj[eventFields.startTime] = this.parent.getDateTime(eventObj[eventFields.startTime]);
+                    eventObj[eventFields.endTime] = this.parent.getDateTime(eventObj[eventFields.endTime]);
+                }
+                if (popupCloseArgs.element) {
+                    popupCloseArgs.element = getElement(popupCloseArgs.element);
+                }
+                if (popupCloseArgs.target) {
+                    popupCloseArgs.target = getElement(popupCloseArgs.target);
+                }
+            }
+            if (!popupCloseArgs.cancel) {
+                if (this.quickPopup.element.classList.contains('e-popup-open')) {
+                    if (isCellPopup && this.isCrudAction) {
+                        this.parent.currentAction = 'Add';
+                        this.parent.crudModule.addEvent(popupCloseArgs.data);
+                    }
+                    if (hideAnimation) {
+                        let animation: AnimationModel = this.quickPopup.hideAnimation;
+                        this.quickPopup.hideAnimation = null;
+                        this.quickPopup.hide();
+                        this.quickPopup.hideAnimation = animation;
+                    } else {
+                        this.quickPopup.hide();
+                    }
+                    this.isMultipleEventSelect = false;
+                    this.isCrudAction = false;
+                }
+            }
+        });
     }
 
     private navigationClick(e: Event): void {

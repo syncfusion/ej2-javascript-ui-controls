@@ -184,6 +184,28 @@ describe('Freeze render module', () => {
             expect(gridObj.getContent().querySelector('.e-movablecontent').querySelector('tbody').childElementCount).toBeGreaterThan(1);
         });
 
+        it('Add aggregates', () => {
+            gridObj.aggregates = [{
+                columns: [{
+                    type: 'Sum',
+                    field: 'EmployeeID',
+                    footerTemplate: 'Sum: ${Sum}'
+                }]
+            },
+            {
+                columns: [{
+                    type: 'Max',
+                    field: 'EmployeeID',
+                    footerTemplate: 'Max: ${Max}'
+                }]
+            }];
+        });
+
+        it('Ensure aggregate row visiblity', () => {
+            let isHide: boolean = gridObj.element.querySelector('.e-frozenfootercontent').querySelector('.e-summaryrow').classList.contains('e-hide');
+            expect(isHide).toBe(false);
+        });
+
         afterAll(() => {
             gridObj['freezeModule'].destroy();
             destroy(gridObj);

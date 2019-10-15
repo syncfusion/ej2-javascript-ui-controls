@@ -158,15 +158,18 @@ export class Selection {
     }
 
     public selectCheckboxes(rowIndexes: number[]): void {
+      let adaptorName: string = 'adaptorName';
       for (let i: number = 0; i < rowIndexes.length; i++) {
         let record: ITreeData = this.parent.getCurrentViewRecords()[rowIndexes[i]];
+        let flatRecord: ITreeData = getParentData(this.parent, record.uniqueID);
+        record = (isBlazor() && this.parent.dataSource[adaptorName] === 'BlazorAdaptor') ?
+            record : flatRecord;
         let checkboxState: string = (record.checkboxState === 'uncheck') ? 'check' : 'uncheck';
         record.checkboxState = checkboxState;
         let keys: string[] = Object.keys(record);
-        let data: ITreeData = getParentData(this.parent, record.uniqueID);
         for (let j: number = 0; j < keys.length; j++) {
-          if (data.hasOwnProperty(keys[j])) {
-            data[keys[j]] = record[keys[j]];
+          if (flatRecord.hasOwnProperty(keys[j])) {
+            flatRecord[keys[j]] = record[keys[j]];
           }
         }
         this.traverSelection(record, checkboxState, false);
@@ -207,6 +210,7 @@ export class Selection {
     }
 
     private updateParentSelection(parentRecord: ITreeData): void {
+      let adaptorName: string = 'adaptorName';
       let length: number = 0; let childRecords: ITreeData[] = [];
       let record: ITreeData = getParentData(this.parent, parentRecord.uniqueID);
       if (record && record.childRecords) {
@@ -223,7 +227,9 @@ export class Selection {
           let childRecord: ITreeData[] = this.parent.getCurrentViewRecords().filter((e: ITreeData) => {
             return e.uniqueID === childRecords[i].uniqueID;
           });
-          let checkBoxRecord: ITreeData = isBlazor() ? childRecord[0] : childRecords[i];
+          let currentRecord: ITreeData = getParentData(this.parent, childRecords[i].uniqueID);
+          let checkBoxRecord: ITreeData = (isBlazor() && this.parent.dataSource[adaptorName] === 'BlazorAdaptor') ?
+              childRecord[0] : currentRecord;
           if (checkBoxRecord.checkboxState === 'indeterminate') {
             indeter++;
           } else if (checkBoxRecord.checkboxState === 'check') {
@@ -245,10 +251,13 @@ export class Selection {
     }
 
     private headerSelection(checkAll?: boolean): void {
+      let adaptorName: string = 'adaptorName';
       let index: number = -1; let length: number = 0;
       let data: ITreeData[] = (!isNullOrUndefined(this.parent.filterModule) &&
           this.parent.filterModule.filteredResult.length > 0) ? this.parent.filterModule.filteredResult :
         this.parent.flatData;
+      data = (isBlazor() && this.parent.dataSource[adaptorName] === 'BlazorAdaptor') ?
+          this.parent.getCurrentViewRecords() : data;
       if (!isNullOrUndefined(checkAll)) {
         for (let i: number = 0; i < data.length; i++) {
           if (checkAll) {
@@ -288,8 +297,10 @@ export class Selection {
       let record: ITreeData[] = this.parent.getCurrentViewRecords().filter((e: ITreeData) => {
         return e.uniqueID === currentRecord.uniqueID;
       });
+      let checkedRecord: ITreeData;
+      let adaptorName: string = 'adaptorName';
       let recordIndex: number = this.parent.getCurrentViewRecords().indexOf(record[0]);
-      let checkboxRecord: ITreeData = isBlazor() ? record[0] : currentRecord;
+      let checkboxRecord: ITreeData = getParentData(this.parent, currentRecord.uniqueID);
       let checkbox: HTMLElement;
       if (recordIndex > -1) {
         let tr: HTMLElement = this.parent.getRows()[recordIndex];
@@ -303,24 +314,29 @@ export class Selection {
           removeClass([checkbox], ['e-check', 'e-stop', 'e-uncheck']);
         }
       }
-      checkboxRecord.checkboxState = checkState;
+      checkedRecord = (isBlazor() && this.parent.dataSource[adaptorName] === 'BlazorAdaptor') ?
+          record[0] : checkboxRecord;
+      if (isNullOrUndefined(checkedRecord)) {
+        checkedRecord = currentRecord;
+      }
+      checkedRecord.checkboxState = checkState;
       if (checkState === 'check' && isNullOrUndefined(currentRecord.isSummaryRow)) {
         if (recordIndex !== -1 && this.selectedIndexes.indexOf(recordIndex) === -1) {
           this.selectedIndexes.push(recordIndex);
         }
-        if (this.selectedItems.indexOf(checkboxRecord) === -1 && (recordIndex !== -1 &&
+        if (this.selectedItems.indexOf(checkedRecord) === -1 && (recordIndex !== -1 &&
           (!isNullOrUndefined(this.parent.filterModule) && this.parent.filterModule.filteredResult.length > 0))) {
-          this.selectedItems.push(checkboxRecord);
+          this.selectedItems.push(checkedRecord);
         }
-        if (this.selectedItems.indexOf(checkboxRecord) === -1 && (!isNullOrUndefined(this.parent.filterModule) &&
+        if (this.selectedItems.indexOf(checkedRecord) === -1 && (!isNullOrUndefined(this.parent.filterModule) &&
             this.parent.filterModule.filteredResult.length === 0)) {
-          this.selectedItems.push(checkboxRecord);
+          this.selectedItems.push(checkedRecord);
         }
-        if (this.selectedItems.indexOf(checkboxRecord) === -1 && isNullOrUndefined(this.parent.filterModule)) {
-          this.selectedItems.push(checkboxRecord);
+        if (this.selectedItems.indexOf(checkedRecord) === -1 && isNullOrUndefined(this.parent.filterModule)) {
+          this.selectedItems.push(checkedRecord);
         }
       } else if ((checkState === 'uncheck' || checkState === 'indeterminate') && isNullOrUndefined(currentRecord.isSummaryRow)) {
-        let index: number = this.selectedItems.indexOf(checkboxRecord);
+        let index: number = this.selectedItems.indexOf(checkedRecord);
         if (index !== -1) {
             this.selectedItems.splice(index, 1);
         }

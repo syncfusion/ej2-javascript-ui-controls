@@ -682,6 +682,7 @@ export function laneInterChanged(diagram: Diagram, obj: NodeModel, target: NodeM
             diagram.updateDiagramObject(swimLane);
         }
     }
+    diagram.updateDiagramElementQuad();
 }
 /** @private */
 export function updateSwimLaneObject(diagram: Diagram, obj: Node, swimLane: NodeModel, helperObject: NodeModel): void {

@@ -881,7 +881,7 @@ export function createTemplate(
     templateFn = getTemplateFunction(content);
     try {
         let blazor: string = 'Blazor';
-        let tempObject: Object = window[blazor] ? point : { chart: chart, series: series, point: point };
+        let tempObject: Object = window[blazor] ? (dataLabelId ? point : { point: point}) : { chart: chart, series: series, point: point };
         let elementData: Element[] = templateFn ? templateFn(tempObject, null, null, dataLabelId ||
                                                              childElement.id.replace(/[^a-zA-Z0-9]/g, '')) : [];
         if (elementData.length) {
@@ -1153,6 +1153,7 @@ export function getMedian(values: number[]): number {
 export function calculateLegendShapes(location: ChartLocation, size: Size, shape: string, options: PathOption): IShapes {
     let padding: number = 10;
     let dir: string = '';
+    let space: number = 2;
     let height: number = size.height;
     let width: number = size.width;
     let lx: number = location.x;
@@ -1178,7 +1179,6 @@ export function calculateLegendShapes(location: ChartLocation, size: Size, shape
             merge(options, { 'd': dir });
             break;
         case 'RightArrow':
-            let space: number = 2;
             dir = 'M' + ' ' + (lx + (-width / 2)) + ' ' + (ly - (height / 2)) + ' ' +
                 'L' + ' ' + (lx + (width / 2)) + ' ' + (ly) + ' ' + 'L' + ' ' +
                 (lx + (-width / 2)) + ' ' + (ly + (height / 2)) + ' L' + ' ' + (lx + (-width / 2)) + ' ' +
@@ -1189,7 +1189,6 @@ export function calculateLegendShapes(location: ChartLocation, size: Size, shape
         case 'LeftArrow':
             options.fill = options.stroke;
             options.stroke = 'transparent';
-            space = 2;
             dir = 'M' + ' ' + (lx + (width / 2)) + ' ' + (ly - (height / 2)) + ' ' +
                 'L' + ' ' + (lx + (-width / 2)) + ' ' + (ly) + ' ' + 'L' + ' ' +
                 (lx + (width / 2)) + ' ' + (ly + (height / 2)) + ' ' + 'L' + ' ' +

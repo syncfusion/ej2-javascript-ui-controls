@@ -8,7 +8,7 @@ import { DocumentEditorContainer } from '../../document-editor-container';
 export interface DocumentChangeEventArgs {
     /**
      * Specifies the source DocumentEditor instance which triggers this documentChange event.
-
+     * @deprecated
      */
     source: DocumentEditor;
 }
@@ -26,7 +26,7 @@ export interface ViewChangeEventArgs {
     endPage: number;
     /**
      * Specifies the source DocumentEditor instance which triggers this viewChange event.
-
+     * @deprecated
      */
     source: DocumentEditor;
 }
@@ -36,7 +36,7 @@ export interface ViewChangeEventArgs {
 export interface ZoomFactorChangeEventArgs {
     /**
      * Specifies the source DocumentEditor instance which triggers this zoomFactorChange event.
-
+     * @deprecated
      */
     source: DocumentEditor;
 }
@@ -46,7 +46,7 @@ export interface ZoomFactorChangeEventArgs {
 export interface SelectionChangeEventArgs {
     /**
      * Specifies the source DocumentEditor instance which triggers this selectionChange event.
-
+     * @deprecated
      */
     source: DocumentEditor;
 }
@@ -72,7 +72,7 @@ export interface RequestNavigateEventArgs {
     isHandled: boolean;
     /**
      * Specifies the source DocumentEditor instance which triggers this requestNavigate event.
-
+     * @deprecated
      */
     source: DocumentEditor;
 }
@@ -82,7 +82,7 @@ export interface RequestNavigateEventArgs {
 export interface ContentChangeEventArgs {
     /**
      * Specifies the source DocumentEditor instance which triggers this contentChange event.
-
+     * @deprecated
      */
     source: DocumentEditor;
 }
@@ -100,7 +100,7 @@ export interface DocumentEditorKeyDownEventArgs {
     isHandled: boolean;
     /**
      * Specifies the source DocumentEditor instance which triggers this key down event.
-
+     * @deprecated
      */
     source: DocumentEditor;
 }
@@ -111,7 +111,7 @@ export interface DocumentEditorKeyDownEventArgs {
 export interface SearchResultsChangeEventArgs {
     /**
      * Specifies the source DocumentEditor instance which triggers this searchResultsChange event.
-
+     * @deprecated
      */
     source: DocumentEditor;
 }
@@ -141,7 +141,7 @@ export interface BeforeOpenCloseCustomContentMenuEventArgs {
 export interface ContainerContentChangeEventArgs {
     /**
      * Specifies the source DocumentEditorContainer instance which triggers this contentChange event.
-
+     * @deprecated
      */
     source: DocumentEditorContainer;
 }
@@ -152,7 +152,7 @@ export interface ContainerContentChangeEventArgs {
 export interface ContainerSelectionChangeEventArgs {
     /**
      * Specifies the source DocumentEditorContainer instance which triggers this selectionChange event.
-
+     * @deprecated
      */
     source: DocumentEditorContainer;
 }
@@ -162,7 +162,7 @@ export interface ContainerSelectionChangeEventArgs {
 export interface ContainerDocumentChangeEventArgs {
     /**
      * Specifies the source DocumentEditorContainer instance which triggers this documentChange event.
-
+     * @deprecated
      */
     source: DocumentEditorContainer;
 }

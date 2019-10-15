@@ -110,7 +110,6 @@ function pushBasicModules(context: Spreadsheet, modules: ModuleDeclaration[]): v
     }
     if (context.allowSorting) {
         modules.push({ member: 'sort', args: [context] });
-        modules.push({ member: 'workbookSort', args: [context] });
     }
     if (context.allowResizing) {
         modules.push({

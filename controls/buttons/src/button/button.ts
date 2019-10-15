@@ -1,5 +1,5 @@
-import { Property, NotifyPropertyChanges, INotifyPropertyChanged, Component, isBlazor, isRippleEnabled } from '@syncfusion/ej2-base';
-import { addClass, Event, EmitType, detach, removeClass, rippleEffect, EventHandler } from '@syncfusion/ej2-base';
+import { Property, NotifyPropertyChanges, INotifyPropertyChanged, Component, isBlazor } from '@syncfusion/ej2-base';
+import { addClass, Event, EmitType, detach, removeClass, rippleEffect, EventHandler, isRippleEnabled } from '@syncfusion/ej2-base';
 import { ButtonModel } from './button-model';
 import { getTextNode } from '../common/common';
 export type IconPosition = 'Left' | 'Right' | 'Top' | 'Bottom';

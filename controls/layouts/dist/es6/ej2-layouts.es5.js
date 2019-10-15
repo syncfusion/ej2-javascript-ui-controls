@@ -3939,7 +3939,7 @@ var DashboardLayout = /** @__PURE__ @class */ (function (_super) {
         for (var i = 0; i < this.panelCollection.length; i++) {
             detach(this.panelCollection[i]);
         }
-        this.element.innerHTML = '';
+        this.removeAllPanel();
         this.rows = 0;
         this.gridPanelCollection = [];
         this.setHeightWidth();
@@ -3951,7 +3951,7 @@ var DashboardLayout = /** @__PURE__ @class */ (function (_super) {
         this.panelCollection = [];
         this.oldRowCol = {};
         this.cloneObject = {};
-        this.panels = [];
+        this.setProperties({ panels: [] }, true);
         this.updatePanels();
         this.updateCloneArrayObject();
     };
@@ -4069,8 +4069,16 @@ var DashboardLayout = /** @__PURE__ @class */ (function (_super) {
         for (var i = 0; i < this.dragCollection.length; i++) {
             this.dragCollection[i].destroy();
         }
-        this.element.innerHTML = '';
+        this.removeAllPanel();
+        if (this.table) {
+            this.table.remove();
+        }
         _super.prototype.destroy.call(this);
+    };
+    DashboardLayout.prototype.removeAllPanel = function () {
+        this.panelCollection.forEach(function (item) {
+            item.remove();
+        });
     };
     DashboardLayout.prototype.setEnableRtl = function () {
         this.enableRtl ? addClass([this.element], 'e-rtl') : removeClass([this.element], 'e-rtl');
@@ -4106,6 +4114,9 @@ var DashboardLayout = /** @__PURE__ @class */ (function (_super) {
         this.removeAll();
         this.setProperties({ panels: panels }, true);
         this.setOldRowCol();
+        if (this.table) {
+            this.table.remove();
+        }
         this.initialize();
         if (this.showGridLines) {
             this.initGridLines();

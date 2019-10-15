@@ -91,7 +91,7 @@ export class StringFilterUI implements IFilterMUI {
         if (isNullOrUndefined(filterValue) || filterValue === '') {
             filterValue = null;
         }
-        filterObj.filterByColumn(column.field, filterOptr, filterValue, 'and', false);
+        filterObj.filterByColumn(column.field, filterOptr, filterValue, 'and', this.parent.filterSettings.enableCaseSensitivity);
     }
 
     private openPopup(args: { popup: Popup }): void {

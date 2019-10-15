@@ -1974,6 +1974,9 @@ let MenuBase = class MenuBase extends Component {
         return false;
     }
     menuHeaderClickHandler(e) {
+        if (closest(e.target, '.e-menu-wrapper').querySelector('ul.e-menu-parent').id !== this.element.id) {
+            return;
+        }
         this.element.classList.contains('e-hide-menu') ? this.openHamburgerMenu(e) : this.closeHamburgerMenu(e);
     }
     clickHandler(e) {
@@ -2048,7 +2051,8 @@ let MenuBase = class MenuBase extends Component {
                     this.menuHeaderClickHandler(e);
                 }
                 else {
-                    if (trgt.tagName !== 'UL' || trgt.parentElement !== wrapper) {
+                    if (trgt.tagName !== 'UL' || (this.isMenu ? trgt.parentElement.classList.contains('e-menu-wrapper') &&
+                        !this.getIndex(trgt.querySelector('.' + ITEM).id, true).length : trgt.parentElement !== wrapper)) {
                         if (!cli || !cli.querySelector('.' + CARET)) {
                             this.closeMenu(null, e);
                         }
@@ -3230,7 +3234,8 @@ let Toolbar = class Toolbar extends Component {
         }
         if (!eventArgs.cancel) {
             this.trigger('clicked', eventArgs, (clickedArgs) => {
-                if (!isNullOrUndefined(this.popObj) && isPopupElement && !clickedArgs.cancel && this.overflowMode === 'Popup') {
+                if (!isNullOrUndefined(this.popObj) && isPopupElement && !clickedArgs.cancel && this.overflowMode === 'Popup' &&
+                    clickedArgs.item && clickedArgs.item.type !== 'Input') {
                     this.popObj.hide({ name: 'FadeOut', duration: 100 });
                 }
             });
@@ -6704,14 +6709,11 @@ let Tab = class Tab extends Component {
         (this.isIconAlone) ? this.element.classList.add(CLS_ICON_TAB) : this.element.classList.remove(CLS_ICON_TAB);
         return tItems;
     }
-    removeActiveClass(id) {
-        let hdrActEle = selectAll(':root .' + CLS_HEADER$1 + ' .' + CLS_TB_ITEM + '.' + CLS_ACTIVE$1, this.element)[0];
-        let selectEle = select('.' + CLS_HEADER$1, this.element);
-        if (this.headerPlacement === 'Bottom') {
-            hdrActEle = selectAll(':root .' + CLS_HEADER$1 + ' .' + CLS_TB_ITEM + '.' + CLS_ACTIVE$1, selectEle)[0];
-        }
-        if (!isNullOrUndefined(hdrActEle)) {
-            hdrActEle.classList.remove(CLS_ACTIVE$1);
+    removeActiveClass() {
+        let tabHeader = this.getTabHeader();
+        if (tabHeader) {
+            let tabItems = selectAll('.' + CLS_TB_ITEM + '.' + CLS_ACTIVE$1, tabHeader);
+            tabItems.forEach((node) => node.classList.remove(CLS_ACTIVE$1));
         }
     }
     checkPopupOverflow(ele) {
@@ -6890,8 +6892,11 @@ let Tab = class Tab extends Component {
             }
         }
     }
+    getTabHeader() {
+        return [].slice.call(this.element.children).filter((e) => e.classList.contains(CLS_HEADER$1))[0];
+    }
     getEleIndex(item) {
-        return Array.prototype.indexOf.call(selectAll('.' + CLS_HEADER$1 + ' .' + CLS_TB_ITEM, this.element), item);
+        return Array.prototype.indexOf.call(selectAll('.' + CLS_TB_ITEM, this.getTabHeader()), item);
     }
     extIndex(id) {
         return id.replace(CLS_ITEM$2 + '_', '');
@@ -7059,7 +7064,7 @@ let Tab = class Tab extends Component {
         if (isNullOrUndefined(this.cntEle)) {
             return;
         }
-        let hdrEle = select('.' + CLS_HEADER$1, this.element);
+        let hdrEle = this.getTabHeader();
         if (this.heightAdjustMode === 'None') {
             if (this.height === 'auto') {
                 return;
@@ -7120,8 +7125,8 @@ let Tab = class Tab extends Component {
     setActiveBorder() {
         let bar;
         let scrollCnt;
-        let trgHdrEle = select('.' + CLS_HEADER$1, this.element);
-        let trg = select('.' + CLS_TB_ITEM + '.' + CLS_ACTIVE$1, this.element);
+        let trgHdrEle = this.getTabHeader();
+        let trg = select('.' + CLS_TB_ITEM + '.' + CLS_ACTIVE$1, trgHdrEle);
         if (trg === null) {
             return;
         }
@@ -7157,7 +7162,7 @@ let Tab = class Tab extends Component {
         }
     }
     setActive(value) {
-        this.tbItem = selectAll('.' + CLS_HEADER$1 + ' .' + CLS_TB_ITEM, this.element);
+        this.tbItem = selectAll('.' + CLS_TB_ITEM, this.getTabHeader());
         let trg = this.tbItem[value];
         if (value >= 0) {
             this.setProperties({ selectedItem: value }, true);
@@ -7177,7 +7182,7 @@ let Tab = class Tab extends Component {
             attributes(trg, { 'aria-controls': CLS_CONTENT$1 + '_' + value });
         }
         let id = trg.id;
-        this.removeActiveClass(id);
+        this.removeActiveClass();
         trg.classList.add(CLS_ACTIVE$1);
         trg.setAttribute('aria-selected', 'true');
         let no = Number(this.extIndex(id));
@@ -7231,7 +7236,7 @@ let Tab = class Tab extends Component {
     }
     setItems(items) {
         this.isReplace = true;
-        this.tbItems = select('.' + CLS_HEADER$1 + ' .' + CLS_TB_ITEMS, this.element);
+        this.tbItems = select('.' + CLS_TB_ITEMS, this.getTabHeader());
         this.tbObj.items = this.parseObject(items, 0);
         this.tbObj.dataBind();
         this.isReplace = false;
@@ -7338,9 +7343,9 @@ let Tab = class Tab extends Component {
         }
         this.element.classList.add(CLS_FOCUS);
         let trg = e.target;
-        let actEle = select('.' + CLS_HEADER$1 + ' .' + CLS_ACTIVE$1, this.element);
-        let tabItem = selectAll('.' + CLS_TB_ITEM + ':not(.' + CLS_TB_POPUP + ')', this.element);
-        this.popEle = select('.' + CLS_HEADER$1 + ' .' + CLS_TB_POP, this.element);
+        let tabHeader = this.getTabHeader();
+        let actEle = select('.' + CLS_ACTIVE$1, tabHeader);
+        this.popEle = select('.' + CLS_TB_POP, tabHeader);
         if (!isNullOrUndefined(this.popEle)) {
             this.popObj = this.popEle.ej2_instances[0];
         }
@@ -7499,10 +7504,6 @@ let Tab = class Tab extends Component {
                 this.reRenderItems();
             }
             else {
-                let items = newProp.items;
-                for (let i = 0; i < items.length; i++) {
-                    this.resetBlazorTemplates(items[i], i);
-                }
                 this.setItems(newProp.items);
                 if (this.templateEle.length > 0) {
                     this.expTemplateContent();
@@ -7514,17 +7515,6 @@ let Tab = class Tab extends Component {
                 }
                 this.select(this.selectedItem);
             }
-        }
-    }
-    resetBlazorTemplates(item, index) {
-        if (!isBlazor()) {
-            return;
-        }
-        if (item.headerTemplate && !this.isStringTemplate && (item.headerTemplate).indexOf('<div>Blazor') === 0) {
-            resetBlazorTemplate(this.element.id + index + '_' + 'headerTemplate', 'HeaderTemplate');
-        }
-        if (item.content && !this.isStringTemplate && item.content.indexOf('<div>Blazor') === 0) {
-            resetBlazorTemplate(this.element.id + index + '_' + 'content', 'ContentTemplate');
         }
     }
     /**
@@ -7599,7 +7589,7 @@ let Tab = class Tab extends Component {
             if (!isNullOrUndefined(this.bdrLine)) {
                 this.bdrLine.classList.add(CLS_HIDDEN$1);
             }
-            this.tbItems = select('.' + CLS_HEADER$1 + ' .' + CLS_TB_ITEMS, this.element);
+            this.tbItems = select('.' + CLS_TB_ITEMS, this.getTabHeader());
             this.isAdd = true;
             let tabItems = this.parseObject(items, index);
             this.isAdd = false;
@@ -7647,7 +7637,6 @@ let Tab = class Tab extends Component {
         let removeArgs = { removedItem: trg, removedIndex: index, cancel: false };
         this.trigger('removing', removeArgs, (tabRemovingArgs) => {
             if (!tabRemovingArgs.cancel) {
-                this.resetBlazorTemplates(this.items[index], index);
                 this.tbObj.removeItems(index);
                 this.items.splice(index, 1);
                 this.itemIndexArray.splice(index, 1);
@@ -7737,8 +7726,9 @@ let Tab = class Tab extends Component {
      * @returns void.
      */
     select(args) {
-        this.tbItems = select('.' + CLS_HEADER$1 + ' .' + CLS_TB_ITEMS, this.element);
-        this.tbItem = selectAll('.' + CLS_HEADER$1 + ' .' + CLS_TB_ITEM, this.element);
+        let tabHeader = this.getTabHeader();
+        this.tbItems = select('.' + CLS_TB_ITEMS, tabHeader);
+        this.tbItem = selectAll('.' + CLS_TB_ITEM, tabHeader);
         this.content = select('.' + CLS_CONTENT$1, this.element);
         this.prevItem = this.tbItem[this.prevIndex];
         if (isNullOrUndefined(this.selectedItem) || (this.selectedItem < 0) || (this.tbItem.length <= this.selectedItem) || isNaN(this.selectedItem)) {

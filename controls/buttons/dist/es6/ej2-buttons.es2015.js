@@ -1,4 +1,4 @@
-import { Component, Event, EventHandler, NotifyPropertyChanges, Property, addClass, append, attributes, closest, deleteObject, detach, getInstance, getUniqueID, getValue, isBlazor, isNullOrUndefined, isRippleEnabled, removeClass, rippleEffect, setValue } from '@syncfusion/ej2-base';
+import { Component, Event, EventHandler, NotifyPropertyChanges, Property, addClass, append, attributes, closest, deleteObject, detach, getElement, getInstance, getUniqueID, getValue, isBlazor, isNullOrUndefined, isRippleEnabled, removeClass, rippleEffect, setValue } from '@syncfusion/ej2-base';
 
 /**
  * Initialize wrapper element for angular.
@@ -601,6 +601,7 @@ let CheckBox = class CheckBox extends Component {
         }
         let label = this.createElement('label', { attrs: { for: this.element.id } });
         let frameSpan = this.createElement('span', { className: 'e-icons ' + FRAME });
+        wrapper.classList.add('e-wrapper');
         if (this.enableRtl) {
             wrapper.classList.add(RTL);
         }
@@ -1035,6 +1036,7 @@ let RadioButton = RadioButton_1 = class RadioButton extends Component {
                 isCenterRipple: true
             });
         }
+        wrapper.classList.add('e-wrapper');
         if (this.enableRtl) {
             label.classList.add(RTL$1);
         }
@@ -1403,6 +1405,7 @@ let Switch = class Switch extends Component {
             handle.appendChild(rippleSpan);
             rippleEffect(rippleSpan, { duration: 400, isCenterRipple: true });
         }
+        wrapper.classList.add('e-wrapper');
         if (this.enableRtl) {
             wrapper.classList.add(RTL$2);
         }
@@ -1940,7 +1943,8 @@ let ChipList = class ChipList extends Component {
                     let deletedItemArgs = chipData;
                     this.trigger('delete', deletedItemArgs, (observedArgs) => {
                         if (!observedArgs.cancel) {
-                            this.deleteHandler(chipData.element, chipData.index);
+                            observedArgs.element = isBlazor() ? getElement(observedArgs.element) : observedArgs.element;
+                            this.deleteHandler(observedArgs.element, observedArgs.index);
                         }
                     });
                 }

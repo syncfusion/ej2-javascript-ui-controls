@@ -47,5 +47,8 @@ export function getWorkbookRequiredModules(context: Workbook, modules: ModuleDec
             args: [context]
         });
     }
+    if (context.allowSorting) {
+        modules.push({ member: 'workbookSort', args: [context] });
+    }
     return modules;
 }

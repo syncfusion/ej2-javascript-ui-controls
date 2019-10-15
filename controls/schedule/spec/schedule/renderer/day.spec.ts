@@ -215,6 +215,27 @@ describe('Schedule day view', () => {
             expect(schObj.element.querySelector('.e-date-range .e-tbar-btn-text').innerHTML).toEqual('October 5, 2017');
         });
 
+        it('Week Number and firstDayofWeek Combination', () => {
+            let model: ScheduleModel = { currentView: 'Day', selectedDate: new Date(2019, 0, 1), showWeekNumber: true };
+            schObj = util.createSchedule(model, []);
+
+            expect(schObj.element.querySelector('.e-date-range .e-tbar-btn-text').innerHTML).toEqual('January 1, 2019');
+            expect((schObj.element.querySelector('.e-week-number') as HTMLElement).innerText).toBe('1');
+            (schObj.element.querySelector('.e-toolbar-item.e-prev') as HTMLElement).click();
+            expect(schObj.element.querySelector('.e-date-range .e-tbar-btn-text').innerHTML).toEqual('December 31, 2018');
+            expect((schObj.element.querySelector('.e-week-number') as HTMLElement).innerText).toBe('1');
+            (schObj.element.querySelector('.e-toolbar-item.e-prev') as HTMLElement).click();
+            expect(schObj.element.querySelector('.e-date-range .e-tbar-btn-text').innerHTML).toEqual('December 30, 2018');
+            expect((schObj.element.querySelector('.e-week-number') as HTMLElement).innerText).toBe('1');
+            (schObj.element.querySelector('.e-toolbar-item.e-prev') as HTMLElement).click();
+            expect(schObj.element.querySelector('.e-date-range .e-tbar-btn-text').innerHTML).toEqual('December 29, 2018');
+            expect((schObj.element.querySelector('.e-week-number') as HTMLElement).innerText).toBe('52');
+            schObj.firstDayOfWeek = 6;
+            schObj.dataBind();
+            expect(schObj.element.querySelector('.e-date-range .e-tbar-btn-text').innerHTML).toEqual('December 29, 2018');
+            expect((schObj.element.querySelector('.e-week-number') as HTMLElement).innerText).toBe('1');
+        });
+
         it('date format', () => {
             let model: ScheduleModel = { currentView: 'Day', selectedDate: new Date(2017, 9, 5), dateFormat: 'y MMM' };
             schObj = util.createSchedule(model, []);

@@ -25,7 +25,6 @@ export interface CheckBoxModel extends ComponentModel{
      * Specifies a value that indicates whether the CheckBox is `checked` or not.
      * When set to `true`, the CheckBox will be in `checked` state.
      * @default false
-     * @isBlazorNullableType true
      */
     checked?: boolean;
 

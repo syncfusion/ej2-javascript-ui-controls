@@ -1,4 +1,4 @@
-import { Component, INotifyPropertyChanged, NotifyPropertyChanges, ChildProperty, L10n, Collection, Complex } from '@syncfusion/ej2-base';import { ModuleDeclaration, isNullOrUndefined, Property, Event, EmitType } from '@syncfusion/ej2-base';import { PdfViewerBase } from './index';import { Navigation } from './index';import { Magnification } from './index';import { Toolbar } from './index';import { ToolbarItem } from './index';import { LinkTarget, InteractionMode, AnnotationType, AnnotationToolbarItem, LineHeadStyle, ContextMenuAction, FontStyle, TextAlignment } from './base/types';import { Annotation } from './index';import { LinkAnnotation } from './index';import { ThumbnailView } from './index';import { BookmarkView } from './index';import { TextSelection } from './index';import { TextSearch } from './index';import { FormFields } from './index';import { Print, CalibrationUnit } from './index';import { UnloadEventArgs, LoadEventArgs, LoadFailedEventArgs, AjaxRequestFailureEventArgs, PageChangeEventArgs, PageClickEventArgs, ZoomChangeEventArgs, HyperlinkClickEventArgs, HyperlinkMouseOverArgs } from './index';import { AnnotationAddEventArgs, AnnotationRemoveEventArgs, AnnotationPropertiesChangeEventArgs, AnnotationResizeEventArgs, AnnotationSelectEventArgs } from './index';import { PdfAnnotationBase, ZOrderPageTable } from '../diagram/pdf-annotation';import { PdfAnnotationBaseModel } from '../diagram/pdf-annotation-model';import { Drawing, ClipBoardObject } from '../diagram/drawing';import { Selector } from '../diagram/selector';import { SelectorModel } from '../diagram/selector-model';import { PointModel, IElement, Rect } from '@syncfusion/ej2-drawings';import { renderAdornerLayer } from '../diagram/dom-util';import { ThumbnailClickEventArgs } from './index';
+import { Component, INotifyPropertyChanged, NotifyPropertyChanges, ChildProperty, L10n, Collection, Complex } from '@syncfusion/ej2-base';import { ModuleDeclaration, isNullOrUndefined, Property, Event, EmitType } from '@syncfusion/ej2-base';import { PdfViewerBase } from './index';import { Navigation } from './index';import { Magnification } from './index';import { Toolbar } from './index';import { ToolbarItem } from './index';import { LinkTarget, InteractionMode, AnnotationType, AnnotationToolbarItem, LineHeadStyle, ContextMenuAction, FontStyle, TextAlignment } from './base/types';import { Annotation } from './index';import { LinkAnnotation } from './index';import { ThumbnailView } from './index';import { BookmarkView } from './index';import { TextSelection } from './index';import { TextSearch } from './index';import { FormFields } from './index';import { Print, CalibrationUnit } from './index';import { UnloadEventArgs, LoadEventArgs, LoadFailedEventArgs, AjaxRequestFailureEventArgs, PageChangeEventArgs, PageClickEventArgs, ZoomChangeEventArgs, HyperlinkClickEventArgs, HyperlinkMouseOverArgs, ImportStartEventArgs, ImportSuccessEventArgs, ImportFailureEventArgs, ExportStartEventArgs, ExportSuccessEventArgs, ExportFailureEventArgs } from './index';import { AnnotationAddEventArgs, AnnotationRemoveEventArgs, AnnotationPropertiesChangeEventArgs, AnnotationResizeEventArgs, AnnotationSelectEventArgs } from './index';import { TextSelectionStartEventArgs, TextSelectionEndEventArgs } from './index';import { PdfAnnotationBase, ZOrderPageTable } from '../diagram/pdf-annotation';import { PdfAnnotationBaseModel } from '../diagram/pdf-annotation-model';import { Drawing, ClipBoardObject } from '../diagram/drawing';import { Selector } from '../diagram/selector';import { SelectorModel } from '../diagram/selector-model';import { PointModel, IElement, Rect } from '@syncfusion/ej2-drawings';import { renderAdornerLayer } from '../diagram/dom-util';import { ThumbnailClickEventArgs } from './index';
 import {IAjaxHeaders} from "./pdfviewer";
 import {ComponentModel} from '@syncfusion/ej2-base';
 
@@ -985,6 +985,12 @@ export interface PdfViewerModel extends ComponentModel{
     enableNavigationToolbar?: boolean;
 
     /**
+     * Enable or disables the Comment Panel of PdfViewer.
+     * @default true
+     */
+    enableCommentPanel?: boolean;
+
+    /**
      * Enable or disables the download option of PdfViewer.
      * @default true
      */
@@ -1367,11 +1373,67 @@ export interface PdfViewerModel extends ComponentModel{
     annotationSelect?: EmitType<AnnotationSelectEventArgs>;
 
     /**
+     * Triggers when an imported annotations started in the PDF document.
+     * @event
+     * @blazorProperty 'ImportStarted'
+     */
+    importStart?: EmitType<ImportStartEventArgs>;
+
+    /**
+     * Triggers when an exported annotations started in the PDF Viewer.
+     * @event
+     * @blazorProperty 'ExportStarted'
+     */
+    exportStart?: EmitType<ExportStartEventArgs>;
+
+    /**
+     * Triggers when an imports annotations succeed in the PDF document.
+     * @event
+     * @blazorProperty 'ImportSucceed'
+     */
+    importSuccess?: EmitType<ImportSuccessEventArgs>;
+
+    /**
+     * Triggers when an export annotations succeed in the PDF Viewer.
+     * @event
+     * @blazorProperty 'ExportSucceed'
+     */
+    exportSuccess?: EmitType<ExportSuccessEventArgs>;
+
+    /**
+     * Triggers when an imports annotations failed in the PDF document.
+     * @event
+     * @blazorProperty 'ImportFailed'
+     */
+    importFailed?: EmitType<ImportFailureEventArgs>;
+
+    /**
+     * Triggers when an export annotations failed in the PDF Viewer.
+     * @event
+     * @blazorProperty 'ExportFailed'
+     */
+    exportFailed?: EmitType<ExportFailureEventArgs>;
+
+    /**
      * Triggers an event when the thumbnail is clicked in the thumbnail panel of PDF Viewer.
      * @event
      * @blazorProperty 'OnThumbnailClick'
      */
     thumbnailClick?: EmitType<ThumbnailClickEventArgs>;
+
+    /**
+     * Triggers an event when the text selection is started.
+     * @event
+     * @blazorProperty 'OnTextSelectionStart'
+     */
+    textSelectionStart?: EmitType<TextSelectionStartEventArgs>;
+
+    /**
+     * Triggers an event when the text selection is finished.
+     * @event
+     * @blazorProperty 'OnTextSelectionEnd'
+     */
+    textSelectionEnd?: EmitType<TextSelectionEndEventArgs>;
 
     /**
      * Triggers when the property of the annotation is changed in the page of the PDF document.

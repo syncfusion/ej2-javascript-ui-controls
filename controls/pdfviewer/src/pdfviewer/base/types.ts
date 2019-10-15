@@ -34,7 +34,8 @@ export type AnnotationToolbarItem =
     'FontSizeAnnotationTool' |
     'FontStylesAnnotationTool' |
     'FontAlignAnnotationTool' |
-    'FontColorAnnotationTool';
+    'FontColorAnnotationTool'|
+    'CommentPanelTool';
 /**
  * Enum LinkTarget for hyperlink navigation
  */

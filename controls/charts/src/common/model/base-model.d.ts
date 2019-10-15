@@ -404,6 +404,20 @@ export interface TooltipSettingsModel {
     enableAnimation?: boolean;
 
     /**
+     * Duration for the ToolTip hide.
+     * @default 1000
+     */
+
+    duration?: number;
+
+    /**
+     * Fade Out duration for the ToolTip hide.
+     * @default 1000
+     */
+
+    fadeOutDuration?: number;
+
+    /**
      * Options to customize tooltip borders.
      */
     border?: BorderModel;

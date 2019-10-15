@@ -6,11 +6,12 @@ import { Chart } from '../../../src/chart/chart';
 import { DataLabel } from '../../../src/chart/series/data-label';
 import { PolarSeries } from '../../../src/chart/series/polar-series';
 import { RadarSeries } from '../../../src/chart/series/radar-series';
+import { LineSeries } from '../../../src/chart/series/line-series';
 import { DateTime } from '../../../src/chart/axis/date-time-axis';
 import { Logarithmic } from '../../../src/chart/axis/logarithmic-axis';
 import { Category } from '../../../src/chart/axis/category-axis';
 import { Axis } from '../../../src/chart/axis/axis';
-import { CoefficientToVector, valueToPolarCoefficient } from '../../../src/common/utils/helper';
+import { CoefficientToVector, valueToPolarCoefficient, getElement } from '../../../src/common/utils/helper';
 import { ChartLocation } from '../../../src/common/utils/helper';
 import { Series, Points } from '../../../src/chart/series/chart-series';
 import { Legend } from '../../../src/chart/legend/legend';
@@ -22,7 +23,7 @@ import  {profile , inMB, getMemoryProfile} from '../../common.spec';
 import { tool1, tool2, datetimeData, categoryData, negativeDataPoint } from '../base/data.spec';
 import { EmitType } from '@syncfusion/ej2-base';
 import { ILoadedEventArgs, IPointRenderEventArgs } from '../../../src/chart/model/chart-interface';
-Chart.Inject(DateTime, Category, Tooltip, Logarithmic, PolarSeries, RadarSeries, DataLabel, Legend);
+Chart.Inject(DateTime, Category, Tooltip, Logarithmic, PolarSeries, LineSeries, RadarSeries, DataLabel, Legend);
 let data: any = tool1;
 let data2: any = tool2;
 let datetime: any = datetimeData;
@@ -597,6 +598,211 @@ describe('Chart Control', () => {
         
     });
     
+    describe('Polar Axis: Smart Labels', () => {
+        let chartObj: Chart;
+        beforeAll((): void => {
+            ele = createElement('div', { id: 'container' });
+            document.body.appendChild(ele);
+            chartObj = new Chart(
+                {
+                    primaryXAxis: {
+                        title: 'Months',
+                        valueType: 'Category',
+                        labelPlacement: 'OnTicks',
+                        interval: 1,
+                        labelIntersectAction: "None"
+                    },
+                    margin: {
+                        
+                    },
+                    //Initializing Primary Y Axis
+                    primaryYAxis:
+                    {
+                        title: 'Temperature (Celsius)',
+                        minimum: -25, maximum: 25, interval: 1,
+                        edgeLabelPlacement: 'Shift',
+                        labelFormat: '{value}°C',
+                        labelIntersectAction: "None"
+                    },
+                    chartArea: {
+                        border: {width:1, color: 'red'}
+                    },
+                    //Initializing Chart Series
+                    series: [
+                        {
+                            dataSource: [
+                                { x: 'Jan', y: -7.1 }, { x: 'Feb', y: -3.7 },
+                                { x: 'Mar', y: 0.8 }, { x: 'Apr', y: 6.3 },
+                                { x: 'May', y: 13.3 }, { x: 'Jun', y: 18.0 },
+                                { x: 'Jul', y: 19.8 }, { x: 'Aug', y: 18.1 },
+                                { x: 'Sep', y: 13.1 }, { x: 'Oct', y: 4.1 },
+                                { x: 'Nov', y: -3.8 }, { x: 'Dec', y: -6.8 },
+            
+                                { x: 'Jan1', y: -7.1 }, { x: 'Feb1', y: -3.7 },
+                                { x: 'Mar1', y: 0.8 }, { x: 'Apr1', y: 6.3 },
+                                { x: 'May1', y: 13.3 }, { x: 'Jun1', y: 18.0 },
+                                { x: 'Jul1', y: 19.8 }, { x: 'Aug1', y: 18.1 },
+                                { x: 'Sep1', y: 13.1 }, { x: 'Oct1', y: 4.1 },
+                                { x: 'Nov1', y: -3.8 }, { x: 'Dec1', y: -6.8 },
+            
+                                { x: 'Jan2', y: -7.1 }, { x: 'Feb2', y: -3.7 },
+                                { x: 'Mar2', y: 0.8 }, { x: 'Apr2', y: 6.3 },
+                                { x: 'May2', y: 13.3 }, { x: 'Jun2', y: 18.0 },
+                                { x: 'Jul2', y: 19.8 }, { x: 'Aug2', y: 18.1 },
+                                { x: 'Sep2', y: 13.1 }, { x: 'Oct2', y: 4.1 },
+                                { x: 'Nov2', y: -3.8 }, { x: 'Dec2', y: -6.8 },
+            
+                                { x: 'Jan3', y: -7.1 }, { x: 'Feb3', y: -3.7 },
+                                { x: 'Mar3', y: 0.8 }, { x: 'Apr3', y: 6.3 },
+                                { x: 'May3', y: 13.3 }, { x: 'Jun3', y: 18.0 },
+                                { x: 'Jul3', y: 19.8 }, { x: 'Aug3', y: 18.1 },
+                                { x: 'Sep3', y: 13.1 }, { x: 'Oct3', y: 4.1 },
+                                { x: 'Nov3', y: -3.8 }, { x: 'Dec3', y: -6.8 },
+                            ],
+                            xName: 'x', width: 2, yName: 'y', name: 'Warmest', type: 'Polar',
+                            marker: {
+                                visible: true,
+                                height: 10, width: 10,
+                                shape: 'Pentagon',
+                            },
+                            
+                        }
+                    ],
+                    //Initializing Chart title
+                    title: 'Alaska Weather Statistics - 2016',
+                    //Initializing User Interaction Tooltip
+                    tooltip: {
+                        enable: true
+                    }
+                },'#container');
+        });
+
+        afterAll((): void => {
+            chartObj.destroy();
+            document.getElementById('container').remove();
+        });
+
+        it('Default Polar Chart', (done: Function) => {
+            chartObj.loaded = (args: Arg): void => {
+                let chart: Element = document.getElementById('container');
+                expect(chart !== null).toBe(true);
+                expect(args.chart.series[0].type === 'Polar').toBe(true);
+                done();
+            };
+            chartObj.refresh();
+        });
+
+        it('Default Radar Chart', (done: Function) => {
+            chartObj.loaded = (args: Arg): void => {
+                let chart: Element = document.getElementById('container');
+                expect(chart !== null).toBe(true);
+                expect(args.chart.series[0].type === 'Radar').toBe(true);
+                done();
+            };
+            chartObj.series[0].type = 'Radar';
+            chartObj.refresh();
+        });
+
+        it('Check default X axis labels count', (done: Function) => {
+            chartObj.loaded = (args: Arg): void => {
+                let ele: Element = document.getElementById('containerAxisLabels0');
+                expect(ele.childElementCount == 48).toBe(true);
+                done();
+            };
+            chartObj.series[0].type = 'Polar';
+            chartObj.refresh();
+        });
+
+        it('Check default Y axis labels count', (done: Function) => {
+            chartObj.loaded = (args: Arg): void => {
+                let ele: Element = document.getElementById('containerAxisLabels1');
+                expect(ele.childElementCount == 51).toBe(true);
+                done();
+            };
+            chartObj.refresh();
+        });
+
+        it('Check X axis labels count after hide', (done: Function) => {
+            chartObj.loaded = (args: Arg): void => {
+                let ele: Element = document.getElementById('containerAxisLabels0');
+                expect(ele.childElementCount == 37 || ele.childElementCount == 38).toBe(true);
+                done();
+            };
+            chartObj.primaryXAxis.labelIntersectAction = 'Hide';
+            chartObj.refresh();
+        });
+
+        it('Check Y axis labels count after hide', (done: Function) => {
+            chartObj.loaded = (args: Arg): void => {
+                let ele: Element = document.getElementById('containerAxisLabels1');
+                expect(ele.childElementCount == 9 || ele.childElementCount == 11).toBe(true);
+                done();
+            };
+            chartObj.primaryYAxis.labelIntersectAction = 'Hide';
+            chartObj.refresh();
+        });
+
+        it('Check X axis labels hide with label position inside', (done: Function) => {
+            chartObj.loaded = (args: Arg): void => {
+                let ele: Element = document.getElementById('containerAxisLabels0');
+                expect(ele.childElementCount == 32).toBe(true);
+                done();
+            };
+            chartObj.primaryXAxis.labelPosition = 'Inside';
+            chartObj.refresh();
+        });
+
+        it('Check Y axis labels count when X axis label inside and Y axis intersect action none', (done: Function) => {
+            chartObj.loaded = (args: Arg): void => {
+                let ele: Element = document.getElementById('containerAxisLabels1');
+                expect(ele.childElementCount == 51).toBe(true);
+                done();
+            };
+            chartObj.primaryYAxis.labelIntersectAction = 'None';
+            chartObj.primaryXAxis.labelPosition = 'Inside';
+            chartObj.refresh();
+        });
+
+        it('Check Y axis labels count when X axis label inside and Y axis intersect action hide', (done: Function) => {
+            chartObj.loaded = (args: Arg): void => {
+                let ele: Element = document.getElementById('containerAxisLabels1');
+                expect(ele.childElementCount == 7 || ele.childElementCount == 9).toBe(true);
+                done();
+            };
+            chartObj.primaryYAxis.labelIntersectAction = 'Hide';
+            chartObj.primaryXAxis.labelPosition = 'Inside';
+            chartObj.refresh();
+        });
+
+        it('Check X axis labels with start angle and label position outside', (done: Function) => {
+            chartObj.loaded = (args: Arg): void => {
+                let ele: Element = document.getElementById('containerAxisLabels0');
+                expect(ele.childElementCount == 37 || ele.childElementCount == 38).toBe(true);
+                let anchor: string = getElement("container0_AxisLabel_0").getAttribute("text-anchor");
+                expect(anchor === 'start').toBe(true);
+                done();
+            };
+            chartObj.primaryXAxis.labelIntersectAction = 'Hide';
+            chartObj.primaryXAxis.labelPosition = 'Outside';
+            chartObj.primaryXAxis.startAngle = 90;
+            chartObj.refresh();
+        });
+
+        it('Check X axis labels with start angle and label position inside', (done: Function) => {
+            chartObj.loaded = (args: Arg): void => {
+                let ele: Element = document.getElementById('containerAxisLabels0');
+                expect(ele.childElementCount == 33).toBe(true);
+                let anchor: string = getElement("container0_AxisLabel_0").getAttribute("text-anchor");
+                expect(anchor === 'start').toBe(true);
+                done();
+            };
+            chartObj.primaryXAxis.labelIntersectAction = 'Hide';
+            chartObj.primaryXAxis.labelPosition = 'Inside';
+            chartObj.primaryXAxis.startAngle = 90;
+            chartObj.refresh();
+        });
+    });
+
     it('memory leak', () => {
         profile.sample();
         let average: any = inMB(profile.averageChange)

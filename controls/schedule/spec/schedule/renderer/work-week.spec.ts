@@ -267,6 +267,23 @@ describe('Schedule work week view', () => {
                 .toEqual('<div class="e-header-day">Mon</div><div class="e-header-date e-navigate" role="link">2</div>');
         });
 
+        it('Week Number and firstDayofWeek Combination', () => {
+            let model: ScheduleModel = { currentView: 'WorkWeek', selectedDate: new Date(2019, 0, 1), showWeekNumber: true };
+            schObj = util.createSchedule(model, []);
+            expect(schObj.element.querySelector('.e-date-header-container .e-header-cells').innerHTML)
+                .toEqual('<div class="e-header-day">Mon</div><div class="e-header-date e-navigate" role="link">31</div>');
+            expect(schObj.element.querySelectorAll('.e-week-number')[0].innerHTML).toBe('<span title="Week 1">1</span>');
+            (schObj.element.querySelector('.e-toolbar-item.e-prev') as HTMLElement).click();
+            expect(schObj.element.querySelector('.e-date-header-container .e-header-cells').innerHTML)
+                .toEqual('<div class="e-header-day">Mon</div><div class="e-header-date e-navigate" role="link">24</div>');
+            expect(schObj.element.querySelectorAll('.e-week-number')[0].innerHTML).toBe('<span title="Week 52">52</span>');
+            schObj.firstDayOfWeek = 6;
+            schObj.dataBind();
+            expect(schObj.element.querySelector('.e-date-header-container .e-header-cells').innerHTML)
+                .toEqual('<div class="e-header-day">Mon</div><div class="e-header-date e-navigate" role="link">24</div>');
+            expect(schObj.element.querySelectorAll('.e-week-number')[0].innerHTML).toBe('<span title="Week 52">52</span>');
+        });
+
         it('date format', () => {
             let model: ScheduleModel = { currentView: 'WorkWeek', selectedDate: new Date(2017, 9, 5), dateFormat: 'MMM dd yyyy' };
             schObj = util.createSchedule(model, []);

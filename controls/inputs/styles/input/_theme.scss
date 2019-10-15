@@ -38,6 +38,7 @@
     color: $input-group-disabled-color;
   }
 
+  // sass-lint:disable no-vendor-prefixes
   .e-input#{$css}[disabled],
   .e-input-group .e-input[disabled],
   .e-input-group.e-control-wrapper .e-input[disabled],
@@ -49,6 +50,7 @@
   .e-float-input.e-control-wrapper textarea[disabled],
   .e-float-input.e-disabled,
   .e-float-input.e-control-wrapper.e-disabled  {
+    -webkit-text-fill-color: $input-disable-font-color;
     background: $input-disable-bg-color;
     color: $input-disable-font-color;
     @if $input-skin-name == 'material' {
@@ -108,11 +110,13 @@
     color: inherit;
   }
 
+  // sass-lint:disable no-vendor-prefixes 
   /*! Added color to textbox for disbaled state */
   .e-float-input:not(.e-disabled) input[disabled],
   .e-float-input.e-control-wrapper:not(.e-disabled) input[disabled],
   .e-float-input:not(.e-disabled) textarea[disabled],
   .e-float-input.e-control-wrapper:not(.e-disabled) textarea[disabled] {
+    -webkit-text-fill-color: $input-disable-font-color;
     color: $input-disable-font-color;
   }
 

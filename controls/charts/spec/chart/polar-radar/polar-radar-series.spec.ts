@@ -1544,6 +1544,48 @@ describe('Chart Control', () => {
             chartObj.refresh();
         });
     });
+    describe('Customer issue', () => {
+        let chartObj: Chart;
+        beforeAll((): void => {
+            elem = createElement('div', { id: 'customerIssue' });
+            document.body.appendChild(elem);
+            chartObj = new Chart({
+                primaryXAxis: { isInversed: true, valueType: 'Category', labelPlacement: 'OnTicks' },
+
+                primaryYAxis: { title: 'Revenue in Millions', labelFormat: '{value}M', isInversed: true },
+
+                series: [
+                    {
+                        type: 'Polar', drawType: 'Column', xName: 'x', width: 2, yName: 'y', name: 'Product A', animation: { enable: false},
+                        dataSource: [{ x: 2000, y: 1 }, { x: 2001, y: 2.0 }, { x: 2002, y: 3.0 }, { x: 2003, y: 4.4 }],
+                    },
+                    {
+                        type: 'Polar', drawType: 'Column', xName: 'x', width: 2, yName: 'y', name: 'Product A', animation: { enable: false},
+                        dataSource: [{ x: 2000, y: 1 }, { x: 2001, y: 2.0 }, { x: 2002, y: 3.0 }, { x: 2003, y: 4.4 }],
+                    }
+                ],
+                tooltip: { enable: true }, title: 'Average Sales (Inversed Polar)',
+            });
+            chartObj.appendTo('#customerIssue');
+        });
+        afterAll((): void => {
+            chartObj.destroy();
+            elem.remove();
+        });
+        it('Checking with ColumnSeries OnTicks label', () => {
+           let point: Element = document.getElementById('customerIssue_Series_0_Point_1');
+           expect(point.getAttribute('d')).toBe('M 290.075 224.625 A 94.425 94.425 0 0 1 317.7313754179358 157.85650895505148 L 384.5 224.625 Z');
+        });
+        it('checking columnSeries with between ticks', (done: Function) => {
+            chartObj.loaded = () => {
+                let point: Element = document.getElementById('customerIssue_Series_0_Point_1');
+                expect(point.getAttribute('d')).toBe('M 317.73144218646024 291.39355781353976 A 94.425 94.425 0 0 1 290.0750000000472 224.62509442500001 L 384.5 224.625 Z');
+                done();
+            };
+            chartObj.primaryXAxis.labelPlacement = 'BetweenTicks';
+            chartObj.dataBind();
+        });
+    });
     it('memory leak', () => {
         profile.sample();
         let average: any = inMB(profile.averageChange)

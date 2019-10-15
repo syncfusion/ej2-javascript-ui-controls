@@ -1220,9 +1220,13 @@ export class DiagramRenderer {
         if (attr) {
             if (element && (element as Container).children &&
                 (element as Container).children.length && ((element as Container).children[0] instanceof DiagramHtmlElement)) {
-                let layer: HTMLElement = getHTMLLayer(this.diagramId).children[0] as HTMLElement;
+                let id: string[] = canvas.id.split('_preview');
+                let layer: HTMLElement = document.getElementById(id[0] + '_html_div') ||
+                    getHTMLLayer(this.diagramId).children[0] as HTMLElement;
                 canvas = layer.querySelector(('#' + element.id + '_content_html_element'));
-                canvas.style.transform = 'scale(' + scaleX + ',' + scaleY + ')';
+                if (canvas) {
+                    canvas.style.transform = 'scale(' + scaleX + ',' + scaleY + ')';
+                }
             } else {
                 setAttributeSvg(canvas as SVGElement, attr);
             }

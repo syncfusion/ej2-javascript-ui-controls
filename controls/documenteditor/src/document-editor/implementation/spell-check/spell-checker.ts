@@ -42,48 +42,48 @@ export class SpellChecker {
 
     /**
      * Gets the languageID.
-
-
+     * @aspType int
+     * @blazorType int
      */
     public get languageID(): number {
         return isNullOrUndefined(this.langIDInternal) ? 0 : this.langIDInternal;
     }
     /**
      * Sets the languageID.
-
-
+     * @aspType int
+     * @blazorType int
      */
     public set languageID(value: number) {
         this.langIDInternal = value;
     }
     /**
      * Getter indicates whether suggestion enabled.
-
-
+     * @aspType bool
+     * @blazorType bool
      */
     public get allowSpellCheckAndSuggestion(): boolean {
         return this.spellSuggestionInternal;
     }
     /**
      * Setter to enable or disable suggestion
-
-
+     * @aspType bool
+     * @blazorType bool 
      */
     public set allowSpellCheckAndSuggestion(value: boolean) {
         this.spellSuggestionInternal = value;
     }
     /**
      * Getter indicates whether underline removed for mis-spelled word.
-
-
+     * @aspType bool
+     * @blazorType bool
      */
     public get removeUnderline(): boolean {
         return this.removeUnderlineInternal;
     }
     /**
      * Setter to enable or disable underline for mis-spelled word
-
-
+     * @aspType bool
+     * @blazorType bool
      */
     public set removeUnderline(value: boolean) {
         this.removeUnderlineInternal = value;

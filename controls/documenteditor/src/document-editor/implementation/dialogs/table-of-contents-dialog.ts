@@ -69,18 +69,21 @@ export class TableOfContentsDialog {
         }
 
         // tslint:disable-next-line:max-line-length
+        let topContainer: HTMLDivElement = createElement('div', { id: 'general_top_container', styles: 'display:inline-flex' }) as HTMLDivElement;
         let leftGeneralDiv: HTMLDivElement = createElement('div', { id: 'left_general', styles: leftGeneralDivStyles + 'position:relative;' }) as HTMLDivElement;
-        generalDiv.appendChild(leftGeneralDiv);
+        topContainer.appendChild(leftGeneralDiv);
         // tslint:disable-next-line:max-line-length
-        let rightGeneralDiv: HTMLDivElement = createElement('div', { styles: 'position:absolute;', className: 'e-de-toc-dlg-right-general-div' }) as HTMLDivElement;
-        generalDiv.appendChild(rightGeneralDiv);
+        let rightGeneralDiv: HTMLDivElement = createElement('div', { className: 'e-de-toc-dlg-right-general-div' }) as HTMLDivElement;
+        topContainer.appendChild(rightGeneralDiv);
+        generalDiv.appendChild(topContainer);
         // tslint:disable-next-line:max-line-length
-        let leftBottomGeneralDiv: HTMLDivElement = createElement('div', { id: 'leftBottom_general', styles: 'float:left;position:absolute;top:210px;' }) as HTMLDivElement;
-        generalDiv.appendChild(leftBottomGeneralDiv);
+        let bottomContainer: HTMLDivElement = createElement('div', { id: 'general_bottom_container', styles: 'display:inline-flex' }) as HTMLDivElement;
+        let leftBottomGeneralDiv: HTMLDivElement = createElement('div', { id: 'leftBottom_general', styles: 'float:left;' }) as HTMLDivElement;
+        bottomContainer.appendChild(leftBottomGeneralDiv);
         // tslint:disable-next-line:max-line-length
         let rightBottomGeneralDiv: HTMLDivElement = createElement('div', { className: 'e-de-toc-dlg-right-sub-container', styles: rightBottomGeneralDivStyles }) as HTMLDivElement;
-        generalDiv.appendChild(rightBottomGeneralDiv);
-
+        bottomContainer.appendChild(rightBottomGeneralDiv);
+        generalDiv.appendChild(bottomContainer);
         // tslint:disable-next-line:max-line-length
         let pageNumberDiv: HTMLDivElement = createElement('div', { id: 'pageNumber_div', className: 'e-de-toc-dlg-sub-container' }) as HTMLDivElement;
         let pageNumber: HTMLInputElement = <HTMLInputElement>createElement('input', {

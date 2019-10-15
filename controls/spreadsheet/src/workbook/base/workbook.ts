@@ -1,6 +1,6 @@
 import { Component, Property, NotifyPropertyChanges, INotifyPropertyChanged, Collection, Complex, EmitType } from '@syncfusion/ej2-base';
 import { Event, ModuleDeclaration, merge } from '@syncfusion/ej2-base';
-import { Sheet, initSheet, getSheet, getSheetIndexFromId, getSheetNameCount, getMaxSheetId } from './sheet';
+import { Sheet, initSheet, getSheet, getSheetIndexFromId, getSheetNameCount, getMaxSheetId, getSheetIndex } from './sheet';
 import { WorkbookModel } from './workbook-model';
 import { DefineNameModel } from '../common/class-model';
 import { getWorkbookRequiredModules } from '../common/module';
@@ -8,13 +8,17 @@ import { getData, clearRange } from './data';
 import { SheetModel } from './sheet-model';
 import { CellModel } from './cell-model';
 import { OpenOptions, BeforeOpenEventArgs, OpenFailureArgs } from '../../spreadsheet/common/interface';
-import { DefineName, CellStyle, updateUsedRange } from '../common/index';
+import { DefineName, CellStyle, updateUsedRange, getIndexesFromAddress } from '../common/index';
 import * as events from '../common/event';
 import { CellStyleModel } from '../common/index';
 import { setCellFormat, sheetCreated } from '../common/index';
-import { BeforeSaveEventArgs, SaveCompleteEventArgs, BeforeCellFormatArgs, SaveOptions, SortOptions } from '../common/interface';
-import { BeforeSortEventArgs, SortEventArgs } from '../common/interface';
-import { getCell, skipDefaultValue } from './cell';
+import { BeforeSaveEventArgs, SaveCompleteEventArgs, BeforeCellFormatArgs, SaveOptions } from '../common/interface';
+import { SortOptions, BeforeSortEventArgs, SortEventArgs } from '../common/interface';
+import { getCell, skipDefaultValue, setCell } from './cell';
+import { DataBind } from '../index';
+import { WorkbookSave, WorkbookFormula, WorkbookOpen, WorkbookSort } from '../integrations/index';
+import { WorkbookNumberFormat } from '../integrations/number-format';
+import { WorkbookEdit, WorkbookCellFormat } from '../actions/index';
 
 /**
  * Represents the Workbook.
@@ -281,40 +285,6 @@ export class Workbook extends Component<HTMLElement> implements INotifyPropertyC
     public saveComplete: EmitType<SaveCompleteEventArgs>;
 
     /**
-     * Triggers before sorting the specified range.
-     * ```html
-     * <div id='Spreadsheet'></div>
-     * ```
-     * ```typescript
-     * new Spreadsheet({
-     *       beforeSort: (args: BeforeSortEventArgs) => {
-     *       }
-     *      ...
-     *  }, '#Spreadsheet');
-     * ```
-     * @event
-     */
-    @Event()
-    public beforeSort: EmitType<BeforeSortEventArgs>;
-
-    /**
-     * Triggers after sorting action is completed.
-     * ```html
-     * <div id='Spreadsheet'></div>
-     * ```
-     * ```typescript
-     * new Spreadsheet({
-     *       sortComplete: (args: SortEventArgs) => {
-     *       }
-     *      ...
-     *  }, '#Spreadsheet');
-     * ```
-     * @event
-     */
-    @Event()
-    public sortComplete: EmitType<SortEventArgs>;
-
-    /**
      * Triggers before the cell format applied to the cell.
      * ```html
      * <div id='Spreadsheet'></div>
@@ -346,6 +316,8 @@ export class Workbook extends Component<HTMLElement> implements INotifyPropertyC
      */
     constructor(options: WorkbookModel) {
         super(options);
+        Workbook.Inject(
+            DataBind, WorkbookSave, WorkbookOpen, WorkbookNumberFormat, WorkbookCellFormat, WorkbookEdit, WorkbookFormula, WorkbookSort);
         this.commonCellStyle = {};
         if (options && options.cellStyle) { this.commonCellStyle = options.cellStyle; }
         if (this.getModuleName() === 'workbook') {
@@ -612,16 +584,28 @@ export class Workbook extends Component<HTMLElement> implements INotifyPropertyC
      * @param sortOptions - options for sorting.
      * @param range - address of the data range.
      */
-    public sort(sortOptions?: SortOptions, range?: string): void {
-        if (!this.allowSorting) {
-            return;
-        }
+    public sort(sortOptions?: SortOptions, range?: string): Promise<SortEventArgs> {
+        if (!this.allowSorting) { return Promise.reject(); }
         let eventArgs: BeforeSortEventArgs = {
-            range: range,
-            sortOptions : sortOptions,
+            range: range || this.getActiveSheet().selectedRange,
+            sortOptions: sortOptions || { sortDescriptors: {} },
             cancel: false
         };
-        this.notify(events.initiateSort, eventArgs);
+        let promise: Promise<SortEventArgs> = new Promise((resolve: Function, reject: Function) => { resolve((() => { /** */ })()); });
+        let sortArgs: {[key: string]: BeforeSortEventArgs | Promise<SortEventArgs>} = { args: eventArgs, promise: promise };
+        this.notify(events.initiateSort, sortArgs);
+        return sortArgs.promise as Promise<SortEventArgs>;
+    }
+
+    /**
+     * To update a cell properties.
+     * @param {CellModel} cell - Cell properties.
+     * @param {string} address - Address to update.
+     */
+    public updateCell(cell: CellModel, address?: string): void {
+        let range: number[] = getIndexesFromAddress(address);
+        let sheetIdx: number = getSheetIndex(this, address.split('!')[0]) || this.activeSheetTab - 1;
+        setCell(range[0], range[1], this.sheets[sheetIdx], cell);
     }
 
     /**

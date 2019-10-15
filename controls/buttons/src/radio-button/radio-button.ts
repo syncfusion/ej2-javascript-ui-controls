@@ -237,6 +237,7 @@ export class RadioButton extends Component<HTMLInputElement> implements INotifyP
                 isCenterRipple: true
             });
         }
+        wrapper.classList.add('e-wrapper');
         if (this.enableRtl) {
             label.classList.add(RTL);
         }

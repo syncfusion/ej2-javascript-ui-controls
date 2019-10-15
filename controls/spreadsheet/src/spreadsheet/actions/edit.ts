@@ -402,7 +402,7 @@ export class Edit {
 
     private updateEditedValue(tdRefresh: boolean = true): void {
         let oldCellValue: string = this.editCellData.oldValue;
-        let oldValue: string = oldCellValue.toString().toUpperCase();
+        let oldValue: string = oldCellValue ? oldCellValue.toString().toUpperCase() : '';
         if (oldCellValue !== this.editCellData.value || oldValue.indexOf('=RAND()') > -1 || oldValue.indexOf('RAND()') > -1 ||
             oldValue.indexOf('=RANDBETWEEN(') > -1 || oldValue.indexOf('RANDBETWEEN(') > -1) {
             let cellIndex: number[] = getRangeIndexes(this.parent.getActiveSheet().activeCell);

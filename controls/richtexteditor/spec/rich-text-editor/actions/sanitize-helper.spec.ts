@@ -2,9 +2,14 @@
  * Sanitize HTML helper renderer spec
  */
 import { createElement, detach } from '@syncfusion/ej2-base';
+import { EditorManager } from "../../../src/editor-manager/index";
 import { RichTextEditor } from '../../../src/rich-text-editor/base/rich-text-editor';
-import { renderRTE, destroy } from './../render.spec';
-import { HtmlEditor, HTMLFormatter, BeforeSanitizeHtmlArgs } from "../../../src/rich-text-editor/index";
+import { renderRTE, destroy, setCursorPoint } from './../render.spec';
+import { HtmlEditor, HTMLFormatter, BeforeSanitizeHtmlArgs, PasteCleanup } from "../../../src/rich-text-editor/index";
+import {
+    CLS_RTE_PASTE_KEEP_FORMAT, CLS_RTE_PASTE_PLAIN_FORMAT
+  } from "../../../src/rich-text-editor/base/classes";
+import { CLS_RTE_PASTE_OK } from "../../../src/rich-text-editor/base/classes";
 
 RichTextEditor.Inject(HtmlEditor);
 
@@ -419,6 +424,91 @@ describe('Sanitize Html Helper', () => {
 
         it('check the style element', () => {
             expect((rteObj.inputElement.querySelectorAll('script')).length).toBe(0);
+        });
+
+        afterAll(() => {
+            destroy(rteObj);
+        });
+    })
+
+
+    describe("prevent xss attack", () => {
+        let editorObj: EditorManager;
+        let rteObj: RichTextEditor;
+        let pasteCleanUp: PasteCleanup;
+        let rteEle: HTMLElement;
+        let element: HTMLElement;
+        let keepFormatButton: HTMLElement;
+        let beforeDialogOpenEvent: boolean = false;
+        let keyBoardEvent: any = {
+          preventDefault: () => { },
+          type: "keydown",
+          stopPropagation: () => { },
+          ctrlKey: false,
+          shiftKey: false,
+          action: null,
+          which: 64,
+          key: ""
+        };
+        let defaultString: string = `
+        <div style="color:red;" id="content-edit" contenteditable="true" class="e-node-deletable e-node-inner">
+        <div>
+        <div id="inline-event" onmouseover='javascript:alert(1)'></div>
+        <script>alert('hi')</script>
+        <img src="javascript:alert('XSS Image');"/>
+        <iframe src="http://evil.com/xss.html"></iframe>
+        <input type="image" src="javascript:alert('XSS Image');"/>
+        <link rel="stylesheet" href="javascript:alert('XSS CSS');"/>
+        <div id="background" style="background-image: url(javascript:alert('XSS Background'))">BackGround Image</div>
+        <div id="expression" style="width: expression(alert('XSS'));">Expression</div>
+        <object type="text/x-scriptlet" data="http://hacker.com/xss.html">
+        </object>
+        </div>
+         </div>
+         `;
+      
+        beforeAll((done: Function) => {
+          rteObj = renderRTE({
+            pasteCleanupSettings: {
+              prompt: true
+            },
+            beforeDialogOpen: beforeDialogOpen
+          });
+          rteEle = rteObj.element;
+          editorObj = new EditorManager({ document: document, editableElement: document.getElementsByClassName("e-content")[0] });
+          function beforeDialogOpen(args: any): void {
+            beforeDialogOpenEvent = true;
+          }
+          done();
+        });
+        it("prevent xss attack when pasting", (done) => {
+          keyBoardEvent.clipboardData = {
+            getData: () => {
+              return defaultString;
+            },
+            items: []
+          };
+          (rteObj as any).inputElement.focus();
+          setCursorPoint((rteObj as any).inputElement, 0);
+          rteObj.onPaste(keyBoardEvent);
+          setTimeout(() => {
+            if (rteObj.pasteCleanupSettings.prompt) {
+              let keepFormat: any = document.getElementById(rteObj.getID() + "_pasteCleanupDialog").getElementsByClassName(CLS_RTE_PASTE_KEEP_FORMAT);
+              keepFormat[0].click();
+              let pasteOK: any = document.getElementById(rteObj.getID() + '_pasteCleanupDialog').getElementsByClassName(CLS_RTE_PASTE_OK);
+              pasteOK[0].click();
+            }
+            expect(rteObj.inputElement.querySelectorAll('script').length).toBe(0);
+            expect(rteObj.inputElement.querySelectorAll('iframe').length).toBe(0);
+            expect(rteObj.inputElement.querySelectorAll('img').length).toBe(0);
+            expect(rteObj.inputElement.querySelectorAll('link').length).toBe(0);
+            expect(rteObj.inputElement.querySelectorAll('object').length).toBe(0);
+            expect(rteObj.inputElement.querySelectorAll('input').length).toBe(0);
+            expect(rteObj.inputElement.querySelector('#background').hasAttribute('style')).toBe(false);
+            expect(rteObj.inputElement.querySelector('#expression').hasAttribute('style')).toBe(false);
+            expect(rteObj.inputElement.querySelector('#inline-event').hasAttribute('onmouseover')).toBe(false);
+            done();
+          }, 50);
         });
 
         afterAll(() => {

@@ -2,6 +2,28 @@
 
 ## [Unreleased]
 
+## 17.3.17 (2019-10-15)
+
+### MultiSelect
+
+#### Bug Fixes
+
+- `#250710` - Now, you can filter the data while render the component using `select` element.
+
+## 17.3.16 (2019-10-09)
+
+### ListBox
+
+#### Bug Fixes
+
+- Adding common cssClass for wrapper.
+
+### MultiSelect
+
+#### New Features
+
+- Provided `Material2 outline layout` for multiselect.
+
 ## 17.3.14 (2019-10-03)
 
 ### AutoComplete

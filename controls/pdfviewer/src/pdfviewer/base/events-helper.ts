@@ -171,6 +171,18 @@ export interface AnnotationAddEventArgs extends BaseEventArgs {
      * Define the type of the annotation added in the page of the PDF document.
      */
     annotationType: AnnotationType;
+    /**
+     * Defines the selected text content in the text markup annotation.
+     */
+    textMarkupContent?: string;
+    /**
+     * Starting index of text markup annotation in the page text content.
+     */
+    textMarkupStartIndex?: number;
+    /**
+     * End index of text markup annotation in the page text content.
+     */
+    textMarkupEndIndex?: number;
 }
 
 /**
@@ -300,4 +312,111 @@ export interface ThumbnailClickEventArgs extends BaseEventArgs {
      * Page number of the thumbnail in which click action is performed
      */
     pageNumber: number;
+}
+
+/**
+ * This event arguments provide the necessary information about text selection start event.
+ */
+export interface TextSelectionStartEventArgs extends BaseEventArgs {
+    /**
+     * Defines the page number in which the text selection is started.
+     */
+    pageIndex: number;
+}
+
+/**
+ * This event arguments provide the necessary information about text selection end event.
+ */
+export interface TextSelectionEndEventArgs extends BaseEventArgs {
+    /**
+     * Defines the page number in which the text selection is finished.
+     */
+    pageIndex: number;
+    /**
+     * Defines the text content selected in the page.
+     */
+    textContent: string;
+    /**
+     * Defines the bounds of the selected text in the page.
+     */
+    // tslint:disable-next-line
+    textBounds: any;
+}
+
+/** 
+ * This event arguments provides the necessary information about import annotations start event.
+ */
+export interface ImportStartEventArgs extends BaseEventArgs {
+    /**
+     * json Data to be imported into PdfViewer.
+     */
+    // tslint:disable-next-line
+    importData: any;
+}
+
+/** 
+ * This event arguments provides the necessary information about export annotations start event.
+ */
+export interface ExportStartEventArgs extends BaseEventArgs {
+    /**
+     * Specifies the loaded document annotation details.
+     */
+    // tslint:disable-next-line
+    exportData: any;
+}
+
+/** 
+ * This event arguments provides the necessary information about import annotations success event.
+ */
+export interface ImportSuccessEventArgs extends BaseEventArgs {
+    /**
+     * Specified the data to be imported in loaded document.
+     */
+    // tslint:disable-next-line
+    importData: any;
+}
+
+/** 
+ * This event arguments provides the necessary information about export annotations success event.
+ */
+export interface ExportSuccessEventArgs extends BaseEventArgs {
+    /**
+     * Specifies the data exported from the loaded documents.
+     */
+    // tslint:disable-next-line
+    exportData: any;
+    /**
+     * Specifies the exported annotations json file name.
+     */
+    fileName: string;
+}
+
+/** 
+ * This event arguments provides the necessary information about import annotations failure event.
+ */
+export interface ImportFailureEventArgs extends BaseEventArgs {
+    /**
+     * Document name to be loaded into PdfViewer
+     */
+    // tslint:disable-next-line
+    importData: any;
+    /**
+     * Error details for import annotations.
+     */
+    errorDetails: string;
+}
+
+/** 
+ * This event arguments provides the necessary information about export annotations failure event.
+ */
+export interface ExportFailureEventArgs extends BaseEventArgs {
+    /**
+     * Document name to be loaded into PdfViewer
+     */
+    // tslint:disable-next-line
+    exportData: any;
+    /**
+     * Error details for export annotations.
+     */
+    errorDetails: string;
 }

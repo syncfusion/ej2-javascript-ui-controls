@@ -7,7 +7,7 @@ import {DetailsView} from '../../../src/file-manager/layout/details-view';
 import { Toolbar } from '../../../src/file-manager/actions/toolbar';
 import { BeforeSendEventArgs,FileLoadEventArgs, ToolbarCreateEventArgs, UploadListCreateArgs } from '../../../src/file-manager/base/interface';
 import { createElement, Browser } from '@syncfusion/ej2-base';
-import { toolbarItems, toolbarItems1, toolbarItems2, data1, data2, data3, doubleClickRead } from '../data';
+import { toolbarItems, toolbarItems1, toolbarItems2, data1, data2, data3, doubleClickRead, noExtension, noExtensionRename, noExtensionSuccess } from '../data';
 
 FileManager.Inject(Toolbar, NavigationPane, DetailsView);
 
@@ -360,6 +360,65 @@ describe('FileManager control single selection Grid view', () => {
             expect(document.querySelector('.e-file-status').textContent).toBe('File type is not allowed');
             expect(i).toEqual(1);
             expect(feObj.uploadDialogObj.element.querySelectorAll('.e-fm-upload-icon').length).toBe(1);
+        });
+        it('for beforePopupOpen with preventing file extension', (done: Function) => {
+            feObj = new FileManager({
+                view: 'Details',
+                ajaxSettings: {
+                    url: '/FileOperations',
+                    uploadUrl: '/Upload', downloadUrl: '/Download', getImageUrl: '/GetImage'
+                },
+                allowMultiSelection: false,
+                showThumbnail: false,
+                showFileExtension: false,
+            });
+            feObj.appendTo('#file');
+            this.request = jasmine.Ajax.requests.mostRecent();
+            this.request.respondWith({
+                status: 200,
+                responseText: JSON.stringify(noExtension)
+            });
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+            setTimeout(function () {
+                feObj.detailsviewModule.gridObj.selectRows([1]);
+                let items: any = document.getElementsByClassName('e-fe-rename');
+                items[0].click();
+                expect((<HTMLInputElement>document.getElementById('rename')).value).toBe("1");
+                (<HTMLElement>document.getElementById('file_dialog').querySelectorAll('.e-btn')[0]).click();
+                feObj.detailsviewModule.gridObj.selectRows([2]);
+                items[0].click();
+                expect((<HTMLInputElement>document.getElementById('rename')).value).toBe("New");
+                (<HTMLInputElement>document.getElementById('rename')).value = "New ";
+                (<HTMLElement>document.getElementById('file_dialog').querySelectorAll('.e-btn')[1]).click();
+                expect(document.getElementsByClassName("e-fe-error")[0].textContent).not.toEqual("");
+                (<HTMLInputElement>document.getElementById('rename')).value = "New.";
+                (<HTMLElement>document.getElementById('file_dialog').querySelectorAll('.e-btn')[1]).click();
+                expect(document.getElementsByClassName("e-fe-error")[0].textContent).not.toEqual("");
+                (<HTMLElement>document.getElementById('file_dialog').querySelectorAll('.e-btn')[0]).click();
+                feObj.detailsviewModule.gridObj.selectRows([1]);
+                items[0].click();
+                expect((<HTMLInputElement>document.getElementById('rename')).value).toBe("1");
+                (<HTMLInputElement>document.getElementById('rename')).value = "2";
+                (<HTMLElement>document.getElementById('file_dialog').querySelectorAll('.e-btn')[1]).click();
+                this.request = jasmine.Ajax.requests.mostRecent();
+                this.request.respondWith({
+                    status: 200,
+                    responseText: JSON.stringify(noExtensionRename)
+                });
+                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                this.request = jasmine.Ajax.requests.mostRecent();
+                this.request.respondWith({
+                    status: 200,
+                    responseText: JSON.stringify(noExtensionSuccess)
+                });
+                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                setTimeout(function () {
+                    let gridLi: any = document.getElementById('file_grid').querySelectorAll('.e-row');
+                    expect(gridLi.length).toEqual(3);
+                    expect(gridLi[1].querySelector('.e-fe-text').innerText).toBe("2");
+                    done();
+                }, 500);
+            }, 500);
         });
     });
 });

@@ -185,4 +185,4 @@ $schedule-bigger-resource-color-size: 16px !default;
 @mixin tbar-btn-animation-after {
   content: '';
 }
-$schedule-tbar-border-hover-color: darken($gray-600, 12.5%);
+$schedule-tbar-border-hover-color: darken($gray-600, 12.5%) !default;

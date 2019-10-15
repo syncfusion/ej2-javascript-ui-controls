@@ -348,7 +348,7 @@ export abstract class LayoutViewer {
 
     /**
      * @private
-
+     * @default false
      */
     public isScrollToSpellCheck: boolean;
 
@@ -775,13 +775,17 @@ export abstract class LayoutViewer {
             className: 'e-de-text-target'
         }) as HTMLIFrameElement;
 
+        this.viewerContainer.appendChild(this.iframe);
+        this.initIframeContent();
+    }
+    private initIframeContent(): void {
+        let style: string = 'background-color:transparent;width:100%;height:100%;padding: 0px; margin: 0px;';
         let innerHtml: string = '<!DOCTYPE html>'
             + '<html><head></head>'
-            + '<body spellcheck="false"style="background-color:transparent;width:100%;height:100%;padding: 0px; margin: 0px;" >'
-            + '<div contenteditable="true" style="background-color:transparent;width:100%;height:100%;padding: 0px; margin: 0px;"></div>'
+            + '<body spellcheck="false" style=' + style + ' >'
+            + '<div contenteditable="true" style=' + style + '></div>'
             + '</body>'
             + '</html>';
-        this.viewerContainer.appendChild(this.iframe);
         this.iframe.contentDocument.open();
         this.iframe.contentDocument.write(innerHtml);
         this.iframe.contentDocument.close();
@@ -794,20 +798,8 @@ export abstract class LayoutViewer {
         if (!isNullOrUndefined(this.selection)) {
             this.selection.initCaret();
         }
-        this.editableDiv.addEventListener('paste', this.onPaste);
-        if (!Browser.isDevice) {
-            this.editableDiv.addEventListener('keypress', this.onKeyPressInternal);
-            if (Browser.info.name === 'chrome') {
-                this.editableDiv.addEventListener('textInput', this.onTextInput);
-            }
-        } else {
-            this.editableDiv.addEventListener('input', this.onTextInputInternal);
-        }
-        this.editableDiv.addEventListener('blur', this.onFocusOut);
-        this.editableDiv.addEventListener('keydown', this.onKeyDownInternal);
-        this.editableDiv.addEventListener('compositionstart', this.compositionStart);
-        this.editableDiv.addEventListener('compositionupdate', this.compositionUpdated);
-        this.editableDiv.addEventListener('compositionend', this.compositionEnd);
+        this.wireInputEvents();
+        this.iframe.addEventListener('load', this.onIframeLoad);
         this.viewerContainer.addEventListener('scroll', this.scrollHandler);
         this.viewerContainer.addEventListener('mousedown', this.onMouseDownInternal);
         this.viewerContainer.addEventListener('keydown', this.onKeyDownInternal);
@@ -826,6 +818,31 @@ export abstract class LayoutViewer {
             this.viewerContainer.addEventListener('DOMMouseScroll', this.zoomModule.onMouseWheelInternal);
         }
         this.viewerContainer.addEventListener('mousewheel', this.zoomModule.onMouseWheelInternal);
+    }
+    private wireInputEvents(): void {
+        if (isNullOrUndefined(this.editableDiv)) {
+            return;
+        }
+        this.editableDiv.addEventListener('paste', this.onPaste);
+        if (!Browser.isDevice) {
+            this.editableDiv.addEventListener('keypress', this.onKeyPressInternal);
+            if (Browser.info.name === 'chrome') {
+                this.editableDiv.addEventListener('textInput', this.onTextInput);
+            }
+        } else {
+            this.editableDiv.addEventListener('input', this.onTextInputInternal);
+        }
+        this.editableDiv.addEventListener('blur', this.onFocusOut);
+        this.editableDiv.addEventListener('keydown', this.onKeyDownInternal);
+        this.editableDiv.addEventListener('compositionstart', this.compositionStart);
+        this.editableDiv.addEventListener('compositionupdate', this.compositionUpdated);
+        this.editableDiv.addEventListener('compositionend', this.compositionEnd);
+    }
+    private onIframeLoad = (): void => {
+        if (!isNullOrUndefined(this.iframe) && this.iframe.contentDocument.body.children.length === 0) {
+            this.initIframeContent();
+            this.wireInputEvents();
+        }
     }
     /**
      * @private
@@ -939,7 +956,7 @@ export abstract class LayoutViewer {
     private onKeyPressInternal = (event: KeyboardEvent): void => {
         let key: number = event.which || event.keyCode;
         let ctrl: boolean = (event.ctrlKey || event.metaKey) ? true : ((key === 17) ? true : false); // ctrl detection
-        if (ctrl && event.key === 'v') {
+        if (ctrl && event.key === 'v' || ctrl && event.key === 'a') {
             return;
         }
         if (!this.owner.isReadOnlyMode) {
@@ -994,7 +1011,7 @@ export abstract class LayoutViewer {
             this.dialogInternal = new Dialog({
                 target: document.body, showCloseIcon: true,
                 allowDragging: true, enableRtl: isRtl, visible: false,
-                width: '1px', isModal: true, position: { X: 'center', Y: 'center' }, zIndex: 20,
+                width: '1px', isModal: true, position: { X: 'center', Y: 'center' }, zIndex: this.owner.zIndex + 10,
                 animationSettings: { effect: 'None' }
             });
             this.dialogInternal.open = this.selection.hideCaret;
@@ -1015,7 +1032,7 @@ export abstract class LayoutViewer {
             this.dialogInternal2 = new Dialog({
                 target: document.body, showCloseIcon: true,
                 allowDragging: true, enableRtl: isRtl, visible: false,
-                width: '1px', isModal: true, position: { X: 'center', Y: 'Top' }, zIndex: 10
+                width: '1px', isModal: true, position: { X: 'center', Y: 'Top' }, zIndex: this.owner.zIndex
             });
             this.dialogInternal2.appendTo(target);
         }
@@ -2127,7 +2144,7 @@ export abstract class LayoutViewer {
      * @param endPosition 
      * @private
      */
-    public scrollToPosition(startPosition: TextPosition, endPosition: TextPosition): void {
+    public scrollToPosition(startPosition: TextPosition, endPosition: TextPosition, skipCursorUpdate?: boolean): void {
         if (this.owner.enableImageResizerMode && this.owner.imageResizerModule.isImageResizing
             || this.isMouseDownInFooterRegion || this.isRowOrCellResizing) {
             return;
@@ -2179,10 +2196,11 @@ export abstract class LayoutViewer {
             this.viewerContainer.scrollTop = (y - 10);
         } else if (scrollTop + pageHeight < y + caretHeight) {
             this.viewerContainer.scrollTop = y + caretHeight - pageHeight + 10;
-        } else {
+        }
+        if (!skipCursorUpdate) {
             this.selection.updateCaretToPage(startPosition, endPage);
         }
-        this.selection.updateCaretToPage(startPosition, endPage);
+
         let scrollBarWidth: number = this.viewerContainer.offsetWidth - this.viewerContainer.clientWidth;
         if (scrollLeft > x) {
             this.viewerContainer.scrollLeft = x - (viewer.pageContainer.offsetWidth / 100) * 20;
@@ -2498,6 +2516,7 @@ export abstract class LayoutViewer {
         this.editableDiv.removeEventListener('compositionupdate', this.compositionUpdated);
         this.editableDiv.removeEventListener('compositionend', this.compositionEnd);
         this.viewerContainer.removeEventListener('mouseup', this.onMouseUpInternal);
+        this.iframe.removeEventListener('load', this.onIframeLoad);
         this.viewerContainer.removeEventListener('dblclick', this.onDoubleTap);
         window.removeEventListener('resize', this.onWindowResize);
         window.removeEventListener('keyup', this.onKeyUpInternal);

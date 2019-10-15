@@ -8168,6 +8168,9 @@ var NodeCutter = /** @__PURE__ @class */ (function () {
         node = this.SplitNode(range, node, false);
         return node;
     };
+    /**
+     * @hidden
+     */
     NodeCutter.prototype.SplitNode = function (range, node, isCollapsed) {
         if (node) {
             var clone = range.cloneRange();
@@ -9613,7 +9616,9 @@ var SelectionCommands = /** @__PURE__ @class */ (function () {
                 nodeIndex.push(domSelection.getIndex(cloneNode));
                 cloneNode = cloneNode.parentNode;
             } while (cloneNode && (cloneNode !== formatNode));
-            cloneNode = splitNode = nodeCutter.GetSpliceNode(range, formatNode);
+            cloneNode = splitNode = (isCursor && (formatNode.textContent.length - 1) === range.startOffset) ?
+                nodeCutter.SplitNode(range, formatNode, true)
+                : nodeCutter.GetSpliceNode(range, formatNode);
             if (!isCursor) {
                 while (cloneNode && cloneNode.childNodes.length > 0 && ((nodeIndex.length - 1) >= 0)
                     && (cloneNode.childNodes.length > nodeIndex[nodeIndex.length - 1])) {
@@ -11999,6 +12004,7 @@ var PasteCleanup = /** @__PURE__ @class */ (function () {
         this.renderFactory = this.locator.getService('rendererFactory');
         this.i10n = serviceLocator.getService('rteLocale');
         this.dialogRenderObj = serviceLocator.getService('dialogRenderObject');
+        this.sanitize = new SanitizeHtmlHelper();
         this.addEventListener();
     }
     PasteCleanup.prototype.addEventListener = function () {
@@ -12147,7 +12153,9 @@ var PasteCleanup = /** @__PURE__ @class */ (function () {
         imgElem.style.opacity = '0.5';
         var popupEle = this.parent.createElement('div');
         this.parent.element.appendChild(popupEle);
-        var contentEle = this.parent.createElement('div');
+        var contentEle = this.parent.createElement('input', {
+            id: this.parent.element.id + '_upload', attrs: { type: 'File', name: 'UploadFiles' }
+        });
         var offsetY = this.parent.iframeSettings.enable ? -50 : -90;
         var popupObj = new Popup(popupEle, {
             relateTo: imgElem,
@@ -12177,12 +12185,6 @@ var PasteCleanup = /** @__PURE__ @class */ (function () {
             dropArea: this.parent.inputElement,
             allowedExtensions: this.parent.insertImageSettings.allowedTypes.toString(),
             success: function (e) {
-                if (!isNullOrUndefined(_this.parent.insertImageSettings.path)) {
-                    var url = _this.parent.insertImageSettings.path +
-                        e.file.name + '.' + e.file.type.split('image/')[1];
-                    imgElem.removeAttribute('src');
-                    imgElem.setAttribute('src', url);
-                }
                 setTimeout(function () { _this.popupClose(popupObj, uploadObj, imgElem, e); }, 900);
             },
             failure: function (e) {
@@ -12210,9 +12212,17 @@ var PasteCleanup = /** @__PURE__ @class */ (function () {
         detach(popupObj.element.querySelector('.e-rte-dialog-upload .e-file-select-wrap'));
     };
     PasteCleanup.prototype.popupClose = function (popupObj, uploadObj, imgElem, e) {
+        var _this = this;
+        this.parent.trigger(imageUploadSuccess, e, function (e) {
+            if (!isNullOrUndefined(_this.parent.insertImageSettings.path)) {
+                var url = _this.parent.insertImageSettings.path + e.file.name + '.' +
+                    e.file.type.split('image/')[1];
+                imgElem.src = url;
+                imgElem.setAttribute('alt', e.file.name);
+            }
+        });
         popupObj.close();
         imgElem.style.opacity = '1';
-        this.parent.trigger(imageUploadSuccess, e);
         uploadObj.destroy();
     };
     PasteCleanup.prototype.refreshPopup = function (imageElement, popupObj) {
@@ -12381,6 +12391,7 @@ var PasteCleanup = /** @__PURE__ @class */ (function () {
             clipBoardElem = this.allowedStyle(clipBoardElem);
         }
         this.saveSelection.restore();
+        clipBoardElem.innerHTML = this.sanitizeHelper(clipBoardElem.innerHTML);
         this.parent.formatter.editorManager.execCommand('inserthtml', 'pasteCleanup', args, function (returnArgs) {
             extend(args, { elements: [returnArgs.elements] }, true);
             _this.parent.formatter.onSuccess(_this.parent, args);
@@ -12389,6 +12400,10 @@ var PasteCleanup = /** @__PURE__ @class */ (function () {
         if (!isNullOrUndefined(this.parent.insertImageSettings.saveUrl)) {
             this.imgUploading(this.parent.inputElement);
         }
+    };
+    PasteCleanup.prototype.sanitizeHelper = function (value) {
+        value = this.sanitize.initialize(value, this.parent);
+        return value;
     };
     //Plain Formatting
     PasteCleanup.prototype.plainFormatting = function (value, args) {
@@ -12427,6 +12442,7 @@ var PasteCleanup = /** @__PURE__ @class */ (function () {
             }
             this.removeEmptyElements(clipBoardElem);
             this.saveSelection.restore();
+            clipBoardElem.innerHTML = this.sanitizeHelper(clipBoardElem.innerHTML);
             this.parent.formatter.editorManager.execCommand('inserthtml', 'pasteCleanup', args, function (returnArgs) {
                 extend(args, { elements: [] }, true);
                 _this.parent.formatter.onSuccess(_this.parent, args);
@@ -14525,13 +14541,12 @@ var Image = /** @__PURE__ @class */ (function () {
         uploadParentEle.appendChild(uploadEle);
         var altText;
         this.uploadObj = new Uploader({
-            asyncSettings: {
-                saveUrl: this.parent.insertImageSettings.saveUrl,
-            },
+            asyncSettings: { saveUrl: this.parent.insertImageSettings.saveUrl, },
             dropArea: span, multiple: false, enableRtl: this.parent.enableRtl,
             allowedExtensions: this.parent.insertImageSettings.allowedTypes.toString(),
             selected: function (e) {
                 _this.parent.trigger(imageSelected, e, function (e) {
+                    _this.checkExtension(e.filesData[0]);
                     altText = e.filesData[0].name;
                     if (_this.parent.editorMode === 'HTML' && isNullOrUndefined(_this.parent.insertImageSettings.path)) {
                         var reader_1 = new FileReader();
@@ -14562,7 +14577,8 @@ var Image = /** @__PURE__ @class */ (function () {
                     if (!isNullOrUndefined(_this.parent.insertImageSettings.path)) {
                         var url = _this.parent.insertImageSettings.path + e.file.name;
                         proxy.uploadUrl = {
-                            url: url, selection: save, altText: altText, selectParent: selectParent,
+                            url: url, selection: save, altText: e.file.name,
+                            selectParent: selectParent,
                             width: {
                                 width: proxy.parent.insertImageSettings.width, minWidth: proxy.parent.insertImageSettings.minWidth,
                                 maxWidth: proxy.parent.insertImageSettings.maxWidth
@@ -14581,7 +14597,10 @@ var Image = /** @__PURE__ @class */ (function () {
             removing: function () {
                 _this.parent.trigger(imageRemoving, e, function (e) {
                     proxy.inputUrl.removeAttribute('disabled');
-                    proxy.uploadUrl.url = '';
+                    if (proxy.uploadUrl) {
+                        proxy.uploadUrl.url = '';
+                    }
+                    _this.dialogObj.getButtons(0).element.removeAttribute('disabled');
                 });
             }
         });
@@ -14589,6 +14608,13 @@ var Image = /** @__PURE__ @class */ (function () {
         this.uploadObj.createElement = this.parent.createElement;
         this.uploadObj.appendTo(uploadEle);
         return uploadParentEle;
+    };
+    Image.prototype.checkExtension = function (e) {
+        if (!this.uploadObj.allowedExtensions) {
+            if (this.uploadObj.allowedExtensions.toLocaleLowerCase().indexOf(('.' + e.type).toLocaleLowerCase()) === -1) {
+                this.dialogObj.getButtons(0).element.setAttribute('disabled', 'disabled');
+            }
+        }
     };
     Image.prototype.fileSelect = function () {
         this.dialogObj.element.getElementsByClassName('e-file-select-wrap')[0].querySelector('button').click();
@@ -14772,14 +14798,16 @@ var Image = /** @__PURE__ @class */ (function () {
         var proxy = this;
         var popupEle = this.parent.createElement('div');
         this.parent.element.appendChild(popupEle);
-        var contentEle = this.parent.createElement('div');
+        var uploadEle = this.parent.createElement('input', {
+            id: this.rteID + '_upload', attrs: { type: 'File', name: 'UploadFiles' }
+        });
         var offsetY = this.parent.iframeSettings.enable ? -50 : -90;
         this.popupObj = new Popup(popupEle, {
             relateTo: imageElement,
             height: '85px',
             width: '300px',
             offsetY: offsetY,
-            content: contentEle,
+            content: uploadEle,
             viewPortElement: this.parent.element,
             position: { X: 'center', Y: 'top' },
             enableRtl: this.parent.enableRtl,
@@ -14869,14 +14897,17 @@ var Image = /** @__PURE__ @class */ (function () {
      * Called when drop image upload was successful
      */
     Image.prototype.uploadSuccess = function (imageElement, dragEvent, args, e) {
-        if (!isNullOrUndefined(this.parent.insertImageSettings.path)) {
-            var url = this.parent.insertImageSettings.path + e.file.name;
-            imageElement.src = url;
-        }
-        this.popupObj.close();
+        var _this = this;
         imageElement.style.opacity = '1';
         imageElement.classList.add(CLS_IMG_FOCUS);
-        this.parent.trigger(imageUploadSuccess, e);
+        this.parent.trigger(imageUploadSuccess, e, function (e) {
+            if (!isNullOrUndefined(_this.parent.insertImageSettings.path)) {
+                var url = _this.parent.insertImageSettings.path + e.file.name;
+                imageElement.src = url;
+                imageElement.setAttribute('alt', e.file.name);
+            }
+        });
+        this.popupObj.close();
         this.showImageQuickToolbar(args);
         this.resizeStart(dragEvent, imageElement);
         this.uploadObj.destroy();

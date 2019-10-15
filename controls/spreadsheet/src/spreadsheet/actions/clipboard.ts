@@ -132,7 +132,7 @@ export class Clipboard {
                 .concat([selIdx[0] + cIdx[2] - cIdx[0], selIdx[1] + cIdx[3] - cIdx[1] || selIdx[1]]);
             for (let i: number = cIdx[0], l: number = 0; i <= cIdx[2]; i++ , l++) {
                 for (let j: number = cIdx[1], k: number = 0; j <= cIdx[3]; j++ , k++) {
-                    cell = isExternal ? rows[i].cells[j] : getCell(i, j, prevSheet);
+                    cell = isExternal ? rows[i].cells[j] : Object.assign({}, getCell(i, j, prevSheet));
                     if (cell && args && args.type) {
                         switch (args.type) {
                             case 'Formats':

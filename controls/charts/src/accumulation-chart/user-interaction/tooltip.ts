@@ -35,7 +35,7 @@ export class AccumulationTooltip extends BaseTooltip {
     }
 
     private mouseLeaveHandler(e: PointerEvent): void {
-          this.removeTooltip(1000);
+          this.removeTooltip(this.accumulation.tooltip.fadeOutDuration);
     }
 
     private mouseUpHandler(e: PointerEvent | TouchEvent): void {
@@ -84,7 +84,7 @@ export class AccumulationTooltip extends BaseTooltip {
             }
         } else {
             if (!data.point && this.isRemove) {
-                this.removeTooltip(1000);
+                this.removeTooltip(this.accumulation.tooltip.duration);
                 this.isRemove = false;
             }
         }

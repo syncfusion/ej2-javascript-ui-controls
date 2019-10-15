@@ -1,4 +1,4 @@
-import { Ajax, Animation, Browser, ChildProperty, Collection, Complex, Component, Event, EventHandler, Internationalization, L10n, NotifyPropertyChanges, Property, compile, createElement, extend, isNullOrUndefined, merge, print, remove, resetBlazorTemplate, updateBlazorTemplate } from '@syncfusion/ej2-base';
+import { Ajax, Animation, Browser, ChildProperty, Collection, Complex, Component, Event, EventHandler, Internationalization, L10n, NotifyPropertyChanges, Property, compile, createElement, extend, isBlazor, isNullOrUndefined, merge, print, remove, resetBlazorTemplate, updateBlazorTemplate } from '@syncfusion/ej2-base';
 import { SvgRenderer, Tooltip } from '@syncfusion/ej2-svg-base';
 import { DataManager, Query } from '@syncfusion/ej2-data';
 import { PdfBitmap, PdfDocument, PdfPageOrientation } from '@syncfusion/ej2-pdf-export';
@@ -4792,8 +4792,7 @@ var Maps = /** @__PURE__ @class */ (function (_super) {
     Maps.prototype.preRender = function () {
         var _this = this;
         this.isDevice = Browser.isDevice;
-        var blazor = 'Blazor';
-        this.isBlazor = window[blazor];
+        this.isBlazor = isBlazor();
         this.initPrivateVariable();
         this.trigger(load, this.isBlazor ? {} : { maps: this }, function () {
             _this.unWireEVents();
@@ -8457,7 +8456,7 @@ var Selection = /** @__PURE__ @class */ (function () {
             maps: this.maps
         };
         if (this.maps.isBlazor) {
-            var shapeData_1 = eventArgs.shapeData, maps = eventArgs.maps, blazorEventArgs = __rest$5(eventArgs, ["shapeData", "maps"]);
+            var maps = eventArgs.maps, blazorEventArgs = __rest$5(eventArgs, ["maps"]);
             eventArgs = blazorEventArgs;
         }
         this.maps.trigger('itemSelection', eventArgs, function (observedArgs) {

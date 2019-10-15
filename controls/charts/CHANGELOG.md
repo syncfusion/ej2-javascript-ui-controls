@@ -2,6 +2,43 @@
 
 ## [Unreleased]
 
+## 17.3.17 (2019-10-15)
+
+### Chart
+
+#### New Features
+
+- #249554 - Provided smart axis label for polar radar chart.
+- #239599 - Provided event support for tooltip template.
+
+## 17.3.16 (2019-10-09)
+
+### Accumulation Chart
+
+#### New Features
+
+- #249611 - Provided duration support for hiding the tooltip.
+
+### Chart
+
+#### New Features
+
+- #249611 - Provided duration support for hiding the tooltip.
+
+#### Bug Fixes
+
+- #249730 - Polar chart column series with inversed axis with OnTicks rendering issue fixed.
+- #250074 - Radar chart values are wrongly plotted in outside the axis issue fixed.
+- #250064 - Radar and Polar Chart of Scatter Type is not rendering when the Value label is enabled issue fixed.
+- #250336 - es2015 script error issue has fixed.
+- #250081 - Radar and Polar chart when only one data is passed it is appearing as single dot issue fixed.
+
+### Stock Chart
+
+#### Bug Fixes
+
+- `#249956` - Annotation rendering issue has fixed.
+
 ## 17.3.14 (2019-10-03)
 
 ### Chart

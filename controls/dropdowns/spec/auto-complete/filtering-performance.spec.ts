@@ -268,7 +268,7 @@ describe('Filtering performance', () => {
             autoEle.remove();
         });
 
-        it('check the performance', (done) => {
+        it('check the performance', () => {
             autoObj.open = () => {
                 isOpen = true;
                 expect(isBind).toBeFalsy();
@@ -276,7 +276,6 @@ describe('Filtering performance', () => {
             autoObj.dataBound = () => {
                 isBind = true;
                 expect(isOpen).toBeTruthy();
-                done();
             }
             autoObj.focusIn();
             (<any>autoObj).inputElement.value = "t";

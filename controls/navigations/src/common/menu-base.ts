@@ -1331,6 +1331,9 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
     }
 
     private menuHeaderClickHandler(e: MouseEvent | KeyboardEvent): void {
+        if (closest(e.target as Element, '.e-menu-wrapper').querySelector('ul.e-menu-parent').id !== this.element.id) {
+            return;
+        }
         this.element.classList.contains('e-hide-menu') ? this.openHamburgerMenu(e) : this.closeHamburgerMenu(e);
     }
 
@@ -1402,7 +1405,8 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
                     && trgt.classList.contains('e-menu-icon')) {
                     this.menuHeaderClickHandler(e);
                 } else {
-                    if (trgt.tagName !== 'UL' || trgt.parentElement !== wrapper) {
+                    if (trgt.tagName !== 'UL' || (this.isMenu ? trgt.parentElement.classList.contains('e-menu-wrapper') &&
+                    !this.getIndex(trgt.querySelector('.' + ITEM).id, true).length : trgt.parentElement !== wrapper)) {
                         if (!cli || !cli.querySelector('.' + CARET)) {
                             this.closeMenu(null, e);
                         }

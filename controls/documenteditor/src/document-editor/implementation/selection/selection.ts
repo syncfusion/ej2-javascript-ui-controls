@@ -172,9 +172,9 @@ export class Selection {
     //Format retrieval properties
     /**
      * Gets the instance of selection character format.
-
-
-
+     * @default undefined
+     * @aspType SelectionCharacterFormat
+     * @blazorType SelectionCharacterFormat
      * @return {SelectionCharacterFormat}
      */
     public get characterFormat(): SelectionCharacterFormat {
@@ -182,9 +182,9 @@ export class Selection {
     }
     /**
      * Gets the instance of selection paragraph format.
-
-
-
+     * @default undefined
+     * @aspType SelectionParagraphFormat
+     * @blazorType SelectionParagraphFormat
      * @return {SelectionParagraphFormat}
      */
     public get paragraphFormat(): SelectionParagraphFormat {
@@ -192,9 +192,9 @@ export class Selection {
     }
     /**
      * Gets the instance of selection section format.
-
-
-
+     * @default undefined
+     * @aspType SelectionSectionFormat
+     * @blazorType SelectionSectionFormat
      * @return {SelectionSectionFormat}
      */
     public get sectionFormat(): SelectionSectionFormat {
@@ -202,9 +202,9 @@ export class Selection {
     }
     /**
      * Gets the instance of selection table format.
-
-
-
+     * @default undefined
+     * @aspType SelectionTableFormat
+     * @blazorType SelectionTableFormat
      * @return {SelectionTableFormat}
      */
     public get tableFormat(): SelectionTableFormat {
@@ -212,9 +212,9 @@ export class Selection {
     }
     /**
      * Gets the instance of selection cell format.
-
-
-
+     * @default undefined
+     * @aspType SelectionCellFormat
+     * @blazorType SelectionCellFormat
      * @return {SelectionCellFormat}
      */
     public get cellFormat(): SelectionCellFormat {
@@ -222,9 +222,9 @@ export class Selection {
     }
     /**
      * Gets the instance of selection row format.
-
-
-
+     * @default undefined
+     * @aspType SelectionRowFormat
+     * @blazorType SelectionRowFormat
      * @returns {SelectionRowFormat}
      */
     public get rowFormat(): SelectionRowFormat {
@@ -232,9 +232,9 @@ export class Selection {
     }
     /**
      * Gets the instance of selection image format.
-
-
-
+     * @default undefined
+     * @aspType SelectionImageFormat
+     * @blazorType SelectionImageFormat
      * @returns {SelectionImageFormat}
      */
     public get imageFormat(): SelectionImageFormat {
@@ -277,7 +277,7 @@ export class Selection {
 
     /**
      * Determines whether the selection direction is forward or not.
-
+     * @default false
      * @returns {boolean}
      * @private
      */
@@ -286,7 +286,7 @@ export class Selection {
     }
     /**
      * Determines whether the start and end positions are same or not.
-
+     * @default false
      * @returns {boolean}
      * @private
      */
@@ -298,9 +298,9 @@ export class Selection {
     }
     /**
      * Gets the text within selection.
-
-
-
+     * @default ''
+     * @aspType string
+     * @blazorType string
      * @returns {string}
      */
     public get text(): string {
@@ -550,6 +550,15 @@ export class Selection {
         let linkText: string = this.getLinkText(hyperLinkField);
         this.copyToClipboard(linkText);
     }
+    private isHideSelection(paragraph: ParagraphWidget): boolean {
+        let bodyWgt: BodyWidget = paragraph.bodyWidget;
+        let sectionFormat: WSectionFormat = bodyWgt.sectionFormat;
+        let pageHt: number = sectionFormat.pageHeight - sectionFormat.footerDistance;
+        let headerFooterHt: number = bodyWgt.page.boundingRectangle.height / 100 * 40;
+        return this.contextType.indexOf('Footer') >= 0
+            && (paragraph.y + paragraph.height > HelperMethods.convertPointToPixel(pageHt))
+            || this.contextType.indexOf('Header') >= 0 && paragraph.y + paragraph.height > headerFooterHt;
+    }
     //Selection add, Highlight, remove API starts
     /**
      * @private
@@ -559,6 +568,10 @@ export class Selection {
             this.owner.imageResizerModule.hideImageResizer();
         }
         if (this.isEmpty) {
+            if (this.isHideSelection(this.start.paragraph)) {
+                this.hideCaret();
+                return;
+            }
             this.updateCaretPosition();
         } else {
             if (this.isForward) {
@@ -2977,21 +2990,30 @@ export class Selection {
         }
         let validOffset: number = 0;
         let count: number = 0;
+        let value: number = 0;
+        let bidi: boolean = paragraph.paragraphFormat.bidi;
         for (let i: number = 0; i < paragraph.childWidgets.length; i++) {
             let lineWidget: LineWidget = paragraph.childWidgets[i] as LineWidget;
-            for (let j: number = 0; j < lineWidget.children.length; j++) {
-                let inline: ElementBox = lineWidget.children[j] as ElementBox;
-                if (inline.length === 0) {
-                    continue;
+            if (!bidi) {
+                for (let j: number = 0; j < lineWidget.children.length; j++) {
+                    let inline: ElementBox = lineWidget.children[j] as ElementBox;
+                    if (inline.length === 0) {
+                        continue;
+                    }
+                    if (offset <= count + inline.length) {
+                        return offset - 1 === count ? validOffset : offset - 1;
+                    }
+                    if (inline instanceof TextElementBox || inline instanceof ImageElementBox
+                        || (inline instanceof FieldElementBox && HelperMethods.isLinkedFieldCharacter((inline as FieldElementBox)))) {
+                        validOffset = count + inline.length;
+                    }
+                    count += inline.length;
                 }
-                if (offset <= count + inline.length) {
-                    return offset - 1 === count ? validOffset : offset - 1;
+            } else {
+                value = lineWidget.getInlineForOffset(offset, false, undefined, false, true, false).index;
+                if (value >= 0) {
+                    return value;
                 }
-                if (inline instanceof TextElementBox || inline instanceof ImageElementBox
-                    || (inline instanceof FieldElementBox && HelperMethods.isLinkedFieldCharacter((inline as FieldElementBox)))) {
-                    validOffset = count + inline.length;
-                }
-                count += inline.length;
             }
         }
         return offset - 1 === count ? validOffset : offset - 1;
@@ -3002,18 +3024,24 @@ export class Selection {
      */
     public getNextValidOffset(line: LineWidget, offset: number): number {
         let count: number = 0;
-        for (let i: number = 0; i < line.children.length; i++) {
-            let inline: ElementBox = line.children[i] as ElementBox;
-            if (inline.length === 0 || inline instanceof ListTextElementBox) {
-                continue;
-            }
-            if (offset < count + inline.length) {
-                if (inline instanceof TextElementBox || inline instanceof ImageElementBox
-                    || (inline instanceof FieldElementBox && HelperMethods.isLinkedFieldCharacter((inline as FieldElementBox)))) {
-                    return (offset > count ? offset : count) + 1;
+        if (!line.paragraph.paragraphFormat.bidi) {
+            for (let i: number = 0; i < line.children.length; i++) {
+                let inline: ElementBox = line.children[i] as ElementBox;
+                if (inline.length === 0 || inline instanceof ListTextElementBox) {
+                    continue;
                 }
+                if (offset < count + inline.length) {
+                    if (inline instanceof TextElementBox || inline instanceof ImageElementBox
+                        || (inline instanceof FieldElementBox && HelperMethods.isLinkedFieldCharacter((inline as FieldElementBox)))) {
+                        return (offset > count ? offset : count) + 1;
+                    }
+                }
+                count += inline.length;
             }
-            count += inline.length;
+        } else {
+            if (offset !== this.getLineLength(line)) {
+                offset = line.getInlineForOffset(offset, false, undefined, false, false, true).index;
+            }
         }
         return offset;
     }
@@ -3332,6 +3360,10 @@ export class Selection {
                 if (paragraph.childWidgets.indexOf(end.currentWidget) !== -1) {
                     return;
                 }
+            }
+            if (this.isHideSelection(paragraph)) {
+                this.isHighlightNext = false;
+                return;
             }
             this.isHighlightNext = true;
             this.hightLightNextParagraph = paragraph;
@@ -4392,6 +4424,9 @@ export class Selection {
         let top: number = 0;
         let width: number = 0;
         let isRtlText: boolean = false;
+        if (widget.paragraphFormat.bidi && endLine.children.indexOf(endElement) > 0) {
+            endElement = endLine.children[0];
+        }
         for (let i: number = startIndex; i < widget.childWidgets.length; i++) {
             let line: LineWidget = widget.childWidgets[i] as LineWidget;
             if (i === startIndex) {
@@ -5123,7 +5158,9 @@ export class Selection {
      */
     public getFirstElementInternal(widget: LineWidget): ElementBox {
         let element: ElementBox = undefined;
-        for (let i: number = 0; i < widget.children.length; i++) {
+        let isBidi: boolean = widget.paragraph.paragraphFormat.bidi;
+        let childLen: number = widget.children.length;
+        for (let i: number = isBidi ? childLen - 1 : 0; isBidi ? i >= 0 : i < childLen; isBidi ? i-- : i++) {
             element = widget.children[i];
             if (element instanceof ListTextElementBox) {
                 element = undefined;
@@ -6248,17 +6285,19 @@ export class Selection {
      * @private
      */
     public createPasteElement(top: string, left: string): void {
+        let locale: L10n = new L10n('documenteditor', this.owner.defaultLocale);
+        locale.setLocale(this.owner.locale);
         let items: ItemModel[] = [
             {
-                text: 'Keep source formatting',
+                text: locale.getConstant('Keep source formatting'),
                 iconCss: 'e-icons e-de-paste-source'
             },
             {
-                text: 'Match destination formatting',
+                text: locale.getConstant('Match destination formatting'),
                 iconCss: 'e-icons e-de-paste-merge'
             },
             {
-                text: 'Text only',
+                text: locale.getConstant('Text only'),
                 iconCss: 'e-icons e-de-paste-text'
             }
         ];
@@ -6738,8 +6777,9 @@ export class Selection {
         let left: number = page.boundingRectangle.x;
         let right: number = page.boundingRectangle.width * this.viewer.zoomFactor + left;
         if (!this.owner.enableImageResizerMode || !this.owner.imageResizerModule.isImageResizerVisible) {
-            // tslint:disable-next-line:max-line-length
-            if (this.isEmpty && (!this.owner.isReadOnlyMode || this.owner.enableCursorOnReadOnly)) {
+            if (this.isHideSelection(this.start.paragraph)) {
+                this.caret.style.display = 'none';
+            } else if (this.isEmpty && (!this.owner.isReadOnlyMode || this.owner.enableCursorOnReadOnly)) {
                 let caretLeft: number = parseInt(this.caret.style.left.replace('px', ''), 10);
                 if (caretLeft < left || caretLeft > right) {
                     this.caret.style.display = 'none';
@@ -7412,7 +7452,8 @@ export class Selection {
      */
     public getElementsBackward(lineWidget: LineWidget, startElement: ElementBox, endElement: ElementBox, bidi: boolean): ElementBox[] {
         let elements: ElementBox[] = [];
-        while (bidi && startElement && startElement.previousElement && !startElement.isRightToLeft) {
+        while (bidi && startElement && startElement.previousElement && (!startElement.isRightToLeft
+            || startElement instanceof TextElementBox && this.viewer.textHelper.isRTLText(startElement.text))) {
             startElement = startElement.previousElement;
         }
         let elementIndex: number = lineWidget.children.indexOf(startElement);
@@ -7618,8 +7659,14 @@ export class Selection {
             let positionInfo: PositionInfo = this.getPosition(editRangeStart);
             let startPosition: TextPosition = positionInfo.startPosition;
             let endPosition: TextPosition = positionInfo.endPosition;
-            if ((this.start.isExistAfter(startPosition) || this.start.isAtSamePosition(startPosition))
-                && (this.end.isExistBefore(endPosition) || this.end.isAtSamePosition(endPosition))) {
+            let start: TextPosition = this.start;
+            let end: TextPosition = this.end;
+            if (!this.isForward) {
+                start = this.end;
+                end = this.start;
+            }
+            if ((start.isExistAfter(startPosition) || start.isAtSamePosition(startPosition))
+                && (end.isExistBefore(endPosition) || end.isAtSamePosition(endPosition))) {
                 return true;
             }
         }

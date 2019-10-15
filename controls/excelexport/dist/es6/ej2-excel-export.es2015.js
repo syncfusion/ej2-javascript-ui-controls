@@ -1026,7 +1026,7 @@ class Workbook {
         return colors;
     }
     processColor(colorVal) {
-        if (colorVal.startsWith('#')) {
+        if (colorVal.indexOf('#') === 0) {
             return colorVal.replace('#', 'FF');
         }
         colorVal = colorVal.toUpperCase();
@@ -1923,7 +1923,7 @@ class Workbook {
             let sstStart = '<?xml version="1.0" encoding="utf-8"?><sst uniqueCount="' + length + '" count="' + this.sharedStringCount + '" xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">';
             let si = '';
             for (let i = 0; i < length; i++) {
-                if (!this.sharedString[i].startsWith('<r>')) {
+                if (this.sharedString[i].indexOf('<r>') !== 0) {
                     si += '<si><t>';
                     si += this.processString(this.sharedString[i]);
                     si += '</t></si>';

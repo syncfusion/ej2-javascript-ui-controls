@@ -2052,7 +2052,42 @@ describe('Edit module', () => {
     });
   });
   
-  
+  describe('EJ2-31696-Default contextmenu Expand collapse throw script error in All platform', () => {
+    let gridObj: TreeGrid;
+    beforeAll((done: Function) => {
+      gridObj = createGrid(
+        {
+          dataSource: sampleData,
+          childMapping: 'subtasks',
+          editSettings: { allowEditing: true, mode: 'Row', allowDeleting: true, allowAdding: true, newRowPosition: 'Child' },
+          allowSorting: true,
+          sortSettings: {columns: [{field: 'taskName', direction: 'Ascending'}]},
+          treeColumnIndex: 1,
+          toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll'],
+          columns: [{ field: 'taskID', headerText: 'Task ID', isPrimaryKey: true },
+            { field: 'taskName', headerText: 'Task Name' },
+            { field: 'progress', headerText: 'Progress' },
+            { field: 'startDate', headerText: 'Start Date' }
+          ]
+        },
+      done
+      );
+    });
+    it('Throw script error while expand collapse', () => {
+      let event: MouseEvent = new MouseEvent('dblclick', {
+        'view': window,
+        'bubbles': true,
+        'cancelable': true
+      });
+      gridObj.getCellFromIndex(0,1).querySelector(".e-treegridexpand").dispatchEvent(event);
+      gridObj.selectRow(2);
+      expect(gridObj.getRows()[2].getElementsByClassName('e-active').length > 0).toBe(true);
+      expect(gridObj.grid.editModule.formObj === undefined).toBe(true);
+    });
+    afterAll(() => {
+      destroy(gridObj);
+    });
+  });
 
   describe('EJ2-31713-While add after expand through script error in platform', () => {
     let gridObj: TreeGrid;

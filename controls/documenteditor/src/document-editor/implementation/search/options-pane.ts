@@ -743,6 +743,9 @@ export class OptionsPane {
         let index: string = endSelection.getHierarchicalIndexInternal();
         this.results = this.viewer.owner.searchModule.textSearch.findAll(patterns, this.findOption, index);
         if (this.results != null && this.results.length > 0) {
+            let start: TextPosition = this.results.innerList[this.results.currentIndex].start;
+            let end: TextPosition = this.results.innerList[this.results.currentIndex].end;
+            this.viewer.scrollToPosition(start, end, true);
             this.navigateSearchResult(false);
             this.getMessageDivHeight();
             let height: number = this.isOptionsPane ? 215 : 292;

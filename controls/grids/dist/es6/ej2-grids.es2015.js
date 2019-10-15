@@ -3680,7 +3680,10 @@ class SummaryModelGenerator {
     getGeneratedCell(column, summaryRow, cellType, indent, isDetailGridAlone) {
         //Get the summary column by display
         let sColumn = summaryRow.columns.filter((scolumn) => scolumn.columnName === column.field)[0];
-        let attrs = { 'style': { 'textAlign': column.textAlign } };
+        let attrs = {
+            'style': { 'textAlign': column.textAlign },
+            'e-mappinguid': column.uid, index: column.index
+        };
         if (indent) {
             attrs.class = indent;
         }
@@ -5874,6 +5877,7 @@ class Render {
      */
     constructor(parent, locator) {
         this.emptyGrid = false;
+        this.counter = 0;
         this.parent = parent;
         this.locator = locator;
         this.data = new Data(parent, locator);
@@ -6248,11 +6252,28 @@ class Render {
         prepareColumns(this.parent.columns);
         this.headerRenderer.renderTable();
         this.contentRenderer.renderTable();
+        this.parent.isAutoGen = true;
         this.parent.notify(autoCol, {});
     }
+    iterateComplexColumns(obj, field, split) {
+        let keys = Object.keys(obj);
+        for (let i = 0; i < keys.length; i++) {
+            let childKeys = Object.keys(obj[keys[i]]);
+            if (typeof obj[keys[i]] === 'object' && childKeys.length) {
+                this.iterateComplexColumns(obj[keys[i]], field + (keys[i] + '.'), split);
+            }
+            else {
+                split[this.counter] = field + keys[i];
+                this.counter++;
+            }
+        }
+    }
     buildColumns(record) {
-        let columns = Object.keys(record).filter((e) => e !== 'BlazId');
         let cols = [];
+        let complexCols = {};
+        this.iterateComplexColumns(record, '', complexCols);
+        let columns = Object.keys(complexCols).filter((e) => complexCols[e] !== 'BlazId').
+            map((field) => complexCols[field]);
         for (let i = 0, len = columns.length; i < len; i++) {
             cols[i] = { 'field': columns[i] };
             if (this.parent.enableColumnVirtualization) {
@@ -6508,6 +6529,9 @@ class ColumnWidthService {
         }
     }
     setColumnWidth(column, index, module) {
+        if (this.parent.getColumns().length < 1) {
+            return;
+        }
         let columnIndex = isNullOrUndefined(index) ? this.parent.getNormalizedColumnIndex(column.uid) : index;
         let cWidth = this.getWidth(column);
         let tgridWidth = this.getTableWidth(this.parent.getColumns());
@@ -11302,6 +11326,8 @@ let Grid = Grid_1 = class Grid extends Component {
         this.prevPageMoving = false;
         /** @hidden */
         this.pageTemplateChange = false;
+        /** @hidden */
+        this.isAutoGen = false;
         // enable/disable logger for MVC & Core
         this.enableLogger = true;
         this.needsID = true;
@@ -13188,29 +13214,29 @@ let Grid = Grid_1 = class Grid extends Component {
         let contentCol = [].slice.call(this.getContentTable().querySelector('colgroup').childNodes);
         let perPixel = indentWidth / 30;
         let i = 0;
+        let applyWidth = (index, width) => {
+            headerCol[index].style.width = width + 'px';
+            contentCol[index].style.width = width + 'px';
+            this.notify(columnWidthChanged, { index: index, width: width });
+        };
         if (perPixel >= 1) {
             indentWidth = (30 / perPixel);
         }
-        if (this.enableColumnVirtualization) {
+        if (this.enableColumnVirtualization || this.isAutoGen) {
             indentWidth = 30;
         }
         while (i < this.groupSettings.columns.length) {
-            headerCol[i].style.width = indentWidth + 'px';
-            contentCol[i].style.width = indentWidth + 'px';
-            this.notify(columnWidthChanged, { index: i, width: indentWidth });
+            applyWidth(i, indentWidth);
             i++;
         }
         if (this.isDetail()) {
-            headerCol[i].style.width = indentWidth + 'px';
-            contentCol[i].style.width = indentWidth + 'px';
-            this.notify(columnWidthChanged, { index: i, width: indentWidth });
+            applyWidth(i, indentWidth);
             i++;
         }
         if (this.isRowDragable()) {
-            headerCol[i].style.width = indentWidth + 'px';
-            contentCol[i].style.width = indentWidth + 'px';
-            this.notify(columnWidthChanged, { index: i, width: indentWidth });
+            applyWidth(i, indentWidth);
         }
+        this.isAutoGen = false;
         this.getHeaderTable().querySelector('.e-emptycell').setAttribute('indentRefreshed', 'true');
     }
     /**
@@ -13632,6 +13658,7 @@ let Grid = Grid_1 = class Grid extends Component {
         EventHandler.remove(this.element, 'click', this.mouseClickHandler);
         EventHandler.remove(this.element, 'touchend', this.mouseClickHandler);
         EventHandler.remove(this.element, 'focusout', this.focusOutHandler);
+        EventHandler.remove(this.element, 'dblclick', this.dblClickHandler);
         EventHandler.remove(this.getContent().firstElementChild, 'scroll', this.scrollHandler);
         EventHandler.remove(this.element, 'mousemove', this.mouseMoveHandler);
         EventHandler.remove(this.element, 'mouseout', this.mouseMoveHandler);
@@ -13833,10 +13860,6 @@ let Grid = Grid_1 = class Grid extends Component {
                     arr[index] = extend(localCol, col, true);
                 }
                 else {
-                    if (isBlazor()) {
-                        let guid = 'guid';
-                        col[guid] = localCol[guid];
-                    }
                     arr[index] = extend(localCol, col, true);
                 }
             }
@@ -16541,7 +16564,7 @@ class StringFilterUI {
         if (isNullOrUndefined(filterValue) || filterValue === '') {
             filterValue = null;
         }
-        filterObj.filterByColumn(column.field, filterOptr, filterValue, 'and', false);
+        filterObj.filterByColumn(column.field, filterOptr, filterValue, 'and', this.parent.filterSettings.enableCaseSensitivity);
     }
     openPopup(args) {
         getZIndexCalcualtion(args, this.dialogObj);
@@ -17501,24 +17524,13 @@ class ExcelFilter extends CheckBoxFilter {
             data = { column: predicates instanceof Array ? predicates[predIndex] : predicates };
             let indx = this.options.column.columnData && fltrPredicates.length > 1 ?
                 (this.options.column.columnData.length === 1 ? 0 : 1) : predIndex;
-            let value = 'value';
-            let fColumn = 'column';
-            let filterValue = columnObj.foreignKeyValue ?
-                this.getForeignFilterValue(columnObj, getValue('value', data[fColumn])) : getValue('value', data[fColumn]);
-            if (columnObj.foreignKeyValue) {
-                data[this.options.foreignKeyValue] = filterValue;
-                data[value] = filterValue;
-            }
-            else {
-                data[this.options.field] = filterValue;
-                data[value] = filterValue;
+            data[this.options.field] = columnObj.foreignKeyValue ? this.options.column.columnData[indx][columnObj.foreignKeyValue] :
+                fltrPredicates[indx].value;
+            if (this.options.foreignKeyValue) {
+                data[this.options.foreignKeyValue] = this.options.column.columnData[indx][columnObj.foreignKeyValue];
             }
         }
         return data;
-    }
-    getForeignFilterValue(columnObj, fValue) {
-        let foreignData = columnObj.columnData.filter((e) => { return e[columnObj.field] === fValue; });
-        return foreignData[0][columnObj.foreignKeyValue];
     }
     /* tslint:disable-next-line:max-line-length */
     renderMatchCase(column, tr, matchCase, elementId, predicates) {
@@ -17666,6 +17678,8 @@ class Filter {
             lessThan: 'lessthan', lessThanOrEqual: 'lessthanorequal', notEqual: 'notequal', startsWith: 'startswith'
         };
         this.fltrDlgDetails = { field: '', isOpen: false };
+        this.skipNumberInput = ['=', ' ', '!'];
+        this.skipStringInput = ['>', '<', '='];
         this.actualPredicate = {};
         this.parent = parent;
         this.filterSettings = filterSettings;
@@ -17929,7 +17943,7 @@ class Filter {
             return;
         }
         this.value = filterValue;
-        this.matchCase = this.filterSettings.enableCaseSensitivity;
+        this.matchCase = matchCase || false;
         this.ignoreAccent = this.ignoreAccent = !isNullOrUndefined(ignoreAccent) ? ignoreAccent : this.parent.filterSettings.ignoreAccent;
         this.fieldName = fieldName;
         this.predicate = predicate || 'and';
@@ -18268,17 +18282,14 @@ class Filter {
     }
     checkForSkipInput(column, value) {
         let isSkip;
-        let skipInput;
         if (column.type === 'number') {
-            skipInput = ['=', ' ', '!'];
-            if (DataUtil.operatorSymbols[value] || skipInput.indexOf(value) > -1) {
+            if (DataUtil.operatorSymbols[value] || this.skipNumberInput.indexOf(value) > -1) {
                 isSkip = true;
             }
         }
         else if (column.type === 'string') {
-            skipInput = ['>', '<', '=', '!'];
             for (let val of value) {
-                if (skipInput.indexOf(val) > -1) {
+                if (this.skipStringInput.indexOf(val) > -1) {
                     isSkip = true;
                 }
             }
@@ -18321,7 +18332,7 @@ class Filter {
             return;
         }
         this.validateFilterValue(this.value);
-        this.filterByColumn(this.column.field, this.operator, this.value, this.predicate, this.matchCase, this.ignoreAccent);
+        this.filterByColumn(this.column.field, this.operator, this.value, this.predicate, this.filterSettings.enableCaseSensitivity, this.ignoreAccent);
         filterElement.value = filterValue;
         this.updateFilterMsg();
     }
@@ -19877,12 +19888,23 @@ class RowDD {
             }
         };
         this.dragStop = (e) => {
+            if (isActionPrevent(this.parent)) {
+                this.parent.notify(preventBatch, {
+                    instance: this, handler: this.processDragStop, arg1: e
+                });
+            }
+            else {
+                this.processDragStop(e);
+            }
+        };
+        this.processDragStop = (e) => {
             let gObj = this.parent;
             if (this.parent.isDestroyed) {
                 return;
             }
             let targetEle = this.getElementFromPosition(e.helper, e.event);
-            let target = targetEle ? targetEle : e.target;
+            let target = targetEle && !targetEle.classList.contains('e-dlg-overlay') ?
+                targetEle : e.target;
             let cloneElement = this.parent.element.querySelector('.e-cloneproperties');
             gObj.element.classList.remove('e-rowdrag');
             let dropElement = document.getElementById(gObj.rowDropSettings.targetID);
@@ -21811,6 +21833,22 @@ class FooterRenderer extends ContentRender {
         this.renderSummaryContent(e, this.getTable(), this.parent.getFrozenColumns());
         // check freeze content have no row case
         if (this.parent.getFrozenColumns()) {
+            let frozenCnt = [].slice.call(this.parent.element.querySelector('.e-frozenfootercontent')
+                .querySelectorAll('.e-summaryrow'));
+            let movableCnt = [].slice.call(this.parent.element.querySelector('.e-movablefootercontent')
+                .querySelectorAll('.e-summaryrow'));
+            for (let i = 0; i < frozenCnt.length; i++) {
+                let frozenHeight$$1 = frozenCnt[i].getBoundingClientRect().height;
+                let movableHeight = movableCnt[i].getBoundingClientRect().height;
+                if (frozenHeight$$1 < movableHeight) {
+                    frozenCnt[i].classList.remove('e-hide');
+                    frozenCnt[i].style.height = movableHeight + 'px';
+                }
+                else if (frozenHeight$$1 > movableHeight) {
+                    movableCnt[i].classList.remove('e-hide');
+                    movableCnt[i].style.height = frozenHeight$$1 + 'px';
+                }
+            }
             let frozenDiv = this.frozenContent;
             if (!frozenDiv.offsetHeight) {
                 frozenDiv.style.height = this.getTable().offsetHeight + 'px';
@@ -21889,6 +21927,7 @@ class FooterRenderer extends ContentRender {
         let mergeds = [];
         let dataSource = [];
         let isModified = false;
+        let batchChanges = {};
         let gridData = 'dataSource';
         let changedRecords = 'changedRecords';
         let addedRecords = 'addedRecords';
@@ -21896,7 +21935,9 @@ class FooterRenderer extends ContentRender {
         let currentViewData = this.parent.dataSource instanceof Array ?
             this.parent.dataSource : this.parent.dataSource[gridData].json.length
             ? this.parent.dataSource[gridData].json : this.parent.getCurrentViewRecords();
-        let batchChanges = this.parent.editModule.getBatchChanges();
+        if (this.parent.editModule) {
+            batchChanges = this.parent.editModule.getBatchChanges();
+        }
         if (Object.keys(batchChanges).length) {
             for (let i = 0; i < currentViewData.length; i++) {
                 isModified = false;
@@ -23660,7 +23701,8 @@ class DropDownEditCell {
             query: new Query().select(args.column.field), enabled: isEditable(args.column, args.requestType, args.element),
             fields: { value: args.column.field },
             value: getObject(args.column.field, args.rowData),
-            enableRtl: this.parent.enableRtl, filtering: this.ddFiltering.bind(this), actionComplete: this.ddActionComplete.bind(this),
+            enableRtl: this.parent.enableRtl, actionComplete: this.ddActionComplete.bind(this),
+            created: this.dropdownCreated.bind(this),
             placeholder: isInline ? '' : args.column.headerText, popupHeight: '200px',
             floatLabelType: isInline ? 'Never' : 'Always', open: this.dropDownOpen.bind(this),
             sortOrder: 'Ascending'
@@ -23672,12 +23714,12 @@ class DropDownEditCell {
     read(element) {
         return element.ej2_instances[0].value;
     }
-    ddFiltering(e) {
+    dropdownCreated(e) {
         this.flag = true;
     }
     ddActionComplete(e) {
         e.result = DataUtil.distinct(e.result, this.obj.fields.value, true);
-        if (!this.flag && this.column.dataSource) {
+        if (this.flag && this.column.dataSource) {
             this.column.dataSource.dataSource.json = e.result;
         }
         this.flag = false;
@@ -26026,7 +26068,22 @@ class Edit {
         }
         div.appendChild(content);
         div.appendChild(arrow);
-        this.formObj.element.appendChild(div);
+        if (this.parent.getFrozenColumns() && this.parent.editSettings.mode !== 'Dialog') {
+            let getEditCell = this.parent.editSettings.mode === 'Normal' ?
+                closest(element, '.e-editcell') : closest(element, '.e-table');
+            getEditCell.style.position = 'relative';
+            div.style.position = 'absolute';
+            if (this.parent.editSettings.mode === 'Batch' ||
+                (closest(element, '.e-frozencontent') || closest(element, '.e-frozenheader'))) {
+                this.formObj.element.appendChild(div);
+            }
+            else {
+                this.mFormObj.element.appendChild(div);
+            }
+        }
+        else {
+            this.formObj.element.appendChild(div);
+        }
         if (isInline && gcontent.getBoundingClientRect().bottom < inputClient.bottom + inputClient.height) {
             gcontent.scrollTop = gcontent.scrollTop + div.offsetHeight + arrow.scrollHeight;
         }
@@ -26035,7 +26092,12 @@ class Edit {
             div.querySelector('label').getBoundingClientRect().height / (lineHeight * 1.2) >= 2) {
             div.style.width = div.style.maxWidth;
         }
-        div.style.left = (parseInt(div.style.left, 10) - div.offsetWidth / 2) + 'px';
+        if (this.parent.getFrozenColumns() && (this.parent.editSettings.mode === 'Normal' || this.parent.editSettings.mode === 'Batch')) {
+            div.style.left = input.offsetLeft + (input.offsetWidth / 2 - div.offsetWidth / 2) + 'px';
+        }
+        else {
+            div.style.left = (parseInt(div.style.left, 10) - div.offsetWidth / 2) + 'px';
+        }
         if (!isScroll && isInline && !this.parent.allowPaging) {
             gcontent.style.position = 'static';
             let pos = calculateRelativeBasedPosition(input, div);
@@ -30103,7 +30165,7 @@ class FreezeRender extends HeaderRender {
                 !this.parent.resizeModule.isFrozenColResized))) {
                 fRows[i].style.height = mRowHgt + 'px';
             }
-            if (!isNullOrUndefined(mRows[i]) && mRows[i].childElementCount && ((isWrap && fRowHgt > mRowHgt) ||
+            if (mRows && !isNullOrUndefined(mRows[i]) && mRows[i].childElementCount && ((isWrap && fRowHgt > mRowHgt) ||
                 (!isWrap && fRowHgt > mRowHgt) || (this.parent.allowResizing && this.parent.resizeModule &&
                 this.parent.resizeModule.isFrozenColResized))) {
                 mRows[i].style.height = fRowHgt + 'px';

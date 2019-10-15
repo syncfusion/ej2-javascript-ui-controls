@@ -2,6 +2,32 @@
 
 ## [Unreleased]
 
+## 17.3.17 (2019-10-15)
+
+### PDF Viewer
+
+#### New Features
+
+- `#248585` - The start and end indexes of text markup annotation have been exposed in the annotationAdd event.
+
+#### Bug Fixes
+
+- `#249742` - The annotationSelect event will be triggered properly after selecting another text markup annotation.
+- `#245008` - Notes of the measure annotations will now be updated properly after modifying the scale values.
+
+## 17.3.16 (2019-10-09)
+
+### PDF Viewer
+
+#### New Features
+
+- `#249725` - Provided the support to enable or disable the comment panel.
+- `#248609` -  Exposed the API for textSelectionStart and textSelectionEnd events in the PDF Viewer.
+
+#### Bug Fixes
+
+- `#249017` - Multiline text markup annotation bounds will be returned properly in the annotationAdd event arguments.
+
 ## 17.3.14 (2019-10-03)
 
 ### PDF Viewer

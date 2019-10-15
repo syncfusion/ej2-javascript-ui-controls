@@ -1588,7 +1588,7 @@ export class TextPosition {
                 this.offset = startOffset;
             }
         } else if (!isNullOrUndefined(firstElement)) {
-            let indexInInline: number = selection.getIndexInInline(firstElement);
+            let indexInInline: number = 0;
             this.currentWidget = firstElement.line;
             this.offset = this.currentWidget.getOffset(firstElement, indexInInline);
             indexInInline = 0;
@@ -1753,7 +1753,8 @@ export class TextPosition {
             // As per Microsoft Behavior, when current para is RTL and if line widget contains rtl text or mixed inlines(rtl, normal),
             // then need to consider the last element and to update offset to last element
             if (isParaBidi && this.containsRtlText(currentLine)) {
-                lastElement = firstElement;
+                let endOffset: number = currentLine.getEndOffset();
+                lastElement = currentLine.getInline(endOffset, 0).element;
             } else {
                 lastElement = currentLine.children[currentLine.children.length - 1];
                 if (lastElement instanceof ListTextElementBox && currentLine.children.length > 2) {

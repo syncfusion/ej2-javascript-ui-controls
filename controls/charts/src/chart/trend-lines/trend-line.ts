@@ -35,6 +35,7 @@ export class Trendlines {
         series.yName = 'y';
         series.fill = fill || 'blue';
         series.width = width;
+        series.dashArray = trendline.dashArray;
         series.clipRectElement = trendline.clipRectElement;
         series.points = [];
         series.enableTooltip = trendline.enableTooltip;

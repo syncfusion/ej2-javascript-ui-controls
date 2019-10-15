@@ -1,4 +1,4 @@
-import { Component, NotifyPropertyChanges, INotifyPropertyChanged, Property, Complex } from '@syncfusion/ej2-base';
+import { Component, NotifyPropertyChanges, INotifyPropertyChanged, Property, Complex, isBlazor } from '@syncfusion/ej2-base';
 import { SvgRenderer } from '@syncfusion/ej2-svg-base';
 import { remove, L10n, Internationalization, Event, EmitType, ModuleDeclaration, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { Browser, EventHandler, Touch, Collection } from '@syncfusion/ej2-base';
@@ -391,8 +391,7 @@ export class Sparkline extends Component<HTMLElement> implements INotifyProperty
      * Initializing pre-required values for sparkline.
      */
     protected preRender(): void {
-        let blazor: string = 'Blazor';
-        this.isBlazor = window[blazor];
+        this.isBlazor = isBlazor();
 
         this.unWireEvents();
 

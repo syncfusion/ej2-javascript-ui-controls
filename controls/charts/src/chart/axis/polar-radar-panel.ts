@@ -1,12 +1,13 @@
 import { Chart } from '../chart';
 import { Axis, Row, Column, VisibleRangeModel, VisibleLabels } from '../axis/axis';
-import { valueToCoefficient, inside } from '../../common/utils/helper';
+import { valueToCoefficient, inside, isOverlap } from '../../common/utils/helper';
 import { appendChildElement } from '../../common/utils/helper';
 import { CircleOption } from '../../common/utils/helper';
 import { Size, measureText, TextOption, PathOption, Rect } from '@syncfusion/ej2-svg-base';
 import { LineBase } from '../series/line-base';
 import { textElement, ChartLocation, valueToPolarCoefficient, CoefficientToVector, getElement } from '../../common/utils/helper';
 import { BorderModel } from '../../index';
+import { LabelIntersectAction } from '../utils/enum';
 
 /**
  * Specifies the Polar Axis Layout.
@@ -21,6 +22,7 @@ export class PolarRadarPanel extends LineBase {
     private centerX: number;
     private centerY: number;
     private startAngle: number;
+    private xAxisVisibleLabels: Rect[] = [];
     /** @private */
     public seriesClipRect: Rect;
     /**
@@ -216,9 +218,15 @@ export class PolarRadarPanel extends LineBase {
         let angle: number = this.startAngle < 0 ? this.startAngle + 360 : this.startAngle;
         let anchor: string = 'middle';
         let radius: number; let padding: number = 5;
+        let isIntersect: boolean;
+        let labelRegions: Rect[] = [];
+        let isLabelVisible: boolean[] = [];
+        isLabelVisible[0] = true;
+        let intersectType: LabelIntersectAction = axis.labelIntersectAction;
         let labelElement: Element = chart.renderer.createGroup({ id: chart.element.id + 'AxisLabels' + index });
         vector = CoefficientToVector(valueToPolarCoefficient(axis.visibleLabels[0].value, axis), this.startAngle);
         for (let i: number = 0, len: number = axis.visibleLabels.length; i < len; i++) {
+            isIntersect = false;
             radius = chart.radius * valueToCoefficient(axis.visibleLabels[i].value, axis);
             elementSize = axis.visibleLabels[i].size;
             radius = chart.radius * valueToCoefficient(axis.visibleLabels[i].value, axis);
@@ -226,8 +234,36 @@ export class PolarRadarPanel extends LineBase {
               * (Math.cos(angle * Math.PI / 180)) * (axis.labelPosition === 'Inside' ? 1 : -1));
             pointY = (this.centerY + radius * vector.y) + ((axis.majorTickLines.height + elementSize.height / 2)
               * (Math.sin(angle * Math.PI / 180)) * (axis.labelPosition === 'Inside' ? 1 : -1));
-            options = new TextOption(chart.element.id + index + '_AxisLabel_' + i, pointX, pointY + (elementSize.height / 4),
+            pointY += (elementSize.height / 4);
+            labelRegions[i] = this.getLabelRegion(pointX, pointY, axis.visibleLabels[i], anchor);
+            if (i !== 0 && intersectType === 'Hide') {
+                for (let j: number = i; j >= 0; j--) {
+                    j = (j === 0) ? 0 : (j === i) ? (j - 1) : j;
+                    if (isLabelVisible[j] && isOverlap(labelRegions[i], labelRegions[j])) {
+                        isIntersect = true;
+                        isLabelVisible[i] = false;
+                        break;
+                    } else {
+                        isLabelVisible[i] = true;
+                    }
+                }
+                if (isIntersect) {
+                    continue; // If the label is intersect, the label render is ignored.
+                }
+                // To check Y axis label with visible X axis label
+                for (let j: number = 0; j < this.xAxisVisibleLabels.length; j++) {
+                    if (isOverlap(labelRegions[i], this.xAxisVisibleLabels[j])) {
+                        isIntersect = true;
+                        break;
+                    }
+                }
+                if (isIntersect) {
+                    continue;
+                }
+            }
+            options = new TextOption(chart.element.id + index + '_AxisLabel_' + i, pointX, pointY,
                                      anchor, axis.visibleLabels[i].text);
+
             textElement(
                 chart.renderer, options, axis.labelStyle, axis.labelStyle.color || chart.themeStyle.axisLabel, labelElement,
                 false, chart.redraw, true, true
@@ -405,13 +441,18 @@ export class PolarRadarPanel extends LineBase {
         let lastLabelX: number;
         let label: VisibleLabels;
         let textAnchor: string = '';
+        let isIntersect: boolean;
+        let labelRegions: Rect[] = [];
+        let isLabelVisible: boolean[] = [];
+        isLabelVisible[0] = true;
+        let intersectType: LabelIntersectAction = axis.labelIntersectAction;
         let ticksbwtLabel: number = axis.valueType === 'Category' && axis.labelPlacement === 'BetweenTicks'
                   && chart.visibleSeries[0].type !== 'Radar' ? 0.5 : 0;
         let radius: number = chart.radius + axis.majorTickLines.height;
         radius = (islabelInside) ? -radius : radius;
 
         for (let i: number = 0, len: number = axis.visibleLabels.length; i < len; i++) {
-
+            isIntersect = false;
             vector = CoefficientToVector(valueToPolarCoefficient(axis.visibleLabels[i].value + ticksbwtLabel, axis), this.startAngle);
             if (!isNaN(vector.x) && !isNaN(vector.y)) {
                 pointX = this.centerX + (radius + axis.majorTickLines.height + padding) * vector.x;
@@ -422,6 +463,7 @@ export class PolarRadarPanel extends LineBase {
             labelText = <string>axis.visibleLabels[i].text;
             // fix for label style not working in axisLabelRender event issue
             label = axis.visibleLabels[i];
+            labelRegions[i] = this.getLabelRegion(pointX, pointY, label, textAnchor);
             if (i === 0) {
                 firstLabelX = pointX;
             } else if (i === axis.visibleLabels.length - 1 && axis.valueType !== 'Category') {
@@ -431,13 +473,52 @@ export class PolarRadarPanel extends LineBase {
             }
 
             options = new TextOption(chart.element.id + index + '_AxisLabel_' + i, pointX, pointY, textAnchor, labelText, '', 'central');
+            // Label intersect action (Hide) perform here
+            if (i !== 0 && intersectType === 'Hide') {
+                for (let j: number = i; j >= 0; j--) {
+                    j = (j === 0) ? 0 : ((j === i) ? (j - 1) : j);
+                    if (isLabelVisible[j] && isOverlap(labelRegions[i], labelRegions[j])) {
+                        isIntersect = true;
+                        isLabelVisible[i] = false;
+                        break;
+                    } else {
+                        isLabelVisible[i] = true;
+                    }
+                }
+            }
+            if (isIntersect) {
+                continue; // If the label is intersect, the label render is ignored.
+            }
             textElement(
                 chart.renderer, options, label.labelStyle, label.labelStyle.color || chart.themeStyle.axisLabel, labelElement,
                 false, chart.redraw, true, true
             );
         }
-
+        for (let i: number = 0; i < isLabelVisible.length; i++) {
+            if (isLabelVisible[i]) {
+                this.xAxisVisibleLabels.push(labelRegions[i]);
+            }
+        }
         this.element.appendChild(labelElement);
+    }
+
+    /**
+     * Getting axis label bounds
+     * @param pointX
+     * @param pointY
+     * @param label
+     * @param anchor
+     */
+    private getLabelRegion(pointX: number, pointY: number, label: VisibleLabels, anchor: string): Rect {
+        if (anchor === 'middle') {
+            pointX -= (label.size.width / 2);
+        } else if (anchor === 'end') {
+            pointX -= label.size.width;
+        } else {
+            pointX = pointX;
+        }
+        pointY -= (label.size.height / 2);
+        return new Rect(pointX, pointY, label.size.width, label.size.height);
     }
 
     private renderTickLine(

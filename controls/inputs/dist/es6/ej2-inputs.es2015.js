@@ -7696,7 +7696,7 @@ let Uploader = class Uploader extends Component {
             showSpinner(spinnerTarget);
         }
         if (eventArgs.postRawFile && !isNullOrUndefined(selectedFiles.rawFile) && selectedFiles.rawFile !== '') {
-            formData.append(name, selectedFiles.rawFile);
+            formData.append(name, selectedFiles.rawFile, selectedFiles.name);
         }
         else {
             formData.append(name, selectedFiles.name);
@@ -9282,7 +9282,8 @@ let Uploader = class Uploader extends Component {
         this.trigger('beforeUpload', eventArgs, (eventArgs) => {
             if (isBlazor()) {
                 this.currentRequestHeader = eventArgs.currentRequest ? eventArgs.currentRequest : this.currentRequestHeader;
-                this.customFormDatas = eventArgs.customFormData ? eventArgs.customFormData : this.customFormDatas;
+                this.customFormDatas = (eventArgs.customFormData && eventArgs.customFormData.length > 0) ?
+                    eventArgs.customFormData : this.customFormDatas;
             }
             this.uploadFiles(uploadFiles, custom);
         });
@@ -11880,15 +11881,17 @@ let TextBox = class TextBox extends Component {
         else {
             this.resetValue(this.initialValue);
         }
-        let label = this.textboxWrapper.container.querySelector('.e-float-text');
-        if (!isNullOrUndefined(label)) {
-            if ((isNullOrUndefined(this.initialValue) || this.initialValue === '')) {
-                label.classList.add('e-label-bottom');
-                label.classList.remove('e-label-top');
-            }
-            else if (this.initialValue !== '') {
-                label.classList.add('e-label-top');
-                label.classList.remove('e-label-bottom');
+        if (!isNullOrUndefined(this.textboxWrapper)) {
+            let label = this.textboxWrapper.container.querySelector('.e-float-text');
+            if (!isNullOrUndefined(label)) {
+                if ((isNullOrUndefined(this.initialValue) || this.initialValue === '')) {
+                    label.classList.add('e-label-bottom');
+                    label.classList.remove('e-label-top');
+                }
+                else if (this.initialValue !== '') {
+                    label.classList.add('e-label-top');
+                    label.classList.remove('e-label-bottom');
+                }
             }
         }
     }

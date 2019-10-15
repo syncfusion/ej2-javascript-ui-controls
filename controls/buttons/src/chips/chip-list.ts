@@ -1,6 +1,6 @@
 import { Component, NotifyPropertyChanges, INotifyPropertyChanged, Property, append, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { removeClass, KeyboardEventArgs, rippleEffect, closest, MouseEventArgs } from '@syncfusion/ej2-base';
-import { EventHandler, detach, EmitType, Event, addClass } from '@syncfusion/ej2-base';
+import { EventHandler, detach, EmitType, Event, addClass, isBlazor, getElement } from '@syncfusion/ej2-base';
 import { ChipListModel } from './chip-list-model';
 import { ChipModel } from './chip';
 
@@ -588,7 +588,8 @@ export class ChipList extends Component<HTMLElement> implements INotifyPropertyC
                     let deletedItemArgs: DeleteEventArgs = chipData as DeleteEventArgs;
                     this.trigger('delete', deletedItemArgs, (observedArgs: DeleteEventArgs) => {
                         if (!observedArgs.cancel) {
-                            this.deleteHandler(chipData.element, chipData.index);
+                            observedArgs.element = isBlazor() ? getElement(observedArgs.element) : observedArgs.element;
+                            this.deleteHandler(observedArgs.element, observedArgs.index);
                         }
                     });
                 } else if (this.selection !== 'None') {

@@ -296,7 +296,10 @@ L10n.load({
             'Unprotect Document': 'إلغاء حماية المستند',
             'Password': 'كلمه المرور',
             /* tslint:disable */
-            "Don't add space between the paragraphs of the same styles": 'عدم إضافة مسافة بين فقرات نفس الأنماط'
+            "Don't add space between the paragraphs of the same styles": 'عدم إضافة مسافة بين فقرات نفس الأنماط',
+            'Keep source formatting': 'الاحتفاظ بتنسيق المصدر',
+            'Match destination formatting': 'مطابقه تنسيق الوجهة',
+            'Text only': 'النص فقط'
             /* tslint:enable */
         },
         'documenteditorcontainer': {
@@ -449,7 +452,9 @@ L10n.load({
             'Stop Protection': 'إيقاف الحماية',
             'Unprotect Document': 'إلغاء حماية المستند',
             'Password': 'كلمه المرور',
-            'Protections': 'الحمايه'
+            'Protections': 'الحمايه',
+            'Single': 'واحد',
+            'Double': 'انقر نقرا مزدوجا'
         },
         'colorpicker': {
             'Apply': 'تطبيق',

@@ -1191,6 +1191,10 @@ export class TableWidget extends BlockWidget {
     /**
      * @private
      */
+    public isDefaultFormatUpdated: boolean = false;
+    /**
+     * @private
+     */
     get isGridUpdated(): boolean {
         return ((this.flags & 0x4) >> 2) !== 0;
     }
@@ -1552,7 +1556,11 @@ export class TableWidget extends BlockWidget {
         // For continuous layout, window width should be considered. 
         // If preferred width exceeds this limit, it can take upto maximum of 2112 pixels (1584 points will be assigned by Microsoft Word).
         containerWidth = this.getOwnerWidth(true);
+        let isZeroWidth: boolean = (isAutoWidth && this.tableFormat.preferredWidth === 0 && !isAutoFit);
         tableWidth = this.getTableClientWidth(containerWidth);
+        if (isZeroWidth && !this.isDefaultFormatUpdated) {
+            this.splitWidthToTableCells(tableWidth, isZeroWidth);
+        }
         for (let i: number = 0; i < this.childWidgets.length; i++) {
             let row: TableRowWidget = this.childWidgets[i] as TableRowWidget;
             let rowFormat: WRowFormat = row.rowFormat;
@@ -1621,6 +1629,10 @@ export class TableWidget extends BlockWidget {
                         }
                     }
                 }
+                let newCellFormat: WCellFormat = new WCellFormat();
+                if (isZeroWidth && !this.isDefaultFormatUpdated) {
+                    cell.cellFormat.copyFormat(newCellFormat);
+                }
                 cellWidth = this.getCellWidth(cell.cellFormat.preferredWidth, cell.cellFormat.preferredWidthType, tableWidth, cell);
                 sizeInfo = cell.getCellSizeInfo(isAutoFit);
                 this.tableHolder.addColumns(columnSpan, columnSpan += cell.cellFormat.columnSpan, cellWidth, sizeInfo, offset += cellWidth);
@@ -1629,6 +1641,9 @@ export class TableWidget extends BlockWidget {
                     this.tableHolder.addColumns(columnSpan, columnSpan += rowFormat.gridAfter, cellWidth, sizeInfo, offset += cellWidth);
                 }
             }
+        }
+        if (isZeroWidth && !this.isDefaultFormatUpdated) {
+            this.isDefaultFormatUpdated = true;
         }
         this.tableHolder.validateColumnWidths();
         if (isAutoFit) {
@@ -1895,9 +1910,9 @@ export class TableWidget extends BlockWidget {
      * @param tableClientWidth 
      * @private
      */
-    public splitWidthToTableCells(tableClientWidth: number): void {
+    public splitWidthToTableCells(tableClientWidth: number, isZeroWidth?: boolean): void {
         for (let row: number = 0; row < this.childWidgets.length; row++) {
-            (this.childWidgets[row] as TableRowWidget).splitWidthToRowCells(tableClientWidth);
+            (this.childWidgets[row] as TableRowWidget).splitWidthToRowCells(tableClientWidth, isZeroWidth);
         }
     }
     /**
@@ -2002,6 +2017,7 @@ export class TableWidget extends BlockWidget {
         this.headerHeight = undefined;
         this.description = undefined;
         this.title = undefined;
+        this.isDefaultFormatUpdated = undefined;
         super.destroy();
     }
 }
@@ -2108,11 +2124,19 @@ export class TableRowWidget extends BlockWidget {
     /**
      * @private
      */
-    public splitWidthToRowCells(tableClientWidth: number): void {
+    public splitWidthToRowCells(tableClientWidth: number, isZeroWidth?: boolean): void {
         let cells: TableCellWidget[] = this.childWidgets as TableCellWidget[];
         let cellWidth: number = tableClientWidth / cells.length;
         for (let cell: number = 0; cell < cells.length; cell++) {
-            cells[cell].cellFormat.preferredWidth = cellWidth;
+            if (isZeroWidth && cells[cell].cellFormat.preferredWidth === 0) {
+                cells[cell].cellFormat.preferredWidth = cellWidth;
+                this.ownerTable.isDefaultFormatUpdated = false;
+            } else if (isZeroWidth) {
+                this.ownerTable.isDefaultFormatUpdated = true;
+                break;
+            } else {
+                cells[cell].cellFormat.preferredWidth = cellWidth;
+            }
         }
     }
     /**
@@ -2698,7 +2722,9 @@ export class TableCellWidget extends BlockWidget {
      */
     public getMinimumPreferredWidth(): number {
         let defaultWidth: number = 0;
-
+        if (this.cellFormat.preferredWidth > 0) {
+            return this.cellFormat.preferredWidth;
+        }
         defaultWidth = this.leftMargin + this.rightMargin + this.getLeftBorderWidth() + this.getRightBorderWidth() + this.getCellSpacing();
 
         return defaultWidth;
@@ -3385,29 +3411,42 @@ export class LineWidget implements IWidget {
         }
         return startOffset;
     }
-    private getBodyWidget(): BodyWidget {
-        let cntrWidget: Widget = this.paragraph.containerWidget;
-        while (!(cntrWidget instanceof BodyWidget)) {
-            cntrWidget = cntrWidget.containerWidget;
-        }
-        return cntrWidget;
-    }
-    private getInlineForOffset(offset: number, isOffset?: boolean, inline?: ElementBox, isEndOffset?: boolean): ElementInfo {
+
+    /**
+     * @private
+     * @param offset 
+     * @param isOffset 
+     * @param inline 
+     * @param isEndOffset 
+     */
+    // tslint:disable-next-line:max-line-length
+    public getInlineForOffset(offset: number, isOffset?: boolean, inline?: ElementBox, isEndOffset?: boolean, isPrevOffset?: boolean, isNxtOffset?: boolean): ElementInfo {
         let startElement: ElementBox = this.children[this.children.length - 1] as ElementBox;
         let endElement: ElementBox;
         let element: ElementBox = startElement;
-        let viewer: LayoutViewer = this.getBodyWidget().page.viewer;
+        let viewer: LayoutViewer = this.paragraph.bodyWidget.page.viewer;
         let textHelper: TextHelper = viewer.textHelper;
         let isApplied: boolean = false;
         let count: number = 0;
         let lineLength: number = viewer.selection.getLineLength(this);
+        let validOffset: number = 0;
         while (element) {
             if (!endElement && !(element instanceof TabElementBox && element.text === '\t') &&
                 (element instanceof TextElementBox && !textHelper.isRTLText(element.text)
                     || !(element instanceof TextElementBox))) {
                 while (element.previousElement && (element.previousElement instanceof TextElementBox
                     && !textHelper.isRTLText(element.previousElement.text) || element.previousElement instanceof FieldElementBox
-                    || element.previousElement instanceof ListTextElementBox || element instanceof BookmarkElementBox
+                    || element.previousElement instanceof BookmarkElementBox
+                    && !isNullOrUndefined(element.previousElement.previousElement) &&
+                    !(element.previousElement.previousElement instanceof BookmarkElementBox)
+                    || element.previousElement instanceof BookmarkElementBox
+                    && element.previousElement.previousElement instanceof BookmarkElementBox
+                    && !isNullOrUndefined(element.previousElement.previousElement.previousElement)
+                    || element instanceof BookmarkElementBox && element.previousElement instanceof BookmarkElementBox
+                    && !isNullOrUndefined(element.previousElement.previousElement)
+                    || element.previousElement instanceof ListTextElementBox
+                    || element.previousElement instanceof EditRangeEndElementBox
+                    || element.previousElement instanceof EditRangeStartElementBox
                     || element instanceof ImageElementBox)) {
                     isApplied = true;
                     element = element.previousElement;
@@ -3432,21 +3471,37 @@ export class LineWidget implements IWidget {
                     return { 'element': element, 'index': offset };
                 }
                 offset += element.length;
-            }
-            else if (isEndOffset) {
+            } else if (isEndOffset) {
                 offset += element.length;
                 if (offset === lineLength) {
                     return { 'element': element, 'index': offset };
                 }
-            }
-            else {
-                if (offset <= count + element.length) {
-                    return { 'element': element, 'index': offset - count };
+            } else if (isNxtOffset) {
+                if (offset < count + element.length) {
+                    if (element instanceof TextElementBox || element instanceof ImageElementBox
+                        || (element instanceof FieldElementBox && HelperMethods.isLinkedFieldCharacter((element as FieldElementBox)))) {
+                        return { 'element': element, 'index': (offset > count ? offset : count) + 1 };
+                    }
                 }
                 count += element.length;
             }
-            if (element instanceof TextElementBox && textHelper.isRTLText(element.text) ||
-                (element instanceof TabElementBox && element.text === '\t')) {
+            else {
+                if (offset <= count + element.length) {
+                    return {
+                        'element': element, 'index': isPrevOffset ? (offset - 1 === count ? validOffset : offset - 1) : offset - count
+                    };
+                }
+                if (isPrevOffset && (element instanceof TextElementBox || element instanceof ImageElementBox
+                    || (element instanceof FieldElementBox && HelperMethods.isLinkedFieldCharacter((element as FieldElementBox))))) {
+                    validOffset = count + element.length;
+                }
+                count += element.length;
+            }
+            if (element.previousElement && (element instanceof TextElementBox && textHelper.isRTLText(element.text) ||
+                (element instanceof TabElementBox && element.text === '\t' || (element instanceof BookmarkElementBox
+                    && (element instanceof BookmarkElementBox && element.previousElement instanceof BookmarkElementBox
+                        && !element.previousElement.previousElement
+                        || element.bookmarkType === 1 && !element.previousElement))))) {
                 if ((offset === count + 1 || offset > count + 1) && count === lineLength && !element.previousElement) {
                     break;
                 }
@@ -3462,11 +3517,21 @@ export class LineWidget implements IWidget {
                     endElement = undefined;
                     isApplied = false;
                 } else {
+                    if ((endElement === element || offset === count + 1) && !element.previousElement && count === lineLength) {
+                        break;
+                    }
                     element = element.nextElement;
+
                 }
             }
         }
-        return { 'element': element, 'index': isEndOffset ? offset : 0 };
+        if (isNxtOffset) {
+            return { 'element': element, 'index': offset };
+        } else if (isPrevOffset) {
+            return { 'element': element, 'index': -1 };
+        } else {
+            return { 'element': element, 'index': isEndOffset ? offset : 0 };
+        }
     }
     /**
      * @private
@@ -6066,7 +6131,7 @@ export class Page {
     public repeatHeaderRowTableWidget: boolean = false;
     /**
      * Specifies the bodyWidgets
-
+     * @default []
      * @private
      */
     public bodyWidgets: BodyWidget[] = [];

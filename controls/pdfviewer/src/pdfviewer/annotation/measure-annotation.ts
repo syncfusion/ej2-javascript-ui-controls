@@ -763,6 +763,7 @@ export class MeasureAnnotation {
             let pageAnnotations: IMeasureShapeAnnotation[] = this.getAnnotations(i, null);
             if (pageAnnotations) {
                 for (let j: number = 0; j < pageAnnotations.length; j++) {
+                    pageAnnotations = this.getAnnotations(i, null);
                     let measureObject: IMeasureShapeAnnotation = pageAnnotations[j];
                     measureObject.calibrate.ratio = ratio;
                     measureObject.calibrate.x[0].unit = displayUnit;

@@ -214,6 +214,9 @@ export class Edit {
       this.parent.trigger(events.cellEdit, args, (celleditArgs: CellEditArgs) => {
         if (!celleditArgs.cancel && this.parent.editSettings.mode === 'Cell') {
           this.enableToolbarItems('edit');
+        } else if (celleditArgs.cancel && this.parent.editSettings.mode === 'Cell') {
+            this.isOnBatch = false;
+            this.updateGridEditMode('Normal');
         }
         if (!isNullOrUndefined(prom)) {
           prom.resolve(celleditArgs);

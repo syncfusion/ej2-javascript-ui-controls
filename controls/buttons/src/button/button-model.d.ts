@@ -1,4 +1,4 @@
-import { Property, NotifyPropertyChanges, INotifyPropertyChanged, Component, isBlazor, isRippleEnabled } from '@syncfusion/ej2-base';import { addClass, Event, EmitType, detach, removeClass, rippleEffect, EventHandler } from '@syncfusion/ej2-base';import { getTextNode } from '../common/common';
+import { Property, NotifyPropertyChanges, INotifyPropertyChanged, Component, isBlazor } from '@syncfusion/ej2-base';import { addClass, Event, EmitType, detach, removeClass, rippleEffect, EventHandler, isRippleEnabled } from '@syncfusion/ej2-base';import { getTextNode } from '../common/common';
 import {IconPosition} from "./button";
 import {ComponentModel} from '@syncfusion/ej2-base';
 

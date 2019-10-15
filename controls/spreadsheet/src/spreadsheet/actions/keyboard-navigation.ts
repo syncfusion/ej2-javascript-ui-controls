@@ -36,18 +36,20 @@ export class KeyboardNavigation {
             closest(document.activeElement, '.e-sheet'))) {
             let isNavigate: boolean;
             let scrollIdxes: number[];
+            let isRtl: boolean = this.parent.enableRtl;
             let sheet: SheetModel = this.parent.getActiveSheet();
             let actIdxes: number[] = getCellIndexes(this.parent.getActiveSheet().activeCell);
             if ([9, 37, 38, 39, 40].indexOf(e.keyCode) > -1) {
                 e.preventDefault();
             }
-            if ((!e.shiftKey && e.keyCode === 37) || (e.shiftKey && e.keyCode === 9)) {   //left key
+            if ((!e.shiftKey && ((!isRtl && e.keyCode === 37) || (isRtl && e.keyCode === 39)))
+                || (e.shiftKey && e.keyCode === 9)) { //left key
                 if (actIdxes[1] > 0) {
                     actIdxes[1] -= 1;
                     isNavigate = true;
                 } else {
                     let content: Element = this.parent.getMainContent();
-                    if (actIdxes[1] === 0 && content.scrollLeft) { content.scrollLeft = 0; }
+                    if (actIdxes[1] === 0 && content.scrollLeft && !isRtl) { content.scrollLeft = 0; }
                 }
             } else if ((!e.shiftKey && e.keyCode === 38) || (e.shiftKey && e.keyCode === 13)) {    // Up key
                 if (actIdxes[0] > 0) {
@@ -57,7 +59,7 @@ export class KeyboardNavigation {
                     let content: Element = this.parent.getMainContent();
                     if (actIdxes[0] === 0 && content.scrollTop) { content.scrollTop = 0; }
                 }
-            } else if ((!e.shiftKey && e.keyCode === 39) || e.keyCode === 9) {        // Right key
+            } else if ((!e.shiftKey && ((!isRtl && e.keyCode === 39) || (isRtl && e.keyCode === 37))) || e.keyCode === 9) { // Right key
                 if (actIdxes[1] < sheet.colCount - 1) {
                     actIdxes[1] += 1;
                     isNavigate = true;
@@ -100,6 +102,7 @@ export class KeyboardNavigation {
     }
 
     private scrollNavigation(actIdxes: number[], isScroll: boolean): void {
+        let x: number = this.parent.enableRtl ? -1 : 1;
         let cont: Element = this.parent.getMainContent();
         let sheet: SheetModel = this.parent.getActiveSheet();
         let prevActIdxes: number[] = getCellIndexes(sheet.activeCell);
@@ -110,9 +113,9 @@ export class KeyboardNavigation {
             cont.scrollTop -= getRowHeight(sheet, actIdxes[0]);
         }
         if (this.getRightIdx(topLeftIdxes) <= actIdxes[1] || isScroll) {
-            cont.scrollLeft += getColumnWidth(sheet, actIdxes[1]);
+            cont.scrollLeft += getColumnWidth(sheet, actIdxes[1]) * x;
         } else if (topLeftIdxes[1] > actIdxes[1]) {
-            cont.scrollLeft -= getColumnWidth(sheet, actIdxes[1]);
+            cont.scrollLeft -= getColumnWidth(sheet, actIdxes[1]) * x;
         }
     }
 

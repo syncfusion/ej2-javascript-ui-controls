@@ -388,7 +388,7 @@ export class HeaderRenderer {
                 break;
         }
         let toolbarPopUp: HTMLElement = <HTMLElement>this.toolbarObj.element.querySelector('.e-toolbar-pop');
-        if (toolbarPopUp) {
+        if (toolbarPopUp && args.item.type !== 'Input') {
             ((toolbarPopUp as EJ2Instance).ej2_instances[0] as Popup).hide({ name: 'SlideUp', duration: 100 });
         }
     }

@@ -8,86 +8,92 @@ export interface DocumentEditorContainerModel extends ComponentModel{
 
     /**
      * Show or hide properties pane.
-
+     * @default true
      */
     showPropertiesPane?: boolean;
 
     /**
      * Enable or disable toolbar in document editor container.
-
+     * @default true
      */
     enableToolbar?: boolean;
 
     /**
      * Restrict editing operation.
-
+     * @default false
      */
     restrictEditing?: boolean;
 
     /**
      * Enable or disable spell checker in document editor container.
-
+     * @default false
      */
     enableSpellCheck?: boolean;
 
     /**
      * Enable local paste
-
+     * @default true
      */
     enableLocalPaste?: boolean;
 
     /**
      * Sfdt service URL.
-
+     * @default ''
      */
     serviceUrl?: string;
 
     /**
+     * Specifies the z-order for rendering that determines whether the dialog is displayed in front or behind of another component.
+     * @default 2000
+     */
+    zIndex?: number;
+
+    /**
      * Triggers when the component is created
      * @event
-
+     * @blazorproperty 'Created'
      */
     created?: EmitType<Object>;
 
     /**
      * Triggers when the component is destroyed.
      * @event
-
+     * @blazorproperty 'Destroyed'
      */
     destroyed?: EmitType<Object>;
 
     /**
      * Triggers whenever the content changes in the document editor container.
      * @event
-
+     * @blazorproperty 'ContentChanged'
      */
     contentChange?: EmitType<ContainerContentChangeEventArgs>;
 
     /**
      * Triggers whenever selection changes in the document editor container.
      * @event
-
+     * @blazorproperty 'SelectionChanged'
      */
     selectionChange?: EmitType<ContainerSelectionChangeEventArgs>;
 
     /**
      * Triggers whenever document changes in the document editor container.
      * @event
-
+     * @blazorproperty 'DocumentChanged'
      */
     documentChange?: EmitType<ContainerDocumentChangeEventArgs>;
 
     /**
      * Triggers while selecting the custom context-menu option.
      * @event
-
+     * @blazorproperty 'ContextMenuItemSelected'
      */
     customContextMenuSelect?: EmitType<CustomContentMenuEventArgs>;
 
     /**
      * Triggers before opening the custom context-menu option.
      * @event
-
+     * @blazorproperty 'OnContextMenuOpen'
      */
     customContextMenuBeforeOpen?: EmitType<BeforeOpenCloseCustomContentMenuEventArgs>;
 

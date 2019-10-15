@@ -3,10 +3,10 @@ import { Grid, RowDD as GridDragDrop, RowDropEventArgs, parentsUntil } from '@sy
 import { EJ2Intance, RowDragEventArgs, getObject, Scroll } from '@syncfusion/ej2-grids';
 import { closest, isNullOrUndefined, classList, setValue, extend } from '@syncfusion/ej2-base';
 import { ITreeData } from '../base';
-import { DataManager, RemoteSaveAdaptor, JsonAdaptor } from '@syncfusion/ej2-data';
+import { DataManager } from '@syncfusion/ej2-data';
 import * as events from '../base/constant';
 import { editAction } from './crud-actions';
-import { getParentData, findChildrenRecords, isRemoteData } from '../utils';
+import { getParentData, findChildrenRecords, isRemoteData, isOffline } from '../utils';
 /**
  * TreeGrid RowDragAndDrop module
  * @hidden
@@ -42,10 +42,8 @@ export class RowDD {
     private getChildrecordsByParentID(id: string): ITreeData[] {
         let index: number;
         let treeGridDataSource: Object;
-        if (this.parent.dataSource instanceof DataManager && (!isRemoteData(this.parent))) {
-            if (this.parent.dataSource.dataSource.offline && this.parent.dataSource.dataSource.json) {
-                treeGridDataSource = this.parent.dataSource.dataSource.json;
-            }
+        if (this.parent.dataSource instanceof DataManager && isOffline(this.parent)) {
+            treeGridDataSource = (<DataManager>this.parent.grid.dataSource).dataSource.json;
         } else {
             treeGridDataSource = this.parent.grid.dataSource;
         }
@@ -164,10 +162,8 @@ export class RowDD {
         let droppedRecord: ITreeData = this.droppedRecord;
         let proxy: TreeGrid = this.parent;
         let tempDataSource: Object; let idx: number;
-        if (proxy.dataSource instanceof DataManager) {
-            if (proxy.dataSource.dataSource.offline && proxy.dataSource.dataSource.json) {
-                tempDataSource = proxy.dataSource.dataSource.json;
-            }
+        if (this.parent.dataSource instanceof DataManager && isOffline(this.parent)) {
+            tempDataSource = (<DataManager>proxy.dataSource).dataSource.json;
         } else {
             tempDataSource = proxy.dataSource;
         }
@@ -622,7 +618,7 @@ export class RowDD {
                             this.treeGridData.splice(recordIndex1 + count + 1, 0, this.draggedRecord);
                         }
                         draggedRecord.parentItem = this.treeGridData[recordIndex1].parentItem;
-                        draggedRecord.parentUniqueID = ((tObj.grid.dataSource as ITreeData[])[recordIndex1] as ITreeData).parentUniqueID;
+                        draggedRecord.parentUniqueID = this.treeGridData[recordIndex1].parentUniqueID;
                         draggedRecord.level = this.treeGridData[recordIndex1].level;
                         if (draggedRecord.hasChildRecords) {
                             let level: number = 1;
@@ -734,11 +730,10 @@ export class RowDD {
     }
 
     private deleteDragRow(): void {
-        if (this.parent.dataSource instanceof RemoteSaveAdaptor
-            || this.parent.dataSource instanceof JsonAdaptor) {
-            this.treeGridData = this.parent.dataSource.dataSource.json;
+        if (this.parent.dataSource instanceof DataManager && isOffline(this.parent)) {
+            this.treeGridData = (<DataManager>this.parent.grid.dataSource).dataSource.json;
         } else {
-           this.treeGridData = this.parent.grid.dataSource as ITreeData[];
+            this.treeGridData = this.parent.grid.dataSource as ITreeData[];
         }
         let deletedRow: ITreeData;
         deletedRow = getParentData(this.parent, this.draggedRecord.uniqueID);
@@ -791,7 +786,12 @@ export class RowDD {
 
     private removeRecords(record: ITreeData): void {
         let tObj: TreeGrid = this.parent;
-        let dataSource: Object = tObj.dataSource;
+        let dataSource: Object;
+        if (this.parent.dataSource instanceof DataManager && isOffline(this.parent)) {
+            dataSource = (<DataManager>this.parent.dataSource).dataSource.json;
+        } else {
+            dataSource = this.parent.dataSource;
+        }
         let deletedRow: ITreeData = record;
         let recordIndex: number;
         let rowIndex: number;
@@ -859,8 +859,13 @@ export class RowDD {
         let idx: number;
         for (let i: number = 0; i < record.childRecords.length; i++) {
             currentRecord = record.childRecords[i];
-            let treeGridData: ITreeData[] = tObj.dataSource as ITreeData[];
-            for (let i: number = 0; i < treeGridData.length; i++) {
+            let treeGridData: Object;
+            if (this.parent.dataSource instanceof DataManager && isOffline(this.parent)) {
+                treeGridData = (<DataManager>this.parent.dataSource).dataSource.json;
+            } else {
+                treeGridData = this.parent.dataSource;
+            }
+            for (let i: number = 0; i < (< ITreeData[]>treeGridData).length; i++) {
                 if (treeGridData[i][this.parent.idMapping] === currentRecord.taskData[this.parent.idMapping]) {
                     idx = i;
                 }

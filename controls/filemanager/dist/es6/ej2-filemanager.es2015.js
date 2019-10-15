@@ -2274,8 +2274,16 @@ function onRenameDialogOpen(parent) {
 }
 function onFocusRenameInput(parent, inputEle) {
     inputEle.focus();
-    inputEle.value = parent.currentItemText;
-    if (parent.isFile && (parent.isFile && inputEle.value.indexOf('.') !== -1)) {
+    let txt = '';
+    if (parent.isFile && !parent.showFileExtension) {
+        let index = parent.currentItemText.lastIndexOf('.');
+        txt = (index === -1) ? parent.currentItemText : parent.currentItemText.substring(0, index);
+    }
+    else {
+        txt = parent.currentItemText;
+    }
+    inputEle.value = txt;
+    if (parent.isFile && parent.showFileExtension && (inputEle.value.indexOf('.') !== -1)) {
         inputEle.setSelectionRange(0, inputEle.value.lastIndexOf('.'));
     }
     else {
@@ -2491,7 +2499,12 @@ function onReSubmit(parent) {
         return;
     }
     let text = ele.value;
-    parent.renameText = ele.value;
+    let oIndex = parent.currentItemText.lastIndexOf('.');
+    if (parent.isFile && !parent.showFileExtension) {
+        let extn = (oIndex === -1) ? '' : parent.currentItemText.substr(oIndex);
+        text += extn;
+    }
+    parent.renameText = text;
     if (parent.currentItemText === text) {
         parent.dialogObj.hide();
         return;
@@ -2499,9 +2512,10 @@ function onReSubmit(parent) {
     let newPath = (parent.activeModule === 'navigationpane') ? getParentPath(parent.path) : parent.path;
     parent.renamedId = getValue('id', parent.itemData[0]);
     if (parent.isFile) {
-        let oldExtension = parent.currentItemText.substr(parent.currentItemText.lastIndexOf('.'));
-        let newExtension = text.substr(text.lastIndexOf('.'));
-        if (oldExtension !== newExtension) {
+        let oldExtension = (oIndex === -1) ? '' : parent.currentItemText.substr(oIndex);
+        let nIndex = text.lastIndexOf('.');
+        let newExtension = (nIndex === -1) ? '' : text.substr(nIndex);
+        if (parent.showFileExtension && oldExtension !== newExtension) {
             createExtDialog(parent, 'Extension', null, newPath);
         }
         else {
@@ -2530,7 +2544,8 @@ function onValidate(parent, ele) {
 function onSubmitValidate(parent, ele) {
     onValidate(parent, ele);
     let len = ele.value.length - 1;
-    if (ele.value !== '' && ((ele.value.lastIndexOf('.') === len) || (ele.value.lastIndexOf(' ') === len))) {
+    if (ele.value !== '' && ((ele.value.lastIndexOf('.') === len) || (ele.value.lastIndexOf(' ') === len)) &&
+        (parent.showFileExtension || (parent.currentItemText.lastIndexOf('.') === -1))) {
         addInvalid(parent, ele);
     }
 }
@@ -7556,6 +7571,15 @@ class DetailsView {
     }
     onRowDataBound(args) {
         let td = select('.e-fe-grid-name', args.row);
+        if (!td) {
+            let columns = this.parent.detailsViewSettings.columns;
+            for (let i = 0; i < columns.length; i++) {
+                if (columns[i].field === 'name') {
+                    td = args.row.children[this.parent.allowMultiSelection ? (i + 2) : (i + 1)];
+                    break;
+                }
+            }
+        }
         if (td) {
             td.setAttribute('title', getValue('name', args.data));
         }
@@ -7565,12 +7589,13 @@ class DetailsView {
                 addBlur(args.row);
             }
         }
-        /* istanbul ignore next */
         if (!this.parent.showFileExtension && getValue('isFile', args.data)) {
             let textEle = args.row.querySelector('.e-fe-text');
-            let name = getValue('name', args.data);
-            let type = getValue('type', args.data);
-            textEle.innerHTML = name.substr(0, name.length - type.length);
+            if (textEle) {
+                let name = getValue('name', args.data);
+                let type = getValue('type', args.data);
+                textEle.innerHTML = name.substr(0, name.length - type.length);
+            }
         }
         if (getValue('size', args.data) !== undefined && args.row.querySelector('.e-fe-size')) {
             let sizeEle = args.row.querySelector('.e-fe-size');

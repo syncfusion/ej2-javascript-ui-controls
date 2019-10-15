@@ -350,23 +350,25 @@ export class Annotation {
      * @private
      */
     public showCommentsPanel(): void {
-        let commentPanel: HTMLElement = document.getElementById(this.pdfViewer.element.id + '_commantPanel');
-        if (commentPanel) {
-            if (commentPanel.style.display === 'none') {
-                commentPanel.style.display = 'block';
-                let viewerContainer: HTMLElement = document.getElementById(this.pdfViewer.element.id + '_viewerContainer');
-                let pageContainer: HTMLElement = document.getElementById(this.pdfViewer.element.id + '_pageViewContainer');
-                if (viewerContainer) {
-                    if (this.pdfViewer.enableRtl) {
-                        viewerContainer.style.left = this.pdfViewerBase.navigationPane.getViewerContainerRight() + 'px';
-                    } else {
-                        viewerContainer.style.right = this.pdfViewerBase.navigationPane.getViewerContainerRight() + 'px';
+        if (this.pdfViewer.enableCommentPanel) {
+            let commentPanel: HTMLElement = document.getElementById(this.pdfViewer.element.id + '_commantPanel');
+            if (commentPanel) {
+                if (commentPanel.style.display === 'none') {
+                    commentPanel.style.display = 'block';
+                    let viewerContainer: HTMLElement = document.getElementById(this.pdfViewer.element.id + '_viewerContainer');
+                    let pageContainer: HTMLElement = document.getElementById(this.pdfViewer.element.id + '_pageViewContainer');
+                    if (viewerContainer) {
+                        if (this.pdfViewer.enableRtl) {
+                            viewerContainer.style.left = this.pdfViewerBase.navigationPane.getViewerContainerRight() + 'px';
+                        } else {
+                            viewerContainer.style.right = this.pdfViewerBase.navigationPane.getViewerContainerRight() + 'px';
+                        }
+                        // tslint:disable-next-line:max-line-length
+                        viewerContainer.style.width = (this.pdfViewer.element.clientWidth - this.pdfViewerBase.navigationPane.getViewerContainerLeft() - this.pdfViewerBase.navigationPane.getViewerContainerRight()) + 'px';
+                        pageContainer.style.width = (viewerContainer.offsetWidth - this.pdfViewerBase.navigationPane.getViewerContainerScrollbarWidth()) + 'px';
                     }
-                    // tslint:disable-next-line:max-line-length
-                    viewerContainer.style.width = (this.pdfViewer.element.clientWidth - this.pdfViewerBase.navigationPane.getViewerContainerLeft() - this.pdfViewerBase.navigationPane.getViewerContainerRight()) + 'px';
-                    pageContainer.style.width = (viewerContainer.offsetWidth - this.pdfViewerBase.navigationPane.getViewerContainerScrollbarWidth()) + 'px';
+                    this.pdfViewerBase.updateZoomValue();
                 }
-                this.pdfViewerBase.updateZoomValue();
             }
         }
     }

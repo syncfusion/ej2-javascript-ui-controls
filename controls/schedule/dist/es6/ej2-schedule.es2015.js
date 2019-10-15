@@ -1042,7 +1042,7 @@ class HeaderRenderer {
                 break;
         }
         let toolbarPopUp = this.toolbarObj.element.querySelector('.e-toolbar-pop');
-        if (toolbarPopUp) {
+        if (toolbarPopUp && args.item.type !== 'Input') {
             toolbarPopUp.ej2_instances[0].hide({ name: 'SlideUp', duration: 100 });
         }
     }
@@ -2821,7 +2821,16 @@ function getDateCount$1(startDate, ruleObject) {
         count = ruleObject.count;
     }
     else if (ruleObject.until) {
-        count = Math.floor((ruleObject.until.getTime() - startDate.getTime()) / MS_PER_DAY) + 1;
+        if (ruleObject.freq === 'DAILY' || ruleObject.freq === 'WEEKLY') {
+            count = Math.floor((ruleObject.until.getTime() - startDate.getTime()) / MS_PER_DAY) + 1;
+        }
+        else if ((ruleObject.freq === 'MONTHLY' || ruleObject.freq === 'YEARLY') && ruleObject.day.length === 0) {
+            count = Math.floor(((ruleObject.until.getMonth() + 12 * ruleObject.until.getFullYear()) -
+                (startDate.getMonth() + 12 * startDate.getFullYear())) / ruleObject.interval) + 1;
+            if (ruleObject.freq === 'YEARLY') {
+                count = ruleObject.month.length > 1 ? (count * ruleObject.month.length) : count;
+            }
+        }
     }
     return count;
 }
@@ -3049,7 +3058,7 @@ function initializeRecRuleVariables(startDate, ruleObject) {
         index: 0,
         tempDate: new Date(startDate.getTime()),
         mainDate: new Date(startDate.getTime()),
-        expectedCount: ruleObject.count ? ruleObject.count : maxOccurrence,
+        expectedCount: getDateCount$1(startDate, ruleObject),
         monthInit: 0,
         dateCollection: [],
     };
@@ -4939,6 +4948,7 @@ class QuickPopups {
      */
     constructor(parent) {
         this.isMultipleEventSelect = false;
+        this.isCrudAction = false;
         this.parent = parent;
         this.l10n = this.parent.localeObj;
         this.fieldValidator = new FieldValidator();
@@ -5695,21 +5705,7 @@ class QuickPopups {
         });
     }
     saveClick() {
-        if (!this.quickPopup.element.querySelector('.' + FORM_CLASS).ej2_instances[0].validate()) {
-            return;
-        }
-        let fields = this.parent.eventFields;
-        let saveObj = extend({}, this.parent.eventWindow.getObjectFromFormData(POPUP_WRAPPER_CLASS));
-        this.parent.eventWindow.setDefaultValueToObject(saveObj);
-        saveObj[fields.id] = this.parent.eventBase.getEventMaxID();
-        saveObj[fields.startTime] = this.parent.activeCellsData.startTime;
-        saveObj[fields.endTime] = this.parent.activeCellsData.endTime;
-        saveObj[fields.isAllDay] = this.parent.activeCellsData.isAllDay;
-        if (this.parent.resourceBase) {
-            this.parent.resourceBase.setResourceValues(saveObj, true);
-        }
-        this.parent.currentAction = 'Add';
-        this.parent.crudModule.addEvent(saveObj);
+        this.isCrudAction = true;
         this.quickPopupHide();
     }
     detailsClick() {
@@ -6026,18 +6022,69 @@ class QuickPopups {
         }
     }
     quickPopupHide(hideAnimation) {
-        if (this.quickPopup.element.classList.contains('e-popup-open')) {
-            if (hideAnimation) {
-                let animation = this.quickPopup.hideAnimation;
-                this.quickPopup.hideAnimation = null;
-                this.quickPopup.hide();
-                this.quickPopup.hideAnimation = animation;
+        let isCellPopup = this.quickPopup.element.querySelector('.' + CELL_POPUP_CLASS);
+        let popupData;
+        if (isCellPopup) {
+            let formvalidator = this.quickPopup.element.querySelector('.e-formvalidator');
+            if (formvalidator && !formvalidator.ej2_instances[0].validate()) {
+                return;
             }
-            else {
-                this.quickPopup.hide();
+            let fields = this.parent.eventFields;
+            let saveObj = this.parent.eventWindow.getObjectFromFormData(POPUP_WRAPPER_CLASS);
+            this.parent.eventWindow.setDefaultValueToObject(saveObj);
+            saveObj[fields.id] = this.parent.eventBase.getEventMaxID();
+            saveObj[fields.startTime] = this.parent.activeCellsData.startTime;
+            saveObj[fields.endTime] = this.parent.activeCellsData.endTime;
+            saveObj[fields.isAllDay] = this.parent.activeCellsData.isAllDay;
+            if (this.parent.resourceBase) {
+                this.parent.resourceBase.setResourceValues(saveObj, true);
             }
-            this.isMultipleEventSelect = false;
+            popupData = saveObj;
         }
+        else {
+            popupData = this.parent.activeEventData.event;
+        }
+        let isEventPopup = this.quickPopup.element.querySelector('.' + EVENT_POPUP_CLASS);
+        let args = {
+            type: this.parent.isAdaptive ? isEventPopup ? 'ViewEventInfo' : 'EditEventInfo' : 'QuickInfo',
+            cancel: false, data: popupData, element: this.quickPopup.element,
+            target: (isCellPopup ? this.parent.activeCellsData.element : this.parent.activeEventData.element)
+        };
+        this.parent.trigger(popupClose, args, (popupCloseArgs) => {
+            if (isBlazor()) {
+                let eventFields = this.parent.eventFields;
+                if (popupCloseArgs.data) {
+                    let eventObj = popupCloseArgs.data;
+                    eventObj[eventFields.startTime] = this.parent.getDateTime(eventObj[eventFields.startTime]);
+                    eventObj[eventFields.endTime] = this.parent.getDateTime(eventObj[eventFields.endTime]);
+                }
+                if (popupCloseArgs.element) {
+                    popupCloseArgs.element = getElement(popupCloseArgs.element);
+                }
+                if (popupCloseArgs.target) {
+                    popupCloseArgs.target = getElement(popupCloseArgs.target);
+                }
+            }
+            if (!popupCloseArgs.cancel) {
+                if (this.quickPopup.element.classList.contains('e-popup-open')) {
+                    if (isCellPopup && this.isCrudAction) {
+                        this.parent.currentAction = 'Add';
+                        this.parent.crudModule.addEvent(popupCloseArgs.data);
+                    }
+                    if (hideAnimation) {
+                        let animation = this.quickPopup.hideAnimation;
+                        this.quickPopup.hideAnimation = null;
+                        this.quickPopup.hide();
+                        this.quickPopup.hideAnimation = animation;
+                    }
+                    else {
+                        this.quickPopup.hide();
+                    }
+                    this.isMultipleEventSelect = false;
+                    this.isCrudAction = false;
+                }
+            }
+        });
     }
     navigationClick(e) {
         let navigateEle = closest(e.target, '.' + NAVIGATE_CLASS);
@@ -6563,7 +6610,12 @@ let RecurrenceEditor = class RecurrenceEditor extends Component {
         });
     }
     showFormElement() {
-        neverClassList.forEach((className) => removeClass([this.element.querySelector('.' + className)], HIDEWRAPPER));
+        neverClassList.forEach((className) => {
+            let hideElement = this.element.querySelector('.' + className);
+            if (hideElement) {
+                removeClass([hideElement], HIDEWRAPPER);
+            }
+        });
     }
     renderDropdowns() {
         let self = this;
@@ -16801,7 +16853,9 @@ class VerticalView extends ViewBase {
             let data = { className: [(this.colLevels[i][0] && this.colLevels[i][0].className[0])], type: 'emptyCells' };
             if (this.parent.activeViewOptions.showWeekNumber && data.className.indexOf(HEADER_CELLS_CLASS) !== -1) {
                 data.className.push(WEEK_NUMBER_CLASS);
-                let weekNo = getWeekNumber(this.renderDates.slice(-1)[0]);
+                let weekNumberDate = getWeekLastDate(this.renderDates.slice(-1)[0], this.parent.firstDayOfWeek);
+                let weekNo = this.parent.currentView === 'Day' ? getWeekNumber(weekNumberDate) :
+                    getWeekNumber(this.renderDates.slice(-1)[0]);
                 data.template = [createElement('span', {
                         innerHTML: '' + weekNo,
                         attrs: { title: this.parent.localeObj.getConstant('week') + ' ' + weekNo }
@@ -18668,7 +18722,11 @@ class TimelineHeaderRow {
                         viewTemplate = `<span class="e-header-month">${dateParser(dates[0], 'MMMM')}</span>`;
                         break;
                     case 'Week':
-                        viewTemplate = `<span class="e-header-week">${getWeekNumber(dates.slice(-1)[0])}</span>`;
+                        let weekNumberDate = getWeekLastDate(dates.slice(-1)[0], this.parent.firstDayOfWeek);
+                        if (this.parent.currentView === 'TimelineMonth') {
+                            weekNumberDate = getWeekLastDate(dates.slice(-1)[0], 0);
+                        }
+                        viewTemplate = `<span class="e-header-week">${getWeekNumber(weekNumberDate)}</span>`;
                 }
                 let headerWrapper = createElement('div', { innerHTML: viewTemplate });
                 htmlCol = headerWrapper.childNodes;

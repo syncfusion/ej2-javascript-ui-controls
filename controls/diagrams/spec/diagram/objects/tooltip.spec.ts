@@ -714,7 +714,7 @@ describe('Tool Tip mouse', () => {
             let tooltipElement: HTMLElement = document.getElementsByClassName('e-tooltip-wrap e-popup e-control e-popup-open')[0] as HTMLElement;
             let bounds: ClientRect = tooltipElement.getBoundingClientRect();
             expect(document.getElementsByClassName('e-tooltip-wrap e-popup e-control e-popup-open').length !== 0 &&
-                bounds.top === 68 && bounds.left === 277.5 || bounds.left === 278).toBe(true);
+                bounds.top === 68 && bounds.left === 277.5 || bounds.left === 278 || bounds.left === 279.5).toBe(true);
             expect(document.getElementsByClassName('e-tooltip-wrap e-popup e-control e-popup-open').length !== 0).toBe(true);
             mouseEvents.mouseMoveEvent(diagramCanvas, 10, 10, false, false);
             setTimeout(() => {
@@ -754,7 +754,7 @@ describe('Tool Tip mouse', () => {
             let tooltipElement: HTMLElement = document.getElementsByClassName('e-tooltip-wrap e-popup e-control e-popup-open')[0] as HTMLElement;
             let bounds: ClientRect = tooltipElement.getBoundingClientRect();
             expect(document.getElementsByClassName('e-tooltip-wrap e-popup e-control e-popup-open').length !== 0 &&
-                bounds.top === 88 && bounds.left === 647 || bounds.left === 648).toBe(true);
+                bounds.top === 88 && bounds.left === 647 || bounds.left === 648 || bounds.left === 651).toBe(true);
             expect(document.getElementsByClassName('e-tooltip-wrap e-popup e-control e-popup-open').length !== 0).toBe(true);
             mouseEvents.mouseMoveEvent(diagramCanvas, 10, 10, false, false);
             setTimeout(() => {
@@ -794,7 +794,7 @@ describe('Tool Tip mouse', () => {
             let tooltipElement: HTMLElement = document.getElementsByClassName('e-tooltip-wrap e-popup e-control e-popup-open')[0] as HTMLElement;
             let bounds: ClientRect = tooltipElement.getBoundingClientRect();
             expect(document.getElementsByClassName('e-tooltip-wrap e-popup e-control e-popup-open').length !== 0 &&
-                bounds.top === 308 && bounds.left === 267 || bounds.left === 268).toBe(true);
+                bounds.top === 308 && bounds.left === 267 || bounds.left === 268 || bounds.left === 271).toBe(true);
             expect(document.getElementsByClassName('e-tooltip-wrap e-popup e-control e-popup-open').length !== 0).toBe(true);
             mouseEvents.mouseMoveEvent(diagramCanvas, 10, 10, false, false);
             setTimeout(() => {
@@ -814,7 +814,7 @@ describe('Tool Tip mouse', () => {
             let tooltipElement: HTMLElement = document.getElementsByClassName('e-tooltip-wrap e-popup e-control e-popup-open')[0] as HTMLElement;
             let bounds: ClientRect = tooltipElement.getBoundingClientRect();
             expect(document.getElementsByClassName('e-tooltip-wrap e-popup e-control e-popup-open').length !== 0 &&
-                bounds.top === 308 && bounds.left === 477.5 || bounds.left === 478).toBe(true);
+                bounds.top === 308 && bounds.left === 477.5 || bounds.left === 478 || bounds.left === 479.5).toBe(true);
             expect(document.getElementsByClassName('e-tooltip-wrap e-popup e-control e-popup-open').length !== 0).toBe(true);
             mouseEvents.mouseMoveEvent(diagramCanvas, 10, 10, false, false);
             setTimeout(() => {
@@ -854,7 +854,7 @@ describe('Tool Tip mouse', () => {
             let tooltipElement: HTMLElement = document.getElementsByClassName('e-tooltip-wrap e-popup e-control e-popup-open')[0] as HTMLElement;
             let bounds: ClientRect = tooltipElement.getBoundingClientRect();
             expect(document.getElementsByClassName('e-tooltip-wrap e-popup e-control e-popup-open').length !== 0 &&
-                bounds.top === 488 && bounds.left === 47 || bounds.left === 48).toBe(true);
+                bounds.top === 488 && bounds.left === 47 || bounds.left === 48 || bounds.left === 51).toBe(true);
             expect(document.getElementsByClassName('e-tooltip-wrap e-popup e-control e-popup-open').length !== 0).toBe(true);
             mouseEvents.mouseMoveEvent(diagramCanvas, 10, 10, false, false);
             setTimeout(() => {

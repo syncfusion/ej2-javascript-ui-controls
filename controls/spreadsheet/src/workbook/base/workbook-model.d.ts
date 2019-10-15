@@ -1,4 +1,4 @@
-import { Component, Property, NotifyPropertyChanges, INotifyPropertyChanged, Collection, Complex, EmitType } from '@syncfusion/ej2-base';import { Event, ModuleDeclaration, merge } from '@syncfusion/ej2-base';import { Sheet, initSheet, getSheet, getSheetIndexFromId, getSheetNameCount, getMaxSheetId } from './sheet';import { DefineNameModel } from '../common/class-model';import { getWorkbookRequiredModules } from '../common/module';import { getData, clearRange } from './data';import { SheetModel } from './sheet-model';import { CellModel } from './cell-model';import { OpenOptions, BeforeOpenEventArgs, OpenFailureArgs } from '../../spreadsheet/common/interface';import { DefineName, CellStyle, updateUsedRange } from '../common/index';import * as events from '../common/event';import { CellStyleModel } from '../common/index';import { setCellFormat, sheetCreated } from '../common/index';import { BeforeSaveEventArgs, SaveCompleteEventArgs, BeforeCellFormatArgs, SaveOptions, SortOptions } from '../common/interface';import { BeforeSortEventArgs, SortEventArgs } from '../common/interface';import { getCell, skipDefaultValue } from './cell';
+import { Component, Property, NotifyPropertyChanges, INotifyPropertyChanged, Collection, Complex, EmitType } from '@syncfusion/ej2-base';import { Event, ModuleDeclaration, merge } from '@syncfusion/ej2-base';import { Sheet, initSheet, getSheet, getSheetIndexFromId, getSheetNameCount, getMaxSheetId, getSheetIndex } from './sheet';import { DefineNameModel } from '../common/class-model';import { getWorkbookRequiredModules } from '../common/module';import { getData, clearRange } from './data';import { SheetModel } from './sheet-model';import { CellModel } from './cell-model';import { OpenOptions, BeforeOpenEventArgs, OpenFailureArgs } from '../../spreadsheet/common/interface';import { DefineName, CellStyle, updateUsedRange, getIndexesFromAddress } from '../common/index';import * as events from '../common/event';import { CellStyleModel } from '../common/index';import { setCellFormat, sheetCreated } from '../common/index';import { BeforeSaveEventArgs, SaveCompleteEventArgs, BeforeCellFormatArgs, SaveOptions } from '../common/interface';import { SortOptions, BeforeSortEventArgs, SortEventArgs } from '../common/interface';import { getCell, skipDefaultValue, setCell } from './cell';import { DataBind } from '../index';import { WorkbookSave, WorkbookFormula, WorkbookOpen, WorkbookSort } from '../integrations/index';import { WorkbookNumberFormat } from '../integrations/number-format';import { WorkbookEdit, WorkbookCellFormat } from '../actions/index';
 import {ComponentModel} from '@syncfusion/ej2-base';
 
 /**
@@ -243,38 +243,6 @@ export interface WorkbookModel extends ComponentModel{
      * @event
      */
     saveComplete?: EmitType<SaveCompleteEventArgs>;
-
-    /**
-     * Triggers before sorting the specified range.
-     * ```html
-     * <div id='Spreadsheet'></div>
-     * ```
-     * ```typescript
-     * new Spreadsheet({
-     *       beforeSort: (args: BeforeSortEventArgs) => {
-     *       }
-     *      ...
-     *  }, '#Spreadsheet');
-     * ```
-     * @event
-     */
-    beforeSort?: EmitType<BeforeSortEventArgs>;
-
-    /**
-     * Triggers after sorting action is completed.
-     * ```html
-     * <div id='Spreadsheet'></div>
-     * ```
-     * ```typescript
-     * new Spreadsheet({
-     *       sortComplete: (args: SortEventArgs) => {
-     *       }
-     *      ...
-     *  }, '#Spreadsheet');
-     * ```
-     * @event
-     */
-    sortComplete?: EmitType<SortEventArgs>;
 
     /**
      * Triggers before the cell format applied to the cell.

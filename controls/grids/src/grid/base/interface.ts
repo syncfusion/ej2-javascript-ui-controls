@@ -441,6 +441,7 @@ export interface IGrid extends Component<HTMLElement> {
     isSelectedRowIndexUpdating?: boolean;
     pagerModule?: Page;
     invokedFromMedia?: boolean;
+    isAutoGen?: boolean;
 
     //public methods
     getHeaderContent?(): Element;

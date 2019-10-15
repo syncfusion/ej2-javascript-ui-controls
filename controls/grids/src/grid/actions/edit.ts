@@ -822,7 +822,20 @@ export class Edit implements IAction {
         }
         div.appendChild(content);
         div.appendChild(arrow);
-        this.formObj.element.appendChild(div);
+        if (this.parent.getFrozenColumns() && this.parent.editSettings.mode !== 'Dialog') {
+            let getEditCell: HTMLElement = this.parent.editSettings.mode === 'Normal' ?
+            closest(element, '.e-editcell') as HTMLElement : closest(element, '.e-table') as HTMLElement;
+            getEditCell.style.position = 'relative';
+            div.style.position = 'absolute';
+            if (this.parent.editSettings.mode === 'Batch' ||
+                (closest(element, '.e-frozencontent') || closest(element, '.e-frozenheader'))) {
+                this.formObj.element.appendChild(div);
+            } else {
+                this.mFormObj.element.appendChild(div);
+            }
+        } else {
+            this.formObj.element.appendChild(div);
+        }
         if (isInline && gcontent.getBoundingClientRect().bottom < inputClient.bottom + inputClient.height) {
             gcontent.scrollTop = gcontent.scrollTop + div.offsetHeight + arrow.scrollHeight;
         }
@@ -833,8 +846,11 @@ export class Edit implements IAction {
             div.querySelector('label').getBoundingClientRect().height / (lineHeight * 1.2) >= 2) {
             div.style.width = div.style.maxWidth;
         }
-
-        div.style.left = (parseInt(div.style.left, 10) - div.offsetWidth / 2) + 'px';
+        if (this.parent.getFrozenColumns() && (this.parent.editSettings.mode === 'Normal' || this.parent.editSettings.mode === 'Batch')) {
+            div.style.left = input.offsetLeft + (input.offsetWidth / 2 - div.offsetWidth / 2) + 'px';
+        } else {
+            div.style.left = (parseInt(div.style.left, 10) - div.offsetWidth / 2) + 'px';
+        }
         if (!isScroll && isInline && !this.parent.allowPaging) {
             gcontent.style.position = 'static';
             let pos: OffsetPosition = calculateRelativeBasedPosition(input, div);

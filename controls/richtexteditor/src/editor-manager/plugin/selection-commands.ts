@@ -119,7 +119,9 @@ export class SelectionCommands {
                 nodeIndex.push(domSelection.getIndex(cloneNode));
                 cloneNode = cloneNode.parentNode;
             } while (cloneNode && (cloneNode !== formatNode));
-            cloneNode = splitNode = nodeCutter.GetSpliceNode(range, formatNode as HTMLElement) as HTMLElement;
+            cloneNode = splitNode = (isCursor && (formatNode.textContent.length - 1) === range.startOffset) ?
+            nodeCutter.SplitNode(range, formatNode as HTMLElement, true) as HTMLElement
+            : nodeCutter.GetSpliceNode(range, formatNode as HTMLElement) as HTMLElement;
             if (!isCursor) {
                 while (cloneNode && cloneNode.childNodes.length > 0 && ((nodeIndex.length - 1) >= 0)
                     && (cloneNode.childNodes.length > nodeIndex[nodeIndex.length - 1])) {

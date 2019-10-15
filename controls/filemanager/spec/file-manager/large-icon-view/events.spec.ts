@@ -8,7 +8,7 @@ import { Toolbar } from '../../../src/file-manager/actions/toolbar';
 import { BeforeSendEventArgs, FileOpenEventArgs, FileLoadEventArgs, ToolbarCreateEventArgs } from '../../../src/file-manager/base/interface';
 import { UploadListCreateArgs, MenuOpenEventArgs, MenuClickEventArgs, ToolbarClickEventArgs, PopupOpenCloseEventArgs, BeforePopupOpenCloseEventArgs } from '../../../src/file-manager/base/interface';
 import { createElement, Browser } from '@syncfusion/ej2-base';
-import { toolbarItems, toolbarItems1, toolbarItems2, data1, data2, data3, doubleClickRead2, multiCopySuccess1, multiItemCopyRead3, multiCopySuccess2, multiItemCopyRead2, uploadData1, singleSelectionDetails, getMultipleDetails, doubleClickRead } from '../data';
+import { toolbarItems, toolbarItems1, toolbarItems2, data1, data2, data3, doubleClickRead2, multiCopySuccess1, multiItemCopyRead3, multiCopySuccess2, multiItemCopyRead2, uploadData1, singleSelectionDetails, getMultipleDetails, doubleClickRead, noExtension, noExtensionRename, noExtensionSuccess } from '../data';
 
 FileManager.Inject(Toolbar, NavigationPane, DetailsView);
 
@@ -624,6 +624,68 @@ describe('FileManager control LargeIcons view', () => {
                 uploadObj.ej2_instances[0].onSelectFiles(eventArgs);
                 expect(i).toEqual(2);
                 done();
+            }, 500);
+        });
+        it('for beforePopupOpen with preventing file extension', (done: Function) => {
+            feObj = new FileManager({
+                view: 'LargeIcons',
+                ajaxSettings: {
+                    url: '/FileOperations',
+                    uploadUrl: '/Upload', downloadUrl: '/Download', getImageUrl: '/GetImage'
+                },
+                showThumbnail: false,
+                showFileExtension: false,
+            });
+            feObj.appendTo('#file');
+            this.request = jasmine.Ajax.requests.mostRecent();
+            this.request.respondWith({
+                status: 200,
+                responseText: JSON.stringify(noExtension)
+            });
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+            setTimeout(function () {
+                let li: any = document.getElementById('file_largeicons').querySelectorAll('li');
+                mouseEventArgs.target = li[1];
+                feObj.largeiconsviewModule.clickObj.tap(tapEvent);
+                let items: any = document.getElementsByClassName('e-fe-rename');
+                items[0].click();
+                expect((<HTMLInputElement>document.getElementById('rename')).value).toBe("1");
+                (<HTMLElement>document.getElementById('file_dialog').querySelectorAll('.e-btn')[0]).click();
+                mouseEventArgs.target = li[2];
+                feObj.largeiconsviewModule.clickObj.tap(tapEvent);
+                items[0].click();
+                expect((<HTMLInputElement>document.getElementById('rename')).value).toBe("New");
+                (<HTMLInputElement>document.getElementById('rename')).value = "New ";
+                (<HTMLElement>document.getElementById('file_dialog').querySelectorAll('.e-btn')[1]).click();
+                expect(document.getElementsByClassName("e-fe-error")[0].textContent).not.toEqual("");
+                (<HTMLInputElement>document.getElementById('rename')).value = "New.";
+                (<HTMLElement>document.getElementById('file_dialog').querySelectorAll('.e-btn')[1]).click();
+                expect(document.getElementsByClassName("e-fe-error")[0].textContent).not.toEqual("");
+                (<HTMLElement>document.getElementById('file_dialog').querySelectorAll('.e-btn')[0]).click();
+                mouseEventArgs.target = li[1];
+                feObj.largeiconsviewModule.clickObj.tap(tapEvent);
+                items[0].click();
+                expect((<HTMLInputElement>document.getElementById('rename')).value).toBe("1");
+                (<HTMLInputElement>document.getElementById('rename')).value = "2";
+                (<HTMLElement>document.getElementById('file_dialog').querySelectorAll('.e-btn')[1]).click();
+                this.request = jasmine.Ajax.requests.mostRecent();
+                this.request.respondWith({
+                    status: 200,
+                    responseText: JSON.stringify(noExtensionRename)
+                });
+                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                this.request = jasmine.Ajax.requests.mostRecent();
+                this.request.respondWith({
+                    status: 200,
+                    responseText: JSON.stringify(noExtensionSuccess)
+                });
+                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                setTimeout(function () {
+                    let largeLi: any = document.getElementById('file_largeicons').querySelectorAll('li');
+                    expect(largeLi.length).toEqual(3);
+                    expect(largeLi[1].querySelector('.e-list-text').innerText).toBe("2");
+                    done();
+                }, 500);
             }, 500);
         });
     });

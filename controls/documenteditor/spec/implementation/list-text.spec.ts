@@ -1163,3 +1163,43 @@ describe('without history Restart Numbering and continue numbering validation', 
     //    expect(editor.selection.paragraphFormat.listText).toBe('III)');
     });
 });
+
+describe('List continue numbering validation', () => {
+    let editor: DocumentEditor;
+    let viewer: LayoutViewer;
+    beforeAll((): void => {
+        let ele: HTMLElement = createElement('div', { id: 'container' });
+        document.body.appendChild(ele);
+        DocumentEditor.Inject(Editor, Selection);
+        editor = new DocumentEditor({ enableEditor: true, isReadOnly: false, enableSelection: true});
+        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        editor.appendTo('#container');
+        viewer = editor.viewer as PageLayoutViewer;
+    });
+    afterAll((): void => {
+        viewer.destroy();
+        viewer = undefined;
+        editor.destroy();
+        document.body.removeChild(document.getElementById('container'));
+        editor = undefined;
+    });
+    it('Check list number', () => {
+        editor.openBlank();
+        editor.editorModule.insertText('1');
+        editor.editorModule.insertText('.');
+        editor.editorModule.insertText(' ');
+        editor.editorModule.insertText('Sample');
+        editor.editor.onEnter();
+        editor.editorModule.insertText('Sample');
+        editor.editor.onEnter();
+        editor.editorModule.insertText('Sample');
+        editor.selection.handleUpKey();
+        editor.editor.onEnter();
+        editor.editor.onBackSpace();
+        let paragraph: any = editor.selection.start.paragraph.bodyWidget;
+        expect(paragraph.childWidgets[3].childWidgets[0].children[0].text).toBe('3.');
+    });
+});

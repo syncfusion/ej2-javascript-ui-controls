@@ -1,6 +1,6 @@
 import { createElement } from '@syncfusion/ej2-base';
 import { Schedule } from '../base/schedule';
-import { MS_PER_DAY, getWeekNumber } from '../base/util';
+import { MS_PER_DAY, getWeekNumber, getWeekLastDate } from '../base/util';
 import { TdData, CellTemplateArgs } from '../base/interface';
 import { HeaderRowsModel } from '../models/header-rows-model';
 
@@ -69,7 +69,11 @@ export class TimelineHeaderRow {
                         viewTemplate = `<span class="e-header-month">${dateParser(dates[0], 'MMMM')}</span>`;
                         break;
                     case 'Week':
-                        viewTemplate = `<span class="e-header-week">${getWeekNumber(dates.slice(-1)[0])}</span>`;
+                        let weekNumberDate: Date = getWeekLastDate(dates.slice(-1)[0], this.parent.firstDayOfWeek);
+                        if (this.parent.currentView === 'TimelineMonth') {
+                            weekNumberDate = getWeekLastDate(dates.slice(-1)[0], 0);
+                        }
+                        viewTemplate = `<span class="e-header-week">${getWeekNumber(weekNumberDate)}</span>`;
                 }
                 let headerWrapper: HTMLElement = createElement('div', { innerHTML: viewTemplate });
                 htmlCol = headerWrapper.childNodes;

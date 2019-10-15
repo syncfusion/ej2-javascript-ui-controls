@@ -2,6 +2,23 @@
 
 ## [Unreleased]
 
+## 17.3.17 (2019-10-15)
+
+### TreeGrid
+
+#### Bug Fixes
+
+- `#248114` - Data loads properly when we set `height` to 100% in `EnableVirtualization`.
+
+## 17.3.16 (2019-10-09)
+
+### TreeGrid
+
+#### Bug Fixes
+
+- `#249633` - Row Drag and Drop works fine with RemoteSaveAdaptor.
+- `#F147968` - Datasource update works fine after cancelling edit action on cell editing.
+
 ## 17.3.14 (2019-10-03)
 
 ### TreeGrid

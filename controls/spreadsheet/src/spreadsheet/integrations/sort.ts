@@ -1,7 +1,7 @@
 import { Spreadsheet, ICellRenderer, initiateCustomSort, locale, dialog } from '../index';
-import { sortComplete, validateSortRange, beforeSort, getFormattedCellObject } from '../../workbook/common/event';
+import { sortComplete, beforeSort, getFormattedCellObject, sortRangeAlert } from '../../workbook/common/event';
 import { getIndexesFromAddress, getSwapRange, SheetModel, getCell, getColumnHeaderText, CellModel } from '../../workbook/index';
-import { SortEventArgs, BeforeSortEventArgs } from '../../workbook/common/interface';
+import { SortEventArgs } from '../../workbook/common/interface';
 import { L10n, getUniqueID, getComponent, enableRipple } from '@syncfusion/ej2-base';
 import { Dialog } from '../services';
 import { DropDownList, ChangeEventArgs as DropdownChangeEventArgs, FieldSettingsModel } from '@syncfusion/ej2-dropdowns';
@@ -32,18 +32,18 @@ export class Sort {
     }
 
     private addEventListener(): void {
-        this.parent.on(validateSortRange, this.validateSortRange, this);
         this.parent.on(beforeSort, this.beforeSortHandler, this);
-        this.parent.on(sortComplete, this.sortComplete, this);
-        this.parent.on(initiateCustomSort, this.initiateCustomSort, this);
+        this.parent.on(sortRangeAlert, this.sortRangeAlertHandler, this);
+        this.parent.on(sortComplete, this.sortCompleteHandler, this);
+        this.parent.on(initiateCustomSort, this.initiateCustomSortHandler, this);
     }
 
     private removeEventListener(): void {
         if (!this.parent.isDestroyed) {
-            this.parent.off(validateSortRange, this.validateSortRange);
             this.parent.off(beforeSort, this.beforeSortHandler);
-            this.parent.off(sortComplete, this.sortComplete);
-            this.parent.off(initiateCustomSort, this.initiateCustomSort);
+            this.parent.off(sortRangeAlert, this.sortRangeAlertHandler);
+            this.parent.off(sortComplete, this.sortCompleteHandler);
+            this.parent.off(initiateCustomSort, this.initiateCustomSortHandler);
         }
     }
 
@@ -56,43 +56,41 @@ export class Sort {
     }
 
     /**
-     * Validates the range to be sorted.
+     * Validates the range and returns false when invalid.
      */
-    private validateSortRange(args: { [key: string]: string | boolean }): void {
-        args.isValid = this.showRangeAlert(args.range as string);
-    }
-
-    /**
-     * Validates the range and shows the alert dialog and return true when invalid.
-     * @param address - range address.
-     */
-    private showRangeAlert(address?: string): boolean {
-        let l10n: L10n = this.parent.serviceLocator.getService(locale);
+    private isValidSortRange(): boolean {
         let sheet: SheetModel = this.parent.getActiveSheet();
-        let rangeStr: string = address || sheet.selectedRange;
-        let range: number[] = getSwapRange(getIndexesFromAddress(rangeStr));
+        let range: number[] = getSwapRange(getIndexesFromAddress(sheet.selectedRange));
         if (range[0] > sheet.usedRange.rowIndex - 1 || range[1] > sheet.usedRange.colIndex) {
-            (this.parent.serviceLocator.getService(dialog) as Dialog).show({
-                height: 180, width: 400, isModal: true, showCloseIcon: true,
-                content: l10n.getConstant('SortOutOfRangeError')
-            });
-            this.parent.hideSpinner();
             return false;
         }
         return true;
     }
 
     /**
+     * Shows the range error alert dialog.
+     * @param error - range error string.
+     */
+    private sortRangeAlertHandler(args: {error: string}): void {
+        let dialogInst: Dialog = (this.parent.serviceLocator.getService(dialog) as Dialog);
+        dialogInst.show({
+            height: 180, width: 400, isModal: true, showCloseIcon: true,
+            content: args.error
+        });
+        this.parent.hideSpinner();
+    }
+
+    /**
      * Initiates sort process.
      */
-    private beforeSortHandler(args: BeforeSortEventArgs): void {
+    private beforeSortHandler(): void {
         this.parent.showSpinner();
     }
 
     /**
      * Invoked when the sort action is completed.
      */
-    private sortComplete(args: SortEventArgs): void {
+    private sortCompleteHandler(args: SortEventArgs): void {
         let range: number[] = getIndexesFromAddress(args.range);
         this.parent.serviceLocator.getService<ICellRenderer>('cell').refreshRange(range);
         this.parent.hideSpinner();
@@ -101,9 +99,12 @@ export class Sort {
     /**
      * Initiates the custom sort dialog.
      */
-    private initiateCustomSort(): void {
+    private initiateCustomSortHandler(): void {
         let l10n: L10n = this.parent.serviceLocator.getService(locale);
-        if (!this.showRangeAlert()) { return; }
+        if (!this.isValidSortRange()) {
+            this.sortRangeAlertHandler({error: l10n.getConstant('SortOutOfRangeError')});
+            return;
+        }
         let dialogInst: Dialog = (this.parent.serviceLocator.getService(dialog) as Dialog);
         dialogInst.show({
             height: 400, width: 560, isModal: true, showCloseIcon: true, cssClass: 'e-customsort-dlg',
@@ -114,7 +115,7 @@ export class Sort {
             },
             buttons: [{
                 buttonModel: {
-                    content: (this.parent.serviceLocator.getService(locale) as L10n).getConstant('Ok'), isPrimary: true
+                    content: l10n.getConstant('Ok'), isPrimary: true
                 },
                 click: (): void => {
                     let element: HTMLElement = dialogInst.dialogInstance.content as HTMLElement;
@@ -143,8 +144,6 @@ export class Sort {
      * @param errorElem - element to display error.
      */
     private validateError(json: { [key: string]: string }[], dialogElem: HTMLElement, errorElem: HTMLElement): boolean {
-        //1. All sort criteria must have a column specified. Check the selected sort criteria and try again.
-        //2. Column B is being sorted by values more than once. Delete the duplicate sort criteria and try again.
         let l10n: L10n = this.parent.serviceLocator.getService(locale);
         let hasEmpty: boolean = json.some((element: { [key: string]: string }) => element.field.toString() === '');
         if (hasEmpty) {

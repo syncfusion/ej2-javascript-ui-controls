@@ -22,7 +22,7 @@ export interface RemoveEventArgs extends SelectEventArgs { }
 /* tslint:enable */
 const FOCUS: string = 'e-input-focus';
 const DISABLED: string = 'e-disabled';
-const OVER_ALL_WRAPPER: string = 'e-multiselect e-input-group';
+const OVER_ALL_WRAPPER: string = 'e-multiselect e-input-group e-control-wrapper';
 const ELEMENT_WRAPPER: string = 'e-multi-select-wrapper';
 const ELEMENT_MOBILE_WRAPPER: string = 'e-mob-wrapper';
 const HIDE_LIST: string = 'e-hide-listitem';
@@ -90,6 +90,7 @@ export class MultiSelect extends DropDownBase implements IInput {
     private initial: boolean;
     private backCommand: boolean;
     private keyAction: boolean;
+    private isSelectAll: boolean;
 
     /**
      * Specifies a Boolean value that indicates the whether the grouped list items are 
@@ -219,6 +220,14 @@ export class MultiSelect extends DropDownBase implements IInput {
      */
     @Property(null)
     public allowFiltering: boolean;
+    /**
+     * By default, the multiselect component fires the change event while focus out the component.
+     * If you want to fires the change event on every value selection and remove, then disable the changeOnBlur property. 
+     * 
+     * @default true
+     */
+    @Property(true)
+    public changeOnBlur: boolean;
     /**
      * Allows user to add a 
      * [`custom value`](../../multi-select/custom-value), the value which is not present in the suggestion list.
@@ -605,6 +614,9 @@ export class MultiSelect extends DropDownBase implements IInput {
             if (!eventArgs.cancel) {
                 this.focusAtFirstListItem();
                 document.body.appendChild(this.popupObj.element);
+                if (this.mode === 'CheckBox' && this.enableGroupCheckBox && !isNullOrUndefined(this.fields.groupBy)) {
+                    this.updateListItems(this.list.querySelectorAll('li.e-list-item'), this.mainList.querySelectorAll('li.e-list-item'));
+                }
                 if (this.mode === 'CheckBox' || this.showDropDownIcon) {
                     addClass([this.overAllWrapper], [iconAnimation]);
                 }
@@ -622,6 +634,7 @@ export class MultiSelect extends DropDownBase implements IInput {
             this.findGroupStart(listItems[i] as HTMLElement);
             this.findGroupStart(mainListItems[i] as HTMLElement);
         }
+        this.deselectHeader();
     }
     private loadTemplate(): void {
         this.refreshListItems(null);
@@ -715,7 +728,7 @@ export class MultiSelect extends DropDownBase implements IInput {
         }
         this.removeValue(value, e);
         this.removeChipSelection();
-        this.updateDelimeter(this.delimiterChar);
+        this.updateDelimeter(this.delimiterChar, e);
         this.makeTextBoxEmpty();
         if (this.mainList && this.listData) {
             this.refreshSelection();
@@ -752,6 +765,7 @@ export class MultiSelect extends DropDownBase implements IInput {
         list: { [key: string]: Object }[] | number[] | boolean[] | string[],
         e?: Object, isUpdated?: boolean): void {
         super.onActionComplete(ulElement, list, e);
+        this.updateSelectElementData(this.allowFiltering);
         let proxy: MultiSelect = this;
         let valuecheck: string[] = [];
         if (!isNullOrUndefined(this.value) && !this.allowCustomValue) {
@@ -810,7 +824,7 @@ export class MultiSelect extends DropDownBase implements IInput {
             this.initialValueUpdate();
             this.initialUpdate();
             this.refreshPlaceHolder();
-            this.updateValueState(null, this.value, null);
+            if (this.mode !== 'CheckBox' && this.changeOnBlur) { this.updateValueState(null, this.value, null); }
         }
         this.renderPopup();
         if (this.beforePopupOpen) {
@@ -921,16 +935,17 @@ export class MultiSelect extends DropDownBase implements IInput {
         if (this.enableGroupCheckBox && !isNullOrUndefined(this.fields.groupBy)) {
             searchActiveCount = searchActiveCount - groupItemLength;
         }
-        if ((searchCount === searchActiveCount) && (this.mode === 'CheckBox' && this.showSelectAll)) {
+        if ((searchCount === searchActiveCount || searchActiveCount === this.maximumSelectionLength)
+        && (this.mode === 'CheckBox' && this.showSelectAll)) {
             this.notify('checkSelectAll', { module: 'CheckBoxSelection', enable: this.mode === 'CheckBox', value: 'check' });
-        }
-        if ((searchCount !== searchActiveCount) && (this.mode === 'CheckBox' && this.showSelectAll)) {
+        } else if ((searchCount !== searchActiveCount) && (this.mode === 'CheckBox' && this.showSelectAll)) {
             this.notify('checkSelectAll', { module: 'CheckBoxSelection', enable: this.mode === 'CheckBox', value: 'uncheck' });
         }
         if (this.enableGroupCheckBox && this.fields.groupBy && !this.enableSelectionOrder) {
             for (let i: number = 0; i < listItem.length; i++) {
                 this.findGroupStart(listItem[i] as HTMLElement);
             }
+            this.deselectHeader();
         }
     }
     private openClick(e: KeyboardEventArgs): void {
@@ -1197,8 +1212,10 @@ export class MultiSelect extends DropDownBase implements IInput {
             this.refreshListItems(null);
             this.updateDelimView();
         }
-        this.updateValueState(eve, this.value, this.tempValues);
-        this.dispatchEvent(this.hiddenElement as HTMLElement, 'change');
+        if (this.changeOnBlur) {
+            this.updateValueState(eve, this.value, this.tempValues);
+            this.dispatchEvent(this.hiddenElement as HTMLElement, 'change');
+        }
         this.overAllClear.style.display = 'none';
         if (this.isPopupOpen()) {
             this.DropDownBaseresetBlazorTemplates(false, false, true, true, false, true, true);
@@ -1266,6 +1283,9 @@ export class MultiSelect extends DropDownBase implements IInput {
             };
             this.trigger('change', eventArgs);
             this.updateTempValue();
+            if (!this.changeOnBlur) {
+                this.dispatchEvent(this.hiddenElement as HTMLElement, 'change');
+            }
         }
     }
     private updateTempValue(): void {
@@ -1547,7 +1567,7 @@ export class MultiSelect extends DropDownBase implements IInput {
     private keyNavigation(e: KeyboardEventArgs): void {
         if ((this.mode !== 'Delimiter' && this.mode !== 'CheckBox') && this.value && this.value.length) {
             switch (e.keyCode) {
-                case 37: //left arrow  
+                case 37: //left arrow   
                     e.preventDefault();
                     this.moveBy(-1, e);
                     break;
@@ -1567,7 +1587,7 @@ export class MultiSelect extends DropDownBase implements IInput {
                 e.preventDefault();
                 let temp: string | number | boolean = this.value[this.value.length - 1];
                 this.removeValue(temp, e);
-                this.updateDelimeter(this.delimiterChar);
+                this.updateDelimeter(this.delimiterChar, e);
                 this.focusAtLastListItem(<string>temp);
             }
         }
@@ -1643,19 +1663,23 @@ export class MultiSelect extends DropDownBase implements IInput {
                 this.addListFocus(<HTMLElement>li);
                 if (this.mode === 'CheckBox') {
                     this.updateDelimView();
-                    this.updateDelimeter(this.delimiterChar);
+                    this.updateDelimeter(this.delimiterChar, e);
                     this.refreshInputHight();
                     this.checkPlaceholderSize();
                     if (this.enableGroupCheckBox && !isNullOrUndefined(this.fields.groupBy)) {
                         (target as Element) = li.firstElementChild.lastElementChild;
                         this.findGroupStart(target);
+                        this.deselectHeader();
                     }
                 } else {
-                    this.updateDelimeter(this.delimiterChar);
+                    this.updateDelimeter(this.delimiterChar, e);
                 }
                 this.makeTextBoxEmpty();
                 if (this.mode !== 'CheckBox') {
                     this.refreshListItems(li.textContent);
+                }
+                if (!this.changeOnBlur) {
+                    this.updateValueState(e, this.value, this.tempValues);
                 }
                 this.refreshPopup();
             }else {
@@ -1675,11 +1699,7 @@ export class MultiSelect extends DropDownBase implements IInput {
         if ((this.allowFiltering || (this.mode === 'CheckBox' && this.enableSelectionOrder === true)
             || this.allowCustomValue) && this.mainList && this.listData) {
             let list: HTMLElement;
-            if (this.sortOrder === 'Descending' || this.sortOrder === 'Ascending') {
-                list = this.ulElement.cloneNode ? <HTMLElement>this.ulElement.cloneNode(true) : this.ulElement;
-            } else {
-                list = this.mainList.cloneNode ? <HTMLElement>this.mainList.cloneNode(true) : this.mainList;
-            }
+            list = this.mainList.cloneNode ? <HTMLElement>this.mainList.cloneNode(true) : this.mainList;
             this.onActionComplete(list, this.mainData);
             this.focusAtLastListItem(data);
             if (this.value && this.value.length) {
@@ -1830,7 +1850,7 @@ export class MultiSelect extends DropDownBase implements IInput {
                 let list: HTMLElement = this.mainList.cloneNode ? <HTMLElement>this.mainList.cloneNode(true) : this.mainList;
                 this.onActionComplete(list, this.mainData);
             }
-            this.updateDelimeter(this.delimiterChar);
+            this.updateDelimeter(this.delimiterChar, e);
             if (this.placeholder && this.floatLabelType === 'Never') {
                 this.makeTextBoxEmpty();
                 this.checkPlaceholderSize();
@@ -1865,6 +1885,8 @@ export class MultiSelect extends DropDownBase implements IInput {
         if (index === -1 && this.allowCustomValue && !isNullOrUndefined(value)) {
             index = (this.value as string[]).indexOf(value.toString());
         }
+        let targetEle: HTMLElement = eve && eve.target as HTMLElement;
+        isClearAll = (isClearAll || targetEle && targetEle.classList.contains('e-close-hooker')) ? true : null;
         let className: string = this.hideSelectedItem ?
             HIDE_LIST :
             dropDownBaseClasses.selected;
@@ -1919,11 +1941,19 @@ export class MultiSelect extends DropDownBase implements IInput {
                         removeClass(collection, 'e-disable');
                     }
                     this.trigger('removed', eventArgs);
+                    let targetEle: HTMLElement = eve && eve.currentTarget as HTMLElement;
+                    let isSelectAll: boolean = (targetEle && targetEle.classList.contains('e-selectall-parent')) ? true : null;
+                    if (!this.changeOnBlur && !isClearAll && (eve && length && !isSelectAll)) {
+                        this.updateValueState(eve, this.value, this.tempValues);
+                    }
                     if (length) {
                         this.selectAllEventData.push(val);
                         this.selectAllEventEle.push(<HTMLLIElement>element);
                     }
                     if (length === 1) {
+                        if (!this.changeOnBlur) {
+                            this.updateValueState(eve, this.value, this.tempValues);
+                        }
                         let args: ISelectAllEventArgs = {
                             event: eve,
                             items: this.selectAllEventEle,
@@ -1935,7 +1965,7 @@ export class MultiSelect extends DropDownBase implements IInput {
                         this.selectAllEventData = [];
                         this.selectAllEventEle = [];
                     }
-                    if (isClearAll) { this.clearAllCallback(eve as MouseEvent); }
+                    if (isClearAll) { this.clearAllCallback(eve as MouseEvent, isClearAll); }
                 }
             });
         }
@@ -2140,6 +2170,9 @@ export class MultiSelect extends DropDownBase implements IInput {
                 }
                 EventHandler.add(chipClose, 'mousedown', this.onChipRemove, this);
                 this.chipCollectionWrapper.appendChild(chip as HTMLElement);
+                if (!this.changeOnBlur && e) {
+                    this.updateValueState(e, this.value, this.tempValues);
+                }
             }
         });
     }
@@ -2314,24 +2347,29 @@ export class MultiSelect extends DropDownBase implements IInput {
     private ClearAll(e: MouseEvent): void {
         if (this.enabled && !this.readonly) {
             let temp: string | number | boolean;
-            if (this.value) {
-                this.removeIndex = 0;
-                for (temp = this.value[this.removeIndex]; this.removeIndex < this.value.length; temp = this.value[this.removeIndex]) {
-                    this.removeValue(temp, e, null, true);
+            if (this.value && this.value.length > 0) {
+                let liElement: NodeListOf<Element> = this.list && this.list.querySelectorAll('li.e-list-item');
+                if (liElement && liElement.length > 0) {
+                    this.selectAllItems(false, e);
+                } else {
+                    this.removeIndex = 0;
+                    for (temp = this.value[this.removeIndex]; this.removeIndex < this.value.length; temp = this.value[this.removeIndex]) {
+                        this.removeValue(temp, e, null, true);
+                    }
                 }
             } else {
                 this.clearAllCallback(e);
             }
         }
     }
-    private clearAllCallback(e: MouseEvent): void {
+    private clearAllCallback(e: MouseEvent, isClearAll?: boolean): void {
         let tempValues: string[] | number[] = this.value ? <string[]>this.value.slice() : <string[]>[];
         if (this.mainList && this.listData && this.allowFiltering) {
             let list: HTMLElement = this.mainList.cloneNode ? <HTMLElement>this.mainList.cloneNode(true) : this.mainList;
             this.onActionComplete(list, this.mainData);
         }
         this.focusAtFirstListItem();
-        this.updateDelimeter(this.delimiterChar);
+        this.updateDelimeter(this.delimiterChar, e);
         if (this.mode !== 'Box' && (!this.inputFocus || this.mode === 'CheckBox')) {
             this.updateDelimView();
         }
@@ -2341,7 +2379,7 @@ export class MultiSelect extends DropDownBase implements IInput {
             this.refreshPopup();
         }
         if (!this.inputFocus) {
-            this.updateValueState(e, this.value, tempValues);
+            if (this.changeOnBlur) { this.updateValueState(e, this.value, tempValues); }
             if (this.mode !== 'CheckBox') {
                 this.inputElement.focus();
             }
@@ -2349,6 +2387,12 @@ export class MultiSelect extends DropDownBase implements IInput {
         if (this.mode === 'CheckBox') {
             this.refreshPlaceHolder();
             this.refreshInputHight();
+            if (this.changeOnBlur && isClearAll && (this.value && this.value.length === 0)) {
+                this.updateValueState(e, this.value, this.tempValues);
+            }
+        }
+        if (!this.changeOnBlur && isClearAll && (this.value && this.value.length === 0)) {
+            this.updateValueState(e, this.value, this.tempValues);
         }
         if (this.mode === 'CheckBox' && this.enableGroupCheckBox && !isNullOrUndefined(this.fields.groupBy)) {
             this.updateListItems(this.list.querySelectorAll('li.e-list-item'), this.mainList.querySelectorAll('li.e-list-item'));
@@ -2416,7 +2460,7 @@ export class MultiSelect extends DropDownBase implements IInput {
         this.backCommand = true;
     }
 
-    private updateData(delimiterChar: string): void {
+    private updateData(delimiterChar: string, e?: MouseEvent | KeyboardEventArgs): void {
         let data: string = '';
         let delim: boolean = this.mode === 'Delimiter' || this.mode === 'CheckBox';
         let text: string[] = <string[]>[];
@@ -2439,6 +2483,12 @@ export class MultiSelect extends DropDownBase implements IInput {
         this.setProperties({ text: text.toString() }, true);
         if (delim) {
             this.delimiterWrapper.innerHTML = data;
+        }
+        let targetEle: HTMLElement = e && e.target as HTMLElement;
+        let isClearAll: boolean = (targetEle && targetEle.classList.contains('e-close-hooker')) ? true : null;
+        if (!this.changeOnBlur && ((e && !isClearAll)) || this.isSelectAll) {
+            this.isSelectAll = false;
+            this.updateValueState(e, this.value, this.tempValues);
         }
         this.listData = <{ [key: string]: Object }[]>tempData;
         if (!isNullOrUndefined(this.value) && this.value.length) {
@@ -2510,7 +2560,7 @@ export class MultiSelect extends DropDownBase implements IInput {
             }
             if (this.mode === 'CheckBox') {
                 this.updateDelimView();
-                this.updateValueState(null, this.value, this.tempValues);
+                if (this.changeOnBlur) { this.updateValueState(null, this.value, this.tempValues); }
                 this.updateDelimeter(this.delimiterChar);
                 this.refreshInputHight();
             } else {
@@ -2667,29 +2717,32 @@ export class MultiSelect extends DropDownBase implements IInput {
             attributes(this.inputElement, { 'aria-activedescendant': element.id });
         }
     }
-    private updateDelimeter(delimChar: string): void {
-        this.updateData(delimChar);
+    private updateDelimeter(delimChar: string, e?: MouseEvent | KeyboardEventArgs): void {
+        this.updateData(delimChar, e);
     }
     private onMouseClick(e: MouseEvent): void {
         this.scrollFocusStatus = false;
         let target: Element = <Element>e.target;
         let li: HTMLElement = <HTMLElement>closest(target, '.' + dropDownBaseClasses.li);
-        let listElement : Element;
-        if (!li && this.enableGroupCheckBox && this.mode === 'CheckBox' && this.fields.groupBy) {
+        let headerLi : HTMLElement = <HTMLElement>closest(target, '.' + dropDownBaseClasses.group);
+        if (headerLi && this.enableGroupCheckBox && this.mode === 'CheckBox' && this.fields.groupBy) {
             target = target.classList.contains('e-list-group-item') ? target.firstElementChild.lastElementChild
             : <Element>e.target;
             if (target.classList.contains('e-check')) {
                 this.selectAllItem(false, e);
                 target.classList.remove('e-check');
                 target.classList.remove('e-stop');
+                closest(target, '.' + 'e-list-group-item').classList.remove('e-active');
                 target.setAttribute('aria-selected', 'false');
             } else {
                 this.selectAllItem(true, e);
                 target.classList.remove('e-stop');
                 target.classList.add('e-check');
+                closest(target, '.' + 'e-list-group-item').classList.add('e-active');
                 target.setAttribute('aria-selected', 'true');
             }
             this.refreshSelection();
+            this.checkSelectAll();
         } else {
             if (this.isValidLI(li)) {
                 let limit: number = this.value && this.value.length ? this.value.length : 0;
@@ -2711,10 +2764,10 @@ export class MultiSelect extends DropDownBase implements IInput {
                 }
                 if (this.mode === 'CheckBox') {
                     this.updateDelimView();
-                    this.updateDelimeter(this.delimiterChar);
+                    this.updateDelimeter(this.delimiterChar, e);
                     this.refreshInputHight();
                 } else {
-                    this.updateDelimeter(this.delimiterChar);
+                    this.updateDelimeter(this.delimiterChar, e);
                 }
                 this.checkSelectAll();
                 this.refreshPopup();
@@ -2727,6 +2780,7 @@ export class MultiSelect extends DropDownBase implements IInput {
                     e.preventDefault();
                 }
                 this.makeTextBoxEmpty();
+                this.findGroupStart(target as HTMLElement);
             } else {
                 e.preventDefault();
             }
@@ -2734,7 +2788,7 @@ export class MultiSelect extends DropDownBase implements IInput {
                 this.refreshListItems(isNullOrUndefined(li) ? null : li.textContent);
             }
             this.refreshPlaceHolder();
-            this.findGroupStart(target as HTMLElement);
+            this.deselectHeader();
         }
     }
     private findGroupStart(target: HTMLElement): void {
@@ -2793,15 +2847,33 @@ export class MultiSelect extends DropDownBase implements IInput {
         if (count === checked) {
             checkBoxElement.classList.remove('e-stop');
             checkBoxElement.classList.add('e-check');
+            closest(checkBoxElement, '.' + 'e-list-group-item').classList.add('e-active');
             groupHeader.setAttribute('aria-selected', 'true');
         } else if (count === unChecked) {
             checkBoxElement.classList.remove('e-check');
             checkBoxElement.classList.remove('e-stop');
+            closest(checkBoxElement, '.' + 'e-list-group-item').classList.remove('e-active');
             groupHeader.setAttribute('aria-selected', 'false');
+        } else if (this.maximumSelectionLength === checked - 1) {
+            checkBoxElement.classList.remove('e-stop');
+            groupHeader.setAttribute('aria-selected', 'true');
+            closest(checkBoxElement, '.' + 'e-list-group-item').classList.add('e-active');
+            checkBoxElement.classList.add('e-check');
         } else {
             checkBoxElement.classList.remove('e-check');
             checkBoxElement.classList.add('e-stop');
+            closest(checkBoxElement, '.' + 'e-list-group-item').classList.add('e-active');
             groupHeader.setAttribute('aria-selected', 'false');
+        }
+    }
+    private deselectHeader (): void {
+        let limit: number = this.value && this.value.length ? this.value.length : 0;
+        let collection: NodeList = this.list.querySelectorAll('li.e-list-group-item:not(.e-active)');
+        if (limit < this.maximumSelectionLength) {
+            removeClass(collection, 'e-disable');
+        }
+        if (limit === this.maximumSelectionLength) {
+            addClass(collection, 'e-disable');
         }
     }
     private onMouseOver(e: MouseEvent): void {
@@ -3102,10 +3174,10 @@ export class MultiSelect extends DropDownBase implements IInput {
             'li.e-list-item:not([aria-selected="true"]):not(.e-reorder-hide)' :
             'li.e-list-item[aria-selected="true"]:not(.e-reorder-hide)');
         if (this.enableGroupCheckBox && this.mode === 'CheckBox' && !isNullOrUndefined(this.fields.groupBy)) {
-            let target: Element = <Element>event.target;
-            target = ((event as KeyboardEvent).keyCode === 32) ? list : target;
-            target = (target.classList.contains('e-frame')) ? target.parentElement.parentElement : target;
-            if (target.classList.contains('e-list-group-item')) {
+            let target: Element = <Element>(event ? event.target : null);
+            target = (event && (event as KeyboardEvent).keyCode === 32) ? list : target;
+            target = (target && target.classList.contains('e-frame')) ? target.parentElement.parentElement : target;
+            if (target && target.classList.contains('e-list-group-item')) {
                 let listElement : Element = target.nextElementSibling;
                 if (isNullOrUndefined(listElement)) {
                     return;
@@ -3113,7 +3185,13 @@ export class MultiSelect extends DropDownBase implements IInput {
                 while (listElement.classList.contains('e-list-item')) {
                     if (state) {
                         if (!listElement.firstElementChild.lastElementChild.classList.contains('e-check')) {
-                            this.updateListSelection(listElement, event);
+                            let selectionLimit: number = this.value && this.value.length ? this.value.length : 0;
+                            if (listElement.classList.contains('e-active')) {
+                                selectionLimit -= 1;
+                            }
+                            if (selectionLimit < this.maximumSelectionLength) {
+                                this.updateListSelection(listElement, event);
+                            }
                         }
                     } else {
                         if (listElement.firstElementChild.lastElementChild.classList.contains('e-check')) {
@@ -3135,40 +3213,51 @@ export class MultiSelect extends DropDownBase implements IInput {
                 }
                 this.textboxValueUpdate();
                 this.checkPlaceholderSize();
-            } else if (target.classList.contains('e-selectall-parent') || target.parentElement.classList.contains('e-selectall-parent')) {
-                this.updateValue(event, li);
+                if (!this.changeOnBlur && event) {
+                    this.updateValueState(event, this.value, this.tempValues);
+                }
+            } else {
+                this.updateValue(event, li, state);
             }
         } else {
-            this.updateValue(event, li);
+            this.updateValue(event, li, state);
         }
     }
-    private updateValue (event: MouseEvent | KeyboardEventArgs, li : NodeListOf<HTMLElement>| HTMLElement[]): void {
+    private updateValue (event: MouseEvent | KeyboardEventArgs, li : NodeListOf<HTMLElement>| HTMLElement[], state: boolean): void {
         let length: number = li.length;
         if (li && li.length) {
             let index: number = 0;
-            while (index < length && index <= 50) {
+            let count: number = 0;
+            if (this.enableGroupCheckBox) {
+                count = state ? this.maximumSelectionLength - (this.value ? this.value.length : 0) : li.length;
+            } else {
+                count = state ? this.maximumSelectionLength - (this.value ? this.value.length : 0) : this.maximumSelectionLength;
+            }
+            while (index < length && index <= 50 && index < count) {
                 this.updateListSelection(li[index], event, length - index);
                 this.findGroupStart(li[index]);
                 index++;
             }
+            this.deselectHeader();
             if (length > 50) {
                 setTimeout(
                     (): void => {
-                        while (index < length) {
+                        while (index < length && index < count) {
                             this.updateListSelection(li[index], event, length - index);
                             this.findGroupStart(li[index]);
                             index++;
                         }
-                        this.textboxValueUpdate();
+                        this.deselectHeader();
+                        this.textboxValueUpdate(event);
                     },
                     0
                 );
             }
         }
-        this.textboxValueUpdate();
+        this.textboxValueUpdate(event);
         this.checkPlaceholderSize();
     }
-    private textboxValueUpdate(): void {
+    private textboxValueUpdate(event?: MouseEvent | KeyboardEventArgs): void {
         if (this.mode !== 'Box' && !this.isPopupOpen()) {
             this.updateDelimView();
         } else {
@@ -3176,10 +3265,10 @@ export class MultiSelect extends DropDownBase implements IInput {
         }
         if (this.mode === 'CheckBox') {
             this.updateDelimView();
-            this.updateDelimeter(this.delimiterChar);
+            this.updateDelimeter(this.delimiterChar, event);
             this.refreshInputHight();
         } else {
-            this.updateDelimeter(this.delimiterChar);
+            this.updateDelimeter(this.delimiterChar, event);
         }
         this.refreshPlaceHolder();
     }
@@ -3333,6 +3422,7 @@ export class MultiSelect extends DropDownBase implements IInput {
                     break;
                 case 'allowFiltering':
                     if (this.mode === 'CheckBox' && this.popupObj) { this.reInitializePoup(); }
+                    this.updateSelectElementData(this.allowFiltering);
                     break;
                 default:
                     let msProps: { [key: string]: Object };
@@ -3360,12 +3450,16 @@ export class MultiSelect extends DropDownBase implements IInput {
                 this.initialTextUpdate();
                 newProp = this.value;
             }
+            if (this.value && this.value.length === 0) { this.tempValues = oldProp; }
             this.initialValueUpdate();
             if (this.mode !== 'Box') { this.updateDelimView(); }
             this.refreshInputHight();
             this.refreshPlaceHolder();
-            this.updateValueState(null, newProp, oldProp);
+            if (this.mode !== 'CheckBox' && this.changeOnBlur) { this.updateValueState(null, newProp, oldProp); }
             this.checkPlaceholderSize();
+        }
+        if (!this.changeOnBlur) {
+            this.updateValueState(null, newProp, oldProp);
         }
     }
     /**
@@ -3427,6 +3521,7 @@ export class MultiSelect extends DropDownBase implements IInput {
      * @returns void
      */
     public selectAll(state: boolean): void {
+        this.isSelectAll = true;
         this.selectAllItems(state);
     }
 
@@ -3439,6 +3534,7 @@ export class MultiSelect extends DropDownBase implements IInput {
      */
     public render(): void {
         this.setDynValue = this.initStatus = false;
+        this.isSelectAll = false;
         this.searchWrapper = this.createElement('span', { className: SEARCHBOX_WRAPPER + ' ' + ((this.mode === 'Box') ? BOX_ELEMENT : '')});
         this.viewWrapper = this.createElement('span', { className: DELIMITER_VIEW + ' ' + DELIMITER_WRAPPER, styles: 'display:none;' });
         this.overAllClear = this.createElement('span', {
@@ -3560,6 +3656,7 @@ export class MultiSelect extends DropDownBase implements IInput {
                     this.initStatus = true;
                 };
             }
+            this.updateTempValue();
         } else {
             this.initialUpdate();
         }

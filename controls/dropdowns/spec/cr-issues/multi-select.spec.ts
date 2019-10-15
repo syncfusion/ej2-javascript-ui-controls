@@ -976,6 +976,52 @@ describe('MultiSelect', () => {
         });
     });
 
+    describe('EJ2-32393 - Filtering not working with multiselect ', () => {
+        let element: HTMLInputElement;
+        let selectElement: HTMLDivElement; 
+        let ddl: MultiSelect;
+        let isSeleted: boolean = true;
+        beforeAll(() => {
+            element = <HTMLInputElement>createElement('input', { id: 'multiselect1' });
+            selectElement = <HTMLDivElement>createElement('div', { id: 'multiselect2' });
+            selectElement.innerHTML = `<select id="list"> 
+                <option value="0">American Football</option>
+                <option value="1 ">Badminton</option>
+                <option value="2">Basketball</option>
+                <option value="3">Cricket</option>
+                <option value="4">Football</option>
+                <option value="5">Golf</option>
+                <option value="6">Hockey</option>
+                <option value="7">Rugby</option>
+                <option value="8">Snooker</option>
+                <option value="9">Tennis</option>
+            </select>`;
+            document.body.appendChild(selectElement);
+        });
+        afterAll(() => {
+            document.body.innerHTML = '';
+        }); 
+        it('when render the component using select element', () => {
+            ddl = new MultiSelect({ 
+                allowFiltering: true,
+                open: function(e) {
+                    let len: number = (<any>ddl).ulElement.querySelectorAll('li').length;
+                    expect(len !==0 ).toBe(true);
+                }
+            });
+            ddl.appendTo(selectElement.querySelector('#list') as HTMLElement);
+            ddl.showPopup();
+            (<any>ddl).inputFocus = true;
+            (<any>ddl).inputElement.value = "a";
+            keyboardEventArgs.altKey = false;
+            keyboardEventArgs.keyCode = 65;
+            (<any>ddl).keyDownStatus = true;
+            (<any>ddl).onInput();
+            (<any>ddl).KeyUp(keyboardEventArgs);
+            expect((<any>ddl).liCollections.length).toBe(1);
+        });
+    });
+
     describe(' EJ2-18283 - selectAll eventArgs', () => {
         let listObj: any;
         let popupObj: any;
@@ -1013,6 +1059,57 @@ describe('MultiSelect', () => {
                 expect(!isNullOrUndefined(selectEle)).toBe(true);
                 done();
             }, 400);
+        });
+    });
+    describe('EJ2-31766:Performance issue arise while clearing larger number of selected items using clear button', () => {
+        let element: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'dropdown' });
+        let dropDowns: any;
+        let ischanged: boolean = false;
+        let data: any = [];
+        for(let i: number = 0; i< 100; i++) {
+            data.push({text: 'Java Script'+ i, value: 1 });
+        }
+        beforeAll(() => {
+            document.body.appendChild(element);
+            dropDowns = new MultiSelect({
+                dataSource: data,
+                showSelectAll: true,
+                allowFiltering: true,
+                mode: 'CheckBox',
+                change: function (e: any) {
+                    ischanged = true;
+                    expect(e.name === 'change').toBe(true);
+                }
+            });
+            dropDowns.appendTo(element);
+        });
+        afterAll(() => {
+            element.remove();
+        });
+
+        it(' select item and clear the value using icon ', () => {
+            mouseEventArgs.target = dropDowns.componentWrapper;
+            mouseEventArgs.type = 'mousedown';
+            (<any>dropDowns).wrapperClick(mouseEventArgs);
+            expect(dropDowns.isPopupOpen()).toBe(true);
+            (<any>dropDowns).checkBoxSelectionModule.clickHandler({
+                preventDefault: () => { }, currentTarget: (<any>dropDowns).checkBoxSelectionModule.checkAllParent
+            });
+            mouseEventArgs.target = dropDowns.componentWrapper;
+            mouseEventArgs.type = 'mousedown';
+            (<any>dropDowns).wrapperClick(mouseEventArgs);
+            expect(ischanged).not.toBe(true);
+            mouseEventArgs.target = document.body;
+            dropDowns.checkBoxSelectionModule.onDocumentClick(mouseEventArgs);
+            expect(dropDowns.isPopupOpen()).not.toBe(true);
+            expect(ischanged).toBe(true);
+            mouseEventArgs.target = dropDowns.componentWrapper;
+            mouseEventArgs.type = 'mousedown';
+            (<any>dropDowns).wrapperClick(mouseEventArgs);
+            mouseEventArgs.target = dropDowns.componentWrapper.querySelector('.e-chips-close.e-close-hooker');
+            mouseEventArgs.type = 'mouseup';
+            dropDowns.ClearAll(mouseEventArgs);
+            expect(dropDowns.value && dropDowns.value.length === 0).toBe(true);
         });
     });
     describe('EJ2-18758 - UnSelectAll issue', () => {
@@ -1318,6 +1415,107 @@ describe('MultiSelect', () => {
             }, 200);
         })
     })
+
+    describe('BLAZ-888:change event is not triggered when clear the item', () => {
+        let element: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'dropdown' });
+        let dropDowns: any;
+        let ischanged: boolean = false;
+        beforeAll(() => {
+            document.body.appendChild(element);
+            dropDowns = new MultiSelect({
+                dataSource: ['Java Script', 'AS.NET MVC', 'Java', 'C#'],
+                showSelectAll: true,
+                value: ['Java'],
+                allowFiltering: true,
+                mode: 'CheckBox',
+                change: function (e: any) {
+                    ischanged = true;
+                    expect(e.name === 'change').toBe(true);
+                }
+            });
+            dropDowns.appendTo(element);
+        });
+        afterAll(() => {
+            element.remove();
+        });
+
+        it(' select item and clear the value using icon ', () => {
+            mouseEventArgs.target = dropDowns.componentWrapper;
+            mouseEventArgs.type = 'mousedown';
+            (<any>dropDowns).wrapperClick(mouseEventArgs);
+            expect(dropDowns.isPopupOpen()).toBe(true);
+            let list: Array<HTMLElement> = (<any>dropDowns).ulElement.querySelectorAll('li');
+            mouseEventArgs.target = list[0];
+            mouseEventArgs.type = 'click';
+            (<any>dropDowns).onMouseClick(mouseEventArgs);
+            mouseEventArgs.target = dropDowns.componentWrapper;
+            mouseEventArgs.type = 'mousedown';
+            (<any>dropDowns).wrapperClick(mouseEventArgs);
+            expect(ischanged).not.toBe(true);
+            mouseEventArgs.target = document.body;
+            dropDowns.checkBoxSelectionModule.onDocumentClick(mouseEventArgs);
+            expect(dropDowns.isPopupOpen()).not.toBe(true);
+            expect(ischanged).toBe(true);
+            mouseEventArgs.target = dropDowns.componentWrapper;
+            mouseEventArgs.type = 'mousedown';
+            (<any>dropDowns).wrapperClick(mouseEventArgs);
+            mouseEventArgs.target = dropDowns.componentWrapper.querySelector('.e-chips-close.e-close-hooker');
+            mouseEventArgs.type = 'mouseup';
+            dropDowns.ClearAll(mouseEventArgs);
+            expect(ischanged).toBe(true);
+        });
+    });
+
+    describe('BLAZ-888:change event is not triggered when clear the item', () => {
+        let element: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'dropdown' });
+        let dropDowns: any;
+        let ischanged: boolean = false;
+        beforeAll(() => {
+            document.body.appendChild(element);
+            dropDowns = new MultiSelect({
+                dataSource: ['Java Script', 'AS.NET MVC', 'Java', 'C#'],
+                mode: 'Box',
+                value: ['Java'],
+                change: function (e: any) {
+                    ischanged = true;
+                    expect(e.name === 'change').toBe(true);
+                }
+            });
+            dropDowns.appendTo(element);
+        });
+        afterAll(() => {
+            element.remove();
+        });
+
+        it(' select item and click wrapper ', () => {
+            mouseEventArgs.target = dropDowns.componentWrapper;
+            mouseEventArgs.type = 'mousedown';
+            (<any>dropDowns).wrapperClick(mouseEventArgs);
+            expect(dropDowns.isPopupOpen()).toBe(true);
+            let list: Array<HTMLElement> = (<any>dropDowns).ulElement.querySelectorAll('li');
+            mouseEventArgs.target = list[0];
+            mouseEventArgs.type = 'click';
+            (<any>dropDowns).onMouseClick(mouseEventArgs);
+            mouseEventArgs.target = dropDowns.componentWrapper;
+            mouseEventArgs.type = 'mousedown';
+            (<any>dropDowns).wrapperClick(mouseEventArgs);
+            expect(ischanged).not.toBe(true);
+            mouseEventArgs.target = document.body;
+            dropDowns.onBlur(mouseEventArgs);
+            expect(dropDowns.isPopupOpen()).not.toBe(true);
+            expect(ischanged).toBe(true);
+            mouseEventArgs.target = dropDowns.componentWrapper;
+            mouseEventArgs.type = 'mousedown';
+            (<any>dropDowns).wrapperClick(mouseEventArgs);
+            mouseEventArgs.target = dropDowns.componentWrapper.querySelector('.e-chips-close.e-close-hooker');
+            mouseEventArgs.type = 'mouseup';
+            dropDowns.ClearAll(mouseEventArgs);
+            mouseEventArgs.target = document.body;
+            dropDowns.onBlur(mouseEventArgs);
+            expect(ischanged).toBe(true);
+        });
+    });
+
     describe('EJ2-29649 - filtering with allowCustomValue ', () => {
         let listObj: MultiSelect;
         let originalTimeout: number;

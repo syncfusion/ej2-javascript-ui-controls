@@ -1464,6 +1464,7 @@ export class AnnotationToolbar {
         this.closeItem = this.primaryToolbar.addClassToolbarItem('_annotation_close', 'e-pv-annotation-tools-close', null);
         this.selectAnnotationDeleteItem(false);
         this.enableTextMarkupAnnotationPropertiesTools(false);
+        this.enableCommentPanelTool(this.pdfViewer.enableCommentPanel);
     }
 
     private onToolbarClicked(args: ClickEventArgs): void {
@@ -1690,6 +1691,11 @@ export class AnnotationToolbar {
         } else {
             this.showFontColorAnnotationTool(false);
         }
+        if (this.pdfViewer.annotationToolbarSettings.annotationToolbarItem.indexOf('CommentPanelTool') !== -1) {
+            this.showCommentPanelTool(true);
+        } else {
+            this.showCommentPanelTool(false);
+        }
         this.showSeparator();
     }
 
@@ -1787,6 +1793,10 @@ export class AnnotationToolbar {
     private showAnnotationDeleteTool(isShow: boolean): void {
         this.isDeleteAnnotationToolVisible = isShow;
         this.applyHideToToolbar(isShow, 23, 23);
+    }
+
+    private showCommentPanelTool(isShow: boolean): void {
+        this.applyHideToToolbar(isShow, 24, 24);
     }
 
     private applyHideToToolbar(show: boolean, startIndex: number, endIndex: number): void {
@@ -2080,6 +2090,13 @@ export class AnnotationToolbar {
             isButtonsEnabled = true;
         }
         return isButtonsEnabled;
+    }
+
+    /**
+     * @private
+     */
+    public enableCommentPanelTool(isEnable: boolean): void {
+        this.toolbar.enableItems(this.commentItem.parentElement, isEnable);
     }
 
     private updateToolbarItems(): void {

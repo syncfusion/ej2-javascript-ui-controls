@@ -2,6 +2,18 @@
 
 ## [Unreleased]
 
+## 17.3.16 (2019-10-09)
+
+### CheckBox
+
+### RadioButton
+
+### Switch
+
+#### Bug Fixes
+
+- Adding common cssClass for wrapper.
+
 ## 17.2.35 (2019-07-17)
 
 ### Chips

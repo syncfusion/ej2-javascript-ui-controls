@@ -116,6 +116,21 @@ export class FooterRenderer extends ContentRender implements IRenderer {
         this.renderSummaryContent(e, <HTMLTableElement>this.getTable(), this.parent.getFrozenColumns());
         // check freeze content have no row case
         if (this.parent.getFrozenColumns()) {
+            let frozenCnt: HTMLElement[] = [].slice.call(this.parent.element.querySelector('.e-frozenfootercontent')
+                .querySelectorAll('.e-summaryrow'));
+            let movableCnt: HTMLElement[] = [].slice.call(this.parent.element.querySelector('.e-movablefootercontent')
+                .querySelectorAll('.e-summaryrow'));
+            for (let i: number = 0; i < frozenCnt.length; i++) {
+                let frozenHeight: number = frozenCnt[i].getBoundingClientRect().height;
+                let movableHeight: number = movableCnt[i].getBoundingClientRect().height;
+                if (frozenHeight < movableHeight) {
+                    frozenCnt[i].classList.remove('e-hide');
+                    frozenCnt[i].style.height = movableHeight + 'px';
+                } else if (frozenHeight > movableHeight) {
+                    movableCnt[i].classList.remove('e-hide');
+                    movableCnt[i].style.height = frozenHeight + 'px';
+                }
+            }
             let frozenDiv: HTMLElement = <HTMLElement>this.frozenContent;
             if (!frozenDiv.offsetHeight) {
                 frozenDiv.style.height = (<HTMLElement>this.getTable()).offsetHeight + 'px';
@@ -201,6 +216,7 @@ export class FooterRenderer extends ContentRender implements IRenderer {
         let mergeds: Object[] = [];
         let dataSource: object[] = [];
         let isModified: boolean = false;
+        let batchChanges: Object = {};
         let gridData: string = 'dataSource';
         let changedRecords: string = 'changedRecords';
         let addedRecords: string = 'addedRecords';
@@ -208,8 +224,9 @@ export class FooterRenderer extends ContentRender implements IRenderer {
         let currentViewData: Object[] = this.parent.dataSource instanceof Array ?
             this.parent.dataSource : this.parent.dataSource[gridData].json.length
             ? this.parent.dataSource[gridData].json : this.parent.getCurrentViewRecords();
-
-        let batchChanges: Object = this.parent.editModule.getBatchChanges();
+        if (this.parent.editModule) {
+            batchChanges = this.parent.editModule.getBatchChanges();
+        }
         if (Object.keys(batchChanges).length) {
             for (let i: number = 0; i < currentViewData.length; i++) {
                 isModified = false;

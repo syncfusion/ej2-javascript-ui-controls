@@ -34,6 +34,12 @@
     }
   }
 
+  .e-multiselect.e-outline  .e-multi-select-wrapper.e-down-icon .e-chips-close.e-close-hooker {
+    @if $skin-name == 'material' {
+      right: 52px;
+    }
+  }
+
   .e-bigger.e-small.e-multiselect.e-outline  .e-multi-select-wrapper .e-chips-close.e-close-hooker,
   .e-bigger.e-small .e-multiselect.e-outline  .e-multi-select-wrapper .e-chips-close.e-close-hooker,
   .e-bigger .e-small.e-multiselect.e-outline  .e-multi-select-wrapper .e-chips-close.e-close-hooker,
@@ -44,6 +50,15 @@
       right: 12px;
       top: 50%;
       width: 18px;
+    }
+  }
+
+  .e-bigger.e-small.e-multiselect.e-outline  .e-multi-select-wrapper.e-down-icon .e-chips-close.e-close-hooker,
+  .e-bigger.e-small .e-multiselect.e-outline  .e-multi-select-wrapper.e-down-icon .e-chips-close.e-close-hooker,
+  .e-bigger .e-small.e-multiselect.e-outline  .e-multi-select-wrapper.e-down-icon .e-chips-close.e-close-hooker,
+  .e-small .e-bigger.e-multiselect.e-outline  .e-multi-select-wrapper.e-down-icon .e-chips-close.e-close-hooker {
+    @if $skin-name == 'material' {
+      right: 48px;
     }
   }
 
@@ -58,6 +73,13 @@
     }
   }
 
+  .e-bigger.e-multiselect.e-outline  .e-multi-select-wrapper.e-down-icon .e-chips-close.e-close-hooker,
+  .e-bigger .e-multiselect.e-outline  .e-multi-select-wrapper.e-down-icon .e-chips-close.e-close-hooker {
+    @if $skin-name == 'material' {
+      right: 60px;
+    }
+  }
+
   .e-small.e-multiselect.e-outline  .e-multi-select-wrapper .e-chips-close.e-close-hooker,
   .e-small .e-multiselect.e-outline  .e-multi-select-wrapper .e-chips-close.e-close-hooker {
     @if $skin-name == 'material' {
@@ -69,10 +91,17 @@
     }
   }
 
+  .e-small.e-multiselect.e-outline  .e-multi-select-wrapper.e-down-icon .e-chips-close.e-close-hooker,
+  .e-small .e-multiselect.e-outline  .e-multi-select-wrapper.e-down-icon .e-chips-close.e-close-hooker {
+    @if $skin-name == 'material' {
+      right: 48px;
+    }
+  }
+
   .e-rtl.e-multiselect.e-outline  .e-multi-select-wrapper .e-chips-close.e-close-hooker,
   .e-rtl .e-multiselect.e-outline  .e-multi-select-wrapper .e-chips-close.e-close-hooker {
     @if $skin-name == 'material' {
-      left: 16px;
+      left: 52px;
       right: auto;
     }
   }
@@ -90,7 +119,7 @@
   .e-small .e-rtl .e-bigger.e-multiselect.e-outline .e-multi-select-wrapper .e-chips-close.e-close-hooker,
   .e-small .e-rtl.e-bigger.e-multiselect.e-outline .e-multi-select-wrapper .e-chips-close.e-close-hooker {
     @if $skin-name == 'material' {
-      left: 12px;
+      left: 48px;
       right: auto;
     }
   }
@@ -102,7 +131,7 @@
   .e-bigger .e-rtl.e-multiselect.e-outline  .e-multi-select-wrapper .e-chips-close.e-close-hooker,
   .e-bigger .e-rtl .e-multiselect.e-outline  .e-multi-select-wrapper .e-chips-close.e-close-hooker {
     @if $skin-name == 'material' {
-      left: 16px;
+      left: 60px;
       right: auto;
     }
   }
@@ -114,7 +143,7 @@
   .e-small .e-rtl.e-multiselect.e-outline  .e-multi-select-wrapper .e-chips-close.e-close-hooker,
   .e-small .e-rtl .e-multiselect.e-outline  .e-multi-select-wrapper .e-chips-close.e-close-hooker {
     @if $skin-name == 'material' {
-      left: 14px;
+      left: 48px;
       right: auto;
     }
   }
@@ -192,6 +221,104 @@
   .e-small .e-bigger.e-multiselect.e-outline .e-multi-select-wrapper .e-chips .e-chips-close::before {
     @if $skin-name == 'material' {
       font-size: 14px;
+    }
+  }
+
+  // Multiselect dropdown icon margin
+
+  .e-multiselect.e-input-group.e-outline .e-multi-select-wrapper .e-input-group-icon.e-ddl-icon,
+  .e-multiselect.e-outline.e-input-group.e-control-wrapper .e-multi-select-wrapper .e-input-group-icon.e-ddl-icon {
+    @if $skin-name == 'material' {
+      margin: 7px 12px 9px 0;
+    }
+  }
+
+  .e-multiselect.e-input-group.e-outline.e-bigger .e-multi-select-wrapper .e-input-group-icon.e-ddl-icon,
+  .e-bigger .e-multiselect.e-input-group.e-outline .e-multi-select-wrapper .e-input-group-icon.e-ddl-icon,
+  .e-multiselect.e-input-group.e-outline.e-control-wrapper.e-bigger .e-multi-select-wrapper .e-input-group-icon.e-ddl-icon,
+  .e-bigger .e-multiselect.e-input-group.e-outline.e-control-wrapper .e-multi-select-wrapper .e-input-group-icon.e-ddl-icon {
+    @if $skin-name == 'material' {
+      margin: 10px 16px 10px 0;
+    }
+  }
+
+  .e-multiselect.e-input-group.e-outline.e-small .e-multi-select-wrapper .e-input-group-icon.e-ddl-icon,
+  .e-multiselect.e-input-group.e-outline.e-control-wrapper.e-small .e-multi-select-wrapper .e-input-group-icon.e-ddl-icon,
+  .e-small .e-multiselect.e-input-group.e-outline .e-multi-select-wrapper .e-input-group-icon.e-ddl-icon,
+  .e-small .e-multiselect.e-input-group.e-outline.e-control-wrapper .e-multi-select-wrapper .e-input-group-icon.e-ddl-icon {
+    @if $skin-name == 'material' {
+      margin: 6px 10px 8px 0;
+    }
+  }
+
+  .e-multiselect.e-input-group.e-outline.e-small.e-bigger .e-multi-select-wrapper .e-input-group-icon.e-ddl-icon,
+  .e-bigger.e-small .e-multiselect.e-input-group.e-outline .e-multi-select-wrapper .e-input-group-icon.e-ddl-icon,
+  .e-multiselect.e-input-group.e-outline.e-control-wrapper.e-small.e-bigger .e-multi-select-wrapper .e-input-group-icon.e-ddl-icon,
+  .e-small.e-bigger .e-multiselect.e-input-group.e-outline.e-control-wrapper .e-multi-select-wrapper .e-input-group-icon.e-ddl-icon,
+  .e-bigger .e-multiselect.e-input-group.e-outline.e-small .e-multi-select-wrapper .e-input-group-icon.e-ddl-icon,
+  .e-bigger .e-multiselect.e-input-group.e-outline.e-control-wrapper.e-small .e-multi-select-wrapper .e-input-group-icon.e-ddl-icon,
+  .e-small .e-multiselect.e-input-group.e-outline.e-bigger .e-multi-select-wrapper .e-input-group-icon.e-ddl-icon,
+  .e-small .e-multiselect.e-input-group.e-outline.e-control-wrapper.e-bigger .e-multi-select-wrapper .e-input-group-icon.e-ddl-icon {
+    @if $skin-name == 'material' {
+      margin: 6px 12px 8px 0;
+    }
+  }
+
+  // RTL Multiselect dropdown icon margin
+
+  .e-rtl.e-multiselect.e-input-group.e-outline .e-multi-select-wrapper .e-input-group-icon.e-ddl-icon,
+  .e-rtl.e-multiselect.e-outline.e-input-group.e-control-wrapper .e-multi-select-wrapper .e-input-group-icon.e-ddl-icon,
+  .e-rtl .e-multiselect.e-input-group.e-outline .e-multi-select-wrapper .e-input-group-icon.e-ddl-icon,
+  .e-rtl .e-multiselect.e-outline.e-input-group.e-control-wrapper .e-multi-select-wrapper .e-input-group-icon.e-ddl-icon {
+    @if $skin-name == 'material' {
+      margin: 7px 0 9px 12px;
+    }
+  }
+
+  .e-rtl.e-multiselect.e-input-group.e-outline.e-bigger .e-multi-select-wrapper .e-input-group-icon.e-ddl-icon,
+  .e-bigger .e-rtl.e-multiselect.e-input-group.e-outline .e-multi-select-wrapper .e-input-group-icon.e-ddl-icon,
+  .e-rtl.e-multiselect.e-input-group.e-outline.e-control-wrapper.e-bigger .e-multi-select-wrapper .e-input-group-icon.e-ddl-icon,
+  .e-bigger .e-rtl.e-multiselect.e-input-group.e-outline.e-control-wrapper .e-multi-select-wrapper .e-input-group-icon.e-ddl-icon,
+  .e-rtl .e-multiselect.e-input-group.e-outline.e-bigger .e-multi-select-wrapper .e-input-group-icon.e-ddl-icon,
+  .e-bigger.e-rtl .e-multiselect.e-input-group.e-outline .e-multi-select-wrapper .e-input-group-icon.e-ddl-icon,
+  .e-rtl .e-multiselect.e-input-group.e-outline.e-control-wrapper.e-bigger .e-multi-select-wrapper .e-input-group-icon.e-ddl-icon,
+  .e-bigger.e-rtl .e-multiselect.e-input-group.e-outline.e-control-wrapper .e-multi-select-wrapper .e-input-group-icon.e-ddl-icon {
+    @if $skin-name == 'material' {
+      margin: 10px 0 10px 16px;
+    }
+  }
+
+  .e-rtl.e-multiselect.e-input-group.e-outline.e-small .e-multi-select-wrapper .e-input-group-icon.e-ddl-icon,
+  .e-rtl.e-multiselect.e-input-group.e-outline.e-control-wrapper.e-small .e-multi-select-wrapper .e-input-group-icon.e-ddl-icon,
+  .e-small .e-rtl.e-multiselect.e-input-group.e-outline .e-multi-select-wrapper .e-input-group-icon.e-ddl-icon,
+  .e-small .e-rtl.e-multiselect.e-input-group.e-outline.e-control-wrapper .e-multi-select-wrapper .e-input-group-icon.e-ddl-icon,
+  .e-rtl .e-multiselect.e-input-group.e-outline.e-small .e-multi-select-wrapper .e-input-group-icon.e-ddl-icon,
+  .e-rtl .e-multiselect.e-input-group.e-outline.e-control-wrapper.e-small .e-multi-select-wrapper .e-input-group-icon.e-ddl-icon,
+  .e-rtl.e-small .e-multiselect.e-input-group.e-outline .e-multi-select-wrapper .e-input-group-icon.e-ddl-icon,
+  .e-rtl.e-small .e-multiselect.e-input-group.e-outline.e-control-wrapper .e-multi-select-wrapper .e-input-group-icon.e-ddl-icon {
+    @if $skin-name == 'material' {
+      margin: 6px 0 8px 10px;
+    }
+  }
+
+  .e-rtl.e-multiselect.e-input-group.e-outline.e-small.e-bigger .e-multi-select-wrapper .e-input-group-icon.e-ddl-icon,
+  .e-bigger.e-small .e-rtl.e-multiselect.e-input-group.e-outline .e-multi-select-wrapper .e-input-group-icon.e-ddl-icon,
+  .e-rtl.e-multiselect.e-input-group.e-outline.e-control-wrapper.e-small.e-bigger .e-multi-select-wrapper .e-input-group-icon.e-ddl-icon,
+  .e-small.e-bigger .e-rtl.e-multiselect.e-input-group.e-outline.e-control-wrapper .e-multi-select-wrapper .e-input-group-icon.e-ddl-icon,
+  .e-bigger .e-rtl.e-multiselect.e-input-group.e-outline.e-small .e-multi-select-wrapper .e-input-group-icon.e-ddl-icon,
+  .e-bigger .e-rtl.e-multiselect.e-input-group.e-outline.e-control-wrapper.e-small .e-multi-select-wrapper .e-input-group-icon.e-ddl-icon,
+  .e-small .e-rtl.e-multiselect.e-input-group.e-outline.e-bigger .e-multi-select-wrapper .e-input-group-icon.e-ddl-icon,
+  .e-small .e-rtl.e-multiselect.e-input-group.e-outline.e-control-wrapper.e-bigger .e-multi-select-wrapper .e-input-group-icon.e-ddl-icon,
+  .e-rtl .e-multiselect.e-input-group.e-outline.e-small.e-bigger .e-multi-select-wrapper .e-input-group-icon.e-ddl-icon,
+  .e-rtl.e-bigger.e-small .e-multiselect.e-input-group.e-outline .e-multi-select-wrapper .e-input-group-icon.e-ddl-icon,
+  .e-rtl .e-multiselect.e-input-group.e-outline.e-control-wrapper.e-small.e-bigger .e-multi-select-wrapper .e-input-group-icon.e-ddl-icon,
+  .e-rtl.e-small.e-bigger .e-multiselect.e-input-group.e-outline.e-control-wrapper .e-multi-select-wrapper .e-input-group-icon.e-ddl-icon,
+  .e-rtl.e-bigger .e-multiselect.e-input-group.e-outline.e-small .e-multi-select-wrapper .e-input-group-icon.e-ddl-icon,
+  .e-rtl.e-bigger .e-multiselect.e-input-group.e-outline.e-control-wrapper.e-small .e-multi-select-wrapper .e-input-group-icon.e-ddl-icon,
+  .e-rtl.e-small .e-multiselect.e-input-group.e-outline.e-bigger .e-multi-select-wrapper .e-input-group-icon.e-ddl-icon,
+  .e-rtl.e-small .e-multiselect.e-input-group.e-outline.e-control-wrapper.e-bigger .e-multi-select-wrapper .e-input-group-icon.e-ddl-icon {
+    @if $skin-name == 'material' {
+      margin: 6px 0 8px 12px;
     }
   }
 }

@@ -2198,6 +2198,47 @@ client side. Customer easy to edit the contents and get the HTML content for
         });
     });
 
+    describe('Rename images in success event- ', () => {
+        let rteObj: RichTextEditor;
+        beforeEach((done: Function) => {
+            rteObj = renderRTE({
+                imageUploadSuccess: function (args : any) {
+                    args.file.name = 'rte_image';
+                    var filename : any = document.querySelectorAll(".e-file-name")[0];
+                    filename.innerHTML = args.file.name.replace(document.querySelectorAll(".e-file-type")[0].innerHTML, '');
+                    filename.title = args.file.name;
+                },
+                insertImageSettings: {
+                    saveUrl:"https://aspnetmvc.syncfusion.com/services/api/uploadbox/Save",
+                    path: "../Images/"
+                }
+            });
+            done();
+        })
+        afterEach((done: Function) => {
+            destroy(rteObj);
+            done();
+        })
+        it('Check name after renamed', (done) => {
+            let rteEle: HTMLElement = rteObj.element;
+            (rteObj.contentModule.getEditPanel() as HTMLElement).focus();
+            let args = { preventDefault: function () { } };
+            let range = new NodeSelection().getRange(document);
+            let save = new NodeSelection().save(range, document);
+            let evnArg = { args: MouseEvent, self: (<any>rteObj).imageModule, selection: save, selectNode: new Array(), };
+            (<HTMLElement>rteEle.querySelectorAll(".e-toolbar-item button")[8] as HTMLElement).click();
+            let dialogEle: Element = rteObj.element.querySelector('.e-dialog');
+            (dialogEle.querySelector('.e-img-url') as HTMLInputElement).value = 'https://js.syncfusion.com/demos/web/content/images/accordion/baked-chicken-and-cheese.png';
+            let fileObj: File = new File(["Nice One"], "sample.png", { lastModified: 0, type: "overide/mimetype" });
+            let eventArgs = { type: 'click', target: { files: [fileObj] }, preventDefault: (): void => { } };
+            (<any>rteObj).imageModule.uploadObj.onSelectFiles(eventArgs);
+            setTimeout(() => {
+                expect(document.querySelectorAll(".e-file-name")[0].innerHTML).toBe('rte_image');
+                done();
+            }, 4000);
+        });
+    });
+
     describe('Inserting Image as Base64 - ', () => {
         let rteObj: RichTextEditor;
         beforeEach((done: Function) => {

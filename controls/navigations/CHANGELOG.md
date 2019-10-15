@@ -2,6 +2,28 @@
 
 ## [Unreleased]
 
+## 17.3.17 (2019-10-15)
+
+### Tab
+
+#### Bug Fixes
+
+- `#250013` - An issue with nested tab rendering while `headerPlacement` is set as `Bottom` has been fixed.
+
+## 17.3.16 (2019-10-09)
+
+### Toolbar
+
+#### Bug Fixes
+
+- `#246126` - An issue with toolbar is not working properly in overflow as popup mode when we used input elements in it has been fixed.
+
+### Menu
+
+#### Bug Fixes
+
+- `#249638` - Multiple Menu in the Page causes an issue in Hamburger mode is fixed.
+
 ## 17.3.14 (2019-10-03)
 
 ### TreeView
@@ -15,6 +37,16 @@
 #### Bug Fixes
 
 - #245474 - Improper rendering of other components inside the accordion content issue has been fixed.
+
+- Material dark theme issue has been resolved.
+
+- Accessing multiple cssClass property issue with accordion has been fixed.
+
+### Tab
+
+#### New Features
+
+- Provided scroll step customization support for tab header.
 
 ## 17.3.9-beta (2019-09-20)
 

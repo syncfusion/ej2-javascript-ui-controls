@@ -554,11 +554,16 @@ export class SfdtExport {
     }
     private writeLine(line: LineWidget, offset: number, inlines: any): void {
         let isEnd: boolean = line === this.endLine;
+        let lineWidget: LineWidget = line.clone();
+        let bidi: boolean = line.paragraph.paragraphFormat.bidi;
+        if (bidi || this.viewer.layout.isContainsRtl(lineWidget)) {
+            this.viewer.layout.reArrangeElementsForRtl(lineWidget, bidi);
+        }
         let started: boolean = false;
         let ended: boolean = false;
         let length: number = 0;
-        for (let j: number = 0; j < line.children.length; j++) {
-            let element: ElementBox = line.children[j];
+        for (let j: number = 0; j < lineWidget.children.length; j++) {
+            let element: ElementBox = lineWidget.children[j];
             if (element instanceof ListTextElementBox) {
                 continue;
             }

@@ -134,6 +134,14 @@ export interface MultiSelectModel extends DropDownBaseModel{
     allowFiltering?: boolean;
 
     /**
+     * By default, the multiselect component fires the change event while focus out the component.
+     * If you want to fires the change event on every value selection and remove, then disable the changeOnBlur property. 
+     * 
+     * @default true
+     */
+    changeOnBlur?: boolean;
+
+    /**
      * Allows user to add a 
      * [`custom value`](../../multi-select/custom-value), the value which is not present in the suggestion list.
      * @default false

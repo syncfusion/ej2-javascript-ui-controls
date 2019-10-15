@@ -1505,14 +1505,6 @@ export class DropDownList extends DropDownBase implements IInput {
                 this.isNotSearchList = true;
             } else {
                 this.isNotSearchList = false;
-                if ((this.element.tagName === 'SELECT' && (<HTMLSelectElement>this.element).options.length > 0)
-                    || (this.element.tagName === 'UL' && (<HTMLUListElement>this.element).childNodes.length > 0)) {
-                    let data: boolean = dataSource instanceof Array ? (dataSource.length > 0)
-                : !isNullOrUndefined(dataSource);
-                    if (!data && this.listData.length > 0) {
-                        dataSource = this.listData;
-                    }
-                }
                 query = (this.filterInput.value.trim() === '') ? null : query;
                 this.resetList(dataSource, fields, query);
             }
@@ -1595,6 +1587,7 @@ export class DropDownList extends DropDownBase implements IInput {
         if (this.isActive) {
             let selectedItem: HTMLElement = this.selectedLI ? <HTMLElement>this.selectedLI.cloneNode(true) : null;
             super.onActionComplete(ulElement, list, e);
+            this.updateSelectElementData(this.allowFiltering);
             if (this.isRequested && !isNullOrUndefined(this.searchKeyEvent) && this.searchKeyEvent.type === 'keydown') {
                 this.isRequested = false;
                 this.keyActionHandler(this.searchKeyEvent);
@@ -1806,8 +1799,8 @@ export class DropDownList extends DropDownBase implements IInput {
     }
     private getOffsetValue(popupEle: HTMLElement): number {
         let popupStyles: CSSStyleDeclaration = getComputedStyle(popupEle);
-        let borderTop: number = parseInt(popupStyles.borderTop, 10);
-        let borderBottom: number = parseInt(popupStyles.borderBottom, 10);
+        let borderTop: number = parseInt(popupStyles.borderTopWidth, 10);
+        let borderBottom: number = parseInt(popupStyles.borderBottomWidth, 10);
         return this.setPopupPosition(borderTop + borderBottom);
     }
     private createPopup(element: HTMLElement, offsetValue: number, left: number): void {
@@ -2315,7 +2308,8 @@ export class DropDownList extends DropDownBase implements IInput {
                 case 'allowFiltering':
                     if (this.allowFiltering) {
                         this.actionCompleteData = { ulElement: this.ulElement,
-                        list: this.listData as { [key: string]: Object }[], isUpdated: true }; }
+                        list: this.listData as { [key: string]: Object }[], isUpdated: true };
+                        this.updateSelectElementData(this.allowFiltering); }
                     break;
                 case 'floatLabelType':
                     Input.removeFloating(this.inputWrapper);

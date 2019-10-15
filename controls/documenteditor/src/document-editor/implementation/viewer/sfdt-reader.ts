@@ -11,7 +11,7 @@ import {
     TableRowWidget, TableWidget, FieldElementBox, BlockWidget, HeaderFooterWidget, HeaderFooters,
     BookmarkElementBox, FieldTextElementBox, TabElementBox, EditRangeStartElementBox, EditRangeEndElementBox,
     ChartElementBox, ChartCategoryAxis, ChartLegend, ChartLayout, ChartTitleArea, ChartDataFormat,
-    ChartDataTable, ChartArea, ChartCategory, ChartData, ChartSeries, ChartDataLabels, ChartTrendLines, ChartSeriesFormat
+    ChartDataTable, ChartArea, ChartCategory, ChartData, ChartSeries, ChartDataLabels, ChartTrendLines, ChartSeriesFormat, ElementBox
 } from './page';
 import { HelperMethods } from '../editor/editor-helper';
 import { Dictionary } from '../../base/dictionary';
@@ -439,11 +439,7 @@ export class SfdtReader {
                 }
                 textElement.characterFormat = new WCharacterFormat(textElement);
                 this.parseCharacterFormat(inline.characterFormat, textElement.characterFormat, writeInlineFormat);
-                /*�tslint:disable-next-line:max-line-length */
-                if (!isNullOrUndefined(inline.characterFormat) && !isNullOrUndefined(inline.characterFormat.styleName)) {
-                    let charStyle: Object = this.viewer.styles.findByName(inline.characterFormat.styleName, 'Character');
-                    textElement.characterFormat.ApplyStyle(charStyle as WStyle);
-                }
+                this.applyCharacterStyle(inline, textElement);
                 textElement.text = inline.text;
                 textElement.line = lineWidget;
                 lineWidget.children.push(textElement);
@@ -495,6 +491,8 @@ export class SfdtReader {
                 hasValidElmts = true;
             } else if (inline.hasOwnProperty('hasFieldEnd') || (inline.hasOwnProperty('fieldType') && inline.fieldType === 0)) {
                 let fieldBegin: FieldElementBox = new FieldElementBox(0);
+                this.parseCharacterFormat(inline.characterFormat, fieldBegin.characterFormat, writeInlineFormat);
+                this.applyCharacterStyle(inline, fieldBegin);
                 fieldBegin.fieldCodeType = inline.fieldCodeType;
                 fieldBegin.hasFieldEnd = inline.hasFieldEnd;
                 this.viewer.fieldStacks.push(fieldBegin);
@@ -522,6 +520,8 @@ export class SfdtReader {
                     }
                 } else if (inline.fieldType === 1) {
                     field = new FieldElementBox(1);
+                    this.parseCharacterFormat(inline.characterFormat, field.characterFormat, writeInlineFormat);
+                    this.applyCharacterStyle(inline, field);
                     //For Field End Updated begin and separator.                                      
                     if (this.viewer.fieldStacks.length > 0) {
                         field.fieldBegin = this.viewer.fieldStacks[this.viewer.fieldStacks.length - 1];
@@ -582,6 +582,13 @@ export class SfdtReader {
         }
         paragraph.childWidgets.push(lineWidget);
         return hasValidElmts;
+    }
+    private applyCharacterStyle(inline: any, elementbox: ElementBox): void {
+        /*�tslint:disable-next-line:max-line-length */
+        if (!isNullOrUndefined(inline.characterFormat) && !isNullOrUndefined(inline.characterFormat.styleName)) {
+            let charStyle: Object = this.viewer.styles.findByName(inline.characterFormat.styleName, 'Character');
+            elementbox.characterFormat.ApplyStyle(charStyle as WStyle);
+        }
     }
     private parseEditableRangeStart(data: any): EditRangeStartElementBox {
         let permStart: EditRangeStartElementBox = new EditRangeStartElementBox();

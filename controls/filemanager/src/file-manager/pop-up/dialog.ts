@@ -366,8 +366,15 @@ function onRenameDialogOpen(parent: IFileManager): void {
 
 function onFocusRenameInput(parent: IFileManager, inputEle: HTMLInputElement): void {
     inputEle.focus();
-    inputEle.value = parent.currentItemText;
-    if (parent.isFile && (parent.isFile && inputEle.value.indexOf('.') !== -1)) {
+    let txt: string = '';
+    if (parent.isFile && !parent.showFileExtension) {
+        let index: number = parent.currentItemText.lastIndexOf('.');
+        txt = (index === -1) ? parent.currentItemText : parent.currentItemText.substring(0, index);
+    } else {
+        txt = parent.currentItemText;
+    }
+    inputEle.value = txt;
+    if (parent.isFile && parent.showFileExtension && (inputEle.value.indexOf('.') !== -1)) {
         inputEle.setSelectionRange(0, inputEle.value.lastIndexOf('.'));
     } else {
         inputEle.setSelectionRange(0, inputEle.value.length);
@@ -597,7 +604,12 @@ function onReSubmit(parent: IFileManager): void {
         return;
     }
     let text: string = ele.value;
-    parent.renameText = ele.value;
+    let oIndex: number = parent.currentItemText.lastIndexOf('.');
+    if (parent.isFile && !parent.showFileExtension) {
+        let extn: string = (oIndex === -1) ? '' : parent.currentItemText.substr(oIndex);
+        text += extn;
+    }
+    parent.renameText = text;
     if (parent.currentItemText === text) {
         parent.dialogObj.hide();
         return;
@@ -605,9 +617,10 @@ function onReSubmit(parent: IFileManager): void {
     let newPath: string = (parent.activeModule === 'navigationpane') ? getParentPath(parent.path) : parent.path;
     parent.renamedId = getValue('id', parent.itemData[0]);
     if (parent.isFile) {
-        let oldExtension: string = parent.currentItemText.substr(parent.currentItemText.lastIndexOf('.'));
-        let newExtension: string = text.substr(text.lastIndexOf('.'));
-        if (oldExtension !== newExtension) {
+        let oldExtension: string = (oIndex === -1) ? '' : parent.currentItemText.substr(oIndex);
+        let nIndex: number = text.lastIndexOf('.');
+        let newExtension: string = (nIndex === -1) ? '' : text.substr(nIndex);
+        if (parent.showFileExtension && oldExtension !== newExtension) {
             createExtDialog(parent, 'Extension', null, newPath);
         } else {
             rename(parent, newPath, text);
@@ -635,7 +648,8 @@ function onValidate(parent: IFileManager, ele: HTMLInputElement): void {
 function onSubmitValidate(parent: IFileManager, ele: HTMLInputElement): void {
     onValidate(parent, ele);
     let len: number = ele.value.length - 1;
-    if (ele.value !== '' && ((ele.value.lastIndexOf('.') === len) || (ele.value.lastIndexOf(' ') === len))) {
+    if (ele.value !== '' && ((ele.value.lastIndexOf('.') === len) || (ele.value.lastIndexOf(' ') === len)) &&
+        (parent.showFileExtension || (parent.currentItemText.lastIndexOf('.') === -1))) {
         addInvalid(parent, ele);
     }
 }

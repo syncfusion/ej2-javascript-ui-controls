@@ -396,7 +396,12 @@ export class RecurrenceEditor extends Component<HTMLElement> implements INotifyP
         });
     }
     private showFormElement(): void {
-        neverClassList.forEach((className: string) => removeClass([this.element.querySelector('.' + className)], HIDEWRAPPER));
+        neverClassList.forEach((className: string) => {
+            let hideElement: HTMLElement = this.element.querySelector('.' + className);
+            if (hideElement) {
+                removeClass([hideElement], HIDEWRAPPER);
+            }
+        });
     }
     private renderDropdowns(): void {
         let self: RecurrenceEditor = this;

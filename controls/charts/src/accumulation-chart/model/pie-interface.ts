@@ -118,7 +118,7 @@ export interface IAccumulationChartTemplate {
     /** accumulation point x value */
     x?: Object;
     /** accumulation point y value */
-    y?: number;
+    y?: object;
     /** accumulation point color */
     label?: string;
     /** accumulation point percentage value */

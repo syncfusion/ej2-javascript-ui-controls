@@ -1,5 +1,5 @@
 import { Component, Property, Event, EmitType, EventHandler, classList, L10n, compile, isNullOrUndefined } from '@syncfusion/ej2-base';import { NotifyPropertyChanges, INotifyPropertyChanged, detach, append, Animation } from '@syncfusion/ej2-base';import { addClass, removeClass, KeyboardEvents, KeyboardEventArgs, setValue, getValue, ChildProperty } from '@syncfusion/ej2-base';import { Collection, Complex, Browser, Ajax, BeforeSendEventArgs, getUniqueID, closest } from '@syncfusion/ej2-base';import { createSpinner, showSpinner, hideSpinner } from '@syncfusion/ej2-popups';import { updateBlazorTemplate, resetBlazorTemplate, isBlazor } from '@syncfusion/ej2-base';
-import {ActionCompleteEventArgs,RenderingEventArgs,UploadingEventArgs,FileListRenderingEventArgs,SelectedEventArgs,RemovingEventArgs,ClearingEventArgs,CancelEventArgs,PauseResumeEventArgs} from "./uploader";
+import {ActionCompleteEventArgs,RenderingEventArgs,BeforeUploadEventArgs,FileListRenderingEventArgs,SelectedEventArgs,UploadingEventArgs,RemovingEventArgs,BeforeRemoveEventArgs,ClearingEventArgs,CancelEventArgs,PauseResumeEventArgs} from "./uploader";
 import {ComponentModel} from '@syncfusion/ej2-base';
 
 /**
@@ -260,7 +260,7 @@ export interface UploaderModel extends ComponentModel{
      * @event
      * @blazorProperty 'BeforeUpload'
      */
-    beforeUpload?: EmitType<UploadingEventArgs>;
+    beforeUpload?: EmitType<BeforeUploadEventArgs>;
 
     /**
      * Triggers before rendering each file item from the file list in a page.
@@ -360,7 +360,7 @@ export interface UploaderModel extends ComponentModel{
      * @event
      * @blazorProperty 'BeforeRemove'
      */
-    beforeRemove?: EmitType<RemovingEventArgs>;
+    beforeRemove?: EmitType<BeforeRemoveEventArgs>;
 
     /**
      * Triggers before clearing the items in file list when clicking “clear”.

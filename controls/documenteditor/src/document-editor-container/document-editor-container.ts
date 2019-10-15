@@ -23,51 +23,57 @@ import { CharacterFormatProperties, ParagraphFormatProperties } from '../documen
 export class DocumentEditorContainer extends Component<HTMLElement> implements INotifyPropertyChanged {
     /**
      * Show or hide properties pane.
-
+     * @default true
      */
     @Property(true)
     public showPropertiesPane: boolean;
     /**
      * Enable or disable toolbar in document editor container.
-
+     * @default true
      */
     @Property(true)
     public enableToolbar: boolean;
     /**
      * Restrict editing operation.
-
+     * @default false
      */
     @Property(false)
     public restrictEditing: boolean;
     /**
      * Enable or disable spell checker in document editor container.
-
+     * @default false
      */
     @Property(false)
     public enableSpellCheck: boolean;
     /**
      * Enable local paste
-
+     * @default true
      */
     @Property(true)
     public enableLocalPaste: boolean;
     /**
      * Sfdt service URL.
-
+     * @default ''
      */
     @Property()
     public serviceUrl: string;
     /**
+     * Specifies the z-order for rendering that determines whether the dialog is displayed in front or behind of another component.
+     * @default 2000
+     */
+    @Property(2000)
+    public zIndex: number;
+    /**
      * Triggers when the component is created
      * @event
-
+     * @blazorproperty 'Created'
      */
     @Event()
     public created: EmitType<Object>;
     /**
      * Triggers when the component is destroyed.
      * @event
-
+     * @blazorproperty 'Destroyed'
      */
     @Event()
     public destroyed: EmitType<Object>;
@@ -75,35 +81,35 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
     /**
      * Triggers whenever the content changes in the document editor container.
      * @event
-
+     * @blazorproperty 'ContentChanged'
      */
     @Event()
     public contentChange: EmitType<ContainerContentChangeEventArgs>;
     /**
      * Triggers whenever selection changes in the document editor container.
      * @event
-
+     * @blazorproperty 'SelectionChanged'
      */
     @Event()
     public selectionChange: EmitType<ContainerSelectionChangeEventArgs>;
     /**
      * Triggers whenever document changes in the document editor container.
      * @event
-
+     * @blazorproperty 'DocumentChanged'
      */
     @Event()
     public documentChange: EmitType<ContainerDocumentChangeEventArgs>;
     /**
      * Triggers while selecting the custom context-menu option.
      * @event
-
+     * @blazorproperty 'ContextMenuItemSelected'
      */
     @Event()
     public customContextMenuSelect: EmitType<CustomContentMenuEventArgs>;
     /**
      * Triggers before opening the custom context-menu option.
      * @event
-
+     * @blazorproperty 'OnContextMenuOpen'
      */
     @Event()
     public customContextMenuBeforeOpen: EmitType<BeforeOpenCloseCustomContentMenuEventArgs>;
@@ -188,8 +194,8 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
     public serverActionSettings: ContainerServerActionSettingsModel;
     /**
      * Gets DocumentEditor instance.
-
-
+     * @aspType DocumentEditor
+     * @blazorType DocumentEditor
      */
     public get documentEditor(): DocumentEditor {
         return this.documentEditorInternal;
@@ -345,7 +351,9 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
         'The current page number in the document. Click or tap to navigate specific page.': 'The current page number in the document. Click or tap to navigate specific page.',
         'Read only': 'Read only',
         'Protections': 'Protections',
-        'Error in establishing connection with web server': 'Error in establishing connection with web server'
+        'Error in establishing connection with web server': 'Error in establishing connection with web server',
+        'Single': 'Single',
+        'Double': 'Double'
     };
 
     /**
@@ -383,6 +391,11 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
                 case 'serverActionSettings':
                     if (this.documentEditor) {
                         this.setserverActionSettings();
+                    }
+                    break;
+                case 'zIndex':
+                    if (this.documentEditor) {
+                        this.documentEditor.zIndex = newModel.zIndex;
                     }
                     break;
             }
@@ -507,6 +520,7 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
             customContextMenuBeforeOpen: this.onCustomContextMenuBeforeOpen.bind(this),
             locale: this.locale,
             acceptTab: true,
+            zIndex: this.zIndex,
             enableLocalPaste: this.enableLocalPaste,
             pageOutline: '#E0E0E0'
         });

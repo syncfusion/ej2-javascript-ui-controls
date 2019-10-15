@@ -727,6 +727,14 @@ export function createMeasureElements(): void {
         window[measureElement] = divElement;
         window[measureElement].usageCount = 1;
         document.body.appendChild(divElement);
+        let measureElementCount: string = 'measureElementCount';
+        if (!window[measureElementCount]) {
+            window[measureElementCount] = 1;
+        } else {
+            window[measureElementCount]++;
+        }
+
+
     } else {
         window[measureElement].usageCount += 1;
     }

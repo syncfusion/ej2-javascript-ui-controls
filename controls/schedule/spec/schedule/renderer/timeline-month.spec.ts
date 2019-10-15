@@ -597,6 +597,125 @@ describe('Schedule Timeline Month view', () => {
         });
     });
 
+    describe('Week Number and firstDayofWeek Combination', () => {
+        let schObj: Schedule;
+        beforeEach(() => {
+            schObj = undefined;
+        });
+        afterEach(() => {
+            util.destroy(schObj);
+        });
+
+        it('Timeline Day', () => {
+            let model: ScheduleModel = {
+                height: '600px', width: '1000px', currentView: 'TimelineDay',
+                views: ['TimelineDay', 'TimelineWeek', 'TimelineWorkWeek', 'TimelineMonth'],
+                headerRows: [{ option: 'Year' }, { option: 'Month' }, { option: 'Week' }, { option: 'Date' }, { option: 'Hour' }],
+                selectedDate: new Date(2019, 0, 1)
+            };
+            schObj = util.createSchedule(model, []);
+            expect(schObj.element.querySelector('.e-active-view').classList).toContain('e-timeline-day');
+            let headTrs: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-date-header-wrap tr'));
+            expect(schObj.element.querySelector('.e-date-range .e-tbar-btn-text').innerHTML).toEqual('January 1, 2019');
+            expect((headTrs[2].children[0] as HTMLElement).innerText).toEqual('1');
+            (schObj.element.querySelector('.e-toolbar-item.e-prev') as HTMLElement).click();
+            headTrs = [].slice.call(schObj.element.querySelectorAll('.e-date-header-wrap tr'));
+            expect(schObj.element.querySelector('.e-date-range .e-tbar-btn-text').innerHTML).toEqual('December 31, 2018');
+            expect((headTrs[2].children[0] as HTMLElement).innerText).toEqual('1');
+            (schObj.element.querySelector('.e-toolbar-item.e-prev') as HTMLElement).click();
+            headTrs = [].slice.call(schObj.element.querySelectorAll('.e-date-header-wrap tr'));
+            expect(schObj.element.querySelector('.e-date-range .e-tbar-btn-text').innerHTML).toEqual('December 30, 2018');
+            expect((headTrs[2].children[0] as HTMLElement).innerText).toEqual('1');
+            (schObj.element.querySelector('.e-toolbar-item.e-prev') as HTMLElement).click();
+            headTrs = [].slice.call(schObj.element.querySelectorAll('.e-date-header-wrap tr'));
+            expect(schObj.element.querySelector('.e-date-range .e-tbar-btn-text').innerHTML).toEqual('December 29, 2018');
+            expect((headTrs[2].children[0] as HTMLElement).innerText).toEqual('52');
+            schObj.firstDayOfWeek = 6;
+            schObj.dataBind();
+            headTrs = [].slice.call(schObj.element.querySelectorAll('.e-date-header-wrap tr'));
+            expect(schObj.element.querySelector('.e-date-range .e-tbar-btn-text').innerHTML).toEqual('December 29, 2018');
+            expect((headTrs[2].children[0] as HTMLElement).innerText).toEqual('1');
+        });
+
+        it('Timeline Week', () => {
+            let model: ScheduleModel = {
+                height: '600px', width: '1000px', currentView: 'TimelineWeek',
+                views: ['TimelineDay', 'TimelineWeek', 'TimelineWorkWeek', 'TimelineMonth'],
+                headerRows: [{ option: 'Year' }, { option: 'Month' }, { option: 'Week' }, { option: 'Date' }, { option: 'Hour' }],
+                selectedDate: new Date(2019, 0, 1)
+            };
+            schObj = util.createSchedule(model, []);
+            expect(schObj.element.querySelector('.e-active-view').classList).toContain('e-timeline-week');
+            let headTrs: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-date-header-wrap tr'));
+            expect((schObj.element.querySelector('.e-date-header-container .e-header-cells') as HTMLElement).innerText)
+                .toEqual('Dec 30, Sunday');
+            expect((headTrs[2].children[0] as HTMLElement).innerText).toEqual('1');
+            (schObj.element.querySelector('.e-toolbar-item.e-prev') as HTMLElement).click();
+            headTrs = [].slice.call(schObj.element.querySelectorAll('.e-date-header-wrap tr'));
+            expect((schObj.element.querySelector('.e-date-header-container .e-header-cells') as HTMLElement).innerText)
+                .toEqual('Dec 23, Sunday');
+            expect((headTrs[2].children[0] as HTMLElement).innerText).toEqual('52');
+            schObj.firstDayOfWeek = 6;
+            schObj.dataBind();
+            headTrs = [].slice.call(schObj.element.querySelectorAll('.e-date-header-wrap tr'));
+            expect((schObj.element.querySelector('.e-date-header-container .e-header-cells') as HTMLElement).innerText)
+                .toEqual('Dec 22, Saturday');
+            expect((headTrs[2].children[0] as HTMLElement).innerText).toEqual('52');
+        });
+
+        it('TimelineWorkWeek', () => {
+            let model: ScheduleModel = {
+                height: '600px', width: '1000px', currentView: 'TimelineWorkWeek',
+                views: ['TimelineDay', 'TimelineWeek', 'TimelineWorkWeek', 'TimelineMonth'],
+                headerRows: [{ option: 'Year' }, { option: 'Month' }, { option: 'Week' }, { option: 'Date' }, { option: 'Hour' }],
+                selectedDate: new Date(2019, 0, 1)
+            };
+            schObj = util.createSchedule(model, []);
+            expect(schObj.element.querySelector('.e-active-view').classList).toContain('e-timeline-work-week');
+            let headTrs: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-date-header-wrap tr'));
+            expect((schObj.element.querySelector('.e-date-header-container .e-header-cells') as HTMLElement).innerText)
+                .toEqual('Dec 31, Monday');
+            expect((headTrs[2].children[0] as HTMLElement).innerText).toEqual('1');
+            (schObj.element.querySelector('.e-toolbar-item.e-prev') as HTMLElement).click();
+            headTrs = [].slice.call(schObj.element.querySelectorAll('.e-date-header-wrap tr'));
+            expect((schObj.element.querySelector('.e-date-header-container .e-header-cells') as HTMLElement).innerText)
+                .toEqual('Dec 24, Monday');
+            expect((headTrs[2].children[0] as HTMLElement).innerText).toEqual('52');
+            schObj.firstDayOfWeek = 6;
+            schObj.dataBind();
+            headTrs = [].slice.call(schObj.element.querySelectorAll('.e-date-header-wrap tr'));
+            expect((schObj.element.querySelector('.e-date-header-container .e-header-cells') as HTMLElement).innerText)
+                .toEqual('Dec 24, Monday');
+            expect((headTrs[2].children[0] as HTMLElement).innerText).toEqual('52');
+        });
+
+        it('TimelineMonth', () => {
+            let model: ScheduleModel = {
+                height: '600px', width: '1000px', currentView: 'TimelineMonth',
+                views: ['TimelineDay', 'TimelineWeek', 'TimelineWorkWeek', 'TimelineMonth'],
+                headerRows: [{ option: 'Year' }, { option: 'Month' }, { option: 'Week' }, { option: 'Date' }, { option: 'Hour' }],
+                selectedDate: new Date(2019, 0, 1)
+            };
+            schObj = util.createSchedule(model, []);
+            expect(schObj.element.querySelector('.e-active-view').classList).toContain('e-timeline-month');
+            let headTrs: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-date-header-wrap tr'));
+            expect((schObj.element.querySelector('.e-date-header-container .e-header-cells') as HTMLElement).innerText)
+                .toEqual('Jan 1');
+            expect((headTrs[2].children[0] as HTMLElement).innerText).toEqual('1');
+            (schObj.element.querySelector('.e-toolbar-item.e-prev') as HTMLElement).click();
+            headTrs = [].slice.call(schObj.element.querySelectorAll('.e-date-header-wrap tr'));
+            expect((schObj.element.querySelector('.e-date-header-container .e-header-cells') as HTMLElement).innerText)
+                .toEqual('Dec 1');
+            expect((headTrs[2].children[0] as HTMLElement).innerText).toEqual('48');
+            schObj.firstDayOfWeek = 6;
+            schObj.dataBind();
+            headTrs = [].slice.call(schObj.element.querySelectorAll('.e-date-header-wrap tr'));
+            expect((schObj.element.querySelector('.e-date-header-container .e-header-cells') as HTMLElement).innerText)
+                .toEqual('Dec 1');
+            expect((headTrs[2].children[0] as HTMLElement).innerText).toEqual('48');
+        });
+    });
+
     describe('Public methods', () => {
         let schObj: Schedule;
         beforeEach((): void => {
@@ -3762,11 +3881,11 @@ describe('Schedule Timeline Month view', () => {
             util.destroy(schObj);
         });
 
-        it('horizontal scroll', (done: Function) => { 
+        it('horizontal scroll', (done: Function) => {
             let contentArea: HTMLElement = schObj.element.querySelector('.e-content-wrap') as HTMLElement;
             // tslint:disable-next-line:no-any
             (schObj.activeView as any).onContentScroll({ target: contentArea });
-           
+
             expect(contentArea.scrollLeft).toEqual(1602);
             done();
         });

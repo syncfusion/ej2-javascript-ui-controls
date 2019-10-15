@@ -1249,3 +1249,34 @@ describe('Grid base module', () => {
         });
     });
     
+    describe('Complex field with auto generated columns checking', () => {
+        let gridObj: Grid;
+        let dataSource = [{
+            OrderID: 10248, Customer: { ID: 'VINET', Name: { FirstName: 'Dijin', LastName: 'Jones' } }, EmployeeID: 5, OrderDate: new Date(8364186e5),
+        },
+        {
+            OrderID: 10249, Customer: { ID: 'TOMSP', Name: { FirstName: 'Vins', LastName: 'Chevalier' } }, EmployeeID: 6, OrderDate: new Date(836505e6),
+        },
+        {
+            OrderID: 10250, Customer: { ID: 'HANAR', Name: { FirstName: 'Hilarton', LastName: 'Abastos' } }, EmployeeID: 4, OrderDate: new Date(8367642e5),
+        }];
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: dataSource,
+                    height: 500,
+                }, done);
+        });
+        it('Check Complex data', () => {
+            expect((gridObj.getRowByIndex(0) as any ).cells[1].innerHTML).toBe('VINET');
+            expect((gridObj.getRowByIndex(1) as any ).cells[1].innerHTML).toBe('TOMSP');
+            expect((gridObj.getRowByIndex(0) as any ).cells[2].innerHTML).toBe('Dijin');
+            expect((gridObj.getRowByIndex(0) as any ).cells[3].innerHTML).toBe('Jones');
+            expect((gridObj.columns[1] as  any).field).toBe('Customer.ID');
+            expect((gridObj.columns[2] as  any).field).toBe('Customer.Name.FirstName');
+            expect((gridObj.columns[3] as  any).field).toBe('Customer.Name.LastName');
+        });
+        afterAll(() => {
+            destroy(gridObj);
+        });
+    });

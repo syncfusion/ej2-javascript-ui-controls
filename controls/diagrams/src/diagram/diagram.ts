@@ -2011,13 +2011,14 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
             let measureElement: string = 'measureElement';
             if (window[measureElement]) {
                 window[measureElement].usageCount -= 1;
-                if (window[measureElement].usageCount === 0) {
+                let measureElementCount: string = 'measureElementCount';
+                window[measureElementCount]--;
+                if (window[measureElementCount] === 0) {
                     window[measureElement].parentNode.removeChild(window[measureElement]);
                     window[measureElement] = null;
                 }
             }
         }
-
     }
 
     /**
@@ -2882,6 +2883,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
             this.historyManager.endGroupAction();
             this.protectPropertyChange(false);
         }
+        this.updateDiagramElementQuad();
     }
     /**
      * Shows tooltip for corresponding diagram object
@@ -4005,6 +4007,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                 index += 1;
             }
         }
+        this.updateDiagramElementQuad();
     }
 
     /**
@@ -4016,6 +4019,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
         for (let i: number = 0; i < phases.length; i++) {
             addPhase(this, node, phases[i]);
         }
+        this.updateDiagramElementQuad();
     }
 
     /**
@@ -4024,6 +4028,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
 
     public removeLane(node: NodeModel, lane: LaneModel): void {
         removeLane(this, undefined, node, lane);
+        this.updateDiagramElementQuad();
     }
 
     /**
@@ -4032,6 +4037,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
 
     public removePhase(node: NodeModel, phase: PhaseModel): void {
         removePhase(this, undefined, node, phase);
+        this.updateDiagramElementQuad();
     }
 
     private removelabelExtension(
@@ -4936,6 +4942,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
             obj.wrapper.children[0] instanceof GridPanel) {
             swimLaneMeasureAndArrange(obj);
             arrangeChildNodesInSwimLane(this, obj);
+            this.updateDiagramElementQuad();
         } else {
             canvas.measure(new Size(obj.width, obj.height));
             if (canvas instanceof GridPanel) {
@@ -4953,6 +4960,12 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
         }
         if (obj.container && obj.container.type === 'Grid' && obj.children && obj.children.length > 0) {
             this.updateChildPosition(obj);
+        }
+    }
+    /** @private */
+    public updateDiagramElementQuad(): void {
+        for (let i: number = 0; i < this.nodes.length; i++) {
+            this.updateQuad(this.nodes[i] as IElement);
         }
     }
 

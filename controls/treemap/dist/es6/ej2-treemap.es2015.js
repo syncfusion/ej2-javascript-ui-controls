@@ -1,4 +1,4 @@
-import { Ajax, Browser, ChildProperty, Collection, Complex, Component, Event, EventHandler, Internationalization, NotifyPropertyChanges, Property, compile, createElement, extend, isNullOrUndefined, merge, print, remove, resetBlazorTemplate, updateBlazorTemplate } from '@syncfusion/ej2-base';
+import { Ajax, Browser, ChildProperty, Collection, Complex, Component, Event, EventHandler, Internationalization, NotifyPropertyChanges, Property, compile, createElement, extend, isBlazor, isNullOrUndefined, merge, print, remove, resetBlazorTemplate, updateBlazorTemplate } from '@syncfusion/ej2-base';
 import { SvgRenderer, Tooltip } from '@syncfusion/ej2-svg-base';
 import { PdfBitmap, PdfDocument, PdfPageOrientation } from '@syncfusion/ej2-pdf-export';
 import { DataManager, Query } from '@syncfusion/ej2-data';
@@ -2290,8 +2290,7 @@ let TreeMap = class TreeMap extends Component {
         this.isHierarchicalData = false;
     }
     preRender() {
-        let blazor = 'Blazor';
-        this.isBlazor = Object.keys(window).indexOf(blazor) >= 0;
+        this.isBlazor = isBlazor();
         this.trigger(load, { treemap: this.isBlazor ? null : this }, () => {
             this.initPrivateVariable();
             this.unWireEVents();

@@ -2418,8 +2418,16 @@ function onRenameDialogOpen(parent) {
 }
 function onFocusRenameInput(parent, inputEle) {
     inputEle.focus();
-    inputEle.value = parent.currentItemText;
-    if (parent.isFile && (parent.isFile && inputEle.value.indexOf('.') !== -1)) {
+    var txt = '';
+    if (parent.isFile && !parent.showFileExtension) {
+        var index = parent.currentItemText.lastIndexOf('.');
+        txt = (index === -1) ? parent.currentItemText : parent.currentItemText.substring(0, index);
+    }
+    else {
+        txt = parent.currentItemText;
+    }
+    inputEle.value = txt;
+    if (parent.isFile && parent.showFileExtension && (inputEle.value.indexOf('.') !== -1)) {
         inputEle.setSelectionRange(0, inputEle.value.lastIndexOf('.'));
     }
     else {
@@ -2638,7 +2646,12 @@ function onReSubmit(parent) {
         return;
     }
     var text = ele.value;
-    parent.renameText = ele.value;
+    var oIndex = parent.currentItemText.lastIndexOf('.');
+    if (parent.isFile && !parent.showFileExtension) {
+        var extn = (oIndex === -1) ? '' : parent.currentItemText.substr(oIndex);
+        text += extn;
+    }
+    parent.renameText = text;
     if (parent.currentItemText === text) {
         parent.dialogObj.hide();
         return;
@@ -2646,9 +2659,10 @@ function onReSubmit(parent) {
     var newPath = (parent.activeModule === 'navigationpane') ? getParentPath(parent.path) : parent.path;
     parent.renamedId = getValue('id', parent.itemData[0]);
     if (parent.isFile) {
-        var oldExtension = parent.currentItemText.substr(parent.currentItemText.lastIndexOf('.'));
-        var newExtension = text.substr(text.lastIndexOf('.'));
-        if (oldExtension !== newExtension) {
+        var oldExtension = (oIndex === -1) ? '' : parent.currentItemText.substr(oIndex);
+        var nIndex = text.lastIndexOf('.');
+        var newExtension = (nIndex === -1) ? '' : text.substr(nIndex);
+        if (parent.showFileExtension && oldExtension !== newExtension) {
             createExtDialog(parent, 'Extension', null, newPath);
         }
         else {
@@ -2677,7 +2691,8 @@ function onValidate(parent, ele) {
 function onSubmitValidate(parent, ele) {
     onValidate(parent, ele);
     var len = ele.value.length - 1;
-    if (ele.value !== '' && ((ele.value.lastIndexOf('.') === len) || (ele.value.lastIndexOf(' ') === len))) {
+    if (ele.value !== '' && ((ele.value.lastIndexOf('.') === len) || (ele.value.lastIndexOf(' ') === len)) &&
+        (parent.showFileExtension || (parent.currentItemText.lastIndexOf('.') === -1))) {
         addInvalid(parent, ele);
     }
 }
@@ -7741,6 +7756,15 @@ var DetailsView = /** @__PURE__ @class */ (function () {
     };
     DetailsView.prototype.onRowDataBound = function (args) {
         var td = select('.e-fe-grid-name', args.row);
+        if (!td) {
+            var columns = this.parent.detailsViewSettings.columns;
+            for (var i = 0; i < columns.length; i++) {
+                if (columns[i].field === 'name') {
+                    td = args.row.children[this.parent.allowMultiSelection ? (i + 2) : (i + 1)];
+                    break;
+                }
+            }
+        }
         if (td) {
             td.setAttribute('title', getValue('name', args.data));
         }
@@ -7750,12 +7774,13 @@ var DetailsView = /** @__PURE__ @class */ (function () {
                 addBlur(args.row);
             }
         }
-        /* istanbul ignore next */
         if (!this.parent.showFileExtension && getValue('isFile', args.data)) {
             var textEle = args.row.querySelector('.e-fe-text');
-            var name_1 = getValue('name', args.data);
-            var type = getValue('type', args.data);
-            textEle.innerHTML = name_1.substr(0, name_1.length - type.length);
+            if (textEle) {
+                var name_1 = getValue('name', args.data);
+                var type = getValue('type', args.data);
+                textEle.innerHTML = name_1.substr(0, name_1.length - type.length);
+            }
         }
         if (getValue('size', args.data) !== undefined && args.row.querySelector('.e-fe-size')) {
             var sizeEle = args.row.querySelector('.e-fe-size');

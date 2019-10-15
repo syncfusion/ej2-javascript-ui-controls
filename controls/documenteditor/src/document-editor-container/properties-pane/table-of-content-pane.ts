@@ -326,7 +326,6 @@ export class TocProperties {
     }
 
     private onInsertToc = (): void => {
-        // tslint:disable-next-line:max-line-length
         let tocSettings: TableOfContentsSettings = {
             startLevel: 1,
             endLevel: parseInt(this.borderLevelStyle.value as string, 0),
@@ -334,6 +333,9 @@ export class TocProperties {
             includePageNumber: this.showPageNumber.checked,
             rightAlign: this.rightalignPageNumber.checked
         };
+        if (tocSettings.rightAlign) {
+            tocSettings.tabLeader = 'Dot';
+        }
         this.documentEditor.editor.insertTableOfContents(tocSettings);
     }
     public destroy(): void {

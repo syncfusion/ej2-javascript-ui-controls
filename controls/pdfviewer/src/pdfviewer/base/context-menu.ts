@@ -80,11 +80,19 @@ export class ContextMenu {
         }
     }
 
+    private setTarget(args: BeforeOpenCloseMenuEventArgs): HTMLElement {
+        let target: HTMLElement = null;
+        if (args.event && args.event.target) {
+            target = args.event.target as HTMLElement;
+            this.currentTarget = target;
+        }
+        return target;
+    }
+
     private contextMenuOnBeforeOpen(args: BeforeOpenCloseMenuEventArgs): void {
-        let target: HTMLElement = args.event.target as HTMLElement;
-        this.currentTarget = target;
+        let target: HTMLElement = this.setTarget(args);
         // tslint:disable-next-line:max-line-length
-        if (this.pdfViewer.annotationModule && this.pdfViewer.annotationModule.freeTextAnnotationModule && this.pdfViewer.annotationModule.freeTextAnnotationModule.isInuptBoxInFocus && target.className === 'free-text-input' && target.tagName === 'TEXTAREA') {
+        if (this.pdfViewer.annotationModule && this.pdfViewer.annotationModule.freeTextAnnotationModule && this.pdfViewer.annotationModule.freeTextAnnotationModule.isInuptBoxInFocus && target && target.className === 'free-text-input' && target.tagName === 'TEXTAREA') {
             this.pdfViewerBase.isFreeTextContextMenu = true;
         }
         // tslint:disable-next-line:max-line-length
@@ -173,12 +181,20 @@ export class ContextMenu {
                     this.pdfViewerBase.getElement('_context_menu_separator').classList.add('e-menu-hide');
                 }
             }
+            this.enableCommentPanelItem();
         } else {
             args.cancel = true;
         }
-
         if (this.pdfViewer.contextMenuOption === 'None') {
             args.cancel = true;
+        }
+    }
+
+    private enableCommentPanelItem(): void {
+        if (this.pdfViewer.enableCommentPanel) {
+            this.contextMenuObj.enableItems([this.pdfViewer.localeObj.getConstant('Comment')], true);
+        } else {
+            this.contextMenuObj.enableItems([this.pdfViewer.localeObj.getConstant('Comment')], false);
         }
     }
 

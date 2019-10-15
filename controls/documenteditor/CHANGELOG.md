@@ -2,7 +2,36 @@
 
 ## [Unreleased]
 
+## 17.3.17 (2019-10-15)
+
+### Document Editor
+
+#### Bug Fixes
+
+- `#246264` - Page now becomes responsive, when document contains table with split cell widget.
+- `#249138` - Table of contents dialog now rendered properly.
+- `#245757` - Page now becomes responsive when we edit in header footer region.
+- `#249049` - List continue numbering issues are resolved now.
+- `#248304`, `#250801` - TOC is now updated properly, when paragraph contains page break with heading style.
+- `#249736` - Focus is now set to text search result, when search icon is clicked in options pane.
+- `#249542` - Draw image error is resolved now, when document contains invalid image source.
+- `#249329` - Added localization for missed text in document editor.
+- `#248710` - Character format is now applied, when selection start is in field.
+
 ## 17.3.16 (2019-10-09)
+
+### Document Editor
+
+#### Bug Fixes
+
+- `#246365`, `#250077` - Table Width for auto type table format is now updated properly.
+- `#249283` - Command + A key triggers properly in MAC machine's Safari browser.
+- `#248301` - Text clipping issues are fixed when text inside table cell.
+- `#246587` - backward selection issues and backspace issues for restrict editing are resolved now.
+- `#244786` , `#248882` - Text now rendered properly in RTL paragraph, when copy and paste locally.
+- `#248304` - Tab leader is now preserved properly, when updating table of contents.
+
+## 17.3.14 (2019-10-03)
 
 ### Document Editor
 

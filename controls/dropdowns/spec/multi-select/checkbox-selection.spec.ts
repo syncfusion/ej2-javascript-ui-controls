@@ -2487,7 +2487,8 @@ describe('MultiSelect', () => {
                 showDropDownIcon: true,
                 allowFiltering: true,
                 open: () => {
-                    (<any>listObj).checkBoxSelectionModule.checkAllParent.click();
+                    var mouseEventArgs = {preventDefault: function(){}, currentTarget: (<any>listObj).checkBoxSelectionModule.checkAllParent };
+                    (<any>listObj).checkBoxSelectionModule.clickHandler(mouseEventArgs);
                     (<any>listObj).onBlur();
                 },
                 change: () => {

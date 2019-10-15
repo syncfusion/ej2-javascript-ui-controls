@@ -33,9 +33,10 @@ $de-toc-list-view-border-color: #808080 !default;
 $de-toc-reset-button-margin-top: 10px !default;
 $de-toc-modify-button-margin-top: 10px !default;
 $de-toc-list-view-font-size: 12px !default;
-$de-toc-list-view-height: 181px !default;
+$de-toc-list-view-height: 194px !default;
 $de-toc-dlg-sub-margin: 10px 15px 5px 15px !default;
-$de-toc-dlg-style-label-top: 60px !default;
+$de-toc-dlg-style-label-left: 50px !default;
+$de-toc-dlg-style-label-top: 58px !default;
 $de-para-sub-title-bottom-margin: 15px !default;
 $de-para-sub-title-top-margin: 8px !default;
 $de-para-sub-container-bottom: 25px !default;
@@ -331,14 +332,13 @@ $de-table-ppty-dlg-table-header-padding: 24px !default;
 $styles-listview-border-color: #808080 !default;
 $de-table-ppty-dlg-table-header-padding-left: 1px !default;
 $de-border-dlg-border-label-font-weight: 400 !default;
-$e-de-toc-dlg-show-level-div-margin-top: 16px !default;
-$de-toc-dlg-build-table-margin-top: 45px !default;
+$de-toc-dlg-build-table-margin-top: 30px !default;
 $de-toc-styles-table-div-margin-top: 15px !default;
 $de-toc-table-div-width: 211px !default;
 $de-toc-dlg-right-sub-container-margin-right: 2px !default;
 $de-toc-dlg-styles-margin-bottom: 11px !default;
-$de-toc-dlg-styles-margin-left: 25px !default;
-$de-toc-dlg-styles-margin-top: 38px !default;
+$de-toc-dlg-styles-margin-left: 38px !default;
+$de-toc-dlg-styles-margin-top: 30px !default;
 $de-toc-list-view-width: 211px !default;
 $de-toc-styles-table-div-border-radius: 4px !default;
 $de-toc-modify-button-margin-left: 156px !default;
@@ -349,7 +349,7 @@ $de-bookmark-textbox-height: 34px !default;
 $de-bookmark-custom-btn-width: 80px !default;
 $de-bookmark-custom-btn-height: 34px !default;
 $de-bookmark-button-div-top-position: 15px !default;
-$de-toc-list-view-margin-left: 23px !default;
+$de-toc-list-view-margin-left: 36px !default;
 $e-de-toc-table-div-height: 163px !default;
 $de-toc-dlg-showlevel-div-margin-left: 255px !default;
 $de-toc-dlg-show-level-div-margin-left: 255px !default;
@@ -397,10 +397,9 @@ $de-toc-list-view-border-color: #c8c8c8 !default;
 $de-toc-reset-button-margin-top: 10px !default;
 $de-toc-modify-button-margin-top: 10px !default;
 $de-toc-list-view-font-size: 12px !default;
-$de-toc-list-view-height: 180px !default;
+$de-toc-list-view-height: 193px !default;
 $de-toc-list-view-width: 200px !default;
 $de-toc-dlg-sub-margin: 10px 15px 10px 15px !default;
-$de-toc-dlg-style-label-top: 65px !default;
 $de-para-sub-title-bottom-margin: 8px !default;
 $de-para-sub-title-top-margin: 5px !default;
 $de-para-sub-container-bottom: 15px !default;
@@ -693,13 +692,11 @@ $de-table-ppty-dlg-table-header-padding: 12.5px !default;
 $styles-listview-border-color: #808080 !default;
 $de-table-ppty-dlg-table-header-padding-left: 1px !default;
 $de-border-dlg-border-label-font-weight: 600 !default;
-$e-de-toc-dlg-show-level-div-margin-top: 1px !default;
-$de-toc-dlg-build-table-margin-top: 20px !default;
+$de-toc-dlg-build-table-margin-top: 30px !default;
 $de-toc-styles-table-div-margin-top: 10px !default;
 $de-toc-table-div-width: 209px !default;
-$de-toc-dlg-right-sub-container-margin-right: 31px !default;
 $de-toc-dlg-styles-margin-bottom: 13px !default;
-$de-toc-dlg-styles-margin-left: 22px !default;
+$de-toc-dlg-styles-margin-left: 38px !default;
 $de-toc-dlg-styles-margin-top: 1px !default;
 $de-toc-list-view-width: 210px !default;
 $de-toc-styles-table-div-border-radius: 1px !default;
@@ -713,9 +710,9 @@ $de-bookmark-custom-btn-height: 32px !default;
 $de-bookmark-button-div-top-position: 0 !default;
 $de-bookmark-list-view-border-radius: 0 !default;
 $de-toc-dlg-style-input-margin-bottom: 3px !default;
-$de-toc-dlg-style-input-margin-left: 23px !default;
+$de-toc-dlg-style-input-margin-left: 36px !default;
 $de-toc-dlg-style-input-width: 210px !default;
-$de-toc-list-view-margin-left: 23px !default;
+$de-toc-list-view-margin-left: 36px !default;
 $e-de-toc-table-div-height: 160px !default;
 $de-toc-dlg-showlevel-div-margin-left: 255px !default;
 $de-toc-dlg-show-level-div-margin-left: 255px !default;
@@ -740,7 +737,6 @@ $de-toc-dlg-right-sub-container-margin-top: 125px !default;
 $e-de-list-div-margin-top-rtl: -139px !default;
 $e-de-list-subdiv-margin-top-rtl: -136px !default;
 $de-toc-modify-button-margin-rtl: 157px !default;
-$de-toc-reset-button-margin-rtl: 57px !default;
 $de-hght-type-top: -25px !default;
 $de-bigger-style-button-height: 37px !default;
 $de-bigger-style-button-width: 100px !default;
@@ -1403,8 +1399,13 @@ $de-bigger-style-button-width: 100px !default;
   }
 
   .e-de-toc-dlg-style-label {
-    position: absolute;
-    top: $de-toc-dlg-style-label-top;
+    margin-left: $de-toc-dlg-style-label-left;
+    margin-top: $de-toc-dlg-style-label-top;
+  }
+
+  .e-de-toc-dlg-style-label.e-de-rtl {
+    margin-left: 0;
+    margin-right: $de-toc-dlg-style-label-left;
   }
 
   .e-de-pagesetup-dlg-container {
@@ -2430,7 +2431,7 @@ $de-bigger-style-button-width: 100px !default;
   .e-de-style-font-color-picker,
   .e-de-style-icon-button-size,
   .e-de-style-icon-button-first-size,
-  .e-de-style-icon-button-last-size, {
+  .e-de-style-icon-button-last-size {
     height: 30px;
   }
 
@@ -2633,11 +2634,6 @@ $de-bigger-style-button-width: 100px !default;
     float: right;
   }
 
-  .e-de-toc-dlg-right-sub-container {
-    margin-right: $de-toc-dlg-right-sub-container-margin-right;
-    margin-top: 103px;
-  }
-
   .e-de-toc-dlg-styles {
     margin-bottom: $de-toc-dlg-styles-margin-bottom;
     margin-left: $de-toc-dlg-styles-margin-left;
@@ -2665,11 +2661,6 @@ $de-bigger-style-button-width: 100px !default;
     font-size: 12px;
   }
 
-  .e-de-toc-dlg-show-level-div {
-    margin-left: $de-toc-dlg-show-level-div-margin-left;
-    margin-top: $e-de-toc-dlg-show-level-div-margin-top;
-  }
-
   .e-de-toc-table-div {
     height: $e-de-toc-table-div-height;
     overflow-y: scroll;
@@ -2683,7 +2674,7 @@ $de-bigger-style-button-width: 100px !default;
   }
 
   .e-de-toc-dlg-outline-levels {
-    margin-top: 10px;
+    margin-top: 15px;
     width: $de-toc-dlg-outline-levels-width;
   }
 
@@ -2699,10 +2690,6 @@ $de-bigger-style-button-width: 100px !default;
   .e-styles-dlgfields {
     font-weight: 400;
     margin-bottom: 6px;
-  }
-
-  .e-de-toc-dlg-showlevel-div {
-    margin-left: $de-toc-dlg-showlevel-div-margin-left;
   }
 
   .e-tab .e-tab-header .e-toolbar-item .e-de-op-find-tab-header {

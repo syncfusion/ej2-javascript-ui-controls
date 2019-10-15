@@ -163,12 +163,14 @@ export interface ISelectionEventArgs extends IMapsEventArgs {
     target?: string;
     /**
      * shape data event argument
+     * @isGenericType true
      */
-    shapeData?: object;
+    shapeData?: Object;
     /**
      * data from data source
+     * @isGenericType true
      */
-    data?: object;
+    data?: Object;
 }
 /**
  * Specifies shapeSelected event arguments for maps.

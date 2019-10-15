@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 17.3.17 (2019-10-15)
+
+### Excel Export
+
+#### Bug Fixes
+
+- Internet Explorer version 11 Grid to Excel export issue is fixed.
+
 ## 17.2.48-beta (2019-08-28)
 
 ### Excel Export

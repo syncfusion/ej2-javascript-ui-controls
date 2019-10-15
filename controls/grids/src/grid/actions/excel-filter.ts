@@ -17,7 +17,6 @@ import { distinctStringValues, isComplexField, getComplexFieldID, getCustomDateF
 import { Column } from '../models/column';
 import { DatePicker, DateTimePicker } from '@syncfusion/ej2-calendars';
 import { OffsetPosition } from '@syncfusion/ej2-popups';
-import { getValue } from '@syncfusion/ej2-base';
 /**
  * @hidden
  * `ExcelFilter` module is used to handle filtering action.
@@ -658,33 +657,22 @@ export class ExcelFilter extends CheckBoxFilter {
         }
     }
 
-    private getExcelFilterData(
-        elementId?: string, data?: Object, columnObj?: Column,
-        predicates?: PredicateModel[], fltrPredicates?: Object[]): Object {
+    private getExcelFilterData(elementId?: string, data?: Object, columnObj?: Column,
+                               predicates?: PredicateModel[], fltrPredicates?: Object[]): Object {
         let predIndex: number = elementId === '-xlfl-frstvalue' ? 0 : 1;
         if (elementId === '-xlfl-frstvalue' || fltrPredicates.length > 1) {
             data = { column: predicates instanceof Array ? predicates[predIndex] : predicates };
             let indx: number = this.options.column.columnData && fltrPredicates.length > 1 ?
                 (this.options.column.columnData.length === 1 ? 0 : 1) : predIndex;
-            let value: string = 'value';
-            let fColumn: string = 'column';
-            let filterValue: string | boolean | Date = columnObj.foreignKeyValue ?
-                this.getForeignFilterValue(columnObj, getValue('value', data[fColumn])) : getValue('value', data[fColumn]);
-            if (columnObj.foreignKeyValue) {
-                data[this.options.foreignKeyValue] = filterValue;
-                data[value] = filterValue;
-            } else {
-                data[this.options.field] = filterValue;
-                data[value] = filterValue;
+            data[this.options.field] = columnObj.foreignKeyValue ? this.options.column.columnData[indx][columnObj.foreignKeyValue] :
+                ((<HTMLInputElement>fltrPredicates[indx]) as { value?: string | boolean | Date }).value;
+            if (this.options.foreignKeyValue) {
+                data[this.options.foreignKeyValue] = this.options.column.columnData[indx][columnObj.foreignKeyValue];
             }
         }
         return data;
     }
 
-    private getForeignFilterValue(columnObj?: Column, fValue?: string | boolean | Date): string | boolean | Date {
-        let foreignData: object = columnObj.columnData.filter((e: object) => { return e[columnObj.field] === fValue; });
-        return foreignData[0][columnObj.foreignKeyValue];
-    }
     /* tslint:disable-next-line:max-line-length */
     private renderMatchCase(column: string, tr: HTMLElement, matchCase: HTMLElement, elementId: string, predicates: PredicateModel[]): void {
 

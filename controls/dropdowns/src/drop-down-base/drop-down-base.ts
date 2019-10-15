@@ -203,6 +203,7 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
     protected isActive: boolean;
     protected isRequested: boolean;
     protected isDataFetched: boolean;
+    protected selectData: { [key: string]: Object }[] | string[] | boolean[] | number[];
     protected queryString: string;
     protected sortedData: { [key: string]: Object }[] | string[] | boolean[] | number[];
     protected isGroupChecking: boolean;
@@ -1111,9 +1112,24 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
         dataSource?: { [key: string]: Object }[] | DataManager | string[] | number[] | boolean[],
         fields?: FieldSettingsModel, query?: Query): void {
         if (this.list) {
+            if ((this.element.tagName === 'SELECT' && (<HTMLSelectElement>this.element).options.length > 0)
+                || (this.element.tagName === 'UL' && (<HTMLUListElement>this.element).childNodes.length > 0)) {
+                let data: boolean = dataSource instanceof Array ? (dataSource.length > 0)
+                    : !isNullOrUndefined(dataSource);
+                if (!data && this.selectData && this.selectData.length > 0) {
+                    dataSource = this.selectData;
+                }
+            }
             this.setListData(dataSource, fields, query);
         }
     }
+
+    protected updateSelectElementData(isFiltering: boolean): void {
+        if (isFiltering && isNullOrUndefined(this.selectData) && this.listData.length > 0) {
+            this.selectData = this.listData;
+        }
+    }
+
     protected updateSelection(): void {
         // This is for after added the item, need to update the selected index values.
     }

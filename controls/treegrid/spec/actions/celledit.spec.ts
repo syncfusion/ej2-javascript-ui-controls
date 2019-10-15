@@ -373,6 +373,49 @@ describe('Cell Edit module', () => {
     });
   });
 
+  describe('Expand/Collpase icon testing at the time of cell edit cancel', () => {
+    let gridObj: TreeGrid;
+    let rows: Element[];
+    beforeAll((done: Function) => {
+      gridObj = createGrid(
+        {
+          dataSource: sampleData,
+          childMapping: 'subtasks',
+          allowSelection: true,
+          selectionSettings: {mode: 'Cell'},
+          treeColumnIndex: 1,
+            editSettings: {
+                allowAdding: true,
+                allowEditing: true,
+                allowDeleting: true,
+                mode: 'Cell'
+            },
+            toolbar: ['Add', 'Delete', 'Update', 'Cancel'],
+            columns: [
+            { field: 'taskID', headerText: 'Task ID', isPrimaryKey: true },
+            { field: 'taskName', template:"<span>test</span>", headerText: 'Task Name' },
+            { field: 'startDate', headerText: 'Start Date'},
+            { field: 'duration', headerText: 'duration' },
+            ]
+        },
+        done
+      );
+    });
+    it('double click on a record, cell edit and cancel',() => {
+      let event: MouseEvent = new MouseEvent('dblclick', {
+        'view': window,
+        'bubbles': true,
+        'cancelable': true
+      });
+      gridObj.getCellFromIndex(0, 1).dispatchEvent(event);
+      (<any>gridObj.grid.toolbarModule).toolbarClickHandler({ item: { id: gridObj.grid.element.id + '_cancel' } });
+      expect(gridObj.getRows()[0].getElementsByClassName('e-treecell').length).toBe(1);
+    });
+    afterAll(() => {
+      destroy(gridObj);
+    });
+  });
+
   describe('EJ2-26550 - Edit cell through method', () => {
     let gridObj: TreeGrid;
     let cellEdit: () => void;
@@ -533,6 +576,49 @@ describe('Cell Edit module', () => {
       });
       gridObj.getCellFromIndex(2, 1).dispatchEvent(event);
       expect(isNullOrUndefined(gridObj.grid.editModule.formObj)).toBe(true);
+    });
+    afterAll(() => {
+      destroy(gridObj);
+    });
+  });
+
+  describe('EJ2-32160 - DataSource not refreshed after cancelling the edit action on cellEditing', () => {
+    let gridObj: TreeGrid;
+    let cellEdit: () => void;
+    let actionComplete: () => void;
+    beforeAll((done: Function) => {
+      gridObj = createGrid(
+        {
+          dataSource: sampleData,
+          childMapping: 'subtasks',
+          editSettings: { allowEditing: true, allowDeleting: true, allowAdding: true, mode: "Cell", newRowPosition: 'Below' },
+          treeColumnIndex: 1,
+          toolbar: ['Add', 'Update', 'Delete', 'Cancel'],
+          columns: [{ field: 'taskID', headerText: 'Task ID', isPrimaryKey: true },
+          { field: 'taskName', headerText: 'Task Name' },
+          { field: 'progress', headerText: 'Progress' },
+          { field: 'startDate', headerText: 'Start Date' }
+          ]
+        },
+        done
+      );
+    });
+    it('DataSource not refreshed after cancelling the edit action on cellEditing', () => {
+      let event: MouseEvent = new MouseEvent('dblclick', {
+        'view': window,
+        'bubbles': true,
+        'cancelable': true
+      });
+      cellEdit = (args?: any): void => {
+        args.cancel = true;
+      }
+      actionComplete = (args?: any): void => {
+        expect(isNullOrUndefined(args.rowData.taskID)).toBe(true);
+      }
+      gridObj.cellEdit = cellEdit;
+      gridObj.actionComplete = actionComplete;
+      gridObj.getCellFromIndex(2, 1).dispatchEvent(event);
+      (<any>gridObj.grid.toolbarModule).toolbarClickHandler({ item: { id: gridObj.grid.element.id + '_add' } });
     });
     afterAll(() => {
       destroy(gridObj);

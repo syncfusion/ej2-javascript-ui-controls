@@ -308,17 +308,25 @@ export class NavigationPane {
         if (args.target.files[0] !== null) {
             let uploadedFile: File = upoadedFiles[0];
             if (uploadedFile) {
-                let reader: FileReader = new FileReader();
-                reader.readAsDataURL(uploadedFile);
+                this.pdfViewer.fireImportStart(uploadedFile);
                 // tslint:disable-next-line
-                reader.onload = (e: any): void => {
-                    if (e.currentTarget.result) {
-                        let importFile: string =  e.currentTarget.result.split(',')[1];
-                        // tslint:disable-next-line
-                        let annotationData: any =  atob(importFile);
-                        this.pdfViewerBase.importAnnotations(JSON.parse(annotationData));
-                    }
-                };
+                let uploadedFileType: any = uploadedFile.type;
+                if (uploadedFile.name.split('.json').length > 1 && uploadedFileType.includes('json')) {
+                    let reader: FileReader = new FileReader();
+                    reader.readAsDataURL(uploadedFile);
+                    // tslint:disable-next-line
+                    reader.onload = (e: any): void => {
+                        if (e.currentTarget.result) {
+                            let importFile: string =  e.currentTarget.result.split(',')[1];
+                            // tslint:disable-next-line
+                            let annotationData: any =  atob(importFile);
+                            this.pdfViewerBase.importAnnotations(JSON.parse(annotationData));
+                        }
+                    };
+                } else {
+                    this.pdfViewer.fireImportFailed(uploadedFile, this.pdfViewer.localeObj.getConstant('Import Failed'));
+                    this.pdfViewerBase.openImportExportNotificationPopup(this.pdfViewer.localeObj.getConstant('Import Failed'));
+                }
             }
         }
     }

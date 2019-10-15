@@ -686,8 +686,8 @@ export interface ColumnModel {
     /**    
      * It is used to change display value with the given format and does not affect the original data.   
      * Gets the format from the user which can be standard or custom 
-     * [`number`](../../common/internationalization/#number-formatting/) 
-     * and [`date`](../common/internationalization/#number-formatting/) formats.  
+     * [`number`](../../common/internationalization/#manipulating-numbers) 
+     * and [`date`](../../common/internationalization/#manipulating-datetime) formats.  
      * @default null
      * @aspType string
      * @blazorType string

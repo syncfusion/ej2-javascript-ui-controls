@@ -531,7 +531,7 @@ describe('Hierarchy Filter Mode Testing - Parent and child', () => {
         destroy(gridObj);
       });
     });
-   describe('Excel Clear Filter Testing - Parent', () => {
+  describe('Excel Clear Filter Testing - Parent', () => {
       let gridObj: TreeGrid;
       let rows: Element[];
       let actionComplete: (args: CellSaveEventArgs) => void;
@@ -556,7 +556,7 @@ describe('Hierarchy Filter Mode Testing - Parent and child', () => {
         }
         gridObj.grid.actionComplete = actionComplete;
         gridObj.filterByColumn('taskName', 'startswith', 'phase');
-    });
+    });	
     it('Check the filter levels - after clearfilter', (done: Function) => {
       actionComplete = (args: CellSaveEventArgs): void => {
         if(args.requestType === 'refresh'){
@@ -574,7 +574,7 @@ describe('Hierarchy Filter Mode Testing - Parent and child', () => {
         destroy(gridObj);
       });
     });
-    describe('Excel Filter Custom Filter Testing - With AND', () => {
+   describe('Excel Filter Custom Filter Testing - With AND', () => {
       let gridObj: TreeGrid;
       let rows: Element[];
       let originalTimeout: number;
@@ -631,7 +631,7 @@ describe('Hierarchy Filter Mode Testing - Parent and child', () => {
       afterAll(() => {
         destroy(gridObj);
       });
-    });
+    }); 
     describe('Excel Filter Custom Filter Testing - With OR', () => {
       let gridObj: TreeGrid;
       let rows: Element[];

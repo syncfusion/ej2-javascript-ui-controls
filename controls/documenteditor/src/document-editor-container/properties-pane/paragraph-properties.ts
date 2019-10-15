@@ -156,13 +156,13 @@ export class Paragraph {
     }
     private createLineSpacingDropdown(button: HTMLElement): DropDownButton {
         let items: ItemModel[] = [{
-            text: 'Single'
+            text: this.localObj.getConstant('Single')
         }, {
             text: '1.15'
         }, {
             text: '1.5'
         }, {
-            text: 'Double'
+            text: this.localObj.getConstant('Double')
         }];
         let dropdown: DropDownButton = new DropDownButton({
             items: items,

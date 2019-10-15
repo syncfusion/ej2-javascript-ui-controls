@@ -2,6 +2,18 @@
 
 ## [Unreleased]
 
+## 17.3.16 (2019-10-09)
+
+### RichTextEditor
+
+#### Bug Fixes
+
+- `#249291` - The issue "extra empty tags are added while toggling bold or Italic style when typing the text randomly" in the Rich Text Editor has been fixed.
+
+- `#250650` - The issue with image rename in the imageUploadSuccess event not working when drag and drop an image into RichTextEditor has been fixed.
+
+- `#250587` - The issue with null field shown on form data headers response when drag and drop an image into RichTextEditor has been fixed.
+
 ## 17.3.14 (2019-10-03)
 
 ### RichTextEditor
@@ -11,8 +23,6 @@
 - `#249182` - The issue with localizing static texts of paste prompt dialog in the Rich Text Editor has been fixed.
 
 - `#249613` - The issue with pasting content from Microsoft Excel sheet that throws console error in the Rich Text Editor has been fixed.
-
-- `#248386` - The issue "JSDoc published with deprecated attributes" has been fixed.
 
 ## 17.3.9-beta (2019-09-20)
 

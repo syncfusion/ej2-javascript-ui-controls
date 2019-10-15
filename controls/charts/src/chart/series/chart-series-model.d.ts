@@ -210,6 +210,20 @@ export interface TrendlineModel {
     name?: string;
 
     /**
+     * Defines the pattern of dashes and gaps to stroke.
+     * @default '0'
+     */
+
+    dashArray?: string;
+
+    /**
+     * Specifies the visibility of trendline.
+     * @default true
+     */
+
+    visible?: boolean;
+
+    /**
      * Defines the type of the trendline
      * @default 'Linear'
      */

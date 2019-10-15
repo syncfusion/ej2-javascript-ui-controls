@@ -46,12 +46,12 @@ export class PolarSeries extends PolarRadarPanel {
         let centerY: number = (series.clipRect.height / 2) + series.clipRect.y; let dEndX: number; let dEndY: number;
         let isRangeColumn: boolean = series.drawType === 'RangeColumn'; let isPolar: boolean = series.type === 'Polar';
         let isLogAxis: boolean = yAxis.valueType === 'Logarithmic'; let isStacking: boolean = series.drawType === 'StackingColumn';
-        let direction: string = ''; let sumofYValues: number = 0;
+        let direction: string = ''; let sumofYValues: number = 0; let arcValue: string ;
         let interval: number = (series.points[1] ? series.points[1].xValue : 2 * series.points[0].xValue) - series.points[0].xValue;
-        let ticks: number = xAxis.valueType === 'Category' &&
-        (xAxis.labelPlacement ===  'BetweenTicks' ||  (xAxis.labelPlacement ===  'OnTicks' && series.type === 'Radar')) ? 0 : interval / 2;
-        let rangeInterval: number = xAxis.valueType === 'DateTime' ? xAxis.dateTimeInterval : 1;
-        this.getSeriesPosition(series);
+        //customer issue ID-I249730, Polar columnSeries in OnTicks with inversed axis and Radar StackedColumn with OnTicks
+        let ticks: number = xAxis.valueType === 'Category' && (xAxis.labelPlacement === 'BetweenTicks' || (xAxis.labelPlacement ===
+            'OnTicks' && series.type === 'Radar')) ? 0 : xAxis.isInversed ? -interval / 2 : interval / 2;
+        let rangeInterval: number = xAxis.valueType === 'DateTime' ? xAxis.dateTimeInterval : 1; this.getSeriesPosition(series);
         let position: number = xAxis.isInversed ? (series.rectCount - 1 - series.position) : series.position;
         do {
             sumofYValues += rangeInterval; min += rangeInterval;
@@ -65,6 +65,11 @@ export class PolarSeries extends PolarRadarPanel {
                     ((interval / series.rectCount) * position - ticks) + (sumofYValues / 360 * xAxis.startAngle);
                 itemCurrentXPos = (((itemCurrentXPos) / (sumofYValues)));
                 startAngle = 2 * Math.PI * (itemCurrentXPos + xAxis.startAngle);
+                if (startAngle === 0 && endAngle === 0) {
+                    endAngle = 2 * Math.PI; arcValue = '1';
+                } else {
+                    arcValue = '0';
+                }
                 endAngle = 2 * Math.PI * ((itemCurrentXPos + xAxis.startAngle) + (interval / series.rectCount) / (sumofYValues));
                 pointStartAngle = startAngle; pointEndAngle = endAngle;
                 startAngle = (startAngle - 0.5 * Math.PI); endAngle = (endAngle - 0.5 * Math.PI) - 0.000001;
@@ -77,13 +82,12 @@ export class PolarSeries extends PolarRadarPanel {
                     x1 = centerX + radius * Math.cos(startAngle); x2 = centerX + radius * Math.cos(endAngle);
                     y1 = centerY + radius * Math.sin(startAngle); y2 = centerY + radius * Math.sin(endAngle);
                     innerRadius = series.chart.radius * valueToCoefficient(
-                        (startValue === 0 && yAxis.visibleRange.min !== 0) ? yAxis.visibleRange.min : startValue,
-                        yAxis);
+                        (startValue === 0 && yAxis.visibleRange.min !== 0) ? yAxis.visibleRange.min : startValue, yAxis);
                     dStartX = centerX + innerRadius * Math.cos(startAngle); dStartY = centerY + innerRadius * Math.sin(startAngle);
                     dEndX = centerX + innerRadius * Math.cos(endAngle); dEndY = centerY + innerRadius * Math.sin(endAngle);
                     if (isPolar) {
                         direction = ('M' + ' ' + x1 + ' ' + y1 + ' ' + 'A' + ' ' + radius + ' ' + radius + ' ' + '0' + ' '
-                            + '0' + ' ' + 1 + ' ' + x2 + ' ' + y2 + ' ' + 'L' + ' ' + dEndX + ' ' + dEndY + ' ' +
+                            + arcValue + ' ' + 1 + ' ' + x2 + ' ' + y2 + ' ' + 'L' + ' ' + dEndX + ' ' + dEndY + ' ' +
                             'A' + ' ' + innerRadius + ' ' + innerRadius + ' ' + '1' + ' ' + '0' + ' ' + '0' + ' '
                             + dStartX + ' ' + dStartY + ' ' + 'Z');
                     } else {
@@ -99,8 +103,7 @@ export class PolarSeries extends PolarRadarPanel {
                     y1 = centerY + radius * Math.sin(startAngle); y2 = centerY + radius * Math.sin(endAngle);
                     if (isPolar) {
                         direction = ('M' + ' ' + x1 + ' ' + y1 + ' ' + 'A' + ' ' + radius + ' ' + radius + ' ' + '0' + ' ' +
-                            '0' + ' ' + 1 + ' ' + x2 + ' ' + y2 + ' ' + 'L' + ' ' + centerX + ' ' +
-                            centerY + ' ' + 'Z');
+                            arcValue + ' ' + 1 + ' ' + x2 + ' ' + y2 + ' ' + 'L' + ' ' + centerX + ' ' + centerY + ' ' + 'Z');
                     } else {
                         direction = ('M' + ' ' + x1 + ' ' + y1 + ' ' + 'L' + ' ' + x2 + ' ' + y2 + ' ' + 'L' + ' '
                             + centerX + ' ' + centerY + ' ' + 'Z');
@@ -130,10 +133,7 @@ export class PolarSeries extends PolarRadarPanel {
                         if (isRangeColumn) {
                             point.symbolLocations.push({ x: (dEndX + dStartX) / 2, y: (dEndY + dStartY) / 2 });
                         }
-                    }
-                }
-            }
-        }
+                    } } } }
         this.renderMarker(series);
         series.isRectSeries = true;
     }

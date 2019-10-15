@@ -155,6 +155,86 @@ describe('FileManager control single selection Grid view', () => {
                 done();
             }, 400);
         });
+        it('for showFileExtension and custom template columns', (done) => {
+            feObj = new FileManager({
+                view: 'Details',
+                ajaxSettings: {
+                    url: '/FileOperations',
+                    uploadUrl: '/Upload', downloadUrl: '/Download', getImageUrl: '/GetImage'
+                },
+                allowMultiSelection: false,
+                detailsViewSettings: {
+                    columns: [
+                        {field: 'size', headerText: 'File Size',minWidth: 50},
+                        {field: 'name',template: '<div class="e-fe-text">${name}</div>', headerText: 'File Name', minWidth: 120}
+                    ]
+                },
+                showFileExtension: false
+            });
+            feObj.appendTo('#file');
+            this.request = jasmine.Ajax.requests.mostRecent();
+            this.request.respondWith({
+                status: 200,
+                responseText: JSON.stringify(data1)
+            });
+            setTimeout(function () {
+                expect(document.getElementById('file_grid').querySelectorAll('.e-row').length).toEqual(5);
+                expect(document.getElementById('file_grid').querySelectorAll('.e-row')[4].children[2].textContent).toBe('1');
+                feObj.showFileExtension = true;
+                feObj.dataBind();
+                this.request = jasmine.Ajax.requests.mostRecent();
+                this.request.respondWith({
+                    status: 200,
+                    responseText: JSON.stringify(data1)
+                });
+                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                setTimeout(function () {
+                    expect(document.getElementById('file_grid').querySelectorAll('.e-row').length).toEqual(5);
+                    expect(document.getElementById('file_grid').querySelectorAll('.e-row')[4].children[2].textContent).toBe('1.png')
+                    done();
+                }, 500);
+            }, 500);
+        });
+        it('for showFileExtension and custom columns', (done) => {
+            feObj = new FileManager({
+                view: 'Details',
+                ajaxSettings: {
+                    url: '/FileOperations',
+                    uploadUrl: '/Upload', downloadUrl: '/Download', getImageUrl: '/GetImage'
+                },
+                allowMultiSelection: false,
+                detailsViewSettings: {
+                    columns: [
+                        {field: 'size', headerText: 'File Size',minWidth: 50},
+                        {field: 'name', headerText: 'File Name', minWidth: 120}
+                    ]
+                },
+                showFileExtension: false
+            });
+            feObj.appendTo('#file');
+            this.request = jasmine.Ajax.requests.mostRecent();
+            this.request.respondWith({
+                status: 200,
+                responseText: JSON.stringify(data1)
+            });
+            setTimeout(function () {
+                expect(document.getElementById('file_grid').querySelectorAll('.e-row').length).toEqual(5);
+                expect(document.getElementById('file_grid').querySelectorAll('.e-row')[4].children[2].textContent).toBe('1.png');
+                feObj.showFileExtension = true;
+                feObj.dataBind();
+                this.request = jasmine.Ajax.requests.mostRecent();
+                this.request.respondWith({
+                    status: 200,
+                    responseText: JSON.stringify(data1)
+                });
+                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                setTimeout(function () {
+                    expect(document.getElementById('file_grid').querySelectorAll('.e-row').length).toEqual(5);
+                    expect(document.getElementById('file_grid').querySelectorAll('.e-row')[4].children[2].textContent).toBe('1.png')
+                    done();
+                }, 500);
+            }, 500);
+        });
         it('for detailsViewSettings', (done: Function) => {
             feObj = new FileManager({
                 view: 'Details',

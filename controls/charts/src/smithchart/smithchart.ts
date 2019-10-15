@@ -1,4 +1,4 @@
-import { Component, Complex, NotifyPropertyChanges, INotifyPropertyChanged, Property } from '@syncfusion/ej2-base';
+import { Component, Complex, NotifyPropertyChanges, INotifyPropertyChanged, Property, isBlazor } from '@syncfusion/ej2-base';
 import { isNullOrUndefined, Browser, ModuleDeclaration } from '@syncfusion/ej2-base';
 import { createElement, remove, Event, EmitType, EventHandler } from '@syncfusion/ej2-base';
 import { createSvg, RectOption, measureText, TextOption, renderTextElement } from '../smithchart/utils/helper';
@@ -461,8 +461,7 @@ export class Smithchart extends Component<HTMLElement> implements INotifyPropert
      */
 
     protected preRender(): void {
-        let blazor: string = 'Blazor';
-        this.isBlazor = window[blazor];
+        this.isBlazor = isBlazor();
         this.trigger(load, { smithchart: !this.isBlazor ? this : null });
         this.unWireEVents();
         this.initPrivateVariable();

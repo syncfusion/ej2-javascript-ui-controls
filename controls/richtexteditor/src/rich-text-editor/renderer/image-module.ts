@@ -1265,14 +1265,12 @@ export class Image {
         });
         uploadParentEle.appendChild(uploadEle); let altText: string;
         this.uploadObj = new Uploader({
-            asyncSettings: {
-                saveUrl: this.parent.insertImageSettings.saveUrl,
-            },
+            asyncSettings: { saveUrl: this.parent.insertImageSettings.saveUrl, },
             dropArea: span, multiple: false, enableRtl: this.parent.enableRtl,
             allowedExtensions: this.parent.insertImageSettings.allowedTypes.toString(),
             selected: (e: SelectedEventArgs) => {
                 this.parent.trigger(events.imageSelected, e, (e: SelectedEventArgs) => {
-                    altText = e.filesData[0].name;
+                    this.checkExtension(e.filesData[0]); altText = e.filesData[0].name;
                     if (this.parent.editorMode === 'HTML' && isNullOrUndefined(this.parent.insertImageSettings.path)) {
                         let reader: FileReader = new FileReader();
                         reader.addEventListener('load', (e: MouseEvent) => {
@@ -1303,7 +1301,8 @@ export class Image {
                         let url: string = this.parent.insertImageSettings.path + (e as MetaData).file.name;
                         let value: IImageCommandsArgs = { url: url, selection: save };
                         proxy.uploadUrl = {
-                            url: url, selection: save, altText: altText, selectParent: selectParent,
+                            url: url, selection: save, altText: (e as MetaData).file.name,
+                            selectParent: selectParent,
                             width: {
                                 width: proxy.parent.insertImageSettings.width, minWidth: proxy.parent.insertImageSettings.minWidth,
                                 maxWidth: proxy.parent.insertImageSettings.maxWidth
@@ -1321,12 +1320,20 @@ export class Image {
             },
             removing: () => {
                 this.parent.trigger(events.imageRemoving, e, (e: RemovingEventArgs) => {
-                    proxy.inputUrl.removeAttribute('disabled'); proxy.uploadUrl.url = '';
+                    proxy.inputUrl.removeAttribute('disabled'); if (proxy.uploadUrl) { proxy.uploadUrl.url = ''; }
+                    (this.dialogObj.getButtons(0) as Button).element.removeAttribute('disabled');
                 });
             }
         });
         this.uploadObj.isStringTemplate = true; this.uploadObj.createElement = this.parent.createElement;
         this.uploadObj.appendTo(uploadEle); return uploadParentEle;
+    }
+    private checkExtension(e: FileInfo): void {
+        if (!this.uploadObj.allowedExtensions) {
+            if (this.uploadObj.allowedExtensions.toLocaleLowerCase().indexOf(('.' + e.type).toLocaleLowerCase()) === -1) {
+                (this.dialogObj.getButtons(0) as Button).element.setAttribute('disabled', 'disabled');
+            }
+        }
     }
     private fileSelect(): boolean {
         this.dialogObj.element.getElementsByClassName('e-file-select-wrap')[0].querySelector('button').click();
@@ -1502,14 +1509,16 @@ export class Image {
         let proxy: Image = this;
         let popupEle: HTMLElement = this.parent.createElement('div');
         this.parent.element.appendChild(popupEle);
-        let contentEle: HTMLElement = this.parent.createElement('div');
+        let uploadEle: HTMLInputElement | HTMLElement = this.parent.createElement('input', {
+            id: this.rteID + '_upload', attrs: { type: 'File', name: 'UploadFiles' }
+        });
         let offsetY: number = this.parent.iframeSettings.enable ? -50 : -90;
         this.popupObj = new Popup(popupEle, {
             relateTo: imageElement,
             height: '85px',
             width: '300px',
             offsetY: offsetY,
-            content: contentEle,
+            content: uploadEle,
             viewPortElement: this.parent.element,
             position: { X: 'center', Y: 'top' },
             enableRtl: this.parent.enableRtl,
@@ -1600,14 +1609,16 @@ export class Image {
      * Called when drop image upload was successful
      */
     private uploadSuccess(imageElement: HTMLElement, dragEvent: DragEvent, args: IShowPopupArgs, e: Object): void {
-        if (!isNullOrUndefined(this.parent.insertImageSettings.path)) {
-            let url: string = this.parent.insertImageSettings.path + (e as MetaData).file.name;
-            (imageElement as HTMLImageElement).src = url;
-        }
-        this.popupObj.close();
         imageElement.style.opacity = '1';
         imageElement.classList.add(classes.CLS_IMG_FOCUS);
-        this.parent.trigger(events.imageUploadSuccess, e);
+        this.parent.trigger(events.imageUploadSuccess, e, (e: object) => {
+            if (!isNullOrUndefined(this.parent.insertImageSettings.path)) {
+                let url: string = this.parent.insertImageSettings.path + (e as MetaData).file.name;
+                (imageElement as HTMLImageElement).src = url;
+                imageElement.setAttribute('alt', (e as MetaData).file.name);
+            }
+        });
+        this.popupObj.close();
         this.showImageQuickToolbar(args);
         this.resizeStart((dragEvent as MouseEvent) as PointerEvent, imageElement);
         this.uploadObj.destroy();

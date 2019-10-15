@@ -892,6 +892,10 @@ export class DiagramEventHandler {
         this.commandHandler.removeSnap();
         this.inAction = false;
         this.eventArgs = {};
+        if (this.diagram.selectedObject && this.diagram.selectedObject.helperObject) {
+            this.diagram.remove(this.diagram.selectedObject.helperObject);
+            this.diagram.selectedObject = { helperObject: undefined, actualObject: undefined };
+        }
         this.tool = null;
         removeRulerMarkers();
         if (this.action === 'Rotate') {
@@ -1079,6 +1083,10 @@ export class DiagramEventHandler {
                     break;
             }
             this.eventArgs.position = { x: point.x, y: point.y };
+            this.currentPosition = this.eventArgs.position;
+            let objects: IElement[] = this.objectFinder.findObjectsUnderMouse(
+                this.currentPosition, this.diagram, this.eventArgs, null, this.action);
+            this.eventArgs.target = this.diagram.findObjectUnderMouse(objects, this.action, this.inAction);
             this.tool.mouseMove(this.eventArgs);
             this.diagram.scroller.zoom(1, -left, -top, pos);
         }
@@ -1507,7 +1515,7 @@ export class DiagramEventHandler {
                 this.diagram.updateSelector();
                 if ((obj as Node).isLane || (obj as Node).isPhase) {
                     this.diagram.clearSelection();
-                    this.commandHandler.select(obj);
+                    this.commandHandler.selectObjects([obj]);
                 }
             }
         }
@@ -1608,6 +1616,10 @@ export class DiagramEventHandler {
                 updateConnectorsProperties(connectors, this.diagram);
                 history.hasStack = hasGroup;
             }
+        }
+        if (obj && ((obj as SwimLane).isPhase || (obj as SwimLane).isLane ||
+            (obj.shape && obj.shape.type === 'SwimLane'))) {
+            this.diagram.updateDiagramElementQuad();
         }
         return history;
     }

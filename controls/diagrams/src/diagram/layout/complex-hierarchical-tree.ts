@@ -1,4 +1,4 @@
-import { INode, IConnector, Layout } from './layout-base';
+import { INode, IConnector, Layout, Bounds } from './layout-base';
 import { PointModel } from '../primitives/point-model';
 
 /**
@@ -245,11 +245,6 @@ class HierarchicalLayoutUtil {
             horizontalSpacing: layoutProp.horizontalSpacing, verticalSpacing: layoutProp.verticalSpacing,
             orientation: layoutProp.orientation, marginX: layoutProp.margin.left, marginY: layoutProp.margin.top
         };
-        if (layout.orientation === 'BottomToTop') {
-            layout.marginY = -layoutProp.margin.top;
-        } else if (layout.orientation === 'RightToLeft') {
-            layout.marginX = -layoutProp.margin.left;
-        }
         this.vertices = [];
         let filledVertexSet: {} = {};
         for (let i: number = 0; i < nodes.length; i++) {
@@ -279,7 +274,7 @@ class HierarchicalLayoutUtil {
             limit = this.placementStage(model, limit.marginX, limit.marginY);
         }
         let modelBounds: Rect = this.getModelBounds(this.vertices);
-        let trnsX: number = (viewPort.x - modelBounds.width) / 2;
+        this.updateMargin(layoutProp, layout, modelBounds, viewPort);
         for (let i: number = 0; i < this.vertices.length; i++) {
             let clnode: Vertex = this.vertices[i];
             if (clnode) {//Check what is node.source/node.target -  && !clnode.source && !clnode.target) {
@@ -295,13 +290,88 @@ class HierarchicalLayoutUtil {
                 } else if (layout.orientation === 'RightToLeft') {
                     x = modelBounds.width - dx;
                 }
-                x += trnsX;
+                // x += trnsX;
                 dnode.offsetX += x - dnode.offsetX;
                 dnode.offsetY += y - dnode.offsetY;
             }
         }
     }
 
+    private updateMargin(layoutProp: Layout, layout: LayoutProp, modelBounds: Rect, viewPort: PointModel): void {
+        let viewPortBounds: Rect = { x: 0, y: 0, width: viewPort.x, height: viewPort.y };
+        let layoutBounds: Rect;
+        let bounds: Bounds = {
+            x: modelBounds.x, y: modelBounds.y,
+            right: modelBounds.x + modelBounds.width,
+            bottom: modelBounds.y + modelBounds.height
+        };
+        layoutBounds = layoutProp.bounds ? layoutProp.bounds : viewPortBounds;
+        if (layout.orientation === 'TopToBottom' || layout.orientation === 'BottomToTop') {
+            switch (layoutProp.horizontalAlignment) {
+                case 'Auto':
+                case 'Left':
+                    layout.marginX = (layoutBounds.x - bounds.x) + layoutProp.margin.left;
+                    break;
+                case 'Right':
+                    layout.marginX = layoutBounds.x + layoutBounds.width - layoutProp.margin.right - bounds.right;
+                    break;
+                case 'Center':
+                    layout.marginX = layoutBounds.x + layoutBounds.width / 2 - (bounds.x + bounds.right) / 2;
+                    break;
+            }
+            switch (layoutProp.verticalAlignment) {
+                case 'Top':
+                    let top: number;
+                    top = layoutBounds.y + layoutProp.margin.top;
+                    layout.marginY = layout.orientation === 'TopToBottom' ? top : - top;
+                    break;
+                case 'Bottom':
+                    let bottom: number;
+                    bottom = layoutBounds.y + layoutBounds.height - layoutProp.margin.bottom;
+                    layout.marginY = layout.orientation === 'TopToBottom' ? bottom - bounds.bottom : -(bottom - bounds.bottom);
+                    break;
+                case 'Auto':
+                case 'Center':
+                    let center: number;
+                    center = layoutBounds.y + layoutBounds.height / 2;
+                    layout.marginY = layout.orientation === 'TopToBottom' ?
+                        center - (bounds.y + bounds.bottom) / 2 : -center + (bounds.y + bounds.bottom) / 2;
+                    break;
+            }
+        } else {
+            switch (layoutProp.horizontalAlignment) {
+                case 'Auto':
+                case 'Left':
+                    let left: number;
+                    left = layoutBounds.x + layoutProp.margin.left;
+                    layout.marginX = layout.orientation === 'LeftToRight' ? left : - left;
+                    break;
+                case 'Right':
+                    let right: number;
+                    right = layoutBounds.x + layoutBounds.width - layoutProp.margin.right;
+                    layout.marginX = layout.orientation === 'LeftToRight' ? right - bounds.right : bounds.right - right;
+                    break;
+                case 'Center':
+                    let center: number;
+                    center = layoutBounds.width / 2 + layoutBounds.x;
+                    layout.marginX = layout.orientation === 'LeftToRight' ?
+                        center - (bounds.y + bounds.bottom) / 2 : -center + (bounds.x + bounds.right) / 2;
+                    break;
+            }
+            switch (layoutProp.verticalAlignment) {
+                case 'Top':
+                    layout.marginY = layoutBounds.y + layoutProp.margin.top - bounds.x;
+                    break;
+                case 'Auto':
+                case 'Center':
+                    layout.marginY = layoutBounds.y + layoutBounds.height / 2 - (bounds.y + bounds.bottom) / 2;
+                    break;
+                case 'Bottom':
+                    layout.marginY = layoutBounds.y + layoutBounds.height - layoutProp.margin.bottom - bounds.bottom;
+                    break;
+            }
+        }
+    }
     /**
      * Handles positioning the nodes
      */

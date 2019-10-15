@@ -451,6 +451,22 @@ export class TooltipSettings extends ChildProperty<TooltipSettings> {
     public enableAnimation: boolean;
 
     /**
+     * Duration for the ToolTip hide.
+     * @default 1000
+     */
+
+    @Property(1000)
+    public duration: number;
+
+    /**
+     * Fade Out duration for the ToolTip hide.
+     * @default 1000
+     */
+
+    @Property(1000)
+    public fadeOutDuration: number;
+
+    /**
      * Options to customize tooltip borders.
      */
     @Complex<BorderModel>({ color: '#cccccc', width: 0.5 }, Border)

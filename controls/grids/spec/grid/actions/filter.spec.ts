@@ -1804,4 +1804,129 @@ describe('Filtering module => ', () => {
         });
 
 });
+
+describe('Check for case sensitive ', ()=>{
+    let gridObj: Grid;
+    let actionComplete: (args: any) => void;
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: filterData.slice(0,30),
+                allowFiltering: true,
+                columns: [
+                    { field: 'OrderID', headerText: 'Order ID', width: 120 },
+                    { field: 'CustomerID',  headerText: 'Customer ID', width: 120},
+                    { field: 'Freight',  headerText: 'Freight', width: 120},
+                    { field: 'ShipCountry',  headerText: 'Ship Country', width: 120}
+                ],
+            }, done);
+    });
+    it('filterbyColumn Method checking with case sensitive', (done: Function) => {
+        actionComplete = () => {
+            expect(gridObj.element.querySelectorAll('.e-row').length).toBe(7);
+            expect((gridObj.element.querySelectorAll('.e-row')[0] as any).cells[3].innerHTML).toBe('Switzerland');
+            done();
+        };
+        gridObj.filterModule.filterByColumn('ShipCountry', 'contains', 'S', 'and', true);
+        gridObj.actionComplete = actionComplete;
+    });
+    it('filterbyColumn Method checking with case sensitive', (done: Function) => {
+        actionComplete = () => {
+            expect(gridObj.element.querySelectorAll('.e-row').length).toBe(2);
+            expect((gridObj.element.querySelectorAll('.e-row')[0] as any).cells[3].innerHTML).toBe('Austria');
+            done();
+        };
+        gridObj.filterModule.filterByColumn('ShipCountry', 'contains', 's', 'and', true);
+        gridObj.actionComplete = actionComplete;
+    });
+    afterAll(() => {
+        destroy(gridObj);
+        gridObj = actionComplete = null;
+    });
+});
+
+    describe('Ensure the filtering when different characters are given', () => {
+        let gridObj: Grid;
+        let filterData1: Object[] = [
+            { OrderID: 10248!, CustomerID: 'VINET!!' },
+            { OrderID: 10249, CustomerID: 'TOMSP' },
+            { OrderID: 10250, CustomerID: 'HANAR' }
+        ];
+        let actionComplete: () => void;
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: filterData1,
+                    allowFiltering: true,
+                    columns: [
+                        { field: 'OrderID', headerText: 'Order ID', width: 120, filter: { operator: "equal" } },
+                        { field: 'CustomerID', headerText: 'Customer ID', width: 120, filter: { operator: "contains" } },
+                    ],
+                    actionComplete: actionComplete,
+                }, done);
+        });
+        it('Perfom filtering with exclamation mark for string type', (done: Function) => {
+            actionComplete = (args?: Object): void => {
+                expect(gridObj.element.querySelectorAll('.e-row').length).toBe(1);
+                done();
+            };
+            gridObj.actionComplete = actionComplete;
+            filterColumn(gridObj, 'CustomerID', '!');
+        });
+
+        it('Perfom filtering with exclamation mark for number type', (done: Function) => {
+            gridObj.clearFiltering();
+            actionComplete = (args?: Object): void => {
+                expect(gridObj.element.querySelectorAll('.e-row').length).toBe(3);
+                done();
+            };
+            gridObj.actionComplete = actionComplete;
+            filterColumn(gridObj, 'OrderID', '!');
+        });
+        afterAll(() => {
+            destroy(gridObj);
+            gridObj = null;
+        });
+    });
+    
+    describe('Check for case sensitive  Excel fltr', () => {
+        let gridObj: Grid;
+        let actionComplete: (args: any) => void;
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: filterData.slice(0, 30),
+                    allowFiltering: true,
+                    filterSettings: { type: 'Excel' },
+                    columns: [
+                        { field: 'OrderID', headerText: 'Order ID', width: 120 },
+                        { field: 'CustomerID', headerText: 'Customer ID', width: 120 },
+                        { field: 'Freight', headerText: 'Freight', width: 120 },
+                        { field: 'ShipCountry', headerText: 'Ship Country', width: 120 }
+                    ],
+                }, done);
+        });
+        it('filterbyColumn Method checking with case sensitive Excelfltr', (done: Function) => {
+            actionComplete = () => {
+                expect(gridObj.element.querySelectorAll('.e-row').length).toBe(9);
+                expect((gridObj.element.querySelectorAll('.e-row')[0] as any).cells[3].innerHTML).toBe('Switzerland');
+                done();
+            };
+            gridObj.filterModule.filterByColumn('ShipCountry', 'contains', 'S');
+            gridObj.actionComplete = actionComplete;
+        });
+        it('filterbyColumn Method checking with case sensitive Excel Fltr', (done: Function) => {
+            actionComplete = () => {
+                expect(gridObj.element.querySelectorAll('.e-row').length).toBe(9);
+                expect((gridObj.element.querySelectorAll('.e-row')[0] as any).cells[3].innerHTML).toBe('Switzerland');
+                done();
+            };
+            gridObj.filterModule.filterByColumn('ShipCountry', 'contains', 's');
+            gridObj.actionComplete = actionComplete;
+        });
+        afterAll(() => {
+            destroy(gridObj);
+            gridObj = actionComplete = null;
+        });
+    });    
 });

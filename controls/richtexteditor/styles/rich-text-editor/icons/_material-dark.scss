@@ -275,10 +275,8 @@
     }
   }
 
-  .e-richtexteditor {
-    .e-south-east::before,
-    .e-south-west::before {
-      content: '\eb05';
-    }
+  .e-south-east::before,
+  .e-south-west::before {
+    content: '\eb05';
   }
 }

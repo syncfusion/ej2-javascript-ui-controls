@@ -58,7 +58,6 @@ export class CheckBox extends Component<HTMLInputElement> implements INotifyProp
      * Specifies a value that indicates whether the CheckBox is `checked` or not.
      * When set to `true`, the CheckBox will be in `checked` state.
      * @default false
-     * @isBlazorNullableType true
      */
     @Property(false)
     public checked: boolean;
@@ -281,6 +280,7 @@ export class CheckBox extends Component<HTMLInputElement> implements INotifyProp
         }
         let label: Element = this.createElement('label', { attrs: { for: this.element.id } });
         let frameSpan: Element = this.createElement('span', { className: 'e-icons ' + FRAME });
+        wrapper.classList.add('e-wrapper');
         if (this.enableRtl) {
             wrapper.classList.add(RTL);
         }

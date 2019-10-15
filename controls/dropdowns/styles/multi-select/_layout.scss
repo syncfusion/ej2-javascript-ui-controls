@@ -533,11 +533,13 @@
   padding-left: 10px;
 }
 
-.e-popup.e-multi-select-list-wrapper .e-list-item.e-disable .e-checkbox-wrapper .e-frame {
+.e-popup.e-multi-select-list-wrapper .e-list-item.e-disable .e-checkbox-wrapper .e-frame,
+.e-popup.e-multi-select-list-wrapper .e-list-group-item.e-disable .e-checkbox-wrapper .e-frame {
   opacity: .3;
 }
 
-.e-popup.e-multi-select-list-wrapper .e-list-item.e-disable {
+.e-popup.e-multi-select-list-wrapper .e-list-item.e-disable,
+.e-popup.e-multi-select-list-wrapper.e-multiselect-group.e-checkbox .e-list-group-item.e-disable {
   opacity: .7;
 }
 
@@ -639,6 +641,13 @@ ejs-multiselect {
   @if $skin-name == 'material' {
     font-size: inherit;
     min-height: $outline-multiselect-inner-input-height;
+    padding: 8px 12px 9px;
+  }
+}
+
+.e-multiselect.e-outline.e-input-focus .e-multi-select-wrapper input[type='text'] {
+  @if $skin-name == 'material' {
+    padding: 8px 12px 9px;
   }
 }
 
@@ -647,6 +656,14 @@ ejs-multiselect {
   @if $skin-name == 'material' {
     font-size: inherit;
     min-height: $outline-multiselect-small-inner-input-height;
+    padding: 7px 10px;
+  }
+}
+
+.e-small.e-multiselect.e-outline.e-input-focus .e-multi-select-wrapper input[type='text'],
+.e-small .e-multiselect.e-outline.e-input-focus .e-multi-select-wrapper input[type='text'] {
+  @if $skin-name == 'material' {
+    padding: 7px 10px;
   }
 }
 
@@ -657,6 +674,16 @@ ejs-multiselect {
   @if $skin-name == 'material' {
     font-size: inherit;
     min-height: $outline-multiselect-inner-input-height;
+    padding: 8px 12px 9px;
+  }
+}
+
+.e-bigger.e-small.e-multiselect.e-outline.e-input-focus .e-multi-select-wrapper input[type='text'],
+.e-bigger.e-small .e-multiselect.e-outline.e-input-focus .e-multi-select-wrapper input[type='text'],
+.e-bigger .e-small.e-multiselect.e-outline.e-input-focus .e-multi-select-wrapper input[type='text'],
+.e-small .e-bigger.e-multiselect.e-outline.e-input-focus .e-multi-select-wrapper input[type='text'] {
+  @if $skin-name == 'material' {
+    padding: 8px 12px 9px;
   }
 }
 
@@ -731,6 +758,50 @@ ejs-multiselect {
   @if $skin-name == 'material' {
     min-height: $ddl-outline-multiselect-height;
     padding: $outline-multiselect-overall-padding;
+  }
+}
+
+.e-outline.e-multiselect.e-checkbox .e-multi-select-wrapper,
+.e-multiselect.e-outline .e-multi-select-wrapper.e-down-icon,
+.e-bigger.e-outline.e-multiselect.e-checkbox .e-multi-select-wrapper,
+.e-bigger.e-multiselect.e-outline .e-multi-select-wrapper.e-down-icon,
+.e-bigger .e-outline.e-multiselect.e-checkbox .e-multi-select-wrapper,
+.e-bigger .e-multiselect.e-outline .e-multi-select-wrapper.e-down-icon {
+  @if $skin-name == 'material' {
+    padding-right: 0;
+  }
+}
+
+.e-rtl.e-outline.e-multiselect.e-checkbox .e-multi-select-wrapper,
+.e-rtl.e-multiselect.e-outline .e-multi-select-wrapper.e-down-icon,
+.e-rtl .e-outline.e-multiselect.e-checkbox .e-multi-select-wrapper,
+.e-rtl .e-multiselect.e-outline .e-multi-select-wrapper.e-down-icon,
+.e-rtl.e-bigger.e-outline.e-multiselect.e-checkbox .e-multi-select-wrapper,
+.e-rtl.e-bigger.e-multiselect.e-outline .e-multi-select-wrapper.e-down-icon,
+.e-bigger .e-rtl.e-outline.e-multiselect.e-checkbox .e-multi-select-wrapper,
+.e-bigger .e-rtl.e-multiselect.e-outline .e-multi-select-wrapper.e-down-icon,
+.e-rtl .e-bigger.e-outline.e-multiselect.e-checkbox .e-multi-select-wrapper,
+.e-rtl .e-bigger.e-multiselect.e-outline .e-multi-select-wrapper.e-down-icon,
+.e-rtl.e-small.e-outline.e-multiselect.e-checkbox .e-multi-select-wrapper,
+.e-rtl.e-small.e-multiselect.e-outline .e-multi-select-wrapper.e-down-icon,
+.e-small .e-rtl.e-outline.e-multiselect.e-checkbox .e-multi-select-wrapper,
+.e-small .e-rtl.e-multiselect.e-outline .e-multi-select-wrapper.e-down-icon,
+.e-rtl .e-small.e-outline.e-multiselect.e-checkbox .e-multi-select-wrapper,
+.e-rtl .e-small.e-multiselect.e-outline .e-multi-select-wrapper.e-down-icon,
+.e-rtl.e-bigger .e-small.e-multiselect.e-outline.e-checkbox .e-multi-select-wrapper,
+.e-rtl.e-small .e-bigger.e-multiselect.e-outline.e-checkbox .e-multi-select-wrapper,
+.e-rtl .e-bigger .e-small.e-multiselect.e-outline.e-checkbox .e-multi-select-wrapper,
+.e-rtl .e-small .e-bigger.e-multiselect.e-outline.e-checkbox .e-multi-select-wrapper,
+.e-rtl.e-small.e-bigger .e-multiselect.e-outline.e-checkbox .e-multi-select-wrapper,
+.e-rtl.e-small.e-bigger.e-multiselect.e-outline.e-checkbox .e-multi-select-wrapper,
+.e-rtl.e-bigger .e-small.e-multiselect.e-outline .e-multi-select-wrapper.e-down-icon,
+.e-rtl.e-small .e-bigger.e-multiselect.e-outline .e-multi-select-wrapper.e-down-icon,
+.e-rtl .e-bigger .e-small.e-multiselect.e-outline .e-multi-select-wrapper.e-down-icon,
+.e-rtl .e-small .e-bigger.e-multiselect.e-outline .e-multi-select-wrapper.e-down-icon,
+.e-rtl.e-small.e-bigger .e-multiselect.e-outline .e-multi-select-wrapper.e-down-icon,
+.e-rtl.e-small.e-bigger.e-multiselect.e-outline .e-multi-select-wrapper.e-down-icon {
+  @if $skin-name == 'material' {
+    padding-left: 0;
   }
 }
 
@@ -984,6 +1055,13 @@ ejs-multiselect {
   }
 }
 
+.e-multiselect.e-outline .e-multi-select-wrapper .e-chips-close {
+  align-items: center;
+}
+
+.e-multiselect.e-outline .e-multi-select-wrapper .e-chips-close.e-close-hooker {
+  align-items: normal;
+}
 
 //+2 more configutations
 

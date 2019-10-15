@@ -145,7 +145,15 @@ function getDateCount(startDate: Date, ruleObject: RecRule): Number {
     if (ruleObject.count) {
         count = ruleObject.count;
     } else if (ruleObject.until) {
-        count = Math.floor((ruleObject.until.getTime() - startDate.getTime()) / MS_PER_DAY) + 1;
+        if (ruleObject.freq === 'DAILY' || ruleObject.freq === 'WEEKLY') {
+            count = Math.floor((ruleObject.until.getTime() - startDate.getTime()) / MS_PER_DAY) + 1;
+        } else if ((ruleObject.freq === 'MONTHLY' || ruleObject.freq === 'YEARLY') && ruleObject.day.length === 0) {
+            count = Math.floor(((ruleObject.until.getMonth() + 12 * ruleObject.until.getFullYear()) -
+                (startDate.getMonth() + 12 * startDate.getFullYear())) / ruleObject.interval) + 1;
+            if (ruleObject.freq === 'YEARLY') {
+                count = ruleObject.month.length > 1 ? ((count as number) * ruleObject.month.length) : count;
+            }
+        }
     }
     return count;
 }
@@ -376,7 +384,7 @@ function initializeRecRuleVariables(startDate: Date, ruleObject: RecRule): RuleD
         index: 0,
         tempDate: new Date(startDate.getTime()),
         mainDate: new Date(startDate.getTime()),
-        expectedCount: ruleObject.count ? ruleObject.count : maxOccurrence,
+        expectedCount: getDateCount(startDate, ruleObject),
         monthInit: 0,
         dateCollection: [],
     };

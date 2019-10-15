@@ -2606,7 +2606,7 @@ export class DashboardLayout extends Component<HTMLElement> implements INotifyPr
         for (let i: number = 0; i < this.panelCollection.length; i++) {
             detach(this.panelCollection[i]);
         }
-        this.element.innerHTML = '';
+        this.removeAllPanel();
         this.rows = 0;
         this.gridPanelCollection = [];
         this.setHeightWidth();
@@ -2618,7 +2618,7 @@ export class DashboardLayout extends Component<HTMLElement> implements INotifyPr
         this.panelCollection = [];
         this.oldRowCol = {};
         this.cloneObject = {};
-        this.panels = [];
+        this.setProperties({ panels: [] }, true);
         this.updatePanels();
         this.updateCloneArrayObject();
     }
@@ -2743,8 +2743,15 @@ export class DashboardLayout extends Component<HTMLElement> implements INotifyPr
         for (let i: number = 0; i < this.dragCollection.length; i++) {
             this.dragCollection[i].destroy();
         }
-        this.element.innerHTML = '';
+        this.removeAllPanel();
+        if (this.table) { this.table.remove(); }
         super.destroy();
+    }
+
+    private removeAllPanel(): void {
+        this.panelCollection.forEach((item: HTMLElement) => {
+            item.remove();
+        });
     }
 
     protected setEnableRtl(): void {
@@ -2783,6 +2790,7 @@ export class DashboardLayout extends Component<HTMLElement> implements INotifyPr
         this.removeAll();
         this.setProperties({ panels: panels }, true);
         this.setOldRowCol();
+        if (this.table) { this.table.remove(); }
         this.initialize();
         if (this.showGridLines) {
             this.initGridLines();

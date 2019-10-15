@@ -300,6 +300,9 @@ export class WorkbookNumberFormat {
     }
 
     private timeFormat(args: { [key: string]: string | number | boolean | CellModel }, intl: Internationalization): string {
+        if (isNullOrUndefined(args.value)) {
+            return '';
+        }
         if (!isNullOrUndefined(args.value.toString().split(this.decimalSep)[1])) {
             args.value = parseFloat('1' + this.decimalSep + (args.value as string).split(this.decimalSep)[1]) || args.value;
         }

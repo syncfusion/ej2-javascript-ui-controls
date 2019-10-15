@@ -2068,6 +2068,9 @@ var MenuBase = /** @__PURE__ @class */ (function (_super) {
         return false;
     };
     MenuBase.prototype.menuHeaderClickHandler = function (e) {
+        if (closest(e.target, '.e-menu-wrapper').querySelector('ul.e-menu-parent').id !== this.element.id) {
+            return;
+        }
         this.element.classList.contains('e-hide-menu') ? this.openHamburgerMenu(e) : this.closeHamburgerMenu(e);
     };
     MenuBase.prototype.clickHandler = function (e) {
@@ -2142,7 +2145,8 @@ var MenuBase = /** @__PURE__ @class */ (function (_super) {
                     this.menuHeaderClickHandler(e);
                 }
                 else {
-                    if (trgt.tagName !== 'UL' || trgt.parentElement !== wrapper) {
+                    if (trgt.tagName !== 'UL' || (this.isMenu ? trgt.parentElement.classList.contains('e-menu-wrapper') &&
+                        !this.getIndex(trgt.querySelector('.' + ITEM).id, true).length : trgt.parentElement !== wrapper)) {
                         if (!cli || !cli.querySelector('.' + CARET)) {
                             this.closeMenu(null, e);
                         }
@@ -3365,7 +3369,8 @@ var Toolbar = /** @__PURE__ @class */ (function (_super) {
         }
         if (!eventArgs.cancel) {
             this.trigger('clicked', eventArgs, function (clickedArgs) {
-                if (!isNullOrUndefined(_this.popObj) && isPopupElement && !clickedArgs.cancel && _this.overflowMode === 'Popup') {
+                if (!isNullOrUndefined(_this.popObj) && isPopupElement && !clickedArgs.cancel && _this.overflowMode === 'Popup' &&
+                    clickedArgs.item && clickedArgs.item.type !== 'Input') {
                     _this.popObj.hide({ name: 'FadeOut', duration: 100 });
                 }
             });
@@ -6967,14 +6972,11 @@ var Tab = /** @__PURE__ @class */ (function (_super) {
         (this.isIconAlone) ? this.element.classList.add(CLS_ICON_TAB) : this.element.classList.remove(CLS_ICON_TAB);
         return tItems;
     };
-    Tab.prototype.removeActiveClass = function (id) {
-        var hdrActEle = selectAll(':root .' + CLS_HEADER$1 + ' .' + CLS_TB_ITEM + '.' + CLS_ACTIVE$1, this.element)[0];
-        var selectEle = select('.' + CLS_HEADER$1, this.element);
-        if (this.headerPlacement === 'Bottom') {
-            hdrActEle = selectAll(':root .' + CLS_HEADER$1 + ' .' + CLS_TB_ITEM + '.' + CLS_ACTIVE$1, selectEle)[0];
-        }
-        if (!isNullOrUndefined(hdrActEle)) {
-            hdrActEle.classList.remove(CLS_ACTIVE$1);
+    Tab.prototype.removeActiveClass = function () {
+        var tabHeader = this.getTabHeader();
+        if (tabHeader) {
+            var tabItems = selectAll('.' + CLS_TB_ITEM + '.' + CLS_ACTIVE$1, tabHeader);
+            tabItems.forEach(function (node) { return node.classList.remove(CLS_ACTIVE$1); });
         }
     };
     Tab.prototype.checkPopupOverflow = function (ele) {
@@ -7155,8 +7157,11 @@ var Tab = /** @__PURE__ @class */ (function (_super) {
             }
         }
     };
+    Tab.prototype.getTabHeader = function () {
+        return [].slice.call(this.element.children).filter(function (e) { return e.classList.contains(CLS_HEADER$1); })[0];
+    };
     Tab.prototype.getEleIndex = function (item) {
-        return Array.prototype.indexOf.call(selectAll('.' + CLS_HEADER$1 + ' .' + CLS_TB_ITEM, this.element), item);
+        return Array.prototype.indexOf.call(selectAll('.' + CLS_TB_ITEM, this.getTabHeader()), item);
     };
     Tab.prototype.extIndex = function (id) {
         return id.replace(CLS_ITEM$2 + '_', '');
@@ -7325,7 +7330,7 @@ var Tab = /** @__PURE__ @class */ (function (_super) {
         if (isNullOrUndefined(this.cntEle)) {
             return;
         }
-        var hdrEle = select('.' + CLS_HEADER$1, this.element);
+        var hdrEle = this.getTabHeader();
         if (this.heightAdjustMode === 'None') {
             if (this.height === 'auto') {
                 return;
@@ -7386,8 +7391,8 @@ var Tab = /** @__PURE__ @class */ (function (_super) {
     Tab.prototype.setActiveBorder = function () {
         var bar;
         var scrollCnt;
-        var trgHdrEle = select('.' + CLS_HEADER$1, this.element);
-        var trg = select('.' + CLS_TB_ITEM + '.' + CLS_ACTIVE$1, this.element);
+        var trgHdrEle = this.getTabHeader();
+        var trg = select('.' + CLS_TB_ITEM + '.' + CLS_ACTIVE$1, trgHdrEle);
         if (trg === null) {
             return;
         }
@@ -7423,7 +7428,7 @@ var Tab = /** @__PURE__ @class */ (function (_super) {
         }
     };
     Tab.prototype.setActive = function (value) {
-        this.tbItem = selectAll('.' + CLS_HEADER$1 + ' .' + CLS_TB_ITEM, this.element);
+        this.tbItem = selectAll('.' + CLS_TB_ITEM, this.getTabHeader());
         var trg = this.tbItem[value];
         if (value >= 0) {
             this.setProperties({ selectedItem: value }, true);
@@ -7443,7 +7448,7 @@ var Tab = /** @__PURE__ @class */ (function (_super) {
             attributes(trg, { 'aria-controls': CLS_CONTENT$1 + '_' + value });
         }
         var id = trg.id;
-        this.removeActiveClass(id);
+        this.removeActiveClass();
         trg.classList.add(CLS_ACTIVE$1);
         trg.setAttribute('aria-selected', 'true');
         var no = Number(this.extIndex(id));
@@ -7497,7 +7502,7 @@ var Tab = /** @__PURE__ @class */ (function (_super) {
     };
     Tab.prototype.setItems = function (items) {
         this.isReplace = true;
-        this.tbItems = select('.' + CLS_HEADER$1 + ' .' + CLS_TB_ITEMS, this.element);
+        this.tbItems = select('.' + CLS_TB_ITEMS, this.getTabHeader());
         this.tbObj.items = this.parseObject(items, 0);
         this.tbObj.dataBind();
         this.isReplace = false;
@@ -7604,9 +7609,9 @@ var Tab = /** @__PURE__ @class */ (function (_super) {
         }
         this.element.classList.add(CLS_FOCUS);
         var trg = e.target;
-        var actEle = select('.' + CLS_HEADER$1 + ' .' + CLS_ACTIVE$1, this.element);
-        var tabItem = selectAll('.' + CLS_TB_ITEM + ':not(.' + CLS_TB_POPUP + ')', this.element);
-        this.popEle = select('.' + CLS_HEADER$1 + ' .' + CLS_TB_POP, this.element);
+        var tabHeader = this.getTabHeader();
+        var actEle = select('.' + CLS_ACTIVE$1, tabHeader);
+        this.popEle = select('.' + CLS_TB_POP, tabHeader);
         if (!isNullOrUndefined(this.popEle)) {
             this.popObj = this.popEle.ej2_instances[0];
         }
@@ -7765,10 +7770,6 @@ var Tab = /** @__PURE__ @class */ (function (_super) {
                 this.reRenderItems();
             }
             else {
-                var items = newProp.items;
-                for (var i = 0; i < items.length; i++) {
-                    this.resetBlazorTemplates(items[i], i);
-                }
                 this.setItems(newProp.items);
                 if (this.templateEle.length > 0) {
                     this.expTemplateContent();
@@ -7780,17 +7781,6 @@ var Tab = /** @__PURE__ @class */ (function (_super) {
                 }
                 this.select(this.selectedItem);
             }
-        }
-    };
-    Tab.prototype.resetBlazorTemplates = function (item, index) {
-        if (!isBlazor()) {
-            return;
-        }
-        if (item.headerTemplate && !this.isStringTemplate && (item.headerTemplate).indexOf('<div>Blazor') === 0) {
-            resetBlazorTemplate(this.element.id + index + '_' + 'headerTemplate', 'HeaderTemplate');
-        }
-        if (item.content && !this.isStringTemplate && item.content.indexOf('<div>Blazor') === 0) {
-            resetBlazorTemplate(this.element.id + index + '_' + 'content', 'ContentTemplate');
         }
     };
     /**
@@ -7867,7 +7857,7 @@ var Tab = /** @__PURE__ @class */ (function (_super) {
             if (!isNullOrUndefined(this.bdrLine)) {
                 this.bdrLine.classList.add(CLS_HIDDEN$1);
             }
-            this.tbItems = select('.' + CLS_HEADER$1 + ' .' + CLS_TB_ITEMS, this.element);
+            this.tbItems = select('.' + CLS_TB_ITEMS, this.getTabHeader());
             this.isAdd = true;
             var tabItems = this.parseObject(items, index);
             this.isAdd = false;
@@ -7916,7 +7906,6 @@ var Tab = /** @__PURE__ @class */ (function (_super) {
         var removeArgs = { removedItem: trg, removedIndex: index, cancel: false };
         this.trigger('removing', removeArgs, function (tabRemovingArgs) {
             if (!tabRemovingArgs.cancel) {
-                _this.resetBlazorTemplates(_this.items[index], index);
                 _this.tbObj.removeItems(index);
                 _this.items.splice(index, 1);
                 _this.itemIndexArray.splice(index, 1);
@@ -8007,8 +7996,9 @@ var Tab = /** @__PURE__ @class */ (function (_super) {
      */
     Tab.prototype.select = function (args) {
         var _this = this;
-        this.tbItems = select('.' + CLS_HEADER$1 + ' .' + CLS_TB_ITEMS, this.element);
-        this.tbItem = selectAll('.' + CLS_HEADER$1 + ' .' + CLS_TB_ITEM, this.element);
+        var tabHeader = this.getTabHeader();
+        this.tbItems = select('.' + CLS_TB_ITEMS, tabHeader);
+        this.tbItem = selectAll('.' + CLS_TB_ITEM, tabHeader);
         this.content = select('.' + CLS_CONTENT$1, this.element);
         this.prevItem = this.tbItem[this.prevIndex];
         if (isNullOrUndefined(this.selectedItem) || (this.selectedItem < 0) || (this.tbItem.length <= this.selectedItem) || isNaN(this.selectedItem)) {

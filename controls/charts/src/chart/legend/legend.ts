@@ -69,7 +69,9 @@ export class Legend extends BaseLegend {
                 seriesType = (chart.chartAreaType === 'PolarRadar') ? <ChartDrawType>series.drawType :
                     <ChartSeriesType>series.type;
                 this.legendCollections.push(new LegendOptions(
-                    series.name, series.interior, series.legendShape, series.visible, seriesType, series.marker.shape, series.marker.visible
+                    series.name, series.interior, series.legendShape, (series.category === 'TrendLine' ?
+                        (this.chart as Chart).series[series.sourceIndex].trendlines[series.index].visible : series.visible),
+                    seriesType, series.marker.shape, series.marker.visible
                 ));
             }
         }
@@ -170,12 +172,21 @@ export class Legend extends BaseLegend {
             selectedDataIndexes = <Indexes[]>extend([], chart.selectionModule.selectedDataIndexes, null, true);
         }
         if (chart.legendSettings.toggleVisibility) {
-            if (!series.visible) {
-                series.visible = true;
+            if (series.category === 'TrendLine') {
+                if (!chart.series[series.sourceIndex].trendlines[series.index].visible) {
+                    chart.series[series.sourceIndex].trendlines[series.index].visible = true;
+                } else {
+                    chart.series[series.sourceIndex].trendlines[series.index].visible = false;
+                }
             } else {
-                series.visible = false;
+                if (!series.visible) {
+                    series.visible = true;
+                } else {
+                    series.visible = false;
+                }
             }
-            legend.visible = (series.visible);
+            legend.visible = series.category === 'TrendLine' ? chart.series[series.sourceIndex].trendlines[series.index].visible :
+                             (series.visible);
             if ((chart.svgObject.childNodes.length > 0 ) && !chart.enableAnimation && !chart.enableCanvas) {
                 while (chart.svgObject.lastChild) {
                     chart.svgObject.removeChild(chart.svgObject.lastChild);

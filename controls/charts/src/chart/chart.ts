@@ -1557,8 +1557,14 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
      * @private
      */
     public renderSeries(): void {
+        let visibility: boolean;
         for (let item of this.visibleSeries) {
-            if (item.visible) {
+            if (item.category === 'TrendLine') {
+                visibility = this.series[item.sourceIndex].trendlines[item.index].visible;
+            } else {
+                visibility = item.visible;
+            }
+            if (visibility) {
                 findClipRect(item);
                 if (this.enableCanvas) {
                     // To render scatter and bubble series in canvas
@@ -1582,6 +1588,9 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
             'stroke-width': 1,
             'stroke': 'Gray'
         };
+        if (!this.seriesElements) {
+            return;
+        }
         if (!this.enableCanvas) {
             this.seriesElements.appendChild(
                 appendClipElement(this.redraw, options, this.renderer as SvgRenderer)
@@ -2096,6 +2105,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
         this.verticalAxes = [];
         this.visibleSeries = [];
         this.axisCollections = [];
+        this.seriesElements = null;
         this.chartAxisLayoutPanel = null;
         this.dataLabelCollections = null;
         this.dataLabelElements = null;

@@ -637,12 +637,15 @@ class DataUtil {
      * @param  {string|number} y
      * @returns number
      */
-    static fnAscending(x, y) {
+    static fnAscending(x, y, locales, options) {
+        if (isNullOrUndefined(x) && isNullOrUndefined(y)) {
+            return -1;
+        }
         if (y === null || y === undefined) {
             return -1;
         }
         if (typeof x === 'string') {
-            return x.localeCompare(y);
+            return x.localeCompare(y, locales, options);
         }
         if (x === null || x === undefined) {
             return 1;
@@ -655,12 +658,15 @@ class DataUtil {
      * @param  {string|number} y
      * @returns number
      */
-    static fnDescending(x, y) {
+    static fnDescending(x, y, locales, options) {
+        if (isNullOrUndefined(x) && isNullOrUndefined(y)) {
+            return -1;
+        }
         if (y === null || y === undefined) {
             return 1;
         }
         if (typeof x === 'string') {
-            return x.localeCompare(y) * -1;
+            return x.localeCompare(y, locales, options) * -1;
         }
         if (x === null || x === undefined) {
             return -1;

@@ -221,6 +221,15 @@ export class DetailsView {
 
     private onRowDataBound(args: RowDataBoundEventArgs): void {
         let td: Element = select('.e-fe-grid-name', args.row);
+        if (!td) {
+            let columns: ColumnModel[] = this.parent.detailsViewSettings.columns;
+            for (let i: number = 0; i < columns.length; i++) {
+                if (columns[i].field === 'name') {
+                    td = args.row.children[this.parent.allowMultiSelection ? (i + 2) : (i + 1)];
+                    break;
+                }
+            }
+        }
         if (td) {
             td.setAttribute('title', getValue('name', args.data));
         }
@@ -230,12 +239,13 @@ export class DetailsView {
                 addBlur(args.row);
             }
         }
-        /* istanbul ignore next */
         if (!this.parent.showFileExtension && getValue('isFile', args.data)) {
             let textEle: Element = args.row.querySelector('.e-fe-text');
-            let name: string = getValue('name', args.data);
-            let type: string = getValue('type', args.data);
-            textEle.innerHTML = name.substr(0, name.length - type.length);
+            if (textEle) {
+                let name: string = getValue('name', args.data);
+                let type: string = getValue('type', args.data);
+                textEle.innerHTML = name.substr(0, name.length - type.length);
+            }
         }
         if (getValue('size', args.data) !== undefined && args.row.querySelector('.e-fe-size')) {
             let sizeEle: Element = args.row.querySelector('.e-fe-size');

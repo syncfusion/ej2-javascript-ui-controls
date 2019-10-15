@@ -15,6 +15,7 @@ import { DialogRenderer } from '../renderer/dialog-renderer';
 import { Uploader, MetaData } from '@syncfusion/ej2-inputs';
 import * as classes from '../base/classes';
 import { IHtmlFormatterCallBack } from '../../common';
+import { SanitizeHtmlHelper } from './sanitize-helper';
 /**
  * PasteCleanup module called when pasting content in RichTextEditor
  */
@@ -29,6 +30,7 @@ export class PasteCleanup {
   private dialogRenderObj: DialogRenderer;
   private popupObj: Popup;
   private uploadObj: Uploader;
+  private sanitize: SanitizeHtmlHelper;
   private inlineNode: string[] = ['a', 'abbr', 'acronym', 'audio', 'b', 'bdi', 'bdo', 'big', 'br', 'button',
     'canvas', 'cite', 'code', 'data', 'datalist', 'del', 'dfn', 'em', 'embed', 'font', 'i', 'iframe', 'img', 'input',
     'ins', 'kbd', 'label', 'map', 'mark', 'meter', 'noscript', 'object', 'output', 'picture', 'progress',
@@ -45,6 +47,7 @@ export class PasteCleanup {
     this.renderFactory = this.locator.getService<RendererFactory>('rendererFactory');
     this.i10n = serviceLocator.getService<L10n>('rteLocale');
     this.dialogRenderObj = serviceLocator.getService<DialogRenderer>('dialogRenderObject');
+    this.sanitize = new SanitizeHtmlHelper();
     this.addEventListener();
   }
 
@@ -193,7 +196,9 @@ export class PasteCleanup {
       (imgElem as HTMLElement).style.opacity = '0.5';
       let popupEle: HTMLElement = this.parent.createElement('div');
       this.parent.element.appendChild(popupEle);
-      let contentEle: HTMLElement = this.parent.createElement('div');
+      let contentEle:  HTMLInputElement | HTMLElement = this.parent.createElement('input', {
+        id: this.parent.element.id + '_upload', attrs: { type: 'File', name: 'UploadFiles' }
+    });
       let offsetY: number = this.parent.iframeSettings.enable ? -50 : -90;
       let popupObj: Popup = new Popup(popupEle, {
           relateTo: imgElem as HTMLElement,
@@ -224,12 +229,6 @@ export class PasteCleanup {
         dropArea: this.parent.inputElement,
         allowedExtensions: this.parent.insertImageSettings.allowedTypes.toString(),
         success: (e: object) => {
-          if (!isNullOrUndefined(this.parent.insertImageSettings.path)) {
-            let url: string = this.parent.insertImageSettings.path +
-            (e as MetaData).file.name + '.' + (e as MetaData).file.type.split('image/')[1];
-            (imgElem as HTMLElement).removeAttribute('src');
-            (imgElem as HTMLElement).setAttribute('src', url);
-          }
           setTimeout(() => { this.popupClose(popupObj, uploadObj, imgElem, e); }, 900); },
         failure: (e: Object) => {
           if (popupObj) {
@@ -257,9 +256,16 @@ export class PasteCleanup {
       detach(popupObj.element.querySelector('.e-rte-dialog-upload .e-file-select-wrap') as HTMLElement);
   }
   private popupClose(popupObj: Popup, uploadObj: Uploader, imgElem: Element, e: Object): void {
+    this.parent.trigger(events.imageUploadSuccess, e, (e: object) => {
+      if (!isNullOrUndefined(this.parent.insertImageSettings.path)) {
+          let url: string = this.parent.insertImageSettings.path + (e as MetaData).file.name + '.' +
+          (e as MetaData).file.type.split('image/')[1];
+          (imgElem as HTMLImageElement).src = url;
+          imgElem.setAttribute('alt', (e as MetaData).file.name);
+      }
+  });
     popupObj.close();
     (imgElem as HTMLElement).style.opacity = '1';
-    this.parent.trigger(events.imageUploadSuccess, e);
     uploadObj.destroy();
   }
   private refreshPopup(imageElement: HTMLElement, popupObj: Popup): void {
@@ -424,6 +430,7 @@ export class PasteCleanup {
       clipBoardElem = this.allowedStyle(clipBoardElem);
     }
     this.saveSelection.restore();
+    clipBoardElem.innerHTML = this.sanitizeHelper(clipBoardElem.innerHTML);
     this.parent.formatter.editorManager.execCommand(
       'inserthtml',
       'pasteCleanup',
@@ -438,6 +445,11 @@ export class PasteCleanup {
     if (!isNOU(this.parent.insertImageSettings.saveUrl)) {
       this.imgUploading(this.parent.inputElement);
     }
+  }
+
+  private sanitizeHelper(value: string): string {
+    value = this.sanitize.initialize(value, this.parent);
+    return value;
   }
 
   //Plain Formatting
@@ -475,6 +487,7 @@ export class PasteCleanup {
       }
       this.removeEmptyElements(clipBoardElem);
       this.saveSelection.restore();
+      clipBoardElem.innerHTML = this.sanitizeHelper(clipBoardElem.innerHTML);
       this.parent.formatter.editorManager.execCommand(
         'inserthtml',
         'pasteCleanup',

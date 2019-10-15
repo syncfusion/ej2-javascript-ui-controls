@@ -149,6 +149,9 @@ export class TreeVirtual extends GridVirtualScroll {
   public ensurePageSize(): void {
     let parentGrid: IGrid = getValue('parent', this);
     let rowHeight: number = parentGrid.getRowHeight();
+    if (!isNullOrUndefined(parentGrid.height) && typeof (parentGrid.height) === 'string' && parentGrid.height.indexOf('%') !== -1) {
+      parentGrid.element.style.height = parentGrid.height;
+    }
     let vHeight: string | number = parentGrid.height.toString().indexOf('%') < 0 ? parentGrid.height :
     parentGrid.element.getBoundingClientRect().height;
     let blockSize: number = ~~(<number>vHeight / rowHeight);

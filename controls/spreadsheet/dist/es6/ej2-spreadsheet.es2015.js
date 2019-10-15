@@ -258,7 +258,7 @@ const initiateSort = 'initiateSort';
 /** @hidden */
 const sortComplete = 'sortComplete';
 /** @hidden */
-const validateSortRange = 'validateSortRange';
+const sortRangeAlert = 'sortRangeAlert';
 
 /**
  * @hidden
@@ -648,6 +648,9 @@ class WorkbookNumberFormat {
         });
     }
     timeFormat(args, intl) {
+        if (isNullOrUndefined(args.value)) {
+            return '';
+        }
         if (!isNullOrUndefined(args.value.toString().split(this.decimalSep)[1])) {
             args.value = parseFloat('1' + this.decimalSep + args.value.split(this.decimalSep)[1]) || args.value;
         }
@@ -1427,8 +1430,9 @@ class WorkbookSave extends SaveWorker {
     updateBasicSettings() {
         let jsonStr = this.getStringifyObject(this.parent, ['sheets', '_isScalar', 'observers', 'closed', 'isStopped', 'hasError',
             '__isAsync', 'beforeCellFormat', 'beforeCellRender', 'beforeDataBound', 'beforeOpen', 'beforeSave', 'beforeSelect',
-            'cellEdit', 'cellEditing', 'cellSave', 'contextMenuItemSelect', 'contextMenuBeforeClose', 'contextMenuBeforeOpen', 'created',
-            'dataBound', 'fileItemSelect', 'fileMenuBeforeClose', 'fileMenuBeforeOpen', 'openFailure', 'saveComplete', 'select']);
+            'beforeSort', 'cellEdit', 'cellEditing', 'cellSave', 'contextMenuItemSelect', 'contextMenuBeforeClose',
+            'contextMenuBeforeOpen', 'created', 'dataBound', 'fileItemSelect', 'fileMenuBeforeClose', 'fileMenuBeforeOpen', 'openFailure',
+            'saveComplete', 'sortComplete', 'select']);
         let basicSettings = JSON.parse(jsonStr);
         let sheetCount = this.parent.sheets.length;
         if (sheetCount) {
@@ -7168,20 +7172,18 @@ class WorkbookSort {
      * Sorts range of cells in the sheet.
      * @param args - arguments for sorting.
      */
-    initiateSortHandler(args) {
-        let validateArgs = {
-            range: args.range,
-            isValid: true
-        };
+    initiateSortHandler(eventArgs) {
+        let args = eventArgs.args;
+        let deferred = new Deferred();
+        let sheet = this.parent.getActiveSheet();
+        let range = getSwapRange(getIndexesFromAddress(args.range));
+        let sortOptions = args.sortOptions || { sortDescriptors: {}, containsHeader: true };
         let isSingleCell = false;
-        this.parent.notify(validateSortRange, validateArgs);
-        if (!validateArgs.isValid) {
+        eventArgs.promise = deferred.promise;
+        if (range[0] > sheet.usedRange.rowIndex - 1 || range[1] > sheet.usedRange.colIndex) {
+            deferred.reject('Select a cell or range inside the used range and try again.');
             return;
         }
-        let sheet = this.parent.getActiveSheet();
-        let address = args.range || sheet.selectedRange;
-        let range = getSwapRange(getIndexesFromAddress(address));
-        let sortOptions = args.sortOptions || { sortDescriptors: {}, containsHeader: true };
         let containsHeader = sortOptions.containsHeader;
         if (range[0] === range[2] && (range[2] - range[0]) === 0) { //if selected range is a single cell 
             range[0] = 0;
@@ -7250,12 +7252,8 @@ class WorkbookSort {
                     }
                     sRIdx++;
                 });
-                let eventArgs = {
-                    range: getRangeAddress(range),
-                    sortOptions: sortOptions
-                };
-                this.parent.trigger('sortComplete', eventArgs);
-                this.parent.notify(sortComplete, eventArgs);
+                let eventArgs = { range: getRangeAddress(range), sortOptions: args.sortOptions };
+                deferred.resolve(eventArgs);
             });
         });
     }
@@ -7266,6 +7264,10 @@ class WorkbookSort {
      * @param y - second cell
      */
     sortComparer(sortDescriptor, x, y) {
+        //fix - when x and y values are empty, cells should not be swapped.
+        if (!(x ? x.value : x) && !(y ? y.value : y)) {
+            return -1; // Need to remove this condition once this is handled in fnSort()
+        }
         let direction = sortDescriptor.order || '';
         let comparer = DataUtil.fnSort(direction);
         return comparer(x ? x.value : x, y ? y.value : y);
@@ -7661,6 +7663,9 @@ function getWorkbookRequiredModules(context, modules = []) {
             member: 'workbookcellformat',
             args: [context]
         });
+    }
+    if (context.allowSorting) {
+        modules.push({ member: 'workbookSort', args: [context] });
     }
     return modules;
 }
@@ -8326,10 +8331,11 @@ var __decorate = (undefined && undefined.__decorate) || function (decorators, ta
     else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 };
+var Workbook_1;
 /**
  * Represents the Workbook.
  */
-let Workbook = class Workbook extends Component {
+let Workbook = Workbook_1 = class Workbook extends Component {
     /**
      * Constructor for initializing the library.
      * @param options - Configures Workbook model.
@@ -8341,6 +8347,7 @@ let Workbook = class Workbook extends Component {
          * @hidden
          */
         this.sheetNameCount = 1;
+        Workbook_1.Inject(DataBind, WorkbookSave, WorkbookOpen, WorkbookNumberFormat, WorkbookCellFormat, WorkbookEdit, WorkbookFormula, WorkbookSort);
         this.commonCellStyle = {};
         if (options && options.cellStyle) {
             this.commonCellStyle = options.cellStyle;
@@ -8582,14 +8589,27 @@ let Workbook = class Workbook extends Component {
      */
     sort(sortOptions, range) {
         if (!this.allowSorting) {
-            return;
+            return Promise.reject();
         }
         let eventArgs = {
-            range: range,
-            sortOptions: sortOptions,
+            range: range || this.getActiveSheet().selectedRange,
+            sortOptions: sortOptions || { sortDescriptors: {} },
             cancel: false
         };
-        this.notify(initiateSort, eventArgs);
+        let promise = new Promise((resolve, reject) => { resolve((() => { })()); });
+        let sortArgs = { args: eventArgs, promise: promise };
+        this.notify(initiateSort, sortArgs);
+        return sortArgs.promise;
+    }
+    /**
+     * To update a cell properties.
+     * @param {CellModel} cell - Cell properties.
+     * @param {string} address - Address to update.
+     */
+    updateCell(cell, address) {
+        let range = getIndexesFromAddress(address);
+        let sheetIdx = getSheetIndex(this, address.split('!')[0]) || this.activeSheetTab - 1;
+        setCell(range[0], range[1], this.sheets[sheetIdx], cell);
     }
     /**
      * Adds the defined name to the Spreadsheet.
@@ -8693,14 +8713,8 @@ __decorate([
 ], Workbook.prototype, "saveComplete", void 0);
 __decorate([
     Event$1()
-], Workbook.prototype, "beforeSort", void 0);
-__decorate([
-    Event$1()
-], Workbook.prototype, "sortComplete", void 0);
-__decorate([
-    Event$1()
 ], Workbook.prototype, "beforeCellFormat", void 0);
-Workbook = __decorate([
+Workbook = Workbook_1 = __decorate([
     NotifyPropertyChanges
 ], Workbook);
 
@@ -8819,7 +8833,6 @@ function pushBasicModules(context, modules) {
     }
     if (context.allowSorting) {
         modules.push({ member: 'sort', args: [context] });
-        modules.push({ member: 'workbookSort', args: [context] });
     }
     if (context.allowResizing) {
         modules.push({
@@ -9268,7 +9281,7 @@ class Clipboard {
                 .concat([selIdx[0] + cIdx[2] - cIdx[0], selIdx[1] + cIdx[3] - cIdx[1] || selIdx[1]]);
             for (let i = cIdx[0], l = 0; i <= cIdx[2]; i++, l++) {
                 for (let j = cIdx[1], k = 0; j <= cIdx[3]; j++, k++) {
-                    cell = isExternal ? rows[i].cells[j] : getCell(i, j, prevSheet);
+                    cell = isExternal ? rows[i].cells[j] : Object.assign({}, getCell(i, j, prevSheet));
                     if (cell && args && args.type) {
                         switch (args.type) {
                             case 'Formats':
@@ -9928,7 +9941,7 @@ class Edit {
     }
     updateEditedValue(tdRefresh = true) {
         let oldCellValue = this.editCellData.oldValue;
-        let oldValue = oldCellValue.toString().toUpperCase();
+        let oldValue = oldCellValue ? oldCellValue.toString().toUpperCase() : '';
         if (oldCellValue !== this.editCellData.value || oldValue.indexOf('=RAND()') > -1 || oldValue.indexOf('RAND()') > -1 ||
             oldValue.indexOf('=RANDBETWEEN(') > -1 || oldValue.indexOf('RANDBETWEEN(') > -1) {
             let cellIndex = getRangeIndexes(this.parent.getActiveSheet().activeCell);
@@ -11126,19 +11139,21 @@ class KeyboardNavigation {
             closest(document.activeElement, '.e-sheet'))) {
             let isNavigate;
             let scrollIdxes;
+            let isRtl = this.parent.enableRtl;
             let sheet = this.parent.getActiveSheet();
             let actIdxes = getCellIndexes(this.parent.getActiveSheet().activeCell);
             if ([9, 37, 38, 39, 40].indexOf(e.keyCode) > -1) {
                 e.preventDefault();
             }
-            if ((!e.shiftKey && e.keyCode === 37) || (e.shiftKey && e.keyCode === 9)) { //left key
+            if ((!e.shiftKey && ((!isRtl && e.keyCode === 37) || (isRtl && e.keyCode === 39)))
+                || (e.shiftKey && e.keyCode === 9)) { //left key
                 if (actIdxes[1] > 0) {
                     actIdxes[1] -= 1;
                     isNavigate = true;
                 }
                 else {
                     let content = this.parent.getMainContent();
-                    if (actIdxes[1] === 0 && content.scrollLeft) {
+                    if (actIdxes[1] === 0 && content.scrollLeft && !isRtl) {
                         content.scrollLeft = 0;
                     }
                 }
@@ -11155,7 +11170,7 @@ class KeyboardNavigation {
                     }
                 }
             }
-            else if ((!e.shiftKey && e.keyCode === 39) || e.keyCode === 9) { // Right key
+            else if ((!e.shiftKey && ((!isRtl && e.keyCode === 39) || (isRtl && e.keyCode === 37))) || e.keyCode === 9) { // Right key
                 if (actIdxes[1] < sheet.colCount - 1) {
                     actIdxes[1] += 1;
                     isNavigate = true;
@@ -11199,6 +11214,7 @@ class KeyboardNavigation {
         }
     }
     scrollNavigation(actIdxes, isScroll) {
+        let x = this.parent.enableRtl ? -1 : 1;
         let cont = this.parent.getMainContent();
         let sheet = this.parent.getActiveSheet();
         let prevActIdxes = getCellIndexes(sheet.activeCell);
@@ -11210,10 +11226,10 @@ class KeyboardNavigation {
             cont.scrollTop -= getRowHeight(sheet, actIdxes[0]);
         }
         if (this.getRightIdx(topLeftIdxes) <= actIdxes[1] || isScroll) {
-            cont.scrollLeft += getColumnWidth(sheet, actIdxes[1]);
+            cont.scrollLeft += getColumnWidth(sheet, actIdxes[1]) * x;
         }
         else if (topLeftIdxes[1] > actIdxes[1]) {
-            cont.scrollLeft -= getColumnWidth(sheet, actIdxes[1]);
+            cont.scrollLeft -= getColumnWidth(sheet, actIdxes[1]) * x;
         }
     }
     getBottomIdx(topLeftIdxes) {
@@ -15115,17 +15131,17 @@ class Sort {
         this.parent = null;
     }
     addEventListener() {
-        this.parent.on(validateSortRange, this.validateSortRange, this);
         this.parent.on(beforeSort, this.beforeSortHandler, this);
-        this.parent.on(sortComplete, this.sortComplete, this);
-        this.parent.on(initiateCustomSort, this.initiateCustomSort, this);
+        this.parent.on(sortRangeAlert, this.sortRangeAlertHandler, this);
+        this.parent.on(sortComplete, this.sortCompleteHandler, this);
+        this.parent.on(initiateCustomSort, this.initiateCustomSortHandler, this);
     }
     removeEventListener() {
         if (!this.parent.isDestroyed) {
-            this.parent.off(validateSortRange, this.validateSortRange);
             this.parent.off(beforeSort, this.beforeSortHandler);
-            this.parent.off(sortComplete, this.sortComplete);
-            this.parent.off(initiateCustomSort, this.initiateCustomSort);
+            this.parent.off(sortRangeAlert, this.sortRangeAlertHandler);
+            this.parent.off(sortComplete, this.sortCompleteHandler);
+            this.parent.off(initiateCustomSort, this.initiateCustomSortHandler);
         }
     }
     /**
@@ -15136,40 +15152,38 @@ class Sort {
         return 'sort';
     }
     /**
-     * Validates the range to be sorted.
+     * Validates the range and returns false when invalid.
      */
-    validateSortRange(args) {
-        args.isValid = this.showRangeAlert(args.range);
-    }
-    /**
-     * Validates the range and shows the alert dialog and return true when invalid.
-     * @param address - range address.
-     */
-    showRangeAlert(address) {
-        let l10n = this.parent.serviceLocator.getService(locale);
+    isValidSortRange() {
         let sheet = this.parent.getActiveSheet();
-        let rangeStr = address || sheet.selectedRange;
-        let range = getSwapRange(getIndexesFromAddress(rangeStr));
+        let range = getSwapRange(getIndexesFromAddress(sheet.selectedRange));
         if (range[0] > sheet.usedRange.rowIndex - 1 || range[1] > sheet.usedRange.colIndex) {
-            this.parent.serviceLocator.getService(dialog).show({
-                height: 180, width: 400, isModal: true, showCloseIcon: true,
-                content: l10n.getConstant('SortOutOfRangeError')
-            });
-            this.parent.hideSpinner();
             return false;
         }
         return true;
     }
     /**
+     * Shows the range error alert dialog.
+     * @param error - range error string.
+     */
+    sortRangeAlertHandler(args) {
+        let dialogInst = this.parent.serviceLocator.getService(dialog);
+        dialogInst.show({
+            height: 180, width: 400, isModal: true, showCloseIcon: true,
+            content: args.error
+        });
+        this.parent.hideSpinner();
+    }
+    /**
      * Initiates sort process.
      */
-    beforeSortHandler(args) {
+    beforeSortHandler() {
         this.parent.showSpinner();
     }
     /**
      * Invoked when the sort action is completed.
      */
-    sortComplete(args) {
+    sortCompleteHandler(args) {
         let range = getIndexesFromAddress(args.range);
         this.parent.serviceLocator.getService('cell').refreshRange(range);
         this.parent.hideSpinner();
@@ -15177,9 +15191,10 @@ class Sort {
     /**
      * Initiates the custom sort dialog.
      */
-    initiateCustomSort() {
+    initiateCustomSortHandler() {
         let l10n = this.parent.serviceLocator.getService(locale);
-        if (!this.showRangeAlert()) {
+        if (!this.isValidSortRange()) {
+            this.sortRangeAlertHandler({ error: l10n.getConstant('SortOutOfRangeError') });
             return;
         }
         let dialogInst = this.parent.serviceLocator.getService(dialog);
@@ -15193,7 +15208,7 @@ class Sort {
             },
             buttons: [{
                     buttonModel: {
-                        content: this.parent.serviceLocator.getService(locale).getConstant('Ok'), isPrimary: true
+                        content: l10n.getConstant('Ok'), isPrimary: true
                     },
                     click: () => {
                         let element = dialogInst.dialogInstance.content;
@@ -15221,8 +15236,6 @@ class Sort {
      * @param errorElem - element to display error.
      */
     validateError(json, dialogElem, errorElem) {
-        //1. All sort criteria must have a column specified. Check the selected sort criteria and try again.
-        //2. Column B is being sorted by values more than once. Delete the duplicate sort criteria and try again.
         let l10n = this.parent.serviceLocator.getService(locale);
         let hasEmpty = json.some((element) => element.field.toString() === '');
         if (hasEmpty) {
@@ -15679,8 +15692,8 @@ let defaultLocale = {
     SortBy: 'Sort by',
     ThenBy: 'Then by',
     SelectAColumn: 'Select a column',
-    SortEmptyFieldError: 'All sort criteria must have a column specified. Check the selected sort criteria and try again.',
-    SortDuplicateFieldError: ' is being sorted by values more than once. Delete the duplicate sort criteria and try again.',
+    SortEmptyFieldError: 'Sort criteria column should not be empty.',
+    SortDuplicateFieldError: ' is mentioned more than once. Duplicate columns must be removed.',
     SortOutOfRangeError: 'Select a cell or range inside the used range and try again.',
     Ok: 'Ok',
     Close: 'Close',
@@ -16375,15 +16388,11 @@ class CellRenderer {
         let td = this.element.cloneNode();
         td.className = 'e-cell';
         attributes(td, { 'role': 'gridcell', 'aria-colindex': (args.colIdx + 1).toString(), 'tabindex': '-1' });
-        let eventArgs = { cell: args.cell, element: td, address: args.address };
-        this.parent.trigger('beforeCellRender', eventArgs);
-        this.updateCell(args.rowIdx, args.colIdx, td, args.cell, eventArgs, args.lastCell, args.row, args.hRow, args.isHeightCheckNeeded);
-        return eventArgs.element;
+        this.updateCell(args.rowIdx, args.colIdx, td, args.cell, args.lastCell, args.row, args.hRow, args.isHeightCheckNeeded);
+        this.parent.trigger('beforeCellRender', { cell: args.cell, element: td, address: args.address });
+        return td;
     }
-    updateCell(rowIdx, colIdx, td, cell, eventArgs, lastCell, row, hRow, isHeightCheckNeeded, isRefresh) {
-        if (!eventArgs) {
-            eventArgs = { cell: cell, element: td };
-        }
+    updateCell(rowIdx, colIdx, td, cell, lastCell, row, hRow, isHeightCheckNeeded, isRefresh) {
         if (cell && cell.formula && !cell.value) {
             let isFormula = checkIsFormula(cell.formula);
             let eventArgs = {
@@ -16403,7 +16412,7 @@ class CellRenderer {
         if (cell) {
             this.parent.notify(getFormattedCellObject, formatArgs);
         }
-        td.textContent = eventArgs.cell ? formatArgs.formattedText : '';
+        td.textContent = td ? formatArgs.formattedText : '';
         this.parent.refreshNode(td, {
             type: formatArgs.type,
             result: formatArgs.formattedText,
@@ -16412,29 +16421,29 @@ class CellRenderer {
             value: formatArgs.value || ''
         });
         let style = {};
-        if (eventArgs.cell && eventArgs.cell.style) {
-            if (eventArgs.cell.style.properties) {
-                style = skipDefaultValue(eventArgs.cell.style, true);
+        if (cell && cell.style) {
+            if (cell.style.properties) {
+                style = skipDefaultValue(cell.style, true);
             }
             else {
-                style = eventArgs.cell.style;
+                style = cell.style;
             }
         }
         if (Object.keys(style).length || Object.keys(this.parent.commonCellStyle).length || lastCell) {
             if (isRefresh) {
-                this.removeStyle(eventArgs.element);
+                this.removeStyle(td);
                 this.parent.notify(setCellFormat, { style: style, range: getCellAddress(rowIdx, colIdx) });
             }
             else {
                 this.parent.notify(applyCellFormat, {
-                    style: extend({}, this.parent.commonCellStyle, style), rowIdx: rowIdx, colIdx: colIdx, cell: eventArgs.element,
+                    style: extend({}, this.parent.commonCellStyle, style), rowIdx: rowIdx, colIdx: colIdx, cell: td,
                     lastCell: lastCell, row: row, hRow: hRow, isHeightCheckNeeded: isHeightCheckNeeded, manualUpdate: false
                 });
             }
         }
         else {
             if (isRefresh) {
-                this.removeStyle(eventArgs.element);
+                this.removeStyle(td);
             }
         }
     }
@@ -16450,7 +16459,7 @@ class CellRenderer {
         if (inView(this.parent, cRange, true)) {
             for (let i = cRange[0]; i <= cRange[2]; i++) {
                 for (let j = cRange[1]; j <= cRange[3]; j++) {
-                    this.updateCell(i, j, this.parent.getCell(i, j), getCell(i, j, sheet), null, false, null, null, true, true);
+                    this.updateCell(i, j, this.parent.getCell(i, j), getCell(i, j, sheet), false, null, null, true, true);
                 }
             }
         }
@@ -16980,22 +16989,41 @@ let Spreadsheet = Spreadsheet_1 = class Spreadsheet extends Workbook {
         return val;
     }
     /**
+     * To update a cell properties.
+     * @param {CellModel} cell - Cell properties.
+     * @param {string} address - Address to update.
+     */
+    updateCell(cell, address) {
+        address = address || this.getActiveSheet().activeCell;
+        super.updateCell(cell, address);
+        this.serviceLocator.getService('cell').refreshRange(getIndexesFromAddress(address));
+        this.notify(activeCellChanged, {});
+    }
+    /**
      * Sorts the range of cells in the active sheet.
      * @param sortOptions - options for sorting.
      * @param range - address of the data range.
      */
     sort(sortOptions, range) {
-        if (!range) {
-            range = this.getActiveSheet().selectedRange;
+        if (!this.allowSorting) {
+            return Promise.reject();
         }
+        range = range || this.getActiveSheet().selectedRange;
         sortOptions = sortOptions || { sortDescriptors: {} };
         let args = { range: range, sortOptions: sortOptions, cancel: false };
         this.trigger(beforeSort, args);
         if (args.cancel) {
-            return;
+            return Promise.reject();
         }
-        this.notify(beforeSort, args);
-        super.sort(args.sortOptions, range);
+        this.notify(beforeSort, null);
+        return super.sort(args.sortOptions, args.range).then((args) => {
+            this.notify(sortComplete, args);
+            this.trigger(sortComplete, args);
+            return Promise.resolve(args);
+        }).catch((error) => {
+            this.notify(sortRangeAlert, { error: error });
+            return Promise.reject(error);
+        });
     }
     /** @hidden */
     setValueRowCol(sheetIndex, value, rowIndex, colIndex) {
@@ -17116,6 +17144,8 @@ let Spreadsheet = Spreadsheet_1 = class Spreadsheet extends Workbook {
         this.element.removeAttribute('role');
         this.element.style.removeProperty('height');
         this.element.style.removeProperty('width');
+        this.element.style.removeProperty('min-height');
+        this.element.style.removeProperty('min-width');
     }
     /**
      * Unbinding events from the element while component destroy.
@@ -17321,6 +17351,12 @@ __decorate$9([
 __decorate$9([
     Event$1()
 ], Spreadsheet.prototype, "created", void 0);
+__decorate$9([
+    Event$1()
+], Spreadsheet.prototype, "beforeSort", void 0);
+__decorate$9([
+    Event$1()
+], Spreadsheet.prototype, "sortComplete", void 0);
 Spreadsheet = Spreadsheet_1 = __decorate$9([
     NotifyPropertyChanges
 ], Spreadsheet);
@@ -17337,5 +17373,5 @@ Spreadsheet = Spreadsheet_1 = __decorate$9([
  * Export Spreadsheet modules
  */
 
-export { Workbook, RangeSetting, UsedRange, Sheet, getSheetIndex, getSheetIndexFromId, getSheetNameFromAddress, updateSelectedRange, getSelectedRange, getSheet, getSheetNameCount, getMaxSheetId, initSheet, getSheetName, Row, getRow, setRow, getRowHeight, setRowHeight, getRowsHeight, Column, getColumn, getColumnWidth, getColumnsWidth, Cell, getCell, setCell, getCellPosition, skipDefaultValue, getData, getModel, processIdx, clearRange, getRangeIndexes, getCellIndexes, getCellAddress, getRangeAddress, getColumnHeaderText, getIndexesFromAddress, getRangeFromAddress, getSwapRange, isSingleCell, executeTaskAsync, WorkbookBasicModule, WorkbookAllModule, getWorkbookRequiredModules, CellStyle, DefineName, workbookDestroyed, workbookOpen, beginSave, saveCompleted, applyNumberFormatting, getFormattedCellObject, refreshCellElement, setCellFormat, textDecorationUpdate, applyCellFormat, updateUsedRange, workbookFormulaOperation, workbookEditOperation, checkDateFormat, getFormattedBarText, activeCellChanged, openSuccess, openFailure, sheetCreated, sheetsDestroyed, aggregateComputation, beforeSort, initiateSort, sortComplete, validateSortRange, checkIsFormula, toFraction, getGcd, intToDate, dateToInt, isDateTime, isNumber, toDate, DataBind, WorkbookOpen, WorkbookSave, WorkbookFormula, WorkbookNumberFormat, getFormatFromType, getTypeFromFormat, WorkbookSort, WorkbookCellFormat, WorkbookEdit, getRequiredModules, ribbon, formulaBar, sheetTabs, refreshSheetTabs, dataRefresh, initialLoad, contentLoaded, mouseDown, spreadsheetDestroyed, editOperation, formulaOperation, formulaBarOperation, click, keyUp, keyDown, formulaKeyUp, formulaBarUpdate, onVerticalScroll, onHorizontalScroll, beforeContentLoaded, beforeVirtualContentLoaded, virtualContentLoaded, contextMenuOpen, cellNavigate, mouseUpAfterSelection, selectionComplete, cMenuBeforeOpen, addSheetTab, removeSheetTab, renameSheetTab, ribbonClick, refreshRibbon, enableRibbonItems, tabSwitch, selectRange, cut, copy, paste, clearCopy, dataBound, beforeDataBound, addContextMenuItems, removeContextMenuItems, enableContextMenuItems, beforeRibbonCreate, rowHeightChanged, colWidthChanged, beforeHeaderLoaded, onContentScroll, deInitProperties, activeSheetChanged, renameSheet, enableToolbar, initiateCustomSort, getUpdateUsingRaf, removeAllChildren, getColGroupWidth, getScrollBarWidth, getSiblingsHeight, inView, locateElem, setStyleAttribute$1 as setStyleAttribute, getStartEvent, getMoveEvent, getEndEvent, isTouchStart, isTouchMove, isTouchEnd, getClientX, getClientY, setAriaOptions, destroyComponent, BasicModule, AllModule, ScrollSettings, SelectionSettings, DISABLED, locale, dialog, fontColor, fillColor, defaultLocale, Spreadsheet, Clipboard, Edit, Selection, Scroll, VirtualScroll, KeyboardNavigation, KeyboardShortcut, CellFormat, Resize, Ribbon$$1 as Ribbon, FormulaBar, Formula, SheetTabs, Open, Save, ContextMenu$1 as ContextMenu, NumberFormat, Sort, Render, SheetRender, RowRenderer, CellRenderer, Calculate, FormulaError, FormulaInfo, CalcSheetFamilyItem, getAlphalabel, ValueChangedArgs, Parser, CalculateCommon, isUndefined$1 as isUndefined, getModules, getValue$1 as getValue, setValue, ModuleLoader, CommonErrors, FormulasErrorsStrings, BasicFormulas };
+export { Workbook, RangeSetting, UsedRange, Sheet, getSheetIndex, getSheetIndexFromId, getSheetNameFromAddress, updateSelectedRange, getSelectedRange, getSheet, getSheetNameCount, getMaxSheetId, initSheet, getSheetName, Row, getRow, setRow, getRowHeight, setRowHeight, getRowsHeight, Column, getColumn, getColumnWidth, getColumnsWidth, Cell, getCell, setCell, getCellPosition, skipDefaultValue, getData, getModel, processIdx, clearRange, getRangeIndexes, getCellIndexes, getCellAddress, getRangeAddress, getColumnHeaderText, getIndexesFromAddress, getRangeFromAddress, getSwapRange, isSingleCell, executeTaskAsync, WorkbookBasicModule, WorkbookAllModule, getWorkbookRequiredModules, CellStyle, DefineName, workbookDestroyed, workbookOpen, beginSave, saveCompleted, applyNumberFormatting, getFormattedCellObject, refreshCellElement, setCellFormat, textDecorationUpdate, applyCellFormat, updateUsedRange, workbookFormulaOperation, workbookEditOperation, checkDateFormat, getFormattedBarText, activeCellChanged, openSuccess, openFailure, sheetCreated, sheetsDestroyed, aggregateComputation, beforeSort, initiateSort, sortComplete, sortRangeAlert, checkIsFormula, toFraction, getGcd, intToDate, dateToInt, isDateTime, isNumber, toDate, DataBind, WorkbookOpen, WorkbookSave, WorkbookFormula, WorkbookNumberFormat, getFormatFromType, getTypeFromFormat, WorkbookSort, WorkbookCellFormat, WorkbookEdit, getRequiredModules, ribbon, formulaBar, sheetTabs, refreshSheetTabs, dataRefresh, initialLoad, contentLoaded, mouseDown, spreadsheetDestroyed, editOperation, formulaOperation, formulaBarOperation, click, keyUp, keyDown, formulaKeyUp, formulaBarUpdate, onVerticalScroll, onHorizontalScroll, beforeContentLoaded, beforeVirtualContentLoaded, virtualContentLoaded, contextMenuOpen, cellNavigate, mouseUpAfterSelection, selectionComplete, cMenuBeforeOpen, addSheetTab, removeSheetTab, renameSheetTab, ribbonClick, refreshRibbon, enableRibbonItems, tabSwitch, selectRange, cut, copy, paste, clearCopy, dataBound, beforeDataBound, addContextMenuItems, removeContextMenuItems, enableContextMenuItems, beforeRibbonCreate, rowHeightChanged, colWidthChanged, beforeHeaderLoaded, onContentScroll, deInitProperties, activeSheetChanged, renameSheet, enableToolbar, initiateCustomSort, getUpdateUsingRaf, removeAllChildren, getColGroupWidth, getScrollBarWidth, getSiblingsHeight, inView, locateElem, setStyleAttribute$1 as setStyleAttribute, getStartEvent, getMoveEvent, getEndEvent, isTouchStart, isTouchMove, isTouchEnd, getClientX, getClientY, setAriaOptions, destroyComponent, BasicModule, AllModule, ScrollSettings, SelectionSettings, DISABLED, locale, dialog, fontColor, fillColor, defaultLocale, Spreadsheet, Clipboard, Edit, Selection, Scroll, VirtualScroll, KeyboardNavigation, KeyboardShortcut, CellFormat, Resize, Ribbon$$1 as Ribbon, FormulaBar, Formula, SheetTabs, Open, Save, ContextMenu$1 as ContextMenu, NumberFormat, Sort, Render, SheetRender, RowRenderer, CellRenderer, Calculate, FormulaError, FormulaInfo, CalcSheetFamilyItem, getAlphalabel, ValueChangedArgs, Parser, CalculateCommon, isUndefined$1 as isUndefined, getModules, getValue$1 as getValue, setValue, ModuleLoader, CommonErrors, FormulasErrorsStrings, BasicFormulas };
 //# sourceMappingURL=ej2-spreadsheet.es2015.js.map

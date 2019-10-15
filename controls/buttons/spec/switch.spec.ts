@@ -56,6 +56,7 @@ describe('Switch', () => {
             specSwitch = new Switch({}, '#specSwitch');
             expect(element.classList.contains('e-switch')).toEqual(true);
             expect(element.parentElement.classList.contains('e-switch-wrapper')).toEqual(true);
+            expect(element.parentElement.classList.contains('e-wrapper')).toEqual(true);
             expect(element.parentElement.children[1].classList.contains('e-switch-inner')).toEqual(true);
             expect(element.parentElement.children[1].children[0].classList.contains('e-switch-on')).toEqual(true);
             expect(element.parentElement.children[1].children[1].classList.contains('e-switch-off')).toEqual(true);

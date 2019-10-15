@@ -340,7 +340,7 @@ export class ListBox extends DropDownBase {
         if (this.itemTemplate) {
             this.list.classList.add('e-list-template');
         }
-        this.list.classList.add('e-listbox-wrapper');
+        this.list.classList.add('e-wrapper');
         if (this.element.tagName === 'EJS-LISTBOX') {
             this.element.setAttribute('tabindex', '0');
             if (this.initLoad) {

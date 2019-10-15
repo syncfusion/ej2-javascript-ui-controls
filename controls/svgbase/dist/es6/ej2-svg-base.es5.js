@@ -1,4 +1,4 @@
-import { Animation, Browser, ChildProperty, Complex, Component, Event, NotifyPropertyChanges, Property, compile, createElement, extend, isBlazor, isNullOrUndefined, merge, remove, resetBlazorTemplate, updateBlazorTemplate } from '@syncfusion/ej2-base';
+import { Animation, Browser, ChildProperty, Complex, Component, Event, NotifyPropertyChanges, Property, compile, createElement, extend, isNullOrUndefined, merge, remove, resetBlazorTemplate, updateBlazorTemplate } from '@syncfusion/ej2-base';
 
 /**
  * To import utils
@@ -1680,6 +1680,8 @@ var Tooltip = /** @__PURE__ @class */ (function (_super) {
         var argsData = { cancel: false, name: 'tooltipRender', tooltip: this };
         this.trigger('tooltipRender', argsData);
         var parent = document.getElementById(this.element.id);
+        var blazor = 'Blazor';
+        var isBlazor = window[blazor];
         if (this.isCanvas) {
             this.removeSVG();
         }
@@ -1691,7 +1693,7 @@ var Tooltip = /** @__PURE__ @class */ (function (_super) {
             var elem = createElement('div', { id: this.element.id + 'parent_template' });
             var templateElement = this.templateFn(this.data, null, null, elem.id + '_blazorTemplate', '');
             while (templateElement && templateElement.length > 0) {
-                if (isBlazor()) {
+                if (isBlazor) {
                     elem.appendChild(templateElement[0]);
                     templateElement = null;
                 }

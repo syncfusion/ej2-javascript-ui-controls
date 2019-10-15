@@ -117,6 +117,8 @@ export interface ITooltipRenderEventArgs extends IChartEventArgs {
     headerText ?: string;
     /** point informations */
     data ?: IPointInformation;
+    /** Defines the tooltip template */
+    template ?: string;
 }
 
 export interface IPointInformation {
@@ -366,17 +368,17 @@ export interface IChartTemplate {
     /** point x */
     x ?: object;
     /** point y */
-    y ?: number;
+    y ?: object;
     /** point text */
     text ?: string;
     /** point open value */
-    open ?: number;
+    open ?: object;
     /** point close value */
-    close?: number;
+    close?: object;
     /** point high value */
-    high?: number;
+    high?: object;
     /** point low value */
-    low?: number;
+    low?: object;
     /** point volume value */
-    volume ?: number;
+    volume ?: object;
 }

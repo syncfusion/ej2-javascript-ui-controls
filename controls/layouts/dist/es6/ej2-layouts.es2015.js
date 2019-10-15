@@ -3869,7 +3869,7 @@ let DashboardLayout = class DashboardLayout extends Component {
         for (let i = 0; i < this.panelCollection.length; i++) {
             detach(this.panelCollection[i]);
         }
-        this.element.innerHTML = '';
+        this.removeAllPanel();
         this.rows = 0;
         this.gridPanelCollection = [];
         this.setHeightWidth();
@@ -3881,7 +3881,7 @@ let DashboardLayout = class DashboardLayout extends Component {
         this.panelCollection = [];
         this.oldRowCol = {};
         this.cloneObject = {};
-        this.panels = [];
+        this.setProperties({ panels: [] }, true);
         this.updatePanels();
         this.updateCloneArrayObject();
     }
@@ -3998,8 +3998,16 @@ let DashboardLayout = class DashboardLayout extends Component {
         for (let i = 0; i < this.dragCollection.length; i++) {
             this.dragCollection[i].destroy();
         }
-        this.element.innerHTML = '';
+        this.removeAllPanel();
+        if (this.table) {
+            this.table.remove();
+        }
         super.destroy();
+    }
+    removeAllPanel() {
+        this.panelCollection.forEach((item) => {
+            item.remove();
+        });
     }
     setEnableRtl() {
         this.enableRtl ? addClass([this.element], 'e-rtl') : removeClass([this.element], 'e-rtl');
@@ -4035,6 +4043,9 @@ let DashboardLayout = class DashboardLayout extends Component {
         this.removeAll();
         this.setProperties({ panels: panels }, true);
         this.setOldRowCol();
+        if (this.table) {
+            this.table.remove();
+        }
         this.initialize();
         if (this.showGridLines) {
             this.initGridLines();

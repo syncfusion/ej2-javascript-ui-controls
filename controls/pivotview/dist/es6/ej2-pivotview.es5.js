@@ -25507,7 +25507,7 @@ var Toolbar$2 = /** @__PURE__ @class */ (function () {
     };
     Toolbar$$1.prototype.fetchReports = function () {
         var reports = { reportName: [] };
-        var tool;
+        var tool = this;
         if (isBlazor()) {
             reports = this.fetchReportsArgs();
             reports.then(function (e) {

@@ -327,6 +327,22 @@ export class Trendline extends ChildProperty<Trendline> {
     public name: string;
 
     /**
+     * Defines the pattern of dashes and gaps to stroke.
+     * @default '0'
+     */
+
+    @Property('0')
+    public dashArray: string;
+
+    /**
+     * Specifies the visibility of trendline.
+     * @default true
+     */
+
+    @Property(true)
+    public visible: boolean;
+
+    /**
      * Defines the type of the trendline
      * @default 'Linear'
      */

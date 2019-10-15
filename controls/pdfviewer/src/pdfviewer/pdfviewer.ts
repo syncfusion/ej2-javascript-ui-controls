@@ -20,8 +20,9 @@ import { TextSearch } from './index';
 import { FormFields } from './index';
 import { Print, CalibrationUnit } from './index';
 // tslint:disable-next-line:max-line-length
-import { UnloadEventArgs, LoadEventArgs, LoadFailedEventArgs, AjaxRequestFailureEventArgs, PageChangeEventArgs, PageClickEventArgs, ZoomChangeEventArgs, HyperlinkClickEventArgs, HyperlinkMouseOverArgs } from './index';
+import { UnloadEventArgs, LoadEventArgs, LoadFailedEventArgs, AjaxRequestFailureEventArgs, PageChangeEventArgs, PageClickEventArgs, ZoomChangeEventArgs, HyperlinkClickEventArgs, HyperlinkMouseOverArgs, ImportStartEventArgs, ImportSuccessEventArgs, ImportFailureEventArgs, ExportStartEventArgs, ExportSuccessEventArgs, ExportFailureEventArgs } from './index';
 import { AnnotationAddEventArgs, AnnotationRemoveEventArgs, AnnotationPropertiesChangeEventArgs, AnnotationResizeEventArgs, AnnotationSelectEventArgs } from './index';
+import { TextSelectionStartEventArgs, TextSelectionEndEventArgs } from './index';
 import { PdfAnnotationBase, ZOrderPageTable } from '../diagram/pdf-annotation';
 import { PdfAnnotationBaseModel } from '../diagram/pdf-annotation-model';
 import { Drawing, ClipBoardObject } from '../diagram/drawing';
@@ -1160,6 +1161,11 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
     public fileName: string = null;
 
     /**
+     * Gets or sets the export annotations JSON file name in the PdfViewer control.
+     */
+    public exportAnnotationFileName: string = null;
+
+    /**
      * Defines the scrollable height of the PdfViewer control.
      * @default 'auto'
      */
@@ -1186,6 +1192,13 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
      */
     @Property(true)
     public enableNavigationToolbar: boolean;
+
+    /**
+     * Enable or disables the Comment Panel of PdfViewer.
+     * @default true
+     */
+    @Property(true)
+    public enableCommentPanel: boolean;
 
     /**
      * Enable or disables the download option of PdfViewer.
@@ -1375,7 +1388,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
      * Defines the settings of the PdfViewer annotation toolbar.
      */
     // tslint:disable-next-line:max-line-length
-    @Property({ showTooltip: true, annotationToolbarItem: ['HighlightTool', 'UnderlineTool', 'StrikethroughTool', 'ColorEditTool', 'OpacityEditTool', 'AnnotationDeleteTool', 'StampAnnotationTool', 'ShapeTool', 'CalibrateTool', 'StrokeColorEditTool', 'ThicknessEditTool', 'FreeTextAnnotationTool', 'FontFamilyAnnotationTool', 'FontSizeAnnotationTool', 'FontStylesAnnotationTool', 'FontAlignAnnotationTool', 'FontColorAnnotationTool'] })
+    @Property({ showTooltip: true, annotationToolbarItem: ['HighlightTool', 'UnderlineTool', 'StrikethroughTool', 'ColorEditTool', 'OpacityEditTool', 'AnnotationDeleteTool', 'StampAnnotationTool', 'ShapeTool', 'CalibrateTool', 'StrokeColorEditTool', 'ThicknessEditTool', 'FreeTextAnnotationTool', 'FontFamilyAnnotationTool', 'FontSizeAnnotationTool', 'FontStylesAnnotationTool', 'FontAlignAnnotationTool', 'FontColorAnnotationTool', 'CommentPanelTool'] })
     public annotationToolbarSettings: AnnotationToolbarSettingsModel;
 
     /**
@@ -1788,12 +1801,76 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
     public annotationSelect: EmitType<AnnotationSelectEventArgs>;
 
     /**
+     * Triggers when an imported annotations started in the PDF document.
+     * @event
+     * @blazorProperty 'ImportStarted'
+     */
+    @Event()
+    public importStart: EmitType<ImportStartEventArgs>;
+
+    /**
+     * Triggers when an exported annotations started in the PDF Viewer.
+     * @event
+     * @blazorProperty 'ExportStarted'
+     */
+    @Event()
+    public exportStart: EmitType<ExportStartEventArgs>;
+
+    /**
+     * Triggers when an imports annotations succeed in the PDF document.
+     * @event
+     * @blazorProperty 'ImportSucceed'
+     */
+    @Event()
+    public importSuccess: EmitType<ImportSuccessEventArgs>;
+
+    /**
+     * Triggers when an export annotations succeed in the PDF Viewer.
+     * @event
+     * @blazorProperty 'ExportSucceed'
+     */
+    @Event()
+    public exportSuccess: EmitType<ExportSuccessEventArgs>;
+
+    /**
+     * Triggers when an imports annotations failed in the PDF document.
+     * @event
+     * @blazorProperty 'ImportFailed'
+     */
+    @Event()
+    public importFailed: EmitType<ImportFailureEventArgs>;
+
+    /**
+     * Triggers when an export annotations failed in the PDF Viewer.
+     * @event
+     * @blazorProperty 'ExportFailed'
+     */
+    @Event()
+    public exportFailed: EmitType<ExportFailureEventArgs>;
+
+    /**
      * Triggers an event when the thumbnail is clicked in the thumbnail panel of PDF Viewer.
      * @event
      * @blazorProperty 'OnThumbnailClick'
      */
     @Event()
     public thumbnailClick: EmitType<ThumbnailClickEventArgs>;
+
+    /**
+     * Triggers an event when the text selection is started.
+     * @event
+     * @blazorProperty 'OnTextSelectionStart'
+     */
+    @Event()
+    public textSelectionStart: EmitType<TextSelectionStartEventArgs>;
+
+    /**
+     * Triggers an event when the text selection is finished.
+     * @event
+     * @blazorProperty 'OnTextSelectionEnd'
+     */
+    @Event()
+    public textSelectionEnd: EmitType<TextSelectionEndEventArgs>;
 
     /**
      * @private
@@ -1869,6 +1946,18 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
                 case 'enableToolbar':
                     this.notify('', { module: 'toolbar', enable: this.enableToolbar });
                     requireRefresh = true;
+                    break;
+                case 'enableCommentPanel':
+                    this.notify('', { module: 'annotation', enable: this.enableCommentPanel });
+                    requireRefresh = true;
+                    if (this.toolbarModule && this.toolbarModule.annotationToolbarModule) {
+                        this.toolbarModule.annotationToolbarModule.enableCommentPanelTool(this.enableCommentPanel);
+                    }
+                    if (!this.enableCommentPanel) {
+                        if (this.viewerBase.navigationPane) {
+                            this.viewerBase.navigationPane.closeCommentPanelContainer();
+                        }
+                    }
                     break;
                 case 'documentPath':
                     this.load(newProp.documentPath, null);
@@ -2117,7 +2206,10 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
         'Create': 'Create',
         'Font family': 'Font Family',
         'Font size': 'Font Size',
-        'Free Text': 'Free Text'
+        'Free Text': 'Free Text',
+        'Import Failed': 'Invalid JSON file type or file name; please select a valid JSON file',
+        'File not found': 'Imported JSON file is not found in the desired location',
+        'Export Failed': 'Export annotations action has failed; please ensure annotations are added properly'
     };
 
     /**
@@ -2377,8 +2469,13 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
      * @private
      */
     // tslint:disable-next-line
-    public fireAnnotationAdd(pageNumber: number, index: number, type: AnnotationType, bounds: any, settings: any): void {
+    public fireAnnotationAdd(pageNumber: number, index: number, type: AnnotationType, bounds: any, settings: any, textMarkupContent?: string, tmStartIndex?: number, tmEndIndex?: number): void {
         let eventArgs: AnnotationAddEventArgs = { name: 'annotationAdd', pageIndex: pageNumber, annotationId: index, annotationType: type, annotationBound: bounds, annotationSettings: settings };
+        if (textMarkupContent) {
+            eventArgs.textMarkupContent = textMarkupContent;
+            eventArgs.textMarkupStartIndex = tmStartIndex;
+            eventArgs.textMarkupEndIndex = tmEndIndex;
+        }
         this.trigger('annotationAdd', eventArgs);
     }
 
@@ -2412,6 +2509,23 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
     /**
      * @private
      */
+    public fireTextSelectionStart(pageNumber: number): void {
+        let eventArgs: TextSelectionStartEventArgs = { pageIndex: pageNumber };
+        this.trigger('textSelectionStart', eventArgs);
+    }
+
+    /**
+     * @private
+     */
+    // tslint:disable-next-line
+    public fireTextSelectionEnd(pageNumber: number, text: string, bound: any[]): void {
+        let eventArgs: TextSelectionEndEventArgs = { pageIndex: pageNumber, textContent: text, textBounds: bound };
+        this.trigger('textSelectionEnd', eventArgs);
+    }
+
+    /**
+     * @private
+     */
     public renderDrawing(canvas?: HTMLCanvasElement, index?: number): void {
         if (!index && this.viewerBase.activeElements.activePageID) {
             index = this.viewerBase.activeElements.activePageID;
@@ -2434,6 +2548,56 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
     public fireThumbnailClick(pageNumber: number): void {
         let eventArgs: ThumbnailClickEventArgs = { name: 'thumbnailClick', pageNumber: pageNumber };
         this.trigger('thumbnailClick', eventArgs);
+    }
+    /**
+     * @private
+     */
+    // tslint:disable-next-line
+    public fireImportStart(importData: any): void {
+        let eventArgs: ImportStartEventArgs = { name: 'ImportAnnotationsStart', importData: importData };
+        this.trigger('importStart', eventArgs);
+    }
+    /**
+     * @private
+     */
+    // tslint:disable-next-line
+    public fireExportStart(exportData: any): void {
+        let eventArgs: ExportStartEventArgs = { name: 'ExportAnnotationsStart', exportData: exportData };
+        this.trigger('exportStart', eventArgs);
+    }
+    /**
+     * @private
+     */
+    // tslint:disable-next-line
+    public fireImportSuccess(importData: any): void {
+        let eventArgs: ImportSuccessEventArgs = { name: 'ImportAnnotationsSuccess', importData: importData };
+        this.trigger('importSuccess', eventArgs);
+    }
+    /**
+     * @private
+     */
+    // tslint:disable-next-line
+    public fireExportSuccess(exportData: any, fileName: string): void {
+        let eventArgs: ExportSuccessEventArgs = { name: 'ExportAnnotationsSuccess', exportData: exportData, fileName: fileName };
+        this.trigger('exportSuccess', eventArgs);
+    }
+    /**
+     * @private
+     */
+    // tslint:disable-next-line
+    public fireImportFailed(data: any, errorDetails: string): void {
+        // tslint:disable-next-line:max-line-length
+        let eventArgs: ImportFailureEventArgs = { name: 'importAnnotationsFailed', importData: data, errorDetails: errorDetails };
+        this.trigger('importFailed', eventArgs);
+    }
+    /**
+     * @private
+     */
+    // tslint:disable-next-line
+    public fireExportFailed(data: any, errorDetails: string): void {
+        // tslint:disable-next-line:max-line-length
+        let eventArgs: ExportFailureEventArgs = { name: 'exportAnnotationsFailed', exportData: data, errorDetails: errorDetails };
+        this.trigger('exportFailed', eventArgs);
     }
     /**
      * @private

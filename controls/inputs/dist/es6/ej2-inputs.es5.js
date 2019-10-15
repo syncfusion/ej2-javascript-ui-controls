@@ -7894,7 +7894,7 @@ var Uploader = /** @__PURE__ @class */ (function (_super) {
             showSpinner(spinnerTarget);
         }
         if (eventArgs.postRawFile && !isNullOrUndefined(selectedFiles.rawFile) && selectedFiles.rawFile !== '') {
-            formData.append(name, selectedFiles.rawFile);
+            formData.append(name, selectedFiles.rawFile, selectedFiles.name);
         }
         else {
             formData.append(name, selectedFiles.name);
@@ -9531,7 +9531,8 @@ var Uploader = /** @__PURE__ @class */ (function (_super) {
         this.trigger('beforeUpload', eventArgs, function (eventArgs) {
             if (isBlazor()) {
                 _this.currentRequestHeader = eventArgs.currentRequest ? eventArgs.currentRequest : _this.currentRequestHeader;
-                _this.customFormDatas = eventArgs.customFormData ? eventArgs.customFormData : _this.customFormDatas;
+                _this.customFormDatas = (eventArgs.customFormData && eventArgs.customFormData.length > 0) ?
+                    eventArgs.customFormData : _this.customFormDatas;
             }
             _this.uploadFiles(uploadFiles, custom);
         });
@@ -12192,15 +12193,17 @@ var TextBox = /** @__PURE__ @class */ (function (_super) {
         else {
             this.resetValue(this.initialValue);
         }
-        var label = this.textboxWrapper.container.querySelector('.e-float-text');
-        if (!isNullOrUndefined(label)) {
-            if ((isNullOrUndefined(this.initialValue) || this.initialValue === '')) {
-                label.classList.add('e-label-bottom');
-                label.classList.remove('e-label-top');
-            }
-            else if (this.initialValue !== '') {
-                label.classList.add('e-label-top');
-                label.classList.remove('e-label-bottom');
+        if (!isNullOrUndefined(this.textboxWrapper)) {
+            var label = this.textboxWrapper.container.querySelector('.e-float-text');
+            if (!isNullOrUndefined(label)) {
+                if ((isNullOrUndefined(this.initialValue) || this.initialValue === '')) {
+                    label.classList.add('e-label-bottom');
+                    label.classList.remove('e-label-top');
+                }
+                else if (this.initialValue !== '') {
+                    label.classList.add('e-label-top');
+                    label.classList.remove('e-label-bottom');
+                }
             }
         }
     };

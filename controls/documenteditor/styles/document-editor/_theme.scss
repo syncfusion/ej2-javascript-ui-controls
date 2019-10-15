@@ -120,7 +120,7 @@
   }
 
   .e-de-toc-reset-button.e-de-rtl {
-    margin-right: $de-toc-reset-button-margin-rtl;
+    margin-right: 0;
   }
 
   .e-de-toc-modify-button {
@@ -166,8 +166,13 @@
   }
 
   .e-de-toc-dlg-style-label {
-    position: absolute;
-    top: $de-toc-dlg-style-label-top;
+    margin-left: $de-toc-dlg-style-label-left;
+    margin-top: $de-toc-dlg-style-label-top;
+  }
+
+  .e-de-toc-dlg-style-label .e-de-rtl {
+    margin-left: 0;
+    margin-right: $de-toc-dlg-style-label-left;
   }
 
   .e-de-pagesetup-dlg-container {
@@ -730,6 +735,10 @@
     .e-de-style-paragraph-indent-group-button .e-btn-icon {
       color: $de-prop-btn-icon-clr;
       font-size: $de-btn-font-size;
+    }
+
+    .e-de-toc-dlg-style-input {
+      margin-top: 18px;
     }
 
     // sass-lint:disable-all
@@ -1772,17 +1781,8 @@
     float: right;
   }
 
-  .e-de-toc-dlg-right-sub-container {
-    margin-right: $de-toc-dlg-right-sub-container-margin-right;
-    margin-top: $de-toc-dlg-right-sub-container-margin-top;
-  }
-
   .e-de-toc-dlg-right-sub-container.e-de-rtl {
     margin-left: $de-toc-dlg-right-sub-container-margin-right;
-    margin-right: 0;
-  }
-
-  .e-de-toc-dlg-right-sub-container.e-de-rtl {
     margin-right: $de-toc-dlg-right-sub-container-margin-right;
   }
 
@@ -1795,6 +1795,11 @@
   .e-de-toc-dlg-styles.e-de-rtl {
     margin-left: 0;
     margin-right: $de-toc-dlg-styles-margin-left;
+  }
+
+  .e-de-toc-dlg-style-input.e-de-rtl {
+    margin-left: 0;
+    margin-right: $de-toc-dlg-style-input-margin-left;
   }
 
   .e-de-toc-dlg-build-table {
@@ -1818,16 +1823,6 @@
     font-size: 12px;
   }
 
-  .e-de-toc-dlg-show-level-div {
-    margin-left: $de-toc-dlg-show-level-div-margin-left;
-    margin-top: $e-de-toc-dlg-show-level-div-margin-top;
-  }
-
-  .e-de-toc-dlg-show-level-div.e-de-rtl {
-    margin-left: 0;
-    margin-right: $de-toc-dlg-show-level-div-margin-left;
-  }
-
   .e-de-toc-table-div {
     height: $e-de-toc-table-div-height;
     overflow-y: scroll;
@@ -1841,7 +1836,7 @@
   }
 
   .e-de-toc-dlg-outline-levels {
-    margin-top: 10px;
+    margin-top: 15px;
     width: $de-toc-dlg-outline-levels-width;
   }
 
@@ -1852,10 +1847,6 @@
   .e-styles-dlgfields {
     font-weight: 400;
     margin-bottom: 6px;
-  }
-
-  .e-de-toc-dlg-showlevel-div {
-    margin-left: $de-toc-dlg-showlevel-div-margin-left;
   }
 
   .e-tab .e-tab-header .e-toolbar-item .e-de-op-find-tab-header {

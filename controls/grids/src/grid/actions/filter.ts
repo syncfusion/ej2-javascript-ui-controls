@@ -53,6 +53,8 @@ export class Filter implements IAction {
     private fltrDlgDetails: { field?: string, isOpen?: boolean } = { field: '', isOpen: false };
 
     private customOperators: Object;
+    public skipNumberInput: string[] = ['=', ' ', '!'];
+    public skipStringInput: string[] = ['>', '<', '='];
     //Module declarations
     private parent: IGrid;
     private serviceLocator: ServiceLocator;
@@ -340,7 +342,7 @@ export class Filter implements IAction {
             return;
         }
         this.value = filterValue;
-        this.matchCase = this.filterSettings.enableCaseSensitivity;
+        this.matchCase = matchCase || false;
         this.ignoreAccent = this.ignoreAccent = !isNullOrUndefined(ignoreAccent) ? ignoreAccent : this.parent.filterSettings.ignoreAccent;
         this.fieldName = fieldName;
         this.predicate = predicate || 'and';
@@ -696,16 +698,13 @@ export class Filter implements IAction {
 
     private checkForSkipInput(column: Column, value: string): boolean {
         let isSkip: boolean;
-        let skipInput: string[];
         if (column.type === 'number') {
-            skipInput = ['=', ' ', '!'];
-            if (DataUtil.operatorSymbols[value] || skipInput.indexOf(value) > -1) {
+            if (DataUtil.operatorSymbols[value] || this.skipNumberInput.indexOf(value) > -1) {
                 isSkip = true;
             }
         } else if (column.type === 'string') {
-            skipInput = ['>', '<', '=', '!'];
             for (let val of value) {
-                if (skipInput.indexOf(val) > -1) {
+                if (this.skipStringInput.indexOf(val) > -1) {
                     isSkip = true;
                 }
             }
@@ -753,7 +752,8 @@ export class Filter implements IAction {
             return;
         }
         this.validateFilterValue(this.value as string);
-        this.filterByColumn(this.column.field, this.operator, this.value as string, this.predicate, this.matchCase, this.ignoreAccent);
+        this.filterByColumn(this.column.field, this.operator, this.value as string, this.predicate,
+                            this.filterSettings.enableCaseSensitivity, this.ignoreAccent);
         filterElement.value = filterValue;
         this.updateFilterMsg();
     }

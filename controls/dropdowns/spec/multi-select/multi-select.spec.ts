@@ -5664,6 +5664,103 @@ describe('MultiSelect', () => {
             (<any>listObj).focusInHandler();
         });
     });
+    describe('Checking selected item not hidden from the popup', () => {
+        let listObj: MultiSelect;
+        let popupObj: any;
+        let element: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'multiselect', attrs: { 'type': 'text' } });
+        let empList: { [key: string]: Object }[] = [
+            { group:'group1', value: 'data11'},
+            { group:'group1', value: 'data12'},
+            { group:'group1', value: 'data13'},
+            { group:'group1', value: 'data14'},
+            { group:'group2', value: 'data21'},
+            { group:'group2', value: 'data22'},
+            { group:'group2', value: 'data23'},
+            { group:'group2', value: 'data24'},
+            { group:'group3', value: 'data31'},
+            { group:'group3', value: 'data32'},
+            { group:'group3', value: 'data33'},
+            { group:'group3', value: 'data34'},
+        ];
+        beforeAll(() => {
+            document.body.innerHTML = '';
+            document.body.appendChild(element);
+        });
+        afterAll(() => {
+            if (element) {
+                listObj.destroy();
+                element.remove();
+            }
+        });
+        it('Validation for the grouping in CheckBox Mode with ascending order', () => {
+            let listObj: MultiSelect = new MultiSelect({
+                dataSource: empList,
+                fields: { text: 'value', value: 'value', groupBy: 'group' },
+                enableGroupCheckBox: true,
+                mode : 'CheckBox',
+                width: '250px',
+                placeholder: 'Select a data',
+                popupWidth: '250px',
+                popupHeight: '300px',
+                sortOrder: "Ascending",
+            });
+            listObj.appendTo(element);
+            listObj.showPopup();
+            let keyboardEventArgs: any = { preventDefault: (): void => { }, };
+            expect((<any>listObj).isPopupOpen()).toBe(true);
+            keyboardEventArgs.keyCode = 40;
+            (<any>listObj).onKeyDown(keyboardEventArgs);
+            (<any>listObj).onKeyDown(keyboardEventArgs);
+            keyboardEventArgs.keyCode = 32;
+            keyboardEventArgs.code = 'Space';
+            (<any>listObj).onKeyDown(keyboardEventArgs);
+            let listElement: any = (<any>listObj).ulElement.querySelector("li.e-list-item");
+            expect(listElement.classList.contains('e-active')).toBe(true);
+            mouseEventArgs.type = 'click';
+            mouseEventArgs.target = document.body;
+            (listObj as any).onDocumentClick(mouseEventArgs);
+            (listObj as any).onBlur(mouseEventArgs);
+            listObj.showPopup();
+            expect((<any>listObj).isPopupOpen()).toBe(true);
+            expect(listElement.classList.contains('e-active')).toBe(true);
+            listObj.hidePopup();
+            listObj.destroy();
+        });
+        it('Validation for the grouping in CheckBox Mode ascending order', () => {
+            let listObj: MultiSelect = new MultiSelect({
+                dataSource: empList,
+                fields: { text: 'value', value: 'value', groupBy: 'group' },
+                enableGroupCheckBox: true,
+                mode : 'CheckBox',
+                width: '250px',
+                placeholder: 'Select a data',
+                popupWidth: '250px',
+                popupHeight: '300px',
+                sortOrder: "Descending",
+            });
+            listObj.appendTo(element);
+            listObj.showPopup();
+            let keyboardEventArgs: any = { preventDefault: (): void => { }, };
+            expect((<any>listObj).isPopupOpen()).toBe(true);
+            keyboardEventArgs.keyCode = 40;
+            (<any>listObj).onKeyDown(keyboardEventArgs);
+            (<any>listObj).onKeyDown(keyboardEventArgs);
+            keyboardEventArgs.keyCode = 32;
+            keyboardEventArgs.code = 'Space';
+            (<any>listObj).onKeyDown(keyboardEventArgs);
+            let listElement: any = (<any>listObj).ulElement.querySelector("li.e-list-item");
+            expect(listElement.classList.contains('e-active')).toBe(true);
+            mouseEventArgs.type = 'click';
+            mouseEventArgs.target = document.body;
+            (listObj as any).onDocumentClick(mouseEventArgs);
+            (listObj as any).onBlur(mouseEventArgs);
+            listObj.showPopup();
+            expect((<any>listObj).isPopupOpen()).toBe(true);
+            expect(listElement.classList.contains('e-active')).toBe(true);
+            listObj.hidePopup();
+            listObj.destroy();
+        });
+    });
     describe('Filtering API', () => {
         let ele: HTMLElement = document.createElement('input');
         ele.id = 'newlist';
@@ -5886,6 +5983,241 @@ describe('MultiSelect', () => {
                     done();
                 }, 2000);
             }, 800);
+        });
+    });
+    describe('EJ2-32125-Remote data binding', () => {
+        let listObj: MultiSelect;
+        let popupObj: any;
+        let originalTimeout: number;
+        let element: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'multiselect' });
+        let remoteData: DataManager = new DataManager({ url: '/api/Employees', adaptor: new ODataV4Adaptor });
+        beforeAll(() => {
+            document.body.innerHTML = '';
+            document.body.appendChild(element);
+            originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+        });
+        afterAll(() => {
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = originalTimeout;
+            if (element) {
+                element.remove();
+            }
+        });
+        it('allowCustomValue.-remote data', (done) => {
+            listObj = new MultiSelect({ hideSelectedItem: false, dataSource: remoteData, mode: 'Box', fields: { value: 'EmployeeID', text: 'FirstName' }, allowCustomValue: true });
+            listObj.appendTo(element);
+            listObj.showPopup();
+            (<any>listObj).focusInHandler();
+            keyboardEventArgs.altKey = false;
+            keyboardEventArgs.keyCode = 65;
+            setTimeout(() => {
+                (<any>listObj).keyDownStatus = true;
+                (<any>listObj).onInput();
+                (<any>listObj).KeyUp(keyboardEventArgs);
+                setTimeout(() => {
+                    expect((<any>listObj).liCollections.length > 1).toBe(true);
+                    expect((<any>listObj).value).toBe(null);
+                    listObj.destroy();
+                    done();
+                }, 2000);
+            }, 800);
+        });
+    });
+    describe('Select All functionality against Maximumselection length', () => {
+        let listObj: MultiSelect;
+        let popupObj: any;
+        let element: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'multiselect', attrs: { 'type': 'text' } });
+        let empList: { [key: string]: Object }[] = [
+            { "Name": "Australia", "Code": "AU", "Start": "A" },
+            { "Name": "Bermuda", "Code": "BM", "Start": "B" },
+            { "Name": "Canada", "Code": "CA", "Start": "C" },
+            { "Name": "Cameroon", "Code": "CM", "Start": "C" },
+            { "Name": "Denmark", "Code": "DK", "Start": "D" },
+            { "Name": "France", "Code": "FR", "Start": "F" },
+            { "Name": "Finland", "Code": "FI", "Start": "F" },
+            { "Name": "Germany", "Code": "DE", "Start": "G" },
+            { "Name": "Greenland", "Code": "GL", "Start": "G" },
+            { "Name": "Hong Kong", "Code": "HK", "Start": "H" },
+            { "Name": "India", "Code": "IN", "Start": "I" },
+            { "Name": "Italy", "Code": "IT", "Start": "I" },
+            { "Name": "Japan", "Code": "JP", "Start": "J" },
+            { "Name": "Mexico", "Code": "MX", "Start": "M" },
+            { "Name": "Norway", "Code": "NO", "Start": "N" },
+            { "Name": "Poland", "Code": "PL", "Start": "P" },
+            { "Name": "Switzerland", "Code": "CH", "Start": "S" },
+            { "Name": "United Kingdom", "Code": "GB", "Start": "U" },
+            { "Name": "United States", "Code": "US", "Start": "U" }
+        ];
+        beforeAll(() => {
+            document.body.innerHTML = '';
+            document.body.appendChild(element);
+        });
+        afterAll(() => {
+            if (element) {
+                listObj.destroy();
+                element.remove();
+            }
+        });
+        it('Without grouping', () => {
+            let listObj: MultiSelect = new MultiSelect({
+                dataSource: empList,
+                fields: { text: 'Name', value: 'Name' },
+                showSelectAll: true,
+                mode : 'CheckBox',
+                width: '250px',
+                placeholder: 'Select an employee',
+                popupWidth: '250px',
+                popupHeight: '300px',
+                maximumSelectionLength: 5
+            });
+            listObj.appendTo(element);
+            (<any>listObj).renderPopup();
+            listObj.showPopup();
+            expect((<any>listObj).isPopupOpen()).toBe(true);
+            mouseEventArgs.target = (listObj as any).popupWrapper.querySelectorAll('.e-selectall-parent')[0];
+            mouseEventArgs.type = 'click';
+            (<any>listObj).selectAllItem(true, mouseEventArgs);
+            expect((listObj as any).list.querySelectorAll('.e-active').length == (listObj as any).maximumSelectionLength).toBe(true);
+            expect((listObj as any).value.length == (listObj as any).maximumSelectionLength).toBe(true);
+            listObj.hidePopup();
+            listObj.destroy();
+        });
+        it('With grouping', () => {
+            let listObj: MultiSelect = new MultiSelect({
+                dataSource: empList,
+                fields: { text: 'Name', value: 'Name', groupBy: 'Start' },
+                showSelectAll: true,
+                mode : 'CheckBox',
+                width: '250px',
+                placeholder: 'Select an employee',
+                popupWidth: '250px',
+                popupHeight: '300px',
+                maximumSelectionLength: 5
+            });
+            listObj.appendTo(element);
+            (<any>listObj).renderPopup();
+            listObj.showPopup();
+            expect((<any>listObj).isPopupOpen()).toBe(true);
+            mouseEventArgs.target = (listObj as any).popupWrapper.querySelectorAll('.e-selectall-parent')[0];
+            mouseEventArgs.type = 'click';
+            (<any>listObj).selectAllItem(true, mouseEventArgs);
+            expect((listObj as any).list.querySelectorAll('.e-list-item.e-active').length == (listObj as any).maximumSelectionLength).toBe(true);
+            expect((listObj as any).value.length == (listObj as any).maximumSelectionLength).toBe(true);
+            listObj.hidePopup();
+            listObj.destroy();
+        });
+        it('Grouping with checkbox', () => {
+            let listObj: MultiSelect = new MultiSelect({
+                dataSource: empList,
+                fields: { text: 'Name', value: 'Name', groupBy: 'Start' },
+                showSelectAll: true,
+                enableGroupCheckBox: true,
+                mode : 'CheckBox',
+                width: '250px',
+                placeholder: 'Select an employee',
+                popupWidth: '250px',
+                popupHeight: '300px',
+                maximumSelectionLength: 1
+            });
+            listObj.appendTo(element);
+            (<any>listObj).renderPopup();
+            listObj.showPopup();
+            expect((<any>listObj).isPopupOpen()).toBe(true);
+            mouseEventArgs.target = (listObj as any).popupWrapper.querySelectorAll('.e-list-group-item')[0];
+            mouseEventArgs.type = 'click';
+            (<any>listObj).onMouseClick(mouseEventArgs);
+            expect((listObj as any).list.querySelectorAll('.e-list-item.e-active').length == (listObj as any).maximumSelectionLength).toBe(true);
+            expect((listObj as any).value.length == (listObj as any).maximumSelectionLength).toBe(true);
+            listObj.hidePopup();
+            listObj.destroy();
+        });
+    });
+    describe('Select All Public method functionality', () => {
+        let listObj: MultiSelect;
+        let popupObj: any;
+        let element: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'multiselect', attrs: { 'type': 'text' } });
+        let empList: { [key: string]: Object }[] = [
+            { "Name": "Australia", "Code": "AU", "Start": "A" },
+            { "Name": "Bermuda", "Code": "BM", "Start": "B" },
+            { "Name": "Canada", "Code": "CA", "Start": "C" },
+            { "Name": "Cameroon", "Code": "CM", "Start": "C" },
+            { "Name": "Denmark", "Code": "DK", "Start": "D" },
+            { "Name": "France", "Code": "FR", "Start": "F" },
+            { "Name": "Finland", "Code": "FI", "Start": "F" },
+            { "Name": "Germany", "Code": "DE", "Start": "G" },
+            { "Name": "Greenland", "Code": "GL", "Start": "G" },
+            { "Name": "Hong Kong", "Code": "HK", "Start": "H" },
+            { "Name": "India", "Code": "IN", "Start": "I" },
+            { "Name": "Italy", "Code": "IT", "Start": "I" },
+            { "Name": "Japan", "Code": "JP", "Start": "J" },
+            { "Name": "Mexico", "Code": "MX", "Start": "M" },
+            { "Name": "Norway", "Code": "NO", "Start": "N" },
+            { "Name": "Poland", "Code": "PL", "Start": "P" },
+            { "Name": "Switzerland", "Code": "CH", "Start": "S" },
+            { "Name": "United Kingdom", "Code": "GB", "Start": "U" },
+            { "Name": "United States", "Code": "US", "Start": "U" }
+        ];
+        beforeAll(() => {
+            document.body.innerHTML = '';
+            document.body.appendChild(element);
+        });
+        afterAll(() => {
+            if (element) {
+                listObj.destroy();
+                element.remove();
+            }
+        });
+        it('Without grouping', () => {
+            let listObj: MultiSelect = new MultiSelect({
+                dataSource: empList,
+                fields: { text: 'Name', value: 'Name' },
+                showSelectAll: true,
+                mode : 'CheckBox',
+                width: '250px',
+                placeholder: 'Select an employee',
+                popupWidth: '250px',
+                popupHeight: '300px',
+            });
+            listObj.appendTo(element);
+            (<any>listObj).renderPopup();
+            (<any>listObj).selectAll(true);
+            expect((<any>listObj).value.length === (<any>listObj).liCollections.length).toBe(true);
+            listObj.destroy();
+        });
+        it('With grouping', () => {
+            let listObj: MultiSelect = new MultiSelect({
+                dataSource: empList,
+                fields: { text: 'Name', value: 'Name', groupBy: 'Start' },
+                showSelectAll: true,
+                mode : 'CheckBox',
+                width: '250px',
+                placeholder: 'Select an employee',
+                popupWidth: '250px',
+                popupHeight: '300px',
+            });
+            listObj.appendTo(element);
+            (<any>listObj).renderPopup();
+            (<any>listObj).selectAll(true);
+            expect((<any>listObj).value.length === (<any>listObj).liCollections.length).toBe(true);
+            listObj.destroy();
+        });
+        it('enableGroupCheckBox is true', () => {
+            let listObj: MultiSelect = new MultiSelect({
+                dataSource: empList,
+                fields: { text: 'Name', value: 'Name', groupBy: 'Start' },
+                showSelectAll: true,
+                mode : 'CheckBox',
+                width: '250px',
+                placeholder: 'Select an employee',
+                popupWidth: '250px',
+                popupHeight: '300px',
+                enableGroupCheckBox: true,
+            });
+            listObj.appendTo(element);
+            (<any>listObj).renderPopup();
+            (<any>listObj).selectAll(true);
+            expect((<any>listObj).value.length === (<any>listObj).liCollections.length).toBe(true);
+            listObj.destroy();
         });
     });
     it('memory leak', () => {     

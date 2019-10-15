@@ -1,4 +1,4 @@
-import { LayoutViewer, PageLayoutViewer } from '../../src/index';
+import { LayoutViewer, PageLayoutViewer, TextElementBox } from '../../src/index';
 import { DocumentEditor } from '../../src/document-editor/document-editor';
 import { createElement } from '@syncfusion/ej2-base';
 import { extend } from '@syncfusion/ej2-base';
@@ -180,5 +180,37 @@ describe('open find pane and repalce pane testing', () => {
         optionsPane.onKeyDownInternal();
         let resultCount = (optionsPane as any).resultsListBlock.children.length;
         expect(resultCount).toBe(1);
+    });
+});
+
+describe('search icon focus validation', () => {
+    let editor: DocumentEditor = undefined;
+    let optionsPane: OptionsPane;
+    beforeEach((): void => {
+        let ele: HTMLElement = createElement('div', { id: 'container' });
+        document.body.appendChild(ele);
+        DocumentEditor.Inject(Editor, Selection, OptionsPane, Search, EditorHistory);
+        editor = new DocumentEditor({ enableEditor: true, enableOptionsPane: true, enableSelection: true, isReadOnly: false, enableSearch: true, enableEditorHistory: true });
+        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        editor.appendTo('#container');
+        optionsPane = editor.optionsPaneModule;
+    });
+    afterEach(() => {
+        document.body.removeChild(document.getElementById('container'));
+        editor.destroy();
+        optionsPane.destroy();
+        editor = undefined;
+    });
+    it('Scroll Update Validation', () => {
+        editor.open(getJson());
+        let optionsPane = editor.optionsPaneModule;
+        optionsPane.showHideOptionsPane(true);
+        (optionsPane as any).searchInput.value = 'Road';
+        optionsPane.searchIconClickInternal();
+        let scrollTop: number = editor.viewer.viewerContainer.scrollTop;
+        expect(scrollTop).not.toBe(0);
     });
 });

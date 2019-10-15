@@ -93,6 +93,8 @@ export function removeChildInContainer(
     diagram: Diagram, obj: NodeModel | ConnectorModel, position: PointModel, isBoundsUpdate: boolean): void {
     let container: NodeModel; let connectorList: string[] = [];
     if (checkParentAsContainer(diagram, obj, true)) {
+        let isProtectedOnChange: string = 'isProtectedOnChange';
+        let propertyChangeValue: boolean = diagram[isProtectedOnChange];
         diagram.protectPropertyChange(true);
         container = diagram.nameTable[(obj as Node).parentId];
         let wrapper: Canvas = container.wrapper as Canvas;
@@ -114,6 +116,7 @@ export function removeChildInContainer(
                 }
             }
         }
+        diagram.protectPropertyChange(propertyChangeValue);
     }
 }
 
@@ -278,6 +281,11 @@ export function addChildToContainer(diagram: Diagram, parent: NodeModel, node: N
                 let currentParentId: string = canvasId.substring(0, canvasId.length - 1);
                 for (let i: number = 0; i < lanes.length; i++) {
                     if ((container as Node).isLane && currentParentId === lanes[i].id) {
+                        // tslint:disable-next-line:no-any
+                        if (!((node as any).parentObj instanceof Diagram)) {
+                            // tslint:disable-next-line:no-any
+                            (node as any).parentObj = lanes[i];
+                        }
                         lanes[i].children.push(node);
                     }
                 }
@@ -352,6 +360,7 @@ export function updateLaneBoundsAfterAddChild(
         checkLaneSize(swimLane);
     }
     considerSwimLanePadding(diagram, node as NodeModel, padding);
+    diagram.updateDiagramElementQuad();
     return isGroupAction;
 }
 

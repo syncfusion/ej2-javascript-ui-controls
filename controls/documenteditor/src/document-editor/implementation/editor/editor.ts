@@ -868,7 +868,7 @@ export class Editor {
         this.initHistory('Insert');
         let paragraphInfo: ParagraphInfo = this.getParagraphInfo(selection.start);
         this.viewer.selection.editPosition = this.getHierarchicalIndex(paragraphInfo.paragraph, paragraphInfo.offset.toString());
-        let bidi: boolean = selection.start.paragraph.paragraphFormat.getValue('bidi') as boolean;
+        let bidi: boolean = selection.start.paragraph.paragraphFormat.bidi;
         if (!bidi && this.viewer.layout.isContainsRtl(selection.start.currentWidget)) {
             this.viewer.layout.reArrangeElementsForRtl(selection.start.currentWidget, bidi);
         }
@@ -2300,7 +2300,9 @@ export class Editor {
         this.viewer.selection.fireSelectionChanged(true);
     }
     private pasteCopiedData(widgets: BlockWidget[], currentFormat?: WParagraphFormat): void {
-
+        if (this.viewer.layout.isBidiReLayout) {
+            this.viewer.layout.isBidiReLayout = false;
+        }
         for (let j: number = 0; j < widgets.length; j++) {
             let widget: BlockWidget = widgets[j];
             if (widget instanceof ParagraphWidget && widget.childWidgets.length === 0) {
@@ -2316,8 +2318,14 @@ export class Editor {
                 let paragraphFormat: WParagraphFormat;
                 if (newParagraph.childWidgets.length > 0
                     && (newParagraph.childWidgets[0] as LineWidget).children.length > 0) {
-                    if (newParagraph.paragraphFormat.listFormat.listId !== -1) {
+                    if (newParagraph.paragraphFormat.listFormat.listId !== -1 || newParagraph.paragraphFormat.bidi) {
                         paragraphFormat = newParagraph.paragraphFormat;
+                    }
+                    let insertPosition: TextPosition = this.selection.start;
+                    if ((insertPosition.paragraph.paragraphFormat.textAlignment === 'Center'
+                        || insertPosition.paragraph.paragraphFormat.textAlignment === 'Right') &&
+                        insertPosition.paragraph.paragraphFormat.listFormat.listId === -1) {
+                        insertPosition.paragraph.x = this.viewer.clientActiveArea.x;
                     }
                     this.insertElement((newParagraph.childWidgets[0] as LineWidget).children, paragraphFormat);
                 }
@@ -2530,7 +2538,7 @@ export class Editor {
         if (paragraphFormat) {
             paragraph.paragraphFormat.copyFormat(paragraphFormat);
         }
-        this.viewer.layout.reLayoutParagraph(paragraph, lineIndex, 0);
+        this.viewer.layout.reLayoutParagraph(paragraph, lineIndex, 0, paragraph.paragraphFormat.bidi);
         this.setPositionParagraph(paragraphInfo.paragraph, paragraphInfo.offset + length, true);
     }
     private insertElementInternal(element: ElementBox, newElement: ElementBox, index: number, relayout?: boolean): void {
@@ -2538,8 +2546,10 @@ export class Editor {
         let paragraph: ParagraphWidget = line.paragraph;
         let lineIndex: number = line.indexInOwner;
         let insertIndex: number = element.indexInOwner;
-        if (index === element.length) { // Add new Element in current 
-            if (!paragraph.paragraphFormat.bidi) {
+        let isBidi: boolean = paragraph.paragraphFormat.bidi && element.isRightToLeft;
+        if (index === element.length) {
+            // Add new Element in current 
+            if (!isBidi) {
                 insertIndex++;
             }
             line.children.splice(insertIndex, 0, newElement);
@@ -2551,7 +2561,9 @@ export class Editor {
                 element.line.children.splice(insertIndex, 0, newElement);
             }
         } else {
-            insertIndex++;
+            if (!isBidi) {
+                insertIndex++;
+            }
             let textElement: TextElementBox = new TextElementBox();
             textElement.characterFormat.copyFormat(element.characterFormat);
             textElement.text = (element as TextElementBox).text.substring(index);
@@ -2559,7 +2571,7 @@ export class Editor {
             line.children.splice(insertIndex, 0, textElement);
             textElement.line = element.line;
             //Inserts the new inline.
-            line.children.splice(insertIndex, 0, newElement);
+            line.children.splice(isBidi ? insertIndex + 1 : insertIndex, 0, newElement);
             insertIndex -= 1;
         }
         newElement.line = element.line;
@@ -2889,6 +2901,7 @@ export class Editor {
         let row: TableRowWidget = prevBlock.childWidgets[prevBlock.childWidgets.length - 1] as TableRowWidget;
         prevBlock.insertTableRowsInternal(table.childWidgets as TableRowWidget[], prevBlock.childWidgets.length);
         let paragraph: ParagraphWidget = this.selection.getFirstParagraph(row.nextWidget.childWidgets[0] as TableCellWidget);
+        prevBlock.isDefaultFormatUpdated = false;
         this.viewer.layout.reLayoutTable(prevBlock);
         this.selection.selectParagraph(paragraph, true);
         if (this.editorHistory && this.editorHistory.currentBaseHistoryInfo) {
@@ -7811,6 +7824,9 @@ export class Editor {
                     && (inline as EditRangeEndElementBox).editRangeStart === inline.previousNode)) {
                 return;
             }
+            if (inline instanceof EditRangeStartElementBox && !(inline.previousNode instanceof EditRangeEndElementBox)) {
+                return;
+            }
             if (inline instanceof EditRangeEndElementBox) {
                 inline = inline.previousNode;
                 paragraph = inline.line.paragraph;
@@ -10379,6 +10395,9 @@ export class Editor {
                 let lineWidget: LineWidget = paragraph.childWidgets[lineIndex] as LineWidget;
                 for (let elementIndex: number = 0; elementIndex < lineWidget.children.length; elementIndex++) {
                     let element: ElementBox = lineWidget.children[elementIndex];
+                    if (element.isPageBreak) {
+                        continue;
+                    }
                     if ((element instanceof FieldElementBox) || (element instanceof BookmarkElementBox) || isFieldCode) {
                         if (element instanceof FieldElementBox) {
                             if (element.fieldType === 0) {

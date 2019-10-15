@@ -1,4 +1,4 @@
-import { Component, Event, EventHandler, NotifyPropertyChanges, Property, addClass, append, attributes, closest, deleteObject, detach, getInstance, getUniqueID, getValue, isBlazor, isNullOrUndefined, isRippleEnabled, removeClass, rippleEffect, setValue } from '@syncfusion/ej2-base';
+import { Component, Event, EventHandler, NotifyPropertyChanges, Property, addClass, append, attributes, closest, deleteObject, detach, getElement, getInstance, getUniqueID, getValue, isBlazor, isNullOrUndefined, isRippleEnabled, removeClass, rippleEffect, setValue } from '@syncfusion/ej2-base';
 
 /**
  * Initialize wrapper element for angular.
@@ -635,6 +635,7 @@ var CheckBox = /** @__PURE__ @class */ (function (_super) {
         }
         var label = this.createElement('label', { attrs: { for: this.element.id } });
         var frameSpan = this.createElement('span', { className: 'e-icons ' + FRAME });
+        wrapper.classList.add('e-wrapper');
         if (this.enableRtl) {
             wrapper.classList.add(RTL);
         }
@@ -1088,6 +1089,7 @@ var RadioButton = /** @__PURE__ @class */ (function (_super) {
                 isCenterRipple: true
             });
         }
+        wrapper.classList.add('e-wrapper');
         if (this.enableRtl) {
             label.classList.add(RTL$1);
         }
@@ -1474,6 +1476,7 @@ var Switch = /** @__PURE__ @class */ (function (_super) {
             handle.appendChild(rippleSpan);
             rippleEffect(rippleSpan, { duration: 400, isCenterRipple: true });
         }
+        wrapper.classList.add('e-wrapper');
         if (this.enableRtl) {
             wrapper.classList.add(RTL$2);
         }
@@ -2022,28 +2025,29 @@ var ChipList = /** @__PURE__ @class */ (function (_super) {
         var chipWrapper = closest(e.target, '.' + classNames.chip);
         if (chipWrapper) {
             if (this.type !== 'chip') {
-                var chipData_1 = this.find(chipWrapper);
-                chipData_1.event = e;
+                var chipData = this.find(chipWrapper);
+                chipData.event = e;
                 var deleteElement = e.target.classList.contains(classNames.delete) ?
                     e.target : (del ? chipWrapper.querySelector('.' + classNames.delete) : undefined);
                 if (deleteElement && this.enableDelete) {
-                    chipData_1.cancel = false;
-                    var deletedItemArgs = chipData_1;
+                    chipData.cancel = false;
+                    var deletedItemArgs = chipData;
                     this.trigger('delete', deletedItemArgs, function (observedArgs) {
                         if (!observedArgs.cancel) {
-                            _this.deleteHandler(chipData_1.element, chipData_1.index);
+                            observedArgs.element = isBlazor() ? getElement(observedArgs.element) : observedArgs.element;
+                            _this.deleteHandler(observedArgs.element, observedArgs.index);
                         }
                     });
                 }
                 else if (this.selection !== 'None') {
                     this.selectionHandler(chipWrapper);
-                    chipData_1.selected = chipWrapper.classList.contains(classNames.active);
-                    var selectedItemArgs = chipData_1;
+                    chipData.selected = chipWrapper.classList.contains(classNames.active);
+                    var selectedItemArgs = chipData;
                     this.trigger('click', selectedItemArgs);
                 }
                 else {
                     this.focusInHandler(chipWrapper);
-                    var clickedItemArgs = chipData_1;
+                    var clickedItemArgs = chipData;
                     this.trigger('click', clickedItemArgs);
                 }
             }

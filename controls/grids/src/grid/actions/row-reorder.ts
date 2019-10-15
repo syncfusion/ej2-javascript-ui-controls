@@ -2,7 +2,7 @@ import { MouseEventArgs, Draggable, isBlazor } from '@syncfusion/ej2-base';
 import { removeClass } from '@syncfusion/ej2-base';
 import { remove, closest as closestElement, classList, BlazorDragEventArgs  } from '@syncfusion/ej2-base';
 import { IGrid, NotifyArgs, EJ2Intance, IPosition, RowDragEventArgs } from '../base/interface';
-import { parentsUntil, removeElement, getPosition, addRemoveActiveClasses } from '../base/util';
+import { parentsUntil, removeElement, getPosition, addRemoveActiveClasses, isActionPrevent } from '../base/util';
 import * as events from '../base/constant';
 import { Scroll } from '../actions/scroll';
 import { RowDropEventArgs } from '../base/interface';
@@ -187,9 +187,20 @@ export class RowDD {
     }
 
     private dragStop: Function = (e: { target: HTMLTableRowElement, event: MouseEventArgs, helper: Element }) => {
+        if (isActionPrevent(this.parent)) {
+            this.parent.notify(events.preventBatch, {
+                instance: this, handler: this.processDragStop, arg1: e
+            });
+        } else {
+            this.processDragStop(e);
+        }
+    }
+
+    private processDragStop: Function = (e: { target: HTMLTableRowElement, event: MouseEventArgs, helper: Element }) => {
         let gObj: IGrid = this.parent; if (this.parent.isDestroyed) { return; }
         let targetEle: Element = this.getElementFromPosition(e.helper as HTMLElement, e.event);
-        let target: Element = targetEle ? targetEle : e.target;
+        let target: Element = targetEle && !targetEle.classList.contains('e-dlg-overlay') ?
+            targetEle : e.target;
         let cloneElement: HTMLElement = this.parent.element.querySelector('.e-cloneproperties') as HTMLElement;
         gObj.element.classList.remove('e-rowdrag');
         let dropElement: EJ2Intance = document.getElementById(gObj.rowDropSettings.targetID) as EJ2Intance;

@@ -91,7 +91,7 @@ export class Toolbar {
 
     private fetchReports(): FetchReportArgs {
         let reports: any = { reportName: [] };
-        let tool: Toolbar;
+        let tool: Toolbar = this;
         if(isBlazor()){
             reports = this.fetchReportsArgs();
             reports.then( function(e : any){

@@ -717,7 +717,8 @@ export class Toolbar extends Component<HTMLElement> implements INotifyPropertyCh
         }
         if (!eventArgs.cancel) {
             this.trigger('clicked', eventArgs, (clickedArgs: ClickEventArgs) => {
-                if (!isNOU(this.popObj) && isPopupElement && !clickedArgs.cancel && this.overflowMode === 'Popup') {
+                if (!isNOU(this.popObj) && isPopupElement && !clickedArgs.cancel && this.overflowMode === 'Popup' &&
+                    clickedArgs.item && clickedArgs.item.type !== 'Input') {
                     this.popObj.hide({ name: 'FadeOut', duration: 100 });
                 }
             });

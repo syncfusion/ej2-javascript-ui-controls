@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 17.3.17 (2019-10-15)
+
+### File Manager
+
+#### Breaking Changes
+
+- Now, the rename dialog shows or hides the file name extension based on the `showFileExtension` property value in the file manager.
+
 ## 17.3.14 (2019-10-03)
 
 ### File Manager

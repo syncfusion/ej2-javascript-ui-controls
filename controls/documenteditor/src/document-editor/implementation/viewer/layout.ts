@@ -286,12 +286,13 @@ export class Layout {
         let footerMaxHeight: number = bodyWidget.page.boundingRectangle.height - (bodyWidget.page.boundingRectangle.height / 100) * 40;
         widgetTop = Math.max(widgetTop, footerMaxHeight);
         shiftTop = widgetTop - bodyWidget.y;
-        bodyWidget.y = widgetTop;
+        let childTop: number = bodyWidget.y = widgetTop;
         for (let i: number = 0; i < bodyWidget.childWidgets.length; i++) {
             let childWidget: IWidget = bodyWidget.childWidgets[i];
             if (childWidget instanceof ParagraphWidget) {
                 (childWidget as Widget).x = (childWidget as Widget).x;
-                (childWidget as Widget).y = (childWidget as Widget).y + shiftTop;
+                (childWidget as Widget).y = i === 0 ? (childWidget as Widget).y + shiftTop : childTop;
+                childTop += childWidget.height;
             } else {
                 this.shiftChildLocationForTableWidget(childWidget as TableWidget, shiftTop);
             }
@@ -2638,7 +2639,8 @@ export class Layout {
                 if (viewer.splittedCellWidgets.length > 0 && tableRowWidget.y + tableRowWidget.height <= viewer.clientArea.bottom) {
                     let isRowSpanEnd: boolean = this.isRowSpanEnd(row, viewer);
                     if (!isRowSpanEnd) {
-                        if (this.isVerticalMergedCellContinue(row) && tableRowWidget.y === viewer.clientArea.y) {
+                        if (this.isVerticalMergedCellContinue(row) && (tableRowWidget.y === viewer.clientArea.y
+                            || tableRowWidget.y === this.viewer.clientArea.y + tableRowWidget.ownerTable.headerHeight)) {
                             this.insertSplittedCellWidgets(viewer, tableWidgets, tableRowWidget, tableRowWidget.indexInOwner - 1);
                         }
                         this.addWidgetToTable(viewer, tableWidgets, rowWidgets, tableRowWidget);
@@ -2689,7 +2691,8 @@ export class Layout {
                     let isInsertSplittedWidgets: boolean = false;
                     // Splitting handled for the merged cell with allowRowBreakAcross pages. 
                     if (this.isVerticalMergedCellContinue(row) && (isAllowBreakAcrossPages ||
-                        (isInsertSplittedWidgets = tableRowWidget.y === viewer.clientArea.y))) {
+                        (isInsertSplittedWidgets = (tableRowWidget.y === viewer.clientArea.y
+                            || tableRowWidget.y === this.viewer.clientArea.y + tableRowWidget.ownerTable.headerHeight)))) {
                         if (isInsertSplittedWidgets) {
                             this.insertSplittedCellWidgets(viewer, tableWidgets, splittedWidget, tableRowWidget.indexInOwner - 1);
                         } else {
@@ -3819,7 +3822,7 @@ export class Layout {
             splittedWidget = nextBlock.getSplitWidgets() as BlockWidget[];
             nextBlock = splittedWidget[splittedWidget.length - 1].nextRenderedWidget as BlockWidget;
         }
-        if (!viewer.owner.isShiftingEnabled || (this.viewer.blockToShift && this.viewer.blockToShift !== block)) {
+        if (!viewer.owner.isShiftingEnabled || (this.viewer.blockToShift !== block)) {
             this.viewer.owner.editorModule.updateListItemsTillEnd(block, updateNextBlockList);
         }
     }
@@ -3853,6 +3856,11 @@ export class Layout {
         isBidi = isNullOrUndefined(isBidi) ? false : isBidi;
         if (this.viewer.blockToShift === paragraphWidget) {
             this.layoutBodyWidgetCollection(paragraphWidget.index, paragraphWidget.containerWidget, paragraphWidget, false);
+            this.isBidiReLayout = true;
+        } else {
+            if (this.isBidiReLayout) {
+                this.isBidiReLayout = false;
+            }
         }
         // let isElementMoved: boolean = elementBoxIndex > 0;
         if (paragraphWidget.isInsideTable) {
@@ -4280,7 +4288,7 @@ export class Layout {
             } else if (row.rowFormat.hasValue('topMargin')) {
                 topMargin = HelperMethods.convertPointToPixel(row.rowFormat.topMargin);
             } else {
-                topMargin = HelperMethods.convertPointToPixel(row.ownerTable.topMargin);
+                topMargin = HelperMethods.convertPointToPixel(row.ownerTable.tableFormat.topMargin);
             }
             if (topMargin > value) {
                 value = topMargin;
@@ -4306,7 +4314,7 @@ export class Layout {
             } else if (row.rowFormat.hasValue('bottomMargin')) {
                 bottomMargin = HelperMethods.convertPointToPixel(row.rowFormat.bottomMargin);
             } else {
-                bottomMargin = HelperMethods.convertPointToPixel(row.ownerTable.bottomMargin);
+                bottomMargin = HelperMethods.convertPointToPixel(row.ownerTable.tableFormat.bottomMargin);
             }
             if (bottomMargin > value) {
                 value = bottomMargin;
@@ -4459,6 +4467,9 @@ export class Layout {
         }
     }
     private shiftWidgetsForPara(paragraph: ParagraphWidget, viewer: LayoutViewer): void {
+        if (paragraph.height > viewer.clientArea.height) {
+            return;
+        }
         let prevBodyObj: BodyWidgetInfo = this.getBodyWidgetOfPreviousBlock(paragraph, 0);
         let prevBodyWidget: BodyWidget = prevBodyObj.bodyWidget;
         let index: number = prevBodyObj.index;
@@ -4962,7 +4973,8 @@ export class Layout {
         }
         return isContainsRTL;
     }
-    // Re arranges the elements for Right to left layotuing.        
+    // Re arranges the elements for Right to left layotuing.
+    // tslint:disable:max-func-body-length    
     public reArrangeElementsForRtl(line: LineWidget, isParaBidi: boolean): void {
         if (line.children.length === 0) {
             return;
@@ -4979,7 +4991,20 @@ export class Layout {
             let isRtl: boolean = false;
             let text: string = '';
             if (element instanceof BookmarkElementBox) {
-                tempElements.push(element);
+                if (isParaBidi) {
+                    if (lastAddedElementIsRtl || element.bookmarkType === 0 && element.nextElement
+                        && element.nextElement.nextElement instanceof TextElementBox
+                        && this.viewer.textHelper.isRTLText(element.nextElement.nextElement.text)
+                        || element.bookmarkType === 1 && element.nextElement instanceof TextElementBox
+                        && this.viewer.textHelper.isRTLText(element.nextElement.text)) {
+                        tempElements.splice(0, 0, element);
+                    } else {
+                        tempElements.splice(lastAddedElementIsRtl ? lastAddedRtlElementIndex : lastAddedRtlElementIndex + 1, 0, element);
+                    }
+                    lastAddedRtlElementIndex = tempElements.indexOf(element);
+                } else {
+                    tempElements.push(element);
+                }
                 continue;
             }
             if (element instanceof TextElementBox) {
@@ -4993,7 +5018,6 @@ export class Layout {
                 isRtl = this.viewer.textHelper.isRTLText(text) || elementCharacterFormat.bidi
                     || elementCharacterFormat.bdo === 'RTL';
             }
-
             // If the text element box contains only whitespaces, then need to check the previous and next elements.
             if (!isRtl && !isNullOrUndefined(text) && text !== '' && text.trim() === '') {
                 let elements: ElementBox[] = line.children;
@@ -5011,12 +5035,9 @@ export class Layout {
                 } else if (lastAddedElementIsRtl) {
                     isRtl = true;
                 }
-
             }
-
             // Preserve the isRTL value, to reuse it for navigation and selection.
             element.isRightToLeft = isRtl;
-
             //Adds the text element to the line
             if (isRtl && elementCharacterFormat.bdo !== 'LTR') {
                 if (lastAddedElementIsRtl) {

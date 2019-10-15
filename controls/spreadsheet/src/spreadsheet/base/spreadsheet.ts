@@ -2,7 +2,8 @@
 import { Property, NotifyPropertyChanges, INotifyPropertyChanged, ModuleDeclaration, EventHandler, Event } from '@syncfusion/ej2-base';
 import { addClass, removeClass, EmitType, Complex, formatUnit, detach, L10n, isNullOrUndefined, Browser } from '@syncfusion/ej2-base';
 import { MenuItemModel, BeforeOpenCloseMenuEventArgs } from '@syncfusion/ej2-navigations';
-import { initialLoad, mouseDown, spreadsheetDestroyed, keyUp, keyDown, getSiblingsHeight } from '../common/index';
+import { initialLoad, mouseDown, spreadsheetDestroyed, keyUp, keyDown } from '../common/index';
+import { getSiblingsHeight, ICellRenderer } from '../common/index';
 import { defaultLocale, locale, setAriaOptions } from '../common/index';
 import { CellEditEventArgs, CellSaveEventArgs, ribbon, formulaBar, sheetTabs, formulaOperation } from '../common/index';
 import { addContextMenuItems, removeContextMenuItems, enableContextMenuItems, selectRange } from '../common/index';
@@ -11,8 +12,9 @@ import { Render } from '../renderer/render';
 import { Scroll, VirtualScroll, Edit, CellFormat, Selection, KeyboardNavigation, KeyboardShortcut, Clipboard } from '../actions/index';
 import { CellRenderEventArgs, IRenderer, IViewport, OpenOptions, MenuSelectArgs, click } from '../common/index';
 import { ServiceLocator, Dialog } from '../services/index';
-import { SheetModel, getCellPosition, getColumnsWidth, getSheetIndex, getSheetNameFromAddress, DataBind } from './../../workbook/index';
-import { BeforeSortEventArgs, SortOptions, beforeSort } from './../../workbook/index';
+import { SheetModel, getCellPosition, getColumnsWidth, getSheetIndex, activeCellChanged } from './../../workbook/index';
+import { getSheetNameFromAddress, DataBind, CellModel } from './../../workbook/index';
+import { BeforeSortEventArgs, SortOptions, beforeSort, sortComplete, SortEventArgs, sortRangeAlert } from './../../workbook/index';
 import { getSheetIndexFromId, WorkbookEdit, WorkbookOpen, WorkbookSave, WorkbookCellFormat, WorkbookSort } from './../../workbook/index';
 import { Workbook } from '../../workbook/base/workbook';
 import { SpreadsheetModel } from './spreadsheet-model';
@@ -401,6 +403,40 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
     @Event()
     public created: EmitType<Event>;
 
+    /**
+     * Triggers before sorting the specified range.
+     * ```html
+     * <div id='Spreadsheet'></div>
+     * ```
+     * ```typescript
+     * new Spreadsheet({
+     *       beforeSort: (args: BeforeSortEventArgs) => {
+     *       }
+     *      ...
+     *  }, '#Spreadsheet');
+     * ```
+     * @event
+     */
+    @Event()
+    public beforeSort: EmitType<BeforeSortEventArgs>;
+
+    /**
+     * Triggers after sorting action is completed.
+     * ```html
+     * <div id='Spreadsheet'></div>
+     * ```
+     * ```typescript
+     * new Spreadsheet({
+     *       sortComplete: (args: SortEventArgs) => {
+     *       }
+     *      ...
+     *  }, '#Spreadsheet');
+     * ```
+     * @event
+     */
+    @Event()
+    public sortComplete: EmitType<SortEventArgs>;
+
     /** @hidden */
     public isOpen: boolean = false;
 
@@ -690,20 +726,38 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
     }
 
     /**
+     * To update a cell properties.
+     * @param {CellModel} cell - Cell properties.
+     * @param {string} address - Address to update.
+     */
+    public updateCell(cell: CellModel, address?: string): void {
+        address = address || this.getActiveSheet().activeCell;
+        super.updateCell(cell, address);
+        this.serviceLocator.getService<ICellRenderer>('cell').refreshRange(getIndexesFromAddress(address));
+        this.notify(activeCellChanged, {});
+    }
+
+    /**
      * Sorts the range of cells in the active sheet.
      * @param sortOptions - options for sorting.
      * @param range - address of the data range.
      */
-     public sort(sortOptions?: SortOptions, range?: string): void {
-        if (!range) {
-            range = this.getActiveSheet().selectedRange;
-        }
+     public sort(sortOptions?: SortOptions, range?: string): Promise<SortEventArgs> {
+        if (!this.allowSorting) { return Promise.reject(); }
+        range = range || this.getActiveSheet().selectedRange;
         sortOptions = sortOptions || { sortDescriptors: {} };
         let args: BeforeSortEventArgs = { range: range, sortOptions: sortOptions, cancel: false };
         this.trigger(beforeSort, args);
-        if (args.cancel) { return; }
-        this.notify(beforeSort, args);
-        super.sort(args.sortOptions, range);
+        if (args.cancel) { return Promise.reject(); }
+        this.notify(beforeSort, null);
+        return super.sort(args.sortOptions, args.range).then((args: SortEventArgs) => {
+            this.notify(sortComplete, args);
+            this.trigger(sortComplete, args);
+            return Promise.resolve(args);
+        }).catch((error: string) => {
+            this.notify(sortRangeAlert, {error: error});
+            return Promise.reject(error);
+        });
     }
 
     /** @hidden */
@@ -830,6 +884,8 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
         this.element.removeAttribute('role');
         this.element.style.removeProperty('height');
         this.element.style.removeProperty('width');
+        this.element.style.removeProperty('min-height');
+        this.element.style.removeProperty('min-width');
     }
 
     /**

@@ -773,7 +773,9 @@
   }
 
   .e-input-group.e-small .e-input-group-icon,
-  .e-input-group.e-control-wrapper.e-small .e-input-group-icon {
+  .e-input-group.e-control-wrapper.e-small .e-input-group-icon,
+  .e-small .e-input-group .e-input-group-icon,
+  .e-small .e-input-group.e-control-wrapper .e-input-group-icon {
     font-size: $input-small-icon-font-size;
     min-height: $input-small-child-min-height;
     min-width: $input-small-child-min-width;
@@ -1273,6 +1275,11 @@
   .e-bigger .e-float-input.e-small input ~ label.e-label-top.e-float-text,
   .e-bigger .e-float-input.e-small input[readonly] ~ label.e-float-text,
   .e-bigger .e-float-input.e-small input[disabled] ~ label.e-float-text,
+  .e-bigger.e-small .e-float-input.e-control-wrapper input:focus ~ label.e-float-text,
+  .e-bigger.e-small .e-float-input.e-control-wrapper input:valid ~ label.e-float-text,
+  .e-bigger.e-small .e-float-input.e-control-wrapper input ~ label.e-label-top.e-float-text,
+  .e-bigger.e-small .e-float-input.e-control-wrapper input[readonly] ~ label.e-float-text,
+  .e-bigger.e-small .e-float-input.e-control-wrapper input[disabled] ~ label.e-float-text,
   .e-float-input.e-control-wrapper.e-small.e-bigger input:focus ~ label.e-float-text,
   .e-float-input.e-control-wrapper.e-small.e-bigger input:valid ~ label.e-float-text,
   .e-float-input.e-control-wrapper.e-small.e-bigger input ~ label.e-label-top.e-float-text,

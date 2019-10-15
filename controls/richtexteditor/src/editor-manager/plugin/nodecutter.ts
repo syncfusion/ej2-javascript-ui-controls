@@ -16,7 +16,10 @@ export class NodeCutter {
         return node;
     }
 
-    private SplitNode(range: Range, node: HTMLElement, isCollapsed: boolean): HTMLElement {
+    /**
+     * @hidden
+     */
+    public SplitNode(range: Range, node: HTMLElement, isCollapsed: boolean): HTMLElement {
         if (node) {
             let clone: Range = range.cloneRange();
             let parent: HTMLElement = node.parentNode as HTMLElement;

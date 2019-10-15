@@ -50,6 +50,7 @@ export class Render {
     private renderer: RendererFactory;
     private emptyGrid: boolean = false;
     private isLayoutRendered: boolean;
+    private counter: number = 0;
 
     /**
      * Constructor for render module
@@ -447,12 +448,29 @@ export class Render {
         prepareColumns(this.parent.columns);
         this.headerRenderer.renderTable();
         this.contentRenderer.renderTable();
+        this.parent.isAutoGen = true;
         this.parent.notify(events.autoCol, {});
     }
 
+    private iterateComplexColumns(obj: Object, field: string, split: Object): void {
+        let keys: string[] = Object.keys(obj);
+        for (let i: number = 0; i < keys.length; i++) {
+            let childKeys: string[] = Object.keys(obj[keys[i]]);
+            if (typeof obj[keys[i]] === 'object' && childKeys.length) {
+                this.iterateComplexColumns(obj[keys[i]], field + (keys[i] + '.'), split);
+            } else {
+                split[this.counter] = field + keys[i];
+                this.counter++;
+            }
+        }
+    }
+
     private buildColumns(record: Object): void {
-        let columns: string[] = Object.keys(record).filter((e: string) => e !== 'BlazId');
         let cols: Column[] = [];
+        let complexCols: Object = {};
+        this.iterateComplexColumns(record, '', complexCols);
+        let columns: string[] = Object.keys(complexCols).filter((e: string) => complexCols[e] !== 'BlazId').
+            map((field: string) => complexCols[field]);
         for (let i: number = 0, len: number = columns.length; i < len; i++) {
             cols[i] = { 'field': columns[i] } as Column;
             if (this.parent.enableColumnVirtualization) {

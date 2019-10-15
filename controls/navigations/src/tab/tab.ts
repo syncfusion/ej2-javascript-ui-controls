@@ -3,7 +3,7 @@ import { INotifyPropertyChanged, NotifyPropertyChanges, ChildProperty, Animation
 import { KeyboardEvents, KeyboardEventArgs, MouseEventArgs, Effect, Browser, formatUnit, DomElements, L10n } from '@syncfusion/ej2-base';
 import { setStyleAttribute as setStyle, isNullOrUndefined as isNOU, selectAll, addClass, removeClass, remove } from '@syncfusion/ej2-base';
 import { EventHandler, rippleEffect, Touch, SwipeEventArgs, compile, Animation, AnimationModel, BaseEventArgs } from '@syncfusion/ej2-base';
-import { updateBlazorTemplate, resetBlazorTemplate, isBlazor } from '@syncfusion/ej2-base';
+import { updateBlazorTemplate, isBlazor } from '@syncfusion/ej2-base';
 import { Popup, PopupModel } from '@syncfusion/ej2-popups';
 import { Toolbar, OverflowMode, ClickEventArgs } from '../toolbar/toolbar';
 import { TabModel, TabItemModel, HeaderModel, TabActionSettingsModel, TabAnimationSettingsModel } from './tab-model';
@@ -692,14 +692,11 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
         (this.isIconAlone) ? this.element.classList.add(CLS_ICON_TAB) : this.element.classList.remove(CLS_ICON_TAB);
         return tItems;
     }
-    private removeActiveClass(id: string): void {
-        let hdrActEle: HTEle = <HTEle> selectAll(':root .' + CLS_HEADER + ' .' + CLS_TB_ITEM + '.' + CLS_ACTIVE, this.element)[0];
-        let selectEle: HTEle = <HTEle>select('.' + CLS_HEADER, this.element);
-        if (this.headerPlacement === 'Bottom') {
-            hdrActEle = <HTEle>selectAll(':root .' + CLS_HEADER + ' .' + CLS_TB_ITEM + '.' + CLS_ACTIVE, selectEle)[0];
-        }
-        if (!isNOU(hdrActEle)) {
-            hdrActEle.classList.remove(CLS_ACTIVE);
+    private removeActiveClass(): void {
+        let tabHeader: HTMLElement = this.getTabHeader();
+        if (tabHeader) {
+            let tabItems: HTMLElement[] = selectAll('.' + CLS_TB_ITEM + '.' + CLS_ACTIVE, tabHeader);
+            tabItems.forEach((node: HTMLElement) => node.classList.remove(CLS_ACTIVE));
         }
     }
     private checkPopupOverflow(ele: HTEle): boolean {
@@ -859,8 +856,11 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
             }
         }
     }
+    private getTabHeader(): HTMLElement {
+        return [].slice.call(this.element.children).filter((e: HTMLElement) => e.classList.contains(CLS_HEADER))[0];
+    }
     private getEleIndex(item: HTEle): number {
-        return Array.prototype.indexOf.call(selectAll('.' + CLS_HEADER + ' .' + CLS_TB_ITEM, this.element), item);
+        return Array.prototype.indexOf.call(selectAll('.' + CLS_TB_ITEM, this.getTabHeader()), item);
     }
     private extIndex(id: string): string {
         return id.replace(CLS_ITEM + '_', '');
@@ -1010,7 +1010,7 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
             removeClass([this.element], [CLS_FILL]);
         }
         if (isNOU(this.cntEle)) { return; }
-        let hdrEle: HTEle = <HTEle> select('.' + CLS_HEADER, this.element);
+        let hdrEle: HTEle = this.getTabHeader();
         if (this.heightAdjustMode === 'None') {
             if (this.height === 'auto') {
                 return;
@@ -1064,8 +1064,8 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
     private setActiveBorder(): void {
         let bar: HTEle;
         let scrollCnt: HTEle;
-        let trgHdrEle: Element = select('.' + CLS_HEADER, this.element);
-        let trg: HTEle = <HTEle>select('.' + CLS_TB_ITEM + '.' + CLS_ACTIVE, this.element);
+        let trgHdrEle: Element = this.getTabHeader();
+        let trg: HTEle = <HTEle>select('.' + CLS_TB_ITEM + '.' + CLS_ACTIVE, trgHdrEle);
         if (trg === null) { return; }
         let root: HTEle = <HTEle>closest(trg, '.' + CLS_TAB);
         if (this.element !== root) { return; }
@@ -1092,7 +1092,7 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
         if (!isNOU(this.bdrLine)) { this.bdrLine.classList.remove(CLS_HIDDEN); }
     }
     private setActive(value: number): void {
-        this.tbItem = selectAll('.' + CLS_HEADER + ' .' + CLS_TB_ITEM, this.element);
+        this.tbItem = selectAll('.' + CLS_TB_ITEM, this.getTabHeader());
         let trg: HTEle = this.tbItem[value];
         if (value >= 0) { this.setProperties({ selectedItem: value }, true); }
         if (value < 0 || isNaN(value) || this.tbItem.length === 0 ) { return; }
@@ -1104,7 +1104,7 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
             if (!isNOU(prev)) { prev.removeAttribute('aria-controls'); }
             attributes(trg, { 'aria-controls': CLS_CONTENT + '_' + value }); }
         let id: Str = trg.id;
-        this.removeActiveClass(id);
+        this.removeActiveClass();
         trg.classList.add(CLS_ACTIVE);
         trg.setAttribute('aria-selected', 'true');
         let no: number = Number(this.extIndex(id));
@@ -1153,7 +1153,7 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
     }
     private setItems(items: object[]): void {
         this.isReplace = true;
-        this.tbItems = <HTEle> select('.' + CLS_HEADER + ' .' +  CLS_TB_ITEMS, this.element);
+        this.tbItems = <HTEle>select('.' + CLS_TB_ITEMS, this.getTabHeader());
         this.tbObj.items = this.parseObject(items, 0);
         this.tbObj.dataBind();
         this.isReplace = false;
@@ -1242,10 +1242,10 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
     private keyHandler(e: KeyboardEventArgs): void {
         if (this.element.classList.contains(CLS_DISABLE)) { return; }
         this.element.classList.add(CLS_FOCUS);
-        let trg: HTEle = <HTEle> e.target;
-        let actEle: HTEle = <HTEle> select('.' + CLS_HEADER + ' .' + CLS_ACTIVE, this.element);
-        let tabItem: HTEle[] = selectAll('.' + CLS_TB_ITEM + ':not(.' + CLS_TB_POPUP + ')', this.element);
-        this.popEle = <DomElements> select('.' + CLS_HEADER + ' .' + CLS_TB_POP, this.element);
+        let trg: HTEle = <HTEle>e.target;
+        let tabHeader: HTMLElement = this.getTabHeader();
+        let actEle: HTEle = <HTEle>select('.' + CLS_ACTIVE, tabHeader);
+        this.popEle = <DomElements>select('.' + CLS_TB_POP, tabHeader);
         if (!isNOU(this.popEle)) { this.popObj = <Popup> this.popEle.ej2_instances[0]; }
         switch (e.action) {
             case 'space':
@@ -1379,10 +1379,6 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
             if (isNOU(this.tbObj)) {
                 this.reRenderItems();
             } else {
-                let items: TabItemModel[] = newProp.items;
-                for (let i: number = 0; i < items.length; i++) {
-                    this.resetBlazorTemplates(items[i], i);
-                }
                 this.setItems(<TabItemModel[]>newProp.items);
                 if (this.templateEle.length > 0) { this.expTemplateContent(); }
                 this.templateEle = [];
@@ -1394,19 +1390,6 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
             }
         }
     }
-
-    private resetBlazorTemplates(item: TabItemModel, index: number): void {
-        if (!isBlazor()) {
-            return;
-        }
-        if (item.headerTemplate && !this.isStringTemplate && (item.headerTemplate).indexOf('<div>Blazor') === 0) {
-            resetBlazorTemplate(this.element.id + index + '_' + 'headerTemplate', 'HeaderTemplate');
-        }
-        if (item.content && !this.isStringTemplate && (<string>item.content).indexOf('<div>Blazor') === 0) {
-            resetBlazorTemplate(this.element.id + index + '_' + 'content', 'ContentTemplate');
-        }
-    }
-
     /**
      * Enables or disables the specified Tab item. On passing value as `false`, the item will be disabled.
      * @param  {number} index - Index value of target Tab item.
@@ -1459,7 +1442,7 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
             if (itemsCount < index || index < 0 || isNaN(index)) { return; }
             if (itemsCount === 0 && !isNOU(this.hdrEle)) { this.hdrEle.style.display = ''; }
             if (!isNOU(this.bdrLine)) { this.bdrLine.classList.add(CLS_HIDDEN); }
-            this.tbItems = <HTEle> select('.' + CLS_HEADER + ' .' +  CLS_TB_ITEMS, this.element);
+            this.tbItems = <HTEle>select('.' + CLS_TB_ITEMS, this.getTabHeader());
             this.isAdd = true;
             let tabItems: object[] = this.parseObject(items, index);
             this.isAdd = false;
@@ -1501,7 +1484,6 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
         let removeArgs: RemoveEventArgs = { removedItem: trg, removedIndex: index, cancel: false };
         this.trigger('removing', removeArgs, (tabRemovingArgs: RemoveEventArgs) => {
             if (!tabRemovingArgs.cancel) {
-                this.resetBlazorTemplates(this.items[index], index);
                 this.tbObj.removeItems(index);
                 this.items.splice(index, 1);
                 this.itemIndexArray.splice(index, 1);
@@ -1577,9 +1559,10 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
      * @returns void.
      */
     public select(args: number | HTEle): void {
-        this.tbItems = <HTEle> select('.' + CLS_HEADER + ' .' +  CLS_TB_ITEMS, this.element);
-        this.tbItem = selectAll('.' + CLS_HEADER + ' .' +  CLS_TB_ITEM, this.element);
-        this.content = <HTEle> select('.' + CLS_CONTENT , this.element);
+        let tabHeader: HTMLElement = this.getTabHeader();
+        this.tbItems = <HTEle>select('.' + CLS_TB_ITEMS, tabHeader);
+        this.tbItem = selectAll('.' + CLS_TB_ITEM, tabHeader);
+        this.content = <HTEle>select('.' + CLS_CONTENT, this.element);
         this.prevItem = this.tbItem[this.prevIndex];
         if (isNOU(this.selectedItem) || (this.selectedItem < 0) || (this.tbItem.length <= this.selectedItem) || isNaN(this.selectedItem)) {
             this.selectedItem = 0;

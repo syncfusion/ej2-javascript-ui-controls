@@ -65,6 +65,7 @@ export class TextSelection {
     private topStoreLeft: { [key: string]: Object } = null;
     private topStoreRight: { [key: string]: Object } = null;
     private isTextSearched: boolean = false;
+    private isSelectionStartTriggered: boolean = false;
     /**
      * @private
      */
@@ -80,6 +81,10 @@ export class TextSelection {
         let targetElement: HTMLElement = target as HTMLElement;
         this.isTextSearched = true;
         if (targetElement.nodeType === targetElement.TEXT_NODE) {
+            if (!this.isSelectionStartTriggered && !this.pdfViewerBase.getTextMarkupAnnotationMode()) {
+                this.pdfViewer.fireTextSelectionStart(this.pdfViewerBase.currentPageNumber);
+                this.isSelectionStartTriggered = true;
+            }
             this.isBackwardPropagatedSelection = false;
             let range: Range = targetElement.ownerDocument.createRange();
             let selection: Selection = window.getSelection();
@@ -276,6 +281,7 @@ export class TextSelection {
         let pageNumber: number = parseInt((event.target as HTMLElement).id.split('_text_')[1]);
         let textDivs: NodeList = document.querySelectorAll('div[id*="' + this.pdfViewer.element.id + '_text_' + pageNumber + '"]');
         if (targetElement.classList.contains('e-pv-text')) {
+            this.pdfViewer.fireTextSelectionStart(pageNumber + 1);
             for (let i: number = 0; i < textDivs.length; i++) {
                 let rect: ClientRect = (textDivs[i] as HTMLElement).getBoundingClientRect();
                 // tslint:disable-next-line:radix
@@ -409,7 +415,9 @@ export class TextSelection {
         this.clear();
         if (window.getSelection().anchorNode !== null) {
             this.isMouseLeaveSelection = false;
+            this.isSelectionStartTriggered = false;
             this.maintainSelectionOnZoom(true, false);
+            this.fireTextSelectEnd();
             let isTextSearch: boolean = this.pdfViewerBase.textLayer.getTextSearchStatus();
             if (isTextSearch) {
                 this.pdfViewerBase.textLayer.clearDivSelection();
@@ -438,6 +446,32 @@ export class TextSelection {
             }
             this.pdfViewerBase.contextMenuModule.contextMenuObj.close();
             this.removeTouchElements();
+        }
+    }
+
+    /**
+     * @private
+     */
+    public fireTextSelectEnd(): void {
+        if (this.selectionRangeArray.length !== 0) {
+            let selectEndPageIndex: number = 0;
+            let selectedText: string = '';
+            // tslint:disable-next-line
+            let selectedBounds: any[] = [];
+            for (let k: number = 0; k < this.selectionRangeArray.length; k++) {
+                selectedText += this.selectionRangeArray[k].textContent;
+                for (let j: number = 0; j < this.selectionRangeArray[k].rectangleBounds.length; j++) {
+                    let currentBound: IRectangle = this.selectionRangeArray[k].rectangleBounds[j];
+                    // tslint:disable-next-line:max-line-length
+                    selectedBounds.push({ left: currentBound.left, right: currentBound.right, top: currentBound.top, bottom: currentBound.bottom, width: currentBound.width, height: currentBound.height, pageIndex: this.selectionRangeArray[k].pageNumber + 1 });
+                }
+                if (this.selectionRangeArray[k].isBackward && k === 0) {
+                    selectEndPageIndex = this.selectionRangeArray[k].pageNumber + 1;
+                } else if (!this.selectionRangeArray[k].isBackward && k === this.selectionRangeArray.length - 1) {
+                    selectEndPageIndex = this.selectionRangeArray[k].pageNumber + 1;
+                }
+            }
+            this.pdfViewer.fireTextSelectionEnd(selectEndPageIndex, selectedText, selectedBounds);
         }
     }
 
@@ -1313,9 +1347,12 @@ export class TextSelection {
                 element = belowElements[1];
             }
         }
+        let pageNumber: number = parseFloat(element.id.split('_')[2]);
+        this.pdfViewer.fireTextSelectionStart(pageNumber + 1);
         this.selectAWord(element, x, y, true);
         this.createTouchSelectElement(event);
         this.maintainSelectionOnZoom(true, false);
+        this.fireTextSelectEnd();
         this.applySpanForSelection();
     }
 
@@ -1555,6 +1592,9 @@ export class TextSelection {
                 }
             }
         }
+        if (this.selectionRangeArray.length > 0) {
+            this.pdfViewer.fireTextSelectionStart(this.selectionRangeArray[0].pageNumber + 1);
+        }
     }
 
     // tslint:disable-next-line
@@ -1565,6 +1605,7 @@ export class TextSelection {
             // tslint:disable-next-line:max-line-length
             this.pdfViewer.annotationModule.textMarkupAnnotationModule.drawTextMarkupAnnotations(this.pdfViewer.annotationModule.textMarkupAnnotationModule.currentTextMarkupAddMode);
         } else {
+            this.fireTextSelectEnd();
             // tslint:disable-next-line:max-line-length
             this.pdfViewerBase.contextMenuModule.contextMenuObj.open(event.changedTouches[0].clientY - this.pdfViewerBase.viewerContainer.offsetTop + this.pdfViewerBase.contextMenuModule.contextMenuElement.clientHeight, event.changedTouches[0].clientX - this.pdfViewerBase.viewerContainer.offsetLeft, this.pdfViewerBase.viewerContainer);
         }

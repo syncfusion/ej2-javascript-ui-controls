@@ -46,8 +46,8 @@ export class Search {
     }
     /**
      * Gets the search results object.
-
-
+     * @aspType SearchResults
+     * @blazorType SearchResults
      */
     public get searchResults(): SearchResults {
         return this.searchResultsInternal;

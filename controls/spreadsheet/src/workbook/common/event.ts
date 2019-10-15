@@ -50,4 +50,4 @@ export const initiateSort: string = 'initiateSort';
 /** @hidden */
 export const sortComplete: string = 'sortComplete';
 /** @hidden */
-export const validateSortRange: string = 'validateSortRange';
+export const sortRangeAlert: string = 'sortRangeAlert';

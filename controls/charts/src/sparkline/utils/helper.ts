@@ -89,12 +89,16 @@ export function stringToNumber(value: string, containerSize: number): number {
  * Method to calculate the width and height of the sparkline
  */
 export function calculateSize(sparkline: Sparkline): void {
-    let containerWidth: number = sparkline.element.clientWidth;
-    let containerHeight: number = sparkline.element.clientHeight;
+    let containerWidth: number;
+    let containerHeight: number;
+    containerWidth = !sparkline.element.clientWidth ? (!sparkline.element.parentElement ? 100 :
+        sparkline.element.parentElement.clientWidth) : sparkline.element.clientWidth;
+    containerHeight = !sparkline.element.clientHeight ? (!sparkline.element.parentElement ? 50 :
+        sparkline.element.parentElement.clientHeight) : sparkline.element.clientHeight;
     sparkline.availableSize = new Size(
-        stringToNumber(sparkline.width, containerWidth) || containerWidth || 100,
+        stringToNumber(sparkline.width, containerWidth) || containerWidth,
         stringToNumber(sparkline.height, containerHeight) || containerHeight || (sparkline.isDevice ?
-            Math.min(window.innerWidth, window.innerHeight) : 50)
+            Math.min(window.innerWidth, window.innerHeight) : containerHeight)
     );
 }
 /**
@@ -164,7 +168,7 @@ export interface SparkValues {
     width?: number;
     percent?: number;
     degree?: number;
-    location?: {x: number, y: number};
+    location?: { x: number, y: number };
     markerPosition?: number;
     xVal?: number;
     yVal?: number;

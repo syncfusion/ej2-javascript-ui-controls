@@ -24935,7 +24935,7 @@ class Toolbar$2 {
     }
     fetchReports() {
         let reports = { reportName: [] };
-        let tool;
+        let tool = this;
         if (isBlazor()) {
             reports = this.fetchReportsArgs();
             reports.then(function (e) {

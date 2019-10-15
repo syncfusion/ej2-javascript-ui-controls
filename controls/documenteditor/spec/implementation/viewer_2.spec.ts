@@ -1480,6 +1480,14 @@ describe('Safari Paste Event Validation', () => {
         let keyPress: any = (editor.viewer as any).onKeyPressInternal(event);
         expect(keyPress).toBe(undefined);
     });
+    it('Select All Event Key Press Validation', () => {
+        let event: any = {
+            offsetX: 100, offsetY: 100, preventDefault: function () { return true; },
+            ctrlKey: true, shiftKey: false, which: 0, key: "a"
+        };
+        let keyPress: any = (editor.viewer as any).onKeyPressInternal(event);
+        expect(keyPress).toBe(undefined);
+    });
 });
 
 //#endregion

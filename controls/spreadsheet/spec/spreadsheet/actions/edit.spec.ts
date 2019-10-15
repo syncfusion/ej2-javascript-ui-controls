@@ -43,4 +43,23 @@ describe('Spreadsheet edit module ->', () => {
             }, 20);
         });
     });
+
+    describe('Rtl ->', () => {
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({ enableRtl: true }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('', (done: Function) => {
+            let td: HTMLElement = helper.invoke('getCell', [3, 5]);
+            let coords: ClientRect = td.getBoundingClientRect();
+            helper.triggerMouseAction('dblclick', { x: coords.right, y: coords.top }, null, td);
+            let ele: HTMLElement = helper.getElementFromSpreadsheet('.e-spreadsheet-edit');
+            // expect(ele.style.top).toBe('61px');
+            // expect(ele.style.right).toBe('321px');
+            // expect(ele.style.height).toBe('17px');
+            done();
+        });
+    });
 });

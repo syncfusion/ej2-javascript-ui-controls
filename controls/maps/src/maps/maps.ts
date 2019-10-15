@@ -3,7 +3,7 @@
  */
 import { Component, NotifyPropertyChanges, INotifyPropertyChanged, Property, Ajax, resetBlazorTemplate } from '@syncfusion/ej2-base';
 import { EventHandler, Browser, EmitType, isNullOrUndefined, createElement } from '@syncfusion/ej2-base';
-import { Event, remove, L10n, Collection, Internationalization, Complex } from '@syncfusion/ej2-base';
+import { Event, remove, L10n, Collection, Internationalization, Complex, isBlazor } from '@syncfusion/ej2-base';
 import { ModuleDeclaration } from '@syncfusion/ej2-base';
 import { SvgRenderer } from '@syncfusion/ej2-svg-base';
 import { Size, createSvg, Point, removeElement, triggerShapeEvent, showTooltip } from './utils/helper';
@@ -572,9 +572,7 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
     protected preRender(): void {
 
         this.isDevice = Browser.isDevice;
-
-        let blazor: string = 'Blazor';
-        this.isBlazor = window[blazor];
+        this.isBlazor = isBlazor();
 
         this.initPrivateVariable();
 

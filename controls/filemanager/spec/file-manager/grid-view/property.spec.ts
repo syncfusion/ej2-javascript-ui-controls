@@ -6,7 +6,7 @@ import { NavigationPane } from '../../../src/file-manager/layout/navigation-pane
 import { DetailsView } from '../../../src/file-manager/layout/details-view';
 import { Toolbar } from '../../../src/file-manager/actions/toolbar';
 import { createElement } from '@syncfusion/ej2-base';
-import { toolbarItems1, data1, data11, data15, data16, idData1, idData2, idData3 } from '../data';
+import { toolbarItems1, data1, data11, data15, data16, idData1, idData2, idData3, uploadData1 } from '../data';
 
 FileManager.Inject(Toolbar, NavigationPane, DetailsView);
 
@@ -333,7 +333,7 @@ describe('FileManager control Grid view', () => {
             feObj.destroy();
             expect(feObj.element.classList.contains('e-rtl')).toEqual(false);
         });
-        it('for showFileExtension', () => {
+        it('for showFileExtension', (done) => {
             feObj = new FileManager({
                 view: 'Details',
                 ajaxSettings: {
@@ -348,24 +348,38 @@ describe('FileManager control Grid view', () => {
                 status: 200,
                 responseText: JSON.stringify(data1)
             });
-            expect(data1.files[0].name.substr(0, data1.files[0].name.lastIndexOf('.'))).toEqual('1');
-            expect(data11.files[0].name.substr(0, data11.files[0].name.lastIndexOf('.'))).toEqual('image');
-            expect(data11.files[4].name.substr(0, data11.files[4].name.lastIndexOf('.'))).toEqual('video');
-            feObj.showFileExtension = true;
-            feObj.dataBind();
-            expect(data1.files[0].name).toEqual('1.png');
-            expect(data11.files[4].name).toEqual('video.mp4');
-            expect(data11.files[1].name).toEqual('music.mp3');
+            setTimeout(function () {
+                expect(document.getElementById('file_grid').querySelectorAll('.e-row').length).toEqual(5);
+                expect(document.getElementById('file_grid').querySelectorAll('.e-row')[4].children[2].textContent).toBe('1');
+                feObj.showFileExtension = true;
+                feObj.dataBind();
+                this.request = jasmine.Ajax.requests.mostRecent();
+                this.request.respondWith({
+                    status: 200,
+                    responseText: JSON.stringify(data1)
+                });
+                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                setTimeout(function () {
+                    expect(document.getElementById('file_grid').querySelectorAll('.e-row').length).toEqual(5);
+                    expect(document.getElementById('file_grid').querySelectorAll('.e-row')[4].children[2].textContent).toBe('1.png')
+                    done();
+                }, 500);
+            }, 500);
         });
-        it('for showHiddenItems', () => {
+        it('for showFileExtension and custom template columns', (done) => {
             feObj = new FileManager({
                 view: 'Details',
                 ajaxSettings: {
                     url: '/FileOperations',
                     uploadUrl: '/Upload', downloadUrl: '/Download', getImageUrl: '/GetImage'
                 },
-                showHiddenItems: false,
-                path: '/Food/'
+                detailsViewSettings: {
+                    columns: [
+                        {field: 'size', headerText: 'File Size',minWidth: 50},
+                        {field: 'name',template: '<div class="e-fe-text">${name}</div>', headerText: 'File Name', minWidth: 120}
+                    ]
+                },
+                showFileExtension: false
             });
             feObj.appendTo('#file');
             this.request = jasmine.Ajax.requests.mostRecent();
@@ -373,11 +387,94 @@ describe('FileManager control Grid view', () => {
                 status: 200,
                 responseText: JSON.stringify(data1)
             });
-            expect(data15.files.length).toEqual(3);
-            expect(data15.files[0].name.substr(0, data15.files[0].name.lastIndexOf('.'))).toEqual('Bread');
-            feObj.showHiddenItems = true;
-            feObj.dataBind();
-            expect(data11.files.length).toEqual(5);
+            setTimeout(function () {
+                expect(document.getElementById('file_grid').querySelectorAll('.e-row').length).toEqual(5);
+                expect(document.getElementById('file_grid').querySelectorAll('.e-row')[4].children[3].textContent).toBe('1');
+                feObj.showFileExtension = true;
+                feObj.dataBind();
+                this.request = jasmine.Ajax.requests.mostRecent();
+                this.request.respondWith({
+                    status: 200,
+                    responseText: JSON.stringify(data1)
+                });
+                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                setTimeout(function () {
+                    expect(document.getElementById('file_grid').querySelectorAll('.e-row').length).toEqual(5);
+                    expect(document.getElementById('file_grid').querySelectorAll('.e-row')[4].children[3].textContent).toBe('1.png')
+                    done();
+                }, 500);
+            }, 500);
+        });
+        it('for showFileExtension and custom columns', (done) => {
+            feObj = new FileManager({
+                view: 'Details',
+                ajaxSettings: {
+                    url: '/FileOperations',
+                    uploadUrl: '/Upload', downloadUrl: '/Download', getImageUrl: '/GetImage'
+                },
+                detailsViewSettings: {
+                    columns: [
+                        {field: 'size', headerText: 'File Size',minWidth: 50},
+                        {field: 'name', headerText: 'File Name', minWidth: 120}
+                    ]
+                },
+                showFileExtension: false
+            });
+            feObj.appendTo('#file');
+            this.request = jasmine.Ajax.requests.mostRecent();
+            this.request.respondWith({
+                status: 200,
+                responseText: JSON.stringify(data1)
+            });
+            setTimeout(function () {
+                expect(document.getElementById('file_grid').querySelectorAll('.e-row').length).toEqual(5);
+                expect(document.getElementById('file_grid').querySelectorAll('.e-row')[4].children[3].textContent).toBe('1.png');
+                feObj.showFileExtension = true;
+                feObj.dataBind();
+                this.request = jasmine.Ajax.requests.mostRecent();
+                this.request.respondWith({
+                    status: 200,
+                    responseText: JSON.stringify(data1)
+                });
+                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                setTimeout(function () {
+                    expect(document.getElementById('file_grid').querySelectorAll('.e-row').length).toEqual(5);
+                    expect(document.getElementById('file_grid').querySelectorAll('.e-row')[4].children[3].textContent).toBe('1.png')
+                    done();
+                }, 500);
+            }, 500);
+        });
+        it('for showHiddenItems', (done) => {
+            feObj = new FileManager({
+                view: 'Details',
+                ajaxSettings: {
+                    url: '/FileOperations',
+                    uploadUrl: '/Upload', downloadUrl: '/Download', getImageUrl: '/GetImage'
+                },
+                showHiddenItems: true
+            });
+            feObj.appendTo('#file');
+            this.request = jasmine.Ajax.requests.mostRecent();
+            this.request.respondWith({
+                status: 200,
+                responseText: JSON.stringify(uploadData1)
+            });
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+            setTimeout(function () {
+                expect(document.getElementById('file_grid').querySelectorAll('.e-row').length).toEqual(6);
+                feObj.showHiddenItems = false;
+                feObj.dataBind();
+                this.request = jasmine.Ajax.requests.mostRecent();
+                this.request.respondWith({
+                    status: 200,
+                    responseText: JSON.stringify(data1)
+                });
+                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                setTimeout(function () {
+                    expect(document.getElementById('file_grid').querySelectorAll('.e-row').length).toEqual(5);
+                    done();
+                }, 500);
+            }, 500);
         });
         it('for path', (done: Function) => {
             feObj = new FileManager({

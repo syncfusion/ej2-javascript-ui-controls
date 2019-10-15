@@ -656,6 +656,12 @@ export class CommandHandler {
             selectedItems = selectedItems.concat(this.diagram.selectedItems.nodes);
             for (let j: number = 0; j < this.diagram.selectedItems.nodes.length; j++) {
                 let node: NodeModel = clone(this.diagram.selectedItems.nodes[j]);
+                if (node.wrapper && (node.offsetX !== node.wrapper.offsetX)) {
+                    node.offsetX = node.wrapper.offsetX;
+                }
+                if (node.wrapper && (node.offsetY !== node.wrapper.offsetY)) {
+                    node.offsetY = node.wrapper.offsetY;
+                }
                 let processTable: {} = {};
                 this.copyProcesses(node as Node);
                 obj.push(clone(node));
@@ -1209,7 +1215,7 @@ export class CommandHandler {
     public selectObjects(
         obj: (NodeModel | ConnectorModel)[], multipleSelection?: boolean, oldValue?: (NodeModel | ConnectorModel)[]
     ): void {
-        let arg: ISelectionChangeEventArgs|IBlazorSelectionChangeEventArgs = {
+        let arg: ISelectionChangeEventArgs | IBlazorSelectionChangeEventArgs = {
             oldValue: oldValue ? oldValue : this.getSelectedObject(),
             newValue: obj, cause: this.diagram.diagramActions,
             state: 'Changing', type: 'Addition', cancel: false
@@ -2567,9 +2573,9 @@ export class CommandHandler {
                         obj.offsetX = newOffset.x;
                         obj.offsetY = newOffset.y;
                         this.diagram.nodePropertyChange(
-                            obj as Node, oldValues,
-                            { rotateAngle: obj.rotateAngle } as Node);
-                    }
+                            obj as Node, {} as Node,
+                            { offsetX: obj.offsetX, offsetY: obj.offsetY, rotateAngle: obj.rotateAngle } as Node);
+                        }
                     if (obj.processId) {
                         let parent: NodeModel = this.diagram.nameTable[obj.processId];
                         let bound: Rect = this.diagram.bpmnModule.getChildrenBound(parent, obj.id, this.diagram);

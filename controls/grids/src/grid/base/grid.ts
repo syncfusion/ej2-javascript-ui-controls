@@ -765,6 +765,8 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     public prevPageMoving: boolean = false;
     /** @hidden */
     public pageTemplateChange: boolean = false;
+    /** @hidden */
+    public isAutoGen: boolean = false;
 
     //Module Declarations
     /**
@@ -3906,27 +3908,27 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
         let contentCol: HTMLElement[] = [].slice.call(this.getContentTable().querySelector('colgroup').childNodes);
         let perPixel: number = indentWidth / 30;
         let i: number = 0;
+        let applyWidth = (index: number, width: number) => {
+            headerCol[index].style.width = width + 'px';
+            contentCol[index].style.width = width + 'px';
+            this.notify(events.columnWidthChanged, { index: index, width: width });
+        };
         if (perPixel >= 1) {
             indentWidth = (30 / perPixel);
         }
-        if (this.enableColumnVirtualization) { indentWidth = 30; }
+        if (this.enableColumnVirtualization || this.isAutoGen) { indentWidth = 30; }
         while (i < this.groupSettings.columns.length) {
-            headerCol[i].style.width = indentWidth + 'px';
-            contentCol[i].style.width = indentWidth + 'px';
-            this.notify(events.columnWidthChanged, { index: i, width: indentWidth });
+            applyWidth(i, indentWidth);
             i++;
         }
         if (this.isDetail()) {
-            headerCol[i].style.width = indentWidth + 'px';
-            contentCol[i].style.width = indentWidth + 'px';
-            this.notify(events.columnWidthChanged, { index: i, width: indentWidth });
+            applyWidth(i, indentWidth);
             i++;
         }
         if (this.isRowDragable()) {
-            headerCol[i].style.width = indentWidth + 'px';
-            contentCol[i].style.width = indentWidth + 'px';
-            this.notify(events.columnWidthChanged, { index: i, width: indentWidth });
+            applyWidth(i, indentWidth);
         }
+        this.isAutoGen = false;
         this.getHeaderTable().querySelector('.e-emptycell').setAttribute('indentRefreshed', 'true');
     }
 
@@ -4375,6 +4377,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
         EventHandler.remove(this.element, 'click', this.mouseClickHandler);
         EventHandler.remove(this.element, 'touchend', this.mouseClickHandler);
         EventHandler.remove(this.element, 'focusout', this.focusOutHandler);
+        EventHandler.remove(this.element, 'dblclick', this.dblClickHandler);
         EventHandler.remove(this.getContent().firstElementChild, 'scroll', this.scrollHandler);
         EventHandler.remove(this.element, 'mousemove', this.mouseMoveHandler);
         EventHandler.remove(this.element, 'mouseout', this.mouseMoveHandler);
@@ -4576,18 +4579,14 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     private mergeColumns(storedColumn: Column[], columns: Column[]): void {
         (<Column[]>storedColumn).forEach((col: Column, index: number, arr: Column[]) => {
             let localCol = columns.filter((tCol: Column) => tCol.index === col.index)[0];
-            if (!isNullOrUndefined(localCol)) {
-                if (localCol.columns && localCol.columns.length) {
-                    this.mergeColumns(<Column[]>col.columns, <Column[]>localCol.columns);
-                    arr[index] = <Column>extend(localCol, col, true);
-                } else {
-                    if (isBlazor()) {
-                        let guid: string = 'guid';
-                        col[guid] = localCol[guid];
+                if (!isNullOrUndefined(localCol)) {
+                    if (localCol.columns && localCol.columns.length) {
+                        this.mergeColumns(<Column[]>col.columns, <Column[]>localCol.columns);
+                        arr[index] = <Column>extend(localCol, col, true);
+                    } else {
+                        arr[index] = <Column>extend(localCol, col, true);
                     }
-                    arr[index] = <Column>extend(localCol, col, true);
-                }
-            }
+                }   
         });
     }
 

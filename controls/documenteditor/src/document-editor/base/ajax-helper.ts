@@ -5,7 +5,7 @@ export class XmlHttpRequestHandler {
 
     /**
      * Specifies the URL to which request to be sent.
-
+     * @default null	
      */
     public url: string;
     /**
@@ -14,12 +14,12 @@ export class XmlHttpRequestHandler {
     public contentType: string;
     /**
      * Specifies the responseType to which request response.
-
+     * @default null
      */
     public responseType: XMLHttpRequestResponseType;
     /**		 
      * A boolean value indicating whether the request should be sent asynchronous or not.
-
+     * @default true
      */
     public mode: boolean = true;
 

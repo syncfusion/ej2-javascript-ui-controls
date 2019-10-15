@@ -51,7 +51,7 @@ export class Tooltip extends BaseTooltip {
     }
 
     private mouseLeaveHandler(): void {
-        this.removeTooltip(1000);
+        this.removeTooltip(this.chart.tooltip.fadeOutDuration);
     }
 
     private mouseMoveHandler(): void {
@@ -147,7 +147,7 @@ export class Tooltip extends BaseTooltip {
             }
         } else {
             if (!data.point && this.isRemove) {
-                this.removeTooltip(1000);
+                this.removeTooltip(this.chart.tooltip.duration);
                 this.isRemove = false;
             } else {
                 for (let series of chart.visibleSeries) {
@@ -164,8 +164,9 @@ export class Tooltip extends BaseTooltip {
 
     private triggerTooltipRender(point: PointData, isFirst: boolean, textCollection: string,
                                  headerText: string, firstText: boolean = true): void {
+        let template: string;
         let argsData: ITooltipRenderEventArgs = {
-            cancel: false, name: tooltipRender, text: textCollection, headerText : headerText,
+            cancel: false, name: tooltipRender, text: textCollection, headerText : headerText, template : template,
             series: this.chart.isBlazor ? {} as Series : point.series, textStyle: this.textStyle,  point: point.point,
             data : { pointX: point.point.x , pointY: point.point.y, seriesIndex: point.series.index, seriesName: point.series.name,
                      pointIndex: point.point.index, pointText: point.point.text  }
@@ -191,6 +192,9 @@ export class Tooltip extends BaseTooltip {
         };
         chartTooltipSuccess.bind(this, point);
         this.chart.trigger(tooltipRender, argsData, chartTooltipSuccess);
+        if (argsData.template) {
+            this.chart.tooltip.template = argsData.template;
+        }
     }
 
     private findMarkerHeight(pointData: PointData): number {

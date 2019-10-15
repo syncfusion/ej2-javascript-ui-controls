@@ -720,7 +720,7 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
      * @blazorProperty 'BeforeUpload'
      */
     @Event()
-    public beforeUpload: EmitType<UploadingEventArgs>;
+    public beforeUpload: EmitType<BeforeUploadEventArgs>;
 
     /**
      * Triggers before rendering each file item from the file list in a page.
@@ -827,7 +827,7 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
      * @blazorProperty 'BeforeRemove'
      */
     @Event()
-    public beforeRemove: EmitType<RemovingEventArgs>;
+    public beforeRemove: EmitType<BeforeRemoveEventArgs>;
 
     /**
      * Triggers before clearing the items in file list when clicking “clear”.
@@ -1757,7 +1757,7 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
                 showSpinner(spinnerTarget);
             }
             if (eventArgs.postRawFile && !isNullOrUndefined(selectedFiles.rawFile) && selectedFiles.rawFile !== '') {
-                formData.append(name, selectedFiles.rawFile);
+                formData.append(name, selectedFiles.rawFile, selectedFiles.name);
             } else {
                 formData.append(name, selectedFiles.name);
             }
@@ -3321,7 +3321,8 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
         this.trigger('beforeUpload', eventArgs, (eventArgs: BeforeUploadEventArgs) => {
             if (isBlazor()) {
                 this.currentRequestHeader = eventArgs.currentRequest ? eventArgs.currentRequest : this.currentRequestHeader;
-                this.customFormDatas = eventArgs.customFormData ? eventArgs.customFormData : this.customFormDatas;
+                this.customFormDatas = (eventArgs.customFormData && eventArgs.customFormData.length > 0) ?
+                    eventArgs.customFormData : this.customFormDatas;
             }
             this.uploadFiles(uploadFiles, custom);
         });

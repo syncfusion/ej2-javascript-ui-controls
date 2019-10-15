@@ -1043,7 +1043,7 @@ var HeaderRenderer = /** @__PURE__ @class */ (function () {
                 break;
         }
         var toolbarPopUp = this.toolbarObj.element.querySelector('.e-toolbar-pop');
-        if (toolbarPopUp) {
+        if (toolbarPopUp && args.item.type !== 'Input') {
             toolbarPopUp.ej2_instances[0].hide({ name: 'SlideUp', duration: 100 });
         }
     };
@@ -2849,7 +2849,16 @@ function getDateCount$1(startDate, ruleObject) {
         count = ruleObject.count;
     }
     else if (ruleObject.until) {
-        count = Math.floor((ruleObject.until.getTime() - startDate.getTime()) / MS_PER_DAY) + 1;
+        if (ruleObject.freq === 'DAILY' || ruleObject.freq === 'WEEKLY') {
+            count = Math.floor((ruleObject.until.getTime() - startDate.getTime()) / MS_PER_DAY) + 1;
+        }
+        else if ((ruleObject.freq === 'MONTHLY' || ruleObject.freq === 'YEARLY') && ruleObject.day.length === 0) {
+            count = Math.floor(((ruleObject.until.getMonth() + 12 * ruleObject.until.getFullYear()) -
+                (startDate.getMonth() + 12 * startDate.getFullYear())) / ruleObject.interval) + 1;
+            if (ruleObject.freq === 'YEARLY') {
+                count = ruleObject.month.length > 1 ? (count * ruleObject.month.length) : count;
+            }
+        }
     }
     return count;
 }
@@ -3077,7 +3086,7 @@ function initializeRecRuleVariables(startDate, ruleObject) {
         index: 0,
         tempDate: new Date(startDate.getTime()),
         mainDate: new Date(startDate.getTime()),
-        expectedCount: ruleObject.count ? ruleObject.count : maxOccurrence,
+        expectedCount: getDateCount$1(startDate, ruleObject),
         monthInit: 0,
         dateCollection: [],
     };
@@ -5013,6 +5022,7 @@ var QuickPopups = /** @__PURE__ @class */ (function () {
      */
     function QuickPopups(parent) {
         this.isMultipleEventSelect = false;
+        this.isCrudAction = false;
         this.parent = parent;
         this.l10n = this.parent.localeObj;
         this.fieldValidator = new FieldValidator();
@@ -5777,21 +5787,7 @@ var QuickPopups = /** @__PURE__ @class */ (function () {
         });
     };
     QuickPopups.prototype.saveClick = function () {
-        if (!this.quickPopup.element.querySelector('.' + FORM_CLASS).ej2_instances[0].validate()) {
-            return;
-        }
-        var fields = this.parent.eventFields;
-        var saveObj = extend({}, this.parent.eventWindow.getObjectFromFormData(POPUP_WRAPPER_CLASS));
-        this.parent.eventWindow.setDefaultValueToObject(saveObj);
-        saveObj[fields.id] = this.parent.eventBase.getEventMaxID();
-        saveObj[fields.startTime] = this.parent.activeCellsData.startTime;
-        saveObj[fields.endTime] = this.parent.activeCellsData.endTime;
-        saveObj[fields.isAllDay] = this.parent.activeCellsData.isAllDay;
-        if (this.parent.resourceBase) {
-            this.parent.resourceBase.setResourceValues(saveObj, true);
-        }
-        this.parent.currentAction = 'Add';
-        this.parent.crudModule.addEvent(saveObj);
+        this.isCrudAction = true;
         this.quickPopupHide();
     };
     QuickPopups.prototype.detailsClick = function () {
@@ -6109,18 +6105,70 @@ var QuickPopups = /** @__PURE__ @class */ (function () {
         }
     };
     QuickPopups.prototype.quickPopupHide = function (hideAnimation) {
-        if (this.quickPopup.element.classList.contains('e-popup-open')) {
-            if (hideAnimation) {
-                var animation = this.quickPopup.hideAnimation;
-                this.quickPopup.hideAnimation = null;
-                this.quickPopup.hide();
-                this.quickPopup.hideAnimation = animation;
+        var _this = this;
+        var isCellPopup = this.quickPopup.element.querySelector('.' + CELL_POPUP_CLASS);
+        var popupData;
+        if (isCellPopup) {
+            var formvalidator = this.quickPopup.element.querySelector('.e-formvalidator');
+            if (formvalidator && !formvalidator.ej2_instances[0].validate()) {
+                return;
             }
-            else {
-                this.quickPopup.hide();
+            var fields = this.parent.eventFields;
+            var saveObj = this.parent.eventWindow.getObjectFromFormData(POPUP_WRAPPER_CLASS);
+            this.parent.eventWindow.setDefaultValueToObject(saveObj);
+            saveObj[fields.id] = this.parent.eventBase.getEventMaxID();
+            saveObj[fields.startTime] = this.parent.activeCellsData.startTime;
+            saveObj[fields.endTime] = this.parent.activeCellsData.endTime;
+            saveObj[fields.isAllDay] = this.parent.activeCellsData.isAllDay;
+            if (this.parent.resourceBase) {
+                this.parent.resourceBase.setResourceValues(saveObj, true);
             }
-            this.isMultipleEventSelect = false;
+            popupData = saveObj;
         }
+        else {
+            popupData = this.parent.activeEventData.event;
+        }
+        var isEventPopup = this.quickPopup.element.querySelector('.' + EVENT_POPUP_CLASS);
+        var args = {
+            type: this.parent.isAdaptive ? isEventPopup ? 'ViewEventInfo' : 'EditEventInfo' : 'QuickInfo',
+            cancel: false, data: popupData, element: this.quickPopup.element,
+            target: (isCellPopup ? this.parent.activeCellsData.element : this.parent.activeEventData.element)
+        };
+        this.parent.trigger(popupClose, args, function (popupCloseArgs) {
+            if (isBlazor()) {
+                var eventFields = _this.parent.eventFields;
+                if (popupCloseArgs.data) {
+                    var eventObj = popupCloseArgs.data;
+                    eventObj[eventFields.startTime] = _this.parent.getDateTime(eventObj[eventFields.startTime]);
+                    eventObj[eventFields.endTime] = _this.parent.getDateTime(eventObj[eventFields.endTime]);
+                }
+                if (popupCloseArgs.element) {
+                    popupCloseArgs.element = getElement(popupCloseArgs.element);
+                }
+                if (popupCloseArgs.target) {
+                    popupCloseArgs.target = getElement(popupCloseArgs.target);
+                }
+            }
+            if (!popupCloseArgs.cancel) {
+                if (_this.quickPopup.element.classList.contains('e-popup-open')) {
+                    if (isCellPopup && _this.isCrudAction) {
+                        _this.parent.currentAction = 'Add';
+                        _this.parent.crudModule.addEvent(popupCloseArgs.data);
+                    }
+                    if (hideAnimation) {
+                        var animation = _this.quickPopup.hideAnimation;
+                        _this.quickPopup.hideAnimation = null;
+                        _this.quickPopup.hide();
+                        _this.quickPopup.hideAnimation = animation;
+                    }
+                    else {
+                        _this.quickPopup.hide();
+                    }
+                    _this.isMultipleEventSelect = false;
+                    _this.isCrudAction = false;
+                }
+            }
+        });
     };
     QuickPopups.prototype.navigationClick = function (e) {
         var navigateEle = closest(e.target, '.' + NAVIGATE_CLASS);
@@ -6668,7 +6716,12 @@ var RecurrenceEditor = /** @__PURE__ @class */ (function (_super) {
     };
     RecurrenceEditor.prototype.showFormElement = function () {
         var _this = this;
-        neverClassList.forEach(function (className) { return removeClass([_this.element.querySelector('.' + className)], HIDEWRAPPER); });
+        neverClassList.forEach(function (className) {
+            var hideElement = _this.element.querySelector('.' + className);
+            if (hideElement) {
+                removeClass([hideElement], HIDEWRAPPER);
+            }
+        });
     };
     RecurrenceEditor.prototype.renderDropdowns = function () {
         var _this = this;
@@ -17380,7 +17433,9 @@ var VerticalView = /** @__PURE__ @class */ (function (_super) {
             var data_1 = { className: [(this.colLevels[i][0] && this.colLevels[i][0].className[0])], type: 'emptyCells' };
             if (this.parent.activeViewOptions.showWeekNumber && data_1.className.indexOf(HEADER_CELLS_CLASS) !== -1) {
                 data_1.className.push(WEEK_NUMBER_CLASS);
-                var weekNo = getWeekNumber(this.renderDates.slice(-1)[0]);
+                var weekNumberDate = getWeekLastDate(this.renderDates.slice(-1)[0], this.parent.firstDayOfWeek);
+                var weekNo = this.parent.currentView === 'Day' ? getWeekNumber(weekNumberDate) :
+                    getWeekNumber(this.renderDates.slice(-1)[0]);
                 data_1.template = [createElement('span', {
                         innerHTML: '' + weekNo,
                         attrs: { title: this.parent.localeObj.getConstant('week') + ' ' + weekNo }
@@ -19368,7 +19423,11 @@ var TimelineHeaderRow = /** @__PURE__ @class */ (function () {
                         viewTemplate = "<span class=\"e-header-month\">" + dateParser(dates[0], 'MMMM') + "</span>";
                         break;
                     case 'Week':
-                        viewTemplate = "<span class=\"e-header-week\">" + getWeekNumber(dates.slice(-1)[0]) + "</span>";
+                        var weekNumberDate = getWeekLastDate(dates.slice(-1)[0], this.parent.firstDayOfWeek);
+                        if (this.parent.currentView === 'TimelineMonth') {
+                            weekNumberDate = getWeekLastDate(dates.slice(-1)[0], 0);
+                        }
+                        viewTemplate = "<span class=\"e-header-week\">" + getWeekNumber(weekNumberDate) + "</span>";
                 }
                 var headerWrapper = createElement('div', { innerHTML: viewTemplate });
                 htmlCol = headerWrapper.childNodes;

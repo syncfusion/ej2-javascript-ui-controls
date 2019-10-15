@@ -79,6 +79,9 @@ export class ColumnWidthService {
     }
 
     public setColumnWidth(column: Column, index?: number, module?: string): void {
+        if (this.parent.getColumns().length < 1) {
+            return;
+        }
         let columnIndex: number = isNullOrUndefined(index) ? this.parent.getNormalizedColumnIndex(column.uid) : index;
         let cWidth: string | number = this.getWidth(column);
         let tgridWidth: number = this.getTableWidth(this.parent.getColumns());

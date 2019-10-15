@@ -1,8 +1,8 @@
 import { Workbook, SheetModel, CellModel, getCell, setCell } from '../base/index';
-import { DataManager, Query, ReturnOption, DataUtil } from '@syncfusion/ej2-data';
+import { DataManager, Query, ReturnOption, DataUtil, Deferred } from '@syncfusion/ej2-data';
 import { getCellIndexes, getIndexesFromAddress, getColumnHeaderText, getSwapRange, getRangeAddress } from '../common/index';
 import { SortDescriptor, SortOptions, BeforeSortEventArgs, SortEventArgs } from '../common/interface';
-import { sortComplete, validateSortRange, initiateSort } from '../common/event';
+import { initiateSort } from '../common/event';
 import { ExtendedSheet, Cell } from '../../workbook/index';
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
 
@@ -41,20 +41,20 @@ export class WorkbookSort {
      * Sorts range of cells in the sheet.
      * @param args - arguments for sorting.
      */
-    private initiateSortHandler(args: BeforeSortEventArgs): void {
-        let validateArgs: ValidateRangeArgs = {
-            range: args.range,
-            isValid: true
-        };
-
-        let isSingleCell: boolean = false;
-        this.parent.notify(validateSortRange, validateArgs);
-        if (!validateArgs.isValid) { return; }
-
+    private initiateSortHandler(eventArgs: {args: BeforeSortEventArgs, promise: Promise<SortEventArgs>}): void {
+        let args: BeforeSortEventArgs = eventArgs.args;
+        let deferred: Deferred = new Deferred();
         let sheet: SheetModel = this.parent.getActiveSheet();
-        let address: string = args.range || sheet.selectedRange;
-        let range: number[] = getSwapRange(getIndexesFromAddress(address));
+        let range: number[] = getSwapRange(getIndexesFromAddress(args.range));
         let sortOptions: SortOptions = args.sortOptions || { sortDescriptors: {}, containsHeader: true };
+        let isSingleCell: boolean = false;
+
+        eventArgs.promise = deferred.promise;
+        if (range[0] > sheet.usedRange.rowIndex - 1 || range[1] > sheet.usedRange.colIndex) {
+            deferred.reject('Select a cell or range inside the used range and try again.');
+            return;
+        }
+
         let containsHeader: boolean = sortOptions.containsHeader;
         if (range[0] === range[2] && (range[2] - range[0]) === 0) { //if selected range is a single cell 
             range[0] = 0; range[1] = 0; range[2] = sheet.usedRange.rowIndex - 1; range[3] = sheet.usedRange.colIndex;
@@ -114,12 +114,8 @@ export class WorkbookSort {
                     }
                     sRIdx++;
                 });
-                let eventArgs: SortEventArgs = {
-                    range: getRangeAddress(range),
-                    sortOptions: sortOptions
-                };
-                this.parent.trigger('sortComplete', eventArgs);
-                this.parent.notify(sortComplete, eventArgs);
+                let eventArgs: SortEventArgs = { range: getRangeAddress(range), sortOptions: args.sortOptions };
+                deferred.resolve(eventArgs);
             });
         });
     }
@@ -131,6 +127,10 @@ export class WorkbookSort {
      * @param y - second cell
      */
     private sortComparer(sortDescriptor: SortDescriptor, x: CellModel, y: CellModel): number {
+        //fix - when x and y values are empty, cells should not be swapped.
+        if (!(x ? x.value : x) && !(y ? y.value : y)) {
+            return -1; // Need to remove this condition once this is handled in fnSort()
+        }
         let direction: string = sortDescriptor.order || '';
         let comparer: Function = DataUtil.fnSort(direction);
         return comparer(x ? x.value : x, y ? y.value : y);

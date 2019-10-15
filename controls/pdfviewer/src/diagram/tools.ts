@@ -933,8 +933,10 @@ export class NodeDrawingTool extends ToolBase {
             this.commandHandler.clearSelection(this.pdfViewerBase.activeElements.activePageID);
             this.commandHandler.select([this.drawingObject.id]);
             this.commandHandler.annotation.updateCalibrateValues(this.drawingObject);
-            // tslint:disable-next-line
-            this.commandHandler.annotation.addAction((this as any).pageIndex, null, this.drawingObject, 'Addition', '', this.drawingObject as any, this.drawingObject);
+            if (this.commandHandler) {
+                // tslint:disable-next-line
+                this.commandHandler.annotation.addAction((this as any).pageIndex, null, this.drawingObject, 'Addition', '', this.drawingObject as any, this.drawingObject);
+            }
             this.drawingObject = null;
             this.dragging = false;
             super.mouseUp(args);
