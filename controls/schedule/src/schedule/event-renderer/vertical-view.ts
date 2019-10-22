@@ -243,7 +243,8 @@ export class VerticalEvent extends EventBase {
             let elementId: string = this.parent.element.id + '_';
             let viewName: string = this.parent.activeViewOptions.eventTemplateName;
             let templateId: string = elementId + viewName + 'eventTemplate';
-            templateElement = this.parent.getAppointmentTemplate()(record, this.parent, 'eventTemplate', templateId, false);
+            let templateArgs: Object = util.addLocalOffsetToEvent(record, this.parent.eventFields);
+            templateElement = this.parent.getAppointmentTemplate()(templateArgs, this.parent, 'eventTemplate', templateId, false);
         } else {
             let appointmentSubject: HTMLElement = createElement('div', { className: cls.SUBJECT_CLASS, innerHTML: recordSubject });
             if (isAllDay) {

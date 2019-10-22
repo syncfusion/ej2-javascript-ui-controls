@@ -876,4 +876,10 @@ describe('DateParser', () => {
             });
         })
     });
+    describe('EJ2-30137 Case insensitive date returns proper value',() => {
+       it('Case insensitive date returns proper value',()=>{
+        let iFormatter: Date = DateParser.dateParser('en', { format:'dd MMM,yyyy' }, cldrData)('01 aug,2019');
+        expect(iFormatter).not.toBeNull();
+       });
+    })
 });

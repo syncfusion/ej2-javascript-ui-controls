@@ -809,22 +809,21 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
     /** @hidden */
     public refreshNode(td: Element, args?: RefreshValueArgs): void {
         let value: string;
-        let spanElem: Element = td.querySelector('.' + this.element.id + '_currency');
+        let spanElem: Element = td.querySelector('.e-' + this.element.id + '_currency');
         let alignClass: string = 'e-right-align';
         if (args) {
             args.result = isNullOrUndefined(args.result) ? '' : args.result.toString();
+            if (spanElem) { detach(spanElem); }
             if (args.type === 'Accounting' && isNumber(args.value)) {
-                td.innerHTML = '';
+                td.textContent = args.result.split(args.curSymbol).join('');
                 td.appendChild(this.createElement('span', {
-                    className: this.element.id + '_currency',
+                    className: 'e-' + this.element.id + '_currency',
                     innerHTML: ` ${args.curSymbol}`,
                     styles: 'float: left'
                 }));
-                td.innerHTML += args.result.split(args.curSymbol).join('');
                 td.classList.add(alignClass);
                 return;
             } else {
-                if (spanElem) { detach(spanElem); }
                 if (args.result && (args.result.toLowerCase() === 'true' || args.result.toLowerCase() === 'false')) {
                     args.result = args.result.toUpperCase();
                     alignClass = 'e-center-align';
@@ -837,7 +836,7 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
         value = !isNullOrUndefined(value) ? value : '';
         if (!isNullOrUndefined(td)) {
             let node: Node = td.lastChild;
-            if (node && (node.nodeType === 3 || (node.nodeType === 1))) {
+            if (node && (node.nodeType === 3 || node.nodeType === 1)) {
                 node.nodeValue = value;
             } else {
                 td.appendChild(document.createTextNode(value));

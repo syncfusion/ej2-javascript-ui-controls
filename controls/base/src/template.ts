@@ -105,14 +105,20 @@ function evalExp(str: string, nameSpace: string, helper?: Object): string {
                     //handling if condition
                     cnt = '"; ' + cnt.replace(matches[1], rlStr.replace(WORDIF, (strs: string): string => {
                         strs = strs.trim();
-                        let regExAt: RegExp = /\@|\$|\#/gm;
-                        if (regExAt.test(strs)) {
-                            strs = NameSpaceForspecialChar(strs, (localKeys.indexOf(strs) === -1), nameSpace, localKeys) + '"]';
-                        }
-                        if (ARR_OBJ.test(strs)) {
-                            return NameSpaceArrObj(strs, !(QUOTES.test(strs)) && (localKeys.indexOf(strs) === -1), nameSpace, localKeys);
+                        let funcRegExp: RegExp = /\window./gm;
+                        if (!funcRegExp.test(strs)) {
+                            let regExAt: RegExp = /\@|\$|\#/gm;
+                            if (regExAt.test(strs)) {
+                                strs = NameSpaceForspecialChar(strs, (localKeys.indexOf(strs) === -1), nameSpace, localKeys) + '"]';
+                            }
+                            if (ARR_OBJ.test(strs)) {
+                                // tslint:disable-next-line
+                                return NameSpaceArrObj(strs, !(QUOTES.test(strs)) && (localKeys.indexOf(strs) === -1), nameSpace, localKeys);
+                            } else {
+                                return addNameSpace(strs, !(QUOTES.test(strs)) && (localKeys.indexOf(strs) === -1), nameSpace, localKeys);
+                            }
                         } else {
-                            return addNameSpace(strs, !(QUOTES.test(strs)) && (localKeys.indexOf(strs) === -1), nameSpace, localKeys);
+                            return strs;
                         }
                     })) + '{ \n str = str + "';
                 } else if (FOR_STMT.test(cnt)) {

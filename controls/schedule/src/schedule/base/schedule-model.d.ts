@@ -385,7 +385,7 @@ export interface ScheduleModel extends ComponentModel{
      * Triggers on beginning of every scheduler action.
      * @event
      * @blazorproperty 'OnActionBegin'
-     * @deprecated
+     * @blazorType Syncfusion.EJ2.Blazor.Schedule.ActionEventArgs<TValue>
      */
     actionBegin?: EmitType<ActionEventArgs>;
 

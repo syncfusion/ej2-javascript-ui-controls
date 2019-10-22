@@ -3663,5 +3663,30 @@ describe('TimePicker', () => {
             expect(timepicker.inputWrapper.container.classList.contains('e-test')).toBe(true);
         });
     });
+    describe('Popup hide testing when crosses view port', function (){
+        let timepicker: any;
+        let divElement: HTMLElement;
+        beforeEach(function() {
+            let inputElement: HTMLElement = createElement('input', { id: 'datepicker'});
+            document.body.appendChild(inputElement);
+            divElement = createElement('div', { id: 'divElement'});
+            divElement.style.height = '900px';
+        });
+        afterEach(function() {
+            if (timepicker) {
+                timepicker.destroy();
+                document.body.innerHTML = '';
+            }
+        });
+        it('Popup hide testing',function() {
+            timepicker = new TimePicker({});
+            timepicker.appendTo('#datepicker');
+            (<HTMLInputElement>document.getElementsByClassName(' e-input-group-icon e-time-icon  e-icons')[0]).dispatchEvent(clickEvent);
+            expect(timepicker.popupWrapper !== null).toBe(true);
+            document.body.appendChild(divElement);
+            scrollBy({top: 500, behavior: 'smooth'});
+            timepicker.popupObj.trigger('targetExitViewport');
+        });
+    });
 });
 

@@ -2792,7 +2792,8 @@ var TreeGrid = /** @__PURE__ @class */ (function (_super) {
             _this.trigger(detailDataBound, args);
         };
         this.grid.actionBegin = function (args) {
-            if (args.requestType === 'sorting' && args.target && args.target.parentElement.classList.contains('e-hierarchycheckbox')) {
+            if (args.requestType === 'sorting' && args.target && args.target.parentElement &&
+                args.target.parentElement.classList.contains('e-hierarchycheckbox')) {
                 args.cancel = true;
             }
             var requestType = getObject('requestType', args);

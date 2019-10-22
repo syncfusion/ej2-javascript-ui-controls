@@ -4019,7 +4019,7 @@ describe('DDList', () => {
             element.remove();
         });
 
-        it(' filtering event', (done) => {
+        it(' filtering event', () => {
             dropDowns = new DropDownList({
                 dataSource: datasource,
                 allowFiltering: true,
@@ -4030,16 +4030,12 @@ describe('DDList', () => {
             });
             dropDowns.appendTo(element);
             dropDowns.showPopup();
-            setTimeout(() => {
-                dropDowns.filterInput.value = 'java';
-                e.keyCode = 72;
-                dropDowns.onInput();
-                dropDowns.onFilterUp(e);
-                setTimeout(() => {
-                    expect(dropDowns.list.classList.contains(dropDownBaseClasses.noData)).toBe(false);
-                    done();
-                }, 450);
-            }, 450);
+            dropDowns.filterInput.value = 'java';
+            e.keyCode = 72;
+            dropDowns.onInput();
+            dropDowns.onFilterUp(e);
+            expect(dropDowns.list.classList.contains(dropDownBaseClasses.noData)).toBe(false);
+
         });
     });
 
@@ -4903,6 +4899,34 @@ describe('DDList', () => {
                     done();
                 }, 250)
             }, 500)
+        });
+    });
+    describe('DDL-hidepopup', () => {
+        let divElement: any;
+        divElement = createElement('div', { id: 'divElement' });
+        divElement.style.height = '900px';
+        let ddlObj: any;
+        let ddlEle: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'ddl' });
+        let empList: any = ['American Football', 'Badminton'];
+        beforeAll(() => {
+            document.body.appendChild(ddlEle);
+            ddlObj = new DropDownList({
+                dataSource: empList,
+                showClearButton: true
+            });
+            ddlObj.appendTo(ddlEle);
+        });
+        afterAll(() => {
+            ddlObj.destroy();
+            ddlEle.remove();
+        });
+
+        it('when crosses view port', () => {
+            (<HTMLInputElement>document.getElementsByClassName('e-ddl-icon')[0]).click();
+            ddlObj.showPopup();
+            document.body.appendChild(divElement)
+            scrollBy({top: 500, behavior: 'smooth'});
+            ddlObj.popupObj.trigger('targetExitViewport');
         });
     });
 });

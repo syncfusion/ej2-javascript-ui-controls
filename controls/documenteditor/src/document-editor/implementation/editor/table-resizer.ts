@@ -330,7 +330,7 @@ export class TableResizer {
     //Resize Table cell
     public resizeTableCellColumn(dragValue: number): void {
         let table: TableWidget = this.currentResizingTable;
-        if (isNullOrUndefined(table) || dragValue === 0 || isNullOrUndefined(table.childWidgets)) {
+        if (isNullOrUndefined(table) || dragValue === 0 || isNullOrUndefined(table.childWidgets) || this.resizerPosition < 0) {
             return;
         }
 

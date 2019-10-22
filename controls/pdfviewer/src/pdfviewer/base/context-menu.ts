@@ -275,7 +275,7 @@ export class ContextMenu {
             case this.pdfViewer.localeObj.getConstant('Copy'):
                 let isSkip: boolean = false;
                 // tslint:disable-next-line:max-line-length
-                if (this.pdfViewerBase.isFreeTextContextMenu || this.pdfViewer.annotationModule.freeTextAnnotationModule.isInuptBoxInFocus) {
+                if (this.pdfViewerBase.isFreeTextContextMenu || (this.pdfViewer.annotationModule && this.pdfViewer.annotationModule.freeTextAnnotationModule.isInuptBoxInFocus)) {
                     this.pdfViewer.annotation.freeTextAnnotationModule.copySelectedText();
                     this.contextMenuObj.close();
                     isSkip = true;

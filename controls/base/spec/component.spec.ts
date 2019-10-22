@@ -10,7 +10,6 @@ import { Property, Complex, NotifyPropertyChanges, INotifyPropertyChanged, Event
 import { Touch } from '../src/touch';
 import { enableRtl, setCulture } from '../src/internationalization';
 import { setCurrencyCode } from '../src/index';
-import * as Util from '../src/util';
 //classes
 
 
@@ -870,7 +869,6 @@ describe('Component', () => {
         });
         it(' - after component render', () => {
             window['Blazor'] = {};
-            Util.enableBlazorMode();
             window['ejsInterop'] = {
                 childSaveChanges: function (wrapper: any) {
                     return wrapper;
@@ -888,7 +886,6 @@ describe('Component', () => {
             obj.renderComplete(wrapper);
             obj.fields.name = 'childchange';
             expect(curSpy).toHaveBeenCalled();
-            Util.disableBlazorMode();
             delete window['Blazor'];
             delete window['ejsInterop'];
         });

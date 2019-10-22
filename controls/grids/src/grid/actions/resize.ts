@@ -405,6 +405,12 @@ export class Resize implements IAction {
         }
     }
 
+    private updateResizeEleHeight(): void {
+        this.parent.getHeaderContent().querySelectorAll('.e-rhandler').forEach((element: HTMLElement) => {
+            element.style.height = this.element.parentElement.offsetHeight + 'px';
+        });
+    }
+
     private getColData(column: Column, mousemove: number): { [key: string]: number } {
         return {
             width: parseFloat(isNullOrUndefined(this.widthService.getWidth(column)) || this.widthService.getWidth(column) === 'auto'  ? '0'
@@ -423,7 +429,7 @@ export class Resize implements IAction {
             offsetWidth = (parentsUntil(this.element, 'th') as HTMLTableCellElement).offsetWidth;
         }
         if (this.parent.allowTextWrap) {
-            this.element.style.height = this.element.parentElement.offsetHeight + 'px';
+            this.updateResizeEleHeight();
             this.setHelperHeight();
         }
         let pageX: number = this.getPointX(e);
@@ -525,6 +531,7 @@ export class Resize implements IAction {
             this.parent.notify(events.freezeRender, { case: 'textwrap' });
         }
         if (this.parent.allowTextWrap) {
+            this.updateResizeEleHeight();
             this.parent.notify(events.textWrapRefresh, { case: 'textwrap' });
         }
         this.refresh();

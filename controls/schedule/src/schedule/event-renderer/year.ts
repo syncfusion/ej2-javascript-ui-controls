@@ -186,7 +186,8 @@ export class YearEvent extends TimelineEvent {
         let eventObj: { [key: string]: Object } = extend({}, record, null, true) as { [key: string]: Object };
         if (this.parent.activeViewOptions.eventTemplate) {
             let templateId: string = this.parent.element.id + '_' + this.parent.activeViewOptions.eventTemplateName + 'eventTemplate';
-            templateElement = this.parent.getAppointmentTemplate()(eventObj, this.parent, 'eventTemplate', templateId, false);
+            let templateArgs: Object = util.addLocalOffsetToEvent(eventObj, this.parent.eventFields);
+            templateElement = this.parent.getAppointmentTemplate()(templateArgs, this.parent, 'eventTemplate', templateId, false);
         } else {
             let locationEle: string = (record[this.fields.location] || this.parent.eventSettings.fields.location.default || '') as string;
             let subjectEle: HTMLElement = createElement('div', {

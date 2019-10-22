@@ -6,6 +6,7 @@ import { Selection, ContextElementInfo } from './index';
 import { TextPosition } from './selection/selection-helper';
 import { FieldElementBox } from './viewer/page';
 import { SpellChecker } from './spell-check/spell-checker';
+import { Point } from './editor/editor-helper';
 
 const CONTEXTMENU_COPY: string = '_contextmenu_copy';
 const CONTEXTMENU_CUT: string = '_contextmenu_cut';
@@ -498,7 +499,8 @@ export class ContextMenu {
      * @param  {PointerEvent} event
      * @private
      */
-    public onContextMenuInternal = (event: PointerEvent): void => {
+    public onContextMenuInternal = (event: PointerEvent | TouchEvent): void => {
+        let isTouch: boolean = event instanceof TouchEvent;
         if (this.viewer.owner.enableSpellCheck && this.spellChecker.allowSpellCheckAndSuggestion) {
             event.preventDefault();
             this.currentContextInfo = this.spellChecker.findCurretText();
@@ -510,24 +512,42 @@ export class ContextMenu {
                 this.spellChecker.currentContextInfo = this.currentContextInfo;
                 if (this.spellChecker.errorSuggestions.containsKey(exactData)) {
                     allSuggestions = this.spellChecker.errorSuggestions.get(exactData).slice();
-                    splittedSuggestion = this.spellChecker.handleSuggestions(allSuggestions, event);
-                    this.processSuggestions(allSuggestions, splittedSuggestion, event);
+                    splittedSuggestion = this.spellChecker.handleSuggestions(allSuggestions);
+                    this.processSuggestions(allSuggestions, splittedSuggestion, isTouch ? event as TouchEvent : event as PointerEvent);
                 } else {
-                    this.processSuggestions(allSuggestions, splittedSuggestion, event);
+                    this.processSuggestions(allSuggestions, splittedSuggestion, isTouch ? event as TouchEvent : event as PointerEvent);
                 }
             } else {
                 this.hideSpellContextItems();
-                if (this.showHideElements(this.viewer.selection)) {
-                    this.contextMenuInstance.open(event.y, event.x);
-                    event.preventDefault();
-                }
+                this.showContextMenuOnSel(isTouch ? event as TouchEvent : event as PointerEvent);
             }
         } else {
             this.hideSpellContextItems();
-            if (this.showHideElements(this.viewer.selection)) {
-                this.contextMenuInstance.open(event.y, event.x);
-                event.preventDefault();
+            this.showContextMenuOnSel(isTouch ? event as TouchEvent : event as PointerEvent);
+        }
+    }
+    /**
+     * Opens context menu.
+     * @param {PointerEvent | TouchEvent} event 
+     */
+    private showContextMenuOnSel(event: PointerEvent | TouchEvent): void {
+        let isTouch: boolean = event instanceof TouchEvent;
+        let xPos: number = 0;
+        let yPos: number = 0;
+        if (isTouch) {
+            let point: Point = this.viewer.getTouchOffsetValue(event as TouchEvent);
+            xPos = point.x;
+            yPos = point.y;
+        } else {
+            yPos = (event as PointerEvent).y;
+            xPos = (event as PointerEvent).x;
+        }
+        if (this.showHideElements(this.viewer.selection)) {
+            if (isTouch) {
+                this.viewer.isMouseDown = false;
             }
+            this.contextMenuInstance.open(yPos, xPos);
+            event.preventDefault();
         }
     }
     /**
@@ -551,7 +571,7 @@ export class ContextMenu {
      * @private
      */
     /* tslint:disable:no-any */
-    public processSuggestions(allSuggestions: any, splittedSuggestion: string[], event: PointerEvent): void {
+    public processSuggestions(allSuggestions: any, splittedSuggestion: string[], event: PointerEvent | TouchEvent): void {
         this.spellContextItems = this.constructContextmenu(allSuggestions, splittedSuggestion);
         this.addCustomMenu(this.spellContextItems);
         this.noSuggestion = document.getElementById(this.viewer.owner.element.id + CONTEXTMENU_NO_SUGGESTION);
@@ -559,10 +579,7 @@ export class ContextMenu {
             this.noSuggestion.style.display = 'block';
             classList(this.noSuggestion, ['e-disabled'], ['e-focused']);
         }
-        if (!isNullOrUndefined(event) && this.showHideElements(this.viewer.selection)) {
-            this.contextMenuInstance.open(event.y, event.x);
-            event.preventDefault();
-        }
+        this.showContextMenuOnSel(event);
     }
     /**
      * Method to add inline menu

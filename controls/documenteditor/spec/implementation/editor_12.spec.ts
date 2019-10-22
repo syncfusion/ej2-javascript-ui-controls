@@ -1,5 +1,5 @@
 import { DocumentEditor } from '../../src/document-editor/document-editor';
-import { TableOfContentsSettings, ParagraphWidget } from '../../src/document-editor/index';
+import { TableOfContentsSettings, ParagraphWidget, SfdtExport } from '../../src/document-editor/index';
 import { createElement } from '@syncfusion/ej2-base';
 import { Editor, TableCellWidget, TextElementBox, TextHelper, RtlInfo, ListTextElementBox, LineWidget, TabElementBox, TextPosition } from '../../src/index';
 import { TestHelper } from '../test-helper.spec';
@@ -1486,6 +1486,71 @@ describe('Header footer editing validation', () => {
             editor.editor.onEnter();
         }
         expect(editor.viewer.pages.length).toBe(1);
+    });
+});
+describe('Paste Heading content and TOC validation', () => {
+    let editor: DocumentEditor = undefined;
+    beforeAll(() => {
+        document.body.innerHTML = '';
+        let ele: HTMLElement = createElement('div', { id: 'container' });
+        document.body.appendChild(ele);
+        editor = new DocumentEditor({ enableEditor: true, enableSelection: true, enableEditorHistory: true, isReadOnly: false, enableSfdtExport: true, enableLocalPaste: true });
+        DocumentEditor.Inject(Editor, Selection, EditorHistory, SfdtExport);
+        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        editor.appendTo('#container');
+    });
+    afterAll((done) => {
+        editor.destroy();
+        document.body.removeChild(document.getElementById('container'));
+        editor = undefined;
+        document.body.innerHTML = '';
+        setTimeout(() => {
+            done();
+        }, 500);
+    });
+    it('Copy Paste Heading and Inserting TOC', () => {
+        editor.editor.insertText('Heading1');
+        editor.selection.selectAll();
+        editor.editor.applyStyle('Heading 1');
+        editor.selection.copy();
+        editor.selection.handleRightKey();
+        editor.editor.onEnter();
+        editor.editor.paste();
+        editor.selection.handleUpKey();
+        editor.selection.handleHomeKey();
+        editor.editor.onEnter();
+        editor.selection.handleUpKey();
+        editor.editor.insertTableOfContents();
+        expect(editor.viewer.pages[0].bodyWidgets[0].childWidgets.length).toBe(6);
+    });
+    it('Copy Paste word in paragraph', () => {
+        editor.openBlank();
+        editor.editor.insertText('Hello World');
+        editor.selection.selectAll();
+        editor.editor.applyStyle('Heading 1');
+        editor.selection.handleRightKey();
+        editor.selection.handleLeftKey();
+        editor.selection.handleLeftKey();
+        editor.selection.selectCurrentWord();
+        editor.selection.copy();
+        editor.selection.handleRightKey();
+        editor.editor.onEnter();
+        editor.editor.paste();
+        expect(editor.selection.paragraphFormat.styleName).toBe('Normal');
+    });
+    it('Copy Paste whole paragraph', () => {
+        editor.openBlank();
+        editor.editor.insertText('Hello World');
+        editor.selection.selectAll();
+        editor.editor.applyStyle('Heading 1');        
+        editor.selection.copy();
+        editor.selection.handleRightKey();
+        editor.editor.onEnter();
+        editor.editor.paste();
+        expect(editor.selection.paragraphFormat.styleName).toBe('Heading 1');
     });
 });
 

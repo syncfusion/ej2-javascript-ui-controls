@@ -284,7 +284,8 @@ export class MonthEvent extends EventBase {
             let scheduleId: string = this.parent.element.id + '_';
             let viewName: string = this.parent.activeViewOptions.eventTemplateName;
             let templateId: string = scheduleId + viewName + 'eventTemplate';
-            templateElement = this.parent.getAppointmentTemplate()(eventObj, this.parent, 'eventTemplate', templateId, false);
+            let templateArgs: Object = util.addLocalOffsetToEvent(eventObj, this.parent.eventFields);
+            templateElement = this.parent.getAppointmentTemplate()(templateArgs, this.parent, 'eventTemplate', templateId, false);
         } else {
             let eventLocation: string = (record[this.fields.location] || this.parent.eventSettings.fields.location.default || '') as string;
             let appointmentSubject: HTMLElement = createElement('div', {

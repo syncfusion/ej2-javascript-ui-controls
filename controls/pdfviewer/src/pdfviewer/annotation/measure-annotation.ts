@@ -827,6 +827,7 @@ export class MeasureAnnotation {
      */
     // tslint:disable-next-line
     public modifyInCollection(property: string, pageNumber: number, annotationBase: any): IMeasureShapeAnnotation {
+        this.pdfViewerBase.isDocumentEdited = true;
         let currentAnnotObject: IMeasureShapeAnnotation = null;
         let pageAnnotations: IMeasureShapeAnnotation[] = this.getAnnotations(pageNumber, null);
         if (pageAnnotations != null && annotationBase) {

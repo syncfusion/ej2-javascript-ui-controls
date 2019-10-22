@@ -3295,26 +3295,26 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
         }
         let target: Element = <Element>e.target;
         let newText: string = (<HTMLInputElement>target).value;
-        let txtEle: Element = closest(target, '.' + LISTTEXT);
+        let txtEle: HTMLElement = closest(target, '.' + LISTTEXT) as HTMLElement;
         let liEle: Element = closest(target, '.' + LISTITEM);
         detach(this.inputObj.container);
         this.appendNewText(liEle, txtEle, newText, true);
     }
 
-    private appendNewText(liEle: Element, txtEle: Element, newText: string, isInput: boolean): void {
+    private appendNewText(liEle: Element, txtEle: HTMLElement, newText: string, isInput: boolean): void {
         let eventArgs: NodeEditEventArgs = this.getEditEvent(liEle, newText, null);
         this.trigger('nodeEdited', eventArgs, (observedArgs: NodeEditEventArgs) => {
             newText = observedArgs.cancel ? observedArgs.oldText : observedArgs.newText;
             let newData: { [key: string]: Object } = setValue(this.editFields.text, newText, this.editData);
             if (!isNOU(this.nodeTemplateFn)) {
-                txtEle.innerHTML = '';
+                txtEle.innerText = '';
                 let tempArr: Element[] = this.nodeTemplateFn(newData, undefined, undefined, this.element.id + 'nodeTemplate',
                     this.isStringTemplate);
                 tempArr = Array.prototype.slice.call(tempArr);
                 append(tempArr, txtEle);
                 this.updateBlazorTemplate();
             } else {
-                txtEle.innerHTML = newText;
+                txtEle.innerText = newText;
             }
             if (isInput) {
                 removeClass([liEle], EDITING);
@@ -4725,7 +4725,9 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
         this.setCssClass(this.cssClass, null);
         this.setDragAndDrop(false);
         this.setFullRow(false);
-        this.element.innerHTML = '';
+        if (this.ulElement && this.ulElement.parentElement) {
+            this.ulElement.parentElement.removeChild(this.ulElement);
+        }
         super.destroy();
     }
 
@@ -4981,7 +4983,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
         if (isNOU(liEle)) {
             return;
         }
-        let txtEle: Element = select('.' + LISTTEXT, liEle);
+        let txtEle: HTMLElement = select('.' + LISTTEXT, liEle) as HTMLElement;
         this.updateOldText(liEle);
         let eventArgs: NodeEditEventArgs = this.getEditEvent(liEle, null, null);
         this.trigger('nodeEditing', eventArgs, (observedArgs: NodeEditEventArgs) => {

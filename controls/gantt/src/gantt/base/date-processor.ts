@@ -472,10 +472,11 @@ export class DateProcessor {
         for (let count: number = 0; count < length; count++) {
             let currentRange: DayWorkingTimeModel = dayWorkingTime[count];
             if (!isNullOrUndefined(currentRange.from) && !isNullOrUndefined(currentRange.to)) {
-                startDate.setHours(currentRange.from);
+                startDate.setHours(0, 0, 0, 0);
+                let tempDate: Date = new Date(startDate.getTime());
+                startDate.setTime(startDate.getTime() + (currentRange.from * 3600000));
                 let startHour: Date = new Date(startDate.getTime());
-                let tempDate: Date = currentRange.to !== 0 ? startDate : endDate;
-                tempDate.setHours(currentRange.to);
+                tempDate.setTime(tempDate.getTime() + (currentRange.to * 3600000));
                 let endHour: Date = new Date(tempDate.getTime());
                 let timeDiff: number = endHour.getTime() - startHour.getTime();
                 let sdSeconds: number = this.getSecondsInDecimal(startHour);
@@ -807,8 +808,12 @@ export class DateProcessor {
      * @private
      */
     public setTime(seconds: number, date: Date): void {
-        let hour: number = seconds / 3600;
-        let min: number = (seconds - (hour * 3600)) / 60;
+        /* tslint:disable-next-line:no-any */
+        let hour: any = seconds / 3600;
+        hour = parseInt(hour, 10);
+        /* tslint:disable-next-line:no-any */
+        let min: any = (seconds - (hour * 3600)) / 60;
+        min = parseInt(min, 10);
         let sec: number = seconds - (hour * 3600) - (min * 60);
         date.setHours(hour, min, sec);
     }

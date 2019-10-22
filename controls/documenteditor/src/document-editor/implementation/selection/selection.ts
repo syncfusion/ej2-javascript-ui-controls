@@ -78,6 +78,7 @@ export class Selection {
     private toolTipObject: Popup;
     private toolTipField: FieldElementBox;
     private isMoveDownOrMoveUp: boolean = false;
+    private pasteDropDwn: DropDownButton;
     /**
      * @private
      */
@@ -6306,11 +6307,10 @@ export class Selection {
             this.viewer.viewerContainer.appendChild(this.pasteElement);
             let splitButtonEle: HTMLElement = createElement('button', { id: 'iconsplitbtn' });
             this.pasteElement.appendChild(splitButtonEle);
-            let splitButton: DropDownButton = new DropDownButton({
+            this.pasteDropDwn = new DropDownButton({
                 items: items, iconCss: 'e-icons e-de-paste', select: this.pasteOptions
             });
-            splitButton.appendTo('#iconsplitbtn');
-
+            this.pasteDropDwn.appendTo('#iconsplitbtn');
         }
         this.pasteElement.style.display = 'block';
         this.pasteElement.style.position = 'absolute';
@@ -7339,6 +7339,10 @@ export class Selection {
     public destroy(): void {
         if (!isNullOrUndefined(this.contextTypeInternal)) {
             this.contextTypeInternal = undefined;
+        }
+        if (this.pasteDropDwn) {
+            this.pasteDropDwn.destroy();
+            this.pasteDropDwn = undefined;
         }
         this.caret = undefined;
         this.contextTypeInternal = undefined;

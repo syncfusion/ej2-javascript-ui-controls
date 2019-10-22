@@ -12453,8 +12453,7 @@ var PolarRadarPanel = /** @__PURE__ @class */ (function (_super) {
         var isLabelVisible = [];
         isLabelVisible[0] = true;
         var intersectType = axis.labelIntersectAction;
-        var ticksbwtLabel = axis.valueType === 'Category' && axis.labelPlacement === 'BetweenTicks'
-            && chart.visibleSeries[0].type !== 'Radar' ? 0.5 : 0;
+        var ticksbwtLabel = axis.valueType === 'Category' && axis.labelPlacement === 'BetweenTicks' ? 0.5 : 0;
         var radius = chart.radius + axis.majorTickLines.height;
         radius = (islabelInside) ? -radius : radius;
         for (var i = 0, len = axis.visibleLabels.length; i < len; i++) {
@@ -12636,9 +12635,9 @@ var PolarSeries = /** @__PURE__ @class */ (function (_super) {
         var sumofYValues = 0;
         var arcValue;
         var interval = (series.points[1] ? series.points[1].xValue : 2 * series.points[0].xValue) - series.points[0].xValue;
-        //customer issue ID-I249730, Polar columnSeries in OnTicks with inversed axis and Radar StackedColumn with OnTicks
-        var ticks = xAxis.valueType === 'Category' && (xAxis.labelPlacement === 'BetweenTicks' || (xAxis.labelPlacement ===
-            'OnTicks' && series.type === 'Radar')) ? 0 : xAxis.isInversed ? -interval / 2 : interval / 2;
+        //customer issue ID-I249730, Polar columnSeries in OnTicks with inversed axis
+        var ticks = (xAxis.valueType === 'Category' && xAxis.labelPlacement === 'BetweenTicks') ? 0 :
+            xAxis.isInversed ? -interval / 2 : interval / 2;
         var rangeInterval = xAxis.valueType === 'DateTime' ? xAxis.dateTimeInterval : 1;
         this.getSeriesPosition(series);
         var position = xAxis.isInversed ? (series.rectCount - 1 - series.position) : series.position;
@@ -17964,6 +17963,9 @@ var Tooltip$1 = /** @__PURE__ @class */ (function (_super) {
                 _this.headerText = argsData.headerText;
                 _this.formattedText = _this.formattedText.concat(argsData.text);
                 _this.text = _this.formattedText;
+                if (argsData.template) {
+                    _this.chart.tooltip.template = argsData.template;
+                }
                 _this.createTooltip(_this.chart, isFirst, _this.getSymbolLocation(point), point.series.clipRect, point.point, _this.findShapes(), _this.findMarkerHeight(_this.currentPoints[0]), _this.chart.chartAxisLayoutPanel.seriesClipRect, null, _this.getTemplateText(point));
             }
             else {
@@ -17974,9 +17976,6 @@ var Tooltip$1 = /** @__PURE__ @class */ (function (_super) {
         };
         chartTooltipSuccess.bind(this, point);
         this.chart.trigger(tooltipRender, argsData, chartTooltipSuccess);
-        if (argsData.template) {
-            this.chart.tooltip.template = argsData.template;
-        }
     };
     Tooltip$$1.prototype.findMarkerHeight = function (pointData) {
         if (!this.chart.tooltip.enableMarker) {
@@ -26406,6 +26405,18 @@ var AccumulationChart = /** @__PURE__ @class */ (function (_super) {
         return false;
     };
     /**
+     * Get visible series for accumulation chart by index
+     */
+    AccumulationChart.prototype.changeVisibleSeries = function (visibleSeries, index) {
+        for (var _i = 0, visibleSeries_1 = visibleSeries; _i < visibleSeries_1.length; _i++) {
+            var series = visibleSeries_1[_i];
+            if (index === series.index) {
+                return series;
+            }
+        }
+        return null;
+    };
+    /**
      * Get the properties to be maintained in the persisted state.
      * @private
      */
@@ -26461,8 +26472,11 @@ var AccumulationChart = /** @__PURE__ @class */ (function (_super) {
                     if (!this.animateselected) {
                         var len = this.series.length;
                         var seriesRefresh = false;
+                        var series = void 0;
                         for (var i = 0; i < len; i++) {
+                            series = newProp.series[i];
                             if (newProp.series[i] && (newProp.series[i].dataSource || newProp.series[i].yName || newProp.series[i].xName)) {
+                                extend(this.changeVisibleSeries(this.visibleSeries, i), series, null, true);
                                 seriesRefresh = true;
                             }
                             if (newProp.series[i] && newProp.series[i].explodeIndex !== oldProp.series[i].explodeIndex) {

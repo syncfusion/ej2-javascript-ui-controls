@@ -257,6 +257,8 @@ export class HeaderFooterProperties {
         }
     }
     public onSelectionChange(): void {
+        this.headerFromTop.value = this.documentEditor.sectionFormat.headerDistance;
+        this.footerFromTop.value = this.documentEditor.sectionFormat.footerDistance;
         if (this.documentEditor.selection.sectionFormat.differentFirstPage) {
             this.firstPage.checked = true;
         } else {

@@ -12383,7 +12383,7 @@ var SpellChecker = /** @__PURE__ @class */ (function () {
      * @private
      */
     /* tslint:disable:no-any */
-    SpellChecker.prototype.handleSuggestions = function (allsuggestions, event) {
+    SpellChecker.prototype.handleSuggestions = function (allsuggestions) {
         this.spellCheckSuggestion = [];
         if (allsuggestions.length === 0) {
             this.spellCheckSuggestion.push('Add To Dictionary');
@@ -13998,6 +13998,13 @@ var DocumentEditor = /** @__PURE__ @class */ (function (_super) {
         this.paragraphFormat = paragraphFormat;
     };
     /**
+     * Set the default section format for document editor
+     * @param sectionFormat
+     */
+    DocumentEditor.prototype.setDefaultSectionFormat = function (sectionFormat) {
+        this.sectionFormat = sectionFormat;
+    };
+    /**
      * Get the properties to be maintained in the persisted state.
      * @private
      */
@@ -14516,6 +14523,9 @@ var DocumentEditor = /** @__PURE__ @class */ (function (_super) {
         var section = new BodyWidget();
         section.index = 0;
         section.sectionFormat = new WSectionFormat(section);
+        if (this.sectionFormat) {
+            this.parser.parseSectionFormat(this.sectionFormat, section.sectionFormat);
+        }
         var paragraph = new ParagraphWidget();
         paragraph.index = 0;
         paragraph.paragraphFormat = new WParagraphFormat(paragraph);
@@ -15124,6 +15134,7 @@ var ContextMenu$1 = /** @__PURE__ @class */ (function () {
          * @private
          */
         this.onContextMenuInternal = function (event) {
+            var isTouch = event instanceof TouchEvent;
             if (_this.viewer.owner.enableSpellCheck && _this.spellChecker.allowSpellCheckAndSuggestion) {
                 event.preventDefault();
                 _this.currentContextInfo = _this.spellChecker.findCurretText();
@@ -15135,27 +15146,21 @@ var ContextMenu$1 = /** @__PURE__ @class */ (function () {
                     _this.spellChecker.currentContextInfo = _this.currentContextInfo;
                     if (_this.spellChecker.errorSuggestions.containsKey(exactData)) {
                         allSuggestions = _this.spellChecker.errorSuggestions.get(exactData).slice();
-                        splittedSuggestion = _this.spellChecker.handleSuggestions(allSuggestions, event);
-                        _this.processSuggestions(allSuggestions, splittedSuggestion, event);
+                        splittedSuggestion = _this.spellChecker.handleSuggestions(allSuggestions);
+                        _this.processSuggestions(allSuggestions, splittedSuggestion, isTouch ? event : event);
                     }
                     else {
-                        _this.processSuggestions(allSuggestions, splittedSuggestion, event);
+                        _this.processSuggestions(allSuggestions, splittedSuggestion, isTouch ? event : event);
                     }
                 }
                 else {
                     _this.hideSpellContextItems();
-                    if (_this.showHideElements(_this.viewer.selection)) {
-                        _this.contextMenuInstance.open(event.y, event.x);
-                        event.preventDefault();
-                    }
+                    _this.showContextMenuOnSel(isTouch ? event : event);
                 }
             }
             else {
                 _this.hideSpellContextItems();
-                if (_this.showHideElements(_this.viewer.selection)) {
-                    _this.contextMenuInstance.open(event.y, event.x);
-                    event.preventDefault();
-                }
+                _this.showContextMenuOnSel(isTouch ? event : event);
             }
         };
         this.viewer = viewer;
@@ -15577,6 +15582,31 @@ var ContextMenu$1 = /** @__PURE__ @class */ (function () {
         }
     };
     /**
+     * Opens context menu.
+     * @param {PointerEvent | TouchEvent} event
+     */
+    ContextMenu$$1.prototype.showContextMenuOnSel = function (event) {
+        var isTouch = event instanceof TouchEvent;
+        var xPos = 0;
+        var yPos = 0;
+        if (isTouch) {
+            var point = this.viewer.getTouchOffsetValue(event);
+            xPos = point.x;
+            yPos = point.y;
+        }
+        else {
+            yPos = event.y;
+            xPos = event.x;
+        }
+        if (this.showHideElements(this.viewer.selection)) {
+            if (isTouch) {
+                this.viewer.isMouseDown = false;
+            }
+            this.contextMenuInstance.open(yPos, xPos);
+            event.preventDefault();
+        }
+    };
+    /**
      * Method to hide spell context items
      */
     ContextMenu$$1.prototype.hideSpellContextItems = function () {
@@ -15605,10 +15635,7 @@ var ContextMenu$1 = /** @__PURE__ @class */ (function () {
             this.noSuggestion.style.display = 'block';
             classList(this.noSuggestion, ['e-disabled'], ['e-focused']);
         }
-        if (!isNullOrUndefined(event) && this.showHideElements(this.viewer.selection)) {
-            this.contextMenuInstance.open(event.y, event.x);
-            event.preventDefault();
-        }
+        this.showContextMenuOnSel(event);
     };
     /**
      * Method to add inline menu
@@ -24210,9 +24237,52 @@ var LayoutViewer = /** @__PURE__ @class */ (function () {
                 if (_this.touchDownOnSelectionMark || event.touches.length > 1) {
                     event.preventDefault();
                 }
+                _this.longTouchTimer = setTimeout(_this.onLongTouch, 500, event);
                 _this.timer = setTimeout(function () {
                     _this.isTimerStarted = false;
                 }, 200);
+            }
+        };
+        /**
+         * Fired on long touch
+         * @param {TouchEvent} event
+         * @private
+         */
+        this.onLongTouch = function (event) {
+            if (isNullOrUndefined(_this.owner) || isNullOrUndefined(_this.viewerContainer)) {
+                return;
+            }
+            var point = _this.getTouchOffsetValue(event);
+            var pointRelToPage = _this.findFocusedPage(point, true);
+            var selStart = _this.selection.start;
+            var selEnd = _this.selection.end;
+            var updateSel = false;
+            if (!_this.selection.isForward) {
+                selStart = _this.selection.end;
+                selEnd = _this.selection.start;
+            }
+            var selStartPt = selStart.location;
+            var selEndPt = selEnd.location;
+            if (selStart.currentWidget !== selEnd.currentWidget) {
+                updateSel = !(pointRelToPage.x >= selStartPt.x && pointRelToPage.x <= selEndPt.x)
+                    && !(pointRelToPage.y >= selStartPt.y && pointRelToPage.y <= selEndPt.y);
+            }
+            else {
+                updateSel = !(pointRelToPage.x >= selStartPt.x && pointRelToPage.x <= selEndPt.x)
+                    || !(pointRelToPage.y >= selStartPt.y && pointRelToPage.y <= selEndPt.y);
+            }
+            if (event.changedTouches.length === 1 && updateSel) {
+                _this.updateSelectionOnTouch(point, pointRelToPage);
+                _this.isMouseDown = false;
+                _this.touchDownOnSelectionMark = 0;
+                _this.useTouchSelectionMark = true;
+                _this.isSelectionChangedOnMouseMoved = false;
+            }
+            if (_this.selection.isEmpty) {
+                _this.selection.selectCurrentWord();
+            }
+            if (!isNullOrUndefined(_this.owner.contextMenuModule) && _this.owner.contextMenuModule.contextMenuInstance) {
+                _this.owner.contextMenuModule.onContextMenuInternal(event);
             }
         };
         /**
@@ -24285,6 +24355,10 @@ var LayoutViewer = /** @__PURE__ @class */ (function () {
                 }
                 _this.preDifference = currentDiff;
             }
+            if (_this.longTouchTimer) {
+                clearTimeout(_this.longTouchTimer);
+                _this.longTouchTimer = undefined;
+            }
         };
         /**
          * Fired on touch up.
@@ -24296,21 +24370,7 @@ var LayoutViewer = /** @__PURE__ @class */ (function () {
                 var point = _this.getTouchOffsetValue(event);
                 var touchPoint = _this.findFocusedPage(point, true);
                 if (event.changedTouches.length === 1) {
-                    _this.zoomX = undefined;
-                    _this.zoomY = undefined;
-                    // tslint:disable-next-line:max-line-length
-                    if (_this.isMouseDown && !_this.isSelectionChangedOnMouseMoved && !isNullOrUndefined(_this.currentPage) && !isNullOrUndefined(_this.owner.selection.start)) {
-                        if (_this.touchDownOnSelectionMark === 0) {
-                            _this.updateTextPositionForSelection(new Point(touchPoint.x, touchPoint.y), _this.tapCount);
-                            if (_this.tapCount === 2) {
-                                _this.selection.checkAndEnableHeaderFooter(point, touchPoint);
-                            }
-                        }
-                        if (_this.owner.selection.isEmpty) {
-                            _this.selection.updateCaretPosition();
-                        }
-                        _this.selection.checkForCursorVisibility();
-                    }
+                    _this.updateSelectionOnTouch(point, touchPoint);
                     if (!isNullOrUndefined(_this.currentPage) && !isNullOrUndefined(_this.selection.start)
                         && !_this.isSelectionChangedOnMouseMoved && (_this.selection.isEmpty ||
                         _this.selection.isImageField() && (!_this.owner.enableImageResizerMode ||
@@ -24341,6 +24401,10 @@ var LayoutViewer = /** @__PURE__ @class */ (function () {
             }
             _this.preDifference = -1;
             _this.isTouchInput = false;
+            if (_this.longTouchTimer) {
+                clearTimeout(_this.longTouchTimer);
+                _this.longTouchTimer = undefined;
+            }
             if (!_this.isTimerStarted) {
                 _this.tapCount = 1;
             }
@@ -24855,7 +24919,9 @@ var LayoutViewer = /** @__PURE__ @class */ (function () {
             this.selection.initCaret();
         }
         this.wireInputEvents();
-        this.iframe.addEventListener('load', this.onIframeLoad);
+        if (!isNullOrUndefined(this.iframe)) {
+            this.iframe.addEventListener('load', this.onIframeLoad);
+        }
         this.viewerContainer.addEventListener('scroll', this.scrollHandler);
         this.viewerContainer.addEventListener('mousedown', this.onMouseDownInternal);
         this.viewerContainer.addEventListener('keydown', this.onKeyDownInternal);
@@ -24927,10 +24993,10 @@ var LayoutViewer = /** @__PURE__ @class */ (function () {
      */
     LayoutViewer.prototype.initDialog = function (isRtl) {
         if (!this.dialogInternal) {
-            this.dialogTarget = createElement('div', { className: 'e-de-dlg-target' });
-            document.body.appendChild(this.dialogTarget);
+            this.dialogTarget1 = createElement('div', { className: 'e-de-dlg-target' });
+            document.body.appendChild(this.dialogTarget1);
             if (isRtl) {
-                this.dialogTarget.classList.add('e-de-rtl');
+                this.dialogTarget1.classList.add('e-de-rtl');
             }
             this.dialogInternal = new Dialog({
                 target: document.body, showCloseIcon: true,
@@ -24940,7 +25006,7 @@ var LayoutViewer = /** @__PURE__ @class */ (function () {
             });
             this.dialogInternal.open = this.selection.hideCaret;
             this.dialogInternal.beforeClose = this.updateFocus;
-            this.dialogInternal.appendTo(this.dialogTarget);
+            this.dialogInternal.appendTo(this.dialogTarget1);
         }
     };
     /**
@@ -24948,17 +25014,17 @@ var LayoutViewer = /** @__PURE__ @class */ (function () {
      */
     LayoutViewer.prototype.initDialog2 = function (isRtl) {
         if (!this.dialogInternal2) {
-            var target = createElement('div', { className: 'e-de-dlg-target' });
-            document.body.appendChild(target);
+            this.dialogTarget2 = createElement('div', { className: 'e-de-dlg-target' });
+            document.body.appendChild(this.dialogTarget2);
             if (isRtl) {
-                target.classList.add('e-de-rtl');
+                this.dialogTarget2.classList.add('e-de-rtl');
             }
             this.dialogInternal2 = new Dialog({
                 target: document.body, showCloseIcon: true,
                 allowDragging: true, enableRtl: isRtl, visible: false,
                 width: '1px', isModal: true, position: { X: 'center', Y: 'Top' }, zIndex: this.owner.zIndex
             });
-            this.dialogInternal2.appendTo(target);
+            this.dialogInternal2.appendTo(this.dialogTarget2);
         }
     };
     /**
@@ -25113,7 +25179,30 @@ var LayoutViewer = /** @__PURE__ @class */ (function () {
         return button === 1;
     };
     /**
+     * Updates selection for touch position.
+     * @param point
+     * @param touchPoint
+     */
+    LayoutViewer.prototype.updateSelectionOnTouch = function (point, touchPoint) {
+        this.zoomX = undefined;
+        this.zoomY = undefined;
+        // tslint:disable-next-line:max-line-length
+        if (this.isMouseDown && !this.isSelectionChangedOnMouseMoved && !isNullOrUndefined(this.currentPage) && !isNullOrUndefined(this.owner.selection.start)) {
+            if (this.touchDownOnSelectionMark === 0) {
+                this.updateTextPositionForSelection(new Point(touchPoint.x, touchPoint.y), this.tapCount);
+                if (this.tapCount === 2) {
+                    this.selection.checkAndEnableHeaderFooter(point, touchPoint);
+                }
+            }
+            if (this.owner.selection.isEmpty) {
+                this.selection.updateCaretPosition();
+            }
+            this.selection.checkForCursorVisibility();
+        }
+    };
+    /**
      * Gets touch offset value.
+     * @private
      */
     LayoutViewer.prototype.getTouchOffsetValue = function (event) {
         var targetElement = this.viewerContainer;
@@ -25841,10 +25930,18 @@ var LayoutViewer = /** @__PURE__ @class */ (function () {
             this.dialogInternal.destroy();
         }
         this.dialogInternal = undefined;
-        if (this.dialogTarget && this.dialogTarget.parentElement) {
-            this.dialogTarget.parentElement.removeChild(this.dialogTarget);
+        if (this.dialogInternal2) {
+            this.dialogInternal2.destroy();
+            this.dialogInternal2 = undefined;
         }
-        this.dialogTarget = undefined;
+        if (this.dialogTarget1 && this.dialogTarget1.parentElement) {
+            this.dialogTarget1.parentElement.removeChild(this.dialogTarget1);
+        }
+        this.dialogTarget1 = undefined;
+        if (this.dialogTarget2 && this.dialogTarget2.parentElement) {
+            this.dialogTarget2.parentElement.removeChild(this.dialogTarget2);
+        }
+        this.dialogTarget2 = undefined;
         if (!isNullOrUndefined(this.touchStart)) {
             this.touchStart.innerHTML = '';
         }
@@ -25905,7 +26002,9 @@ var LayoutViewer = /** @__PURE__ @class */ (function () {
         this.editableDiv.removeEventListener('compositionupdate', this.compositionUpdated);
         this.editableDiv.removeEventListener('compositionend', this.compositionEnd);
         this.viewerContainer.removeEventListener('mouseup', this.onMouseUpInternal);
-        this.iframe.removeEventListener('load', this.onIframeLoad);
+        if (!isNullOrUndefined(this.iframe)) {
+            this.iframe.removeEventListener('load', this.onIframeLoad);
+        }
         this.viewerContainer.removeEventListener('dblclick', this.onDoubleTap);
         window.removeEventListener('resize', this.onWindowResize);
         window.removeEventListener('keyup', this.onKeyUpInternal);
@@ -26660,6 +26759,11 @@ var SfdtReader = /** @__PURE__ @class */ (function () {
         }
         return undefined;
     };
+    /**
+     * @private
+     * @param data
+     * @param abstractLists
+     */
     SfdtReader.prototype.parseAbstractList = function (data, abstractLists) {
         for (var i = 0; i < data.abstractLists.length; i++) {
             var abstractList = new WAbstractList();
@@ -26703,6 +26807,11 @@ var SfdtReader = /** @__PURE__ @class */ (function () {
         this.parseParagraphFormat(data.paragraphFormat, listLevel.paragraphFormat);
         return listLevel;
     };
+    /**
+     * @private
+     * @param data
+     * @param listCollection
+     */
     SfdtReader.prototype.parseList = function (data, listCollection) {
         for (var i = 0; i < data.lists.length; i++) {
             var list = new WList();
@@ -27532,6 +27641,11 @@ var SfdtReader = /** @__PURE__ @class */ (function () {
             }
         }
     };
+    /**
+     *
+     * @param data @private
+     * @param sectionFormat
+     */
     SfdtReader.prototype.parseSectionFormat = function (data, sectionFormat) {
         if (!isNullOrUndefined(data.pageWidth)) {
             sectionFormat.pageWidth = data.pageWidth;
@@ -39612,10 +39726,10 @@ var Selection = /** @__PURE__ @class */ (function () {
             this.viewer.viewerContainer.appendChild(this.pasteElement);
             var splitButtonEle = createElement('button', { id: 'iconsplitbtn' });
             this.pasteElement.appendChild(splitButtonEle);
-            var splitButton = new DropDownButton({
+            this.pasteDropDwn = new DropDownButton({
                 items: items, iconCss: 'e-icons e-de-paste', select: this.pasteOptions
             });
-            splitButton.appendTo('#iconsplitbtn');
+            this.pasteDropDwn.appendTo('#iconsplitbtn');
         }
         this.pasteElement.style.display = 'block';
         this.pasteElement.style.position = 'absolute';
@@ -40638,6 +40752,10 @@ var Selection = /** @__PURE__ @class */ (function () {
     Selection.prototype.destroy = function () {
         if (!isNullOrUndefined(this.contextTypeInternal)) {
             this.contextTypeInternal = undefined;
+        }
+        if (this.pasteDropDwn) {
+            this.pasteDropDwn.destroy();
+            this.pasteDropDwn = undefined;
         }
         this.caret = undefined;
         this.contextTypeInternal = undefined;
@@ -43682,7 +43800,7 @@ var TableResizer = /** @__PURE__ @class */ (function () {
     //Resize Table cell
     TableResizer.prototype.resizeTableCellColumn = function (dragValue) {
         var table = this.currentResizingTable;
-        if (isNullOrUndefined(table) || dragValue === 0 || isNullOrUndefined(table.childWidgets)) {
+        if (isNullOrUndefined(table) || dragValue === 0 || isNullOrUndefined(table.childWidgets) || this.resizerPosition < 0) {
             return;
         }
         var selectionFlag = true;
@@ -44393,6 +44511,7 @@ var Editor = /** @__PURE__ @class */ (function () {
         this.pasteTextPosition = undefined;
         this.isSkipHistory = false;
         this.isPaste = false;
+        this.isPasteListUpdated = false;
         /**
          * @private
          */
@@ -44668,6 +44787,9 @@ var Editor = /** @__PURE__ @class */ (function () {
             this.copiedContent = undefined;
             this.copiedTextContent = '';
             this.selection.isViewPasteOptions = false;
+            if (this.isPasteListUpdated) {
+                this.isPasteListUpdated = false;
+            }
             this.selection.showHidePasteOptions(undefined, undefined);
         }
         if (this.viewer.owner.isLayoutEnabled && !this.viewer.owner.isShiftingEnabled) {
@@ -45055,6 +45177,9 @@ var Editor = /** @__PURE__ @class */ (function () {
                         this.copiedContent = undefined;
                         this.copiedTextContent = '';
                         this.selection.isViewPasteOptions = false;
+                        if (this.isPasteListUpdated) {
+                            this.isPasteListUpdated = false;
+                        }
                         this.selection.showHidePasteOptions(undefined, undefined);
                     }
                     break;
@@ -46429,6 +46554,9 @@ var Editor = /** @__PURE__ @class */ (function () {
         this.pasteRequestHandler.onError = this.onPasteFailure.bind(this);
     };
     Editor.prototype.pasteFormattedContent = function (result) {
+        if (this.isPasteListUpdated) {
+            this.isPasteListUpdated = false;
+        }
         this.pasteContents(isNullOrUndefined(result.data) ? this.copiedTextContent : result.data);
         this.applyPasteOptions(this.currentPasteOptions);
         hideSpinner(this.owner.element);
@@ -46454,6 +46582,137 @@ var Editor = /** @__PURE__ @class */ (function () {
             this.pasteContents(document_1);
             this.applyPasteOptions(this.currentPasteOptions);
         }
+    };
+    Editor.prototype.getUniqueListOrAbstractListId = function (isList) {
+        if (isList && this.viewer.lists.length) {
+            var sortedList = this.viewer.lists.slice().sort(function (a, b) {
+                return a.listId - b.listId;
+            });
+            return sortedList[sortedList.length - 1].listId + 1;
+        }
+        else if (this.viewer.abstractLists.length) {
+            var sortedAbsList = this.viewer.abstractLists.slice().sort(function (a, b) {
+                return a.abstractListId - b.abstractListId;
+            });
+            return sortedAbsList[sortedAbsList.length - 1].abstractListId + 1;
+        }
+        return 0;
+    };
+    Editor.prototype.checkSameLevelFormat = function (lstLevelNo, abstractList, list) {
+        return abstractList.levels[lstLevelNo].listLevelPattern === list.abstractList.levels[lstLevelNo].listLevelPattern
+            && abstractList.levels[lstLevelNo].numberFormat === list.abstractList.levels[lstLevelNo].numberFormat;
+    };
+    Editor.prototype.listLevelPatternInCollection = function (lstLevelNo, listLevelPattern, numberFormat) {
+        return this.viewer.lists.filter(function (list) {
+            return list.abstractList.levels[lstLevelNo].listLevelPattern === listLevelPattern
+                && list.abstractList.levels[lstLevelNo].numberFormat === numberFormat;
+        })[0];
+    };
+    Editor.prototype.getBlocksToUpdate = function (blocks) {
+        var _this = this;
+        var blcks = [];
+        blocks.forEach(function (obj) {
+            if (obj.paragraphFormat && obj.paragraphFormat.listFormat
+                && Object.keys(obj.paragraphFormat.listFormat).length > 0) {
+                blcks.push(obj);
+            }
+            else if (obj.rows) {
+                obj.rows.forEach(function (row) {
+                    row.cells.forEach(function (cell) {
+                        blcks = blcks.concat(_this.getBlocksToUpdate(cell.blocks));
+                    });
+                });
+            }
+        });
+        return blcks;
+    };
+    Editor.prototype.updateListIdForBlocks = function (blocks, abstractList, list, id, idToUpdate) {
+        var _this = this;
+        var update = false;
+        blocks.forEach(function (obj) {
+            if (obj.paragraphFormat && obj.paragraphFormat.listFormat
+                && Object.keys(obj.paragraphFormat.listFormat).length > 0) {
+                var format = obj.paragraphFormat.listFormat;
+                // tslint:disable-next-line:max-line-length
+                var existingList = _this.listLevelPatternInCollection(format.listLevelNumber, abstractList.levels[format.listLevelNumber].listLevelPattern, abstractList.levels[format.listLevelNumber].numberFormat);
+                if (format.listId === id) {
+                    if (isNullOrUndefined(existingList) && (!list || (list
+                        && !_this.checkSameLevelFormat(format.listLevelNumber, abstractList, list)))) {
+                        update = true;
+                        format.listId = idToUpdate;
+                    }
+                    else if (!isNullOrUndefined(existingList)
+                        && _this.checkSameLevelFormat(format.listLevelNumber, abstractList, existingList)) {
+                        if (!format.isUpdated) {
+                            format.listId = existingList.listId;
+                            format.isUpdated = true;
+                        }
+                        update = false;
+                    }
+                }
+            }
+            else if (obj.rows) {
+                obj.rows.forEach(function (row) {
+                    row.cells.forEach(function (cell) {
+                        var toUpdate = _this.updateListIdForBlocks(cell.blocks, abstractList, list, id, idToUpdate);
+                        if (!update) {
+                            update = toUpdate;
+                        }
+                    });
+                });
+            }
+        });
+        return update;
+    };
+    Editor.prototype.updatePasteContent = function (pasteContent, sectionId) {
+        var uniqueListId = this.getUniqueListOrAbstractListId(true);
+        if (pasteContent.lists.filter(function (obj) { return obj.listId === uniqueListId; }).length > 0) {
+            var sortedPasteList = pasteContent.lists.slice().sort(function (a, b) {
+                return a.listId - b.listId;
+            });
+            uniqueListId = sortedPasteList[sortedPasteList.length - 1].listId + 1;
+        }
+        var uniqueAbsLstId = this.getUniqueListOrAbstractListId(false);
+        if (pasteContent.abstractLists.filter(function (obj) {
+            return obj.abstractListId === uniqueAbsLstId;
+        }).length > 0) {
+            var sortedPasteAbsList = pasteContent.abstractLists.slice().sort(function (a, b) {
+                return a.abstractListId - b.abstractListId;
+            });
+            uniqueAbsLstId = sortedPasteAbsList[sortedPasteAbsList.length - 1].abstractListId + 1;
+        }
+        var _loop_1 = function (k) {
+            var list = pasteContent.lists[k];
+            var abstractList = pasteContent.abstractLists.filter(function (obj) {
+                return obj.abstractListId === list.abstractListId;
+            })[0];
+            var lstDup = this_1.viewer.lists.filter(function (obj) {
+                return obj.listId === list.listId;
+            });
+            // tslint:disable-next-line:max-line-length
+            var isUpdate = this_1.updateListIdForBlocks(pasteContent.sections[sectionId].blocks, abstractList, lstDup[0], list.listId, uniqueListId);
+            if (isUpdate) {
+                abstractList.abstractListId = uniqueAbsLstId;
+                list.listId = uniqueListId;
+                list.abstractListId = uniqueAbsLstId;
+                uniqueListId++;
+                uniqueAbsLstId++;
+            }
+            else {
+                pasteContent.lists.splice(k, 1);
+                pasteContent.abstractLists.splice(pasteContent.abstractLists.indexOf(abstractList), 1);
+                k--;
+            }
+            out_k_1 = k;
+        };
+        var this_1 = this, out_k_1;
+        for (var k = 0; k < pasteContent.lists.length; k++) {
+            _loop_1(k);
+            k = out_k_1;
+        }
+        this.getBlocksToUpdate(pasteContent.sections[sectionId].blocks).forEach(function (blck) {
+            delete blck.paragraphFormat.listFormat.isUpdated;
+        });
     };
     Editor.prototype.getBlocks = function (pasteContent) {
         var widgets = [];
@@ -46488,7 +46747,20 @@ var Editor = /** @__PURE__ @class */ (function () {
         }
         else {
             for (var i = 0; i < pasteContent.sections.length; i++) {
-                this.viewer.owner.parser.parseBody(pasteContent.sections[i].blocks, widgets);
+                var parser = this.viewer.owner.parser;
+                if (!this.isPasteListUpdated && !isNullOrUndefined(pasteContent.lists)) {
+                    if (this.viewer.lists.length > 0) {
+                        this.updatePasteContent(pasteContent, i);
+                    }
+                    this.isPasteListUpdated = true;
+                    if (!isNullOrUndefined(pasteContent.abstractLists)) {
+                        parser.parseAbstractList(pasteContent, this.viewer.abstractLists);
+                    }
+                    if (!isNullOrUndefined(pasteContent.lists)) {
+                        parser.parseList(pasteContent, this.viewer.lists);
+                    }
+                }
+                parser.parseBody(pasteContent.sections[i].blocks, widgets);
             }
         }
         if (this.currentPasteOptions === 'MergeWithExistingFormatting') {
@@ -46668,19 +46940,15 @@ var Editor = /** @__PURE__ @class */ (function () {
             }
             if (j === widgets.length - 1 && widget instanceof ParagraphWidget) {
                 var newParagraph = widget;
-                var paragraphFormat = void 0;
                 if (newParagraph.childWidgets.length > 0
                     && newParagraph.childWidgets[0].children.length > 0) {
-                    if (newParagraph.paragraphFormat.listFormat.listId !== -1 || newParagraph.paragraphFormat.bidi) {
-                        paragraphFormat = newParagraph.paragraphFormat;
-                    }
                     var insertPosition = this.selection.start;
                     if ((insertPosition.paragraph.paragraphFormat.textAlignment === 'Center'
                         || insertPosition.paragraph.paragraphFormat.textAlignment === 'Right') &&
                         insertPosition.paragraph.paragraphFormat.listFormat.listId === -1) {
                         insertPosition.paragraph.x = this.viewer.clientActiveArea.x;
                     }
-                    this.insertElement(newParagraph.childWidgets[0].children, paragraphFormat);
+                    this.insertElement(newParagraph.childWidgets[0].children, newParagraph.paragraphFormat);
                 }
             }
             else if (widget instanceof BlockWidget) {
@@ -64384,8 +64652,22 @@ var SfdtExport = /** @__PURE__ @class */ (function () {
     };
     SfdtExport.prototype.createParagraph = function (paragraphWidget) {
         var paragraph = {};
-        paragraph.paragraphFormat = this.writeParagraphFormat(paragraphWidget.paragraphFormat);
-        paragraph.characterFormat = this.writeCharacterFormat(paragraphWidget.characterFormat);
+        var isParaSelected = false;
+        if (this.viewer.selection && !this.viewer.selection.isEmpty) {
+            var endPos = this.viewer.selection.end;
+            if (!this.viewer.selection.isForward) {
+                endPos = this.viewer.selection.start;
+            }
+            var lastLine = endPos.paragraph.childWidgets[endPos.paragraph.childWidgets.length - 1];
+            isParaSelected = this.viewer.selection.isParagraphLastLine(lastLine) && endPos.currentWidget === lastLine
+                && endPos.offset === this.viewer.selection.getLineLength(lastLine) + 1;
+        }
+        else {
+            isParaSelected = true;
+        }
+        // tslint:disable-next-line:max-line-length
+        paragraph.paragraphFormat = this.writeParagraphFormat(isParaSelected ? paragraphWidget.paragraphFormat : new WParagraphFormat(paragraphWidget));
+        paragraph.characterFormat = this.writeCharacterFormat(isParaSelected ? paragraphWidget.characterFormat : new WCharacterFormat(paragraphWidget));
         paragraph.inlines = [];
         return paragraph;
     };
@@ -68433,7 +68715,7 @@ var StyleDialog = /** @__PURE__ @class */ (function () {
         var items = [{ text: localValue.getConstant('Font') + '..', id: 'style_font' },
             { text: localValue.getConstant('Paragraph') + '..', id: 'style_paragraph' },
             { text: localValue.getConstant('Numbering') + '..', id: 'style_numbering' }];
-        var dropDownbtn = new DropDownButton({
+        this.styleDropdwn = new DropDownButton({
             items: items, cssClass: 'e-de-style-format-dropdwn', enableRtl: isRtl,
             beforeItemRender: function (args) {
                 if (_this.styleType.value === localValue.getConstant('Character')) {
@@ -68454,8 +68736,8 @@ var StyleDialog = /** @__PURE__ @class */ (function () {
                 }
             }
         });
-        dropDownbtn.appendTo(formatBtn);
-        dropDownbtn.addEventListener('select', this.openDialog);
+        this.styleDropdwn.appendTo(formatBtn);
+        this.styleDropdwn.addEventListener('select', this.openDialog);
     };
     StyleDialog.prototype.createFontOptions = function (parentDiv, isRtl) {
         var fontFamilyElement = createElement('select', { id: this.target.id + '_fontName' });
@@ -68837,26 +69119,38 @@ var StyleDialog = /** @__PURE__ @class */ (function () {
             }
             this.target = undefined;
         }
+        if (this.fontColor) {
+            this.fontColor.destroy();
+            this.fontColor = undefined;
+        }
+        if (this.fontSize) {
+            this.fontSize.destroy();
+            this.fontSize = undefined;
+        }
+        if (this.fontFamily) {
+            this.fontFamily.destroy();
+            this.fontFamily = undefined;
+        }
         if (this.styleType) {
             this.styleType.destroy();
+            this.styleType = undefined;
         }
-        this.styleType = undefined;
         if (this.styleBasedOn) {
             this.styleBasedOn.destroy();
+            this.styleBasedOn = undefined;
         }
-        this.styleBasedOn = undefined;
         if (this.styleParagraph) {
             this.styleParagraph.destroy();
+            this.styleParagraph = undefined;
         }
-        this.styleParagraph = undefined;
         if (this.onlyThisDocument) {
             this.onlyThisDocument.destroy();
         }
         this.onlyThisDocument = undefined;
         if (this.template) {
             this.template.destroy();
+            this.template = undefined;
         }
-        this.template = undefined;
         if (this.style) {
             this.style = undefined;
         }
@@ -68865,8 +69159,12 @@ var StyleDialog = /** @__PURE__ @class */ (function () {
         }
         if (this.numberingBulletDialog) {
             this.numberingBulletDialog.destroy();
+            this.numberingBulletDialog = undefined;
         }
-        this.numberingBulletDialog = undefined;
+        if (this.styleDropdwn) {
+            this.styleDropdwn.destroy();
+            this.styleDropdwn = undefined;
+        }
     };
     return StyleDialog;
 }());
@@ -73141,7 +73439,7 @@ var Toolbar$1 = /** @__PURE__ @class */ (function () {
             iconCss: 'e-icons e-de-ctnr-image',
             select: this.onDropDownButtonSelect.bind(this),
         };
-        var insertImage = new DropDownButton(items, imageButton);
+        this.imgDropDwn = new DropDownButton(items, imageButton);
         var breakButton = toolbarTarget.getElementsByClassName('e-de-break-splitbutton')[0].firstChild;
         items = {
             items: [
@@ -73152,7 +73450,7 @@ var Toolbar$1 = /** @__PURE__ @class */ (function () {
             iconCss: 'e-icons e-de-ctnr-break',
             select: this.onDropDownButtonSelect.bind(this),
         };
-        var inserBreak = new DropDownButton(items, breakButton);
+        this.breakDropDwn = new DropDownButton(items, breakButton);
         this.filePicker = createElement('input', {
             attrs: { type: 'file', accept: '.doc,.docx,.rtf,.txt,.htm,.html,.sfdt' }, className: 'e-de-ctnr-file-picker'
         });
@@ -73170,7 +73468,7 @@ var Toolbar$1 = /** @__PURE__ @class */ (function () {
             cssClass: 'e-de-toolbar-btn-first e-caret-hide',
             select: this.onDropDownButtonSelect.bind(this)
         };
-        var restrictDropDown = new DropDownButton(lockItems, restrictEditing);
+        this.restrictDropDwn = new DropDownButton(lockItems, restrictEditing);
     };
     Toolbar$$1.prototype.showHidePropertiesPane = function () {
         if (this.container.propertiesPaneContainer.style.display === 'none') {
@@ -73513,6 +73811,18 @@ var Toolbar$1 = /** @__PURE__ @class */ (function () {
      * @private
      */
     Toolbar$$1.prototype.destroy = function () {
+        if (this.restrictDropDwn) {
+            this.restrictDropDwn.destroy();
+            this.restrictDropDwn = undefined;
+        }
+        if (this.imgDropDwn) {
+            this.imgDropDwn.destroy();
+            this.imgDropDwn = undefined;
+        }
+        if (this.breakDropDwn) {
+            this.breakDropDwn.destroy();
+            this.breakDropDwn = undefined;
+        }
         if (this.toolbar) {
             var toolbarElement = this.toolbar.element;
             this.toolbar.destroy();
@@ -74635,11 +74945,11 @@ var Paragraph = /** @__PURE__ @class */ (function () {
                 _this.removeSelectedList();
             }
         };
-        var dropdown = new SplitButton(menuOptions);
-        dropdown.click = function () {
+        this.numberedListBtn = new SplitButton(menuOptions);
+        this.numberedListBtn.click = function () {
             _this.applyLastAppliedNumbering();
         };
-        dropdown.appendTo(button);
+        this.numberedListBtn.appendTo(button);
         button.parentElement.setAttribute('title', this.localObj.getConstant('Numbering'));
     };
     Paragraph.prototype.createBulletListDropButton = function (iconcss, button) {
@@ -74678,11 +74988,11 @@ var Paragraph = /** @__PURE__ @class */ (function () {
                 _this.removeSelectedList();
             }
         };
-        var dropdown = new SplitButton(menuOptions);
-        dropdown.click = function () {
+        this.bulletListBtn = new SplitButton(menuOptions);
+        this.bulletListBtn.click = function () {
             _this.applyLastAppliedBullet();
         };
-        dropdown.appendTo(button);
+        this.bulletListBtn.appendTo(button);
         button.parentElement.setAttribute('title', this.localObj.getConstant('Bullets'));
     };
     Paragraph.prototype.createNumberListTag = function (ulTag, text1, text2, text3) {
@@ -74893,6 +75203,14 @@ var Paragraph = /** @__PURE__ @class */ (function () {
         if (this.style) {
             this.style.destroy();
             this.style = undefined;
+        }
+        if (this.bulletListBtn) {
+            this.bulletListBtn.destroy();
+            this.bulletListBtn = undefined;
+        }
+        if (this.numberedListBtn) {
+            this.numberedListBtn.destroy();
+            this.numberedListBtn = undefined;
         }
     };
     return Paragraph;
@@ -75251,6 +75569,8 @@ var HeaderFooterProperties = /** @__PURE__ @class */ (function () {
         return divElement;
     };
     HeaderFooterProperties.prototype.onSelectionChange = function () {
+        this.headerFromTop.value = this.documentEditor.sectionFormat.headerDistance;
+        this.footerFromTop.value = this.documentEditor.sectionFormat.footerDistance;
         if (this.documentEditor.selection.sectionFormat.differentFirstPage) {
             this.firstPage.checked = true;
         }
@@ -76288,7 +76608,7 @@ var TableProperties = /** @__PURE__ @class */ (function () {
             liTag.appendChild(liInnerDiv);
             return liTag;
         };
-        // tslint:disable-next-line:max-line-length
+        //tslint:disable-next-line:max-line-length
         this.createDropDownButton = function (id, styles, parentDiv, iconCss, content, items, target) {
             var buttonElement = createElement('button', { id: id, styles: styles, attrs: { type: 'button' } });
             parentDiv.appendChild(buttonElement);
@@ -76696,11 +77016,18 @@ var StatusBar = /** @__PURE__ @class */ (function () {
         });
         return spellCheckBtn;
     };
+    /**
+     * @private
+     */
     StatusBar.prototype.destroy = function () {
         this.container = undefined;
         if (this.zoom) {
             this.zoom.destroy();
             this.zoom = undefined;
+        }
+        if (this.spellCheckButton) {
+            this.spellCheckButton.destroy();
+            this.spellCheckButton = undefined;
         }
     };
     return StatusBar;
@@ -76986,6 +77313,9 @@ var DocumentEditorContainer = /** @__PURE__ @class */ (function (_super) {
         if (this.paragraphFormat) {
             this.documentEditor.setDefaultParagraphFormat(this.paragraphFormat);
         }
+        if (this.sectionFormat) {
+            this.documentEditor.setDefaultSectionFormat(this.sectionFormat);
+        }
     };
     DocumentEditorContainer.prototype.setserverActionSettings = function () {
         if (this.serviceUrl) {
@@ -77254,10 +77584,22 @@ var DocumentEditorContainer = /** @__PURE__ @class */ (function (_super) {
         this.paragraphFormat = paragraphFormat;
     };
     /**
+     * Set the default section format for document editor container
+     * @param sectionFormat
+     */
+    DocumentEditorContainer.prototype.setDefaultSectionFormat = function (sectionFormat) {
+        this.sectionFormat = sectionFormat;
+    };
+    /**
      * Destroys all managed resources used by this object.
      */
     DocumentEditorContainer.prototype.destroy = function () {
         _super.prototype.destroy.call(this);
+        if (this.element) {
+            this.element.classList.remove('e-documenteditorcontainer');
+            this.element.innerHTML = '';
+        }
+        this.element = undefined;
         if (this.toolbarContainer && this.toolbarContainer.parentElement) {
             this.toolbarContainer.innerHTML = '';
             this.toolbarContainer.parentElement.removeChild(this.toolbarContainer);
@@ -77287,6 +77629,9 @@ var DocumentEditorContainer = /** @__PURE__ @class */ (function (_super) {
             this.tableProperties.destroy();
         }
         this.tableProperties = undefined;
+        if (this.statusBar) {
+            this.statusBar.destroy();
+        }
         if (this.propertiesPaneContainer && this.editorContainer.parentElement) {
             this.propertiesPaneContainer.innerHTML = '';
             this.propertiesPaneContainer.parentElement.removeChild(this.propertiesPaneContainer);

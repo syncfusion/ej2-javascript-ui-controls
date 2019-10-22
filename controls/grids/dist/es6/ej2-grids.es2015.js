@@ -5616,6 +5616,12 @@ class StackedHeaderCellRenderer extends CellRenderer {
         if (cell.column.toolTip) {
             node.setAttribute('title', cell.column.toolTip);
         }
+        if (column.clipMode === 'Clip') {
+            node.classList.add('e-gridclip');
+        }
+        else if (column.clipMode === 'EllipsisWithTooltip') {
+            node.classList.add('e-ellipsistooltip');
+        }
         if (!isNullOrUndefined(cell.column.textAlign)) {
             div.style.textAlign = cell.column.textAlign;
         }
@@ -12117,13 +12123,23 @@ let Grid = Grid_1 = class Grid extends Component {
      * @hidden
      */
     updateDefaultCursor() {
-        let headerRows = [].slice.call(this.element.querySelectorAll('.e-columnheader'));
-        for (let row of headerRows) {
-            if (this.allowSorting || (this.allowGrouping && this.groupSettings.showDropArea) || this.allowReordering) {
-                row.classList.remove('e-defaultcursor');
+        let headerCells = [].slice.call(this.getHeaderContent().querySelectorAll('.e-headercell:not(.e-stackedheadercell)'));
+        let stdHdrCell = [].slice.call(this.getHeaderContent().querySelectorAll('.e-stackedheadercell'));
+        let cols = this.getColumns();
+        for (let i = 0; i < headerCells.length; i++) {
+            let cell = headerCells[i];
+            if (this.allowGrouping || this.allowReordering || this.allowSorting) {
+                if (!cols[i].allowReordering || !cols[i].allowSorting || !cols[i].allowGrouping) {
+                    cell.classList.add('e-defaultcursor');
+                }
+                else {
+                    cell.classList.add('e-mousepointer');
+                }
             }
-            else {
-                row.classList.add('e-defaultcursor');
+        }
+        for (let count = 0; count < stdHdrCell.length; count++) {
+            if (this.allowReordering) {
+                stdHdrCell[count].classList.add('e-mousepointer');
             }
         }
     }
@@ -12727,7 +12743,7 @@ let Grid = Grid_1 = class Grid extends Component {
         if (this.isDetail()) {
             index++;
         }
-        if (this.allowRowDragAndDrop && this.allowResizing) {
+        if (this.allowRowDragAndDrop && isNullOrUndefined(this.rowDropSettings.targetID) && this.allowResizing) {
             index++;
         }
         /**
@@ -13548,8 +13564,8 @@ let Grid = Grid_1 = class Grid extends Component {
         let headerDivTag = 'e-gridheader';
         let htable = this.createTable(headerTable, headerDivTag, 'header');
         let ctable = this.createTable(headerTable, headerDivTag, 'content');
-        let table = headerTable.contains(element) ? htable : ctable;
-        let ele = headerTable.contains(element) ? 'th' : 'tr';
+        let table = element.classList.contains('e-headercell') ? htable : ctable;
+        let ele = element.classList.contains('e-headercell') ? 'th' : 'tr';
         table.querySelector(ele).className = element.className;
         table.querySelector(ele).innerHTML = element.innerHTML;
         width = table.querySelector(ele).getBoundingClientRect().width;
@@ -13739,7 +13755,6 @@ let Grid = Grid_1 = class Grid extends Component {
     /**
      * Get current visible data of grid.
      * @return {Object[]}
-     * @hidden
      * @isGenericType true
      */
     getCurrentViewRecords() {
@@ -13860,6 +13875,10 @@ let Grid = Grid_1 = class Grid extends Component {
                     arr[index] = extend(localCol, col, true);
                 }
                 else {
+                    if (isBlazor()) {
+                        let guid = 'guid';
+                        col[guid] = localCol[guid];
+                    }
                     arr[index] = extend(localCol, col, true);
                 }
             }
@@ -16064,6 +16083,7 @@ class Page {
         this.pagerDestroy();
         if (!isNullOrUndefined(this.parent.pagerTemplate)) {
             this.pageSettings.template = this.parent.pagerTemplate;
+            this.parent.pageTemplateChange = true;
         }
         this.element = this.parent.createElement('div', { className: 'e-gridpager' });
         pagerObj = extend$1({}, extend({}, getActualProperties(this.pageSettings)), {
@@ -17678,6 +17698,7 @@ class Filter {
             lessThan: 'lessthan', lessThanOrEqual: 'lessthanorequal', notEqual: 'notequal', startsWith: 'startswith'
         };
         this.fltrDlgDetails = { field: '', isOpen: false };
+        /** @hidden */
         this.skipNumberInput = ['=', ' ', '!'];
         this.skipStringInput = ['>', '<', '='];
         this.actualPredicate = {};
@@ -18971,6 +18992,11 @@ class Resize {
             return width;
         }
     }
+    updateResizeEleHeight() {
+        this.parent.getHeaderContent().querySelectorAll('.e-rhandler').forEach((element) => {
+            element.style.height = this.element.parentElement.offsetHeight + 'px';
+        });
+    }
     getColData(column, mousemove) {
         return {
             width: parseFloat(isNullOrUndefined(this.widthService.getWidth(column)) || this.widthService.getWidth(column) === 'auto' ? '0'
@@ -18988,7 +19014,7 @@ class Resize {
             offsetWidth = parentsUntil(this.element, 'th').offsetWidth;
         }
         if (this.parent.allowTextWrap) {
-            this.element.style.height = this.element.parentElement.offsetHeight + 'px';
+            this.updateResizeEleHeight();
             this.setHelperHeight();
         }
         let pageX = this.getPointX(e);
@@ -19091,6 +19117,7 @@ class Resize {
             this.parent.notify(freezeRender, { case: 'textwrap' });
         }
         if (this.parent.allowTextWrap) {
+            this.updateResizeEleHeight();
             this.parent.notify(textWrapRefresh, { case: 'textwrap' });
         }
         this.refresh();

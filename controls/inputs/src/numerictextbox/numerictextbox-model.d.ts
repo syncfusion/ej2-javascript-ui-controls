@@ -119,6 +119,9 @@ export interface NumericTextBoxModel extends ComponentModel{
      * For more information on decimals, refer to
      * [decimals](../../numerictextbox/formats/#precision-of-numbers).
      * @default null
+     * @isBlazorNullableType true
+     * @blazorDefaultValue 
+     * @blazorType int
      */
     decimals?: number;
 

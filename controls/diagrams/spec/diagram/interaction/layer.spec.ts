@@ -807,9 +807,30 @@ describe('Diagram Control', () => {
         it('Node fill color change in hidden layer - checking the node element is render or not ', (done: Function) => {
             let node = diagram.nodes.find(i => i.id == "N1");
             node.style.fill = node.style.fill == "red" ? "white" : "red";
+            diagram.dataBind();
             let ele = document.getElementById("N1_groupElement");
             console.log("ele"+ele);
             expect(ele === null).toBe(true);
+            done();
+        });
+
+        it('Change the layer visibility from visible false to true', (done: Function) => {
+            let layer = diagram.layers.find(i => i.id == "L1");
+            layer.visible = !layer.visible;
+            diagram.dataBind();
+            let ele = document.getElementById("N1_groupElement");
+            console.log("ele"+ele);
+            expect(ele !== null).toBe(true);
+            done();
+        });
+
+        it('Change the layer visibility from visible true to false', (done: Function) => {
+            let layer = diagram.layers.find(i => i.id == "L1");
+            layer.visible = !layer.visible;
+            diagram.dataBind();
+            let visible = document.getElementById("N1").getAttribute('visibility')
+            console.log("visible"+visible);
+            expect(visible === "hidden").toBe(true);
             done();
         });
     });

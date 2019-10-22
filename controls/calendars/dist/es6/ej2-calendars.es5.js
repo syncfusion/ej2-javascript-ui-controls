@@ -3587,6 +3587,10 @@ var DatePicker = /** @__PURE__ @class */ (function (_super) {
                 detach(_this.popupWrapper);
                 _this.popupObj = _this.popupWrapper = null;
                 _this.setAriaAttributes();
+            }, targetExitViewport: function () {
+                if (!Browser.isDevice) {
+                    _this.hide();
+                }
             }
         });
         this.popupObj.element.className += ' ' + this.cssClass;
@@ -4489,6 +4493,7 @@ var CSS$1 = 'e-css';
 var ZOOMIN$1 = 'e-zoomin';
 var NONEDITABLE = 'e-non-edit';
 var DAYHEADERLONG$1 = 'e-daterange-day-header-lg';
+var HIDDENELEMENT = 'e-daterange-hidden';
 var wrapperAttr = ['title', 'class', 'style'];
 var Presets = /** @__PURE__ @class */ (function (_super) {
     __extends$2(Presets, _super);
@@ -4552,6 +4557,7 @@ var DateRangePicker = /** @__PURE__ @class */ (function (_super) {
         this.setProperties({ startDate: this.startValue }, true);
         this.setProperties({ endDate: this.endValue }, true);
         this.setModelValue();
+        this.updateDataAttribute(false);
         this.renderComplete();
     };
     /**
@@ -4747,6 +4753,24 @@ var DateRangePicker = /** @__PURE__ @class */ (function (_super) {
         this.updateHtmlAttributeToWrapper();
         this.setRangeAllowEdit();
         this.bindEvents();
+    };
+    DateRangePicker.prototype.updateDataAttribute = function (isDynamic) {
+        var attr = {};
+        if (!isDynamic) {
+            for (var a = 0; a < this.element.attributes.length; a++) {
+                attr[this.element.attributes[a].name] = this.element.getAttribute(this.element.attributes[a].name);
+            }
+        }
+        else {
+            attr = this.htmlAttributes;
+        }
+        for (var _i = 0, _a = Object.keys(attr); _i < _a.length; _i++) {
+            var key = _a[_i];
+            if (key.indexOf('data') === 0) {
+                this.firstHiddenChild.setAttribute(key, attr[key]);
+                this.secondHiddenChild.setAttribute(key, attr[key]);
+            }
+        }
     };
     DateRangePicker.prototype.setRangeAllowEdit = function () {
         if (this.allowEdit) {
@@ -7331,6 +7355,10 @@ var DateRangePicker = /** @__PURE__ @class */ (function (_super) {
                 if (_this.isMobile && !Browser.isDevice) {
                     EventHandler.remove(document, 'keydown', _this.popupCloseHandler);
                 }
+            }, targetExitViewport: function () {
+                if (!Browser.isDevice) {
+                    _this.hide();
+                }
             }
         });
         if (this.isMobile) {
@@ -8328,18 +8356,16 @@ var DateRangePicker = /** @__PURE__ @class */ (function (_super) {
             this.inputElement.removeAttribute('name');
         }
         attributes(this.firstHiddenChild, {
-            'type': 'text', 'name': this.inputElement.getAttribute('data-name')
+            'type': 'text', 'name': this.inputElement.getAttribute('data-name'), 'class': HIDDENELEMENT
         });
         attributes(this.secondHiddenChild, {
-            'type': 'text', 'name': this.inputElement.getAttribute('data-name'),
+            'type': 'text', 'name': this.inputElement.getAttribute('data-name'), 'class': HIDDENELEMENT
         });
         var format = { type: 'datetime', skeleton: 'yMd' };
         this.firstHiddenChild.value = this.startDate && this.globalize.formatDate(this.startDate, format);
         this.secondHiddenChild.value = this.endDate && this.globalize.formatDate(this.endDate, format);
         this.inputElement.parentElement.appendChild(this.firstHiddenChild);
         this.inputElement.parentElement.appendChild(this.secondHiddenChild);
-        this.firstHiddenChild.style.display = 'none';
-        this.secondHiddenChild.style.display = 'none';
     };
     /**
      * Called internally if any of the property value changed.
@@ -8408,6 +8434,7 @@ var DateRangePicker = /** @__PURE__ @class */ (function (_super) {
                 case 'htmlAttributes':
                     this.updateHtmlAttributeToElement();
                     this.updateHtmlAttributeToWrapper();
+                    this.updateDataAttribute(true);
                     this.checkHtmlAttributes(true);
                     break;
                 case 'showClearButton':
@@ -9135,6 +9162,10 @@ var TimePicker = /** @__PURE__ @class */ (function (_super) {
                 _this.popupObj.destroy();
                 _this.popupWrapper.innerHTML = '';
                 _this.listWrapper = _this.popupWrapper = _this.listTag = undefined;
+            }, targetExitViewport: function () {
+                if (!Browser.isDevice) {
+                    _this.hide();
+                }
             }
         });
         if (!Browser.isDevice) {
@@ -9556,6 +9587,12 @@ var TimePicker = /** @__PURE__ @class */ (function (_super) {
                     _this.modal.style.display = 'none';
                     _this.modal.outerHTML = '';
                     _this.modal = null;
+                }
+                if (Browser.isDevice) {
+                    if (!isNullOrUndefined(_this.mobileTimePopupWrap)) {
+                        _this.mobileTimePopupWrap.remove();
+                        _this.mobileTimePopupWrap = null;
+                    }
                 }
                 if (Browser.isDevice && _this.allowEdit && !_this.readonly) {
                     _this.inputElement.removeAttribute('readonly');
@@ -10469,12 +10506,16 @@ var TimePicker = /** @__PURE__ @class */ (function (_super) {
                 document.body.className += ' ' + OVERFLOW$2;
                 document.body.appendChild(this.modal);
             }
+            if (Browser.isDevice) {
+                this.mobileTimePopupWrap = this.createElement('div', { className: 'e-timepicker-mob-popup-wrap' });
+                document.body.appendChild(this.mobileTimePopupWrap);
+            }
             this.openPopupEventArgs = {
                 popup: this.popupObj || null,
                 cancel: false,
                 event: event || null,
                 name: 'open',
-                appendTo: document.body
+                appendTo: Browser.isDevice ? this.mobileTimePopupWrap : document.body
             };
             var eventArgs = this.openPopupEventArgs;
             this.trigger('open', eventArgs, function (eventArgs) {
@@ -10501,6 +10542,7 @@ var TimePicker = /** @__PURE__ @class */ (function (_super) {
                     attributes(_this.inputElement, { 'aria-expanded': 'true' });
                     addClass([_this.inputWrapper.container], FOCUS);
                     EventHandler.add(document, 'mousedown touchstart', _this.documentClickHandler, _this);
+                    _this.setOverlayIndex(_this.mobileTimePopupWrap, _this.popupObj.element, _this.modal, Browser.isDevice);
                 }
                 else {
                     _this.popupObj.destroy();
@@ -10509,6 +10551,13 @@ var TimePicker = /** @__PURE__ @class */ (function (_super) {
                     _this.popupObj = null;
                 }
             });
+        }
+    };
+    TimePicker.prototype.setOverlayIndex = function (popupWrapper, timePopupElement, modal, isDevice) {
+        if (isDevice && !isNullOrUndefined(timePopupElement) && !isNullOrUndefined(modal) && !isNullOrUndefined(popupWrapper)) {
+            var index = parseInt(timePopupElement.style.zIndex, 10) ? parseInt(timePopupElement.style.zIndex, 10) : 1000;
+            modal.style.zIndex = (index - 1).toString();
+            popupWrapper.style.zIndex = index.toString();
         }
     };
     TimePicker.prototype.formatValues = function (type) {
@@ -11397,6 +11446,10 @@ var DateTimePicker = /** @__PURE__ @class */ (function (_super) {
                 _this.listWrapper = _this.dateTimeWrapper = undefined;
                 if (_this.inputEvent) {
                     _this.inputEvent.destroy();
+                }
+            }, targetExitViewport: function () {
+                if (!Browser.isDevice) {
+                    _this.hide();
                 }
             }
         });

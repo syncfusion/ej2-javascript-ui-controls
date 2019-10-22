@@ -1843,6 +1843,9 @@ export class DropDownList extends DropDownBase implements IInput {
                     }
                 }
                 this.activeStateChange();
+            },
+            targetExitViewport: () => {
+                if (!Browser.isDevice) { this.hidePopup(); }
             }
         });
     }

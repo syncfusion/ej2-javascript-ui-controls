@@ -41,6 +41,8 @@ export class Paragraph {
     public localObj: L10n;
     private isRtl: boolean;
     private splitButtonClass: string = 'e-de-prop-splitbutton';
+    private bulletListBtn: SplitButton;
+    private numberedListBtn: SplitButton;
     get documentEditor(): DocumentEditor {
         return this.container.documentEditor;
     }
@@ -221,11 +223,11 @@ export class Paragraph {
                 this.removeSelectedList();
             }
         };
-        let dropdown: SplitButton = new SplitButton(menuOptions);
-        dropdown.click = (): void => {
+        this.numberedListBtn = new SplitButton(menuOptions);
+        this.numberedListBtn.click = (): void => {
             this.applyLastAppliedNumbering();
         };
-        dropdown.appendTo(button);
+        this.numberedListBtn.appendTo(button);
         button.parentElement.setAttribute('title', this.localObj.getConstant('Numbering'));
     }
     private updateSelectedBulletListType = (listText: string): void => {
@@ -347,11 +349,11 @@ export class Paragraph {
                 this.removeSelectedList();
             }
         };
-        let dropdown: SplitButton = new SplitButton(menuOptions);
-        dropdown.click = (): void => {
+        this.bulletListBtn = new SplitButton(menuOptions);
+        this.bulletListBtn.click = (): void => {
             this.applyLastAppliedBullet();
         };
-        dropdown.appendTo(button);
+        this.bulletListBtn.appendTo(button);
         button.parentElement.setAttribute('title', this.localObj.getConstant('Bullets'));
     }
     private createNumberListTag(ulTag: HTMLElement, text1: string, text2: string, text3: string): HTMLElement {
@@ -759,6 +761,14 @@ export class Paragraph {
         if (this.style) {
             this.style.destroy();
             this.style = undefined;
+        }
+        if (this.bulletListBtn) {
+            this.bulletListBtn.destroy();
+            this.bulletListBtn = undefined;
+        }
+        if (this.numberedListBtn) {
+            this.numberedListBtn.destroy();
+            this.numberedListBtn = undefined;
         }
     }
 }

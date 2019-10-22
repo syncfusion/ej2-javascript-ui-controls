@@ -926,12 +926,15 @@
       padding: 0 .6em;
     }
 
-    .e-columnheader {
-      cursor: pointer;
+    .e-headercell,
+    .e-headercell.e-stackedheadercell,
+    .e-headercell.e-defaultcursor {
+      cursor: default;
     }
 
-    .e-columnheader.e-defaultcursor {
-      cursor: default;
+    .e-headercell.e-mousepointer,
+    .e-headercell.e-stackedheadercell.e-mousepointer {
+      cursor: pointer;
     }
 
     .e-gridheader .e-headercell,

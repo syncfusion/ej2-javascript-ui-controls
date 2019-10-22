@@ -98,8 +98,9 @@ export class EventTooltip {
         if (!isNullOrUndefined(this.parent.eventSettings.tooltipTemplate)) {
             let contentContainer: HTMLElement = createElement('div');
             let templateId: string = this.parent.element.id + '_tooltipTemplate';
+            let templateArgs: Object = util.addLocalOffsetToEvent(record, this.parent.eventFields);
             let tooltipTemplate: NodeList =
-                this.parent.getEventTooltipTemplate()(record, this.parent, 'tooltipTemplate', templateId, false);
+                this.parent.getEventTooltipTemplate()(templateArgs, this.parent, 'tooltipTemplate', templateId, false);
             append(tooltipTemplate, contentContainer);
             this.setContent(contentContainer);
         } else {

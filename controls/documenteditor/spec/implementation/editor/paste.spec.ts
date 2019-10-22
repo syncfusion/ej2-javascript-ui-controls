@@ -178,9 +178,9 @@ describe('Paste Validation with List Formatting', () => {
         editor.editorModule.insertText('.');
         editor.editorModule.insertText(' ');
         editor.editorModule.insertText('Adventure');
-        (editor.editorModule as any).selection.extendToLineStart();
+        (editor.editorModule as any).selection.selectAll();
         (editor.editorModule as any).selection.copy();
-        (editor.editorModule as any).selection.extendToLineEnd();
+        (editor.editorModule as any).selection.handleRightKey();
         editor.editor.handleEnterKey();
         editor.editor.handleEnterKey();
         editor.editorModule.paste();

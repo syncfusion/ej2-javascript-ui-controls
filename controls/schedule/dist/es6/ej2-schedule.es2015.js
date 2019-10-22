@@ -225,6 +225,24 @@ function removeChildren(element) {
         element.removeChild(element.firstElementChild);
     }
 }
+function addLocalOffset(date) {
+    if (isBlazor()) {
+        let dateValue = new Date(+date - (date.getTimezoneOffset() * 60000));
+        return dateValue;
+    }
+    return date;
+}
+function addLocalOffsetToEvent(event, eventFields) {
+    if (isBlazor()) {
+        let eventObj = extend({}, event, null, true);
+        eventObj[eventFields.startTime] =
+            new Date(+event[eventFields.startTime] - ((eventObj[eventFields.startTime]).getTimezoneOffset() * 60000));
+        eventObj[eventFields.endTime] =
+            new Date(+event[eventFields.endTime] - ((eventObj[eventFields.endTime]).getTimezoneOffset() * 60000));
+        return eventObj;
+    }
+    return event;
+}
 
 /**
  * CSS Constants
@@ -706,7 +724,9 @@ class HeaderRenderer {
     renderToolbar() {
         let items = this.getItems();
         let args = { requestType: 'toolbarItemRendering', items: items };
-        this.parent.trigger(actionBegin, args);
+        if (!isBlazor()) {
+            this.parent.trigger(actionBegin, args);
+        }
         this.toolbarObj = new Toolbar({
             items: args.items,
             overflowMode: 'Popup',
@@ -731,7 +751,9 @@ class HeaderRenderer {
         if (this.toolbarObj) {
             let items = this.getItems();
             let args = { requestType: 'toolbarItemRendering', items: items };
-            this.parent.trigger(actionBegin, args);
+            if (!isBlazor()) {
+                this.parent.trigger(actionBegin, args);
+            }
             this.toolbarObj.items = args.items;
             this.toolbarObj.dataBind();
             this.parent.trigger(actionComplete, {
@@ -1188,7 +1210,9 @@ class ScheduleTouch {
         }
         if (e.scrollDirection === 'Left' || e.scrollDirection === 'Right') {
             let args = { requestType: 'dateNavigate', cancel: false, event: e.originalEvent };
-            this.parent.trigger(actionBegin, args);
+            if (!isBlazor()) {
+                this.parent.trigger(actionBegin, args);
+            }
             if (args.cancel) {
                 return;
             }
@@ -4764,7 +4788,8 @@ class EventBase {
             let scheduleId = this.parent.element.id + '_';
             let viewName = this.parent.activeViewOptions.eventTemplateName;
             let templateId = scheduleId + viewName + 'eventTemplate';
-            templateElement = this.parent.getAppointmentTemplate()(record, this.parent, 'eventTemplate', templateId, false);
+            let templateArgs = addLocalOffsetToEvent(record, this.parent.eventFields);
+            templateElement = this.parent.getAppointmentTemplate()(templateArgs, this.parent, 'eventTemplate', templateId, false);
         }
         else {
             let appointmentSubject = createElement('div', {
@@ -5453,7 +5478,8 @@ class QuickPopups {
         if (this.isQuickTemplate(headerType) && this.parent.quickInfoTemplates.header) {
             let headerArgs = extend({}, headerData, { elementType: headerType.toLowerCase() }, true);
             let templateId = this.parent.element.id;
-            let headerTemp = this.parent.getQuickInfoTemplatesHeader()(headerArgs, this.parent, 'header', templateId + '_headerTemplate', false);
+            let templateArgs = addLocalOffsetToEvent(headerArgs, this.parent.eventFields);
+            let headerTemp = this.parent.getQuickInfoTemplatesHeader()(templateArgs, this.parent, 'header', templateId + '_headerTemplate', false);
             append([].slice.call(headerTemp), headerTemplate);
         }
         else {
@@ -5483,7 +5509,8 @@ class QuickPopups {
         if (this.isQuickTemplate(type) && this.parent.quickInfoTemplates.content) {
             let contentArgs = extend({}, data, { elementType: type.toLowerCase() }, true);
             let templateId = this.parent.element.id;
-            let contentTemp = this.parent.getQuickInfoTemplatesContent()(contentArgs, this.parent, 'content', templateId + '_contentTemplate', false);
+            let templateArgs = addLocalOffsetToEvent(contentArgs, this.parent.eventFields);
+            let contentTemp = this.parent.getQuickInfoTemplatesContent()(templateArgs, this.parent, 'content', templateId + '_contentTemplate', false);
             append([].slice.call(contentTemp), contentTemplate);
         }
         else {
@@ -5543,7 +5570,8 @@ class QuickPopups {
         if (this.isQuickTemplate(footerType) && this.parent.quickInfoTemplates.footer) {
             let footerArgs = extend({}, footerData, { elementType: footerType.toLowerCase() }, true);
             let templateId = this.parent.element.id;
-            let footerTemp = this.parent.getQuickInfoTemplatesFooter()(footerArgs, this.parent, 'footer', templateId + '_footerTemplate', false);
+            let templateArgs = addLocalOffsetToEvent(footerArgs, this.parent.eventFields);
+            let footerTemp = this.parent.getQuickInfoTemplatesFooter()(templateArgs, this.parent, 'footer', templateId + '_footerTemplate', false);
             append([].slice.call(footerTemp), footerTemplate);
         }
         else {
@@ -6241,7 +6269,8 @@ class EventTooltip {
         if (!isNullOrUndefined(this.parent.eventSettings.tooltipTemplate)) {
             let contentContainer = createElement('div');
             let templateId = this.parent.element.id + '_tooltipTemplate';
-            let tooltipTemplate = this.parent.getEventTooltipTemplate()(record, this.parent, 'tooltipTemplate', templateId, false);
+            let templateArgs = addLocalOffsetToEvent(record, this.parent.eventFields);
+            let tooltipTemplate = this.parent.getEventTooltipTemplate()(templateArgs, this.parent, 'tooltipTemplate', templateId, false);
             append(tooltipTemplate, contentContainer);
             this.setContent(contentContainer);
         }
@@ -9478,28 +9507,32 @@ class Crud {
             }
             let addEvents = (eventData instanceof Array) ? eventData : [eventData];
             let args = {
-                requestType: 'eventCreate', cancel: false, data: addEvents,
+                requestType: 'eventCreate', cancel: false,
                 addedRecords: addEvents, changedRecords: [], deletedRecords: []
             };
+            if (!isBlazor()) {
+                args.data = addEvents;
+            }
             this.parent.trigger(actionBegin, args, (addArgs) => {
+                this.serializeData(addArgs.addedRecords);
                 if (!addArgs.cancel) {
                     let fields = this.parent.eventFields;
                     let editParms = { addedRecords: [], changedRecords: [], deletedRecords: [] };
                     let promise;
-                    if (eventData instanceof Array) {
-                        for (let event of eventData) {
+                    if (addArgs.addedRecords instanceof Array) {
+                        for (let event of addArgs.addedRecords) {
                             editParms.addedRecords.push(this.parent.eventBase.processTimezone(event, true));
                         }
                         // tslint:disable-next-line:max-line-length
                         promise = this.parent.dataModule.dataManager.saveChanges(editParms, fields.id, this.getTable(), this.getQuery());
                     }
                     else {
-                        let event = this.parent.eventBase.processTimezone(eventData, true);
+                        let event = this.parent.eventBase.processTimezone(addArgs.addedRecords, true);
                         editParms.addedRecords.push(event);
                         promise = this.parent.dataModule.dataManager.insert(event, this.getTable(), this.getQuery());
                     }
                     let crudArgs = {
-                        requestType: 'eventCreated', cancel: false, data: eventData, promise: promise, editParms: editParms
+                        requestType: 'eventCreated', cancel: false, data: addArgs.addedRecords, promise: promise, editParms: editParms
                     };
                     this.refreshData(crudArgs);
                 }
@@ -9529,23 +9562,27 @@ class Crud {
             else {
                 let updateEvents = (eventData instanceof Array) ? eventData : [eventData];
                 let args = {
-                    requestType: 'eventChange', cancel: false, data: eventData,
+                    requestType: 'eventChange', cancel: false,
                     addedRecords: [], changedRecords: updateEvents, deletedRecords: []
                 };
+                if (!isBlazor()) {
+                    args.data = eventData;
+                }
                 this.parent.trigger(actionBegin, args, (saveArgs) => {
+                    this.serializeData(saveArgs.changedRecords);
                     if (!saveArgs.cancel) {
                         let promise;
                         let fields = this.parent.eventFields;
                         let editParms = { addedRecords: [], changedRecords: [], deletedRecords: [] };
-                        if (eventData instanceof Array) {
-                            for (let event of eventData) {
+                        if (saveArgs.changedRecords instanceof Array) {
+                            for (let event of saveArgs.changedRecords) {
                                 editParms.changedRecords.push(this.parent.eventBase.processTimezone(event, true));
                             }
                             // tslint:disable-next-line:max-line-length
                             promise = this.parent.dataModule.dataManager.saveChanges(editParms, fields.id, this.getTable(), this.getQuery());
                         }
                         else {
-                            let event = this.parent.eventBase.processTimezone(eventData, true);
+                            let event = this.parent.eventBase.processTimezone(saveArgs.changedRecords, true);
                             editParms.changedRecords.push(event);
                             // tslint:disable-next-line:max-line-length
                             promise = this.parent.dataModule.dataManager.update(fields.id, event, this.getTable(), this.getQuery());
@@ -9587,27 +9624,31 @@ class Crud {
             }
             else {
                 let args = {
-                    requestType: 'eventRemove', cancel: false, data: eventData,
+                    requestType: 'eventRemove', cancel: false,
                     addedRecords: [], changedRecords: [], deletedRecords: deleteEvents
                 };
+                if (!isBlazor()) {
+                    args.data = eventData;
+                }
                 this.parent.trigger(actionBegin, args, (deleteArgs) => {
+                    this.serializeData(deleteArgs.deletedRecords);
                     if (!deleteArgs.cancel) {
                         let promise;
                         let fields = this.parent.eventFields;
                         let editParms = { addedRecords: [], changedRecords: [], deletedRecords: [] };
-                        if (deleteEvents.length > 1) {
-                            for (let eventObj of deleteEvents) {
+                        if (deleteArgs.deletedRecords.length > 1) {
+                            for (let eventObj of deleteArgs.deletedRecords) {
                                 editParms.deletedRecords.push(eventObj);
                             }
                             // tslint:disable-next-line:max-line-length
                             promise = this.parent.dataModule.dataManager.saveChanges(editParms, fields.id, this.getTable(), this.getQuery());
                         }
                         else {
-                            editParms.deletedRecords.push(deleteEvents[0]);
+                            editParms.deletedRecords.push(deleteArgs.deletedRecords[0]);
                             // tslint:disable-next-line:max-line-length
-                            promise = this.parent.dataModule.dataManager.remove(fields.id, deleteEvents[0], this.getTable(), this.getQuery());
+                            promise = this.parent.dataModule.dataManager.remove(fields.id, deleteArgs.deletedRecords[0], this.getTable(), this.getQuery());
                         }
-                        this.parent.eventBase.selectWorkCellByTime(deleteEvents);
+                        this.parent.eventBase.selectWorkCellByTime(deleteArgs.deletedRecords);
                         let crudArgs = {
                             requestType: 'eventRemoved', cancel: false, data: deleteArgs.data, promise: promise, editParms: editParms
                         };
@@ -9629,16 +9670,20 @@ class Crud {
         }
         let updateEvents = (eventData instanceof Array) ? eventData : [eventData];
         let args = {
-            requestType: 'eventChange', cancel: false, data: occurenceData,
+            requestType: action === 'EditOccurrence' ? 'eventChange' : 'eventRemove', cancel: false,
             addedRecords: [], changedRecords: updateEvents, deletedRecords: []
         };
+        if (!isBlazor()) {
+            args.data = occurenceData;
+        }
         this.parent.trigger(actionBegin, args, (occurenceArgs) => {
+            this.serializeData(occurenceArgs.changedRecords);
             if (!occurenceArgs.cancel) {
                 let fields = this.parent.eventFields;
                 let editParms = { addedRecords: [], changedRecords: [], deletedRecords: [] };
                 let occurrenceEvents = (occurenceData instanceof Array ? occurenceData : [occurenceData]);
-                for (let a = 0, count = updateEvents.length; a < count; a++) {
-                    let childEvent = updateEvents[a];
+                for (let a = 0, count = occurenceArgs.changedRecords.length; a < count; a++) {
+                    let childEvent = occurenceArgs.changedRecords[a];
                     let parentEvent = occurrenceEvents[a].parent;
                     let parentException = parentEvent[fields.recurrenceException];
                     switch (action) {
@@ -9671,9 +9716,10 @@ class Crud {
                 }
                 // tslint:disable-next-line:max-line-length
                 let promise = this.parent.dataModule.dataManager.saveChanges(editParms, fields.id, this.getTable(), this.getQuery());
-                this.parent.eventBase.selectWorkCellByTime(updateEvents);
+                this.parent.eventBase.selectWorkCellByTime(occurenceArgs.changedRecords);
                 let crudArgs = {
-                    requestType: 'eventChanged', cancel: false, data: occurenceArgs.data, promise: promise, editParms: editParms
+                    requestType: action === 'EditOccurrence' ? 'eventChanged' : 'eventRemoved',
+                    cancel: false, data: occurenceArgs.data, promise: promise, editParms: editParms
                 };
                 this.refreshData(crudArgs);
             }
@@ -9691,16 +9737,20 @@ class Crud {
         }
         let updateFollowEvents = (eventData instanceof Array) ? eventData : [eventData];
         let args = {
-            requestType: 'eventChange', cancel: false, data: followData,
+            requestType: action === 'EditFollowingEvents' ? 'eventChange' : 'eventRemove', cancel: false,
             addedRecords: [], changedRecords: updateFollowEvents, deletedRecords: []
         };
+        if (!isBlazor()) {
+            args.data = followData;
+        }
         this.parent.trigger(actionBegin, args, (followArgs) => {
+            this.serializeData(followArgs.changedRecords);
             if (!followArgs.cancel) {
                 let fields = this.parent.eventFields;
                 let editParms = { addedRecords: [], changedRecords: [], deletedRecords: [] };
                 let followEvents = (followData instanceof Array ? followData : [followData]);
-                for (let a = 0, count = updateFollowEvents.length; a < count; a++) {
-                    let childEvent = updateFollowEvents[a];
+                for (let a = 0, count = followArgs.changedRecords.length; a < count; a++) {
+                    let childEvent = followArgs.changedRecords[a];
                     let parentEvent = followEvents[a].parent;
                     let followData = this.parent.eventBase.getEventCollections(parentEvent, childEvent);
                     switch (action) {
@@ -9738,9 +9788,10 @@ class Crud {
                 }
                 // tslint:disable-next-line:max-line-length
                 let promise = this.parent.dataModule.dataManager.saveChanges(editParms, fields.id, this.getTable(), this.getQuery());
-                this.parent.eventBase.selectWorkCellByTime(updateFollowEvents);
+                this.parent.eventBase.selectWorkCellByTime(followArgs.changedRecords);
                 let crudArgs = {
-                    requestType: 'eventChanged', cancel: false, data: followArgs.data, promise: promise, editParms: editParms
+                    requestType: action === 'EditFollowingEvents' ? 'eventChanged' : 'eventRemoved',
+                    cancel: false, data: followArgs.data, promise: promise, editParms: editParms
                 };
                 this.refreshData(crudArgs);
             }
@@ -9758,16 +9809,20 @@ class Crud {
         }
         let updateSeriesEvents = (eventData instanceof Array) ? eventData : [eventData];
         let args = {
-            requestType: 'eventChange', cancel: false, data: seriesData,
+            requestType: action === 'EditSeries' ? 'eventChange' : 'eventRemove', cancel: false,
             addedRecords: [], changedRecords: updateSeriesEvents, deletedRecords: []
         };
+        if (!isBlazor()) {
+            args.data = seriesData;
+        }
         this.parent.trigger(actionBegin, args, (seriesArgs) => {
+            this.serializeData(seriesArgs.changedRecords);
             if (!seriesArgs.cancel) {
                 let fields = this.parent.eventFields;
                 let editParms = { addedRecords: [], changedRecords: [], deletedRecords: [] };
                 let seriesEvents = (seriesData instanceof Array ? seriesData : [seriesData]);
-                for (let a = 0, count = updateSeriesEvents.length; a < count; a++) {
-                    let childEvent = updateSeriesEvents[a];
+                for (let a = 0, count = seriesArgs.changedRecords.length; a < count; a++) {
+                    let childEvent = seriesArgs.changedRecords[a];
                     let parentEvent = seriesEvents[a];
                     let eventCollections = this.parent.eventBase.getEventCollections(parentEvent);
                     let deletedEvents = eventCollections.follow.concat(eventCollections.occurrence);
@@ -9796,9 +9851,10 @@ class Crud {
                 }
                 // tslint:disable-next-line:max-line-length
                 let promise = this.parent.dataModule.dataManager.saveChanges(editParms, fields.id, this.getTable(), this.getQuery());
-                this.parent.eventBase.selectWorkCellByTime(updateSeriesEvents);
+                this.parent.eventBase.selectWorkCellByTime(seriesArgs.changedRecords);
                 let crudArgs = {
-                    requestType: 'eventChanged', cancel: false, data: seriesArgs.data, promise: promise, editParms: editParms
+                    requestType: action === 'EditSeries' ? 'eventChanged' : 'eventRemoved',
+                    cancel: false, data: seriesArgs.data, promise: promise, editParms: editParms
                 };
                 this.refreshData(crudArgs);
             }
@@ -9815,19 +9871,23 @@ class Crud {
             }
         }
         let args = {
-            requestType: 'eventRemove', cancel: false, data: deleteData,
+            requestType: 'eventRemove', cancel: false,
             addedRecords: [], changedRecords: [], deletedRecords: eventData
         };
+        if (!isBlazor()) {
+            args.data = deleteData;
+        }
         this.parent.trigger(actionBegin, args, (deleteArgs) => {
+            this.serializeData(deleteArgs.deletedRecords);
             if (!deleteArgs.cancel) {
                 let fields = this.parent.eventFields;
                 let editParms = { addedRecords: [], changedRecords: [], deletedRecords: [] };
-                for (let a = 0, count = eventData.length; a < count; a++) {
-                    let isDelete = isNullOrUndefined(eventData[a][this.parent.eventFields.recurrenceRule]);
+                for (let a = 0, count = deleteArgs.deletedRecords.length; a < count; a++) {
+                    let isDelete = isNullOrUndefined(deleteArgs.deletedRecords[a][this.parent.eventFields.recurrenceRule]);
                     if (!isDelete) {
                         let parentEvent = deleteData[a].parent;
                         let isEdited = editParms.changedRecords.filter((obj) => obj[fields.id] === parentEvent[fields.id]);
-                        let editedDate = eventData[a][fields.startTime];
+                        let editedDate = deleteArgs.deletedRecords[a][fields.startTime];
                         if (isEdited.length > 0) {
                             let editedData = isEdited[0];
                             editedData[fields.recurrenceException] =
@@ -9840,10 +9900,10 @@ class Crud {
                         if (isEdited.length === 0) {
                             editParms.changedRecords.push(this.parent.eventBase.processTimezone(parentEvent, true));
                         }
-                        isDelete = (eventData[a][fields.id] !== parentEvent[fields.id]);
+                        isDelete = (deleteArgs.deletedRecords[a][fields.id] !== parentEvent[fields.id]);
                     }
                     if (isDelete) {
-                        editParms.deletedRecords.push(eventData[a]);
+                        editParms.deletedRecords.push(deleteArgs.deletedRecords[a]);
                     }
                 }
                 // tslint:disable-next-line:max-line-length
@@ -9854,6 +9914,15 @@ class Crud {
                 this.refreshData(crudArgs);
             }
         });
+    }
+    serializeData(eventData) {
+        if (isBlazor()) {
+            let eventFields = this.parent.eventFields;
+            for (let event of eventData) {
+                event[eventFields.startTime] = this.parent.getDateTime(event[eventFields.startTime]);
+                event[eventFields.endTime] = this.parent.getDateTime(event[eventFields.endTime]);
+            }
+        }
     }
     getParentEvent(event, isParent = false) {
         let parentEvent = this.parent.eventBase.getParentEvent(event, isParent) || event;
@@ -13475,7 +13544,8 @@ class MonthEvent extends EventBase {
             let scheduleId = this.parent.element.id + '_';
             let viewName = this.parent.activeViewOptions.eventTemplateName;
             let templateId = scheduleId + viewName + 'eventTemplate';
-            templateElement = this.parent.getAppointmentTemplate()(eventObj, this.parent, 'eventTemplate', templateId, false);
+            let templateArgs = addLocalOffsetToEvent(eventObj, this.parent.eventFields);
+            templateElement = this.parent.getAppointmentTemplate()(templateArgs, this.parent, 'eventTemplate', templateId, false);
         }
         else {
             let eventLocation = (record[this.fields.location] || this.parent.eventSettings.fields.location.default || '');
@@ -14762,7 +14832,8 @@ class VerticalEvent extends EventBase {
             let elementId = this.parent.element.id + '_';
             let viewName = this.parent.activeViewOptions.eventTemplateName;
             let templateId = elementId + viewName + 'eventTemplate';
-            templateElement = this.parent.getAppointmentTemplate()(record, this.parent, 'eventTemplate', templateId, false);
+            let templateArgs = addLocalOffsetToEvent(record, this.parent.eventFields);
+            templateElement = this.parent.getAppointmentTemplate()(templateArgs, this.parent, 'eventTemplate', templateId, false);
         }
         else {
             let appointmentSubject = createElement('div', { className: SUBJECT_CLASS, innerHTML: recordSubject });
@@ -16727,11 +16798,12 @@ class VerticalView extends ViewBase {
         let wrapper = createElement('div');
         let templateName = '';
         let templateId = this.parent.element.id + '_';
+        let dateValue = addLocalOffset(date);
         switch (type) {
             case 'dateHeader':
                 if (this.parent.activeViewOptions.dateHeaderTemplate) {
                     templateName = 'dateHeaderTemplate';
-                    let args = { date: date, type: type };
+                    let args = { date: dateValue, type: type };
                     let viewName = this.parent.activeViewOptions.dateHeaderTemplateName;
                     cntEle =
                         this.parent.getDateHeaderTemplate()(args, this.parent, templateName, templateId + viewName + templateName, false);
@@ -16747,7 +16819,7 @@ class VerticalView extends ViewBase {
             case 'majorSlot':
                 if (this.parent.activeViewOptions.timeScale.majorSlotTemplate) {
                     templateName = 'majorSlotTemplate';
-                    let args = { date: date, type: type };
+                    let args = { date: dateValue, type: type };
                     cntEle =
                         this.parent.getMajorSlotTemplate()(args, this.parent, templateName, templateId + templateName, false);
                 }
@@ -16759,7 +16831,7 @@ class VerticalView extends ViewBase {
             case 'minorSlot':
                 if (this.parent.activeViewOptions.timeScale.minorSlotTemplate) {
                     templateName = 'minorSlotTemplate';
-                    let args = { date: date, type: type };
+                    let args = { date: dateValue, type: type };
                     cntEle =
                         this.parent.getMinorSlotTemplate()(args, this.parent, templateName, templateId + templateName, false);
                 }
@@ -16772,7 +16844,7 @@ class VerticalView extends ViewBase {
                 if (this.parent.activeViewOptions.cellTemplate) {
                     let viewName = this.parent.activeViewOptions.cellTemplateName;
                     templateName = 'cellTemplate';
-                    let args = { date: date, type: type, groupIndex: groupIndex };
+                    let args = { date: dateValue, type: type, groupIndex: groupIndex };
                     cntEle =
                         this.parent.getCellTemplate()(args, this.parent, templateName, templateId + viewName + templateName, false);
                 }
@@ -17018,7 +17090,8 @@ class VerticalView extends ViewBase {
         }
         addClass([ntd], clsName);
         if (this.parent.activeViewOptions.cellTemplate) {
-            let args = { date: cellDate, type: type, groupIndex: tdData.groupIndex };
+            let dateValue = addLocalOffset(cellDate);
+            let args = { date: dateValue, type: type, groupIndex: tdData.groupIndex };
             let scheduleId = this.parent.element.id + '_';
             let viewName = this.parent.activeViewOptions.cellTemplateName;
             let templateId = scheduleId + viewName + 'cellTemplate';
@@ -17461,7 +17534,8 @@ class Month extends ViewBase {
             addClass([tdEle], DATE_HEADER_CLASS);
             tdEle.setAttribute('data-date', td.date.getTime().toString());
             if (this.parent.activeViewOptions.dateHeaderTemplate) {
-                let cellArgs = { date: td.date, type: td.type };
+                let dateValue = addLocalOffset(td.date);
+                let cellArgs = { date: dateValue, type: td.type };
                 let elementId = this.parent.element.id + '_';
                 let viewName = this.parent.activeViewOptions.dateHeaderTemplateName;
                 let templateId = elementId + viewName + 'dateHeaderTemplate';
@@ -17609,7 +17683,8 @@ class Month extends ViewBase {
         }
         this.renderDateHeaderElement(data, ntd);
         if (this.parent.activeViewOptions.cellTemplate) {
-            let args = { date: data.date, type: type, groupIndex: data.groupIndex };
+            let dateValue = addLocalOffset(data.date);
+            let args = { date: dateValue, type: type, groupIndex: data.groupIndex };
             let scheduleId = this.parent.element.id + '_';
             let viewName = this.parent.activeViewOptions.cellTemplateName;
             let templateId = scheduleId + viewName + 'cellTemplate';
@@ -17626,7 +17701,8 @@ class Month extends ViewBase {
         }
         let dateHeader = createElement('div', { className: DATE_HEADER_CLASS });
         if (this.parent.activeViewOptions.cellHeaderTemplate) {
-            let args = { date: data.date, type: data.type, groupIndex: data.groupIndex };
+            let dateValue = addLocalOffset(data.date);
+            let args = { date: dateValue, type: data.type, groupIndex: data.groupIndex };
             let scheduleId = this.parent.element.id + '_';
             let viewName = this.parent.activeViewOptions.cellHeaderTemplateName;
             let templateId = scheduleId + viewName + 'cellHeaderTemplate';
@@ -17804,7 +17880,8 @@ class AgendaBase {
                     let scheduleId = this.parent.element.id + '_';
                     let viewName = this.parent.activeViewOptions.eventTemplateName;
                     let templateId = scheduleId + viewName + 'eventTemplate';
-                    templateEle = this.parent.getAppointmentTemplate()(listData[li], this.parent, 'eventTemplate', templateId, false);
+                    let templateArgs = addLocalOffsetToEvent(listData[li], this.parent.eventFields);
+                    templateEle = this.parent.getAppointmentTemplate()(templateArgs, this.parent, 'eventTemplate', templateId, false);
                     if (!isNullOrUndefined(listData[li][fieldMapping.recurrenceRule])) {
                         let iconClass = (listData[li][fieldMapping.id] === listData[li][fieldMapping.recurrenceID]) ?
                             EVENT_RECURRENCE_ICON_CLASS : EVENT_RECURRENCE_EDIT_ICON_CLASS;
@@ -18056,7 +18133,8 @@ class AgendaBase {
         let dateHeader;
         if (this.parent.activeViewOptions.dateHeaderTemplate) {
             dateHeader = createElement('div', { className: AGENDA_HEADER_CLASS });
-            let args = { date: date, type: 'dateHeader' };
+            let dateValue = addLocalOffset(date);
+            let args = { date: dateValue, type: 'dateHeader' };
             let scheduleId = this.parent.element.id + '_';
             let viewName = this.parent.activeViewOptions.dateHeaderTemplateName;
             let templateId = scheduleId + viewName + 'dateHeaderTemplate';
@@ -19299,7 +19377,8 @@ class YearEvent extends TimelineEvent {
         let eventObj = extend({}, record, null, true);
         if (this.parent.activeViewOptions.eventTemplate) {
             let templateId = this.parent.element.id + '_' + this.parent.activeViewOptions.eventTemplateName + 'eventTemplate';
-            templateElement = this.parent.getAppointmentTemplate()(eventObj, this.parent, 'eventTemplate', templateId, false);
+            let templateArgs = addLocalOffsetToEvent(eventObj, this.parent.eventFields);
+            templateElement = this.parent.getAppointmentTemplate()(templateArgs, this.parent, 'eventTemplate', templateId, false);
         }
         else {
             let locationEle = (record[this.fields.location] || this.parent.eventSettings.fields.location.default || '');
@@ -20280,5 +20359,5 @@ class Print {
  * Export Schedule components
  */
 
-export { Schedule, cellClick, cellDoubleClick, moreEventsClick, select, hover, actionBegin, actionComplete, actionFailure, navigating, renderCell, eventClick, eventRendered, dataBinding, dataBound, popupOpen, popupClose, dragStart, drag, dragStop, resizeStart, resizing, resizeStop, initialLoad, initialEnd, dataReady, eventsLoaded, contentReady, scroll, virtualScroll, scrollUiUpdate, uiUpdate, documentClick, cellMouseDown, WEEK_LENGTH, MS_PER_DAY, MS_PER_MINUTE, getElementHeightFromClass, getTranslateY, getWeekFirstDate, getWeekLastDate, firstDateOfMonth, lastDateOfMonth, getWeekNumber, setTime, resetTime, getDateInMs, getDateCount, addDays, addMonths, addYears, getStartEndHours, getMaxDays, getDaysCount, getDateFromString, getScrollBarWidth, findIndexInData, getOuterHeight, removeChildren, Resize, DragAndDrop, HeaderRenderer, ViewHelper, ViewBase, Day, Week, WorkWeek, Month, Agenda, MonthAgenda, TimelineViews, TimelineMonth, TimelineYear, Timezone, timezoneData, ICalendarExport, ICalendarImport, ExcelExport, Print, RecurrenceEditor, generateSummary, generate, getDateFromRecurrenceDateString, extractObjectFromRule, getCalendarUtil, getRecurrenceStringFromDate, Gregorian, Islamic };
+export { Schedule, cellClick, cellDoubleClick, moreEventsClick, select, hover, actionBegin, actionComplete, actionFailure, navigating, renderCell, eventClick, eventRendered, dataBinding, dataBound, popupOpen, popupClose, dragStart, drag, dragStop, resizeStart, resizing, resizeStop, initialLoad, initialEnd, dataReady, eventsLoaded, contentReady, scroll, virtualScroll, scrollUiUpdate, uiUpdate, documentClick, cellMouseDown, WEEK_LENGTH, MS_PER_DAY, MS_PER_MINUTE, getElementHeightFromClass, getTranslateY, getWeekFirstDate, getWeekLastDate, firstDateOfMonth, lastDateOfMonth, getWeekNumber, setTime, resetTime, getDateInMs, getDateCount, addDays, addMonths, addYears, getStartEndHours, getMaxDays, getDaysCount, getDateFromString, getScrollBarWidth, findIndexInData, getOuterHeight, removeChildren, addLocalOffset, addLocalOffsetToEvent, Resize, DragAndDrop, HeaderRenderer, ViewHelper, ViewBase, Day, Week, WorkWeek, Month, Agenda, MonthAgenda, TimelineViews, TimelineMonth, TimelineYear, Timezone, timezoneData, ICalendarExport, ICalendarImport, ExcelExport, Print, RecurrenceEditor, generateSummary, generate, getDateFromRecurrenceDateString, extractObjectFromRule, getCalendarUtil, getRecurrenceStringFromDate, Gregorian, Islamic };
 //# sourceMappingURL=ej2-schedule.es2015.js.map

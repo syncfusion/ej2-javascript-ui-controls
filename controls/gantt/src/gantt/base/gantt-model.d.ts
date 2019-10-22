@@ -8,7 +8,7 @@ export interface GanttModel extends ComponentModel{
 
     /**
      * Enables or disables the key board interaction of Gantt.
-     * @hidden
+     * 
      * @default true
      */
     allowKeyboard?: boolean;

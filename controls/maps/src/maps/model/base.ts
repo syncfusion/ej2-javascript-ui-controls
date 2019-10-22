@@ -1283,7 +1283,7 @@ export class LayerSettings extends ChildProperty<LayerSettings> {
      * @default []
      */
     @Property([])
-    public dataSource: object[] | DataManager | MapAjax;
+    public dataSource: Object[] | DataManager | MapAjax;
     /**
      * Specifies the type for the layer.
      * @default Layer

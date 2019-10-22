@@ -435,11 +435,12 @@ export class GanttChart {
         let childRecords: IGanttData[] = record.childRecords;
         let chartRows: NodeListOf<Element> = this.getChartRows();
         let rows: HTMLElement[] = [];
-        chartRows.forEach((item: HTMLElement) => {
-            if ((<HTMLElement>item).classList.contains('gridrowtaskId' + record.ganttProperties.taskId + 'level' + (record.level + 1))) {
-                rows.push(<HTMLElement>item);
+        for (let i: number = 0; i < chartRows.length; i++) {
+            if ((<HTMLElement>chartRows[i]).classList.contains('gridrowtaskId'
+                + record.ganttProperties.taskId + 'level' + (record.level + 1))) {
+                rows.push(<HTMLElement>chartRows[i]);
             }
-        });
+        }
         for (let i: number = 0; i < rows.length; i++) {
             rows[i].style.display = displayType;
             if ((childRecords[i].childRecords && childRecords[i].childRecords.length)

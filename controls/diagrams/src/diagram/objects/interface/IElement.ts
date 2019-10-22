@@ -148,6 +148,8 @@ export interface ICollectionChangeEventArgs {
     type: ChangeType;
     /** returns whether to cancel the change or not */
     cancel: boolean;
+    /** returns the lane index */
+    laneIndex?: Number;
 }
 /**
  * IBlazorCollectionChangeEventArgs notifies while the node/connector are added or removed in the diagram

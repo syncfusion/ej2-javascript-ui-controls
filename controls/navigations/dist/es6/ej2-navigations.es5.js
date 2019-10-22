@@ -6546,6 +6546,7 @@ var __decorate$7 = (undefined && undefined.__decorate) || function (decorators, 
 };
 var CLS_TAB = 'e-tab';
 var CLS_HEADER$1 = 'e-tab-header';
+var CLS_BLA_TEM = 'blazor-template';
 var CLS_CONTENT$1 = 'e-content';
 var CLS_NEST$1 = 'e-nested';
 var CLS_ITEMS$1 = 'e-items';
@@ -7158,7 +7159,17 @@ var Tab = /** @__PURE__ @class */ (function (_super) {
         }
     };
     Tab.prototype.getTabHeader = function () {
-        return [].slice.call(this.element.children).filter(function (e) { return e.classList.contains(CLS_HEADER$1); })[0];
+        var headers = [].slice.call(this.element.children).filter(function (e) { return e.classList.contains(CLS_HEADER$1); });
+        if (headers.length > 0) {
+            return headers[0];
+        }
+        else {
+            var wrap = [].slice.call(this.element.children).filter(function (e) { return !e.classList.contains(CLS_BLA_TEM); })[0];
+            if (!wrap) {
+                return undefined;
+            }
+            return [].slice.call(wrap.children).filter(function (e) { return e.classList.contains(CLS_HEADER$1); })[0];
+        }
     };
     Tab.prototype.getEleIndex = function (item) {
         return Array.prototype.indexOf.call(selectAll('.' + CLS_TB_ITEM, this.getTabHeader()), item);
@@ -10839,14 +10850,14 @@ var TreeView = /** @__PURE__ @class */ (function (_super) {
             newText = observedArgs.cancel ? observedArgs.oldText : observedArgs.newText;
             var newData = setValue(_this.editFields.text, newText, _this.editData);
             if (!isNullOrUndefined(_this.nodeTemplateFn)) {
-                txtEle.innerHTML = '';
+                txtEle.innerText = '';
                 var tempArr = _this.nodeTemplateFn(newData, undefined, undefined, _this.element.id + 'nodeTemplate', _this.isStringTemplate);
                 tempArr = Array.prototype.slice.call(tempArr);
                 append(tempArr, txtEle);
                 _this.updateBlazorTemplate();
             }
             else {
-                txtEle.innerHTML = newText;
+                txtEle.innerText = newText;
             }
             if (isInput) {
                 removeClass([liEle], EDITING);
@@ -12246,7 +12257,9 @@ var TreeView = /** @__PURE__ @class */ (function (_super) {
         this.setCssClass(this.cssClass, null);
         this.setDragAndDrop(false);
         this.setFullRow(false);
-        this.element.innerHTML = '';
+        if (this.ulElement && this.ulElement.parentElement) {
+            this.ulElement.parentElement.removeChild(this.ulElement);
+        }
         _super.prototype.destroy.call(this);
     };
     /**

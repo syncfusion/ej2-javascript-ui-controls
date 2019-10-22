@@ -15,6 +15,7 @@ import { BlockWidget } from '../viewer/page';
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
 import { HelperMethods } from '../editor/editor-helper';
 import { StreamWriter } from '@syncfusion/ej2-file-utils';
+import { TextPosition } from '../selection';
 /**
  * Exports the document to Sfdt format.
  */
@@ -592,8 +593,21 @@ export class SfdtExport {
     }
     private createParagraph(paragraphWidget: ParagraphWidget): any {
         let paragraph: any = {};
-        paragraph.paragraphFormat = this.writeParagraphFormat(paragraphWidget.paragraphFormat);
-        paragraph.characterFormat = this.writeCharacterFormat(paragraphWidget.characterFormat);
+        let isParaSelected: boolean = false;
+        if (this.viewer.selection && !this.viewer.selection.isEmpty) {
+            let endPos: TextPosition = this.viewer.selection.end;
+            if (!this.viewer.selection.isForward) {
+                endPos = this.viewer.selection.start;
+            }
+            let lastLine: LineWidget = endPos.paragraph.childWidgets[endPos.paragraph.childWidgets.length - 1] as LineWidget;
+            isParaSelected = this.viewer.selection.isParagraphLastLine(lastLine) && endPos.currentWidget === lastLine
+                && endPos.offset === this.viewer.selection.getLineLength(lastLine) + 1;
+        } else {
+            isParaSelected = true;
+        }
+        // tslint:disable-next-line:max-line-length
+        paragraph.paragraphFormat = this.writeParagraphFormat(isParaSelected ? paragraphWidget.paragraphFormat : new WParagraphFormat(paragraphWidget));
+        paragraph.characterFormat = this.writeCharacterFormat(isParaSelected ? paragraphWidget.characterFormat : new WCharacterFormat(paragraphWidget));
         paragraph.inlines = [];
         return paragraph;
     }

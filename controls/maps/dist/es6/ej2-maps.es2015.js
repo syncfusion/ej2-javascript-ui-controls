@@ -8158,7 +8158,7 @@ class Selection {
             maps: this.maps
         };
         if (this.maps.isBlazor) {
-            const { maps } = eventArgs, blazorEventArgs = __rest$5(eventArgs, ["maps"]);
+            const { shapeData, maps } = eventArgs, blazorEventArgs = __rest$5(eventArgs, ["shapeData", "maps"]);
             eventArgs = blazorEventArgs;
         }
         this.maps.trigger('itemSelection', eventArgs, (observedArgs) => {

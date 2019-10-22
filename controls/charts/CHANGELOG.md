@@ -2,6 +2,21 @@
 
 ## [Unreleased]
 
+## 17.3.19 (2019-10-22)
+
+### Accumulation chart
+
+#### Bug Fixes
+
+- #148287 - Series DataSource change accumulation chart refresh issue fixed.
+
+### Chart
+
+#### Bug Fixes
+
+- #250074 - Label placement between ticks is not working for radar chart issue fixed.
+- #251346 - Radar and polar chart of draw type column and stacked column the values are plotted differently issue fixed
+
 ## 17.3.17 (2019-10-15)
 
 ### Chart

@@ -178,6 +178,7 @@ export interface MapsModel extends ComponentModel{
     /**
      * Triggers before selection applied
      * @event
+     * @blazorType Syncfusion.EJ2.Blazor.Maps.ISelectionEventArgs<TValue>
      * @blazorProperty 'OnItemSelect'
      */
     itemSelection?: EmitType<ISelectionEventArgs>;
@@ -186,6 +187,7 @@ export interface MapsModel extends ComponentModel{
      * Trigger before highlight applied
      * @event
      * @blazorProperty 'OnItemHighlight'
+     * @blazorType Syncfusion.EJ2.Blazor.Maps.ISelectionEventArgs<TValue>
      */
     itemHighlight?: EmitType<ISelectionEventArgs>;
 

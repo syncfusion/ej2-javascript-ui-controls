@@ -356,7 +356,7 @@ export class SpellChecker {
      * @private
      */
     /* tslint:disable:no-any */
-    public handleSuggestions(allsuggestions: any, event: PointerEvent): string[] {
+    public handleSuggestions(allsuggestions: any): string[] {
         this.spellCheckSuggestion = [];
         if (allsuggestions.length === 0) {
             this.spellCheckSuggestion.push('Add To Dictionary');
@@ -608,7 +608,7 @@ export class SpellChecker {
     public handleWordByWordSpellCheck(jsonObject: any, elementBox: TextElementBox, left: number, top: number, underlineY: number, baselineAlignment: BaselineAlignment, isSamePage: boolean): void {
         if (jsonObject.HasSpellingError && isSamePage) {
             this.addErrorCollection(elementBox.text, elementBox, jsonObject.Suggestions);
-             // tslint:disable-next-line:max-line-length
+            // tslint:disable-next-line:max-line-length
             let backgroundColor: string = (elementBox.line.paragraph.containerWidget instanceof TableCellWidget) ? (elementBox.line.paragraph.containerWidget as TableCellWidget).cellFormat.shading.backgroundColor : this.viewer.backgroundColor;
             this.viewer.render.renderWavyline(elementBox, left, top, underlineY, '#FF0000', 'Single', baselineAlignment, backgroundColor);
             elementBox.isSpellChecked = true;

@@ -14,7 +14,7 @@ import { StatusBar } from './properties-pane/status-bar';
 import { ViewChangeEventArgs, RequestNavigateEventArgs, ContainerContentChangeEventArgs, ContainerSelectionChangeEventArgs, ContainerDocumentChangeEventArgs, CustomContentMenuEventArgs, BeforeOpenCloseCustomContentMenuEventArgs } from '../document-editor/base';
 import { createSpinner } from '@syncfusion/ej2-popups';
 import { ContainerServerActionSettingsModel } from '../document-editor/document-editor-model';
-import { CharacterFormatProperties, ParagraphFormatProperties } from '../document-editor/implementation';
+import { CharacterFormatProperties, ParagraphFormatProperties, SectionFormatProperties } from '../document-editor/implementation';
 
 /**
  * Document Editor container component.
@@ -186,6 +186,10 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
      * @private
      */
     public paragraphFormat: ParagraphFormatProperties;
+    /**
+     * @private
+     */
+    public sectionFormat: SectionFormatProperties;
     /**
      * Defines the settings of the DocumentEditorContainer service.
      */
@@ -441,6 +445,9 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
         }
         if (this.paragraphFormat) {
             this.documentEditor.setDefaultParagraphFormat(this.paragraphFormat);
+        }
+        if (this.sectionFormat) {
+            this.documentEditor.setDefaultSectionFormat(this.sectionFormat);
         }
     }
 
@@ -711,10 +718,23 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
     }
 
     /**
+     * Set the default section format for document editor container
+     * @param sectionFormat
+     */
+    public setDefaultSectionFormat(sectionFormat: SectionFormatProperties): void {
+        this.sectionFormat = sectionFormat;
+    }
+
+    /**
      * Destroys all managed resources used by this object. 
      */
     public destroy(): void {
         super.destroy();
+        if (this.element) {
+            this.element.classList.remove('e-documenteditorcontainer');
+            this.element.innerHTML = '';
+        }
+        this.element = undefined;
         if (this.toolbarContainer && this.toolbarContainer.parentElement) {
             this.toolbarContainer.innerHTML = '';
             this.toolbarContainer.parentElement.removeChild(this.toolbarContainer);
@@ -744,6 +764,9 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
             this.tableProperties.destroy();
         }
         this.tableProperties = undefined;
+        if (this.statusBar) {
+            this.statusBar.destroy();
+        }
         if (this.propertiesPaneContainer && this.editorContainer.parentElement) {
             this.propertiesPaneContainer.innerHTML = '';
             this.propertiesPaneContainer.parentElement.removeChild(this.propertiesPaneContainer);

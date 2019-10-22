@@ -101,7 +101,9 @@ export class TextSelection {
                 range.setStart(targetElement, currentPosition);
                 range.setEnd(targetElement, currentPosition + 1);
                 let rangeBounds: ClientRect = range.getBoundingClientRect();
-                if (rangeBounds.left <= x && rangeBounds.right >= x && rangeBounds.top <= y && rangeBounds.bottom >= y) {
+                // tslint:disable-next-line:max-line-length
+                // tslint:disable-next-line
+                if (rangeBounds.left <= x && rangeBounds.right >= x && parseInt(rangeBounds.top.toString()) <= y && rangeBounds.bottom >= y) {
                     if (selection.anchorNode !== null && (selection.anchorNode.parentNode as HTMLElement).classList.contains('e-pv-text')) {
                         range.setStart(selection.anchorNode, selection.anchorOffset);
                     }
@@ -111,21 +113,41 @@ export class TextSelection {
                         this.selectionStartPage = this.pdfViewerBase.currentPageNumber - 1;
                     }
                     this.isTextSelection = true;
-                    if (this.isBackwardPropagatedSelection) {
-                        selection.extend(targetElement, currentPosition);
-                    } else {
-                        selection.extend(targetElement, currentPosition + 1);
+                    // tslint:disable-next-line
+                    let isIE: boolean = !!(document as any).documentMode;
+                    if (!isIE) {
+                        if (this.isBackwardPropagatedSelection) {
+                            selection.extend(targetElement, currentPosition);
+                        } else {
+                            selection.extend(targetElement, currentPosition + 1);
+                        }
                     }
                     range.detach();
                 }
                 currentPosition += 1;
+            }
+            // tslint:disable-next-line:max-line-length
+            if (this.pdfViewer.enableTextMarkupResizer && this.pdfViewer.annotationModule && this.pdfViewer.annotation.textMarkupAnnotationModule) {
+                if (this.pdfViewerBase.isSelection) {
+                    // tslint:disable-next-line
+                    let currentrange: any = selection.getRangeAt(0);
+                    // tslint:disable-next-line
+                    let rect: any = currentrange.getBoundingClientRect();
+                    let left: number = rect.left;
+                    let top: number = rect.top;
+                    this.pdfViewer.annotation.textMarkupAnnotationModule.updateLeftposition(left, top);
+                    this.pdfViewerBase.isSelection = false;
+                }
+                this.pdfViewer.annotation.textMarkupAnnotationModule.updatePosition(x, y);
             }
         } else {
             for (let i: number = 0; i < targetElement.childNodes.length; i++) {
                 if (targetElement.childNodes[i].nodeType === targetElement.TEXT_NODE) {
                     let range: Range = this.getSelectionRange(i, targetElement);
                     let rangeBounds: ClientRect = range.getBoundingClientRect();
-                    if (rangeBounds.left <= x && rangeBounds.right >= x && rangeBounds.top <= y && rangeBounds.bottom >= y) {
+                    // tslint:disable-next-line:max-line-length
+                    // tslint:disable-next-line
+                    if (rangeBounds.left <= x && rangeBounds.right >= x && parseInt(rangeBounds.top.toString()) <= y && rangeBounds.bottom >= y) {
                         range.detach();
                         this.textSelectionOnMouseMove(targetElement.childNodes[i], x, y);
                     } else {
@@ -135,6 +157,84 @@ export class TextSelection {
             }
         }
     }
+    /**
+     * @private
+     */
+    public textSelectionOnDrag(target: EventTarget, x: number, y: number, isforward: boolean): boolean {
+        let targetElement: HTMLElement = target as HTMLElement;
+        this.isTextSearched = true;
+        if (targetElement.nodeType === targetElement.TEXT_NODE) {
+            this.isBackwardPropagatedSelection = false;
+            let range: Range = targetElement.ownerDocument.createRange();
+            let selection: Selection = window.getSelection();
+            if (selection.anchorNode !== null) {
+                let position: number = selection.anchorNode.compareDocumentPosition(selection.focusNode);
+                if (!position && selection.anchorOffset > selection.focusOffset || position === Node.DOCUMENT_POSITION_PRECEDING) {
+                    this.isBackwardPropagatedSelection = true;
+                }
+            }
+            range.selectNodeContents(targetElement);
+            let currentPosition: number = 0;
+            let endPosition: number = range.endOffset;
+            while (currentPosition < endPosition) {
+                range.setStart(targetElement, currentPosition);
+                range.setEnd(targetElement, currentPosition + 1);
+                let rangeBounds: ClientRect = range.getBoundingClientRect();
+                // tslint:disable-next-line:max-line-length
+                // tslint:disable-next-line
+                if (rangeBounds.left <= x && rangeBounds.right >= x && parseInt(rangeBounds.top.toString()) <= y && rangeBounds.bottom >= y) {
+                    if (isforward) {
+                        // tslint:disable-next-line:max-line-length
+                        if (selection.anchorNode !== null && (selection.anchorNode.parentNode as HTMLElement).classList.contains('e-pv-text')) {
+                            range.setStart(selection.anchorNode, selection.anchorOffset);
+                        }
+                        selection.removeAllRanges();
+                        selection.addRange(range);
+                        selection.extend(targetElement, currentPosition);
+                    } else {
+                        range.setEnd(selection.focusNode, selection.focusOffset);
+                        selection.removeAllRanges();
+                        selection.addRange(range);
+                    }
+                    if (!this.isTextSelection) {
+                        this.selectionStartPage = this.pdfViewerBase.currentPageNumber - 1;
+                    }
+                    this.isTextSelection = true;
+                    range.detach();
+                    return true;
+                }
+                currentPosition += 1;
+            }
+            if (this.pdfViewerBase.isSelection) {
+                // tslint:disable-next-line
+                let currentrange: any = selection.getRangeAt(0);
+                // tslint:disable-next-line
+                let rect: any = currentrange.getBoundingClientRect();
+                let left: number = rect.left;
+                let top: number = rect.top;
+                this.pdfViewer.annotation.textMarkupAnnotationModule.updateLeftposition(left, top);
+                this.pdfViewerBase.isSelection = false;
+            }
+            this.pdfViewer.annotation.textMarkupAnnotationModule.updatePosition(x, y);
+        } else {
+            for (let i: number = 0; i < targetElement.childNodes.length; i++) {
+                if (targetElement.childNodes[i].nodeType === targetElement.TEXT_NODE) {
+                    let range: Range = this.getSelectionRange(i, targetElement);
+                    let rangeBounds: ClientRect = range.getBoundingClientRect();
+                    // tslint:disable-next-line:max-line-length
+                    // tslint:disable-next-line
+                    if (rangeBounds.left <= x && rangeBounds.right >= x && parseInt(rangeBounds.top.toString()) <= y && rangeBounds.bottom >= y) {
+                        range.detach();
+                        this.textSelectionOnDrag(targetElement.childNodes[i], x, y, isforward);
+                    } else {
+                        range.detach();
+                    }
+                }
+            }
+        }
+        return null;
+    }
+
 
     /**
      * @private
@@ -349,6 +449,9 @@ export class TextSelection {
                 for (let i: number = lowerPageIndex; i <= higherPageIndex; i++) {
                     this.pdfViewer.linkAnnotationModule.modifyZindexForTextSelection(i, false);
                 }
+            }
+            if (this.pdfViewer.annotation && this.pdfViewer.annotation.textMarkupAnnotationModule) {
+                this.pdfViewer.annotation.textMarkupAnnotationModule.showHideDropletDiv(true);
             }
             this.selectionRangeArray = [];
             this.isTextSelection = false;
@@ -758,7 +861,10 @@ export class TextSelection {
         }
     }
 
-    private maintainSelection(pageNumber: number, isStich: boolean): void {
+    /**
+     * @private
+     */
+    public maintainSelection(pageNumber: number, isStich: boolean): void {
         let selection: Selection = window.getSelection();
         if (this.isTextSelection && (selection.type === 'Range' || (!selection.type && !selection.isCollapsed))) {
             // tslint:disable-next-line
@@ -1575,8 +1681,10 @@ export class TextSelection {
     private onRightTouchSelectElementTouchEnd = (event: TouchEvent): void => {
         this.terminateSelectionByTouch(event);
     }
-
-    private initiateSelectionByTouch(): void {
+    /**
+     * @private
+     */
+    public initiateSelectionByTouch(): void {
         this.pdfViewerBase.textLayer.clearDivSelection();
         this.pdfViewerBase.contextMenuModule.contextMenuObj.close();
         let lowerPageIndex: number = this.pdfViewerBase.currentPageNumber - 3;
@@ -1767,7 +1875,7 @@ export class TextSelection {
     private isScrolledOnScrollBar(event: TouchEvent): boolean {
         let isScrollBar: boolean = false;
         // tslint:disable-next-line:max-line-length
-        if ((this.pdfViewerBase.viewerContainer.clientHeight + this.pdfViewerBase.viewerContainer.offsetTop) < event.touches[0].clientY && event.touches[0].clientY < (this.pdfViewerBase.viewerContainer.offsetHeight + this.pdfViewerBase.viewerContainer.offsetTop)) {
+        if (event.touches && (this.pdfViewerBase.viewerContainer.clientHeight + this.pdfViewerBase.viewerContainer.offsetTop) < event.touches[0].clientY && event.touches[0].clientY < (this.pdfViewerBase.viewerContainer.offsetHeight + this.pdfViewerBase.viewerContainer.offsetTop)) {
             isScrollBar = true;
         }
         return isScrollBar;

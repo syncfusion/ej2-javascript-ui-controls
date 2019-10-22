@@ -1227,7 +1227,7 @@ export interface LayerSettingsModel {
      * @isObservable true
      * @default []
      */
-    dataSource?: object[] | DataManager | MapAjax;
+    dataSource?: Object[] | DataManager | MapAjax;
 
     /**
      * Specifies the type for the layer.

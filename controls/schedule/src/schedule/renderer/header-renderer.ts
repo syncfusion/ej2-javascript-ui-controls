@@ -1,4 +1,4 @@
-import { L10n, isNullOrUndefined, createElement, remove, closest, addClass, removeClass, extend } from '@syncfusion/ej2-base';
+import { L10n, isNullOrUndefined, createElement, remove, closest, addClass, removeClass, extend, isBlazor } from '@syncfusion/ej2-base';
 import { Toolbar, ItemModel, ClickEventArgs } from '@syncfusion/ej2-navigations';
 import { Calendar, CalendarView, ChangedEventArgs, NavigatedEventArgs } from '@syncfusion/ej2-calendars';
 import { Popup } from '@syncfusion/ej2-popups';
@@ -57,7 +57,9 @@ export class HeaderRenderer {
     private renderToolbar(): void {
         let items: ItemModel[] = this.getItems();
         let args: ToolbarActionArgs = { requestType: 'toolbarItemRendering', items: items };
-        this.parent.trigger(events.actionBegin, args);
+        if (!isBlazor()) {
+            this.parent.trigger(events.actionBegin, args);
+        }
         this.toolbarObj = new Toolbar({
             items: args.items,
             overflowMode: 'Popup',
@@ -82,7 +84,9 @@ export class HeaderRenderer {
         if (this.toolbarObj) {
             let items: ItemModel[] = this.getItems();
             let args: ToolbarActionArgs = { requestType: 'toolbarItemRendering', items: items };
-            this.parent.trigger(events.actionBegin, args);
+            if (!isBlazor()) {
+                this.parent.trigger(events.actionBegin, args);
+            }
             this.toolbarObj.items = args.items;
             this.toolbarObj.dataBind();
             this.parent.trigger(events.actionComplete, <ToolbarActionArgs>{

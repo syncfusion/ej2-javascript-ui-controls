@@ -1802,7 +1802,7 @@ public pdfExportComplete: EmitType<PdfExportCompleteArgs>;
           dm[isDataAvailable] = true;
           dm[dataSource].json = e.result;
           dm[adaptor] = new JsonAdaptor();
-        } );
+        });
       }
     }
   }
@@ -1818,7 +1818,8 @@ public pdfExportComplete: EmitType<PdfExportCompleteArgs>;
       this.trigger(events.detailDataBound, args);
     };
     this.grid.actionBegin = (args: ActionEventArgs): Deferred| void => {
-      if (args.requestType === 'sorting' && args.target && args.target.parentElement.classList.contains('e-hierarchycheckbox')) {
+      if (args.requestType === 'sorting' && args.target && args.target.parentElement &&
+            args.target.parentElement.classList.contains('e-hierarchycheckbox')) {
         args.cancel = true;
       }
       let requestType: string = getObject('requestType', args);

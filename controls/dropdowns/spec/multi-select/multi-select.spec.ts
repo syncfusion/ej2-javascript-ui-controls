@@ -5200,6 +5200,45 @@ describe('MultiSelect', () => {
             (<any>listObj).focusOut();
         });
     });
+    describe('Bootstrap model placeholder length', () => {
+        let listObj: MultiSelect;
+        let element: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'multiselect', attrs: { type: "text" } });
+        let datasource: { [key: string]: Object }[] =  [
+            { id: 'list1', text: 'JAVA' },
+            { id: 'list2', text: 'C#' },
+            { id: 'list3', text: 'C++' },
+            { id: 'list4', text: '.NET' },
+            { id: 'list5', text: 'Oracle' },
+            { id: 'list6', text: 'GO' },
+            { id: 'list7', text: 'Haskell' },
+            { id: 'list8', text: 'Racket' },
+            { id: 'list8', text: 'F#' }];
+        beforeAll(() => {
+            document.body.appendChild(element);
+            listObj = new MultiSelect({
+                dataSource: datasource,
+                fields: { text: "text", value: "id" },
+                placeholder: 'My placeholder 12345566789',
+                width: 100,
+                showDropDownIcon: true
+            });
+            listObj.appendTo(element);
+        });
+        afterAll(() => {
+            if (element) {
+                listObj.destroy();
+                element.remove();
+            }
+        });
+        it('Lengthy placeholder', () => {
+            listObj = new MultiSelect({ hideSelectedItem: false, dataSource: datasource2, 
+                placeholder: "select counties Select or search maximum 8 players" , showDropDownIcon: true , width: 300 });
+            listObj.appendTo(element);
+            listObj.element.parentElement.setAttribute('style','display:none');
+            expect((listObj as any).searchWrapper.classList.contains('e-search-custom-width')).toBe(true);
+            listObj.destroy();
+        });
+    });
     describe('EJ2-13148 - Multiselect key navigation is not working with Home , Endkeys', () => {
         let listObj: MultiSelect;
         let element: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'multiselect', attrs: { type: "text" } });
@@ -6217,6 +6256,62 @@ describe('MultiSelect', () => {
             (<any>listObj).renderPopup();
             (<any>listObj).selectAll(true);
             expect((<any>listObj).value.length === (<any>listObj).liCollections.length).toBe(true);
+            listObj.destroy();
+        });
+    });
+    describe('Multiselect- Hidepopup', () => {
+        let listObj: MultiSelect;
+        let divElement: HTMLElement = createElement('div', { id: 'divElement' });
+        divElement.style.height = '900px';
+        let element: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'multiselect', attrs: { 'type': 'text' } });
+        let empList: { [key: string]: Object }[] = [
+            { "Name": "Australia", "Code": "AU", "Start": "A" },
+            { "Name": "Bermuda", "Code": "BM", "Start": "B" },
+            { "Name": "Canada", "Code": "CA", "Start": "C" },
+            { "Name": "Cameroon", "Code": "CM", "Start": "C" },
+            { "Name": "Denmark", "Code": "DK", "Start": "D" },
+            { "Name": "France", "Code": "FR", "Start": "F" },
+            { "Name": "Finland", "Code": "FI", "Start": "F" },
+            { "Name": "Germany", "Code": "DE", "Start": "G" },
+            { "Name": "Greenland", "Code": "GL", "Start": "G" },
+            { "Name": "Hong Kong", "Code": "HK", "Start": "H" },
+            { "Name": "India", "Code": "IN", "Start": "I" },
+            { "Name": "Italy", "Code": "IT", "Start": "I" },
+            { "Name": "Japan", "Code": "JP", "Start": "J" },
+            { "Name": "Mexico", "Code": "MX", "Start": "M" },
+            { "Name": "Norway", "Code": "NO", "Start": "N" },
+            { "Name": "Poland", "Code": "PL", "Start": "P" },
+            { "Name": "Switzerland", "Code": "CH", "Start": "S" },
+            { "Name": "United Kingdom", "Code": "GB", "Start": "U" },
+            { "Name": "United States", "Code": "US", "Start": "U" }
+        ];
+        beforeAll(() => {
+            document.body.innerHTML = '';
+            document.body.appendChild(element);
+        });
+        afterAll(() => {
+            if (element) {
+                listObj.destroy();
+                element.remove();
+            }
+        });
+        it('when crosses view port', () => {
+            let listObj: MultiSelect = new MultiSelect({
+                dataSource: empList,
+                fields: { text: 'Name', value: 'Name', groupBy: 'Start' },
+                showSelectAll: true,
+                mode : 'CheckBox',
+                width: '250px',
+                placeholder: 'Select an employee',
+                popupWidth: '250px',
+                popupHeight: '300px',
+                enableGroupCheckBox: true,
+            });
+            listObj.appendTo(element);
+            listObj.showPopup();
+            document.body.appendChild(divElement);
+            scrollBy({top: 500, behavior: 'smooth'});
+            (listObj as any).popupObj.trigger('targetExitViewport');
             listObj.destroy();
         });
     });

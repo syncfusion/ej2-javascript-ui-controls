@@ -277,6 +277,7 @@ describe('Table creation', () => {
         beforeAll(() => {
             rteObj = renderRTE({
                 height: 400,
+                placeholder: 'Insert table here',
                 toolbarSettings: {
                     items: ['Bold', 'CreateTable']
                 },
@@ -297,6 +298,7 @@ describe('Table creation', () => {
         });
         it('table creation - dialog', () => {
             expect(rteObj.element.querySelectorAll('.e-rte-content').length).toBe(1);
+            expect((rteObj.element.querySelectorAll('.rte-placeholder')[0] as HTMLElement).style.display).toBe('block');
             (<HTMLElement>rteEle.querySelectorAll(".e-toolbar-item")[1] as HTMLElement).click();
             let target: HTMLElement = (rteObj as any).tableModule.popupObj.element.querySelector('.e-insert-table-btn');
             let clickEvent: any = document.createEvent("MouseEvents");
@@ -320,6 +322,7 @@ describe('Table creation', () => {
             clickEvent.initEvent("mousedown", false, true);
             reCol1.dispatchEvent(clickEvent);
             (rteObj.tableModule as any).resizeStart(clickEvent);
+            expect((rteObj.element.querySelectorAll('.rte-placeholder')[0] as HTMLElement).style.display).toBe('none');
         });
         it('Percentage Check-While resizing', () => {
             let table: HTMLElement = rteObj.contentModule.getEditPanel().querySelector('table') as HTMLElement;

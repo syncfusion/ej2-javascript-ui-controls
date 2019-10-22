@@ -212,6 +212,58 @@
   width: auto;
 }
 
+// bootstrap modal search wrapper width
+.e-multiselect .e-multi-select-wrapper.e-down-icon .e-searcher.e-search-custom-width {
+  width: $ddl-search-wrapper-width;
+}
+
+.e-bigger .e-multiselect .e-multi-select-wrapper.e-down-icon .e-searcher.e-search-custom-width,
+.e-bigger.e-multiselect .e-multi-select-wrapper.e-down-icon .e-searcher.e-search-custom-width {
+  width: $ddl-bigger-search-wrapper-width;
+}
+
+.e-small .e-multiselect .e-multi-select-wrapper.e-down-icon .e-searcher.e-search-custom-width,
+.e-small.e-multiselect .e-multi-select-wrapper.e-down-icon .e-searcher.e-search-custom-width {
+  width: $ddl-small-search-wrapper-width;
+}
+
+.e-bigger.e-small .e-multiselect .e-multi-select-wrapper.e-down-icon .e-searcher.e-search-custom-width,
+.e-bigger.e-small.e-multiselect .e-multi-select-wrapper.e-down-icon .e-searcher.e-search-custom-width,
+.e-bigger .e-small.e-multiselect .e-multi-select-wrapper.e-down-icon .e-searcher.e-search-custom-width,
+.e-small .e-bigger.e-multiselect .e-multi-select-wrapper.e-down-icon .e-searcher.e-search-custom-width {
+  width: $ddl-bigger-small-search-wrapper-width;
+}
+
+// Outline bootstrap modal search wrapper width
+.e-multiselect.e-outline .e-multi-select-wrapper.e-down-icon .e-searcher.e-search-custom-width {
+  @if $skin-name == 'material' {
+    width: $ddl-search-wrapper-width;
+  }
+}
+
+.e-bigger.e-multiselect.e-outline .e-multi-select-wrapper.e-down-icon .e-searcher.e-search-custom-width,
+.e-bigger .e-multiselect.e-outline .e-multi-select-wrapper.e-down-icon .e-searcher.e-search-custom-width {
+  @if $skin-name == 'material' {
+    width: $ddl-bigger-search-wrapper-width;
+  }
+}
+
+.e-small.e-multiselect.e-outline .e-multi-select-wrapper.e-down-icon .e-searcher.e-search-custom-width,
+.e-small .e-multiselect.e-outline .e-multi-select-wrapper.e-down-icon .e-searcher.e-search-custom-width {
+  @if $skin-name == 'material' {
+    width: $ddl-small-search-wrapper-width;
+  }
+}
+
+.e-bigger.e-small.e-multiselect.e-outline .e-multi-select-wrapper.e-down-icon .e-searcher.e-search-custom-width,
+.e-bigger.e-small .e-multiselect.e-outline .e-multi-select-wrapper.e-down-icon .e-searcher.e-search-custom-width,
+.e-bigger .e-small.e-multiselect.e-outline .e-multi-select-wrapper.e-down-icon .e-searcher.e-search-custom-width,
+.e-small .e-bigger.e-multiselect.e-outline .e-multi-select-wrapper.e-down-icon .e-searcher.e-search-custom-width {
+  @if $skin-name == 'material' {
+    width: $ddl-bigger-small-search-wrapper-width;
+  }
+}
+
 .e-multi-select-wrapper .e-delim-values {
   font-family: $ddl-chip-font-family;
   font-size: $ddl-delim-font-size;
@@ -291,6 +343,7 @@
 
     .e-chips.e-mob-chip.e-chip-selected .e-chips-close {
       margin: 0;
+      margin-right: auto;
     }
 
     .e-searcher {

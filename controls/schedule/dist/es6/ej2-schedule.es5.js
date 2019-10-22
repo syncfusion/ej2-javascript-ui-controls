@@ -225,6 +225,24 @@ function removeChildren(element) {
         element.removeChild(element.firstElementChild);
     }
 }
+function addLocalOffset(date) {
+    if (isBlazor()) {
+        var dateValue = new Date(+date - (date.getTimezoneOffset() * 60000));
+        return dateValue;
+    }
+    return date;
+}
+function addLocalOffsetToEvent(event, eventFields) {
+    if (isBlazor()) {
+        var eventObj = extend({}, event, null, true);
+        eventObj[eventFields.startTime] =
+            new Date(+event[eventFields.startTime] - ((eventObj[eventFields.startTime]).getTimezoneOffset() * 60000));
+        eventObj[eventFields.endTime] =
+            new Date(+event[eventFields.endTime] - ((eventObj[eventFields.endTime]).getTimezoneOffset() * 60000));
+        return eventObj;
+    }
+    return event;
+}
 
 /**
  * CSS Constants
@@ -706,7 +724,9 @@ var HeaderRenderer = /** @__PURE__ @class */ (function () {
     HeaderRenderer.prototype.renderToolbar = function () {
         var items = this.getItems();
         var args = { requestType: 'toolbarItemRendering', items: items };
-        this.parent.trigger(actionBegin, args);
+        if (!isBlazor()) {
+            this.parent.trigger(actionBegin, args);
+        }
         this.toolbarObj = new Toolbar({
             items: args.items,
             overflowMode: 'Popup',
@@ -731,7 +751,9 @@ var HeaderRenderer = /** @__PURE__ @class */ (function () {
         if (this.toolbarObj) {
             var items = this.getItems();
             var args = { requestType: 'toolbarItemRendering', items: items };
-            this.parent.trigger(actionBegin, args);
+            if (!isBlazor()) {
+                this.parent.trigger(actionBegin, args);
+            }
             this.toolbarObj.items = args.items;
             this.toolbarObj.dataBind();
             this.parent.trigger(actionComplete, {
@@ -1191,7 +1213,9 @@ var ScheduleTouch = /** @__PURE__ @class */ (function () {
         }
         if (e.scrollDirection === 'Left' || e.scrollDirection === 'Right') {
             var args = { requestType: 'dateNavigate', cancel: false, event: e.originalEvent };
-            this.parent.trigger(actionBegin, args);
+            if (!isBlazor()) {
+                this.parent.trigger(actionBegin, args);
+            }
             if (args.cancel) {
                 return;
             }
@@ -4829,7 +4853,8 @@ var EventBase = /** @__PURE__ @class */ (function () {
             var scheduleId = this.parent.element.id + '_';
             var viewName = this.parent.activeViewOptions.eventTemplateName;
             var templateId = scheduleId + viewName + 'eventTemplate';
-            templateElement = this.parent.getAppointmentTemplate()(record, this.parent, 'eventTemplate', templateId, false);
+            var templateArgs = addLocalOffsetToEvent(record, this.parent.eventFields);
+            templateElement = this.parent.getAppointmentTemplate()(templateArgs, this.parent, 'eventTemplate', templateId, false);
         }
         else {
             var appointmentSubject = createElement('div', {
@@ -5534,7 +5559,8 @@ var QuickPopups = /** @__PURE__ @class */ (function () {
         if (this.isQuickTemplate(headerType) && this.parent.quickInfoTemplates.header) {
             var headerArgs = extend({}, headerData, { elementType: headerType.toLowerCase() }, true);
             var templateId = this.parent.element.id;
-            var headerTemp = this.parent.getQuickInfoTemplatesHeader()(headerArgs, this.parent, 'header', templateId + '_headerTemplate', false);
+            var templateArgs = addLocalOffsetToEvent(headerArgs, this.parent.eventFields);
+            var headerTemp = this.parent.getQuickInfoTemplatesHeader()(templateArgs, this.parent, 'header', templateId + '_headerTemplate', false);
             append([].slice.call(headerTemp), headerTemplate);
         }
         else {
@@ -5564,7 +5590,8 @@ var QuickPopups = /** @__PURE__ @class */ (function () {
         if (this.isQuickTemplate(type) && this.parent.quickInfoTemplates.content) {
             var contentArgs = extend({}, data, { elementType: type.toLowerCase() }, true);
             var templateId = this.parent.element.id;
-            var contentTemp = this.parent.getQuickInfoTemplatesContent()(contentArgs, this.parent, 'content', templateId + '_contentTemplate', false);
+            var templateArgs = addLocalOffsetToEvent(contentArgs, this.parent.eventFields);
+            var contentTemp = this.parent.getQuickInfoTemplatesContent()(templateArgs, this.parent, 'content', templateId + '_contentTemplate', false);
             append([].slice.call(contentTemp), contentTemplate);
         }
         else {
@@ -5624,7 +5651,8 @@ var QuickPopups = /** @__PURE__ @class */ (function () {
         if (this.isQuickTemplate(footerType) && this.parent.quickInfoTemplates.footer) {
             var footerArgs = extend({}, footerData, { elementType: footerType.toLowerCase() }, true);
             var templateId = this.parent.element.id;
-            var footerTemp = this.parent.getQuickInfoTemplatesFooter()(footerArgs, this.parent, 'footer', templateId + '_footerTemplate', false);
+            var templateArgs = addLocalOffsetToEvent(footerArgs, this.parent.eventFields);
+            var footerTemp = this.parent.getQuickInfoTemplatesFooter()(templateArgs, this.parent, 'footer', templateId + '_footerTemplate', false);
             append([].slice.call(footerTemp), footerTemplate);
         }
         else {
@@ -6326,7 +6354,8 @@ var EventTooltip = /** @__PURE__ @class */ (function () {
         if (!isNullOrUndefined(this.parent.eventSettings.tooltipTemplate)) {
             var contentContainer = createElement('div');
             var templateId = this.parent.element.id + '_tooltipTemplate';
-            var tooltipTemplate = this.parent.getEventTooltipTemplate()(record, this.parent, 'tooltipTemplate', templateId, false);
+            var templateArgs = addLocalOffsetToEvent(record, this.parent.eventFields);
+            var tooltipTemplate = this.parent.getEventTooltipTemplate()(templateArgs, this.parent, 'tooltipTemplate', templateId, false);
             append(tooltipTemplate, contentContainer);
             this.setContent(contentContainer);
         }
@@ -9696,16 +9725,20 @@ var Crud = /** @__PURE__ @class */ (function () {
             }
             var addEvents = (eventData instanceof Array) ? eventData : [eventData];
             var args = {
-                requestType: 'eventCreate', cancel: false, data: addEvents,
+                requestType: 'eventCreate', cancel: false,
                 addedRecords: addEvents, changedRecords: [], deletedRecords: []
             };
+            if (!isBlazor()) {
+                args.data = addEvents;
+            }
             this.parent.trigger(actionBegin, args, function (addArgs) {
+                _this.serializeData(addArgs.addedRecords);
                 if (!addArgs.cancel) {
                     var fields = _this.parent.eventFields;
                     var editParms = { addedRecords: [], changedRecords: [], deletedRecords: [] };
                     var promise = void 0;
-                    if (eventData instanceof Array) {
-                        for (var _i = 0, _a = eventData; _i < _a.length; _i++) {
+                    if (addArgs.addedRecords instanceof Array) {
+                        for (var _i = 0, _a = addArgs.addedRecords; _i < _a.length; _i++) {
                             var event_1 = _a[_i];
                             editParms.addedRecords.push(_this.parent.eventBase.processTimezone(event_1, true));
                         }
@@ -9713,12 +9746,12 @@ var Crud = /** @__PURE__ @class */ (function () {
                         promise = _this.parent.dataModule.dataManager.saveChanges(editParms, fields.id, _this.getTable(), _this.getQuery());
                     }
                     else {
-                        var event_2 = _this.parent.eventBase.processTimezone(eventData, true);
+                        var event_2 = _this.parent.eventBase.processTimezone(addArgs.addedRecords, true);
                         editParms.addedRecords.push(event_2);
                         promise = _this.parent.dataModule.dataManager.insert(event_2, _this.getTable(), _this.getQuery());
                     }
                     var crudArgs = {
-                        requestType: 'eventCreated', cancel: false, data: eventData, promise: promise, editParms: editParms
+                        requestType: 'eventCreated', cancel: false, data: addArgs.addedRecords, promise: promise, editParms: editParms
                     };
                     _this.refreshData(crudArgs);
                 }
@@ -9749,24 +9782,28 @@ var Crud = /** @__PURE__ @class */ (function () {
             else {
                 var updateEvents = (eventData instanceof Array) ? eventData : [eventData];
                 var args = {
-                    requestType: 'eventChange', cancel: false, data: eventData,
+                    requestType: 'eventChange', cancel: false,
                     addedRecords: [], changedRecords: updateEvents, deletedRecords: []
                 };
+                if (!isBlazor()) {
+                    args.data = eventData;
+                }
                 this.parent.trigger(actionBegin, args, function (saveArgs) {
+                    _this.serializeData(saveArgs.changedRecords);
                     if (!saveArgs.cancel) {
                         var promise = void 0;
                         var fields = _this.parent.eventFields;
                         var editParms = { addedRecords: [], changedRecords: [], deletedRecords: [] };
-                        if (eventData instanceof Array) {
-                            for (var _i = 0, eventData_1 = eventData; _i < eventData_1.length; _i++) {
-                                var event_3 = eventData_1[_i];
+                        if (saveArgs.changedRecords instanceof Array) {
+                            for (var _i = 0, _a = saveArgs.changedRecords; _i < _a.length; _i++) {
+                                var event_3 = _a[_i];
                                 editParms.changedRecords.push(_this.parent.eventBase.processTimezone(event_3, true));
                             }
                             // tslint:disable-next-line:max-line-length
                             promise = _this.parent.dataModule.dataManager.saveChanges(editParms, fields.id, _this.getTable(), _this.getQuery());
                         }
                         else {
-                            var event_4 = _this.parent.eventBase.processTimezone(eventData, true);
+                            var event_4 = _this.parent.eventBase.processTimezone(saveArgs.changedRecords, true);
                             editParms.changedRecords.push(event_4);
                             // tslint:disable-next-line:max-line-length
                             promise = _this.parent.dataModule.dataManager.update(fields.id, event_4, _this.getTable(), _this.getQuery());
@@ -9784,55 +9821,59 @@ var Crud = /** @__PURE__ @class */ (function () {
         var _this = this;
         if (this.parent.eventSettings.allowDeleting) {
             this.parent.currentAction = action;
-            var deleteEvents_1 = [];
+            var deleteEvents = [];
             if (typeof eventData === 'string' || typeof eventData === 'number') {
-                deleteEvents_1 = this.parent.eventsData.filter(function (eventObj) {
+                deleteEvents = this.parent.eventsData.filter(function (eventObj) {
                     return eventObj[_this.parent.eventFields.id] === eventData;
                 });
             }
             else {
-                deleteEvents_1 = (eventData instanceof Array ? eventData : [eventData]);
+                deleteEvents = (eventData instanceof Array ? eventData : [eventData]);
             }
             if (action) {
                 switch (action) {
                     case 'Delete':
-                        this.processEventDelete(deleteEvents_1);
+                        this.processEventDelete(deleteEvents);
                         break;
                     case 'DeleteOccurrence':
-                        this.processOccurrences(deleteEvents_1, action);
+                        this.processOccurrences(deleteEvents, action);
                         break;
                     case 'DeleteFollowingEvents':
-                        this.processFollowSeries(deleteEvents_1, action);
+                        this.processFollowSeries(deleteEvents, action);
                         break;
                     case 'DeleteSeries':
-                        this.processEntireSeries(deleteEvents_1, action);
+                        this.processEntireSeries(deleteEvents, action);
                         break;
                 }
             }
             else {
                 var args = {
-                    requestType: 'eventRemove', cancel: false, data: eventData,
-                    addedRecords: [], changedRecords: [], deletedRecords: deleteEvents_1
+                    requestType: 'eventRemove', cancel: false,
+                    addedRecords: [], changedRecords: [], deletedRecords: deleteEvents
                 };
+                if (!isBlazor()) {
+                    args.data = eventData;
+                }
                 this.parent.trigger(actionBegin, args, function (deleteArgs) {
+                    _this.serializeData(deleteArgs.deletedRecords);
                     if (!deleteArgs.cancel) {
                         var promise = void 0;
                         var fields = _this.parent.eventFields;
                         var editParms = { addedRecords: [], changedRecords: [], deletedRecords: [] };
-                        if (deleteEvents_1.length > 1) {
-                            for (var _i = 0, deleteEvents_2 = deleteEvents_1; _i < deleteEvents_2.length; _i++) {
-                                var eventObj = deleteEvents_2[_i];
+                        if (deleteArgs.deletedRecords.length > 1) {
+                            for (var _i = 0, _a = deleteArgs.deletedRecords; _i < _a.length; _i++) {
+                                var eventObj = _a[_i];
                                 editParms.deletedRecords.push(eventObj);
                             }
                             // tslint:disable-next-line:max-line-length
                             promise = _this.parent.dataModule.dataManager.saveChanges(editParms, fields.id, _this.getTable(), _this.getQuery());
                         }
                         else {
-                            editParms.deletedRecords.push(deleteEvents_1[0]);
+                            editParms.deletedRecords.push(deleteArgs.deletedRecords[0]);
                             // tslint:disable-next-line:max-line-length
-                            promise = _this.parent.dataModule.dataManager.remove(fields.id, deleteEvents_1[0], _this.getTable(), _this.getQuery());
+                            promise = _this.parent.dataModule.dataManager.remove(fields.id, deleteArgs.deletedRecords[0], _this.getTable(), _this.getQuery());
                         }
-                        _this.parent.eventBase.selectWorkCellByTime(deleteEvents_1);
+                        _this.parent.eventBase.selectWorkCellByTime(deleteArgs.deletedRecords);
                         var crudArgs = {
                             requestType: 'eventRemoved', cancel: false, data: deleteArgs.data, promise: promise, editParms: editParms
                         };
@@ -9846,8 +9887,8 @@ var Crud = /** @__PURE__ @class */ (function () {
         var _this = this;
         var occurenceData = [];
         if (eventData instanceof Array) {
-            for (var _i = 0, eventData_2 = eventData; _i < eventData_2.length; _i++) {
-                var event_5 = eventData_2[_i];
+            for (var _i = 0, eventData_1 = eventData; _i < eventData_1.length; _i++) {
+                var event_5 = eventData_1[_i];
                 occurenceData.push({ occurrence: event_5, parent: this.getParentEvent(event_5) });
             }
         }
@@ -9856,16 +9897,20 @@ var Crud = /** @__PURE__ @class */ (function () {
         }
         var updateEvents = (eventData instanceof Array) ? eventData : [eventData];
         var args = {
-            requestType: 'eventChange', cancel: false, data: occurenceData,
+            requestType: action === 'EditOccurrence' ? 'eventChange' : 'eventRemove', cancel: false,
             addedRecords: [], changedRecords: updateEvents, deletedRecords: []
         };
+        if (!isBlazor()) {
+            args.data = occurenceData;
+        }
         this.parent.trigger(actionBegin, args, function (occurenceArgs) {
+            _this.serializeData(occurenceArgs.changedRecords);
             if (!occurenceArgs.cancel) {
                 var fields = _this.parent.eventFields;
                 var editParms = { addedRecords: [], changedRecords: [], deletedRecords: [] };
                 var occurrenceEvents = (occurenceData instanceof Array ? occurenceData : [occurenceData]);
                 var _loop_1 = function (a, count) {
-                    var childEvent = updateEvents[a];
+                    var childEvent = occurenceArgs.changedRecords[a];
                     var parentEvent = occurrenceEvents[a].parent;
                     var parentException = parentEvent[fields.recurrenceException];
                     switch (action) {
@@ -9896,14 +9941,15 @@ var Crud = /** @__PURE__ @class */ (function () {
                             break;
                     }
                 };
-                for (var a = 0, count = updateEvents.length; a < count; a++) {
+                for (var a = 0, count = occurenceArgs.changedRecords.length; a < count; a++) {
                     _loop_1(a, count);
                 }
                 // tslint:disable-next-line:max-line-length
                 var promise = _this.parent.dataModule.dataManager.saveChanges(editParms, fields.id, _this.getTable(), _this.getQuery());
-                _this.parent.eventBase.selectWorkCellByTime(updateEvents);
+                _this.parent.eventBase.selectWorkCellByTime(occurenceArgs.changedRecords);
                 var crudArgs = {
-                    requestType: 'eventChanged', cancel: false, data: occurenceArgs.data, promise: promise, editParms: editParms
+                    requestType: action === 'EditOccurrence' ? 'eventChanged' : 'eventRemoved',
+                    cancel: false, data: occurenceArgs.data, promise: promise, editParms: editParms
                 };
                 _this.refreshData(crudArgs);
             }
@@ -9913,8 +9959,8 @@ var Crud = /** @__PURE__ @class */ (function () {
         var _this = this;
         var followData = [];
         if (eventData instanceof Array) {
-            for (var _i = 0, eventData_3 = eventData; _i < eventData_3.length; _i++) {
-                var event_6 = eventData_3[_i];
+            for (var _i = 0, eventData_2 = eventData; _i < eventData_2.length; _i++) {
+                var event_6 = eventData_2[_i];
                 followData.push({ occurrence: event_6, parent: this.getParentEvent(event_6) });
             }
         }
@@ -9923,16 +9969,20 @@ var Crud = /** @__PURE__ @class */ (function () {
         }
         var updateFollowEvents = (eventData instanceof Array) ? eventData : [eventData];
         var args = {
-            requestType: 'eventChange', cancel: false, data: followData,
+            requestType: action === 'EditFollowingEvents' ? 'eventChange' : 'eventRemove', cancel: false,
             addedRecords: [], changedRecords: updateFollowEvents, deletedRecords: []
         };
+        if (!isBlazor()) {
+            args.data = followData;
+        }
         this.parent.trigger(actionBegin, args, function (followArgs) {
+            _this.serializeData(followArgs.changedRecords);
             if (!followArgs.cancel) {
                 var fields_1 = _this.parent.eventFields;
                 var editParms = { addedRecords: [], changedRecords: [], deletedRecords: [] };
                 var followEvents = (followData instanceof Array ? followData : [followData]);
                 var _loop_2 = function (a, count) {
-                    var childEvent = updateFollowEvents[a];
+                    var childEvent = followArgs.changedRecords[a];
                     var parentEvent = followEvents[a].parent;
                     var followData_1 = _this.parent.eventBase.getEventCollections(parentEvent, childEvent);
                     switch (action) {
@@ -9970,14 +10020,15 @@ var Crud = /** @__PURE__ @class */ (function () {
                             break;
                     }
                 };
-                for (var a = 0, count = updateFollowEvents.length; a < count; a++) {
+                for (var a = 0, count = followArgs.changedRecords.length; a < count; a++) {
                     _loop_2(a, count);
                 }
                 // tslint:disable-next-line:max-line-length
                 var promise = _this.parent.dataModule.dataManager.saveChanges(editParms, fields_1.id, _this.getTable(), _this.getQuery());
-                _this.parent.eventBase.selectWorkCellByTime(updateFollowEvents);
+                _this.parent.eventBase.selectWorkCellByTime(followArgs.changedRecords);
                 var crudArgs = {
-                    requestType: 'eventChanged', cancel: false, data: followArgs.data, promise: promise, editParms: editParms
+                    requestType: action === 'EditFollowingEvents' ? 'eventChanged' : 'eventRemoved',
+                    cancel: false, data: followArgs.data, promise: promise, editParms: editParms
                 };
                 _this.refreshData(crudArgs);
             }
@@ -9987,8 +10038,8 @@ var Crud = /** @__PURE__ @class */ (function () {
         var _this = this;
         var seriesData = [];
         if (eventData instanceof Array) {
-            for (var _i = 0, eventData_4 = eventData; _i < eventData_4.length; _i++) {
-                var event_7 = eventData_4[_i];
+            for (var _i = 0, eventData_3 = eventData; _i < eventData_3.length; _i++) {
+                var event_7 = eventData_3[_i];
                 seriesData.push(this.getParentEvent(event_7, true));
             }
         }
@@ -9997,16 +10048,20 @@ var Crud = /** @__PURE__ @class */ (function () {
         }
         var updateSeriesEvents = (eventData instanceof Array) ? eventData : [eventData];
         var args = {
-            requestType: 'eventChange', cancel: false, data: seriesData,
+            requestType: action === 'EditSeries' ? 'eventChange' : 'eventRemove', cancel: false,
             addedRecords: [], changedRecords: updateSeriesEvents, deletedRecords: []
         };
+        if (!isBlazor()) {
+            args.data = seriesData;
+        }
         this.parent.trigger(actionBegin, args, function (seriesArgs) {
+            _this.serializeData(seriesArgs.changedRecords);
             if (!seriesArgs.cancel) {
                 var fields_2 = _this.parent.eventFields;
                 var editParms = { addedRecords: [], changedRecords: [], deletedRecords: [] };
                 var seriesEvents = (seriesData instanceof Array ? seriesData : [seriesData]);
                 var _loop_3 = function (a, count) {
-                    var childEvent = updateSeriesEvents[a];
+                    var childEvent = seriesArgs.changedRecords[a];
                     var parentEvent = seriesEvents[a];
                     var eventCollections = _this.parent.eventBase.getEventCollections(parentEvent);
                     var deletedEvents = eventCollections.follow.concat(eventCollections.occurrence);
@@ -10035,14 +10090,15 @@ var Crud = /** @__PURE__ @class */ (function () {
                             break;
                     }
                 };
-                for (var a = 0, count = updateSeriesEvents.length; a < count; a++) {
+                for (var a = 0, count = seriesArgs.changedRecords.length; a < count; a++) {
                     _loop_3(a, count);
                 }
                 // tslint:disable-next-line:max-line-length
                 var promise = _this.parent.dataModule.dataManager.saveChanges(editParms, fields_2.id, _this.getTable(), _this.getQuery());
-                _this.parent.eventBase.selectWorkCellByTime(updateSeriesEvents);
+                _this.parent.eventBase.selectWorkCellByTime(seriesArgs.changedRecords);
                 var crudArgs = {
-                    requestType: 'eventChanged', cancel: false, data: seriesArgs.data, promise: promise, editParms: editParms
+                    requestType: action === 'EditSeries' ? 'eventChanged' : 'eventRemoved',
+                    cancel: false, data: seriesArgs.data, promise: promise, editParms: editParms
                 };
                 _this.refreshData(crudArgs);
             }
@@ -10051,8 +10107,8 @@ var Crud = /** @__PURE__ @class */ (function () {
     Crud.prototype.processEventDelete = function (eventData) {
         var _this = this;
         var deleteData = [];
-        for (var _i = 0, eventData_5 = eventData; _i < eventData_5.length; _i++) {
-            var eventObj = eventData_5[_i];
+        for (var _i = 0, eventData_4 = eventData; _i < eventData_4.length; _i++) {
+            var eventObj = eventData_4[_i];
             if (eventObj[this.parent.eventFields.recurrenceRule]) {
                 deleteData.push({ occurrence: eventObj, parent: this.getParentEvent(eventObj) });
             }
@@ -10061,21 +10117,25 @@ var Crud = /** @__PURE__ @class */ (function () {
             }
         }
         var args = {
-            requestType: 'eventRemove', cancel: false, data: deleteData,
+            requestType: 'eventRemove', cancel: false,
             addedRecords: [], changedRecords: [], deletedRecords: eventData
         };
+        if (!isBlazor()) {
+            args.data = deleteData;
+        }
         this.parent.trigger(actionBegin, args, function (deleteArgs) {
+            _this.serializeData(deleteArgs.deletedRecords);
             if (!deleteArgs.cancel) {
                 var fields_3 = _this.parent.eventFields;
                 var editParms = { addedRecords: [], changedRecords: [], deletedRecords: [] };
                 var _loop_4 = function (a, count) {
-                    var isDelete = isNullOrUndefined(eventData[a][_this.parent.eventFields.recurrenceRule]);
+                    var isDelete = isNullOrUndefined(deleteArgs.deletedRecords[a][_this.parent.eventFields.recurrenceRule]);
                     if (!isDelete) {
                         var parentEvent_1 = deleteData[a].parent;
                         var isEdited = editParms.changedRecords.filter(function (obj) {
                             return obj[fields_3.id] === parentEvent_1[fields_3.id];
                         });
-                        var editedDate = eventData[a][fields_3.startTime];
+                        var editedDate = deleteArgs.deletedRecords[a][fields_3.startTime];
                         if (isEdited.length > 0) {
                             var editedData = isEdited[0];
                             editedData[fields_3.recurrenceException] =
@@ -10088,13 +10148,13 @@ var Crud = /** @__PURE__ @class */ (function () {
                         if (isEdited.length === 0) {
                             editParms.changedRecords.push(_this.parent.eventBase.processTimezone(parentEvent_1, true));
                         }
-                        isDelete = (eventData[a][fields_3.id] !== parentEvent_1[fields_3.id]);
+                        isDelete = (deleteArgs.deletedRecords[a][fields_3.id] !== parentEvent_1[fields_3.id]);
                     }
                     if (isDelete) {
-                        editParms.deletedRecords.push(eventData[a]);
+                        editParms.deletedRecords.push(deleteArgs.deletedRecords[a]);
                     }
                 };
-                for (var a = 0, count = eventData.length; a < count; a++) {
+                for (var a = 0, count = deleteArgs.deletedRecords.length; a < count; a++) {
                     _loop_4(a, count);
                 }
                 // tslint:disable-next-line:max-line-length
@@ -10105,6 +10165,16 @@ var Crud = /** @__PURE__ @class */ (function () {
                 _this.refreshData(crudArgs);
             }
         });
+    };
+    Crud.prototype.serializeData = function (eventData) {
+        if (isBlazor()) {
+            var eventFields = this.parent.eventFields;
+            for (var _i = 0, _a = eventData; _i < _a.length; _i++) {
+                var event_8 = _a[_i];
+                event_8[eventFields.startTime] = this.parent.getDateTime(event_8[eventFields.startTime]);
+                event_8[eventFields.endTime] = this.parent.getDateTime(event_8[eventFields.endTime]);
+            }
+        }
     };
     Crud.prototype.getParentEvent = function (event, isParent) {
         if (isParent === void 0) { isParent = false; }
@@ -13923,7 +13993,8 @@ var MonthEvent = /** @__PURE__ @class */ (function (_super) {
             var scheduleId = this.parent.element.id + '_';
             var viewName = this.parent.activeViewOptions.eventTemplateName;
             var templateId = scheduleId + viewName + 'eventTemplate';
-            templateElement = this.parent.getAppointmentTemplate()(eventObj, this.parent, 'eventTemplate', templateId, false);
+            var templateArgs = addLocalOffsetToEvent(eventObj, this.parent.eventFields);
+            templateElement = this.parent.getAppointmentTemplate()(templateArgs, this.parent, 'eventTemplate', templateId, false);
         }
         else {
             var eventLocation = (record[this.fields.location] || this.parent.eventSettings.fields.location.default || '');
@@ -15284,7 +15355,8 @@ var VerticalEvent = /** @__PURE__ @class */ (function (_super) {
             var elementId = this.parent.element.id + '_';
             var viewName = this.parent.activeViewOptions.eventTemplateName;
             var templateId = elementId + viewName + 'eventTemplate';
-            templateElement = this.parent.getAppointmentTemplate()(record, this.parent, 'eventTemplate', templateId, false);
+            var templateArgs = addLocalOffsetToEvent(record, this.parent.eventFields);
+            templateElement = this.parent.getAppointmentTemplate()(templateArgs, this.parent, 'eventTemplate', templateId, false);
         }
         else {
             var appointmentSubject = createElement('div', { className: SUBJECT_CLASS, innerHTML: recordSubject });
@@ -17307,11 +17379,12 @@ var VerticalView = /** @__PURE__ @class */ (function (_super) {
         var wrapper = createElement('div');
         var templateName = '';
         var templateId = this.parent.element.id + '_';
+        var dateValue = addLocalOffset(date);
         switch (type) {
             case 'dateHeader':
                 if (this.parent.activeViewOptions.dateHeaderTemplate) {
                     templateName = 'dateHeaderTemplate';
-                    var args = { date: date, type: type };
+                    var args = { date: dateValue, type: type };
                     var viewName = this.parent.activeViewOptions.dateHeaderTemplateName;
                     cntEle =
                         this.parent.getDateHeaderTemplate()(args, this.parent, templateName, templateId + viewName + templateName, false);
@@ -17327,7 +17400,7 @@ var VerticalView = /** @__PURE__ @class */ (function (_super) {
             case 'majorSlot':
                 if (this.parent.activeViewOptions.timeScale.majorSlotTemplate) {
                     templateName = 'majorSlotTemplate';
-                    var args = { date: date, type: type };
+                    var args = { date: dateValue, type: type };
                     cntEle =
                         this.parent.getMajorSlotTemplate()(args, this.parent, templateName, templateId + templateName, false);
                 }
@@ -17339,7 +17412,7 @@ var VerticalView = /** @__PURE__ @class */ (function (_super) {
             case 'minorSlot':
                 if (this.parent.activeViewOptions.timeScale.minorSlotTemplate) {
                     templateName = 'minorSlotTemplate';
-                    var args = { date: date, type: type };
+                    var args = { date: dateValue, type: type };
                     cntEle =
                         this.parent.getMinorSlotTemplate()(args, this.parent, templateName, templateId + templateName, false);
                 }
@@ -17352,7 +17425,7 @@ var VerticalView = /** @__PURE__ @class */ (function (_super) {
                 if (this.parent.activeViewOptions.cellTemplate) {
                     var viewName = this.parent.activeViewOptions.cellTemplateName;
                     templateName = 'cellTemplate';
-                    var args = { date: date, type: type, groupIndex: groupIndex };
+                    var args = { date: dateValue, type: type, groupIndex: groupIndex };
                     cntEle =
                         this.parent.getCellTemplate()(args, this.parent, templateName, templateId + viewName + templateName, false);
                 }
@@ -17601,7 +17674,8 @@ var VerticalView = /** @__PURE__ @class */ (function (_super) {
         }
         addClass([ntd], clsName);
         if (this.parent.activeViewOptions.cellTemplate) {
-            var args_1 = { date: cellDate, type: type, groupIndex: tdData.groupIndex };
+            var dateValue = addLocalOffset(cellDate);
+            var args_1 = { date: dateValue, type: type, groupIndex: tdData.groupIndex };
             var scheduleId = this.parent.element.id + '_';
             var viewName = this.parent.activeViewOptions.cellTemplateName;
             var templateId = scheduleId + viewName + 'cellTemplate';
@@ -18109,7 +18183,8 @@ var Month = /** @__PURE__ @class */ (function (_super) {
             addClass([tdEle], DATE_HEADER_CLASS);
             tdEle.setAttribute('data-date', td.date.getTime().toString());
             if (this.parent.activeViewOptions.dateHeaderTemplate) {
-                var cellArgs = { date: td.date, type: td.type };
+                var dateValue = addLocalOffset(td.date);
+                var cellArgs = { date: dateValue, type: td.type };
                 var elementId = this.parent.element.id + '_';
                 var viewName = this.parent.activeViewOptions.dateHeaderTemplateName;
                 var templateId = elementId + viewName + 'dateHeaderTemplate';
@@ -18260,7 +18335,8 @@ var Month = /** @__PURE__ @class */ (function (_super) {
         }
         this.renderDateHeaderElement(data, ntd);
         if (this.parent.activeViewOptions.cellTemplate) {
-            var args_1 = { date: data.date, type: type, groupIndex: data.groupIndex };
+            var dateValue = addLocalOffset(data.date);
+            var args_1 = { date: dateValue, type: type, groupIndex: data.groupIndex };
             var scheduleId = this.parent.element.id + '_';
             var viewName = this.parent.activeViewOptions.cellTemplateName;
             var templateId = scheduleId + viewName + 'cellTemplate';
@@ -18277,7 +18353,8 @@ var Month = /** @__PURE__ @class */ (function (_super) {
         }
         var dateHeader = createElement('div', { className: DATE_HEADER_CLASS });
         if (this.parent.activeViewOptions.cellHeaderTemplate) {
-            var args = { date: data.date, type: data.type, groupIndex: data.groupIndex };
+            var dateValue = addLocalOffset(data.date);
+            var args = { date: dateValue, type: data.type, groupIndex: data.groupIndex };
             var scheduleId = this.parent.element.id + '_';
             var viewName = this.parent.activeViewOptions.cellHeaderTemplateName;
             var templateId = scheduleId + viewName + 'cellHeaderTemplate';
@@ -18456,7 +18533,8 @@ var AgendaBase = /** @__PURE__ @class */ (function () {
                     var scheduleId = this_1.parent.element.id + '_';
                     var viewName = this_1.parent.activeViewOptions.eventTemplateName;
                     var templateId = scheduleId + viewName + 'eventTemplate';
-                    templateEle = this_1.parent.getAppointmentTemplate()(listData[li], this_1.parent, 'eventTemplate', templateId, false);
+                    var templateArgs = addLocalOffsetToEvent(listData[li], this_1.parent.eventFields);
+                    templateEle = this_1.parent.getAppointmentTemplate()(templateArgs, this_1.parent, 'eventTemplate', templateId, false);
                     if (!isNullOrUndefined(listData[li][fieldMapping.recurrenceRule])) {
                         var iconClass = (listData[li][fieldMapping.id] === listData[li][fieldMapping.recurrenceID]) ?
                             EVENT_RECURRENCE_ICON_CLASS : EVENT_RECURRENCE_EDIT_ICON_CLASS;
@@ -18715,7 +18793,8 @@ var AgendaBase = /** @__PURE__ @class */ (function () {
         var dateHeader;
         if (this.parent.activeViewOptions.dateHeaderTemplate) {
             dateHeader = createElement('div', { className: AGENDA_HEADER_CLASS });
-            var args = { date: date, type: 'dateHeader' };
+            var dateValue = addLocalOffset(date);
+            var args = { date: dateValue, type: 'dateHeader' };
             var scheduleId = this.parent.element.id + '_';
             var viewName = this.parent.activeViewOptions.dateHeaderTemplateName;
             var templateId = scheduleId + viewName + 'dateHeaderTemplate';
@@ -20063,7 +20142,8 @@ var YearEvent = /** @__PURE__ @class */ (function (_super) {
         var eventObj = extend({}, record, null, true);
         if (this.parent.activeViewOptions.eventTemplate) {
             var templateId = this.parent.element.id + '_' + this.parent.activeViewOptions.eventTemplateName + 'eventTemplate';
-            templateElement = this.parent.getAppointmentTemplate()(eventObj, this.parent, 'eventTemplate', templateId, false);
+            var templateArgs = addLocalOffsetToEvent(eventObj, this.parent.eventFields);
+            templateElement = this.parent.getAppointmentTemplate()(templateArgs, this.parent, 'eventTemplate', templateId, false);
         }
         else {
             var locationEle = (record[this.fields.location] || this.parent.eventSettings.fields.location.default || '');
@@ -21100,5 +21180,5 @@ var Print = /** @__PURE__ @class */ (function () {
  * Export Schedule components
  */
 
-export { Schedule, cellClick, cellDoubleClick, moreEventsClick, select, hover, actionBegin, actionComplete, actionFailure, navigating, renderCell, eventClick, eventRendered, dataBinding, dataBound, popupOpen, popupClose, dragStart, drag, dragStop, resizeStart, resizing, resizeStop, initialLoad, initialEnd, dataReady, eventsLoaded, contentReady, scroll, virtualScroll, scrollUiUpdate, uiUpdate, documentClick, cellMouseDown, WEEK_LENGTH, MS_PER_DAY, MS_PER_MINUTE, getElementHeightFromClass, getTranslateY, getWeekFirstDate, getWeekLastDate, firstDateOfMonth, lastDateOfMonth, getWeekNumber, setTime, resetTime, getDateInMs, getDateCount, addDays, addMonths, addYears, getStartEndHours, getMaxDays, getDaysCount, getDateFromString, getScrollBarWidth, findIndexInData, getOuterHeight, removeChildren, Resize, DragAndDrop, HeaderRenderer, ViewHelper, ViewBase, Day, Week, WorkWeek, Month, Agenda, MonthAgenda, TimelineViews, TimelineMonth, TimelineYear, Timezone, timezoneData, ICalendarExport, ICalendarImport, ExcelExport, Print, RecurrenceEditor, generateSummary, generate, getDateFromRecurrenceDateString, extractObjectFromRule, getCalendarUtil, getRecurrenceStringFromDate, Gregorian, Islamic };
+export { Schedule, cellClick, cellDoubleClick, moreEventsClick, select, hover, actionBegin, actionComplete, actionFailure, navigating, renderCell, eventClick, eventRendered, dataBinding, dataBound, popupOpen, popupClose, dragStart, drag, dragStop, resizeStart, resizing, resizeStop, initialLoad, initialEnd, dataReady, eventsLoaded, contentReady, scroll, virtualScroll, scrollUiUpdate, uiUpdate, documentClick, cellMouseDown, WEEK_LENGTH, MS_PER_DAY, MS_PER_MINUTE, getElementHeightFromClass, getTranslateY, getWeekFirstDate, getWeekLastDate, firstDateOfMonth, lastDateOfMonth, getWeekNumber, setTime, resetTime, getDateInMs, getDateCount, addDays, addMonths, addYears, getStartEndHours, getMaxDays, getDaysCount, getDateFromString, getScrollBarWidth, findIndexInData, getOuterHeight, removeChildren, addLocalOffset, addLocalOffsetToEvent, Resize, DragAndDrop, HeaderRenderer, ViewHelper, ViewBase, Day, Week, WorkWeek, Month, Agenda, MonthAgenda, TimelineViews, TimelineMonth, TimelineYear, Timezone, timezoneData, ICalendarExport, ICalendarImport, ExcelExport, Print, RecurrenceEditor, generateSummary, generate, getDateFromRecurrenceDateString, extractObjectFromRule, getCalendarUtil, getRecurrenceStringFromDate, Gregorian, Islamic };
 //# sourceMappingURL=ej2-schedule.es5.js.map

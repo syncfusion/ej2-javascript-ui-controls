@@ -5,6 +5,22 @@
     display: flex;
   }
 
+  // Hidden element styles
+  .e-float-input.e-input-group.e-control-wrapper.e-date-range-wrapper .e-daterange-hidden,
+  .e-input-group.e-control-wrapper.e-date-range-wrapper .e-daterange-hidden,
+  .e-float-input.e-control-wrapper.e-date-range-wrapper .e-daterange-hidden,
+  .e-float-input.e-input-group.e-control-wrapper.e-date-range-wrapper.e-input-focus .e-daterange-hidden,
+  .e-input-group.e-control-wrapper.e-date-range-wrapper.e-input-focus .e-daterange-hidden,
+  .e-float-input.e-control-wrapper.e-date-range-wrapper.e-input-focus .e-daterange-hidden {
+    border: 0;
+    height: 0;
+    margin: 0;
+    padding: 0;
+    text-indent: 0;
+    visibility: hidden;
+    width: 0;
+  }
+
   #{&}.e-daterangepicker,
   .e-bigger.e-small #{&}.e-daterangepicker {
     &.e-popup {

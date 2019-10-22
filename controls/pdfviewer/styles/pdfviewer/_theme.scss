@@ -2238,4 +2238,30 @@
     background: $pv-signature-footer-color;
     border-color: $pv-signature-footer-color;
   }
+
+  .e-pv-comment-panel-resizer {
+    background: $pv-sidebar-resizer-background;
+    border: $pv-sidebar-resizer-border;
+    border-width: $pv-sidebar-resizer-border-width;
+    color: $pv-sidebar-resizer-color;
+    cursor: $pv-sidebar-resizer-cursor;
+    height: $pv-sidebar-resizer-height;
+    position: $pv-sidebar-resizer-position;
+    width: $pv-sidebar-resizer-width;
+    z-index: $pv-sidebar-resizer-z-index;
+  }
+
+  .e-pv-comment-panel-resizer.e-left {
+    @if $skin-name == 'bootstrap4' {
+      border-right: 1px solid $pv-sidebar-resizer-border-color;
+    }
+    left: 300px;
+  }
+
+  .e-pv-comment-panel-resizer.e-right {
+    @if $skin-name == 'bootstrap4' {
+      border-left: 1px solid $pv-sidebar-resizer-border-color;
+    }
+    right: 300px;
+  }
 }

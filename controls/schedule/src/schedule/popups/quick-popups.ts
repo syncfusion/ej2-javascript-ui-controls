@@ -547,8 +547,9 @@ export class QuickPopups {
         if (this.isQuickTemplate(headerType) && this.parent.quickInfoTemplates.header) {
             let headerArgs: Object = extend({}, headerData, { elementType: headerType.toLowerCase() }, true);
             let templateId: string = this.parent.element.id;
+            let templateArgs: Object = util.addLocalOffsetToEvent(headerArgs as { [key: string]: Object }, this.parent.eventFields);
             let headerTemp: NodeList =
-                this.parent.getQuickInfoTemplatesHeader()(headerArgs, this.parent, 'header', templateId + '_headerTemplate', false);
+                this.parent.getQuickInfoTemplatesHeader()(templateArgs, this.parent, 'header', templateId + '_headerTemplate', false);
             append([].slice.call(headerTemp), headerTemplate);
         } else {
             let header: string;
@@ -578,8 +579,9 @@ export class QuickPopups {
         if (this.isQuickTemplate(type) && this.parent.quickInfoTemplates.content) {
             let contentArgs: Object = extend({}, data, { elementType: type.toLowerCase() }, true);
             let templateId: string = this.parent.element.id;
+            let templateArgs: Object = util.addLocalOffsetToEvent(contentArgs as { [key: string]: Object }, this.parent.eventFields);
             let contentTemp: NodeList =
-                this.parent.getQuickInfoTemplatesContent()(contentArgs, this.parent, 'content', templateId + '_contentTemplate', false);
+                this.parent.getQuickInfoTemplatesContent()(templateArgs, this.parent, 'content', templateId + '_contentTemplate', false);
             append([].slice.call(contentTemp), contentTemplate);
         } else {
             let content: string;
@@ -639,8 +641,9 @@ export class QuickPopups {
         if (this.isQuickTemplate(footerType) && this.parent.quickInfoTemplates.footer) {
             let footerArgs: Object = extend({}, footerData, { elementType: footerType.toLowerCase() }, true);
             let templateId: string = this.parent.element.id;
+            let templateArgs: Object = util.addLocalOffsetToEvent(footerArgs as { [key: string]: Object }, this.parent.eventFields);
             let footerTemp: NodeList =
-                this.parent.getQuickInfoTemplatesFooter()(footerArgs, this.parent, 'footer', templateId + '_footerTemplate', false);
+                this.parent.getQuickInfoTemplatesFooter()(templateArgs, this.parent, 'footer', templateId + '_footerTemplate', false);
             append([].slice.call(footerTemp), footerTemplate);
         } else {
             let footer: string;

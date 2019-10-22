@@ -812,6 +812,7 @@ let QueryBuilder = class QueryBuilder extends Component {
     operatorChangeSuccess(eventsArgs, filterElem, tempRule, rule, ddlArgs) {
         if (!eventsArgs.cancel) {
             let operatorElem = closest(ddlArgs.element, '.e-rule-operator');
+            let valElem = operatorElem.nextElementSibling;
             let dropDownObj = getComponent(ddlArgs.element, 'dropdownlist');
             let prevOper = rule.operator ? rule.operator.toLowerCase() : '';
             tempRule.operator = dropDownObj.value;
@@ -844,9 +845,11 @@ let QueryBuilder = class QueryBuilder extends Component {
                 removeClass([parentElem], 'e-show');
                 addClass([parentElem], 'e-hide');
             }
+            if (valElem && valElem.querySelector('.e-template')) {
+                filterElem = operatorElem.previousElementSibling;
+            }
             this.changeRuleValues(filterElem, rule, tempRule, ddlArgs);
         }
-        this.isValueRendered = true;
     }
     changeRuleValues(filterElem, rule, tempRule, ddlArgs) {
         let operatorElem = closest(ddlArgs.element, '.e-rule-operator');
@@ -1413,7 +1416,11 @@ let QueryBuilder = class QueryBuilder extends Component {
         }
     }
     updateValues(element, rule) {
-        let controlName = element.className.split(' e-')[1];
+        let idx = 1;
+        if (element.className.indexOf('e-template') > -1) {
+            idx = 3;
+        }
+        let controlName = element.className.split(' e-')[idx];
         let i = parseInt(element.id.slice(-1), 2);
         switch (controlName) {
             case 'textbox':
@@ -1440,14 +1447,18 @@ let QueryBuilder = class QueryBuilder extends Component {
             case 'datepicker':
                 let column = this.getColumn(rule.field);
                 let format = { type: 'dateTime', format: column.format || 'MM/dd/yyyy' };
+                let selectedDate = getComponent(element, controlName).value;
                 if (rule.operator.indexOf('between') > -1) {
-                    rule.value[i] = getComponent(element, controlName).value;
+                    rule.value[i] = selectedDate;
                 }
-                else if (isNullOrUndefined(format.format)) {
-                    rule.value = this.intl.formatDate(getComponent(element, controlName).value);
+                else if (isNullOrUndefined(format.format) && selectedDate) {
+                    rule.value = this.intl.formatDate(selectedDate);
+                }
+                else if (selectedDate) {
+                    rule.value = this.intl.formatDate(selectedDate, format);
                 }
                 else {
-                    rule.value = this.intl.formatDate(getComponent(element, controlName).value, format);
+                    rule.value = '';
                 }
                 break;
             case 'multiselect':
@@ -1613,7 +1624,7 @@ let QueryBuilder = class QueryBuilder extends Component {
                 let ddlInst = getInstance(ruleElem.querySelector('.e-rule-filter input'), DropDownList);
                 let format = { type: 'dateTime', format: this.columns[ddlInst.index].format || 'MM/dd/yyyy' };
                 if (format.type) {
-                    if (arrOperator.indexOf(oper) > -1) {
+                    if (arrOperator.indexOf(oper) > -1 && i) {
                         rule.rules[index].value[i] = this.intl.formatDate(selectedValue, format);
                     }
                     else {
@@ -2668,7 +2679,7 @@ let QueryBuilder = class QueryBuilder extends Component {
                     queryStr += rule.field + ' ' + this.operators[rule.operator];
                 }
                 else {
-                    queryStr += rule.field + ' ' + this.operators[rule.operator] + ' ' + valueStr;
+                    queryStr += rule.field + ' ' + (this.operators[rule.operator] || rule.operator) + ' ' + valueStr;
                 }
             }
             if (j !== jLen - 1) {

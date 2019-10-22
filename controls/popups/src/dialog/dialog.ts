@@ -936,6 +936,7 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
         this.dragObj = new Draggable(this.element, {
             clone: false,
             abort: '.e-dlg-closeicon-btn',
+            isDragScroll: true,
             handle: handleContent,
             dragStart: (event: Object & BlazorDragEventArgs) => {
                 this.trigger('dragStart', event, (dragEventArgs: Object & BlazorDragEventArgs) => {
@@ -1247,14 +1248,14 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
                     if (!isNullOrUndefined(this.content) && this.content !== '') {
                         if (!isNullOrUndefined(this.contentEle) && this.contentEle.getAttribute('role') !== 'dialog') {
                             this.contentEle.innerHTML = '';
-                            typeof (this.content) === 'string' ?
-                                this.contentEle.innerHTML = this.content : this.contentEle.appendChild(this.content);
+                            typeof (this.content) === 'function' ? this.setTemplate(this.content, this.contentEle) :
+                            (typeof (this.content) === 'string' ? this.contentEle.innerHTML = this.content :
+                            this.contentEle.appendChild(this.content));
                             this.setMaxHeight();
                         } else { this.setContent();  }
                     } else if (!isNullOrUndefined(this.contentEle)) {
                         detach(this.contentEle); this.contentEle = null;
-                    }
-                    break;
+                    } break;
                 case 'header':
                     if (this.header === '' || isNullOrUndefined(this.header)) {
                         if (this.headerEle) {
@@ -1263,8 +1264,7 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
                         }
                     } else {
                         this.setHeader();
-                    }
-                    break;
+                    } break;
                 case 'footerTemplate':
                     if (this.footerTemplate === '' || isNullOrUndefined(this.footerTemplate)) {
                         if (!this.ftrTemplateContent) { return; }

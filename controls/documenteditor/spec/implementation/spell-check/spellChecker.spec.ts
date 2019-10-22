@@ -260,13 +260,13 @@ describe('Spell Checker API', () => {
         editor.openBlank();
         editor.editorModule.insertTextInternal('Helo', false);
         let jsonData: any = { "HasSpellingError": true, 'Suggestions': ['Hello', 'Halo', 'Help', 'Helm', 'hide'] };
-        editor.spellChecker.handleSuggestions(jsonData, undefined);
+        editor.spellChecker.handleSuggestions(jsonData);
     });
     it('Spell check suggestion test on context menu 1', () => {
         editor.openBlank();
         editor.editorModule.insertTextInternal('Helo', false);
         let jsonData: any = { "HasSpellingError": true, 'Suggestions': [] };
-        let suggestions: string[] = editor.spellChecker.handleSuggestions(jsonData, undefined);
+        let suggestions: string[] = editor.spellChecker.handleSuggestions(jsonData);
         expect(suggestions.length).toBe(1);
     });
     it('Spell check retrieveText API test on context menu', () => {

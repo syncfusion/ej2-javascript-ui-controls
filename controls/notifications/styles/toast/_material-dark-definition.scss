@@ -41,8 +41,8 @@ $toast-title-font-weight: bold !default;
 
 //theme variables
 
-$toast-box-shadow: 0 2px 5px 0 rgba($grey-black, .26) !default;
-$toast-hover-box-shadow: 0 3px 6px 0 rgba($grey-black, .26) !default;
+$toast-box-shadow: 0 3px 5px -1px rgba($grey-black, .2), 0 6px 10px 0 rgba($grey-black, .14), 0 1px 18px 0 rgba($grey-black, .12) !default;
+$toast-hover-box-shadow: 0 3px 5px -1px rgba($grey-black, .2), 0 6px 10px 0 rgba($grey-black, .14), 0 1px 18px 0 rgba($grey-black, .12) !default;
 $toast-progress-color: $accent !default;
 $toast-bg-color: $grey-800 !default;
 $toast-hover-bg-color: #3d3d3d !default;
@@ -76,7 +76,7 @@ $toast-success-icon-color: $message-font !default;
 $toast-success-content-color: $message-font !default;
 $toast-success-hover-bg-color: #49a84d !default;
 $toast-success-hover-color: $message-font !default;
-$toast-success-hover-box-shadow: 0 3px 6px 0 rgba($grey-black, .26) !default;
+$toast-success-hover-box-shadow: 0 3px 5px -1px rgba($grey-black, .2), 0 6px 10px 0 rgba($grey-black, .14), 0 1px 18px 0 rgba($grey-black, .12) !default;
 
 
 $toast-info-bg-color: $info-bg !default;
@@ -86,7 +86,7 @@ $toast-info-icon-color: $message-font !default;
 $toast-info-content-color: $message-font !default;
 $toast-info-hover-bg-color: #03a2ea !default;
 $toast-info-hover-color: $message-font !default;
-$toast-info-hover-box-shadow: 0 3px 6px 0 rgba($grey-black, .26) !default;
+$toast-info-hover-box-shadow: 0 3px 5px -1px rgba($grey-black, .2), 0 6px 10px 0 rgba($grey-black, .14), 0 1px 18px 0 rgba($grey-black, .12) !default;
 
 
 $toast-warning-bg-color: $warning-bg !default;
@@ -96,7 +96,7 @@ $toast-warning-icon-color: $message-font !default;
 $toast-warning-content-color: $message-font !default;
 $toast-warning-hover-bg-color: #f59200 !default;
 $toast-warning-hover-color: $message-font !default;
-$toast-warning-hover-box-shadow: 0 3px 6px 0 rgba($grey-black, .26) !default;
+$toast-warning-hover-box-shadow: 0 3px 5px -1px rgba($grey-black, .2), 0 6px 10px 0 rgba($grey-black, .14), 0 1px 18px 0 rgba($grey-black, .12) !default;
 
 
 $toast-danger-bg-color: $error-bg !default;
@@ -106,7 +106,7 @@ $toast-danger-icon-color: $message-font !default;
 $toast-danger-content-color: $message-font !default;
 $toast-danger-hover-bg-color: #ff5d48 !default;
 $toast-danger-hover-color: $message-font !default;
-$toast-danger-hover-box-shadow: 0 3px 6px 0 rgba($grey-black, .26) !default;
+$toast-danger-hover-box-shadow: 0 3px 5px -1px rgba($grey-black, .2), 0 6px 10px 0 rgba($grey-black, .14), 0 1px 18px 0 rgba($grey-black, .12) !default;
 //icon variabels
 
 $toast-close-icon: '\e7fc' !default;

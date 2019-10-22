@@ -946,6 +946,41 @@ export interface FreeTextSettingsModel {
 }
 
 /**
+ * Interface for a class AnnotationSelectorSettings
+ */
+export interface AnnotationSelectorSettingsModel {
+
+    /**
+     * Specifies the selection border color.
+     */
+    selectionBorderColor?: string;
+
+    /**
+     * Specifies the border color of the resizer.
+     * @ignore
+     */
+    resizerBorderColor?: string;
+
+    /**
+     * Specifies the fill color of the resizer.
+     * @ignore
+     */
+    resizerFillColor?: string;
+
+    /**
+     * Specifies the size of the resizer.
+     * @ignore
+     */
+    resizerSize?: number;
+
+    /**
+     * Specifies the thickness of the border of selection.
+     */
+    selectionBorderThickness?: number;
+
+}
+
+/**
  * Interface for a class PdfViewer
  */
 export interface PdfViewerModel extends ComponentModel{
@@ -989,6 +1024,12 @@ export interface PdfViewerModel extends ComponentModel{
      * @default true
      */
     enableCommentPanel?: boolean;
+
+    /**
+     * Enable or disable the text markup resizer to modify the bounds in UI.
+     * @default false
+     */
+    enableTextMarkupResizer?: boolean;
 
     /**
      * Enable or disables the download option of PdfViewer.
@@ -1267,6 +1308,12 @@ export interface PdfViewerModel extends ComponentModel{
      * Defines the settings of measurement annotation.
      */
     measurementSettings?: MeasurementSettingsModel;
+
+    /**
+     * Defines the settings of annotation selector.
+     */
+    // tslint:disable-next-line:max-line-length
+    annotationSelectorSettings?: AnnotationSelectorSettingsModel;
 
     /**
      * Defines the collection of selected items, size and position of the selector

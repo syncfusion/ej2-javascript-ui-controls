@@ -953,7 +953,8 @@ export class EventBase {
             let scheduleId: string = this.parent.element.id + '_';
             let viewName: string = this.parent.activeViewOptions.eventTemplateName;
             let templateId: string = scheduleId + viewName + 'eventTemplate';
-            templateElement = this.parent.getAppointmentTemplate()(record, this.parent, 'eventTemplate', templateId, false);
+            let templateArgs: Object = util.addLocalOffsetToEvent(record, this.parent.eventFields);
+            templateElement = this.parent.getAppointmentTemplate()(templateArgs, this.parent, 'eventTemplate', templateId, false);
         } else {
             let appointmentSubject: HTMLElement = createElement('div', {
                 className: cls.SUBJECT_CLASS, innerHTML: eventSubject

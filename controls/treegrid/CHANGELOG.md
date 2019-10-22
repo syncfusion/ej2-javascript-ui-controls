@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 17.3.19 (2019-10-22)
+
+### TreeGrid
+
+#### Bug Fixes
+
+- `#251499` - Border applied properly for checkbox column when `treeColumnIndex` property is enabled with different themes.
+
 ## 17.3.17 (2019-10-15)
 
 ### TreeGrid

@@ -325,6 +325,7 @@ export class FreeTextAnnotation {
      */
     // tslint:disable-next-line
     public modifyInCollection(property: string, pageNumber: number, annotationBase: any): IFreeTextAnnotation {
+        this.pdfViewerBase.isDocumentEdited = true;
         let currentAnnotObject: IFreeTextAnnotation = null;
         let pageAnnotations: IFreeTextAnnotation[] = this.getAnnotations(pageNumber, null);
         if (pageAnnotations != null && annotationBase) {

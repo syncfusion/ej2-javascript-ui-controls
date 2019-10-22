@@ -2,6 +2,21 @@
 
 ## [Unreleased]
 
+## 17.3.19 (2019-10-22)
+
+### Document Editor
+
+#### New Features
+
+- `#249783` - Added API to set default section format properties.
+
+#### Bug Fixes
+
+- `#249729` - List now updated when copy and paste from outside editor.
+- `#249574` - Table now layout properly when resizing table middle column.
+- `#249767` - Control elements are now destroyed properly.
+- `#250041` - Paragraph formatting is now preserved properly when copy and paste contents.
+
 ## 17.3.17 (2019-10-15)
 
 ### Document Editor

@@ -168,5 +168,28 @@
     .e-pv-properties-stroke-color-icon {
       border-bottom: 2px solid;
     }
+
+    .e-pv-drop {
+      color: $pv-selection-touch-element-background-color;
+      display: inline-block;
+      height: 20px;
+      position: absolute;
+      width: 20px;
+      z-index: 1000;
+    }
+
+    .e-pv-droplet {
+      background-color: $pv-selection-touch-element-background-color;
+      border-bottom-left-radius: 50%;
+      border-bottom-right-radius: 50%;
+      border-color: $pv-selection-touch-element-border-color;
+      border-style: solid;
+      border-top-left-radius: 50%;
+      border-width: 2px;
+      height: 20px;
+      margin: 0 0 0 9px;
+      position: absolute;
+      width: 20px;
+    }
   }
 }

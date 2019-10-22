@@ -1,14 +1,5 @@
 let instances = 'ej2_instances';
 let uid = 0;
-let isBlazorPlatform = false;
-/**
- * Function to check whether the platform is blazor or not.
- * @return {boolean} result
- * @private
- */
-function disableBlazorMode() {
-    isBlazorPlatform = false;
-}
 /**
  * Create Instance from constructor function with desired parameters.
  * @param {Function} classFunction - Class function to which need to create instance
@@ -341,16 +332,8 @@ function formatUnit(value) {
  * @return {boolean} result
  * @private
  */
-function enableBlazorMode() {
-    isBlazorPlatform = true;
-}
-/**
- * Function to check whether the platform is blazor or not.
- * @return {boolean} result
- * @private
- */
 function isBlazor() {
-    return isBlazorPlatform;
+    return window && Object.keys(window).indexOf('Blazor') >= 0;
 }
 /**
  * Function to convert xPath to DOM element in blazor platform
@@ -4544,7 +4527,7 @@ class DateParser {
                     parseOptions.evalposition[charKey] = { isNumber: isNumber, pos: i + 1 + gmtCorrection, hourOnly: hourOnly };
                 }
                 if (i === length - 1 && !isNullOrUndefined(regexString)) {
-                    parseOptions.parserRegex = new RegExp('^' + regexString + '$');
+                    parseOptions.parserRegex = new RegExp('^' + regexString + '$', 'i');
                 }
             }
         }
@@ -6803,15 +6786,22 @@ function evalExp(str, nameSpace, helper) {
                 //handling if condition
                 cnt = '"; ' + cnt.replace(matches[1], rlStr.replace(WORDIF, (strs) => {
                     strs = strs.trim();
-                    let regExAt = /\@|\$|\#/gm;
-                    if (regExAt.test(strs)) {
-                        strs = NameSpaceForspecialChar(strs, (localKeys.indexOf(strs) === -1), nameSpace, localKeys) + '"]';
-                    }
-                    if (ARR_OBJ.test(strs)) {
-                        return NameSpaceArrObj(strs, !(QUOTES.test(strs)) && (localKeys.indexOf(strs) === -1), nameSpace, localKeys);
+                    let funcRegExp = /\window./gm;
+                    if (!funcRegExp.test(strs)) {
+                        let regExAt = /\@|\$|\#/gm;
+                        if (regExAt.test(strs)) {
+                            strs = NameSpaceForspecialChar(strs, (localKeys.indexOf(strs) === -1), nameSpace, localKeys) + '"]';
+                        }
+                        if (ARR_OBJ.test(strs)) {
+                            // tslint:disable-next-line
+                            return NameSpaceArrObj(strs, !(QUOTES.test(strs)) && (localKeys.indexOf(strs) === -1), nameSpace, localKeys);
+                        }
+                        else {
+                            return addNameSpace(strs, !(QUOTES.test(strs)) && (localKeys.indexOf(strs) === -1), nameSpace, localKeys);
+                        }
                     }
                     else {
-                        return addNameSpace(strs, !(QUOTES.test(strs)) && (localKeys.indexOf(strs) === -1), nameSpace, localKeys);
+                        return strs;
                     }
                 })) + '{ \n str = str + "';
             }
@@ -7032,5 +7022,5 @@ let engineObj = { compile: new Engine().compile };
  * Base modules
  */
 
-export { Ajax, Animation, rippleEffect, isRippleEnabled, enableRipple, Base, getComponent, Browser, Component, ChildProperty, Position, Draggable, Droppable, EventHandler, onIntlChange, rightToLeft, cldrData, defaultCulture, defaultCurrencyCode, Internationalization, setCulture, setCurrencyCode, loadCldr, enableRtl, getNumericObject, getNumberDependable, getDefaultDateObject, KeyboardEvents, L10n, ModuleLoader, Property, Complex, ComplexFactory, Collection, CollectionFactory, Event, NotifyPropertyChanges, CreateBuilder, SwipeSettings, Touch, HijriParser, blazorTemplates, getRandomId, compile$$1 as compile, updateBlazorTemplate, resetBlazorTemplate, setTemplateEngine, getTemplateEngine, disableBlazorMode, createInstance, setImmediate, getValue, setValue, deleteObject, isObject, getEnumValue, merge, extend, isNullOrUndefined, isUndefined, getUniqueID, debounce, queryParams, isObjectArray, compareElementParent, throwError, print, formatUnit, enableBlazorMode, isBlazor, getElement, getInstance, addInstance, uniqueID, createElement, addClass, removeClass, isVisible, prepend, append, detach, remove, attributes, select, selectAll, closest, siblings, getAttributeOrDefault, setStyleAttribute, classList, matches, Observer };
+export { Ajax, Animation, rippleEffect, isRippleEnabled, enableRipple, Base, getComponent, Browser, Component, ChildProperty, Position, Draggable, Droppable, EventHandler, onIntlChange, rightToLeft, cldrData, defaultCulture, defaultCurrencyCode, Internationalization, setCulture, setCurrencyCode, loadCldr, enableRtl, getNumericObject, getNumberDependable, getDefaultDateObject, KeyboardEvents, L10n, ModuleLoader, Property, Complex, ComplexFactory, Collection, CollectionFactory, Event, NotifyPropertyChanges, CreateBuilder, SwipeSettings, Touch, HijriParser, blazorTemplates, getRandomId, compile$$1 as compile, updateBlazorTemplate, resetBlazorTemplate, setTemplateEngine, getTemplateEngine, createInstance, setImmediate, getValue, setValue, deleteObject, isObject, getEnumValue, merge, extend, isNullOrUndefined, isUndefined, getUniqueID, debounce, queryParams, isObjectArray, compareElementParent, throwError, print, formatUnit, isBlazor, getElement, getInstance, addInstance, uniqueID, createElement, addClass, removeClass, isVisible, prepend, append, detach, remove, attributes, select, selectAll, closest, siblings, getAttributeOrDefault, setStyleAttribute, classList, matches, Observer };
 //# sourceMappingURL=ej2-base.es2015.js.map

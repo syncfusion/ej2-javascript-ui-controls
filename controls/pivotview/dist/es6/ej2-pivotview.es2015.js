@@ -14811,6 +14811,10 @@ let PivotView = PivotView_1 = class PivotView extends Component {
                             this.setProperties({ dataSourceSettings: dataSource }, true);
                         }
                     }
+                    if (Object.keys(newProp.dataSourceSettings).length === 1
+                        && Object.keys(newProp.dataSourceSettings)[0] === "dataSource") {
+                        this.engineModule.fieldList = null;
+                    }
                     this.notify(initialLoad, {});
                     break;
                 case 'pivotValues':
@@ -25686,7 +25690,16 @@ class Toolbar$2 {
         }
     }
     updateReportList() {
-        let reports = this.fetchReports();
+        let reports;
+        if (isBlazor()) {
+            reports = this.fetchReports();
+            if (reports.reportName === undefined) {
+                reports.reportName = this.reportList.dataSource;
+            }
+        }
+        else {
+            reports = this.fetchReports();
+        }
         this.reportList.dataSource = reports.reportName;
         if (this.currentReport === '' && this.reportList.dataSource.length > 0) {
             this.reportList.value = this.reportList.dataSource[this.reportList.dataSource.length - 1];

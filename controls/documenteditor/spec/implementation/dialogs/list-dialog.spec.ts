@@ -581,7 +581,7 @@ describe('dialog event validation-1', () => {
         viewer = undefined;
         setTimeout(function () {
             done();
-        }, 1000);
+        }, 500);
     });
     it('NumberFormat event validation', (done) => {
         editor.openBlank();
@@ -594,7 +594,7 @@ describe('dialog event validation-1', () => {
             expect((dialog as any).viewModel.listLevel.numberFormat).toBe('%0.');
             (dialog as any).onCancelButtonClick();
             done();
-        }, 200);
+        });
     });
     it('follow character event validation', () => {
         let viewer: LayoutViewer = editor.viewer;
@@ -648,7 +648,7 @@ describe('dialog event validation', () => {
         viewer = undefined;
         setTimeout(function () {
             done();
-        }, 1000);
+        }, 500);
     });
     it('ListLevel event validation', () => {
         createDocument(editor);
@@ -678,7 +678,7 @@ describe('dialog event validation', () => {
             expect(dialog.list).toBe(undefined);
             expect(dialog.listLevel).toBe(undefined);
             done();
-        }, 200);
+        });
     });
 });
 describe('dialog event validation', () => {

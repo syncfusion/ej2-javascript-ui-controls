@@ -194,4 +194,7 @@ export const CLS_UPLOAD_FILES: string = 'e-upload-files';
 export const CLS_RTE_DIALOG_UPLOAD: string = 'e-rte-dialog-upload';
 /** @hidden */
 export const CLS_RTE_RES_CNT: string = 'e-rte-resize';
-
+/** @hidden */
+export const CLS_CUSTOM_TILE: string = 'e-custom-tile';
+/** @hidden */
+export const CLS_NOCOLOR_ITEM: string = 'e-nocolor-item';

@@ -93,7 +93,7 @@ export class AccumulationTooltip extends BaseTooltip {
     private triggerTooltipRender(point: AccPointData, isFirst: boolean, textCollection: string,
                                  headerText: string, firstText: boolean = true): void {
         let argsData: ITooltipRenderEventArgs = {
-            cancel: false, name: tooltipRender, text: textCollection, point: point.point,  textStyle: this.textStyle,
+            cancel: false, name: tooltipRender, text: textCollection, point: point.point, textStyle: this.textStyle,
             series: this.accumulation.isBlazor  ?  {} as AccumulationSeries : point.series,  headerText : headerText,
             data : { pointX: point.point.x , pointY: point.point.y as Object, seriesIndex: point.series.index,
                      pointIndex: point.point.index, pointText: point.point.text, seriesName: point.series.name  }

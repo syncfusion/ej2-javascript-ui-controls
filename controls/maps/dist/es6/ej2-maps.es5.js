@@ -8456,7 +8456,7 @@ var Selection = /** @__PURE__ @class */ (function () {
             maps: this.maps
         };
         if (this.maps.isBlazor) {
-            var maps = eventArgs.maps, blazorEventArgs = __rest$5(eventArgs, ["maps"]);
+            var shapeData_1 = eventArgs.shapeData, maps = eventArgs.maps, blazorEventArgs = __rest$5(eventArgs, ["shapeData", "maps"]);
             eventArgs = blazorEventArgs;
         }
         this.maps.trigger('itemSelection', eventArgs, function (observedArgs) {

@@ -3715,4 +3715,30 @@ describe('Datepicker', () => {
             expect(datePicker.inputWrapper.container.classList.contains('e-ternary')).toBe(true);
         });
     });
+    describe('Popup hide testing when crosses view port', function (){
+        let datePicker: any;
+        let divElement: HTMLElement;
+        beforeEach(function() {
+            let inputElement: HTMLElement = createElement('input', { id: 'datepicker'});
+            document.body.appendChild(inputElement);
+            divElement = createElement('div', { id: 'divElement'});
+            divElement.style.height = '900px';
+        });
+        afterEach(function() {
+            if (datePicker) {
+                datePicker.destroy();
+                document.body.innerHTML = '';
+            }
+        });
+        it('Popup hide testing',function() {
+            datePicker = new DatePicker({});
+            datePicker.appendTo('#datepicker');
+            (<HTMLInputElement>document.getElementsByClassName(' e-input-group-icon e-date-icon e-icons')[0]).dispatchEvent(clickEvent);
+            expect(datePicker.popupWrapper !== null).toBe(true);
+            document.body.appendChild(divElement);
+            scrollBy({top: 500, behavior: 'smooth'})
+            datePicker.popupObj.trigger('targetExitViewport');
+            expect(datePicker.popupWrapper === null).toBe(true);
+        });
+    });
 });

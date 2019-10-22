@@ -2718,6 +2718,11 @@ let DropDownList = class DropDownList extends DropDownBase {
                     }
                 }
                 this.activeStateChange();
+            },
+            targetExitViewport: () => {
+                if (!Browser.isDevice) {
+                    this.hidePopup();
+                }
             }
         });
     }
@@ -4718,6 +4723,7 @@ const iconAnimation = 'e-icon-anim';
 const TOTAL_COUNT_WRAPPER = 'e-delim-total';
 const BOX_ELEMENT = 'e-multiselect-box';
 const FILTERPARENT = 'e-filter-parent';
+const CUSTOM_WIDTH = 'e-search-custom-width';
 /**
  * The Multiselect allows the user to pick a more than one value from list of predefined values.
  * ```html
@@ -5493,10 +5499,16 @@ let MultiSelect = class MultiSelect extends DropDownBase {
     }
     setPlaceholderSize(downIconWidth) {
         if (isNullOrUndefined(this.value) || this.value.length === 0) {
-            this.searchWrapper.style.width = ('calc(100% - ' + (downIconWidth + 10)) + 'px';
+            if (this.dropIcon.offsetWidth !== 0) {
+                this.searchWrapper.style.width = ('calc(100% - ' + (downIconWidth + 10)) + 'px';
+            }
+            else {
+                addClass([this.searchWrapper], CUSTOM_WIDTH);
+            }
         }
         else if (!isNullOrUndefined(this.value)) {
             this.searchWrapper.removeAttribute('style');
+            removeClass([this.searchWrapper], CUSTOM_WIDTH);
         }
     }
     refreshInputHight() {
@@ -6569,6 +6581,10 @@ let MultiSelect = class MultiSelect extends DropDownBase {
                                 this.notify('inputFocus', {
                                     module: 'CheckBoxSelection', enable: this.mode === 'CheckBox', value: 'focus'
                                 });
+                            }
+                        }, targetExitViewport: () => {
+                            if (!Browser.isDevice) {
+                                this.hidePopup();
                             }
                         }
                     });
@@ -9450,7 +9466,7 @@ let ListBox = class ListBox extends DropDownBase {
     getDataByElems(elems) {
         let data = [];
         elems.forEach((ele) => {
-            data.push(this.getDataByValue(ele.getAttribute('data-value')));
+            data.push(this.getDataByValue(this.getFormattedValue(ele.getAttribute('data-value'))));
         });
         return data;
     }

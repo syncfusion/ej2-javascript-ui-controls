@@ -1942,6 +1942,7 @@ let Dialog = class Dialog extends Component {
         this.dragObj = new Draggable(this.element, {
             clone: false,
             abort: '.e-dlg-closeicon-btn',
+            isDragScroll: true,
             handle: handleContent,
             dragStart: (event) => {
                 this.trigger('dragStart', event, (dragEventArgs) => {
@@ -2250,8 +2251,9 @@ let Dialog = class Dialog extends Component {
                     if (!isNullOrUndefined(this.content) && this.content !== '') {
                         if (!isNullOrUndefined(this.contentEle) && this.contentEle.getAttribute('role') !== 'dialog') {
                             this.contentEle.innerHTML = '';
-                            typeof (this.content) === 'string' ?
-                                this.contentEle.innerHTML = this.content : this.contentEle.appendChild(this.content);
+                            typeof (this.content) === 'function' ? this.setTemplate(this.content, this.contentEle) :
+                                (typeof (this.content) === 'string' ? this.contentEle.innerHTML = this.content :
+                                    this.contentEle.appendChild(this.content));
                             this.setMaxHeight();
                         }
                         else {

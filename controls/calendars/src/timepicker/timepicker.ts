@@ -186,6 +186,7 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
     private invalidValueString: string = null;
     protected keyConfigure: { [key: string]: string };
     private timeOptions : TimePickerModel;
+    private mobileTimePopupWrap: HTMLElement;
     /**
      * Gets or sets the width of the TimePicker component. The width of the popup is based on the width of the component.
      * @default null
@@ -812,6 +813,8 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
                 this.popupObj.destroy();
                 this.popupWrapper.innerHTML = '';
                 this.listWrapper = this.popupWrapper = this.listTag = undefined;
+            }, targetExitViewport: () => {
+                if (!Browser.isDevice) { this.hide(); }
             }
         });
         if (!Browser.isDevice) {
@@ -1203,6 +1206,12 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
                     this.modal.style.display = 'none';
                     this.modal.outerHTML = '';
                     this.modal = null;
+                }
+                if (Browser.isDevice) {
+                    if (!isNullOrUndefined(this.mobileTimePopupWrap)) {
+                        this.mobileTimePopupWrap.remove();
+                        this.mobileTimePopupWrap = null;
+                    }
                 }
                 if (Browser.isDevice && this.allowEdit && !this.readonly) {
                     this.inputElement.removeAttribute('readonly');
@@ -2074,12 +2083,16 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
                 document.body.className += ' ' + OVERFLOW;
                 document.body.appendChild(this.modal);
             }
+            if (Browser.isDevice) {
+                this.mobileTimePopupWrap = this.createElement('div', { className: 'e-timepicker-mob-popup-wrap'});
+                document.body.appendChild(this.mobileTimePopupWrap);
+            }
             this.openPopupEventArgs = {
                 popup: this.popupObj || null,
                 cancel: false,
                 event: event || null,
                 name: 'open',
-                appendTo: document.body
+                appendTo: Browser.isDevice ? this.mobileTimePopupWrap : document.body
             };
             let eventArgs: PopupEventArgs = this.openPopupEventArgs;
             this.trigger('open', eventArgs, (eventArgs: PopupEventArgs) => {
@@ -2105,6 +2118,7 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
                     attributes(this.inputElement, { 'aria-expanded': 'true' });
                     addClass([this.inputWrapper.container], FOCUS);
                     EventHandler.add(document, 'mousedown touchstart', this.documentClickHandler, this);
+                    this.setOverlayIndex(this.mobileTimePopupWrap, this.popupObj.element, this.modal, Browser.isDevice);
                 } else {
                     this.popupObj.destroy();
                     this.popupWrapper = this.listTag = undefined;
@@ -2112,6 +2126,13 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
                     this.popupObj = null;
                 }
             });
+        }
+    }
+    private setOverlayIndex(popupWrapper: HTMLElement, timePopupElement: HTMLElement, modal: HTMLElement, isDevice: Boolean, ): void {
+        if (isDevice && !isNullOrUndefined(timePopupElement) && !isNullOrUndefined(modal) && !isNullOrUndefined(popupWrapper)) {
+            let index: number = parseInt(timePopupElement.style.zIndex, 10) ? parseInt(timePopupElement.style.zIndex, 10) : 1000;
+            modal.style.zIndex = (index - 1).toString();
+            popupWrapper.style.zIndex = index.toString();
         }
     }
     private formatValues(type: string | number): string {

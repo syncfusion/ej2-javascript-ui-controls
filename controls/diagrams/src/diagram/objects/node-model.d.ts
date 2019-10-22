@@ -1395,6 +1395,7 @@ export interface NodeModel extends NodeBaseModel{
      * Defines the shape of a node
      * @default Basic Shape
      * @aspType object
+     * @blazorType object
      */
     shape?: ShapeModel | FlowShapeModel | BasicShapeModel | ImageModel | PathModel | TextModel | BpmnShapeModel | NativeModel | HtmlModel | UmlActivityShapeModel | UmlClassifierShapeModel | SwimLaneModel;
 

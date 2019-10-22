@@ -1910,7 +1910,7 @@ export class DataUtil {
         let val: string;
         let tmp: Object = {};
         json.forEach((data: Object, index: number) => {
-            val = DataUtil.getVal(json, index, fieldName) as string;
+            val = typeof(json[index]) === 'object' ? DataUtil.getVal(json, index, fieldName) as string : json[index] as string;
             if (!(val in tmp)) {
                 result.push(!requiresCompleteRecord ? val : json[index]);
                 tmp[val] = 1;

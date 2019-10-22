@@ -15242,6 +15242,10 @@ var PivotView = /** @__PURE__ @class */ (function (_super) {
                             this.setProperties({ dataSourceSettings: dataSource }, true);
                         }
                     }
+                    if (Object.keys(newProp.dataSourceSettings).length === 1
+                        && Object.keys(newProp.dataSourceSettings)[0] === "dataSource") {
+                        this.engineModule.fieldList = null;
+                    }
                     this.notify(initialLoad, {});
                     break;
                 case 'pivotValues':
@@ -26260,7 +26264,16 @@ var Toolbar$2 = /** @__PURE__ @class */ (function () {
         }
     };
     Toolbar$$1.prototype.updateReportList = function () {
-        var reports = this.fetchReports();
+        var reports;
+        if (isBlazor()) {
+            reports = this.fetchReports();
+            if (reports.reportName === undefined) {
+                reports.reportName = this.reportList.dataSource;
+            }
+        }
+        else {
+            reports = this.fetchReports();
+        }
         this.reportList.dataSource = reports.reportName;
         if (this.currentReport === '' && this.reportList.dataSource.length > 0) {
             this.reportList.value = this.reportList.dataSource[this.reportList.dataSource.length - 1];

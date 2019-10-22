@@ -11266,7 +11266,7 @@ class SpellChecker {
      * @private
      */
     /* tslint:disable:no-any */
-    handleSuggestions(allsuggestions, event) {
+    handleSuggestions(allsuggestions) {
         this.spellCheckSuggestion = [];
         if (allsuggestions.length === 0) {
             this.spellCheckSuggestion.push('Add To Dictionary');
@@ -12791,6 +12791,13 @@ let DocumentEditor = DocumentEditor_1 = class DocumentEditor extends Component {
         this.paragraphFormat = paragraphFormat;
     }
     /**
+     * Set the default section format for document editor
+     * @param sectionFormat
+     */
+    setDefaultSectionFormat(sectionFormat) {
+        this.sectionFormat = sectionFormat;
+    }
+    /**
      * Get the properties to be maintained in the persisted state.
      * @private
      */
@@ -13308,6 +13315,9 @@ let DocumentEditor = DocumentEditor_1 = class DocumentEditor extends Component {
         let section = new BodyWidget();
         section.index = 0;
         section.sectionFormat = new WSectionFormat(section);
+        if (this.sectionFormat) {
+            this.parser.parseSectionFormat(this.sectionFormat, section.sectionFormat);
+        }
         let paragraph = new ParagraphWidget();
         paragraph.index = 0;
         paragraph.paragraphFormat = new WParagraphFormat(paragraph);
@@ -13900,6 +13910,7 @@ class ContextMenu$1 {
          * @private
          */
         this.onContextMenuInternal = (event) => {
+            let isTouch = event instanceof TouchEvent;
             if (this.viewer.owner.enableSpellCheck && this.spellChecker.allowSpellCheckAndSuggestion) {
                 event.preventDefault();
                 this.currentContextInfo = this.spellChecker.findCurretText();
@@ -13911,27 +13922,21 @@ class ContextMenu$1 {
                     this.spellChecker.currentContextInfo = this.currentContextInfo;
                     if (this.spellChecker.errorSuggestions.containsKey(exactData)) {
                         allSuggestions = this.spellChecker.errorSuggestions.get(exactData).slice();
-                        splittedSuggestion = this.spellChecker.handleSuggestions(allSuggestions, event);
-                        this.processSuggestions(allSuggestions, splittedSuggestion, event);
+                        splittedSuggestion = this.spellChecker.handleSuggestions(allSuggestions);
+                        this.processSuggestions(allSuggestions, splittedSuggestion, isTouch ? event : event);
                     }
                     else {
-                        this.processSuggestions(allSuggestions, splittedSuggestion, event);
+                        this.processSuggestions(allSuggestions, splittedSuggestion, isTouch ? event : event);
                     }
                 }
                 else {
                     this.hideSpellContextItems();
-                    if (this.showHideElements(this.viewer.selection)) {
-                        this.contextMenuInstance.open(event.y, event.x);
-                        event.preventDefault();
-                    }
+                    this.showContextMenuOnSel(isTouch ? event : event);
                 }
             }
             else {
                 this.hideSpellContextItems();
-                if (this.showHideElements(this.viewer.selection)) {
-                    this.contextMenuInstance.open(event.y, event.x);
-                    event.preventDefault();
-                }
+                this.showContextMenuOnSel(isTouch ? event : event);
             }
         };
         this.viewer = viewer;
@@ -14348,6 +14353,31 @@ class ContextMenu$1 {
         }
     }
     /**
+     * Opens context menu.
+     * @param {PointerEvent | TouchEvent} event
+     */
+    showContextMenuOnSel(event) {
+        let isTouch = event instanceof TouchEvent;
+        let xPos = 0;
+        let yPos = 0;
+        if (isTouch) {
+            let point = this.viewer.getTouchOffsetValue(event);
+            xPos = point.x;
+            yPos = point.y;
+        }
+        else {
+            yPos = event.y;
+            xPos = event.x;
+        }
+        if (this.showHideElements(this.viewer.selection)) {
+            if (isTouch) {
+                this.viewer.isMouseDown = false;
+            }
+            this.contextMenuInstance.open(yPos, xPos);
+            event.preventDefault();
+        }
+    }
+    /**
      * Method to hide spell context items
      */
     hideSpellContextItems() {
@@ -14376,10 +14406,7 @@ class ContextMenu$1 {
             this.noSuggestion.style.display = 'block';
             classList(this.noSuggestion, ['e-disabled'], ['e-focused']);
         }
-        if (!isNullOrUndefined(event) && this.showHideElements(this.viewer.selection)) {
-            this.contextMenuInstance.open(event.y, event.x);
-            event.preventDefault();
-        }
+        this.showContextMenuOnSel(event);
     }
     /**
      * Method to add inline menu
@@ -22896,9 +22923,52 @@ class LayoutViewer {
                 if (this.touchDownOnSelectionMark || event.touches.length > 1) {
                     event.preventDefault();
                 }
+                this.longTouchTimer = setTimeout(this.onLongTouch, 500, event);
                 this.timer = setTimeout(() => {
                     this.isTimerStarted = false;
                 }, 200);
+            }
+        };
+        /**
+         * Fired on long touch
+         * @param {TouchEvent} event
+         * @private
+         */
+        this.onLongTouch = (event) => {
+            if (isNullOrUndefined(this.owner) || isNullOrUndefined(this.viewerContainer)) {
+                return;
+            }
+            let point = this.getTouchOffsetValue(event);
+            let pointRelToPage = this.findFocusedPage(point, true);
+            let selStart = this.selection.start;
+            let selEnd = this.selection.end;
+            let updateSel = false;
+            if (!this.selection.isForward) {
+                selStart = this.selection.end;
+                selEnd = this.selection.start;
+            }
+            let selStartPt = selStart.location;
+            let selEndPt = selEnd.location;
+            if (selStart.currentWidget !== selEnd.currentWidget) {
+                updateSel = !(pointRelToPage.x >= selStartPt.x && pointRelToPage.x <= selEndPt.x)
+                    && !(pointRelToPage.y >= selStartPt.y && pointRelToPage.y <= selEndPt.y);
+            }
+            else {
+                updateSel = !(pointRelToPage.x >= selStartPt.x && pointRelToPage.x <= selEndPt.x)
+                    || !(pointRelToPage.y >= selStartPt.y && pointRelToPage.y <= selEndPt.y);
+            }
+            if (event.changedTouches.length === 1 && updateSel) {
+                this.updateSelectionOnTouch(point, pointRelToPage);
+                this.isMouseDown = false;
+                this.touchDownOnSelectionMark = 0;
+                this.useTouchSelectionMark = true;
+                this.isSelectionChangedOnMouseMoved = false;
+            }
+            if (this.selection.isEmpty) {
+                this.selection.selectCurrentWord();
+            }
+            if (!isNullOrUndefined(this.owner.contextMenuModule) && this.owner.contextMenuModule.contextMenuInstance) {
+                this.owner.contextMenuModule.onContextMenuInternal(event);
             }
         };
         /**
@@ -22971,6 +23041,10 @@ class LayoutViewer {
                 }
                 this.preDifference = currentDiff;
             }
+            if (this.longTouchTimer) {
+                clearTimeout(this.longTouchTimer);
+                this.longTouchTimer = undefined;
+            }
         };
         /**
          * Fired on touch up.
@@ -22982,21 +23056,7 @@ class LayoutViewer {
                 let point = this.getTouchOffsetValue(event);
                 let touchPoint = this.findFocusedPage(point, true);
                 if (event.changedTouches.length === 1) {
-                    this.zoomX = undefined;
-                    this.zoomY = undefined;
-                    // tslint:disable-next-line:max-line-length
-                    if (this.isMouseDown && !this.isSelectionChangedOnMouseMoved && !isNullOrUndefined(this.currentPage) && !isNullOrUndefined(this.owner.selection.start)) {
-                        if (this.touchDownOnSelectionMark === 0) {
-                            this.updateTextPositionForSelection(new Point(touchPoint.x, touchPoint.y), this.tapCount);
-                            if (this.tapCount === 2) {
-                                this.selection.checkAndEnableHeaderFooter(point, touchPoint);
-                            }
-                        }
-                        if (this.owner.selection.isEmpty) {
-                            this.selection.updateCaretPosition();
-                        }
-                        this.selection.checkForCursorVisibility();
-                    }
+                    this.updateSelectionOnTouch(point, touchPoint);
                     if (!isNullOrUndefined(this.currentPage) && !isNullOrUndefined(this.selection.start)
                         && !this.isSelectionChangedOnMouseMoved && (this.selection.isEmpty ||
                         this.selection.isImageField() && (!this.owner.enableImageResizerMode ||
@@ -23027,6 +23087,10 @@ class LayoutViewer {
             }
             this.preDifference = -1;
             this.isTouchInput = false;
+            if (this.longTouchTimer) {
+                clearTimeout(this.longTouchTimer);
+                this.longTouchTimer = undefined;
+            }
             if (!this.isTimerStarted) {
                 this.tapCount = 1;
             }
@@ -23489,7 +23553,9 @@ class LayoutViewer {
             this.selection.initCaret();
         }
         this.wireInputEvents();
-        this.iframe.addEventListener('load', this.onIframeLoad);
+        if (!isNullOrUndefined(this.iframe)) {
+            this.iframe.addEventListener('load', this.onIframeLoad);
+        }
         this.viewerContainer.addEventListener('scroll', this.scrollHandler);
         this.viewerContainer.addEventListener('mousedown', this.onMouseDownInternal);
         this.viewerContainer.addEventListener('keydown', this.onKeyDownInternal);
@@ -23561,10 +23627,10 @@ class LayoutViewer {
      */
     initDialog(isRtl) {
         if (!this.dialogInternal) {
-            this.dialogTarget = createElement('div', { className: 'e-de-dlg-target' });
-            document.body.appendChild(this.dialogTarget);
+            this.dialogTarget1 = createElement('div', { className: 'e-de-dlg-target' });
+            document.body.appendChild(this.dialogTarget1);
             if (isRtl) {
-                this.dialogTarget.classList.add('e-de-rtl');
+                this.dialogTarget1.classList.add('e-de-rtl');
             }
             this.dialogInternal = new Dialog({
                 target: document.body, showCloseIcon: true,
@@ -23574,7 +23640,7 @@ class LayoutViewer {
             });
             this.dialogInternal.open = this.selection.hideCaret;
             this.dialogInternal.beforeClose = this.updateFocus;
-            this.dialogInternal.appendTo(this.dialogTarget);
+            this.dialogInternal.appendTo(this.dialogTarget1);
         }
     }
     /**
@@ -23582,17 +23648,17 @@ class LayoutViewer {
      */
     initDialog2(isRtl) {
         if (!this.dialogInternal2) {
-            let target = createElement('div', { className: 'e-de-dlg-target' });
-            document.body.appendChild(target);
+            this.dialogTarget2 = createElement('div', { className: 'e-de-dlg-target' });
+            document.body.appendChild(this.dialogTarget2);
             if (isRtl) {
-                target.classList.add('e-de-rtl');
+                this.dialogTarget2.classList.add('e-de-rtl');
             }
             this.dialogInternal2 = new Dialog({
                 target: document.body, showCloseIcon: true,
                 allowDragging: true, enableRtl: isRtl, visible: false,
                 width: '1px', isModal: true, position: { X: 'center', Y: 'Top' }, zIndex: this.owner.zIndex
             });
-            this.dialogInternal2.appendTo(target);
+            this.dialogInternal2.appendTo(this.dialogTarget2);
         }
     }
     /**
@@ -23747,7 +23813,30 @@ class LayoutViewer {
         return button === 1;
     }
     /**
+     * Updates selection for touch position.
+     * @param point
+     * @param touchPoint
+     */
+    updateSelectionOnTouch(point, touchPoint) {
+        this.zoomX = undefined;
+        this.zoomY = undefined;
+        // tslint:disable-next-line:max-line-length
+        if (this.isMouseDown && !this.isSelectionChangedOnMouseMoved && !isNullOrUndefined(this.currentPage) && !isNullOrUndefined(this.owner.selection.start)) {
+            if (this.touchDownOnSelectionMark === 0) {
+                this.updateTextPositionForSelection(new Point(touchPoint.x, touchPoint.y), this.tapCount);
+                if (this.tapCount === 2) {
+                    this.selection.checkAndEnableHeaderFooter(point, touchPoint);
+                }
+            }
+            if (this.owner.selection.isEmpty) {
+                this.selection.updateCaretPosition();
+            }
+            this.selection.checkForCursorVisibility();
+        }
+    }
+    /**
      * Gets touch offset value.
+     * @private
      */
     getTouchOffsetValue(event) {
         let targetElement = this.viewerContainer;
@@ -24475,10 +24564,18 @@ class LayoutViewer {
             this.dialogInternal.destroy();
         }
         this.dialogInternal = undefined;
-        if (this.dialogTarget && this.dialogTarget.parentElement) {
-            this.dialogTarget.parentElement.removeChild(this.dialogTarget);
+        if (this.dialogInternal2) {
+            this.dialogInternal2.destroy();
+            this.dialogInternal2 = undefined;
         }
-        this.dialogTarget = undefined;
+        if (this.dialogTarget1 && this.dialogTarget1.parentElement) {
+            this.dialogTarget1.parentElement.removeChild(this.dialogTarget1);
+        }
+        this.dialogTarget1 = undefined;
+        if (this.dialogTarget2 && this.dialogTarget2.parentElement) {
+            this.dialogTarget2.parentElement.removeChild(this.dialogTarget2);
+        }
+        this.dialogTarget2 = undefined;
         if (!isNullOrUndefined(this.touchStart)) {
             this.touchStart.innerHTML = '';
         }
@@ -24539,7 +24636,9 @@ class LayoutViewer {
         this.editableDiv.removeEventListener('compositionupdate', this.compositionUpdated);
         this.editableDiv.removeEventListener('compositionend', this.compositionEnd);
         this.viewerContainer.removeEventListener('mouseup', this.onMouseUpInternal);
-        this.iframe.removeEventListener('load', this.onIframeLoad);
+        if (!isNullOrUndefined(this.iframe)) {
+            this.iframe.removeEventListener('load', this.onIframeLoad);
+        }
         this.viewerContainer.removeEventListener('dblclick', this.onDoubleTap);
         window.removeEventListener('resize', this.onWindowResize);
         window.removeEventListener('keyup', this.onKeyUpInternal);
@@ -25282,6 +25381,11 @@ class SfdtReader {
         }
         return undefined;
     }
+    /**
+     * @private
+     * @param data
+     * @param abstractLists
+     */
     parseAbstractList(data, abstractLists) {
         for (let i = 0; i < data.abstractLists.length; i++) {
             let abstractList = new WAbstractList();
@@ -25325,6 +25429,11 @@ class SfdtReader {
         this.parseParagraphFormat(data.paragraphFormat, listLevel.paragraphFormat);
         return listLevel;
     }
+    /**
+     * @private
+     * @param data
+     * @param listCollection
+     */
     parseList(data, listCollection) {
         for (let i = 0; i < data.lists.length; i++) {
             let list = new WList();
@@ -26154,6 +26263,11 @@ class SfdtReader {
             }
         }
     }
+    /**
+     *
+     * @param data @private
+     * @param sectionFormat
+     */
     parseSectionFormat(data, sectionFormat) {
         if (!isNullOrUndefined(data.pageWidth)) {
             sectionFormat.pageWidth = data.pageWidth;
@@ -37874,10 +37988,10 @@ class Selection {
             this.viewer.viewerContainer.appendChild(this.pasteElement);
             let splitButtonEle = createElement('button', { id: 'iconsplitbtn' });
             this.pasteElement.appendChild(splitButtonEle);
-            let splitButton = new DropDownButton({
+            this.pasteDropDwn = new DropDownButton({
                 items: items, iconCss: 'e-icons e-de-paste', select: this.pasteOptions
             });
-            splitButton.appendTo('#iconsplitbtn');
+            this.pasteDropDwn.appendTo('#iconsplitbtn');
         }
         this.pasteElement.style.display = 'block';
         this.pasteElement.style.position = 'absolute';
@@ -38899,6 +39013,10 @@ class Selection {
     destroy() {
         if (!isNullOrUndefined(this.contextTypeInternal)) {
             this.contextTypeInternal = undefined;
+        }
+        if (this.pasteDropDwn) {
+            this.pasteDropDwn.destroy();
+            this.pasteDropDwn = undefined;
         }
         this.caret = undefined;
         this.contextTypeInternal = undefined;
@@ -41878,7 +41996,7 @@ class TableResizer {
     //Resize Table cell
     resizeTableCellColumn(dragValue) {
         let table = this.currentResizingTable;
-        if (isNullOrUndefined(table) || dragValue === 0 || isNullOrUndefined(table.childWidgets)) {
+        if (isNullOrUndefined(table) || dragValue === 0 || isNullOrUndefined(table.childWidgets) || this.resizerPosition < 0) {
             return;
         }
         let selectionFlag = true;
@@ -42587,6 +42705,7 @@ class Editor {
         this.pasteTextPosition = undefined;
         this.isSkipHistory = false;
         this.isPaste = false;
+        this.isPasteListUpdated = false;
         /**
          * @private
          */
@@ -42842,6 +42961,9 @@ class Editor {
             this.copiedContent = undefined;
             this.copiedTextContent = '';
             this.selection.isViewPasteOptions = false;
+            if (this.isPasteListUpdated) {
+                this.isPasteListUpdated = false;
+            }
             this.selection.showHidePasteOptions(undefined, undefined);
         }
         if (this.viewer.owner.isLayoutEnabled && !this.viewer.owner.isShiftingEnabled) {
@@ -43229,6 +43351,9 @@ class Editor {
                         this.copiedContent = undefined;
                         this.copiedTextContent = '';
                         this.selection.isViewPasteOptions = false;
+                        if (this.isPasteListUpdated) {
+                            this.isPasteListUpdated = false;
+                        }
                         this.selection.showHidePasteOptions(undefined, undefined);
                     }
                     break;
@@ -44602,6 +44727,9 @@ class Editor {
         this.pasteRequestHandler.onError = this.onPasteFailure.bind(this);
     }
     pasteFormattedContent(result) {
+        if (this.isPasteListUpdated) {
+            this.isPasteListUpdated = false;
+        }
         this.pasteContents(isNullOrUndefined(result.data) ? this.copiedTextContent : result.data);
         this.applyPasteOptions(this.currentPasteOptions);
         hideSpinner(this.owner.element);
@@ -44627,6 +44755,129 @@ class Editor {
             this.pasteContents(document);
             this.applyPasteOptions(this.currentPasteOptions);
         }
+    }
+    getUniqueListOrAbstractListId(isList) {
+        if (isList && this.viewer.lists.length) {
+            let sortedList = this.viewer.lists.slice().sort((a, b) => {
+                return a.listId - b.listId;
+            });
+            return sortedList[sortedList.length - 1].listId + 1;
+        }
+        else if (this.viewer.abstractLists.length) {
+            let sortedAbsList = this.viewer.abstractLists.slice().sort((a, b) => {
+                return a.abstractListId - b.abstractListId;
+            });
+            return sortedAbsList[sortedAbsList.length - 1].abstractListId + 1;
+        }
+        return 0;
+    }
+    checkSameLevelFormat(lstLevelNo, abstractList, list) {
+        return abstractList.levels[lstLevelNo].listLevelPattern === list.abstractList.levels[lstLevelNo].listLevelPattern
+            && abstractList.levels[lstLevelNo].numberFormat === list.abstractList.levels[lstLevelNo].numberFormat;
+    }
+    listLevelPatternInCollection(lstLevelNo, listLevelPattern, numberFormat) {
+        return this.viewer.lists.filter((list) => {
+            return list.abstractList.levels[lstLevelNo].listLevelPattern === listLevelPattern
+                && list.abstractList.levels[lstLevelNo].numberFormat === numberFormat;
+        })[0];
+    }
+    getBlocksToUpdate(blocks) {
+        let blcks = [];
+        blocks.forEach((obj) => {
+            if (obj.paragraphFormat && obj.paragraphFormat.listFormat
+                && Object.keys(obj.paragraphFormat.listFormat).length > 0) {
+                blcks.push(obj);
+            }
+            else if (obj.rows) {
+                obj.rows.forEach((row) => {
+                    row.cells.forEach((cell) => {
+                        blcks = blcks.concat(this.getBlocksToUpdate(cell.blocks));
+                    });
+                });
+            }
+        });
+        return blcks;
+    }
+    updateListIdForBlocks(blocks, abstractList, list, id, idToUpdate) {
+        let update = false;
+        blocks.forEach((obj) => {
+            if (obj.paragraphFormat && obj.paragraphFormat.listFormat
+                && Object.keys(obj.paragraphFormat.listFormat).length > 0) {
+                let format = obj.paragraphFormat.listFormat;
+                // tslint:disable-next-line:max-line-length
+                let existingList = this.listLevelPatternInCollection(format.listLevelNumber, abstractList.levels[format.listLevelNumber].listLevelPattern, abstractList.levels[format.listLevelNumber].numberFormat);
+                if (format.listId === id) {
+                    if (isNullOrUndefined(existingList) && (!list || (list
+                        && !this.checkSameLevelFormat(format.listLevelNumber, abstractList, list)))) {
+                        update = true;
+                        format.listId = idToUpdate;
+                    }
+                    else if (!isNullOrUndefined(existingList)
+                        && this.checkSameLevelFormat(format.listLevelNumber, abstractList, existingList)) {
+                        if (!format.isUpdated) {
+                            format.listId = existingList.listId;
+                            format.isUpdated = true;
+                        }
+                        update = false;
+                    }
+                }
+            }
+            else if (obj.rows) {
+                obj.rows.forEach((row) => {
+                    row.cells.forEach((cell) => {
+                        let toUpdate = this.updateListIdForBlocks(cell.blocks, abstractList, list, id, idToUpdate);
+                        if (!update) {
+                            update = toUpdate;
+                        }
+                    });
+                });
+            }
+        });
+        return update;
+    }
+    updatePasteContent(pasteContent, sectionId) {
+        let uniqueListId = this.getUniqueListOrAbstractListId(true);
+        if (pasteContent.lists.filter((obj) => { return obj.listId === uniqueListId; }).length > 0) {
+            let sortedPasteList = pasteContent.lists.slice().sort((a, b) => {
+                return a.listId - b.listId;
+            });
+            uniqueListId = sortedPasteList[sortedPasteList.length - 1].listId + 1;
+        }
+        let uniqueAbsLstId = this.getUniqueListOrAbstractListId(false);
+        if (pasteContent.abstractLists.filter((obj) => {
+            return obj.abstractListId === uniqueAbsLstId;
+        }).length > 0) {
+            let sortedPasteAbsList = pasteContent.abstractLists.slice().sort((a, b) => {
+                return a.abstractListId - b.abstractListId;
+            });
+            uniqueAbsLstId = sortedPasteAbsList[sortedPasteAbsList.length - 1].abstractListId + 1;
+        }
+        for (let k = 0; k < pasteContent.lists.length; k++) {
+            let list = pasteContent.lists[k];
+            let abstractList = pasteContent.abstractLists.filter((obj) => {
+                return obj.abstractListId === list.abstractListId;
+            })[0];
+            let lstDup = this.viewer.lists.filter((obj) => {
+                return obj.listId === list.listId;
+            });
+            // tslint:disable-next-line:max-line-length
+            let isUpdate = this.updateListIdForBlocks(pasteContent.sections[sectionId].blocks, abstractList, lstDup[0], list.listId, uniqueListId);
+            if (isUpdate) {
+                abstractList.abstractListId = uniqueAbsLstId;
+                list.listId = uniqueListId;
+                list.abstractListId = uniqueAbsLstId;
+                uniqueListId++;
+                uniqueAbsLstId++;
+            }
+            else {
+                pasteContent.lists.splice(k, 1);
+                pasteContent.abstractLists.splice(pasteContent.abstractLists.indexOf(abstractList), 1);
+                k--;
+            }
+        }
+        this.getBlocksToUpdate(pasteContent.sections[sectionId].blocks).forEach((blck) => {
+            delete blck.paragraphFormat.listFormat.isUpdated;
+        });
     }
     getBlocks(pasteContent) {
         let widgets = [];
@@ -44661,7 +44912,20 @@ class Editor {
         }
         else {
             for (let i = 0; i < pasteContent.sections.length; i++) {
-                this.viewer.owner.parser.parseBody(pasteContent.sections[i].blocks, widgets);
+                let parser = this.viewer.owner.parser;
+                if (!this.isPasteListUpdated && !isNullOrUndefined(pasteContent.lists)) {
+                    if (this.viewer.lists.length > 0) {
+                        this.updatePasteContent(pasteContent, i);
+                    }
+                    this.isPasteListUpdated = true;
+                    if (!isNullOrUndefined(pasteContent.abstractLists)) {
+                        parser.parseAbstractList(pasteContent, this.viewer.abstractLists);
+                    }
+                    if (!isNullOrUndefined(pasteContent.lists)) {
+                        parser.parseList(pasteContent, this.viewer.lists);
+                    }
+                }
+                parser.parseBody(pasteContent.sections[i].blocks, widgets);
             }
         }
         if (this.currentPasteOptions === 'MergeWithExistingFormatting') {
@@ -44841,19 +45105,15 @@ class Editor {
             }
             if (j === widgets.length - 1 && widget instanceof ParagraphWidget) {
                 let newParagraph = widget;
-                let paragraphFormat;
                 if (newParagraph.childWidgets.length > 0
                     && newParagraph.childWidgets[0].children.length > 0) {
-                    if (newParagraph.paragraphFormat.listFormat.listId !== -1 || newParagraph.paragraphFormat.bidi) {
-                        paragraphFormat = newParagraph.paragraphFormat;
-                    }
                     let insertPosition = this.selection.start;
                     if ((insertPosition.paragraph.paragraphFormat.textAlignment === 'Center'
                         || insertPosition.paragraph.paragraphFormat.textAlignment === 'Right') &&
                         insertPosition.paragraph.paragraphFormat.listFormat.listId === -1) {
                         insertPosition.paragraph.x = this.viewer.clientActiveArea.x;
                     }
-                    this.insertElement(newParagraph.childWidgets[0].children, paragraphFormat);
+                    this.insertElement(newParagraph.childWidgets[0].children, newParagraph.paragraphFormat);
                 }
             }
             else if (widget instanceof BlockWidget) {
@@ -62402,8 +62662,22 @@ class SfdtExport {
     }
     createParagraph(paragraphWidget) {
         let paragraph = {};
-        paragraph.paragraphFormat = this.writeParagraphFormat(paragraphWidget.paragraphFormat);
-        paragraph.characterFormat = this.writeCharacterFormat(paragraphWidget.characterFormat);
+        let isParaSelected = false;
+        if (this.viewer.selection && !this.viewer.selection.isEmpty) {
+            let endPos = this.viewer.selection.end;
+            if (!this.viewer.selection.isForward) {
+                endPos = this.viewer.selection.start;
+            }
+            let lastLine = endPos.paragraph.childWidgets[endPos.paragraph.childWidgets.length - 1];
+            isParaSelected = this.viewer.selection.isParagraphLastLine(lastLine) && endPos.currentWidget === lastLine
+                && endPos.offset === this.viewer.selection.getLineLength(lastLine) + 1;
+        }
+        else {
+            isParaSelected = true;
+        }
+        // tslint:disable-next-line:max-line-length
+        paragraph.paragraphFormat = this.writeParagraphFormat(isParaSelected ? paragraphWidget.paragraphFormat : new WParagraphFormat(paragraphWidget));
+        paragraph.characterFormat = this.writeCharacterFormat(isParaSelected ? paragraphWidget.characterFormat : new WCharacterFormat(paragraphWidget));
         paragraph.inlines = [];
         return paragraph;
     }
@@ -66400,7 +66674,7 @@ class StyleDialog {
         let items = [{ text: localValue.getConstant('Font') + '..', id: 'style_font' },
             { text: localValue.getConstant('Paragraph') + '..', id: 'style_paragraph' },
             { text: localValue.getConstant('Numbering') + '..', id: 'style_numbering' }];
-        let dropDownbtn = new DropDownButton({
+        this.styleDropdwn = new DropDownButton({
             items: items, cssClass: 'e-de-style-format-dropdwn', enableRtl: isRtl,
             beforeItemRender: (args) => {
                 if (this.styleType.value === localValue.getConstant('Character')) {
@@ -66421,8 +66695,8 @@ class StyleDialog {
                 }
             }
         });
-        dropDownbtn.appendTo(formatBtn);
-        dropDownbtn.addEventListener('select', this.openDialog);
+        this.styleDropdwn.appendTo(formatBtn);
+        this.styleDropdwn.addEventListener('select', this.openDialog);
     }
     createFontOptions(parentDiv, isRtl) {
         let fontFamilyElement = createElement('select', { id: this.target.id + '_fontName' });
@@ -66803,26 +67077,38 @@ class StyleDialog {
             }
             this.target = undefined;
         }
+        if (this.fontColor) {
+            this.fontColor.destroy();
+            this.fontColor = undefined;
+        }
+        if (this.fontSize) {
+            this.fontSize.destroy();
+            this.fontSize = undefined;
+        }
+        if (this.fontFamily) {
+            this.fontFamily.destroy();
+            this.fontFamily = undefined;
+        }
         if (this.styleType) {
             this.styleType.destroy();
+            this.styleType = undefined;
         }
-        this.styleType = undefined;
         if (this.styleBasedOn) {
             this.styleBasedOn.destroy();
+            this.styleBasedOn = undefined;
         }
-        this.styleBasedOn = undefined;
         if (this.styleParagraph) {
             this.styleParagraph.destroy();
+            this.styleParagraph = undefined;
         }
-        this.styleParagraph = undefined;
         if (this.onlyThisDocument) {
             this.onlyThisDocument.destroy();
         }
         this.onlyThisDocument = undefined;
         if (this.template) {
             this.template.destroy();
+            this.template = undefined;
         }
-        this.template = undefined;
         if (this.style) {
             this.style = undefined;
         }
@@ -66831,8 +67117,12 @@ class StyleDialog {
         }
         if (this.numberingBulletDialog) {
             this.numberingBulletDialog.destroy();
+            this.numberingBulletDialog = undefined;
         }
-        this.numberingBulletDialog = undefined;
+        if (this.styleDropdwn) {
+            this.styleDropdwn.destroy();
+            this.styleDropdwn = undefined;
+        }
     }
 }
 
@@ -71062,7 +71352,7 @@ class Toolbar$1 {
             iconCss: 'e-icons e-de-ctnr-image',
             select: this.onDropDownButtonSelect.bind(this),
         };
-        let insertImage = new DropDownButton(items, imageButton);
+        this.imgDropDwn = new DropDownButton(items, imageButton);
         let breakButton = toolbarTarget.getElementsByClassName('e-de-break-splitbutton')[0].firstChild;
         items = {
             items: [
@@ -71073,7 +71363,7 @@ class Toolbar$1 {
             iconCss: 'e-icons e-de-ctnr-break',
             select: this.onDropDownButtonSelect.bind(this),
         };
-        let inserBreak = new DropDownButton(items, breakButton);
+        this.breakDropDwn = new DropDownButton(items, breakButton);
         this.filePicker = createElement('input', {
             attrs: { type: 'file', accept: '.doc,.docx,.rtf,.txt,.htm,.html,.sfdt' }, className: 'e-de-ctnr-file-picker'
         });
@@ -71091,7 +71381,7 @@ class Toolbar$1 {
             cssClass: 'e-de-toolbar-btn-first e-caret-hide',
             select: this.onDropDownButtonSelect.bind(this)
         };
-        let restrictDropDown = new DropDownButton(lockItems, restrictEditing);
+        this.restrictDropDwn = new DropDownButton(lockItems, restrictEditing);
     }
     showHidePropertiesPane() {
         if (this.container.propertiesPaneContainer.style.display === 'none') {
@@ -71430,6 +71720,18 @@ class Toolbar$1 {
      * @private
      */
     destroy() {
+        if (this.restrictDropDwn) {
+            this.restrictDropDwn.destroy();
+            this.restrictDropDwn = undefined;
+        }
+        if (this.imgDropDwn) {
+            this.imgDropDwn.destroy();
+            this.imgDropDwn = undefined;
+        }
+        if (this.breakDropDwn) {
+            this.breakDropDwn.destroy();
+            this.breakDropDwn = undefined;
+        }
         if (this.toolbar) {
             let toolbarElement = this.toolbar.element;
             this.toolbar.destroy();
@@ -72535,11 +72837,11 @@ class Paragraph {
                 this.removeSelectedList();
             }
         };
-        let dropdown = new SplitButton(menuOptions);
-        dropdown.click = () => {
+        this.numberedListBtn = new SplitButton(menuOptions);
+        this.numberedListBtn.click = () => {
             this.applyLastAppliedNumbering();
         };
-        dropdown.appendTo(button);
+        this.numberedListBtn.appendTo(button);
         button.parentElement.setAttribute('title', this.localObj.getConstant('Numbering'));
     }
     createBulletListDropButton(iconcss, button) {
@@ -72577,11 +72879,11 @@ class Paragraph {
                 this.removeSelectedList();
             }
         };
-        let dropdown = new SplitButton(menuOptions);
-        dropdown.click = () => {
+        this.bulletListBtn = new SplitButton(menuOptions);
+        this.bulletListBtn.click = () => {
             this.applyLastAppliedBullet();
         };
-        dropdown.appendTo(button);
+        this.bulletListBtn.appendTo(button);
         button.parentElement.setAttribute('title', this.localObj.getConstant('Bullets'));
     }
     createNumberListTag(ulTag, text1, text2, text3) {
@@ -72790,6 +73092,14 @@ class Paragraph {
         if (this.style) {
             this.style.destroy();
             this.style = undefined;
+        }
+        if (this.bulletListBtn) {
+            this.bulletListBtn.destroy();
+            this.bulletListBtn = undefined;
+        }
+        if (this.numberedListBtn) {
+            this.numberedListBtn.destroy();
+            this.numberedListBtn = undefined;
         }
     }
 }
@@ -73119,6 +73429,8 @@ class HeaderFooterProperties {
         return divElement;
     }
     onSelectionChange() {
+        this.headerFromTop.value = this.documentEditor.sectionFormat.headerDistance;
+        this.footerFromTop.value = this.documentEditor.sectionFormat.footerDistance;
         if (this.documentEditor.selection.sectionFormat.differentFirstPage) {
             this.firstPage.checked = true;
         }
@@ -74138,7 +74450,7 @@ class TableProperties {
             liTag.appendChild(liInnerDiv);
             return liTag;
         };
-        // tslint:disable-next-line:max-line-length
+        //tslint:disable-next-line:max-line-length
         this.createDropDownButton = (id, styles, parentDiv, iconCss, content, items, target) => {
             let buttonElement = createElement('button', { id: id, styles: styles, attrs: { type: 'button' } });
             parentDiv.appendChild(buttonElement);
@@ -74531,11 +74843,18 @@ class StatusBar {
         });
         return spellCheckBtn;
     }
+    /**
+     * @private
+     */
     destroy() {
         this.container = undefined;
         if (this.zoom) {
             this.zoom.destroy();
             this.zoom = undefined;
+        }
+        if (this.spellCheckButton) {
+            this.spellCheckButton.destroy();
+            this.spellCheckButton = undefined;
         }
     }
 }
@@ -74799,6 +75118,9 @@ let DocumentEditorContainer = class DocumentEditorContainer extends Component {
         }
         if (this.paragraphFormat) {
             this.documentEditor.setDefaultParagraphFormat(this.paragraphFormat);
+        }
+        if (this.sectionFormat) {
+            this.documentEditor.setDefaultSectionFormat(this.sectionFormat);
         }
     }
     setserverActionSettings() {
@@ -75067,10 +75389,22 @@ let DocumentEditorContainer = class DocumentEditorContainer extends Component {
         this.paragraphFormat = paragraphFormat;
     }
     /**
+     * Set the default section format for document editor container
+     * @param sectionFormat
+     */
+    setDefaultSectionFormat(sectionFormat) {
+        this.sectionFormat = sectionFormat;
+    }
+    /**
      * Destroys all managed resources used by this object.
      */
     destroy() {
         super.destroy();
+        if (this.element) {
+            this.element.classList.remove('e-documenteditorcontainer');
+            this.element.innerHTML = '';
+        }
+        this.element = undefined;
         if (this.toolbarContainer && this.toolbarContainer.parentElement) {
             this.toolbarContainer.innerHTML = '';
             this.toolbarContainer.parentElement.removeChild(this.toolbarContainer);
@@ -75100,6 +75434,9 @@ let DocumentEditorContainer = class DocumentEditorContainer extends Component {
             this.tableProperties.destroy();
         }
         this.tableProperties = undefined;
+        if (this.statusBar) {
+            this.statusBar.destroy();
+        }
         if (this.propertiesPaneContainer && this.editorContainer.parentElement) {
             this.propertiesPaneContainer.innerHTML = '';
             this.propertiesPaneContainer.parentElement.removeChild(this.propertiesPaneContainer);

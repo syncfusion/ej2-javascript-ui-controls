@@ -3,7 +3,7 @@ import { NodeModel, LaneModel, PhaseModel, SwimLaneModel } from '../objects/node
 import { Node, Shape, SwimLane } from '../objects/node';
 import { GridPanel, GridCell, GridRow, RowDefinition, ColumnDefinition } from '../core/containers/grid';
 import { Lane, Phase } from '../objects/node';
-import { DiagramAction, NodeConstraints, DiagramConstraints } from '../enum/enum';
+import { DiagramAction, NodeConstraints, DiagramConstraints, DiagramEvent } from '../enum/enum';
 import { cloneObject, randomId } from './../utility/base-util';
 import { Container } from '../core/containers/container';
 import { DiagramElement } from '../core/elements/diagram-element';
@@ -13,7 +13,7 @@ import { PointModel } from '../primitives/point-model';
 import { Canvas } from '../core/containers/canvas';
 import { Rect } from '../primitives/rect';
 import { HistoryEntry } from '../diagram/history';
-import { StackEntryObject } from '../objects/interface/IElement';
+import { StackEntryObject, ICollectionChangeEventArgs } from '../objects/interface/IElement';
 import { Connector } from '../objects/connector';
 import { ConnectorModel } from '../objects/connector-model';
 import { SelectorModel } from '../objects/node-model';
@@ -775,6 +775,7 @@ export function updateHeaderMaxWidth(diagram: Diagram, swimLane: NodeModel): voi
 
 /** @private */
 export function addLane(diagram: Diagram, parent: NodeModel, lane: LaneModel, count?: number): void {
+    let args: ICollectionChangeEventArgs;
     let swimLane: NodeModel = diagram.nameTable[parent.id];
     if (swimLane.shape.type === 'SwimLane') {
         diagram.protectPropertyChange(true);
@@ -783,7 +784,6 @@ export function addLane(diagram: Diagram, parent: NodeModel, lane: LaneModel, co
         let orientation: boolean = false; let connectors: string[]; let entry: HistoryEntry;
         let index: number; let laneObj: LaneModel; let laneIndex: number; let children: NodeModel[];
         let j: number; let i: number; let k: number; let cell: GridCell; let child: NodeModel; let point: PointModel;
-
         laneObj = new Lane(shape as Shape, 'lanes', lane, true);
         index = (shape.header && (shape as SwimLane).hasHeader) ? 1 : 0;
         if (shape.orientation === 'Horizontal') {
@@ -793,71 +793,80 @@ export function addLane(diagram: Diagram, parent: NodeModel, lane: LaneModel, co
         connectors = getConnectors(diagram, grid, 0, true);
         laneIndex = (count !== undefined) ? count : shape.lanes.length;
         index += laneIndex;
-        if (orientation) {
-            let rowDef: RowDefinition = new RowDefinition();
-            rowDef.height = lane.height;
-            grid.addRow(index, rowDef, false);
-            swimLane.height = (swimLane.height !== undefined) ? swimLane.height + lane.height : swimLane.height;
-            swimLane.wrapper.height = grid.height = swimLane.height;
-        } else {
-            let colDef: ColumnDefinition = new ColumnDefinition();
-            colDef.width = lane.width;
-            grid.addColumn(laneIndex + 1, colDef, false);
-            if (swimLane.width) {
-                swimLane.width += lane.width;
-                swimLane.wrapper.width = grid.width = swimLane.width;
+        args = {
+            element: laneObj, cause: this.diagramActions, state: 'Changing', type: 'Addition', cancel: false, laneIndex: laneIndex
+        };
+        diagram.triggerEvent(DiagramEvent.collectionChange, args);
+        if (!args.cancel) {
+            if (orientation) {
+                let rowDef: RowDefinition = new RowDefinition();
+                rowDef.height = lane.height;
+                grid.addRow(index, rowDef, false);
+                swimLane.height = (swimLane.height !== undefined) ? swimLane.height + lane.height : swimLane.height;
+                swimLane.wrapper.height = grid.height = swimLane.height;
+            } else {
+                let colDef: ColumnDefinition = new ColumnDefinition();
+                colDef.width = lane.width;
+                grid.addColumn(laneIndex + 1, colDef, false);
+                if (swimLane.width) {
+                    swimLane.width += lane.width;
+                    swimLane.wrapper.width = grid.width = swimLane.width;
+                }
+                if (!(diagram.diagramActions & DiagramAction.UndoRedo)) {
+                    grid.rows[0].cells[0].columnSpan += 1;
+                }
             }
             if (!(diagram.diagramActions & DiagramAction.UndoRedo)) {
-                grid.rows[0].cells[0].columnSpan += 1;
+                laneObj.id += randomId();
             }
-        }
-        if (!(diagram.diagramActions & DiagramAction.UndoRedo)) {
-            laneObj.id += randomId();
-        }
-        if (count !== undefined) {
-            shape.lanes.splice(count, 0, laneObj);
-        } else {
-            shape.lanes.push(laneObj);
-        }
-
-        laneCollection(grid, diagram, swimLane, index, laneIndex, orientation);
-        redoObj = (shape.orientation === 'Horizontal') ?
-            diagram.nameTable[grid.rows[index].cells[0].children[0].id] :
-            ((shape.header && (shape as SwimLane).hasHeader) ? diagram.nameTable[grid.rows[1].cells[index].children[0].id] :
-                diagram.nameTable[grid.rows[0].cells[index].children[0].id]);
-        if (!(diagram.diagramActions & DiagramAction.UndoRedo)) {
-            entry = {
-                type: 'LaneCollectionChanged', changeType: 'Insert', undoObject: cloneObject(laneObj),
-                redoObject: cloneObject(redoObj), category: 'Internal'
+            if (count !== undefined) {
+                shape.lanes.splice(count, 0, laneObj);
+            } else {
+                shape.lanes.push(laneObj);
+            }
+            args = {
+                element: laneObj, cause: this.diagramActions, state: 'Changed', type: 'Addition', cancel: false, laneIndex: laneIndex
             };
-            diagram.addHistoryEntry(entry);
-        }
-        let startRowIndex: number = (shape.orientation === 'Horizontal') ?
-            index : ((shape.header && (shape as SwimLane).hasHeader) ? 1 : 0);
-        ChangeLaneIndex(diagram, swimLane, startRowIndex);
-        swimLaneMeasureAndArrange(swimLane);
-        updateHeaderMaxWidth(diagram, swimLane);
-        children = lane.children;
-        if (children && children.length > 0) {
-            for (j = 0; j < children.length; j++) {
-                child = children[j];
-                point = { x: child.wrapper.offsetX, y: child.wrapper.offsetY };
+            diagram.triggerEvent(DiagramEvent.collectionChange, args);
+            laneCollection(grid, diagram, swimLane, index, laneIndex, orientation);
+            redoObj = (shape.orientation === 'Horizontal') ?
+                diagram.nameTable[grid.rows[index].cells[0].children[0].id] :
+                ((shape.header && (shape as SwimLane).hasHeader) ? diagram.nameTable[grid.rows[1].cells[index].children[0].id] :
+                    diagram.nameTable[grid.rows[0].cells[index].children[0].id]);
+            if (!(diagram.diagramActions & DiagramAction.UndoRedo)) {
+                entry = {
+                    type: 'LaneCollectionChanged', changeType: 'Insert', undoObject: cloneObject(laneObj),
+                    redoObject: cloneObject(redoObj), category: 'Internal'
+                };
+                diagram.addHistoryEntry(entry);
+            }
+            let startRowIndex: number = (shape.orientation === 'Horizontal') ?
+                index : ((shape.header && (shape as SwimLane).hasHeader) ? 1 : 0);
+            ChangeLaneIndex(diagram, swimLane, startRowIndex);
+            swimLaneMeasureAndArrange(swimLane);
+            updateHeaderMaxWidth(diagram, swimLane);
+            children = lane.children;
+            if (children && children.length > 0) {
+                for (j = 0; j < children.length; j++) {
+                    child = children[j];
+                    point = { x: child.wrapper.offsetX, y: child.wrapper.offsetY };
 
-                if (shape.orientation === 'Horizontal') {
-                    cell = grid.rows[index].cells[i];
-                    for (i = 0; i < grid.rows[index].cells.length; i++) {
-                        addChildNodeToNewLane(diagram, grid.rows[index].cells[i], point, child);
-                    }
-                } else {
-                    for (k = 0; k < grid.rows.length; k++) {
-                        cell = grid.rows[k].cells[index];
-                        addChildNodeToNewLane(diagram, cell, point, child);
+                    if (shape.orientation === 'Horizontal') {
+                        cell = grid.rows[index].cells[i];
+                        for (i = 0; i < grid.rows[index].cells.length; i++) {
+                            addChildNodeToNewLane(diagram, grid.rows[index].cells[i], point, child);
+                        }
+                    } else {
+                        for (k = 0; k < grid.rows.length; k++) {
+                            cell = grid.rows[k].cells[index];
+                            addChildNodeToNewLane(diagram, cell, point, child);
+                        }
                     }
                 }
             }
+            updateConnectorsProperties(connectors, diagram);
+            diagram.drag(swimLane, bounds.x - grid.bounds.x, bounds.y - grid.bounds.y);
         }
-        updateConnectorsProperties(connectors, diagram);
-        diagram.drag(swimLane, bounds.x - grid.bounds.x, bounds.y - grid.bounds.y);
         diagram.protectPropertyChange(false);
     }
 }
@@ -1370,6 +1379,7 @@ function deleteNode(diagram: Diagram, node: NodeModel): void {
 }
 
 export function removeLane(diagram: Diagram, lane: NodeModel, swimLane: NodeModel, lanes?: LaneModel): void {
+    let args: ICollectionChangeEventArgs;
     if (swimLane.shape.type === 'SwimLane') {
         let shape: SwimLaneModel = swimLane.shape as SwimLaneModel; let laneIndex: number;
         if (shape.lanes.length === 1) {
@@ -1380,51 +1390,60 @@ export function removeLane(diagram: Diagram, lane: NodeModel, swimLane: NodeMode
 
             let grid: GridPanel = swimLane.wrapper.children[0] as GridPanel;
             laneIndex = (lanes) ? (shape.lanes.indexOf(lanes)) : findLaneIndex(swimLane, lane);
-            let undoObj: LaneModel = cloneObject(shape.lanes[laneIndex]) as LaneModel;
-
-            removeLaneChildNode(diagram, swimLane, lane as NodeModel, undefined, laneIndex);
-            if (!(diagram.diagramActions & DiagramAction.UndoRedo)) {
-                let entry: HistoryEntry = {
-                    type: 'LaneCollectionChanged', changeType: 'Remove', undoObject: undoObj,
-                    redoObject: cloneObject(lane), category: 'Internal'
+            args = {
+                element: lane, cause: this.diagramActions, state: 'Changing', type: 'Removal', cancel: false, laneIndex: laneIndex
+            };
+            diagram.triggerEvent(DiagramEvent.collectionChange, args);
+            if (!args.cancel) {
+                let undoObj: LaneModel = cloneObject(shape.lanes[laneIndex]) as LaneModel;
+                removeLaneChildNode(diagram, swimLane, lane as NodeModel, undefined, laneIndex);
+                if (!(diagram.diagramActions & DiagramAction.UndoRedo)) {
+                    let entry: HistoryEntry = {
+                        type: 'LaneCollectionChanged', changeType: 'Remove', undoObject: undoObj,
+                        redoObject: cloneObject(lane), category: 'Internal'
+                    };
+                    diagram.addHistoryEntry(entry);
+                }
+                shape.lanes.splice(laneIndex, 1);
+                let index: number = (lane) ? (shape.orientation === 'Horizontal' ? lane.rowIndex : lane.columnIndex) :
+                    (findStartLaneIndex(swimLane) + laneIndex);
+                if (shape.orientation === 'Horizontal') {
+                    row = grid.rows[index];
+                    for (i = 0; i < row.cells.length; i++) {
+                        cell = row.cells[i];
+                        if (cell && cell.children.length > 0) {
+                            for (j = 0; j < cell.children.length; j++) {
+                                child = cell.children[j] as Canvas;
+                                removeChildren(diagram, child);
+                            }
+                        }
+                    }
+                    grid.removeRow(index);
+                } else {
+                    swimLane.width = (swimLane.width !== undefined) ?
+                        swimLane.width - grid.rows[0].cells[index].actualSize.width : swimLane.width;
+                    for (i = 0; i < grid.rows.length; i++) {
+                        cell = grid.rows[i].cells[index];
+                        if (cell && cell.children.length > 0) {
+                            for (j = 0; j < cell.children.length; j++) {
+                                child = cell.children[j] as Canvas;
+                                removeChildren(diagram, child);
+                            }
+                        }
+                    }
+                    grid.removeColumn(index);
+                }
+                args = {
+                    element: lane, cause: this.diagramActions, state: 'Changed', type: 'Removal', cancel: false, laneIndex: laneIndex
                 };
-                diagram.addHistoryEntry(entry);
+                diagram.triggerEvent(DiagramEvent.collectionChange, args);
+                swimLane.width = swimLane.wrapper.width = grid.width;
+                swimLane.height = swimLane.wrapper.height = grid.height;
+                swimLaneMeasureAndArrange(swimLane);
+                ChangeLaneIndex(diagram, swimLane, index);
+                diagram.drag(swimLane, x - swimLane.wrapper.bounds.x, y - swimLane.wrapper.bounds.y);
+                diagram.updateDiagramObject(swimLane);
             }
-            shape.lanes.splice(laneIndex, 1);
-            let index: number = (lane) ? (shape.orientation === 'Horizontal' ? lane.rowIndex : lane.columnIndex) :
-                (findStartLaneIndex(swimLane) + laneIndex);
-            if (shape.orientation === 'Horizontal') {
-                row = grid.rows[index];
-                for (i = 0; i < row.cells.length; i++) {
-                    cell = row.cells[i];
-                    if (cell && cell.children.length > 0) {
-                        for (j = 0; j < cell.children.length; j++) {
-                            child = cell.children[j] as Canvas;
-                            removeChildren(diagram, child);
-                        }
-                    }
-                }
-                grid.removeRow(index);
-            } else {
-                swimLane.width = (swimLane.width !== undefined) ?
-                    swimLane.width - grid.rows[0].cells[index].actualSize.width : swimLane.width;
-                for (i = 0; i < grid.rows.length; i++) {
-                    cell = grid.rows[i].cells[index];
-                    if (cell && cell.children.length > 0) {
-                        for (j = 0; j < cell.children.length; j++) {
-                            child = cell.children[j] as Canvas;
-                            removeChildren(diagram, child);
-                        }
-                    }
-                }
-                grid.removeColumn(index);
-            }
-            swimLane.width = swimLane.wrapper.width = grid.width;
-            swimLane.height = swimLane.wrapper.height = grid.height;
-            swimLaneMeasureAndArrange(swimLane);
-            ChangeLaneIndex(diagram, swimLane, index);
-            diagram.drag(swimLane, x - swimLane.wrapper.bounds.x, y - swimLane.wrapper.bounds.y);
-            diagram.updateDiagramObject(swimLane);
         }
     }
 }

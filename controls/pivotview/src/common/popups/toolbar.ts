@@ -860,7 +860,15 @@ export class Toolbar {
     }
 
     private updateReportList(): void {
-        let reports: FetchReportArgs = this.fetchReports();
+        let reports: FetchReportArgs;
+        if(isBlazor()) {
+            reports = this.fetchReports();
+            if(reports.reportName === undefined) {
+                reports.reportName = this.reportList.dataSource as string[];
+            }
+        } else {
+            reports = this.fetchReports();
+        }
         this.reportList.dataSource = reports.reportName;
         if (this.currentReport === '' && this.reportList.dataSource.length > 0) {
             this.reportList.value = this.reportList.dataSource[this.reportList.dataSource.length - 1];

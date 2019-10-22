@@ -37,7 +37,7 @@ import { getFlowShape } from './../objects/dictionary/flow-shapes';
 import { Diagram } from './../diagram';
 import { Intersection, findAngle } from './connector';
 import { SelectorModel } from '../objects/node-model';
-import {  UserHandleModel } from '../interaction/selector-model';
+import { UserHandleModel } from '../interaction/selector-model';
 import { MarginModel } from '../core/appearance-model';
 import { PointPortModel } from './../objects/port-model';
 import { ShapeAnnotationModel, PathAnnotationModel, HyperlinkModel, AnnotationModel } from './../objects/annotation-model';
@@ -50,7 +50,7 @@ import { View } from '../objects/interface/interfaces';
 import { TransformFactor as Transforms, Segment } from '../interaction/scroller';
 import { SymbolPalette } from '../../symbol-palette/symbol-palette';
 import { canResize } from './constraints-util';
-import {  UserHandle } from '../interaction/selector';
+import { UserHandle } from '../interaction/selector';
 import { Selector } from '../objects/node';
 import { getUMLActivityShape } from '../objects/dictionary/umlactivity-shapes';
 import { Canvas } from '../core/containers/canvas';
@@ -270,8 +270,7 @@ export function setConnectorDefaults(child: ConnectorModel, node: ConnectorModel
                     node.sourceDecorator.style.fill = (child.sourceDecorator && child.sourceDecorator.style &&
                         child.sourceDecorator.style.fill) || 'white';
                 }
-                hasRelation = true;
-                node.style.strokeDashArray = '4 4';
+                hasRelation = true; node.style.strokeDashArray = '4 4';
             } else if ((child.shape as RelationShip).relationship === 'Realization') {
                 if (node.sourceDecorator && node.sourceDecorator.style) {
                     node.sourceDecorator.style.fill = (child.sourceDecorator && child.sourceDecorator.style &&
@@ -279,9 +278,7 @@ export function setConnectorDefaults(child: ConnectorModel, node: ConnectorModel
                 }
                 hasRelation = true;
             }
-            if (hasRelation) {
-                node.style.strokeWidth = (child.style && child.style.strokeWidth) || 2;
-            }
+            if (hasRelation) { node.style.strokeWidth = (child.style && child.style.strokeWidth) || 2; }
             break;
     }
 }

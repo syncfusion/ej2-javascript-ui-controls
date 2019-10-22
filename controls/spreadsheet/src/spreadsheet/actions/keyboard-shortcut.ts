@@ -35,7 +35,7 @@ export class KeyboardShortcut {
             if (e.keyCode === 79) {
                 (this.parent.element.querySelector('#' + this.parent.element.id + '_fileUpload') as HTMLElement).click();
             } else if (e.keyCode === 83) {
-                this.parent.save();
+                if (this.parent.saveUrl && this.parent.allowSave) { this.parent.save(); }
             } else if (e.keyCode === 88) {
                 this.parent.notify(cut, null);
             } else if (e.keyCode === 67) {

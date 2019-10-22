@@ -1,5 +1,5 @@
 import { addClass, removeClass, Touch, remove, EventHandler, TapEventArgs, Browser } from '@syncfusion/ej2-base';
-import { closest, isNullOrUndefined, ScrollEventArgs, SwipeEventArgs } from '@syncfusion/ej2-base';
+import { closest, isNullOrUndefined, ScrollEventArgs, SwipeEventArgs, isBlazor } from '@syncfusion/ej2-base';
 import { Schedule } from '../base/schedule';
 import { ActionEventArgs, NavigatingEventArgs, LayoutData } from '../base/interface';
 import * as events from '../base/constant';
@@ -48,7 +48,9 @@ export class ScheduleTouch {
         }
         if (e.scrollDirection === 'Left' || e.scrollDirection === 'Right') {
             let args: ActionEventArgs = { requestType: 'dateNavigate', cancel: false, event: e.originalEvent };
-            this.parent.trigger(events.actionBegin, args);
+            if (!isBlazor()) {
+                this.parent.trigger(events.actionBegin, args);
+            }
             if (args.cancel) {
                 return;
             }

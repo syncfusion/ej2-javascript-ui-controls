@@ -355,6 +355,9 @@ export class Annotation {
             if (commentPanel) {
                 if (commentPanel.style.display === 'none') {
                     commentPanel.style.display = 'block';
+                    this.pdfViewerBase.navigationPane.commentPanelResizer.style.display = 'block';
+                    this.pdfViewerBase.navigationPane.setCommentPanelResizeIconTop();
+                    this.pdfViewer.annotation.stickyNotesAnnotationModule.updateCommentPanelTextTop();
                     let viewerContainer: HTMLElement = document.getElementById(this.pdfViewer.element.id + '_viewerContainer');
                     let pageContainer: HTMLElement = document.getElementById(this.pdfViewer.element.id + '_pageViewContainer');
                     if (viewerContainer) {
@@ -1708,9 +1711,11 @@ export class Annotation {
                     // tslint:disable-next-line:max-line-length
                     this.measureAnnotationModule.renderMeasureShapeAnnotations(pdfAnnotationBase, this.pdfViewer.annotation.getEventPageNumber(event));
                 }
+                this.pdfViewerBase.isDocumentEdited = true;
                 // tslint:disable-next-line:max-line-length
                 this.pdfViewer.fireAnnotationAdd(pdfAnnotationBase.pageIndex, index, this.getAnnotationType(pdfAnnotationBase.shapeAnnotationType, pdfAnnotationBase.measureType), bounds, setting);
             } else if (this.pdfViewerBase.tool instanceof MoveTool || this.pdfViewerBase.tool instanceof ResizeTool) {
+                this.pdfViewerBase.isDocumentEdited = true;
                 if (this.pdfViewerBase.tool instanceof ResizeTool) {
                     this.triggerAnnotationResize(pdfAnnotationBase);
                 }
@@ -1729,6 +1734,7 @@ export class Annotation {
                     this.pdfViewer.annotation.measureAnnotationModule.modifyInCollection('bounds', this.pdfViewer.annotation.getEventPageNumber(event), pdfAnnotationBase);
                 }
             } else if (this.pdfViewerBase.tool instanceof ConnectTool) {
+                this.pdfViewerBase.isDocumentEdited = true;
                 this.triggerAnnotationResize(pdfAnnotationBase);
                 if (pdfAnnotationBase.measureType === '' || isNullOrUndefined(pdfAnnotationBase.measureType)) {
                     // tslint:disable-next-line:max-line-length

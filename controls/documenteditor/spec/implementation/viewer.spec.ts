@@ -607,3 +607,44 @@ describe('Header footer maximum height validation', () => {
         expect((editor.viewer.pages[0].bodyWidgets[0].firstChild as ParagraphWidget).y).toBeLessThan(450);
     });
 });
+describe('Long Touch Testing', () => {
+    let editor: DocumentEditor;
+    let viewer: PageLayoutViewer;
+    beforeAll(() => {
+        let ele: HTMLElement = createElement('div', { id: 'container', styles: 'width:100%;height:100%' });
+        document.body.appendChild(ele);
+        DocumentEditor.Inject(Editor, Selection, ContextMenu);
+        editor = new DocumentEditor({ enableEditor: true, enableSelection: true, isReadOnly: false, enableContextMenu: true });
+        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        editor.appendTo('#container');
+        viewer = editor.viewer as PageLayoutViewer;
+    });
+    afterAll((done) => {
+        editor.destroy();
+        //destroy validation
+        editor.destroy();
+        editor = undefined;
+        document.body.removeChild(document.getElementById('container'));
+        setTimeout(() => {
+            done();
+        }, 1000);
+    });
+    it('Select current word on long touch in empty selection', () => {
+        let touchevent: any;
+        let clientX_Y = { clientX: 297, clientY: 302, pageX: 297, pageY: 302 };
+        let touches = [];
+        let changedTouches = [];
+        touches.push(clientX_Y);
+        changedTouches.push(clientX_Y);
+        touchevent = { touches, changedTouches, preventDefault: function () { } };
+        viewer.isTouchInput = true;
+        viewer.onTouchStartInternal(touchevent);
+        viewer.onLongTouch(touchevent);
+        let selStart: string = viewer.selection.start.hierarchicalPosition;
+        let selEnd: string = viewer.selection.end.hierarchicalPosition;
+        expect(selStart).not.toBe(selEnd);
+    });    
+});

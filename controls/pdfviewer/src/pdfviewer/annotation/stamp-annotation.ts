@@ -134,7 +134,12 @@ export class StampAnnotation {
                     // tslint:disable-next-line
                     this.retrieveDynamicStampAnnotation(annotation['Subject']);
                     this.isExistingStamp = true;
-                    let currentLocation: IRectCollection = this.calculateImagePosition(position, true);
+                    let currentLocation: IRectCollection;
+                    if (isImport) {
+                        currentLocation = this.calculateImagePosition(position, false, true);
+                    } else {
+                        currentLocation = this.calculateImagePosition(position, true);
+                    }
                     // tslint:disable-next-line
                     let rotation: number = this.retrieveRotationAngle(annotation['RotateAngle']);
                     for (let d: number = 0; d < Apperance.length; d++) {
@@ -160,7 +165,12 @@ export class StampAnnotation {
                     // tslint:disable-next-line
                     this.retrievestampAnnotation(annotation['Subject']);
                     this.isExistingStamp = true;
-                    let currentLocation: IRectCollection = this.calculateImagePosition(position, true);
+                    let currentLocation: IRectCollection;
+                    if (isImport) {
+                        currentLocation = this.calculateImagePosition(position, false, true);
+                    } else {
+                        currentLocation = this.calculateImagePosition(position, true);
+                    }
                     // tslint:disable-next-line
                     let rotation: number = this.retrieveRotationAngle(annotation['RotateAngle']);
                     // tslint:disable-next-line
@@ -239,7 +249,7 @@ export class StampAnnotation {
         return (number * (96 / 72));
     }
     // tslint:disable-next-line
-    private calculateImagePosition(position: any, flags?: boolean): any {
+    private calculateImagePosition(position: any, flags?: boolean, isImport?: boolean): any {
         let positions: IRectCollection = { width: 0, height: 0, left: 0, top: 0 };
         if (flags) {
             let width: number = this.ConvertPointToPixel((parseFloat(position.Width)) - 20);
@@ -247,6 +257,8 @@ export class StampAnnotation {
             let left: number = this.ConvertPointToPixel((parseFloat(position.X)) + 10);
             let top: number = this.ConvertPointToPixel((parseFloat(position.Y)) + 10);
             positions = { width: width, height: height, left: left, top: top };
+        } else if (isImport) {
+            positions = { width: position.Width - 20, height: position.Height - 20, left: position.X - 2, top: position.Y - 3 };
         } else {
             let width: number = this.ConvertPointToPixel((parseFloat(position.Width)));
             let height: number = this.ConvertPointToPixel((parseFloat(position.Height)));
@@ -419,6 +431,7 @@ export class StampAnnotation {
      */
     // tslint:disable-next-line
     public updateDeleteItems(pageNumber: number, annotation: any, opacity?: number): any {
+        this.pdfViewerBase.isDocumentEdited = true;
         let annotationObject: IStampAnnotation = null;
         annotation.modifiedDate = new Date().toLocaleString();
         annotation.author = this.pdfViewer.stampSettings.author;

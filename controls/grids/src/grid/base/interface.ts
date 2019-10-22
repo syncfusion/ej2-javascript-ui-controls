@@ -442,6 +442,7 @@ export interface IGrid extends Component<HTMLElement> {
     pagerModule?: Page;
     invokedFromMedia?: boolean;
     isAutoGen?: boolean;
+    pageTemplateChange?: boolean;
 
     //public methods
     getHeaderContent?(): Element;

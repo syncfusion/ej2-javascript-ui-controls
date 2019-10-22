@@ -90,6 +90,28 @@ export class TextMarkupAnnotation {
     public currentTextMarkupAnnotation: ITextMarkupAnnotation = null;
     private currentAnnotationIndex: number = null;
     private isAnnotationSelect: boolean = false;
+    // tslint:disable-next-line
+    private dropDivAnnotationLeft: any;
+    // tslint:disable-next-line
+    private dropDivAnnotationRight: any;
+    // tslint:disable-next-line
+    private dropElementLeft: any;
+    // tslint:disable-next-line
+    private dropElementRight: any;
+    /**
+     * @private
+     */
+    public isDropletClicked: boolean = false;
+    /**
+     * @private
+     */
+    public isRightDropletClicked: boolean = false;
+    /**
+     * @private
+     */
+    public isLeftDropletClicked: boolean = false;
+    private isSelectionMaintained: boolean = false;
+    private isExtended: boolean = false;
 
     /**
      * @private
@@ -104,7 +126,192 @@ export class TextMarkupAnnotation {
         this.underlineOpacity = pdfViewer.underlineSettings.opacity;
         this.strikethroughOpacity = pdfViewer.strikethroughSettings.opacity;
     }
+    /**
+     * @private
+     */
+    public createAnnotationSelectElement(): void {
+        // tslint:disable-next-line:max-line-length
+        this.dropDivAnnotationLeft = createElement('div', { id: this.pdfViewer.element.id + '_droplet_left', className: 'e-pv-drop' });
+        this.dropDivAnnotationLeft.style.borderRight = '2px solid';
+        // tslint:disable-next-line:max-line-length
+        this.dropDivAnnotationRight = createElement('div', { id: this.pdfViewer.element.id + '_droplet_right', className: 'e-pv-drop' });
+        this.dropDivAnnotationRight.style.borderLeft = '2px solid';
+        this.dropElementLeft = createElement('div', { className: 'e-pv-droplet', id: this.pdfViewer.element.id + '_dropletspan_left', });
+        this.dropElementLeft.style.transform = 'rotate(0deg)';
+        this.dropDivAnnotationLeft.appendChild(this.dropElementLeft);
+        this.dropElementRight = createElement('div', { className: 'e-pv-droplet', id: this.pdfViewer.element.id + '_dropletspan_right' });
+        this.dropElementRight.style.transform = 'rotate(-90deg)';
+        this.dropDivAnnotationRight.appendChild(this.dropElementRight);
+        this.pdfViewerBase.pageContainer.appendChild(this.dropDivAnnotationLeft);
+        this.pdfViewerBase.pageContainer.appendChild(this.dropDivAnnotationRight);
+        this.dropElementLeft.style.top = '20px';
+        this.dropElementRight.style.top = '20px';
+        this.dropElementRight.style.left = '-8px';
+        this.dropElementLeft.style.left = '-8px';
+        this.dropDivAnnotationLeft.style.display = 'none';
+        this.dropDivAnnotationRight.style.display = 'none';
+        this.dropDivAnnotationLeft.addEventListener('mousedown', this.maintainSelection);
+        this.dropDivAnnotationLeft.addEventListener('mousemove', this.annotationLeftMove);
+        this.dropDivAnnotationLeft.addEventListener('mouseup', this.selectionEnd);
+        this.dropDivAnnotationRight.addEventListener('mousedown', this.maintainSelection);
+        this.dropDivAnnotationRight.addEventListener('mousemove', this.annotationRightMove);
+        this.dropDivAnnotationRight.addEventListener('mouseup', this.selectionEnd);
+    }
+    // tslint:disable-next-line
+    private maintainSelection = (event: any): void => {
+        this.isDropletClicked = true;
+        this.pdfViewer.textSelectionModule.initiateSelectionByTouch();
+        this.isExtended = true;
+        this.pdfViewer.textSelectionModule.selectionRangeArray = [];
+    }
+    // tslint:disable-next-line
+    private selectionEnd = (event: any): void => {
+        if (this.isDropletClicked) {
+            this.isDropletClicked = false;
+        }
+    }
+    // tslint:disable-next-line
+    private annotationLeftMove = (event: any): void => {
+        if (this.isDropletClicked) {
+            this.isLeftDropletClicked = true;
+        }
+    }
 
+    // tslint:disable-next-line
+    private annotationRightMove = (event: any): void => {
+        if (this.isDropletClicked) {
+            this.isRightDropletClicked = true;
+        }
+    }
+    /**
+     * @private
+     */
+    // tslint:disable-next-line
+    public textSelect(target: any, x: any, y: any) {
+        if (this.isLeftDropletClicked) {
+            let leftElement: ClientRect = this.dropDivAnnotationRight.getBoundingClientRect();
+            let clientX: number = x;
+            let clientY: number = y;
+            if (target.classList.contains('e-pv-text')) {
+                this.pdfViewer.textSelectionModule.textSelectionOnDrag(target, clientX, clientY, false);
+                this.updateLeftposition(clientX, clientY);
+            }
+        } else if (this.isRightDropletClicked) {
+            let leftElement: ClientRect = this.dropDivAnnotationLeft.getBoundingClientRect();
+            let clientX: number = x;
+            let clientY: number = y;
+            if (target.classList.contains('e-pv-text')) {
+                if (clientY >= leftElement.top) {
+                    this.pdfViewer.textSelectionModule.textSelectionOnDrag(target, clientX, clientY, true);
+                } else {
+                    this.pdfViewer.textSelectionModule.textSelectionOnDrag(target, clientX, clientY, false);
+                }
+                this.updatePosition(clientX, clientY);
+            }
+        }
+    }
+    /**
+     * @private
+     */
+    public showHideDropletDiv(hide: boolean): void {
+        if (this.pdfViewer.enableTextMarkupResizer) {
+            if (hide) {
+                this.dropDivAnnotationLeft.style.display = 'none';
+                this.dropDivAnnotationRight.style.display = 'none';
+            } else {
+                this.dropDivAnnotationLeft.style.display = '';
+                this.dropDivAnnotationRight.style.display = '';
+            }
+        }
+    }
+    private updateAnnotationBounds(): void {
+        this.isSelectionMaintained = false;
+        // tslint:disable-next-line
+        let annotation: any = this.currentTextMarkupAnnotation;
+        if (annotation && annotation.bounds) {
+            this.retreieveSelection(annotation, null);
+            this.pdfViewer.textSelectionModule.maintainSelection(this.selectTextMarkupCurrentPage, false);
+            this.isSelectionMaintained = true;
+            window.getSelection().removeAllRanges();
+        }
+    }
+
+    // tslint:disable-next-line
+    private retreieveSelection(annotation: any, element: any): any {
+        for (let k: number = 0; k < annotation.bounds.length; k++) {
+            // tslint:disable-next-line
+            let bound: any = annotation.bounds[k];
+            let x: number = (bound.left ? bound.left : bound.Left) * this.pdfViewerBase.getZoomFactor();
+            let y: number = (bound.top ? bound.top : bound.Top) * this.pdfViewerBase.getZoomFactor();
+            let width: number = (bound.width ? bound.width : bound.Width) * this.pdfViewerBase.getZoomFactor();
+            let height: number = bound.height ? bound.height : bound.Height;
+            // tslint:disable-next-line
+            let textDivs: any = this.pdfViewerBase.getElement('_textLayer_' + this.selectTextMarkupCurrentPage).childNodes;
+            for (let n: number = 0; n < textDivs.length; n++) {
+                if (textDivs[n]) {
+                    // tslint:disable-next-line
+                    let top: number = parseInt(textDivs[n].style.top);
+                    // tslint:disable-next-line
+                    if (top === parseInt(y.toString()) || (top + 1) === parseInt(y.toString()) || (top - 1) === parseInt(y.toString())) {
+                        element = textDivs[n];
+                        break;
+                    }
+                }
+            }
+            if (element != null) {
+                // tslint:disable-next-line
+                let boundingRect: any = this.pdfViewerBase.getElement('_textLayer_' + this.selectTextMarkupCurrentPage).getBoundingClientRect();
+                this.pdfViewer.textSelectionModule.textSelectionOnMouseMove(element, x + boundingRect.left, y + boundingRect.top);
+                if ((annotation.bounds.length - 1) === k) {
+                    // tslint:disable-next-line:max-line-length
+                    this.pdfViewer.textSelectionModule.textSelectionOnMouseMove(element, x + boundingRect.left + width, y + boundingRect.top);
+                }
+            }
+        }
+    }
+    /**
+     * @private
+     */
+    public updatePosition(x: number, y: number, isSelected?: boolean): void {
+        this.showHideDropletDiv(false);
+        let pageTopValue: number = this.pdfViewerBase.pageSize[this.pdfViewerBase.currentPageNumber - 1].top;
+        let topClientValue: number = this.getClientValueTop(y, this.pdfViewerBase.currentPageNumber - 1);
+        // tslint:disable-next-line
+        let rightDivElement: any = document.getElementById(this.pdfViewer.element.id + '_droplet_right');
+        if (isSelected) {
+            // tslint:disable-next-line:max-line-length
+            rightDivElement.style.top = topClientValue * this.pdfViewerBase.getZoomFactor() + pageTopValue * this.pdfViewerBase.getZoomFactor() + 'px';
+        } else {
+            // tslint:disable-next-line:max-line-length
+            rightDivElement.style.top = topClientValue + pageTopValue * this.pdfViewerBase.getZoomFactor() + 'px';
+        }
+        rightDivElement.style.left = x - this.pdfViewerBase.viewerContainer.getBoundingClientRect().left;
+    }
+    /**
+     * @private
+     */
+    public updateLeftposition(x: number, y: number, isSelected?: boolean): void {
+        this.showHideDropletDiv(false);
+        let pageTopValue: number = this.pdfViewerBase.pageSize[this.pdfViewerBase.currentPageNumber - 1].top;
+        let topClientValue: number = this.getClientValueTop(y, this.pdfViewerBase.currentPageNumber - 1);
+        // tslint:disable-next-line
+        let leftDivElement: any = document.getElementById(this.pdfViewer.element.id + '_droplet_left');
+        leftDivElement.style.display = '';
+        if (isSelected) {
+            // tslint:disable-next-line:max-line-length
+            leftDivElement.style.top = topClientValue * this.pdfViewerBase.getZoomFactor() + pageTopValue * this.pdfViewerBase.getZoomFactor() + 'px';
+        } else {
+            // tslint:disable-next-line:max-line-length
+            leftDivElement.style.top = topClientValue + pageTopValue * this.pdfViewerBase.getZoomFactor() + 'px';
+        }
+        leftDivElement.style.left = x - this.pdfViewerBase.viewerContainer.getBoundingClientRect().left - 20 + 'px';
+    }
+
+
+    private getClientValueTop(clientValue: number, pageNumber: number): number {
+        // tslint:disable-next-line:max-line-length
+        return clientValue - this.pdfViewerBase.getElement('_pageDiv_' + pageNumber).getBoundingClientRect().top;
+    }
     /**
      * @private
      */
@@ -112,6 +319,7 @@ export class TextMarkupAnnotation {
     public renderTextMarkupAnnotationsInPage(textMarkupAnnotations: any, pageNumber: number, isImportTextMarkup?: boolean): void {
         let canvas: HTMLElement = this.pdfViewerBase.getElement('_annotationCanvas_' + pageNumber);
         if (isImportTextMarkup) {
+            this.renderTextMarkupAnnotations(null, pageNumber, canvas, this.pdfViewerBase.getZoomFactor());
             this.renderTextMarkupAnnotations(textMarkupAnnotations, pageNumber, canvas, this.pdfViewerBase.getZoomFactor(), true);
         } else {
             this.renderTextMarkupAnnotations(textMarkupAnnotations, pageNumber, canvas, this.pdfViewerBase.getZoomFactor());
@@ -138,7 +346,9 @@ export class TextMarkupAnnotation {
                     let annotationObject: ITextMarkupAnnotation = null;
                     if (annotation.TextMarkupAnnotationType) {
                         // tslint:disable-next-line:max-line-length
-                        annotationObject = { textMarkupAnnotationType: annotation.TextMarkupAnnotationType, color: annotation.Color, opacity: annotation.Opacity, bounds: annotation.Bounds, author: annotation.Author, subject: annotation.Subject, modifiedDate: annotation.ModifiedDate, note: annotation.Note, rect: annotation.Rect,
+                        annotationObject = {
+                            textMarkupAnnotationType: annotation.TextMarkupAnnotationType, color: annotation.Color, opacity: annotation.Opacity, bounds: annotation.Bounds, author: annotation.Author, subject: annotation.Subject, modifiedDate: annotation.ModifiedDate, note: annotation.Note, rect: annotation.Rect,
+                            // tslint:disable-next-line:max-line-length
                             annotName: annotation.AnnotName, comments: this.pdfViewer.annotationModule.getAnnotationComments(annotation.Comments, annotation, annotation.Author), review: { state: annotation.State, stateModel: annotation.StateModel, modifiedDate: annotation.ModifiedDate, author: annotation.Author }, shapeAnnotationType: 'textMarkup'
                         };
                         this.pdfViewer.annotationModule.storeAnnotations(pageNumber, annotationObject, '_annotations_textMarkup');
@@ -179,10 +389,14 @@ export class TextMarkupAnnotation {
         this.isTextMarkupAnnotationMode = true;
         this.currentTextMarkupAddMode = type;
         let selectionObject: ISelection[] = this.pdfViewer.textSelectionModule.selectionRangeArray;
-        if (selectionObject.length > 0) {
+        if (selectionObject.length > 0 && !this.isSelectionMaintained) {
             this.convertSelectionToTextMarkup(type, selectionObject, this.pdfViewerBase.getZoomFactor());
         }
-        if (window.getSelection().toString()) {
+        if (this.pdfViewer.enableTextMarkupResizer && this.isExtended && window.getSelection().toString()) {
+            let pageBounds: IPageAnnotationBounds[] = this.getDrawnBounds();
+            this.updateTextMarkupAnnotationBounds(pageBounds[0].bounds);
+
+        } else if (window.getSelection().toString()) {
             let pageBounds: IPageAnnotationBounds[] = this.getDrawnBounds();
             if (pageBounds.length > 0) {
                 for (let i: number = 0; i < pageBounds.length; i++) {
@@ -191,8 +405,13 @@ export class TextMarkupAnnotation {
                 }
             }
         }
+        this.isExtended = false;
+        this.isSelectionMaintained = false;
         // this.pdfViewerBase.annotationHelper.redoCollection = [];
         this.pdfViewer.textSelectionModule.clearTextSelection();
+        if (this.pdfViewer.enableTextMarkupResizer) {
+            this.updateAnnotationBounds();
+        }
     }
 
     private convertSelectionToTextMarkup(type: string, selectionObject: ISelection[], factor: number): void {
@@ -200,6 +419,28 @@ export class TextMarkupAnnotation {
             // tslint:disable-next-line
             let indexes: any = this.getIndexNumbers(i, selectionObject[i].textContent);
             this.drawTextMarkups(type, selectionObject[i].rectangleBounds, selectionObject[i].pageNumber, selectionObject[i].bound, factor, selectionObject[i].textContent, indexes.startIndex, indexes.endIndex);
+        }
+    }
+
+    // tslint:disable-next-line
+    private updateTextMarkupAnnotationBounds(currentBounds: any): void {
+        if (this.currentTextMarkupAnnotation) {
+            let pageAnnotations: ITextMarkupAnnotation[] = this.getAnnotations(this.selectTextMarkupCurrentPage, null);
+            let annotation: ITextMarkupAnnotation = null;
+            if (pageAnnotations) {
+                for (let i: number = 0; i < pageAnnotations.length; i++) {
+                    if (JSON.stringify(this.currentTextMarkupAnnotation) === JSON.stringify(pageAnnotations[i])) {
+                        pageAnnotations[i].bounds = currentBounds;
+                    }
+                }
+                this.manageAnnotations(pageAnnotations, this.selectTextMarkupCurrentPage);
+                this.currentTextMarkupAnnotation = null;
+                this.pdfViewer.annotationModule.renderAnnotations(this.selectTextMarkupCurrentPage, null, null, null);
+                this.pdfViewerBase.isDocumentEdited = true;
+                // tslint:disable-next-line:max-line-length
+                this.currentAnnotationIndex = null;
+                this.selectTextMarkupCurrentPage = null;
+            }
         }
     }
 
@@ -232,12 +473,14 @@ export class TextMarkupAnnotation {
                     }
                     break;
             }
-            this.pdfViewerBase.isDocumentEdited = true;
-            // tslint:disable-next-line
-            let settings: any = { opacity: annotation.opacity, color: annotation.color, author: annotation.author, subject: annotation.subject, modifiedDate: annotation.modifiedDate };
-            let index: number = this.pdfViewer.annotationModule.actionCollection[this.pdfViewer.annotationModule.actionCollection.length - 1].index;
-            // tslint:disable-next-line:max-line-length
-            this.pdfViewer.fireAnnotationAdd(pageNumber, index, (type as AnnotationType), annotation.bounds, settings, textContent, startIndex, endIndex);
+            if (annotation) {
+                this.pdfViewerBase.isDocumentEdited = true;
+                // tslint:disable-next-line
+                let settings: any = { opacity: annotation.opacity, color: annotation.color, author: annotation.author, subject: annotation.subject, modifiedDate: annotation.modifiedDate };
+                let index: number = this.pdfViewer.annotationModule.actionCollection[this.pdfViewer.annotationModule.actionCollection.length - 1].index;
+                // tslint:disable-next-line:max-line-length
+                this.pdfViewer.fireAnnotationAdd(pageNumber, index, (type as AnnotationType), annotation.bounds, settings, textContent, startIndex, endIndex);
+            }
         }
     }
 
@@ -378,6 +621,7 @@ export class TextMarkupAnnotation {
      */
     public deleteTextMarkupAnnotation(): void {
         if (this.currentTextMarkupAnnotation) {
+            this.showHideDropletDiv(true);
             let pageAnnotations: ITextMarkupAnnotation[] = this.getAnnotations(this.selectTextMarkupCurrentPage, null);
             let deletedAnnotation: ITextMarkupAnnotation = null;
             if (pageAnnotations) {
@@ -586,15 +830,17 @@ export class TextMarkupAnnotation {
     }
 
     private clearCurrentAnnotation(): void {
-        this.selectTextMarkupCurrentPage = null;
-        this.currentTextMarkupAnnotation = null;
-        let isSkip: boolean = false;
-        // tslint:disable-next-line:max-line-length
-        if (this.pdfViewer.annotation.freeTextAnnotationModule && this.pdfViewer.annotation.freeTextAnnotationModule.isInuptBoxInFocus) {
-            isSkip = true;
-        }
-        if (!isSkip) {
-            this.enableAnnotationPropertiesTool(false);
+        if (!this.isExtended) {
+            this.selectTextMarkupCurrentPage = null;
+            this.currentTextMarkupAnnotation = null;
+            let isSkip: boolean = false;
+            // tslint:disable-next-line:max-line-length
+            if (this.pdfViewer.annotation.freeTextAnnotationModule && this.pdfViewer.annotation.freeTextAnnotationModule.isInuptBoxInFocus) {
+                isSkip = true;
+            }
+            if (!isSkip) {
+                this.enableAnnotationPropertiesTool(false);
+            }
         }
     }
 
@@ -1036,6 +1282,22 @@ export class TextMarkupAnnotation {
             this.currentTextMarkupAnnotation = annotation;
             this.selectTextMarkupCurrentPage = pageNumber;
         }
+        // tslint:disable-next-line
+        let currentEvent: any = event;
+        if (this.pdfViewer.enableTextMarkupResizer && annotation && currentEvent && !currentEvent.touches) {
+            // tslint:disable-next-line
+            let boundingRect: any = this.pdfViewerBase.getElement('_textLayer_' + this.selectTextMarkupCurrentPage).getBoundingClientRect();
+            let left: number = annotation.bounds[0].left ? annotation.bounds[0].left : annotation.bounds[0].Left;
+            let top: number = annotation.bounds[0].top ? annotation.bounds[0].top : annotation.bounds[0].Top;
+            this.updateLeftposition(left * this.pdfViewerBase.getZoomFactor() + boundingRect.left, (boundingRect.top + top), true);
+            // tslint:disable-next-line
+            let endPosition: any = annotation.bounds[annotation.bounds.length - 1];
+            let endLeft: number = endPosition.left ? endPosition.left : endPosition.Left;
+            let endTop: number = endPosition.top ? endPosition.top : endPosition.Top;
+            let endWidth: number = endPosition.width ? endPosition.width : endPosition.Width;
+            // tslint:disable-next-line:max-line-length
+            this.updatePosition((endLeft + endWidth) * this.pdfViewerBase.getZoomFactor() + boundingRect.left, (endTop + boundingRect.top), true);
+        }
         for (let i: number = 0; i < annotation.bounds.length; i++) {
             // tslint:disable-next-line
             let bound: any = annotation.bounds[i];
@@ -1051,6 +1313,9 @@ export class TextMarkupAnnotation {
                 this.pdfViewer.annotationModule.selectAnnotation(annotation.annotName, this.selectTextMarkupCurrentPage, annotation);
             }
         }
+        if (annotation && this.pdfViewer.enableTextMarkupResizer) {
+            this.isTextMarkupAnnotationMode = true;
+        }
     }
 
     private drawAnnotationSelectRect(canvas: HTMLElement, x: number, y: number, width: number, height: number): void {
@@ -1061,7 +1326,11 @@ export class TextMarkupAnnotation {
         context.globalAlpha = 1;
         context.rect(x, y, width, height);
         context.closePath();
-        context.strokeStyle = '#0000ff';
+        // tslint:disable-next-line:max-line-length
+        let borderColor: string = isNullOrUndefined(this.pdfViewer.annotationSelectorSettings.selectionBorderColor) || this.pdfViewer.annotationSelectorSettings.selectionBorderColor === '' ? '#0000ff' : this.pdfViewer.annotationSelectorSettings.selectionBorderColor;
+        context.strokeStyle = borderColor;
+        // tslint:disable-next-line:max-line-length
+        context.lineWidth = isNullOrUndefined(this.pdfViewer.annotationSelectorSettings.selectionBorderThickness) ? 1 : this.pdfViewer.annotationSelectorSettings.selectionBorderThickness;
         context.stroke();
         context.save();
     }
@@ -1245,7 +1514,9 @@ export class TextMarkupAnnotation {
         let annotationObject: ITextMarkupAnnotation = null;
         annotation.Author = this.pdfViewer.annotationModule.updateAnnotationAuthor('textMarkup', annotation.Subject);
         // tslint:disable-next-line:max-line-length
-        annotationObject = { textMarkupAnnotationType: annotation.TextMarkupAnnotationType, color: annotation.Color, opacity: annotation.Opacity, bounds: annotation.Bounds, author: annotation.Author, subject: annotation.Subject, modifiedDate: annotation.ModifiedDate, note: annotation.Note, rect: annotation.Rect,
+        annotationObject = {
+            // tslint:disable-next-line:max-line-length
+            textMarkupAnnotationType: annotation.TextMarkupAnnotationType, color: annotation.Color, opacity: annotation.Opacity, bounds: annotation.Bounds, author: annotation.Author, subject: annotation.Subject, modifiedDate: annotation.ModifiedDate, note: annotation.Note, rect: annotation.Rect,
             annotName: annotation.AnnotName, comments: this.pdfViewer.annotationModule.getAnnotationComments(annotation.Comments, annotation, annotation.Author), review: { state: annotation.State, stateModel: annotation.StateModel, modifiedDate: annotation.ModifiedDate, author: annotation.Author }, shapeAnnotationType: 'textMarkup'
         };
         this.pdfViewer.annotationModule.storeAnnotations(pageNumber, annotationObject, '_annotations_textMarkup');
@@ -1255,6 +1526,8 @@ export class TextMarkupAnnotation {
      * @private
      */
     public clear(): void {
+        this.selectTextMarkupCurrentPage = null;
+        this.currentTextMarkupAnnotation = null;
         window.sessionStorage.removeItem(this.pdfViewerBase.documentId + '_annotations_textMarkup');
     }
 }

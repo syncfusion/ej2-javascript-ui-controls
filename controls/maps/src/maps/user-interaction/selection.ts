@@ -124,7 +124,7 @@ export class Selection {
             maps: this.maps
         };
         if (this.maps.isBlazor) {
-            const {maps, ...blazorEventArgs } :  ISelectionEventArgs = eventArgs;
+            const {shapeData, maps, ...blazorEventArgs } :  ISelectionEventArgs = eventArgs;
             eventArgs = blazorEventArgs;
         }
         this.maps.trigger('itemSelection', eventArgs, (observedArgs: ISelectionEventArgs) => {

@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+## 17.3.19 (2019-10-22)
+
+### ListBox
+
+- Drag Event returns null value issue is fixed
+
 ## 17.3.17 (2019-10-15)
 
 ### MultiSelect

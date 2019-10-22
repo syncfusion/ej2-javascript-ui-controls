@@ -401,6 +401,7 @@ describe('Touch event validation', () => {
         touches[0].pageY = pageY + rect.top + 28;
         viewer.onTouchStartInternal(event);
         expect(viewer.touchDownOnSelectionMark).toBe(1);
+        viewer.onTouchUpInternal(event);
         touches[0].pageX = pageX + rect.left + 10;
         touches[0].pageY = pageY + rect.top + 28; //widget height
         viewer.onTouchStartInternal(event);
@@ -444,6 +445,7 @@ describe('Touch event validation', () => {
         touches[0].pageY = pageY + rect.top + 28;
         viewer.onTouchStartInternal(event);
         expect(viewer.touchDownOnSelectionMark).toBe(2);
+        viewer.onTouchUpInternal(event);
         touches[0].pageX = pageX + rect.left + 10;
         touches[0].pageY = pageY + rect.top + 28 - 10;
         viewer.onTouchStartInternal(event);

@@ -430,6 +430,7 @@ export class ShapeAnnotation {
      */
     // tslint:disable-next-line
     public modifyInCollection(property: string, pageNumber: number, annotationBase: any): IShapeAnnotation {
+        this.pdfViewerBase.isDocumentEdited = true;
         let currentAnnotObject: IShapeAnnotation = null;
         if (annotationBase) {
             if (property === 'bounds') {

@@ -247,6 +247,7 @@ export class FormFields {
      */
     // tslint:disable-next-line
     public updateDataInSession(target: any, signaturePath?: any): void {
+        this.pdfViewerBase.isDocumentEdited = true;
         // tslint:disable-next-line
         let data: any = window.sessionStorage.getItem('formfields');
         // tslint:disable-next-line

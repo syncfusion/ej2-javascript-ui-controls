@@ -311,6 +311,7 @@ export class SymbolPalette extends Component<HTMLElement> implements INotifyProp
      */
     @Event()
     public paletteSelectionChange: EmitType<IPaletteSelectionChangeArgs>;
+
     /**
      * `bpmnModule` is used to add built-in BPMN Shapes to diagrams
      * @private

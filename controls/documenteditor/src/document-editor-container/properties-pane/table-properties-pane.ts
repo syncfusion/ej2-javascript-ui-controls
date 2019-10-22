@@ -560,7 +560,7 @@ export class TableProperties {
         liTag.appendChild(liInnerDiv);
         return liTag;
     }
-    // tslint:disable-next-line:max-line-length
+    //tslint:disable-next-line:max-line-length
     public createDropDownButton = (id: string, styles: string, parentDiv: HTMLElement, iconCss: string, content: string, items?: ItemModel[], target?: HTMLElement): DropDownButton => {
         let buttonElement: HTMLButtonElement = createElement('button', { id: id, styles: styles, attrs: { type: 'button' } }) as HTMLButtonElement;
         parentDiv.appendChild(buttonElement);

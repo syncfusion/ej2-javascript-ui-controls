@@ -28,21 +28,27 @@ export interface IPrintEventArgs extends IMapsEventArgs {
  * Specifies the Loaded Event arguments.
  */
 export interface ILoadedEventArgs extends IMapsEventArgs {
-    /** Defines the current Maps instance */
+    /** Defines the current Maps instance
+     * @deprecated
+     */
     maps?: Maps;
 }
 /**
  * Specifies the Load Event arguments.
  */
 export interface ILoadEventArgs extends IMapsEventArgs {
-    /** Defines the current Maps instance */
+    /** Defines the current Maps instance
+     * @deprecated
+     */
     maps?: Maps;
 }
 /**
  * Specifies the data label Event arguments.
  */
 export interface IDataLabelArgs extends IMapsEventArgs {
-    /** Defines the current Maps instance */
+    /** Defines the current Maps instance
+     * @deprecated
+     */
     maps: Maps;
     /**
      * define event
@@ -83,7 +89,9 @@ export interface IResizeEventArgs {
     previousSize: Size;
     /** Defines the current size of the maps */
     currentSize: Size;
-    /** Defines the Maps instance */
+    /** Defines the Maps instance
+     * @deprecated
+     */
     maps: Maps;
 }
 
@@ -108,7 +116,9 @@ export interface MapsTooltipOption {
  * Specifies TooltipRender event arguments for maps.
  */
 export interface ITooltipRenderEventArgs extends IMapsEventArgs {
-    /** Defines the current TreeMap instance */
+    /** Defines the current TreeMap instance
+     * @deprecated
+     */
     maps?: Maps;
     /**
      * Define the content
@@ -143,7 +153,9 @@ export interface ITooltipRenderEventArgs extends IMapsEventArgs {
  * Specifies itemSelection event arguments for maps.
  */
 export interface ISelectionEventArgs extends IMapsEventArgs {
-    /** Defines the current Map instance */
+    /** Defines the current Map instance
+     * @deprecated
+     */
     maps?: Maps;
     /**
      * fill event argument
@@ -163,7 +175,6 @@ export interface ISelectionEventArgs extends IMapsEventArgs {
     target?: string;
     /**
      * shape data event argument
-     * @isGenericType true
      */
     shapeData?: Object;
     /**
@@ -176,7 +187,9 @@ export interface ISelectionEventArgs extends IMapsEventArgs {
  * Specifies shapeSelected event arguments for maps.
  */
 export interface IShapeSelectedEventArgs extends IMapsEventArgs {
-    /** Defines the current Map instance */
+    /** Defines the current Map instance
+     * @deprecated
+     */
     maps?: Maps;
     /**
      * fill event argument
@@ -193,11 +206,11 @@ export interface IShapeSelectedEventArgs extends IMapsEventArgs {
     /**
      * shapeData for the currently clicked shape
      */
-    shapeData?: object;
+    shapeData?: Object;
     /**
      * data source for the currently clicked shape
      */
-    data?: object;
+    data?: Object;
     /** Defines current mouse event target id */
     target?: string;
 }
@@ -224,6 +237,7 @@ export interface ILayerRenderingEventArgs extends IMapsEventArgs {
     index?: number;
     /**
      * maps instance event argument
+     * @deprecated
      */
     maps?: Maps;
     /**
@@ -242,6 +256,7 @@ export interface IShapeRenderingEventArgs extends IMapsEventArgs {
     index?: number;
     /**
      * maps instance event argument
+     * @deprecated
      */
     maps?: Maps;
     /**
@@ -259,7 +274,7 @@ export interface IShapeRenderingEventArgs extends IMapsEventArgs {
     /**
      * shape data source event argument
      */
-    data?: object;
+    data?: Object;
 }
 /**
  * Specifies markerRendering event arguments for maps.
@@ -267,6 +282,7 @@ export interface IShapeRenderingEventArgs extends IMapsEventArgs {
 export interface IMarkerRenderingEventArgs extends IMapsEventArgs {
     /**
      * maps instance event argument
+     * @deprecated
      */
     maps?: Maps;
     /**
@@ -309,7 +325,7 @@ export interface IMarkerRenderingEventArgs extends IMapsEventArgs {
     /**
      * marker data event argument
      */
-    data?: object;
+    data?: Object;
 }
 
 /**
@@ -318,6 +334,7 @@ export interface IMarkerRenderingEventArgs extends IMapsEventArgs {
 export interface IMarkerClusterRenderingEventArgs extends IMapsEventArgs {
     /**
      * maps instance event argument
+     * @deprecated
      */
     maps?: Maps;
     /**
@@ -355,7 +372,7 @@ export interface IMarkerClusterRenderingEventArgs extends IMapsEventArgs {
     /**
      * marker data event argument
      */
-    data?: object;
+    data?: Object;
 }
 
 /**
@@ -364,6 +381,7 @@ export interface IMarkerClusterRenderingEventArgs extends IMapsEventArgs {
 export interface IMarkerClickEventArgs extends IMouseEventArgs {
     /**
      * maps instance event argument
+     * @deprecated
      */
     maps?: Maps;
     /**
@@ -373,7 +391,7 @@ export interface IMarkerClickEventArgs extends IMouseEventArgs {
     /**
      * defines the currently clicked marker data
      */
-    data?: object;
+    data?: Object;
 }
 
 /**
@@ -382,12 +400,13 @@ export interface IMarkerClickEventArgs extends IMouseEventArgs {
 export interface IMarkerMoveEventArgs extends IMouseEventArgs {
     /**
      * maps instance event argument
+     * @deprecated
      */
     maps?: Maps;
     /**
      * marker data event argument. This is Read Only option.
      */
-    data?: object;
+    data?: Object;
 }
 
 /**
@@ -397,9 +416,10 @@ export interface IMarkerClusterClickEventArgs extends IMouseEventArgs {
     /**
      * defines the currently clicked marker data
      */
-    data?: object;
+    data?: Object;
     /**
      * maps instance event argument
+     * @deprecated
      */
     maps?: Maps;
 }
@@ -410,12 +430,13 @@ export interface IMarkerClusterClickEventArgs extends IMouseEventArgs {
 export interface IMarkerClusterMoveEventArgs extends IMouseEventArgs {
     /**
      * maps instance event argument
+     * @deprecated
      */
     maps?: Maps;
     /**
      * marker data event argument. This is Read Only option.
      */
-    data?: object;
+    data?: Object;
 }
 
 /**
@@ -424,6 +445,7 @@ export interface IMarkerClusterMoveEventArgs extends IMouseEventArgs {
 export interface ILabelRenderingEventArgs extends IMapsEventArgs {
     /**
      * maps instance event argument
+     * @deprecated
      */
     maps?: Maps;
     /**
@@ -454,6 +476,7 @@ export interface ILabelRenderingEventArgs extends IMapsEventArgs {
 export interface IBubbleRenderingEventArgs extends IMapsEventArgs {
     /**
      * maps instance event argument
+     * @deprecated
      */
     maps?: Maps;
     /**
@@ -479,7 +502,7 @@ export interface IBubbleRenderingEventArgs extends IMapsEventArgs {
     /**
      * current bubble data
      */
-    data?: object;
+    data?: Object;
 }
 /**
  * Specifies bubbleClick event arguments for maps.
@@ -487,12 +510,13 @@ export interface IBubbleRenderingEventArgs extends IMapsEventArgs {
 export interface IBubbleClickEventArgs extends IMouseEventArgs {
     /**
      * maps instance event argument
+     * @deprecated
      */
     maps?: Maps;
     /**
      * bubble current data event argument
      */
-    data?: object;
+    data?: Object;
 }
 
 /**
@@ -501,12 +525,13 @@ export interface IBubbleClickEventArgs extends IMouseEventArgs {
 export interface IBubbleMoveEventArgs extends IMouseEventArgs {
     /**
      * maps instance event argument
+     * @deprecated
      */
     maps?: Maps;
     /**
      * bubble current data event argument
      */
-    data?: object;
+    data?: Object;
 }
 /**
  * Specifies animationComplete event arguments for maps.
@@ -514,6 +539,7 @@ export interface IBubbleMoveEventArgs extends IMouseEventArgs {
 export interface IAnimationCompleteEventArgs extends IMapsEventArgs {
     /**
      * maps instance event argument
+     * @deprecated
      */
     maps?: Maps;
     /**
@@ -528,6 +554,7 @@ export interface IAnimationCompleteEventArgs extends IMapsEventArgs {
 export interface ILegendRenderingEventArgs extends IMapsEventArgs {
     /**
      * maps instance event argument
+     * @deprecated
      */
     maps?: Maps;
     /**
@@ -552,6 +579,7 @@ export interface ILegendRenderingEventArgs extends IMapsEventArgs {
 export interface IAnnotationRenderingEventArgs extends IMapsEventArgs {
     /**
      * maps instance event argument
+     * @deprecated
      */
     maps?: Maps;
     /**
@@ -570,6 +598,7 @@ export interface IAnnotationRenderingEventArgs extends IMapsEventArgs {
 export interface IMapPanEventArgs extends IMapsEventArgs {
     /**
      * maps instance event argument.
+     * @deprecated
      */
     maps?: Maps;
     /**
@@ -596,6 +625,7 @@ export interface IMapPanEventArgs extends IMapsEventArgs {
 export interface IMapZoomEventArgs extends IMapsEventArgs {
     /**
      * maps instance event argument.
+     * @deprecated
      */
     maps?: Maps;
     /**

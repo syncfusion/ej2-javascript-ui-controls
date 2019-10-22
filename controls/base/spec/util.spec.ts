@@ -252,10 +252,8 @@ describe('Util', () => {
     });
 
     it('isBlazor true', () => {
-        Util.enableBlazorMode();
         window['Blazor'] = {};
         expect(Util.isBlazor()).toBe(true);
-        Util.disableBlazorMode();
     });
 
     it('GetElement with element', () => {
@@ -265,7 +263,6 @@ describe('Util', () => {
     });
     it('GetElement with xpath', () => {
         window['Blazor'] = {};
-        Util.enableBlazorMode();
         var element = document.createElement('span');
         element.id = "xpathelement";
         document.body.appendChild(element);
@@ -274,7 +271,6 @@ describe('Util', () => {
         }
         expect(Util.getElement(eleObj)).toBe(element);
         document.body.innerHTML = "";
-        Util.disableBlazorMode();
     });
     function createXPathFromElement (elm: any): any {
         var allNodes = document.getElementsByTagName('*');

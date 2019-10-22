@@ -160,8 +160,6 @@ export declare class QueryBuilder extends Component<HTMLDivElement> implements I
     private dataManager;
     private fields;
     private selectedColumn;
-    private isOperatorRendered;
-    private isValueRendered;
     private actionButton;
     private isInitialLoad;
     /**

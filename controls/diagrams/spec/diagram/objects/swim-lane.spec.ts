@@ -1334,6 +1334,27 @@ describe('Diagram Control', () => {
             diagram.addPhases(diagram.nodes[1], [phases]);
             done();
         });
+
+        it('Checking Collection Change Event for adding lanes', (done: Function) => {
+            let event: string = ''; 
+            diagram.collectionChange = function (args) {
+                event += 'CollectionChange'
+            } 
+            let darkColor: string = '#C7D4DF';
+            let lightColor: string = '#f5f5f5';
+            let lane: LaneModel = {
+                id: 'stackCanvas35',
+                header: {
+                    width: 50, annotation: { content: 'data' },
+                    style: { fill: darkColor }
+                },
+                style: { fill: lightColor }, height: 120,
+            } as LaneModel;
+
+            diagram.addLanes(diagram.nodes[0], [lane] as LaneModel[]); 
+            expect(event == 'CollectionChangeCollectionChange').toBe(true);
+            done();
+        });
     });
     describe('Swimlane Sample', () => {
         let diagram: Diagram;

@@ -230,6 +230,14 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
     @Property(true)
     public enableAnimation: boolean;
 
+    /**
+     * Duration for Tooltip animation.
+     * @default 300
+     * @private.
+     */
+    @Property(300)
+    public duration: number;
+
    /**
     * To rotate the tooltip.
     * @default false.
@@ -893,7 +901,7 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
         let y: number = parseFloat(tooltipDiv.style.top);
         let currenDiff: number;
         new Animation({}).animate(tooltipDiv, {
-            duration: 300,
+            duration: this.duration,
             progress: (args: AnimationOptions): void => {
                 currenDiff = (args.timeStamp / args.duration);
                 tooltipDiv.style.animation = null;

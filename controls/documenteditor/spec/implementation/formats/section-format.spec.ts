@@ -1,5 +1,9 @@
-import { WTableHolder } from '../../../src/index';
+import { WTableHolder, Selection } from '../../../src/index';
+import { DocumentEditor } from '../../../src/document-editor/document-editor';
+import { Editor } from '../../../src/document-editor/implementation/editor/editor';
+import { createElement } from '@syncfusion/ej2-base';
 import { WSectionFormat } from '../../../src/document-editor/implementation/format/section-format';
+import { TestHelper } from '../../test-helper.spec';
 describe('TableHolder Validation Testing', () => {
     afterEach(() => {
         WSectionFormat.clear();
@@ -33,7 +37,7 @@ describe('TableHolder Validation Testing', () => {
     it('Section Format Copy Format Testing', () => {
         let sectionFormat: WSectionFormat = new WSectionFormat();
         let sectionFormat1: WSectionFormat = new WSectionFormat();
-        sectionFormat1.footerDistance = undefined;      
+        sectionFormat1.footerDistance = undefined;
         sectionFormat.copyFormat(sectionFormat1);
         expect(sectionFormat.footerDistance).toBe(36);
     });
@@ -43,8 +47,63 @@ describe('TableHolder Validation Testing', () => {
         expect('').toBe('')
     });
     it('Section Format Clone Format Testing', () => {
-        let sectionFormat: WSectionFormat = new WSectionFormat();     
+        let sectionFormat: WSectionFormat = new WSectionFormat();
         sectionFormat.cloneFormat();
         expect(sectionFormat.footerDistance).toBe(36);
+    });
+});
+
+describe('Default section Format API Validation', () => {
+    let editor: DocumentEditor = undefined;
+    beforeAll(() => {
+        let ele: HTMLElement = createElement('div', { id: 'container' });
+        let defaultSectionFormat: object = {
+            headerDistance: 25,
+            footerDistance: 25,
+            pageWidth: 500,
+            pageHeight: 500,
+            topMargin: 20,
+            bottomMargin: 20,
+            leftMargin: 20,
+            rightMargin: 20,
+        }
+        document.body.appendChild(ele);
+        editor = new DocumentEditor({ enableEditor: true, isReadOnly: false });
+        DocumentEditor.Inject(Editor, Selection);
+        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        editor.setDefaultSectionFormat(defaultSectionFormat);
+        editor.appendTo('#container');
+    });
+    afterAll(() => {
+        editor.destroy();
+        document.body.removeChild(document.getElementById('container'));
+        editor = undefined;
+    });
+    it('check page width of the page', () => {
+        expect(editor.selection.sectionFormat.pageWidth).toBe(500);
+    });
+    it('check page height of the page', () => {
+        expect(editor.selection.sectionFormat.pageHeight).toBe(500);
+    });
+    it('check header distance', () => {
+        expect(editor.selection.sectionFormat.headerDistance).toBe(25);
+    });
+    it('check footer distance', () => {
+        expect(editor.selection.sectionFormat.footerDistance).toBe(25);
+    });
+    it('check top margin', () => {
+        expect(editor.selection.sectionFormat.topMargin).toBe(20);
+    });
+    it('check bottom margin', () => {
+        expect(editor.selection.sectionFormat.bottomMargin).toBe(20);
+    });
+    it('check left margin', () => {
+        expect(editor.selection.sectionFormat.leftMargin).toBe(20);
+    });
+    it('check right margin', () => {
+        expect(editor.selection.sectionFormat.rightMargin).toBe(20);
     });
 });

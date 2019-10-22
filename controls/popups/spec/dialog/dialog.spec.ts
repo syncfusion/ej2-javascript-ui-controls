@@ -55,13 +55,14 @@ describe('create alert utility dialog with modal', () => {
     beforeAll(() => {
         DialogUtility.alert({
             isModal: true,
-            okButton: {text: 'new button'}
+            okButton: {text: 'new button', cssClass: 'syncfusion'}
          });
 });
 it('alert utility dialog to test modal behavior and destroy functionality',()=>{
     let clickEvent: any = document.createEvent("MouseEvents");
     clickEvent.initEvent("click", false, true);
     expect(document.getElementsByClassName('e-btn')[0].textContent == 'new button').toBe(true);
+    expect(document.getElementsByClassName('e-btn')[0].classList.contains('syncfusion')).toBe(true);
     (<HTMLElement>document.getElementsByClassName('e-btn')[0]).dispatchEvent(clickEvent);
 })
 afterAll(() => {

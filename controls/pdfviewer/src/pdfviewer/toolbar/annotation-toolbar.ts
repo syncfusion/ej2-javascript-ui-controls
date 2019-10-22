@@ -1495,6 +1495,9 @@ export class AnnotationToolbar {
             case this.pdfViewer.element.id + '_annotation_commentPanel':
             case this.pdfViewer.element.id + '_annotation_commentPanelIcon':
                 let commentPanel: HTMLElement = document.getElementById(this.pdfViewer.element.id + '_commantPanel');
+                if (this.pdfViewer.annotation && this.pdfViewer.annotation.textMarkupAnnotationModule) {
+                    this.pdfViewer.annotation.textMarkupAnnotationModule.showHideDropletDiv(true);
+                }
                 if (commentPanel.style.display === 'block') {
                     this.pdfViewerBase.navigationPane.closeCommentPanelContainer();
                 } else {
@@ -1817,17 +1820,20 @@ export class AnnotationToolbar {
         let sideBarToolbar: HTMLElement = this.pdfViewerBase.navigationPane.sideBarToolbar;
         let sideBarContentContainer: HTMLElement = this.pdfViewerBase.navigationPane.sideBarContentContainer;
         let commentsContainer: HTMLElement = this.pdfViewerBase.navigationPane.commentPanelContainer;
+        let commentPanelResizer: HTMLElement = this.pdfViewerBase.navigationPane.commentPanelResizer;
         if (isAdjust) {
             if (this.pdfViewer.enableToolbar) {
                 sideBarToolbar.style.top = (toolbarHeight + annotationToolbarHeight) + 'px';
                 sideBarContentContainer.style.top = (toolbarHeight + annotationToolbarHeight) + 'px';
                 splitterElement.style.top = (toolbarHeight + annotationToolbarHeight) + 'px';
                 commentsContainer.style.top = (toolbarHeight + annotationToolbarHeight) + 'px';
+                commentPanelResizer.style.top = (toolbarHeight + annotationToolbarHeight) + 'px';
             } else {
                 sideBarToolbar.style.top = (annotationToolbarHeight) + 'px';
                 sideBarContentContainer.style.top = (annotationToolbarHeight) + 'px';
                 splitterElement.style.top = (annotationToolbarHeight) + 'px';
                 commentsContainer.style.top = (annotationToolbarHeight) + 'px';
+                commentPanelResizer.style.top = (toolbarHeight + annotationToolbarHeight) + 'px';
             }
             // tslint:disable-next-line:max-line-length
             this.pdfViewerBase.viewerContainer.style.height = this.updateViewerHeight(this.getElementHeight(this.pdfViewerBase.viewerContainer), (annotationToolbarHeight + toolbarHeight)) + 'px';
@@ -1840,6 +1846,7 @@ export class AnnotationToolbar {
                 sideBarContentContainer.style.top = toolbarHeight + 'px';
                 splitterElement.style.top = toolbarHeight + 'px';
                 commentsContainer.style.top = toolbarHeight + 'px';
+                commentPanelResizer.style.top = toolbarHeight + 'px';
             } else {
                 sideBarToolbar.style.top = 1 + 'px';
                 sideBarToolbar.style.height = '100%';
@@ -1849,11 +1856,17 @@ export class AnnotationToolbar {
                 splitterElement.style.height = '100%';
                 commentsContainer.style.top = 1 + 'px';
                 commentsContainer.style.height = '100%';
+                commentPanelResizer.style.top = 1 + 'px';
+                commentPanelResizer.style.height = '100%';
             }
             // tslint:disable-next-line:max-line-length
             this.pdfViewerBase.viewerContainer.style.height = this.resetViewerHeight(this.getElementHeight(this.pdfViewerBase.viewerContainer), annotationToolbarHeight) + 'px';
             sideBarToolbar.style.height = this.getNavigationToolbarHeight(toolbarHeight);
             splitterElement.style.height = this.getNavigationToolbarHeight(toolbarHeight);
+            if (this.pdfViewerBase.viewerContainer.style.height === '0px') {
+                // tslint:disable-next-line
+                this.pdfViewerBase.viewerContainer.style.height = (parseInt(this.pdfViewer.element.style.height) - parseInt(sideBarToolbar.style.top)) + 'px';
+            }
         }
         this.updateContentContainerHeight(isAdjust);
     }

@@ -267,6 +267,12 @@ export class StickyNotesAnnotation {
                     }
                 }
                 if (data) {
+                    if (proxy.pdfViewerBase.annotationComments) {
+                        // tslint:disable-next-line
+                        proxy.pdfViewerBase.annotationComments = (<any>Object).assign(data.popupAnnotation, proxy.pdfViewerBase.annotationComments);
+                    } else {
+                        proxy.pdfViewerBase.annotationComments = data.popupAnnotation;
+                    }
                     if (data.popupAnnotation && data.uniqueId === proxy.pdfViewerBase.documentId) {
                         for (let j: number = data.startPageIndex; j < data.endPageIndex; j++) {
                             if (data.popupAnnotation[j]) {
@@ -324,13 +330,25 @@ export class StickyNotesAnnotation {
             // tslint:disable-next-line:max-line-length
             let commentPanelText: HTMLElement = createElement('div', { id: this.pdfViewer.element.id + '_commentsPanelText', className: 'e-pv-comments-panel-text' });
             commentPanelText.textContent = this.pdfViewer.localeObj.getConstant('No Comments Yet');
-            commentPanelText.style.paddingTop = '75%';
+            this.updateCommentPanelTextTop();
             this.pdfViewerBase.navigationPane.commentsContentContainer.appendChild(commentPanelText);
             // tslint:disable-next-line:max-line-length
             this.accordionContentContainer = createElement('div', { id: this.pdfViewer.element.id + '_accordionContentContainer', className: 'e-pv-accordion-content-container' });
             this.pdfViewerBase.navigationPane.commentsContentContainer.appendChild(this.accordionContentContainer);
             // tslint:disable-next-line:max-line-length
             this.pdfViewerBase.navigationPane.annotationMenuObj.enableItems([this.pdfViewer.localeObj.getConstant('Export Annotations')], false);
+        }
+    }
+
+    /**
+     * @private
+     */
+    public updateCommentPanelTextTop(): void {
+        let commentPanelText: HTMLElement = document.getElementById(this.pdfViewer.element.id + '_commentsPanelText');
+        // tslint:disable-next-line:max-line-length
+        if (this.pdfViewerBase.navigationPane.commentPanelContainer && this.pdfViewerBase.navigationPane.commentPanelContainer.clientHeight && commentPanelText.style.display === '') {
+            commentPanelText.style.paddingTop = (this.pdfViewerBase.navigationPane.commentPanelContainer.clientHeight) / 2 + 'px';
+            commentPanelText.style.paddingLeft = (this.pdfViewerBase.navigationPane.commentPanelContainer.clientWidth) / 3 + 'px';
         }
     }
 
@@ -564,6 +582,7 @@ export class StickyNotesAnnotation {
 
     // tslint:disable-next-line
     private createCommentDiv(args: any): void {
+        this.pdfViewerBase.isDocumentEdited = true;
         let commentsContainer: HTMLElement;
         let titleContainer: HTMLElement;
         // tslint:disable-next-line

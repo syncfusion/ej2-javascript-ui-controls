@@ -1779,6 +1779,21 @@ describe('RTE base module', () => {
             expect((rteObj as any).placeHolderWrapper.style.display).toBe('block');
             expect((rteObj as any).placeHolderWrapper.innerText).toBe('changed');
         });
+        it('ensure placeholder on execute command', () => {
+            destroy(rteObj);
+            rteObj = renderRTE({
+                height: '200px',
+                width: '400px',
+                placeholder: 'type something'
+            });
+            (rteObj as any).inputElement.focus();
+            let curDocument: Document;
+            curDocument = rteObj.contentModule.getDocument();
+            setCursorPoint(curDocument, (rteObj as any).inputElement, 0);
+            expect((rteObj as any).placeHolderWrapper.style.display).toBe('block');
+            rteObj.executeCommand('insertHTML', 'inserted an html');
+            expect((rteObj as any).placeHolderWrapper.style.display).toBe('none');
+        });
         afterAll(() => {
             destroy(rteObj);
         });

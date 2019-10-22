@@ -1280,3 +1280,46 @@ describe('Grid base module', () => {
             destroy(gridObj);
         });
     });
+
+    describe('grid with stacked header and clipmode', () => {
+        let gridObj: Grid;
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: data,
+                    allowSelection: true,
+                    allowPaging: true,
+                    pageSettings: { pageSize: 6},
+                    columns: [
+                        {
+                            headerText: 'Order Details', toolTip: 'Order Details',clipMode: 'EllipsisWithTooltip', textAlign: 'Center',
+                            columns: [{ field: 'OrderID', width: 120, clipMode: 'EllipsisWithTooltip', textAlign: 'Right', headerText: 'Order ID' },
+                            {
+                                field: 'OrderDate', width: 120, textAlign: 'Right',clipMode: 'EllipsisWithTooltip', headerText: 'Order Date',
+                                format: { skeleton: 'yMd', type: 'date' }, type: 'date'
+                            }]
+                        },
+                        { field: 'CustomerID', width: 120,clipMode: 'EllipsisWithTooltip', headerText: 'Customer ID' },
+                        { field: 'EmployeeID', width: 120, textAlign: 'Right', clipMode: 'EllipsisWithTooltip', headerText: 'Employee ID' },
+                        {
+                            headerText: 'Ship Details',clipMode: 'EllipsisWithTooltip',
+                            columns: [
+                                { field: 'ShipCity', width: 120,clipMode: 'EllipsisWithTooltip', headerText: 'Ship City' },
+                                { field: 'ShipCountry', width: 120,clipMode: 'EllipsisWithTooltip', headerText: 'Ship Country' },
+                            ],
+                        }
+                    ],
+                    
+                }, done);
+        });
+    
+        it('check stacked header clipmode', () => {
+            expect(gridObj.getHeaderContent().querySelector('tr').querySelectorAll('th')[0].classList.contains('e-ellipsistooltip')).toBeTruthy();
+            expect(gridObj.getHeaderContent().querySelector('tr').querySelectorAll('th')[1].classList.contains('e-ellipsistooltip')).toBeTruthy();
+            expect(gridObj.getHeaderContent().querySelectorAll('.e-ellipsistooltip').length).toBe(8);
+        });
+        afterAll(() => {
+            destroy(gridObj);
+            gridObj = null;
+        });
+    });

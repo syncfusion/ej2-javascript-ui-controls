@@ -353,7 +353,7 @@ export class ConnectTool extends ToolBase {
 
     protected endPoint: string;
 
-    /**   @private  */
+    /** @private */
     public selectedSegment: BezierSegment;
 
     constructor(commandHandler: CommandHandler, endPoint: string) {
@@ -537,7 +537,7 @@ export class ConnectTool extends ToolBase {
                     if (target instanceof Node) {
                         if ((canInConnect(target) && this.endPoint === 'ConnectorTargetEnd')
                             || (canOutConnect(target) && this.endPoint === 'ConnectorSourceEnd')) {
-                            this.commandHandler.connect(this.endPoint, args);
+                                this.commandHandler.connect(this.endPoint, args);
                         }
                     } else {
                         let isConnect: boolean = this.checkConnect(target as PointPortModel);
@@ -882,6 +882,7 @@ export class RotateTool extends ToolBase {
     /**   @private  */
     public mouseDown(args: MouseEventArgs): void {
         this.undoElement = cloneObject(args.source);
+
         if (this.undoElement.nodes[0] && this.undoElement.nodes[0].children) {
             let objects: (NodeModel | ConnectorModel)[] = [];
             let nodes: (NodeModel | ConnectorModel)[] = this.commandHandler.getAllDescendants(this.undoElement.nodes[0], objects);
@@ -906,7 +907,7 @@ export class RotateTool extends ToolBase {
                 source: args.source, state: 'Completed', oldValue: oldValue,
                 newValue: oldValue, cancel: false
             };
-            this.commandHandler.triggerEvent(DiagramEvent.rotateChange, arg);
+                this.commandHandler.triggerEvent(DiagramEvent.rotateChange, arg);
             let obj: SelectorModel;
             obj = cloneObject(args.source);
             let entry: HistoryEntry = {
@@ -930,7 +931,7 @@ export class RotateTool extends ToolBase {
             let arg: IRotationEventArgs = {
                 source: args.source, state: 'Start', oldValue: oldValue, newValue: oldValue, cancel: false
             };
-            this.commandHandler.triggerEvent(DiagramEvent.rotateChange, arg);
+                this.commandHandler.triggerEvent(DiagramEvent.rotateChange, arg);
         }
 
         this.currentPosition = args.position;
@@ -949,8 +950,9 @@ export class RotateTool extends ToolBase {
             source: cloneBlazorObject(args.source), state: 'Progress', oldValue: cloneBlazorObject(oldValue),
             newValue: cloneBlazorObject(newValue), cancel: arg.cancel
         };
-        this.commandHandler.triggerEvent(DiagramEvent.rotateChange, arg1);
-        if (!arg1.cancel) {
+        
+            this.commandHandler.triggerEvent(DiagramEvent.rotateChange, arg1);
+            if (!arg1.cancel) {
             this.blocked = !(this.commandHandler.rotateSelectedItems(angle - object.wrapper.rotateAngle));
         }
         if (this.commandHandler.canEnableDefaultTooltip()) {

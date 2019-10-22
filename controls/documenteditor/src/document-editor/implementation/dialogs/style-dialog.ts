@@ -49,6 +49,7 @@ export class StyleDialog {
     private singleLineSpacing: HTMLElement;
     private doubleLineSpacing: HTMLElement;
     private onePointFiveLineSpacing: HTMLElement;
+    private styleDropdwn: DropDownButton;
 
     /**
      * @private
@@ -182,7 +183,7 @@ export class StyleDialog {
         let items: ItemModel[] = [{ text: localValue.getConstant('Font') + '..', id: 'style_font' },
         { text: localValue.getConstant('Paragraph') + '..', id: 'style_paragraph' },
         { text: localValue.getConstant('Numbering') + '..', id: 'style_numbering' }];
-        let dropDownbtn: DropDownButton = new DropDownButton({
+        this.styleDropdwn = new DropDownButton({
             items: items, cssClass: 'e-de-style-format-dropdwn', enableRtl: isRtl,
             beforeItemRender: (args: MenuEventArgs) => {
                 if (this.styleType.value === localValue.getConstant('Character')) {
@@ -204,8 +205,8 @@ export class StyleDialog {
                 }
             }
         });
-        dropDownbtn.appendTo(formatBtn);
-        dropDownbtn.addEventListener('select', this.openDialog);
+        this.styleDropdwn.appendTo(formatBtn);
+        this.styleDropdwn.addEventListener('select', this.openDialog);
     }
     /* tslint:disable-next-line:no-any */
     private openDialog = (args: any): void => {
@@ -880,26 +881,38 @@ export class StyleDialog {
             }
             this.target = undefined;
         }
+        if (this.fontColor) {
+            this.fontColor.destroy();
+            this.fontColor = undefined;
+        }
+        if (this.fontSize) {
+            this.fontSize.destroy();
+            this.fontSize = undefined;
+        }
+        if (this.fontFamily) {
+            this.fontFamily.destroy();
+            this.fontFamily = undefined;
+        }
         if (this.styleType) {
             this.styleType.destroy();
+            this.styleType = undefined;
         }
-        this.styleType = undefined;
         if (this.styleBasedOn) {
             this.styleBasedOn.destroy();
+            this.styleBasedOn = undefined;
         }
-        this.styleBasedOn = undefined;
         if (this.styleParagraph) {
             this.styleParagraph.destroy();
+            this.styleParagraph = undefined;
         }
-        this.styleParagraph = undefined;
         if (this.onlyThisDocument) {
             this.onlyThisDocument.destroy();
         }
         this.onlyThisDocument = undefined;
         if (this.template) {
             this.template.destroy();
+            this.template = undefined;
         }
-        this.template = undefined;
         if (this.style) {
             this.style = undefined;
         }
@@ -908,7 +921,11 @@ export class StyleDialog {
         }
         if (this.numberingBulletDialog) {
             this.numberingBulletDialog.destroy();
+            this.numberingBulletDialog = undefined;
         }
-        this.numberingBulletDialog = undefined;
+        if (this.styleDropdwn) {
+            this.styleDropdwn.destroy();
+            this.styleDropdwn = undefined;
+        }
     }
 }

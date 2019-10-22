@@ -1,7 +1,7 @@
 import { Component, INotifyPropertyChanged, NotifyPropertyChanges, ChildProperty, L10n, Collection, Complex } from '@syncfusion/ej2-base';
 import { ModuleDeclaration, isNullOrUndefined, Property, Event, EmitType } from '@syncfusion/ej2-base';
 // tslint:disable-next-line:max-line-length
-import { PdfViewerModel, HighlightSettingsModel, UnderlineSettingsModel, StrikethroughSettingsModel, LineSettingsModel, ArrowSettingsModel, RectangleSettingsModel, CircleSettingsModel, PolygonSettingsModel, StampSettingsModel, StickyNotesSettingsModel, CustomStampSettingsModel, VolumeSettingsModel, RadiusSettingsModel, AreaSettingsModel, PerimeterSettingsModel, DistanceSettingsModel, MeasurementSettingsModel, FreeTextSettingsModel } from './pdfviewer-model';
+import { PdfViewerModel, HighlightSettingsModel, UnderlineSettingsModel, StrikethroughSettingsModel, LineSettingsModel, ArrowSettingsModel, RectangleSettingsModel, CircleSettingsModel, PolygonSettingsModel, StampSettingsModel, StickyNotesSettingsModel, CustomStampSettingsModel, VolumeSettingsModel, RadiusSettingsModel, AreaSettingsModel, PerimeterSettingsModel, DistanceSettingsModel, MeasurementSettingsModel, FreeTextSettingsModel, AnnotationSelectorSettingsModel } from './pdfviewer-model';
 import { ToolbarSettingsModel, AnnotationToolbarSettingsModel, ShapeLabelSettingsModel } from './pdfviewer-model';
 import { ServerActionSettingsModel, AjaxRequestSettingsModel, CustomStampItemModel } from './pdfviewer-model';
 import { PdfViewerBase } from './index';
@@ -1094,6 +1094,44 @@ export class FreeTextSettings extends ChildProperty<FreeTextSettings> {
 }
 
 /**
+ * The `AnnotationSelectorSettings` module is used to provide the properties to annotation selectors.
+ */
+export class AnnotationSelectorSettings extends ChildProperty<AnnotationSelectorSettings> {
+    /**
+     * Specifies the selection border color.
+     */
+    @Property('')
+    public selectionBorderColor: string;
+
+    /**
+     * Specifies the border color of the resizer.
+     * @ignore
+     */
+    @Property('black')
+    public resizerBorderColor: string;
+
+    /**
+     * Specifies the fill color of the resizer.
+     * @ignore
+     */
+    @Property('#FF4081')
+    public resizerFillColor: string;
+
+    /**
+     * Specifies the size of the resizer.
+     * @ignore
+     */
+    @Property(8)
+    public resizerSize: number;
+
+    /**
+     * Specifies the thickness of the border of selection.
+     */
+    @Property(1)
+    public selectionBorderThickness: number;
+}
+
+/**
  * Represents the PDF viewer component.
  * ```html
  * <div id="pdfViewer"></div>
@@ -1199,6 +1237,13 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
      */
     @Property(true)
     public enableCommentPanel: boolean;
+
+    /**
+     * Enable or disable the text markup resizer to modify the bounds in UI.
+     * @default false
+     */
+    @Property(false)
+    public enableTextMarkupResizer: boolean;
 
     /**
      * Enable or disables the download option of PdfViewer.
@@ -1524,6 +1569,13 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
      */
     @Property({ conversionUnit: 'in', displayUnit: 'in', scaleRatio: 1, depth: 96 })
     public measurementSettings: MeasurementSettingsModel;
+
+    /**
+     * Defines the settings of annotation selector.
+     */
+    // tslint:disable-next-line:max-line-length
+    @Property({selectionBorderColor: '', resizerBorderColor: 'black', resizerFillColor: '#FF4081', resizerSize: 8, selectionBorderThickness: 1 })
+    public annotationSelectorSettings: AnnotationSelectorSettingsModel;
 
     /**
      * @private
@@ -2384,6 +2436,16 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
             });
         } else {
             return null;
+        }
+    }
+
+    /**
+     * To delete the annotation Collections in the PDF Document.
+     * @returns void
+     */
+    public deleteAnnotations(): void {
+        if (this.annotationModule) {
+            this.viewerBase.deleteAnnotations();
         }
     }
 

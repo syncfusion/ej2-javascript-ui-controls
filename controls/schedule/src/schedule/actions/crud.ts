@@ -1,4 +1,4 @@
-import { isNullOrUndefined } from '@syncfusion/ej2-base';
+import { isNullOrUndefined, isBlazor } from '@syncfusion/ej2-base';
 import { Query } from '@syncfusion/ej2-data';
 import { getRecurrenceStringFromDate, generate } from '../../recurrence-editor/date-generator';
 import { ActionEventArgs, EventFieldsMapping, SaveChanges, CrudArgs } from '../base/interface';
@@ -67,27 +67,31 @@ export class Crud {
             }
             let addEvents: Object[] = (eventData instanceof Array) ? eventData : [eventData];
             let args: ActionEventArgs = {
-                requestType: 'eventCreate', cancel: false, data: addEvents,
+                requestType: 'eventCreate', cancel: false,
                 addedRecords: addEvents, changedRecords: [], deletedRecords: []
             };
+            if (!isBlazor()) {
+                args.data = addEvents;
+            }
             this.parent.trigger(events.actionBegin, args, (addArgs: ActionEventArgs) => {
+                this.serializeData(addArgs.addedRecords);
                 if (!addArgs.cancel) {
                     let fields: EventFieldsMapping = this.parent.eventFields;
                     let editParms: SaveChanges = { addedRecords: [], changedRecords: [], deletedRecords: [] };
                     let promise: Promise<Object>;
-                    if (eventData instanceof Array) {
-                        for (let event of eventData as { [key: string]: Object }[]) {
+                    if (addArgs.addedRecords instanceof Array) {
+                        for (let event of addArgs.addedRecords as { [key: string]: Object }[]) {
                             editParms.addedRecords.push(this.parent.eventBase.processTimezone(event, true));
                         }
                         // tslint:disable-next-line:max-line-length
                         promise = this.parent.dataModule.dataManager.saveChanges(editParms, fields.id, this.getTable(), this.getQuery()) as Promise<Object>;
                     } else {
-                        let event: Object = this.parent.eventBase.processTimezone(eventData as { [key: string]: Object }, true);
+                        let event: Object = this.parent.eventBase.processTimezone(addArgs.addedRecords as { [key: string]: Object }, true);
                         editParms.addedRecords.push(event);
                         promise = this.parent.dataModule.dataManager.insert(event, this.getTable(), this.getQuery()) as Promise<Object>;
                     }
                     let crudArgs: CrudArgs = {
-                        requestType: 'eventCreated', cancel: false, data: eventData, promise: promise, editParms: editParms
+                        requestType: 'eventCreated', cancel: false, data: addArgs.addedRecords, promise: promise, editParms: editParms
                     };
                     this.refreshData(crudArgs);
                 }
@@ -117,22 +121,26 @@ export class Crud {
             } else {
                 let updateEvents: Object[] = (eventData instanceof Array) ? eventData : [eventData];
                 let args: ActionEventArgs = {
-                    requestType: 'eventChange', cancel: false, data: eventData,
+                    requestType: 'eventChange', cancel: false,
                     addedRecords: [], changedRecords: updateEvents, deletedRecords: []
                 };
+                if (!isBlazor()) {
+                    args.data = eventData;
+                }
                 this.parent.trigger(events.actionBegin, args, (saveArgs: ActionEventArgs) => {
+                    this.serializeData(saveArgs.changedRecords);
                     if (!saveArgs.cancel) {
                         let promise: Promise<Object>;
                         let fields: EventFieldsMapping = this.parent.eventFields;
                         let editParms: SaveChanges = { addedRecords: [], changedRecords: [], deletedRecords: [] };
-                        if (eventData instanceof Array) {
-                            for (let event of eventData) {
+                        if (saveArgs.changedRecords instanceof Array) {
+                            for (let event of saveArgs.changedRecords as { [key: string]: Object }[]) {
                                 editParms.changedRecords.push(this.parent.eventBase.processTimezone(event, true));
                             }
                             // tslint:disable-next-line:max-line-length
                             promise = this.parent.dataModule.dataManager.saveChanges(editParms, fields.id, this.getTable(), this.getQuery()) as Promise<Object>;
                         } else {
-                            let event: { [key: string]: Object } = this.parent.eventBase.processTimezone(eventData, true);
+                            let event: { [key: string]: Object } = this.parent.eventBase.processTimezone(saveArgs.changedRecords, true);
                             editParms.changedRecords.push(event);
                             // tslint:disable-next-line:max-line-length
                             promise = this.parent.dataModule.dataManager.update(fields.id, event, this.getTable(), this.getQuery()) as Promise<Object>;
@@ -174,26 +182,30 @@ export class Crud {
                 }
             } else {
                 let args: ActionEventArgs = {
-                    requestType: 'eventRemove', cancel: false, data: eventData,
+                    requestType: 'eventRemove', cancel: false,
                     addedRecords: [], changedRecords: [], deletedRecords: deleteEvents
                 };
+                if (!isBlazor()) {
+                    args.data = eventData;
+                }
                 this.parent.trigger(events.actionBegin, args, (deleteArgs: ActionEventArgs) => {
+                    this.serializeData(deleteArgs.deletedRecords);
                     if (!deleteArgs.cancel) {
                         let promise: Promise<Object>;
                         let fields: EventFieldsMapping = this.parent.eventFields;
                         let editParms: SaveChanges = { addedRecords: [], changedRecords: [], deletedRecords: [] };
-                        if (deleteEvents.length > 1) {
-                            for (let eventObj of deleteEvents) {
+                        if (deleteArgs.deletedRecords.length > 1) {
+                            for (let eventObj of deleteArgs.deletedRecords) {
                                 editParms.deletedRecords.push(eventObj);
                             }
                             // tslint:disable-next-line:max-line-length
                             promise = this.parent.dataModule.dataManager.saveChanges(editParms, fields.id, this.getTable(), this.getQuery()) as Promise<Object>;
                         } else {
-                            editParms.deletedRecords.push(deleteEvents[0]);
+                            editParms.deletedRecords.push(deleteArgs.deletedRecords[0]);
                             // tslint:disable-next-line:max-line-length
-                            promise = this.parent.dataModule.dataManager.remove(fields.id, deleteEvents[0], this.getTable(), this.getQuery()) as Promise<Object>;
+                            promise = this.parent.dataModule.dataManager.remove(fields.id, deleteArgs.deletedRecords[0], this.getTable(), this.getQuery()) as Promise<Object>;
                         }
-                        this.parent.eventBase.selectWorkCellByTime(deleteEvents);
+                        this.parent.eventBase.selectWorkCellByTime(deleteArgs.deletedRecords);
                         let crudArgs: CrudArgs = {
                             requestType: 'eventRemoved', cancel: false, data: deleteArgs.data, promise: promise, editParms: editParms
                         };
@@ -215,17 +227,21 @@ export class Crud {
         }
         let updateEvents: Object[] = (eventData instanceof Array) ? eventData : [eventData];
         let args: ActionEventArgs = {
-            requestType: 'eventChange', cancel: false, data: occurenceData,
+            requestType: action === 'EditOccurrence' ? 'eventChange' : 'eventRemove', cancel: false,
             addedRecords: [], changedRecords: updateEvents, deletedRecords: []
         };
+        if (!isBlazor()) {
+            args.data = occurenceData;
+        }
         this.parent.trigger(events.actionBegin, args, (occurenceArgs: ActionEventArgs) => {
+            this.serializeData(occurenceArgs.changedRecords);
             if (!occurenceArgs.cancel) {
                 let fields: EventFieldsMapping = this.parent.eventFields;
                 let editParms: SaveChanges = { addedRecords: [], changedRecords: [], deletedRecords: [] };
                 let occurrenceEvents: { [key: string]: Object }[] = (occurenceData instanceof Array ? occurenceData : [occurenceData]) as
                     { [key: string]: Object }[];
-                for (let a: number = 0, count: number = updateEvents.length; a < count; a++) {
-                    let childEvent: { [key: string]: Object } = updateEvents[a] as { [key: string]: Object };
+                for (let a: number = 0, count: number = occurenceArgs.changedRecords.length; a < count; a++) {
+                    let childEvent: { [key: string]: Object } = occurenceArgs.changedRecords[a] as { [key: string]: Object };
                     let parentEvent: { [key: string]: Object } = occurrenceEvents[a].parent as { [key: string]: Object };
                     let parentException: string = parentEvent[fields.recurrenceException] as string;
                     switch (action) {
@@ -258,9 +274,10 @@ export class Crud {
                 }
                 // tslint:disable-next-line:max-line-length
                 let promise: Promise<Object> = this.parent.dataModule.dataManager.saveChanges(editParms, fields.id, this.getTable(), this.getQuery()) as Promise<Object>;
-                this.parent.eventBase.selectWorkCellByTime(updateEvents);
+                this.parent.eventBase.selectWorkCellByTime(occurenceArgs.changedRecords);
                 let crudArgs: CrudArgs = {
-                    requestType: 'eventChanged', cancel: false, data: occurenceArgs.data, promise: promise, editParms: editParms
+                    requestType: action === 'EditOccurrence' ? 'eventChanged' : 'eventRemoved',
+                    cancel: false, data: occurenceArgs.data, promise: promise, editParms: editParms
                 };
                 this.refreshData(crudArgs);
             }
@@ -278,17 +295,21 @@ export class Crud {
         }
         let updateFollowEvents: Object[] = (eventData instanceof Array) ? eventData : [eventData];
         let args: ActionEventArgs = {
-            requestType: 'eventChange', cancel: false, data: followData,
+            requestType: action === 'EditFollowingEvents' ? 'eventChange' : 'eventRemove', cancel: false,
             addedRecords: [], changedRecords: updateFollowEvents, deletedRecords: []
         };
+        if (!isBlazor()) {
+            args.data = followData;
+        }
         this.parent.trigger(events.actionBegin, args, (followArgs: ActionEventArgs) => {
+            this.serializeData(followArgs.changedRecords);
             if (!followArgs.cancel) {
                 let fields: EventFieldsMapping = this.parent.eventFields;
                 let editParms: SaveChanges = { addedRecords: [], changedRecords: [], deletedRecords: [] };
                 let followEvents: { [key: string]: Object }[] = (followData instanceof Array ? followData : [followData]) as
                     { [key: string]: Object }[];
-                for (let a: number = 0, count: number = updateFollowEvents.length; a < count; a++) {
-                    let childEvent: { [key: string]: Object } = updateFollowEvents[a] as { [key: string]: Object };
+                for (let a: number = 0, count: number = followArgs.changedRecords.length; a < count; a++) {
+                    let childEvent: { [key: string]: Object } = followArgs.changedRecords[a] as { [key: string]: Object };
                     let parentEvent: { [key: string]: Object } = followEvents[a].parent as { [key: string]: Object };
                     let followData: { [key: string]: Object[] } = this.parent.eventBase.getEventCollections(parentEvent, childEvent);
                     switch (action) {
@@ -327,9 +348,10 @@ export class Crud {
                 }
                 // tslint:disable-next-line:max-line-length
                 let promise: Promise<Object> = this.parent.dataModule.dataManager.saveChanges(editParms, fields.id, this.getTable(), this.getQuery()) as Promise<Object>;
-                this.parent.eventBase.selectWorkCellByTime(updateFollowEvents);
+                this.parent.eventBase.selectWorkCellByTime(followArgs.changedRecords);
                 let crudArgs: CrudArgs = {
-                    requestType: 'eventChanged', cancel: false, data: followArgs.data, promise: promise, editParms: editParms
+                    requestType: action === 'EditFollowingEvents' ? 'eventChanged' : 'eventRemoved',
+                    cancel: false, data: followArgs.data, promise: promise, editParms: editParms
                 };
                 this.refreshData(crudArgs);
             }
@@ -347,17 +369,21 @@ export class Crud {
         }
         let updateSeriesEvents: Object[] = (eventData instanceof Array) ? eventData : [eventData];
         let args: ActionEventArgs = {
-            requestType: 'eventChange', cancel: false, data: seriesData,
+            requestType: action === 'EditSeries' ? 'eventChange' : 'eventRemove', cancel: false,
             addedRecords: [], changedRecords: updateSeriesEvents, deletedRecords: []
         };
+        if (!isBlazor()) {
+            args.data = seriesData;
+        }
         this.parent.trigger(events.actionBegin, args, (seriesArgs: ActionEventArgs) => {
+            this.serializeData(seriesArgs.changedRecords);
             if (!seriesArgs.cancel) {
                 let fields: EventFieldsMapping = this.parent.eventFields;
                 let editParms: SaveChanges = { addedRecords: [], changedRecords: [], deletedRecords: [] };
                 let seriesEvents: { [key: string]: Object }[] = (seriesData instanceof Array ? seriesData : [seriesData]) as
                     { [key: string]: Object }[];
-                for (let a: number = 0, count: number = updateSeriesEvents.length; a < count; a++) {
-                    let childEvent: { [key: string]: Object } = updateSeriesEvents[a] as { [key: string]: Object };
+                for (let a: number = 0, count: number = seriesArgs.changedRecords.length; a < count; a++) {
+                    let childEvent: { [key: string]: Object } = seriesArgs.changedRecords[a] as { [key: string]: Object };
                     let parentEvent: { [key: string]: Object } = seriesEvents[a] as { [key: string]: Object };
                     let eventCollections: { [key: string]: Object[]; } = this.parent.eventBase.getEventCollections(parentEvent);
                     let deletedEvents: Object[] = eventCollections.follow.concat(eventCollections.occurrence);
@@ -387,9 +413,10 @@ export class Crud {
                 }
                 // tslint:disable-next-line:max-line-length
                 let promise: Promise<Object> = this.parent.dataModule.dataManager.saveChanges(editParms, fields.id, this.getTable(), this.getQuery()) as Promise<Object>;
-                this.parent.eventBase.selectWorkCellByTime(updateSeriesEvents);
+                this.parent.eventBase.selectWorkCellByTime(seriesArgs.changedRecords);
                 let crudArgs: CrudArgs = {
-                    requestType: 'eventChanged', cancel: false, data: seriesArgs.data, promise: promise, editParms: editParms
+                    requestType: action === 'EditSeries' ? 'eventChanged' : 'eventRemoved',
+                    cancel: false, data: seriesArgs.data, promise: promise, editParms: editParms
                 };
                 this.refreshData(crudArgs);
             }
@@ -406,20 +433,25 @@ export class Crud {
             }
         }
         let args: ActionEventArgs = {
-            requestType: 'eventRemove', cancel: false, data: deleteData,
+            requestType: 'eventRemove', cancel: false,
             addedRecords: [], changedRecords: [], deletedRecords: eventData
         };
+        if (!isBlazor()) {
+            args.data = deleteData;
+        }
         this.parent.trigger(events.actionBegin, args, (deleteArgs: ActionEventArgs) => {
+            this.serializeData(deleteArgs.deletedRecords);
             if (!deleteArgs.cancel) {
                 let fields: EventFieldsMapping = this.parent.eventFields;
                 let editParms: SaveChanges = { addedRecords: [], changedRecords: [], deletedRecords: [] };
-                for (let a: number = 0, count: number = eventData.length; a < count; a++) {
-                    let isDelete: boolean = isNullOrUndefined(eventData[a][this.parent.eventFields.recurrenceRule]);
+                for (let a: number = 0, count: number = deleteArgs.deletedRecords.length; a < count; a++) {
+                    let isDelete: boolean = isNullOrUndefined(
+                        (deleteArgs.deletedRecords as { [key: string]: Object }[])[a][this.parent.eventFields.recurrenceRule]);
                     if (!isDelete) {
                         let parentEvent: { [key: string]: Object } = deleteData[a].parent as { [key: string]: Object };
                         let isEdited: { [key: string]: Object }[] = editParms.changedRecords.filter((obj: { [key: string]: Object }) =>
                             obj[fields.id] === parentEvent[fields.id]) as { [key: string]: Object }[];
-                        let editedDate: Date = eventData[a][fields.startTime] as Date;
+                        let editedDate: Date = (deleteArgs.deletedRecords as { [key: string]: Object }[])[a][fields.startTime] as Date;
                         if (isEdited.length > 0) {
                             let editedData: { [key: string]: Object } = isEdited[0];
                             editedData[fields.recurrenceException] =
@@ -431,10 +463,10 @@ export class Crud {
                         if (isEdited.length === 0) {
                             editParms.changedRecords.push(this.parent.eventBase.processTimezone(parentEvent, true));
                         }
-                        isDelete = (eventData[a][fields.id] !== parentEvent[fields.id]);
+                        isDelete = ((deleteArgs.deletedRecords as { [key: string]: Object }[])[a][fields.id] !== parentEvent[fields.id]);
                     }
                     if (isDelete) {
-                        editParms.deletedRecords.push(eventData[a]);
+                        editParms.deletedRecords.push((deleteArgs.deletedRecords as { [key: string]: Object }[])[a]);
                     }
                 }
                 // tslint:disable-next-line:max-line-length
@@ -445,6 +477,16 @@ export class Crud {
                 this.refreshData(crudArgs);
             }
         });
+    }
+
+    public serializeData(eventData: Object[]): void {
+        if (isBlazor()) {
+            let eventFields: EventFieldsMapping = this.parent.eventFields;
+            for (let event of eventData as { [key: string]: Date }[]) {
+                event[eventFields.startTime] = this.parent.getDateTime(event[eventFields.startTime]);
+                event[eventFields.endTime] = this.parent.getDateTime(event[eventFields.endTime]);
+            }
+        }
     }
 
     private getParentEvent(event: { [key: string]: Object }, isParent: boolean = false): { [key: string]: Object } {

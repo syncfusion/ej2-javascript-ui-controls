@@ -278,6 +278,7 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
     /**
      * Triggers before selection applied
      * @event
+     * @blazorType Syncfusion.EJ2.Blazor.Maps.ISelectionEventArgs<TValue>
      * @blazorProperty 'OnItemSelect'
      */
     @Event()
@@ -286,6 +287,7 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
      * Trigger before highlight applied
      * @event
      * @blazorProperty 'OnItemHighlight'
+     * @blazorType Syncfusion.EJ2.Blazor.Maps.ISelectionEventArgs<TValue>
      */
     @Event()
     public itemHighlight: EmitType<ISelectionEventArgs>;

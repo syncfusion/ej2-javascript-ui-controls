@@ -1,6 +1,6 @@
 import { TreeGrid } from '../../src/treegrid/base/treegrid';
 import { createGrid, destroy } from '../base/treegridutil.spec';
-import { sampleData, projectData } from '../base/datasource.spec';
+import { sampleData, projectData, sortData } from '../base/datasource.spec';
 import { Sort } from '../../src/treegrid/actions/sort';
 import { profile, inMB, getMemoryProfile } from '../common.spec';
 
@@ -320,7 +320,44 @@ describe('Sorting with Sort comparer property functionality checking', () => {
     });
   });
 
-
+  describe('EJ2-32541 - Issue in MultiSorting Sample', () => {
+    let gridObj: TreeGrid;
+    let actionComplete: ()=> void;
+    beforeAll((done: Function) => {
+      gridObj = createGrid(
+        {
+          dataSource: sortData,
+          childMapping: 'subtasks',
+          treeColumnIndex: 0,
+          allowSorting: true,
+          columns: [
+            { field: 'orderName', headerText: 'Order Name', width: 200 },
+            { field: 'Category', headerText: 'Category', width: 140 },
+            { field: 'orderDate', headerText: 'Order Date', width: 150, textAlign: 'Right', format: 'yMd', type: 'date' },
+            { field: 'units', headerText: 'Units', width: 110, textAlign: 'Right' }
+          ],
+          sortSettings: { columns: [{ field: 'Category', direction: 'Ascending' }, { field: 'orderName', direction: 'Ascending' }] }
+        },
+        done
+      );
+    });
+    it('Datasource update with Sorting', (done: Function)  => {
+      actionComplete = (args?: Object): void => {
+        expect(gridObj.getRows()[0].getElementsByClassName('e-rowcell')[1].innerHTML == "Seafoods").toBe(true);
+        done();
+      }
+      let event: MouseEvent = new MouseEvent('click', {
+        'view': window,
+        'bubbles': true,
+        'cancelable': true
+      });
+      gridObj.actionComplete = actionComplete;
+      gridObj.getHeaderTable().querySelectorAll('.e-sortnumber')[1].dispatchEvent(event);
+    });
+    afterAll(() => {
+      destroy(gridObj);
+    });
+  });
   
   it('memory leak', () => {
     profile.sample();

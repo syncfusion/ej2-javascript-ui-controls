@@ -72,7 +72,8 @@ export class AgendaBase {
                     let scheduleId: string = this.parent.element.id + '_';
                     let viewName: string = this.parent.activeViewOptions.eventTemplateName;
                     let templateId: string = scheduleId + viewName + 'eventTemplate';
-                    templateEle = this.parent.getAppointmentTemplate()(listData[li], this.parent, 'eventTemplate', templateId, false);
+                    let templateArgs: Object = util.addLocalOffsetToEvent(listData[li], this.parent.eventFields);
+                    templateEle = this.parent.getAppointmentTemplate()(templateArgs, this.parent, 'eventTemplate', templateId, false);
                     if (!isNullOrUndefined(listData[li][fieldMapping.recurrenceRule])) {
                         let iconClass: string = (listData[li][fieldMapping.id] === listData[li][fieldMapping.recurrenceID]) ?
                             cls.EVENT_RECURRENCE_ICON_CLASS : cls.EVENT_RECURRENCE_EDIT_ICON_CLASS;
@@ -325,7 +326,8 @@ export class AgendaBase {
         let dateHeader: Element;
         if (this.parent.activeViewOptions.dateHeaderTemplate) {
             dateHeader = createElement('div', { className: cls.AGENDA_HEADER_CLASS });
-            let args: CellTemplateArgs = { date: date, type: 'dateHeader' };
+            let dateValue: Date = util.addLocalOffset(date);
+            let args: CellTemplateArgs = { date: dateValue, type: 'dateHeader' };
             let scheduleId: string = this.parent.element.id + '_';
             let viewName: string = this.parent.activeViewOptions.dateHeaderTemplateName;
             let templateId: string = scheduleId + viewName + 'dateHeaderTemplate';

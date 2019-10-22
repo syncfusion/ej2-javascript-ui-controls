@@ -874,6 +874,7 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
     QueryBuilder.prototype.operatorChangeSuccess = function (eventsArgs, filterElem, tempRule, rule, ddlArgs) {
         if (!eventsArgs.cancel) {
             var operatorElem = closest(ddlArgs.element, '.e-rule-operator');
+            var valElem = operatorElem.nextElementSibling;
             var dropDownObj = getComponent(ddlArgs.element, 'dropdownlist');
             var prevOper = rule.operator ? rule.operator.toLowerCase() : '';
             tempRule.operator = dropDownObj.value;
@@ -906,9 +907,11 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
                 removeClass([parentElem], 'e-show');
                 addClass([parentElem], 'e-hide');
             }
+            if (valElem && valElem.querySelector('.e-template')) {
+                filterElem = operatorElem.previousElementSibling;
+            }
             this.changeRuleValues(filterElem, rule, tempRule, ddlArgs);
         }
-        this.isValueRendered = true;
     };
     QueryBuilder.prototype.changeRuleValues = function (filterElem, rule, tempRule, ddlArgs) {
         var operatorElem = closest(ddlArgs.element, '.e-rule-operator');
@@ -1482,7 +1485,11 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
         }
     };
     QueryBuilder.prototype.updateValues = function (element, rule) {
-        var controlName = element.className.split(' e-')[1];
+        var idx = 1;
+        if (element.className.indexOf('e-template') > -1) {
+            idx = 3;
+        }
+        var controlName = element.className.split(' e-')[idx];
         var i = parseInt(element.id.slice(-1), 2);
         switch (controlName) {
             case 'textbox':
@@ -1509,14 +1516,18 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
             case 'datepicker':
                 var column = this.getColumn(rule.field);
                 var format = { type: 'dateTime', format: column.format || 'MM/dd/yyyy' };
+                var selectedDate = getComponent(element, controlName).value;
                 if (rule.operator.indexOf('between') > -1) {
-                    rule.value[i] = getComponent(element, controlName).value;
+                    rule.value[i] = selectedDate;
                 }
-                else if (isNullOrUndefined(format.format)) {
-                    rule.value = this.intl.formatDate(getComponent(element, controlName).value);
+                else if (isNullOrUndefined(format.format) && selectedDate) {
+                    rule.value = this.intl.formatDate(selectedDate);
+                }
+                else if (selectedDate) {
+                    rule.value = this.intl.formatDate(selectedDate, format);
                 }
                 else {
-                    rule.value = this.intl.formatDate(getComponent(element, controlName).value, format);
+                    rule.value = '';
                 }
                 break;
             case 'multiselect':
@@ -1682,7 +1693,7 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
                 var ddlInst = getInstance(ruleElem.querySelector('.e-rule-filter input'), DropDownList);
                 var format = { type: 'dateTime', format: this.columns[ddlInst.index].format || 'MM/dd/yyyy' };
                 if (format.type) {
-                    if (arrOperator.indexOf(oper) > -1) {
+                    if (arrOperator.indexOf(oper) > -1 && i) {
                         rule.rules[index].value[i] = this.intl.formatDate(selectedValue, format);
                     }
                     else {
@@ -2741,7 +2752,7 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
                     queryStr += rule.field + ' ' + this.operators[rule.operator];
                 }
                 else {
-                    queryStr += rule.field + ' ' + this.operators[rule.operator] + ' ' + valueStr;
+                    queryStr += rule.field + ' ' + (this.operators[rule.operator] || rule.operator) + ' ' + valueStr;
                 }
             }
             if (j !== jLen - 1) {

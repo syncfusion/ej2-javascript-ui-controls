@@ -196,6 +196,9 @@ export class NumericTextBox extends Component<HTMLInputElement> implements INoti
      * For more information on decimals, refer to
      * [decimals](../../numerictextbox/formats/#precision-of-numbers).
      * @default null
+     * @isBlazorNullableType true
+     * @blazorDefaultValue 
+     * @blazorType int
      */
     @Property(null)
     public decimals: number;

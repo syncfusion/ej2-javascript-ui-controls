@@ -2002,6 +2002,7 @@ var Dialog = /** @__PURE__ @class */ (function (_super) {
         this.dragObj = new Draggable(this.element, {
             clone: false,
             abort: '.e-dlg-closeicon-btn',
+            isDragScroll: true,
             handle: handleContent,
             dragStart: function (event) {
                 _this.trigger('dragStart', event, function (dragEventArgs) {
@@ -2313,8 +2314,9 @@ var Dialog = /** @__PURE__ @class */ (function (_super) {
                     if (!isNullOrUndefined(this.content) && this.content !== '') {
                         if (!isNullOrUndefined(this.contentEle) && this.contentEle.getAttribute('role') !== 'dialog') {
                             this.contentEle.innerHTML = '';
-                            typeof (this.content) === 'string' ?
-                                this.contentEle.innerHTML = this.content : this.contentEle.appendChild(this.content);
+                            typeof (this.content) === 'function' ? this.setTemplate(this.content, this.contentEle) :
+                                (typeof (this.content) === 'string' ? this.contentEle.innerHTML = this.content :
+                                    this.contentEle.appendChild(this.content));
                             this.setMaxHeight();
                         }
                         else {

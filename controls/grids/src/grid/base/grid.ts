@@ -2697,14 +2697,24 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      * @hidden   
      */
     public updateDefaultCursor(): void {
-        let headerRows: Element[] = [].slice.call(this.element.querySelectorAll('.e-columnheader'));
-        for (let row of headerRows) {
-            if (this.allowSorting || (this.allowGrouping && this.groupSettings.showDropArea) || this.allowReordering) {
-                row.classList.remove('e-defaultcursor');
-            } else {
-                row.classList.add('e-defaultcursor');
+        let headerCells: Element[] = [].slice.call(this.getHeaderContent().querySelectorAll('.e-headercell:not(.e-stackedheadercell)'));
+        let stdHdrCell: Element[] = [].slice.call(this.getHeaderContent().querySelectorAll('.e-stackedheadercell'));
+        let cols: Column[] =  this.getColumns();
+        for (let i: number = 0; i < headerCells.length; i++) {
+            let cell: Element = headerCells[i];
+            if (this.allowGrouping || this.allowReordering || this.allowSorting) {
+                if (!cols[i].allowReordering || !cols[i].allowSorting || !cols[i].allowGrouping) {
+                    cell.classList.add('e-defaultcursor');
+                } else {
+                    cell.classList.add('e-mousepointer');
+                }
             }
         }
+        for (let count: number = 0; count < stdHdrCell.length; count++) {
+            if (this.allowReordering) {
+                stdHdrCell[count].classList.add('e-mousepointer');
+            }
+        }   
     }
 
     private updateColumnModel(columns: Column[]): void {
@@ -3370,7 +3380,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
         if (this.isDetail()) {
             index++;
         }
-        if (this.allowRowDragAndDrop && this.allowResizing){
+        if (this.allowRowDragAndDrop && isNullOrUndefined(this.rowDropSettings.targetID) && this.allowResizing){
             index++;
         }
         /**
@@ -4260,8 +4270,8 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
         let htable: HTMLDivElement = this.createTable(headerTable, headerDivTag, 'header');
         let ctable: HTMLDivElement = this.createTable(headerTable, headerDivTag, 'content');
         let td: HTMLElement = element;
-        let table: HTMLDivElement = headerTable.contains(element) ? htable : ctable;
-        let ele: string = headerTable.contains(element) ? 'th' : 'tr';
+        let table: HTMLDivElement = element.classList.contains('e-headercell') ? htable : ctable;
+        let ele: string = element.classList.contains('e-headercell') ? 'th' : 'tr';
         table.querySelector(ele).className = element.className;
         table.querySelector(ele).innerHTML = element.innerHTML;
         width = table.querySelector(ele).getBoundingClientRect().width;
@@ -4458,8 +4468,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     }
     /** 
      * Get current visible data of grid.
-     * @return {Object[]}
-     * @hidden
+     * @return {Object[]} 
      * @isGenericType true
      */
     public getCurrentViewRecords(): Object[] {
@@ -4579,14 +4588,18 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     private mergeColumns(storedColumn: Column[], columns: Column[]): void {
         (<Column[]>storedColumn).forEach((col: Column, index: number, arr: Column[]) => {
             let localCol = columns.filter((tCol: Column) => tCol.index === col.index)[0];
-                if (!isNullOrUndefined(localCol)) {
-                    if (localCol.columns && localCol.columns.length) {
-                        this.mergeColumns(<Column[]>col.columns, <Column[]>localCol.columns);
-                        arr[index] = <Column>extend(localCol, col, true);
-                    } else {
-                        arr[index] = <Column>extend(localCol, col, true);
+            if (!isNullOrUndefined(localCol)) {
+                if (localCol.columns && localCol.columns.length) {
+                    this.mergeColumns(<Column[]>col.columns, <Column[]>localCol.columns);
+                    arr[index] = <Column>extend(localCol, col, true);
+                } else {
+                    if (isBlazor()) {
+                        let guid: string = 'guid';
+                        col[guid] = localCol[guid];
                     }
-                }   
+                    arr[index] = <Column>extend(localCol, col, true);
+                }
+            }
         });
     }
 

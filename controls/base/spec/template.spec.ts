@@ -40,6 +40,7 @@ let tempObj: any;
 
 interface MyWindow extends Window {
     getName: Function;
+    check: Function;
     custom : String;
 }
 
@@ -342,6 +343,20 @@ describe('Template', () => {
         let getDOMString: (data: object) => any = template.compile('<div>${translate(data.name,data.val,window.custom)}</div>');
         let output: any = getDOMString(data);
         expect(output).toEqual("<div>ASTONHIMARTIN</div>");
+    });
+    it('JSON Array Input with IF Condition which has window function', () => {
+        window.check = function (args: number) {
+            if(args % 2 == 0) {
+                return true;
+            }
+            else {
+                return false;
+            }
+        }
+        let templateStr: string = '${if(window.check(IDPRATICA))}<div>true</div>${else}<div>false</div>${/if}';
+        let result: Element[] = [];
+        result.push(createElement('div', { innerHTML: 'true' }));
+        expect(outDOM(template.compile(templateStr), arrayOfObj)).toEqual(result);
     });
 
 });

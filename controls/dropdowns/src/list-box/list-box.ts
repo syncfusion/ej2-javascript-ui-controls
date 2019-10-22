@@ -1055,7 +1055,7 @@ export class ListBox extends DropDownBase {
     private getDataByElems(elems: Element[]): Object[] {
         let data: Object[] = [];
         elems.forEach((ele: Element) => {
-            data.push(this.getDataByValue(ele.getAttribute('data-value')));
+            data.push(this.getDataByValue(this.getFormattedValue(ele.getAttribute('data-value'))));
         });
         return data;
     }

@@ -402,6 +402,10 @@ var CLS_UPLOAD_FILES = 'e-upload-files';
 var CLS_RTE_DIALOG_UPLOAD = 'e-rte-dialog-upload';
 /** @hidden */
 var CLS_RTE_RES_CNT = 'e-rte-resize';
+/** @hidden */
+var CLS_CUSTOM_TILE = 'e-custom-tile';
+/** @hidden */
+var CLS_NOCOLOR_ITEM = 'e-nocolor-item';
 
 /**
  * Defines types of Render
@@ -1811,6 +1815,10 @@ var ToolbarRenderer = /** @__PURE__ @class */ (function () {
             modeSwitcher: ((item === 'backgroundcolor') ? proxy.parent.backgroundColor.modeSwitcher : proxy.parent.fontColor.modeSwitcher),
             beforeTileRender: function (args) {
                 args.element.classList.add(CLS_COLOR_PALETTE);
+                args.element.classList.add(CLS_CUSTOM_TILE);
+                if (args.value === '') {
+                    args.element.classList.add(CLS_NOCOLOR_ITEM);
+                }
             },
             change: function (colorPickerArgs) {
                 var colorpickerValue = colorPickerArgs.currentValue.rgba;
@@ -10357,7 +10365,8 @@ var MsWordPaste = /** @__PURE__ @class */ (function () {
         elm.innerHTML = tempHTMLContent;
         var patern = /class='?Mso|style='[^ ]*\bmso-/i;
         var patern2 = /class="?Mso|style="[^ ]*\bmso-/i;
-        if (patern.test(tempHTMLContent) || patern2.test(tempHTMLContent)) {
+        var patern3 = /(class="?Mso|class='?Mso|class="?Xl|class='?Xl|class=Xl|style="[^"]*\bmso-|style='[^']*\bmso-|w:WordDocument)/gi;
+        if (patern.test(tempHTMLContent) || patern2.test(tempHTMLContent) || patern3.test(tempHTMLContent)) {
             this.imageConversion(elm, rtfData);
             tempHTMLContent = tempHTMLContent.replace(/<img[^>]+>/i, '');
             listNodes = this.cleanUp(elm, listNodes);
@@ -14610,7 +14619,7 @@ var Image = /** @__PURE__ @class */ (function () {
         return uploadParentEle;
     };
     Image.prototype.checkExtension = function (e) {
-        if (!this.uploadObj.allowedExtensions) {
+        if (this.uploadObj.allowedExtensions) {
             if (this.uploadObj.allowedExtensions.toLocaleLowerCase().indexOf(('.' + e.type).toLocaleLowerCase()) === -1) {
                 this.dialogObj.getButtons(0).element.setAttribute('disabled', 'disabled');
             }
@@ -17293,6 +17302,7 @@ var RichTextEditor = /** @__PURE__ @class */ (function (_super) {
         }
         var tool = executeGroup[commandName];
         this.formatter.editorManager.execCommand(tool.command, tool.subCommand ? tool.subCommand : (value ? value : tool.value), null, null, (value ? value : tool.value), (value ? value : tool.value));
+        this.setPlaceHolder();
     };
     RichTextEditor.prototype.htmlPurifier = function (command, value) {
         if (this.editorMode === 'HTML') {
@@ -17885,11 +17895,13 @@ var RichTextEditor = /** @__PURE__ @class */ (function (_super) {
                     });
                 }
                 this.placeHolderWrapper.innerHTML = this.placeholder;
-                if (this.inputElement.textContent.length !== 0) {
-                    this.placeHolderWrapper.style.display = 'none';
+                if (this.inputElement.textContent.length === 0 &&
+                    !isNullOrUndefined(this.inputElement.firstChild) && this.inputElement.firstChild.nodeName === 'P' &&
+                    !isNullOrUndefined(this.inputElement.firstChild.firstChild) && this.inputElement.firstChild.firstChild.nodeName === 'BR') {
+                    this.placeHolderWrapper.style.display = 'block';
                 }
                 else {
-                    this.placeHolderWrapper.style.display = 'block';
+                    this.placeHolderWrapper.style.display = 'none';
                 }
             }
             else {
@@ -18278,7 +18290,7 @@ var RichTextEditor = /** @__PURE__ @class */ (function (_super) {
                     !e.target.classList.contains('e-img-inner')
                     && (e.target && e.target.parentElement
                         && !e.target.parentElement.classList.contains('e-img-wrap')))
-                || active.closest('.e-rte-toolbar') === this.getToolbarElement()) {
+                || closest(active, '.e-rte-toolbar') === this.getToolbarElement()) {
                 this.contentModule.getEditPanel().focus();
                 if (!isNullOrUndefined(this.getToolbarElement())) {
                     this.getToolbarElement().setAttribute('tabindex', '-1');

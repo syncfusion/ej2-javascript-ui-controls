@@ -236,7 +236,7 @@ export class Gantt extends Component<HTMLElement>
     protected needsID: boolean = true;
     /**
      * Enables or disables the key board interaction of Gantt.
-     * @hidden
+     * 
      * @default true
      */
     @Property(true)

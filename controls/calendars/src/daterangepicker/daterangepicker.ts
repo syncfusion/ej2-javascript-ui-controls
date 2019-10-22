@@ -72,6 +72,7 @@ const CSS: string = 'e-css';
 const ZOOMIN: string = 'e-zoomin';
 const NONEDITABLE: string = 'e-non-edit';
 const DAYHEADERLONG: string = 'e-daterange-day-header-lg';
+const HIDDENELEMENT: string = 'e-daterange-hidden';
 const wrapperAttr: string[] = ['title', 'class', 'style'];
 
 export class Presets extends ChildProperty<Presets> {
@@ -684,6 +685,7 @@ export class DateRangePicker extends CalendarBase {
         this.setProperties({ startDate: this.startValue }, true);
         this.setProperties({ endDate: this.endValue }, true);
         this.setModelValue();
+        this.updateDataAttribute(false);
         this.renderComplete();
     }
     /**
@@ -859,6 +861,22 @@ export class DateRangePicker extends CalendarBase {
         this.bindEvents();
     }
 
+    private updateDataAttribute(isDynamic: boolean) : void {
+        let attr: { [key: string]: string; } = {};
+        if (!isDynamic) {
+            for (let a: number = 0; a < this.element.attributes.length; a++) {
+                attr[this.element.attributes[a].name] = this.element.getAttribute(this.element.attributes[a].name);
+            }
+        } else {
+            attr = this.htmlAttributes;
+        }
+        for (let key of Object.keys(attr)) {
+            if (key.indexOf('data') === 0 ) {
+                this.firstHiddenChild.setAttribute(key, attr[key]);
+                this.secondHiddenChild.setAttribute(key, attr[key]);
+            }
+        }
+    }
     private setRangeAllowEdit(): void {
         if (this.allowEdit) {
             if (!this.readonly) {
@@ -3334,6 +3352,8 @@ export class DateRangePicker extends CalendarBase {
                 if (this.isMobile && !Browser.isDevice) {
                     EventHandler.remove(document, 'keydown', this.popupCloseHandler);
                 }
+            }, targetExitViewport: () => {
+                if (!Browser.isDevice) { this.hide(); }
             }
         });
 
@@ -4292,18 +4312,16 @@ export class DateRangePicker extends CalendarBase {
             this.inputElement.removeAttribute('name');
         }
         attributes(this.firstHiddenChild, {
-            'type': 'text', 'name': this.inputElement.getAttribute('data-name')
+            'type': 'text', 'name': this.inputElement.getAttribute('data-name'), 'class' : HIDDENELEMENT
         });
         attributes(this.secondHiddenChild, {
-            'type': 'text', 'name': this.inputElement.getAttribute('data-name'),
+            'type': 'text', 'name': this.inputElement.getAttribute('data-name'), 'class' : HIDDENELEMENT
         });
         let format: Object = { type: 'datetime', skeleton: 'yMd' };
         this.firstHiddenChild.value = this.startDate && this.globalize.formatDate(this.startDate, format);
         this.secondHiddenChild.value = this.endDate && this.globalize.formatDate(this.endDate, format);
         this.inputElement.parentElement.appendChild(this.firstHiddenChild);
         this.inputElement.parentElement.appendChild(this.secondHiddenChild);
-        this.firstHiddenChild.style.display = 'none';
-        this.secondHiddenChild.style.display = 'none';
     }
     /**
      * Called internally if any of the property value changed.
@@ -4371,6 +4389,7 @@ export class DateRangePicker extends CalendarBase {
                 case 'htmlAttributes':
                     this.updateHtmlAttributeToElement();
                     this.updateHtmlAttributeToWrapper();
+                    this.updateDataAttribute(true);
                     this.checkHtmlAttributes(true);
                     break;
                 case 'showClearButton':

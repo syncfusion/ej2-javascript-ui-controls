@@ -438,11 +438,9 @@ export class SvgRenderer implements IRenderer {
             htmlElement.appendChild(element.template.cloneNode(true));
             if (indexValue !== undefined && canvas.childNodes.length > indexValue) {
                 canvas.insertBefore(htmlElement, canvas.childNodes[indexValue]);
-
-            } else {
-                parentHtmlElement.appendChild(htmlElement);
-                canvas.appendChild(parentHtmlElement);
             }
+            parentHtmlElement.appendChild(htmlElement);
+            canvas.appendChild(parentHtmlElement);
 
         }
         let point: PointModel = cornersPointsBeforeRotation(element).topLeft;

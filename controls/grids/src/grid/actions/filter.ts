@@ -53,6 +53,7 @@ export class Filter implements IAction {
     private fltrDlgDetails: { field?: string, isOpen?: boolean } = { field: '', isOpen: false };
 
     private customOperators: Object;
+    /** @hidden */
     public skipNumberInput: string[] = ['=', ' ', '!'];
     public skipStringInput: string[] = ['>', '<', '='];
     //Module declarations

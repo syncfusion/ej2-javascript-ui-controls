@@ -188,6 +188,13 @@ export interface TooltipModel extends ComponentModel{
     enableAnimation?: boolean;
 
     /**
+     * Duration for Tooltip animation.
+     * @default 300
+     * @private.
+     */
+    duration?: number;
+
+    /**
     * To rotate the tooltip.
     * @default false.
     * @private.

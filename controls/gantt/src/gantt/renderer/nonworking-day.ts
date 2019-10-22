@@ -149,9 +149,9 @@ export class NonWorkingDay {
         let viewportHeight: number = parseInt((scrollElement as HTMLElement).style.height, 10);
         let top: number = (viewportHeight < height) ? viewportHeight / 2 : height / 2;
         let labels: NodeList = this.holidayContainer.querySelectorAll('.' + cls.holidayLabel);
-        labels.forEach((element: HTMLElement) => {
-            element.style.top = formatUnit(top);
-        });
+        for (let i: number = 0; i < labels.length; i++) {
+            (labels[i] as HTMLElement).style.top = formatUnit(top);
+        }
     }
     /**
      * Method to update height for all internal containers

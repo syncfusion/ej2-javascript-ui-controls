@@ -565,7 +565,6 @@ class DateProcessor {
         let length = dayWorkingTime.length;
         let totalSeconds = 0;
         let startDate = new Date('10/11/2018');
-        let endDate = new Date('10/12/2018');
         this.parent.nonWorkingHours = [];
         let nonWorkingHours = this.parent.nonWorkingHours;
         this.parent.workingTimeRanges = [];
@@ -575,10 +574,11 @@ class DateProcessor {
         for (let count = 0; count < length; count++) {
             let currentRange = dayWorkingTime[count];
             if (!isNullOrUndefined(currentRange.from) && !isNullOrUndefined(currentRange.to)) {
-                startDate.setHours(currentRange.from);
+                startDate.setHours(0, 0, 0, 0);
+                let tempDate = new Date(startDate.getTime());
+                startDate.setTime(startDate.getTime() + (currentRange.from * 3600000));
                 let startHour = new Date(startDate.getTime());
-                let tempDate = currentRange.to !== 0 ? startDate : endDate;
-                tempDate.setHours(currentRange.to);
+                tempDate.setTime(tempDate.getTime() + (currentRange.to * 3600000));
                 let endHour = new Date(tempDate.getTime());
                 let timeDiff = endHour.getTime() - startHour.getTime();
                 let sdSeconds = this.getSecondsInDecimal(startHour);
@@ -928,8 +928,12 @@ class DateProcessor {
      * @private
      */
     setTime(seconds, date) {
+        /* tslint:disable-next-line:no-any */
         let hour = seconds / 3600;
+        hour = parseInt(hour, 10);
+        /* tslint:disable-next-line:no-any */
         let min = (seconds - (hour * 3600)) / 60;
+        min = parseInt(min, 10);
         let sec = seconds - (hour * 3600) - (min * 60);
         date.setHours(hour, min, sec);
     }
@@ -2696,11 +2700,12 @@ class GanttChart {
         let childRecords = record.childRecords;
         let chartRows = this.getChartRows();
         let rows = [];
-        chartRows.forEach((item) => {
-            if (item.classList.contains('gridrowtaskId' + record.ganttProperties.taskId + 'level' + (record.level + 1))) {
-                rows.push(item);
+        for (let i = 0; i < chartRows.length; i++) {
+            if (chartRows[i].classList.contains('gridrowtaskId'
+                + record.ganttProperties.taskId + 'level' + (record.level + 1))) {
+                rows.push(chartRows[i]);
             }
-        });
+        }
         for (let i = 0; i < rows.length; i++) {
             rows[i].style.display = displayType;
             if ((childRecords[i].childRecords && childRecords[i].childRecords.length)
@@ -3592,8 +3597,8 @@ class Timeline {
                 break;
             case 'Month':
                 firstDay = startDate;
-                lastDay = new Date(startDate.getFullYear(), startDate.getMonth() + count, 0);
-                increment = ((lastDay.getTime() - firstDay.getTime())) + (1000 * 60 * 60 * 24);
+                lastDay = new Date(startDate.getFullYear(), startDate.getMonth() + count, 1);
+                increment = ((lastDay.getTime() - firstDay.getTime()));
                 break;
             case 'Week':
                 let dayIndex = this.parent.timelineModule.customTimelineSettings.weekStartDay;
@@ -5078,7 +5083,7 @@ class ChartRows {
      * @private
      */
     getIndicatorNode(indicator) {
-        let templateString = '<label class="' + taskIndicatorDiv + '"  style="line-height:'
+        let templateString = '<label class="' + label + ' ' + taskIndicatorDiv + '"  style="line-height:'
             + (this.parent.rowHeight) + 'px;' +
             'left:' + this.getIndicatorleft(indicator.date) + 'px;"><i class="' + indicator.iconClass + '"></i> </label>';
         return this.createDivElement(templateString);
@@ -5357,7 +5362,7 @@ class ChartRows {
         if (typeof template !== 'string') {
             result = true;
         }
-        else if (template.indexOf('#') === 0 || template.indexOf('<div') > -1
+        else if (template.indexOf('#') === 0 || template.indexOf('<') > -1
             || template.indexOf('$') > -1) {
             result = true;
         }
@@ -6010,11 +6015,11 @@ class ChartRows {
     }
     generateTaskLabelAriaLabel(type) {
         let label$$1 = '';
-        if (type === 'left' && this.parent.labelSettings.leftLabel && this.parent.labelSettings.leftLabel.indexOf('#') !== 0) {
+        if (type === 'left' && this.parent.labelSettings.leftLabel && !this.leftTaskLabelTemplateFunction) {
             label$$1 += 'aria-label= "' + this.parent.localeObj.getConstant('leftTaskLabel') +
                 ' ' + this.getTaskLabel(this.parent.labelSettings.leftLabel) + '"';
         }
-        else if (type === 'right' && this.parent.labelSettings.rightLabel && this.parent.labelSettings.rightLabel.indexOf('#') !== 0) {
+        else if (type === 'right' && this.parent.labelSettings.rightLabel && !this.rightTaskLabelTemplateFunction) {
             label$$1 += 'aria-label="' + this.parent.localeObj.getConstant('rightTaskLabel') +
                 ' ' + this.getTaskLabel(this.parent.labelSettings.rightLabel) + '"';
         }
@@ -17609,9 +17614,9 @@ class NonWorkingDay {
         let viewportHeight = parseInt(scrollElement.style.height, 10);
         let top = (viewportHeight < height) ? viewportHeight / 2 : height / 2;
         let labels = this.holidayContainer.querySelectorAll('.' + holidayLabel);
-        labels.forEach((element) => {
-            element.style.top = formatUnit(top);
-        });
+        for (let i = 0; i < labels.length; i++) {
+            labels[i].style.top = formatUnit(top);
+        }
     }
     /**
      * Method to update height for all internal containers

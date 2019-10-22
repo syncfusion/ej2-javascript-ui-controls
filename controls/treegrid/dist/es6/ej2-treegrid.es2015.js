@@ -2597,7 +2597,8 @@ let TreeGrid = TreeGrid_1 = class TreeGrid extends Component {
             this.trigger(detailDataBound, args);
         };
         this.grid.actionBegin = (args) => {
-            if (args.requestType === 'sorting' && args.target && args.target.parentElement.classList.contains('e-hierarchycheckbox')) {
+            if (args.requestType === 'sorting' && args.target && args.target.parentElement &&
+                args.target.parentElement.classList.contains('e-hierarchycheckbox')) {
                 args.cancel = true;
             }
             let requestType = getObject('requestType', args);

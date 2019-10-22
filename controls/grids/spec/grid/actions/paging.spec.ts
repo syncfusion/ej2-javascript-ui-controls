@@ -495,4 +495,46 @@ describe('Paging module', () => {
         });
     });
 
+    describe('EJ2-31442 Pager Template refresh issue  =>', () => {
+        let gridObj: Grid;
+        let count: number = 0;
+        let elem: HTMLElement = createElement('div', { id: 'Grid' });
+        beforeAll((done: Function) => {
+            let dataBound: EmitType<Object> = () => { count++; done(); };
+            document.body.appendChild(elem);
+            gridObj = new Grid(
+                {
+                    dataSource: data,
+                    allowPaging: true,
+                    pagerTemplate: '<span class ="e-pagenomsg">${currentPage} of ${totalPages} pages</span>',
+                    dataBound: dataBound,
+                    columns: [
+                        { headerText: 'OrderID', field: 'OrderID' },
+                        { headerText: 'CustomerID', field: 'CustomerID' },
+                        { headerText: 'EmployeeID', field: 'EmployeeID' },
+                        { headerText: 'ShipCountry', field: 'ShipCountry' },
+                        { headerText: 'ShipCity', field: 'ShipCity' },
+                    ],
+                });
+            gridObj.appendTo('#Grid');
+        });
+
+        it('Refresh grid', (done: Function) => {
+            let dataBound1 = () => {
+                count++;
+                done();
+            }
+            gridObj.dataBound = dataBound1;
+            gridObj.refresh();
+        });
+
+        it('check count of grid refresh', () => {
+            expect(count).toBe(2);
+        });
+
+        afterAll(() => {
+            destroy(gridObj);
+            gridObj = null;
+        });
+    });
 });

@@ -1329,7 +1329,7 @@ export class Image {
         this.uploadObj.appendTo(uploadEle); return uploadParentEle;
     }
     private checkExtension(e: FileInfo): void {
-        if (!this.uploadObj.allowedExtensions) {
+        if (this.uploadObj.allowedExtensions) {
             if (this.uploadObj.allowedExtensions.toLocaleLowerCase().indexOf(('.' + e.type).toLocaleLowerCase()) === -1) {
                 (this.dialogObj.getButtons(0) as Button).element.setAttribute('disabled', 'disabled');
             }

@@ -61,6 +61,10 @@ export class Toolbar {
      */
     public importHandler: XmlHttpRequestHandler;
 
+    private restrictDropDwn: DropDownButton;
+    private imgDropDwn: DropDownButton;
+    private breakDropDwn: DropDownButton;
+
     /**
      * @private
      */
@@ -128,7 +132,7 @@ export class Toolbar {
             iconCss: 'e-icons e-de-ctnr-image',
             select: this.onDropDownButtonSelect.bind(this),
         };
-        let insertImage: DropDownButton = new DropDownButton(items, imageButton as HTMLButtonElement);
+        this.imgDropDwn = new DropDownButton(items, imageButton as HTMLButtonElement);
 
         let breakButton: HTMLElement = toolbarTarget.getElementsByClassName('e-de-break-splitbutton')[0].firstChild as HTMLElement;
         items = {
@@ -139,7 +143,7 @@ export class Toolbar {
             iconCss: 'e-icons e-de-ctnr-break',
             select: this.onDropDownButtonSelect.bind(this),
         };
-        let inserBreak: DropDownButton = new DropDownButton(items, breakButton as HTMLButtonElement);
+        this.breakDropDwn = new DropDownButton(items, breakButton as HTMLButtonElement);
 
         this.filePicker = createElement('input', {
             attrs: { type: 'file', accept: '.doc,.docx,.rtf,.txt,.htm,.html,.sfdt' }, className: 'e-de-ctnr-file-picker'
@@ -158,7 +162,7 @@ export class Toolbar {
             cssClass: 'e-de-toolbar-btn-first e-caret-hide',
             select: this.onDropDownButtonSelect.bind(this)
         };
-        let restrictDropDown: DropDownButton = new DropDownButton(lockItems, restrictEditing as HTMLButtonElement);
+        this.restrictDropDwn = new DropDownButton(lockItems, restrictEditing as HTMLButtonElement);
     }
     private showHidePropertiesPane(): void {
         if (this.container.propertiesPaneContainer.style.display === 'none') {
@@ -489,6 +493,18 @@ export class Toolbar {
      * @private
      */
     public destroy(): void {
+        if (this.restrictDropDwn) {
+            this.restrictDropDwn.destroy();
+            this.restrictDropDwn = undefined;
+        }
+        if (this.imgDropDwn) {
+            this.imgDropDwn.destroy();
+            this.imgDropDwn = undefined;
+        }
+        if (this.breakDropDwn) {
+            this.breakDropDwn.destroy();
+            this.breakDropDwn = undefined;
+        }
         if (this.toolbar) {
             let toolbarElement: HTMLElement = this.toolbar.element;
             this.toolbar.destroy();

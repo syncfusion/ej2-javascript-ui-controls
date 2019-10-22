@@ -1586,6 +1586,72 @@ describe('Chart Control', () => {
             chartObj.dataBind();
         });
     });
+    describe('Customer issue: Radar chart with X axis label placement is OnTicks', () => {
+        let chartObj: Chart;
+        beforeAll((): void => {
+            elem = createElement('div', { id: 'container' });
+            document.body.appendChild(elem);
+            chartObj = new Chart({
+                //Initializing Primary X Axis
+        primaryXAxis: {
+           
+            valueType: 'Category',
+            interval: 1,
+            labelPlacement: 'OnTicks',
+        },
+        
+        //Initializing Primary Y Axis
+        primaryYAxis:
+        {
+           minimum: 0, maximum: 700, interval: 100
+        },
+        width: "600",
+        //Initializing Chart Series
+        series: [
+            {
+                dataSource: [
+                    { x: '1996', y: 130 }, { x: '1997', y: 167.46 },
+                    { x: '1998', y: 100 }
+                ],
+                xName: 'x', width: 2, yName: 'y', name: 'Warmest', type: 'Radar',
+                drawType: 'Column', visible: true, opacity:0.4
+            },
+            {
+                dataSource: [
+                    { x: '1996', y: 200 }, { x: '1997', y: 600 },
+                    { x: '1998', y: 400 }
+                ],
+                xName: 'x', width: 2, yName: 'y', name: 'Warmest', type: 'Radar', fill:'red',
+                drawType: 'Column', visible: true, opacity: 0.5
+            },
+        ],
+        //Initializing Chart title
+        title: 'Alaska Weather Statistics - 2016',
+        //Initializing User Interaction Tooltip
+        tooltip: {
+            enable: true
+        }
+            });
+            chartObj.appendTo('#container');
+        });
+        afterAll((): void => {
+            chartObj.destroy();
+            elem.remove();
+        });
+        it('Checking with OnTicks label', () => {
+           let point: Element = document.getElementById('container_Series_0_Point_0');
+           expect(point.getAttribute('d')).toBe('M 274.68886110046446 210.01160714285714 L 299.9999707732143 195.3982142857289 L 300 224.625 Z');
+        });
+        it('checking with between ticks', (done: Function) => {
+            chartObj.loaded = () => {
+                let point: Element = document.getElementById('container_Series_0_Point_0');
+                expect(point.getAttribute('d')).toBe('M 300 195.3982142857143 L 325.31112428613005 210.01158183172555 L 300 224.625 Z');
+                done();
+            };
+            chartObj.primaryXAxis.labelPlacement = 'BetweenTicks';
+            chartObj.dataBind();
+        });
+    });
     it('memory leak', () => {
         profile.sample();
         let average: any = inMB(profile.averageChange)

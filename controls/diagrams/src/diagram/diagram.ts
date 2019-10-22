@@ -2947,14 +2947,14 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
             if (isBlazor()) {
                 args = getCollectionChangeEventArguements(args as IBlazorCollectionChangeEventArgs, obj, 'Changing', 'Addition');
             }
-            if (obj.id !== 'helper') { this.triggerEvent(DiagramEvent.collectionChange, args); }
+            if (obj.id !== 'helper' && !(this.diagramActions & DiagramAction.PreventCollectionChangeOnDragOver)) {
+                this.triggerEvent(DiagramEvent.collectionChange, args);
+            }
             this.diagramActions = this.diagramActions | DiagramAction.PublicMethod;
             obj.id = obj.id || randomId(); let layers: LayerModel = this.activeLayer;
             if (!args.cancel && !layers.lock) {
                 if (layers.objects.indexOf(obj.id) < 0 && !layers.lock) {
-                    if (!layers.visible) {
-                        layers.visible = true; this.dataBind();
-                    }
+                    if (!layers.visible) { layers.visible = true; this.dataBind(); }
                     layers.objects.push(obj.id);
                 }
                 if (getObjectType(obj) === Connector) {
@@ -3008,7 +3008,9 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                 if (isBlazor()) {
                     args = getCollectionChangeEventArguements(args as IBlazorCollectionChangeEventArgs, obj, 'Changed', 'Addition');
                 }
-                if (obj.id !== 'helper') { this.triggerEvent(DiagramEvent.collectionChange, args); }
+                if (obj.id !== 'helper' && !(this.diagramActions & DiagramAction.PreventCollectionChangeOnDragOver)) {
+                    this.triggerEvent(DiagramEvent.collectionChange, args);
+                }
                 if (!(this.diagramActions & DiagramAction.UndoRedo) && !(this.diagramActions & DiagramAction.Group) &&
                     !(this.diagramActions & DiagramAction.PreventHistory)) {
                     let entry: HistoryEntry = {
@@ -4673,6 +4675,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
         }
     }
 
+    /* tslint:disable */
     /** @private */
     public initObject(obj: IElement, layer?: LayerModel, independentObj: boolean = true, group?: boolean): void {
         if (obj !== undefined) {
@@ -4775,6 +4778,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
             this.updateElementVisibility(obj.wrapper, (obj as Node | Connector), false);
         }
     }
+    /* tslint:enable */
 
     private getConnectedPort(node: NodeModel, connector: ConnectorModel): PointPortModel {
         if (node && node.ports) {
@@ -5216,7 +5220,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
     }
 
     /** @private */
-    public updateDiagramObject(obj: (NodeModel | ConnectorModel), canIgnoreIndex?: boolean): void {
+    public updateDiagramObject(obj: (NodeModel | ConnectorModel), canIgnoreIndex?: boolean, isUpdateObject?: boolean): void {
         let view: View;
         for (let temp of this.views) {
             view = this.views[temp];
@@ -5226,7 +5230,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                     if (hasLayers) {
                         layer = this.commandHandler.getObjectLayer(obj.id);
                     }
-                    if (layer === undefined || (layer && layer.visible)) {
+                    if ((layer === undefined || (layer && layer.visible)) || isUpdateObject) {
                         let htmlLayer: HTMLElement = getHTMLLayer(this.element.id);
                         let diagramElementsLayer: HTMLCanvasElement =
                             document.getElementById(view.element.id + '_diagramLayer') as HTMLCanvasElement;
@@ -6681,7 +6685,11 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
             }
             if (!this.preventNodesUpdate) {
                 if (!canVitualize(this) || (canVitualize(this) && this.scroller.oldCollectionObjects.indexOf(actualObject.id) > -1)) {
-                    this.updateDiagramObject(actualObject as NodeModel);
+                    if (this.diagramActions & DiagramAction.PreventZIndexOnDragging) {
+                        this.updateDiagramObject(actualObject as NodeModel, true);
+                    } else {
+                        this.updateDiagramObject(actualObject as NodeModel);
+                    }
                 }
                 if (!isLayout && updateConnector) {
                     if (this.lineRoutingModule && this.diagramActions && (this.constraints & DiagramConstraints.LineRouting) && actualObject.id !== 'helper') {
@@ -6914,7 +6922,11 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
             || (this.diagramActions & DiagramAction.UndoRedo))) { this.updateSelector(); }
         if (!this.preventConnectorsUpdate) {
             if (!canVitualize(this) || (canVitualize(this) && this.scroller.oldCollectionObjects.indexOf(actualObject.id) > -1)) {
-                this.updateDiagramObject(actualObject);
+                if (this.diagramActions & DiagramAction.PreventZIndexOnDragging) {
+                    this.updateDiagramObject(actualObject, true);
+                } else {
+                    this.updateDiagramObject(actualObject);
+                }
             }
         }
         if (this.diagramActions && actualObject.status !== 'New') { actualObject.status = 'Update'; }
@@ -7076,7 +7088,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
             if ((obj instanceof Node && !this.preventNodesUpdate) || (obj instanceof Connector && !this.preventConnectorsUpdate)) {
                 //Avoid calling updateDiagramObject method during rendering
                 if (this.diagramActions) {
-                    this.updateDiagramObject(this.nameTable[element.id]);
+                    this.updateDiagramObject(this.nameTable[element.id], undefined, true);
                 }
             }
         }
@@ -7538,6 +7550,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                                         header.style = (newNode.shape as SwimLane).lanes[0].header.style;
                                         header.offsetX = position.x + 5 + header.width / 2;
                                         header.offsetY = position.y + header.height / 2;
+                                        this.diagramActions |= DiagramAction.PreventCollectionChangeOnDragOver;
                                         header = this.add(header) as NodeModel;
                                         lane = {
                                             id: 'body' + randomId(),
@@ -7563,6 +7576,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                                         group.width = (newNode.shape as SwimLane).lanes[0].width;
                                         group.height = (newNode.shape as SwimLane).lanes[0].height;
                                         newNode = this.add(group) as Node;
+                                        this.diagramActions &= ~DiagramAction.PreventCollectionChangeOnDragOver;
                                     }
                                     this.diagramActions &= ~DiagramAction.PreventHistory;
                                 }

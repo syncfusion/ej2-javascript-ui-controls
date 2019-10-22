@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 17.3.19 (2019-10-22)
+
+### TimePicker
+
+#### Bug Fixes
+
+- `#248416` - In mobile device, TimePicker popup displays in the center of the viewport.
+
 ## 17.2.49 (2019-09-04)
 
 ### DatePicker

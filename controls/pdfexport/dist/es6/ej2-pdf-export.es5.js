@@ -3719,7 +3719,15 @@ var PdfTextDirection;
  */
 var PdfColor = /** @__PURE__ @class */ (function () {
     function PdfColor(color1, color2, color3, color4) {
-        if (color1 instanceof PdfColor) {
+        if (typeof color1 === 'undefined') {
+            if (typeof color2 !== 'undefined' && typeof color3 !== 'undefined' && typeof color4 !== 'undefined') {
+                this.assignRGB(color2, color3, color4);
+            }
+            else {
+                this.filled = false;
+            }
+        }
+        else if (color1 instanceof PdfColor) {
             this.redColor = color1.r;
             this.greenColor = color1.g;
             this.blueColor = color1.b;
@@ -3727,31 +3735,40 @@ var PdfColor = /** @__PURE__ @class */ (function () {
             this.alpha = color1.alpha;
             this.filled = (this.alpha !== 0);
         }
+        else if (typeof color4 === 'undefined') {
+            this.assignRGB(color1, color2, color3);
+        }
+        else {
+            this.assignRGB(color2, color3, color4, color1);
+        }
+    }
+    /**
+     * `Assign` red, green, blue colors with alpha value..
+     * @private
+     */
+    PdfColor.prototype.assignRGB = function (r, g, b, a) {
+        if (typeof r === 'undefined' || typeof g === 'undefined' || typeof b === 'undefined') {
+            this.filled = false;
+        }
         else {
             this.cyanColor = 0;
             this.magentaColor = 0;
             this.yellowColor = 0;
             this.blackColor = 0;
             this.grayColor = 0;
-            if (typeof color4 === 'undefined') {
-                //doubt-byte/float
-                this.redColor = color1;
-                this.greenColor = color2;
-                this.blueColor = color3;
+            this.redColor = r;
+            this.greenColor = g;
+            this.blueColor = b;
+            if (typeof a === 'undefined') {
                 this.alpha = PdfColor.maxColourChannelValue;
-                this.filled = true;
-                this.assignCMYK(color1, color2, color3);
             }
             else {
-                this.redColor = color2;
-                this.greenColor = color3;
-                this.blueColor = color4;
-                this.alpha = color1;
-                this.filled = true;
-                this.assignCMYK(color2, color3, color4);
+                this.alpha = a;
             }
+            this.filled = true;
+            this.assignCMYK(r, g, b);
         }
-    }
+    };
     /**
      * `Calculate and assign` cyan, megenta, yellow colors from rgb values..
      * @private

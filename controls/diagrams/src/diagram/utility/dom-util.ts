@@ -378,7 +378,11 @@ export function getDiagramLayerSvg(diagramId: string): SVGSVGElement {
 export function getDiagramElement(elementId: string, contentId?: string): HTMLElement {
     let diagramElement: HTMLElement; let element: HTMLElement;
     if (contentId) { element = document.getElementById(contentId); }
-    diagramElement = (element) ? element.querySelector('#' + elementId) as HTMLElement : document.getElementById(elementId);
+    if (Browser.info.name === 'msie' || Browser.info.name === 'edge') {
+        diagramElement = (element) ? element.querySelector('#' + elementId) as HTMLElement : document.getElementById(elementId);
+    } else {
+        diagramElement = (element) ? element.querySelector('#' + CSS.escape(elementId)) as HTMLElement : document.getElementById(elementId);
+    }
     return diagramElement;
 }
 

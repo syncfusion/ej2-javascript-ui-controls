@@ -64,6 +64,7 @@ export class Page implements IAction {
         this.pagerDestroy();
         if (!isNullOrUndefined(this.parent.pagerTemplate)) {
             this.pageSettings.template = this.parent.pagerTemplate;
+            this.parent.pageTemplateChange = true;
         }
         this.element = this.parent.createElement('div', { className: 'e-gridpager' });
         pagerObj = <PagerModel>gridExtend(

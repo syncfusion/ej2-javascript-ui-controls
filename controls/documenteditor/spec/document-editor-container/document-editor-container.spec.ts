@@ -30,4 +30,14 @@ describe('Document Editor container initialization', () => {
     it('Get Persist Data', () => {
         expect(container.getPersistData()).toBe('documenteditor-container');
     });
+    it('Test control destroy 1', () => {
+        let element: HTMLElement = container.element;
+        container.destroy();
+        expect((element.parentNode as any).querySelectorAll('div').length).toBe(1);
+    });
+    it('Test control destroy 2', () => {
+        let element: HTMLElement = container.element;
+        container.destroy();
+        expect(container.element).toBe(undefined);
+    });
 });

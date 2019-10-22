@@ -11694,7 +11694,9 @@ var KeyboardShortcut = /** @__PURE__ @class */ (function () {
                 this.parent.element.querySelector('#' + this.parent.element.id + '_fileUpload').click();
             }
             else if (e.keyCode === 83) {
-                this.parent.save();
+                if (this.parent.saveUrl && this.parent.allowSave) {
+                    this.parent.save();
+                }
             }
             else if (e.keyCode === 88) {
                 this.parent.notify(cut, null);
@@ -17594,25 +17596,24 @@ var Spreadsheet = /** @__PURE__ @class */ (function (_super) {
     /** @hidden */
     Spreadsheet.prototype.refreshNode = function (td, args) {
         var value;
-        var spanElem = td.querySelector('.' + this.element.id + '_currency');
+        var spanElem = td.querySelector('.e-' + this.element.id + '_currency');
         var alignClass = 'e-right-align';
         if (args) {
             args.result = isNullOrUndefined(args.result) ? '' : args.result.toString();
+            if (spanElem) {
+                detach(spanElem);
+            }
             if (args.type === 'Accounting' && isNumber(args.value)) {
-                td.innerHTML = '';
+                td.textContent = args.result.split(args.curSymbol).join('');
                 td.appendChild(this.createElement('span', {
-                    className: this.element.id + '_currency',
+                    className: 'e-' + this.element.id + '_currency',
                     innerHTML: " " + args.curSymbol,
                     styles: 'float: left'
                 }));
-                td.innerHTML += args.result.split(args.curSymbol).join('');
                 td.classList.add(alignClass);
                 return;
             }
             else {
-                if (spanElem) {
-                    detach(spanElem);
-                }
                 if (args.result && (args.result.toLowerCase() === 'true' || args.result.toLowerCase() === 'false')) {
                     args.result = args.result.toUpperCase();
                     alignClass = 'e-center-align';
@@ -17625,7 +17626,7 @@ var Spreadsheet = /** @__PURE__ @class */ (function (_super) {
         value = !isNullOrUndefined(value) ? value : '';
         if (!isNullOrUndefined(td)) {
             var node = td.lastChild;
-            if (node && (node.nodeType === 3 || (node.nodeType === 1))) {
+            if (node && (node.nodeType === 3 || node.nodeType === 1)) {
                 node.nodeValue = value;
             }
             else {

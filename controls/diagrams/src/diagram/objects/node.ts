@@ -93,6 +93,7 @@ let getShapeType: Function = (obj: Shape): Object => {
     return BasicShape;
 };
 
+
 /**
  * Defines the behavior of default shape
  */
@@ -1762,6 +1763,7 @@ export class Node extends NodeBase implements IElement {
      * Defines the shape of a node
      * @default Basic Shape
      * @aspType object
+     * @blazorType object
      */
     @ComplexFactory(getShapeType)
     public shape: ShapeModel | FlowShapeModel | BasicShapeModel | ImageModel | PathModel | TextModel | BpmnShapeModel | NativeModel | HtmlModel | UmlActivityShapeModel | UmlClassifierShapeModel | SwimLaneModel;
@@ -2101,8 +2103,8 @@ export class Node extends NodeBase implements IElement {
             }
         }
         if ((this.shape.type !== 'Bpmn' || (this.shape as BpmnShape).shape === 'Message' ||
-            (this.shape as BpmnShape).shape === 'DataSource') && (
-                (this.shape.type !== 'UmlActivity' || (this.shape as UmlActivityShape).shape !== 'FinalNode'
+        (this.shape as BpmnShape).shape === 'DataSource') && (
+            (this.shape.type !== 'UmlActivity' || (this.shape as UmlActivityShape).shape !== 'FinalNode'
                 ))) {
             if (this.shape.type !== 'Text') {
                 content.style = this.style;

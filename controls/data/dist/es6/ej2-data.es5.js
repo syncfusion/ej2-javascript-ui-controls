@@ -1084,7 +1084,7 @@ var DataUtil = /** @__PURE__ @class */ (function () {
         var val;
         var tmp = {};
         json.forEach(function (data, index) {
-            val = DataUtil.getVal(json, index, fieldName);
+            val = typeof (json[index]) === 'object' ? DataUtil.getVal(json, index, fieldName) : json[index];
             if (!(val in tmp)) {
                 result.push(!requiresCompleteRecord ? val : json[index]);
                 tmp[val] = 1;

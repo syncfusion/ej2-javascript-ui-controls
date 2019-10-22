@@ -6308,6 +6308,7 @@ var __decorate$7 = (undefined && undefined.__decorate) || function (decorators, 
 };
 const CLS_TAB = 'e-tab';
 const CLS_HEADER$1 = 'e-tab-header';
+const CLS_BLA_TEM = 'blazor-template';
 const CLS_CONTENT$1 = 'e-content';
 const CLS_NEST$1 = 'e-nested';
 const CLS_ITEMS$1 = 'e-items';
@@ -6893,7 +6894,17 @@ let Tab = class Tab extends Component {
         }
     }
     getTabHeader() {
-        return [].slice.call(this.element.children).filter((e) => e.classList.contains(CLS_HEADER$1))[0];
+        let headers = [].slice.call(this.element.children).filter((e) => e.classList.contains(CLS_HEADER$1));
+        if (headers.length > 0) {
+            return headers[0];
+        }
+        else {
+            let wrap = [].slice.call(this.element.children).filter((e) => !e.classList.contains(CLS_BLA_TEM))[0];
+            if (!wrap) {
+                return undefined;
+            }
+            return [].slice.call(wrap.children).filter((e) => e.classList.contains(CLS_HEADER$1))[0];
+        }
     }
     getEleIndex(item) {
         return Array.prototype.indexOf.call(selectAll('.' + CLS_TB_ITEM, this.getTabHeader()), item);
@@ -10519,14 +10530,14 @@ let TreeView = TreeView_1 = class TreeView extends Component {
             newText = observedArgs.cancel ? observedArgs.oldText : observedArgs.newText;
             let newData = setValue(this.editFields.text, newText, this.editData);
             if (!isNullOrUndefined(this.nodeTemplateFn)) {
-                txtEle.innerHTML = '';
+                txtEle.innerText = '';
                 let tempArr = this.nodeTemplateFn(newData, undefined, undefined, this.element.id + 'nodeTemplate', this.isStringTemplate);
                 tempArr = Array.prototype.slice.call(tempArr);
                 append(tempArr, txtEle);
                 this.updateBlazorTemplate();
             }
             else {
-                txtEle.innerHTML = newText;
+                txtEle.innerText = newText;
             }
             if (isInput) {
                 removeClass([liEle], EDITING);
@@ -11921,7 +11932,9 @@ let TreeView = TreeView_1 = class TreeView extends Component {
         this.setCssClass(this.cssClass, null);
         this.setDragAndDrop(false);
         this.setFullRow(false);
-        this.element.innerHTML = '';
+        if (this.ulElement && this.ulElement.parentElement) {
+            this.ulElement.parentElement.removeChild(this.ulElement);
+        }
         super.destroy();
     }
     /**

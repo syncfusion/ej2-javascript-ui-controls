@@ -3062,4 +3062,30 @@ describe('invalid String', () => {
             expect(datetimepicker.inputWrapper.container.classList.contains('e-ternary')).toBe(true);
         });
     });
+    describe('Popup hide testing when crosses view port', function (){
+        let datetimepicker: any;
+        let divElement: HTMLElement;
+        beforeEach(function() {
+            let inputElement: HTMLElement = createElement('input', { id: 'datetimepicker'});
+            document.body.appendChild(inputElement);
+            divElement = createElement('div', { id: 'divElement'});
+            divElement.style.height = '900px';
+        });
+        afterEach(function() {
+            if (datetimepicker) {
+                datetimepicker.destroy();
+                document.body.innerHTML = '';
+            }
+        });
+        it('Popup hide testing',function() {
+            datetimepicker = new DateTimePicker({});
+            datetimepicker.appendTo('#datetimepicker');
+            (<HTMLInputElement>document.getElementsByClassName('e-input-group-icon e-time-icon e-icons')[0]).dispatchEvent(clickEvent);
+            expect(datetimepicker.popupWrapper !== null).toBe(true);
+            document.body.appendChild(divElement);
+            scrollBy({top: 500, behavior: 'smooth'});
+            let popupObj: Element = document.querySelectorAll('.e-popup')[0];
+            (popupObj as any).ej2_instances[0].trigger('targetExitViewport');
+        });
+    });
 });

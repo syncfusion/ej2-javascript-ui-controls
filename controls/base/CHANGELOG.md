@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 17.3.16 (2019-10-09)
+
+### Common
+
+#### Bug Fixes
+
+- `#243640` - Resolved Template support for helper function in if/else condition.
+
 ## 17.3.14 (2019-10-03)
 
 ### Common

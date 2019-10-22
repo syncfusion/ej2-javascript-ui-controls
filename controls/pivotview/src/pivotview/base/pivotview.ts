@@ -1761,6 +1761,10 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
                             this.setProperties({ dataSourceSettings: dataSource }, true);
                         }
                     }
+                    if (Object.keys(newProp.dataSourceSettings).length === 1
+                        && Object.keys(newProp.dataSourceSettings)[0] === "dataSource") {
+                            this.engineModule.fieldList = null;
+                    }
                     this.notify(events.initialLoad, {});
                     break;
                 case 'pivotValues':

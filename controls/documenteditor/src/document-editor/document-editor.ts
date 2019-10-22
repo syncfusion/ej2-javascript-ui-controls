@@ -30,7 +30,7 @@ import { TablePropertiesDialog, BordersAndShadingDialog, CellOptionsDialog, Tabl
 import { SpellChecker } from './implementation/spell-check/spell-checker';
 import { SpellCheckDialog } from './implementation/dialogs/spellCheck-dialog';
 import { DocumentEditorModel, ServerActionSettingsModel } from './document-editor-model';
-import { CharacterFormatProperties, ParagraphFormatProperties } from './implementation';
+import { CharacterFormatProperties, ParagraphFormatProperties, SectionFormatProperties } from './implementation';
 import { PasteOptions } from './index';
 
 /**
@@ -519,6 +519,10 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
      */
     public paragraphFormat: ParagraphFormatProperties;
     /**
+     * @private
+     */
+    public sectionFormat: SectionFormatProperties;
+    /**
      * Gets the total number of pages.
      * @returns {number}
      */
@@ -783,6 +787,14 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
      */
     public setDefaultParagraphFormat(paragraphFormat: ParagraphFormatProperties): void {
         this.paragraphFormat = paragraphFormat;
+    }
+
+    /**
+     * Set the default section format for document editor
+     * @param sectionFormat 
+     */
+    public setDefaultSectionFormat(sectionFormat: SectionFormatProperties): void {
+        this.sectionFormat = sectionFormat;
     }
     /**
      * Get the properties to be maintained in the persisted state.
@@ -1589,6 +1601,9 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
         let section: BodyWidget = new BodyWidget();
         section.index = 0;
         section.sectionFormat = new WSectionFormat(section);
+        if (this.sectionFormat) {
+            this.parser.parseSectionFormat(this.sectionFormat, section.sectionFormat);
+        }
         let paragraph: ParagraphWidget = new ParagraphWidget();
         paragraph.index = 0;
         paragraph.paragraphFormat = new WParagraphFormat(paragraph);

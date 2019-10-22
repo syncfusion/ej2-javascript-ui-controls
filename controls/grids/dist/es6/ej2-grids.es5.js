@@ -5776,6 +5776,12 @@ var StackedHeaderCellRenderer = /** @__PURE__ @class */ (function (_super) {
         if (cell.column.toolTip) {
             node.setAttribute('title', cell.column.toolTip);
         }
+        if (column.clipMode === 'Clip') {
+            node.classList.add('e-gridclip');
+        }
+        else if (column.clipMode === 'EllipsisWithTooltip') {
+            node.classList.add('e-ellipsistooltip');
+        }
         if (!isNullOrUndefined(cell.column.textAlign)) {
             div.style.textAlign = cell.column.textAlign;
         }
@@ -12634,14 +12640,23 @@ var Grid = /** @__PURE__ @class */ (function (_super) {
      * @hidden
      */
     Grid.prototype.updateDefaultCursor = function () {
-        var headerRows = [].slice.call(this.element.querySelectorAll('.e-columnheader'));
-        for (var _i = 0, headerRows_1 = headerRows; _i < headerRows_1.length; _i++) {
-            var row = headerRows_1[_i];
-            if (this.allowSorting || (this.allowGrouping && this.groupSettings.showDropArea) || this.allowReordering) {
-                row.classList.remove('e-defaultcursor');
+        var headerCells = [].slice.call(this.getHeaderContent().querySelectorAll('.e-headercell:not(.e-stackedheadercell)'));
+        var stdHdrCell = [].slice.call(this.getHeaderContent().querySelectorAll('.e-stackedheadercell'));
+        var cols = this.getColumns();
+        for (var i = 0; i < headerCells.length; i++) {
+            var cell = headerCells[i];
+            if (this.allowGrouping || this.allowReordering || this.allowSorting) {
+                if (!cols[i].allowReordering || !cols[i].allowSorting || !cols[i].allowGrouping) {
+                    cell.classList.add('e-defaultcursor');
+                }
+                else {
+                    cell.classList.add('e-mousepointer');
+                }
             }
-            else {
-                row.classList.add('e-defaultcursor');
+        }
+        for (var count = 0; count < stdHdrCell.length; count++) {
+            if (this.allowReordering) {
+                stdHdrCell[count].classList.add('e-mousepointer');
             }
         }
     };
@@ -13256,7 +13271,7 @@ var Grid = /** @__PURE__ @class */ (function (_super) {
         if (this.isDetail()) {
             index++;
         }
-        if (this.allowRowDragAndDrop && this.allowResizing) {
+        if (this.allowRowDragAndDrop && isNullOrUndefined(this.rowDropSettings.targetID) && this.allowResizing) {
             index++;
         }
         /**
@@ -14083,8 +14098,8 @@ var Grid = /** @__PURE__ @class */ (function (_super) {
         var headerDivTag = 'e-gridheader';
         var htable = this.createTable(headerTable, headerDivTag, 'header');
         var ctable = this.createTable(headerTable, headerDivTag, 'content');
-        var table = headerTable.contains(element) ? htable : ctable;
-        var ele = headerTable.contains(element) ? 'th' : 'tr';
+        var table = element.classList.contains('e-headercell') ? htable : ctable;
+        var ele = element.classList.contains('e-headercell') ? 'th' : 'tr';
         table.querySelector(ele).className = element.className;
         table.querySelector(ele).innerHTML = element.innerHTML;
         width = table.querySelector(ele).getBoundingClientRect().width;
@@ -14274,7 +14289,6 @@ var Grid = /** @__PURE__ @class */ (function (_super) {
     /**
      * Get current visible data of grid.
      * @return {Object[]}
-     * @hidden
      * @isGenericType true
      */
     Grid.prototype.getCurrentViewRecords = function () {
@@ -14397,6 +14411,10 @@ var Grid = /** @__PURE__ @class */ (function (_super) {
                     arr[index] = extend(localCol, col, true);
                 }
                 else {
+                    if (isBlazor()) {
+                        var guid = 'guid';
+                        col[guid] = localCol[guid];
+                    }
                     arr[index] = extend(localCol, col, true);
                 }
             }
@@ -16631,6 +16649,7 @@ var Page = /** @__PURE__ @class */ (function () {
         this.pagerDestroy();
         if (!isNullOrUndefined(this.parent.pagerTemplate)) {
             this.pageSettings.template = this.parent.pagerTemplate;
+            this.parent.pageTemplateChange = true;
         }
         this.element = this.parent.createElement('div', { className: 'e-gridpager' });
         pagerObj = extend$1({}, extend({}, getActualProperties(this.pageSettings)), {
@@ -18293,6 +18312,7 @@ var Filter = /** @__PURE__ @class */ (function () {
             lessThan: 'lessthan', lessThanOrEqual: 'lessthanorequal', notEqual: 'notequal', startsWith: 'startswith'
         };
         this.fltrDlgDetails = { field: '', isOpen: false };
+        /** @hidden */
         this.skipNumberInput = ['=', ' ', '!'];
         this.skipStringInput = ['>', '<', '='];
         this.actualPredicate = {};
@@ -19596,6 +19616,12 @@ var Resize = /** @__PURE__ @class */ (function () {
             return width;
         }
     };
+    Resize.prototype.updateResizeEleHeight = function () {
+        var _this = this;
+        this.parent.getHeaderContent().querySelectorAll('.e-rhandler').forEach(function (element) {
+            element.style.height = _this.element.parentElement.offsetHeight + 'px';
+        });
+    };
     Resize.prototype.getColData = function (column, mousemove) {
         return {
             width: parseFloat(isNullOrUndefined(this.widthService.getWidth(column)) || this.widthService.getWidth(column) === 'auto' ? '0'
@@ -19613,7 +19639,7 @@ var Resize = /** @__PURE__ @class */ (function () {
             offsetWidth = parentsUntil(this.element, 'th').offsetWidth;
         }
         if (this.parent.allowTextWrap) {
-            this.element.style.height = this.element.parentElement.offsetHeight + 'px';
+            this.updateResizeEleHeight();
             this.setHelperHeight();
         }
         var pageX = this.getPointX(e);
@@ -19723,6 +19749,7 @@ var Resize = /** @__PURE__ @class */ (function () {
             this.parent.notify(freezeRender, { case: 'textwrap' });
         }
         if (this.parent.allowTextWrap) {
+            this.updateResizeEleHeight();
             this.parent.notify(textWrapRefresh, { case: 'textwrap' });
         }
         this.refresh();

@@ -566,7 +566,6 @@ var DateProcessor = /** @__PURE__ @class */ (function () {
         var length = dayWorkingTime.length;
         var totalSeconds = 0;
         var startDate = new Date('10/11/2018');
-        var endDate = new Date('10/12/2018');
         this.parent.nonWorkingHours = [];
         var nonWorkingHours = this.parent.nonWorkingHours;
         this.parent.workingTimeRanges = [];
@@ -576,10 +575,11 @@ var DateProcessor = /** @__PURE__ @class */ (function () {
         for (var count = 0; count < length; count++) {
             var currentRange = dayWorkingTime[count];
             if (!isNullOrUndefined(currentRange.from) && !isNullOrUndefined(currentRange.to)) {
-                startDate.setHours(currentRange.from);
+                startDate.setHours(0, 0, 0, 0);
+                var tempDate = new Date(startDate.getTime());
+                startDate.setTime(startDate.getTime() + (currentRange.from * 3600000));
                 var startHour = new Date(startDate.getTime());
-                var tempDate = currentRange.to !== 0 ? startDate : endDate;
-                tempDate.setHours(currentRange.to);
+                tempDate.setTime(tempDate.getTime() + (currentRange.to * 3600000));
                 var endHour = new Date(tempDate.getTime());
                 var timeDiff = endHour.getTime() - startHour.getTime();
                 var sdSeconds = this.getSecondsInDecimal(startHour);
@@ -929,8 +929,12 @@ var DateProcessor = /** @__PURE__ @class */ (function () {
      * @private
      */
     DateProcessor.prototype.setTime = function (seconds, date) {
+        /* tslint:disable-next-line:no-any */
         var hour = seconds / 3600;
+        hour = parseInt(hour, 10);
+        /* tslint:disable-next-line:no-any */
         var min = (seconds - (hour * 3600)) / 60;
+        min = parseInt(min, 10);
         var sec = seconds - (hour * 3600) - (min * 60);
         date.setHours(hour, min, sec);
     };
@@ -2722,11 +2726,12 @@ var GanttChart = /** @__PURE__ @class */ (function () {
         var childRecords = record.childRecords;
         var chartRows = this.getChartRows();
         var rows = [];
-        chartRows.forEach(function (item) {
-            if (item.classList.contains('gridrowtaskId' + record.ganttProperties.taskId + 'level' + (record.level + 1))) {
-                rows.push(item);
+        for (var i = 0; i < chartRows.length; i++) {
+            if (chartRows[i].classList.contains('gridrowtaskId'
+                + record.ganttProperties.taskId + 'level' + (record.level + 1))) {
+                rows.push(chartRows[i]);
             }
-        });
+        }
         for (var i = 0; i < rows.length; i++) {
             rows[i].style.display = displayType;
             if ((childRecords[i].childRecords && childRecords[i].childRecords.length)
@@ -3638,8 +3643,8 @@ var Timeline = /** @__PURE__ @class */ (function () {
                 break;
             case 'Month':
                 firstDay = startDate;
-                lastDay = new Date(startDate.getFullYear(), startDate.getMonth() + count, 0);
-                increment = ((lastDay.getTime() - firstDay.getTime())) + (1000 * 60 * 60 * 24);
+                lastDay = new Date(startDate.getFullYear(), startDate.getMonth() + count, 1);
+                increment = ((lastDay.getTime() - firstDay.getTime()));
                 break;
             case 'Week':
                 var dayIndex = this.parent.timelineModule.customTimelineSettings.weekStartDay;
@@ -5415,7 +5420,7 @@ var ChartRows = /** @__PURE__ @class */ (function () {
      * @private
      */
     ChartRows.prototype.getIndicatorNode = function (indicator) {
-        var templateString = '<label class="' + taskIndicatorDiv + '"  style="line-height:'
+        var templateString = '<label class="' + label + ' ' + taskIndicatorDiv + '"  style="line-height:'
             + (this.parent.rowHeight) + 'px;' +
             'left:' + this.getIndicatorleft(indicator.date) + 'px;"><i class="' + indicator.iconClass + '"></i> </label>';
         return this.createDivElement(templateString);
@@ -5694,7 +5699,7 @@ var ChartRows = /** @__PURE__ @class */ (function () {
         if (typeof template !== 'string') {
             result = true;
         }
-        else if (template.indexOf('#') === 0 || template.indexOf('<div') > -1
+        else if (template.indexOf('#') === 0 || template.indexOf('<') > -1
             || template.indexOf('$') > -1) {
             result = true;
         }
@@ -6348,11 +6353,11 @@ var ChartRows = /** @__PURE__ @class */ (function () {
     };
     ChartRows.prototype.generateTaskLabelAriaLabel = function (type) {
         var label$$1 = '';
-        if (type === 'left' && this.parent.labelSettings.leftLabel && this.parent.labelSettings.leftLabel.indexOf('#') !== 0) {
+        if (type === 'left' && this.parent.labelSettings.leftLabel && !this.leftTaskLabelTemplateFunction) {
             label$$1 += 'aria-label= "' + this.parent.localeObj.getConstant('leftTaskLabel') +
                 ' ' + this.getTaskLabel(this.parent.labelSettings.leftLabel) + '"';
         }
-        else if (type === 'right' && this.parent.labelSettings.rightLabel && this.parent.labelSettings.rightLabel.indexOf('#') !== 0) {
+        else if (type === 'right' && this.parent.labelSettings.rightLabel && !this.rightTaskLabelTemplateFunction) {
             label$$1 += 'aria-label="' + this.parent.localeObj.getConstant('rightTaskLabel') +
                 ' ' + this.getTaskLabel(this.parent.labelSettings.rightLabel) + '"';
         }
@@ -18049,9 +18054,9 @@ var NonWorkingDay = /** @__PURE__ @class */ (function () {
         var viewportHeight = parseInt(scrollElement.style.height, 10);
         var top = (viewportHeight < height) ? viewportHeight / 2 : height / 2;
         var labels = this.holidayContainer.querySelectorAll('.' + holidayLabel);
-        labels.forEach(function (element) {
-            element.style.top = formatUnit(top);
-        });
+        for (var i = 0; i < labels.length; i++) {
+            labels[i].style.top = formatUnit(top);
+        }
     };
     /**
      * Method to update height for all internal containers

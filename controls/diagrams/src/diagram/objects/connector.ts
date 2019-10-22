@@ -445,6 +445,7 @@ export class OrthogonalSegment extends ConnectorSegment {
 
 }
 
+
 /**
  * Get the direction of the control points while the bezier is connected to the node
  */
@@ -664,6 +665,7 @@ export class Connector extends NodeBase implements IElement {
      * Defines the shape of the connector
      * @default 'Bpmn'
      * @aspType object
+     * @blazorType object
      */
     @ComplexFactory(getConnectorType)
     public shape: ConnectorShapeModel | BpmnFlowModel | RelationShipModel;
@@ -935,8 +937,7 @@ export class Connector extends NodeBase implements IElement {
                 }
                 break;
             case 'UmlClassifier':
-                this.getConnectorRelation();
-                break;
+                this.getConnectorRelation(); break;
         }
         let anglePoints: PointModel[] = this.intermediatePoints as PointModel[];
         if (this.type === 'Bezier') {

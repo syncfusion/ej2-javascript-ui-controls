@@ -1197,6 +1197,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
             (value ? value : tool.value),
             (value ? value : tool.value)
         );
+        this.setPlaceHolder();
     }
 
     private htmlPurifier(
@@ -1775,11 +1776,14 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
                     });
                 }
                 this.placeHolderWrapper.innerHTML = this.placeholder;
-                if (this.inputElement.textContent.length !== 0) {
-                    this.placeHolderWrapper.style.display = 'none';
-                } else {
+                if (this.inputElement.textContent.length === 0 &&
+                !isNOU(this.inputElement.firstChild) && this.inputElement.firstChild.nodeName === 'P' &&
+                !isNOU(this.inputElement.firstChild.firstChild) && this.inputElement.firstChild.firstChild.nodeName === 'BR') {
                     this.placeHolderWrapper.style.display = 'block';
+                } else {
+                    this.placeHolderWrapper.style.display = 'none';
                 }
+
             } else {
                 this.inputElement.setAttribute('placeholder', this.placeholder);
             }
@@ -2168,7 +2172,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
                     !(e.target as HTMLElement).classList.contains('e-img-inner')
                     && (e.target && (e.target as HTMLElement).parentElement
                     && !(e.target as HTMLElement).parentElement.classList.contains('e-img-wrap')))
-                || active.closest('.e-rte-toolbar') === this.getToolbarElement()) {
+                || closest(active, '.e-rte-toolbar') === this.getToolbarElement()) {
                 (this.contentModule.getEditPanel() as HTMLElement).focus();
                 if (!isNOU(this.getToolbarElement())) {
                     this.getToolbarElement().setAttribute('tabindex', '-1');

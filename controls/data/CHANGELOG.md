@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 17.3.19 (2019-10-22)
+
+### DataManager
+
+#### Bug Fixes
+
+- `250531`, `148065`, `251052` - Date time values are now properly `serialized`.
+
 ## 17.3.14 (2019-10-03)
 
 ### DataManager

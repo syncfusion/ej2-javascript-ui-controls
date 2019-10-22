@@ -62,6 +62,10 @@
         display: inline-block;
         vertical-align: middle;
       }
+
+      .e-hierarchycheckbox .e-frame {
+        height: $treegrid-frame-icon-height;
+      }
     }
 
     .e-checkselection {

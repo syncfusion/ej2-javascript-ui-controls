@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 17.3.19 (2019-10-22)
+
+### QueryBuilder
+
+#### Bug Fixes
+
+- Value not updated properly while changing operator.
+
 ## 17.2.46 (2019-08-22)
 
 ### QueryBuilder

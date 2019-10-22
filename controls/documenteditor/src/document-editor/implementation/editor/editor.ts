@@ -29,7 +29,7 @@ import {
 } from '../../base/index';
 import { SelectionCharacterFormat } from '../index';
 import { Action } from '../../index';
-import { PageLayoutViewer } from '../index';
+import { PageLayoutViewer, SfdtReader } from '../index';
 import { WCharacterStyle } from '../format/style';
 import { EditorHistory } from '../editor-history/index';
 import { BaseHistoryInfo } from '../editor-history/base-history-info';
@@ -117,6 +117,7 @@ export class Editor {
     private pasteTextPosition: PositionInfo = undefined;
     public isSkipHistory: boolean = false;
     public isPaste: boolean = false;
+    public isPasteListUpdated: boolean = false;
 
     /**
      * Initialize the editor module
@@ -243,6 +244,9 @@ export class Editor {
             this.copiedContent = undefined;
             this.copiedTextContent = '';
             this.selection.isViewPasteOptions = false;
+            if (this.isPasteListUpdated) {
+                this.isPasteListUpdated = false;
+            }
             this.selection.showHidePasteOptions(undefined, undefined);
         }
         if (this.viewer.owner.isLayoutEnabled && !this.viewer.owner.isShiftingEnabled) {
@@ -730,6 +734,9 @@ export class Editor {
                         this.copiedContent = undefined;
                         this.copiedTextContent = '';
                         this.selection.isViewPasteOptions = false;
+                        if (this.isPasteListUpdated) {
+                            this.isPasteListUpdated = false;
+                        }
                         this.selection.showHidePasteOptions(undefined, undefined);
                     }
                     break;
@@ -2075,6 +2082,9 @@ export class Editor {
     }
 
     private pasteFormattedContent(result: any): void {
+        if (this.isPasteListUpdated) {
+            this.isPasteListUpdated = false;
+        }
         this.pasteContents(isNullOrUndefined(result.data) ? this.copiedTextContent : result.data);
         this.applyPasteOptions(this.currentPasteOptions);
         hideSpinner(this.owner.element);
@@ -2101,6 +2111,124 @@ export class Editor {
             this.pasteContents(document);
             this.applyPasteOptions(this.currentPasteOptions);
         }
+    }
+    private getUniqueListOrAbstractListId(isList: boolean): number {
+        if (isList && this.viewer.lists.length) {
+            let sortedList: WList[] = this.viewer.lists.slice().sort((a: any, b: any) => {
+                return a.listId - b.listId;
+            });
+            return sortedList[sortedList.length - 1].listId + 1;
+        } else if (this.viewer.abstractLists.length) {
+            let sortedAbsList: WAbstractList[] = this.viewer.abstractLists.slice().sort((a: any, b: any) => {
+                return a.abstractListId - b.abstractListId;
+            });
+            return sortedAbsList[sortedAbsList.length - 1].abstractListId + 1;
+        }
+        return 0;
+    }
+    private checkSameLevelFormat(lstLevelNo: number, abstractList: any, list: WList): boolean {
+        return abstractList.levels[lstLevelNo].listLevelPattern === list.abstractList.levels[lstLevelNo].listLevelPattern
+            && abstractList.levels[lstLevelNo].numberFormat === list.abstractList.levels[lstLevelNo].numberFormat;
+    }
+    private listLevelPatternInCollection(lstLevelNo: number, listLevelPattern: any, numberFormat: any): WList {
+        return this.viewer.lists.filter((list: WList) => {
+            return list.abstractList.levels[lstLevelNo].listLevelPattern === listLevelPattern
+                && list.abstractList.levels[lstLevelNo].numberFormat === numberFormat;
+        })[0];
+    }
+    private getBlocksToUpdate(blocks: any): any[] {
+        let blcks: any[] = [];
+        blocks.forEach((obj: any) => {
+            if (obj.paragraphFormat && obj.paragraphFormat.listFormat
+                && Object.keys(obj.paragraphFormat.listFormat).length > 0) {
+                blcks.push(obj);
+            } else if (obj.rows) {
+                obj.rows.forEach((row: any) => {
+                    row.cells.forEach((cell: any) => {
+                        blcks = blcks.concat(this.getBlocksToUpdate(cell.blocks));
+                    });
+                });
+            }
+        });
+        return blcks;
+    }
+    private updateListIdForBlocks(blocks: any, abstractList: any, list: WList, id: number, idToUpdate: number): boolean {
+        let update: boolean = false;
+        blocks.forEach((obj: any) => {
+            if (obj.paragraphFormat && obj.paragraphFormat.listFormat
+                && Object.keys(obj.paragraphFormat.listFormat).length > 0) {
+                let format: any = obj.paragraphFormat.listFormat;
+                // tslint:disable-next-line:max-line-length
+                let existingList: WList = this.listLevelPatternInCollection(format.listLevelNumber, abstractList.levels[format.listLevelNumber].listLevelPattern, abstractList.levels[format.listLevelNumber].numberFormat);
+                if (format.listId === id) {
+                    if (isNullOrUndefined(existingList) && (!list || (list
+                        && !this.checkSameLevelFormat(format.listLevelNumber, abstractList, list)))) {
+                        update = true;
+                        format.listId = idToUpdate;
+                    } else if (!isNullOrUndefined(existingList)
+                        && this.checkSameLevelFormat(format.listLevelNumber, abstractList, existingList)) {
+                        if (!format.isUpdated) {
+                            format.listId = existingList.listId;
+                            format.isUpdated = true;
+                        }
+                        update = false;
+                    }
+                }
+            } else if (obj.rows) {
+                obj.rows.forEach((row: any) => {
+                    row.cells.forEach((cell: any) => {
+                        let toUpdate: boolean = this.updateListIdForBlocks(cell.blocks, abstractList, list, id, idToUpdate);
+                        if (!update) {
+                            update = toUpdate;
+                        }
+                    });
+                });
+            }
+        });
+        return update;
+    }
+    private updatePasteContent(pasteContent: any, sectionId: number): void {
+        let uniqueListId: number = this.getUniqueListOrAbstractListId(true);
+        if (pasteContent.lists.filter((obj: any): any => { return obj.listId === uniqueListId; }).length > 0) {
+            let sortedPasteList: any[] = pasteContent.lists.slice().sort((a: any, b: any) => {
+                return a.listId - b.listId;
+            });
+            uniqueListId = sortedPasteList[sortedPasteList.length - 1].listId + 1;
+        }
+        let uniqueAbsLstId: number = this.getUniqueListOrAbstractListId(false);
+        if (pasteContent.abstractLists.filter((obj: any): any => {
+            return obj.abstractListId === uniqueAbsLstId;
+        }).length > 0) {
+            let sortedPasteAbsList: any[] = pasteContent.abstractLists.slice().sort((a: any, b: any) => {
+                return a.abstractListId - b.abstractListId;
+            });
+            uniqueAbsLstId = sortedPasteAbsList[sortedPasteAbsList.length - 1].abstractListId + 1;
+        }
+        for (let k: number = 0; k < pasteContent.lists.length; k++) {
+            let list: WList = pasteContent.lists[k];
+            let abstractList: any = pasteContent.abstractLists.filter((obj: WAbstractList) => {
+                return obj.abstractListId === list.abstractListId;
+            })[0];
+            let lstDup: WList[] = this.viewer.lists.filter((obj: any) => {
+                return obj.listId === list.listId;
+            });
+            // tslint:disable-next-line:max-line-length
+            let isUpdate: boolean = this.updateListIdForBlocks(pasteContent.sections[sectionId].blocks, abstractList, lstDup[0], list.listId, uniqueListId);
+            if (isUpdate) {
+                abstractList.abstractListId = uniqueAbsLstId;
+                list.listId = uniqueListId;
+                list.abstractListId = uniqueAbsLstId;
+                uniqueListId++;
+                uniqueAbsLstId++;
+            } else {
+                pasteContent.lists.splice(k, 1);
+                pasteContent.abstractLists.splice(pasteContent.abstractLists.indexOf(abstractList), 1);
+                k--;
+            }
+        }
+        this.getBlocksToUpdate(pasteContent.sections[sectionId].blocks).forEach((blck: any) => {
+            delete blck.paragraphFormat.listFormat.isUpdated;
+        });
     }
     private getBlocks(pasteContent: any): BlockWidget[] {
         let widgets: BlockWidget[] = [];
@@ -2134,7 +2262,20 @@ export class Editor {
             }
         } else {
             for (let i: number = 0; i < pasteContent.sections.length; i++) {
-                this.viewer.owner.parser.parseBody(pasteContent.sections[i].blocks, widgets);
+                let parser: SfdtReader = this.viewer.owner.parser;
+                if (!this.isPasteListUpdated && !isNullOrUndefined(pasteContent.lists)) {
+                    if (this.viewer.lists.length > 0) {
+                        this.updatePasteContent(pasteContent, i);
+                    }
+                    this.isPasteListUpdated = true;
+                    if (!isNullOrUndefined(pasteContent.abstractLists)) {
+                        parser.parseAbstractList(pasteContent, this.viewer.abstractLists);
+                    }
+                    if (!isNullOrUndefined(pasteContent.lists)) {
+                        parser.parseList(pasteContent, this.viewer.lists);
+                    }
+                }
+                parser.parseBody(pasteContent.sections[i].blocks, widgets);
             }
         }
 
@@ -2315,19 +2456,15 @@ export class Editor {
             }
             if (j === widgets.length - 1 && widget instanceof ParagraphWidget) {
                 let newParagraph: ParagraphWidget = widget as ParagraphWidget;
-                let paragraphFormat: WParagraphFormat;
                 if (newParagraph.childWidgets.length > 0
                     && (newParagraph.childWidgets[0] as LineWidget).children.length > 0) {
-                    if (newParagraph.paragraphFormat.listFormat.listId !== -1 || newParagraph.paragraphFormat.bidi) {
-                        paragraphFormat = newParagraph.paragraphFormat;
-                    }
                     let insertPosition: TextPosition = this.selection.start;
                     if ((insertPosition.paragraph.paragraphFormat.textAlignment === 'Center'
                         || insertPosition.paragraph.paragraphFormat.textAlignment === 'Right') &&
                         insertPosition.paragraph.paragraphFormat.listFormat.listId === -1) {
                         insertPosition.paragraph.x = this.viewer.clientActiveArea.x;
                     }
-                    this.insertElement((newParagraph.childWidgets[0] as LineWidget).children, paragraphFormat);
+                    this.insertElement((newParagraph.childWidgets[0] as LineWidget).children, newParagraph.paragraphFormat);
                 }
             } else if (widget instanceof BlockWidget) {
                 let startParagraph: ParagraphWidget = this.selection.start.paragraph;
@@ -11039,4 +11176,41 @@ export interface ParagraphFormatProperties {
      * Defines the bidirectional property of paragraph
      */
     bidi?: boolean;
+}
+/**
+ * Defines the section format properties of document editor
+ */
+export interface SectionFormatProperties {
+    /**
+     * Defines the header distance.
+     */
+    headerDistance?: number;
+    /**
+     * Defines the footer distance.
+     */
+    footerDistance?: number;
+    /**
+     * Defines the page width.
+     */
+    pageWidth?: number;
+    /**
+     * Defines the page height.
+     */
+    pageHeight?: number;
+    /**
+     * Defines the left margin of the page.
+     */
+    leftMargin?: number;
+    /**
+     * Defines the top margin of the page.
+     */
+    topMargin?: number;
+    /**
+     * Defines the bottom margin of the page.
+     */
+    bottomMargin?: number;
+    /**
+     * Defines the right margin of the page.
+     */
+    rightMargin?: number;
 }

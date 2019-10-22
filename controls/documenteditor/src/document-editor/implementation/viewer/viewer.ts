@@ -216,7 +216,8 @@ export abstract class LayoutViewer {
     public suffix: string = '';
     //DialogDialog
     private dialogInternal: Dialog;
-    private dialogTarget: HTMLElement;
+    private dialogTarget1: HTMLElement;
+    private dialogTarget2: HTMLElement;
     private dialogInternal2: Dialog;
 
     /**
@@ -385,6 +386,10 @@ export abstract class LayoutViewer {
      * @private
      */
     public restrictEditingPane: RestrictEditing;
+    /**
+     * @private
+     */
+    public longTouchTimer: number;
     //Document Protection Properties Ends
 
     //#region Properties
@@ -799,7 +804,9 @@ export abstract class LayoutViewer {
             this.selection.initCaret();
         }
         this.wireInputEvents();
-        this.iframe.addEventListener('load', this.onIframeLoad);
+        if (!isNullOrUndefined(this.iframe)) {
+            this.iframe.addEventListener('load', this.onIframeLoad);
+        }
         this.viewerContainer.addEventListener('scroll', this.scrollHandler);
         this.viewerContainer.addEventListener('mousedown', this.onMouseDownInternal);
         this.viewerContainer.addEventListener('keydown', this.onKeyDownInternal);
@@ -1003,10 +1010,10 @@ export abstract class LayoutViewer {
      */
     private initDialog(isRtl?: boolean): void {
         if (!this.dialogInternal) {
-            this.dialogTarget = createElement('div', { className: 'e-de-dlg-target' });
-            document.body.appendChild(this.dialogTarget);
+            this.dialogTarget1 = createElement('div', { className: 'e-de-dlg-target' });
+            document.body.appendChild(this.dialogTarget1);
             if (isRtl) {
-                this.dialogTarget.classList.add('e-de-rtl');
+                this.dialogTarget1.classList.add('e-de-rtl');
             }
             this.dialogInternal = new Dialog({
                 target: document.body, showCloseIcon: true,
@@ -1016,7 +1023,7 @@ export abstract class LayoutViewer {
             });
             this.dialogInternal.open = this.selection.hideCaret;
             this.dialogInternal.beforeClose = this.updateFocus;
-            this.dialogInternal.appendTo(this.dialogTarget);
+            this.dialogInternal.appendTo(this.dialogTarget1);
         }
     }
     /**
@@ -1024,17 +1031,17 @@ export abstract class LayoutViewer {
      */
     private initDialog2(isRtl?: boolean): void {
         if (!this.dialogInternal2) {
-            let target: HTMLElement = createElement('div', { className: 'e-de-dlg-target' });
-            document.body.appendChild(target);
+            this.dialogTarget2 = createElement('div', { className: 'e-de-dlg-target' });
+            document.body.appendChild(this.dialogTarget2);
             if (isRtl) {
-                target.classList.add('e-de-rtl');
+                this.dialogTarget2.classList.add('e-de-rtl');
             }
             this.dialogInternal2 = new Dialog({
                 target: document.body, showCloseIcon: true,
                 allowDragging: true, enableRtl: isRtl, visible: false,
                 width: '1px', isModal: true, position: { X: 'center', Y: 'Top' }, zIndex: this.owner.zIndex
             });
-            this.dialogInternal2.appendTo(target);
+            this.dialogInternal2.appendTo(this.dialogTarget2);
         }
     }
     /**
@@ -1544,9 +1551,51 @@ export abstract class LayoutViewer {
             if (this.touchDownOnSelectionMark || (event as TouchEvent).touches.length > 1) {
                 event.preventDefault();
             }
+            this.longTouchTimer = setTimeout(this.onLongTouch, 500, event as TouchEvent);
             this.timer = setTimeout((): void => {
                 this.isTimerStarted = false;
             }, 200);
+        }
+    }
+    /**
+     * Fired on long touch
+     * @param {TouchEvent} event
+     * @private
+     */
+    public onLongTouch = (event: TouchEvent): void => {
+        if (isNullOrUndefined(this.owner) || isNullOrUndefined(this.viewerContainer)) {
+            return;
+        }
+        let point: Point = this.getTouchOffsetValue(event);
+        let pointRelToPage: Point = this.findFocusedPage(point, true);
+        let selStart: TextPosition = this.selection.start;
+        let selEnd: TextPosition = this.selection.end;
+        let updateSel: boolean = false;
+        if (!this.selection.isForward) {
+            selStart = this.selection.end;
+            selEnd = this.selection.start;
+        }
+        let selStartPt: Point = selStart.location;
+        let selEndPt: Point = selEnd.location;
+        if (selStart.currentWidget !== selEnd.currentWidget) {
+            updateSel = !(pointRelToPage.x >= selStartPt.x && pointRelToPage.x <= selEndPt.x)
+                && !(pointRelToPage.y >= selStartPt.y && pointRelToPage.y <= selEndPt.y);
+        } else {
+            updateSel = !(pointRelToPage.x >= selStartPt.x && pointRelToPage.x <= selEndPt.x)
+                || !(pointRelToPage.y >= selStartPt.y && pointRelToPage.y <= selEndPt.y);
+        }
+        if (event.changedTouches.length === 1 && updateSel) {
+            this.updateSelectionOnTouch(point, pointRelToPage);
+            this.isMouseDown = false;
+            this.touchDownOnSelectionMark = 0;
+            this.useTouchSelectionMark = true;
+            this.isSelectionChangedOnMouseMoved = false;
+        }
+        if (this.selection.isEmpty) {
+            this.selection.selectCurrentWord();
+        }
+        if (!isNullOrUndefined(this.owner.contextMenuModule) && this.owner.contextMenuModule.contextMenuInstance) {
+            this.owner.contextMenuModule.onContextMenuInternal(event);
         }
     }
     /**
@@ -1616,6 +1665,10 @@ export abstract class LayoutViewer {
             }
             this.preDifference = currentDiff;
         }
+        if (this.longTouchTimer) {
+            clearTimeout(this.longTouchTimer);
+            this.longTouchTimer = undefined;
+        }
     }
     /**
      * Fired on touch up.
@@ -1627,21 +1680,7 @@ export abstract class LayoutViewer {
             let point: Point = this.getTouchOffsetValue(event);
             let touchPoint: Point = this.findFocusedPage(point, true);
             if (event.changedTouches.length === 1) {
-                this.zoomX = undefined;
-                this.zoomY = undefined;
-                // tslint:disable-next-line:max-line-length
-                if (this.isMouseDown && !this.isSelectionChangedOnMouseMoved && !isNullOrUndefined(this.currentPage) && !isNullOrUndefined(this.owner.selection.start)) {
-                    if (this.touchDownOnSelectionMark === 0) {
-                        this.updateTextPositionForSelection(new Point(touchPoint.x, touchPoint.y), this.tapCount);
-                        if (this.tapCount === 2) {
-                            this.selection.checkAndEnableHeaderFooter(point, touchPoint);
-                        }
-                    }
-                    if (this.owner.selection.isEmpty) {
-                        this.selection.updateCaretPosition();
-                    }
-                    this.selection.checkForCursorVisibility();
-                }
+                this.updateSelectionOnTouch(point, touchPoint);
                 if (!isNullOrUndefined(this.currentPage) && !isNullOrUndefined(this.selection.start)
                     && !this.isSelectionChangedOnMouseMoved && (this.selection.isEmpty ||
                         this.selection.isImageField() && (!this.owner.enableImageResizerMode ||
@@ -1672,6 +1711,10 @@ export abstract class LayoutViewer {
         }
         this.preDifference = -1;
         this.isTouchInput = false;
+        if (this.longTouchTimer) {
+            clearTimeout(this.longTouchTimer);
+            this.longTouchTimer = undefined;
+        }
         if (!this.isTimerStarted) {
             this.tapCount = 1;
         }
@@ -1680,9 +1723,32 @@ export abstract class LayoutViewer {
         }
     }
     /**
-     * Gets touch offset value.
+     * Updates selection for touch position.
+     * @param point 
+     * @param touchPoint 
      */
-    private getTouchOffsetValue(event: TouchEvent): Point {
+    private updateSelectionOnTouch(point: Point, touchPoint: Point): void {
+        this.zoomX = undefined;
+        this.zoomY = undefined;
+        // tslint:disable-next-line:max-line-length
+        if (this.isMouseDown && !this.isSelectionChangedOnMouseMoved && !isNullOrUndefined(this.currentPage) && !isNullOrUndefined(this.owner.selection.start)) {
+            if (this.touchDownOnSelectionMark === 0) {
+                this.updateTextPositionForSelection(new Point(touchPoint.x, touchPoint.y), this.tapCount);
+                if (this.tapCount === 2) {
+                    this.selection.checkAndEnableHeaderFooter(point, touchPoint);
+                }
+            }
+            if (this.owner.selection.isEmpty) {
+                this.selection.updateCaretPosition();
+            }
+            this.selection.checkForCursorVisibility();
+        }
+    }
+    /**
+     * Gets touch offset value.
+     * @private
+     */
+    public getTouchOffsetValue(event: TouchEvent): Point {
         let targetElement: HTMLElement = this.viewerContainer as HTMLElement;
         let offset: ClientRect = targetElement.getBoundingClientRect();
         let touchOffsetValues: Touch = event.touches[0];
@@ -2453,10 +2519,18 @@ export abstract class LayoutViewer {
             this.dialogInternal.destroy();
         }
         this.dialogInternal = undefined;
-        if (this.dialogTarget && this.dialogTarget.parentElement) {
-            this.dialogTarget.parentElement.removeChild(this.dialogTarget);
+        if (this.dialogInternal2) {
+            this.dialogInternal2.destroy();
+            this.dialogInternal2 = undefined;
         }
-        this.dialogTarget = undefined;
+        if (this.dialogTarget1 && this.dialogTarget1.parentElement) {
+            this.dialogTarget1.parentElement.removeChild(this.dialogTarget1);
+        }
+        this.dialogTarget1 = undefined;
+        if (this.dialogTarget2 && this.dialogTarget2.parentElement) {
+            this.dialogTarget2.parentElement.removeChild(this.dialogTarget2);
+        }
+        this.dialogTarget2 = undefined;
         if (!isNullOrUndefined(this.touchStart)) {
             this.touchStart.innerHTML = '';
         }
@@ -2516,7 +2590,9 @@ export abstract class LayoutViewer {
         this.editableDiv.removeEventListener('compositionupdate', this.compositionUpdated);
         this.editableDiv.removeEventListener('compositionend', this.compositionEnd);
         this.viewerContainer.removeEventListener('mouseup', this.onMouseUpInternal);
-        this.iframe.removeEventListener('load', this.onIframeLoad);
+        if (!isNullOrUndefined(this.iframe)) {
+            this.iframe.removeEventListener('load', this.onIframeLoad);
+        }
         this.viewerContainer.removeEventListener('dblclick', this.onDoubleTap);
         window.removeEventListener('resize', this.onWindowResize);
         window.removeEventListener('keyup', this.onKeyUpInternal);

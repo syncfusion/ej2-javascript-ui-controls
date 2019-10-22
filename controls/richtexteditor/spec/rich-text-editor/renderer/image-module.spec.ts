@@ -57,6 +57,7 @@ describe('insert image', () => {
         beforeAll(() => {
             rteObj = renderRTE({
                 height: 400,
+                placeholder: 'Insert Image here',
                 toolbarSettings: {
                     items: ['Image', 'Bold']
                 },
@@ -85,6 +86,7 @@ describe('insert image', () => {
         });
         it('image dialog', () => {
             (rteObj.contentModule.getEditPanel() as HTMLElement).focus();
+            expect((rteObj.element.querySelectorAll('.rte-placeholder')[0] as HTMLElement).style.display).toBe('block');
             let args: any = {
                 preventDefault: function () { },
                 originalEvent: { currentTarget: document.getElementById('rte_toolbarItems') }
@@ -97,7 +99,7 @@ describe('insert image', () => {
             (dialogEle.querySelector('.e-img-url') as HTMLInputElement).value = 'https://js.syncfusion.com/demos/web/content/images/accordion/baked-chicken-and-cheese.png';
             expect(rteObj.element.lastElementChild.classList.contains('e-dialog')).toBe(true);
             (document.querySelector('.e-insertImage.e-primary') as HTMLElement).click();
-
+            expect((rteObj.element.querySelectorAll('.rte-placeholder')[0] as HTMLElement).style.display).toBe('none');
         });
         it('resize start', () => {
             let trg = (rteObj.element.querySelector('.e-rte-image') as HTMLElement);
@@ -2439,7 +2441,44 @@ client side. Customer easy to edit the contents and get the HTML content for
         });
     });
 
-    
+    describe('Testing allowed extension in image upload - ', () => {
+        let rteObj: RichTextEditor;
+        beforeEach((done: Function) => {
+            rteObj = renderRTE({
+                insertImageSettings: {
+                    allowedTypes: ['.png'],
+                    saveUrl:"uploadbox/Save",
+                    path: "../Images/"
+                }
+            });
+            done();
+        })
+        afterEach((done: Function) => {
+            destroy(rteObj);
+            done();
+        })
+        it(' Test the component insert image with allowedExtension property', (done) => {
+            let rteEle: HTMLElement = rteObj.element;
+            (rteObj.contentModule.getEditPanel() as HTMLElement).focus();
+            let args = { preventDefault: function () { } };
+            let range = new NodeSelection().getRange(document);
+            let save = new NodeSelection().save(range, document);
+            let evnArg = { args: MouseEvent, self: (<any>rteObj).imageModule, selection: save, selectNode: new Array(), };
+            (<HTMLElement>rteEle.querySelectorAll(".e-toolbar-item button")[8] as HTMLElement).click();
+            let dialogEle: Element = rteObj.element.querySelector('.e-dialog');
+            (dialogEle.querySelector('.e-img-url') as HTMLInputElement).value = 'https://js.syncfusion.com/demos/web/content/images/accordion/baked-chicken-and-cheese.png';
+            let fileObj: File = new File(["Nice One"], "sample.jpg", { lastModified: 0, type: "overide/mimetype" });
+            let eventArgs = { type: 'click', target: { files: [fileObj] }, preventDefault: (): void => { } };
+            (<any>rteObj).imageModule.uploadObj.onSelectFiles(eventArgs);
+            setTimeout(() => {
+                expect((dialogEle.querySelector('.e-insertImage') as HTMLButtonElement).hasAttribute('disabled')).toBe(true);
+                evnArg.selectNode = [rteObj.element];
+                (<any>rteObj).imageModule.deleteImg(evnArg);
+                (<any>rteObj).imageModule.uploadObj.upload((<any>rteObj).imageModule.uploadObj.filesData[0]);
+                done();
+            }, 4000);
+        });
+    });
 
 
     describe(' Caption image with link insert testing', () => {

@@ -1399,4 +1399,54 @@ describe("Toolbar - Actions Module", () => {
             }, 500);
         });
     });
+
+    describe("Color picker shows transparent color as white", () => {
+        let rteEle: HTMLElement;
+        let rteObj: RichTextEditor;
+        beforeEach(() => {
+            rteObj = renderRTE({
+                toolbarSettings: {
+                    items: ['FontColor', 'BackgroundColor']
+                },
+                fontColor: {
+                    columns: 5,
+                    colorCode: {
+                        'Custom': ['#00ff00',
+                            '#00ffff', '#ff00ff', '#0000ff', '', '#ff0000', '#000080', '#008080', '#008000', '#800080',
+                            '#800000', '#808000', '#c0c0c0', '#000000'
+                        ]
+                    }
+                },
+                backgroundColor: {
+                    columns: 5,
+                    colorCode: {
+                        'Custom': ['#00ff00',
+                            '#00ffff', '#ff00ff', '#0000ff', '', '#ff0000', '#000080', '#008080', '#008000', '#800080',
+                            '#800000', '#808000', '#c0c0c0', '#000000'
+                        ]
+                    }
+                },
+            });
+            rteEle = rteObj.element;
+        });
+        afterEach(() => {
+            destroy(rteObj);
+        });
+        it("Check Font color picker", () => {
+            let trgtEle : HTMLElement = document.querySelectorAll('.e-icon-right.e-caret')[0] as HTMLElement;
+                trgtEle.click();
+            let palette : HTMLElement = document.querySelector('.e-palette');
+            expect(palette.childElementCount).toBe(3);
+            expect(palette.firstChild.childNodes.length).toBe(5);
+            expect((palette.firstChild.childNodes[4] as HTMLElement).classList.contains('e-nocolor-item')).toBe(true);
+        });
+        it("Check background color picker", () => {
+            let trgtEle : HTMLElement = document.querySelectorAll('.e-icon-right.e-caret')[1] as HTMLElement;
+                trgtEle.click();
+            let palette : HTMLElement = document.querySelector('.e-palette');
+            expect(palette.childElementCount).toBe(3);
+            expect(palette.firstChild.childNodes.length).toBe(5);
+            expect((palette.firstChild.childNodes[4] as HTMLElement).classList.contains('e-nocolor-item')).toBe(true);
+        });
+    });
 });

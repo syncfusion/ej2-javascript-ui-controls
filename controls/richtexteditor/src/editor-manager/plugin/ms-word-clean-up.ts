@@ -57,7 +57,9 @@ export class MsWordPaste {
         elm.innerHTML = tempHTMLContent;
         let patern: RegExp = /class='?Mso|style='[^ ]*\bmso-/i;
         let patern2: RegExp = /class="?Mso|style="[^ ]*\bmso-/i;
-        if (patern.test(tempHTMLContent) || patern2.test(tempHTMLContent)) {
+        let patern3: RegExp =
+        /(class="?Mso|class='?Mso|class="?Xl|class='?Xl|class=Xl|style="[^"]*\bmso-|style='[^']*\bmso-|w:WordDocument)/gi;
+        if (patern.test(tempHTMLContent) || patern2.test(tempHTMLContent) || patern3.test(tempHTMLContent)) {
             this.imageConversion(elm, rtfData);
             tempHTMLContent = tempHTMLContent.replace(/<img[^>]+>/i, '');
             listNodes = this.cleanUp(elm, listNodes);

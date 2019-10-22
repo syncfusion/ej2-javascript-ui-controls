@@ -194,8 +194,6 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
     private dataManager: DataManager;
     private fields: Object;
     private selectedColumn: ColumnsModel;
-    private isOperatorRendered: boolean;
-    private isValueRendered: boolean;
     private actionButton: Element;
     private isInitialLoad: boolean;
     /** 
@@ -982,6 +980,7 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
         eventsArgs: ChangeEventArgs, filterElem: Element, tempRule: RuleModel, rule: RuleModel, ddlArgs: DropDownChangeEventArgs): void {
         if (!eventsArgs.cancel) {
             let operatorElem: Element = closest(ddlArgs.element, '.e-rule-operator');
+            let valElem: Element = operatorElem.nextElementSibling;
             let dropDownObj: DropDownList = getComponent(ddlArgs.element, 'dropdownlist') as DropDownList;
             let prevOper: string = rule.operator ? rule.operator.toLowerCase() : '';
             tempRule.operator = dropDownObj.value as string;
@@ -1012,9 +1011,11 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
                 removeClass([parentElem], 'e-show');
                 addClass([parentElem], 'e-hide');
             }
+            if (valElem && valElem.querySelector('.e-template')) {
+                filterElem = operatorElem.previousElementSibling;
+            }
             this.changeRuleValues(filterElem, rule, tempRule, ddlArgs);
         }
-        this.isValueRendered = true;
     }
 
     private changeRuleValues(filterElem: Element, rule: RuleModel, tempRule: RuleModel, ddlArgs: DropDownChangeEventArgs): void {
@@ -1538,7 +1539,11 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
         }
     }
     private updateValues(element: HTMLElement, rule: RuleModel): void {
-        let controlName: string = element.className.split(' e-')[1];
+        let idx: number = 1;
+        if (element.className.indexOf('e-template') > -1) {
+            idx = 3;
+        }
+        let controlName: string = element.className.split(' e-')[idx];
         let i: number = parseInt(element.id.slice(-1), 2) as number;
         switch (controlName) {
             case 'textbox':
@@ -1564,12 +1569,15 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
             case 'datepicker':
                 let column: ColumnsModel = this.getColumn(rule.field);
                 let format: DateFormatOptions = { type: 'dateTime', format: column.format || 'MM/dd/yyyy' } as DateFormatOptions;
+                let selectedDate: Date = (getComponent(element, controlName) as DatePicker).value;
                 if (rule.operator.indexOf('between') > -1) {
-                    rule.value[i] = (getComponent(element, controlName) as DatePicker).value;
-                } else if (isNullOrUndefined(format.format)) {
-                    rule.value = this.intl.formatDate((getComponent(element, controlName) as DatePicker).value);
+                    rule.value[i] = selectedDate;
+                } else if (isNullOrUndefined(format.format) && selectedDate) {
+                    rule.value = this.intl.formatDate(selectedDate);
+                } else if (selectedDate) {
+                    rule.value = this.intl.formatDate(selectedDate, format);
                 } else {
-                    rule.value = this.intl.formatDate((getComponent(element, controlName) as DatePicker).value, format);
+                    rule.value = '';
                 }
                 break;
             case 'multiselect':
@@ -1718,7 +1726,7 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
                 let format: DateFormatOptions =
                     { type: 'dateTime', format: this.columns[ddlInst.index].format || 'MM/dd/yyyy' } as DateFormatOptions;
                 if ((<DateFormatOptions>format).type) {
-                    if (arrOperator.indexOf(oper) > -1) {
+                    if (arrOperator.indexOf(oper) > -1 && i) {
                         rule.rules[index].value[i] = this.intl.formatDate(selectedValue as Date, format);
                     } else {
                         rule.rules[index].value = this.intl.formatDate(selectedValue as Date, format);
@@ -2694,7 +2702,8 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
                 if (rule.operator.indexOf('null') > -1 || (rule.operator.indexOf('empty') > -1)) {
                     queryStr += rule.field + ' ' + this.operators[rule.operator];
                 } else {
-                queryStr += rule.field + ' ' + this.operators[rule.operator] + ' ' + valueStr; }
+                    queryStr += rule.field + ' ' + (this.operators[rule.operator] || rule.operator)  + ' ' + valueStr;
+                }
             }
             if (j !== jLen - 1) {
                 queryStr += ' ' + condition + ' ';

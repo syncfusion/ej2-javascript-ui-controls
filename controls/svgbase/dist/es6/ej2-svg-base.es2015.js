@@ -1750,7 +1750,7 @@ let Tooltip = class Tooltip extends Component {
         let y = parseFloat(tooltipDiv.style.top);
         let currenDiff;
         new Animation({}).animate(tooltipDiv, {
-            duration: 300,
+            duration: this.duration,
             progress: (args) => {
                 currenDiff = (args.timeStamp / args.duration);
                 tooltipDiv.style.animation = null;
@@ -1883,6 +1883,9 @@ __decorate([
 __decorate([
     Property(true)
 ], Tooltip.prototype, "enableAnimation", void 0);
+__decorate([
+    Property(300)
+], Tooltip.prototype, "duration", void 0);
 __decorate([
     Property(false)
 ], Tooltip.prototype, "inverted", void 0);

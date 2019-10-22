@@ -5,9 +5,11 @@ import { DropDownButton, MenuEventArgs, BeforeOpenCloseMenuEventArgs, OpenCloseM
 import { Popup } from '@syncfusion/ej2-popups';
 import * as classes from '../base/classes';
 import * as events from '../base/constant';
-import { CLS_TOOLBAR, CLS_DROPDOWN_BTN, CLS_RTE_ELEMENTS, CLS_TB_BTN, CLS_INLINE_DROPDOWN,
-        CLS_COLOR_CONTENT, CLS_FONT_COLOR_DROPDOWN, CLS_BACKGROUND_COLOR_DROPDOWN, CLS_COLOR_PALETTE,
-        CLS_FONT_COLOR_PICKER, CLS_BACKGROUND_COLOR_PICKER } from '../base/classes';
+import {
+    CLS_TOOLBAR, CLS_DROPDOWN_BTN, CLS_RTE_ELEMENTS, CLS_TB_BTN, CLS_INLINE_DROPDOWN,
+    CLS_COLOR_CONTENT, CLS_FONT_COLOR_DROPDOWN, CLS_BACKGROUND_COLOR_DROPDOWN, CLS_COLOR_PALETTE,
+    CLS_FONT_COLOR_PICKER, CLS_BACKGROUND_COLOR_PICKER, CLS_CUSTOM_TILE, CLS_NOCOLOR_ITEM
+} from '../base/classes';
 import { IRenderer, IRichTextEditor, IToolbarOptions, IDropDownModel, IColorPickerModel, IColorPickerEventArgs } from '../base/interface';
 import { ColorPicker, PaletteTileEventArgs, ModeSwitchEventArgs } from '@syncfusion/ej2-inputs';
 import { hasClass } from '../base/util';
@@ -330,6 +332,11 @@ export class ToolbarRenderer implements IRenderer {
             modeSwitcher: ((item === 'backgroundcolor') ? proxy.parent.backgroundColor.modeSwitcher : proxy.parent.fontColor.modeSwitcher),
             beforeTileRender: (args: PaletteTileEventArgs) => {
                 args.element.classList.add(CLS_COLOR_PALETTE);
+                args.element.classList.add(CLS_CUSTOM_TILE);
+                if (args.value === '') {
+                    args.element.classList.add(CLS_NOCOLOR_ITEM);
+                }
+
             },
             change: (colorPickerArgs: IColorPickerEventArgs): void => {
                 let colorpickerValue: string = colorPickerArgs.currentValue.rgba;

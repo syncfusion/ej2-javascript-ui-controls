@@ -265,11 +265,12 @@ export class VerticalView extends ViewBase implements IRenderer {
         let wrapper: HTMLElement = createElement('div');
         let templateName: string = '';
         let templateId: string = this.parent.element.id + '_';
+        let dateValue: Date = util.addLocalOffset(date);
         switch (type) {
             case 'dateHeader':
                 if (this.parent.activeViewOptions.dateHeaderTemplate) {
                     templateName = 'dateHeaderTemplate';
-                    let args: CellTemplateArgs = { date: date, type: type };
+                    let args: CellTemplateArgs = { date: dateValue, type: type };
                     let viewName: string = this.parent.activeViewOptions.dateHeaderTemplateName;
                     cntEle =
                         this.parent.getDateHeaderTemplate()(args, this.parent, templateName, templateId + viewName + templateName, false);
@@ -284,7 +285,7 @@ export class VerticalView extends ViewBase implements IRenderer {
             case 'majorSlot':
                 if (this.parent.activeViewOptions.timeScale.majorSlotTemplate) {
                     templateName = 'majorSlotTemplate';
-                    let args: CellTemplateArgs = { date: date, type: type };
+                    let args: CellTemplateArgs = { date: dateValue, type: type };
                     cntEle =
                         this.parent.getMajorSlotTemplate()(args, this.parent, templateName, templateId + templateName, false);
                 } else {
@@ -295,7 +296,7 @@ export class VerticalView extends ViewBase implements IRenderer {
             case 'minorSlot':
                 if (this.parent.activeViewOptions.timeScale.minorSlotTemplate) {
                     templateName = 'minorSlotTemplate';
-                    let args: CellTemplateArgs = { date: date, type: type };
+                    let args: CellTemplateArgs = { date: dateValue, type: type };
                     cntEle =
                         this.parent.getMinorSlotTemplate()(args, this.parent, templateName, templateId + templateName, false);
                 } else {
@@ -307,7 +308,7 @@ export class VerticalView extends ViewBase implements IRenderer {
                 if (this.parent.activeViewOptions.cellTemplate) {
                     let viewName: string = this.parent.activeViewOptions.cellTemplateName;
                     templateName = 'cellTemplate';
-                    let args: CellTemplateArgs = { date: date, type: type, groupIndex: groupIndex };
+                    let args: CellTemplateArgs = { date: dateValue, type: type, groupIndex: groupIndex };
                     cntEle =
                         this.parent.getCellTemplate()(args, this.parent, templateName, templateId + viewName + templateName, false);
                 }
@@ -551,7 +552,8 @@ export class VerticalView extends ViewBase implements IRenderer {
         }
         addClass([ntd], clsName);
         if (this.parent.activeViewOptions.cellTemplate) {
-            let args: CellTemplateArgs = { date: cellDate, type: type, groupIndex: tdData.groupIndex };
+            let dateValue: Date = util.addLocalOffset(cellDate);
+            let args: CellTemplateArgs = { date: dateValue, type: type, groupIndex: tdData.groupIndex };
             let scheduleId: string = this.parent.element.id + '_';
             let viewName: string = this.parent.activeViewOptions.cellTemplateName;
             let templateId: string = scheduleId + viewName + 'cellTemplate';

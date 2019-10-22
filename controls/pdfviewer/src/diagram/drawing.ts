@@ -16,6 +16,7 @@ import { SelectorModel } from './selector-model';
 import { isLineShapes, setElementStype, findPointsLength, getBaseShapeAttributes, isLeader, Leader, cloneObject } from './drawing-util';
 // tslint:disable-next-line:max-line-length
 import { getConnectorPoints, updateSegmentElement, getSegmentElement, updateDecoratorElement, getDecoratorElement, clipDecorators, initDistanceLabel, initLeaders, initLeader, getPolygonPath, initPerimeterLabel } from './connector-util';
+import { isNullOrUndefined } from '@syncfusion/ej2-base';
 
 /**
  * Renderer module is used to render basic diagram elements
@@ -810,8 +811,12 @@ export class Drawing {
             options.y *= transform.scale;
             options.width *= transform.scale;
             options.height *= transform.scale;
-            options.fill = 'transparent'; options.stroke = 'black';
-            options.strokeWidth = 2;
+            options.fill = 'transparent';
+            // tslint:disable-next-line:max-line-length
+            let borderColor: string = isNullOrUndefined(this.pdfViewer.annotationSelectorSettings.selectionBorderColor) || this.pdfViewer.annotationSelectorSettings.selectionBorderColor === '' ? 'black' : this.pdfViewer.annotationSelectorSettings.selectionBorderColor;
+            options.stroke = borderColor;
+            // tslint:disable-next-line:max-line-length
+            options.strokeWidth = isNullOrUndefined(this.pdfViewer.annotationSelectorSettings.selectionBorderThickness) ? 2 : this.pdfViewer.annotationSelectorSettings.selectionBorderThickness;
             options.dashArray = '6,3';
             options.class = 'e-diagram-border';
             if (isSwimlane) { options.class += ' e-diagram-lane'; }
@@ -829,8 +834,11 @@ export class Drawing {
             options.y *= transform.scale;
             options.width *= transform.scale;
             options.height *= transform.scale;
-            options.stroke = 'black';
-            options.strokeWidth = 1;
+            // tslint:disable-next-line:max-line-length
+            let borderColor: string = isNullOrUndefined(this.pdfViewer.annotationSelectorSettings.selectionBorderColor) || this.pdfViewer.annotationSelectorSettings.selectionBorderColor === '' ? 'black' : this.pdfViewer.annotationSelectorSettings.selectionBorderColor;
+            options.stroke = borderColor;
+            // tslint:disable-next-line:max-line-length
+            options.strokeWidth = isNullOrUndefined(this.pdfViewer.annotationSelectorSettings.selectionBorderThickness) ? 1 : this.pdfViewer.annotationSelectorSettings.selectionBorderThickness;
             options.dashArray = '6,3';
         }
         let parentSvg: SVGSVGElement = this.getParentSvg(selector, 'selector') as SVGSVGElement;
@@ -859,13 +867,13 @@ export class Drawing {
         }
 
         let options: CircleAttributes = getBaseShapeAttributes(wrapper) as CircleAttributes;
-        options.stroke = 'black';
+        options.stroke = this.pdfViewer.annotationSelectorSettings.resizerBorderColor;
         options.strokeWidth = 1;
         if (count !== undefined) {
             radius = 5;
             options.id = 'segmentEnd_' + count;
         }
-        options.fill = '#FF4081';
+        options.fill = this.pdfViewer.annotationSelectorSettings.resizerFillColor;
         options.centerX = (newPoint.x + t.tx) * t.scale;
         options.centerY = (newPoint.y + t.ty) * t.scale;
         options.radius = radius;
@@ -880,8 +888,8 @@ export class Drawing {
         if (canMask) {
             options.visible = false;
         }
-        options.width = 8 * t.scale;
-        options.height = 8 * t.scale;
+        options.width = this.pdfViewer.annotationSelectorSettings.resizerSize * t.scale;
+        options.height = this.pdfViewer.annotationSelectorSettings.resizerSize * t.scale;
         options.x = (newPoint.x * t.scale) - (options.width / 2);
         options.y = (newPoint.y * t.scale) - (options.height / 2);
         let parentSvg: SVGSVGElement = this.getParentSvg(selector, 'selector') as SVGSVGElement;

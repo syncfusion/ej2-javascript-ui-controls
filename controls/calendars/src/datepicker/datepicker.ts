@@ -1056,6 +1056,8 @@ export class DatePicker extends Calendar implements IInput {
                 detach(this.popupWrapper);
                 this.popupObj = this.popupWrapper = null;
                 this.setAriaAttributes();
+            }, targetExitViewport: () => {
+                if (!Browser.isDevice) { this.hide(); }
             }
         });
         this.popupObj.element.className += ' ' + this.cssClass;

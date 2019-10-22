@@ -2187,7 +2187,11 @@ export enum DiagramAction {
     /** Use to prevent the history during some action in diagram */
     PreventHistory = 1 << 10,
     /** Use to prevent the icon while expand a node in diagram */
-    PreventIconsUpdate = 1 << 11
+    PreventIconsUpdate = 1 << 11,
+    /** Use to prevent the collection change event while dragging lane from palette and over it in diagram */
+    PreventCollectionChangeOnDragOver = 1 << 12,
+    /** Use to prevent the z order on dragging the diagram elements */
+    PreventZIndexOnDragging = 1 << 13,
 }
 /** @private */
 export type DiagramHistoryAction = 'AddNodeToLane';

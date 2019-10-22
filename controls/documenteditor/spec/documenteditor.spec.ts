@@ -3,7 +3,7 @@ import {
     Margin, Page, TableWidget, ImageElementBox, TableRowWidget,
     TableCellWidget, BodyWidget, ParagraphWidget, LineWidget, ElementBox, TextElementBox
 } from '../src/index';
-import { createElement } from '@syncfusion/ej2-base';
+import { createElement, Browser } from '@syncfusion/ej2-base';
 import { Layout } from '../src/document-editor/implementation/viewer/layout';
 import { DocumentEditorModel } from '../src/document-editor/document-editor-model';
 import '../node_modules/es6-promise/dist/es6-promise';
@@ -17,6 +17,7 @@ import {
 } from '../src/document-editor/implementation/dialogs/index';
 import { EditorHistory } from '../src/document-editor/implementation/editor-history/index';
 import { profile, inMB, getMemoryProfile } from './common.spec';
+
 /**
  * Document Editor spec
  */
@@ -1434,5 +1435,36 @@ describe('DocumentEditor', () => {
         let memory: any = inMB(getMemoryProfile())
         //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
         expect(memory).toBeLessThan(profile.samples[0] + 0.25);
+    });
+});
+
+describe("Initilize document editor", function () {
+    let editor: DocumentEditor;
+    let currentAgent = '';
+    beforeAll(() => {
+        let ele: HTMLElement = createElement('div', { id: 'container' });
+        document.body.appendChild(ele);
+        editor = new DocumentEditor({});
+        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        currentAgent = Browser.userAgent;
+        let iPhoneUa: string = 'Mozilla/5.0 (iPhone; CPU iPhone OS 9_1 like Mac OS X) ' +
+            'AppleWebKit/601.1.46 (KHTML, like Gecko) Version/9.0 Mobile/13B143 Safari/601.1';
+        Browser.userAgent = iPhoneUa;
+    });
+    afterAll((done) => {
+        editor.destroy();
+        editor = undefined;
+        document.body.removeChild(document.getElementById('container'));
+        Browser.userAgent = currentAgent;
+        setTimeout(function () {
+            done();
+        }, 500);
+    });
+
+    it('In Device testing', function () {
+        expect(() => { editor.appendTo("#container"); }).not.toThrowError();
     });
 });

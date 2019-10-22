@@ -102,7 +102,7 @@ export class ChartRows {
      * @private
      */
     private getIndicatorNode(indicator: IIndicator): NodeList {
-        let templateString: string = '<label class="' + cls.taskIndicatorDiv + '"  style="line-height:'
+        let templateString: string = '<label class="' + cls.label + ' ' + cls.taskIndicatorDiv + '"  style="line-height:'
             + (this.parent.rowHeight) + 'px;' +
             'left:' + this.getIndicatorleft(indicator.date) + 'px;"><i class="' + indicator.iconClass + '"></i> </label>';
         return this.createDivElement(templateString);
@@ -401,7 +401,7 @@ export class ChartRows {
         let result: boolean = false;
         if (typeof template !== 'string') {
             result = true;
-        } else if (template.indexOf('#') === 0 || template.indexOf('<div') > -1
+        } else if (template.indexOf('#') === 0 || template.indexOf('<') > -1
             || template.indexOf('$') > -1) {
             result = true;
         }
@@ -1068,10 +1068,10 @@ export class ChartRows {
 
     private generateTaskLabelAriaLabel(type: string): string {
         let label: string = '';
-        if (type === 'left' && this.parent.labelSettings.leftLabel && this.parent.labelSettings.leftLabel.indexOf('#') !== 0) {
+        if (type === 'left' && this.parent.labelSettings.leftLabel && !this.leftTaskLabelTemplateFunction) {
             label += 'aria-label= "' + this.parent.localeObj.getConstant('leftTaskLabel') +
                 ' ' + this.getTaskLabel(this.parent.labelSettings.leftLabel) + '"';
-        } else if (type === 'right' && this.parent.labelSettings.rightLabel && this.parent.labelSettings.rightLabel.indexOf('#') !== 0) {
+        } else if (type === 'right' && this.parent.labelSettings.rightLabel && !this.rightTaskLabelTemplateFunction) {
             label += 'aria-label="' + this.parent.localeObj.getConstant('rightTaskLabel') +
                 ' ' + this.getTaskLabel(this.parent.labelSettings.rightLabel) + '"';
         }

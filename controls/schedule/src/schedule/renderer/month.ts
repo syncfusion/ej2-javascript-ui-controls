@@ -250,7 +250,8 @@ export class Month extends ViewBase implements IRenderer {
             addClass([tdEle], cls.DATE_HEADER_CLASS);
             tdEle.setAttribute('data-date', td.date.getTime().toString());
             if (this.parent.activeViewOptions.dateHeaderTemplate) {
-                let cellArgs: CellTemplateArgs = { date: td.date, type: td.type };
+                let dateValue: Date = util.addLocalOffset(td.date);
+                let cellArgs: CellTemplateArgs = { date: dateValue, type: td.type };
                 let elementId: string = this.parent.element.id + '_';
                 let viewName: string = this.parent.activeViewOptions.dateHeaderTemplateName;
                 let templateId: string = elementId + viewName + 'dateHeaderTemplate';
@@ -395,7 +396,8 @@ export class Month extends ViewBase implements IRenderer {
         }
         this.renderDateHeaderElement(data, ntd);
         if (this.parent.activeViewOptions.cellTemplate) {
-            let args: CellTemplateArgs = { date: data.date, type: type, groupIndex: data.groupIndex };
+            let dateValue: Date = util.addLocalOffset(data.date);
+            let args: CellTemplateArgs = { date: dateValue, type: type, groupIndex: data.groupIndex };
             let scheduleId: string = this.parent.element.id + '_';
             let viewName: string = this.parent.activeViewOptions.cellTemplateName;
             let templateId: string = scheduleId + viewName + 'cellTemplate';
@@ -413,7 +415,8 @@ export class Month extends ViewBase implements IRenderer {
         }
         let dateHeader: Element = createElement('div', { className: cls.DATE_HEADER_CLASS });
         if (this.parent.activeViewOptions.cellHeaderTemplate) {
-            let args: CellTemplateArgs = { date: data.date, type: data.type, groupIndex: data.groupIndex };
+            let dateValue: Date = util.addLocalOffset(data.date);
+            let args: CellTemplateArgs = { date: dateValue, type: data.type, groupIndex: data.groupIndex };
             let scheduleId: string = this.parent.element.id + '_';
             let viewName: string = this.parent.activeViewOptions.cellHeaderTemplateName;
             let templateId: string = scheduleId + viewName + 'cellHeaderTemplate';

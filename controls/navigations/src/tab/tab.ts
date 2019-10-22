@@ -22,6 +22,7 @@ export type HeightStyles = 'None' | 'Auto' | 'Content' | 'Fill';
 
 const CLS_TAB: string = 'e-tab';
 const CLS_HEADER: string = 'e-tab-header';
+const CLS_BLA_TEM: string = 'blazor-template';
 const CLS_CONTENT: string = 'e-content';
 const CLS_NEST: string = 'e-nested';
 const CLS_ITEMS: string = 'e-items';
@@ -857,7 +858,16 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
         }
     }
     private getTabHeader(): HTMLElement {
-        return [].slice.call(this.element.children).filter((e: HTMLElement) => e.classList.contains(CLS_HEADER))[0];
+        let headers: HTMLElement[] = [].slice.call(this.element.children).filter((e: HTMLElement) => e.classList.contains(CLS_HEADER));
+        if (headers.length > 0) {
+            return headers[0];
+        } else {
+            let wrap: HTMLElement = [].slice.call(this.element.children).filter((e: HTMLElement) => !e.classList.contains(CLS_BLA_TEM))[0];
+            if (!wrap) {
+                return undefined;
+            }
+            return [].slice.call(wrap.children).filter((e: HTMLElement) => e.classList.contains(CLS_HEADER))[0];
+        }
     }
     private getEleIndex(item: HTEle): number {
         return Array.prototype.indexOf.call(selectAll('.' + CLS_TB_ITEM, this.getTabHeader()), item);

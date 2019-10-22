@@ -187,7 +187,12 @@ export class SfdtReader {
         }
         return undefined;
     }
-    private parseAbstractList(data: any, abstractLists: WAbstractList[]): void {
+    /**
+     * @private
+     * @param data 
+     * @param abstractLists 
+     */
+    public parseAbstractList(data: any, abstractLists: WAbstractList[]): void {
         for (let i: number = 0; i < data.abstractLists.length; i++) {
             let abstractList: WAbstractList = new WAbstractList();
             let abstract: any = data.abstractLists[i];
@@ -228,7 +233,12 @@ export class SfdtReader {
         this.parseParagraphFormat(data.paragraphFormat, listLevel.paragraphFormat);
         return listLevel;
     }
-    private parseList(data: any, listCollection: WList[]): void {
+    /**
+     * @private
+     * @param data 
+     * @param listCollection 
+     */
+    public parseList(data: any, listCollection: WList[]): void {
         for (let i: number = 0; i < data.lists.length; i++) {
             let list: WList = new WList();
             let lists: any = data.lists[i];
@@ -1045,7 +1055,12 @@ export class SfdtReader {
             }
         }
     }
-    private parseSectionFormat(data: any, sectionFormat: WSectionFormat): void {
+    /**
+     * 
+     * @param data @private
+     * @param sectionFormat 
+     */
+    public parseSectionFormat(data: any, sectionFormat: WSectionFormat): void {
         if (!isNullOrUndefined(data.pageWidth)) {
             sectionFormat.pageWidth = data.pageWidth;
         }

@@ -393,6 +393,7 @@ export interface ConnectorModel extends NodeBaseModel{
      * Defines the shape of the connector
      * @default 'Bpmn'
      * @aspType object
+     * @blazorType object
      */
     shape?: ConnectorShapeModel | BpmnFlowModel | RelationShipModel;
 

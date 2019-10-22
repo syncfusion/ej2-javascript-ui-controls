@@ -2,6 +2,15 @@
 
 ## [Unreleased]
 
+## 17.3.19 (2019-10-22)
+
+### Gantt
+
+#### Bug Fixes
+
+- `249581` - Browser hangs issue while change schedule mode to year has been fixed.
+- `252195` - Issue on forEach method iteration in IE11 has been fixed.
+
 ## 17.3.14 (2019-10-03)
 
 ### Gantt

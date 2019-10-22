@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 17.3.19 (2019-10-22)
+
+### Schedule
+
+#### Bug Fixes
+
+- `#251995` - An issue with request type parameter of action complete event while performing CRUD actions has been fixed.
+
 ## 17.3.17 (2019-10-15)
 
 ### Schedule

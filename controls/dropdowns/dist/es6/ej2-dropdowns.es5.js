@@ -2772,6 +2772,11 @@ var DropDownList = /** @__PURE__ @class */ (function (_super) {
                     }
                 }
                 _this.activeStateChange();
+            },
+            targetExitViewport: function () {
+                if (!Browser.isDevice) {
+                    _this.hidePopup();
+                }
             }
         });
     };
@@ -4829,6 +4834,7 @@ var iconAnimation = 'e-icon-anim';
 var TOTAL_COUNT_WRAPPER = 'e-delim-total';
 var BOX_ELEMENT = 'e-multiselect-box';
 var FILTERPARENT = 'e-filter-parent';
+var CUSTOM_WIDTH = 'e-search-custom-width';
 /**
  * The Multiselect allows the user to pick a more than one value from list of predefined values.
  * ```html
@@ -5609,10 +5615,16 @@ var MultiSelect = /** @__PURE__ @class */ (function (_super) {
     };
     MultiSelect.prototype.setPlaceholderSize = function (downIconWidth) {
         if (isNullOrUndefined(this.value) || this.value.length === 0) {
-            this.searchWrapper.style.width = ('calc(100% - ' + (downIconWidth + 10)) + 'px';
+            if (this.dropIcon.offsetWidth !== 0) {
+                this.searchWrapper.style.width = ('calc(100% - ' + (downIconWidth + 10)) + 'px';
+            }
+            else {
+                addClass([this.searchWrapper], CUSTOM_WIDTH);
+            }
         }
         else if (!isNullOrUndefined(this.value)) {
             this.searchWrapper.removeAttribute('style');
+            removeClass([this.searchWrapper], CUSTOM_WIDTH);
         }
     };
     MultiSelect.prototype.refreshInputHight = function () {
@@ -6690,6 +6702,10 @@ var MultiSelect = /** @__PURE__ @class */ (function (_super) {
                                 _this.notify('inputFocus', {
                                     module: 'CheckBoxSelection', enable: _this.mode === 'CheckBox', value: 'focus'
                                 });
+                            }
+                        }, targetExitViewport: function () {
+                            if (!Browser.isDevice) {
+                                _this.hidePopup();
                             }
                         }
                     });
@@ -9626,7 +9642,7 @@ var ListBox = /** @__PURE__ @class */ (function (_super) {
         var _this = this;
         var data = [];
         elems.forEach(function (ele) {
-            data.push(_this.getDataByValue(ele.getAttribute('data-value')));
+            data.push(_this.getDataByValue(_this.getFormattedValue(ele.getAttribute('data-value'))));
         });
         return data;
     };

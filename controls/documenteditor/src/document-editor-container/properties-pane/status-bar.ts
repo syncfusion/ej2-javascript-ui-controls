@@ -181,9 +181,9 @@ export class StatusBar {
                     this.documentEditor.viewer.triggerSpellCheck = true;
                 }
                 this.documentEditor.editor.reLayout(this.documentEditor.viewer.selection);
-            /* tslint:disable */
+                /* tslint:disable */
             }, 50);
-             /* tslint:enable */
+            /* tslint:enable */
             this.documentEditor.viewer.triggerSpellCheck = false;
             this.documentEditor.viewer.triggerElementsOnLoading = false;
             // tslint:disable-next-line:max-line-length
@@ -267,11 +267,18 @@ export class StatusBar {
         this.editablePageNumber.focus();
         window.getSelection().selectAllChildren(this.editablePageNumber);
     }
-    private destroy(): void {
+    /**
+     * @private
+     */
+    public destroy(): void {
         this.container = undefined;
         if (this.zoom) {
             this.zoom.destroy();
             this.zoom = undefined;
+        }
+        if (this.spellCheckButton) {
+            this.spellCheckButton.destroy();
+            this.spellCheckButton = undefined;
         }
     }
 }

@@ -180,6 +180,9 @@ export class Tooltip extends BaseTooltip {
                 this.headerText = argsData.headerText;
                 this.formattedText = this.formattedText.concat(argsData.text);
                 this.text = this.formattedText;
+                if (argsData.template) {
+                    this.chart.tooltip.template = argsData.template;
+                }
                 this.createTooltip(this.chart, isFirst, this.getSymbolLocation(point),
                                    point.series.clipRect, point.point, this.findShapes(),
                                    this.findMarkerHeight(<PointData>this.currentPoints[0]),
@@ -192,9 +195,6 @@ export class Tooltip extends BaseTooltip {
         };
         chartTooltipSuccess.bind(this, point);
         this.chart.trigger(tooltipRender, argsData, chartTooltipSuccess);
-        if (argsData.template) {
-            this.chart.tooltip.template = argsData.template;
-        }
     }
 
     private findMarkerHeight(pointData: PointData): number {

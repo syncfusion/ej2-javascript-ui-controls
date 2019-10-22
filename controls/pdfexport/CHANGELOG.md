@@ -2,7 +2,15 @@
 
 ## [Unreleased]
 
-## 17.3.17 (2019-10-15)
+## 17.3.16 (2019-10-09)
+
+### Pdf Export
+
+#### Bug Fixes
+
+- Preservation issue with PDF colour empty constructor is fixed.
+
+## 17.3.9-beta (2019-09-20)
 
 ### Pdf Export
 

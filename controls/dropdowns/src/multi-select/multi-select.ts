@@ -54,6 +54,7 @@ const iconAnimation: string = 'e-icon-anim';
 const TOTAL_COUNT_WRAPPER: string = 'e-delim-total';
 const BOX_ELEMENT: string = 'e-multiselect-box';
 const FILTERPARENT: string = 'e-filter-parent';
+const CUSTOM_WIDTH: string = 'e-search-custom-width';
 /**
  * The Multiselect allows the user to pick a more than one value from list of predefined values.
  * ```html
@@ -1252,9 +1253,14 @@ export class MultiSelect extends DropDownBase implements IInput {
     }
     private setPlaceholderSize(downIconWidth: number): void {
         if (isNullOrUndefined(this.value) || this.value.length === 0) {
-            this.searchWrapper.style.width = ('calc(100% - ' + (downIconWidth + 10)) + 'px';
+            if (this.dropIcon.offsetWidth !== 0) {
+                this.searchWrapper.style.width = ('calc(100% - ' + (downIconWidth + 10)) + 'px';
+            } else {
+                addClass([this.searchWrapper], CUSTOM_WIDTH);
+            }
         } else if (!isNullOrUndefined(this.value)) {
             this.searchWrapper.removeAttribute('style');
+            removeClass([this.searchWrapper], CUSTOM_WIDTH);
         }
     }
     private refreshInputHight(): void {
@@ -2297,6 +2303,8 @@ export class MultiSelect extends DropDownBase implements IInput {
                                         module: 'CheckBoxSelection', enable: this.mode === 'CheckBox', value: 'focus'
                                     });
                             }
+                        }, targetExitViewport: () => {
+                            if (!Browser.isDevice) { this.hidePopup(); }
                         }
                     });
                     this.popupObj.close();

@@ -11754,8 +11754,7 @@ class PolarRadarPanel extends LineBase {
         let isLabelVisible = [];
         isLabelVisible[0] = true;
         let intersectType = axis.labelIntersectAction;
-        let ticksbwtLabel = axis.valueType === 'Category' && axis.labelPlacement === 'BetweenTicks'
-            && chart.visibleSeries[0].type !== 'Radar' ? 0.5 : 0;
+        let ticksbwtLabel = axis.valueType === 'Category' && axis.labelPlacement === 'BetweenTicks' ? 0.5 : 0;
         let radius = chart.radius + axis.majorTickLines.height;
         radius = (islabelInside) ? -radius : radius;
         for (let i = 0, len = axis.visibleLabels.length; i < len; i++) {
@@ -11919,9 +11918,9 @@ class PolarSeries extends PolarRadarPanel {
         let sumofYValues = 0;
         let arcValue;
         let interval = (series.points[1] ? series.points[1].xValue : 2 * series.points[0].xValue) - series.points[0].xValue;
-        //customer issue ID-I249730, Polar columnSeries in OnTicks with inversed axis and Radar StackedColumn with OnTicks
-        let ticks = xAxis.valueType === 'Category' && (xAxis.labelPlacement === 'BetweenTicks' || (xAxis.labelPlacement ===
-            'OnTicks' && series.type === 'Radar')) ? 0 : xAxis.isInversed ? -interval / 2 : interval / 2;
+        //customer issue ID-I249730, Polar columnSeries in OnTicks with inversed axis
+        let ticks = (xAxis.valueType === 'Category' && xAxis.labelPlacement === 'BetweenTicks') ? 0 :
+            xAxis.isInversed ? -interval / 2 : interval / 2;
         let rangeInterval = xAxis.valueType === 'DateTime' ? xAxis.dateTimeInterval : 1;
         this.getSeriesPosition(series);
         let position = xAxis.isInversed ? (series.rectCount - 1 - series.position) : series.position;
@@ -16669,6 +16668,9 @@ class Tooltip$1 extends BaseTooltip {
                 this.headerText = argsData.headerText;
                 this.formattedText = this.formattedText.concat(argsData.text);
                 this.text = this.formattedText;
+                if (argsData.template) {
+                    this.chart.tooltip.template = argsData.template;
+                }
                 this.createTooltip(this.chart, isFirst, this.getSymbolLocation(point), point.series.clipRect, point.point, this.findShapes(), this.findMarkerHeight(this.currentPoints[0]), this.chart.chartAxisLayoutPanel.seriesClipRect, null, this.getTemplateText(point));
             }
             else {
@@ -16679,9 +16681,6 @@ class Tooltip$1 extends BaseTooltip {
         };
         chartTooltipSuccess.bind(this, point);
         this.chart.trigger(tooltipRender, argsData, chartTooltipSuccess);
-        if (argsData.template) {
-            this.chart.tooltip.template = argsData.template;
-        }
     }
     findMarkerHeight(pointData) {
         if (!this.chart.tooltip.enableMarker) {
@@ -24805,6 +24804,17 @@ let AccumulationChart = class AccumulationChart extends Component {
         return false;
     }
     /**
+     * Get visible series for accumulation chart by index
+     */
+    changeVisibleSeries(visibleSeries, index) {
+        for (let series of visibleSeries) {
+            if (index === series.index) {
+                return series;
+            }
+        }
+        return null;
+    }
+    /**
      * Get the properties to be maintained in the persisted state.
      * @private
      */
@@ -24859,8 +24869,11 @@ let AccumulationChart = class AccumulationChart extends Component {
                     if (!this.animateselected) {
                         let len = this.series.length;
                         let seriesRefresh = false;
+                        let series;
                         for (let i = 0; i < len; i++) {
+                            series = newProp.series[i];
                             if (newProp.series[i] && (newProp.series[i].dataSource || newProp.series[i].yName || newProp.series[i].xName)) {
+                                extend(this.changeVisibleSeries(this.visibleSeries, i), series, null, true);
                                 seriesRefresh = true;
                             }
                             if (newProp.series[i] && newProp.series[i].explodeIndex !== oldProp.series[i].explodeIndex) {

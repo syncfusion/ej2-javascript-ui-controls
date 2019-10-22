@@ -4824,51 +4824,6 @@ describe('GridLayout', () => {
             detach(ele);
         });
 
-        it('Swapping test cases bottom to top', () => {
-            let ele: HTMLElement = createElement('div', { id: 'gridlayout' });
-            let parentEle: HTMLElement = createElement('div', { id: 'container' });
-            parentEle.style.width = '1264px';
-            parentEle.appendChild(ele);
-            document.body.appendChild(parentEle);
-            let gridLayOut = new DashboardLayout({
-
-                columns: 12,
-                cellSpacing: [5, 5],
-                allowFloating: false,
-                panels: [{ id: '1', sizeX: 1, sizeY: 1, row: 0, col: 3 },
-                { id: '2', sizeX: 1, sizeY: 1, row: 0, col: 2 },
-                { id: '3', sizeX: 2, sizeY: 2, row: 1, col: 2 },
-                ]
-            });
-            gridLayOut.appendTo('#gridlayout');
-            let CellElements: HTMLElement[] = <HTMLElement[] & NodeListOf<Element>>gridLayOut.element.querySelectorAll('.e-panel');
-            setCss(CellElements);
-            let movingElemnt: HTMLElement = document.getElementById('3');
-            let targetElemnt: HTMLElement = document.getElementById('2');
-            let mousedown: any = getEventObject('MouseEvents', 'mousedown', movingElemnt, targetElemnt, 60, 120);
-            EventHandler.trigger(<HTMLElement>movingElemnt, 'mousedown', mousedown);
-            let mousemove: any = getEventObject('MouseEvents', 'mousemove', movingElemnt, targetElemnt, 55, 120);
-            EventHandler.trigger(<any>(document), 'mousemove', mousemove);
-            mousemove.srcElement = mousemove.target = mousemove.toElement = targetElemnt;
-            mousemove = setMouseCordinates(mousemove, 55, 0);
-            EventHandler.trigger(<any>(document), 'mousemove', mousemove);
-            mousemove = setMouseCordinates(mousemove, 55, 0);
-            EventHandler.trigger(<any>(document), 'mousemove', mousemove);
-            mousemove = setMouseCordinates(mousemove, 55, 0);
-            EventHandler.trigger(<any>(document), 'mousemove', mousemove);
-            let mouseup: any = getEventObject('MouseEvents', 'mouseup', movingElemnt, targetElemnt);
-            mouseup.type = 'mouseup';
-            EventHandler.trigger(movingElemnt, 'mouseup', mouseup);
-            expect((<any>gridLayOut).getCellInstance('1').row == 2).toBe(true);
-            expect((<any>gridLayOut).getCellInstance('1').col == 3).toBe(true);
-            expect((<any>gridLayOut).getCellInstance('2').row == 2).toBe(true);
-            expect((<any>gridLayOut).getCellInstance('2').col == 2).toBe(true);
-            expect((<any>gridLayOut).getCellInstance('3').row == 0).toBe(true);
-            expect((<any>gridLayOut).getCellInstance('3').col == 2).toBe(true);
-            gridLayOut.destroy();
-            detach(ele);
-        });
-
         it('Left side allowPushing of default case of sizeX and sieY values as 1', () => {
             let ele: HTMLElement = createElement('div', { id: 'gridlayout' });
             let parentEle: HTMLElement = createElement('div', { id: 'container' });
@@ -6034,6 +5989,7 @@ describe('GridLayout', () => {
             EventHandler.trigger(<any>(document), 'mousemove', mousemove);
             let mouseup: any = getEventObject('MouseEvents', 'mouseup', movingElemnt, targetElemnt);
             mouseup.type = 'mouseup';
+            mouseup.currentTarget = document;
             EventHandler.trigger(<any>(document), 'mouseup', mouseup);
             expect((<any>gridLayOut).getCellInstance('0').row == 0).toBe(true);
             expect((<any>gridLayOut).getCellInstance('0').col == 1).toBe(true);
@@ -6087,6 +6043,7 @@ describe('GridLayout', () => {
             EventHandler.trigger(<any>(document), 'mousemove', mousemove);
             let mouseup: any = getEventObject('MouseEvents', 'mouseup', movingElemnt, targetElemnt);
             mouseup.type = 'mouseup';
+            mouseup.currentTarget = document;
             EventHandler.trigger(<any>(document), 'mouseup', mouseup);
             expect((<any>gridLayOut).getCellInstance('0').row == 0).toBe(true);
             expect((<any>gridLayOut).getCellInstance('0').col == 1).toBe(true);
@@ -6119,6 +6076,7 @@ describe('GridLayout', () => {
             EventHandler.trigger(<any>(document), 'mousemove', mousemove);
             let mouseup: any = getEventObject('MouseEvents', 'mouseup', movingElemnt, targetElemnt);
             mouseup.type = 'mouseup';
+            mouseup.currentTarget = document;
             EventHandler.trigger(<any>(document), 'mouseup', mouseup);
             expect((<any>gridLayOut).getCellInstance('15').row == 0).toBe(true);
             expect((<any>gridLayOut).getCellInstance('15').col == 5).toBe(true);
@@ -6157,6 +6115,7 @@ describe('GridLayout', () => {
             EventHandler.trigger(<any>(document), 'mousemove', mousemove);
             let mouseup: any = getEventObject('MouseEvents', 'mouseup', movingElemnt, targetElemnt);
             mouseup.type = 'mouseup';
+            mouseup.currentTarget = document;
             EventHandler.trigger(<any>(document), 'mouseup', mouseup);
             expect((<any>gridLayOut).getCellInstance('15').row == 1).toBe(true);
             expect((<any>gridLayOut).getCellInstance('15').col == 5).toBe(true);
@@ -6188,6 +6147,7 @@ describe('GridLayout', () => {
             EventHandler.trigger(<any>(document), 'mousemove', mousemove);
             let mouseup: any = getEventObject('MouseEvents', 'mouseup', movingElemnt, targetElemnt);
             mouseup.type = 'mouseup';
+            mouseup.currentTarget = document;
             EventHandler.trigger(<any>(document), 'mouseup', mouseup);
             EventHandler.trigger(<any>(document), 'mouseup', mouseup);
             expect((<any>gridLayOut).getCellInstance('0').row == 0).toBe(true);
@@ -6218,6 +6178,7 @@ describe('GridLayout', () => {
             EventHandler.trigger(<any>(document), 'mousemove', mousemove);
             let mouseup: any = getEventObject('MouseEvents', 'mouseup', movingElemnt, targetElemnt);
             mouseup.type = 'mouseup';
+            mouseup.currentTarget = document;
             EventHandler.trigger(<any>(document), 'mouseup', mouseup);
             expect((<any>gridLayOut).getCellInstance('0').row == 0).toBe(true);
             expect((<any>gridLayOut).getCellInstance('0').col == 0).toBe(true);
@@ -6247,7 +6208,8 @@ describe('GridLayout', () => {
             EventHandler.trigger(<any>(document), 'mousemove', mousemove);
             let mouseup: any = getEventObject('MouseEvents', 'mouseup', movingElemnt, targetElemnt);
             mouseup.type = 'mouseup';
-            EventHandler.trigger(movingElemnt, 'mouseup', mouseup);
+            mouseup.currentTarget = document;
+            EventHandler.trigger(<any>(document), 'mouseup', mouseup);
             expect((<any>gridLayOut).getCellInstance('1').row == 1).toBe(true);
             expect((<any>gridLayOut).getCellInstance('1').col == 1).toBe(true);
             expect((<any>gridLayOut).getCellInstance('2').row == 3).toBe(true);
@@ -6276,7 +6238,8 @@ describe('GridLayout', () => {
             EventHandler.trigger(<any>(document), 'mousemove', mousemove);
             let mouseup: any = getEventObject('MouseEvents', 'mouseup', movingElemnt, targetElemnt);
             mouseup.type = 'mouseup';
-            EventHandler.trigger(movingElemnt, 'mouseup', mouseup);
+            mouseup.currentTarget = document;
+            EventHandler.trigger(<any>(document), 'mouseup', mouseup);
             expect((<any>gridLayOut).getCellInstance('14').row == 3).toBe(true);
             expect((<any>gridLayOut).getCellInstance('14').col == 1).toBe(true);
             expect((<any>gridLayOut).getCellInstance('13').row == 4).toBe(true);
@@ -6299,7 +6262,8 @@ describe('GridLayout', () => {
             EventHandler.trigger(<any>(document), 'mousemove', mousemove);
             let mouseup: any = getEventObject('MouseEvents', 'mouseup', movingElemnt, targetElemnt);
             mouseup.type = 'mouseup';
-            EventHandler.trigger(movingElemnt, 'mouseup', mouseup);
+            mouseup.currentTarget = document;
+            EventHandler.trigger(<any>(document), 'mouseup', mouseup);
             expect((<any>gridLayOut).getCellInstance('2').row == 0).toBe(true);
             expect((<any>gridLayOut).getCellInstance('2').col == 2).toBe(true);
             expect((<any>gridLayOut).getCellInstance('5').row == 0).toBe(true);
@@ -6316,14 +6280,14 @@ describe('GridLayout', () => {
             let mousemove: any = getEventObject('MouseEvents', 'mousemove', movingElemnt, targetElemnt, 0, 0);
             EventHandler.trigger(<any>(document), 'mousemove', mousemove);
             mousemove.srcElement = mousemove.target = mousemove.toElement = targetElemnt;
-            ;
             mousemove = setMouseCordinates(mousemove, 0, 0);
             EventHandler.trigger(<any>(document), 'mousemove', mousemove);
             mousemove = setMouseCordinates(mousemove, 0, 0);
             EventHandler.trigger(<any>(document), 'mousemove', mousemove);
             let mouseup: any = getEventObject('MouseEvents', 'mouseup', movingElemnt, targetElemnt);
             mouseup.type = 'mouseup';
-            EventHandler.trigger(movingElemnt, 'mouseup', mouseup);
+            mouseup.currentTarget = document;
+            EventHandler.trigger(<any>(document), 'mouseup', mouseup);
             expect((<any>gridLayOut).getCellInstance('2').row).toBe(0);
             expect((<any>gridLayOut).getCellInstance('2').col).toBe(0);
             expect((<any>gridLayOut).getCellInstance('0').row).toBe(0);
@@ -6352,7 +6316,8 @@ describe('GridLayout', () => {
             EventHandler.trigger(<any>(document), 'mousemove', mousemove);
             let mouseup: any = getEventObject('MouseEvents', 'mouseup', movingElemnt, targetElemnt);
             mouseup.type = 'mouseup';
-            EventHandler.trigger(movingElemnt, 'mouseup', mouseup);
+            mouseup.currentTarget = document;
+            EventHandler.trigger(<any>(document), 'mouseup', mouseup);
             expect((<any>gridLayOut).getCellInstance('5').row == 0).toBe(true);
             expect((<any>gridLayOut).getCellInstance('5').col == 4).toBe(true);
             expect((<any>gridLayOut).getCellInstance('6').row == 1).toBe(true);
@@ -6381,7 +6346,8 @@ describe('GridLayout', () => {
             EventHandler.trigger(<any>(document), 'mousemove', mousemove);
             let mouseup: any = getEventObject('MouseEvents', 'mouseup', movingElemnt, targetElemnt);
             mouseup.type = 'mouseup';
-            EventHandler.trigger(movingElemnt, 'mouseup', mouseup);
+            mouseup.currentTarget = document;
+            EventHandler.trigger(<any>(document), 'mouseup', mouseup);
             expect((<any>gridLayOut).getCellInstance('8').row == 3).toBe(true);
             expect((<any>gridLayOut).getCellInstance('8').col == 5).toBe(true);
             expect((<any>gridLayOut).getCellInstance('10').row == 4).toBe(true);
@@ -6412,7 +6378,8 @@ describe('GridLayout', () => {
             EventHandler.trigger(<any>(document), 'mousemove', mousemove);
             let mouseup: any = getEventObject('MouseEvents', 'mouseup', movingElemnt, targetElemnt);
             mouseup.type = 'mouseup';
-            EventHandler.trigger(movingElemnt, 'mouseup', mouseup);
+            mouseup.currentTarget = document;
+            EventHandler.trigger(<any>(document), 'mouseup', mouseup);
             expect((<any>gridLayOut).getCellInstance('8').row == 1).toBe(true);
             expect((<any>gridLayOut).getCellInstance('8').col == 5).toBe(true);
             expect((<any>gridLayOut).getCellInstance('10').row == 0).toBe(true);
@@ -6440,7 +6407,8 @@ describe('GridLayout', () => {
             EventHandler.trigger(<any>(document), 'mousemove', mousemove);
             mouseup = getEventObject('MouseEvents', 'mouseup', movingElemnt, targetElemnt);
             mouseup.type = 'mouseup';
-            EventHandler.trigger(movingElemnt, 'mouseup', mouseup);
+            mouseup.currentTarget = document;
+            EventHandler.trigger(<any>(document), 'mouseup', mouseup);
             expect((<any>gridLayOut).getCellInstance('17').row).toBe(0);
             expect((<any>gridLayOut).getCellInstance('17').col).toBe(9);
             expect((<any>gridLayOut).getCellInstance('18').row).toBe(0);
@@ -6470,7 +6438,8 @@ describe('GridLayout', () => {
             EventHandler.trigger(<any>(document), 'mousemove', mousemove);
             mouseup = getEventObject('MouseEvents', 'mouseup', movingElemnt, targetElemnt);
             mouseup.type = 'mouseup';
-            EventHandler.trigger(movingElemnt, 'mouseup', mouseup);
+            mouseup.currentTarget = document;
+            EventHandler.trigger(<any>(document), 'mouseup', mouseup);
             expect((<any>gridLayOut).getCellInstance('17').row).toBe(0);
             expect((<any>gridLayOut).getCellInstance('17').col).toBe(9);
             expect((<any>gridLayOut).getCellInstance('18').row).toBe(0);
@@ -6502,7 +6471,8 @@ describe('GridLayout', () => {
             EventHandler.trigger(<any>(document), 'mousemove', mousemove);
             mouseup = getEventObject('MouseEvents', 'mouseup', movingElemnt, targetElemnt);
             mouseup.type = 'mouseup';
-            EventHandler.trigger(movingElemnt, 'mouseup', mouseup);
+            mouseup.currentTarget = document;
+            EventHandler.trigger(<any>(document), 'mouseup', mouseup);
             expect((<any>gridLayOut).getCellInstance('2').row).toBe(1);
             expect((<any>gridLayOut).getCellInstance('2').col).toBe(1);
             expect((<any>gridLayOut).getCellInstance('3').row).toBe(0);
@@ -6534,7 +6504,8 @@ describe('GridLayout', () => {
             EventHandler.trigger(<any>(document), 'mousemove', mousemove);
             mouseup = getEventObject('MouseEvents', 'mouseup', movingElemnt, targetElemnt);
             mouseup.type = 'mouseup';
-            EventHandler.trigger(movingElemnt, 'mouseup', mouseup);
+            mouseup.currentTarget = document;
+            EventHandler.trigger(<any>(document), 'mouseup', mouseup);
             expect((<any>gridLayOut).getCellInstance('8').row).toBe(1);
             expect((<any>gridLayOut).getCellInstance('8').col).toBe(5);
             expect((<any>gridLayOut).getCellInstance('10').row).toBe(0);
@@ -6592,9 +6563,9 @@ describe('GridLayout', () => {
             expect((<any>gridLayOut).getCellInstance('16').row).toBe(6);
             expect((<any>gridLayOut).getCellInstance('16').col).toBe(0);
             mouseup = getEventObject('MouseEvents', 'mouseup', movingElemnt, targetElemnt);
+            mouseup.currentTarget = document;
             mouseup.type = 'mouseup';
-            EventHandler.trigger(movingElemnt, 'mouseup', mouseup);
-            (<any>gridLayOut).getDragInstance(movingElemnt.id).trigger('dragStop', mouseup);
+            EventHandler.trigger(<any>(document), 'mouseup', mouseup);
         });
 
         it('continuos Dragging element 17 (1 ,4) down over 18 (3,3)', function () {
@@ -6637,9 +6608,10 @@ describe('GridLayout', () => {
             expect((<any>gridLayOut).getCellInstance('19').col).toBe(9);
             expect((<any>gridLayOut).getCellInstance('21').col).toBe(8);
             expect((<any>gridLayOut).getCellInstance('21').row).toBe(5);
-            EventHandler.trigger(movingElemnt, 'mouseup', mouseup);
             mouseup = getEventObject('MouseEvents', 'mouseup', movingElemnt, targetElemnt);
             mouseup.type = 'mouseup';
+            mouseup.currentTarget = document;
+            EventHandler.trigger(<any>(document), 'mouseup', mouseup);
         });
 
         it('continuos Dragging element 15 (1 ,4) left and up over 2 (2,2)', function () {
@@ -6703,7 +6675,8 @@ describe('GridLayout', () => {
             EventHandler.trigger(<any>(document), 'mousemove', mousemove);
             mouseup = getEventObject('MouseEvents', 'mouseup', movingElemnt, targetElemnt);
             mouseup.type = 'mouseup';
-            EventHandler.trigger(movingElemnt, 'mouseup', mouseup);
+            mouseup.currentTarget = document;
+            EventHandler.trigger(<any>(document), 'mouseup', mouseup);
             expect((<any>gridLayOut).getCellInstance('15').row).toBe(0);
             expect((<any>gridLayOut).getCellInstance('15').col).toBe(1);
             expect((<any>gridLayOut).getCellInstance('2').row).toBe(2);
@@ -6796,9 +6769,10 @@ describe('GridLayout', () => {
             expect((<any>gridLayOut).getCellInstance('13').col).toBe(1);
             expect((<any>gridLayOut).getCellInstance('16').row).toBe(4);
             expect((<any>gridLayOut).getCellInstance('16').col).toBe(0);
-            EventHandler.trigger(movingElemnt, 'mouseup', mouseup);
             mouseup = getEventObject('MouseEvents', 'mouseup', movingElemnt, targetElemnt);
             mouseup.type = 'mouseup';
+            mouseup.currentTarget = document;
+            EventHandler.trigger(<any>(document), 'mouseup', mouseup);
         });
 
         it('continuos Dragging element 2 (2 ,2) and checking for allowFloating wihtout allowing allowFloating', function () {
@@ -6841,10 +6815,10 @@ describe('GridLayout', () => {
             expect((<any>gridLayOut).getCellInstance('13').col).toBe(1);
             expect((<any>gridLayOut).getCellInstance('16').row).toBe(6);
             expect((<any>gridLayOut).getCellInstance('16').col).toBe(0);
-
-            EventHandler.trigger(movingElemnt, 'mouseup', mouseup);
             mouseup = getEventObject('MouseEvents', 'mouseup', movingElemnt, targetElemnt);
             mouseup.type = 'mouseup';
+            mouseup.currentTarget = document;
+            EventHandler.trigger(<any>(document), 'mouseup', mouseup);
         });
     });
 
@@ -6881,8 +6855,8 @@ describe('GridLayout', () => {
         mousemove = setMouseCordinates(mousemove, 55, 60);
         EventHandler.trigger(<any>(document), 'mousemove', mousemove);
         let mouseup: any = getEventObject('MouseEvents', 'mouseup', movingElemnt, targetElemnt);
-        mouseup.type = 'mouseup';
-        EventHandler.trigger(movingElemnt, 'mouseup', mouseup);
+        mouseup.type = 'mouseup'
+        EventHandler.trigger(<any>(document), 'mouseup', mouseup);
         expect((<any>gridLayOut).getCellInstance('1').row == 0).toBe(true);
         expect((<any>gridLayOut).getCellInstance('1').col == 3).toBe(true);
         expect((<any>gridLayOut).getCellInstance('2').row == 0).toBe(true);
@@ -6929,7 +6903,8 @@ describe('GridLayout', () => {
         EventHandler.trigger(<any>(document), 'mousemove', mousemove);
         let mouseup: any = getEventObject('MouseEvents', 'mouseup', movingElemnt, targetElemnt);
         mouseup.type = 'mouseup';
-        EventHandler.trigger(movingElemnt, 'mouseup', mouseup);
+        mouseup.currentTarget = document;
+        EventHandler.trigger(<any>(document), 'mouseup', mouseup);
         expect((<any>gridLayOut).getCellInstance('1').row == 2).toBe(true);
         expect((<any>gridLayOut).getCellInstance('1').col == 1).toBe(true);
         expect((<any>gridLayOut).getCellInstance('2').row == 2).toBe(true);
@@ -6978,7 +6953,8 @@ describe('GridLayout', () => {
         EventHandler.trigger(<any>(document), 'mousemove', mousemove);
         let mouseup: any = getEventObject('MouseEvents', 'mouseup', movingElemnt, targetElemnt);
         mouseup.type = 'mouseup';
-        EventHandler.trigger(movingElemnt, 'mouseup', mouseup);
+        mouseup.currentTarget = document;
+        EventHandler.trigger(<any>(document), 'mouseup', mouseup);
         expect((<any>gridLayOut).getCellInstance('1').row == 0).toBe(true);
         expect((<any>gridLayOut).getCellInstance('1').col == 0).toBe(true);
         expect((<any>gridLayOut).getCellInstance('2').row == 2).toBe(true);
@@ -7028,7 +7004,8 @@ describe('GridLayout', () => {
         EventHandler.trigger(<any>(document), 'mousemove', mousemove);
         let mouseup: any = getEventObject('MouseEvents', 'mouseup', movingElemnt, targetElemnt);
         mouseup.type = 'mouseup';
-        EventHandler.trigger(movingElemnt, 'mouseup', mouseup);
+        mouseup.currentTarget = document;
+        EventHandler.trigger(<any>(document), 'mouseup', mouseup);
         expect((<any>gridLayOut).getCellInstance('1').row == 0).toBe(true);
         expect((<any>gridLayOut).getCellInstance('1').col == 0).toBe(true);
         expect((<any>gridLayOut).getCellInstance('2').row == 0).toBe(true);
@@ -7077,7 +7054,8 @@ describe('GridLayout', () => {
         EventHandler.trigger(<any>(document), 'mousemove', mousemove);
         let mouseup: any = getEventObject('MouseEvents', 'mouseup', movingElemnt, targetElemnt);
         mouseup.type = 'mouseup';
-        EventHandler.trigger(movingElemnt, 'mouseup', mouseup);
+        mouseup.currentTarget = document;
+        EventHandler.trigger(<any>(document), 'mouseup', mouseup);
         expect((<any>gridLayOut).getCellInstance('2').row == 0).toBe(true);
         expect((<any>gridLayOut).getCellInstance('2').col == 2).toBe(true);
         expect((<any>gridLayOut).getCellInstance('4').row == 0).toBe(true);
@@ -7087,6 +7065,53 @@ describe('GridLayout', () => {
         gridLayOut.destroy();
         detach(ele);
     });
+
+    it('Swapping test cases bottom to top', () => {
+        let ele: HTMLElement = createElement('div', { id: 'gridlayout' });
+        let parentEle: HTMLElement = createElement('div', { id: 'container' });
+        parentEle.style.width = '1264px';
+        parentEle.appendChild(ele);
+        document.body.appendChild(parentEle);
+        let gridLayOut = new DashboardLayout({
+
+            columns: 12,
+            cellSpacing: [5, 5],
+            allowFloating: false,
+            panels: [{ id: '1', sizeX: 1, sizeY: 1, row: 0, col: 3 },
+            { id: '2', sizeX: 1, sizeY: 1, row: 0, col: 2 },
+            { id: '3', sizeX: 2, sizeY: 2, row: 1, col: 2 },
+            ]
+        });
+        gridLayOut.appendTo('#gridlayout');
+        let CellElements: HTMLElement[] = <HTMLElement[] & NodeListOf<Element>>gridLayOut.element.querySelectorAll('.e-panel');
+        setCss(CellElements);
+        let movingElemnt: HTMLElement = document.getElementById('3');
+        let targetElemnt: HTMLElement = document.getElementById('2');
+        let mousedown: any = getEventObject('MouseEvents', 'mousedown', movingElemnt, targetElemnt, 60, 120);
+        EventHandler.trigger(<HTMLElement>movingElemnt, 'mousedown', mousedown);
+        let mousemove: any = getEventObject('MouseEvents', 'mousemove', movingElemnt, targetElemnt, 55, 120);
+        EventHandler.trigger(<any>(document), 'mousemove', mousemove);
+        mousemove.srcElement = mousemove.target = mousemove.toElement = targetElemnt;
+        mousemove = setMouseCordinates(mousemove, 55, 0);
+        EventHandler.trigger(<any>(document), 'mousemove', mousemove);
+        mousemove = setMouseCordinates(mousemove, 55, 0);
+        EventHandler.trigger(<any>(document), 'mousemove', mousemove);
+        mousemove = setMouseCordinates(mousemove, 55, 0);
+        EventHandler.trigger(<any>(document), 'mousemove', mousemove);
+        let mouseup: any = getEventObject('MouseEvents', 'mouseup', movingElemnt, targetElemnt);
+        mouseup.type = 'mouseup';
+        mouseup.currentTarget = document;
+        EventHandler.trigger(<any>(document), 'mouseup', mouseup);
+        expect((<any>gridLayOut).getCellInstance('1').row == 2).toBe(true);
+        expect((<any>gridLayOut).getCellInstance('1').col == 3).toBe(true);
+        expect((<any>gridLayOut).getCellInstance('2').row == 2).toBe(true);
+        expect((<any>gridLayOut).getCellInstance('2').col == 2).toBe(true);
+        expect((<any>gridLayOut).getCellInstance('3').row == 0).toBe(true);
+        expect((<any>gridLayOut).getCellInstance('3').col == 2).toBe(true);
+        gridLayOut.destroy();
+        detach(ele);
+    });
+    
     it('memory leak', () => {
         profile.sample();
         let average: any = inMB(profile.averageChange)

@@ -195,7 +195,6 @@ export class CommandHandler {
 
             }
         }
-
         this.diagram.triggerEvent(event, args);
     }
 
@@ -2575,7 +2574,7 @@ export class CommandHandler {
                         this.diagram.nodePropertyChange(
                             obj as Node, {} as Node,
                             { offsetX: obj.offsetX, offsetY: obj.offsetY, rotateAngle: obj.rotateAngle } as Node);
-                        }
+                    }
                     if (obj.processId) {
                         let parent: NodeModel = this.diagram.nameTable[obj.processId];
                         let bound: Rect = this.diagram.bpmnModule.getChildrenBound(parent, obj.id, this.diagram);
@@ -3254,7 +3253,9 @@ export class CommandHandler {
         }
         obj = renderContainerHelper(this.diagram, obj) || obj;
         if (this.checkBoundaryConstraints(tx, ty)) {
+            this.diagram.diagramActions = this.diagram.diagramActions | DiagramAction.PreventZIndexOnDragging;
             this.diagram.drag(obj, tx, ty);
+            this.diagram.diagramActions = this.diagram.diagramActions & ~DiagramAction.PreventZIndexOnDragging;
             this.diagram.refreshCanvasLayers();
             return true;
         }

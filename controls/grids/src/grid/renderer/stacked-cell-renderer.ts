@@ -44,6 +44,12 @@ export class StackedHeaderCellRenderer extends CellRenderer implements ICellRend
             node.setAttribute('title', cell.column.toolTip);
         }
 
+        if (column.clipMode === 'Clip') {
+            node.classList.add('e-gridclip');
+        } else if (column.clipMode === 'EllipsisWithTooltip') {
+            node.classList.add('e-ellipsistooltip');
+        }
+
         if (!isNullOrUndefined(cell.column.textAlign)) {
             (div as HTMLElement).style.textAlign = cell.column.textAlign;
         }

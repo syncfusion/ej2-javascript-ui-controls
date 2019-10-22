@@ -864,6 +864,8 @@ export class DateTimePicker extends DatePicker {
                 this.dateTimeWrapper.innerHTML = '';
                 this.listWrapper = this.dateTimeWrapper = undefined;
                 if (this.inputEvent) { this.inputEvent.destroy(); }
+            }, targetExitViewport: () => {
+                if (!Browser.isDevice) { this.hide(); }
             }
         });
         this.popupObject.element.style.maxHeight = POPUPDIMENSION;

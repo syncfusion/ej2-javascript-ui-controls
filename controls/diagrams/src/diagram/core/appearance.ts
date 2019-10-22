@@ -328,6 +328,7 @@ export class RadialGradient extends Gradient {
     @Property(50)
     public r: number;
 }
+
 /**      
  * Defines the style of shape/path
  */
@@ -386,6 +387,7 @@ export class ShapeStyle extends ChildProperty<ShapeStyle> {
      * Defines the gradient of a shape/path
      * @default null
      * @aspType object
+     * @blazorType object
      */
     @ComplexFactory(getGradientType)
     public gradient: GradientModel | LinearGradientModel | RadialGradientModel;

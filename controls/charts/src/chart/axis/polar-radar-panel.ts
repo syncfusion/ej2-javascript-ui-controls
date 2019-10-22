@@ -446,8 +446,7 @@ export class PolarRadarPanel extends LineBase {
         let isLabelVisible: boolean[] = [];
         isLabelVisible[0] = true;
         let intersectType: LabelIntersectAction = axis.labelIntersectAction;
-        let ticksbwtLabel: number = axis.valueType === 'Category' && axis.labelPlacement === 'BetweenTicks'
-                  && chart.visibleSeries[0].type !== 'Radar' ? 0.5 : 0;
+        let ticksbwtLabel: number = axis.valueType === 'Category' && axis.labelPlacement === 'BetweenTicks' ? 0.5 : 0;
         let radius: number = chart.radius + axis.majorTickLines.height;
         radius = (islabelInside) ? -radius : radius;
 

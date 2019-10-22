@@ -2,6 +2,26 @@
 
 ## [Unreleased]
 
+## 17.3.19 (2019-10-22)
+
+### PDF Viewer
+
+#### New Features
+
+- `#249703` - The quality of the printed copy has been improved.
+- `#147267`, `#251146` - Provided the support to delete the annotations in code behind.
+- `#248609` - Provided the support to customize the annotation selector.
+- `#247224`, `#248179` - Provided the support to resize the text markup annotation bounds.
+
+#### Bug Fixes
+
+- `#251577` - The value of the isDocumentEdited property now returned properly for shapes, measure, stamps annotation and form filling features.
+- `#249588` - The PDF Viewer control size is updated properly while using in tab control.
+- `#251729` - The text markup annotation selector is cleared properly when loading the another PDF document.
+- `#251742` - The perimeter shape type has been updated properly when exporting the annotation details.
+- `#251494` - The reference error will no longer be thrown if you render the PDF document in docker Linux container environment.
+- `#251153` – The previously imported annotations are no more cleared when import the other set of annotations.
+
 ## 17.3.17 (2019-10-15)
 
 ### PDF Viewer

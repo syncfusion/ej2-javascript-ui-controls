@@ -802,8 +802,8 @@ export class Timeline {
                 break;
             case 'Month':
                 firstDay = startDate;
-                lastDay = new Date(startDate.getFullYear(), startDate.getMonth() + count, 0);
-                increment = ((lastDay.getTime() - firstDay.getTime())) + (1000 * 60 * 60 * 24);
+                lastDay = new Date(startDate.getFullYear(), startDate.getMonth() + count, 1);
+                increment = ((lastDay.getTime() - firstDay.getTime()));
                 break;
             case 'Week':
                 let dayIndex: number = this.parent.timelineModule.customTimelineSettings.weekStartDay;

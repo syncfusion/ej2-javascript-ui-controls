@@ -137,8 +137,9 @@ export class Print {
                 proxy.printCanvas = createElement('canvas', { id: proxy.pdfViewer.element.id + '_printCanvas_' + pageIndex, className: 'e-pv-print-canvas' }) as HTMLCanvasElement;
                 proxy.printCanvas.style.width = pageWidth + 'px';
                 proxy.printCanvas.style.height = pageHeight + 'px';
-                proxy.printCanvas.height = 1056 * window.devicePixelRatio;
-                proxy.printCanvas.width = 816 * window.devicePixelRatio;
+                let printScaleValue: number = 1.5;
+                proxy.printCanvas.height = 1056 * printScaleValue * window.devicePixelRatio;
+                proxy.printCanvas.width = 816 * printScaleValue * window.devicePixelRatio;
                 let context: CanvasRenderingContext2D = proxy.printCanvas.getContext('2d');
                 let pageImage: HTMLImageElement = new Image();
                 let annotationImage: HTMLImageElement = new Image();

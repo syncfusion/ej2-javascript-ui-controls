@@ -36,6 +36,9 @@ export class NavigationPane {
     private isThumbnail: boolean = false;
     private annotationInputElement: HTMLElement;
     private annotationContextMenu: MenuItemModel[] = [];
+    private isCommentPanelShow: boolean = false;
+    private commentPanelWidthMin: number = 300;
+    private commentPanelResizeIcon: HTMLElement;
     /**
      * @private
      */
@@ -89,6 +92,10 @@ export class NavigationPane {
      * @private
      */
     public accordionContentContainer: HTMLElement;
+    /**
+     * @private
+     */
+    public commentPanelResizer: HTMLElement;
 
     /**
      * @private
@@ -218,6 +225,17 @@ export class NavigationPane {
         // tslint:disable-next-line:max-line-length
         this.commentsContentContainer = createElement('div', { id: this.pdfViewer.element.id + '_commentscontentcontainer', className: 'e-pv-comments-content-container' });
         this.commentPanelContainer.appendChild(this.commentsContentContainer);
+        // tslint:disable-next-line:max-line-length
+        this.commentPanelResizer = createElement('div', { id: this.pdfViewer.element.id + '_commentPanelResizer', className: 'e-pv-comment-panel-resizer' });
+        if (this.pdfViewer.enableRtl) {
+            this.commentPanelResizer.classList.add('e-left');
+        } else {
+            this.commentPanelResizer.classList.add('e-right');
+        }
+        this.commentPanelResizer.style.display = 'none';
+        this.commentPanelResizer.addEventListener('mousedown', this.commentPanelMouseDown);
+        this.pdfViewerBase.mainContainer.appendChild(this.commentPanelResizer);
+        this.createCommentPanelResizeIcon();
         this.createFileElement(this.commentPanelContainer);
     }
 
@@ -237,6 +255,14 @@ export class NavigationPane {
         this.commentPanelContainer.appendChild(commentPanelTitleContainer);
         this.createAnnotationContextMenu();
         annotationButton.addEventListener('click', this.openAnnotationContextMenu.bind(this));
+    }
+
+    private createCommentPanelResizeIcon(): void {
+        // tslint:disable-next-line:max-line-length
+        this.commentPanelResizeIcon = createElement('div', { id: this.pdfViewer.element.id + '_resize', className: 'e-pv-resize-icon e-pv-icon' });
+        this.setCommentPanelResizeIconTop();
+        this.commentPanelResizeIcon.style.position = 'absolute';
+        this.commentPanelResizer.appendChild(this.commentPanelResizeIcon);
     }
 
     // tslint:disable-next-line
@@ -340,6 +366,7 @@ export class NavigationPane {
         let commentPanel: HTMLElement = document.getElementById(this.pdfViewer.element.id + '_commantPanel');
         if (commentPanel) {
             commentPanel.style.display = 'none';
+            proxy.commentPanelResizer.style.display = 'none';
             if (viewerContainer) {
                 if (this.pdfViewer.enableRtl) {
                     viewerContainer.style.left = proxy.getViewerContainerRight() + 'px';
@@ -647,6 +674,16 @@ export class NavigationPane {
         }
     }
 
+    /**
+     * @private
+     */
+    public setCommentPanelResizeIconTop(): void {
+        // tslint:disable-next-line:max-line-length
+        if (this.commentPanelContainer && this.commentPanelContainer.clientHeight && this.commentPanelResizeIcon.style.top === '') {
+            this.commentPanelResizeIcon.style.top = (this.commentPanelContainer.clientHeight) / 2 + 'px';
+        }
+    }
+
     private resizeIconMouseOver = (event: MouseEvent): void => {
         (event.srcElement as HTMLElement).style.cursor = 'default';
     }
@@ -674,6 +711,10 @@ export class NavigationPane {
             proxy.pdfViewerBase.viewerContainer.style.cursor = 'default';
             proxy.sideBarContentContainer.style.cursor = 'default';
             proxy.isNavigationPaneResized = false;
+        }
+        if (proxy.commentPanelContainer &&  proxy.isCommentPanelShow) {
+            this.commentPanelMouseLeave(event);
+            proxy.isCommentPanelShow = false;
         }
     }
     /**
@@ -783,6 +824,8 @@ export class NavigationPane {
                 if (!proxy.bookmarkButton.children[0].classList.contains('e-pv-bookmark-disable-icon')) {
                     proxy.pdfViewer.bookmarkViewModule.setBookmarkContentHeight();
                 }
+            } else if (proxy.isCommentPanelShow && this.commentPanelContainer) {
+                this.updateCommentPanelContainer(event);
             }
         }
     }
@@ -840,7 +883,7 @@ export class NavigationPane {
      * @private
      */
     public getViewerContainerRight(): number {
-        return (this.commentPanelContainerWidth);
+        return (this.commentPanelContainerWidth + this.commentPanelResizer.clientWidth);
     }
     /**
      * @private
@@ -1021,6 +1064,69 @@ export class NavigationPane {
             this.sideBarContentContainer.style.display = 'none';
             this.bookmarkButton.setAttribute('disabled', 'disabled');
             this.bookmarkButton.children[0].classList.add('e-pv-bookmark-disable-icon');
+        }
+    }
+
+    private commentPanelMouseDown = (event: MouseEvent): void => {
+        let proxy: NavigationPane = this;
+        proxy.offset = [
+            proxy.commentPanelResizer.offsetLeft - event.clientX,
+            proxy.commentPanelResizer.offsetTop - event.clientY,
+            proxy.getViewerContainerRight()
+        ];
+        this.isCommentPanelShow = true;
+        this.previousX = event.clientX;
+        proxy.pdfViewerBase.viewerContainer.style.cursor = 'e-resize';
+        proxy.commentPanelResizer.style.cursor = 'e-resize';
+    }
+
+    private updateCommentPanelContainer = (event: MouseEvent): void => {
+        let proxy: NavigationPane = this;
+        // prevent the commentPanel from becoming too narrow, or from occupying more
+        // than half of the available viewer width.
+        if (this.pdfViewer.enableRtl) {
+            let width: number = event.clientX + proxy.offset[0];
+            const maxWidth: number = Math.floor(this.outerContainerWidth / 2);
+            if (width > maxWidth) {
+                width = maxWidth;
+            }
+            if (width < this.commentPanelWidthMin) {
+                width = this.commentPanelWidthMin;
+            }
+            proxy.commentPanelResizer.style.left = width + 'px';
+            proxy.commentPanelContainer.style.width = width + 'px';
+            // tslint:disable-next-line:max-line-length
+            proxy.pdfViewerBase.viewerContainer.style.left = proxy.getViewerContainerRight() + 'px';
+            proxy.pdfViewerBase.viewerContainer.style.right = proxy.getViewerContainerLeft() + 'px';
+        } else {
+            let currentWidth: number = this.previousX - event.clientX;
+            let width: number = currentWidth + proxy.offset[2];
+            const maxWidth: number = Math.floor(this.outerContainerWidth / 2);
+            if (width > maxWidth) {
+                width = maxWidth;
+            }
+            if (width < this.commentPanelWidthMin) {
+                width = this.commentPanelWidthMin;
+            }
+            proxy.commentPanelResizer.style.right = width + 'px';
+            proxy.commentPanelContainer.style.width = width + 'px';
+            // tslint:disable-next-line:max-line-length
+            proxy.pdfViewerBase.viewerContainer.style.right = proxy.getViewerContainerRight() + 'px';
+            proxy.pdfViewerBase.viewerContainer.style.left = proxy.getViewerContainerLeft() + 'px';
+        }
+        this.pdfViewer.annotation.stickyNotesAnnotationModule.updateCommentPanelTextTop();
+        // tslint:disable-next-line:max-line-length
+        let viewerWidth: number = (proxy.pdfViewer.element.clientWidth - proxy.getViewerContainerLeft() - proxy.getViewerContainerRight());
+        proxy.pdfViewerBase.viewerContainer.style.width = viewerWidth + 'px';
+        proxy.pdfViewerBase.pageContainer.style.width = proxy.pdfViewerBase.viewerContainer.clientWidth + 'px';
+        proxy.pdfViewerBase.updateZoomValue();
+    }
+
+    private commentPanelMouseLeave = (event: MouseEvent): void => {
+        let proxy: NavigationPane = this;
+        if (proxy.commentPanelContainer) {
+            proxy.pdfViewerBase.viewerContainer.style.cursor = 'default';
+            proxy.commentPanelContainer.style.cursor = 'default';
         }
     }
 

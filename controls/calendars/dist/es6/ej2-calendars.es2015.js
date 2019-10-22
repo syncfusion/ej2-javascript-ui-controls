@@ -3545,6 +3545,10 @@ let DatePicker = class DatePicker extends Calendar {
                 detach(this.popupWrapper);
                 this.popupObj = this.popupWrapper = null;
                 this.setAriaAttributes();
+            }, targetExitViewport: () => {
+                if (!Browser.isDevice) {
+                    this.hide();
+                }
             }
         });
         this.popupObj.element.className += ' ' + this.cssClass;
@@ -4429,6 +4433,7 @@ const CSS$1 = 'e-css';
 const ZOOMIN$1 = 'e-zoomin';
 const NONEDITABLE = 'e-non-edit';
 const DAYHEADERLONG$1 = 'e-daterange-day-header-lg';
+const HIDDENELEMENT = 'e-daterange-hidden';
 const wrapperAttr = ['title', 'class', 'style'];
 class Presets extends ChildProperty {
 }
@@ -4485,6 +4490,7 @@ let DateRangePicker = class DateRangePicker extends CalendarBase {
         this.setProperties({ startDate: this.startValue }, true);
         this.setProperties({ endDate: this.endValue }, true);
         this.setModelValue();
+        this.updateDataAttribute(false);
         this.renderComplete();
     }
     /**
@@ -4680,6 +4686,23 @@ let DateRangePicker = class DateRangePicker extends CalendarBase {
         this.updateHtmlAttributeToWrapper();
         this.setRangeAllowEdit();
         this.bindEvents();
+    }
+    updateDataAttribute(isDynamic) {
+        let attr = {};
+        if (!isDynamic) {
+            for (let a = 0; a < this.element.attributes.length; a++) {
+                attr[this.element.attributes[a].name] = this.element.getAttribute(this.element.attributes[a].name);
+            }
+        }
+        else {
+            attr = this.htmlAttributes;
+        }
+        for (let key of Object.keys(attr)) {
+            if (key.indexOf('data') === 0) {
+                this.firstHiddenChild.setAttribute(key, attr[key]);
+                this.secondHiddenChild.setAttribute(key, attr[key]);
+            }
+        }
     }
     setRangeAllowEdit() {
         if (this.allowEdit) {
@@ -7245,6 +7268,10 @@ let DateRangePicker = class DateRangePicker extends CalendarBase {
                 if (this.isMobile && !Browser.isDevice) {
                     EventHandler.remove(document, 'keydown', this.popupCloseHandler);
                 }
+            }, targetExitViewport: () => {
+                if (!Browser.isDevice) {
+                    this.hide();
+                }
             }
         });
         if (this.isMobile) {
@@ -8240,18 +8267,16 @@ let DateRangePicker = class DateRangePicker extends CalendarBase {
             this.inputElement.removeAttribute('name');
         }
         attributes(this.firstHiddenChild, {
-            'type': 'text', 'name': this.inputElement.getAttribute('data-name')
+            'type': 'text', 'name': this.inputElement.getAttribute('data-name'), 'class': HIDDENELEMENT
         });
         attributes(this.secondHiddenChild, {
-            'type': 'text', 'name': this.inputElement.getAttribute('data-name'),
+            'type': 'text', 'name': this.inputElement.getAttribute('data-name'), 'class': HIDDENELEMENT
         });
         let format = { type: 'datetime', skeleton: 'yMd' };
         this.firstHiddenChild.value = this.startDate && this.globalize.formatDate(this.startDate, format);
         this.secondHiddenChild.value = this.endDate && this.globalize.formatDate(this.endDate, format);
         this.inputElement.parentElement.appendChild(this.firstHiddenChild);
         this.inputElement.parentElement.appendChild(this.secondHiddenChild);
-        this.firstHiddenChild.style.display = 'none';
-        this.secondHiddenChild.style.display = 'none';
     }
     /**
      * Called internally if any of the property value changed.
@@ -8319,6 +8344,7 @@ let DateRangePicker = class DateRangePicker extends CalendarBase {
                 case 'htmlAttributes':
                     this.updateHtmlAttributeToElement();
                     this.updateHtmlAttributeToWrapper();
+                    this.updateDataAttribute(true);
                     this.checkHtmlAttributes(true);
                     break;
                 case 'showClearButton':
@@ -9029,6 +9055,10 @@ let TimePicker = class TimePicker extends Component {
                 this.popupObj.destroy();
                 this.popupWrapper.innerHTML = '';
                 this.listWrapper = this.popupWrapper = this.listTag = undefined;
+            }, targetExitViewport: () => {
+                if (!Browser.isDevice) {
+                    this.hide();
+                }
             }
         });
         if (!Browser.isDevice) {
@@ -9447,6 +9477,12 @@ let TimePicker = class TimePicker extends Component {
                     this.modal.style.display = 'none';
                     this.modal.outerHTML = '';
                     this.modal = null;
+                }
+                if (Browser.isDevice) {
+                    if (!isNullOrUndefined(this.mobileTimePopupWrap)) {
+                        this.mobileTimePopupWrap.remove();
+                        this.mobileTimePopupWrap = null;
+                    }
                 }
                 if (Browser.isDevice && this.allowEdit && !this.readonly) {
                     this.inputElement.removeAttribute('readonly');
@@ -10357,12 +10393,16 @@ let TimePicker = class TimePicker extends Component {
                 document.body.className += ' ' + OVERFLOW$2;
                 document.body.appendChild(this.modal);
             }
+            if (Browser.isDevice) {
+                this.mobileTimePopupWrap = this.createElement('div', { className: 'e-timepicker-mob-popup-wrap' });
+                document.body.appendChild(this.mobileTimePopupWrap);
+            }
             this.openPopupEventArgs = {
                 popup: this.popupObj || null,
                 cancel: false,
                 event: event || null,
                 name: 'open',
-                appendTo: document.body
+                appendTo: Browser.isDevice ? this.mobileTimePopupWrap : document.body
             };
             let eventArgs = this.openPopupEventArgs;
             this.trigger('open', eventArgs, (eventArgs) => {
@@ -10389,6 +10429,7 @@ let TimePicker = class TimePicker extends Component {
                     attributes(this.inputElement, { 'aria-expanded': 'true' });
                     addClass([this.inputWrapper.container], FOCUS);
                     EventHandler.add(document, 'mousedown touchstart', this.documentClickHandler, this);
+                    this.setOverlayIndex(this.mobileTimePopupWrap, this.popupObj.element, this.modal, Browser.isDevice);
                 }
                 else {
                     this.popupObj.destroy();
@@ -10397,6 +10438,13 @@ let TimePicker = class TimePicker extends Component {
                     this.popupObj = null;
                 }
             });
+        }
+    }
+    setOverlayIndex(popupWrapper, timePopupElement, modal, isDevice) {
+        if (isDevice && !isNullOrUndefined(timePopupElement) && !isNullOrUndefined(modal) && !isNullOrUndefined(popupWrapper)) {
+            let index = parseInt(timePopupElement.style.zIndex, 10) ? parseInt(timePopupElement.style.zIndex, 10) : 1000;
+            modal.style.zIndex = (index - 1).toString();
+            popupWrapper.style.zIndex = index.toString();
         }
     }
     formatValues(type) {
@@ -11266,6 +11314,10 @@ let DateTimePicker = class DateTimePicker extends DatePicker {
                 this.listWrapper = this.dateTimeWrapper = undefined;
                 if (this.inputEvent) {
                     this.inputEvent.destroy();
+                }
+            }, targetExitViewport: () => {
+                if (!Browser.isDevice) {
+                    this.hide();
                 }
             }
         });

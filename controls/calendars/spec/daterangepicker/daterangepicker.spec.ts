@@ -7306,7 +7306,40 @@ describe('DateRangePicker', () => {
             expect(range.popupObj.position.X).toBe('right')
         });
     });
-
+    describe('Data attribue testing', () => {
+        let daterangepicker: any;
+        beforeEach(() => {
+            let ele: HTMLElement = <HTMLElement>createElement('input', { id: 'date' });
+            document.body.appendChild(ele);
+            ele.setAttribute("data-value","true");
+        });
+        afterEach(() => {
+            if (daterangepicker) {
+                daterangepicker.destroy();
+            }
+            document.body.innerHTML = '';
+        });
+        it('Data attribute at hidden element testing', () => {
+            daterangepicker = new DateRangePicker();
+            daterangepicker.appendTo('#date');
+            expect(daterangepicker.inputWrapper.container.childElementCount).toBe(5);
+            expect(daterangepicker.inputWrapper.container.children[3].getAttribute('data-value')).toBe("true");
+            expect(daterangepicker.inputWrapper.container.children[4].getAttribute('data-value')).toBe("true");
+            expect(daterangepicker.inputWrapper.container.children[3].classList.contains('e-daterange-hidden')).toBe(true);
+            expect(daterangepicker.inputWrapper.container.children[4].classList.contains('e-daterange-hidden')).toBe(true);
+        });
+        it('Data attribute at hidden element testing', () => {
+            daterangepicker = new DateRangePicker({htmlAttributes:{"data-valmsg-replace":"true"}});
+            daterangepicker.appendTo('#date');
+            expect(daterangepicker.inputWrapper.container.childElementCount).toBe(5);
+            expect(daterangepicker.inputWrapper.container.children[3].getAttribute('data-value')).toBe("true");
+            expect(daterangepicker.inputWrapper.container.children[3].getAttribute('data-valmsg-replace')).toBe("true");
+            expect(daterangepicker.inputWrapper.container.children[4].getAttribute('data-value')).toBe("true");
+            expect(daterangepicker.inputWrapper.container.children[4].getAttribute('data-valmsg-replace')).toBe("true");
+            expect(daterangepicker.inputWrapper.container.children[3].classList.contains('e-daterange-hidden')).toBe(true);
+            expect(daterangepicker.inputWrapper.container.children[4].classList.contains('e-daterange-hidden')).toBe(true);
+        });
+    });
     describe('invalid String', () => {
         let daterangepicker: any;
         beforeEach(() => {
@@ -8708,6 +8741,31 @@ describe('DateRangePicker', () => {
             expect(daterangepicker.inputWrapper.container.classList.contains('e-secondary')).toBe(false);
             expect(daterangepicker.inputWrapper.container.classList.contains('e-test')).toBe(true);
             expect(daterangepicker.inputWrapper.container.classList.contains('e-ternary')).toBe(true);
+        });
+    });
+    describe('Popup hide testing when crosses view port', function (){
+        let daterangepicker: any;
+        let divElement: HTMLElement;
+        beforeEach(function() {
+            let inputElement: HTMLElement = createElement('input', { id: 'datepicker'});
+            document.body.appendChild(inputElement);
+            divElement = createElement('div', { id: 'divElement'});
+            divElement.style.height = '900px';
+        });
+        afterEach(function() {
+            if (daterangepicker) {
+                daterangepicker.destroy();
+                document.body.innerHTML = '';
+            }
+        });
+        it('Popup hide testing',function() {
+            daterangepicker = new DateRangePicker({});
+            daterangepicker.appendTo('#datepicker');
+            (<HTMLInputElement>document.getElementsByClassName(' e-input-group-icon e-range-icon e-icons')[0]).dispatchEvent(clickEvent);
+            expect(daterangepicker.popupWrapper !== null).toBe(true);
+            document.body.appendChild(divElement);
+            scrollBy({top: 500, behavior: 'smooth'});
+            daterangepicker.popupObj.trigger('targetExitViewport');
         });
     });
 });
