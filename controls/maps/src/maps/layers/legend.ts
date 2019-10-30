@@ -1191,7 +1191,7 @@ export class Legend {
         let legendToggleOpacity: number = this.maps.legendSettings.toggleLegendSettings.opacity;
         let legendToggleBorderColor: string = this.maps.legendSettings.toggleLegendSettings.border.color;
         let legendToggleBorderWidth: number = this.maps.legendSettings.toggleLegendSettings.border.width; 
-        if (targetEle.parentElement.id.indexOf(this.maps.element.id + '_Legend_Index_') > -1) {
+        if (targetEle.parentNode['id'].indexOf(this.maps.element.id + '_Legend_Index_') > -1) {
             let mapElement: Element;
             let legendIndex: number = parseFloat(targetEle.parentElement.id.substr((this.maps.element.id + '_Legend_Index_').length));
             let selectedItem: object[] = this.legendCollection[legendIndex]['data'];

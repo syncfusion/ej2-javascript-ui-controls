@@ -10,6 +10,17 @@ declare let window: {
     msCrypto: Crypto;
 } & Window;
 let uid: number = 0;
+let isBlazorPlatform: boolean = false;
+
+/**
+ * Function to check whether the platform is blazor or not.
+ * @return {boolean} result
+ * @private
+ */
+export function disableBlazorMode(): void {
+    isBlazorPlatform = false;
+}
+
 
 /**
  * Create Instance from constructor function with desired parameters.
@@ -350,8 +361,18 @@ export function formatUnit(value: number | string): string {
  * @return {boolean} result
  * @private
  */
+export function enableBlazorMode(): void {
+    isBlazorPlatform = true;
+}
+
+/**
+ * Function to check whether the platform is blazor or not.
+ * @return {boolean} result
+ * @private
+ */
+
 export function isBlazor(): boolean {
-    return window && Object.keys(window).indexOf('Blazor') >= 0;
+    return isBlazorPlatform;
 }
 
 /**

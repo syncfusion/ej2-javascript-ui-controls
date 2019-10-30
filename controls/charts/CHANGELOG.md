@@ -2,6 +2,27 @@
 
 ## [Unreleased]
 
+## 17.3.21 (2019-10-30)
+
+### Chart
+
+#### New Features
+
+- #249556 - Provided smart data label for polar radar chart.
+- #249971 - Provided support to trim polar radar axis labels based on available size.
+
+#### Bug Fixes
+
+- #250412 - The axis missing in polar and radar issue is fixed.
+- #148064 - Legend color is not working when using point color mapping issue is fixed.
+- #252450 - Selection while clicking on marker border issue is fixed.
+
+### Accumulation chart
+
+#### Bug Fixes
+
+- #252357 - 'remove' method is not support in IE 11 issue fixed.
+
 ## 17.3.19 (2019-10-22)
 
 ### Accumulation chart

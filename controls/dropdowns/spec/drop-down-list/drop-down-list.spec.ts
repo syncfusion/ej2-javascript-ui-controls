@@ -4929,4 +4929,138 @@ describe('DDList', () => {
             ddlObj.popupObj.trigger('targetExitViewport');
         });
     });
+    describe('Width value with unit em', () => {
+        let listObj: any;
+        let element: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'dropdownlist' });
+        beforeAll(() => {
+            document.body.appendChild(element);
+        });
+        afterAll(() => {
+            if (element) {
+                element.remove();
+                document.body.innerHTML = '';
+            }
+        });
+        it('Set the width to unit em', () => {
+            listObj = new DropDownList({ width: "30em" });
+            listObj.appendTo(element);
+            expect(listObj.element.parentElement.style.width).toEqual('30em');
+            listObj.width = '400px';
+            listObj.dataBind();
+            expect(listObj.element.parentElement.style.width).toEqual('400px');
+            listObj.width = '50em';
+            listObj.dataBind();
+            expect(listObj.element.parentElement.style.width).toEqual('50em');
+            listObj.width = '20%';
+            listObj.dataBind();
+            expect(listObj.element.parentElement.style.width).toEqual('20%');
+            listObj.width = '30';
+            listObj.dataBind();
+            expect(listObj.element.parentElement.style.width).toEqual('30px');
+            listObj.width = 60;
+            listObj.dataBind();
+            expect(listObj.element.parentElement.style.width).toEqual('60px');
+        });
+        it('Set the width to unit px', () => {
+            listObj = new DropDownList({ width: "100px" });
+            listObj.appendTo(element);
+            expect(listObj.element.parentElement.style.width).toEqual('100px');
+            listObj.width = '30em';
+            listObj.dataBind();
+            expect(listObj.element.parentElement.style.width).toEqual('30em');
+            listObj.width = '200px';
+            listObj.dataBind();
+            expect(listObj.element.parentElement.style.width).toEqual('200px');
+        });
+        it('Set the width to unit %', () => {
+            listObj = new DropDownList({ width: "100%" });
+            listObj.appendTo(element);
+            expect(listObj.element.parentElement.style.width).toEqual('100%');
+            listObj.width = '200px';
+            listObj.dataBind();
+            expect(listObj.element.parentElement.style.width).toEqual('200px');
+            listObj.width = '30em';
+            listObj.dataBind();
+            expect(listObj.element.parentElement.style.width).toEqual('30em');
+        });
+    });
+	describe('Check popup opens after open event set as true', () => {
+        let list: any;
+        let count: number = 0;
+        let ele: HTMLElement;
+        beforeAll(() => {
+            ele = createElement('input', { id: 'DropDownList' });
+            document.body.appendChild(ele);
+        });
+        afterAll((done) => {
+            setTimeout(() => {
+                list.destroy();
+                ele.remove();
+                done();
+            }, 450)
+        });
+        it('open event set as true', (done) => {
+            list = new DropDownList({
+                dataSource: datasource2, fields: { text: 'text', value: 'id' },
+                index: 4,
+                allowFiltering: true,
+                open: function(e: any){
+                    if (count === 2) {
+                        e.cancel = true;
+                    }
+                },
+            });
+            list.appendTo(ele);
+            setTimeout(() => {
+            count++;
+            list.showPopup();
+            expect(list.beforePopupOpen).toBe(true);
+            list.hidePopup();
+            expect(list.beforePopupOpen).toBe(false);
+            count++;
+            list.showPopup();
+            expect(list.beforePopupOpen).toBe(false);
+            count++;
+            list.showPopup();
+            expect(list.beforePopupOpen).toBe(true);
+            list.hidePopup();
+            expect(list.beforePopupOpen).toBe(false);
+                done();
+        }, 450)
+        });
+    });
+    describe('Press backspace key for delete input', () => {
+        let keyEventArgs: any = {
+            preventDefault: (): void => { /** NO Code */ },
+            keyCode: 74,
+            metaKey: false
+        };
+        let listObj: any;
+        let element: HTMLInputElement;
+        beforeAll(() => {
+            element = <HTMLInputElement>createElement('input', { id: 'dropdownlist' });
+            document.body.appendChild(element);
+            listObj = new DropDownList({
+                dataSource: datasource,
+                fields: { text: "text", value: "id" },
+                popupHeight: "200px",
+                allowFiltering: true,
+                filtering: function (e: FilteringEventArgs) {
+                    let query = new Query();
+                    query = (e.text != "") ? query.where("text", "startswith", e.text, true) : query;
+                    listObj.filter(datasource2, query);
+                }
+            });
+            listObj.appendTo(element);
+            listObj.showPopup();
+        });
+        it('back space key in searchBox', () => {
+            keyEventArgs.keyCode = 8;
+            listObj.filterInput.value = "j";
+            listObj.onFilterDown(keyEventArgs);
+            listObj.onInput();
+            listObj.onFilterUp(keyEventArgs);
+            expect(listObj.queryString).toBe('j');
+        });
+    });
 });

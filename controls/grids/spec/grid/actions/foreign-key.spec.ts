@@ -146,7 +146,7 @@ describe('Foreign Key =>', () => {
                 }
             };
             (<any>gridObj.filterModule).filterDialogOpen(gridObj.getForeignKeyColumns()[1], gridObj.getHeaderTable().querySelectorAll('.e-filtermenudiv.e-icons')[2]);
-            (<any>gridObj.filterModule).filterModule.initiateFilter(gridObj.filterSettings.columns);
+            (<any>gridObj.filterModule).filterModule.excelFilterBase.initiateFilter(gridObj.filterSettings.columns);
         });
         // excel Filtering
         it('Excel Filtering', (done: Function) => {
@@ -167,7 +167,7 @@ describe('Foreign Key =>', () => {
             gridObj.actionComplete = (args) => {
                 if (args.requestType === 'filtering') {
                     expect(gridObj.filterSettings.columns.length).toBe(0);
-                    !(<any>gridObj.filterModule).filterModule.dialogObj.isDestroyed && 
+                    !(<any>gridObj.filterModule).filterModule.excelFilterBase.dialogObj.isDestroyed && 
                     (<any>gridObj.filterModule).filterModule.closeDialog();
                     done();
                 }

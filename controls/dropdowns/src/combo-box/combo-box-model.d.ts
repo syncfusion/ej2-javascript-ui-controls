@@ -64,6 +64,7 @@ export interface ComboBoxModel extends DropDownListModel{
      * @default null
      * @blazorType int
      * @isBlazorNullableType true
+     * @blazorDefaultValue 
      */
     index?: number;
 

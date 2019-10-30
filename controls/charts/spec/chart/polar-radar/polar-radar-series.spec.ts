@@ -193,7 +193,7 @@ describe('Chart Control', () => {
         });
         it('Checking line series datalabel', (done: Function) => {
             loaded = (args: Object): void => {
-                ele = document.getElementById('chartContainer_Series_0_Point_0_Text_0');
+                ele = document.getElementById('chartContainer_Series_0_Point_2_Text_0');
                 expect(ele.textContent === '70').toBe(true);
                 done();
             };
@@ -359,7 +359,7 @@ describe('Chart Control', () => {
         });
         it('Checking spline series datalabel', (done: Function) => {
             loaded = (args: Object): void => {
-                ele = document.getElementById('chartContainer_Series_0_Point_0_Text_0');
+                ele = document.getElementById('chartContainer_Series_0_Point_2_Text_0');
                 expect(ele.textContent === '70').toBe(true);
                 done();
             };
@@ -465,9 +465,9 @@ describe('Chart Control', () => {
             loaded = (args: Object): void => {
                 ele = document.getElementById('chartContainer_Series_0');
                 expect(ele !== null).toBe(true);
-                ele = document.getElementById('chartContainer_Series_0_Point_0_Symbol');
+                ele = document.getElementById('chartContainer_Series_0_Point_2_Symbol');
                 expect(ele !== null).toBe(true);
-                ele = document.getElementById('chartContainer_Series_0_Point_0_Text_0');
+                ele = document.getElementById('chartContainer_Series_0_Point_2_Text_0');
                 expect(ele.textContent === '70').toBe(true);
                 done();
             };
@@ -575,9 +575,9 @@ describe('Chart Control', () => {
             loaded = (args: Object): void => {
                 ele = document.getElementById('chartContainer_Series_0');
                 expect(ele !== null).toBe(true);
-                ele = document.getElementById('chartContainer_Series_0_Point_0_Symbol');
+                ele = document.getElementById('chartContainer_Series_0_Point_2_Symbol');
                 expect(ele !== null).toBe(true);
-                ele = document.getElementById('chartContainer_Series_0_Point_0_Text_0');
+                ele = document.getElementById('chartContainer_Series_0_Point_2_Text_0');
                 expect(ele.textContent === '70').toBe(true);
                 done();
             };
@@ -693,9 +693,9 @@ describe('Chart Control', () => {
         });
         it('Checking scatter series datalabel', (done: Function) => {
             loaded = (args: Object): void => {
-                ele = document.getElementById('chartContainer_Series_0_Point_0');
+                ele = document.getElementById('chartContainer_Series_0_Point_2');
                 expect(ele !== null).toBe(true);
-                ele = document.getElementById('chartContainer_Series_0_Point_0_Text_0');
+                ele = document.getElementById('chartContainer_Series_0_Point_2_Text_0');
                 expect(ele !== null).toBe(true);
                 done();
             };
@@ -920,9 +920,9 @@ describe('Chart Control', () => {
         });
         it('Checking datalabel for column Bottom', (done: Function) => {
             loaded = (args: Object): void => {
-                ele = document.getElementById('chartContainer_Series_0_Point_0');
+                ele = document.getElementById('chartContainer_Series_0_Point_1');
                 expect(ele !== null).toBe(true);
-                ele = document.getElementById('chartContainer_Series_0_Point_0_Text_0');
+                ele = document.getElementById('chartContainer_Series_0_Point_1_Text_0');
                 expect(ele !== null).toBe(true);
                 done();
             };
@@ -1111,9 +1111,9 @@ describe('Chart Control', () => {
         });
         it('Checking datalabel for rangecolumn Bottom', (done: Function) => {
             loaded = (args: Object): void => {
-                ele = document.getElementById('chartContainer_Series_0_Point_0');
+                ele = document.getElementById('chartContainer_Series_0_Point_2');
                 expect(ele !== null).toBe(true);
-                ele = document.getElementById('chartContainer_Series_0_Point_0_Text_0');
+                ele = document.getElementById('chartContainer_Series_0_Point_2_Text_0');
                 expect(ele !== null).toBe(true);
                 done();
             };
@@ -1650,6 +1650,141 @@ describe('Chart Control', () => {
             };
             chartObj.primaryXAxis.labelPlacement = 'BetweenTicks';
             chartObj.dataBind();
+        });
+    });
+    describe('Polar Radar Smart Datalabel', () => {
+        let chartObj: Chart;
+        beforeAll((): void => {
+            elem = createElement('div', { id: 'container' });
+            document.body.appendChild(elem);
+            chartObj = new Chart({
+                //Initializing Primary X Axis
+                primaryXAxis: {
+                    title: 'Months',
+                    valueType: 'Category',
+                    labelPlacement: 'OnTicks',
+                    interval: 2,
+                },
+
+                //Initializing Primary Y Axis
+                primaryYAxis:
+                {
+                    title: 'Temperature (Celsius)',
+                    minimum: -25, maximum: 25, interval: 2,
+                    edgeLabelPlacement: 'Shift',
+                    labelFormat: '{value}°C',
+                },
+                width: '600', height: '400',
+                //Initializing Chart Series
+                series: [
+                    {
+                        dataSource: [
+                            { x: 'Jan', y: -7.1 }, { x: 'Feb', y: -3.7 },
+                            { x: 'Mar', y: 0.8 }, { x: 'Apr', y: 6.3 },
+                            { x: 'May', y: 13.3 }, { x: 'Jun', y: 18.0 },
+                            { x: 'Jul', y: 19.8 }, { x: 'Aug', y: 18.1 },
+                            { x: 'Sep', y: 13.1 }, { x: 'Oct', y: 4.1 },
+                            { x: 'Nov', y: -3.8 }, { x: 'Dec', y: -6.8 },
+
+                            { x: 'Jan1', y: -7.1 }, { x: 'Feb1', y: -3.7 },
+                            { x: 'Mar1', y: 0.8 }, { x: 'Apr1', y: 6.3 },
+                            { x: 'May1', y: 13.3 }, { x: 'Jun1', y: 18.0 },
+                            { x: 'Jul1', y: 19.8 }, { x: 'Aug1', y: 18.1 },
+                            { x: 'Sep1', y: 13.1 }, { x: 'Oct1', y: 4.1 },
+                            { x: 'Nov1', y: -3.8 }, { x: 'Dec1', y: -6.8 },
+
+                            { x: 'Jan2', y: -7.1 }, { x: 'Feb2', y: -3.7 },
+                            { x: 'Mar2', y: 0.8 }, { x: 'Apr2', y: 6.3 },
+                            { x: 'May2', y: 13.3 }, { x: 'Jun2', y: 18.0 },
+                            { x: 'Jul2', y: 19.8 }, { x: 'Aug2', y: 18.1 },
+                            { x: 'Sep2', y: 13.1 }, { x: 'Oct2', y: 4.1 },
+                            { x: 'Nov2', y: -3.8 }, { x: 'Dec2', y: -6.8 },
+
+                            { x: 'Jan3', y: -7.1 }, { x: 'Feb3', y: -3.7 },
+                            { x: 'Mar3', y: 0.8 }, { x: 'Apr3', y: 6.3 },
+                            { x: 'May3', y: 13.3 }, { x: 'Jun3', y: 18.0 },
+                            { x: 'Jul3', y: 19.8 }, { x: 'Aug3', y: 18.1 },
+                            { x: 'Sep3', y: 13.1 }, { x: 'Oct3', y: 4.1 },
+                            { x: 'Nov3', y: -3.8 }, { x: 'Dec3', y: -6.8 },
+                        ],
+                        xName: 'x', width: 2, yName: 'y', name: 'Warmest', type: 'Polar',
+                        marker: {
+                            visible: true,
+                            height: 10, width: 10,
+                            shape: 'Pentagon',
+                            dataLabel: {
+                                visible: true,
+
+                            }
+                        },
+                        animation: { enable: false }
+                    }
+                ],
+                //Initializing Chart title
+                title: 'Alaska Weather Statistics - 2016',
+                //Initializing User Interaction Tooltip
+                tooltip: {
+                    enable: true
+                }
+            }, '#container');
+        });
+        afterAll((): void => {
+            chartObj.destroy();
+            elem.remove();
+        });
+        it('Polar Chart: datalabel count check with X axis label outside', (done: Function) => {
+            chartObj.loaded = (args: Arg): void => {
+                let datalabel: Element = getElement("containerTextGroup0");
+                expect(datalabel.childElementCount === 30 || datalabel.childElementCount === 31 ).toBe(true);
+                done();
+            };
+            chartObj.refresh();
+        });
+        it('Polar Chart: datalabel count check with X axis label inside', (done: Function) => {
+            chartObj.loaded = (args: Arg): void => {
+                let datalabel: Element = getElement("containerTextGroup0");
+                expect(datalabel.childElementCount === 18 || datalabel.childElementCount === 19).toBe(true);
+                done();
+            };
+            chartObj.primaryXAxis.labelPosition = 'Inside';
+            chartObj.refresh();
+        });
+        it('Polar Chart: datalabel count check with Y axis label inside', (done: Function) => {
+            chartObj.loaded = (args: Arg): void => {
+                let datalabel: Element = getElement("containerTextGroup0");
+                expect(datalabel.childElementCount === 15 || datalabel.childElementCount === 16).toBe(true);
+                done();
+            };
+            chartObj.primaryYAxis.labelPosition = 'Inside';
+            chartObj.refresh();
+        });
+        it('Radar Chart: datalabel count check with X axis label outside', (done: Function) => {
+            chartObj.loaded = (args: Arg): void => {
+                let datalabel: Element = getElement("containerTextGroup0");
+                expect(datalabel.childElementCount === 30 || datalabel.childElementCount === 31).toBe(true);
+                done();
+            };
+            chartObj.series[0].type = 'Radar';
+            chartObj.primaryXAxis.labelPosition = chartObj.primaryYAxis.labelPosition = 'Outside';
+            chartObj.refresh();
+        });
+        it('Radar Chart: datalabel count check with X axis label inside', (done: Function) => {
+            chartObj.loaded = (args: Arg): void => {
+                let datalabel: Element = getElement("containerTextGroup0");
+                expect(datalabel.childElementCount === 18 || datalabel.childElementCount === 19).toBe(true);
+                done();
+            };
+            chartObj.primaryXAxis.labelPosition = 'Inside';
+            chartObj.refresh();
+        });
+        it('Radar Chart: datalabel count check with Y axis label inside', (done: Function) => {
+            chartObj.loaded = (args: Arg): void => {
+                let datalabel: Element = getElement("containerTextGroup0");
+                expect(datalabel.childElementCount === 15 || datalabel.childElementCount === 16).toBe(true);
+                done();
+            };
+            chartObj.primaryYAxis.labelPosition = 'Inside';
+            chartObj.refresh();
         });
     });
     it('memory leak', () => {

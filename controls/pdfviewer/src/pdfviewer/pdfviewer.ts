@@ -1,9 +1,10 @@
 import { Component, INotifyPropertyChanged, NotifyPropertyChanges, ChildProperty, L10n, Collection, Complex } from '@syncfusion/ej2-base';
 import { ModuleDeclaration, isNullOrUndefined, Property, Event, EmitType } from '@syncfusion/ej2-base';
 // tslint:disable-next-line:max-line-length
-import { PdfViewerModel, HighlightSettingsModel, UnderlineSettingsModel, StrikethroughSettingsModel, LineSettingsModel, ArrowSettingsModel, RectangleSettingsModel, CircleSettingsModel, PolygonSettingsModel, StampSettingsModel, StickyNotesSettingsModel, CustomStampSettingsModel, VolumeSettingsModel, RadiusSettingsModel, AreaSettingsModel, PerimeterSettingsModel, DistanceSettingsModel, MeasurementSettingsModel, FreeTextSettingsModel, AnnotationSelectorSettingsModel } from './pdfviewer-model';
+import { PdfViewerModel, HighlightSettingsModel, UnderlineSettingsModel, StrikethroughSettingsModel, LineSettingsModel, ArrowSettingsModel, RectangleSettingsModel, CircleSettingsModel, PolygonSettingsModel, StampSettingsModel, StickyNotesSettingsModel, CustomStampSettingsModel, VolumeSettingsModel, RadiusSettingsModel, AreaSettingsModel, PerimeterSettingsModel, DistanceSettingsModel, MeasurementSettingsModel, FreeTextSettingsModel, AnnotationSelectorSettingsModel, TextSearchColorSettingsModel } from './pdfviewer-model';
 import { ToolbarSettingsModel, AnnotationToolbarSettingsModel, ShapeLabelSettingsModel } from './pdfviewer-model';
-import { ServerActionSettingsModel, AjaxRequestSettingsModel, CustomStampItemModel } from './pdfviewer-model';
+// tslint:disable-next-line:max-line-length
+import { ServerActionSettingsModel, AjaxRequestSettingsModel, CustomStampItemModel, HandWrittenSignatureSettingsModel } from './pdfviewer-model';
 import { PdfViewerBase } from './index';
 import { Navigation } from './index';
 import { Magnification } from './index';
@@ -1132,6 +1133,58 @@ export class AnnotationSelectorSettings extends ChildProperty<AnnotationSelector
 }
 
 /**
+ * The `TextSearchColorSettings` module is used to set the settings for the color of the text search highlight.
+ */
+export class TextSearchColorSettings extends ChildProperty<TextSearchColorSettings> {
+    /**
+     * Sets the color of the current occurrence of the text searched string.
+     */
+    @Property('#fdd835')
+    public currentOccurrence: string;
+
+    /**
+     * Sets the color of the other occurrence of the text searched string.
+     */
+    @Property('#8b4c12')
+    public otherOccurrence: string;
+}
+
+/**
+ * The `HandWrittenSignatureSettings` module is used to provide the properties to handwritten signature.
+ */
+export class HandWrittenSignatureSettings extends ChildProperty<HandWrittenSignatureSettings> {
+    /**
+     * specifies the opacity of the annotation.
+     */
+    @Property(1)
+    public opacity: number;
+
+    /**
+     * specifies the stroke color of the annotation.
+     */
+    @Property('#000000')
+    public strokeColor: string;
+
+    /**
+     * specified the thickness of the annotation.
+     */
+    @Property(1)
+    public thickness: number;
+
+    /**
+     * specified the width of the annotation.
+     */
+    @Property(100)
+    public width: number;
+
+    /**
+     * specified the height of the annotation.
+     */
+    @Property(100)
+    public height: number;
+}
+
+/**
  * Represents the PDF viewer component.
  * ```html
  * <div id="pdfViewer"></div>
@@ -1279,6 +1332,13 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
      */
     @Property(true)
     public enableHyperlink: boolean;
+
+    /**
+     * Enables or disables the handwritten signature in PDF document.
+     * @default true
+     */
+    @Property(true)
+    public enableHandwrittenSignature: boolean;
 
     /**
      * Specifies the open state of the hyperlink in the PDF document.
@@ -1433,7 +1493,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
      * Defines the settings of the PdfViewer annotation toolbar.
      */
     // tslint:disable-next-line:max-line-length
-    @Property({ showTooltip: true, annotationToolbarItem: ['HighlightTool', 'UnderlineTool', 'StrikethroughTool', 'ColorEditTool', 'OpacityEditTool', 'AnnotationDeleteTool', 'StampAnnotationTool', 'ShapeTool', 'CalibrateTool', 'StrokeColorEditTool', 'ThicknessEditTool', 'FreeTextAnnotationTool', 'FontFamilyAnnotationTool', 'FontSizeAnnotationTool', 'FontStylesAnnotationTool', 'FontAlignAnnotationTool', 'FontColorAnnotationTool', 'CommentPanelTool'] })
+    @Property({ showTooltip: true, annotationToolbarItem: ['HighlightTool', 'UnderlineTool', 'StrikethroughTool', 'ColorEditTool', 'OpacityEditTool', 'AnnotationDeleteTool', 'StampAnnotationTool', 'HandWrittenSignatureTool' , 'ShapeTool', 'CalibrateTool', 'StrokeColorEditTool', 'ThicknessEditTool', 'FreeTextAnnotationTool', 'FontFamilyAnnotationTool', 'FontSizeAnnotationTool', 'FontStylesAnnotationTool', 'FontAlignAnnotationTool', 'FontColorAnnotationTool', 'CommentPanelTool'] })
     public annotationToolbarSettings: AnnotationToolbarSettingsModel;
 
     /**
@@ -1576,6 +1636,18 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
     // tslint:disable-next-line:max-line-length
     @Property({selectionBorderColor: '', resizerBorderColor: 'black', resizerFillColor: '#FF4081', resizerSize: 8, selectionBorderThickness: 1 })
     public annotationSelectorSettings: AnnotationSelectorSettingsModel;
+
+    /**
+     * Sets the settings for the color of the text search highlight.
+     */
+    @Property({ currentOccurrence: '#fdd835', otherOccurrence: '#8b4c12' })
+    public textSearchColorSettings: TextSearchColorSettingsModel;
+
+    /**
+     * Defines the settings of handWrittenSignature.
+     */
+    @Property({ opacity: 1, strokeColor: '#000000', width: 100, height: 100, thickness: 1 })
+    public handWrittenSignatureSettings: HandWrittenSignatureSettingsModel;
 
     /**
      * @private
@@ -2171,6 +2243,8 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
         'Strikethrough context': 'Strike through',
         // tslint:disable-next-line:max-line-length
         'Server error': 'Web-service is not listening. PDF Viewer depends on web-service for all it\'s features. Please start the web service to continue.',
+        // tslint:disable-next-line:max-line-length
+        'Client error': 'Client-side error is found. Please check the custom headers provided in the AjaxRequestSettings property and web action methods in the ServerActionSettings property.',
         'Open text': 'Open',
         'First text': 'First Page',
         'Previous text': 'Previous Page',

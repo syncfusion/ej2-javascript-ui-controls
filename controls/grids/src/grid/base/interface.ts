@@ -26,7 +26,7 @@ import { Data } from '../actions/data';
 import { DatePickerModel, DateTimePickerModel, TimePickerModel } from '@syncfusion/ej2-calendars';
 import { PdfStandardFont, PdfTrueTypeFont, PdfGridCell } from '@syncfusion/ej2-pdf-export';
 import { Matrix } from '../services/focus-strategy';
-import { CheckBoxFilter } from '../actions/checkbox-filter';
+import { CheckBoxFilterBase } from '../common/checkbox-filter-base';
 import {
     PdfPageSize, PageOrientation, ContentType, PdfPageNumberType, PdfDashStyle,
     PdfHAlign, PdfVAlign
@@ -1129,7 +1129,7 @@ export interface FilterSearchBeginEventArgs {
     /** Defines the current action. */
     requestType?: string;
     /** Defines the filter model. */
-    filterModel?: CheckBoxFilter;
+    filterModel?: CheckBoxFilterBase;
     /** Defines the field name of current column */
     columnName?: string;
     /** Defines the current Column objects */
@@ -1932,6 +1932,7 @@ export interface IFilter {
  */
 export interface IFilterArgs {
     type?: string;
+    height: number;
     field?: string;
     displayName?: string;
     query?: Query;

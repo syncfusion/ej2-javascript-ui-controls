@@ -136,11 +136,10 @@ describe('Render module', () => {
             }, done);
     });
 
-    it('Row height API checking and rowDataBound checking', () => {
+    it('Row height API checking  checking', () => {
         expect((gridObj.element.querySelectorAll('.e-row')[0] as HTMLElement).style.height).toBe('50px');
-        expect((gridObj.element.querySelectorAll('.e-row')[3] as HTMLElement).style.height).toBe('80px');
     });
-
+    
     it('Row height on property change checking', () => {
         gridObj.rowHeight = 20;
         gridObj.dataBind();

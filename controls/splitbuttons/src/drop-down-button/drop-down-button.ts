@@ -1,4 +1,3 @@
-
 import { Collection, Event, NotifyPropertyChanges, detach, Property, EventHandler, EmitType } from '@syncfusion/ej2-base';
 import { addClass, INotifyPropertyChanged, getUniqueID, rippleEffect } from '@syncfusion/ej2-base';
 import { attributes, Component, closest, select, KeyboardEventArgs } from '@syncfusion/ej2-base';

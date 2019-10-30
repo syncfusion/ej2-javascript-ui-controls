@@ -89,7 +89,11 @@ export class DataLabel {
         for (let j: number = 0; j < properties.length; j++) {
             if (shapeProperties[properties[j]]) {
                 propertyPath = properties[j];
-                break;
+                datasrcObj = this.getDataLabel(
+                    layer.dataSource as object[], labelpath, shapeData['properties'][propertyPath], layer.shapeDataPath);
+                if (datasrcObj) {
+                    break;
+                }
             }
         }
         datasrcObj = this.getDataLabel(

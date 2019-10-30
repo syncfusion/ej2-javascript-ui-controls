@@ -1206,6 +1206,7 @@ var MenuBase = /** @__PURE__ @class */ (function (_super) {
             }
             this.targetElement = target;
             if (!this.isMenu) {
+                EventHandler.add(this.targetElement, 'scroll', this.scrollHandler, this);
                 for (var _i = 0, _a = getScrollableParent(this.targetElement); _i < _a.length; _i++) {
                     var parent_1 = _a[_i];
                     EventHandler.add(parent_1, 'scroll', this.scrollHandler, this);
@@ -2389,6 +2390,7 @@ var MenuBase = /** @__PURE__ @class */ (function (_super) {
                 }
             }
             if (!this.isMenu) {
+                EventHandler.remove(this.targetElement, 'scroll', this.scrollHandler);
                 for (var _i = 0, _a = getScrollableParent(this.targetElement); _i < _a.length; _i++) {
                     var parent_2 = _a[_i];
                     EventHandler.remove(parent_2, 'scroll', this.scrollHandler);
@@ -6815,7 +6817,7 @@ var Tab = /** @__PURE__ @class */ (function (_super) {
         var _this = this;
         var hdrPlace = this.headerPlacement;
         var tabItems = [];
-        this.hdrEle = select('.' + CLS_HEADER$1, this.element);
+        this.hdrEle = this.getTabHeader();
         this.addVerticalClass();
         if (!this.isTemplate) {
             tabItems = this.parseObject(this.items, 0);
@@ -6833,7 +6835,8 @@ var Tab = /** @__PURE__ @class */ (function (_super) {
                 while (this.hdrEle.firstElementChild) {
                     detach(this.hdrEle.firstElementChild);
                 }
-                this.hdrEle.appendChild(this.createElement('div', { className: CLS_ITEMS$1 }));
+                var tabItems_1 = this.createElement('div', { className: CLS_ITEMS$1 });
+                this.hdrEle.appendChild(tabItems_1);
                 hdrItems.forEach(function (item, index) {
                     _this.lastIndex = index;
                     var attr = {
@@ -6847,8 +6850,8 @@ var Tab = /** @__PURE__ @class */ (function (_super) {
                         className: CLS_TEXT_WRAP, innerHTML: txt + _this.btnCls.outerHTML
                     }).outerHTML;
                     var wrap = _this.createElement('div', { className: CLS_WRAP, innerHTML: cont, attrs: { tabIndex: '-1' } });
-                    select('.' + CLS_ITEMS$1, _this.element).appendChild(_this.createElement('div', attr));
-                    selectAll('.' + CLS_ITEM$2, _this.element)[index].appendChild(wrap);
+                    tabItems_1.appendChild(_this.createElement('div', attr));
+                    selectAll('.' + CLS_ITEM$2, tabItems_1)[index].appendChild(wrap);
                 });
             }
         }
@@ -9468,7 +9471,8 @@ var TreeView = /** @__PURE__ @class */ (function (_super) {
         var eUids = this.expandedNodes;
         if (this.isInitalExpand && eUids.length > 0) {
             this.setProperties({ expandedNodes: [] }, true);
-            if (this.fields.dataSource instanceof DataManager) {
+            // tslint:disable
+            if (this.fields.dataSource instanceof DataManager && (this.fields.dataSource.adaptorName !== 'BlazorAdaptor')) {
                 this.expandGivenNodes(eUids);
             }
             else {
@@ -9695,7 +9699,12 @@ var TreeView = /** @__PURE__ @class */ (function (_super) {
         removeClass([liEle], NODECOLLAPSED);
         var id = liEle.getAttribute('data-uid');
         if (!isNullOrUndefined(id) && this.expandedNodes.indexOf(id) === -1) {
-            this.expandedNodes.push(id);
+            if (this.isBlazorPlatform) {
+                this.setProperties({ expandedNodes: [].concat([], this.expandedNodes, [id]) }, true);
+            }
+            else {
+                this.expandedNodes.push(id);
+            }
         }
     };
     TreeView.prototype.collapseNode = function (currLi, icon, e) {
@@ -9780,7 +9789,14 @@ var TreeView = /** @__PURE__ @class */ (function (_super) {
         }
         var index = this.expandedNodes.indexOf(liEle.getAttribute('data-uid'));
         if (index > -1) {
-            this.expandedNodes.splice(index, 1);
+            if (this.isBlazorPlatform) {
+                var removeVal = this.expandedNodes.slice(0);
+                removeVal.splice(index, 1);
+                this.setProperties({ expandedNodes: [].concat([], removeVal) }, true);
+            }
+            else {
+                this.expandedNodes.splice(index, 1);
+            }
         }
     };
     TreeView.prototype.disableExpandAttr = function (liEle) {
@@ -9830,6 +9846,9 @@ var TreeView = /** @__PURE__ @class */ (function (_super) {
                 mapper_2.dataSource.executeQuery(this.getQuery(mapper_2, parentLi.getAttribute('data-uid'))).then(function (e) {
                     _this.treeList.pop();
                     childItems = e.result;
+                    if (_this.dataType === 1) {
+                        _this.dataType = 2;
+                    }
                     _this.loadChild(childItems, mapper_2, eicon, parentLi, expandChild, callback, loaded);
                     if (_this.nodeTemplate && _this.isBlazorPlatform && !_this.isStringTemplate) {
                         _this.updateBlazorTemplate();
@@ -11001,11 +11020,13 @@ var TreeView = /** @__PURE__ @class */ (function (_super) {
                 }
                 var eventArgs = _this.getDragEvent(e.event, _this, null, e.target, null, virtualEle, level);
                 if (eventArgs.draggedNode.classList.contains(EDITING)) {
+                    _this.dragObj.intDestroy(e.event);
                     _this.dragCancelAction(virtualEle);
                 }
                 else {
                     _this.trigger('nodeDragStart', eventArgs, function (observedArgs) {
                         if (observedArgs.cancel) {
+                            _this.dragObj.intDestroy(e.event);
                             _this.dragCancelAction(virtualEle);
                         }
                         else {
@@ -12144,6 +12165,7 @@ var TreeView = /** @__PURE__ @class */ (function (_super) {
      * @returns void
      * @private
      */
+    // tslint:disable-next-line:max-func-body-length
     TreeView.prototype.onPropertyChanged = function (newProp, oldProp) {
         for (var _i = 0, _a = Object.keys(newProp); _i < _a.length; _i++) {
             var prop = _a[_i];
@@ -12185,10 +12207,14 @@ var TreeView = /** @__PURE__ @class */ (function (_super) {
                     break;
                 case 'expandedNodes':
                     this.isAnimate = false;
-                    this.setProperties({ expandedNodes: [] }, true);
+                    if (!this.isBlazorPlatform) {
+                        this.setProperties({ expandedNodes: [] }, true);
+                    }
                     this.collapseAll();
                     this.isInitalExpand = true;
-                    this.setProperties({ expandedNodes: isNullOrUndefined(newProp.expandedNodes) ? [] : newProp.expandedNodes }, true);
+                    if (!this.isBlazorPlatform) {
+                        this.setProperties({ expandedNodes: isNullOrUndefined(newProp.expandedNodes) ? [] : newProp.expandedNodes }, true);
+                    }
                     this.doExpandAction();
                     this.isInitalExpand = false;
                     this.isAnimate = true;
@@ -12314,7 +12340,7 @@ var TreeView = /** @__PURE__ @class */ (function (_super) {
         if (this.showCheckBox && dropLi) {
             this.ensureParentCheckState(dropLi);
         }
-        if (this.fields.dataSource instanceof DataManager === false) {
+        if ((this.fields.dataSource instanceof DataManager === false) || (this.fields.dataSource instanceof DataManager) && (this.fields.dataSource.adaptorName === 'BlazorAdaptor')) {
             this.preventExpand = false;
             this.triggerEvent();
         }

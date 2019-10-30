@@ -674,7 +674,7 @@ let QueryBuilder = class QueryBuilder extends Component {
             let multiSelectArgs = args;
             element = multiSelectArgs.element;
         }
-        if (element.className.indexOf('e-day') > -1) {
+        if (element.className.indexOf('e-day') > -1 || element.className.indexOf('e-cell') > -1) {
             let calenderArgs = args;
             element = calenderArgs.element;
         }
@@ -1449,6 +1449,9 @@ let QueryBuilder = class QueryBuilder extends Component {
                 let format = { type: 'dateTime', format: column.format || 'MM/dd/yyyy' };
                 let selectedDate = getComponent(element, controlName).value;
                 if (rule.operator.indexOf('between') > -1) {
+                    if (typeof rule.value === 'string') {
+                        rule.value = [];
+                    }
                     rule.value[i] = selectedDate;
                 }
                 else if (isNullOrUndefined(format.format) && selectedDate) {
@@ -1624,7 +1627,10 @@ let QueryBuilder = class QueryBuilder extends Component {
                 let ddlInst = getInstance(ruleElem.querySelector('.e-rule-filter input'), DropDownList);
                 let format = { type: 'dateTime', format: this.columns[ddlInst.index].format || 'MM/dd/yyyy' };
                 if (format.type) {
-                    if (arrOperator.indexOf(oper) > -1 && i) {
+                    if (arrOperator.indexOf(oper) > -1) {
+                        if (typeof rule.rules[index].value === 'string') {
+                            rule.rules[index].value = [];
+                        }
                         rule.rules[index].value[i] = this.intl.formatDate(selectedValue, format);
                     }
                     else {

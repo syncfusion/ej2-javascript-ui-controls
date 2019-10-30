@@ -496,7 +496,18 @@
 
       .e-fe-errorcontent {
         white-space: normal;
-        word-break: break-all;
+        word-break: break-word;
+      }
+
+      .e-fe-icon {
+        display: inline-block;
+        height: 18px;
+        margin: 0 8px -2px 0;
+        width: 18px;
+      }
+
+      .e-fe-access-header {
+        display: inline-block;
       }
 
       .e-fe-retrycontent {
@@ -512,6 +523,10 @@
 
         td {
           padding: $fe-dg-rtl-td-padding;
+        }
+
+        .e-fe-icon {
+          margin: 0 0 -2px 8px;
         }
 
       }
@@ -1290,7 +1305,7 @@
 
       .e-empty {
         min-width: $fe-big-grid-empty-min-width;
-    }
+      }
 
       .e-empty-content {
         font-size: $fe-big-grid-empty-content-font-size;

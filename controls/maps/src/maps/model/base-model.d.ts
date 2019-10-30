@@ -224,6 +224,31 @@ export interface MarginModel {
 }
 
 /**
+ * Interface for a class ConnectorLineSettings
+ */
+export interface ConnectorLineSettingsModel {
+
+    /**
+     * Set the color for connector line
+     * @default 'black'
+     */
+    color?: string;
+
+    /**
+     * Set the line width for connector line
+     * @default 1
+     */
+    width?: number;
+
+    /**
+     * Set the opacity for connector line
+     * @default 1
+     */
+    opacity?: number;
+
+}
+
+/**
  * Interface for a class MarkerClusterSettings
  */
 export interface MarkerClusterSettingsModel {
@@ -289,6 +314,24 @@ export interface MarkerClusterSettingsModel {
      * cluster style
      */
     labelStyle?: FontModel;
+
+    /**
+     * Toggle the cluster separate
+     * @default false
+     */
+    allowClusterExpand?: boolean;
+
+    /**
+     * Set connector style for cluster separating
+     */
+    connectorLineSettings?: ConnectorLineSettingsModel;
+
+}
+
+/**
+ * Interface for a class SameMarkerClusterData
+ */
+export interface SameMarkerClusterDataModel {
 
 }
 
@@ -1204,7 +1247,6 @@ export interface LayerSettingsModel {
     /**
      * Specifies the shape data for the layer.
      * @isdatamanager false
-     * @isGenericType true
      * @default null
      */
     shapeData?: Object | DataManager | MapAjax;

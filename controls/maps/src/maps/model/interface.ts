@@ -71,6 +71,21 @@ export interface IMouseEventArgs extends IMapsEventArgs {
     longitude?: number;
 }
 /**
+ * Specifies TooltipRender event arguments for maps.
+ */
+export interface ITooltipRenderCompleteEventArgs extends IMapsEventArgs {
+    /** Defines the current Map instance */
+    maps?: Maps;
+    /**
+     * Define the current tooltip element.
+     */
+    element: Element;
+    /**
+     * Define the tooltip options.
+     */
+    options: Object;
+}
+/**
  * Specifies the geo location.
  */
 export interface GeoPosition {
@@ -179,7 +194,6 @@ export interface ISelectionEventArgs extends IMapsEventArgs {
     shapeData?: Object;
     /**
      * data from data source
-     * @isGenericType true
      */
     data?: Object;
 }

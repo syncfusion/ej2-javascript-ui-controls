@@ -849,7 +849,7 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
             let multiSelectArgs: MultiSelectChangeEventArgs = args as MultiSelectChangeEventArgs;
             element = multiSelectArgs.element as Element;
         }
-        if (element.className.indexOf('e-day') > -1) {
+        if (element.className.indexOf('e-day') > -1 || element.className.indexOf('e-cell') > -1) {
             let calenderArgs: CalendarChangeEventArgs = args as CalendarChangeEventArgs;
             element = calenderArgs.element;
         }
@@ -1571,6 +1571,9 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
                 let format: DateFormatOptions = { type: 'dateTime', format: column.format || 'MM/dd/yyyy' } as DateFormatOptions;
                 let selectedDate: Date = (getComponent(element, controlName) as DatePicker).value;
                 if (rule.operator.indexOf('between') > -1) {
+                    if (typeof rule.value === 'string' ) {
+                        rule.value = [];
+                    }
                     rule.value[i] = selectedDate;
                 } else if (isNullOrUndefined(format.format) && selectedDate) {
                     rule.value = this.intl.formatDate(selectedDate);
@@ -1726,7 +1729,10 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
                 let format: DateFormatOptions =
                     { type: 'dateTime', format: this.columns[ddlInst.index].format || 'MM/dd/yyyy' } as DateFormatOptions;
                 if ((<DateFormatOptions>format).type) {
-                    if (arrOperator.indexOf(oper) > -1 && i) {
+                    if (arrOperator.indexOf(oper) > -1) {
+                        if (typeof rule.rules[index].value === 'string') {
+                            rule.rules[index].value = [];
+                        }
                         rule.rules[index].value[i] = this.intl.formatDate(selectedValue as Date, format);
                     } else {
                         rule.rules[index].value = this.intl.formatDate(selectedValue as Date, format);

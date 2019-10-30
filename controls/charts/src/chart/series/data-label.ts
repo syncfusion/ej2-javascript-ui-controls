@@ -1,4 +1,4 @@
-import { ChartLocation, ColorValue, RectOption, isCollide } from '../../common/utils/helper';
+import { ChartLocation, ColorValue, RectOption, isCollide, isOverlap } from '../../common/utils/helper';
 import { markerAnimate, appendChildElement } from '../../common/utils/helper';
 import { getLabelText, convertHexToColor, calculateRect, textElement, colorNameToHex } from '../../common/utils/helper';
 import { Chart } from '../chart';
@@ -16,6 +16,7 @@ import { createElement, getValue, extend } from '@syncfusion/ej2-base';
 import { Alignment } from '../../common/utils/enum';
 import { getPoint } from '../../common/utils/helper';
 import { Axis } from '../../chart/axis/axis';
+import { PolarRadarPanel } from '../axis/polar-radar-panel';
 
 /**
  * `DataLabel` module is used to render data label for the data point.
@@ -46,10 +47,14 @@ export class DataLabel {
     }
 
     private initPrivateVariables(series: Series, marker: MarkerSettingsModel): void {
-        let transform: string;
+        let transform: string = '';
+        let clipPath: string = '';
         let render: SvgRenderer | CanvasRenderer = series.chart.renderer;
         let index: number | string = (series.index === undefined) ? series.category : series.index;
-        transform = series.chart.chartAreaType === 'Cartesian' ? 'translate(' + series.clipRect.x + ',' + (series.clipRect.y) + ')' : '';
+        if (series.chart.chartAreaType === 'Cartesian') {
+            transform = 'translate(' + series.clipRect.x + ',' + (series.clipRect.y) + ')';
+            clipPath = 'url(#' + this.chart.element.id + '_ChartSeriesClipRect_' + index + ')';
+        }
         if (marker.dataLabel.visible) {
             series.shapeElement = render.createGroup({
                 'id': this.chart.element.id + 'ShapeGroup' + index,
@@ -59,7 +64,7 @@ export class DataLabel {
             series.textElement = render.createGroup({
                 'id': this.chart.element.id + 'TextGroup' + index,
                 'transform': transform,
-                'clip-path': 'url(#' + this.chart.element.id + '_ChartSeriesClipRect_' + index + ')'
+                'clip-path': clipPath
             });
         }
         this.markerHeight = ((series.type === 'Scatter' || marker.visible)) ? (marker.height / 2) : 0;
@@ -149,6 +154,7 @@ export class DataLabel {
             let yPos: number;
             let xValue: number;
             let yValue: number;
+            let isRender: boolean = true;
             let clip: Rect = series.clipRect;
             let shapeRect: HTMLElement;
             angle = degree = dataLabel.angle;
@@ -176,7 +182,16 @@ export class DataLabel {
                         } else {
                             textSize = measureText(argsData.text, dataLabel.font);
                             rect = this.calculateTextPosition(point, series, textSize, dataLabel, i);
-                            if (!isCollide(rect, chart.dataLabelCollections, clip)) {
+                            // To check whether the polar radar chart datalabel intersects the axis label or not
+                            if (chart.chartAreaType === 'PolarRadar') {
+                                for (let rectRegion of (<PolarRadarPanel>chart.chartAxisLayoutPanel).visibleAxisLabelRect) {
+                                    if (isOverlap(new Rect(rect.x, rect.y, rect.width, rect.height), rectRegion)) {
+                                        isRender = false;
+                                        break;
+                                    }
+                                }
+                            }
+                            if (!isCollide(rect, chart.dataLabelCollections, clip) && isRender) {
                                 chart.dataLabelCollections.push(new Rect(
                                     rect.x + clip.x, rect.y + clip.y, rect.width, rect.height
                                 ));
@@ -200,7 +215,7 @@ export class DataLabel {
                                 if (angle !== 0 && dataLabel.enableRotation) {
                                     xValue = xPos - (dataLabel.margin.left) / 2 + (dataLabel.margin.right / 2);
                                     yValue = yPos - (dataLabel.margin.top) / 2 - (textSize.height / dataLabel.margin.top) +
-                                    (dataLabel.margin.bottom) / 2;
+                                        (dataLabel.margin.bottom) / 2;
                                     degree = (angle > 360) ? angle - 360 : (angle < -360) ? angle + 360 : angle;
                                 } else {
                                     degree = 0;
@@ -215,8 +230,8 @@ export class DataLabel {
                                         'middle', argsData.text, 'rotate(' + degree + ',' + (xValue) + ',' + (yValue) + ')', 'auto', degree
                                     ),
                                     argsData.font, argsData.font.color ||
-                                    ((contrast >= 128 || series.type === 'Hilo') ? 'black' : 'white'),
-                                    series.textElement, false, redraw, true, false , series.chart.duration, series.clipRect
+                                ((contrast >= 128 || series.type === 'Hilo') ? 'black' : 'white'),
+                                    series.textElement, false, redraw, true, false, series.chart.duration, series.clipRect
                                 );
                             }
                         }

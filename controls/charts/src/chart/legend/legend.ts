@@ -64,12 +64,16 @@ export class Legend extends BaseLegend {
     public getLegendOptions(visibleSeriesCollection: Series[], chart: Chart): void {
         this.legendCollections = [];
         let seriesType: ChartDrawType | ChartSeriesType;
+        let fill: string;
         for (let series of visibleSeriesCollection) {
             if (series.category !== 'Indicator') {
                 seriesType = (chart.chartAreaType === 'PolarRadar') ? <ChartDrawType>series.drawType :
                     <ChartSeriesType>series.type;
+                // To set legend color when use pointColorMapping    
+                fill = series.pointColorMapping ? (series.points[0].interior ? series.points[0].interior : series.interior) :
+                    series.interior;
                 this.legendCollections.push(new LegendOptions(
-                    series.name, series.interior, series.legendShape, (series.category === 'TrendLine' ?
+                    series.name, fill, series.legendShape, (series.category === 'TrendLine' ?
                         (this.chart as Chart).series[series.sourceIndex].trendlines[series.index].visible : series.visible),
                     seriesType, series.marker.shape, series.marker.visible
                 ));

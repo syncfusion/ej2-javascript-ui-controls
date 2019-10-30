@@ -89,17 +89,7 @@ export class SfdtExport {
         if (writeInlineStyles) {
             this.writeInlineStyles = true;
         }
-        this.lists = [];
-        this.document = {};
-        this.document.sections = [];
-        this.document.characterFormat = this.writeCharacterFormat(this.viewer.characterFormat);
-        this.document.paragraphFormat = this.writeParagraphFormat(this.viewer.paragraphFormat);
-        this.document.defaultTabWidth = this.viewer.defaultTabWidth;
-        this.document.enforcement = this.viewer.isDocumentProtected;
-        this.document.hashValue = this.viewer.hashValue;
-        this.document.saltValue = this.viewer.saltValue;
-        this.document.formatting = this.viewer.restrictFormatting;
-        this.document.protectionType = this.viewer.protectionType;
+        this.Initialize();
         this.updateEditRangeId();
         if (line instanceof LineWidget && endLine instanceof LineWidget) {
             // For selection
@@ -170,12 +160,7 @@ export class SfdtExport {
         } else {
             if (this.viewer.pages.length > 0) {
                 let page: Page = this.viewer.pages[0];
-                if (page.bodyWidgets.length > 0) {
-                    let nextBlock: BodyWidget = page.bodyWidgets[0];
-                    do {
-                        nextBlock = this.writeBodyWidget(nextBlock, 0);
-                    } while (!isNullOrUndefined(nextBlock));
-                }
+                this.writePage(page);
             }
         }
         this.writeStyles(this.viewer);
@@ -183,6 +168,35 @@ export class SfdtExport {
         let doc: Document = this.document;
         this.clear();
         return doc;
+    }
+    /**
+     * @private
+     */
+    public Initialize(): void {
+        this.lists = [];
+        this.document = {};
+        this.document.sections = [];
+        this.document.characterFormat = this.writeCharacterFormat(this.viewer.characterFormat);
+        this.document.paragraphFormat = this.writeParagraphFormat(this.viewer.paragraphFormat);
+        this.document.defaultTabWidth = this.viewer.defaultTabWidth;
+        this.document.enforcement = this.viewer.isDocumentProtected;
+        this.document.hashValue = this.viewer.hashValue;
+        this.document.saltValue = this.viewer.saltValue;
+        this.document.formatting = this.viewer.restrictFormatting;
+        this.document.protectionType = this.viewer.protectionType;
+    }
+    /**
+     * @private
+     */
+    public writePage(page: Page): any {
+        if (page.bodyWidgets.length > 0) {
+            let nextBlock: BodyWidget = page.bodyWidgets[0];
+            do {
+                nextBlock = this.writeBodyWidget(nextBlock, 0);
+            } while (!isNullOrUndefined(nextBlock));
+        }
+
+        return this.document;
     }
     private writeBodyWidget(bodyWidget: BodyWidget, index: number): BodyWidget {
         if (!(bodyWidget instanceof BodyWidget)) {

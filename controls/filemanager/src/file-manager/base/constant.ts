@@ -121,3 +121,15 @@ export const dragging: string = 'dragging';
 export const updateSelectionData: string = 'update-selection-data';
 /** @hidden */
 export const methodCall: string = 'method-call';
+/** @hidden */
+export const permissionRead: string = 'read';
+/** @hidden */
+export const permissionEdit: string = 'write';
+/** @hidden */
+export const permissionEditContents: string = 'writeContents';
+/** @hidden */
+export const permissionCopy: string = 'copy';
+/** @hidden */
+export const permissionUpload: string = 'upload';
+/** @hidden */
+export const permissionDownload: string = 'download';

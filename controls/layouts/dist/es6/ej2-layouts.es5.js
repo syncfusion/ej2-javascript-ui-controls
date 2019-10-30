@@ -400,7 +400,12 @@ var Splitter = /** @__PURE__ @class */ (function (_super) {
             var targetEle = void 0;
             var lastBarIndex = (index === this.allBars.length);
             var barIndex = lastBarIndex ? index - 1 : index;
-            targetEle = (lastBarIndex) ? this.collapseArrow(barIndex, lastBarArrow) : this.collapseArrow(barIndex, collapseArrow);
+            if (!lastBarIndex && this.allPanes[index + 1].classList.contains(COLLAPSE_PANE) && index !== 0) {
+                targetEle = this.collapseArrow(barIndex - 1, lastBarArrow);
+            }
+            else {
+                targetEle = (lastBarIndex) ? this.collapseArrow(barIndex, lastBarArrow) : this.collapseArrow(barIndex, collapseArrow);
+            }
             targetEle.click();
         }
     };
@@ -414,6 +419,20 @@ var Splitter = /** @__PURE__ @class */ (function (_super) {
                     this.updateIsCollapsed(m, this.targetArrows().collapseArrow, this.targetArrows().lastBarArrow);
                 }
             }
+            for (var m = this.allPanes.length - 1; m >= 0; m--) {
+                if (!isNullOrUndefined(this.paneSettings[m]) && this.paneSettings[m].collapsed &&
+                    !this.allPanes[m].classList.contains(COLLAPSE_PANE)) {
+                    var collapseArrow = this.orientation === 'Horizontal' ? ARROW_RIGHT : ARROW_DOWN;
+                    if (m !== 0) {
+                        var targetEle = this.collapseArrow(m - 1, collapseArrow);
+                        targetEle.click();
+                    }
+                    if (!this.nextPane.classList.contains(COLLAPSE_PANE)) {
+                        var targetEle = this.collapseArrow(m - 1, collapseArrow);
+                        targetEle.click();
+                    }
+                }
+            }
         }
     };
     Splitter.prototype.targetArrows = function () {
@@ -424,7 +443,7 @@ var Splitter = /** @__PURE__ @class */ (function (_super) {
     };
     Splitter.prototype.collapsedOnchange = function (index) {
         if (!isNullOrUndefined(this.paneSettings[index]) && !isNullOrUndefined(this.paneSettings[index].collapsed)
-            && !this.paneSettings[index].collapsed) {
+            && this.allPanes[index].classList.contains(COLLAPSE_PANE)) {
             this.updateIsCollapsed(index, this.targetArrows().lastBarArrow, this.targetArrows().collapseArrow);
         }
     };

@@ -1349,7 +1349,7 @@ describe('FileManager control Details view', () => {
             mousemove = setMouseCordinates(mousemove, rect[0].x + 5, rect[0].y + 5);
             EventHandler.trigger(<any>(document), 'mousemove', mousemove);
             let mouseup: any = getEventObject('MouseEvents', 'mouseup', li[1].querySelector('.e-fullrow'), li[1].querySelector('.e-fullrow'), rect[0].x + 5, rect[0].y + 5);
-            mouseup.type = 'mouseup';
+            mouseup.type = 'mouseup'; mouseup.currentTarget = document;
             EventHandler.trigger(<any>(document), 'mouseup', mouseup);
             expect(document.querySelector('.e-fe-clone')).toBe(null);
             expect(start).toBe(1);
@@ -1391,7 +1391,7 @@ describe('FileManager control Details view', () => {
             mousemove = setMouseCordinates(mousemove, rect[0].x + 5, rect[0].y + 5);
             EventHandler.trigger(<any>(document), 'mousemove', mousemove);
             let mouseup: any = getEventObject('MouseEvents', 'mouseup', li[1].querySelector('.e-fe-grid-name'), li[1].querySelector('.e-fe-grid-name'), rect[0].x + 5, rect[0].y + 5);
-            mouseup.type = 'mouseup';
+            mouseup.type = 'mouseup'; mouseup.currentTarget = document;
             EventHandler.trigger(<any>(document), 'mouseup', mouseup);
             expect(document.querySelector('.e-fe-clone')).toBe(null);
             expect(start).toBe(1);
@@ -1423,7 +1423,7 @@ describe('FileManager control Details view', () => {
             mousemove = setMouseCordinates(mousemove, rect[0].x + 5, rect[0].y + 5);
             EventHandler.trigger(<any>(document), 'mousemove', mousemove);
             let mouseup: any = getEventObject('MouseEvents', 'mouseup', li[3].querySelector('.e-fullrow'), li[3].querySelector('.e-fullrow'), rect[0].x + 5, rect[0].y + 5);
-            mouseup.type = 'mouseup';
+            mouseup.type = 'mouseup'; mouseup.currentTarget = document;
             EventHandler.trigger(<any>(document), 'mouseup', mouseup);
             expect(document.querySelector('.e-fe-clone')).toBe(null);
             expect(start).toBe(1);
@@ -1471,7 +1471,7 @@ describe('FileManager control Details view', () => {
             mousemove = setMouseCordinates(mousemove, rect[0].x + 5, rect[0].y + 5);
             EventHandler.trigger(<any>(document), 'mousemove', mousemove);
             let mouseup: any = getEventObject('MouseEvents', 'mouseup', li[2].querySelector('.e-fe-grid-name'), li[2].querySelector('.e-fe-grid-name'), rect[0].x + 5, rect[0].y + 5);
-            mouseup.type = 'mouseup';
+            mouseup.type = 'mouseup'; mouseup.currentTarget = document;
             EventHandler.trigger(<any>(document), 'mouseup', mouseup);
             expect(document.querySelector('.e-fe-clone')).toBe(null);
             expect(start).toBe(1);
@@ -1530,7 +1530,7 @@ describe('FileManager control Details view', () => {
             mousemove = setMouseCordinates(mousemove, rect[0].x + 5, rect[0].y + 5);
             EventHandler.trigger(<any>(document), 'mousemove', mousemove);
             let mouseup: any = getEventObject('MouseEvents', 'mouseup', li[3].querySelector('.e-fullrow'), li[3].querySelector('.e-fullrow'), rect[0].x + 5, rect[0].y + 5);
-            mouseup.type = 'mouseup';
+            mouseup.type = 'mouseup'; mouseup.currentTarget = document;
             EventHandler.trigger(<any>(document), 'mouseup', mouseup);
             expect(document.querySelector('.e-fe-clone')).toBe(null);
             expect(start).toBe(1);
@@ -1565,7 +1565,7 @@ describe('FileManager control Details view', () => {
             let mousemove: any = getEventObject('MouseEvents', 'mousemove', li[4].querySelector('.e-fe-grid-name'), li[4].querySelector('.e-fe-grid-name'), rect[0].x + 10, rect[0].y + 5);
             EventHandler.trigger(<any>(document), 'mousemove', mousemove);
             let mouseup: any = getEventObject('MouseEvents', 'mouseup', feObj.toolbarModule.toolbarObj.element, feObj.toolbarModule.toolbarObj.element, rect[0].x + 5, rect[0].y + 5);
-            mouseup.type = 'mouseup';
+            mouseup.type = 'mouseup'; mouseup.currentTarget = document;
             EventHandler.trigger(<any>(document), 'mouseup', mouseup);
             expect(document.querySelector('.e-fe-clone')).toBe(null);
             expect(start).toBe(1);
@@ -1579,7 +1579,7 @@ describe('FileManager control Details view', () => {
             mousemove = getEventObject('MouseEvents', 'mousemove', li[4].querySelector('.e-fe-grid-name'), li[4].querySelector('.e-fe-grid-name'), rect[0].x + 10, rect[0].y + 5);
             EventHandler.trigger(<any>(document), 'mousemove', mousemove);
             mouseup = getEventObject('MouseEvents', 'mouseup', feObj.navigationpaneModule.treeObj.element, feObj.navigationpaneModule.treeObj.element, rect[0].x + 5, rect[0].y + 5);
-            mouseup.type = 'mouseup';
+            mouseup.type = 'mouseup'; mouseup.currentTarget = document;
             EventHandler.trigger(<any>(document), 'mouseup', mouseup);
             expect(document.querySelector('.e-fe-clone')).toBe(null);
             expect(start).toBe(1);
@@ -1619,7 +1619,7 @@ describe('FileManager control Details view', () => {
             mousemove = setMouseCordinates(mousemove, rect[0].x + 5, rect[0].y + 5);
             EventHandler.trigger(<any>(document), 'mousemove', mousemove);
             let mouseup: any = getEventObject('MouseEvents', 'mouseup', li[2].querySelector('.e-fe-grid-name'), li[2].querySelector('.e-fe-grid-name'), rect[0].x + 5, rect[0].y + 5);
-            mouseup.type = 'mouseup';
+            mouseup.type = 'mouseup'; mouseup.currentTarget = document;
             EventHandler.trigger(<any>(document), 'mouseup', mouseup);
             expect(document.querySelector('.e-fe-clone')).toBe(null);
             expect(start).toBe(1);
@@ -1694,7 +1694,7 @@ describe('FileManager control Details view', () => {
                 mousemove = setMouseCordinates(mousemove, rect[0].x + 5, rect[0].y + 5);
                 EventHandler.trigger(<any>(document), 'mousemove', mousemove);
                 let mouseup: any = getEventObject('MouseEvents', 'mouseup', li[0].querySelector('.e-fe-grid-name'), li[0].querySelector('.e-fe-grid-name'), rect[0].x + 5, rect[0].y + 5);
-                mouseup.type = 'mouseup';
+                mouseup.type = 'mouseup'; mouseup.currentTarget = document;
                 EventHandler.trigger(<any>(document), 'mouseup', mouseup);
                 expect(document.querySelector('.e-fe-clone')).toBe(null);
                 expect(start).toBe(1);
@@ -1845,7 +1845,7 @@ describe('FileManager control Details view', () => {
                 mousemove = setMouseCordinates(mousemove, rect[0].x + 5, rect[0].y + 5);
                 EventHandler.trigger(<any>(document), 'mousemove', mousemove);
                 let mouseup: any = getEventObject('MouseEvents', 'mouseup', li[2].querySelector('.e-fe-grid-name'), li[2].querySelector('.e-fe-grid-name'), rect[0].x + 5, rect[0].y + 5);
-                mouseup.type = 'mouseup';
+                mouseup.type = 'mouseup'; mouseup.currentTarget = document;
                 EventHandler.trigger(<any>(document), 'mouseup', mouseup);
                 expect(document.querySelector('.e-fe-clone')).toBe(null);
                 expect(start).toBe(1);
@@ -1912,7 +1912,7 @@ describe('FileManager control Details view', () => {
         //             mousemove = setMouseCordinates(mousemove, rect[0].x + 5, rect[0].y + 5);
         //             EventHandler.trigger(<any>(document), 'mousemove', mousemove);
         //             let mouseup: any = getEventObject('MouseEvents', 'mouseup', li[4].querySelector('.e-fullrow'), li[4].querySelector('.e-fullrow'), rect[0].x + 5, rect[0].y + 5);
-        //             mouseup.type = 'mouseup';
+        //             mouseup.type = 'mouseup'; mouseup.currentTarget = document;
         //             EventHandler.trigger(<any>(document), 'mouseup', mouseup);
         //             expect(document.querySelector('.e-fe-clone')).toBe(null);
         //             expect(start).toBe(1);
@@ -1961,7 +1961,7 @@ describe('FileManager control Details view', () => {
             mousemove = setMouseCordinates(mousemove, rect[0].x + 5, rect[0].y + 5);
             EventHandler.trigger(<any>(document), 'mousemove', mousemove);
             let mouseup: any = getEventObject('MouseEvents', 'mouseup', li[2].querySelector('.e-fe-grid-name'), li[2].querySelector('.e-fe-grid-name'), rect[0].x + 5, rect[0].y + 5);
-            mouseup.type = 'mouseup';
+            mouseup.type = 'mouseup'; mouseup.currentTarget = document;
             EventHandler.trigger(<any>(document), 'mouseup', mouseup);
             expect(document.querySelector('.e-fe-clone')).toBe(null);
             expect(start).toBe(1);
@@ -2015,7 +2015,7 @@ describe('FileManager control Details view', () => {
             mousemove = setMouseCordinates(mousemove, rect[0].x + 5, rect[0].y + 5);
             EventHandler.trigger(<any>(document), 'mousemove', mousemove);
             let mouseup: any = getEventObject('MouseEvents', 'mouseup', li[2].querySelector('.e-fe-grid-name'), li[2].querySelector('.e-fe-grid-name'), rect[0].x + 5, rect[0].y + 5);
-            mouseup.type = 'mouseup';
+            mouseup.type = 'mouseup'; mouseup.currentTarget = document;
             EventHandler.trigger(<any>(document), 'mouseup', mouseup);
             expect(document.querySelector('.e-fe-clone')).toBe(null);
             expect(start).toBe(1);
@@ -2088,7 +2088,7 @@ describe('FileManager control Details view', () => {
             mousemove = setMouseCordinates(mousemove, rect[0].x + 5, rect[0].y + 5);
             EventHandler.trigger(<any>(document), 'mousemove', mousemove);
             let mouseup: any = getEventObject('MouseEvents', 'mouseup', li[2].querySelector('.e-fe-grid-name'), li[2].querySelector('.e-fe-grid-name'), rect[0].x + 5, rect[0].y + 5);
-            mouseup.type = 'mouseup';
+            mouseup.type = 'mouseup'; mouseup.currentTarget = document;
             EventHandler.trigger(<any>(document), 'mouseup', mouseup);
             expect(document.querySelector('.e-fe-clone')).toBe(null);
             expect(start).toBe(1);
@@ -2161,7 +2161,7 @@ describe('FileManager control Details view', () => {
             mousemove = setMouseCordinates(mousemove, rect[0].x + 5, rect[0].y + 5);
             EventHandler.trigger(<any>(document), 'mousemove', mousemove);
             let mouseup: any = getEventObject('MouseEvents', 'mouseup', li[2].querySelector('.e-fe-grid-name'), li[2].querySelector('.e-fe-grid-name'), rect[0].x + 5, rect[0].y + 5);
-            mouseup.type = 'mouseup';
+            mouseup.type = 'mouseup'; mouseup.currentTarget = document;
             EventHandler.trigger(<any>(document), 'mouseup', mouseup);
             expect(document.querySelector('.e-fe-clone')).toBe(null);
             expect(start).toBe(1);
@@ -2259,7 +2259,7 @@ describe('FileManager control Details view', () => {
             mousemove = setMouseCordinates(mousemove, rect[0].x + 5, rect[0].y + 5);
             EventHandler.trigger(<any>(document), 'mousemove', mousemove);
             let mouseup: any = getEventObject('MouseEvents', 'mouseup', li[1].querySelector('.e-fe-grid-name'), li[1].querySelector('.e-fe-grid-name'), rect[0].x + 5, rect[0].y + 5);
-            mouseup.type = 'mouseup';
+            mouseup.type = 'mouseup'; mouseup.currentTarget = document;
             EventHandler.trigger(<any>(document), 'mouseup', mouseup);
             expect(document.querySelector('.e-fe-clone')).toBe(null);
             expect(start).toBe(1);

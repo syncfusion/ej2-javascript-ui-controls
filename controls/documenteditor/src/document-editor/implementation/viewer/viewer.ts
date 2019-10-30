@@ -389,7 +389,12 @@ export abstract class LayoutViewer {
     /**
      * @private
      */
+    public cachedPages: number[] = [];
     public longTouchTimer: number;
+    /**
+     * @private
+     */
+    public skipScrollToPosition: boolean = false;
     //Document Protection Properties Ends
 
     //#region Properties
@@ -962,6 +967,7 @@ export abstract class LayoutViewer {
     // tslint:enable:no-any 
     private onKeyPressInternal = (event: KeyboardEvent): void => {
         let key: number = event.which || event.keyCode;
+        this.triggerElementsOnLoading = false;
         let ctrl: boolean = (event.ctrlKey || event.metaKey) ? true : ((key === 17) ? true : false); // ctrl detection
         if (ctrl && event.key === 'v' || ctrl && event.key === 'a') {
             return;
@@ -2211,6 +2217,10 @@ export abstract class LayoutViewer {
      * @private
      */
     public scrollToPosition(startPosition: TextPosition, endPosition: TextPosition, skipCursorUpdate?: boolean): void {
+        if (this.skipScrollToPosition) {
+            this.skipScrollToPosition = false;
+            return;
+        }
         if (this.owner.enableImageResizerMode && this.owner.imageResizerModule.isImageResizing
             || this.isMouseDownInFooterRegion || this.isRowOrCellResizing) {
             return;
@@ -3150,7 +3160,30 @@ export class PageLayoutViewer extends LayoutViewer {
             this.owner.imageResizerModule.setImageResizerPositions(x, y, width, height);
         }
         this.visiblePages.push(page);
-        this.renderPage(page, x, y, width, height);
+        // tslint:disable-next-line:max-line-length
+        if (this.owner.enableSpellCheck && this.owner.spellChecker.enableOptimizedSpellCheck && (this.triggerElementsOnLoading || this.isScrollHandler) && this.cachedPages.indexOf(page.index) < 0 ) {
+            page.allowNextPageRendering = false;
+            this.cachedPages.push(page.index);
+            let content: string = this.owner.spellChecker.getPageContent(page);
+            if (content.trim().length > 0) {
+                // tslint:disable-next-line:max-line-length
+                /* tslint:disable:no-any */
+                this.owner.spellChecker.CallSpellChecker(this.owner.spellChecker.languageID, content, true, false, false, true).then((data: any) => {
+                    /* tslint:disable:no-any */
+                    let jsonObject: any = JSON.parse(data);
+                    this.owner.spellChecker.updateUniqueWords(jsonObject.SpellCollection);
+                    page.allowNextPageRendering = true;
+                    this.triggerSpellCheck = true;
+                    this.renderPage(page, x, y, width, height);
+                    this.triggerSpellCheck = false;
+                    this.triggerElementsOnLoading = false;
+                });
+            } else {
+                this.renderPage(page, x, y, width, height);
+            }
+        } else {
+            this.renderPage(page, x, y, width, height);
+        }
     }
     /**
      * Render specified page widgets.

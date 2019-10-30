@@ -1931,7 +1931,6 @@ let ListView = class ListView extends Component {
         let classAr = [classNames.root, classNames.disable, 'e-rtl',
             'e-has-header', 'e-lib'].concat(this.cssClass.split(' ').filter((css) => css));
         removeClass([this.element], classAr);
-        this.rippleFn();
         this.element.removeAttribute('role');
         this.element.removeAttribute('tabindex');
         this.element.innerHTML = '';
@@ -3668,6 +3667,7 @@ let Sortable = Sortable_1 = class Sortable extends Base {
             this.target = null;
             this.curTarget = null;
             remove(e.helper);
+            getComponent(this.element, Draggable).intDestroy(e.event);
         };
         this.bind();
     }

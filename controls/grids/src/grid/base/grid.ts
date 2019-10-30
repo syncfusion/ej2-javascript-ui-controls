@@ -3215,6 +3215,10 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
                 return row;
             }
         }
+        if (isNullOrUndefined(row) && this.enableVirtualization && this.groupSettings.columns.length > 0) {
+            row = this.rowObject(this.vRows as Row<Column>[], uid);
+            return row;
+        }
         return row;
     }
 

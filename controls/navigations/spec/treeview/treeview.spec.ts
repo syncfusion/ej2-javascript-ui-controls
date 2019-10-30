@@ -2614,6 +2614,8 @@ describe('TreeView control', () => {
 				mousemove.offsetY = 6;
                 EventHandler.trigger(<any>(document), 'mousemove', mousemove);
                 expect(i).toEqual(2);
+                let mouseup: any = getEventObject('MouseEvents', 'mouseup', treeObj.element, li[2].querySelector('.e-list-text'));
+                EventHandler.trigger(<any>(document), 'mouseup', mouseup);          
             });
 			it('drag and drop with increased offset value are triggered', () => {
                 treeObj = new TreeView({
@@ -2636,6 +2638,8 @@ describe('TreeView control', () => {
 				mousemove.offsetY = 8;
                 EventHandler.trigger(<any>(document), 'mousemove', mousemove);
                 expect(i).toEqual(2);
+                let mouseup: any = getEventObject('MouseEvents', 'mouseup', treeObj.element, li[1].querySelector('.e-list-text'));
+                EventHandler.trigger(<any>(document), 'mouseup', mouseup);
             });
             it('darg start event is canceled', () => {
                 var j = 0;
@@ -10625,7 +10629,7 @@ describe('TreeView control', () => {
         };
         let i: number = 0;
         function nodeDrag(args: DragAndDropEventArgs): void {
-            if (args.dropIndicator === "e-drop-out") {
+            if (args.dropIndicator === "e-drop-in") {
                 ++i;
             }
         }
@@ -10650,7 +10654,7 @@ describe('TreeView control', () => {
                 fields: { dataSource: hierarchicalData1, id: "nodeId", text: "nodeText", child: "nodeChild" },
                 allowDragAndDrop: true
             });
-            treeObj.appendTo(ele);
+            //treeObj.appendTo(ele);
             jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
         })
         afterEach(() => {
@@ -10659,6 +10663,10 @@ describe('TreeView control', () => {
             document.body.innerHTML = '';
         });
         it('Drag position before', () => {
+            treeObj = new TreeView({
+                fields: { dataSource: hierarchicalData1, id: "nodeId", text: "nodeText", child: "nodeChild" },
+                allowDragAndDrop: true
+            },'#tree');
             let li: Element[] = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('li');
             let mousedown: any = getEventObject('MouseEvents', 'mousedown', treeObj.element, li[0].querySelector('.e-list-text'), 15, 10);
             EventHandler.trigger(treeObj.element, 'mousedown', mousedown);
@@ -10666,7 +10674,8 @@ describe('TreeView control', () => {
             let mousemove: any = getEventObject('MouseEvents', 'mousemove', treeObj.element, li[0].querySelector('.e-list-text'), 15, 70);
             mousemove.offsetY = 2;
             EventHandler.trigger(<any>(document), 'mousemove', mousemove);
-            
+            let mouseup: any = getEventObject('MouseEvents', 'mouseup', treeObj.element, li[0].querySelector('.e-list-text'));
+            EventHandler.trigger(<any>(document), 'mouseup', mouseup);     
         });
         it('Drag position on child', (done: Function) => {
             treeObj = new TreeView({ 
@@ -10682,7 +10691,9 @@ describe('TreeView control', () => {
                 let mousemove: any = getEventObject('MouseEvents', 'mousemove', treeObj.element, li[0].querySelector('.e-list-text'), 15, 70);
                 mousemove.offsetY = 12;
                 EventHandler.trigger(<any>(document), 'mousemove', mousemove);
-                expect(li[0].classList.contains('e-node-focus')).toBe(true);         
+                expect(li[0].classList.contains('e-node-focus')).toBe(true);  
+                let mouseup: any = getEventObject('MouseEvents', 'mouseup', treeObj.element, li[0].querySelector('.e-list-text'));
+                EventHandler.trigger(<any>(document), 'mouseup', mouseup);        
                 done();
             }, 100);
         });
@@ -10769,7 +10780,7 @@ describe('Drag and drop with different TreeView functionality testing with empty
         let event = {offsetY: 43, offsetHeight: 300};
         let dragData = {draggable: treeObj.element, draggedElement: treeObj.element, helper: document.querySelector('.e-drag-item') };
         let e = {dragData: dragData, droppedElement: document.querySelector('.e-drag-item'), event: event, target: treeObj1.element};
-        treeObj1.dropAction(e);
+        //treeObj1.dropAction(e);
         let newli: Element[] = <Element[] & NodeListOf<Element>>treeObj1.element.querySelectorAll('li');
         expect(li[2].getAttribute('aria-level')).toBe('1');
     });

@@ -1,7 +1,7 @@
 import { TreeView as BaseTreeView, NodeSelectEventArgs, NodeExpandEventArgs, DrawNodeEventArgs } from '@syncfusion/ej2-navigations';
 import { NodeEditEventArgs, NodeClickEventArgs } from '@syncfusion/ej2-navigations';
 import { isNullOrUndefined as isNOU, select, setValue, getValue, DragEventArgs, Draggable } from '@syncfusion/ej2-base';
-import { KeyboardEvents, KeyboardEventArgs, Touch, closest } from '@syncfusion/ej2-base';
+import { KeyboardEvents, KeyboardEventArgs, Touch, closest, BlazorDragEventArgs } from '@syncfusion/ej2-base';
 import { DataManager, Query } from '@syncfusion/ej2-data';
 import * as events from '../base/constant';
 import * as CLS from '../base/classes';
@@ -97,7 +97,9 @@ export class NavigationPane {
                     dragTarget: '.' + CLS.FULLROW,
                     dragArea: this.parent.element,
                     drag: draggingHandler.bind(this, this.parent),
-                    dragStart: dragStartHandler.bind(this, this.parent),
+                    dragStart: (args: DragEventArgs & BlazorDragEventArgs) => {
+                        dragStartHandler(this.parent, args, this.dragObj);
+                    },
                     dragStop: dragStopHandler.bind(this, this.parent),
                     enableTailMode: true,
                     enableAutoScroll: true,
@@ -700,7 +702,7 @@ export class NavigationPane {
             case 'del':
                 this.updateItemData();
                 if (!hasEditAccess(this.parent.itemData[0])) {
-                    createDeniedDialog(this.parent, this.parent.itemData[0]);
+                    createDeniedDialog(this.parent, this.parent.itemData[0], events.permissionEdit);
                 } else {
                     this.removeNodes = [];
                     createDialog(this.parent, 'Delete');
@@ -719,7 +721,7 @@ export class NavigationPane {
             case 'shiftF10':
                 this.updateItemData();
                 if (!hasDownloadAccess(this.parent.itemData[0])) {
-                    createDeniedDialog(this.parent, this.parent.itemData[0]);
+                    createDeniedDialog(this.parent, this.parent.itemData[0], events.permissionDownload);
                     return;
                 }
                 if (this.parent.selectedItems.length !== 0) {
@@ -730,7 +732,7 @@ export class NavigationPane {
                 if (this.parent.selectedItems.length === 0) {
                     let data: Object = this.getTreeData(this.treeObj.selectedNodes[0])[0];
                     if (!hasEditAccess(data)) {
-                        createDeniedDialog(this.parent, data);
+                        createDeniedDialog(this.parent, data, events.permissionEdit);
                     } else {
                         this.updateRenameData();
                         createDialog(this.parent, 'Rename');

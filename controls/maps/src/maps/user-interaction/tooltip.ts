@@ -1,4 +1,4 @@
-import { Maps, ITooltipRenderEventArgs, tooltipRender, MapsTooltipOption } from '../index';
+import { Maps, ITooltipRenderEventArgs, tooltipRender, MapsTooltipOption, ITooltipRenderCompleteEventArgs } from '../index';
 import { Tooltip } from '@syncfusion/ej2-svg-base';
 import { createElement, Browser, isNullOrUndefined, extend, remove } from '@syncfusion/ej2-base';
 import { TooltipSettingsModel, LayerSettings, MarkerSettingsModel, BubbleSettingsModel } from '../index';
@@ -9,12 +9,20 @@ import { MapLocation, checkShapeDataFields, getMousePosition, Internalize, check
 export class MapsTooltip {
     private maps: Maps;
     private tooltipSettings: TooltipSettingsModel;
+    /**
+     * @private
+     */
     public svgTooltip: Tooltip;
     private isTouch: boolean;
     private tooltipId: string;
     private currentTime: number;
     private clearTimeout: number;
     public tooltipTargetID: string;
+    /**
+     * 
+     * @param maps @private
+     */
+    public targetID: string;
     constructor(maps: Maps) {
         this.maps = maps;
         this.tooltipId = this.maps.element.id + '_mapsTooltip';
@@ -42,6 +50,7 @@ export class MapsTooltip {
         let option: TooltipSettingsModel;
         let currentData: string = '';
         let targetId: string = target.id; let item: Object = {};
+        this.targetID = targetId;
         let tooltipEle: HTMLElement; let location: MapLocation;
         let toolTipData: Object = {};
         let templateData: object = [];
@@ -164,6 +173,11 @@ export class MapsTooltip {
                     this.removeTooltip();
                 }
             });
+            if (this.svgTooltip) {
+                this.maps.trigger('tooltipRenderComplete', {
+                    cancel: false, name: 'tooltipRenderComplete', maps: this.maps, options: tooltipOption, element: this.svgTooltip.element
+                } as ITooltipRenderCompleteEventArgs);
+            }
         } else {
             this.removeTooltip();
         }
@@ -206,8 +220,10 @@ export class MapsTooltip {
     }
     public mouseUpHandler(e: PointerEvent): void {
         this.renderTooltip(e);
-        clearTimeout(this.clearTimeout);
-        this.clearTimeout = setTimeout(this.removeTooltip.bind(this), 2000);
+        if (this.maps.tooltipDisplayMode === 'MouseMove') {
+            clearTimeout(this.clearTimeout);
+            this.clearTimeout = setTimeout(this.removeTooltip.bind(this), 2000);
+        }
     }
 
     public removeTooltip(): void {
@@ -222,17 +238,25 @@ export class MapsTooltip {
         if (this.maps.isDestroyed) {
             return;
         }
-        this.maps.on(Browser.touchMoveEvent, this.renderTooltip, this);
-        this.maps.on(Browser.touchEndEvent, this.mouseUpHandler, this);
-        this.maps.on(Browser.touchCancelEvent, this.removeTooltip, this);
+        if (this.maps.tooltipDisplayMode === 'DoubleClick') {
+            this.maps.on('dblclick', this.renderTooltip, this);
+        } else if (this.maps.tooltipDisplayMode === 'Click') {
+            this.maps.on(Browser.touchEndEvent, this.mouseUpHandler, this);
+        } else {
+            this.maps.on(Browser.touchMoveEvent, this.renderTooltip, this);
+        }
     }
     public removeEventListener(): void {
         if (this.maps.isDestroyed) {
             return;
         }
-        this.maps.off(Browser.touchMoveEvent, this.renderTooltip);
-        this.maps.off(Browser.touchEndEvent, this.mouseUpHandler);
-        this.maps.off(Browser.touchCancelEvent, this.removeTooltip);
+        if (this.maps.tooltipDisplayMode === 'DoubleClick') {
+            this.maps.off('dblclick', this.removeTooltip);
+        } else if (this.maps.tooltipDisplayMode === 'Click') {
+            this.maps.off(Browser.touchEndEvent, this.mouseUpHandler);
+        } else {
+            this.maps.off(Browser.touchMoveEvent, this.renderTooltip);
+        }
     }
     /**
      * Get module name.

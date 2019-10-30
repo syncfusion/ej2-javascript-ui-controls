@@ -704,16 +704,17 @@ describe('Filtering module => ', () => {
                         { field: 'Freight', format: 'C2', type: 'number' },
                         { field: 'ShipCity' }, { field: 'Verified', type: 'boolean' },
                         { field: 'OrderDate', format: 'yMd', type: 'date' }],
-                    actionBegin: actionBegin,
-                    actionComplete: actionComplete
                 }, done);
         });
         // test initial filtering scenario
         it('showFilterBarStatus testing initial filter', (done: Function) => {
+            actionComplete = (args?: Object): void => {
             expect((<any>gridObj.getHeaderContent().querySelectorAll('#EmployeeID_filterBarcell')[0]).value).toBe('5');
             expect(gridObj.currentViewData.length).toBe(4);
             expect(gridObj.getPager().querySelectorAll('.e-pagerexternalmsg')[0].innerHTML).toBe('EmployeeID: 5');
             done();
+            }
+            gridObj.actionComplete = actionComplete;
         });
 
         it('showFilterBarStatus testing with aditional filter', (done: Function) => {
@@ -1784,19 +1785,6 @@ describe('Filtering module => ', () => {
             filterColumn(gridObj, 'Column1', 'ColumnColumn1Row5');
             gridObj.actionComplete = actionComplete;
         });
-        it('columnVirtualization scrolling', (done: Function) => {
-            (<HTMLElement>gridObj.getContent().firstChild).scrollLeft = 4000;
-            setTimeout(done, 200);
-        });
-        it('Multiple filtering with columnVirtualization', (done: Function) => {
-            actionComplete = () => {                
-                expect(gridObj.element.querySelectorAll('.e-row').length).toBe(1);
-               
-                done();
-            };            
-            filterColumn(gridObj, 'Column25', 'ColumnColumn25Row50');
-            gridObj.actionComplete = actionComplete;
-        });  
 
         afterAll(() => {
             destroy(gridObj);

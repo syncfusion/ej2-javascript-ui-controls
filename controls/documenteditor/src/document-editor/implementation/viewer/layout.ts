@@ -130,6 +130,7 @@ export class Layout {
         setTimeout((): void => {
             if (this.viewer) {
                 this.viewer.isScrollHandler = true;
+                this.viewer.triggerElementsOnLoading = true;
                 this.viewer.updateScrollBars();
                 this.viewer.isScrollHandler = false;
                 this.isInitialLoad = false;
@@ -546,6 +547,7 @@ export class Layout {
             }
         } else if (element instanceof TextElementBox) {
             this.checkAndSplitTabOrLineBreakCharacter(element.text, element);
+            this.splitBySpecialCharacters(element);
             text = element.text;
         }
         // Here field code width and height update need to skipped based on the hidden property.
@@ -1240,6 +1242,38 @@ export class Layout {
         } else if (remainder !== '') {
             newSpan.text = value.substring(index + 1);
             span.text = spiltBy;
+        }
+    }
+    private splitBySpecialCharacters(span: TextElementBox): void {
+        if (this.viewer.textHelper.isRTLText(span.text) && this.viewer.textHelper.containsSpecialChar(span.text)) {
+            let inlineIndex: number = span.line.children.indexOf(span);
+            let text: string = span.text;
+            let specialChars: string = '*|,\":<>[]{}`\';()@&$#%!~';
+            let textToReplace: string = '';
+            let spanTextUpdated: boolean = false;
+            for (let i: number = 0; i < text.length; i++) {
+                if (specialChars.indexOf(text.charAt(i)) !== -1) {
+                    if (spanTextUpdated) {
+                        let newSpan1: TextElementBox = new TextElementBox();
+                        newSpan1.line = span.line;
+                        newSpan1.characterFormat.copyFormat(span.characterFormat);
+                        span.line.children.splice(inlineIndex = inlineIndex + 1, 0, newSpan1);
+                        newSpan1.text = textToReplace;
+                    }
+                    let newSpan: TextElementBox = new TextElementBox();
+                    newSpan.line = span.line;
+                    newSpan.characterFormat.copyFormat(span.characterFormat);
+                    span.line.children.splice(inlineIndex = inlineIndex + 1, 0, newSpan);
+                    newSpan.text = text.charAt(i);
+                    if (!spanTextUpdated) {
+                        span.text = textToReplace;
+                        spanTextUpdated = true;
+                    }
+                    textToReplace = '';
+                } else {
+                    textToReplace += text.charAt(i);
+                }
+            }
         }
     }
     /**
@@ -4990,6 +5024,7 @@ export class Layout {
             }
             let isRtl: boolean = false;
             let text: string = '';
+            let containsSpecchrs: boolean = false;
             if (element instanceof BookmarkElementBox) {
                 if (isParaBidi) {
                     if (lastAddedElementIsRtl || element.bookmarkType === 0 && element.nextElement
@@ -5009,6 +5044,13 @@ export class Layout {
             }
             if (element instanceof TextElementBox) {
                 text = (element as TextElementBox).text;
+                containsSpecchrs = this.viewer.textHelper.containsSpecialCharAlone(text);
+                if (containsSpecchrs) {
+                    if (text.length > 1 && elementCharacterFormat.bidi) {
+                        text = HelperMethods.ReverseString(text);
+                        element.text = text;
+                    }
+                }
             }
             // The list element box shold be added in the last position in line widget for the RTL paragraph 
             // and first in the line widget for LTR paragrph.
@@ -5019,7 +5061,7 @@ export class Layout {
                     || elementCharacterFormat.bdo === 'RTL';
             }
             // If the text element box contains only whitespaces, then need to check the previous and next elements.
-            if (!isRtl && !isNullOrUndefined(text) && text !== '' && text.trim() === '') {
+            if (!isRtl && !isNullOrUndefined(text) && ((text !== '' && text.trim() === '') || containsSpecchrs)) {
                 let elements: ElementBox[] = line.children;
                 //Checks whether the langugae is RTL.
                 if (elementCharacterFormat.bidi) {

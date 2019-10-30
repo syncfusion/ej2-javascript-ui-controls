@@ -2,6 +2,7 @@ import { Container } from '../../core/containers/container';
 import { Diagram } from '../../diagram';
 import { ConnectorModel } from '../connector-model';
 import { NodeModel } from '../node-model';
+import { Size } from '../../primitives/size';
 import { PointModel } from '../../primitives/point-model';
 import { EventState, ChangeType, State, DiagramAction } from '../../enum/enum';
 import { SelectorModel } from '../../objects/node-model';
@@ -742,4 +743,15 @@ export interface IExpandStateChangeEventArgs {
     element?: NodeModel;
     /** returns whether or not to expanded */
     state?: boolean;
+}
+
+/**
+ * IImageLoadEventArgs notifies while the image node is loaded.
+ * 
+ */
+export interface IImageLoadEventArgs {
+    /** returns the selected element  */
+    element: NodeModel;
+    /** returns the size of image element */
+    size: Size;
 }

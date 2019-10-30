@@ -295,7 +295,7 @@ describe('FileManager control single selection Grid view', () => {
                 document.getElementById('file_grid').querySelector('.e-content').dispatchEvent(evt);
                 document.getElementById('file_cm_newfolder').click();
                 let dialogObj: any = (document.getElementById("file_dialog") as any).ej2_instances[0];
-                expect(dialogObj.element.querySelector('.e-dlg-header').innerHTML).toEqual("Access Denied");
+                expect(dialogObj.element.querySelector('.e-dlg-header').innerText).toEqual("Access Denied");
                 let treeLi1: any = treeObj.element.querySelectorAll('li');
                 let gridLi1: any = document.getElementById('file_grid').querySelectorAll('.e-row');
                 expect(treeLi1.length).toEqual(5);
@@ -345,7 +345,7 @@ describe('FileManager control single selection Grid view', () => {
                 document.getElementById('file_grid').querySelector('.e-content').dispatchEvent(evt);
                 document.getElementById('file_cm_upload').click();
                 let dialogObj: any = (document.getElementById("file_dialog") as any).ej2_instances[0];
-                expect(dialogObj.element.querySelector('.e-dlg-header').innerHTML).toEqual("Access Denied");
+                expect(dialogObj.element.querySelector('.e-dlg-header').innerText).toEqual("Access Denied");
                 let treeLi1: any = treeObj.element.querySelectorAll('li');
                 let gridLi1: any = document.getElementById('file_grid').querySelectorAll('.e-row');
                 expect(treeLi1.length).toEqual(5);
@@ -454,7 +454,7 @@ describe('FileManager control single selection Grid view', () => {
                 select('.e-fe-grid-name',gridLi[1]).dispatchEvent(evt);
                 document.getElementById('file_cm_rename').click();
                 let dialogObj: any = (document.getElementById("file_dialog") as any).ej2_instances[0];
-                expect(dialogObj.element.querySelector('.e-dlg-header').innerHTML).toEqual("Access Denied");
+                expect(dialogObj.element.querySelector('.e-dlg-header').innerText).toEqual("Access Denied");
                 done();
             }, 500);
         });
@@ -496,7 +496,7 @@ describe('FileManager control single selection Grid view', () => {
                 gridLi[1].dispatchEvent(evt);
                 document.getElementById('file_cm_delete').click();
                 let dialogObj: any = (document.getElementById("file_dialog") as any).ej2_instances[0];
-                expect(dialogObj.element.querySelector('.e-dlg-header').innerHTML).toEqual("Access Denied");
+                expect(dialogObj.element.querySelector('.e-dlg-header').innerText).toEqual("Access Denied");
                 let treeLi1: any = treeObj.element.querySelectorAll('li');
                 let gridLi1: any = document.getElementById('file_grid').querySelectorAll('.e-row');
                 expect(treeLi1.length).toEqual(5);
@@ -548,7 +548,7 @@ describe('FileManager control single selection Grid view', () => {
                 gridLi[1].dispatchEvent(evt);
                 document.getElementById('file_cm_download').click();
                 let dialogObj: any = (document.getElementById("file_dialog") as any).ej2_instances[0];
-                expect(dialogObj.element.querySelector('.e-dlg-header').innerHTML).toEqual("Access Denied");
+                expect(dialogObj.element.querySelector('.e-dlg-header').innerText).toEqual("Access Denied");
                 done();
             }, 500);
         });
@@ -641,7 +641,7 @@ describe('FileManager control single selection Grid view', () => {
                 gridLi[1].dispatchEvent(evt);
                 document.getElementById('file_cm_delete').click();
                 let dialogObj: any = (document.getElementById("file_dialog") as any).ej2_instances[0];
-                expect(dialogObj.element.querySelector('.e-dlg-header').innerHTML).toEqual("Access Denied");
+                expect(dialogObj.element.querySelector('.e-dlg-header').innerText).toEqual("Access Denied");
                 let treeLi1: any = treeObj.element.querySelectorAll('li');
                 let gridLi1: any = document.getElementById('file_grid').querySelectorAll('.e-row');
                 expect(treeLi1.length).toEqual(5);
@@ -693,7 +693,7 @@ describe('FileManager control single selection Grid view', () => {
                 gridLi[1].dispatchEvent(evt);
                 document.getElementById('file_cm_download').click();
                 let dialogObj: any = (document.getElementById("file_dialog") as any).ej2_instances[0];
-                expect(dialogObj.element.querySelector('.e-dlg-header').innerHTML).toEqual("Access Denied");
+                expect(dialogObj.element.querySelector('.e-dlg-header').innerText).toEqual("Access Denied");
                 done();
             }, 500);
         });
@@ -786,14 +786,14 @@ describe('FileManager control single selection Grid view', () => {
                 gridLi[1].dispatchEvent(evt);
                 document.getElementById('file_cm_open').click();
                 let dialogObj: any = (document.getElementById("file_dialog") as any).ej2_instances[0];
-                expect(dialogObj.element.querySelector('.e-dlg-header').innerHTML).toEqual("Access Denied");
+                expect(dialogObj.element.querySelector('.e-dlg-header').innerText).toEqual("Access Denied");
                 dialogObj.element.querySelector('.e-primary').click();
                 feObj.detailsviewModule.gridObj.selectRows([7]);
                 let evt1 = document.createEvent('MouseEvents');
                 evt1.initEvent('contextmenu', true, true);
                 gridLi[7].dispatchEvent(evt1);
                 document.getElementById('file_cm_open').click();
-                expect(dialogObj.element.querySelector('.e-dlg-header').innerHTML).toEqual("Access Denied");
+                expect(dialogObj.element.querySelector('.e-dlg-header').innerText).toEqual("Access Denied");
                 done();
             }, 500);
         });
@@ -856,7 +856,7 @@ describe('FileManager control single selection Grid view', () => {
                     gridLi1[2].dispatchEvent(evt1);
                     document.getElementById('file_cm_open').click();
                     let dialogObj: any = (document.getElementById("file_dialog") as any).ej2_instances[0];
-                    expect(dialogObj.element.querySelector('.e-dlg-header').innerHTML).toEqual("Access Denied");
+                    expect(dialogObj.element.querySelector('.e-dlg-header').innerText).toEqual("Access Denied");
                     dialogObj.element.querySelector('.e-primary').click();
                     feObj.detailsviewModule.gridObj.selectRows([7]);
                     let evt2 = document.createEvent('MouseEvents');

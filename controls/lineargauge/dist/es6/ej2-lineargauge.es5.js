@@ -1,4 +1,4 @@
-import { Animation, Browser, ChildProperty, Collection, Complex, Component, Event, EventHandler, Internationalization, NotifyPropertyChanges, Property, compile, createElement, isNullOrUndefined, merge, remove, resetBlazorTemplate, updateBlazorTemplate } from '@syncfusion/ej2-base';
+import { Animation, Browser, ChildProperty, Collection, Complex, Component, Event, EventHandler, Internationalization, NotifyPropertyChanges, Property, compile, createElement, isBlazor, isNullOrUndefined, merge, remove, resetBlazorTemplate, updateBlazorTemplate } from '@syncfusion/ej2-base';
 import { SvgRenderer, Tooltip } from '@syncfusion/ej2-svg-base';
 
 var __extends$1 = (undefined && undefined.__extends) || (function () {
@@ -1915,10 +1915,9 @@ var Annotations = /** @__PURE__ @class */ (function () {
         }
         this.gauge.trigger(annotationRender, argsData, function (observerArgs) {
             if (!argsData.cancel) {
-                var blazor = 'Blazor';
                 templateFn = getTemplateFunction(argsData.content);
-                if (templateFn && (!window[blazor] ? templateFn(_this.gauge, null, null, _this.gauge.element.id + '_ContentTemplate' + annotationIndex).length : {})) {
-                    templateElement = Array.prototype.slice.call(templateFn(!window[blazor] ? _this.gauge : {}, null, null, _this.gauge.element.id + '_ContentTemplate' + annotationIndex));
+                if (templateFn && (!_this.gauge.isBlazor ? templateFn(_this.gauge, null, null, _this.gauge.element.id + '_ContentTemplate' + annotationIndex).length : {})) {
+                    templateElement = Array.prototype.slice.call(templateFn(!_this.gauge.isBlazor ? _this.gauge : {}, null, null, _this.gauge.element.id + '_ContentTemplate' + annotationIndex));
                     var length_1 = templateElement.length;
                     for (var i = 0; i < length_1; i++) {
                         childElement.appendChild(templateElement[i]);
@@ -2342,8 +2341,7 @@ var LinearGauge = /** @__PURE__ @class */ (function (_super) {
      * Initialize the preRender method.
      */
     LinearGauge.prototype.preRender = function () {
-        var blazor = 'Blazor';
-        this.isBlazor = window[blazor];
+        this.isBlazor = isBlazor();
         this.unWireEvents();
         this.trigger(load, { gauge: !this.isBlazor ? this : null });
         this.initPrivateVariable();

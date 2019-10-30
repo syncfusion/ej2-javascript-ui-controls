@@ -14,7 +14,7 @@ import { DiagramNativeElement } from '../core/elements/native-element';
 import { DiagramHtmlElement } from '../core/elements/html-element';
 import { TransformFactor as Transforms } from '../interaction/scroller';
 import { createSvgElement, createHtmlElement, getBackgroundLayerSvg } from '../utility/dom-util';
-import { removeGradient } from '../utility/diagram-util';
+import { removeGradient, checkBrowserInfo } from '../utility/diagram-util';
 import { Container } from '../core/containers/container';
 /** 
  * SVG Renderer
@@ -525,7 +525,11 @@ export class SvgRenderer implements IRenderer {
             'x': x.toString(), 'y': y.toString()
         };
         setAttributeSvg(rect, attr);
-        group.setAttribute('clip-path', 'url(#' + node.id + '_clip)');
+        if (checkBrowserInfo()) {
+            group.setAttribute('clip-path', 'url(' + location.href + '#' + node.id + '_clip)');
+        } else {
+            group.setAttribute('clip-path', 'url(#' + node.id + '_clip)');
+        }
         return group;
     }
 
@@ -602,7 +606,11 @@ export class SvgRenderer implements IRenderer {
             }
             if (style.gradient && style.gradient.type !== 'None') {
                 let grd: SVGElement = this.renderGradient(style, svg, diagramId);
-                fill = 'url(#' + grd.id + ')';
+                if (checkBrowserInfo()) {
+                    fill = 'url(' + location.href + '#' + grd.id + ')';
+                } else {
+                    fill = 'url(#' + grd.id + ')';
+                }
             } else {
                 fill = style.fill;
             }

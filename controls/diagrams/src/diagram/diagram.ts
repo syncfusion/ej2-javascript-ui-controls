@@ -21,14 +21,14 @@ import { ISegmentCollectionChangeEventArgs, IBlazorPropertyChangeEventArgs } fro
 import { IDragEnterEventArgs, IDragLeaveEventArgs, IDragOverEventArgs, IDropEventArgs } from './objects/interface/IElement';
 import { ITextEditEventArgs, IHistoryChangeArgs, IScrollChangeEventArgs } from './objects/interface/IElement';
 import { IMouseEventArgs, IBlazorHistoryChangeArgs } from './objects/interface/IElement';
-import { IBlazorCustomHistoryChangeArgs } from './objects/interface/IElement';
+import { IBlazorCustomHistoryChangeArgs, IImageLoadEventArgs } from './objects/interface/IElement';
 import { StackEntryObject, IExpandStateChangeEventArgs } from './objects/interface/IElement';
 import { ZoomOptions, IPrintOptions, IExportOptions, IFitOptions, ActiveLabel } from './objects/interface/interfaces';
 import { View, IDataSource, IFields } from './objects/interface/interfaces';
 import { Container } from './core/containers/container';
 import { Node, BpmnShape, BpmnAnnotation, SwimLane, Path } from './objects/node';
 import { cloneBlazorObject, } from './utility/diagram-util';
-import { updateDefaultValues, getCollectionChangeEventArguements } from './utility/diagram-util';
+import { updateDefaultValues, getCollectionChangeEventArguements, checkBrowserInfo } from './utility/diagram-util';
 import { flipConnector, updatePortEdges, alignElement, setConnectorDefaults } from './utility/diagram-util';
 import { Segment } from './interaction/scroller';
 import { Connector } from './objects/connector';
@@ -1162,6 +1162,14 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
      */
     @Event()
     public segmentCollectionChange: EmitType<ISegmentCollectionChangeEventArgs>;
+
+    /**
+     * Triggers when the image node is loaded.
+     * @deprecated
+     * @event
+     */
+    @Event()
+    public onImageLoad: EmitType<IImageLoadEventArgs>;
 
     /**
      * Triggers when the state of the expand and collapse icon change for a node.
@@ -4256,9 +4264,13 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
         svgGridSvg.setAttribute('class', 'e-grid-layer');
         let svgGrid: SVGElement = createSvgElement('g', { 'id': this.element.id + '_gridline', 'width': '100%', 'height': '100%' });
         let rect: SVGElement = createSvgElement('rect', {
-            'id': this.element.id + '_grid_rect', 'x': '0', 'y': '0', 'width': '100%', 'height': '100%',
-            'fill': 'url(#' + this.element.id + '_pattern)'
+            'id': this.element.id + '_grid_rect', 'x': '0', 'y': '0', 'width': '100%', 'height': '100%'
         });
+        if (checkBrowserInfo()) {
+            rect.setAttribute('fill', 'url(' + location.href + '#' + this.element.id + '_pattern ');
+        } else {
+            rect.setAttribute('fill', 'url(#' + this.element.id + '_pattern)');
+        }
         svgGrid.appendChild(rect);
         svgGridSvg.appendChild(svgGrid);
         this.diagramCanvas.appendChild(svgGridSvg);
@@ -4948,7 +4960,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
             arrangeChildNodesInSwimLane(this, obj);
             this.updateDiagramElementQuad();
         } else {
-            canvas.measure(new Size(obj.width, obj.height));
+            canvas.measure(new Size(obj.width, obj.height), obj.id, this.onLoadImageSize.bind(this));
             if (canvas instanceof GridPanel) {
                 canvas.arrange(canvas.desiredSize, true);
             } else { canvas.arrange(canvas.desiredSize); }
@@ -4973,6 +4985,16 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
         }
     }
 
+    private onLoadImageSize(id: string, size: Size): void {
+        let obj: NodeModel = this.getObject(id);
+        let image: HTMLElement = document.getElementById(id + 'sf-imageNode');
+        if (image) {
+            image.parentNode.removeChild(image);
+        }
+        this.nodePropertyChange(obj as Node, {} as Node, { width: size.width, height: size.height } as Node);
+        let args: IImageLoadEventArgs = { element: cloneObject(obj), size: size };
+        this.triggerEvent(DiagramEvent.onImageLoad, args);
+    }
     private updateChildPosition(obj: NodeModel): void {
         for (let i: number = 0; i < obj.children.length; i++) {
             let child: NodeModel = this.getObject(obj.children[i]);
@@ -6626,7 +6648,8 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
             if (this.bpmnModule !== undefined) {
                 this.bpmnModule.updateTextAnnotationProp(actualObject, { offsetX: (oldObject.offsetX || actualObject.offsetX), offsetY: (oldObject.offsetY || actualObject.offsetY) } as Node, this);
             }
-            actualObject.wrapper.measure(new Size(actualObject.wrapper.bounds.width, actualObject.wrapper.bounds.height));
+            actualObject.wrapper.measure(new Size(actualObject.wrapper.bounds.width, actualObject.wrapper.bounds.height), actualObject.id,
+                this.onLoadImageSize.bind(this));
 
             actualObject.wrapper.arrange(actualObject.wrapper.desiredSize); this.updateObject(actualObject, oldObject, node);
             if (actualObject.shape.type === 'SwimLane' && !this.currentSymbol && !(this.diagramActions & DiagramAction.ToolAction)) {

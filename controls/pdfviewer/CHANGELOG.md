@@ -2,6 +2,23 @@
 
 ## [Unreleased]
 
+## 17.3.21 (2019-10-30)
+
+### PDF Viewer
+
+#### New Features
+
+- `#252111` - Provided the support for handwritten signature.
+- `#251149` – Provided the support for customizing the text search highlight color.
+
+#### Bug Fixes
+
+- `#251864` - The pages in the landscape document will be rendered properly.
+- `#250902` - Now, the text Markup annotations are working properly inside the Tab control.
+- `#250538` - The ajaxRequestFailed event will be triggered for all the possible ajax error codes.
+- `#252269` – The mouse cursor has been updated properly after adding the free text annotation.
+- `#251401` - The annotationSelect event will be triggered properly while selecting the annotations.
+
 ## 17.3.19 (2019-10-22)
 
 ### PDF Viewer

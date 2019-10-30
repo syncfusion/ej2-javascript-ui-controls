@@ -1,4 +1,4 @@
-import { Component, Property, NotifyPropertyChanges, Internationalization, ModuleDeclaration } from '@syncfusion/ej2-base';
+import { Component, Property, NotifyPropertyChanges, Internationalization, ModuleDeclaration, isBlazor } from '@syncfusion/ej2-base';
 import { EmitType, INotifyPropertyChanged, setCulture, Browser, resetBlazorTemplate } from '@syncfusion/ej2-base';
 import { Event, EventHandler, Complex, Collection, isNullOrUndefined, remove, createElement } from '@syncfusion/ej2-base';
 import { Border, Font, Container, Margin, Annotation, TooltipSettings } from './model/base';
@@ -355,8 +355,7 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
      */
 
     protected preRender(): void {
-        let blazor: string = 'Blazor';
-        this.isBlazor = window[blazor];
+        this.isBlazor = isBlazor();
         this.unWireEvents();
         this.trigger(load, { gauge: !this.isBlazor ? this : null });
         this.initPrivateVariable();

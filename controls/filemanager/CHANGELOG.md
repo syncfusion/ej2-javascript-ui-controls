@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 17.3.21 (2019-10-30)
+
+### File Manager
+
+#### Bug Fixes
+
+- The issue `file manager throws script error when navigate to the different folder after sorting the path column in details view` has been fixed.
+
 ## 17.3.17 (2019-10-15)
 
 ### File Manager

@@ -228,18 +228,27 @@ export class StampAnnotation {
         let annot: PdfAnnotationBaseModel;
         // tslint:disable-next-line
         let annotation: any = this.currentStampAnnotation;
-        if (annotation.shapeAnnotationType === 'Image') {
+        if (annotation && annotation.shapeAnnotationType === 'Image') {
             annot = {
                 // tslint:disable-next-line:max-line-length
                 id: 'stamp' + this.pdfViewerBase.customStampCount, bounds: { x: X, y: Y, width: annotation.bounds.width, height: annotation.bounds.height }, pageIndex: pageIndex, data: annotation.data, modifiedDate: annotation.modifiedDate,
                 shapeAnnotationType: 'Image', opacity: annotation.opacity, rotateAngle: annotation.RotationAngle, annotName: annotation.annotationName, comments: [], review: { state: '', stateModel: '', modifiedDate: '', author: annotation.author }
             };
-        } else {
+        } else if (annotation) {
             annot = {
                 // tslint:disable-next-line:max-line-length
                 id: 'stamp' + this.pdfViewerBase.customStampCount, bounds: { x: X, y: Y, width: annotation.width, height: annotation.height }, pageIndex: pageIndex, data: annotation.pathdata,
                 // tslint:disable-next-line:max-line-length
                 shapeAnnotationType: 'Stamp', strokeColor: annotation.strokeColor, fillColor: annotation.fillColor, opacity: 0.5, stampFillColor: annotation.stampFillColor, stampStrokeColor: annotation.stampStrokeColor, rotateAngle: annotation.RotateAngle, isDynamicStamp: this.pdfViewerBase.isDynamicStamp, dynamicText: this.dynamicText, subject: annotation.iconName,
+            };
+        }
+        if (this.pdfViewerBase.currentSignatureAnnot) {
+            annotation = this.pdfViewerBase.currentSignatureAnnot;
+            annot = {
+                // tslint:disable-next-line:max-line-length
+                id: 'sign' + this.pdfViewerBase.signatureCount, bounds: { x: X, y: Y, width: annotation.bounds.width, height: annotation.bounds.height }, pageIndex: pageIndex, data: annotation.data,
+                // tslint:disable-next-line:max-line-length
+                shapeAnnotationType: 'HandWrittenSignature', thickness: annotation.thickness, strokeColor: annotation.strokeColor, opacity: annotation.opacity
             };
         }
         return (annot as PdfAnnotationBase);
@@ -543,7 +552,7 @@ export class StampAnnotation {
             };
             this.storeStampInSession(pageIndex, annotationObject);
             annot.comments = this.pdfViewer.annotationModule.getAnnotationComments(annotation.Comments, annotation, annotation.Author);
-            annot.review =  { state: annotation.State, stateModel: annotation.StateModel, author: author, modifiedDate: modifiedDate };
+            annot.review = { state: annotation.State, stateModel: annotation.StateModel, author: author, modifiedDate: modifiedDate };
             this.pdfViewer.add(annot as PdfAnnotationBase);
             // tslint:disable-next-line
             if (canvas != undefined && canvas != null) {

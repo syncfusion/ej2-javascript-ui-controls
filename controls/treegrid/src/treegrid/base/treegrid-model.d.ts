@@ -68,7 +68,7 @@ export interface TreeGridModel extends ComponentModel{
     expandStateMapping?: string;
 
     /**
-   * Specifies the mapping property path for the expand status of a record in data source
+   * If `allowRowDragAndDrop` is set to true, you can drag and drop treegrid rows at another treegrid.  
    * @default false
    */
     allowRowDragAndDrop?: boolean;

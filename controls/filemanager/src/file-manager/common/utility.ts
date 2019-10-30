@@ -2,7 +2,7 @@ import { IFileManager, ReadArgs, SortOrder, SearchArgs, FileDragEventArgs } from
 import * as CLS from '../base/classes';
 import * as events from '../base/constant';
 import { read, paste, Search, filter, Download, Delete } from '../common/operations';
-import { getValue, setValue, isNullOrUndefined as isNOU, matches, select, createElement } from '@syncfusion/ej2-base';
+import { getValue, setValue, isNullOrUndefined as isNOU, matches, select, createElement, Draggable } from '@syncfusion/ej2-base';
 import { closest, DragEventArgs, detach, BlazorDragEventArgs, isBlazor } from '@syncfusion/ej2-base';
 import { DataManager, Query } from '@syncfusion/ej2-data';
 import { MenuEventArgs } from '@syncfusion/ej2-navigations';
@@ -224,7 +224,7 @@ export function getTargetModule(parent: IFileManager, element: Element): void {
 export function refresh(parent: IFileManager): void {
     parent.itemData = [getPathObject(parent)];
     if (!hasReadAccess(parent.itemData[0])) {
-        createDeniedDialog(parent, parent.itemData[0]);
+        createDeniedDialog(parent, parent.itemData[0], events.permissionRead);
     } else {
         read(parent, events.refreshEnd, parent.path);
     }
@@ -303,7 +303,7 @@ export function getImageUrl(parent: IFileManager, item: Object): string {
     imgUrl = imgUrl + '&time=' + (new Date().getTime()).toString();
     return imgUrl;
 }
-
+/* istanbul ignore next */
 export function getFullPath(parent: IFileManager, data: Object, path: string): string {
     let filePath: string = getValue(parent.hasId ? 'id' : 'name', data) + '/';
     let fPath: string = getValue(parent.hasId ? 'filterId' : 'filterPath', data);
@@ -312,13 +312,6 @@ export function getFullPath(parent: IFileManager, data: Object, path: string): s
     } else {
         return path + filePath;
     }
-}
-
-export function getFullName(item: Object): string {
-    let fullName: string;
-    let fileName: string = getValue('name', item);
-    fullName = getValue('filterPath', item).replace(/\\/g, '/') + fileName;
-    return fullName;
 }
 
 export function getName(parent: IFileManager, data: Object): string {
@@ -687,7 +680,7 @@ export function dragStopHandler(parent: IFileManager, args: DragEventArgs): void
     });
 }
 
-export function dragStartHandler(parent: IFileManager, args: DragEventArgs & BlazorDragEventArgs): void {
+export function dragStartHandler(parent: IFileManager, args: DragEventArgs & BlazorDragEventArgs, dragObj: Draggable): void {
     let dragArgs: FileDragEventArgs = args;
     dragArgs.cancel = false;
     dragArgs.fileDetails = parent.dragData;
@@ -704,6 +697,7 @@ export function dragStartHandler(parent: IFileManager, args: DragEventArgs & Bla
     }
     removeBlur(parent);
     if (dragArgs.cancel) {
+        dragObj.intDestroy(args.event);
         dragCancel(parent);
     } else if (!dragArgs.cancel) {
         let i: number = 0;
@@ -713,6 +707,7 @@ export function dragStartHandler(parent: IFileManager, args: DragEventArgs & Bla
         }
         parent.trigger('fileDragStart', dragArgs, (dragArgs: FileDragEventArgs & BlazorDragEventArgs) => {
             if (dragArgs.cancel) {
+                dragObj.intDestroy(args.event);
                 dragCancel(parent);
             } else {
                 parent.uploadObj.dropArea = null;
@@ -778,12 +773,14 @@ export function draggingHandler(parent: IFileManager, args: DragEventArgs): void
     parent.element.classList.add(canDrop ? 'e-fe-drop' : 'e-no-drop');
     parent.trigger('fileDragging', dragArgs);
 }
-
+// Ignored the message key value in permission object
 export function objectToString(data: Object): string {
     let str: string = '';
     let keys: string[] = Object.keys(data);
     for (let i: number = 0; i < keys.length; i++) {
-        str += (i === 0 ? '' : ', ') + keys[i] + ': ' + getValue(keys[i], data);
+        if (keys[i] !== 'message') {
+            str += (i === 0 ? '' : ', ') + keys[i] + ': ' + getValue(keys[i], data);
+        }
     }
     return str;
 }
@@ -804,7 +801,7 @@ export function updateRenamingData(parent: IFileManager, data: Object): void {
 
 export function doRename(parent: IFileManager): void {
     if (!hasEditAccess(parent.itemData[0])) {
-        createDeniedDialog(parent, parent.itemData[0]);
+        createDeniedDialog(parent, parent.itemData[0], events.permissionEdit);
     } else {
         createDialog(parent, 'Rename');
     }
@@ -814,7 +811,7 @@ export function doDownload(parent: IFileManager): void {
     let items: Object[] = parent.itemData;
     for (let i: number = 0; i < items.length; i++) {
         if (!hasDownloadAccess(items[i])) {
-            createDeniedDialog(parent, items[i]);
+            createDeniedDialog(parent, items[i], events.permissionDownload);
             return;
         }
     }
@@ -826,7 +823,7 @@ export function doDownload(parent: IFileManager): void {
 export function doDeleteFiles(parent: IFileManager, data: Object[], newIds: string[]): void {
     for (let i: number = 0; i < data.length; i++) {
         if (!hasEditAccess(data[i])) {
-            createDeniedDialog(parent, data[i]);
+            createDeniedDialog(parent, data[i], events.permissionEdit);
             return;
         }
     }
@@ -837,7 +834,7 @@ export function doDeleteFiles(parent: IFileManager, data: Object[], newIds: stri
 export function doDownloadFiles(parent: IFileManager, data: Object[], newIds: string[]): void {
     for (let i: number = 0; i < data.length; i++) {
         if (!hasDownloadAccess(data[i])) {
-            createDeniedDialog(parent, data[i]);
+            createDeniedDialog(parent, data[i], events.permissionDownload);
             return;
         }
     }
@@ -847,12 +844,15 @@ export function doDownloadFiles(parent: IFileManager, data: Object[], newIds: st
     }
 }
 
-export function createDeniedDialog(parent: IFileManager, data: Object): void {
+export function createDeniedDialog(parent: IFileManager, data: Object, action: string): void {
+    let message: string = getValue('message', getValue('permission', data));
+    message = (message === '') ? '"' + getValue('name', data) + '" is not accessible. you need permission to perform the ' +
+        action + ' action.' : message;
     let response: ReadArgs = {
         error: {
             code: '401',
             fileExists: null,
-            message: '"' + getFullName(data) + '" is not accessible. Access is denied.'
+            message: message
         }
     };
     createDialog(parent, 'Error', response);
@@ -890,7 +890,7 @@ export function hasDownloadAccess(data: Object): boolean {
 export function createNewFolder(parent: IFileManager): void {
     let details: Object = parent.itemData[0];
     if (!hasContentAccess(details)) {
-        createDeniedDialog(parent, details);
+        createDeniedDialog(parent, details, events.permissionEditContents);
     } else {
         createDialog(parent, 'NewFolder');
     }
@@ -899,7 +899,7 @@ export function createNewFolder(parent: IFileManager): void {
 export function uploadItem(parent: IFileManager): void {
     let details: Object = parent.itemData[0];
     if (!hasUploadAccess(details)) {
-        createDeniedDialog(parent, details);
+        createDeniedDialog(parent, details, events.permissionUpload);
     } else {
         let eleId: string = '#' + parent.element.id + CLS.UPLOAD_ID;
         let uploadEle: HTMLElement = <HTMLElement>select(eleId, parent.element);

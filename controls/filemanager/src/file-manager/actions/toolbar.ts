@@ -105,7 +105,7 @@ export class Toolbar {
                     case 'delete':
                         for (let i: number = 0; i < details.length; i++) {
                             if (!hasEditAccess(details[i])) {
-                                createDeniedDialog(this.parent, details[i]);
+                                createDeniedDialog(this.parent, details[i], events.permissionEdit);
                                 return;
                             }
                         }
@@ -131,7 +131,7 @@ export class Toolbar {
                         break;
                     case 'rename':
                         if (!hasEditAccess(details[0])) {
-                            createDeniedDialog(this.parent, details[0]);
+                            createDeniedDialog(this.parent, details[0], events.permissionEdit);
                         } else {
                             this.parent.notify(events.renameInit, {});
                             createDialog(this.parent, 'Rename');

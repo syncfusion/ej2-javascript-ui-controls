@@ -654,6 +654,7 @@ export class FreeTextAnnotation {
         let pageDiv: HTMLElement = this.pdfViewerBase.getElement('_pageDiv_' + (pageIndex));
         let zoomFactor: number = this.pdfViewerBase.getZoomFactor();
         this.inputBoxElement.value = (annotation && annotation.dynamicText) ? annotation.dynamicText : this.defaultText;
+        this.inputBoxElement.style.boxSizing = 'border-box';
         this.inputBoxElement.style.left = ((currentPosition.x)) + 'px';
         this.inputBoxElement.style.top = ((currentPosition.y)) + 'px';
         this.inputBoxElement.style.height = (this.defaultHeight * zoomFactor) + 'px';

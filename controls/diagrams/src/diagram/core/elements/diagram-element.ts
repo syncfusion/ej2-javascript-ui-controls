@@ -296,7 +296,7 @@ export class DiagramElement {
      * Measures the minimum space that the element requires
      * @param availableSize 
      */
-    public measure(availableSize: Size): Size {
+    public measure(availableSize: Size, obj?: Object, callback?: Function): Size {
         let width: number = this.width !== undefined ? this.width : (availableSize.width || 0) - this.margin.left - this.margin.right;
         let height: number = this.height !== undefined ? this.height : (availableSize.height || 0) - this.margin.top - this.margin.bottom;
         this.desiredSize = new Size(width, height);

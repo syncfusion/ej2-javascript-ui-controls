@@ -1,4 +1,4 @@
-import { isUndefined, isNullOrUndefined, merge, setImmediate, setValue, getValue } from './util';
+import { isUndefined, isNullOrUndefined, merge, setImmediate, setValue, getValue, isBlazor } from './util';
 import { addClass, removeClass } from './dom';
 import { Observer } from './observer';
 
@@ -151,7 +151,7 @@ export abstract class Base<ElementType extends HTMLElement> {
                 let handler: Function = getValue(eventName, this);
                 if (handler) {
                     let blazor: string = 'Blazor';
-                    if (window[blazor]) {
+                    if (isBlazor()) {
                         let promise: Promise<object> = handler.call(this, eventProp);
                         if (promise && typeof promise.then === 'function') {
                             if (!successHandler) {

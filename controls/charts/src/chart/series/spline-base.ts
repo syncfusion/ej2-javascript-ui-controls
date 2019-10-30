@@ -45,6 +45,13 @@ export class SplineBase extends LineBase {
                     }
                 }
             }
+            if (series.chart.chartAreaType === 'PolarRadar' && series.isClosed) {
+                value = this.getControlPoints(
+                    {xValue: points[points.length - 1].xValue, yValue: points[points.length - 1].yValue} as Points,
+                    { xValue: points.length, yValue: points[0].yValue }  as Points,
+                    this.splinePoints[0], this.splinePoints[points[points.length - 1].index], series);
+                series.drawPoints.push(value);
+           }
         }
     }
     protected getPreviousIndex(points: Points[], i: number, series: Series): number {
@@ -191,39 +198,39 @@ export class SplineBase extends LineBase {
         let point: ControlPoints;
         let ySplineDuplicate1: number = ySpline1;
         let ySplineDuplicate2: number = ySpline2;
+        let xValue1: number = point1.xValue;
+        let yValue1: number = point1.yValue;
+        let xValue2: number = point2.xValue;
+        let yValue2: number = point2.yValue;
         switch (series.splineType) {
             case 'Cardinal':
                 if (series.xAxis.valueType === 'DateTime') {
                     ySplineDuplicate1 = ySpline1 / this.dateTimeInterval(series);
                     ySplineDuplicate2 = ySpline2 / this.dateTimeInterval(series);
                 }
-                controlPoint1 = new ChartLocation(point1.xValue + ySpline1 / 3, point1.yValue + ySplineDuplicate1 / 3);
-                controlPoint2 = new ChartLocation(point2.xValue - ySpline2 / 3, point2.yValue - ySplineDuplicate2 / 3);
+                controlPoint1 = new ChartLocation(xValue1 + ySpline1 / 3, yValue1 + ySplineDuplicate1 / 3);
+                controlPoint2 = new ChartLocation(xValue2 - ySpline2 / 3, yValue2 - ySplineDuplicate2 / 3);
                 point = new ControlPoints(controlPoint1, controlPoint2);
                 break;
-
             case 'Monotonic':
-                let value: number = (point2.xValue - point1.xValue) / 3;
-                controlPoint1 = new ChartLocation(point1.xValue + value, point1.yValue + ySpline1 * value);
-                controlPoint2 = new ChartLocation(point2.xValue - value, point2.yValue - ySpline2 * value);
+                let value: number = (xValue2 - xValue1) / 3;
+                controlPoint1 = new ChartLocation(xValue1 + value, yValue1 + ySpline1 * value);
+                controlPoint2 = new ChartLocation(xValue2 - value, yValue2 - ySpline2 * value);
                 point = new ControlPoints(controlPoint1, controlPoint2);
                 break;
-
             default:
                 let one3: number = 1 / 3.0;
-                let deltaX2: number = (point2.xValue - point1.xValue);
+                let deltaX2: number = (xValue2 - xValue1);
                 deltaX2 = deltaX2 * deltaX2;
-                let y1: number = one3 * (((2 * point1.yValue) + point2.yValue) - one3 * deltaX2 * (ySpline1 + 0.5 * ySpline2));
-                let y2: number = one3 * ((point1.yValue + (2 * point2.yValue)) - one3 * deltaX2 * (0.5 * ySpline1 + ySpline2));
-
-                controlPoint1 = new ChartLocation((2 * (point1.xValue) + (point2.xValue)) * one3, y1);
-                controlPoint2 = new ChartLocation(((point1.xValue) + 2 * (point2.xValue)) * one3, y2);
+                let y1: number = one3 * (((2 * yValue1) + yValue2) - one3 * deltaX2 * (ySpline1 + 0.5 * ySpline2));
+                let y2: number = one3 * ((yValue1 + (2 * yValue2)) - one3 * deltaX2 * (0.5 * ySpline1 + ySpline2));
+                controlPoint1 = new ChartLocation((2 * (xValue1) + (xValue2)) * one3, y1);
+                controlPoint2 = new ChartLocation(((xValue1) + 2 * (xValue2)) * one3, y2);
                 point = new ControlPoints(controlPoint1, controlPoint2);
                 break;
         }
         return point;
-    }
-
+    };
     /**
      * calculate datetime interval in hours 
      * 

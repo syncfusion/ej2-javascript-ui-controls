@@ -1,8 +1,10 @@
 import { Maps, doubleClick, Orientation, ITouches, ZoomSettings } from '../../index';
 import { Point, getElementByID, Size, PathOption, Rect, convertGeoToPoint, CircleOption, convertTileLatLongToPoint } from '../utils/helper';
 import { RectOption, PolygonOption, createTooltip, calculateScale, getTouchCenter, getTouches, targetTouches } from '../utils/helper';
-import { MapLocation, zoomAnimate, smoothTranslate , measureText, textTrim, clusterTemplate, marker,
-markerTemplate, removeElement, getElement } from '../utils/helper';
+import {
+    MapLocation, zoomAnimate, smoothTranslate, measureText, textTrim, clusterTemplate, marker,
+    markerTemplate, removeElement, getElement, clusterSeparate
+} from '../utils/helper';
 import { isNullOrUndefined, EventHandler, Browser, remove, createElement } from '@syncfusion/ej2-base';
 import { MarkerSettings, LayerSettings, changeBorderWidth, IMarkerRenderingEventArgs, markerRendering, } from '../index';
 import { IMapZoomEventArgs, IMapPanEventArgs } from '../model/interface';
@@ -60,6 +62,10 @@ export class Zoom {
     private templateCount: number;
     private distanceX: number;
     private distanceY: number;
+    /**
+     * @private
+     */
+    public flag: boolean = false;
     /** @private */
     public layerCollectionEle: Element;
     constructor(maps: Maps) {
@@ -324,17 +330,29 @@ export class Zoom {
                             for (let k: number = 0; k < currentEle.childElementCount; k++) {
                                 this.markerTranslate(<Element>currentEle.childNodes[k], factor, x, y, scale, 'Marker', animate);
                             }
-                            if (document.getElementById(this.maps.element.id + '_mapsTooltip') && this.maps.mapsTooltipModule.tooltipTargetID.indexOf('_MarkerIndex_')) {
-                                let tooltipElement: Element = currentEle.querySelector('#' + this.maps.mapsTooltipModule.tooltipTargetID );
-                                tooltipElement.getAttribute('transform');
-                                let x: number = parseFloat(tooltipElement.getAttribute('transform').split('(')[1].split(')')[0].split(' ')[1]);
-                                let y: number = parseFloat(tooltipElement.getAttribute('transform').split('(')[1].split(')')[0].split(' ')[2]);
-                                if (this.maps.isTileMap) {
-                                    x += +getElement(this.maps.element.id + '_tile_parent')['style']['left'].split('px')[0];
-                                    y += +getElement(this.maps.element.id + '_tile_parent')['style']['top'].split('px')[0];
+                            if (this.isPanning && this.maps.markerModule.sameMarkerData.length > 0) {
+                                clusterSeparate(this.maps.markerModule.sameMarkerData, this.maps, currentEle, true);
+                            } else if (this.maps.markerModule.sameMarkerData.length > 0) {
+                                this.maps.markerModule.sameMarkerData = [];
+                                if (document.getElementById(this.maps.element.id + '_mapsTooltip')) {
+                                    removeElement(this.maps.element.id + '_mapsTooltip');
                                 }
-                                this.maps.mapsTooltipModule.svgTooltip.location.x = x;
-                                this.maps.mapsTooltipModule.svgTooltip.location.y = y;
+                            }
+                            if (document.getElementById(this.maps.element.id + '_mapsTooltip') && this.maps.mapsTooltipModule.targetID.indexOf('_MarkerIndex_')) {
+                                let tooltipElement: Element = currentEle.querySelector('#' + this.maps.mapsTooltipModule.targetID);
+                                if (tooltipElement['style']['visibility'] === 'hidden') {
+                                    removeElement(this.maps.element.id + '_mapsTooltip');
+                                } else {
+                                    let x: number = parseFloat(tooltipElement.getAttribute('transform').split('(')[1].split(')')[0].split(' ')[1]);
+                                    let y: number = parseFloat(tooltipElement.getAttribute('transform').split('(')[1].split(')')[0].split(' ')[2]);
+                                    if (this.maps.isTileMap) {
+                                        x += +getElement(this.maps.element.id + '_tile_parent')['style']['left'].split('px')[0];
+                                        y += +getElement(this.maps.element.id + '_tile_parent')['style']['top'].split('px')[0];
+                                    }
+                                    this.maps.mapsTooltipModule.svgTooltip.location.x = x;
+                                    this.maps.mapsTooltipModule.svgTooltip.location.y = y;
+                                    this.maps.mapsTooltipModule.svgTooltip.enableAnimation = false;
+                                }
                             }
                         } else if (currentEle.id.indexOf('_bubble_Group') > -1) {
                             let childElement: HTMLElement;
@@ -404,84 +422,84 @@ export class Zoom {
     //tslint:disable
     private markerTranslates(
         element: Element | HTMLElement, factor: number, x: number, y: number, scale: number, type: string, layerElement: Element, animate: boolean = false,
-        ): void {
-            let markerSVGObject: Element;
-            let templateFn: Function;   
-            let layerIndex: number = parseInt(element.id.split('_LayerIndex_')[1].split('_')[0], 10);   
-            markerSVGObject = this.maps.renderer.createGroup({
-                id: this.maps.element.id + '_Markers_Group',
-                style: 'pointer-events: auto;'
-            });
-            if (document.getElementById(markerSVGObject.id)) {
-                removeElement(markerSVGObject.id);
-            }
-            let markerTemplateEle: HTMLElement = createElement('div', {
-                id: this.maps.element.id + '_LayerIndex_' + layerIndex + '_Markers_Template_Group',
-                className: 'template',
-                styles: 'overflow: hidden; position: absolute;pointer-events: none;' +
-                    'top:' + (this.maps.isTileMap ? 10 : this.maps.mapAreaRect.y) + 'px;' +
-                    'left:' + (this.maps.isTileMap ? 10 : this.maps.mapAreaRect.x) + 'px;' +
-                    'height:' + this.maps.mapAreaRect.height + 'px;' +
-                    'width:' + this.maps.mapAreaRect.width + 'px;'
-            });
-            if (document.getElementById(markerTemplateEle.id)) {
-                removeElement(markerTemplateEle.id);
-            }
-            let markerIndex: number = parseInt(element.id.split('_MarkerIndex_')[1].split('_')[0], 10);
-            let currentLayer: LayerSettings = <LayerSettings>this.maps.layersCollection[layerIndex];
-            currentLayer.markerSettings.map((markerSettings: MarkerSettings, markerIndex: number) => {
-                let markerDatas: Object[] = <Object[]>markerSettings.dataSource;
-                markerDatas.forEach((data: Object, dataIndex: number) => {
-                    let eventArgs: IMarkerRenderingEventArgs = {
-                        template: markerSettings.template, data: data, maps: this.maps, marker: markerSettings,
-                        cancel: false, name: markerRendering, fill: markerSettings.fill, height: markerSettings.height,
-                        width: markerSettings.width, imageUrl: markerSettings.imageUrl, shape: markerSettings.shape,
-                        border: markerSettings.border
-                    };
-                    if (this.maps.isBlazor) {
-                        const {maps, marker, ...blazorEventArgs } : IMarkerRenderingEventArgs = eventArgs;
-                        eventArgs = blazorEventArgs;
-                    }
-                    this.maps.trigger('markerRendering', eventArgs, (MarkerArgs: IMarkerRenderingEventArgs) => {
-                        let long: number = data['longitude'] | data['Longitude'];
-                        let lati: number = data['latitude'] | data['Latitude'];
-                        let offset: Point = markerSettings.offset;
-                        if (!eventArgs.cancel && markerSettings.visible && !isNullOrUndefined(long) && !isNullOrUndefined(lati)) {
-                            let markerID: string = this.maps.element.id + '_LayerIndex_' + layerIndex + '_MarkerIndex_'
-                                + markerIndex + '_dataIndex_' + dataIndex;
-                            let location: Point = (this.maps.isTileMap) ? convertTileLatLongToPoint(
-                                new MapLocation(long, lati), this.maps.tileZoomLevel, this.maps.tileTranslatePoint, true
-                            ) : convertGeoToPoint(lati, long, factor, currentLayer, this.maps);
-                            let animate: boolean = currentLayer.animationDuration !== 0 || isNullOrUndefined(this.maps.zoomModule);
-                            let transPoint: Point = {x: x, y:y};
-                            if (eventArgs.template) {
-                                markerTemplate(eventArgs, templateFn, markerID, data, markerIndex, markerTemplateEle, location,
-                                    scale, offset, this.maps);   
-                            } else {
-                                marker(eventArgs, markerSettings, markerDatas, dataIndex, location, transPoint,
-                                    markerID, offset, scale, this.maps, markerSVGObject);
-                            }
+    ): void {
+        let markerSVGObject: Element;
+        let templateFn: Function;
+        let layerIndex: number = parseInt(element.id.split('_LayerIndex_')[1].split('_')[0], 10);
+        markerSVGObject = this.maps.renderer.createGroup({
+            id: this.maps.element.id + '_Markers_Group',
+            style: 'pointer-events: auto;'
+        });
+        if (document.getElementById(markerSVGObject.id)) {
+            removeElement(markerSVGObject.id);
+        }
+        let markerTemplateEle: HTMLElement = createElement('div', {
+            id: this.maps.element.id + '_LayerIndex_' + layerIndex + '_Markers_Template_Group',
+            className: 'template',
+            styles: 'overflow: hidden; position: absolute;pointer-events: none;' +
+                'top:' + (this.maps.isTileMap ? 10 : this.maps.mapAreaRect.y) + 'px;' +
+                'left:' + (this.maps.isTileMap ? 10 : this.maps.mapAreaRect.x) + 'px;' +
+                'height:' + this.maps.mapAreaRect.height + 'px;' +
+                'width:' + this.maps.mapAreaRect.width + 'px;'
+        });
+        if (document.getElementById(markerTemplateEle.id)) {
+            removeElement(markerTemplateEle.id);
+        }
+        let markerIndex: number = parseInt(element.id.split('_MarkerIndex_')[1].split('_')[0], 10);
+        let currentLayer: LayerSettings = <LayerSettings>this.maps.layersCollection[layerIndex];
+        currentLayer.markerSettings.map((markerSettings: MarkerSettings, markerIndex: number) => {
+            let markerDatas: Object[] = <Object[]>markerSettings.dataSource;
+            markerDatas.forEach((data: Object, dataIndex: number) => {
+                let eventArgs: IMarkerRenderingEventArgs = {
+                    template: markerSettings.template, data: data, maps: this.maps, marker: markerSettings,
+                    cancel: false, name: markerRendering, fill: markerSettings.fill, height: markerSettings.height,
+                    width: markerSettings.width, imageUrl: markerSettings.imageUrl, shape: markerSettings.shape,
+                    border: markerSettings.border
+                };
+                if (this.maps.isBlazor) {
+                    const { maps, marker, ...blazorEventArgs }: IMarkerRenderingEventArgs = eventArgs;
+                    eventArgs = blazorEventArgs;
+                }
+                this.maps.trigger('markerRendering', eventArgs, (MarkerArgs: IMarkerRenderingEventArgs) => {
+                    let long: number = data['longitude'] | data['Longitude'];
+                    let lati: number = data['latitude'] | data['Latitude'];
+                    let offset: Point = markerSettings.offset;
+                    if (!eventArgs.cancel && markerSettings.visible && !isNullOrUndefined(long) && !isNullOrUndefined(lati)) {
+                        let markerID: string = this.maps.element.id + '_LayerIndex_' + layerIndex + '_MarkerIndex_'
+                            + markerIndex + '_dataIndex_' + dataIndex;
+                        let location: Point = (this.maps.isTileMap) ? convertTileLatLongToPoint(
+                            new MapLocation(long, lati), this.maps.tileZoomLevel, this.maps.tileTranslatePoint, true
+                        ) : convertGeoToPoint(lati, long, factor, currentLayer, this.maps);
+                        let animate: boolean = currentLayer.animationDuration !== 0 || isNullOrUndefined(this.maps.zoomModule);
+                        let transPoint: Point = { x: x, y: y };
+                        if (eventArgs.template) {
+                            markerTemplate(eventArgs, templateFn, markerID, data, markerIndex, markerTemplateEle, location,
+                                scale, offset, this.maps);
+                        } else {
+                            marker(eventArgs, markerSettings, markerDatas, dataIndex, location, transPoint,
+                                markerID, offset, scale, this.maps, markerSVGObject);
                         }
-                    });
+                    }
                 });
             });
-            if (markerSVGObject.childElementCount > 0 && (type !== 'Template')) {
+        });
+        if (markerSVGObject.childElementCount > 0 && (type !== 'Template')) {
+            layerElement.appendChild(markerSVGObject);
+            if (currentLayer.markerClusterSettings.allowClustering) {
+                this.maps.svgObject.appendChild(markerSVGObject);
+                this.maps.element.appendChild(this.maps.svgObject);
+                clusterTemplate(currentLayer, markerSVGObject, this.maps, layerIndex, markerSVGObject) as Element;
                 layerElement.appendChild(markerSVGObject);
-                if (currentLayer.markerClusterSettings.allowClustering) {
-                    this.maps.svgObject.appendChild(markerSVGObject);
-                    this.maps.element.appendChild(this.maps.svgObject);
-                    clusterTemplate(currentLayer, markerSVGObject, this.maps, layerIndex, markerSVGObject) as Element;        
-                    layerElement.appendChild(markerSVGObject);
-                }
             }
-            if (markerTemplateEle.childElementCount > 0 && getElementByID(this.maps.element.id + '_Secondary_Element')) {
+        }
+        if (markerTemplateEle.childElementCount > 0 && getElementByID(this.maps.element.id + '_Secondary_Element')) {
+            getElementByID(this.maps.element.id + '_Secondary_Element').appendChild(markerTemplateEle);
+            if (currentLayer.markerClusterSettings.allowClustering) {
+                clusterTemplate(currentLayer, markerTemplateEle, this.maps, layerIndex, markerSVGObject) as HTMLElement;
                 getElementByID(this.maps.element.id + '_Secondary_Element').appendChild(markerTemplateEle);
-                if (currentLayer.markerClusterSettings.allowClustering) {
-                   clusterTemplate(currentLayer, markerTemplateEle, this.maps,layerIndex, markerSVGObject ) as HTMLElement;      
-                   getElementByID(this.maps.element.id + '_Secondary_Element').appendChild(markerTemplateEle);
-                }
             }
-        };
+        }
+    };
     /**
      * To translate the layer template elements
      * @private
@@ -734,6 +752,7 @@ export class Zoom {
         }
         map.zoomTranslatePoint = map.translatePoint;
         this.mouseDownPoints = this.mouseMovePoints;
+        this.flag = false;
     }
 
     private toAlignSublayer(): void {
@@ -1099,6 +1118,7 @@ export class Zoom {
             this.pinchFactor = this.maps.scale;
             this.fingers = touches.length;
         }
+        this.flag = true;
     }
 
     public mouseMoveHandler(e: PointerEvent | TouchEvent): void {
@@ -1160,6 +1180,7 @@ export class Zoom {
         let map: Maps = this.maps;
         this.rectZoomingStart = false;
         this.isPanning = false;
+        this.flag = this.flag ? true : false;
         this.isTouch = false;
         this.touchStartList = [];
         this.touchMoveList = [];
@@ -1192,26 +1213,22 @@ export class Zoom {
      */
     public click(e: PointerEvent): void {
         let map: Maps = this.maps;
-        if (map.zoomSettings.zoomOnClick && (<Element>e.target).id.indexOf('_shapeIndex_') > -1 && !map.zoomSettings.doubleClickZoom
+        if ((map.markerModule && map.markerModule.sameMarkerData.length > 0) ||
++            (e.target['id'].indexOf('MarkerIndex') > -1 && e.target['id'].indexOf('cluster') == -1)) {
+            return null;
+        }
+        if (this.flag && map.zoomSettings.zoomOnClick && !(e.target['id'].indexOf('_Zooming_') > -1) && !map.zoomSettings.doubleClickZoom
             && (this.zoomColor !== this.selectionColor)) {
-            let bounds: Rect = (<SVGPathElement>e.target).getBBox() as Rect;
-            let boundwidth: number = bounds.width;
-            let boundHeight: number = bounds.height;
-            let layerScale: number; let baseScale: number = 1;
-            let availWidth: number = map.availableSize.width;
-            let availHeight: number = map.availableSize.height;
-            layerScale = ((availWidth - 100) / (availHeight - 100) > boundwidth / boundHeight) ? (availHeight - 100) / boundHeight :
-                (availWidth - 100) / boundwidth;
-            let zoomFactor: number = (layerScale - baseScale + 1);
-            let leftPos: number = ((availWidth / 2) - ((boundwidth * map.scale) / 2)) / layerScale;
-            let topPos: number = ((availHeight / 2) - ((boundHeight * map.scale) / 2)) / layerScale;
-            let translatePointX: number = (-bounds.x) + leftPos;
-            let translatePointY: number = (-bounds.y) + topPos;
-            map.previousScale = map.scale;
-            map.previousPoint = map.translatePoint;
-            map.scale = layerScale;
-            map.translatePoint = { x: translatePointX, y: translatePointY };
-            this.applyTransform(true);
+            let pageX: number = e.pageX;
+            let pageY: number = e.pageY;
+            let position: Point = this.getMousePosition(pageX, pageY);
+            let prevLevel: number = map.tileZoomLevel;
+            let prevScale: number = map.scale;
+            let value: number = (map.isTileMap) ? prevLevel : prevScale;
+            if (((position.x > map.mapAreaRect.x) && (position.x < (map.mapAreaRect.x + map.mapAreaRect.width))) &&
+                (position.y > map.mapAreaRect.y) && position.y < (map.mapAreaRect.y + map.mapAreaRect.height)) {
+                this.performZooming(position, (value + 1), 'ZoomIn');
+            }
         }
     }
 

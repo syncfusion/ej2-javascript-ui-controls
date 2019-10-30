@@ -2,6 +2,20 @@
 
 ## [Unreleased]
 
+## 17.3.21 (2019-10-30)
+
+### Diagram
+
+#### Bug Fixes
+
+- Now, the image size will be set as image node size when the size is not given.
+
+### Diagram
+
+#### Bug Fixes
+
+- `#249091` - The issue with the grid lines that are black in Safari browser for Angular sample has been fixed.
+
 ## 17.3.19 (2019-10-22)
 
 ### Diagram

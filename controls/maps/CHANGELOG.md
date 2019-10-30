@@ -8,6 +8,14 @@
 
 ## [Unreleased]
 
+## 17.3.21 (2019-10-30)
+
+### Maps
+
+#### New Features
+
+- Improved the marker cluster appearance for duplicate markers.
+
 ## 17.3.14 (2019-10-03)
 
 ### Maps

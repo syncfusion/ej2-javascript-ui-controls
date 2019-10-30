@@ -2010,7 +2010,13 @@ export class Selection implements IAction {
             this.refreshPersistSelection();
         }
         if (e.requestType === 'delete' && this.parent.isPersistSelection) {
-            e.data.slice().forEach((data: Object) => {
+            let records: object[] = [];
+            if (!isBlazor()) {
+                records = e.data;
+            } else {
+                records = this.getSelectedRecords();
+            }
+            records.slice().forEach((data: Object) => {
                 if (!isNullOrUndefined(data[this.primaryKey])) {
                     this.updatePersistDelete(data[this.primaryKey]);
                 }

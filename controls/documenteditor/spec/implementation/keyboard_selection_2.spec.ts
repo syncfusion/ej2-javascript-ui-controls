@@ -70,7 +70,7 @@ describe('Rtl Keyboard selection for Shift left key', () => {
         editor.selection.handleDownKey();
         editor.selection.handleDownKey();
         editor.selection.handleShiftLeftKey();
-        expect(editor.selection.start.offset).not.toBe(0);        
+        expect(editor.selection.start.offset).not.toBe(0);
     });
 });
 describe('Rtl Keyboard selection for Shift Right key', () => {
@@ -103,7 +103,7 @@ describe('Rtl Keyboard selection for Shift Right key', () => {
         editor.selection.handleEndKey();
         editor.selection.handleShiftRightKey();
         expect(editor.selection.start.offset).not.toBe(0);
-    });    
+    });
     it('Bidi for paragraph is true containing rtl text only selection is at start of linewidget', () => {
         editor.selection.handleControlDownKey();
         editor.selection.handleShiftRightKey();
@@ -129,7 +129,7 @@ describe('Rtl Keyboard selection for Shift Right key', () => {
         editor.selection.handleDownKey();
         editor.selection.handleShiftRightKey();
         // expect(editor.selection.start.offset).toBe(107);
-        expect(editor.selection.end.offset).toBe(1);
+        expect(editor.selection.end.offset).not.toBe(0);
     });
 });
 
@@ -200,7 +200,7 @@ describe('Rtl Keyboard selection for Shift Home and End key', () => {
     it('Bidi for paragraph is false containing rtl text only at middle of paragraph', () => {
         editor.selection.handleDownKey();
         editor.selection.handleDownKey();
-        editor.selection.handleShiftHomeKey();        
+        editor.selection.handleShiftHomeKey();
         expect(editor.selection.end.offset).toBe(0);
     });
 });
@@ -428,11 +428,11 @@ describe('Rtl Keyboard selection for Shift up and down key', () => {
     it('Bidi for paragraph is true containing rtl text only selection is at end of line widget-Left', () => {
         editor.selection.handleEndKey();
         editor.selection.handleShiftUpKey();
-        expect(editor.selection.end.currentWidget).not.toBe(editor.selection.start.currentWidget);
+        expect(editor.selection.end.currentWidget).toBe(editor.selection.start.currentWidget);
     });
 });
 
-let rtlLtr:any={"sections":[{"blocks":[{"paragraphFormat":{"styleName":"Normal","bidi":true},"inlines":[{"text":"Sample "},{"text":"سشةحمث","characterFormat":{"bidi":true}},{"text":" سشةحمث","characterFormat":{"bold":true,"italic":true,"fontSize":12.0,"bidi":true,"boldBidi":true,"italicBidi":true,"fontSizeBidi":12.0}},{"text":" ","characterFormat":{"bidi":true}},{"text":"Sam"},{"name":"_GoBack","bookmarkType":0},{"name":"_GoBack","bookmarkType":1},{"text":"pe"},{"text":" "},{"text":"Sample "},{"text":"سشةحمث","characterFormat":{"bidi":true}},{"text":" سشةحمث","characterFormat":{"bold":true,"italic":true,"fontSize":12.0,"bidi":true,"boldBidi":true,"italicBidi":true,"fontSizeBidi":12.0}},{"text":" ","characterFormat":{"bidi":true}},{"text":"Sampe"},{"text":" "},{"text":"Sample "},{"text":"سشةحمث","characterFormat":{"bidi":true}},{"text":" سشةحمث","characterFormat":{"bold":true,"italic":true,"fontSize":12.0,"bidi":true,"boldBidi":true,"italicBidi":true,"fontSizeBidi":12.0}},{"text":" ","characterFormat":{"bidi":true}},{"text":"Sampe"},{"text":" "},{"text":"Sample "},{"text":"سشةحمث","characterFormat":{"bidi":true}},{"text":" سشةحمث","characterFormat":{"bold":true,"italic":true,"fontSize":12.0,"bidi":true,"boldBidi":true,"italicBidi":true,"fontSizeBidi":12.0}},{"text":" ","characterFormat":{"bidi":true}},{"text":"Sampe"},{"text":" "},{"text":"Sample "},{"text":"سشةحمث","characterFormat":{"bidi":true}},{"text":" سشةحمث","characterFormat":{"bold":true,"italic":true,"fontSize":12.0,"bidi":true,"boldBidi":true,"italicBidi":true,"fontSizeBidi":12.0}},{"text":" ","characterFormat":{"bidi":true}},{"text":"Sampe"},{"text":" "},{"text":"Sample "},{"text":"سشةحمث","characterFormat":{"bidi":true}},{"text":" سشةحمث","characterFormat":{"bold":true,"italic":true,"fontSize":12.0,"bidi":true,"boldBidi":true,"italicBidi":true,"fontSizeBidi":12.0}},{"text":" ","characterFormat":{"bidi":true}},{"text":"Sampe"},{"text":" "},{"text":"Sample "},{"text":"سشةحمث","characterFormat":{"bidi":true}},{"text":" سشةحمث","characterFormat":{"bold":true,"italic":true,"fontSize":12.0,"bidi":true,"boldBidi":true,"italicBidi":true,"fontSizeBidi":12.0}},{"text":" ","characterFormat":{"bidi":true}},{"text":"Sampe"}]}],"headersFooters":{},"sectionFormat":{"headerDistance":36.0,"footerDistance":36.0,"pageWidth":612.0,"pageHeight":792.0,"leftMargin":72.0,"rightMargin":72.0,"topMargin":72.0,"bottomMargin":72.0,"differentFirstPage":false,"differentOddAndEvenPages":false,"bidi":false}}],"characterFormat":{"fontSize":11.0,"fontFamily":"Calibri","fontSizeBidi":11.0,"fontFamilyBidi":"Calibri"},"paragraphFormat":{"afterSpacing":8.0,"lineSpacing":1.0791666507720947,"lineSpacingType":"Multiple"},"background":{"color":"#FFFFFFFF"},"styles":[{"type":"Paragraph","name":"Normal","next":"Normal"},{"type":"Character","name":"Default Paragraph Font"}]};
+let rtlLtr: any = { "sections": [{ "blocks": [{ "paragraphFormat": { "styleName": "Normal", "bidi": true }, "inlines": [{ "text": "Sample " }, { "text": "سشةحمث", "characterFormat": { "bidi": true } }, { "text": " سشةحمث", "characterFormat": { "bold": true, "italic": true, "fontSize": 12.0, "bidi": true, "boldBidi": true, "italicBidi": true, "fontSizeBidi": 12.0 } }, { "text": " ", "characterFormat": { "bidi": true } }, { "text": "Sam" }, { "name": "_GoBack", "bookmarkType": 0 }, { "name": "_GoBack", "bookmarkType": 1 }, { "text": "pe" }, { "text": " " }, { "text": "Sample " }, { "text": "سشةحمث", "characterFormat": { "bidi": true } }, { "text": " سشةحمث", "characterFormat": { "bold": true, "italic": true, "fontSize": 12.0, "bidi": true, "boldBidi": true, "italicBidi": true, "fontSizeBidi": 12.0 } }, { "text": " ", "characterFormat": { "bidi": true } }, { "text": "Sampe" }, { "text": " " }, { "text": "Sample " }, { "text": "سشةحمث", "characterFormat": { "bidi": true } }, { "text": " سشةحمث", "characterFormat": { "bold": true, "italic": true, "fontSize": 12.0, "bidi": true, "boldBidi": true, "italicBidi": true, "fontSizeBidi": 12.0 } }, { "text": " ", "characterFormat": { "bidi": true } }, { "text": "Sampe" }, { "text": " " }, { "text": "Sample " }, { "text": "سشةحمث", "characterFormat": { "bidi": true } }, { "text": " سشةحمث", "characterFormat": { "bold": true, "italic": true, "fontSize": 12.0, "bidi": true, "boldBidi": true, "italicBidi": true, "fontSizeBidi": 12.0 } }, { "text": " ", "characterFormat": { "bidi": true } }, { "text": "Sampe" }, { "text": " " }, { "text": "Sample " }, { "text": "سشةحمث", "characterFormat": { "bidi": true } }, { "text": " سشةحمث", "characterFormat": { "bold": true, "italic": true, "fontSize": 12.0, "bidi": true, "boldBidi": true, "italicBidi": true, "fontSizeBidi": 12.0 } }, { "text": " ", "characterFormat": { "bidi": true } }, { "text": "Sampe" }, { "text": " " }, { "text": "Sample " }, { "text": "سشةحمث", "characterFormat": { "bidi": true } }, { "text": " سشةحمث", "characterFormat": { "bold": true, "italic": true, "fontSize": 12.0, "bidi": true, "boldBidi": true, "italicBidi": true, "fontSizeBidi": 12.0 } }, { "text": " ", "characterFormat": { "bidi": true } }, { "text": "Sampe" }, { "text": " " }, { "text": "Sample " }, { "text": "سشةحمث", "characterFormat": { "bidi": true } }, { "text": " سشةحمث", "characterFormat": { "bold": true, "italic": true, "fontSize": 12.0, "bidi": true, "boldBidi": true, "italicBidi": true, "fontSizeBidi": 12.0 } }, { "text": " ", "characterFormat": { "bidi": true } }, { "text": "Sampe" }] }], "headersFooters": {}, "sectionFormat": { "headerDistance": 36.0, "footerDistance": 36.0, "pageWidth": 612.0, "pageHeight": 792.0, "leftMargin": 72.0, "rightMargin": 72.0, "topMargin": 72.0, "bottomMargin": 72.0, "differentFirstPage": false, "differentOddAndEvenPages": false, "bidi": false } }], "characterFormat": { "fontSize": 11.0, "fontFamily": "Calibri", "fontSizeBidi": 11.0, "fontFamilyBidi": "Calibri" }, "paragraphFormat": { "afterSpacing": 8.0, "lineSpacing": 1.0791666507720947, "lineSpacingType": "Multiple" }, "background": { "color": "#FFFFFFFF" }, "styles": [{ "type": "Paragraph", "name": "Normal", "next": "Normal" }, { "type": "Character", "name": "Default Paragraph Font" }] };
 
 
 describe('Rtl and ltr text combinations validation', () => {
@@ -469,7 +469,7 @@ describe('Rtl and ltr text combinations validation', () => {
         editor.selection.handleShiftLeftKey();
         editor.selection.handleShiftLeftKey();
         editor.selection.handleShiftLeftKey();
-        editor.selection.handleShiftLeftKey();               
+        editor.selection.handleShiftLeftKey();
         expect(editor.selection.end.currentWidget).toBe(editor.selection.start.currentWidget);
     });
     it('RTl text for paragraph with shift left validation-2', () => {

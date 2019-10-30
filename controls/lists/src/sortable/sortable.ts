@@ -231,7 +231,7 @@ export class Sortable extends Base<HTMLElement>  implements INotifyPropertyChang
     private isPlaceHolderPresent(instance: Sortable): boolean {
         return instance.placeHolderElement && !!closest(instance.placeHolderElement, `#${instance.element.id}`);
     }
-    private onDragStop: Function = (e: { target: HTMLElement, event: MouseEventArgs, helper: Element }) => {
+    private onDragStop: Function = (e: { target: HTMLElement, event: MouseEvent & TouchEvent, helper: Element }) => {
         let dropInst: Sortable = this.getSortableInstance(this.curTarget); let prevIdx: number;
         if (this.isPlaceHolderPresent(dropInst)) {
             prevIdx = this.getIndex(this.target); this.updateItemClass(dropInst);
@@ -253,6 +253,7 @@ export class Sortable extends Base<HTMLElement>  implements INotifyPropertyChang
         this.target = null;
         this.curTarget = null;
         remove(e.helper);
+        (getComponent(this.element, Draggable) as Draggable).intDestroy(e.event);
     }
     /**
      * It is used to sort array of elements from source element to destination element.

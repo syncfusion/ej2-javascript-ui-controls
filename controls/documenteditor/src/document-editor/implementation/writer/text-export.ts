@@ -9,7 +9,10 @@ export class TextExport {
     private getModuleName(): string {
         return 'TextExport';
     }
-    private text: string = '';
+    /**
+     * @private
+     */
+    public pageContent: string = '';
     private curSectionIndex: number = 0;
     /* tslint:disable:no-any */
     private sections: any[];
@@ -44,11 +47,19 @@ export class TextExport {
         let document: any = viewer.owner.sfdtExportModule.write();
         this.setDocument(document);
     }
-    private setDocument(document: any): void {
+    /**
+     * @private
+     * @param document 
+     */
+    public setDocument(document: any): void {
         this.document = document;
         this.mSections = document.sections;
     }
-    private writeInternal(streamWriter: StreamWriter): void {
+    /**
+     * @private
+     * @param streamWriter 
+     */
+    public writeInternal(streamWriter?: StreamWriter): void {
         let section: any = undefined;
         let sectionCount: number = this.document.sections.length - 1;
         let isLastSection: boolean = false;
@@ -134,10 +145,19 @@ export class TextExport {
         this.curSectionIndex++;
     }
     private writeNewLine(writer: StreamWriter): void {
-        writer.writeLine('');
+        if (!isNullOrUndefined(writer)) {
+            writer.writeLine('');
+        } else {
+            this.pageContent = this.pageContent + ' ';
+        }
     }
     private writeText(writer: StreamWriter, text: string): void {
-        writer.write(text);
+        if (!isNullOrUndefined(writer)) {
+            writer.write(text);
+        } else {
+            this.pageContent += text;
+        }
+
     }
     private updateLastParagraph(): void {
         let cnt: number = this.document.sections.length;

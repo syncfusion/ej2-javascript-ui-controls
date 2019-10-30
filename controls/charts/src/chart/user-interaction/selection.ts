@@ -81,7 +81,7 @@ export class Selection extends BaseSelection {
         this.chart.on(Browser.touchEndEvent, this.completeSelection, this);
     }
     /**
-     * Chart mouse down 
+     * Chart mouse down
      */
     private mousedown(e: Event): void {
         let chart: Chart = this.chart;
@@ -104,7 +104,7 @@ export class Selection extends BaseSelection {
         this.chart.off(Browser.touchEndEvent, this.completeSelection);
     }
     /**
-     * To find private variable values 
+     * To find private variable values
      */
     private initPrivateVariables(chart: Chart): void {
         this.styleId = chart.element.id + '_ej2_chart_selection';
@@ -176,7 +176,11 @@ export class Selection extends BaseSelection {
             return;
         }
         if ((<HTMLElement>event.target).id.indexOf('_Series_') > -1) {
-            this.performSelection(this.indexFinder((<HTMLElement>event.target).id), this.chart, <Element>event.target);
+            let element: Element;
+            if ((<HTMLElement>event.target).id.indexOf('_Trackball_') > -1) {
+                element = getElement((<HTMLElement>event.target).id.split('_Trackball_')[0] + '_Symbol');
+            }
+            this.performSelection(this.indexFinder((<HTMLElement>event.target).id), this.chart, element || <Element>event.target);
         }
     }
     private performSelection(index: Index, chart: Chart, element?: Element): void {

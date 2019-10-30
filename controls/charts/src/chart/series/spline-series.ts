@@ -43,15 +43,9 @@ export class SplineSeries extends SplineBase {
             point.symbolLocations = []; point.regions = [];
             if (point.visible && withInRange(points[previous], point, points[this.getNextIndex(points, point.index - 1, series)], series)) {
                 if (firstPoint !== null) {
-                    data = series.drawPoints[previous];
-                    controlPoint1 = data.controlPoint1;
-                    controlPoint2 = data.controlPoint2;
-                    pt1 = getCoordinate(firstPoint.xValue, firstPoint.yValue, xAxis, yAxis, isInverted, series);
-                    pt2 = getCoordinate(point.xValue, point.yValue, xAxis, yAxis, isInverted, series);
-                    bpt1 = getCoordinate(controlPoint1.x, controlPoint1.y, xAxis, yAxis, isInverted, series);
-                    bpt2 = getCoordinate(controlPoint2.x, controlPoint2.y, xAxis, yAxis, isInverted, series);
-                    direction = direction.concat((startPoint + ' ' + (pt1.x) + ' ' + (pt1.y) + ' ' + 'C' + ' ' + (bpt1.x) + ' '
-                        + (bpt1.y) + ' ' + (bpt2.x) + ' ' + (bpt2.y) + ' ' + (pt2.x) + ' ' + (pt2.y) + ' '));
+                    direction = this.getSplineDirection(
+                        series.drawPoints[previous], firstPoint, point, xAxis, yAxis, isInverted, series, startPoint,
+                        getCoordinate, direction);
                     startPoint = 'L';
                 }
                 firstPoint = point;
@@ -62,6 +56,15 @@ export class SplineSeries extends SplineBase {
                 point.symbolLocations = [];
             }
         }
+        if (series.chart.chartAreaType === 'PolarRadar' && series.isClosed) {
+            direction = this.getSplineDirection(
+                series.drawPoints[series.drawPoints.length - 1], points[points.length - 1],
+                {xValue: points.length, yValue: points[0].yValue } as Points,
+                xAxis, yAxis, isInverted,
+                series, startPoint,
+                getCoordinate, direction);
+            startPoint = 'L';
+        }
         let name: string =
             series.category === 'TrendLine' ? series.chart.element.id + '_Series_' + series.sourceIndex + '_TrendLine_' + series.index :
                 series.chart.element.id + '_Series_' + series.index;
@@ -71,6 +74,32 @@ export class SplineSeries extends SplineBase {
         );
         this.appendLinePath(options, series, '');
         this.renderMarker(series);
+    }
+    /**
+     * 
+     * @param data To find the direct of spline using points.
+     * @param firstPoint 
+     * @param point 
+     * @param xAxis 
+     * @param yAxis 
+     * @param isInverted 
+     * @param series 
+     * @param startPoint 
+     * @param getCoordinate 
+     * @param direction 
+     */
+    private getSplineDirection(
+        data: ControlPoints, firstPoint: Points, point: Points, xAxis: Axis, yAxis: Axis, isInverted: boolean, series: Series,
+        startPoint: string, getCoordinate: Function, direction: string
+         ): string {
+        let controlPoint1: ChartLocation = data.controlPoint1;
+        let controlPoint2: ChartLocation = data.controlPoint2;
+        let pt1: ChartLocation = getCoordinate(firstPoint.xValue, firstPoint.yValue, xAxis, yAxis, isInverted, series);
+        let pt2: ChartLocation = getCoordinate(point.xValue, point.yValue, xAxis, yAxis, isInverted, series);
+        let bpt1: ChartLocation = getCoordinate(controlPoint1.x, controlPoint1.y, xAxis, yAxis, isInverted, series);
+        let bpt2: ChartLocation = getCoordinate(controlPoint2.x, controlPoint2.y, xAxis, yAxis, isInverted, series);
+        return direction.concat((startPoint + ' ' + (pt1.x) + ' ' + (pt1.y) + ' ' + 'C' + ' ' + (bpt1.x) + ' '
+            + (bpt1.y) + ' ' + (bpt2.x) + ' ' + (bpt2.y) + ' ' + (pt2.x) + ' ' + (pt2.y) + ' '));
     }
     /**
      * Get module name.

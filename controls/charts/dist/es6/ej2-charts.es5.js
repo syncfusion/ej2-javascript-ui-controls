@@ -2363,7 +2363,8 @@ function valueToPolarCoefficient(value, axis) {
         delta = delta === 0 ? 1 : delta;
     }
     else {
-        delta = range.delta;
+        // To split an interval equally based on visible labels count
+        delta = axis.visibleLabels[axis.visibleLabels.length - 1].value - axis.visibleLabels[0].value;
         length = axis.visibleLabels.length;
     }
     return axis.isInversed ? ((value - range.min) / delta) * (1 - 1 / (length)) :
@@ -5672,6 +5673,9 @@ var SeriesBase = /** @__PURE__ @class */ (function (_super) {
     };
     /** @private */
     SeriesBase.prototype.pushCategoryData = function (point, index, pointX) {
+        if (!this.visible) {
+            return null;
+        }
         if (!this.xAxis.isIndexed) {
             if (this.xAxis.labels.indexOf(pointX) < 0) {
                 this.xAxis.labels.push(pointX);
@@ -5777,6 +5781,9 @@ var SeriesBase = /** @__PURE__ @class */ (function (_super) {
     __decorate$4([
         Property('')
     ], SeriesBase.prototype, "pointColorMapping", void 0);
+    __decorate$4([
+        Property(true)
+    ], SeriesBase.prototype, "visible", void 0);
     __decorate$4([
         Property(null)
     ], SeriesBase.prototype, "xAxisName", void 0);
@@ -6193,9 +6200,6 @@ var Series = /** @__PURE__ @class */ (function (_super) {
         Property('')
     ], Series.prototype, "stackingGroup", void 0);
     __decorate$4([
-        Property(true)
-    ], Series.prototype, "visible", void 0);
-    __decorate$4([
         Complex({ color: 'transparent', width: 0 }, Border)
     ], Series.prototype, "border", void 0);
     __decorate$4([
@@ -6490,7 +6494,8 @@ var MarkerExplode = /** @__PURE__ @class */ (function (_super) {
         for (var i = 0; i < 2; i++) {
             var options = new PathOption(symbolId + '_' + i, i ? (marker.fill || point.color || (explodeSeries ? series.interior : '#ffffff')) : 'transparent', borderWidth + (i ? 0 : 8), i ? borderColor : markerShadow, (marker.opacity || seriesMarker.opacity), null, null);
             var symbol = drawSymbol(location, shape, size, seriesMarker.imageUrl, options, '', this.chart.svgRenderer, series.clipRect);
-            symbol.setAttribute('style', 'pointer-events:none');
+            // incident: 252450 point click selection not working while maker explode
+            //symbol.setAttribute('style', 'pointer-events:none');
             symbol.setAttribute('class', 'EJ2-Trackball');
             element.appendChild(symbol);
         }
@@ -8573,7 +8578,13 @@ var Chart = /** @__PURE__ @class */ (function (_super) {
      * Method to bind events for chart
      */
     Chart.prototype.unWireEvents = function () {
+        /**
+         * To fix react timeout destroy issue.
+         */
         /*! Find the Events type */
+        if (!this.element) {
+            return;
+        }
         var startEvent = Browser.touchStartEvent;
         var moveEvent = Browser.touchMoveEvent;
         var stopEvent = Browser.touchEndEvent;
@@ -8595,6 +8606,12 @@ var Chart = /** @__PURE__ @class */ (function (_super) {
         }
     };
     Chart.prototype.wireEvents = function () {
+        /**
+         * To fix react timeout destroy issue.
+         */
+        if (!this.element) {
+            return;
+        }
         /*! Find the Events type */
         var cancelEvent = Browser.isPointer ? 'pointerleave' : 'mouseleave';
         /*! Bind the Event handler */
@@ -12082,9 +12099,7 @@ var __extends$21 = (undefined && undefined.__extends) || (function () {
 var PolarRadarPanel = /** @__PURE__ @class */ (function (_super) {
     __extends$21(PolarRadarPanel, _super);
     function PolarRadarPanel() {
-        var _this = _super !== null && _super.apply(this, arguments) || this;
-        _this.xAxisVisibleLabels = [];
-        return _this;
+        return _super !== null && _super.apply(this, arguments) || this;
     }
     /**
      * Measure the polar radar axis size.
@@ -12284,16 +12299,18 @@ var PolarRadarPanel = /** @__PURE__ @class */ (function (_super) {
                     continue; // If the label is intersect, the label render is ignored.
                 }
                 // To check Y axis label with visible X axis label
-                for (var j = 0; j < this.xAxisVisibleLabels.length; j++) {
-                    if (isOverlap(labelRegions[i], this.xAxisVisibleLabels[j])) {
+                for (var _i = 0, _a = this.visibleAxisLabelRect; _i < _a.length; _i++) {
+                    var rect = _a[_i];
+                    if (isOverlap(labelRegions[i], rect)) {
                         isIntersect = true;
                         break;
                     }
                 }
-                if (isIntersect) {
-                    continue;
-                }
             }
+            if (isIntersect) {
+                continue;
+            }
+            this.visibleAxisLabelRect.push(labelRegions[i]);
             options = new TextOption(chart.element.id + index + '_AxisLabel_' + i, pointX, pointY, anchor, axis.visibleLabels[i].text);
             textElement(chart.renderer, options, axis.labelStyle, axis.labelStyle.color || chart.themeStyle.axisLabel, labelElement, false, chart.redraw, true, true);
         }
@@ -12435,6 +12452,7 @@ var PolarRadarPanel = /** @__PURE__ @class */ (function (_super) {
      * @private
      */
     PolarRadarPanel.prototype.drawXAxisLabels = function (axis, index) {
+        this.visibleAxisLabelRect = [];
         var chart = this.chart;
         var pointX = 0;
         var pointY = 0;
@@ -12465,9 +12483,30 @@ var PolarRadarPanel = /** @__PURE__ @class */ (function (_super) {
                 textAnchor = parseFloat(pointX.toFixed(1)) === parseFloat(this.centerX.toFixed(1)) ? 'middle' :
                     ((pointX < this.centerX && !islabelInside) || (pointX > this.centerX && islabelInside)) ? 'end' : 'start';
             }
-            labelText = axis.visibleLabels[i].text;
-            // fix for label style not working in axisLabelRender event issue
             label = axis.visibleLabels[i];
+            labelText = label.text;
+            // to trim axis labels based on available size
+            if (axis.enableTrim || intersectType === 'Trim') {
+                var originalText = axis.visibleLabels[i].originalText;
+                var trimText = void 0;
+                var size = void 0;
+                var labelPosition = axis.labelPosition;
+                var chartWidth = chart.availableSize.width;
+                var textLength = originalText.length;
+                for (var i_1 = textLength - 1; i_1 >= 0; --i_1) {
+                    trimText = originalText.substring(0, i_1) + '...';
+                    size = measureText(trimText, axis.labelStyle).width;
+                    if ((labelPosition === 'Outside' && ((pointX > chartWidth / 2 && pointX + size <= chartWidth) ||
+                        (pointX < chartWidth / 2 && pointX - size >= 0))) || (labelPosition === 'Inside' &&
+                        (pointX + size < chartWidth / 2 || pointX - size > chartWidth / 2))) {
+                        labelText = i_1 === textLength - 1 ? originalText : trimText;
+                        label.size.width = measureText(labelText, axis.labelStyle).width;
+                        label.text = labelText;
+                        break;
+                    }
+                }
+            }
+            // fix for label style not working in axisLabelRender event issue
             labelRegions[i] = this.getLabelRegion(pointX, pointY, label, textAnchor);
             if (i === 0) {
                 firstLabelX = pointX;
@@ -12495,12 +12534,8 @@ var PolarRadarPanel = /** @__PURE__ @class */ (function (_super) {
             if (isIntersect) {
                 continue; // If the label is intersect, the label render is ignored.
             }
+            this.visibleAxisLabelRect.push(labelRegions[i]);
             textElement(chart.renderer, options, label.labelStyle, label.labelStyle.color || chart.themeStyle.axisLabel, labelElement, false, chart.redraw, true, true);
-        }
-        for (var i = 0; i < isLabelVisible.length; i++) {
-            if (isLabelVisible[i]) {
-                this.xAxisVisibleLabels.push(labelRegions[i]);
-            }
         }
         this.element.appendChild(labelElement);
     };
@@ -12656,6 +12691,7 @@ var PolarSeries = /** @__PURE__ @class */ (function (_super) {
                     ((interval / series.rectCount) * position - ticks) + (sumofYValues / 360 * xAxis.startAngle);
                 itemCurrentXPos = (((itemCurrentXPos) / (sumofYValues)));
                 startAngle = 2 * Math.PI * (itemCurrentXPos + xAxis.startAngle);
+                endAngle = 2 * Math.PI * ((itemCurrentXPos + xAxis.startAngle) + (interval / series.rectCount) / (sumofYValues));
                 if (startAngle === 0 && endAngle === 0) {
                     endAngle = 2 * Math.PI;
                     arcValue = '1';
@@ -12663,7 +12699,6 @@ var PolarSeries = /** @__PURE__ @class */ (function (_super) {
                 else {
                     arcValue = '0';
                 }
-                endAngle = 2 * Math.PI * ((itemCurrentXPos + xAxis.startAngle) + (interval / series.rectCount) / (sumofYValues));
                 pointStartAngle = startAngle;
                 pointEndAngle = endAngle;
                 startAngle = (startAngle - 0.5 * Math.PI);
@@ -14651,6 +14686,10 @@ var SplineBase = /** @__PURE__ @class */ (function (_super) {
                     }
                 }
             }
+            if (series.chart.chartAreaType === 'PolarRadar' && series.isClosed) {
+                value = this.getControlPoints({ xValue: points[points.length - 1].xValue, yValue: points[points.length - 1].yValue }, { xValue: points.length, yValue: points[0].yValue }, this.splinePoints[0], this.splinePoints[points[points.length - 1].index], series);
+                series.drawPoints.push(value);
+            }
         }
     };
     SplineBase.prototype.getPreviousIndex = function (points, i, series) {
@@ -14798,35 +14837,40 @@ var SplineBase = /** @__PURE__ @class */ (function (_super) {
         var point;
         var ySplineDuplicate1 = ySpline1;
         var ySplineDuplicate2 = ySpline2;
+        var xValue1 = point1.xValue;
+        var yValue1 = point1.yValue;
+        var xValue2 = point2.xValue;
+        var yValue2 = point2.yValue;
         switch (series.splineType) {
             case 'Cardinal':
                 if (series.xAxis.valueType === 'DateTime') {
                     ySplineDuplicate1 = ySpline1 / this.dateTimeInterval(series);
                     ySplineDuplicate2 = ySpline2 / this.dateTimeInterval(series);
                 }
-                controlPoint1 = new ChartLocation(point1.xValue + ySpline1 / 3, point1.yValue + ySplineDuplicate1 / 3);
-                controlPoint2 = new ChartLocation(point2.xValue - ySpline2 / 3, point2.yValue - ySplineDuplicate2 / 3);
+                controlPoint1 = new ChartLocation(xValue1 + ySpline1 / 3, yValue1 + ySplineDuplicate1 / 3);
+                controlPoint2 = new ChartLocation(xValue2 - ySpline2 / 3, yValue2 - ySplineDuplicate2 / 3);
                 point = new ControlPoints(controlPoint1, controlPoint2);
                 break;
             case 'Monotonic':
-                var value = (point2.xValue - point1.xValue) / 3;
-                controlPoint1 = new ChartLocation(point1.xValue + value, point1.yValue + ySpline1 * value);
-                controlPoint2 = new ChartLocation(point2.xValue - value, point2.yValue - ySpline2 * value);
+                var value = (xValue2 - xValue1) / 3;
+                controlPoint1 = new ChartLocation(xValue1 + value, yValue1 + ySpline1 * value);
+                controlPoint2 = new ChartLocation(xValue2 - value, yValue2 - ySpline2 * value);
                 point = new ControlPoints(controlPoint1, controlPoint2);
                 break;
             default:
                 var one3 = 1 / 3.0;
-                var deltaX2 = (point2.xValue - point1.xValue);
+                var deltaX2 = (xValue2 - xValue1);
                 deltaX2 = deltaX2 * deltaX2;
-                var y1 = one3 * (((2 * point1.yValue) + point2.yValue) - one3 * deltaX2 * (ySpline1 + 0.5 * ySpline2));
-                var y2 = one3 * ((point1.yValue + (2 * point2.yValue)) - one3 * deltaX2 * (0.5 * ySpline1 + ySpline2));
-                controlPoint1 = new ChartLocation((2 * (point1.xValue) + (point2.xValue)) * one3, y1);
-                controlPoint2 = new ChartLocation(((point1.xValue) + 2 * (point2.xValue)) * one3, y2);
+                var y1 = one3 * (((2 * yValue1) + yValue2) - one3 * deltaX2 * (ySpline1 + 0.5 * ySpline2));
+                var y2 = one3 * ((yValue1 + (2 * yValue2)) - one3 * deltaX2 * (0.5 * ySpline1 + ySpline2));
+                controlPoint1 = new ChartLocation((2 * (xValue1) + (xValue2)) * one3, y1);
+                controlPoint2 = new ChartLocation(((xValue1) + 2 * (xValue2)) * one3, y2);
                 point = new ControlPoints(controlPoint1, controlPoint2);
                 break;
         }
         return point;
     };
+    
     /**
      * calculate datetime interval in hours
      *
@@ -14901,13 +14945,6 @@ var SplineSeries = /** @__PURE__ @class */ (function (_super) {
         var options;
         var firstPoint = null;
         var direction = '';
-        var pt1;
-        var pt2;
-        var bpt1;
-        var bpt2;
-        var data;
-        var controlPoint1;
-        var controlPoint2;
         var startPoint = 'M';
         var points = this.filterEmptyPoints(series);
         var previous;
@@ -14919,15 +14956,7 @@ var SplineSeries = /** @__PURE__ @class */ (function (_super) {
             point.regions = [];
             if (point.visible && withInRange(points[previous], point, points[this.getNextIndex(points, point.index - 1, series)], series)) {
                 if (firstPoint !== null) {
-                    data = series.drawPoints[previous];
-                    controlPoint1 = data.controlPoint1;
-                    controlPoint2 = data.controlPoint2;
-                    pt1 = getCoordinate(firstPoint.xValue, firstPoint.yValue, xAxis, yAxis, isInverted, series);
-                    pt2 = getCoordinate(point.xValue, point.yValue, xAxis, yAxis, isInverted, series);
-                    bpt1 = getCoordinate(controlPoint1.x, controlPoint1.y, xAxis, yAxis, isInverted, series);
-                    bpt2 = getCoordinate(controlPoint2.x, controlPoint2.y, xAxis, yAxis, isInverted, series);
-                    direction = direction.concat((startPoint + ' ' + (pt1.x) + ' ' + (pt1.y) + ' ' + 'C' + ' ' + (bpt1.x) + ' '
-                        + (bpt1.y) + ' ' + (bpt2.x) + ' ' + (bpt2.y) + ' ' + (pt2.x) + ' ' + (pt2.y) + ' '));
+                    direction = this.getSplineDirection(series.drawPoints[previous], firstPoint, point, xAxis, yAxis, isInverted, series, startPoint, getCoordinate, direction);
                     startPoint = 'L';
                 }
                 firstPoint = point;
@@ -14939,11 +14968,38 @@ var SplineSeries = /** @__PURE__ @class */ (function (_super) {
                 point.symbolLocations = [];
             }
         }
+        if (series.chart.chartAreaType === 'PolarRadar' && series.isClosed) {
+            direction = this.getSplineDirection(series.drawPoints[series.drawPoints.length - 1], points[points.length - 1], { xValue: points.length, yValue: points[0].yValue }, xAxis, yAxis, isInverted, series, startPoint, getCoordinate, direction);
+            startPoint = 'L';
+        }
         var name = series.category === 'TrendLine' ? series.chart.element.id + '_Series_' + series.sourceIndex + '_TrendLine_' + series.index :
             series.chart.element.id + '_Series_' + series.index;
         options = new PathOption(name, 'transparent', series.width, series.interior, series.opacity, series.dashArray, direction);
         this.appendLinePath(options, series, '');
         this.renderMarker(series);
+    };
+    /**
+     *
+     * @param data To find the direct of spline using points.
+     * @param firstPoint
+     * @param point
+     * @param xAxis
+     * @param yAxis
+     * @param isInverted
+     * @param series
+     * @param startPoint
+     * @param getCoordinate
+     * @param direction
+     */
+    SplineSeries.prototype.getSplineDirection = function (data, firstPoint, point, xAxis, yAxis, isInverted, series, startPoint, getCoordinate, direction) {
+        var controlPoint1 = data.controlPoint1;
+        var controlPoint2 = data.controlPoint2;
+        var pt1 = getCoordinate(firstPoint.xValue, firstPoint.yValue, xAxis, yAxis, isInverted, series);
+        var pt2 = getCoordinate(point.xValue, point.yValue, xAxis, yAxis, isInverted, series);
+        var bpt1 = getCoordinate(controlPoint1.x, controlPoint1.y, xAxis, yAxis, isInverted, series);
+        var bpt2 = getCoordinate(controlPoint2.x, controlPoint2.y, xAxis, yAxis, isInverted, series);
+        return direction.concat((startPoint + ' ' + (pt1.x) + ' ' + (pt1.y) + ' ' + 'C' + ' ' + (bpt1.x) + ' '
+            + (bpt1.y) + ' ' + (bpt2.x) + ' ' + (bpt2.y) + ' ' + (pt2.x) + ' ' + (pt2.y) + ' '));
     };
     /**
      * Get module name.
@@ -19581,7 +19637,11 @@ var Selection = /** @__PURE__ @class */ (function (_super) {
             return;
         }
         if (event.target.id.indexOf('_Series_') > -1) {
-            this.performSelection(this.indexFinder(event.target.id), this.chart, event.target);
+            var element = void 0;
+            if (event.target.id.indexOf('_Trackball_') > -1) {
+                element = getElement(event.target.id.split('_Trackball_')[0] + '_Symbol');
+            }
+            this.performSelection(this.indexFinder(event.target.id), this.chart, element || event.target);
         }
     };
     Selection.prototype.performSelection = function (index, chart, element) {
@@ -20699,10 +20759,14 @@ var DataLabel = /** @__PURE__ @class */ (function () {
         this.chart = chart;
     }
     DataLabel.prototype.initPrivateVariables = function (series, marker) {
-        var transform;
+        var transform = '';
+        var clipPath = '';
         var render = series.chart.renderer;
         var index = (series.index === undefined) ? series.category : series.index;
-        transform = series.chart.chartAreaType === 'Cartesian' ? 'translate(' + series.clipRect.x + ',' + (series.clipRect.y) + ')' : '';
+        if (series.chart.chartAreaType === 'Cartesian') {
+            transform = 'translate(' + series.clipRect.x + ',' + (series.clipRect.y) + ')';
+            clipPath = 'url(#' + this.chart.element.id + '_ChartSeriesClipRect_' + index + ')';
+        }
         if (marker.dataLabel.visible) {
             series.shapeElement = render.createGroup({
                 'id': this.chart.element.id + 'ShapeGroup' + index,
@@ -20712,7 +20776,7 @@ var DataLabel = /** @__PURE__ @class */ (function () {
             series.textElement = render.createGroup({
                 'id': this.chart.element.id + 'TextGroup' + index,
                 'transform': transform,
-                'clip-path': 'url(#' + this.chart.element.id + '_ChartSeriesClipRect_' + index + ')'
+                'clip-path': clipPath
             });
         }
         this.markerHeight = ((series.type === 'Scatter' || marker.visible)) ? (marker.height / 2) : 0;
@@ -20807,6 +20871,7 @@ var DataLabel = /** @__PURE__ @class */ (function () {
             var yPos;
             var xValue;
             var yValue;
+            var isRender = true;
             var clip = series.clipRect;
             var shapeRect;
             angle = degree = dataLabel.angle;
@@ -20833,7 +20898,17 @@ var DataLabel = /** @__PURE__ @class */ (function () {
                         else {
                             textSize = measureText(argsData.text, dataLabel.font);
                             rect = _this.calculateTextPosition(point, series, textSize, dataLabel, i);
-                            if (!isCollide(rect, chart.dataLabelCollections, clip)) {
+                            // To check whether the polar radar chart datalabel intersects the axis label or not
+                            if (chart.chartAreaType === 'PolarRadar') {
+                                for (var _i = 0, _a = chart.chartAxisLayoutPanel.visibleAxisLabelRect; _i < _a.length; _i++) {
+                                    var rectRegion = _a[_i];
+                                    if (isOverlap(new Rect(rect.x, rect.y, rect.width, rect.height), rectRegion)) {
+                                        isRender = false;
+                                        break;
+                                    }
+                                }
+                            }
+                            if (!isCollide(rect, chart.dataLabelCollections, clip) && isRender) {
                                 chart.dataLabelCollections.push(new Rect(rect.x + clip.x, rect.y + clip.y, rect.width, rect.height));
                                 if (_this.isShape) {
                                     shapeRect = chart.renderer.drawRectangle(new RectOption(_this.commonId + index + '_TextShape_' + i, argsData.color, argsData.border, dataLabel.opacity, rect, dataLabel.rx, dataLabel.ry), new Int32Array([clip.x, clip.y]));
@@ -21732,12 +21807,16 @@ var Legend = /** @__PURE__ @class */ (function (_super) {
     Legend.prototype.getLegendOptions = function (visibleSeriesCollection, chart) {
         this.legendCollections = [];
         var seriesType;
+        var fill;
         for (var _i = 0, visibleSeriesCollection_1 = visibleSeriesCollection; _i < visibleSeriesCollection_1.length; _i++) {
             var series = visibleSeriesCollection_1[_i];
             if (series.category !== 'Indicator') {
                 seriesType = (chart.chartAreaType === 'PolarRadar') ? series.drawType :
                     series.type;
-                this.legendCollections.push(new LegendOptions(series.name, series.interior, series.legendShape, (series.category === 'TrendLine' ?
+                // To set legend color when use pointColorMapping    
+                fill = series.pointColorMapping ? (series.points[0].interior ? series.points[0].interior : series.interior) :
+                    series.interior;
+                this.legendCollections.push(new LegendOptions(series.name, fill, series.legendShape, (series.category === 'TrendLine' ?
                     this.chart.series[series.sourceIndex].trendlines[series.index].visible : series.visible), seriesType, series.marker.shape, series.marker.visible));
             }
         }
@@ -25123,9 +25202,9 @@ var AccumulationBase = /** @__PURE__ @class */ (function () {
     AccumulationBase.prototype.deExplodeSlice = function (index, sliceId, animationDuration) {
         var element = getElement(sliceId + index);
         if (element) {
-            var borderElement = (element.parentElement.lastElementChild).hasAttribute('transform');
+            var borderElement = element.parentNode.lastChild.hasAttribute('transform');
             if (borderElement) {
-                (element.parentElement.lastElementChild).removeAttribute('transform');
+                element.parentNode.lastChild.removeAttribute('transform');
             }
         }
         var transform = element ? element.getAttribute('transform') : null;
@@ -25474,24 +25553,27 @@ var PieSeries = /** @__PURE__ @class */ (function (_super) {
     PieSeries.prototype.toggleInnerPoint = function (event, radius, innerRadius) {
         var target = event.target;
         var id = indexFinder(target.id, true);
-        var borderElement = document.getElementById(this.accumulation.element.id + 'PointHover_Border');
+        var accumulationId = event.target.id.split('_')[0];
+        var borderElement = document.getElementById(accumulationId + 'PointHover_Border');
         var createBorderEle;
         if (!isNaN(id.series)) {
             var seriesIndex = id.series;
             var pointIndex = id.point;
             if (!isNullOrUndefined(seriesIndex) && !isNaN(seriesIndex) && !isNullOrUndefined(pointIndex) && !isNaN(pointIndex)) {
                 var point = this.accumulation.visibleSeries[0].points[pointIndex];
-                var srcElem = getElement(this.accumulation.element.id + '_Series_' + seriesIndex + '_Point_' + pointIndex);
-                var opacity = srcElem.getAttribute('class') === this.accumulation.element.id + '_ej2_deselected' ?
+                var srcElem = getElement(accumulationId + '_Series_' + seriesIndex + '_Point_' + pointIndex);
+                var opacity = srcElem.getAttribute('class') === accumulationId + '_ej2_deselected' ?
                     this.accumulation.tooltip.enable ? 0.5 : 0.3 : this.accumulation.tooltip.enable ? 0.5 : 1;
                 var innerPie = this.getPathArc(this.accumulation.pieSeriesModule.center, point.startAngle % 360, (point.startAngle + point.degree) % 360, radius, innerRadius);
-                if ((borderElement) && (borderElement.getAttribute('d') !== innerPie || point.isExplode)) {
-                    borderElement.remove();
+                // while using annotation as a chart border will appear in both chart.so changed checked the id with target id
+                if ((borderElement) && (accumulationId === this.accumulation.element.id) &&
+                    (borderElement.getAttribute('d') !== innerPie || point.isExplode)) {
+                    borderElement.parentNode.removeChild(borderElement);
                     borderElement = null;
                 }
-                var seriousGroup = getElement(this.accumulation.element.id + '_Series_' + seriesIndex);
+                var seriousGroup = getElement(accumulationId + '_Series_' + seriesIndex);
                 if (!borderElement && ((!point.isExplode) || (point.isExplode && event.type !== 'click'))) {
-                    var path = new PathOption(this.accumulation.element.id + 'PointHover_Border', point.color, 1, point.color, opacity, '', innerPie);
+                    var path = new PathOption(accumulationId + 'PointHover_Border', point.color, 1, point.color, opacity, '', innerPie);
                     createBorderEle = this.accumulation.renderer.drawPath(path);
                     createBorderEle.removeAttribute('transform');
                     seriousGroup.appendChild(createBorderEle);
@@ -25510,7 +25592,9 @@ var PieSeries = /** @__PURE__ @class */ (function (_super) {
     PieSeries.prototype.removeBorder = function (borderElement, duration) {
         if (borderElement) {
             setTimeout(function () {
-                borderElement.remove();
+                if (borderElement.parentNode) {
+                    borderElement.parentNode.removeChild(borderElement);
+                }
             }, duration);
         }
     };

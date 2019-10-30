@@ -727,8 +727,11 @@ describe('Detail template module', () => {
                 }, done);
         });
         it('indent width checking:', () => {
+            rowDataBound = (args: any) =>{
                 expect(((gridObj.element.querySelectorAll('.e-detailrowcollapse')[0])as HTMLElement).offsetWidth).toBe(30);
                 expect(((gridObj.element.querySelectorAll('.e-detailheadercell')[0])as HTMLElement).offsetWidth).toBe(30);
+            }
+            gridObj.rowDataBound = rowDataBound;
         });
         afterAll(() => {
             destroy(gridObj);

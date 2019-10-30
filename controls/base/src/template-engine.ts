@@ -3,7 +3,7 @@
  */
 import { compile as render } from './template';
 import { createElement } from './dom';
-import { isNullOrUndefined } from './util';
+import { isNullOrUndefined, isBlazor } from './util';
 
 const HAS_ROW: RegExp = /^[\n\r.]+\<tr|^\<tr/;
 const HAS_SVG: RegExp = /^[\n\r.]+\<svg|^\<path|^\<g/;
@@ -36,7 +36,7 @@ export function compile(templateString: string, helper?: Object): (data: Object 
         isStringTemplate?: boolean, index?: number, isSvg?: boolean): NodeList => {
         let result: object = compiler(data, component, propName);
         let blazor: string = 'Blazor'; let blazorTemplateId: string = 'BlazorTemplateId';
-        if (window && window[blazor] && !isStringTemplate) {
+        if (isBlazor() && !isStringTemplate) {
             let randomId: string = getRandomId();
             let blazorId: string = templateId + randomId;
             if (!blazorTemplates[templateId]) {
@@ -83,7 +83,7 @@ export function updateBlazorTemplate(
     templateId?: string, templateName?: string, comp?: object,
     isEmpty?: boolean, callBack?: Function): void {
     let blazor: string = 'Blazor';
-    if (window && window[blazor]) {
+    if (isBlazor()) {
         let ejsIntrop: string = 'ejsInterop';
         window[ejsIntrop].updateTemplate(templateName, blazorTemplates[templateId], templateId, comp, callBack);
         if (isEmpty !== false) {

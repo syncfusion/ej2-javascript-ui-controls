@@ -179,7 +179,8 @@ export class MarkerExplode extends ChartData {
             );
             let symbol: Element = drawSymbol(location, shape, size, seriesMarker.imageUrl, options, '',
                                              this.chart.svgRenderer, series.clipRect);
-            symbol.setAttribute('style', 'pointer-events:none');
+            // incident: 252450 point click selection not working while maker explode
+            //symbol.setAttribute('style', 'pointer-events:none');
             symbol.setAttribute('class', 'EJ2-Trackball');
             element.appendChild(symbol);
         }

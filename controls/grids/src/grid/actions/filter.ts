@@ -542,7 +542,7 @@ export class Filter implements IAction {
         let dataSource: Object = col.filter.dataSource || gObj.getDataModule().dataManager;
         this.filterModule.openDialog({
             type: col.type, field: col.field, displayName: col.headerText,
-            dataSource: dataSource, format: col.format,
+            dataSource: dataSource, format: col.format, height: 800,
             filteredColumns: gObj.filterSettings.columns, target: target,
             sortedColumns: gObj.sortSettings.columns, formatFn: col.getFormatter(),
             parserFn: col.getParser(), query: gObj.query, template: col.getFilterItemTemplate(),

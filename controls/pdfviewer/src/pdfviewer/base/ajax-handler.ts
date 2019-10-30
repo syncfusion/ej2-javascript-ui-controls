@@ -73,7 +73,9 @@ export class AjaxHandler {
     }
 
     private stateChange(proxy: AjaxHandler): void {
-        if (proxy.httpRequest.readyState === 4 && proxy.httpRequest.status === 200) {
+        let status: number = proxy.httpRequest.status;
+        let statusString: string = status.toString().split('')[0];
+        if (proxy.httpRequest.readyState === 4 && status === 200) {
             // tslint:disable-next-line
             let data: any;
             if (this.responseType !== null) {
@@ -89,7 +91,8 @@ export class AjaxHandler {
                 status: proxy.httpRequest.status
             };
             proxy.successHandler(result);
-        } else if (proxy.httpRequest.readyState === 4 && proxy.httpRequest.status === 400) { // jshint ignore:line)
+        } else if (proxy.httpRequest.readyState === 4 && (statusString === '4' || statusString === '5')) { // jshint ignore:line)
+            // For handling 4xx and 5xx errors.
             // tslint:disable-next-line
             let result: any = {
                 name: 'onFailure',

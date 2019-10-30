@@ -2140,7 +2140,8 @@ function valueToPolarCoefficient(value, axis) {
         delta = delta === 0 ? 1 : delta;
     }
     else {
-        delta = range.delta;
+        // To split an interval equally based on visible labels count
+        delta = axis.visibleLabels[axis.visibleLabels.length - 1].value - axis.visibleLabels[0].value;
         length = axis.visibleLabels.length;
     }
     return axis.isInversed ? ((value - range.min) / delta) * (1 - 1 / (length)) :
@@ -5354,6 +5355,9 @@ class SeriesBase extends ChildProperty {
     }
     /** @private */
     pushCategoryData(point, index, pointX) {
+        if (!this.visible) {
+            return null;
+        }
         if (!this.xAxis.isIndexed) {
             if (this.xAxis.labels.indexOf(pointX) < 0) {
                 this.xAxis.labels.push(pointX);
@@ -5456,6 +5460,9 @@ __decorate$4([
 __decorate$4([
     Property('')
 ], SeriesBase.prototype, "pointColorMapping", void 0);
+__decorate$4([
+    Property(true)
+], SeriesBase.prototype, "visible", void 0);
 __decorate$4([
     Property(null)
 ], SeriesBase.prototype, "xAxisName", void 0);
@@ -5857,9 +5864,6 @@ __decorate$4([
     Property('')
 ], Series.prototype, "stackingGroup", void 0);
 __decorate$4([
-    Property(true)
-], Series.prototype, "visible", void 0);
-__decorate$4([
     Complex({ color: 'transparent', width: 0 }, Border)
 ], Series.prototype, "border", void 0);
 __decorate$4([
@@ -6129,7 +6133,8 @@ class MarkerExplode extends ChartData {
         for (let i = 0; i < 2; i++) {
             let options = new PathOption(symbolId + '_' + i, i ? (marker.fill || point.color || (explodeSeries ? series.interior : '#ffffff')) : 'transparent', borderWidth + (i ? 0 : 8), i ? borderColor : markerShadow, (marker.opacity || seriesMarker.opacity), null, null);
             let symbol = drawSymbol(location, shape, size, seriesMarker.imageUrl, options, '', this.chart.svgRenderer, series.clipRect);
-            symbol.setAttribute('style', 'pointer-events:none');
+            // incident: 252450 point click selection not working while maker explode
+            //symbol.setAttribute('style', 'pointer-events:none');
             symbol.setAttribute('class', 'EJ2-Trackball');
             element.appendChild(symbol);
         }
@@ -8098,7 +8103,13 @@ let Chart = class Chart extends Component {
      * Method to bind events for chart
      */
     unWireEvents() {
+        /**
+         * To fix react timeout destroy issue.
+         */
         /*! Find the Events type */
+        if (!this.element) {
+            return;
+        }
         let startEvent = Browser.touchStartEvent;
         let moveEvent = Browser.touchMoveEvent;
         let stopEvent = Browser.touchEndEvent;
@@ -8120,6 +8131,12 @@ let Chart = class Chart extends Component {
         }
     }
     wireEvents() {
+        /**
+         * To fix react timeout destroy issue.
+         */
+        if (!this.element) {
+            return;
+        }
         /*! Find the Events type */
         let cancelEvent = Browser.isPointer ? 'pointerleave' : 'mouseleave';
         /*! Bind the Event handler */
@@ -11384,10 +11401,6 @@ class BarSeries extends ColumnBase {
 }
 
 class PolarRadarPanel extends LineBase {
-    constructor() {
-        super(...arguments);
-        this.xAxisVisibleLabels = [];
-    }
     /**
      * Measure the polar radar axis size.
      * @return {void}
@@ -11585,16 +11598,17 @@ class PolarRadarPanel extends LineBase {
                     continue; // If the label is intersect, the label render is ignored.
                 }
                 // To check Y axis label with visible X axis label
-                for (let j = 0; j < this.xAxisVisibleLabels.length; j++) {
-                    if (isOverlap(labelRegions[i], this.xAxisVisibleLabels[j])) {
+                for (let rect of this.visibleAxisLabelRect) {
+                    if (isOverlap(labelRegions[i], rect)) {
                         isIntersect = true;
                         break;
                     }
                 }
-                if (isIntersect) {
-                    continue;
-                }
             }
+            if (isIntersect) {
+                continue;
+            }
+            this.visibleAxisLabelRect.push(labelRegions[i]);
             options = new TextOption(chart.element.id + index + '_AxisLabel_' + i, pointX, pointY, anchor, axis.visibleLabels[i].text);
             textElement(chart.renderer, options, axis.labelStyle, axis.labelStyle.color || chart.themeStyle.axisLabel, labelElement, false, chart.redraw, true, true);
         }
@@ -11736,6 +11750,7 @@ class PolarRadarPanel extends LineBase {
      * @private
      */
     drawXAxisLabels(axis, index) {
+        this.visibleAxisLabelRect = [];
         let chart = this.chart;
         let pointX = 0;
         let pointY = 0;
@@ -11766,9 +11781,30 @@ class PolarRadarPanel extends LineBase {
                 textAnchor = parseFloat(pointX.toFixed(1)) === parseFloat(this.centerX.toFixed(1)) ? 'middle' :
                     ((pointX < this.centerX && !islabelInside) || (pointX > this.centerX && islabelInside)) ? 'end' : 'start';
             }
-            labelText = axis.visibleLabels[i].text;
-            // fix for label style not working in axisLabelRender event issue
             label = axis.visibleLabels[i];
+            labelText = label.text;
+            // to trim axis labels based on available size
+            if (axis.enableTrim || intersectType === 'Trim') {
+                let originalText = axis.visibleLabels[i].originalText;
+                let trimText;
+                let size;
+                let labelPosition = axis.labelPosition;
+                let chartWidth = chart.availableSize.width;
+                let textLength = originalText.length;
+                for (let i = textLength - 1; i >= 0; --i) {
+                    trimText = originalText.substring(0, i) + '...';
+                    size = measureText(trimText, axis.labelStyle).width;
+                    if ((labelPosition === 'Outside' && ((pointX > chartWidth / 2 && pointX + size <= chartWidth) ||
+                        (pointX < chartWidth / 2 && pointX - size >= 0))) || (labelPosition === 'Inside' &&
+                        (pointX + size < chartWidth / 2 || pointX - size > chartWidth / 2))) {
+                        labelText = i === textLength - 1 ? originalText : trimText;
+                        label.size.width = measureText(labelText, axis.labelStyle).width;
+                        label.text = labelText;
+                        break;
+                    }
+                }
+            }
+            // fix for label style not working in axisLabelRender event issue
             labelRegions[i] = this.getLabelRegion(pointX, pointY, label, textAnchor);
             if (i === 0) {
                 firstLabelX = pointX;
@@ -11796,12 +11832,8 @@ class PolarRadarPanel extends LineBase {
             if (isIntersect) {
                 continue; // If the label is intersect, the label render is ignored.
             }
+            this.visibleAxisLabelRect.push(labelRegions[i]);
             textElement(chart.renderer, options, label.labelStyle, label.labelStyle.color || chart.themeStyle.axisLabel, labelElement, false, chart.redraw, true, true);
-        }
-        for (let i = 0; i < isLabelVisible.length; i++) {
-            if (isLabelVisible[i]) {
-                this.xAxisVisibleLabels.push(labelRegions[i]);
-            }
         }
         this.element.appendChild(labelElement);
     }
@@ -11938,6 +11970,7 @@ class PolarSeries extends PolarRadarPanel {
                     ((interval / series.rectCount) * position - ticks) + (sumofYValues / 360 * xAxis.startAngle);
                 itemCurrentXPos = (((itemCurrentXPos) / (sumofYValues)));
                 startAngle = 2 * Math.PI * (itemCurrentXPos + xAxis.startAngle);
+                endAngle = 2 * Math.PI * ((itemCurrentXPos + xAxis.startAngle) + (interval / series.rectCount) / (sumofYValues));
                 if (startAngle === 0 && endAngle === 0) {
                     endAngle = 2 * Math.PI;
                     arcValue = '1';
@@ -11945,7 +11978,6 @@ class PolarSeries extends PolarRadarPanel {
                 else {
                     arcValue = '0';
                 }
-                endAngle = 2 * Math.PI * ((itemCurrentXPos + xAxis.startAngle) + (interval / series.rectCount) / (sumofYValues));
                 pointStartAngle = startAngle;
                 pointEndAngle = endAngle;
                 startAngle = (startAngle - 0.5 * Math.PI);
@@ -13661,6 +13693,10 @@ class SplineBase extends LineBase {
                     }
                 }
             }
+            if (series.chart.chartAreaType === 'PolarRadar' && series.isClosed) {
+                value = this.getControlPoints({ xValue: points[points.length - 1].xValue, yValue: points[points.length - 1].yValue }, { xValue: points.length, yValue: points[0].yValue }, this.splinePoints[0], this.splinePoints[points[points.length - 1].index], series);
+                series.drawPoints.push(value);
+            }
         }
     }
     getPreviousIndex(points, i, series) {
@@ -13808,35 +13844,40 @@ class SplineBase extends LineBase {
         let point;
         let ySplineDuplicate1 = ySpline1;
         let ySplineDuplicate2 = ySpline2;
+        let xValue1 = point1.xValue;
+        let yValue1 = point1.yValue;
+        let xValue2 = point2.xValue;
+        let yValue2 = point2.yValue;
         switch (series.splineType) {
             case 'Cardinal':
                 if (series.xAxis.valueType === 'DateTime') {
                     ySplineDuplicate1 = ySpline1 / this.dateTimeInterval(series);
                     ySplineDuplicate2 = ySpline2 / this.dateTimeInterval(series);
                 }
-                controlPoint1 = new ChartLocation(point1.xValue + ySpline1 / 3, point1.yValue + ySplineDuplicate1 / 3);
-                controlPoint2 = new ChartLocation(point2.xValue - ySpline2 / 3, point2.yValue - ySplineDuplicate2 / 3);
+                controlPoint1 = new ChartLocation(xValue1 + ySpline1 / 3, yValue1 + ySplineDuplicate1 / 3);
+                controlPoint2 = new ChartLocation(xValue2 - ySpline2 / 3, yValue2 - ySplineDuplicate2 / 3);
                 point = new ControlPoints(controlPoint1, controlPoint2);
                 break;
             case 'Monotonic':
-                let value = (point2.xValue - point1.xValue) / 3;
-                controlPoint1 = new ChartLocation(point1.xValue + value, point1.yValue + ySpline1 * value);
-                controlPoint2 = new ChartLocation(point2.xValue - value, point2.yValue - ySpline2 * value);
+                let value = (xValue2 - xValue1) / 3;
+                controlPoint1 = new ChartLocation(xValue1 + value, yValue1 + ySpline1 * value);
+                controlPoint2 = new ChartLocation(xValue2 - value, yValue2 - ySpline2 * value);
                 point = new ControlPoints(controlPoint1, controlPoint2);
                 break;
             default:
                 let one3 = 1 / 3.0;
-                let deltaX2 = (point2.xValue - point1.xValue);
+                let deltaX2 = (xValue2 - xValue1);
                 deltaX2 = deltaX2 * deltaX2;
-                let y1 = one3 * (((2 * point1.yValue) + point2.yValue) - one3 * deltaX2 * (ySpline1 + 0.5 * ySpline2));
-                let y2 = one3 * ((point1.yValue + (2 * point2.yValue)) - one3 * deltaX2 * (0.5 * ySpline1 + ySpline2));
-                controlPoint1 = new ChartLocation((2 * (point1.xValue) + (point2.xValue)) * one3, y1);
-                controlPoint2 = new ChartLocation(((point1.xValue) + 2 * (point2.xValue)) * one3, y2);
+                let y1 = one3 * (((2 * yValue1) + yValue2) - one3 * deltaX2 * (ySpline1 + 0.5 * ySpline2));
+                let y2 = one3 * ((yValue1 + (2 * yValue2)) - one3 * deltaX2 * (0.5 * ySpline1 + ySpline2));
+                controlPoint1 = new ChartLocation((2 * (xValue1) + (xValue2)) * one3, y1);
+                controlPoint2 = new ChartLocation(((xValue1) + 2 * (xValue2)) * one3, y2);
                 point = new ControlPoints(controlPoint1, controlPoint2);
                 break;
         }
         return point;
     }
+    ;
     /**
      * calculate datetime interval in hours
      *
@@ -13893,13 +13934,6 @@ class SplineSeries extends SplineBase {
         let options;
         let firstPoint = null;
         let direction = '';
-        let pt1;
-        let pt2;
-        let bpt1;
-        let bpt2;
-        let data;
-        let controlPoint1;
-        let controlPoint2;
         let startPoint = 'M';
         let points = this.filterEmptyPoints(series);
         let previous;
@@ -13910,15 +13944,7 @@ class SplineSeries extends SplineBase {
             point.regions = [];
             if (point.visible && withInRange(points[previous], point, points[this.getNextIndex(points, point.index - 1, series)], series)) {
                 if (firstPoint !== null) {
-                    data = series.drawPoints[previous];
-                    controlPoint1 = data.controlPoint1;
-                    controlPoint2 = data.controlPoint2;
-                    pt1 = getCoordinate(firstPoint.xValue, firstPoint.yValue, xAxis, yAxis, isInverted, series);
-                    pt2 = getCoordinate(point.xValue, point.yValue, xAxis, yAxis, isInverted, series);
-                    bpt1 = getCoordinate(controlPoint1.x, controlPoint1.y, xAxis, yAxis, isInverted, series);
-                    bpt2 = getCoordinate(controlPoint2.x, controlPoint2.y, xAxis, yAxis, isInverted, series);
-                    direction = direction.concat((startPoint + ' ' + (pt1.x) + ' ' + (pt1.y) + ' ' + 'C' + ' ' + (bpt1.x) + ' '
-                        + (bpt1.y) + ' ' + (bpt2.x) + ' ' + (bpt2.y) + ' ' + (pt2.x) + ' ' + (pt2.y) + ' '));
+                    direction = this.getSplineDirection(series.drawPoints[previous], firstPoint, point, xAxis, yAxis, isInverted, series, startPoint, getCoordinate, direction);
                     startPoint = 'L';
                 }
                 firstPoint = point;
@@ -13930,11 +13956,38 @@ class SplineSeries extends SplineBase {
                 point.symbolLocations = [];
             }
         }
+        if (series.chart.chartAreaType === 'PolarRadar' && series.isClosed) {
+            direction = this.getSplineDirection(series.drawPoints[series.drawPoints.length - 1], points[points.length - 1], { xValue: points.length, yValue: points[0].yValue }, xAxis, yAxis, isInverted, series, startPoint, getCoordinate, direction);
+            startPoint = 'L';
+        }
         let name = series.category === 'TrendLine' ? series.chart.element.id + '_Series_' + series.sourceIndex + '_TrendLine_' + series.index :
             series.chart.element.id + '_Series_' + series.index;
         options = new PathOption(name, 'transparent', series.width, series.interior, series.opacity, series.dashArray, direction);
         this.appendLinePath(options, series, '');
         this.renderMarker(series);
+    }
+    /**
+     *
+     * @param data To find the direct of spline using points.
+     * @param firstPoint
+     * @param point
+     * @param xAxis
+     * @param yAxis
+     * @param isInverted
+     * @param series
+     * @param startPoint
+     * @param getCoordinate
+     * @param direction
+     */
+    getSplineDirection(data, firstPoint, point, xAxis, yAxis, isInverted, series, startPoint, getCoordinate, direction) {
+        let controlPoint1 = data.controlPoint1;
+        let controlPoint2 = data.controlPoint2;
+        let pt1 = getCoordinate(firstPoint.xValue, firstPoint.yValue, xAxis, yAxis, isInverted, series);
+        let pt2 = getCoordinate(point.xValue, point.yValue, xAxis, yAxis, isInverted, series);
+        let bpt1 = getCoordinate(controlPoint1.x, controlPoint1.y, xAxis, yAxis, isInverted, series);
+        let bpt2 = getCoordinate(controlPoint2.x, controlPoint2.y, xAxis, yAxis, isInverted, series);
+        return direction.concat((startPoint + ' ' + (pt1.x) + ' ' + (pt1.y) + ' ' + 'C' + ' ' + (bpt1.x) + ' '
+            + (bpt1.y) + ' ' + (bpt2.x) + ' ' + (bpt2.y) + ' ' + (pt2.x) + ' ' + (pt2.y) + ' '));
     }
     /**
      * Get module name.
@@ -18253,7 +18306,11 @@ class Selection extends BaseSelection {
             return;
         }
         if (event.target.id.indexOf('_Series_') > -1) {
-            this.performSelection(this.indexFinder(event.target.id), this.chart, event.target);
+            let element;
+            if (event.target.id.indexOf('_Trackball_') > -1) {
+                element = getElement(event.target.id.split('_Trackball_')[0] + '_Symbol');
+            }
+            this.performSelection(this.indexFinder(event.target.id), this.chart, element || event.target);
         }
     }
     performSelection(index, chart, element) {
@@ -19349,10 +19406,14 @@ class DataLabel {
         this.chart = chart;
     }
     initPrivateVariables(series, marker) {
-        let transform;
+        let transform = '';
+        let clipPath = '';
         let render = series.chart.renderer;
         let index = (series.index === undefined) ? series.category : series.index;
-        transform = series.chart.chartAreaType === 'Cartesian' ? 'translate(' + series.clipRect.x + ',' + (series.clipRect.y) + ')' : '';
+        if (series.chart.chartAreaType === 'Cartesian') {
+            transform = 'translate(' + series.clipRect.x + ',' + (series.clipRect.y) + ')';
+            clipPath = 'url(#' + this.chart.element.id + '_ChartSeriesClipRect_' + index + ')';
+        }
         if (marker.dataLabel.visible) {
             series.shapeElement = render.createGroup({
                 'id': this.chart.element.id + 'ShapeGroup' + index,
@@ -19362,7 +19423,7 @@ class DataLabel {
             series.textElement = render.createGroup({
                 'id': this.chart.element.id + 'TextGroup' + index,
                 'transform': transform,
-                'clip-path': 'url(#' + this.chart.element.id + '_ChartSeriesClipRect_' + index + ')'
+                'clip-path': clipPath
             });
         }
         this.markerHeight = ((series.type === 'Scatter' || marker.visible)) ? (marker.height / 2) : 0;
@@ -19456,6 +19517,7 @@ class DataLabel {
             let yPos;
             let xValue;
             let yValue;
+            let isRender = true;
             let clip = series.clipRect;
             let shapeRect;
             angle = degree = dataLabel.angle;
@@ -19482,7 +19544,16 @@ class DataLabel {
                         else {
                             textSize = measureText(argsData.text, dataLabel.font);
                             rect = this.calculateTextPosition(point, series, textSize, dataLabel, i);
-                            if (!isCollide(rect, chart.dataLabelCollections, clip)) {
+                            // To check whether the polar radar chart datalabel intersects the axis label or not
+                            if (chart.chartAreaType === 'PolarRadar') {
+                                for (let rectRegion of chart.chartAxisLayoutPanel.visibleAxisLabelRect) {
+                                    if (isOverlap(new Rect(rect.x, rect.y, rect.width, rect.height), rectRegion)) {
+                                        isRender = false;
+                                        break;
+                                    }
+                                }
+                            }
+                            if (!isCollide(rect, chart.dataLabelCollections, clip) && isRender) {
                                 chart.dataLabelCollections.push(new Rect(rect.x + clip.x, rect.y + clip.y, rect.width, rect.height));
                                 if (this.isShape) {
                                     shapeRect = chart.renderer.drawRectangle(new RectOption(this.commonId + index + '_TextShape_' + i, argsData.color, argsData.border, dataLabel.opacity, rect, dataLabel.rx, dataLabel.ry), new Int32Array([clip.x, clip.y]));
@@ -20361,11 +20432,15 @@ class Legend extends BaseLegend {
     getLegendOptions(visibleSeriesCollection, chart) {
         this.legendCollections = [];
         let seriesType;
+        let fill;
         for (let series of visibleSeriesCollection) {
             if (series.category !== 'Indicator') {
                 seriesType = (chart.chartAreaType === 'PolarRadar') ? series.drawType :
                     series.type;
-                this.legendCollections.push(new LegendOptions(series.name, series.interior, series.legendShape, (series.category === 'TrendLine' ?
+                // To set legend color when use pointColorMapping    
+                fill = series.pointColorMapping ? (series.points[0].interior ? series.points[0].interior : series.interior) :
+                    series.interior;
+                this.legendCollections.push(new LegendOptions(series.name, fill, series.legendShape, (series.category === 'TrendLine' ?
                     this.chart.series[series.sourceIndex].trendlines[series.index].visible : series.visible), seriesType, series.marker.shape, series.marker.visible));
             }
         }
@@ -23590,9 +23665,9 @@ class AccumulationBase {
     deExplodeSlice(index, sliceId, animationDuration) {
         let element = getElement(sliceId + index);
         if (element) {
-            let borderElement = (element.parentElement.lastElementChild).hasAttribute('transform');
+            let borderElement = element.parentNode.lastChild.hasAttribute('transform');
             if (borderElement) {
-                (element.parentElement.lastElementChild).removeAttribute('transform');
+                element.parentNode.lastChild.removeAttribute('transform');
             }
         }
         let transform = element ? element.getAttribute('transform') : null;
@@ -23903,24 +23978,27 @@ class PieSeries extends PieBase {
     toggleInnerPoint(event, radius, innerRadius) {
         let target = event.target;
         let id = indexFinder(target.id, true);
-        let borderElement = document.getElementById(this.accumulation.element.id + 'PointHover_Border');
+        let accumulationId = event.target.id.split('_')[0];
+        let borderElement = document.getElementById(accumulationId + 'PointHover_Border');
         let createBorderEle;
         if (!isNaN(id.series)) {
             let seriesIndex = id.series;
             let pointIndex = id.point;
             if (!isNullOrUndefined(seriesIndex) && !isNaN(seriesIndex) && !isNullOrUndefined(pointIndex) && !isNaN(pointIndex)) {
                 let point = this.accumulation.visibleSeries[0].points[pointIndex];
-                let srcElem = getElement(this.accumulation.element.id + '_Series_' + seriesIndex + '_Point_' + pointIndex);
-                const opacity = srcElem.getAttribute('class') === this.accumulation.element.id + '_ej2_deselected' ?
+                let srcElem = getElement(accumulationId + '_Series_' + seriesIndex + '_Point_' + pointIndex);
+                const opacity = srcElem.getAttribute('class') === accumulationId + '_ej2_deselected' ?
                     this.accumulation.tooltip.enable ? 0.5 : 0.3 : this.accumulation.tooltip.enable ? 0.5 : 1;
                 let innerPie = this.getPathArc(this.accumulation.pieSeriesModule.center, point.startAngle % 360, (point.startAngle + point.degree) % 360, radius, innerRadius);
-                if ((borderElement) && (borderElement.getAttribute('d') !== innerPie || point.isExplode)) {
-                    borderElement.remove();
+                // while using annotation as a chart border will appear in both chart.so changed checked the id with target id
+                if ((borderElement) && (accumulationId === this.accumulation.element.id) &&
+                    (borderElement.getAttribute('d') !== innerPie || point.isExplode)) {
+                    borderElement.parentNode.removeChild(borderElement);
                     borderElement = null;
                 }
-                let seriousGroup = getElement(this.accumulation.element.id + '_Series_' + seriesIndex);
+                let seriousGroup = getElement(accumulationId + '_Series_' + seriesIndex);
                 if (!borderElement && ((!point.isExplode) || (point.isExplode && event.type !== 'click'))) {
-                    let path = new PathOption(this.accumulation.element.id + 'PointHover_Border', point.color, 1, point.color, opacity, '', innerPie);
+                    let path = new PathOption(accumulationId + 'PointHover_Border', point.color, 1, point.color, opacity, '', innerPie);
                     createBorderEle = this.accumulation.renderer.drawPath(path);
                     createBorderEle.removeAttribute('transform');
                     seriousGroup.appendChild(createBorderEle);
@@ -23939,7 +24017,9 @@ class PieSeries extends PieBase {
     removeBorder(borderElement, duration) {
         if (borderElement) {
             setTimeout(() => {
-                borderElement.remove();
+                if (borderElement.parentNode) {
+                    borderElement.parentNode.removeChild(borderElement);
+                }
             }, duration);
         }
     }

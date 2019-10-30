@@ -2,6 +2,20 @@
 
 ## [Unreleased]
 
+## 17.3.21 (2019-10-30)
+
+### ListBox
+
+#### Bug Fixes
+
+- Issue with Drag and Drop has been fixed
+
+### ListView
+
+#### Bug Fixes
+
+- #251219 - The content security policy issue has been fixed.
+
 ## 17.3.16 (2019-10-09)
 
 ### ListView

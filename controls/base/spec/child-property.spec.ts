@@ -2,6 +2,7 @@ import { Property, Complex, Collection, Event, INotifyPropertyChanged, NotifyPro
 import { Base } from '../src/base';
 import { createElement } from '../src/dom';
 import { ChildProperty } from '../src/child-property';
+import * as Util from '../src/util';
 
 /**
  * BookChild Class
@@ -283,7 +284,7 @@ describe('ChildProperty', () => {
                 colAr.push(obj);
                 beforeEach(() => {
                     demoClass3 = new Demo(ele);
-                    window["Blazor"] = true; 
+                    Util.enableBlazorMode();
                 });
                 it("success", (done: Function) => {
                     demoClass3.subjectArray[0].subClick =  ()=> {
@@ -320,12 +321,12 @@ describe('ChildProperty', () => {
                 });
 
                 it("error", (done: Function) => {
-                    window["Blazor"] = true;
+                    Util.enableBlazorMode();
                     demoClass3.subjectArray[0].subClick =  ()=> {                       
                         return Promise.reject({data: {message: 'Error message'}});
                     }
                     demoClass3.trigger('subjectArray[0].subClick', {}, ()=> {}, () => {
-                        window["Blazor"] = false;
+                        Util.disableBlazorMode();
                         done();
                     });                   
                 });
@@ -343,12 +344,12 @@ describe('ChildProperty', () => {
                 });
 
                 it("error with json string ", (done: Function) => {
-                    window["Blazor"] = true;
+                    Util.enableBlazorMode();
                     demoClass3.subjectArray[0].subClick =  ()=> {                       
                         return Promise.reject('{"data":"success"}');
                     }
                     demoClass3.trigger('subjectArray[0].subClick', {}, ()=> {}, () => {
-                        window["Blazor"] = false;
+                        Util.disableBlazorMode();
                         done();
                     });                   
                 });
@@ -360,7 +361,7 @@ describe('ChildProperty', () => {
                     });                   
                 });
                 it("success - non promise - non blazor ", (done: Function) => {
-                    window['Blazor'] = false;
+                    Util.disableBlazorMode();
                     demoClass3.subjectArray[0].subClick =  ()=> {};
                     demoClass3.trigger('subjectArray[0].subClick', {}, ()=> {
                         done();
@@ -372,7 +373,7 @@ describe('ChildProperty', () => {
                     });                   
                 });
                 afterEach(() => {
-                    window["Blazor"] = false; 
+                    Util.disableBlazorMode(); 
                 });
             });
         });

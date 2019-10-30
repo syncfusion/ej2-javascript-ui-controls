@@ -288,7 +288,7 @@ describe('FileManager control single selection LargeIcons view', () => {
                 expect(largeLi[1].classList.contains('e-fe-hidden')).toBe(true);
                 document.getElementById('file_tb_newfolder').click();
                 let dialogObj: any = (document.getElementById("file_dialog") as any).ej2_instances[0];
-                expect(dialogObj.element.querySelector('.e-dlg-header').innerHTML).toEqual("Access Denied");
+                expect(dialogObj.element.querySelector('.e-dlg-header').innerText).toEqual("Access Denied");
                 let treeLi1: any = treeObj.element.querySelectorAll('li');
                 let largeLi1: any = document.getElementById('file_largeicons').querySelectorAll('.e-list-item');
                 expect(treeLi1.length).toEqual(5);
@@ -368,7 +368,7 @@ describe('FileManager control single selection LargeIcons view', () => {
                 expect(largeLi[1].classList.contains('e-fe-hidden')).toBe(true);
                 document.getElementById('file_tb_upload').click();
                 let dialogObj: any = (document.getElementById("file_dialog") as any).ej2_instances[0];
-                expect(dialogObj.element.querySelector('.e-dlg-header').innerHTML).toEqual("Access Denied");
+                expect(dialogObj.element.querySelector('.e-dlg-header').innerText).toEqual("Access Denied");
                 let treeLi1: any = treeObj.element.querySelectorAll('li');
                 let largeLi1: any = document.getElementById('file_largeicons').querySelectorAll('.e-list-item');
                 expect(treeLi1.length).toEqual(5);
@@ -506,7 +506,7 @@ describe('FileManager control single selection LargeIcons view', () => {
                 feObj.largeiconsviewModule.clickObj.tap(tapEvent);
                 document.getElementById('file_tb_rename').click();
                 let dialogObj: any = (document.getElementById("file_dialog") as any).ej2_instances[0];
-                expect(dialogObj.element.querySelector('.e-dlg-header').innerHTML).toEqual("Access Denied");
+                expect(dialogObj.element.querySelector('.e-dlg-header').innerText).toEqual("Access Denied");
                 done();
             }, 500);
         });
@@ -580,7 +580,7 @@ describe('FileManager control single selection LargeIcons view', () => {
                 feObj.largeiconsviewModule.clickObj.tap(tapEvent);
                 document.getElementById('file_tb_delete').click();
                 let dialogObj: any = (document.getElementById("file_dialog") as any).ej2_instances[0];
-                expect(dialogObj.element.querySelector('.e-dlg-header').innerHTML).toEqual("Access Denied");
+                expect(dialogObj.element.querySelector('.e-dlg-header').innerText).toEqual("Access Denied");
                 let treeLi1: any = treeObj.element.querySelectorAll('li');
                 let largeLi1: any = document.getElementById('file_largeicons').querySelectorAll('.e-list-item');
                 expect(treeLi1.length).toEqual(5);
@@ -664,7 +664,7 @@ describe('FileManager control single selection LargeIcons view', () => {
                 feObj.largeiconsviewModule.clickObj.tap(tapEvent);
                 document.getElementById('file_tb_download').click();
                 let dialogObj: any = (document.getElementById("file_dialog") as any).ej2_instances[0];
-                expect(dialogObj.element.querySelector('.e-dlg-header').innerHTML).toEqual("Access Denied");
+                expect(dialogObj.element.querySelector('.e-dlg-header').innerText).toEqual("Access Denied");
                 done();
             }, 500);
         });
@@ -764,7 +764,7 @@ describe('FileManager control single selection LargeIcons view', () => {
                     jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
                     setTimeout(function () {
                         let dialogObj: any = (document.getElementById("file_dialog") as any).ej2_instances[0];
-                        expect(dialogObj.element.querySelector('.e-dlg-header').innerHTML).toEqual("Access Denied");
+                        expect(dialogObj.element.querySelector('.e-dlg-header').innerText).toEqual("Access Denied");
                         done();
                     }, 400);
                 }, 500);
@@ -820,7 +820,7 @@ describe('FileManager control single selection LargeIcons view', () => {
                     jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
                     setTimeout(function () {
                         let dialogObj: any = (document.getElementById("file_dialog") as any).ej2_instances[0];
-                        expect(dialogObj.element.querySelector('.e-dlg-header').innerHTML).toEqual("Access Denied");
+                        expect(dialogObj.element.querySelector('.e-dlg-header').innerText).toEqual("Access Denied");
                         done();
                     }, 400);
                 }, 500);
@@ -863,7 +863,7 @@ describe('FileManager control single selection LargeIcons view', () => {
                 feObj.largeiconsviewModule.clickObj.tap(tapEvent);
                 document.getElementById('file_tb_delete').click();
                 let dialogObj: any = (document.getElementById("file_dialog") as any).ej2_instances[0];
-                expect(dialogObj.element.querySelector('.e-dlg-header').innerHTML).toEqual("Access Denied");
+                expect(dialogObj.element.querySelector('.e-dlg-header').innerText).toEqual("Access Denied");
                 let treeLi1: any = treeObj.element.querySelectorAll('li');
                 let largeLi1: any = document.getElementById('file_largeicons').querySelectorAll('.e-list-item');
                 expect(treeLi1.length).toEqual(5);
@@ -914,7 +914,7 @@ describe('FileManager control single selection LargeIcons view', () => {
                 feObj.largeiconsviewModule.clickObj.tap(tapEvent);
                 document.getElementById('file_tb_download').click();
                 let dialogObj: any = (document.getElementById("file_dialog") as any).ej2_instances[0];
-                expect(dialogObj.element.querySelector('.e-dlg-header').innerHTML).toEqual("Access Denied");
+                expect(dialogObj.element.querySelector('.e-dlg-header').innerText).toEqual("Access Denied");
                 done();
             }, 500);
         });

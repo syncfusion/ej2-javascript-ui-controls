@@ -1,4 +1,4 @@
-import { Animation, Browser, ChildProperty, Collection, Complex, Component, Event, EventHandler, Internationalization, NotifyPropertyChanges, Property, compile, createElement, isNullOrUndefined, merge, remove, resetBlazorTemplate, updateBlazorTemplate } from '@syncfusion/ej2-base';
+import { Animation, Browser, ChildProperty, Collection, Complex, Component, Event, EventHandler, Internationalization, NotifyPropertyChanges, Property, compile, createElement, isBlazor, isNullOrUndefined, merge, remove, resetBlazorTemplate, updateBlazorTemplate } from '@syncfusion/ej2-base';
 import { SvgRenderer, Tooltip } from '@syncfusion/ej2-svg-base';
 
 var __decorate$1 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
@@ -1776,10 +1776,9 @@ class Annotations {
         }
         this.gauge.trigger(annotationRender, argsData, (observerArgs) => {
             if (!argsData.cancel) {
-                let blazor = 'Blazor';
                 templateFn = getTemplateFunction(argsData.content);
-                if (templateFn && (!window[blazor] ? templateFn(this.gauge, null, null, this.gauge.element.id + '_ContentTemplate' + annotationIndex).length : {})) {
-                    templateElement = Array.prototype.slice.call(templateFn(!window[blazor] ? this.gauge : {}, null, null, this.gauge.element.id + '_ContentTemplate' + annotationIndex));
+                if (templateFn && (!this.gauge.isBlazor ? templateFn(this.gauge, null, null, this.gauge.element.id + '_ContentTemplate' + annotationIndex).length : {})) {
+                    templateElement = Array.prototype.slice.call(templateFn(!this.gauge.isBlazor ? this.gauge : {}, null, null, this.gauge.element.id + '_ContentTemplate' + annotationIndex));
                     let length = templateElement.length;
                     for (let i = 0; i < length; i++) {
                         childElement.appendChild(templateElement[i]);
@@ -2185,8 +2184,7 @@ let LinearGauge = class LinearGauge extends Component {
      * Initialize the preRender method.
      */
     preRender() {
-        let blazor = 'Blazor';
-        this.isBlazor = window[blazor];
+        this.isBlazor = isBlazor();
         this.unWireEvents();
         this.trigger(load, { gauge: !this.isBlazor ? this : null });
         this.initPrivateVariable();

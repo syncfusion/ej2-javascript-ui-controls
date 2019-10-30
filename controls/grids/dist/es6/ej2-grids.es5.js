@@ -679,6 +679,12 @@ var beforeCustomFilterOpen = 'beforeCustomFilterOpen';
 var selectVirtualRow = 'select-virtual-Row';
 /** @hidden */
 var columnsPrepared = 'columns-prepared';
+/** @hidden */
+var cBoxFltrBegin = 'cbox-filter-begin';
+/** @hidden */
+var cBoxFltrComplete = 'cbox-filter-complete';
+/** @hidden */
+var cBoxFltrPrevent = 'cbox-filter-Prevent';
 
 /**
  * @hidden
@@ -1849,14 +1855,14 @@ var ToolbarItem;
 /* tslint:disable-next-line:max-line-length */
 /**
  * @hidden
- * `CheckBoxFilter` module is used to handle filtering action.
+ * `CheckBoxFilterBase` module is used to handle filtering action.
  */
-var CheckBoxFilter = /** @__PURE__ @class */ (function () {
+var CheckBoxFilterBase = /** @__PURE__ @class */ (function () {
     /**
      * Constructor for checkbox filtering module
      * @hidden
      */
-    function CheckBoxFilter(parent, filterSettings, serviceLocator) {
+    function CheckBoxFilterBase(parent, filterSettings) {
         this.existingPredicate = {};
         this.foreignKeyQuery = new Query();
         this.filterState = true;
@@ -1864,7 +1870,6 @@ var CheckBoxFilter = /** @__PURE__ @class */ (function () {
         this.renderEmpty = false;
         this.parent = parent;
         this.id = this.parent.element.id;
-        this.serviceLocator = serviceLocator;
         this.filterSettings = filterSettings;
         this.valueFormatter = new ValueFormatter(this.parent.locale);
         this.cBoxTrue = createCheckBox(this.parent.createElement, false, { checked: true, label: ' ' });
@@ -1885,22 +1890,22 @@ var CheckBoxFilter = /** @__PURE__ @class */ (function () {
      * @return {void}
      * @hidden
      */
-    CheckBoxFilter.prototype.destroy = function () {
+    CheckBoxFilterBase.prototype.destroy = function () {
         this.closeDialog();
     };
-    CheckBoxFilter.prototype.wireEvents = function () {
+    CheckBoxFilterBase.prototype.wireEvents = function () {
         EventHandler.add(this.dlg, 'click', this.clickHandler, this);
         this.searchHandler = debounce(this.searchBoxKeyUp, 200);
         EventHandler.add(this.dlg.querySelector('.e-searchinput'), 'keyup', this.searchHandler, this);
     };
-    CheckBoxFilter.prototype.unWireEvents = function () {
+    CheckBoxFilterBase.prototype.unWireEvents = function () {
         EventHandler.remove(this.dlg, 'click', this.clickHandler);
         var elem = this.dlg.querySelector('.e-searchinput');
         if (elem) {
             EventHandler.remove(elem, 'keyup', this.searchHandler);
         }
     };
-    CheckBoxFilter.prototype.foreignKeyFilter = function (args, fColl, mPredicate) {
+    CheckBoxFilterBase.prototype.foreignKeyFilter = function (args, fColl, mPredicate) {
         var _this = this;
         var fPredicate = {};
         var filterCollection = [];
@@ -1926,13 +1931,13 @@ var CheckBoxFilter = /** @__PURE__ @class */ (function () {
             _this.options.handler(args);
         });
     };
-    CheckBoxFilter.prototype.foreignFilter = function (args, value) {
+    CheckBoxFilterBase.prototype.foreignFilter = function (args, value) {
         var operator = this.parent.getDataModule().isRemote() ?
             (this.options.column.type === 'string' ? 'contains' : 'equal') : (this.options.column.type ? 'startswith' : 'contains');
         var initalPredicate = new Predicate(this.options.column.foreignKeyValue, operator, value, true, this.parent.filterSettings.ignoreAccent);
         this.foreignKeyFilter(args, [args.filterCollection], initalPredicate);
     };
-    CheckBoxFilter.prototype.searchBoxClick = function (e) {
+    CheckBoxFilterBase.prototype.searchBoxClick = function (e) {
         var target = e.target;
         if (target.classList.contains('e-searchclear')) {
             this.sInput.value = '';
@@ -1941,11 +1946,11 @@ var CheckBoxFilter = /** @__PURE__ @class */ (function () {
             this.sInput.focus();
         }
     };
-    CheckBoxFilter.prototype.searchBoxKeyUp = function (e) {
+    CheckBoxFilterBase.prototype.searchBoxKeyUp = function (e) {
         this.refreshCheckboxes();
         this.updateSearchIcon();
     };
-    CheckBoxFilter.prototype.updateSearchIcon = function () {
+    CheckBoxFilterBase.prototype.updateSearchIcon = function () {
         if (this.sInput.value.length) {
             classList(this.sIcon, ['e-chkcancel-icon'], ['e-search-icon']);
         }
@@ -1958,10 +1963,10 @@ var CheckBoxFilter = /** @__PURE__ @class */ (function () {
      * @param  {string} key
      * @return {string}
      */
-    CheckBoxFilter.prototype.getLocalizedLabel = function (key) {
+    CheckBoxFilterBase.prototype.getLocalizedLabel = function (key) {
         return this.localeObj.getConstant(key);
     };
-    CheckBoxFilter.prototype.updateDataSource = function () {
+    CheckBoxFilterBase.prototype.updateDataSource = function () {
         var dataSource = this.options.dataSource;
         var str = 'object';
         if (!(dataSource instanceof DataManager)) {
@@ -1974,12 +1979,11 @@ var CheckBoxFilter = /** @__PURE__ @class */ (function () {
             }
         }
     };
-    CheckBoxFilter.prototype.updateModel = function (options) {
+    CheckBoxFilterBase.prototype.updateModel = function (options) {
         this.options = options;
         this.existingPredicate = options.actualPredicate || {};
         this.options.dataSource = options.dataSource;
         this.updateDataSource();
-        this.parent.log('column_type_missing', { column: options.column });
         this.options.type = options.type;
         this.options.format = options.format || '';
         this.options.filteredColumns = options.filteredColumns || this.parent.filterSettings.columns;
@@ -1991,7 +1995,7 @@ var CheckBoxFilter = /** @__PURE__ @class */ (function () {
         this.localeObj = options.localeObj;
         this.isFiltered = options.filteredColumns.length;
     };
-    CheckBoxFilter.prototype.getAndSetChkElem = function (options) {
+    CheckBoxFilterBase.prototype.getAndSetChkElem = function (options) {
         this.dlg = this.parent.createElement('div', {
             id: this.id + this.options.type + '_excelDlg',
             className: 'e-checkboxfilter e-filter-popup'
@@ -2027,7 +2031,7 @@ var CheckBoxFilter = /** @__PURE__ @class */ (function () {
         this.sBox.appendChild(this.spinner);
         return this.sBox;
     };
-    CheckBoxFilter.prototype.showDialog = function (options) {
+    CheckBoxFilterBase.prototype.showDialog = function (options) {
         var args = {
             requestType: filterBeforeOpen,
             columnName: this.options.field, columnType: this.options.type, cancel: false
@@ -2036,7 +2040,7 @@ var CheckBoxFilter = /** @__PURE__ @class */ (function () {
             var filterModel = 'filterModel';
             args[filterModel] = this;
         }
-        this.parent.trigger(actionBegin, args);
+        this.parent.notify(cBoxFltrBegin, args);
         if (args.cancel) {
             return;
         }
@@ -2063,14 +2067,14 @@ var CheckBoxFilter = /** @__PURE__ @class */ (function () {
         var isStringTemplate = 'isStringTemplate';
         this.dialogObj[isStringTemplate] = true;
         this.dialogObj.appendTo(this.dlg);
-        this.dialogObj.element.style.maxHeight = '800px';
+        this.dialogObj.element.style.maxHeight = this.options.height + 'px';
         this.dialogObj.show();
         this.wireEvents();
         createSpinner({ target: this.spinner }, this.parent.createElement);
         showSpinner(this.spinner);
         this.getAllData();
     };
-    CheckBoxFilter.prototype.dialogCreated = function (e) {
+    CheckBoxFilterBase.prototype.dialogCreated = function (e) {
         if (!Browser.isDevice) {
             getFilterMenuPostion(this.options.target, this.dialogObj, this.parent);
         }
@@ -2079,12 +2083,12 @@ var CheckBoxFilter = /** @__PURE__ @class */ (function () {
         }
         this.parent.notify(filterDialogCreated, e);
     };
-    CheckBoxFilter.prototype.openDialog = function (options) {
+    CheckBoxFilterBase.prototype.openDialog = function (options) {
         this.updateModel(options);
         this.getAndSetChkElem(options);
         this.showDialog(options);
     };
-    CheckBoxFilter.prototype.closeDialog = function () {
+    CheckBoxFilterBase.prototype.closeDialog = function () {
         if (this.dialogObj && !this.dialogObj.isDestroyed) {
             var filterTemplateCol = this.parent.getColumns().filter(function (col) { return col.getFilterItemTemplate(); });
             if (filterTemplateCol.length) {
@@ -2097,14 +2101,16 @@ var CheckBoxFilter = /** @__PURE__ @class */ (function () {
             this.dlg = null;
         }
     };
-    CheckBoxFilter.prototype.clearFilter = function () {
-        if (isActionPrevent(this.parent)) {
-            this.parent.notify(preventBatch, { instance: this, handler: this.clearFilter });
+    CheckBoxFilterBase.prototype.clearFilter = function () {
+        /* tslint:disable-next-line:max-line-length */
+        var args = { instance: this, handler: this.clearFilter, cancel: false };
+        this.parent.notify(cBoxFltrPrevent, args);
+        if (args.cancel) {
             return;
         }
         this.options.handler({ action: 'clear-filter', field: this.options.field });
     };
-    CheckBoxFilter.prototype.btnClick = function (e) {
+    CheckBoxFilterBase.prototype.btnClick = function (e) {
         if (this.filterState) {
             if (e.target.tagName.toLowerCase() === 'input') {
                 var value = e.target.value;
@@ -2148,7 +2154,7 @@ var CheckBoxFilter = /** @__PURE__ @class */ (function () {
             this.closeDialog();
         }
     };
-    CheckBoxFilter.prototype.fltrBtnHandler = function () {
+    CheckBoxFilterBase.prototype.fltrBtnHandler = function () {
         var checked = [].slice.call(this.cBox.querySelectorAll('.e-check:not(.e-selectall)'));
         var optr = 'equal';
         var searchInput = this.searchBox.querySelector('.e-searchinput');
@@ -2193,11 +2199,12 @@ var CheckBoxFilter = /** @__PURE__ @class */ (function () {
                 else {
                     coll.push(fObj);
                 }
-                if (isActionPrevent(this.parent)) {
-                    this.parent.notify(preventBatch, {
-                        instance: this, handler: this.fltrBtnHandler, arg1: fObj.field, arg2: fObj.predicate, arg3: fObj.operator,
-                        arg4: fObj.matchCase, arg5: fObj.ignoreAccent, arg6: fObj.value
-                    });
+                var args = {
+                    instance: this, handler: this.fltrBtnHandler, arg1: fObj.field, arg2: fObj.predicate, arg3: fObj.operator,
+                    arg4: fObj.matchCase, arg5: fObj.ignoreAccent, arg6: fObj.value, cancel: false
+                };
+                this.parent.notify(cBoxFltrPrevent, args);
+                if (args.cancel) {
                     return;
                 }
             }
@@ -2207,7 +2214,7 @@ var CheckBoxFilter = /** @__PURE__ @class */ (function () {
             this.clearFilter();
         }
     };
-    CheckBoxFilter.prototype.initiateFilter = function (fColl) {
+    CheckBoxFilterBase.prototype.initiateFilter = function (fColl) {
         var firstVal = fColl[0];
         var predicate;
         if (!isNullOrUndefined(firstVal)) {
@@ -2225,7 +2232,7 @@ var CheckBoxFilter = /** @__PURE__ @class */ (function () {
             this.options.handler(args);
         }
     };
-    CheckBoxFilter.prototype.refreshCheckboxes = function () {
+    CheckBoxFilterBase.prototype.refreshCheckboxes = function () {
         var _this = this;
         var val = this.sInput.value;
         var column = this.options.column;
@@ -2255,13 +2262,14 @@ var CheckBoxFilter = /** @__PURE__ @class */ (function () {
             operator = 'equal';
         }
         this.addDistinct(query);
+        /* tslint:disable-next-line:max-line-length */
         var args = {
             requestType: filterSearchBegin,
             filterModel: this, columnName: field, column: column,
             operator: operator, matchCase: matchCase, ignoreAccent: ignoreAccent, filterChoiceCount: null,
             query: query
         };
-        this.parent.trigger(actionBegin, args);
+        this.parent.notify(cBoxFltrBegin, args);
         predicte = new Predicate(field, args.operator, parsed, args.matchCase, args.ignoreAccent);
         if (this.options.type === 'date' || this.options.type === 'datetime') {
             parsed = this.valueFormatter.fromView(val, this.options.parserFn, this.options.type);
@@ -2304,7 +2312,7 @@ var CheckBoxFilter = /** @__PURE__ @class */ (function () {
             this.search(args, query);
         }
     };
-    CheckBoxFilter.prototype.search = function (args, query) {
+    CheckBoxFilterBase.prototype.search = function (args, query) {
         if (this.parent.dataSource && 'result' in this.parent.dataSource) {
             this.filterEvent(args, query);
         }
@@ -2312,8 +2320,8 @@ var CheckBoxFilter = /** @__PURE__ @class */ (function () {
             this.processSearch(query);
         }
     };
-    CheckBoxFilter.prototype.getPredicateFromCols = function (columns) {
-        var predicates = CheckBoxFilter.getPredicate(columns);
+    CheckBoxFilterBase.prototype.getPredicateFromCols = function (columns) {
+        var predicates = CheckBoxFilterBase.getPredicate(columns);
         var predicateList = [];
         var fPredicate = {};
         var foreignColumn = this.parent.getForeignKeyColumns();
@@ -2335,7 +2343,7 @@ var CheckBoxFilter = /** @__PURE__ @class */ (function () {
         }
         return predicateList.length && Predicate.and(predicateList);
     };
-    CheckBoxFilter.prototype.getAllData = function () {
+    CheckBoxFilterBase.prototype.getAllData = function () {
         var query = this.parent.getQuery().clone();
         query.requiresCount(); //consider take query
         this.addDistinct(query);
@@ -2346,7 +2354,7 @@ var CheckBoxFilter = /** @__PURE__ @class */ (function () {
             var filterModel = 'filterModel';
             args[filterModel] = this;
         }
-        this.parent.trigger(actionBegin, args);
+        this.parent.notify(cBoxFltrBegin, args);
         args.filterChoiceCount = !isNullOrUndefined(args.filterChoiceCount) ? args.filterChoiceCount : 1000;
         query.take(args.filterChoiceCount);
         if (this.parent.dataSource && 'result' in this.parent.dataSource) {
@@ -2356,7 +2364,7 @@ var CheckBoxFilter = /** @__PURE__ @class */ (function () {
             this.processDataOperation(query, true);
         }
     };
-    CheckBoxFilter.prototype.addDistinct = function (query) {
+    CheckBoxFilterBase.prototype.addDistinct = function (query) {
         var filteredColumn = DataUtil.distinct(this.parent.filterSettings.columns, 'field');
         if (filteredColumn.indexOf(this.options.column.field) <= -1) {
             filteredColumn = filteredColumn.concat(this.options.column.field);
@@ -2364,14 +2372,14 @@ var CheckBoxFilter = /** @__PURE__ @class */ (function () {
         query.distinct(filteredColumn);
         return query;
     };
-    CheckBoxFilter.prototype.filterEvent = function (args, query) {
+    CheckBoxFilterBase.prototype.filterEvent = function (args, query) {
         var _this = this;
         var def = this.eventPromise(args, query);
         def.promise.then(function (e) {
             _this.dataSuccess(e);
         });
     };
-    CheckBoxFilter.prototype.eventPromise = function (args, query) {
+    CheckBoxFilterBase.prototype.eventPromise = function (args, query) {
         var state;
         state = this.getStateEventArgument(query);
         var def = new Deferred();
@@ -2381,7 +2389,7 @@ var CheckBoxFilter = /** @__PURE__ @class */ (function () {
         return def;
     };
     
-    CheckBoxFilter.prototype.getStateEventArgument = function (query) {
+    CheckBoxFilterBase.prototype.getStateEventArgument = function (query) {
         var adaptr = new UrlAdaptor();
         var dm = new DataManager({ url: '', adaptor: new UrlAdaptor });
         var state = adaptr.processQuery(dm, query);
@@ -2389,7 +2397,7 @@ var CheckBoxFilter = /** @__PURE__ @class */ (function () {
         return data;
     };
     
-    CheckBoxFilter.prototype.processDataOperation = function (query, isInitial) {
+    CheckBoxFilterBase.prototype.processDataOperation = function (query, isInitial) {
         var _this = this;
         this.options.dataSource = this.options.dataSource instanceof DataManager ?
             this.options.dataSource : new DataManager(this.options.dataSource);
@@ -2408,21 +2416,29 @@ var CheckBoxFilter = /** @__PURE__ @class */ (function () {
             });
         });
     };
-    CheckBoxFilter.prototype.dataSuccess = function (e) {
+    CheckBoxFilterBase.prototype.dataSuccess = function (e) {
         this.fullData = e;
         var query = new Query();
         if (this.parent.searchSettings.key.length) {
             var sSettings = this.parent.searchSettings;
             var fields = sSettings.fields.length ? sSettings.fields : this.parent.getColumns().map(function (f) { return f.field; });
+            /* tslint:disable-next-line:max-line-length */
             query.search(sSettings.key, fields, sSettings.operator, sSettings.ignoreCase, sSettings.ignoreAccent);
         }
         if ((this.options.filteredColumns.length)) {
             var cols = [];
             for (var i = 0; i < this.options.filteredColumns.length; i++) {
                 var filterColumn = this.options.filteredColumns[i];
-                filterColumn.uid = filterColumn.uid || this.parent.getColumnByField(filterColumn.field).uid;
-                if (filterColumn.uid !== this.options.uid) {
-                    cols.push(this.options.filteredColumns[i]);
+                if (this.options.uid) {
+                    filterColumn.uid = filterColumn.uid || this.parent.getColumnByField(filterColumn.field).uid;
+                    if (filterColumn.uid !== this.options.uid) {
+                        cols.push(this.options.filteredColumns[i]);
+                    }
+                }
+                else {
+                    if (filterColumn.field !== this.options.field) {
+                        cols.push(this.options.filteredColumns[i]);
+                    }
                 }
             }
             var predicate = this.getPredicateFromCols(cols);
@@ -2433,7 +2449,7 @@ var CheckBoxFilter = /** @__PURE__ @class */ (function () {
         // query.select(this.options.field);
         var result = new DataManager(this.fullData).executeLocal(query);
         var col = this.options.column;
-        this.filteredData = CheckBoxFilter.
+        this.filteredData = CheckBoxFilterBase.
             getDistinct(result, this.options.field, col, this.foreignKeyData).records || [];
         this.processDataSource(null, true, this.filteredData);
         this.sInput.focus();
@@ -2445,9 +2461,9 @@ var CheckBoxFilter = /** @__PURE__ @class */ (function () {
             var filterModel = 'filterModel';
             args[filterModel] = this;
         }
-        this.parent.trigger(actionComplete, args);
+        this.parent.notify(cBoxFltrComplete, args);
     };
-    CheckBoxFilter.prototype.processDataSource = function (query, isInitial, dataSource) {
+    CheckBoxFilterBase.prototype.processDataSource = function (query, isInitial, dataSource) {
         showSpinner(this.spinner);
         // query = query ? query : this.options.query.clone();
         // query.requiresCount();
@@ -2456,10 +2472,10 @@ var CheckBoxFilter = /** @__PURE__ @class */ (function () {
         this.updateResult();
         this.createFilterItems(dataSource, isInitial);
     };
-    CheckBoxFilter.prototype.processSearch = function (query) {
+    CheckBoxFilterBase.prototype.processSearch = function (query) {
         this.processDataOperation(query);
     };
-    CheckBoxFilter.prototype.updateResult = function () {
+    CheckBoxFilterBase.prototype.updateResult = function () {
         this.result = {};
         var predicate = this.getPredicateFromCols(this.options.filteredColumns);
         var query = new Query();
@@ -2472,7 +2488,7 @@ var CheckBoxFilter = /** @__PURE__ @class */ (function () {
             this.result[getValue(this.options.field, res)] = true;
         }
     };
-    CheckBoxFilter.prototype.clickHandler = function (e) {
+    CheckBoxFilterBase.prototype.clickHandler = function (e) {
         var target = e.target;
         var elem = parentsUntil(target, 'e-checkbox-wrapper');
         if (parentsUntil(target, 'e-searchbox')) {
@@ -2490,20 +2506,20 @@ var CheckBoxFilter = /** @__PURE__ @class */ (function () {
             elem.querySelector('.e-chk-hidden').focus();
         }
     };
-    CheckBoxFilter.prototype.updateAllCBoxes = function (checked) {
+    CheckBoxFilterBase.prototype.updateAllCBoxes = function (checked) {
         var cBoxes = [].slice.call(this.cBox.querySelectorAll('.e-frame'));
         for (var _i = 0, cBoxes_1 = cBoxes; _i < cBoxes_1.length; _i++) {
             var cBox = cBoxes_1[_i];
             removeAddCboxClasses(cBox, checked);
         }
     };
-    CheckBoxFilter.prototype.dialogOpen = function () {
+    CheckBoxFilterBase.prototype.dialogOpen = function () {
         if (this.parent.element.classList.contains('e-device')) {
             this.dialogObj.element.querySelector('.e-input-group').classList.remove('e-input-focus');
             this.dialogObj.element.querySelector('.e-btn').focus();
         }
     };
-    CheckBoxFilter.prototype.createCheckbox = function (value, checked, data) {
+    CheckBoxFilterBase.prototype.createCheckbox = function (value, checked, data) {
         var elem = checked ? this.cBoxTrue.cloneNode(true) :
             this.cBoxFalse.cloneNode(true);
         var label = elem.querySelector('.e-label');
@@ -2516,7 +2532,7 @@ var CheckBoxFilter = /** @__PURE__ @class */ (function () {
         }
         return elem;
     };
-    CheckBoxFilter.prototype.updateIndeterminatenBtn = function () {
+    CheckBoxFilterBase.prototype.updateIndeterminatenBtn = function () {
         var cnt = this.cBox.children.length - 1;
         var className = [];
         var elem = this.cBox.querySelector('.e-selectall');
@@ -2538,7 +2554,7 @@ var CheckBoxFilter = /** @__PURE__ @class */ (function () {
         removeClass([elem], ['e-check', 'e-stop', 'e-uncheck']);
         addClass([elem], className);
     };
-    CheckBoxFilter.prototype.createFilterItems = function (data, isInitial) {
+    CheckBoxFilterBase.prototype.createFilterItems = function (data, isInitial) {
         var _a;
         var cBoxes = this.parent.createElement('div');
         var btn = this.dialogObj.btnObj[0];
@@ -2593,10 +2609,10 @@ var CheckBoxFilter = /** @__PURE__ @class */ (function () {
             var filterModel = 'filterModel';
             args[filterModel] = this;
         }
-        this.parent.trigger(actionComplete, args);
+        this.parent.notify(cBoxFltrComplete, args);
         hideSpinner(this.spinner);
     };
-    CheckBoxFilter.prototype.getCheckedState = function (isColFiltered, value) {
+    CheckBoxFilterBase.prototype.getCheckedState = function (isColFiltered, value) {
         if (!this.isFiltered || !isColFiltered) {
             return true;
         }
@@ -2604,7 +2620,7 @@ var CheckBoxFilter = /** @__PURE__ @class */ (function () {
             return this.result[value];
         }
     };
-    CheckBoxFilter.getDistinct = function (json, field, column, foreignKeyData$$1) {
+    CheckBoxFilterBase.getDistinct = function (json, field, column, foreignKeyData$$1) {
         var len = json.length;
         var result = [];
         var value;
@@ -2630,39 +2646,39 @@ var CheckBoxFilter = /** @__PURE__ @class */ (function () {
         }
         return DataUtil.group(DataUtil.sort(result, field, DataUtil.fnAscending), 'ejValue');
     };
-    CheckBoxFilter.getPredicate = function (columns) {
+    CheckBoxFilterBase.getPredicate = function (columns) {
         var cols = DataUtil.distinct(columns, 'field', true) || [];
         var collection = [];
         var pred = {};
         for (var i = 0; i < cols.length; i++) {
             collection = new DataManager(columns).executeLocal(new Query().where('field', 'equal', cols[i].field));
             if (collection.length !== 0) {
-                pred[cols[i].field] = CheckBoxFilter.generatePredicate(collection);
+                pred[cols[i].field] = CheckBoxFilterBase.generatePredicate(collection);
             }
         }
         return pred;
     };
-    CheckBoxFilter.generatePredicate = function (cols) {
+    CheckBoxFilterBase.generatePredicate = function (cols) {
         var len = cols ? cols.length : 0;
         var predicate;
         var first;
-        first = CheckBoxFilter.updateDateFilter(cols[0]);
+        first = CheckBoxFilterBase.updateDateFilter(cols[0]);
         first.ignoreAccent = !isNullOrUndefined(first.ignoreAccent) ? first.ignoreAccent : false;
         if (first.type === 'date' || first.type === 'datetime') {
             predicate = getDatePredicate(first, first.type);
         }
         else {
             predicate = first.ejpredicate ? first.ejpredicate :
-                new Predicate(first.field, first.operator, first.value, !CheckBoxFilter.getCaseValue(first), first.ignoreAccent);
+                new Predicate(first.field, first.operator, first.value, !CheckBoxFilterBase.getCaseValue(first), first.ignoreAccent);
         }
         for (var p = 1; p < len; p++) {
-            cols[p] = CheckBoxFilter.updateDateFilter(cols[p]);
+            cols[p] = CheckBoxFilterBase.updateDateFilter(cols[p]);
             if (len > 2 && p > 1 && cols[p].predicate === 'or') {
                 if (cols[p].type === 'date' || cols[p].type === 'datetime') {
                     predicate.predicates.push(getDatePredicate(cols[p], cols[p].type));
                 }
                 else {
-                    predicate.predicates.push(new Predicate(cols[p].field, cols[p].operator, cols[p].value, !CheckBoxFilter.getCaseValue(cols[p]), cols[p].ignoreAccent));
+                    predicate.predicates.push(new Predicate(cols[p].field, cols[p].operator, cols[p].value, !CheckBoxFilterBase.getCaseValue(cols[p]), cols[p].ignoreAccent));
                 }
             }
             else {
@@ -2670,15 +2686,16 @@ var CheckBoxFilter = /** @__PURE__ @class */ (function () {
                     predicate = predicate[(cols[p].predicate)](getDatePredicate(cols[p]), cols[p].type, cols[p].ignoreAccent);
                 }
                 else {
+                    /* tslint:disable-next-line:max-line-length */
                     predicate = cols[p].ejpredicate ?
                         predicate[cols[p].predicate](cols[p].ejpredicate) :
-                        predicate[(cols[p].predicate)](cols[p].field, cols[p].operator, cols[p].value, !CheckBoxFilter.getCaseValue(cols[p]), cols[p].ignoreAccent);
+                        predicate[(cols[p].predicate)](cols[p].field, cols[p].operator, cols[p].value, !CheckBoxFilterBase.getCaseValue(cols[p]), cols[p].ignoreAccent);
                 }
             }
         }
         return predicate || null;
     };
-    CheckBoxFilter.getCaseValue = function (filter) {
+    CheckBoxFilterBase.getCaseValue = function (filter) {
         if (isNullOrUndefined(filter.matchCase)) {
             return true;
         }
@@ -2686,20 +2703,13 @@ var CheckBoxFilter = /** @__PURE__ @class */ (function () {
             return filter.matchCase;
         }
     };
-    CheckBoxFilter.updateDateFilter = function (filter) {
+    CheckBoxFilterBase.updateDateFilter = function (filter) {
         if ((filter.type === 'date' || filter.type === 'datetime' || filter.value instanceof Date)) {
             filter.type = filter.type || 'date';
         }
         return filter;
     };
-    /**
-     * For internal use only - Get the module name.
-     * @private
-     */
-    CheckBoxFilter.prototype.getModuleName = function () {
-        return 'checkboxFilter';
-    };
-    return CheckBoxFilter;
+    return CheckBoxFilterBase;
 }());
 
 /**
@@ -2924,7 +2934,7 @@ var Data = /** @__PURE__ @class */ (function () {
                 }
             }
             if (checkBoxCols.length) {
-                var excelPredicate = CheckBoxFilter.getPredicate(checkBoxCols);
+                var excelPredicate = CheckBoxFilterBase.getPredicate(checkBoxCols);
                 for (var _c = 0, _d = Object.keys(excelPredicate); _c < _d.length; _c++) {
                     var prop = _d[_c];
                     var col = void 0;
@@ -6473,6 +6483,7 @@ var Render = /** @__PURE__ @class */ (function () {
             if (dataArgs.cancel) {
                 return;
             }
+            dataArgs.result = isNullOrUndefined(dataArgs.result) ? [] : dataArgs.result;
             var len = Object.keys(dataArgs.result).length;
             if (_this.parent.isDestroyed) {
                 return;
@@ -9850,7 +9861,14 @@ var Selection = /** @__PURE__ @class */ (function () {
             this.refreshPersistSelection();
         }
         if (e.requestType === 'delete' && this.parent.isPersistSelection) {
-            e.data.slice().forEach(function (data) {
+            var records = [];
+            if (!isBlazor()) {
+                records = e.data;
+            }
+            else {
+                records = this.getSelectedRecords();
+            }
+            records.slice().forEach(function (data) {
                 if (!isNullOrUndefined(data[_this.primaryKey])) {
                     _this.updatePersistDelete(data[_this.primaryKey]);
                 }
@@ -13122,6 +13140,10 @@ var Grid = /** @__PURE__ @class */ (function (_super) {
                 row = this.rowObject(this.contentModule.getMovableRows(), uid);
                 return row;
             }
+        }
+        if (isNullOrUndefined(row) && this.enableVirtualization && this.groupSettings.columns.length > 0) {
+            row = this.rowObject(this.vRows, uid);
+            return row;
         }
         return row;
     };
@@ -17557,7 +17579,76 @@ var FilterMenuRenderer = /** @__PURE__ @class */ (function () {
     return FilterMenuRenderer;
 }());
 
-var __extends$18 = (undefined && undefined.__extends) || (function () {
+/**
+ * @hidden
+ * `CheckBoxFilter` module is used to handle filtering action.
+ */
+var CheckBoxFilter = /** @__PURE__ @class */ (function () {
+    /**
+     * Constructor for checkbox filtering module
+     * @hidden
+     */
+    function CheckBoxFilter(parent, filterSettings, serviceLocator) {
+        this.parent = parent;
+        this.checkBoxBase = new CheckBoxFilterBase(parent, filterSettings);
+        this.addEventListener();
+    }
+    /**
+     * To destroy the check box filter.
+     * @return {void}
+     * @hidden
+     */
+    CheckBoxFilter.prototype.destroy = function () {
+        this.removeEventListener();
+        this.checkBoxBase.closeDialog();
+    };
+    CheckBoxFilter.prototype.openDialog = function (options) {
+        this.checkBoxBase.openDialog(options);
+        this.parent.log('column_type_missing', { column: options.column });
+    };
+    CheckBoxFilter.prototype.closeDialog = function () {
+        this.removeEventListener();
+        this.checkBoxBase.closeDialog();
+    };
+    /**
+     * For internal use only - Get the module name.
+     * @private
+     */
+    CheckBoxFilter.prototype.getModuleName = function () {
+        return 'checkboxFilter';
+    };
+    CheckBoxFilter.prototype.actionBegin = function (args) {
+        this.parent.trigger(actionBegin, args);
+    };
+    CheckBoxFilter.prototype.actionComplete = function (args) {
+        this.parent.trigger(actionComplete, args);
+    };
+    CheckBoxFilter.prototype.actionPrevent = function (args) {
+        if (isActionPrevent(this.parent)) {
+            this.parent.notify(preventBatch, args);
+            args.cancel = true;
+        }
+    };
+    CheckBoxFilter.prototype.addEventListener = function () {
+        if (this.parent.isDestroyed) {
+            return;
+        }
+        this.parent.on(cBoxFltrBegin, this.actionBegin, this);
+        this.parent.on(cBoxFltrComplete, this.actionComplete, this);
+        this.parent.on(cBoxFltrPrevent, this.actionPrevent, this);
+    };
+    CheckBoxFilter.prototype.removeEventListener = function () {
+        if (this.parent.isDestroyed) {
+            return;
+        }
+        this.parent.off(cBoxFltrBegin, this.actionBegin);
+        this.parent.off(cBoxFltrComplete, this.actionComplete);
+        this.parent.off(cBoxFltrPrevent, this.actionPrevent);
+    };
+    return CheckBoxFilter;
+}());
+
+var __extends$19 = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -17574,19 +17665,19 @@ var __extends$18 = (undefined && undefined.__extends) || (function () {
  * @hidden
  * `ExcelFilter` module is used to handle filtering action.
  */
-var ExcelFilter = /** @__PURE__ @class */ (function (_super) {
-    __extends$18(ExcelFilter, _super);
+var ExcelFilterBase = /** @__PURE__ @class */ (function (_super) {
+    __extends$19(ExcelFilterBase, _super);
     /**
      * Constructor for excel filtering module
      * @hidden
      */
-    function ExcelFilter(parent, filterSettings, serviceLocator, customFltrOperators) {
-        var _this = _super.call(this, parent, filterSettings, serviceLocator) || this;
+    function ExcelFilterBase(parent, filterSettings, customFltrOperators) {
+        var _this = _super.call(this, parent, filterSettings) || this;
         _this.customFilterOperators = customFltrOperators;
         _this.isExcel = true;
         return _this;
     }
-    ExcelFilter.prototype.getCMenuDS = function (type, operator) {
+    ExcelFilterBase.prototype.getCMenuDS = function (type, operator) {
         var options = {
             number: ['Equal', 'NotEqual', '', 'LessThan', 'LessThanOrEqual', 'GreaterThan',
                 'GreaterThanOrEqual', 'Between', '', 'CustomFilter'],
@@ -17620,7 +17711,7 @@ var ExcelFilter = /** @__PURE__ @class */ (function (_super) {
      * @return {void}
      * @hidden
      */
-    ExcelFilter.prototype.destroy = function () {
+    ExcelFilterBase.prototype.destroy = function () {
         if (this.dlg) {
             this.unwireExEvents();
             _super.prototype.destroy.call(this);
@@ -17629,7 +17720,7 @@ var ExcelFilter = /** @__PURE__ @class */ (function (_super) {
             remove(this.cmenu);
         }
     };
-    ExcelFilter.prototype.createMenu = function (type, isFiltered, isCheckIcon) {
+    ExcelFilterBase.prototype.createMenu = function (type, isFiltered, isCheckIcon) {
         var options = { string: 'TextFilter', date: 'DateFilter', datetime: 'DateTimeFilter', number: 'NumberFilter' };
         this.menu = this.parent.createElement('div', { className: 'e-contextmenu-wrapper' });
         if (this.parent.enableRtl) {
@@ -17646,7 +17737,7 @@ var ExcelFilter = /** @__PURE__ @class */ (function (_super) {
         }
         this.menu.appendChild(ul);
     };
-    ExcelFilter.prototype.createMenuElem = function (val, className, iconName, isSubMenu) {
+    ExcelFilterBase.prototype.createMenuElem = function (val, className, iconName, isSubMenu) {
         var li = this.parent.createElement('li', { className: className + ' e-menu-item' });
         li.innerHTML = val;
         li.insertBefore(this.parent.createElement('span', { className: 'e-menu-icon e-icons ' + iconName }), li.firstChild);
@@ -17655,28 +17746,28 @@ var ExcelFilter = /** @__PURE__ @class */ (function (_super) {
         }
         return li;
     };
-    ExcelFilter.prototype.wireExEvents = function () {
+    ExcelFilterBase.prototype.wireExEvents = function () {
         EventHandler.add(this.dlg, 'mouseover', this.hoverHandler, this);
         EventHandler.add(this.dlg, 'click', this.clickExHandler, this);
     };
-    ExcelFilter.prototype.unwireExEvents = function () {
+    ExcelFilterBase.prototype.unwireExEvents = function () {
         EventHandler.remove(this.dlg, 'mouseover', this.hoverHandler);
         EventHandler.remove(this.dlg, 'click', this.clickExHandler);
     };
-    ExcelFilter.prototype.clickExHandler = function (e) {
+    ExcelFilterBase.prototype.clickExHandler = function (e) {
         var menuItem = parentsUntil(e.target, 'e-menu-item');
         if (menuItem && this.getLocalizedLabel('ClearFilter') === menuItem.innerText.trim()) {
             this.clearFilter();
             this.closeDialog();
         }
     };
-    ExcelFilter.prototype.destroyCMenu = function () {
+    ExcelFilterBase.prototype.destroyCMenu = function () {
         if (this.menuObj && !this.menuObj.isDestroyed) {
             this.menuObj.destroy();
             remove(this.cmenu);
         }
     };
-    ExcelFilter.prototype.hoverHandler = function (e) {
+    ExcelFilterBase.prototype.hoverHandler = function (e) {
         var target = e.target.querySelector('.e-contextmenu');
         var li = parentsUntil(e.target, 'e-menu-item');
         var focused = this.menu.querySelector('.e-focused');
@@ -17728,7 +17819,7 @@ var ExcelFilter = /** @__PURE__ @class */ (function (_super) {
             this.parent.applyBiggerTheme(this.menuObj.element.parentElement);
         }
     };
-    ExcelFilter.prototype.ensureTextFilter = function () {
+    ExcelFilterBase.prototype.ensureTextFilter = function () {
         var selectedMenu;
         var predicates = this.existingPredicate[this.options.field];
         if (predicates && predicates.length === 2) {
@@ -17747,17 +17838,17 @@ var ExcelFilter = /** @__PURE__ @class */ (function (_super) {
         }
         return selectedMenu;
     };
-    ExcelFilter.prototype.preventClose = function (args) {
+    ExcelFilterBase.prototype.preventClose = function (args) {
         if (args.event instanceof MouseEvent && args.event.target.classList.contains('e-submenu')) {
             args.cancel = true;
         }
     };
-    ExcelFilter.prototype.getContextBounds = function (context) {
+    ExcelFilterBase.prototype.getContextBounds = function (context) {
         var elementVisible = this.menuObj.element.style.display;
         this.menuObj.element.style.display = 'block';
         return this.menuObj.element.getBoundingClientRect();
     };
-    ExcelFilter.prototype.getCMenuYPosition = function (target, context) {
+    ExcelFilterBase.prototype.getCMenuYPosition = function (target, context) {
         var contextWidth = this.getContextBounds(context).width;
         var targetPosition = target.getBoundingClientRect();
         var leftPos = targetPosition.right + contextWidth - this.parent.element.clientWidth;
@@ -17765,7 +17856,7 @@ var ExcelFilter = /** @__PURE__ @class */ (function (_super) {
         targetBorder = targetBorder ? targetBorder + 1 : 0;
         return (leftPos < 1) ? (targetPosition.right + 1 - targetBorder) : (targetPosition.left - contextWidth - 1 + targetBorder);
     };
-    ExcelFilter.prototype.openDialog = function (options) {
+    ExcelFilterBase.prototype.openDialog = function (options) {
         var _this = this;
         this.updateModel(options);
         this.getAndSetChkElem(options);
@@ -17782,16 +17873,16 @@ var ExcelFilter = /** @__PURE__ @class */ (function (_super) {
         this.cmenu = this.parent.createElement('ul', { className: 'e-excel-menu' });
         this.wireExEvents();
     };
-    ExcelFilter.prototype.closeDialog = function () {
+    ExcelFilterBase.prototype.closeDialog = function () {
         _super.prototype.closeDialog.call(this);
     };
-    ExcelFilter.prototype.selectHandler = function (e) {
+    ExcelFilterBase.prototype.selectHandler = function (e) {
         if (e.item) {
             this.menuItem = e.item;
             this.renderDialogue(e);
         }
     };
-    ExcelFilter.prototype.renderDialogue = function (e) {
+    ExcelFilterBase.prototype.renderDialogue = function (e) {
         var _this = this;
         var target = e.element;
         var column = this.options.field;
@@ -17850,7 +17941,7 @@ var ExcelFilter = /** @__PURE__ @class */ (function (_super) {
         this.dlgObj[isStringTemplate] = true;
         this.dlgObj.appendTo(this.dlgDiv);
     };
-    ExcelFilter.prototype.removeDialog = function () {
+    ExcelFilterBase.prototype.removeDialog = function () {
         if (isBlazor()) {
             var columns = this.parent.getColumns();
             for (var i = 0; i < columns.length; i++) {
@@ -17863,7 +17954,7 @@ var ExcelFilter = /** @__PURE__ @class */ (function (_super) {
         this.removeObjects([this.dropOptr, this.datePicker, this.dateTimePicker, this.actObj, this.numericTxtObj, this.dlgObj]);
         remove(this.dlgDiv);
     };
-    ExcelFilter.prototype.createdDialog = function (target, column) {
+    ExcelFilterBase.prototype.createdDialog = function (target, column) {
         this.renderCustomFilter(target, column);
         this.dlgObj.element.style.left = '0px';
         this.dlgObj.element.style.top = '0px';
@@ -17874,7 +17965,7 @@ var ExcelFilter = /** @__PURE__ @class */ (function (_super) {
         this.dlgObj.show();
         this.parent.applyBiggerTheme(this.dlgObj.element.parentElement);
     };
-    ExcelFilter.prototype.renderCustomFilter = function (target, column) {
+    ExcelFilterBase.prototype.renderCustomFilter = function (target, column) {
         var dlgConetntEle = this.dlgObj.element.querySelector('.e-xlfl-maindiv');
         /* tslint:disable-next-line:max-line-length */
         var dlgFields = this.parent.createElement('div', { innerHTML: this.getLocalizedLabel('ShowRowsWhere'), className: 'e-xlfl-dlgfields' });
@@ -17884,7 +17975,7 @@ var ExcelFilter = /** @__PURE__ @class */ (function (_super) {
         dlgConetntEle.appendChild(fieldSet);
         this.renderFilterUI(column, dlgConetntEle);
     };
-    ExcelFilter.prototype.filterBtnClick = function (col) {
+    ExcelFilterBase.prototype.filterBtnClick = function (col) {
         var isComplex = !isNullOrUndefined(col) && isComplexField(col);
         var complexFieldName = !isNullOrUndefined(col) && getComplexFieldID(col);
         var colValue = isComplex ? complexFieldName : col;
@@ -17911,6 +18002,7 @@ var ExcelFilter = /** @__PURE__ @class */ (function (_super) {
         this.removeDialog();
     };
     /**
+     * @hidden
      * Filters grid row by column name with given options.
      * @param {string} fieldName - Defines the field name of the filter column.
      * @param {string} firstOperator - Defines the first operator by how to filter records.
@@ -17922,7 +18014,7 @@ var ExcelFilter = /** @__PURE__ @class */ (function (_super) {
      * @param {string} secondOperator - Defines the second operator by how to filter records.
      * @param {string | number | Date | boolean} secondValue - Defines the first value which is used to filter records.
      */
-    ExcelFilter.prototype.filterByColumn = function (fieldName, firstOperator, firstValue, predicate, matchCase, ignoreAccent, secondOperator, secondValue) {
+    ExcelFilterBase.prototype.filterByColumn = function (fieldName, firstOperator, firstValue, predicate, matchCase, ignoreAccent, secondOperator, secondValue) {
         var col = this.parent.getColumnByField(fieldName);
         var field = col.isForeignColumn() ? col.foreignKeyValue : fieldName;
         var fColl = [];
@@ -17970,7 +18062,7 @@ var ExcelFilter = /** @__PURE__ @class */ (function (_super) {
         }
     };
     /* tslint:disable-next-line:max-line-length */
-    ExcelFilter.prototype.renderOperatorUI = function (column, table, elementID, predicates, isFirst) {
+    ExcelFilterBase.prototype.renderOperatorUI = function (column, table, elementID, predicates, isFirst) {
         var fieldElement = this.parent.createElement('tr', { className: 'e-xlfl-fields' });
         table.appendChild(fieldElement);
         var xlfloptr = this.parent.createElement('td', { className: 'e-xlfl-optr' });
@@ -18009,14 +18101,14 @@ var ExcelFilter = /** @__PURE__ @class */ (function (_super) {
         var operator = this.getSelectedValue(selectedValue);
         return { fieldElement: fieldElement, operator: operator };
     };
-    ExcelFilter.prototype.dropDownOpen = function (args) {
+    ExcelFilterBase.prototype.dropDownOpen = function (args) {
         args.popup.element.style.zIndex = (this.dialogObj.zIndex + 1).toString();
     };
-    ExcelFilter.prototype.getSelectedValue = function (text) {
+    ExcelFilterBase.prototype.getSelectedValue = function (text) {
         var selectedField = new DataManager(this.optrData).executeLocal(new Query().where('text', 'equal', text));
         return !isNullOrUndefined(selectedField[0]) ? selectedField[0].value : '';
     };
-    ExcelFilter.prototype.dropSelectedVal = function (col, predicates, isFirst) {
+    ExcelFilterBase.prototype.dropSelectedVal = function (col, predicates, isFirst) {
         var operator;
         if (predicates && predicates.length > 0) {
             operator = predicates.length === 2 ?
@@ -18028,11 +18120,11 @@ var ExcelFilter = /** @__PURE__ @class */ (function (_super) {
         }
         return this.getSelectedText(operator);
     };
-    ExcelFilter.prototype.getSelectedText = function (operator) {
+    ExcelFilterBase.prototype.getSelectedText = function (operator) {
         var selectedField = new DataManager(this.optrData).executeLocal(new Query().where('value', 'equal', operator));
         return !isNullOrUndefined(selectedField[0]) ? selectedField[0].text : '';
     };
-    ExcelFilter.prototype.renderFilterUI = function (column, dlgConetntEle) {
+    ExcelFilterBase.prototype.renderFilterUI = function (column, dlgConetntEle) {
         var predicates = this.existingPredicate[column];
         var table = this.parent.createElement('table', { className: 'e-xlfl-table' });
         dlgConetntEle.appendChild(table);
@@ -18053,7 +18145,7 @@ var ExcelFilter = /** @__PURE__ @class */ (function (_super) {
         //Renders second text box
         this.renderFlValueUI(column, optr, '-xlfl-secndvalue', predicates, false);
     };
-    ExcelFilter.prototype.renderRadioButton = function (column, tr, predicates) {
+    ExcelFilterBase.prototype.renderRadioButton = function (column, tr, predicates) {
         var td = this.parent.createElement('td', { className: 'e-xlfl-radio', attrs: { 'colSpan': '2' } });
         tr.appendChild(td);
         var radioDiv = this.parent
@@ -18091,7 +18183,7 @@ var ExcelFilter = /** @__PURE__ @class */ (function (_super) {
         orRadio.appendTo(secndpredicate);
     };
     /* tslint:disable-next-line:no-any */
-    ExcelFilter.prototype.removeObjects = function (elements) {
+    ExcelFilterBase.prototype.removeObjects = function (elements) {
         for (var _i = 0, elements_1 = elements; _i < elements_1.length; _i++) {
             var obj = elements_1[_i];
             if (obj && !obj.isDestroyed) {
@@ -18100,7 +18192,7 @@ var ExcelFilter = /** @__PURE__ @class */ (function (_super) {
         }
     };
     /* tslint:disable-next-line:max-line-length */
-    ExcelFilter.prototype.renderFlValueUI = function (column, optr, elementId, predicates, isFirst) {
+    ExcelFilterBase.prototype.renderFlValueUI = function (column, optr, elementId, predicates, isFirst) {
         var value = this.parent.createElement('td', { className: 'e-xlfl-value' });
         optr.fieldElement.appendChild(value);
         var isComplex = !isNullOrUndefined(column) && isComplexField(column);
@@ -18150,7 +18242,8 @@ var ExcelFilter = /** @__PURE__ @class */ (function (_super) {
             types[this.options.type](this.options, column, valueInput, flValue, this.parent.enableRtl);
         }
     };
-    ExcelFilter.prototype.getExcelFilterData = function (elementId, data, columnObj, predicates, fltrPredicates) {
+    /* tslint:disable-next-line:max-line-length */
+    ExcelFilterBase.prototype.getExcelFilterData = function (elementId, data, columnObj, predicates, fltrPredicates) {
         var predIndex = elementId === '-xlfl-frstvalue' ? 0 : 1;
         if (elementId === '-xlfl-frstvalue' || fltrPredicates.length > 1) {
             data = { column: predicates instanceof Array ? predicates[predIndex] : predicates };
@@ -18165,7 +18258,7 @@ var ExcelFilter = /** @__PURE__ @class */ (function (_super) {
         return data;
     };
     /* tslint:disable-next-line:max-line-length */
-    ExcelFilter.prototype.renderMatchCase = function (column, tr, matchCase, elementId, predicates) {
+    ExcelFilterBase.prototype.renderMatchCase = function (column, tr, matchCase, elementId, predicates) {
         /* tslint:disable-next-line:max-line-length */
         var matchCaseDiv = this.parent.createElement('div', { className: 'e-xlfl-matchcasediv', attrs: { 'style': 'display: inline-block' } });
         var isComplex = !isNullOrUndefined(column) && isComplexField(column);
@@ -18185,7 +18278,7 @@ var ExcelFilter = /** @__PURE__ @class */ (function (_super) {
         checkbox.appendTo(matchCaseInput);
     };
     /* tslint:disable-next-line:max-line-length */
-    ExcelFilter.prototype.renderDate = function (options, column, inputValue, fValue, isRtl) {
+    ExcelFilterBase.prototype.renderDate = function (options, column, inputValue, fValue, isRtl) {
         var format = getCustomDateFormat(options.format, options.type);
         this.datePicker = new DatePicker(extend$1({
             format: format,
@@ -18198,7 +18291,7 @@ var ExcelFilter = /** @__PURE__ @class */ (function (_super) {
         this.datePicker.appendTo(inputValue);
     };
     /* tslint:disable-next-line:max-line-length */
-    ExcelFilter.prototype.renderDateTime = function (options, column, inputValue, fValue, isRtl) {
+    ExcelFilterBase.prototype.renderDateTime = function (options, column, inputValue, fValue, isRtl) {
         var format = getCustomDateFormat(options.format, options.type);
         this.dateTimePicker = new DateTimePicker(extend$1({
             format: format,
@@ -18210,11 +18303,11 @@ var ExcelFilter = /** @__PURE__ @class */ (function (_super) {
         }, options.column.filter.params));
         this.dateTimePicker.appendTo(inputValue);
     };
-    ExcelFilter.prototype.completeAction = function (e) {
+    ExcelFilterBase.prototype.completeAction = function (e) {
         e.result = distinctStringValues(e.result);
     };
     /* tslint:disable-next-line:max-line-length */
-    ExcelFilter.prototype.renderNumericTextBox = function (options, column, inputValue, fValue, isRtl) {
+    ExcelFilterBase.prototype.renderNumericTextBox = function (options, column, inputValue, fValue, isRtl) {
         this.numericTxtObj = new NumericTextBox(extend$1({
             format: options.format,
             placeholder: this.getLocalizedLabel('CustomFilterPlaceHolder'),
@@ -18224,7 +18317,7 @@ var ExcelFilter = /** @__PURE__ @class */ (function (_super) {
         this.numericTxtObj.appendTo(inputValue);
     };
     /* tslint:disable-next-line:max-line-length */
-    ExcelFilter.prototype.renderAutoComplete = function (options, column, inputValue, fValue, isRtl) {
+    ExcelFilterBase.prototype.renderAutoComplete = function (options, column, inputValue, fValue, isRtl) {
         var _this = this;
         var colObj = this.parent.getColumnByField(column);
         var isForeignColumn = colObj.isForeignColumn();
@@ -18269,7 +18362,7 @@ var ExcelFilter = /** @__PURE__ @class */ (function (_super) {
         actObj.appendTo(inputValue);
         this.actObj = actObj;
     };
-    ExcelFilter.prototype.performComplexDataOperation = function (value, mapObject) {
+    ExcelFilterBase.prototype.performComplexDataOperation = function (value, mapObject) {
         var returnObj;
         var length = value.split('.').length;
         var splits = value.split('.');
@@ -18279,6 +18372,57 @@ var ExcelFilter = /** @__PURE__ @class */ (function (_super) {
             duplicateMap = returnObj;
         }
         return returnObj;
+    };
+    return ExcelFilterBase;
+}(CheckBoxFilterBase));
+
+var __extends$18 = (undefined && undefined.__extends) || (function () {
+    var extendStatics = function (d, b) {
+        extendStatics = Object.setPrototypeOf ||
+            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+        return extendStatics(d, b);
+    };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+/**
+ * @hidden
+ * `ExcelFilter` module is used to handle filtering action.
+ */
+var ExcelFilter = /** @__PURE__ @class */ (function (_super) {
+    __extends$18(ExcelFilter, _super);
+    /**
+     * Constructor for excelbox filtering module
+     * @hidden
+     */
+    function ExcelFilter(parent, filterSettings, serviceLocator, customFltrOperators) {
+        var _this = _super.call(this, parent, filterSettings, serviceLocator) || this;
+        _this.parent = parent;
+        _this.excelFilterBase = new ExcelFilterBase(parent, filterSettings, customFltrOperators);
+        return _this;
+    }
+    /**
+     * To destroy the excel filter.
+     * @return {void}
+     * @hidden
+     */
+    ExcelFilter.prototype.destroy = function () {
+        this.excelFilterBase.closeDialog();
+    };
+    ExcelFilter.prototype.openDialog = function (options) {
+        this.excelFilterBase.openDialog(options);
+    };
+    ExcelFilter.prototype.closeDialog = function () {
+        this.excelFilterBase.closeDialog();
+    };
+    /* tslint:disable-next-line:max-line-length */
+    ExcelFilter.prototype.filterByColumn = function (fieldName, firstOperator, firstValue, predicate, matchCase, ignoreAccent, secondOperator, secondValue) {
+        /* tslint:disable-next-line:max-line-length */
+        this.excelFilterBase.filterByColumn(fieldName, firstOperator, firstValue, predicate, matchCase, ignoreAccent, secondOperator, secondValue);
     };
     /**
      * For internal use only - Get the module name.
@@ -18776,7 +18920,7 @@ var Filter = /** @__PURE__ @class */ (function () {
         var dataSource = col.filter.dataSource || gObj.getDataModule().dataManager;
         this.filterModule.openDialog({
             type: col.type, field: col.field, displayName: col.headerText,
-            dataSource: dataSource, format: col.format,
+            dataSource: dataSource, format: col.format, height: 800,
             filteredColumns: gObj.filterSettings.columns, target: target,
             sortedColumns: gObj.sortSettings.columns, formatFn: col.getFormatter(),
             parserFn: col.getParser(), query: gObj.query, template: col.getFilterItemTemplate(),
@@ -22428,7 +22572,7 @@ var Toolbar$1 = /** @__PURE__ @class */ (function () {
     return Toolbar$$1;
 }());
 
-var __extends$19 = (undefined && undefined.__extends) || (function () {
+var __extends$20 = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -22446,7 +22590,7 @@ var __extends$19 = (undefined && undefined.__extends) || (function () {
  * @hidden
  */
 var FooterRenderer = /** @__PURE__ @class */ (function (_super) {
-    __extends$19(FooterRenderer, _super);
+    __extends$20(FooterRenderer, _super);
     function FooterRenderer(gridModule, serviceLocator) {
         var _this = _super.call(this, gridModule, serviceLocator) || this;
         _this.aggregates = {};
@@ -22697,7 +22841,7 @@ var FooterRenderer = /** @__PURE__ @class */ (function (_super) {
     return FooterRenderer;
 }(ContentRender));
 
-var __extends$20 = (undefined && undefined.__extends) || (function () {
+var __extends$21 = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -22715,7 +22859,7 @@ var __extends$20 = (undefined && undefined.__extends) || (function () {
  * @hidden
  */
 var SummaryCellRenderer = /** @__PURE__ @class */ (function (_super) {
-    __extends$20(SummaryCellRenderer, _super);
+    __extends$21(SummaryCellRenderer, _super);
     function SummaryCellRenderer() {
         var _this = _super !== null && _super.apply(this, arguments) || this;
         _this.element = _this.parent
@@ -23169,7 +23313,7 @@ var VirtualRowModelGenerator = /** @__PURE__ @class */ (function () {
     return VirtualRowModelGenerator;
 }());
 
-var __extends$21 = (undefined && undefined.__extends) || (function () {
+var __extends$22 = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -23187,7 +23331,7 @@ var __extends$21 = (undefined && undefined.__extends) || (function () {
  * @hidden
  */
 var VirtualContentRenderer = /** @__PURE__ @class */ (function (_super) {
-    __extends$21(VirtualContentRenderer, _super);
+    __extends$22(VirtualContentRenderer, _super);
     function VirtualContentRenderer(parent, locator) {
         var _this = _super.call(this, parent, locator) || this;
         _this.prevHeight = 0;
@@ -23635,7 +23779,7 @@ var VirtualContentRenderer = /** @__PURE__ @class */ (function (_super) {
  * @hidden
  */
 var VirtualHeaderRenderer = /** @__PURE__ @class */ (function (_super) {
-    __extends$21(VirtualHeaderRenderer, _super);
+    __extends$22(VirtualHeaderRenderer, _super);
     function VirtualHeaderRenderer(parent, locator) {
         var _this = _super.call(this, parent, locator) || this;
         _this.virtualEle = new VirtualElementHandler();
@@ -24861,7 +25005,7 @@ var NormalEdit = /** @__PURE__ @class */ (function () {
         }
     };
     NormalEdit.prototype.editFailure = function (e) {
-        this.parent.trigger(actionFailure, e);
+        this.parent.trigger(actionFailure, ((isBlazor() && e instanceof Array) ? e[0] : e));
         this.parent.hideSpinner();
         this.parent.log('actionfailure', { error: e });
     };
@@ -25060,7 +25204,7 @@ var NormalEdit = /** @__PURE__ @class */ (function () {
     return NormalEdit;
 }());
 
-var __extends$22 = (undefined && undefined.__extends) || (function () {
+var __extends$23 = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -25078,7 +25222,7 @@ var __extends$22 = (undefined && undefined.__extends) || (function () {
  * @hidden
  */
 var InlineEdit = /** @__PURE__ @class */ (function (_super) {
-    __extends$22(InlineEdit, _super);
+    __extends$23(InlineEdit, _super);
     function InlineEdit(parent, serviceLocator, renderer) {
         var _this = _super.call(this, parent, serviceLocator) || this;
         _this.parent = parent;
@@ -26052,7 +26196,7 @@ var BatchEdit = /** @__PURE__ @class */ (function () {
     return BatchEdit;
 }());
 
-var __extends$23 = (undefined && undefined.__extends) || (function () {
+var __extends$24 = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -26070,7 +26214,7 @@ var __extends$23 = (undefined && undefined.__extends) || (function () {
  * @hidden
  */
 var DialogEdit = /** @__PURE__ @class */ (function (_super) {
-    __extends$23(DialogEdit, _super);
+    __extends$24(DialogEdit, _super);
     function DialogEdit(parent, serviceLocator, renderer) {
         var _this = 
         //constructor
@@ -30045,7 +30189,7 @@ var PdfExport = /** @__PURE__ @class */ (function () {
     return PdfExport;
 }());
 
-var __extends$24 = (undefined && undefined.__extends) || (function () {
+var __extends$25 = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -30063,7 +30207,7 @@ var __extends$24 = (undefined && undefined.__extends) || (function () {
  * @hidden
  */
 var CommandColumnRenderer = /** @__PURE__ @class */ (function (_super) {
-    __extends$24(CommandColumnRenderer, _super);
+    __extends$25(CommandColumnRenderer, _super);
     function CommandColumnRenderer(parent, locator) {
         var _this = _super.call(this, parent, locator) || this;
         _this.buttonElement = _this.parent.createElement('button', {});
@@ -30855,7 +30999,7 @@ var FreezeRowModelGenerator = /** @__PURE__ @class */ (function () {
     return FreezeRowModelGenerator;
 }());
 
-var __extends$25 = (undefined && undefined.__extends) || (function () {
+var __extends$26 = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -30873,7 +31017,7 @@ var __extends$25 = (undefined && undefined.__extends) || (function () {
  * @hidden
  */
 var FreezeContentRender = /** @__PURE__ @class */ (function (_super) {
-    __extends$25(FreezeContentRender, _super);
+    __extends$26(FreezeContentRender, _super);
     function FreezeContentRender(parent, locator) {
         return _super.call(this, parent, locator) || this;
     }
@@ -30923,7 +31067,7 @@ var FreezeContentRender = /** @__PURE__ @class */ (function (_super) {
     return FreezeContentRender;
 }(ContentRender));
 var FreezeRender = /** @__PURE__ @class */ (function (_super) {
-    __extends$25(FreezeRender, _super);
+    __extends$26(FreezeRender, _super);
     function FreezeRender(parent, locator) {
         var _this = _super.call(this, parent, locator) || this;
         _this.addEventListener();
@@ -31751,7 +31895,7 @@ var ColumnMenu = /** @__PURE__ @class */ (function () {
     return ColumnMenu;
 }());
 
-var __extends$26 = (undefined && undefined.__extends) || (function () {
+var __extends$27 = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -31768,7 +31912,7 @@ var __extends$26 = (undefined && undefined.__extends) || (function () {
  * `ForeignKey` module is used to handle foreign key column's actions.
  */
 var ForeignKey = /** @__PURE__ @class */ (function (_super) {
-    __extends$26(ForeignKey, _super);
+    __extends$27(ForeignKey, _super);
     function ForeignKey(parent, serviceLocator) {
         var _this = _super.call(this, parent, serviceLocator) || this;
         _this.parent = parent;
@@ -32627,5 +32771,5 @@ var MaskedTextBoxCellEdit = /** @__PURE__ @class */ (function () {
  * Export Grid components
  */
 
-export { SortDescriptor, SortSettings, Predicate$1 as Predicate, FilterSettings, SelectionSettings, SearchSettings, RowDropSettings, TextWrapSettings, GroupSettings, EditSettings, Grid, CellType, RenderType, ToolbarItem, doesImplementInterface, valueAccessor, getUpdateUsingRaf, updatecloneRow, getCollapsedRowsCount, recursive, iterateArrayOrObject, iterateExtend, templateCompiler, setStyleAndAttributes, extend$1 as extend, setColumnIndex, prepareColumns, setCssInGridPopUp, getActualProperties, parentsUntil, getElementIndex, inArray, getActualPropFromColl, removeElement, getPosition, getUid, appendChildren, parents, calculateAggregate, getScrollBarWidth, getRowHeight, isComplexField, getComplexFieldID, setComplexFieldID, isEditable, isActionPrevent, wrap, setFormatter, addRemoveActiveClasses, distinctStringValues, getFilterMenuPostion, getZIndexCalcualtion, toogleCheckbox, createCboxWithWrap, removeAddCboxClasses, refreshForeignData, getForeignData, getColumnByForeignKeyValue, getDatePredicate, renderMovable, isGroupAdaptive, getObject, getCustomDateFormat, getExpandedState, getPrintGridModel, extendObjWithFn, measureColumnDepth, checkDepth, refreshFilteredColsUid, Global, created, destroyed, load, rowDataBound, queryCellInfo, headerCellInfo, actionBegin, actionComplete, actionFailure, dataBound, rowSelecting, rowSelected, rowDeselecting, rowDeselected, cellSelecting, cellSelected, cellDeselecting, cellDeselected, columnDragStart, columnDrag, columnDrop, rowDragStartHelper, rowDragStart, rowDrag, rowDrop, beforePrint, printComplete, detailDataBound, toolbarClick, batchAdd, batchCancel, batchDelete, beforeBatchAdd, beforeBatchDelete, beforeBatchSave, beginEdit, cellEdit, cellSave, cellSaved, endAdd, endDelete, endEdit, recordDoubleClick, recordClick, beforeDataBound, beforeOpenColumnChooser, resizeStart, onResize, resizeStop, checkBoxChange, beforeCopy, beforePaste, filterChoiceRequest, filterAfterOpen, filterBeforeOpen, filterSearchBegin, commandClick, initialLoad, initialEnd, dataReady, contentReady, uiUpdate, onEmpty, inBoundModelChanged, modelChanged, colGroupRefresh, headerRefreshed, pageBegin, pageComplete, sortBegin, sortComplete, filterBegin, filterComplete, searchBegin, searchComplete, reorderBegin, reorderComplete, rowDragAndDropBegin, rowDragAndDropComplete, groupBegin, groupComplete, ungroupBegin, ungroupComplete, groupAggregates, refreshFooterRenderer, refreshAggregateCell, refreshAggregates, rowSelectionBegin, rowSelectionComplete, columnSelectionBegin, columnSelectionComplete, cellSelectionBegin, cellSelectionComplete, beforeCellFocused, cellFocused, keyPressed, click, destroy, columnVisibilityChanged, scroll, columnWidthChanged, columnPositionChanged, rowDragAndDrop, rowsAdded, rowsRemoved, columnDragStop, headerDrop, dataSourceModified, refreshComplete, refreshVirtualBlock, dblclick, toolbarRefresh, bulkSave, autoCol, tooltipDestroy, updateData, editBegin, editComplete, addBegin, addComplete, saveComplete, deleteBegin, deleteComplete, preventBatch, dialogDestroy, crudAction, addDeleteAction, destroyForm, doubleTap, beforeExcelExport, excelExportComplete, excelQueryCellInfo, excelHeaderQueryCellInfo, exportDetailDataBound, beforePdfExport, pdfExportComplete, pdfQueryCellInfo, pdfHeaderQueryCellInfo, accessPredicate, contextMenuClick, freezeRender, freezeRefresh, contextMenuOpen, columnMenuClick, columnMenuOpen, filterOpen, filterDialogCreated, filterMenuClose, initForeignKeyColumn, getForeignKeyData, generateQuery, showEmptyGrid, foreignKeyData, dataStateChange, dataSourceChanged, rtlUpdated, beforeFragAppend, frozenHeight, textWrapRefresh, recordAdded, cancelBegin, editNextValCell, hierarchyPrint, expandChildGrid, printGridInit, exportRowDataBound, rowPositionChanged, columnChooserOpened, batchForm, beforeStartEdit, beforeBatchCancel, batchEditFormRendered, partialRefresh, beforeCustomFilterOpen, selectVirtualRow, columnsPrepared, Data, Sort, Page, Selection, Filter, Search, Scroll, resizeClassList, Resize, Reorder, RowDD, Group, getCloneProperties, Print, DetailRow, Toolbar$1 as Toolbar, Aggregate, summaryIterator, VirtualScroll, Edit, BatchEdit, InlineEdit, NormalEdit, DialogEdit, ColumnChooser, ExcelExport, PdfExport, ExportHelper, ExportValueFormatter, Clipboard, CommandColumn, CheckBoxFilter, menuClass, ContextMenu$1 as ContextMenu, Freeze, ColumnMenu, ExcelFilter, ForeignKey, Logger, detailLists, Column, CommandColumnModel, Row, Cell, HeaderRender, ContentRender, RowRenderer, CellRenderer, HeaderCellRenderer, FilterCellRenderer, StackedHeaderCellRenderer, Render, IndentCellRenderer, GroupCaptionCellRenderer, GroupCaptionEmptyCellRenderer, BatchEditRender, DialogEditRender, InlineEditRender, EditRender, BooleanEditCell, DefaultEditCell, DropDownEditCell, NumericEditCell, DatePickerEditCell, CommandColumnRenderer, FreezeContentRender, FreezeRender, StringFilterUI, NumberFilterUI, DateFilterUI, BooleanFilterUI, FlMenuOptrUI, AutoCompleteEditCell, ComboboxEditCell, MultiSelectEditCell, TimePickerEditCell, ToggleEditCell, MaskedTextBoxCellEdit, VirtualContentRenderer, VirtualHeaderRenderer, VirtualElementHandler, CellRendererFactory, ServiceLocator, RowModelGenerator, GroupModelGenerator, FreezeRowModelGenerator, ValueFormatter, VirtualRowModelGenerator, InterSectionObserver, Pager, ExternalMessage, NumericContainer, PagerMessage, PagerDropDown };
+export { SortDescriptor, SortSettings, Predicate$1 as Predicate, FilterSettings, SelectionSettings, SearchSettings, RowDropSettings, TextWrapSettings, GroupSettings, EditSettings, Grid, CellType, RenderType, ToolbarItem, doesImplementInterface, valueAccessor, getUpdateUsingRaf, updatecloneRow, getCollapsedRowsCount, recursive, iterateArrayOrObject, iterateExtend, templateCompiler, setStyleAndAttributes, extend$1 as extend, setColumnIndex, prepareColumns, setCssInGridPopUp, getActualProperties, parentsUntil, getElementIndex, inArray, getActualPropFromColl, removeElement, getPosition, getUid, appendChildren, parents, calculateAggregate, getScrollBarWidth, getRowHeight, isComplexField, getComplexFieldID, setComplexFieldID, isEditable, isActionPrevent, wrap, setFormatter, addRemoveActiveClasses, distinctStringValues, getFilterMenuPostion, getZIndexCalcualtion, toogleCheckbox, createCboxWithWrap, removeAddCboxClasses, refreshForeignData, getForeignData, getColumnByForeignKeyValue, getDatePredicate, renderMovable, isGroupAdaptive, getObject, getCustomDateFormat, getExpandedState, getPrintGridModel, extendObjWithFn, measureColumnDepth, checkDepth, refreshFilteredColsUid, Global, created, destroyed, load, rowDataBound, queryCellInfo, headerCellInfo, actionBegin, actionComplete, actionFailure, dataBound, rowSelecting, rowSelected, rowDeselecting, rowDeselected, cellSelecting, cellSelected, cellDeselecting, cellDeselected, columnDragStart, columnDrag, columnDrop, rowDragStartHelper, rowDragStart, rowDrag, rowDrop, beforePrint, printComplete, detailDataBound, toolbarClick, batchAdd, batchCancel, batchDelete, beforeBatchAdd, beforeBatchDelete, beforeBatchSave, beginEdit, cellEdit, cellSave, cellSaved, endAdd, endDelete, endEdit, recordDoubleClick, recordClick, beforeDataBound, beforeOpenColumnChooser, resizeStart, onResize, resizeStop, checkBoxChange, beforeCopy, beforePaste, filterChoiceRequest, filterAfterOpen, filterBeforeOpen, filterSearchBegin, commandClick, initialLoad, initialEnd, dataReady, contentReady, uiUpdate, onEmpty, inBoundModelChanged, modelChanged, colGroupRefresh, headerRefreshed, pageBegin, pageComplete, sortBegin, sortComplete, filterBegin, filterComplete, searchBegin, searchComplete, reorderBegin, reorderComplete, rowDragAndDropBegin, rowDragAndDropComplete, groupBegin, groupComplete, ungroupBegin, ungroupComplete, groupAggregates, refreshFooterRenderer, refreshAggregateCell, refreshAggregates, rowSelectionBegin, rowSelectionComplete, columnSelectionBegin, columnSelectionComplete, cellSelectionBegin, cellSelectionComplete, beforeCellFocused, cellFocused, keyPressed, click, destroy, columnVisibilityChanged, scroll, columnWidthChanged, columnPositionChanged, rowDragAndDrop, rowsAdded, rowsRemoved, columnDragStop, headerDrop, dataSourceModified, refreshComplete, refreshVirtualBlock, dblclick, toolbarRefresh, bulkSave, autoCol, tooltipDestroy, updateData, editBegin, editComplete, addBegin, addComplete, saveComplete, deleteBegin, deleteComplete, preventBatch, dialogDestroy, crudAction, addDeleteAction, destroyForm, doubleTap, beforeExcelExport, excelExportComplete, excelQueryCellInfo, excelHeaderQueryCellInfo, exportDetailDataBound, beforePdfExport, pdfExportComplete, pdfQueryCellInfo, pdfHeaderQueryCellInfo, accessPredicate, contextMenuClick, freezeRender, freezeRefresh, contextMenuOpen, columnMenuClick, columnMenuOpen, filterOpen, filterDialogCreated, filterMenuClose, initForeignKeyColumn, getForeignKeyData, generateQuery, showEmptyGrid, foreignKeyData, dataStateChange, dataSourceChanged, rtlUpdated, beforeFragAppend, frozenHeight, textWrapRefresh, recordAdded, cancelBegin, editNextValCell, hierarchyPrint, expandChildGrid, printGridInit, exportRowDataBound, rowPositionChanged, columnChooserOpened, batchForm, beforeStartEdit, beforeBatchCancel, batchEditFormRendered, partialRefresh, beforeCustomFilterOpen, selectVirtualRow, columnsPrepared, cBoxFltrBegin, cBoxFltrComplete, cBoxFltrPrevent, Data, Sort, Page, Selection, Filter, Search, Scroll, resizeClassList, Resize, Reorder, RowDD, Group, getCloneProperties, Print, DetailRow, Toolbar$1 as Toolbar, Aggregate, summaryIterator, VirtualScroll, Edit, BatchEdit, InlineEdit, NormalEdit, DialogEdit, ColumnChooser, ExcelExport, PdfExport, ExportHelper, ExportValueFormatter, Clipboard, CommandColumn, CheckBoxFilter, menuClass, ContextMenu$1 as ContextMenu, Freeze, ColumnMenu, ExcelFilter, ForeignKey, Logger, detailLists, Column, CommandColumnModel, Row, Cell, HeaderRender, ContentRender, RowRenderer, CellRenderer, HeaderCellRenderer, FilterCellRenderer, StackedHeaderCellRenderer, Render, IndentCellRenderer, GroupCaptionCellRenderer, GroupCaptionEmptyCellRenderer, BatchEditRender, DialogEditRender, InlineEditRender, EditRender, BooleanEditCell, DefaultEditCell, DropDownEditCell, NumericEditCell, DatePickerEditCell, CommandColumnRenderer, FreezeContentRender, FreezeRender, StringFilterUI, NumberFilterUI, DateFilterUI, BooleanFilterUI, FlMenuOptrUI, AutoCompleteEditCell, ComboboxEditCell, MultiSelectEditCell, TimePickerEditCell, ToggleEditCell, MaskedTextBoxCellEdit, VirtualContentRenderer, VirtualHeaderRenderer, VirtualElementHandler, CellRendererFactory, ServiceLocator, RowModelGenerator, GroupModelGenerator, FreezeRowModelGenerator, ValueFormatter, VirtualRowModelGenerator, InterSectionObserver, Pager, ExternalMessage, NumericContainer, PagerMessage, PagerDropDown };
 //# sourceMappingURL=ej2-grids.es5.js.map

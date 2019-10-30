@@ -354,3 +354,9 @@ export const beforeCustomFilterOpen: string = 'beforeCustomFilterOpen';
 export const selectVirtualRow: string = 'select-virtual-Row';
 /** @hidden */
 export const columnsPrepared: string = 'columns-prepared';
+/** @hidden */
+export const cBoxFltrBegin: string = 'cbox-filter-begin';
+/** @hidden */
+export const cBoxFltrComplete: string = 'cbox-filter-complete';
+/** @hidden */
+export const cBoxFltrPrevent: string = 'cbox-filter-Prevent';

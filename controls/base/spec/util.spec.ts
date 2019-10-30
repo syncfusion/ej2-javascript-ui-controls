@@ -252,17 +252,18 @@ describe('Util', () => {
     });
 
     it('isBlazor true', () => {
-        window['Blazor'] = {};
+        Util.enableBlazorMode();
         expect(Util.isBlazor()).toBe(true);
     });
 
     it('GetElement with element', () => {
-        window['Blazor'] = {};
+        Util.enableBlazorMode();
         var element = document.createElement('span');
         expect(Util.getElement(element)).toBe(element);
+        Util.disableBlazorMode();
     });
     it('GetElement with xpath', () => {
-        window['Blazor'] = {};
+        Util.enableBlazorMode();
         var element = document.createElement('span');
         element.id = "xpathelement";
         document.body.appendChild(element);
@@ -271,6 +272,7 @@ describe('Util', () => {
         }
         expect(Util.getElement(eleObj)).toBe(element);
         document.body.innerHTML = "";
+        Util.disableBlazorMode();
     });
     function createXPathFromElement (elm: any): any {
         var allNodes = document.getElementsByTagName('*');

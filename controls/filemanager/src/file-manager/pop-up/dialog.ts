@@ -304,7 +304,7 @@ function onRetryOpen(parent: IFileManager, args: object): void {
 
 function onKeepBothAll(parent: IFileManager): void {
     while (parent.retryFiles.length !== 0) {
-        parent.retryArgs.push({ action: 'KeepBoth', file: parent.retryFiles[0] });
+        parent.retryArgs.push({ action: 'keepboth', file: parent.retryFiles[0] });
         parent.uploadObj.retry(parent.retryFiles[0]);
         parent.retryFiles.splice(0, 1);
     }
@@ -516,7 +516,8 @@ function getOptions(parent: IFileManager, text: string, e?: ReadArgs | SelectedE
             options.dialogName = 'Error';
             let event: ReadArgs = (<ReadArgs>e);
             if (event.error.code === '401') {
-                options.header = getLocaleText(parent, 'Access-Denied');
+                options.header = '<span class="e-fe-icon e-fe-access-error"></span><div class="e-fe-access-header">' + 
+                getLocaleText(parent, 'Access-Denied')+'</div>';
             } else {
                 options.header = getLocaleText(parent, 'Error');
             }

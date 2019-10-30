@@ -3044,7 +3044,8 @@ var TreeGrid = /** @__PURE__ @class */ (function (_super) {
         var gridColumn;
         var gridColumnCollection = [];
         for (var i = 0; i < column.length; i++) {
-            gridColumn = {};
+            var treeColumn = this.grid.getColumnByUid(column[i].uid);
+            gridColumn = treeColumn ? treeColumn : {};
             treeGridColumn = {};
             if (typeof this.columns[i] === 'string') {
                 gridColumn.field = treeGridColumn.field = this.columns[i];
@@ -3727,9 +3728,14 @@ var TreeGrid = /** @__PURE__ @class */ (function (_super) {
     /**
      * Refreshes the TreeGrid column changes.
      */
-    TreeGrid.prototype.refreshColumns = function () {
-        this.grid.columns = this.getGridColumns(this.columns);
-        this.grid.refreshColumns();
+    TreeGrid.prototype.refreshColumns = function (refreshUI) {
+        if (isNullOrUndefined(refreshUI) || refreshUI) {
+            this.grid.columns = this.getGridColumns(this.columns);
+            this.grid.refreshColumns();
+        }
+        else {
+            this.grid.setProperties({ columns: this.getGridColumns(this.columns) }, true);
+        }
     };
     /**
      * Refreshes the TreeGrid header.
@@ -5610,14 +5616,14 @@ var RowDD$1 = /** @__PURE__ @class */ (function () {
                     if (this.dropPosition === 'bottomSegment') {
                         if (!droppedRecord.hasChildRecords) {
                             if (this.parent.parentIdMapping) {
-                                this.parent.dataSource.splice(recordIndex1 + 1, 0, this.draggedRecord.taskData);
+                                this.treeData.splice(recordIndex1 + 1, 0, this.draggedRecord.taskData);
                             }
                             this.treeGridData.splice(recordIndex1 + 1, 0, this.draggedRecord);
                         }
                         else {
                             count = this.getChildCount(droppedRecord, 0);
                             if (this.parent.parentIdMapping) {
-                                this.parent.dataSource.splice(recordIndex1 + count + 1, 0, this.draggedRecord.taskData);
+                                this.treeData.splice(recordIndex1 + count + 1, 0, this.draggedRecord.taskData);
                             }
                             this.treeGridData.splice(recordIndex1 + count + 1, 0, this.draggedRecord);
                         }
@@ -5660,7 +5666,7 @@ var RowDD$1 = /** @__PURE__ @class */ (function () {
             childRecords.length + recordIndex1 + 1;
         if (this.dropPosition === 'middleSegment') {
             if (tObj.parentIdMapping) {
-                this.parent.dataSource.splice(childRecordsLength, 0, this.draggedRecord.taskData);
+                this.treeData.splice(childRecordsLength, 0, this.draggedRecord.taskData);
                 this.treeGridData.splice(childRecordsLength, 0, this.draggedRecord);
             }
             else {
@@ -5676,7 +5682,7 @@ var RowDD$1 = /** @__PURE__ @class */ (function () {
         var tObj = this.parent;
         if (this.dropPosition === 'topSegment') {
             if (tObj.parentIdMapping) {
-                this.parent.dataSource.splice(recordIndex1, 0, this.draggedRecord.taskData);
+                this.treeData.splice(recordIndex1, 0, this.draggedRecord.taskData);
             }
             this.draggedRecord.parentItem = this.treeGridData[recordIndex1].parentItem;
             this.draggedRecord.parentUniqueID = this.treeGridData[recordIndex1].parentUniqueID;
@@ -5736,9 +5742,11 @@ var RowDD$1 = /** @__PURE__ @class */ (function () {
     RowDD$$1.prototype.deleteDragRow = function () {
         if (this.parent.dataSource instanceof DataManager && isOffline(this.parent)) {
             this.treeGridData = this.parent.grid.dataSource.dataSource.json;
+            this.treeData = this.parent.dataSource.dataSource.json;
         }
         else {
             this.treeGridData = this.parent.grid.dataSource;
+            this.treeData = this.parent.dataSource;
         }
         var deletedRow;
         deletedRow = getParentData(this.parent, this.draggedRecord.uniqueID);
@@ -5757,7 +5765,7 @@ var RowDD$1 = /** @__PURE__ @class */ (function () {
             count++;
             tObj.flatData.splice(count, 0, currentRecord);
             if (tObj.parentIdMapping) {
-                tObj.dataSource.splice(count, 0, currentRecord.taskData);
+                this.treeData.splice(count, 0, currentRecord.taskData);
             }
             if (currentRecord.hasChildRecords) {
                 count = this.updateChildRecord(currentRecord, count);
@@ -5873,7 +5881,7 @@ var RowDD$1 = /** @__PURE__ @class */ (function () {
                 }
             }
             if (idx !== -1) {
-                tObj.dataSource.splice(idx, 1);
+                this.treeData.splice(idx, 1);
                 this.treeGridData.splice(idx, 1);
             }
             if (currentRecord.hasChildRecords) {

@@ -80,7 +80,7 @@ describe('FileManager control Grid view', () => {
                 jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
                 setTimeout(function () {
                     let dialogObj: any = (document.getElementById("file_dialog") as any).ej2_instances[0];
-                    expect(dialogObj.element.querySelector('.e-dlg-header').innerHTML).toEqual("Access Denied");
+                    expect(dialogObj.element.querySelector('.e-dlg-header').innerText).toEqual("Access Denied");
                     let treeLi1: any = treeObj.element.querySelectorAll('li');
                     let gridLi1: any = document.getElementById('file_grid').querySelectorAll('.e-row');
                     expect(treeLi1.length).toEqual(5);
@@ -134,7 +134,7 @@ describe('FileManager control Grid view', () => {
                 jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
                 setTimeout(function () {
                     let dialogObj: any = (document.getElementById("file_dialog") as any).ej2_instances[0];
-                    expect(dialogObj.element.querySelector('.e-dlg-header').innerHTML).toEqual("Access Denied");
+                    expect(dialogObj.element.querySelector('.e-dlg-header').innerText).toEqual("Access Denied");
                     let treeLi1: any = treeObj.element.querySelectorAll('li');
                     let gridLi1: any = document.getElementById('file_grid').querySelectorAll('.e-row');
                     expect(treeLi1.length).toEqual(5);

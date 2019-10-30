@@ -65,12 +65,12 @@ export class PolarSeries extends PolarRadarPanel {
                     ((interval / series.rectCount) * position - ticks) + (sumofYValues / 360 * xAxis.startAngle);
                 itemCurrentXPos = (((itemCurrentXPos) / (sumofYValues)));
                 startAngle = 2 * Math.PI * (itemCurrentXPos + xAxis.startAngle);
+                endAngle = 2 * Math.PI * ((itemCurrentXPos + xAxis.startAngle) + (interval / series.rectCount) / (sumofYValues));
                 if (startAngle === 0 && endAngle === 0) {
                     endAngle = 2 * Math.PI; arcValue = '1';
                 } else {
                     arcValue = '0';
                 }
-                endAngle = 2 * Math.PI * ((itemCurrentXPos + xAxis.startAngle) + (interval / series.rectCount) / (sumofYValues));
                 pointStartAngle = startAngle; pointEndAngle = endAngle;
                 startAngle = (startAngle - 0.5 * Math.PI); endAngle = (endAngle - 0.5 * Math.PI) - 0.000001;
                 if (isStacking || isRangeColumn) {

@@ -1,5 +1,14 @@
 let instances = 'ej2_instances';
 let uid = 0;
+let isBlazorPlatform = false;
+/**
+ * Function to check whether the platform is blazor or not.
+ * @return {boolean} result
+ * @private
+ */
+function disableBlazorMode() {
+    isBlazorPlatform = false;
+}
 /**
  * Create Instance from constructor function with desired parameters.
  * @param {Function} classFunction - Class function to which need to create instance
@@ -332,8 +341,16 @@ function formatUnit(value) {
  * @return {boolean} result
  * @private
  */
+function enableBlazorMode() {
+    isBlazorPlatform = true;
+}
+/**
+ * Function to check whether the platform is blazor or not.
+ * @return {boolean} result
+ * @private
+ */
 function isBlazor() {
-    return window && Object.keys(window).indexOf('Blazor') >= 0;
+    return isBlazorPlatform;
 }
 /**
  * Function to convert xPath to DOM element in blazor platform
@@ -1059,9 +1076,8 @@ class Observer {
         if (argument) {
             argument.name = property;
         }
-        let blazor = 'Blazor';
         let curObject = getValue(property, this.boundedEvents).slice(0);
-        if (window[blazor]) {
+        if (isBlazor()) {
             return this.blazorCallback(curObject, argument, successHandler, errorHandler, 0);
         }
         else {
@@ -1288,8 +1304,7 @@ class Base {
             if (isColEName.test(eventName)) {
                 let handler = getValue(eventName, this);
                 if (handler) {
-                    let blazor = 'Blazor';
-                    if (window[blazor]) {
+                    if (isBlazor()) {
                         let promise = handler.call(this, eventProp);
                         if (promise && typeof promise.then === 'function') {
                             if (!successHandler) {
@@ -5399,6 +5414,7 @@ var __decorate$2 = (undefined && undefined.__decorate) || function (decorators, 
 };
 var Draggable_1;
 const defaultPosition = { left: 0, top: 0, bottom: 0, right: 0 };
+const isDraggedObject = { isDragged: false };
 /**
  * Specifies the position coordinates
  */
@@ -5525,10 +5541,21 @@ let Draggable = Draggable_1 = class Draggable extends Base {
         let horizontalScrollParent = this.getScrollableParent(this.element.parentNode, 'horizontal');
     }
     initialize(evt, curTarget) {
+        if (this.isDragStarted()) {
+            return;
+        }
+        else {
+            this.isDragStarted(true);
+            this.externalInitialize = false;
+        }
         this.target = (evt.currentTarget || curTarget);
         this.dragProcessStarted = false;
         if (this.abort) {
             if (!isNullOrUndefined(closest(evt.target, this.abort))) {
+                /* istanbul ignore next */
+                if (this.isDragStarted()) {
+                    this.isDragStarted(true);
+                }
                 return;
             }
         }
@@ -5817,6 +5844,9 @@ let Draggable = Draggable_1 = class Draggable extends Base {
         this.setGlobalDroppables(true);
         document.body.classList.remove('e-prevent-select');
     }
+    /**
+     * @private
+     */
     intDestroy(evt) {
         this.dragProcessStarted = false;
         this.toggleEvents();
@@ -5826,6 +5856,9 @@ let Draggable = Draggable_1 = class Draggable extends Base {
         EventHandler.remove(document, Browser.touchEndEvent, this.intDragStop);
         EventHandler.remove(document, Browser.touchEndEvent, this.intDestroy);
         EventHandler.remove(document, Browser.touchMoveEvent, this.intDrag);
+        if (this.isDragStarted()) {
+            this.isDragStarted(true);
+        }
     }
     // triggers when property changed
     onPropertyChanged(newProp, oldProp) {
@@ -5833,6 +5866,12 @@ let Draggable = Draggable_1 = class Draggable extends Base {
     }
     getModuleName() {
         return 'draggable';
+    }
+    isDragStarted(change) {
+        if (change) {
+            isDraggedObject.isDragged = !isDraggedObject.isDragged;
+        }
+        return isDraggedObject.isDragged;
     }
     setDragArea() {
         let eleWidthBound;
@@ -5889,8 +5928,8 @@ let Draggable = Draggable_1 = class Draggable extends Base {
         let intCoord = this.getCoordinates(evt);
         let pageX;
         let pageY;
-        /* istanbul ignore next */
         let isOffsetParent = isNullOrUndefined(dragEle.offsetParent);
+        /* istanbul ignore next */
         if (isdragscroll) {
             pageX = this.clone ? intCoord.pageX :
                 (intCoord.pageX + (isOffsetParent ? 0 : dragEle.offsetParent.scrollLeft)) - this.relativeXPosition;
@@ -6910,9 +6949,8 @@ function compile$$1(templateString, helper) {
     //tslint:disable-next-line
     return (data, component, propName, templateId, isStringTemplate, index, isSvg) => {
         let result = compiler(data, component, propName);
-        let blazor = 'Blazor';
         let blazorTemplateId = 'BlazorTemplateId';
-        if (window && window[blazor] && !isStringTemplate) {
+        if (isBlazor() && !isStringTemplate) {
             let randomId = getRandomId();
             let blazorId = templateId + randomId;
             if (!blazorTemplates[templateId]) {
@@ -6956,8 +6994,7 @@ function compile$$1(templateString, helper) {
     };
 }
 function updateBlazorTemplate(templateId, templateName, comp, isEmpty, callBack) {
-    let blazor = 'Blazor';
-    if (window && window[blazor]) {
+    if (isBlazor()) {
         let ejsIntrop = 'ejsInterop';
         window[ejsIntrop].updateTemplate(templateName, blazorTemplates[templateId], templateId, comp, callBack);
         if (isEmpty !== false) {
@@ -7022,5 +7059,5 @@ let engineObj = { compile: new Engine().compile };
  * Base modules
  */
 
-export { Ajax, Animation, rippleEffect, isRippleEnabled, enableRipple, Base, getComponent, Browser, Component, ChildProperty, Position, Draggable, Droppable, EventHandler, onIntlChange, rightToLeft, cldrData, defaultCulture, defaultCurrencyCode, Internationalization, setCulture, setCurrencyCode, loadCldr, enableRtl, getNumericObject, getNumberDependable, getDefaultDateObject, KeyboardEvents, L10n, ModuleLoader, Property, Complex, ComplexFactory, Collection, CollectionFactory, Event, NotifyPropertyChanges, CreateBuilder, SwipeSettings, Touch, HijriParser, blazorTemplates, getRandomId, compile$$1 as compile, updateBlazorTemplate, resetBlazorTemplate, setTemplateEngine, getTemplateEngine, createInstance, setImmediate, getValue, setValue, deleteObject, isObject, getEnumValue, merge, extend, isNullOrUndefined, isUndefined, getUniqueID, debounce, queryParams, isObjectArray, compareElementParent, throwError, print, formatUnit, isBlazor, getElement, getInstance, addInstance, uniqueID, createElement, addClass, removeClass, isVisible, prepend, append, detach, remove, attributes, select, selectAll, closest, siblings, getAttributeOrDefault, setStyleAttribute, classList, matches, Observer };
+export { Ajax, Animation, rippleEffect, isRippleEnabled, enableRipple, Base, getComponent, Browser, Component, ChildProperty, Position, Draggable, Droppable, EventHandler, onIntlChange, rightToLeft, cldrData, defaultCulture, defaultCurrencyCode, Internationalization, setCulture, setCurrencyCode, loadCldr, enableRtl, getNumericObject, getNumberDependable, getDefaultDateObject, KeyboardEvents, L10n, ModuleLoader, Property, Complex, ComplexFactory, Collection, CollectionFactory, Event, NotifyPropertyChanges, CreateBuilder, SwipeSettings, Touch, HijriParser, blazorTemplates, getRandomId, compile$$1 as compile, updateBlazorTemplate, resetBlazorTemplate, setTemplateEngine, getTemplateEngine, disableBlazorMode, createInstance, setImmediate, getValue, setValue, deleteObject, isObject, getEnumValue, merge, extend, isNullOrUndefined, isUndefined, getUniqueID, debounce, queryParams, isObjectArray, compareElementParent, throwError, print, formatUnit, enableBlazorMode, isBlazor, getElement, getInstance, addInstance, uniqueID, createElement, addClass, removeClass, isVisible, prepend, append, detach, remove, attributes, select, selectAll, closest, siblings, getAttributeOrDefault, setStyleAttribute, classList, matches, Observer };
 //# sourceMappingURL=ej2-base.es2015.js.map

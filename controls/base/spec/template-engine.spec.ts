@@ -1,5 +1,7 @@
 import * as template from '../src/template-engine';
 import { createElement } from '../src/dom';
+import * as Util from '../src/util';
+
 /**
  * Template Engine Spec
  */
@@ -65,9 +67,9 @@ describe('Template Engine', () => {
     it('Testing for blazor others templates', () => {
         let templateStr: string = '<div> Blazor  template</div>';
         let Blazor: string = 'Blazor';
-        window[Blazor] = 'template';
+        Util.enableBlazorMode();
         let result: any = outDOM(template.compile(templateStr), [dsJSONArray[0]], '', 'Template');
-        window[Blazor] = null;
+        Util.disableBlazorMode();
         expect(result[0].tagName).toEqual('DIV');
     });
 
@@ -76,10 +78,10 @@ describe('Template Engine', () => {
         let result: any = [];
         let blazor: string = 'Blazor';
         let ejsIntrop: string = 'ejsInterop';
-        window[blazor] = 'Template';
+        Util.enableBlazorMode();
         window[ejsIntrop] = { updateTemplate: function () { } };
         result = (template.updateBlazorTemplate('template', 'Template'));
-        window[blazor] = null;
+        Util.disableBlazorMode();
         window[ejsIntrop] = null;
         expect(result).toBeUndefined();
     });
@@ -90,12 +92,12 @@ describe('Template Engine', () => {
         let blazor: string = 'Blazor';
         let ejsIntrop: string = 'ejsInterop';
         let tempID: string = 'template';
-        window[blazor] = 'Template';
+        Util.enableBlazorMode();
         window[ejsIntrop] = { updateTemplate: function () { } };
         template.blazorTemplates[tempID][0] = {text: '0', info: {id: '03'}, name: 'new first name', BlazorTemplateId: 'id1' };
         template.blazorTemplates[tempID][1] = {text: '1', info: {id: '03'}, name: 'new second name', BlazorTemplateId: 'id2' };
         result = outDOM(template.compile(templateStr), [dsJSONArray[0]], 'template', 'templateprop', 1);
-        window[blazor] = null;
+        Util.disableBlazorMode();
         window[ejsIntrop] = null;
         expect(result[0].tagName).toEqual('DIV');
     });
@@ -105,10 +107,10 @@ describe('Template Engine', () => {
         let result: any = [];
         let blazor: string = 'Blazor';
         let ejsIntrop: string = 'ejsInterop';
-        window[blazor] = 'Template';
+        Util.enableBlazorMode();
         window[ejsIntrop] = { updateTemplate: function () { } };
         result = (template.updateBlazorTemplate('rowtemplate', 'RowTemplate', null, false));
-        window[blazor] = null;
+        Util.disableBlazorMode();
         window[ejsIntrop] = null;
         expect(result).toBeUndefined();
     });
@@ -178,9 +180,9 @@ describe('Template Engine', () => {
     it('Testing for blazor Row template', () => {
         let templateStr: string = '<tr> Blazor template</tr>';
         let Blazor: string = 'Blazor';
-        window[Blazor] = 'template';
+        Util.enableBlazorMode();
         let result: any = outDOM(template.compile(templateStr), [dsJSONArray[0]], '', 'rowTemplate')
-        window[Blazor] = null;
+        Util.disableBlazorMode();
         expect(result[0].tagName).toEqual('TR');
     });
 

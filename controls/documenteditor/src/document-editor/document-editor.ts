@@ -1445,16 +1445,21 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
             this.viewer.lists = [];
             this.viewer.abstractLists = [];
             this.viewer.styles = new WStyles();
-            this.viewer.triggerElementsOnLoading = true;
-            this.viewer.triggerSpellCheck = true;
+            this.viewer.cachedPages = [];
+            if (this.enableSpellCheck && !this.spellChecker.enableOptimizedSpellCheck) {
+                this.viewer.triggerElementsOnLoading = true;
+                this.viewer.triggerSpellCheck = true;
+            }
             if (!isNullOrUndefined(sfdtText) && this.viewer) {
                 this.viewer.onDocumentChanged(this.parser.convertJsonToDocument(sfdtText));
                 if (this.editorModule) {
                     this.editorModule.intializeDefaultStyles();
                 }
             }
-            this.viewer.triggerElementsOnLoading = false;
-            this.viewer.triggerSpellCheck = false;
+            if (this.enableSpellCheck && !this.spellChecker.enableOptimizedSpellCheck) {
+                this.viewer.triggerElementsOnLoading = false;
+                this.viewer.triggerSpellCheck = false;
+            }
         }
     }
     /**
@@ -1617,6 +1622,7 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
         if (this.viewer) {
             this.clearPreservedCollectionsInViewer();
             this.viewer.userCollection.push('Everyone');
+            this.viewer.cachedPages = [];
             this.viewer.setDefaultDocumentFormat();
             this.viewer.headersFooters.push(hfs);
             this.viewer.onDocumentChanged(sections);

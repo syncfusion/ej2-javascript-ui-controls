@@ -346,8 +346,8 @@ export class StickyNotesAnnotation {
     public updateCommentPanelTextTop(): void {
         let commentPanelText: HTMLElement = document.getElementById(this.pdfViewer.element.id + '_commentsPanelText');
         // tslint:disable-next-line:max-line-length
-        if (this.pdfViewerBase.navigationPane.commentPanelContainer && this.pdfViewerBase.navigationPane.commentPanelContainer.clientHeight && commentPanelText.style.display === '') {
-            commentPanelText.style.paddingTop = (this.pdfViewerBase.navigationPane.commentPanelContainer.clientHeight) / 2 + 'px';
+        if (this.pdfViewerBase.navigationPane.commentPanelContainer && this.pdfViewerBase.navigationPane.commentPanelContainer.clientHeight && commentPanelText.style.display !== 'none') {
+            commentPanelText.style.paddingTop = (this.pdfViewerBase.navigationPane.commentPanelContainer.clientHeight / 2) - 47 + 'px';
             commentPanelText.style.paddingLeft = (this.pdfViewerBase.navigationPane.commentPanelContainer.clientWidth) / 3 + 'px';
         }
     }
@@ -1138,6 +1138,7 @@ export class StickyNotesAnnotation {
                     // tslint:disable-next-line:max-line-length
                     this.pdfViewerBase.navigationPane.annotationMenuObj.enableItems([this.pdfViewer.localeObj.getConstant('Export Annotations')], false);
                     document.getElementById(this.pdfViewer.element.id + '_commentsPanelText').style.display = 'block';
+                    this.updateCommentPanelTextTop();
                 }
             }
         }

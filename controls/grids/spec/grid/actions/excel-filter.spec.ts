@@ -118,7 +118,7 @@ describe('Excel Filter =>', () => {
                 gridObj, gridObj.filterSettings, gridObj.serviceLocator,
                 customOperators);
             let column: any = gridObj.getColumnByField('OrderID');
-            excel.updateModel({
+            excel.excelFilterBase.updateModel({
                 type: 'number', field: 'OrderID', displayName: 'Order ID',
                 dataSource: gridObj.dataSource,
                 filteredColumns: gridObj.filterSettings.columns, target: gridObj.element,
@@ -126,7 +126,7 @@ describe('Excel Filter =>', () => {
                 handler: test.filterHandler.bind(test), localizedStrings: {},
                 column: column
             });
-            excel.filterByColumn('OrderID', 'greaterthan', 10249, 'or', false, false, 'lessthan', 10280);
+            excel.excelFilterBase.filterByColumn('OrderID', 'greaterthan', 10249, 'or', false, false, 'lessthan', 10280);
             gridObj.dataBind();
             gridObj.actionComplete = actionComplete;
         });
@@ -144,7 +144,7 @@ describe('Excel Filter =>', () => {
                 gridObj, gridObj.filterSettings, gridObj.serviceLocator,
                 customOperators);
             let column: any = gridObj.getColumnByField('OrderID');
-            excel.updateModel({
+            excel.excelFilterBase.updateModel({
                 type: 'number', field: 'OrderID', displayName: 'Order ID',
                 dataSource: gridObj.dataSource,
                 filteredColumns: gridObj.filterSettings.columns, target: gridObj.element,
@@ -152,7 +152,7 @@ describe('Excel Filter =>', () => {
                 handler: test.filterHandler.bind(test), localizedStrings: {},
                 column: column
             });
-            excel.filterByColumn('OrderID', 'greaterthan', 10249, 'and', false, false, 'notequal', 10250);
+            excel.excelFilterBase.filterByColumn('OrderID', 'greaterthan', 10249, 'and', false, false, 'notequal', 10250);
             gridObj.dataBind();
             gridObj.actionComplete = actionComplete;
         });
@@ -170,7 +170,7 @@ describe('Excel Filter =>', () => {
                 gridObj, gridObj.filterSettings, gridObj.serviceLocator,
                 customOperators);
             let column: any = gridObj.getColumnByField('OrderID');
-            excel.updateModel({
+            excel.excelFilterBase.updateModel({
                 type: 'number', field: 'OrderID', displayName: 'Order ID',
                 dataSource: gridObj.dataSource,
                 filteredColumns: gridObj.filterSettings.columns, target: gridObj.element,
@@ -178,7 +178,7 @@ describe('Excel Filter =>', () => {
                 handler: test.filterHandler.bind(test), localizedStrings: {},
                 column: column
             });
-            excel.filterByColumn('OrderID', 'greaterthan', 10249, 'and', false);//, undefined, 10250);
+            excel.excelFilterBase.filterByColumn('OrderID', 'greaterthan', 10249, 'and', false);//, undefined, 10250);
             gridObj.dataBind();
             gridObj.actionComplete = actionComplete;
         });
@@ -189,7 +189,7 @@ describe('Excel Filter =>', () => {
             let excel: any = new (<any>gridObj.filterModule).type['Excel'](
                 gridObj, gridObj.filterSettings, gridObj.serviceLocator,
                 customOperators);
-            excel.preventClose(args);
+            excel.excelFilterBase.preventClose(args);
             expect(args.cancel).toBeFalsy();
         });
 
@@ -205,7 +205,7 @@ describe('Excel Filter =>', () => {
             test.column = gridObj.getColumnByField('ShipCountry');
             let excel: any = new test.type['Excel'](gridObj, gridObj.filterSettings, gridObj.serviceLocator, customOperators);
             let column: any = gridObj.getColumnByField('ShipCountry');
-            excel.updateModel({
+            excel.excelFilterBase.updateModel({
                 type: 'string', field: 'ShipCountry', displayName: 'ShipCountry',
                 dataSource: gridObj.dataSource,
                 filteredColumns: gridObj.filterSettings.columns, target: gridObj.element,
@@ -213,7 +213,7 @@ describe('Excel Filter =>', () => {
                 handler: test.filterHandler.bind(test), localizedStrings: {},
                 column: column
             });
-            excel.filterByColumn('ShipCountry', 'notequal', value, 'and', true);
+            excel.excelFilterBase.filterByColumn('ShipCountry', 'notequal', value, 'and', true);
         });
 
         it('EJ2-7598-Excel Contains Filter Not Working Properly', (done: Function) => {
@@ -227,7 +227,7 @@ describe('Excel Filter =>', () => {
             test.column = gridObj.getColumnByField('ShipCountry');
             let excel: any = new test.type['Excel'](gridObj, gridObj.filterSettings, gridObj.serviceLocator, customOperators);
             let column: any = gridObj.getColumnByField('ShipCountry');
-            excel.updateModel({
+            excel.excelFilterBase.updateModel({
                 type: 'string', field: 'ShipCountry', displayName: 'ShipCountry',
                 dataSource: gridObj.dataSource,
                 filteredColumns: gridObj.filterSettings.columns, target: gridObj.element,
@@ -235,7 +235,7 @@ describe('Excel Filter =>', () => {
                 handler: test.filterHandler.bind(test), localizedStrings: {},
                 column: column
             });
-            excel.filterByColumn('ShipCountry', 'contains', 'fra', 'and', false);
+            excel.excelFilterBase.filterByColumn('ShipCountry', 'contains', 'fra', 'and', false);
         });
 
         it('EJ2-7601-Excel Filter For Starts With Not Working', (done: Function) => {
@@ -249,7 +249,7 @@ describe('Excel Filter =>', () => {
             test.column = gridObj.getColumnByField('ShipCountry');
             let excel: any = new test.type['Excel'](gridObj, gridObj.filterSettings, gridObj.serviceLocator, customOperators);
             let column: any = gridObj.getColumnByField('ShipCountry');
-            excel.updateModel({
+            excel.excelFilterBase.updateModel({
                 type: 'string', field: 'ShipCountry', displayName: 'ShipCountry',
                 dataSource: gridObj.dataSource,
                 filteredColumns: gridObj.filterSettings.columns, target: gridObj.element,
@@ -257,7 +257,7 @@ describe('Excel Filter =>', () => {
                 handler: test.filterHandler.bind(test), localizedStrings: {},
                 column: column
             });
-            excel.filterByColumn('ShipCountry', 'startswith', 'fra', 'and', false);
+            excel.excelFilterBase.filterByColumn('ShipCountry', 'startswith', 'fra', 'and', false);
         });
 
         afterAll(() => {
@@ -340,7 +340,7 @@ describe('Excel Filter =>', () => {
                 test.column = grid.getColumnByField('OrderDate');
                 let excel: any = new test.type['Excel'](grid, grid.filterSettings, grid.serviceLocator, customOperators);
                 let column: any = grid.getColumnByField('OrderDate');
-                excel.updateModel({
+                excel.excelFilterBase.updateModel({
                     type: 'date', field: 'OrderDate', displayName: 'OrderDate',
                     dataSource: grid.dataSource,
                     filteredColumns: grid.filterSettings.columns, target: grid.element,
@@ -348,7 +348,7 @@ describe('Excel Filter =>', () => {
                     handler: test.filterHandler.bind(test), localizedStrings: {},
                     column: column
                 });
-                excel.filterByColumn('OrderDate', 'equal', '7/8/1996', 'and', false);
+                excel.excelFilterBase.filterByColumn('OrderDate', 'equal', '7/8/1996', 'and', false);
             });
 
             it('EJ2-7255-Not equal filter on date column not working properly', (done: Function) => {
@@ -362,7 +362,7 @@ describe('Excel Filter =>', () => {
                 test.column = grid.getColumnByField('OrderDate');
                 let excel: any = new test.type['Excel'](grid, grid.filterSettings, grid.serviceLocator, customOperators);
                 let column: any = grid.getColumnByField('OrderDate');
-                excel.updateModel({
+                excel.excelFilterBase.updateModel({
                     type: 'date', field: 'OrderDate', displayName: 'OrderDate',
                     dataSource: grid.dataSource,
                     filteredColumns: grid.filterSettings.columns, target: grid.element,
@@ -370,7 +370,7 @@ describe('Excel Filter =>', () => {
                     handler: test.filterHandler.bind(test), localizedStrings: {},
                     column: column
                 });
-                excel.filterByColumn('OrderDate', 'notequal', grid.dataSource[0].OrderDate, 'and', false);
+                excel.excelFilterBase.filterByColumn('OrderDate', 'notequal', grid.dataSource[0].OrderDate, 'and', false);
             });
 
             afterAll(() => {
@@ -444,7 +444,7 @@ describe('Excel Filter =>', () => {
                 gridObj.getColumnHeaderByField('Name').querySelector('.e-filtermenudiv')));
             gridObj.keyboardModule.keyAction({ action: 'Escape', preventDefault: preventDefault } as any);
             let returnedValue: string =
-                (<any>gridObj.filterModule).filterModule.performComplexDataOperation('Details.Somethings', gridObj.dataSource[0]);
+                (<any>gridObj.filterModule).filterModule.excelFilterBase.performComplexDataOperation('Details.Somethings', gridObj.dataSource[0]);
             expect(returnedValue).toBe('asdsafasf');
         });
 
@@ -651,7 +651,7 @@ describe('Excel Filter =>', () => {
                         actionComplete = (args?: any): void => {
                             if (flag) {
                                 flag = false;
-                                (gridObj.filterModule as any).filterModule.renderFilterUI((gridObj.columns[1] as any).field,args.filterModel.dlg);
+                                (gridObj.filterModule as any).filterModule.excelFilterBase.renderFilterUI((gridObj.columns[1] as any).field,args.filterModel.dlg);
                                 done();
                             }
                             done();
@@ -699,7 +699,7 @@ describe('Excel Filter =>', () => {
                         gridObj.off(events.beforeCustomFilterOpen, formFunc);
                     };
                     gridObj.on(events.beforeCustomFilterOpen, formFunc, this);
-                    (gridObj.filterModule as any).filterModule.renderDialogue({element:''});   
+                    (gridObj.filterModule as any).filterModule.excelFilterBase.renderDialogue({element:''});   
                     (document.getElementsByClassName('e-btn')[0] as HTMLElement).click();
                     done();
                 });

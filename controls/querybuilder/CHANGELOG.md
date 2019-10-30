@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 17.3.21 (2019-10-30)
+
+### QueryBuilder
+
+#### Bug Fixes
+
+- Value not updated properly while changing 'Between' operator.
+
 ## 17.3.19 (2019-10-22)
 
 ### QueryBuilder

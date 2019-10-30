@@ -53,7 +53,11 @@ export type PdfAnnotationType =
     /**
      * FreeText - Represents the annotation type as Free Text Box.
      */
-    'FreeText';
+    'FreeText' |
+    /**
+     * HandWrittenSignature - Represents the type as Signature.
+     */
+    'HandWrittenSignature';
 
 
 

@@ -11,6 +11,7 @@ const defaultPosition: PositionCoordinates = { left: 0, top: 0, bottom: 0, right
 const positionProp: string[] = ['offsetLeft', 'offsetTop'];
 const axisMapper: string[] = ['x', 'y'];
 const axisValueMapper: string[] = ['left', 'top'];
+const isDraggedObject: DragObject = { isDragged: false };
 /**
  * Specifies the Direction in which drag movement happen.
  */
@@ -21,6 +22,10 @@ interface PositionCoordinates {
     top?: number;
     bottom?: number;
     right?: number;
+}
+
+interface DragObject {
+    isDragged: boolean;
 }
 /**
  * Specifies the position coordinates
@@ -307,7 +312,10 @@ export class Draggable extends Base<HTMLElement> implements INotifyPropertyChang
     @Property(750)
     public tapHoldThreshold: number;
     private target: HTMLElement;
-    private initialPosition: PageInfo;
+    /**
+     * @private
+     */
+    public initialPosition: PageInfo;
     private relativeXPosition: number;
     private relativeYPosition: number;
     private margin: PositionCoordinates;
@@ -417,10 +425,20 @@ export class Draggable extends Base<HTMLElement> implements INotifyPropertyChang
         let horizontalScrollParent: HTMLElement = this.getScrollableParent(this.element.parentNode as HTMLElement, 'horizontal');
     }
     private initialize(evt: MouseEvent & TouchEvent, curTarget?: EventTarget): void {
+        if (this.isDragStarted()) {
+            return;
+        } else {
+            this.isDragStarted(true);
+            this.externalInitialize = false;
+        }
         this.target = <HTMLElement>(evt.currentTarget || curTarget);
         this.dragProcessStarted = false;
         if (this.abort) {
             if (!isNullOrUndefined(closest((evt.target as Element), this.abort))) {
+                /* istanbul ignore next */
+                if (this.isDragStarted()) {
+                    this.isDragStarted(true);
+                }
                 return;
             }
         }
@@ -710,8 +728,10 @@ export class Draggable extends Base<HTMLElement> implements INotifyPropertyChang
         this.setGlobalDroppables(true);
         document.body.classList.remove('e-prevent-select');
     }
-
-    private intDestroy(evt: MouseEvent & TouchEvent): void {
+    /**
+     * @private
+     */
+    public intDestroy(evt: MouseEvent & TouchEvent): void {
         this.dragProcessStarted = false;
         this.toggleEvents();
         document.body.classList.remove('e-prevent-select');
@@ -720,6 +740,9 @@ export class Draggable extends Base<HTMLElement> implements INotifyPropertyChang
         EventHandler.remove(document, Browser.touchEndEvent, this.intDragStop);
         EventHandler.remove(document, Browser.touchEndEvent, this.intDestroy);
         EventHandler.remove(document, Browser.touchMoveEvent, this.intDrag);
+        if (this.isDragStarted()) {
+            this.isDragStarted(true);
+        }
     }
     // triggers when property changed
     public onPropertyChanged(newProp: DraggableModel, oldProp: DraggableModel): void {
@@ -728,6 +751,12 @@ export class Draggable extends Base<HTMLElement> implements INotifyPropertyChang
     public getModuleName(): string {
         return 'draggable';
     }
+
+    private isDragStarted(change?: boolean): boolean {
+        if (change) { isDraggedObject.isDragged = !isDraggedObject.isDragged; }
+        return isDraggedObject.isDragged;
+    }
+
     private setDragArea(): void {
         let eleWidthBound: number;
         let eleHeightBound: number;
@@ -781,8 +810,8 @@ export class Draggable extends Base<HTMLElement> implements INotifyPropertyChang
         let intCoord: Coordinates = this.getCoordinates(evt);
         let pageX: number;
         let pageY: number;
-        /* istanbul ignore next */
         let isOffsetParent: boolean = isNullOrUndefined(dragEle.offsetParent);
+        /* istanbul ignore next */
         if (isdragscroll) {
             pageX = this.clone ? intCoord.pageX :
                 (intCoord.pageX + (isOffsetParent ? 0 : dragEle.offsetParent.scrollLeft)) - this.relativeXPosition;

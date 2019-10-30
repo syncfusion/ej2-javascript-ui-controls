@@ -252,9 +252,9 @@ export class AccumulationBase {
     private deExplodeSlice(index: number, sliceId: string, animationDuration: number): void {
         let element: Element = getElement(sliceId + index);
         if (element) {
-            let borderElement: boolean = (element.parentElement.lastElementChild).hasAttribute('transform');
+            let borderElement: boolean = (<Element>element.parentNode.lastChild).hasAttribute('transform');
             if (borderElement) {
-                (element.parentElement.lastElementChild).removeAttribute('transform');
+                (<Element>element.parentNode.lastChild).removeAttribute('transform');
             }
         }
         let transform: string = element ? element.getAttribute('transform') : null;

@@ -9,10 +9,11 @@ import { CheckBox, RadioButton, ChangeArgs } from '@syncfusion/ej2-buttons';
 import { DropDownList } from '@syncfusion/ej2-dropdowns';
 import { Tab } from '@syncfusion/ej2-navigations';
 import { SelectionRowFormat, SelectionTableFormat, SelectionCellFormat } from '../index';
-import { TableWidget } from '../viewer/page';
+import { TableWidget, TableCellWidget } from '../viewer/page';
 import { classList } from '@syncfusion/ej2-base';
 import { HelperMethods } from '../editor/editor-helper';
 import { EditorHistory } from '../editor-history/index';
+import { TextPosition } from '../selection';
 
 /**
  * The Table properties dialog is used to modify properties of selected table.
@@ -897,8 +898,7 @@ export class TablePropertiesDialog {
         this.rowHeightBox.enabled = enableRowHeight;
         this.rowHeightType.enabled = enableRowHeight;
 
-        // let enabledHeader: boolean = this.enableRepeatHeader() ? false : true;
-        let enabledHeader: boolean = true;
+        let enabledHeader: boolean = this.enableRepeatHeader() ? false : true;
 
         if (isNullOrUndefined(this.owner.selection.rowFormat.isHeader)) {
             this.repeatHeader.indeterminate = true;
@@ -966,18 +966,18 @@ export class TablePropertiesDialog {
     /**
      * @private
      */
-    // public enableRepeatHeader(): boolean {
-    //     let isFirstRow: number = 0;
-    //     for (let i: number = 0; i < this.owner.selection.selectionRanges.length; i++) {
-    //         let range: SelectionRange = this.owner.selection.selectionRanges.getRange(i);
-    //         let table: WTable = range.start.paragraph.associatedCell.ownerTable;
-    //         if (table.childNodes.indexOf(range.start.paragraph.associatedCell.ownerRow) === 0 ||
-    //             table.childNodes.indexOf(range.start.paragraph.associatedCell.ownerRow) === 0) {
-    //             isFirstRow++;
-    //         }
-    //     }
-    //     return isFirstRow === this.owner.selection.selectionRanges.length;
-    // }
+    public enableRepeatHeader(): boolean {
+        let selection: Selection = this.owner.selection;
+        let start: TextPosition = selection.start;
+        let end: TextPosition = selection.end;
+        if (!selection.isForward) {
+            start = selection.end;
+            end = selection.start;
+        }
+        let startCell: TableCellWidget = start.paragraph.associatedCell;
+        let endCell: TableCellWidget = end.paragraph.associatedCell;
+        return startCell.ownerRow.index === 0 && endCell.ownerTable.equals(startCell.ownerTable);
+    }
     //#endregion
 
     //#region Cell Format

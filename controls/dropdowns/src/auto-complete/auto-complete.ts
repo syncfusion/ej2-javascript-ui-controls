@@ -156,6 +156,7 @@ export class AutoComplete extends ComboBox {
      * @private
      * @blazorType int
      * @isBlazorNullableType true
+     * @blazorDefaultValue 
      */
     @Property(null)
     public index: number;

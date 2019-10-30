@@ -2,6 +2,18 @@ import { Sortable } from '../src/sortable/index';
 import { createElement, remove, EventHandler, getComponent, Draggable } from '@syncfusion/ej2-base';
 import { profile , inMB, getMemoryProfile } from './common.spec';
 
+interface EventOptions {
+    name: String;
+    listener: Function;
+    debounce?: Function;
+}
+interface EventData extends Element {
+    __eventList: EventList;
+}
+interface EventList {
+    events?: EventOptions[];
+}
+
 function setMouseCordinates(eventarg: any, x: number, y: number): Object {
     eventarg.pageX = x;
     eventarg.pageY = y;
@@ -22,7 +34,14 @@ function getEventObject(eventType: string, eventName: string): Object {
     returnObject.preventDefault = () => { return true; };
     return returnObject;
 }
-
+function getEventList(element: any): EventOptions[] {
+    if ('__eventList' in element) {
+        return (<EventData>element).__eventList.events;
+    } else {
+        (<EventData>element).__eventList = {};
+        return (<EventData>element).__eventList.events = [];
+    }
+}
 /**
  * @param  {} 'Sortable'
  * @param  {} function(
@@ -84,6 +103,11 @@ describe('Sortable', () => {
     describe('Actions', () => {
         afterEach(() => {
             sortable.destroy();
+            let elemEvent: EventOptions[] = getEventList(element);
+            elemEvent.splice(0, elemEvent.length);
+            let docEvent: EventOptions[] = getEventList((<any>document));
+            docEvent.splice(0, docEvent.length);
+            
         });
         let mousedown: any; let mousemove: any; let mouseUp: any; let dragStartEvent: jasmine.Spy;
         beforeEach(() => { 
@@ -149,12 +173,17 @@ describe('Sortable', () => {
         });
         afterEach(() => {
             sortable.destroy();
+            let elemEvent: EventOptions[] = getEventList(element);
+            elemEvent.splice(0, elemEvent.length);
+            let docEvent: EventOptions[] = getEventList((<any>document));
+            docEvent.splice(0, docEvent.length);
         });
         it('helper', () => {
             sortable = new Sortable(element, { itemClass: 'e-item', dragStart: dragStartEvent });
             EventHandler.trigger(element, 'mousedown', mousedown);
             mousemove.srcElement = mousemove.target = mousemove.toElement = element.children[1];
             sortable.helper = (args: any): HTMLElement => {
+                (args.sender as HTMLElement).style.width = args.element.offsetWidth + 'px';
                 expect(args.element).toEqual(sortable.element);
                 expect(args.sender).toEqual(element.children[1]);
                 return args.sender.cloneNode(true) as HTMLElement;
@@ -165,10 +194,13 @@ describe('Sortable', () => {
             mousemove.srcElement = mousemove.target = mousemove.toElement = element.children[1];
             EventHandler.trigger(<any>(document), 'mousemove', mousemove);
             expect(dragStartEvent).toHaveBeenCalled();
-            remove(element.querySelector('.e-sortableclone'));
+            mouseUp = getEventObject('MouseEvents', 'mouseup');
+            mouseUp.srcElement = mouseUp.target = mouseUp.toElement = element.children[1];
+            EventHandler.trigger(<any>(document), 'mouseup', mouseUp);
         });
         it('placeHolder', () => {
             sortable = new Sortable(element, { itemClass: 'e-item', dragStart: dragStartEvent, placeHolder: (args: any): HTMLElement => {
+                (args.target as HTMLElement).style.width = args.element.offsetWidth + 'px';
                 expect(args.element).toEqual(sortable.element);
                 expect(args.grabbedElement).toEqual(element.children[1]);
                 expect(args.target).toEqual(mousemove.toElement);
@@ -180,10 +212,10 @@ describe('Sortable', () => {
             mousemove = setMouseCordinates(mousemove, 50, 50);
             mousemove.srcElement = mousemove.target = mousemove.toElement = element.children[0];
             EventHandler.trigger(<any>(document), 'mousemove', mousemove);
+            expect(dragStartEvent).toHaveBeenCalled();
             mouseUp = getEventObject('MouseEvents', 'mouseup');
             mouseUp.srcElement = mouseUp.target = mouseUp.toElement = element.children[0];
             EventHandler.trigger(<any>(document), 'mouseup', mouseUp);
-            expect(dragStartEvent).toHaveBeenCalled();
         });
     });
     describe('Combined sortable', () => {
@@ -200,6 +232,10 @@ describe('Sortable', () => {
         });
         afterEach(() => {
             sortable.destroy();
+            let elemEvent: EventOptions[] = getEventList(element);
+            elemEvent.splice(0, elemEvent.length);
+            let docEvent: EventOptions[] = getEventList((<any>document));
+            docEvent.splice(0, docEvent.length);
         });
         it('With empty sortable', () => {
             sortable = new Sortable(element, { itemClass: 'e-item', drop: dragEndEvent, scope: 'combined' });
@@ -214,8 +250,8 @@ describe('Sortable', () => {
             mouseUp = getEventObject('MouseEvents', 'mouseup');
             mouseUp.srcElement = mouseUp.target = mouseUp.toElement = element2;
             EventHandler.trigger(<any>(document), 'mouseup', mouseUp);
-            expect(sortable2.element.childElementCount).toEqual(1);
             expect(dragEndEvent).toHaveBeenCalled();
+            expect(sortable2.element.childElementCount).toEqual(1);
             sortable2.destroy();
         });
         it('Between two sortables', () => {
@@ -322,7 +358,9 @@ describe('Sortable', () => {
             EventHandler.trigger(element, 'mousedown', mousedown);
             mousemove.srcElement = mousemove.target = mousemove.toElement = element.children[3];
             EventHandler.trigger(<any>(document), 'mousemove', mousemove);
-            remove(element.querySelector('.e-sortableclone'));
+            mouseUp = getEventObject('MouseEvents', 'mouseup');
+            mouseUp.srcElement = mouseUp.target = mouseUp.toElement = element.children[2];
+            EventHandler.trigger(<any>(document), 'mouseup', mouseUp);
         });
         it('drag', () => {
             sortable = new Sortable(element, {
@@ -338,7 +376,9 @@ describe('Sortable', () => {
             mousemove = setMouseCordinates(mousemove, 50, 50);
             mousemove.srcElement = mousemove.target = mousemove.toElement = element.children[2];
             EventHandler.trigger(<any>(document), 'mousemove', mousemove);
-            remove(element.querySelector('.e-sortableclone'));
+            mouseUp = getEventObject('MouseEvents', 'mouseup');
+            mouseUp.srcElement = mouseUp.target = mouseUp.toElement = element.children[2];
+            EventHandler.trigger(<any>(document), 'mouseup', mouseUp);
         });
         it('Drop - without placeholder', () => {
             sortable = new Sortable(element, {

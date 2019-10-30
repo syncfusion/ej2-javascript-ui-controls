@@ -8,7 +8,7 @@ import { SmartLabelMode, IntersectAction } from '../../index';
 import { BorderModel, ColorMappingSettingsModel, FontModel, CommonTitleSettingsModel, NavigationLineSettingsModel } from './base-model';
 import { MarkerSettingsModel, MarkerClusterSettingsModel, ShapeSettingsModel, BubbleSettingsModel, ArrowModel } from './base-model';
 import { DataLabelSettingsModel, TooltipSettingsModel, SubTitleSettingsModel, SelectionSettingsModel } from './base-model';
-import { HighlightSettingsModel, ToggleLegendSettingsModel } from './base-model';
+import { HighlightSettingsModel, ToggleLegendSettingsModel, ConnectorLineSettingsModel } from './base-model';
 import { Theme } from './theme';
 import { Point, GeoLocation } from '../utils/helper';
 import { BingMapType, LegendArrangement, LegendShape, BubbleType } from '../utils/enum';
@@ -247,6 +247,31 @@ export class Margin extends ChildProperty<Margin> {
     @Property(10)
     public bottom: number;
 }
+/*
+ * To configure cluster separate connector line style
+ */
+export class ConnectorLineSettings extends ChildProperty<ConnectorLineSettings> {
+    /**
+     * Set the color for connector line
+     * @default 'black'
+     */
+    @Property('black')
+    public color: string;
+
+    /**
+     * Set the line width for connector line
+     * @default 1
+     */
+    @Property(1)
+    public width: number;
+
+    /**
+     * Set the opacity for connector line
+     * @default 1
+     */
+    @Property(1)
+    public opacity: number;
+}
 /**
  * To configure cluster in marker
  */
@@ -316,6 +341,38 @@ export class MarkerClusterSettings extends ChildProperty<MarkerClusterSettings> 
      */
     @Complex<FontModel>({}, Font)
     public labelStyle: FontModel;
+    /**
+     * Toggle the cluster separate
+     * @default false
+     */
+    @Property(false)
+    public allowClusterExpand: boolean;
+    /**
+     * Set connector style for cluster separating
+     */
+    @Complex<ConnectorLineSettingsModel>({}, ConnectorLineSettings)
+    public connectorLineSettings: ConnectorLineSettingsModel;
+}
+/**
+ * To configure cluster separate collections.
+ */
+export class SameMarkerClusterData extends ChildProperty<SameMarkerClusterData> {
+    /**
+     * @private
+     */
+    public data: Object[];
+    /**
+     * @private
+     */
+    public layerIndex: number;
+    /**
+     * @private
+     */
+    public markerIndex: number;
+    /**
+     * @private
+     */
+    public targetClusterIndex: number;
 }
 /**
  * To configure ColorMapping in Maps
@@ -1256,7 +1313,6 @@ export class LayerSettings extends ChildProperty<LayerSettings> {
     /**
      * Specifies the shape data for the layer.
      * @isdatamanager false
-     * @isGenericType true
      * @default null
      */
     @Property(null)

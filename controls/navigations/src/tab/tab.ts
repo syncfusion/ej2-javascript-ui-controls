@@ -543,7 +543,7 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
     private renderHeader(): void {
         let hdrPlace: HeaderPosition = this.headerPlacement;
         let tabItems: Object[] = [];
-        this.hdrEle = <HTEle> select('.' + CLS_HEADER, this.element);
+        this.hdrEle = this.getTabHeader();
         this.addVerticalClass();
         if (!this.isTemplate) {
             tabItems = this.parseObject(this.items, 0);
@@ -560,7 +560,8 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
                 while (this.hdrEle.firstElementChild) {
                     detach(this.hdrEle.firstElementChild);
                 }
-                this.hdrEle.appendChild(this.createElement('div', {className: CLS_ITEMS}));
+                let tabItems: HTMLElement = this.createElement('div', { className: CLS_ITEMS });
+                this.hdrEle.appendChild(tabItems);
                 hdrItems.forEach((item: string, index: number) => {
                     this.lastIndex = index;
                     let attr: object = {
@@ -574,8 +575,8 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
                         className: CLS_TEXT_WRAP, innerHTML: txt + this.btnCls.outerHTML
                     }).outerHTML;
                     let wrap: HTEle = this.createElement('div', { className: CLS_WRAP, innerHTML: cont, attrs: { tabIndex: '-1' } });
-                    select('.' + CLS_ITEMS, this.element).appendChild(this.createElement('div', attr));
-                    selectAll('.' + CLS_ITEM, this.element)[index].appendChild(wrap);
+                    tabItems.appendChild(this.createElement('div', attr));
+                    selectAll('.' + CLS_ITEM, tabItems)[index].appendChild(wrap);
                 });
             }
         }

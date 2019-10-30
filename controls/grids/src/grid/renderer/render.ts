@@ -360,6 +360,7 @@ export class Render {
             if ((<{ cancel?: boolean }>dataArgs).cancel) {
                 return;
             }
+            dataArgs.result = isNullOrUndefined(dataArgs.result) ? [] : dataArgs.result;
             let len: number = Object.keys(dataArgs.result).length;
             if (this.parent.isDestroyed) { return; }
             if ((!gObj.getColumns().length && !len) && !(gObj.columns.length && gObj.columns[0] instanceof Column)) {

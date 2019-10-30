@@ -1968,7 +1968,6 @@ var ListView = /** @__PURE__ @class */ (function (_super) {
         var classAr = [classNames.root, classNames.disable, 'e-rtl',
             'e-has-header', 'e-lib'].concat(this.cssClass.split(' ').filter(function (css) { return css; }));
         removeClass([this.element], classAr);
-        this.rippleFn();
         this.element.removeAttribute('role');
         this.element.removeAttribute('tabindex');
         this.element.innerHTML = '';
@@ -3739,6 +3738,7 @@ var Sortable = /** @__PURE__ @class */ (function (_super) {
             _this.target = null;
             _this.curTarget = null;
             remove(e.helper);
+            getComponent(_this.element, Draggable).intDestroy(e.event);
         };
         _this.bind();
         return _this;

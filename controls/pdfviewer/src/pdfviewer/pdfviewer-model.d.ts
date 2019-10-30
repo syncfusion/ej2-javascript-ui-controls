@@ -981,6 +981,55 @@ export interface AnnotationSelectorSettingsModel {
 }
 
 /**
+ * Interface for a class TextSearchColorSettings
+ */
+export interface TextSearchColorSettingsModel {
+
+    /**
+     * Sets the color of the current occurrence of the text searched string.
+     */
+    currentOccurrence?: string;
+
+    /**
+     * Sets the color of the other occurrence of the text searched string.
+     */
+    otherOccurrence?: string;
+
+}
+
+/**
+ * Interface for a class HandWrittenSignatureSettings
+ */
+export interface HandWrittenSignatureSettingsModel {
+
+    /**
+     * specifies the opacity of the annotation.
+     */
+    opacity?: number;
+
+    /**
+     * specifies the stroke color of the annotation.
+     */
+    strokeColor?: string;
+
+    /**
+     * specified the thickness of the annotation.
+     */
+    thickness?: number;
+
+    /**
+     * specified the width of the annotation.
+     */
+    width?: number;
+
+    /**
+     * specified the height of the annotation.
+     */
+    height?: number;
+
+}
+
+/**
  * Interface for a class PdfViewer
  */
 export interface PdfViewerModel extends ComponentModel{
@@ -1060,6 +1109,12 @@ export interface PdfViewerModel extends ComponentModel{
      * @default true
      */
     enableHyperlink?: boolean;
+
+    /**
+     * Enables or disables the handwritten signature in PDF document.
+     * @default true
+     */
+    enableHandwrittenSignature?: boolean;
 
     /**
      * Specifies the open state of the hyperlink in the PDF document.
@@ -1314,6 +1369,16 @@ export interface PdfViewerModel extends ComponentModel{
      */
     // tslint:disable-next-line:max-line-length
     annotationSelectorSettings?: AnnotationSelectorSettingsModel;
+
+    /**
+     * Sets the settings for the color of the text search highlight.
+     */
+    textSearchColorSettings?: TextSearchColorSettingsModel;
+
+    /**
+     * Defines the settings of handWrittenSignature.
+     */
+    handWrittenSignatureSettings?: HandWrittenSignatureSettingsModel;
 
     /**
      * Defines the collection of selected items, size and position of the selector

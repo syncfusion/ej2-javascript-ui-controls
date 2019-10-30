@@ -1530,7 +1530,6 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
         let classAr: string[] = [classNames.root, classNames.disable, 'e-rtl',
             'e-has-header', 'e-lib'].concat(this.cssClass.split(' ').filter((css: string) => css));
         removeClass([this.element], classAr);
-        this.rippleFn();
         this.element.removeAttribute('role');
         this.element.removeAttribute('tabindex');
         this.element.innerHTML = '';

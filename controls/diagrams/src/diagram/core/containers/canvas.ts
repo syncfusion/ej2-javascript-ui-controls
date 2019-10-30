@@ -1,6 +1,5 @@
 import { Container } from './container';
 import { DiagramElement } from '../elements/diagram-element';
-
 import { rotateSize } from '../../utility/base-util';
 import { Transform, ElementAction } from '../../enum/enum';
 import { Size } from '../../primitives/size';
@@ -22,7 +21,7 @@ export class Canvas extends Container {
      * Measures the minimum space that the canvas requires
      * @param availableSize 
      */
-    public measure(availableSize: Size): Size {
+    public measure(availableSize: Size, id?: string, callback?: Function): Size {
         let desired: Size = undefined;
         let desiredBounds: Rect = undefined;
         if (this.hasChildren()) {
@@ -34,7 +33,7 @@ export class Canvas extends Container {
                         child.measure(availableSize);
                     }
                 } else if (!(child instanceof TextElement)) {
-                    child.measure(availableSize);
+                    child.measure(availableSize, id, callback);
                 }
 
                 let childSize: Size = child.desiredSize.clone();

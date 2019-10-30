@@ -367,3 +367,14 @@ export type PanDirection =
     'Bottom' |
     /** Used to pan the map by mouse move */
     'None';
+
+/**
+ * Tooltip Gesture
+ */
+export type TooltipGesture =
+    /** Used to show tooltip on mouse hover */
+    'MouseMove' |
+    /** Used to show tooltip on click */
+    'Click' |
+    /** Used to show tooltip on double click */
+    'DoubleClick';

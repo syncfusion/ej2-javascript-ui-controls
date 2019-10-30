@@ -245,9 +245,11 @@ export abstract class Widget implements IWidget {
         if (widget instanceof BodyWidget) {
             if (index < widget.page.bodyWidgets.length - 1) {
                 widget = widget.page.bodyWidgets[index + 1];
-            } else {
+            } else if (widget.page.allowNextPageRendering) {
                 let page: Page = widget.page.nextPage;
                 widget = page && page.bodyWidgets.length > 0 ? page.bodyWidgets[0] : undefined;
+            } else {
+                widget = undefined;
             }
         } else {
             if (index < widget.containerWidget.childWidgets.length - 1) {
@@ -6147,6 +6149,10 @@ export class Page {
      * @private
      */
     public currentPageNum: number = 0;
+    /**
+     * 
+     */
+    public allowNextPageRendering: boolean = true;
     /**
      * @private
      */

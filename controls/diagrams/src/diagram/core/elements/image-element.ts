@@ -52,9 +52,9 @@ export class ImageElement extends DiagramElement {
      * Measures minimum space that is required to render the image
      * @param availableSize 
      */
-    public measure(availableSize: Size): Size {
+    public measure(availableSize: Size, id?: string, callback?: Function): Size {
         if (this.isDirt && (this.stretch !== 'Stretch' || this.width === undefined && this.height === undefined)) {
-            this.contentSize = measureImage(this.source, this.contentSize);
+            this.contentSize = measureImage(this.source, this.contentSize, id, callback);
             this.isDirt = false;
         }
         if (this.width !== undefined && this.height !== undefined) {

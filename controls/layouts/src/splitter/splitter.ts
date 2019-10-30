@@ -585,18 +585,36 @@ export class Splitter extends Component<HTMLElement> {
             let targetEle: HTMLElement;
             let lastBarIndex: boolean = (index === this.allBars.length);
             let barIndex: number = lastBarIndex ? index - 1 : index;
-            targetEle = (lastBarIndex) ? this.collapseArrow(barIndex, lastBarArrow) : this.collapseArrow(barIndex, collapseArrow);
+            if (!lastBarIndex && this.allPanes[index + 1].classList.contains(COLLAPSE_PANE) && index !== 0) {
+                targetEle = this.collapseArrow(barIndex - 1, lastBarArrow);
+            } else {
+                targetEle = (lastBarIndex) ? this.collapseArrow(barIndex, lastBarArrow) : this.collapseArrow(barIndex, collapseArrow);
+            }
             targetEle.click();
         }
     }
 
-    private isCollapsed(index ?: number): void {
+    private isCollapsed(index?: number): void {
         if (!isNullOrUndefined(index)) {
             this.updateIsCollapsed(index, this.targetArrows().collapseArrow, this.targetArrows().lastBarArrow);
         } else {
-            for (let m: number = 0 ; m < this.allPanes.length; m ++) {
+            for (let m: number = 0; m < this.allPanes.length; m++) {
                 if (!isNullOrUndefined(this.paneSettings[m]) && this.paneSettings[m].collapsed) {
                     this.updateIsCollapsed(m, this.targetArrows().collapseArrow, this.targetArrows().lastBarArrow);
+                }
+            }
+            for (let m: number = this.allPanes.length - 1; m >= 0; m--) {
+                if (!isNullOrUndefined(this.paneSettings[m]) && this.paneSettings[m].collapsed &&
+                !this.allPanes[m].classList.contains(COLLAPSE_PANE)) {
+                    let collapseArrow : string = this.orientation === 'Horizontal' ? ARROW_RIGHT : ARROW_DOWN ;
+                    if (m !== 0) {
+                        let targetEle: HTMLElement = this.collapseArrow(m - 1, collapseArrow);
+                        targetEle.click();
+                    }
+                    if (!this.nextPane.classList.contains(COLLAPSE_PANE)) {
+                        let targetEle : HTMLElement = this.collapseArrow(m - 1, collapseArrow);
+                        targetEle.click();
+                    }
                 }
             }
         }
@@ -611,7 +629,7 @@ export class Splitter extends Component<HTMLElement> {
 
     private collapsedOnchange(index: number): void {
         if (!isNullOrUndefined(this.paneSettings[index]) && !isNullOrUndefined(this.paneSettings[index].collapsed)
-            && !this.paneSettings[index].collapsed) {
+        && this.allPanes[index].classList.contains(COLLAPSE_PANE)) {
             this.updateIsCollapsed(index, this.targetArrows().lastBarArrow, this.targetArrows().collapseArrow);
         }
     }

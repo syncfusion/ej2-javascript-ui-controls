@@ -5,6 +5,7 @@ import { Base, getComponent } from '../src/base';
 import { NotifyPropertyChanges, INotifyPropertyChanged, Event, Property } from '../src/notify-property-change';
 import { createElement } from '../src/dom';
 import { Touch } from '../src/touch';
+import * as Util from '../src/util';
 
 @NotifyPropertyChanges
 class DemoClass extends Base<HTMLElement> implements INotifyPropertyChanged {
@@ -156,7 +157,7 @@ describe('Library', (): void => {
             });           
         });
         it('notify with success', (done) => {
-            window["Blazor"] = true;
+            Util.enableBlazorMode();
 
             destInst.test =  ()=> {
                 let promise = new Promise(function(resolve, reject) {                    
@@ -165,22 +166,22 @@ describe('Library', (): void => {
                 return promise;               
             };           
             destInst.trigger('test', {}, ()=> {                 
-                window["Blazor"] = false;         
+                Util.disableBlazorMode();      
                 done();
             });           
         });
         it('notify with success -non promise call', (done) => {
-            window["Blazor"] = true;
+            Util.enableBlazorMode();
             destInst.test =  ()=> {
                              
             };           
             destInst.trigger('test', {}, ()=> {                 
-                window["Blazor"] = false;         
+                Util.disableBlazorMode();         
                 done();
             });           
         });
         it('notify with success json', (done) => {
-            window["Blazor"] = true;
+            Util.enableBlazorMode();
 
             destInst.test =  ()=> {
                 let promise = new Promise(function(resolve, reject) {                    
@@ -189,27 +190,27 @@ describe('Library', (): void => {
                 return promise;               
             };           
             destInst.trigger('test', {}, ()=> {                 
-                window["Blazor"] = false;         
+                Util.disableBlazorMode();         
                 done();
             });           
         });   
         it('notify with error for registed event', (done) => {
-            window["Blazor"] = true;
+            Util.enableBlazorMode();
             destInst.test = ()=> {                       
                 return Promise.reject({data: {message: 'Error message'}});
             };           
             destInst.trigger('test', {}, ()=>{},  ()=> {
-                window["Blazor"] = false;               
+                Util.disableBlazorMode();               
                 done();
             });           
         });
         it('notify with error for registed event -stringify', (done) => {
-            window["Blazor"] = true;
+            Util.enableBlazorMode();
             destInst.test = ()=> {                       
                 return Promise.reject('{"data":"error"}');
             };           
             destInst.trigger('test', {}, ()=>{},  ()=> {
-                window["Blazor"] = false;               
+                Util.disableBlazorMode();              
                 done();
             });
         });
@@ -225,7 +226,7 @@ describe('Library', (): void => {
         });        
     
        it('notify with success json with array', (done) => {
-           window["Blazor"] = true;
+        Util.enableBlazorMode();
            destInst.addEventListener("testCollection", () => {
                let promise = new Promise(function (resolve, reject) {
                    setTimeout(() => resolve('{"data":"success"}'), 0);
@@ -242,12 +243,12 @@ describe('Library', (): void => {
                return promise;
            });
            destInst.trigger('testCollection', { data: "preparing", add: "good" }, () => {
-               window["Blazor"] = false;
+            Util.disableBlazorMode();
                done();
            });
        }); 
        it('notify with success json with array', (done) => {
-        window["Blazor"] = true;
+        Util.enableBlazorMode();
         destInst.addEventListener("testCollection", () => {
             let promise = new Promise(function (resolve, reject) {
                 setTimeout(() => resolve('{"data":"success"}'), 0);
@@ -258,15 +259,15 @@ describe('Library', (): void => {
             return { data2: "success-final" };
         });
         destInst.trigger('testCollection', { data: "preparing", add: "good" }, () => {
-            window["Blazor"] = false;
+            Util.disableBlazorMode();
             done();
         });        
         }); 
         it('notify with out success json with array', () => {
-            window["Blazor"] = true;          
+            Util.enableBlazorMode();         
             let data: object =  destInst.trigger('testCollection', { data: "preparing", add: "good" }) as object;
             expect(data).not.toBe(null);
-            window["Blazor"] = false;       
+            Util.disableBlazorMode();   
         });         
         afterEach(function() {
             jasmine.DEFAULT_TIMEOUT_INTERVAL = originalTimeout;

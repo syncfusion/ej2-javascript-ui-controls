@@ -1045,7 +1045,7 @@ export class PolygonDrawingTool extends ToolBase {
     }
 
     /**   @private  */
-    public mouseUp(args: MouseEventArgs, isDoubleClineck?: boolean): void {
+    public mouseUp(args: MouseEventArgs, isDoubleClineck?: boolean, isMouseLeave?: boolean): void {
         super.mouseMove(args);
         if (this.drawingObject) {
             // tslint:disable-next-line:max-line-length
@@ -1055,12 +1055,19 @@ export class PolygonDrawingTool extends ToolBase {
                 if (this.inAction) {
                     this.inAction = false;
                     if (this.drawingObject) {
-                        if (this.drawingObject.vertexPoints.length > 2) {
-                            this.drawingObject.vertexPoints.splice(this.drawingObject.vertexPoints.length - 1, 1);
+                        if (!isMouseLeave) {
+                            if (this.drawingObject.vertexPoints.length > 2) {
+                                this.drawingObject.vertexPoints.splice(this.drawingObject.vertexPoints.length - 1, 1);
+                            }
                         }
                         if (this.action === 'Polygon') {
-                            // tslint:disable-next-line:max-line-length
-                            this.drawingObject.vertexPoints[this.drawingObject.vertexPoints.length - 1] = this.drawingObject.vertexPoints[0];
+                            if (!isMouseLeave) {
+                                // tslint:disable-next-line:max-line-length
+                                this.drawingObject.vertexPoints[this.drawingObject.vertexPoints.length - 1] = this.drawingObject.vertexPoints[0];
+                            } else {
+                                // tslint:disable-next-line:max-line-length
+                                this.drawingObject.vertexPoints[this.drawingObject.vertexPoints.length] = this.drawingObject.vertexPoints[0];
+                            }
                             this.commandHandler.nodePropertyChange(this.drawingObject, { vertexPoints: this.drawingObject.vertexPoints });
                             let cobject: PdfAnnotationBase = cloneObject(this.drawingObject) as PdfAnnotationBase;
                             cobject.shapeAnnotationType = 'Polygon';
@@ -1103,8 +1110,10 @@ export class PolygonDrawingTool extends ToolBase {
                             // tslint:disable-next-line:max-line-length
                             this.commandHandler.fireAnnotationAdd(drawingObject.pageIndex, this.commandHandler.annotation.getAnnotationIndex(drawingObject.pageIndex, drawingObject.id), this.commandHandler.annotation.getAnnotationType(drawingObject.shapeAnnotationType, drawingObject.measureType), bounds, setting);
                         } else {
-                            if (isDoubleClineck) {
-                                this.drawingObject.vertexPoints.splice(this.drawingObject.vertexPoints.length - 1, 1);
+                            if (!isMouseLeave) {
+                                if (isDoubleClineck) {
+                                    this.drawingObject.vertexPoints.splice(this.drawingObject.vertexPoints.length - 1, 1);
+                                }
                             }
                             this.commandHandler.nodePropertyChange(this.drawingObject, {
                                 // tslint:disable-next-line:max-line-length
@@ -1146,6 +1155,11 @@ export class PolygonDrawingTool extends ToolBase {
                 this.commandHandler.remove(this.drawingObject);
             }
         }
+    }
+
+    /**   @private  */
+    public mouseLeave(args: MouseEventArgs): void {
+        this.mouseUp(args, true, true);
     }
 
     /**   @private  */

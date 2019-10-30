@@ -585,7 +585,7 @@ function drawSymbols(shape, imageUrl, location, markerID, shapeCustom, markerCol
     }
     else if (shape === 'Image') {
         x = location.x - (size.width / 2);
-        y = location.y - (size.height / 2);
+        y = location.y - size.height;
         merge(pathOptions, { 'href': imageUrl, 'height': size.height, 'width': size.width, x: x, y: y });
         markerEle = maps.renderer.drawImage(pathOptions);
     }
@@ -606,6 +606,7 @@ function clusterTemplate(currentLayer, markerTemplate, maps, layerIndex, markerC
     var textElement;
     var postionY = (15 / 4);
     var m = 0;
+    var g = maps.renderer.createGroup({ id: maps.element.id + '_LayerIndex_' + layerIndex + '_markerCluster' });
     for (var n = 0; n < markerTemplate.childElementCount; n++) {
         var tempElement = markerTemplate.childNodes[n];
         bounds.push(tempElement.getBoundingClientRect());
@@ -676,15 +677,16 @@ function clusterTemplate(currentLayer, markerTemplate, maps, layerIndex, markerC
                 maps.trigger('markerClusterRendering', eventArg_1, function (clusterargs) {
                     tempX = (maps.isTileMap) ? tempX : (markerTemplate.id.indexOf('_Markers_Group') > -1) ? tempX : ((tempX + transPoint_1.x) * maps.mapScaleValue);
                     tempY = (maps.isTileMap) ? tempY : (markerTemplate.id.indexOf('_Markers_Group') > -1) ? tempY : ((tempY + transPoint_1.y) * maps.mapScaleValue);
-                    var clusterID = maps.element.id + '_LayerIndex_' + layerIndex + '_MarkerIndex_' + markerIndex_1 + '_dataIndex_' + dataIndex_1 + '_cluster_' + (m++);
+                    var clusterID = maps.element.id + '_LayerIndex_' + layerIndex + '_MarkerIndex_' + markerIndex_1 + '_dataIndex_' + dataIndex_1 + '_cluster_' + (m);
                     var labelID = maps.element.id + '_LayerIndex_' + layerIndex + '_MarkerIndex_' + markerIndex_1 + '_dataIndex_' + dataIndex_1 + '_cluster_' + (m) + '_datalabel_' + m;
+                    m++;
                     var ele = drawSymbols(eventArg_1.shape, eventArg_1.imageUrl, { x: 0, y: 0 }, clusterID, shapeCustom_1, markerCollection, maps);
                     ele.setAttribute('transform', 'translate( ' + tempX + ' ' + tempY + ' )');
                     options = new TextOption(labelID, (0), postionY, 'middle', (colloideBounds.length + 1).toString(), '', '');
                     textElement = renderTextElement(options, style, style.color, markerCollection);
                     textElement.setAttribute('transform', 'translate( ' + tempX + ' ' + tempY + ' )');
-                    markerCollection.appendChild(ele);
-                    markerCollection.appendChild(textElement);
+                    g.appendChild(textElement);
+                    g.appendChild(ele);
                 });
             }
         }
@@ -693,7 +695,85 @@ function clusterTemplate(currentLayer, markerTemplate, maps, layerIndex, markerC
     for (var o = 0; o < bounds.length; o++) {
         _loop_1(o);
     }
+    while (0 < g.childNodes.length) {
+        markerCollection.insertBefore(g.childNodes[0], markerCollection.firstChild);
+    }
     return markerTemplate;
+}
+function mergeSeparateCluster(sameMarkerData, maps, markerElement) {
+    var markerId = maps.element.id + '_LayerIndex_' + sameMarkerData[0].layerIndex + '_MarkerIndex_' + sameMarkerData[0].markerIndex;
+    var clusterId = markerId + '_dataIndex_' + sameMarkerData[0].data[0]['index'] + '_cluster_' + sameMarkerData[0].targetClusterIndex;
+    var clusterEle = getElement(clusterId);
+    var clusterEleLabel = getElement(clusterId + '_datalabel_' + sameMarkerData[0].targetClusterIndex);
+    clusterEle.setAttribute('visibility', 'visible');
+    clusterEleLabel.setAttribute('visibility', 'visible');
+    var markerEle;
+    for (var i = 0; i < sameMarkerData[0].data.length; i++) {
+        markerEle = getElement(markerId + '_dataIndex_' + sameMarkerData[0].data[i]['index']);
+        markerEle['style']['visibility'] = "hidden";
+    }
+    removeElement(maps.element.id + '_LayerIndex_' + sameMarkerData[0].layerIndex + '_MarkerIndex_' + sameMarkerData[0].markerIndex + '_markerClusterConnectorLine');
+}
+function clusterSeparate(sameMarkerData, maps, markerElement, isDom) {
+    var getElementFunction = isDom ? getElement : markerElement.querySelector.bind(markerElement);
+    var getQueryConnect = isDom ? '' : '#';
+    var markerId = maps.element.id + '_LayerIndex_' + sameMarkerData[0].layerIndex + '_MarkerIndex_' + sameMarkerData[0].markerIndex;
+    var clusterId = markerId + '_dataIndex_' + sameMarkerData[0].data[0]['index'] + '_cluster_' + sameMarkerData[0].targetClusterIndex;
+    var clusterEle = getElementFunction(getQueryConnect + '' + clusterId);
+    var clusterEleLabel = getElementFunction(getQueryConnect + '' + clusterId + '_datalabel_' + sameMarkerData[0].targetClusterIndex);
+    clusterEle.setAttribute('visibility', 'hidden');
+    clusterEleLabel.setAttribute('visibility', 'hidden');
+    var markerEle = getElementFunction(getQueryConnect + '' + markerId + '_dataIndex_' + sameMarkerData[0].data[0]['index']);
+    var height = maps.layers[sameMarkerData[0].layerIndex].markerSettings[sameMarkerData[0].markerIndex].height;
+    var width = maps.layers[sameMarkerData[0].layerIndex].markerSettings[sameMarkerData[0].markerIndex].width;
+    var centerX = +clusterEle.getAttribute('transform').split('translate(')[1].trim().split(' ')[0];
+    var centerY = +clusterEle.getAttribute('transform').split('translate(')[1].trim().split(' ')[1].split(')')[0].trim() + height / 2;
+    var radius = width + 5;
+    var area = 2 * 3.14 * radius;
+    var totalMarker = 0;
+    var numberOfMarker = Math.round(area / width);
+    totalMarker += numberOfMarker;
+    var percent = Math.round((height / area) * 100);
+    percent = sameMarkerData[0].data.length < numberOfMarker ? 100 / sameMarkerData[0].data.length : percent;
+    var angle = (percent / 100) * 360;
+    var newAngle = sameMarkerData[0].data.length < numberOfMarker ? 45 : 0;
+    var count = 1;
+    var start = 'M ' + centerX + ' ' + centerY + ' ';
+    var path = '';
+    for (var i = 0; i < sameMarkerData[0].data.length; i++) {
+        if (totalMarker === i || Math.round(newAngle) >= 360) {
+            count++;
+            radius = (width + 5) * count;
+            newAngle = 0;
+            area = 2 * 3.14 * radius;
+            numberOfMarker = Math.round(area / height);
+            percent = Math.round((height / area) * 100);
+            while (percent * numberOfMarker < 100) {
+                numberOfMarker++;
+            }
+            angle = ((percent / 100) * 360);
+            totalMarker += numberOfMarker;
+        }
+        var x1 = centerX + radius * Math.sin((Math.PI * 2 * newAngle) / 360);
+        var y1 = centerY + radius * Math.cos((Math.PI * 2 * newAngle) / 360);
+        path += start + 'L ' + (x1 + 2) + ' ' + y1 + ' ';
+        markerEle = getElementFunction(getQueryConnect + '' + markerId + '_dataIndex_' + sameMarkerData[0].data[i]['index']);
+        markerEle.setAttribute('transform', 'translate( ' + x1 + ' ' + y1 + ')');
+        markerEle['style']['visibility'] = "visible";
+        newAngle += angle;
+    }
+    var options;
+    options = {
+        d: path,
+        id: maps.element.id + '_markerClusterConnectorLine',
+        stroke: maps.layers[sameMarkerData[0].layerIndex].markerClusterSettings.connectorLineSettings.color,
+        opacity: maps.layers[sameMarkerData[0].layerIndex].markerClusterSettings.connectorLineSettings.opacity,
+        'stroke-width': maps.layers[sameMarkerData[0].layerIndex].markerClusterSettings.connectorLineSettings.width
+    };
+    markerElement = isDom ? getElementFunction(maps.element.id + '_Markers_Group') : markerElement;
+    var groupEle = maps.renderer.createGroup({ id: maps.element.id + '_LayerIndex_' + sameMarkerData[0].layerIndex + '_MarkerIndex_' + sameMarkerData[0].markerIndex + '_markerClusterConnectorLine' });
+    groupEle.appendChild(maps.renderer.drawPath(options));
+    markerElement.insertBefore(groupEle, markerElement.querySelector('#' + markerId + '_dataIndex_0'));
 }
 function marker(eventArgs, markerSettings, markerData, dataIndex, location, transPoint, markerID, offset, scale, maps, markerCollection) {
     var shapeCustom = {
@@ -716,8 +796,7 @@ function marker(eventArgs, markerSettings, markerData, dataIndex, location, tran
 }
 function markerTemplate(eventArgs, templateFn, markerID, data, markerIndex, markerTemplate, location, scale, offset, maps) {
     templateFn = getTemplateFunction(eventArgs.template);
-    var blazor = 'Blazor';
-    if (templateFn && (!window[blazor] ? templateFn(data, null, null, maps.element.id + '_MarkerTemplate', false).length : {})) {
+    if (templateFn && (!maps.isBlazor ? templateFn(data, null, null, maps.element.id + '_MarkerTemplate', false).length : {})) {
         var templateElement = templateFn(data, null, null, maps.element.id + '_MarkerTemplate', false);
         var markerElement = convertElement(templateElement, markerID, data, markerIndex, maps);
         for (var i = 0; i < markerElement.children.length; i++) {
@@ -2387,6 +2466,25 @@ var Margin = /** @__PURE__ @class */ (function (_super) {
     ], Margin.prototype, "bottom", void 0);
     return Margin;
 }(ChildProperty));
+/*
+ * To configure cluster separate connector line style
+ */
+var ConnectorLineSettings = /** @__PURE__ @class */ (function (_super) {
+    __extends$2(ConnectorLineSettings, _super);
+    function ConnectorLineSettings() {
+        return _super !== null && _super.apply(this, arguments) || this;
+    }
+    __decorate$1([
+        Property('black')
+    ], ConnectorLineSettings.prototype, "color", void 0);
+    __decorate$1([
+        Property(1)
+    ], ConnectorLineSettings.prototype, "width", void 0);
+    __decorate$1([
+        Property(1)
+    ], ConnectorLineSettings.prototype, "opacity", void 0);
+    return ConnectorLineSettings;
+}(ChildProperty));
 /**
  * To configure cluster in marker
  */
@@ -2428,7 +2526,23 @@ var MarkerClusterSettings = /** @__PURE__ @class */ (function (_super) {
     __decorate$1([
         Complex({}, Font)
     ], MarkerClusterSettings.prototype, "labelStyle", void 0);
+    __decorate$1([
+        Property(false)
+    ], MarkerClusterSettings.prototype, "allowClusterExpand", void 0);
+    __decorate$1([
+        Complex({}, ConnectorLineSettings)
+    ], MarkerClusterSettings.prototype, "connectorLineSettings", void 0);
     return MarkerClusterSettings;
+}(ChildProperty));
+/**
+ * To configure cluster separate collections.
+ */
+var SameMarkerClusterData = /** @__PURE__ @class */ (function (_super) {
+    __extends$2(SameMarkerClusterData, _super);
+    function SameMarkerClusterData() {
+        return _super !== null && _super.apply(this, arguments) || this;
+    }
+    return SameMarkerClusterData;
 }(ChildProperty));
 /**
  * To configure ColorMapping in Maps
@@ -3129,6 +3243,7 @@ var Marker = /** @__PURE__ @class */ (function () {
     function Marker(maps) {
         this.maps = maps;
         this.trackElements = [];
+        this.sameMarkerData = [];
     }
     /* tslint:disable:no-string-literal */
     Marker.prototype.markerRender = function (layerElement, layerIndex, factor, type) {
@@ -3239,6 +3354,20 @@ var Marker = /** @__PURE__ @class */ (function () {
         if (isNullOrUndefined(options)) {
             return;
         }
+        var textElement = document.getElementById(target.indexOf('_datalabel_') > -1 ? target : target + '_datalabel_' + target.split('_cluster_')[1]);
+        if (options.clusterCollection.length > 0) {
+            var textElement_1 = document.getElementById(target.indexOf('_datalabel_') > -1 ? target : target + '_datalabel_' + target.split('_cluster_')[1]);
+            if (+textElement_1.textContent === options.clusterCollection[0].data.length) {
+                if (this.sameMarkerData.length > 0) {
+                    mergeSeparateCluster(this.sameMarkerData, this.maps, this.markerSVGObject);
+                }
+                this.sameMarkerData = options.clusterCollection;
+                clusterSeparate(this.sameMarkerData, this.maps, this.markerSVGObject, true);
+            }
+            else {
+                this.sameMarkerData = [];
+            }
+        }
         var eventArgs = {
             cancel: false, name: markerClusterClick, data: options.data, maps: this.maps,
             target: target, x: e.clientX, y: e.clientY,
@@ -3258,6 +3387,7 @@ var Marker = /** @__PURE__ @class */ (function () {
         var index = parseInt(id[1].split('_')[0], 10);
         var layer = this.maps.layers[index];
         var data;
+        var clusterCollection = [];
         var marker$$1;
         if (target.indexOf('_MarkerIndex_') > -1) {
             var markerIndex = parseInt(id[1].split('_MarkerIndex_')[1].split('_')[0], 10);
@@ -3265,7 +3395,19 @@ var Marker = /** @__PURE__ @class */ (function () {
             marker$$1 = layer.markerSettings[markerIndex];
             if (!isNaN(markerIndex)) {
                 data = marker$$1.dataSource[dataIndex];
-                return { marker: marker$$1, data: data };
+                var colo_1 = [];
+                if ((this.maps.layers[index].markerClusterSettings.allowClusterExpand) && target.indexOf('_cluster_') > -1) {
+                    marker$$1.dataSource.forEach(function (loc, index) {
+                        if (loc['latitude'] === data['latitude'] && loc['longitude'] === data['longitude']) {
+                            colo_1.push({ data: data, index: index });
+                        }
+                    });
+                    clusterCollection.push({
+                        data: colo_1, layerIndex: index, markerIndex: markerIndex,
+                        targetClusterIndex: +(target.split('_cluster_')[1].indexOf('_datalabel_') > -1 ? target.split('_cluster_')[1].split('_datalabel_')[0] : target.split('_cluster_')[1])
+                    });
+                }
+                return { marker: marker$$1, data: data, clusterCollection: clusterCollection };
             }
         }
         return null;
@@ -4916,11 +5058,19 @@ var Maps = /** @__PURE__ @class */ (function (_super) {
             tileElement.style.left = left + 'px';
         }
         this.arrangeTemplate();
+        var blazor = this.isBlazor ? this.blazorTemplates() : null;
         if (this.annotationsModule) {
             this.annotationsModule.renderAnnotationElements();
         }
         this.zoomingChange();
         this.trigger(loaded, this.isBlazor ? {} : { maps: this });
+    };
+    /**
+     * To append blazor templates
+     */
+    Maps.prototype.blazorTemplates = function () {
+        // updateBlazorTemplate(this.element.id + '_LabelTemplate', 'LabelTemplate', this.layers[0].dataLabelSettings);
+        updateBlazorTemplate(this.element.id + '_MarkerTemplate', 'MarkerTemplate', this.layers[0].markerSettings[0]);
     };
     /**
      * Render the map area border
@@ -5148,6 +5298,7 @@ var Maps = /** @__PURE__ @class */ (function (_super) {
      * To create svg element for maps
      */
     Maps.prototype.createSVG = function () {
+        resetBlazorTemplate(this.element.id + '_MarkerTemplate', 'MarkerTemplate');
         this.removeSvg();
         createSvg(this);
     };
@@ -5244,6 +5395,13 @@ var Maps = /** @__PURE__ @class */ (function (_super) {
                 if (targetEle.id.indexOf('shapeIndex') !== -1) {
                     var layerIndex_1 = parseInt(targetEle.id.split('_LayerIndex_')[1].split('_')[0], 10);
                     triggerShapeEvent(targetId, _this.layers[layerIndex_1].selectionSettings, _this, shapeSelected);
+                }
+                if (targetEle.id.indexOf('shapeIndex') > -1 || targetEle.id.indexOf('Tile') > -1) {
+                    if (_this.markerModule && _this.markerModule.sameMarkerData.length > 0 &&
+                        (_this.zoomModule ? _this.zoomModule.flag : true)) {
+                        mergeSeparateCluster(_this.markerModule.sameMarkerData, _this, getElement(_this.element.id + '_Markers_Group'));
+                        _this.markerModule.sameMarkerData = [];
+                    }
                 }
                 if (_this.markerModule) {
                     _this.markerModule.markerClick(e);
@@ -5828,6 +5986,9 @@ var Maps = /** @__PURE__ @class */ (function (_super) {
         Property(null)
     ], Maps.prototype, "height", void 0);
     __decorate([
+        Property('MouseMove')
+    ], Maps.prototype, "tooltipDisplayMode", void 0);
+    __decorate([
         Complex({}, TitleSettings)
     ], Maps.prototype, "titleSettings", void 0);
     __decorate([
@@ -5893,6 +6054,9 @@ var Maps = /** @__PURE__ @class */ (function (_super) {
     __decorate([
         Event()
     ], Maps.prototype, "tooltipRender", void 0);
+    __decorate([
+        Event()
+    ], Maps.prototype, "tooltipRenderComplete", void 0);
     __decorate([
         Event()
     ], Maps.prototype, "shapeSelected", void 0);
@@ -6292,7 +6456,10 @@ var DataLabel = /** @__PURE__ @class */ (function () {
         for (var j = 0; j < properties.length; j++) {
             if (shapeProperties[properties[j]]) {
                 propertyPath = properties[j];
-                break;
+                datasrcObj = this.getDataLabel(layer.dataSource, labelpath, shapeData['properties'][propertyPath], layer.shapeDataPath);
+                if (datasrcObj) {
+                    break;
+                }
             }
         }
         datasrcObj = this.getDataLabel(layer.dataSource, labelpath, shapeData['properties'][propertyPath], layer.shapeDataPath);
@@ -7843,7 +8010,7 @@ var Legend = /** @__PURE__ @class */ (function () {
         var legendToggleOpacity = this.maps.legendSettings.toggleLegendSettings.opacity;
         var legendToggleBorderColor = this.maps.legendSettings.toggleLegendSettings.border.color;
         var legendToggleBorderWidth = this.maps.legendSettings.toggleLegendSettings.border.width;
-        if (targetEle.parentElement.id.indexOf(this.maps.element.id + '_Legend_Index_') > -1) {
+        if (targetEle.parentNode['id'].indexOf(this.maps.element.id + '_Legend_Index_') > -1) {
             var mapElement = void 0;
             var legendIndex = parseFloat(targetEle.parentElement.id.substr((this.maps.element.id + '_Legend_Index_').length));
             var selectedItem = this.legendCollection[legendIndex]['data'];
@@ -8573,6 +8740,7 @@ var MapsTooltip = /** @__PURE__ @class */ (function () {
         var option;
         var currentData = '';
         var targetId = target.id;
+        this.targetID = targetId;
         var tooltipEle;
         var location;
         var templateData = [];
@@ -8701,6 +8869,11 @@ var MapsTooltip = /** @__PURE__ @class */ (function () {
                     _this.removeTooltip();
                 }
             });
+            if (this.svgTooltip) {
+                this.maps.trigger('tooltipRenderComplete', {
+                    cancel: false, name: 'tooltipRenderComplete', maps: this.maps, options: tooltipOption, element: this.svgTooltip.element
+                });
+            }
         }
         else {
             this.removeTooltip();
@@ -8746,8 +8919,10 @@ var MapsTooltip = /** @__PURE__ @class */ (function () {
     };
     MapsTooltip.prototype.mouseUpHandler = function (e) {
         this.renderTooltip(e);
-        clearTimeout(this.clearTimeout);
-        this.clearTimeout = setTimeout(this.removeTooltip.bind(this), 2000);
+        if (this.maps.tooltipDisplayMode === 'MouseMove') {
+            clearTimeout(this.clearTimeout);
+            this.clearTimeout = setTimeout(this.removeTooltip.bind(this), 2000);
+        }
     };
     MapsTooltip.prototype.removeTooltip = function () {
         if (document.getElementsByClassName('EJ2-maps-Tooltip').length > 0) {
@@ -8761,17 +8936,29 @@ var MapsTooltip = /** @__PURE__ @class */ (function () {
         if (this.maps.isDestroyed) {
             return;
         }
-        this.maps.on(Browser.touchMoveEvent, this.renderTooltip, this);
-        this.maps.on(Browser.touchEndEvent, this.mouseUpHandler, this);
-        this.maps.on(Browser.touchCancelEvent, this.removeTooltip, this);
+        if (this.maps.tooltipDisplayMode === 'DoubleClick') {
+            this.maps.on('dblclick', this.renderTooltip, this);
+        }
+        else if (this.maps.tooltipDisplayMode === 'Click') {
+            this.maps.on(Browser.touchEndEvent, this.mouseUpHandler, this);
+        }
+        else {
+            this.maps.on(Browser.touchMoveEvent, this.renderTooltip, this);
+        }
     };
     MapsTooltip.prototype.removeEventListener = function () {
         if (this.maps.isDestroyed) {
             return;
         }
-        this.maps.off(Browser.touchMoveEvent, this.renderTooltip);
-        this.maps.off(Browser.touchEndEvent, this.mouseUpHandler);
-        this.maps.off(Browser.touchCancelEvent, this.removeTooltip);
+        if (this.maps.tooltipDisplayMode === 'DoubleClick') {
+            this.maps.off('dblclick', this.removeTooltip);
+        }
+        else if (this.maps.tooltipDisplayMode === 'Click') {
+            this.maps.off(Browser.touchEndEvent, this.mouseUpHandler);
+        }
+        else {
+            this.maps.off(Browser.touchMoveEvent, this.renderTooltip);
+        }
     };
     /**
      * Get module name.
@@ -8817,6 +9004,10 @@ var Zoom = /** @__PURE__ @class */ (function () {
         this.startTouches = [];
         this.shapeZoomLocation = [];
         this.intersect = [];
+        /**
+         * @private
+         */
+        this.flag = false;
         this.maps = maps;
         this.wheelEvent = this.browserName === 'mozilla' ? (this.isPointer ? 'mousewheel' : 'DOMMouseScroll') : 'mousewheel';
         this.cancelEvent = this.isPointer ? 'pointerleave' : 'mouseleave';
@@ -9068,17 +9259,31 @@ var Zoom = /** @__PURE__ @class */ (function () {
                             for (var k = 0; k < currentEle.childElementCount; k++) {
                                 this.markerTranslate(currentEle.childNodes[k], factor, x, y, scale, 'Marker', animate$$1);
                             }
-                            if (document.getElementById(this.maps.element.id + '_mapsTooltip') && this.maps.mapsTooltipModule.tooltipTargetID.indexOf('_MarkerIndex_')) {
-                                var tooltipElement = currentEle.querySelector('#' + this.maps.mapsTooltipModule.tooltipTargetID);
-                                tooltipElement.getAttribute('transform');
-                                var x_1 = parseFloat(tooltipElement.getAttribute('transform').split('(')[1].split(')')[0].split(' ')[1]);
-                                var y_1 = parseFloat(tooltipElement.getAttribute('transform').split('(')[1].split(')')[0].split(' ')[2]);
-                                if (this.maps.isTileMap) {
-                                    x_1 += +getElement(this.maps.element.id + '_tile_parent')['style']['left'].split('px')[0];
-                                    y_1 += +getElement(this.maps.element.id + '_tile_parent')['style']['top'].split('px')[0];
+                            if (this.isPanning && this.maps.markerModule.sameMarkerData.length > 0) {
+                                clusterSeparate(this.maps.markerModule.sameMarkerData, this.maps, currentEle, true);
+                            }
+                            else if (this.maps.markerModule.sameMarkerData.length > 0) {
+                                this.maps.markerModule.sameMarkerData = [];
+                                if (document.getElementById(this.maps.element.id + '_mapsTooltip')) {
+                                    removeElement(this.maps.element.id + '_mapsTooltip');
                                 }
-                                this.maps.mapsTooltipModule.svgTooltip.location.x = x_1;
-                                this.maps.mapsTooltipModule.svgTooltip.location.y = y_1;
+                            }
+                            if (document.getElementById(this.maps.element.id + '_mapsTooltip') && this.maps.mapsTooltipModule.targetID.indexOf('_MarkerIndex_')) {
+                                var tooltipElement = currentEle.querySelector('#' + this.maps.mapsTooltipModule.targetID);
+                                if (tooltipElement['style']['visibility'] === 'hidden') {
+                                    removeElement(this.maps.element.id + '_mapsTooltip');
+                                }
+                                else {
+                                    var x_1 = parseFloat(tooltipElement.getAttribute('transform').split('(')[1].split(')')[0].split(' ')[1]);
+                                    var y_1 = parseFloat(tooltipElement.getAttribute('transform').split('(')[1].split(')')[0].split(' ')[2]);
+                                    if (this.maps.isTileMap) {
+                                        x_1 += +getElement(this.maps.element.id + '_tile_parent')['style']['left'].split('px')[0];
+                                        y_1 += +getElement(this.maps.element.id + '_tile_parent')['style']['top'].split('px')[0];
+                                    }
+                                    this.maps.mapsTooltipModule.svgTooltip.location.x = x_1;
+                                    this.maps.mapsTooltipModule.svgTooltip.location.y = y_1;
+                                    this.maps.mapsTooltipModule.svgTooltip.enableAnimation = false;
+                                }
                             }
                         }
                         else if (currentEle.id.indexOf('_bubble_Group') > -1) {
@@ -9498,6 +9703,7 @@ var Zoom = /** @__PURE__ @class */ (function () {
         }
         map.zoomTranslatePoint = map.translatePoint;
         this.mouseDownPoints = this.mouseMovePoints;
+        this.flag = false;
     };
     Zoom.prototype.toAlignSublayer = function () {
         this.maps.translatePoint.x = !isNullOrUndefined(this.distanceX) ? (this.maps.translatePoint.x -
@@ -9835,6 +10041,7 @@ var Zoom = /** @__PURE__ @class */ (function () {
             this.pinchFactor = this.maps.scale;
             this.fingers = touches.length;
         }
+        this.flag = true;
     };
     Zoom.prototype.mouseMoveHandler = function (e) {
         var pageX;
@@ -9896,6 +10103,7 @@ var Zoom = /** @__PURE__ @class */ (function () {
         var map = this.maps;
         this.rectZoomingStart = false;
         this.isPanning = false;
+        this.flag = this.flag ? true : false;
         this.isTouch = false;
         this.touchStartList = [];
         this.touchMoveList = [];
@@ -9927,25 +10135,22 @@ var Zoom = /** @__PURE__ @class */ (function () {
      */
     Zoom.prototype.click = function (e) {
         var map = this.maps;
-        if (map.zoomSettings.zoomOnClick && e.target.id.indexOf('_shapeIndex_') > -1 && !map.zoomSettings.doubleClickZoom
+        if ((map.markerModule && map.markerModule.sameMarkerData.length > 0) ||
+            +(e.target['id'].indexOf('MarkerIndex') > -1 && e.target['id'].indexOf('cluster') == -1)) {
+            return null;
+        }
+        if (this.flag && map.zoomSettings.zoomOnClick && !(e.target['id'].indexOf('_Zooming_') > -1) && !map.zoomSettings.doubleClickZoom
             && (this.zoomColor !== this.selectionColor)) {
-            var bounds = e.target.getBBox();
-            var boundwidth = bounds.width;
-            var boundHeight = bounds.height;
-            var layerScale = void 0;
-            var availWidth = map.availableSize.width;
-            var availHeight = map.availableSize.height;
-            layerScale = ((availWidth - 100) / (availHeight - 100) > boundwidth / boundHeight) ? (availHeight - 100) / boundHeight :
-                (availWidth - 100) / boundwidth;
-            var leftPos = ((availWidth / 2) - ((boundwidth * map.scale) / 2)) / layerScale;
-            var topPos = ((availHeight / 2) - ((boundHeight * map.scale) / 2)) / layerScale;
-            var translatePointX = (-bounds.x) + leftPos;
-            var translatePointY = (-bounds.y) + topPos;
-            map.previousScale = map.scale;
-            map.previousPoint = map.translatePoint;
-            map.scale = layerScale;
-            map.translatePoint = { x: translatePointX, y: translatePointY };
-            this.applyTransform(true);
+            var pageX = e.pageX;
+            var pageY = e.pageY;
+            var position = this.getMousePosition(pageX, pageY);
+            var prevLevel = map.tileZoomLevel;
+            var prevScale = map.scale;
+            var value = (map.isTileMap) ? prevLevel : prevScale;
+            if (((position.x > map.mapAreaRect.x) && (position.x < (map.mapAreaRect.x + map.mapAreaRect.width))) &&
+                (position.y > map.mapAreaRect.y) && position.y < (map.mapAreaRect.y + map.mapAreaRect.height)) {
+                this.performZooming(position, (value + 1), 'ZoomIn');
+            }
         }
     };
     Zoom.prototype.getMousePosition = function (pageX, pageY) {
@@ -10011,5 +10216,5 @@ var Zoom = /** @__PURE__ @class */ (function () {
  * exporting all modules from maps index
  */
 
-export { Maps, load, loaded, click, rightClick, doubleClick, resize, tooltipRender, shapeSelected, shapeHighlight, mousemove, mouseup, mousedown, layerRendering, shapeRendering, markerRendering, markerClusterRendering, markerClick, markerClusterClick, markerMouseMove, markerClusterMouseMove, dataLabelRendering, bubbleRendering, bubbleClick, bubbleMouseMove, animationComplete, legendRendering, annotationRendering, itemSelection, itemHighlight, beforePrint, zoomIn, zoomOut, pan, Annotation, Arrow, Font, Border, CenterPosition, TooltipSettings, Margin, MarkerClusterSettings, ColorMappingSettings, SelectionSettings, HighlightSettings, NavigationLineSettings, BubbleSettings, CommonTitleSettings, SubTitleSettings, TitleSettings, ZoomSettings, ToggleLegendSettings, LegendSettings, DataLabelSettings, ShapeSettings, MarkerBase, MarkerSettings, LayerSettings, Tile, MapsAreaSettings, Size, stringToNumber, calculateSize, createSvg, getMousePosition, degreesToRadians, radiansToDegrees, convertGeoToPoint, convertTileLatLongToPoint, xToCoordinate, yToCoordinate, aitoff, roundTo, sinci, acos, calculateBound, Point, MinMax, GeoLocation, measureText, TextOption, PathOption, ColorValue, RectOption, CircleOption, PolygonOption, PolylineOption, LineOption, Line, MapLocation, Rect, PatternOptions, renderTextElement, convertElement, convertElementFromLabel, drawSymbols, clusterTemplate, marker, markerTemplate, appendShape, drawCircle, drawRectangle, drawPath, drawPolygon, drawPolyline, drawLine, calculateShapes, drawDiamond, drawTriangle, drawCross, drawHorizontalLine, drawVerticalLine, drawStar, drawBalloon, drawPattern, getFieldData, checkShapeDataFields, checkPropertyPath, filter, getRatioOfBubble, findMidPointOfPolygon, isCustomPath, textTrim, findPosition, removeElement, getTranslate, getZoomTranslate, getElementByID, Internalize, getTemplateFunction, getElement, getShapeData, triggerShapeEvent, getElementsByClassName, querySelector, getTargetElement, createStyle, customizeStyle, removeClass, elementAnimate, timeout, showTooltip, wordWrap, createTooltip, drawSymbol, renderLegendShape, getElementOffset, changeBorderWidth, changeNavaigationLineWidth, targetTouches, calculateScale, getDistance, getTouches, getTouchCenter, sum, zoomAnimate, animate, MapAjax, smoothTranslate, LayerPanel, Bubble, BingMap, Marker, ColorMapping, DataLabel, NavigationLine, Legend, Highlight, Selection, MapsTooltip, Zoom, Annotations };
+export { Maps, load, loaded, click, rightClick, doubleClick, resize, tooltipRender, shapeSelected, shapeHighlight, mousemove, mouseup, mousedown, layerRendering, shapeRendering, markerRendering, markerClusterRendering, markerClick, markerClusterClick, markerMouseMove, markerClusterMouseMove, dataLabelRendering, bubbleRendering, bubbleClick, bubbleMouseMove, animationComplete, legendRendering, annotationRendering, itemSelection, itemHighlight, beforePrint, zoomIn, zoomOut, pan, Annotation, Arrow, Font, Border, CenterPosition, TooltipSettings, Margin, ConnectorLineSettings, MarkerClusterSettings, SameMarkerClusterData, ColorMappingSettings, SelectionSettings, HighlightSettings, NavigationLineSettings, BubbleSettings, CommonTitleSettings, SubTitleSettings, TitleSettings, ZoomSettings, ToggleLegendSettings, LegendSettings, DataLabelSettings, ShapeSettings, MarkerBase, MarkerSettings, LayerSettings, Tile, MapsAreaSettings, Size, stringToNumber, calculateSize, createSvg, getMousePosition, degreesToRadians, radiansToDegrees, convertGeoToPoint, convertTileLatLongToPoint, xToCoordinate, yToCoordinate, aitoff, roundTo, sinci, acos, calculateBound, Point, MinMax, GeoLocation, measureText, TextOption, PathOption, ColorValue, RectOption, CircleOption, PolygonOption, PolylineOption, LineOption, Line, MapLocation, Rect, PatternOptions, renderTextElement, convertElement, convertElementFromLabel, drawSymbols, clusterTemplate, mergeSeparateCluster, clusterSeparate, marker, markerTemplate, appendShape, drawCircle, drawRectangle, drawPath, drawPolygon, drawPolyline, drawLine, calculateShapes, drawDiamond, drawTriangle, drawCross, drawHorizontalLine, drawVerticalLine, drawStar, drawBalloon, drawPattern, getFieldData, checkShapeDataFields, checkPropertyPath, filter, getRatioOfBubble, findMidPointOfPolygon, isCustomPath, textTrim, findPosition, removeElement, getTranslate, getZoomTranslate, getElementByID, Internalize, getTemplateFunction, getElement, getShapeData, triggerShapeEvent, getElementsByClassName, querySelector, getTargetElement, createStyle, customizeStyle, removeClass, elementAnimate, timeout, showTooltip, wordWrap, createTooltip, drawSymbol, renderLegendShape, getElementOffset, changeBorderWidth, changeNavaigationLineWidth, targetTouches, calculateScale, getDistance, getTouches, getTouchCenter, sum, zoomAnimate, animate, MapAjax, smoothTranslate, LayerPanel, Bubble, BingMap, Marker, ColorMapping, DataLabel, NavigationLine, Legend, Highlight, Selection, MapsTooltip, Zoom, Annotations };
 //# sourceMappingURL=ej2-maps.es5.js.map

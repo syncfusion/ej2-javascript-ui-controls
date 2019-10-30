@@ -1,7 +1,7 @@
 import { Grid, Resize, ContextMenu, Sort, VirtualScroll, RowSelectEventArgs, RowDeselectEventArgs, Column } from '@syncfusion/ej2-grids';
 import { select, KeyboardEvents, EventHandler, KeyboardEventArgs, getValue, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { isNullOrUndefined as isNOU, Touch, TapEventArgs, setValue, addClass, removeClass } from '@syncfusion/ej2-base';
-import { Internationalization, closest, DragEventArgs, Draggable } from '@syncfusion/ej2-base';
+import { Internationalization, closest, DragEventArgs, Draggable, BlazorDragEventArgs } from '@syncfusion/ej2-base';
 import { FileManager } from '../base/file-manager';
 import { DataManager, Query } from '@syncfusion/ej2-data';
 import { hideSpinner, showSpinner } from '@syncfusion/ej2-popups';
@@ -497,14 +497,10 @@ export class DetailsView {
         this.parent.isCut = false;
         if (this.parent.breadcrumbbarModule.searchObj.element.value.trim() === '' && this.gridObj) {
             this.parent.searchedItems = [];
-            let len: number = this.gridObj.columns.length;
-            let columnData: ColumnModel[] = JSON.parse(JSON.stringify(this.gridObj.columns));
-            if (columnData[len - 1].field) {
-                if (columnData[len - 1].field === 'filterPath' && !this.parent.isFiltered) {
-                    this.gridObj.columns.pop();
-                    this.gridObj.refreshColumns();
-                    this.isColumnRefresh = true;
-                } else { this.updatePathColumn(); }
+            if (!this.parent.isFiltered) {
+                this.removePathColumn(false);
+            } else {
+                this.updatePathColumn();
             }
         }
         removeBlur(this.parent);
@@ -521,16 +517,15 @@ export class DetailsView {
     private updatePathColumn(): void {
         let len: number = this.gridObj.columns.length;
         let columnData: ColumnModel[] = JSON.parse(JSON.stringify(this.gridObj.columns));
-        if (columnData[len - 1].field && columnData[len - 1].field !== 'filterPath' &&
-            this.parent.isFiltered && !this.parent.isMobile) {
+        if (columnData[len - 1].field && columnData[len - 1].field !== 'filterPath' && !this.parent.isMobile) {
             let pathColumn: ColumnModel = {
                 field: 'filterPath', headerText: getLocaleText(this.parent, 'Path'), minWidth: 180, width: 'auto'
             };
             (<ColumnModel[]>this.gridObj.columns).push(pathColumn);
             this.adjustWidth((<Column[]>this.gridObj.columns), 'filterPath');
             this.adjustWidth((<Column[]>this.gridObj.columns), 'name');
-            this.gridObj.refreshColumns();
             this.isColumnRefresh = true;
+            this.gridObj.refreshColumns();
         }
     }
 
@@ -566,7 +561,7 @@ export class DetailsView {
 
     public openContent(data: Object): void {
         if (!hasReadAccess(data)) {
-            createDeniedDialog(this.parent, data);
+            createDeniedDialog(this.parent, data, events.permissionRead);
             return;
         }
         let eventArgs: FileOpenEventArgs = { cancel: false, fileDetails: data, module: 'DetailsView' };
@@ -620,6 +615,9 @@ export class DetailsView {
                 this.onSearchFiles(args);
             }
             this.adjustHeight();
+            if (this.gridObj.sortSettings.columns[0].field !== this.parent.sortBy) {
+                this.gridObj.sortColumn(this.parent.sortBy, this.parent.sortOrder);
+            }
         }
     }
 
@@ -628,37 +626,30 @@ export class DetailsView {
         if (this.parent.view === 'Details') {
             this.parent.setProperties({ selectedItems: [] }, true);
             this.parent.notify(events.selectionChanged, {});
-            this.removePathColumn();
             if (!this.parent.isLayoutChange) {
                 this.parent.layoutSelectedItems = [];
             }
-            let item: Object = { field: 'filterPath', headerText: getLocaleText(this.parent, 'Path'), minWidth: 180, width: 'auto' };
-            if (!this.parent.isMobile) {
-                (this.gridObj.columns as Column[]).push(item as Column);
-                this.adjustWidth((this.gridObj.columns as Column[]), 'name');
-                this.adjustWidth((this.gridObj.columns as Column[]), 'filterPath');
-            }
-            this.gridObj.refreshColumns();
+            this.updatePathColumn();
             this.parent.searchedItems = args.files;
             this.onPathChanged(<ReadArgs>args);
         }
     }
 
-    private removePathColumn(): void {
+    private removePathColumn(isRefresh: boolean): void {
         let len: number = this.gridObj.columns.length;
-        let column: ColumnModel[] = JSON.parse(JSON.stringify(this.gridObj.columns));
-        if (column[len - 1].field) {
-            if (column[len - 1].field === 'filterPath') {
-                this.gridObj.columns.pop();
+        let columnData: ColumnModel[] = JSON.parse(JSON.stringify(this.gridObj.columns));
+        if (columnData[len - 1].field && (columnData[len - 1].field === 'filterPath')) {
+            /* istanbul ignore next */
+            if (this.gridObj.sortSettings.columns[0].field === 'filterPath') {
+                this.gridObj.sortColumn('name', this.parent.sortOrder);
+                this.parent.notify(events.sortByChange, {});
+            }
+            this.gridObj.columns.pop();
+            if (!isRefresh) {
+                this.isColumnRefresh = true;
+                this.gridObj.refreshColumns();
             }
         }
-    }
-
-    private changeData(args: ReadArgs): void {
-        this.isInteracted = false;
-        this.removePathColumn();
-        this.gridObj.dataSource = getSortedData(this.parent, args.files);
-        this.emptyArgs = args;
     }
 
     private onFinalizeEnd(args: ReadArgs): void {
@@ -702,7 +693,10 @@ export class DetailsView {
 
     private onRefreshEnd(args: ReadArgs): void {
         if (this.parent.view !== 'Details') { return; }
-        this.changeData(args);
+        this.isInteracted = false;
+        this.removePathColumn(true);
+        this.gridObj.dataSource = getSortedData(this.parent, args.files);
+        this.emptyArgs = args;
     }
 
     private onHideLayout(): void {
@@ -927,7 +921,9 @@ export class DetailsView {
                     dragArea: this.parent.element,
                     dragTarget: '.' + CLS.ROW,
                     drag: draggingHandler.bind(this, this.parent),
-                    dragStart: dragStartHandler.bind(this, this.parent),
+                    dragStart: (args: DragEventArgs & BlazorDragEventArgs) => {
+                        dragStartHandler(this.parent, args, this.dragObj);
+                    },
                     dragStop: dragStopHandler.bind(this, this.parent),
                     enableAutoScroll: true,
                     helper: this.dragHelper.bind(this)
@@ -1052,16 +1048,8 @@ export class DetailsView {
     /* istanbul ignore next */
     private onPathColumn(): void {
         if (this.parent.view === 'Details' && !isNOU(this.gridObj)) {
-            let len: number = this.gridObj.columns.length;
             if (this.parent.breadcrumbbarModule.searchObj.element.value === '' && !this.parent.isFiltered) {
-                let column: ColumnModel[] = JSON.parse(JSON.stringify(this.gridObj.columns));
-                if (column[len - 1].field) {
-                    if (column[len - 1].field === 'filterPath') {
-                        this.gridObj.columns.pop();
-                        this.gridObj.refreshColumns();
-                    }
-                }
-
+                this.removePathColumn(false);
             }
         }
     }
@@ -1363,7 +1351,7 @@ export class DetailsView {
             let items: Object[] = this.parent.itemData;
             for (let i: number = 0; i < items.length; i++) {
                 if (!hasDownloadAccess(items[i])) {
-                    createDeniedDialog(this.parent, items[i]);
+                    createDeniedDialog(this.parent, items[i], events.permissionDownload);
                     return;
                 }
             }
@@ -1377,7 +1365,7 @@ export class DetailsView {
             let items: Object[] = this.parent.itemData;
             for (let i: number = 0; i < items.length; i++) {
                 if (!hasEditAccess(items[i])) {
-                    createDeniedDialog(this.parent, items[i]);
+                    createDeniedDialog(this.parent, items[i], events.permissionEdit);
                     return;
                 }
             }
@@ -1696,7 +1684,7 @@ export class DetailsView {
                 if (hasEditAccess(this.parent.itemData[0])) {
                     rename(this.parent, this.parent.path, name);
                 } else {
-                    createDeniedDialog(this.parent, this.parent.itemData[0]);
+                    createDeniedDialog(this.parent, this.parent.itemData[0], events.permissionEdit);
                 }
             } else {
                 doRename(this.parent);

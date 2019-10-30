@@ -379,7 +379,12 @@ let Splitter = class Splitter extends Component {
             let targetEle;
             let lastBarIndex = (index === this.allBars.length);
             let barIndex = lastBarIndex ? index - 1 : index;
-            targetEle = (lastBarIndex) ? this.collapseArrow(barIndex, lastBarArrow) : this.collapseArrow(barIndex, collapseArrow);
+            if (!lastBarIndex && this.allPanes[index + 1].classList.contains(COLLAPSE_PANE) && index !== 0) {
+                targetEle = this.collapseArrow(barIndex - 1, lastBarArrow);
+            }
+            else {
+                targetEle = (lastBarIndex) ? this.collapseArrow(barIndex, lastBarArrow) : this.collapseArrow(barIndex, collapseArrow);
+            }
             targetEle.click();
         }
     }
@@ -393,6 +398,20 @@ let Splitter = class Splitter extends Component {
                     this.updateIsCollapsed(m, this.targetArrows().collapseArrow, this.targetArrows().lastBarArrow);
                 }
             }
+            for (let m = this.allPanes.length - 1; m >= 0; m--) {
+                if (!isNullOrUndefined(this.paneSettings[m]) && this.paneSettings[m].collapsed &&
+                    !this.allPanes[m].classList.contains(COLLAPSE_PANE)) {
+                    let collapseArrow = this.orientation === 'Horizontal' ? ARROW_RIGHT : ARROW_DOWN;
+                    if (m !== 0) {
+                        let targetEle = this.collapseArrow(m - 1, collapseArrow);
+                        targetEle.click();
+                    }
+                    if (!this.nextPane.classList.contains(COLLAPSE_PANE)) {
+                        let targetEle = this.collapseArrow(m - 1, collapseArrow);
+                        targetEle.click();
+                    }
+                }
+            }
         }
     }
     targetArrows() {
@@ -403,7 +422,7 @@ let Splitter = class Splitter extends Component {
     }
     collapsedOnchange(index) {
         if (!isNullOrUndefined(this.paneSettings[index]) && !isNullOrUndefined(this.paneSettings[index].collapsed)
-            && !this.paneSettings[index].collapsed) {
+            && this.allPanes[index].classList.contains(COLLAPSE_PANE)) {
             this.updateIsCollapsed(index, this.targetArrows().lastBarArrow, this.targetArrows().collapseArrow);
         }
     }

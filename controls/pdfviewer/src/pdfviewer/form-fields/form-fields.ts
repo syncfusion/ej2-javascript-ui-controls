@@ -2,7 +2,6 @@ import { PdfViewer } from '../index';
 import { PdfViewerBase } from '../index';
 import { createElement, Browser } from '@syncfusion/ej2-base';
 import { PdfAnnotationBaseModel } from '../../diagram/pdf-annotation-model';
-import { Dialog } from '@syncfusion/ej2-popups';
 import { PdfAnnotationBase } from '../../diagram/pdf-annotation';
 import { splitArrayCollection, processPathData } from '@syncfusion/ej2-drawings';
 import { CheckBox } from '@syncfusion/ej2-buttons';
@@ -21,18 +20,11 @@ export class FormFields {
     private maintainTabIndex: any = {};
     // tslint:disable-next-line
     private maintanMinTabindex: any = {};
-    private signatureDialog: Dialog;
-    private mouseDetection: boolean;
-    private oldX: number;
-    private mouseX: number;
-    private oldY: number;
-    private mouseY: number;
-    // tslint:disable-next-line
-    private newObject: any = [];
-    private outputString: string = '';
+    private isSignatureField: boolean = false;
     // tslint:disable-next-line
     private currentTarget: any;
-    private isSignatureField: boolean = false;
+
+
     /**
      * @private
      */
@@ -172,8 +164,34 @@ export class FormFields {
             this.updateDataInSession(currentTarget);
         } else if (currentTarget.className === 'e-pdfviewer-signatureformFields') {
             this.currentTarget = currentTarget;
-            this.signatureDialog.show();
+            this.pdfViewerBase.signatureModule.showSignatureDialog(true);
         }
+    }
+    /**
+     * @private
+     */
+    public drawSignature(): void {
+        let annot: PdfAnnotationBaseModel;
+        let zoomvalue: number = this.pdfViewerBase.getZoomFactor();
+        let currentWidth: number = parseFloat(this.currentTarget.style.width) / zoomvalue;
+        let currentHeight: number = parseFloat(this.currentTarget.style.height) / zoomvalue;
+        let currentLeft: number = parseFloat(this.currentTarget.style.left) / zoomvalue;
+        let currentTop: number = parseFloat(this.currentTarget.style.top) / zoomvalue;
+        let currentPage: number = parseFloat(this.currentTarget.id.split('_')[1]);
+        annot = {
+            // tslint:disable-next-line:max-line-length
+            id: this.currentTarget.id, bounds: { x: currentLeft, y: currentTop, width: currentWidth, height: currentHeight }, pageIndex: currentPage, data: this.pdfViewerBase.signatureModule.outputString, modifiedDate: '',
+            shapeAnnotationType: 'Path', opacity: 1, rotateAngle: 0, annotName: '', comments: [], review: { state: '', stateModel: '', modifiedDate: '', author: '' }
+        };
+        this.pdfViewer.add(annot as PdfAnnotationBase);
+        // tslint:disable-next-line
+        let canvass: any = document.getElementById(this.pdfViewer.element.id + '_annotationCanvas_' + currentPage);
+        // tslint:disable-next-line
+        this.pdfViewer.renderDrawing(canvass as any, currentPage);
+        this.pdfViewerBase.signatureModule.showSignatureDialog(false);
+        this.currentTarget.className = 'e-pdfviewer-signatureformFields signature';
+        this.updateDataInSession(this.currentTarget, annot.data);
+        this.currentTarget.style.pointerEvents = 'none';
     }
     private updateFormFieldsValue(event: MouseEvent): void {
         // tslint:disable-next-line
@@ -646,37 +664,7 @@ export class FormFields {
             textDiv.style.fontSize = fontHeight * zoomvalue + 'px';
         }
     }
-    /**
-     * @private
-     */
-    public createSignaturePanel(): void {
-        let elementID: string = this.pdfViewer.element.id;
-        let dialogDiv: HTMLElement = createElement('div', { id: elementID + '_signature_window', className: 'e-pv-signature-window' });
-        dialogDiv.style.display = 'block';
-        this.pdfViewerBase.pageContainer.appendChild(dialogDiv);
-        let appearanceTab: HTMLElement = this.createSignatureCanvas();
-        if (this.signatureDialog) {
-            this.signatureDialog.content = appearanceTab;
-        } else {
-            this.signatureDialog = new Dialog({
-                showCloseIcon: true, closeOnEscape: false, isModal: true, header: this.pdfViewer.localeObj.getConstant('Draw Signature'),
-                target: this.pdfViewer.element, content: appearanceTab, width: '750px', visible: false,
-                close: () => {
-                    this.clearSignatureCanvas();
-                }
-            });
-            this.signatureDialog.buttons = [
-                // tslint:disable-next-line:max-line-length
-                { buttonModel: { content: this.pdfViewer.localeObj.getConstant('Clear'), disabled: true, cssClass: 'e-pv-clearbtn' }, click: this.clearSignatureCanvas.bind(this) },
-                // tslint:disable-next-line:max-line-length
-                { buttonModel: { content: this.pdfViewer.localeObj.getConstant('Cancel') }, click: this.closeSignaturePanel.bind(this) },
-                // tslint:disable-next-line:max-line-length
-                { buttonModel: { content: this.pdfViewer.localeObj.getConstant('Create'), isPrimary: true, disabled: true, cssClass: 'e-pv-createbtn' }, click: this.addSignature.bind(this) },
 
-            ];
-            this.signatureDialog.appendTo(dialogDiv);
-        }
-    }
     // tslint:disable-next-line
     private renderExistingAnnnot(data: any, index: any, printContainer: any): any {
         if (!printContainer) {
@@ -702,173 +690,6 @@ export class FormFields {
         }
     }
 
-    private addSignature(): void {
-        let zoomvalue: number = this.pdfViewerBase.getZoomFactor();
-        let currentWidth: number = parseFloat(this.currentTarget.style.width) / zoomvalue;
-        let currentHeight: number = parseFloat(this.currentTarget.style.height) / zoomvalue;
-        let currentLeft: number = parseFloat(this.currentTarget.style.left) / zoomvalue;
-        let currentTop: number = parseFloat(this.currentTarget.style.top) / zoomvalue;
-        let currentPage: number = parseFloat(this.currentTarget.id.split('_')[1]);
-        let annot: PdfAnnotationBaseModel;
-        annot = {
-            // tslint:disable-next-line:max-line-length
-            id: this.currentTarget.id, bounds: { x: currentLeft, y: currentTop, width: currentWidth, height: currentHeight }, pageIndex: currentPage, data: this.outputString, modifiedDate: '',
-            shapeAnnotationType: 'Path', opacity: 1, rotateAngle: 0, annotName: '', comments: [], review: { state: '', stateModel: '', modifiedDate: '', author: '' }
-        };
-        this.pdfViewer.add(annot as PdfAnnotationBase);
-        // tslint:disable-next-line
-        let canvass: any = document.getElementById(this.pdfViewer.element.id + '_annotationCanvas_' + currentPage);
-        // tslint:disable-next-line
-        this.pdfViewer.renderDrawing(canvass as any, currentPage);
-        this.signatureDialog.hide();
-        this.currentTarget.className = 'e-pdfviewer-signatureformFields signature';
-        this.updateDataInSession(this.currentTarget, annot.data);
-        this.currentTarget.style.pointerEvents = 'none';
-    }
-    // tslint:disable-next-line
-    private createSignatureCanvas(): any {
-        // tslint:disable-next-line
-        let previousField: any = document.getElementById(this.pdfViewer.element.id + '_signatureCanvas_');
-        // tslint:disable-next-line
-        let field: any = document.getElementById(this.pdfViewer.element.id + 'Signature_appearance');
-        if (previousField) {
-            previousField.remove();
-        }
-        if (field) {
-            field.remove();
-        }
-        // tslint:disable-next-line:max-line-length
-        let appearanceDiv: HTMLElement = createElement('div', { id: this.pdfViewer.element.id + 'Signature_appearance', className: 'e-pv-signature-apperance' });
-        // tslint:disable-next-line:max-line-length
-        let canvas: HTMLCanvasElement = createElement('canvas', { id: this.pdfViewer.element.id + '_signatureCanvas_', className: 'e-pv-signature-canvas' }) as HTMLCanvasElement;
-        if (this.pdfViewer.element.offsetWidth > 750) {
-            canvas.width = 715;
-            canvas.style.width = '715px';
-        } else {
-            canvas.width = this.pdfViewer.element.offsetWidth - 35;
-            canvas.style.width = canvas.width + 'px';
-        }
-        canvas.height = 335;
-        canvas.style.height = '335px';
-        canvas.style.border = '1px dotted #bdbdbd';
-        canvas.style.backgroundColor = 'white';
-        canvas.addEventListener('mousedown', this.signaturePanelMouseDown.bind(this));
-        canvas.addEventListener('mousemove', this.signaturePanelMouseMove.bind(this));
-        canvas.addEventListener('mouseup', this.signaturePanelMouseUp.bind(this));
-        canvas.addEventListener('touchstart', this.signaturePanelMouseDown.bind(this));
-        canvas.addEventListener('touchmove', this.signaturePanelMouseMove.bind(this));
-        canvas.addEventListener('touchend', this.signaturePanelMouseUp.bind(this));
-        appearanceDiv.appendChild(canvas);
-        // // tslint:disable-next-line
-        // let input: any = document.createElement('input');
-        // input.type = 'checkbox';
-        // appearanceDiv.appendChild(input);
-        // // tslint:disable-next-line
-        // let checkBoxObj: any = new CheckBox({ label: 'Save signature', disabled: true, checked: false });
-        // checkBoxObj.appendTo(input);
-        return appearanceDiv;
-    }
-    private signaturePanelMouseDown(e: MouseEvent | TouchEvent): void {
-        if (e.type !== 'contextmenu') {
-            e.preventDefault();
-            this.findMousePosition(e);
-            this.mouseDetection = true;
-            this.oldX = this.mouseX;
-            this.oldY = this.mouseY;
-            this.newObject = [];
-            this.enableCreateButton(false);
-            this.drawMousePosition(e);
-        }
-    }
-    private enableCreateButton(isEnable: boolean): void {
-        // tslint:disable-next-line
-        let createbtn: any = document.getElementsByClassName('e-pv-createbtn')[0];
-        if (createbtn) {
-            createbtn.disabled = isEnable;
-        }
-        // tslint:disable-next-line
-        let clearbtn: any = document.getElementsByClassName('e-pv-clearbtn')[0];
-        if (clearbtn) {
-            clearbtn.disabled = isEnable;
-        }
-    }
-    private signaturePanelMouseMove(e: MouseEvent | TouchEvent): void {
-        if (this.mouseDetection) {
-            this.findMousePosition(e);
-            this.drawMousePosition(e);
-        }
-    }
-    private findMousePosition(event: MouseEvent | TouchEvent): void {
-        let offsetX: number;
-        let offsetY: number;
-        if (event.type.indexOf('touch') !== -1) {
-            event = event as TouchEvent;
-            let element: HTMLElement = event.target as HTMLElement;
-            // tslint:disable-next-line
-            let currentRect: any = element.getBoundingClientRect();
-            this.mouseX = event.touches[0].pageX - currentRect.left;
-            this.mouseY = event.touches[0].pageY - currentRect.top;
-        } else {
-            event = event as MouseEvent;
-            this.mouseX = event.offsetX;
-            this.mouseY = event.offsetY;
-        }
-    }
-    private drawMousePosition(event: MouseEvent | TouchEvent): void {
-        if (this.mouseDetection) {
-            this.drawSignatureInCanvas();
-            this.oldX = this.mouseX;
-            this.oldY = this.mouseY;
-        }
-    }
-    private drawSignatureInCanvas(): void {
-        // tslint:disable-next-line
-        let canvas: any = document.getElementById(this.pdfViewer.element.id + '_signatureCanvas_');
-        // tslint:disable-next-line
-        let context: any = canvas.getContext('2d');
-        context.beginPath();
-        context.moveTo(this.oldX, this.oldY);
-        context.lineTo(this.mouseX, this.mouseY);
-        context.stroke();
-        context.lineWidth = 2;
-        context.arc(this.oldX, this.oldY, 2 / 2, 0, Math.PI * 2, true);
-        context.closePath();
-        this.newObject.push(this.mouseX, this.mouseY);
-    }
-    private signaturePanelMouseUp(): void {
-        if (this.mouseDetection) {
-            this.convertToPath(this.newObject);
-        }
-        this.mouseDetection = false;
-    }
-    // tslint:disable-next-line
-    private convertToPath(newObject: any): void {
-        this.movePath(newObject[0], newObject[1]);
-        this.linePath(newObject[0], newObject[1]);
-        for (let n: number = 2; n < newObject.length; n = n + 2) {
-            this.linePath(newObject[n], newObject[n + 1]);
-        }
-    }
-    private linePath(x: number, y: number): void {
-        this.outputString += 'L' + x + ',' + y + ' ';
-    }
-    private movePath(x: number, y: number): void {
-        this.outputString += 'M' + x + ',' + y + ' ';
-    }
-    private clearSignatureCanvas(): void {
-        this.outputString = '';
-        this.newObject = [];
-        // tslint:disable-next-line
-        let canvas: any = document.getElementById(this.pdfViewer.element.id + '_signatureCanvas_');
-        // tslint:disable-next-line
-        let context: any = canvas.getContext('2d');
-        context.clearRect(0, 0, canvas.width, canvas.height);
-        this.enableCreateButton(true);
-    }
-    private closeSignaturePanel(): void {
-        this.clearSignatureCanvas();
-        this.signatureDialog.hide();
-    }
     /**
      * @private
      */
@@ -881,10 +702,9 @@ export class FormFields {
      * @private
      */
     public destroy(): void {
-        if (this.signatureDialog) {
-            this.signatureDialog.destroy();
-        }
+        window.sessionStorage.removeItem('formfields');
     }
+
     /**
      * @private
      */

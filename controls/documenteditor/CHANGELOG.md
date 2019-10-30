@@ -2,6 +2,18 @@
 
 ## [Unreleased]
 
+## 17.3.21 (2019-10-30)
+
+### Document Editor
+
+#### Bug Fixes
+
+- `#251576` - Enable repeat row header is now enabled properly in table properties dialog.
+- `#250638` - Scroll position is now maintained after inserting columns.
+- `#253260` - Script error now resolved when double click on header footer.
+- `#250770` - RTL text with special character is now layout properly.
+- `#252506` - Spell checker performance has been improved.
+
 ## 17.3.19 (2019-10-22)
 
 ### Document Editor

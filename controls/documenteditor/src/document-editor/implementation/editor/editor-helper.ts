@@ -631,6 +631,13 @@ export interface ContextElementInfo {
 /** 
  * @private
  */
+export interface WordSpellInfo {
+    hasSpellError: boolean;
+    isElementPresent: boolean;
+}
+/** 
+ * @private
+ */
 export interface TextInLineInfo {
     elementsWithOffset: Dictionary<TextElementBox, number>;
     fullText: string;

@@ -298,7 +298,7 @@ export function measureText(
 }
 
 /** @private */
-export function measureImage(source: string, contentSize: Size): Size {
+export function measureImage(source: string, contentSize: Size, id?: string, callback?: Function): Size {
     let measureElement: string = 'measureElement';
     window[measureElement].style.visibility = 'visible';
     let imageElement: HTMLImageElement = window[measureElement].children[1];
@@ -308,6 +308,19 @@ export function measureImage(source: string, contentSize: Size): Size {
     let height: number = bounds.height;
     contentSize = new Size(width, height);
     window[measureElement].style.visibility = 'hidden';
+
+    let element: HTMLElement = document.createElement('img');
+    element.setAttribute('src', source);
+    setAttributeHtml(element, { id: id + 'sf-imageNode', style: 'display: none;' });
+    document.body.appendChild(element);
+    // tslint:disable-next-line:no-any
+    element.onload = (event: any) => {
+        let loadedImage: HTMLImageElement = event.currentTarget;
+        if (callback) {
+            callback(id, { width: loadedImage.width, height: loadedImage.height });
+        }
+    };
+
     return contentSize;
 }
 

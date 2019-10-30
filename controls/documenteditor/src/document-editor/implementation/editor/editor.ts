@@ -93,7 +93,6 @@ export class Editor {
      */
     public isInsertingTOC: boolean = false;
     private editStartRangeCollection: EditRangeStartElementBox[] = [];
-
     /**
      * @private
      */
@@ -3155,6 +3154,7 @@ export class Editor {
             table.isGridUpdated = false;
             table.buildTableColumns();
             table.isGridUpdated = true;
+            this.viewer.skipScrollToPosition = true;
             this.viewer.layout.reLayoutTable(table);
             this.selection.start.setPosition(startParagraph.firstChild as LineWidget, true);
             this.selection.end.setPosition(this.selection.getLastParagraph(newCell).firstChild as LineWidget, false);

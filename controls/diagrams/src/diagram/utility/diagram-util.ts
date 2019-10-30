@@ -58,11 +58,10 @@ import { PointPort } from '../objects/port';
 import { Command } from '../diagram/keyboard-commands';
 import { pasteSwimLane } from './swim-lane-util';
 import { GridPanel } from '../core/containers/grid';
-import { isBlazor } from '@syncfusion/ej2-base';
+import { isBlazor, Browser } from '@syncfusion/ej2-base';
 import { TreeInfo, INode } from '../layout/layout-base';
 import { MouseEventArgs } from '../interaction/event-handlers';
 import { IBlazorDropEventArgs, IBlazorCollectionChangeEventArgs } from '../objects/interface/IElement';
-
 
 
 
@@ -2034,4 +2033,12 @@ export function cloneBlazorObject(args: object): Object {
         args = cloneObject(args);
     }
     return args;
+}
+
+/** @private */
+export function checkBrowserInfo(): boolean {
+    if (navigator.platform.indexOf('Mac') && Browser.info.name === 'Safari') {
+        return true;
+    }
+    return false;
 }

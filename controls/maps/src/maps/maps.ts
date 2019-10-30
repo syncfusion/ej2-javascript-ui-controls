@@ -4,9 +4,9 @@
 import { Component, NotifyPropertyChanges, INotifyPropertyChanged, Property, Ajax, resetBlazorTemplate } from '@syncfusion/ej2-base';
 import { EventHandler, Browser, EmitType, isNullOrUndefined, createElement } from '@syncfusion/ej2-base';
 import { Event, remove, L10n, Collection, Internationalization, Complex, isBlazor } from '@syncfusion/ej2-base';
-import { ModuleDeclaration } from '@syncfusion/ej2-base';
+import { ModuleDeclaration, updateBlazorTemplate } from '@syncfusion/ej2-base';
 import { SvgRenderer } from '@syncfusion/ej2-svg-base';
-import { Size, createSvg, Point, removeElement, triggerShapeEvent, showTooltip } from './utils/helper';
+import { Size, createSvg, Point, removeElement, triggerShapeEvent, showTooltip, mergeSeparateCluster } from './utils/helper';
 import { getElement, removeClass, getTranslate } from './utils/helper';
 import { ZoomSettings, LegendSettings, Tile } from './model/base';
 import { LayerSettings, TitleSettings, Border, Margin, MapsAreaSettings, Annotation, CenterPosition } from './model/base';
@@ -21,12 +21,12 @@ import { Selection } from './user-interaction/selection';
 import { MapsTooltip } from './user-interaction/tooltip';
 import { Zoom } from './user-interaction/zoom';
 import { load, click, rightClick, loaded, doubleClick, resize, shapeSelected, shapeHighlight, itemSelection } from './model/constants';
-import { ProjectionType, MapsTheme, PanDirection } from './utils/enum';
+import { ProjectionType, MapsTheme, PanDirection, TooltipGesture } from './utils/enum';
 import { MapsModel } from './maps-model';
 import { getThemeStyle } from './model/theme';
 import { BingMap } from './layers/bing-map';
 import { ILoadEventArgs, ILoadedEventArgs, IMouseEventArgs, IResizeEventArgs, ITooltipRenderEventArgs } from './model/interface';
-import { GeoPosition } from './model/interface';
+import { GeoPosition, ITooltipRenderCompleteEventArgs } from './model/interface';
 import { ILayerRenderingEventArgs, IShapeRenderingEventArgs, IMarkerRenderingEventArgs, IMarkerClickEventArgs } from './model/interface';
 import { IMarkerMoveEventArgs, ILabelRenderingEventArgs, IBubbleMoveEventArgs, IBubbleClickEventArgs } from './model/interface';
 import { IMarkerClusterClickEventArgs, IMarkerClusterMoveEventArgs, IMarkerClusterRenderingEventArgs} from './model/interface';
@@ -131,6 +131,12 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
      */
     @Property(null)
     public height: string;
+    /**
+     * To configure the tooltip gesture
+     * @default 'MouseMove'
+     */
+    @Property('MouseMove')
+    public tooltipDisplayMode: TooltipGesture;
     /**
      * To configure the title settings of the maps.
      */
@@ -269,6 +275,14 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
     @Event()
     public tooltipRender: EmitType<ITooltipRenderEventArgs>;
     /**
+     * Triggers after the maps tooltip rendered.
+     * @deprecated
+     * @event
+     * @blazorProperty 'TooltipRenderComplete'
+     */
+    @Event()
+    public tooltipRenderComplete: EmitType<ITooltipRenderCompleteEventArgs>;
+    /**
      * Triggers while clicking the shape
      * @event
      * @blazorProperty 'ShapeSelected'
@@ -278,7 +292,6 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
     /**
      * Triggers before selection applied
      * @event
-     * @blazorType Syncfusion.EJ2.Blazor.Maps.ISelectionEventArgs<TValue>
      * @blazorProperty 'OnItemSelect'
      */
     @Event()
@@ -287,7 +300,6 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
      * Trigger before highlight applied
      * @event
      * @blazorProperty 'OnItemHighlight'
-     * @blazorType Syncfusion.EJ2.Blazor.Maps.ISelectionEventArgs<TValue>
      */
     @Event()
     public itemHighlight: EmitType<ISelectionEventArgs>;
@@ -711,6 +723,8 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
 
         this.arrangeTemplate();
 
+        let blazor: void = this.isBlazor ? this.blazorTemplates() : null;
+
         if (this.annotationsModule) {
 
             this.annotationsModule.renderAnnotationElements();
@@ -721,6 +735,14 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
 
         this.trigger(loaded, this.isBlazor ? {} : { maps: this });
 
+    }
+
+    /**
+     * To append blazor templates
+     */
+    private blazorTemplates(): void {
+        // updateBlazorTemplate(this.element.id + '_LabelTemplate', 'LabelTemplate', this.layers[0].dataLabelSettings);
+        updateBlazorTemplate(this.element.id + '_MarkerTemplate', 'MarkerTemplate', this.layers[0].markerSettings[0]);
     }
 
     /**
@@ -965,6 +987,8 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
      */
     private createSVG(): void {
 
+        resetBlazorTemplate(this.element.id + '_MarkerTemplate', 'MarkerTemplate');
+
         this.removeSvg();
 
         createSvg(this);
@@ -1067,6 +1091,13 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
                 if (targetEle.id.indexOf('shapeIndex') !== -1) {
                     let layerIndex: number = parseInt(targetEle.id.split('_LayerIndex_')[1].split('_')[0], 10);
                     triggerShapeEvent(targetId, this.layers[layerIndex].selectionSettings, this, shapeSelected);
+                }
+                if (targetEle.id.indexOf('shapeIndex') > -1 || targetEle.id.indexOf('Tile') > -1) {
+                    if (this.markerModule && this.markerModule.sameMarkerData.length > 0 &&
+                        (this.zoomModule ? this.zoomModule.flag : true)) {
+                        mergeSeparateCluster(this.markerModule.sameMarkerData, this, getElement(this.element.id + '_Markers_Group'));
+                        this.markerModule.sameMarkerData = [];
+                    }
                 }
                 if (this.markerModule) {
                     this.markerModule.markerClick(e);

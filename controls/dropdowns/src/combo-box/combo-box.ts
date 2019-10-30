@@ -94,6 +94,7 @@ export class ComboBox extends DropDownList {
      * @default null
      * @blazorType int
      * @isBlazorNullableType true
+     * @blazorDefaultValue 
      */
     @Property(null)
     public index: number;
@@ -483,7 +484,9 @@ export class ComboBox extends DropDownList {
         } else {
             this.activeIndex = null;
             this.removeSelection();
-            this.removeFocus();
+            if (this.liCollections && this.liCollections.length < 0) {
+                this.removeFocus();
+            }
         }
     }
 

@@ -9,7 +9,7 @@ import * as events from '../base/constant';
 import { ValueFormatter } from '../services/value-formatter';
 import { ServiceLocator } from '../services/service-locator';
 import { Column, ColumnModel } from '../models/column';
-import { CheckBoxFilter } from '../actions/checkbox-filter';
+import { CheckBoxFilterBase } from '../common/checkbox-filter-base';
 import { SortDirection } from '../base/enum';
 
 /**
@@ -251,7 +251,7 @@ export class Data implements IDataProcessor {
                 }
             }
             if (checkBoxCols.length) {
-                let excelPredicate: Predicate = CheckBoxFilter.getPredicate(checkBoxCols);
+                let excelPredicate: Predicate = CheckBoxFilterBase.getPredicate(checkBoxCols);
                 for (let prop of Object.keys(excelPredicate)) {
                     let col: Column;
                     if (this.parent.getColumnByField(prop).isForeignColumn()) {

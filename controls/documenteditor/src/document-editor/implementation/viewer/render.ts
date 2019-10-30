@@ -12,7 +12,7 @@ import { BaselineAlignment, HighlightColor, Underline, Strikethrough, TabLeader 
 import { Layout } from './layout';
 import { LayoutViewer } from './viewer';
 // tslint:disable-next-line:max-line-length
-import { HelperMethods, ErrorInfo, Point, SpecialCharacterInfo, SpaceCharacterInfo } from '../editor/editor-helper';
+import { HelperMethods, ErrorInfo, Point, SpecialCharacterInfo, SpaceCharacterInfo, WordSpellInfo } from '../editor/editor-helper';
 import { SearchWidgetInfo } from '../index';
 import { SelectionWidgetInfo } from '../selection';
 import { SpellChecker } from '../spell-check/spell-checker';
@@ -475,7 +475,7 @@ export class Renderer {
                     if (elementBox instanceof TextElementBox) {
                         elementBox.canTrigger = true;
                         elementBox.isVisible = false;
-                        if (!elementBox.isSpellChecked) {
+                        if (!elementBox.isSpellChecked || elementBox.line.paragraph.isChangeDetected) {
                             elementBox.ischangeDetected = true;
                         }
                     }
@@ -696,6 +696,9 @@ export class Renderer {
     private handleChangeDetectedElements(elementBox: TextElementBox, underlineY: number, left: number, top: number, baselineAlignment: BaselineAlignment): void {
         let checkText: string = elementBox.text.trim();
         let beforeIndex: number = this.pageIndex;
+        if (elementBox.text === '\v') {
+            return;
+        }
         if (!this.spellChecker.checkElementCanBeCombined(elementBox, underlineY, beforeIndex, true)) {
             /* tslint:disable:no-any */
             let splittedText: any[] = checkText.split(/[\s]+/);
@@ -713,20 +716,29 @@ export class Renderer {
                 }
             } else {
                 let retrievedText: string = this.spellChecker.manageSpecialCharacters(checkText, undefined, true);
-                // tslint:disable-next-line:max-line-length
-                if (this.spellChecker.ignoreAllItems.indexOf(retrievedText) === -1 && elementBox.ignoreOnceItems.indexOf(retrievedText) === -1) {
-                    let indexInLine: number = elementBox.indexInOwner;
-                    let indexinParagraph: number = elementBox.line.paragraph.indexInOwner;
-                    /* tslint:disable:no-any */
+                if (checkText.length > 0) {
                     // tslint:disable-next-line:max-line-length
-                    this.spellChecker.CallSpellChecker(this.spellChecker.languageID, checkText, true, this.spellChecker.allowSpellCheckAndSuggestion).then((data: any) => {
-                        /* tslint:disable:no-any */
-                        let jsonObject: any = JSON.parse(data);
-                        // tslint:disable-next-line:max-line-length
-                        let canUpdate: boolean = (beforeIndex === this.pageIndex || elementBox.isVisible) && (indexInLine === elementBox.indexInOwner) && (indexinParagraph === elementBox.line.paragraph.indexInOwner);
-                        // tslint:disable-next-line:max-line-length
-                        this.spellChecker.handleWordByWordSpellCheck(jsonObject, elementBox, left, top, underlineY, baselineAlignment, canUpdate);
-                    });
+                    if (this.spellChecker.ignoreAllItems.indexOf(retrievedText) === -1 && elementBox.ignoreOnceItems.indexOf(retrievedText) === -1) {
+                        let indexInLine: number = elementBox.indexInOwner;
+                        let indexinParagraph: number = elementBox.line.paragraph.indexInOwner;
+                        let spellInfo: WordSpellInfo = this.spellChecker.checkSpellingInPageInfo(retrievedText);
+                        if (spellInfo.isElementPresent && this.spellChecker.enableOptimizedSpellCheck) {
+                            let jsonObject: any = JSON.parse('{\"HasSpellingError\":' + spellInfo.hasSpellError + '}');
+                            // tslint:disable-next-line:max-line-length
+                            this.spellChecker.handleWordByWordSpellCheck(jsonObject, elementBox, left, top, underlineY, baselineAlignment, true);
+                        } else {
+                            /* tslint:disable:no-any */
+                            // tslint:disable-next-line:max-line-length
+                            this.spellChecker.CallSpellChecker(this.spellChecker.languageID, checkText, true, this.spellChecker.allowSpellCheckAndSuggestion).then((data: any) => {
+                                /* tslint:disable:no-any */
+                                let jsonObject: any = JSON.parse(data);
+                                // tslint:disable-next-line:max-line-length
+                                let canUpdate: boolean = (beforeIndex === this.pageIndex || elementBox.isVisible) && (indexInLine === elementBox.indexInOwner) && (indexinParagraph === elementBox.line.paragraph.indexInOwner);
+                                // tslint:disable-next-line:max-line-length
+                                this.spellChecker.handleWordByWordSpellCheck(jsonObject, elementBox, left, top, underlineY, baselineAlignment, canUpdate);
+                            });
+                        }
+                    }
                 }
             }
         }
@@ -744,16 +756,25 @@ export class Renderer {
     public handleUnorderdElements(currentText: string, elementBox: TextElementBox, underlineY: number, iteration: number, markindex: number, isLastItem?: boolean, beforeIndex?: number): void {
         let indexInLine: number = elementBox.indexInOwner;
         let indexinParagraph: number = elementBox.line.paragraph.indexInOwner;
-        /* tslint:disable:no-any */
-        // tslint:disable-next-line:max-line-length
-        this.spellChecker.CallSpellChecker(this.spellChecker.languageID, currentText, true, this.spellChecker.allowSpellCheckAndSuggestion).then((data: any) => {
-            /* tslint:disable:no-any */
-            let jsonObject: any = JSON.parse(data);
-            // tslint:disable-next-line:max-line-length
-            let canUpdate: boolean = (elementBox.isVisible) && (indexInLine === elementBox.indexInOwner) && (indexinParagraph === elementBox.line.paragraph.indexInOwner);
-            // tslint:disable-next-line:max-line-length
-            this.spellChecker.handleSplitWordSpellCheck(jsonObject, currentText, elementBox, canUpdate, underlineY, iteration, markindex, isLastItem);
-        });
+        if (currentText.length > 0) {
+            let spellInfo: WordSpellInfo = this.spellChecker.checkSpellingInPageInfo(currentText);
+            if (spellInfo.isElementPresent && this.spellChecker.enableOptimizedSpellCheck) {
+                let jsonObject: any = JSON.parse('{\"HasSpellingError\":' + spellInfo.hasSpellError + '}');
+                // tslint:disable-next-line:max-line-length
+                this.spellChecker.handleSplitWordSpellCheck(jsonObject, currentText, elementBox, true, underlineY, iteration, markindex, isLastItem);
+            } else {
+                /* tslint:disable:no-any */
+                // tslint:disable-next-line:max-line-length
+                this.spellChecker.CallSpellChecker(this.spellChecker.languageID, currentText, true, this.spellChecker.allowSpellCheckAndSuggestion).then((data: any) => {
+                    /* tslint:disable:no-any */
+                    let jsonObject: any = JSON.parse(data);
+                    // tslint:disable-next-line:max-line-length
+                    let canUpdate: boolean = (elementBox.isVisible) && (indexInLine === elementBox.indexInOwner) && (indexinParagraph === elementBox.line.paragraph.indexInOwner);
+                    // tslint:disable-next-line:max-line-length
+                    this.spellChecker.handleSplitWordSpellCheck(jsonObject, currentText, elementBox, canUpdate, underlineY, iteration, markindex, isLastItem);
+                });
+            }
+        }
     }
 
     /** 

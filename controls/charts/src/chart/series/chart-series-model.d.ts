@@ -529,6 +529,13 @@ export interface SeriesBaseModel {
     pointColorMapping?: string;
 
     /**
+     * Specifies the visibility of series.
+     * @default true
+     */
+
+    visible?: boolean;
+
+    /**
      * The name of the horizontal axis associated with the series. It requires `axes` of the chart.
      * It is applicable for series and technical indicators
      * ```html
@@ -758,13 +765,6 @@ export interface SeriesModel extends SeriesBaseModel{
      */
 
     stackingGroup?: string;
-
-    /**
-     * Specifies the visibility of series.
-     * @default true
-     */
-
-    visible?: boolean;
 
     /**
      * Options to customizing the border of the series. This is applicable only for `Column` and `Bar` type series.

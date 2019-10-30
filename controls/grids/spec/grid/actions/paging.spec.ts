@@ -455,9 +455,9 @@ describe('Paging module', () => {
 
  
     describe('EJ2-9910 dropDown All option', () => {
-        let gridObj: Grid;
+        let gridInstance: Grid;
         beforeAll((done: Function) => {
-            gridObj = createGrid(
+            gridInstance = createGrid(
                 {
                     allowPaging: true,
                     dataSource: data,
@@ -469,14 +469,14 @@ describe('Paging module', () => {
                 }, done);
         });
         it('dropDownChanged to All', () => {
-            (<any>gridObj.pagerModule).pagerObj.element.querySelector('.e-dropdownlist').ej2_instances[0].value = 'All';
+            (<any>gridInstance.pagerModule).pagerObj.element.querySelector('.e-dropdownlist').ej2_instances[0].value = 'All';
         });
         it('check current pageSize value', (done: Function) => {
             let actionComplete = (args?: any): void => {
-                expect(gridObj.currentViewData.length).toBe(15);
+                expect(gridInstance.currentViewData.length).toBe(15);
                 done();
             };
-            gridObj.actionComplete = actionComplete;
+            gridInstance.actionComplete = actionComplete;
            
         });
         it('memory leak', () => {     
@@ -490,8 +490,8 @@ describe('Paging module', () => {
         });    
 
         afterAll(() => {
-            destroy(gridObj);
-            gridObj = null;
+            destroy(gridInstance);
+            gridInstance = null;
         });
     });
 

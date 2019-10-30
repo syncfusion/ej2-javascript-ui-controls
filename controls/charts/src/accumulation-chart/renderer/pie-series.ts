@@ -53,15 +53,16 @@ export class PieSeries extends PieBase {
     public toggleInnerPoint(event: PointerEvent | TouchEvent, radius: number, innerRadius: number): void {
         let target: Element = event.target as Element;
         let id: Index = indexFinder(target.id, true);
-        let borderElement: Element = document.getElementById(this.accumulation.element.id + 'PointHover_Border');
+        let accumulationId: string = (event.target as Element).id.split('_')[0];
+        let borderElement: Element = document.getElementById(accumulationId + 'PointHover_Border');
         let createBorderEle: Element;
         if (!isNaN(id.series)) {
             let seriesIndex: number = id.series;
             let pointIndex: number = id.point;
             if (!isNullOrUndefined(seriesIndex) && !isNaN(seriesIndex) && !isNullOrUndefined(pointIndex) && !isNaN(pointIndex)) {
                 let point: AccPoints = this.accumulation.visibleSeries[0].points[pointIndex];
-                let srcElem: Element = getElement(this.accumulation.element.id + '_Series_' + seriesIndex + '_Point_' + pointIndex);
-                const opacity: number = srcElem.getAttribute('class') === this.accumulation.element.id + '_ej2_deselected' ?
+                let srcElem: Element = getElement(accumulationId + '_Series_' + seriesIndex + '_Point_' + pointIndex);
+                const opacity: number = srcElem.getAttribute('class') === accumulationId + '_ej2_deselected' ?
                     this.accumulation.tooltip.enable ? 0.5 : 0.3 : this.accumulation.tooltip.enable ? 0.5 : 1;
                 let innerPie: string = this.getPathArc(
                     this.accumulation.pieSeriesModule.center,
@@ -69,14 +70,16 @@ export class PieSeries extends PieBase {
                     (point.startAngle + point.degree) % 360,
                     radius,
                     innerRadius);
-                if ((borderElement) && (borderElement.getAttribute('d') !== innerPie || point.isExplode)) {
-                    borderElement.remove();
+                    // while using annotation as a chart border will appear in both chart.so changed checked the id with target id
+                if ((borderElement) && (accumulationId === this.accumulation.element.id) &&
+                    (borderElement.getAttribute('d') !== innerPie || point.isExplode)) {
+                    borderElement.parentNode.removeChild(borderElement);
                     borderElement = null;
                 }
-                let seriousGroup: Element = getElement(this.accumulation.element.id + '_Series_' + seriesIndex);
+                let seriousGroup: Element = getElement(accumulationId + '_Series_' + seriesIndex);
                 if (!borderElement && ((!point.isExplode) || (point.isExplode && event.type !== 'click'))) {
                     let path: PathOption = new PathOption(
-                        this.accumulation.element.id + 'PointHover_Border', point.color, 1, point.color, opacity, '', innerPie);
+                        accumulationId + 'PointHover_Border', point.color, 1, point.color, opacity, '', innerPie);
                     createBorderEle = this.accumulation.renderer.drawPath(path);
                     createBorderEle.removeAttribute('transform');
                     seriousGroup.appendChild(createBorderEle);
@@ -96,7 +99,9 @@ export class PieSeries extends PieBase {
         if (borderElement) {
             setTimeout(
                 (): void => {
-                    borderElement.remove();
+                    if (borderElement.parentNode) {
+                    borderElement.parentNode.removeChild(borderElement);
+                    }
                 },
                 duration);
         }

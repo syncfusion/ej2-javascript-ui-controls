@@ -678,6 +678,20 @@ describe('ComboBox', () => {
             comboBoxObj.destroy();
             element.remove();
         });
+        it('mobile layout - not open popup when typing', (done) => {
+            let androidPhoneUa: string = 'Mozilla/5.0 (Linux; Android 4.3; Nexus 7 Build/JWR66Y) ' +
+                'AppleWebKit/537.36 (KHTML, like Gecko) Chrome/30.0.1599.92 Safari/537.36';
+            Browser.userAgent = androidPhoneUa;
+            e.keyCode = 74;
+            comboBoxObj.element.value = 'a';
+            comboBoxObj.onInput();
+            comboBoxObj.onFilterUp(e);
+            setTimeout(() => {
+                expect(comboBoxObj.isPopupOpen).toEqual(true);
+                Browser.userAgent = navigator.userAgent;
+                done();
+            }, 450)
+        });
         it('Searching', (done) => {
             comboBoxObj.inputElement.value = 'h'
             comboBoxObj.showPopup();
@@ -840,20 +854,6 @@ describe('ComboBox', () => {
             }, 450)
         });
 
-        it('mobile layout - not open popup when typing', (done) => {
-            let androidPhoneUa: string = 'Mozilla/5.0 (Linux; Android 4.3; Nexus 7 Build/JWR66Y) ' +
-                'AppleWebKit/537.36 (KHTML, like Gecko) Chrome/30.0.1599.92 Safari/537.36';
-            Browser.userAgent = androidPhoneUa;
-            e.keyCode = 74;
-            comboBoxObj.element.value = 'a';
-            comboBoxObj.onInput();
-            comboBoxObj.onFilterUp(e);
-            setTimeout(() => {
-                expect(comboBoxObj.isPopupOpen).toEqual(true);
-                Browser.userAgent = navigator.userAgent;
-                done();
-            }, 450)
-        });
     });
     describe('AutoFill', () => {
         let originalTimeout: number;
@@ -1996,6 +1996,68 @@ describe('ComboBox', () => {
             let mouseEventArgs: any = { preventDefault: function () { }, target: null };
             (<any>ddl).resetHandler(mouseEventArgs);
             ddl.showPopup();
+        });
+    });
+    describe('Disabled with showpopup public methpd', () => {
+        let element: HTMLInputElement;
+        let ddl: any;
+        let empList: { [key: string]: Object }[] = [
+            { id: 'level1', country: 'American Football' }, { id: 'level2', country: 'Badminton' },
+            { id: 'level3', country: 'Basketball' }, { id: 'level4', country: 'Cricket' },
+            { id: 'level5', country: 'Football' }, { id: 'level6', country: 'Golf' },
+            { id: 'level7', country: 'Hockey' }, { id: 'level8', country: 'Rugby' },
+            { id: 'level9', country: 'Snooker' }, { id: 'level10', country: 'Tennis' },
+        ];
+        let keyEventArgs: any = { preventDefault: (): void => { /** NO Code */ }, keyCode: 78, type: 'keyup' };
+        beforeAll(() => {
+            element = <HTMLInputElement>createElement('input', { id: 'dropdownlist' });
+            document.body.appendChild(element);
+        });
+        afterAll(() => {
+            document.body.innerHTML = '';
+        });
+        it('contains filtering', () => {
+            ddl = new ComboBox({
+                dataSource: empList,
+                fields: { text: 'country', value: 'id' },
+                placeholder: 'Select a customer',
+                popupHeight: '230px',
+                width: '350px',
+                allowFiltering: true,
+                filtering: function (e) {
+                    let query = new Query().select(['country', 'id']);
+                    query = (e.text !== '') ? query.where('country', 'contains', e.text, true) : query;
+                    e.updateData(empList, query);
+                }
+            });
+            ddl.appendTo(element);
+            ddl.showPopup();
+            ddl.filterInput.value = 'n';
+            ddl.onInput();
+            ddl.onFilterUp(keyEventArgs);
+            expect(ddl.popupObj.element.querySelector('.e-list-item').classList.contains('e-item-focus')).toBe(true);
+            ddl.destroy();
+        });
+        it('endswith filtering', () => {
+            ddl = new ComboBox({
+                dataSource: empList,
+                fields: { text: 'country', value: 'id' },
+                placeholder: 'Select a customer',
+                popupHeight: '230px',
+                width: '350px',
+                allowFiltering: true,
+                filtering: function (e) {
+                    let query = new Query().select(['country', 'id']);
+                    query = (e.text !== '') ? query.where('country', 'contains', e.text, true) : query;
+                    e.updateData(empList, query);
+                }
+            });
+            ddl.appendTo(element);
+            ddl.showPopup();
+            ddl.filterInput.value = 'n';
+            ddl.onInput();
+            ddl.onFilterUp(keyEventArgs);
+            expect(ddl.popupObj.element.querySelector('.e-list-item').classList.contains('e-item-focus')).toBe(true);
         });
     });
     it('memory leak', () => {     

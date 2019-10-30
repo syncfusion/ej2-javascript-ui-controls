@@ -342,7 +342,7 @@ export class ContextMenu {
                     case 'delete':
                         for (let j: number = 0; j < details.length; j++) {
                             if (!hasEditAccess(details[j])) {
-                                createDeniedDialog(this.parent, details[j]);
+                                createDeniedDialog(this.parent, details[j], events.permissionEdit);
                                 return;
                             }
                         }
@@ -352,7 +352,7 @@ export class ContextMenu {
                     case 'download':
                         for (let i: number = 0; i < details.length; i++) {
                             if (!hasDownloadAccess(details[i])) {
-                                createDeniedDialog(this.parent, details[i]);
+                                createDeniedDialog(this.parent, details[i], events.permissionDownload);
                                 return;
                             }
                         }
@@ -364,7 +364,7 @@ export class ContextMenu {
                         break;
                     case 'rename':
                         if (!hasEditAccess(details[0])) {
-                            createDeniedDialog(this.parent, details[0]);
+                            createDeniedDialog(this.parent, details[0], events.permissionEdit);
                         } else {
                             this.parent.notify(events.renameInit, {});
                             createDialog(this.parent, 'Rename');

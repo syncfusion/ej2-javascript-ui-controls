@@ -7,7 +7,7 @@ import { Size, measureText, TextOption, PathOption, Rect } from '@syncfusion/ej2
 import { LineBase } from '../series/line-base';
 import { textElement, ChartLocation, valueToPolarCoefficient, CoefficientToVector, getElement } from '../../common/utils/helper';
 import { BorderModel } from '../../index';
-import { LabelIntersectAction } from '../utils/enum';
+import { LabelIntersectAction, AxisPosition } from '../utils/enum';
 
 /**
  * Specifies the Polar Axis Layout.
@@ -22,7 +22,8 @@ export class PolarRadarPanel extends LineBase {
     private centerX: number;
     private centerY: number;
     private startAngle: number;
-    private xAxisVisibleLabels: Rect[] = [];
+    /** @private */
+    public visibleAxisLabelRect: Rect[];
     /** @private */
     public seriesClipRect: Rect;
     /**
@@ -251,16 +252,17 @@ export class PolarRadarPanel extends LineBase {
                     continue; // If the label is intersect, the label render is ignored.
                 }
                 // To check Y axis label with visible X axis label
-                for (let j: number = 0; j < this.xAxisVisibleLabels.length; j++) {
-                    if (isOverlap(labelRegions[i], this.xAxisVisibleLabels[j])) {
+                for (let rect of this.visibleAxisLabelRect) {
+                    if (isOverlap(labelRegions[i], rect)) {
                         isIntersect = true;
                         break;
                     }
                 }
-                if (isIntersect) {
-                    continue;
-                }
             }
+            if (isIntersect) {
+                continue;
+            }
+            this.visibleAxisLabelRect.push(labelRegions[i]);
             options = new TextOption(chart.element.id + index + '_AxisLabel_' + i, pointX, pointY,
                                      anchor, axis.visibleLabels[i].text);
 
@@ -427,7 +429,7 @@ export class PolarRadarPanel extends LineBase {
      * @private
      */
     public drawXAxisLabels(axis: Axis, index: number): void {
-
+        this.visibleAxisLabelRect = [];
         let chart: Chart = this.chart;
         let pointX: number = 0;
         let pointY: number = 0;
@@ -459,9 +461,30 @@ export class PolarRadarPanel extends LineBase {
                 textAnchor = parseFloat(pointX.toFixed(1)) === parseFloat(this.centerX.toFixed(1)) ? 'middle' :
                 ((pointX < this.centerX && !islabelInside) || (pointX > this.centerX && islabelInside)) ? 'end' : 'start';
             }
-            labelText = <string>axis.visibleLabels[i].text;
-            // fix for label style not working in axisLabelRender event issue
             label = axis.visibleLabels[i];
+            labelText = <string>label.text;
+            // to trim axis labels based on available size
+            if (axis.enableTrim || intersectType === 'Trim') {
+                let originalText: string = axis.visibleLabels[i].originalText;
+                let trimText: string;
+                let size: number;
+                let labelPosition: AxisPosition = axis.labelPosition;
+                let chartWidth : number = chart.availableSize.width;
+                let textLength: number = originalText.length;
+                for (let i: number = textLength - 1; i >= 0; --i) {
+                    trimText = originalText.substring(0, i) + '...';
+                    size = measureText(trimText, axis.labelStyle).width;
+                    if ((labelPosition === 'Outside' && ((pointX > chartWidth / 2 && pointX + size <= chartWidth) ||
+                        (pointX < chartWidth / 2 && pointX - size >= 0))) || (labelPosition === 'Inside' &&
+                        (pointX + size < chartWidth / 2 || pointX - size > chartWidth / 2))) {
+                            labelText = i === textLength - 1 ? originalText : trimText;
+                            label.size.width = measureText(labelText, axis.labelStyle).width;
+                            label.text = labelText;
+                            break;
+                    }
+                }
+            }
+            // fix for label style not working in axisLabelRender event issue
             labelRegions[i] = this.getLabelRegion(pointX, pointY, label, textAnchor);
             if (i === 0) {
                 firstLabelX = pointX;
@@ -488,15 +511,11 @@ export class PolarRadarPanel extends LineBase {
             if (isIntersect) {
                 continue; // If the label is intersect, the label render is ignored.
             }
+            this.visibleAxisLabelRect.push(labelRegions[i]);
             textElement(
                 chart.renderer, options, label.labelStyle, label.labelStyle.color || chart.themeStyle.axisLabel, labelElement,
                 false, chart.redraw, true, true
             );
-        }
-        for (let i: number = 0; i < isLabelVisible.length; i++) {
-            if (isLabelVisible[i]) {
-                this.xAxisVisibleLabels.push(labelRegions[i]);
-            }
         }
         this.element.appendChild(labelElement);
     }

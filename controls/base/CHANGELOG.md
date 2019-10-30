@@ -9,6 +9,7 @@
 #### Bug Fixes
 
 - `#243640` - Resolved Template support for helper function in if/else condition.
+- `#248248` - Resolved dragging misbehaviour, while placing a new drag element `(child)` inside drag element `(parent)`.
 
 ## 17.3.14 (2019-10-03)
 

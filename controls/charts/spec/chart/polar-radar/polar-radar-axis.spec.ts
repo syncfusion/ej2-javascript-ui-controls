@@ -803,6 +803,151 @@ describe('Chart Control', () => {
         });
     });
 
+    describe('Customer issue: Polar Radar Category axis gridline not split equally', () => {
+        let chartObj: Chart;
+        beforeAll((): void => {
+            ele = createElement('div', { id: 'container' });
+            document.body.appendChild(ele);
+            chartObj = new Chart(
+                {
+                    primaryXAxis: {
+                        valueType: 'Category',
+                        labelPlacement: 'OnTicks',
+                        interval:6,
+                        coefficient:  80 ,
+                    },
+                    primaryYAxis: {
+                        title: 'Revenue in Millions',
+                        labelIntersectAction : 'Hide'
+                        //labelFormat: '{value}'
+                    },
+                    width: '600', height: '400',
+                    series: [
+                        {
+                            dataSource: [{ x: "k", y: 0.0 }, { x: "Alfreds Futterkiste", y: 2517.6 }, { x: "Ana Trujillo Emparedados y helados", y: 1839.54 }, { x: "Antonio Moreno Taquería", y: 4003.74 }, { x: "Around the Horn", y: 8682.83999999999 }, { x: "B's Beverages", y: 3378.9 }, { x: "Berglunds snabbköp", y: 29011.08 }, { x: "Blauer See Delikatessen", y: 2108.46 }, { x: "Blondesddsl père et fils", y: 11880.0 }, { x: "Bólido Comidas preparadas", y: 2664.6 }, { x: "Bon app'", y: 23715.9 }, { x: "Bottom-Dollar Markets", y: 13031.82 }, { x: "Cactus Comidas para llevar", y: 952.800000000001 }, { x: "Centro comercial Moctezuma", y: 39.0 }, { x: "Chop-suey Chinese", y: 5642.64 }, { x: "Comércio Mineiro", y: 2813.04 }, { x: "Consolidated Holdings", y: 698.7 }, { x: "Die Wandernde Kuh", y: 7244.88000000001 }, { x: "Drachenblut Delikatessen", y: 3575.04 }, { x: "Du monde entier", y: 945.66 }, { x: "Eastern Connection", y: 14170.62 }, { x: "Ernst Handel", y: 147221.52 }, { x: "Familia Arquibaldo", y: 3980.34 }, { x: "Folies gourmandes", y: 15002.7 }, { x: "Folk och fä HB", y: 31865.64 }, { x: "France restauration", y: 1508.16 }, { x: "Franchi S.p.A.", y: 875.280000000001 }, { x: "Frankenversand", y: 29587.86 }, { x: "Furia Bacalhau e Frutos do Mar", y: 5363.34 }, { x: "Galería del gastrónomo", y: 409.02 }, { x: "Godos Cocina Típica", y: 10209.36 }, { x: "Gourmet Lanchonetes", y: 5297.7 }, { x: "Great Lakes Food Market", y: 14732.58 }, { x: "GROSELLA-Restaurante", y: 813.6 }, { x: "Hanari Carnes", y: 9323.09999999999 }, { x: "HILARION-Abastos", y: 20504.28 }, { x: "Hungry Coyote Import Store", y: 1817.22 }, { x: "Hungry Owl All-Night Grocers", y: 43286.9400000001 }, { x: "Island Trading", y: 6848.39999999999 }, { x: "Königlich Essen", y: 18199.5 }, { x: "La corne d'abondance", y: 1574.7 }, { x: "La maison d'Asie", y: 9145.26000000001 }, { x: "Laughing Bacchus Wine Cellars", y: 172.92 }, { x: "Lazy K Kountry Store", y: 116.4 }, { x: "Lehmanns Marktstand", y: 17628.66 }, { x: "Let's Stop N Shop", y: 3279.78 }, { x: "LILA-Supermercado", y: 13288.2 }, { x: "LINO-Delicateses", y: 12628.56 }, { x: "Lonesome Pine Restaurant", y: 1087.5 }, { x: "Magazzini Alimentari Riuniti", y: 7248.84 }, { x: "Maison Dewey", y: 6513.12 }, { x: "Mère Paillarde", y: 24726.66 }, { x: "Morgenstern Gesundkost", y: 5389.08 }, { x: "North/South", y: 618.72 }, { x: "Océano Atlántico Ltda.", y: 6535.02 }, { x: "Old World Delicatessen", y: 15569.28 }, { x: "Ottilies Käseladen", y: 15595.42 }, { x: "Pericles Comidas clásicas", y: 4750.92 }, { x: "Piccolo und mehr", y: 19167.12 }, { x: "Princesa Isabel Vinhos", y: 5315.96 }, { x: "Que Delícia", y: 6013.62 }, { x: "Queen Cozinha", y: 41798.64 }, { x: "QUICK-Stop", y: 125166.78 }, { x: "Rancho grande", y: 3148.2 }, { x: "Rattlesnake Canyon Grocery", y: 40659.6699999999 }, { x: "Reggiani Caseifici", y: 4529.22 }, { x: "Ricardo Adocicados", y: 10525.32 }, { x: "Richter Supermarkt", y: 17835.48 }, { x: "Romero y tomillo", y: 1232.52 }, { x: "Santé Gourmet", y: 5382.3 }, { x: "Save-a-lot Markets", y: 159203.1 }, { x: "Seven Seas Imports", y: 16545.0 }, { x: "Simons bistro", y: 9001.02000000001 }, { x: "Spécialités du monde", y: 1698.24 }, { x: "Split Rail Beer & Ale", y: 9911.57999999999 }, { x: "Suprêmes délices", y: 19113.06 }, { x: "The Big Cheese", y: 3119.46 }, { x: "The Cracker Box", y: 2217.78 }, { x: "Toms Spezialitäten", y: 1524.06 }, { x: "Tortuga Restaurante", y: 8743.86000000001 }, { x: "Tradição Hipermercados", y: 4510.8 }, { x: "Trail's Head Gourmet Provisioners", y: 1443.78 }, { x: "Vaffeljernet", y: 16717.86 }, { x: "Victuailles en stock", y: 9400.56 }, { x: "Vins et alcools Chevalier", y: 694.02 }, { x: "Wartian Herkku", y: 15671.58 }, { x: "Wellington Importadora", y: 3281.76 }, { x: "White Clover Markets", y: 24103.92 }, { x: "Wilman Kala", y: 1767.24 }, { x: "Wolski  Zajazd", y: 2769.18 }],
+                            xName: 'x', width: 2, yName: 'y', name: 'Warmest', type: 'Radar',
+                            marker: {
+                                visible: true,
+                                height: 10, width: 10,
+                                shape: 'Pentagon',
+                                dataLabel: {
+                                    visible: true,
+                                }
+                            },
+                            animation: { enable: false }
+                        }
+                    ],
+                    title: 'Alaska Weather Statistics - 2016',
+                    tooltip: {
+                        enable: true
+                    }
+                },'#container');
+        });
+
+        afterAll((): void => {
+            chartObj.destroy();
+            document.getElementById('container').remove();
+        });
+
+        it('Check last gridline path in radar chart', (done: Function) => {
+            chartObj.loaded = (args: Arg): void => {
+                let path: Element = document.getElementById('container_MajorGridLine_0_14');
+                let d: string = path.getAttribute("d");
+                expect(d === "M 300 200.125 L 258.06545209888503 105.93846331704785" || d === "M 300 199.625 L 256.9265894982728 102.88053603564855").toBe(true);
+                done();
+            };
+            chartObj.refresh();
+        });
+        it('Check last gridline path in polar chart', (done: Function) => {
+            chartObj.loaded = (args: Arg): void => {
+                let path: Element = document.getElementById('container_MajorGridLine_0_14');
+                let d: string = path.getAttribute("d");
+                expect(d === "M 300 200.125 L 258.06545209888503 105.93846331704785" || d === "M 300 199.625 L 256.9265894982728 102.88053603564855").toBe(true);
+                done();
+            };
+            chartObj.series[0].type = 'Polar';
+            chartObj.refresh();
+        });
+
+        
+    });
+    describe('Polar Axis: Trim Axis Labels', () => {
+        let chartObj: Chart;
+        beforeAll((): void => {
+            ele = createElement('div', { id: 'trimContainer' });
+            document.body.appendChild(ele);
+            chartObj = new Chart(
+                {
+                    primaryXAxis: {
+                        valueType: 'Category',
+                        labelIntersectAction:'None'
+                    },
+                    width: '400',
+                    series: [
+                        {
+                            dataSource: [
+                                { x: "North North North North North", y: 42 },
+                                { x: "NorthEast NortEast NorthEast", y: 28 },
+                                { x: "East East East East", y: 40 },
+                                { x: "SouthEast SouthEast", y: 45 },
+                                { x: "South South South South", y: 20 },
+                                { x: "SouthWest SouthWest SouthWest", y: 40 },
+                                { x: "West West West West", y: 25 },
+                                { x: "NorthWest NorthWest NorthWest", y: 40 }
+                            ],
+                            border: { width: 1, color: 'white' },
+                            name: 'Series1', type: 'Polar', xName: 'x', yName: 'y', animation: { enable: false },
+                            fill: '#3d5ee0'
+                        },
+                    ]
+                },'#trimContainer');
+        });
+
+        afterAll((): void => {
+            chartObj.destroy();
+            document.getElementById('trimContainer').remove();
+        });
+
+        it('Check X axis labels trim with label position outside', (done: Function) => {
+            chartObj.loaded = (args: Arg): void => {
+                let ele: Element = document.getElementById('trimContainer0_AxisLabel_0');
+                expect(Math.round(ele.getBoundingClientRect().width) > 34).toBe(true);
+                done();
+            };
+            chartObj.primaryXAxis.enableTrim = true;
+            chartObj.refresh();
+        });
+        it('Check X axis labels without trim for label position outside', (done: Function) => {
+            chartObj.loaded = (args: Arg): void => {
+                let ele: Element = document.getElementById('trimContainer0_AxisLabel_3');
+                expect(ele.innerHTML.indexOf('...') !== -1).toBe(false);
+                done();
+            };
+            chartObj.primaryXAxis.enableTrim = true;
+            chartObj.refresh();
+        });
+        it('Check X axis labels trim with label position outside', (done: Function) => {
+            chartObj.loaded = (args: Arg): void => {
+                let ele: Element = document.getElementById('trimContainer0_AxisLabel_4');
+                expect(Math.round(ele.getBoundingClientRect().width) > 34).toBe(true);
+                done();
+            };
+            chartObj.primaryXAxis.enableTrim = true;
+            chartObj.primaryXAxis.labelPosition = 'Inside';
+            chartObj.refresh();
+        });
+        it('Check X axis labels without trim for label position inside', (done: Function) => {
+            chartObj.loaded = (args: Arg): void => {
+                let ele: Element = document.getElementById('trimContainer0_AxisLabel_6');
+                expect(ele.innerHTML.indexOf('...') !== -1).toBe(false);
+                done();
+            };
+            chartObj.primaryXAxis.enableTrim = true;
+            chartObj.primaryXAxis.labelPosition = 'Inside';
+            chartObj.refresh();
+        });
+    });
+
     it('memory leak', () => {
         profile.sample();
         let average: any = inMB(profile.averageChange)

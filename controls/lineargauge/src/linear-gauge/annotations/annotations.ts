@@ -63,10 +63,9 @@ export class Annotations {
         }
         this.gauge.trigger(annotationRender, argsData, (observerArgs: IAnnotationRenderEventArgs) => {
             if (!argsData.cancel) {
-                let blazor: string = 'Blazor';
                 templateFn = getTemplateFunction(argsData.content);
-                if (templateFn && (!window[blazor] ? templateFn(this.gauge, null, null, this.gauge.element.id + '_ContentTemplate' + annotationIndex).length : {})) {
-                    templateElement = Array.prototype.slice.call(templateFn(!window[blazor] ? this.gauge : {}, null, null, this.gauge.element.id + '_ContentTemplate' + annotationIndex));
+                if (templateFn && (!this.gauge.isBlazor ? templateFn(this.gauge, null, null, this.gauge.element.id + '_ContentTemplate' + annotationIndex).length : {})) {
+                    templateElement = Array.prototype.slice.call(templateFn(!this.gauge.isBlazor ? this.gauge : {}, null, null, this.gauge.element.id + '_ContentTemplate' + annotationIndex));
                     let length: number = templateElement.length;
                     for (let i: number = 0; i < length; i++) {
                         childElement.appendChild(templateElement[i]);

@@ -535,7 +535,7 @@ function drawSymbols(shape, imageUrl, location, markerID, shapeCustom, markerCol
     }
     else if (shape === 'Image') {
         x = location.x - (size.width / 2);
-        y = location.y - (size.height / 2);
+        y = location.y - size.height;
         merge(pathOptions, { 'href': imageUrl, 'height': size.height, 'width': size.width, x: x, y: y });
         markerEle = maps.renderer.drawImage(pathOptions);
     }
@@ -556,6 +556,7 @@ function clusterTemplate(currentLayer, markerTemplate, maps, layerIndex, markerC
     let textElement;
     let postionY = (15 / 4);
     let m = 0;
+    let g = maps.renderer.createGroup({ id: maps.element.id + '_LayerIndex_' + layerIndex + '_markerCluster' });
     for (let n = 0; n < markerTemplate.childElementCount; n++) {
         let tempElement = markerTemplate.childNodes[n];
         bounds.push(tempElement.getBoundingClientRect());
@@ -626,21 +627,100 @@ function clusterTemplate(currentLayer, markerTemplate, maps, layerIndex, markerC
                 maps.trigger('markerClusterRendering', eventArg, (clusterargs) => {
                     tempX = (maps.isTileMap) ? tempX : (markerTemplate.id.indexOf('_Markers_Group') > -1) ? tempX : ((tempX + transPoint.x) * maps.mapScaleValue);
                     tempY = (maps.isTileMap) ? tempY : (markerTemplate.id.indexOf('_Markers_Group') > -1) ? tempY : ((tempY + transPoint.y) * maps.mapScaleValue);
-                    let clusterID = maps.element.id + '_LayerIndex_' + layerIndex + '_MarkerIndex_' + markerIndex + '_dataIndex_' + dataIndex + '_cluster_' + (m++);
+                    let clusterID = maps.element.id + '_LayerIndex_' + layerIndex + '_MarkerIndex_' + markerIndex + '_dataIndex_' + dataIndex + '_cluster_' + (m);
                     let labelID = maps.element.id + '_LayerIndex_' + layerIndex + '_MarkerIndex_' + markerIndex + '_dataIndex_' + dataIndex + '_cluster_' + (m) + '_datalabel_' + m;
+                    m++;
                     let ele = drawSymbols(eventArg.shape, eventArg.imageUrl, { x: 0, y: 0 }, clusterID, shapeCustom, markerCollection, maps);
                     ele.setAttribute('transform', 'translate( ' + tempX + ' ' + tempY + ' )');
                     options = new TextOption(labelID, (0), postionY, 'middle', (colloideBounds.length + 1).toString(), '', '');
                     textElement = renderTextElement(options, style, style.color, markerCollection);
                     textElement.setAttribute('transform', 'translate( ' + tempX + ' ' + tempY + ' )');
-                    markerCollection.appendChild(ele);
-                    markerCollection.appendChild(textElement);
+                    g.appendChild(textElement);
+                    g.appendChild(ele);
                 });
             }
         }
         colloideBounds = [];
     }
+    while (0 < g.childNodes.length) {
+        markerCollection.insertBefore(g.childNodes[0], markerCollection.firstChild);
+    }
     return markerTemplate;
+}
+function mergeSeparateCluster(sameMarkerData, maps, markerElement) {
+    let markerId = maps.element.id + '_LayerIndex_' + sameMarkerData[0].layerIndex + '_MarkerIndex_' + sameMarkerData[0].markerIndex;
+    let clusterId = markerId + '_dataIndex_' + sameMarkerData[0].data[0]['index'] + '_cluster_' + sameMarkerData[0].targetClusterIndex;
+    let clusterEle = getElement(clusterId);
+    let clusterEleLabel = getElement(clusterId + '_datalabel_' + sameMarkerData[0].targetClusterIndex);
+    clusterEle.setAttribute('visibility', 'visible');
+    clusterEleLabel.setAttribute('visibility', 'visible');
+    let markerEle;
+    for (let i = 0; i < sameMarkerData[0].data.length; i++) {
+        markerEle = getElement(markerId + '_dataIndex_' + sameMarkerData[0].data[i]['index']);
+        markerEle['style']['visibility'] = "hidden";
+    }
+    removeElement(maps.element.id + '_LayerIndex_' + sameMarkerData[0].layerIndex + '_MarkerIndex_' + sameMarkerData[0].markerIndex + '_markerClusterConnectorLine');
+}
+function clusterSeparate(sameMarkerData, maps, markerElement, isDom) {
+    let getElementFunction = isDom ? getElement : markerElement.querySelector.bind(markerElement);
+    let getQueryConnect = isDom ? '' : '#';
+    let markerId = maps.element.id + '_LayerIndex_' + sameMarkerData[0].layerIndex + '_MarkerIndex_' + sameMarkerData[0].markerIndex;
+    let clusterId = markerId + '_dataIndex_' + sameMarkerData[0].data[0]['index'] + '_cluster_' + sameMarkerData[0].targetClusterIndex;
+    let clusterEle = getElementFunction(getQueryConnect + '' + clusterId);
+    let clusterEleLabel = getElementFunction(getQueryConnect + '' + clusterId + '_datalabel_' + sameMarkerData[0].targetClusterIndex);
+    clusterEle.setAttribute('visibility', 'hidden');
+    clusterEleLabel.setAttribute('visibility', 'hidden');
+    let markerEle = getElementFunction(getQueryConnect + '' + markerId + '_dataIndex_' + sameMarkerData[0].data[0]['index']);
+    let height = maps.layers[sameMarkerData[0].layerIndex].markerSettings[sameMarkerData[0].markerIndex].height;
+    let width = maps.layers[sameMarkerData[0].layerIndex].markerSettings[sameMarkerData[0].markerIndex].width;
+    let centerX = +clusterEle.getAttribute('transform').split('translate(')[1].trim().split(' ')[0];
+    let centerY = +clusterEle.getAttribute('transform').split('translate(')[1].trim().split(' ')[1].split(')')[0].trim() + height / 2;
+    let radius = width + 5;
+    let area = 2 * 3.14 * radius;
+    let totalMarker = 0;
+    let numberOfMarker = Math.round(area / width);
+    totalMarker += numberOfMarker;
+    let percent = Math.round((height / area) * 100);
+    percent = sameMarkerData[0].data.length < numberOfMarker ? 100 / sameMarkerData[0].data.length : percent;
+    let angle = (percent / 100) * 360;
+    let newAngle = sameMarkerData[0].data.length < numberOfMarker ? 45 : 0;
+    let count = 1;
+    let start = 'M ' + centerX + ' ' + centerY + ' ';
+    let path = '';
+    for (let i = 0; i < sameMarkerData[0].data.length; i++) {
+        if (totalMarker === i || Math.round(newAngle) >= 360) {
+            count++;
+            radius = (width + 5) * count;
+            newAngle = 0;
+            area = 2 * 3.14 * radius;
+            numberOfMarker = Math.round(area / height);
+            percent = Math.round((height / area) * 100);
+            while (percent * numberOfMarker < 100) {
+                numberOfMarker++;
+            }
+            angle = ((percent / 100) * 360);
+            totalMarker += numberOfMarker;
+        }
+        let x1 = centerX + radius * Math.sin((Math.PI * 2 * newAngle) / 360);
+        let y1 = centerY + radius * Math.cos((Math.PI * 2 * newAngle) / 360);
+        path += start + 'L ' + (x1 + 2) + ' ' + y1 + ' ';
+        markerEle = getElementFunction(getQueryConnect + '' + markerId + '_dataIndex_' + sameMarkerData[0].data[i]['index']);
+        markerEle.setAttribute('transform', 'translate( ' + x1 + ' ' + y1 + ')');
+        markerEle['style']['visibility'] = "visible";
+        newAngle += angle;
+    }
+    let options;
+    options = {
+        d: path,
+        id: maps.element.id + '_markerClusterConnectorLine',
+        stroke: maps.layers[sameMarkerData[0].layerIndex].markerClusterSettings.connectorLineSettings.color,
+        opacity: maps.layers[sameMarkerData[0].layerIndex].markerClusterSettings.connectorLineSettings.opacity,
+        'stroke-width': maps.layers[sameMarkerData[0].layerIndex].markerClusterSettings.connectorLineSettings.width
+    };
+    markerElement = isDom ? getElementFunction(maps.element.id + '_Markers_Group') : markerElement;
+    let groupEle = maps.renderer.createGroup({ id: maps.element.id + '_LayerIndex_' + sameMarkerData[0].layerIndex + '_MarkerIndex_' + sameMarkerData[0].markerIndex + '_markerClusterConnectorLine' });
+    groupEle.appendChild(maps.renderer.drawPath(options));
+    markerElement.insertBefore(groupEle, markerElement.querySelector('#' + markerId + '_dataIndex_0'));
 }
 function marker(eventArgs, markerSettings, markerData, dataIndex, location, transPoint, markerID, offset, scale, maps, markerCollection) {
     let shapeCustom = {
@@ -663,8 +743,7 @@ function marker(eventArgs, markerSettings, markerData, dataIndex, location, tran
 }
 function markerTemplate(eventArgs, templateFn, markerID, data, markerIndex, markerTemplate, location, scale, offset, maps) {
     templateFn = getTemplateFunction(eventArgs.template);
-    let blazor = 'Blazor';
-    if (templateFn && (!window[blazor] ? templateFn(data, null, null, maps.element.id + '_MarkerTemplate', false).length : {})) {
+    if (templateFn && (!maps.isBlazor ? templateFn(data, null, null, maps.element.id + '_MarkerTemplate', false).length : {})) {
         let templateElement = templateFn(data, null, null, maps.element.id + '_MarkerTemplate', false);
         let markerElement = convertElement(templateElement, markerID, data, markerIndex, maps);
         for (let i = 0; i < markerElement.children.length; i++) {
@@ -2280,6 +2359,20 @@ __decorate$1([
 __decorate$1([
     Property(10)
 ], Margin.prototype, "bottom", void 0);
+/*
+ * To configure cluster separate connector line style
+ */
+class ConnectorLineSettings extends ChildProperty {
+}
+__decorate$1([
+    Property('black')
+], ConnectorLineSettings.prototype, "color", void 0);
+__decorate$1([
+    Property(1)
+], ConnectorLineSettings.prototype, "width", void 0);
+__decorate$1([
+    Property(1)
+], ConnectorLineSettings.prototype, "opacity", void 0);
 /**
  * To configure cluster in marker
  */
@@ -2318,6 +2411,17 @@ __decorate$1([
 __decorate$1([
     Complex({}, Font)
 ], MarkerClusterSettings.prototype, "labelStyle", void 0);
+__decorate$1([
+    Property(false)
+], MarkerClusterSettings.prototype, "allowClusterExpand", void 0);
+__decorate$1([
+    Complex({}, ConnectorLineSettings)
+], MarkerClusterSettings.prototype, "connectorLineSettings", void 0);
+/**
+ * To configure cluster separate collections.
+ */
+class SameMarkerClusterData extends ChildProperty {
+}
 /**
  * To configure ColorMapping in Maps
  */
@@ -2931,6 +3035,7 @@ class Marker {
     constructor(maps) {
         this.maps = maps;
         this.trackElements = [];
+        this.sameMarkerData = [];
     }
     /* tslint:disable:no-string-literal */
     markerRender(layerElement, layerIndex, factor, type) {
@@ -3040,6 +3145,20 @@ class Marker {
         if (isNullOrUndefined(options)) {
             return;
         }
+        let textElement = document.getElementById(target.indexOf('_datalabel_') > -1 ? target : target + '_datalabel_' + target.split('_cluster_')[1]);
+        if (options.clusterCollection.length > 0) {
+            let textElement = document.getElementById(target.indexOf('_datalabel_') > -1 ? target : target + '_datalabel_' + target.split('_cluster_')[1]);
+            if (+textElement.textContent === options.clusterCollection[0].data.length) {
+                if (this.sameMarkerData.length > 0) {
+                    mergeSeparateCluster(this.sameMarkerData, this.maps, this.markerSVGObject);
+                }
+                this.sameMarkerData = options.clusterCollection;
+                clusterSeparate(this.sameMarkerData, this.maps, this.markerSVGObject, true);
+            }
+            else {
+                this.sameMarkerData = [];
+            }
+        }
         let eventArgs = {
             cancel: false, name: markerClusterClick, data: options.data, maps: this.maps,
             target: target, x: e.clientX, y: e.clientY,
@@ -3059,6 +3178,7 @@ class Marker {
         let index = parseInt(id[1].split('_')[0], 10);
         let layer = this.maps.layers[index];
         let data;
+        let clusterCollection = [];
         let marker$$1;
         if (target.indexOf('_MarkerIndex_') > -1) {
             let markerIndex = parseInt(id[1].split('_MarkerIndex_')[1].split('_')[0], 10);
@@ -3066,7 +3186,19 @@ class Marker {
             marker$$1 = layer.markerSettings[markerIndex];
             if (!isNaN(markerIndex)) {
                 data = marker$$1.dataSource[dataIndex];
-                return { marker: marker$$1, data: data };
+                let colo = [];
+                if ((this.maps.layers[index].markerClusterSettings.allowClusterExpand) && target.indexOf('_cluster_') > -1) {
+                    marker$$1.dataSource.forEach((loc, index) => {
+                        if (loc['latitude'] === data['latitude'] && loc['longitude'] === data['longitude']) {
+                            colo.push({ data: data, index: index });
+                        }
+                    });
+                    clusterCollection.push({
+                        data: colo, layerIndex: index, markerIndex: markerIndex,
+                        targetClusterIndex: +(target.split('_cluster_')[1].indexOf('_datalabel_') > -1 ? target.split('_cluster_')[1].split('_datalabel_')[0] : target.split('_cluster_')[1])
+                    });
+                }
+                return { marker: marker$$1, data: data, clusterCollection: clusterCollection };
             }
         }
         return null;
@@ -4670,11 +4802,19 @@ let Maps = class Maps extends Component {
             tileElement.style.left = left + 'px';
         }
         this.arrangeTemplate();
+        let blazor = this.isBlazor ? this.blazorTemplates() : null;
         if (this.annotationsModule) {
             this.annotationsModule.renderAnnotationElements();
         }
         this.zoomingChange();
         this.trigger(loaded, this.isBlazor ? {} : { maps: this });
+    }
+    /**
+     * To append blazor templates
+     */
+    blazorTemplates() {
+        // updateBlazorTemplate(this.element.id + '_LabelTemplate', 'LabelTemplate', this.layers[0].dataLabelSettings);
+        updateBlazorTemplate(this.element.id + '_MarkerTemplate', 'MarkerTemplate', this.layers[0].markerSettings[0]);
     }
     /**
      * Render the map area border
@@ -4901,6 +5041,7 @@ let Maps = class Maps extends Component {
      * To create svg element for maps
      */
     createSVG() {
+        resetBlazorTemplate(this.element.id + '_MarkerTemplate', 'MarkerTemplate');
         this.removeSvg();
         createSvg(this);
     }
@@ -4996,6 +5137,13 @@ let Maps = class Maps extends Component {
                 if (targetEle.id.indexOf('shapeIndex') !== -1) {
                     let layerIndex = parseInt(targetEle.id.split('_LayerIndex_')[1].split('_')[0], 10);
                     triggerShapeEvent(targetId, this.layers[layerIndex].selectionSettings, this, shapeSelected);
+                }
+                if (targetEle.id.indexOf('shapeIndex') > -1 || targetEle.id.indexOf('Tile') > -1) {
+                    if (this.markerModule && this.markerModule.sameMarkerData.length > 0 &&
+                        (this.zoomModule ? this.zoomModule.flag : true)) {
+                        mergeSeparateCluster(this.markerModule.sameMarkerData, this, getElement(this.element.id + '_Markers_Group'));
+                        this.markerModule.sameMarkerData = [];
+                    }
                 }
                 if (this.markerModule) {
                     this.markerModule.markerClick(e);
@@ -5567,6 +5715,9 @@ __decorate([
     Property(null)
 ], Maps.prototype, "height", void 0);
 __decorate([
+    Property('MouseMove')
+], Maps.prototype, "tooltipDisplayMode", void 0);
+__decorate([
     Complex({}, TitleSettings)
 ], Maps.prototype, "titleSettings", void 0);
 __decorate([
@@ -5632,6 +5783,9 @@ __decorate([
 __decorate([
     Event()
 ], Maps.prototype, "tooltipRender", void 0);
+__decorate([
+    Event()
+], Maps.prototype, "tooltipRenderComplete", void 0);
 __decorate([
     Event()
 ], Maps.prototype, "shapeSelected", void 0);
@@ -6026,7 +6180,10 @@ class DataLabel {
         for (let j = 0; j < properties.length; j++) {
             if (shapeProperties[properties[j]]) {
                 propertyPath = properties[j];
-                break;
+                datasrcObj = this.getDataLabel(layer.dataSource, labelpath, shapeData['properties'][propertyPath], layer.shapeDataPath);
+                if (datasrcObj) {
+                    break;
+                }
             }
         }
         datasrcObj = this.getDataLabel(layer.dataSource, labelpath, shapeData['properties'][propertyPath], layer.shapeDataPath);
@@ -7549,7 +7706,7 @@ class Legend {
         let legendToggleOpacity = this.maps.legendSettings.toggleLegendSettings.opacity;
         let legendToggleBorderColor = this.maps.legendSettings.toggleLegendSettings.border.color;
         let legendToggleBorderWidth = this.maps.legendSettings.toggleLegendSettings.border.width;
-        if (targetEle.parentElement.id.indexOf(this.maps.element.id + '_Legend_Index_') > -1) {
+        if (targetEle.parentNode['id'].indexOf(this.maps.element.id + '_Legend_Index_') > -1) {
             let mapElement;
             let legendIndex = parseFloat(targetEle.parentElement.id.substr((this.maps.element.id + '_Legend_Index_').length));
             let selectedItem = this.legendCollection[legendIndex]['data'];
@@ -8273,6 +8430,7 @@ class MapsTooltip {
         let option;
         let currentData = '';
         let targetId = target.id;
+        this.targetID = targetId;
         let tooltipEle;
         let location;
         let templateData = [];
@@ -8401,6 +8559,11 @@ class MapsTooltip {
                     this.removeTooltip();
                 }
             });
+            if (this.svgTooltip) {
+                this.maps.trigger('tooltipRenderComplete', {
+                    cancel: false, name: 'tooltipRenderComplete', maps: this.maps, options: tooltipOption, element: this.svgTooltip.element
+                });
+            }
         }
         else {
             this.removeTooltip();
@@ -8444,8 +8607,10 @@ class MapsTooltip {
     }
     mouseUpHandler(e) {
         this.renderTooltip(e);
-        clearTimeout(this.clearTimeout);
-        this.clearTimeout = setTimeout(this.removeTooltip.bind(this), 2000);
+        if (this.maps.tooltipDisplayMode === 'MouseMove') {
+            clearTimeout(this.clearTimeout);
+            this.clearTimeout = setTimeout(this.removeTooltip.bind(this), 2000);
+        }
     }
     removeTooltip() {
         if (document.getElementsByClassName('EJ2-maps-Tooltip').length > 0) {
@@ -8459,17 +8624,29 @@ class MapsTooltip {
         if (this.maps.isDestroyed) {
             return;
         }
-        this.maps.on(Browser.touchMoveEvent, this.renderTooltip, this);
-        this.maps.on(Browser.touchEndEvent, this.mouseUpHandler, this);
-        this.maps.on(Browser.touchCancelEvent, this.removeTooltip, this);
+        if (this.maps.tooltipDisplayMode === 'DoubleClick') {
+            this.maps.on('dblclick', this.renderTooltip, this);
+        }
+        else if (this.maps.tooltipDisplayMode === 'Click') {
+            this.maps.on(Browser.touchEndEvent, this.mouseUpHandler, this);
+        }
+        else {
+            this.maps.on(Browser.touchMoveEvent, this.renderTooltip, this);
+        }
     }
     removeEventListener() {
         if (this.maps.isDestroyed) {
             return;
         }
-        this.maps.off(Browser.touchMoveEvent, this.renderTooltip);
-        this.maps.off(Browser.touchEndEvent, this.mouseUpHandler);
-        this.maps.off(Browser.touchCancelEvent, this.removeTooltip);
+        if (this.maps.tooltipDisplayMode === 'DoubleClick') {
+            this.maps.off('dblclick', this.removeTooltip);
+        }
+        else if (this.maps.tooltipDisplayMode === 'Click') {
+            this.maps.off(Browser.touchEndEvent, this.mouseUpHandler);
+        }
+        else {
+            this.maps.off(Browser.touchMoveEvent, this.renderTooltip);
+        }
     }
     /**
      * Get module name.
@@ -8514,6 +8691,10 @@ class Zoom {
         this.startTouches = [];
         this.shapeZoomLocation = [];
         this.intersect = [];
+        /**
+         * @private
+         */
+        this.flag = false;
         this.maps = maps;
         this.wheelEvent = this.browserName === 'mozilla' ? (this.isPointer ? 'mousewheel' : 'DOMMouseScroll') : 'mousewheel';
         this.cancelEvent = this.isPointer ? 'pointerleave' : 'mouseleave';
@@ -8765,17 +8946,31 @@ class Zoom {
                             for (let k = 0; k < currentEle.childElementCount; k++) {
                                 this.markerTranslate(currentEle.childNodes[k], factor, x, y, scale, 'Marker', animate$$1);
                             }
-                            if (document.getElementById(this.maps.element.id + '_mapsTooltip') && this.maps.mapsTooltipModule.tooltipTargetID.indexOf('_MarkerIndex_')) {
-                                let tooltipElement = currentEle.querySelector('#' + this.maps.mapsTooltipModule.tooltipTargetID);
-                                tooltipElement.getAttribute('transform');
-                                let x = parseFloat(tooltipElement.getAttribute('transform').split('(')[1].split(')')[0].split(' ')[1]);
-                                let y = parseFloat(tooltipElement.getAttribute('transform').split('(')[1].split(')')[0].split(' ')[2]);
-                                if (this.maps.isTileMap) {
-                                    x += +getElement(this.maps.element.id + '_tile_parent')['style']['left'].split('px')[0];
-                                    y += +getElement(this.maps.element.id + '_tile_parent')['style']['top'].split('px')[0];
+                            if (this.isPanning && this.maps.markerModule.sameMarkerData.length > 0) {
+                                clusterSeparate(this.maps.markerModule.sameMarkerData, this.maps, currentEle, true);
+                            }
+                            else if (this.maps.markerModule.sameMarkerData.length > 0) {
+                                this.maps.markerModule.sameMarkerData = [];
+                                if (document.getElementById(this.maps.element.id + '_mapsTooltip')) {
+                                    removeElement(this.maps.element.id + '_mapsTooltip');
                                 }
-                                this.maps.mapsTooltipModule.svgTooltip.location.x = x;
-                                this.maps.mapsTooltipModule.svgTooltip.location.y = y;
+                            }
+                            if (document.getElementById(this.maps.element.id + '_mapsTooltip') && this.maps.mapsTooltipModule.targetID.indexOf('_MarkerIndex_')) {
+                                let tooltipElement = currentEle.querySelector('#' + this.maps.mapsTooltipModule.targetID);
+                                if (tooltipElement['style']['visibility'] === 'hidden') {
+                                    removeElement(this.maps.element.id + '_mapsTooltip');
+                                }
+                                else {
+                                    let x = parseFloat(tooltipElement.getAttribute('transform').split('(')[1].split(')')[0].split(' ')[1]);
+                                    let y = parseFloat(tooltipElement.getAttribute('transform').split('(')[1].split(')')[0].split(' ')[2]);
+                                    if (this.maps.isTileMap) {
+                                        x += +getElement(this.maps.element.id + '_tile_parent')['style']['left'].split('px')[0];
+                                        y += +getElement(this.maps.element.id + '_tile_parent')['style']['top'].split('px')[0];
+                                    }
+                                    this.maps.mapsTooltipModule.svgTooltip.location.x = x;
+                                    this.maps.mapsTooltipModule.svgTooltip.location.y = y;
+                                    this.maps.mapsTooltipModule.svgTooltip.enableAnimation = false;
+                                }
                             }
                         }
                         else if (currentEle.id.indexOf('_bubble_Group') > -1) {
@@ -9191,6 +9386,7 @@ class Zoom {
         }
         map.zoomTranslatePoint = map.translatePoint;
         this.mouseDownPoints = this.mouseMovePoints;
+        this.flag = false;
     }
     toAlignSublayer() {
         this.maps.translatePoint.x = !isNullOrUndefined(this.distanceX) ? (this.maps.translatePoint.x -
@@ -9528,6 +9724,7 @@ class Zoom {
             this.pinchFactor = this.maps.scale;
             this.fingers = touches.length;
         }
+        this.flag = true;
     }
     mouseMoveHandler(e) {
         let pageX;
@@ -9589,6 +9786,7 @@ class Zoom {
         let map = this.maps;
         this.rectZoomingStart = false;
         this.isPanning = false;
+        this.flag = this.flag ? true : false;
         this.isTouch = false;
         this.touchStartList = [];
         this.touchMoveList = [];
@@ -9620,25 +9818,22 @@ class Zoom {
      */
     click(e) {
         let map = this.maps;
-        if (map.zoomSettings.zoomOnClick && e.target.id.indexOf('_shapeIndex_') > -1 && !map.zoomSettings.doubleClickZoom
+        if ((map.markerModule && map.markerModule.sameMarkerData.length > 0) ||
+            +(e.target['id'].indexOf('MarkerIndex') > -1 && e.target['id'].indexOf('cluster') == -1)) {
+            return null;
+        }
+        if (this.flag && map.zoomSettings.zoomOnClick && !(e.target['id'].indexOf('_Zooming_') > -1) && !map.zoomSettings.doubleClickZoom
             && (this.zoomColor !== this.selectionColor)) {
-            let bounds = e.target.getBBox();
-            let boundwidth = bounds.width;
-            let boundHeight = bounds.height;
-            let layerScale;
-            let availWidth = map.availableSize.width;
-            let availHeight = map.availableSize.height;
-            layerScale = ((availWidth - 100) / (availHeight - 100) > boundwidth / boundHeight) ? (availHeight - 100) / boundHeight :
-                (availWidth - 100) / boundwidth;
-            let leftPos = ((availWidth / 2) - ((boundwidth * map.scale) / 2)) / layerScale;
-            let topPos = ((availHeight / 2) - ((boundHeight * map.scale) / 2)) / layerScale;
-            let translatePointX = (-bounds.x) + leftPos;
-            let translatePointY = (-bounds.y) + topPos;
-            map.previousScale = map.scale;
-            map.previousPoint = map.translatePoint;
-            map.scale = layerScale;
-            map.translatePoint = { x: translatePointX, y: translatePointY };
-            this.applyTransform(true);
+            let pageX = e.pageX;
+            let pageY = e.pageY;
+            let position = this.getMousePosition(pageX, pageY);
+            let prevLevel = map.tileZoomLevel;
+            let prevScale = map.scale;
+            let value = (map.isTileMap) ? prevLevel : prevScale;
+            if (((position.x > map.mapAreaRect.x) && (position.x < (map.mapAreaRect.x + map.mapAreaRect.width))) &&
+                (position.y > map.mapAreaRect.y) && position.y < (map.mapAreaRect.y + map.mapAreaRect.height)) {
+                this.performZooming(position, (value + 1), 'ZoomIn');
+            }
         }
     }
     getMousePosition(pageX, pageY) {
@@ -9703,5 +9898,5 @@ class Zoom {
  * exporting all modules from maps index
  */
 
-export { Maps, load, loaded, click, rightClick, doubleClick, resize, tooltipRender, shapeSelected, shapeHighlight, mousemove, mouseup, mousedown, layerRendering, shapeRendering, markerRendering, markerClusterRendering, markerClick, markerClusterClick, markerMouseMove, markerClusterMouseMove, dataLabelRendering, bubbleRendering, bubbleClick, bubbleMouseMove, animationComplete, legendRendering, annotationRendering, itemSelection, itemHighlight, beforePrint, zoomIn, zoomOut, pan, Annotation, Arrow, Font, Border, CenterPosition, TooltipSettings, Margin, MarkerClusterSettings, ColorMappingSettings, SelectionSettings, HighlightSettings, NavigationLineSettings, BubbleSettings, CommonTitleSettings, SubTitleSettings, TitleSettings, ZoomSettings, ToggleLegendSettings, LegendSettings, DataLabelSettings, ShapeSettings, MarkerBase, MarkerSettings, LayerSettings, Tile, MapsAreaSettings, Size, stringToNumber, calculateSize, createSvg, getMousePosition, degreesToRadians, radiansToDegrees, convertGeoToPoint, convertTileLatLongToPoint, xToCoordinate, yToCoordinate, aitoff, roundTo, sinci, acos, calculateBound, Point, MinMax, GeoLocation, measureText, TextOption, PathOption, ColorValue, RectOption, CircleOption, PolygonOption, PolylineOption, LineOption, Line, MapLocation, Rect, PatternOptions, renderTextElement, convertElement, convertElementFromLabel, drawSymbols, clusterTemplate, marker, markerTemplate, appendShape, drawCircle, drawRectangle, drawPath, drawPolygon, drawPolyline, drawLine, calculateShapes, drawDiamond, drawTriangle, drawCross, drawHorizontalLine, drawVerticalLine, drawStar, drawBalloon, drawPattern, getFieldData, checkShapeDataFields, checkPropertyPath, filter, getRatioOfBubble, findMidPointOfPolygon, isCustomPath, textTrim, findPosition, removeElement, getTranslate, getZoomTranslate, getElementByID, Internalize, getTemplateFunction, getElement, getShapeData, triggerShapeEvent, getElementsByClassName, querySelector, getTargetElement, createStyle, customizeStyle, removeClass, elementAnimate, timeout, showTooltip, wordWrap, createTooltip, drawSymbol, renderLegendShape, getElementOffset, changeBorderWidth, changeNavaigationLineWidth, targetTouches, calculateScale, getDistance, getTouches, getTouchCenter, sum, zoomAnimate, animate, MapAjax, smoothTranslate, LayerPanel, Bubble, BingMap, Marker, ColorMapping, DataLabel, NavigationLine, Legend, Highlight, Selection, MapsTooltip, Zoom, Annotations };
+export { Maps, load, loaded, click, rightClick, doubleClick, resize, tooltipRender, shapeSelected, shapeHighlight, mousemove, mouseup, mousedown, layerRendering, shapeRendering, markerRendering, markerClusterRendering, markerClick, markerClusterClick, markerMouseMove, markerClusterMouseMove, dataLabelRendering, bubbleRendering, bubbleClick, bubbleMouseMove, animationComplete, legendRendering, annotationRendering, itemSelection, itemHighlight, beforePrint, zoomIn, zoomOut, pan, Annotation, Arrow, Font, Border, CenterPosition, TooltipSettings, Margin, ConnectorLineSettings, MarkerClusterSettings, SameMarkerClusterData, ColorMappingSettings, SelectionSettings, HighlightSettings, NavigationLineSettings, BubbleSettings, CommonTitleSettings, SubTitleSettings, TitleSettings, ZoomSettings, ToggleLegendSettings, LegendSettings, DataLabelSettings, ShapeSettings, MarkerBase, MarkerSettings, LayerSettings, Tile, MapsAreaSettings, Size, stringToNumber, calculateSize, createSvg, getMousePosition, degreesToRadians, radiansToDegrees, convertGeoToPoint, convertTileLatLongToPoint, xToCoordinate, yToCoordinate, aitoff, roundTo, sinci, acos, calculateBound, Point, MinMax, GeoLocation, measureText, TextOption, PathOption, ColorValue, RectOption, CircleOption, PolygonOption, PolylineOption, LineOption, Line, MapLocation, Rect, PatternOptions, renderTextElement, convertElement, convertElementFromLabel, drawSymbols, clusterTemplate, mergeSeparateCluster, clusterSeparate, marker, markerTemplate, appendShape, drawCircle, drawRectangle, drawPath, drawPolygon, drawPolyline, drawLine, calculateShapes, drawDiamond, drawTriangle, drawCross, drawHorizontalLine, drawVerticalLine, drawStar, drawBalloon, drawPattern, getFieldData, checkShapeDataFields, checkPropertyPath, filter, getRatioOfBubble, findMidPointOfPolygon, isCustomPath, textTrim, findPosition, removeElement, getTranslate, getZoomTranslate, getElementByID, Internalize, getTemplateFunction, getElement, getShapeData, triggerShapeEvent, getElementsByClassName, querySelector, getTargetElement, createStyle, customizeStyle, removeClass, elementAnimate, timeout, showTooltip, wordWrap, createTooltip, drawSymbol, renderLegendShape, getElementOffset, changeBorderWidth, changeNavaigationLineWidth, targetTouches, calculateScale, getDistance, getTouches, getTouchCenter, sum, zoomAnimate, animate, MapAjax, smoothTranslate, LayerPanel, Bubble, BingMap, Marker, ColorMapping, DataLabel, NavigationLine, Legend, Highlight, Selection, MapsTooltip, Zoom, Annotations };
 //# sourceMappingURL=ej2-maps.es2015.js.map

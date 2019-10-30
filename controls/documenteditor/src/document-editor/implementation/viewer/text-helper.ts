@@ -277,6 +277,32 @@ export class TextHelper {
         return isRTL;
     }
     /**
+     * @private
+     * @param text 
+     */
+    public containsSpecialCharAlone(text: string): boolean {
+        let specialChars: string = '*|,\":<>[]{}`\';()@&$#%!~';
+        for (let i: number = 0; i < text.length; i++) {
+            if (specialChars.indexOf(text.charAt(i)) === -1) {
+                return false;
+            }
+        }
+        return true;
+    }
+    /**
+     * @private
+     * @param text 
+     */
+    public containsSpecialChar(text: string): boolean {
+        let specialChars: string = '*|,\":<>[]{}`\';()@&$#%!~';
+        for (let i: number = 0; i < text.length; i++) {
+            if (specialChars.indexOf(text.charAt(i)) !== -1) {
+                return true;
+            }
+        }
+        return false;
+    }
+    /**
      * @private     
      */
     public getRtlLanguage(text: string): RtlInfo {

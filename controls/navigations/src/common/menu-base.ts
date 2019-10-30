@@ -494,6 +494,7 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
             }
             this.targetElement = target;
             if (!this.isMenu) {
+                EventHandler.add(this.targetElement, 'scroll', this.scrollHandler, this);
                 for (let parent of getScrollableParent(this.targetElement)) {
                     EventHandler.add(parent, 'scroll', this.scrollHandler, this);
                 }
@@ -1644,6 +1645,7 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
                 }
             }
             if (!this.isMenu) {
+                EventHandler.remove(this.targetElement, 'scroll', this.scrollHandler);
                 for (let parent of getScrollableParent(this.targetElement)) {
                     EventHandler.remove(parent, 'scroll', this.scrollHandler);
                 }

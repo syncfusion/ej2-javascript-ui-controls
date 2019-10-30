@@ -3,7 +3,7 @@
  */
 import { Draggable } from '../src/draggable';
 import { createElement } from '../src/dom';
-import { extend } from '../src/util';
+import { extend,disableBlazorMode } from '../src/util';
 import { EventHandler } from '../src/event-handler';
 import { Droppable } from '../src/droppable';
 import { Touch } from '../src/touch';
@@ -41,7 +41,7 @@ export function getEventObject(eventType: string, eventName: string): Object {
 }
 describe('draggable', () => {
     beforeAll(() => {
-        delete window['Blazor'];
+        disableBlazorMode();
     });
     describe('Initialize of draggable', () => {
         let instance: Draggable;
@@ -95,7 +95,7 @@ describe('draggable', () => {
         });
         ///EJ2-4640-click event not triggered issue fixed.
         it('Mouse down event not preventing the click event  ', () => {
-            let instance: any = new Draggable(element);
+            let instance: Draggable = new Draggable(element);
             let clickSpy: jasmine.Spy = jasmine.createSpy('click');
             element.addEventListener('click', clickSpy);
             mousedown.target = mousedown.currentTarget = element;
@@ -108,7 +108,7 @@ describe('draggable', () => {
             instance.intDestroy(mousedown);
         });
         it('Mouse down with handle option and target as the handle element', () => {
-            let instance: any = new Draggable(element, { handle: 'p' });
+            let instance: Draggable = new Draggable(element, { handle: 'p' });
             let elem: Element = element.getElementsByTagName('p')[0];
             mousedown.target = mousedown.currentTarget = elem;
             EventHandler.trigger(elem as HTMLElement, 'mousedown', mousedown);
@@ -117,7 +117,7 @@ describe('draggable', () => {
         });
         it('Mouse down with handle option and target as the handle element', () => {
             document.body.appendChild(createElement('p',{className:'external'}))
-            let instance: any = new Draggable(element, { handle: 'p' });
+            let instance: Draggable = new Draggable(element, { handle: 'p' });
             let elem: Element = document.getElementsByTagName('p')[1];
             mousedown.target = mousedown.currentTarget = elem;
             EventHandler.trigger(elem as HTMLElement, 'mousedown', mousedown);
@@ -125,7 +125,7 @@ describe('draggable', () => {
             instance.intDestroy(mousedown);
         });
         it('Mouse down with handle option and target as the inner element of handle element', () => {
-            let instance: any = new Draggable(element, { handle: '#outer' });
+            let instance: Draggable = new Draggable(element, { handle: '#outer' });
             let elem: Element = document.getElementsByTagName('p')[0];
             mousedown.target = mousedown.currentTarget = elem;
             EventHandler.trigger(document.getElementById('outer'), 'mousedown', mousedown);

@@ -727,6 +727,14 @@ export class SeriesBase extends ChildProperty<SeriesBase> {
     public pointColorMapping: string;
 
     /**
+     * Specifies the visibility of series.
+     * @default true
+     */
+
+    @Property(true)
+    public visible: boolean;
+
+    /**
      * The name of the horizontal axis associated with the series. It requires `axes` of the chart.
      * It is applicable for series and technical indicators
      * ```html
@@ -1109,6 +1117,9 @@ export class SeriesBase extends ChildProperty<SeriesBase> {
     }
     /** @private */
     protected pushCategoryData(point: Points, index: number, pointX: string): void {
+        if (!this.visible) {
+            return null;
+        }
         if (!this.xAxis.isIndexed) {
             if (this.xAxis.labels.indexOf(pointX) < 0) {
                 this.xAxis.labels.push(pointX);
@@ -1119,7 +1130,6 @@ export class SeriesBase extends ChildProperty<SeriesBase> {
                 this.xAxis.labels.push(pointX);
             point.xValue = index;
         }
-
     }
     /**
      * To find average of given property
@@ -1338,14 +1348,6 @@ export class Series extends SeriesBase {
 
     @Property('')
     public stackingGroup: string;
-
-    /**
-     * Specifies the visibility of series.
-     * @default true
-     */
-
-    @Property(true)
-    public visible: boolean;
 
     /**
      * Options to customizing the border of the series. This is applicable only for `Column` and `Bar` type series.

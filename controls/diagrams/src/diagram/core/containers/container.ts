@@ -44,7 +44,7 @@ export class Container extends DiagramElement {
      * 
      * @param availableSize 
      */
-    public measure(availableSize: Size): Size {
+    public measure(availableSize: Size, id?: string, callback?: Function): Size {
         // measure the element and find the desired size
         this.desiredBounds = undefined;
         let desired: Size = undefined;
@@ -64,7 +64,7 @@ export class Container extends DiagramElement {
                 }
                 let force: boolean = child.horizontalAlignment === 'Stretch' || child.verticalAlignment === 'Stretch';
                 if (this.measureChildren || force || (child instanceof Container && child.measureChildren !== undefined)) {
-                    child.measure(availableSize);
+                    child.measure(availableSize, id, callback);
                 }
                 childBounds = this.GetChildrenBounds(child);
                 if (child.horizontalAlignment !== 'Stretch' && child.verticalAlignment !== 'Stretch') {

@@ -5,10 +5,81 @@ import { Editor } from '../../../src/document-editor/implementation/editor/edito
 import { TestHelper } from "../../test-helper.spec";
 import { SpellChecker } from "../../../src/document-editor/implementation/spell-check/spell-checker";
 import { DocumentEditor } from '../../../src/document-editor/document-editor';
-import { ParagraphWidget, LineInfo, TextElementBox, TextPosition, ContextElementInfo, LineWidget, ElementInfo, ErrorInfo, SpaceCharacterInfo, SpecialCharacterInfo, ElementBox } from '../../../src';
+import { ParagraphWidget, LineInfo, TextElementBox, TextPosition, ContextElementInfo, LineWidget, ElementInfo, ErrorInfo, SpaceCharacterInfo, SpecialCharacterInfo, ElementBox, WordSpellInfo } from '../../../src';
 import { Search, TextSearchResults } from '../../../src/document-editor/implementation/search/index';
 import { SpellCheckDialog } from '../../../src/document-editor/implementation/dialogs/spellCheck-dialog';
 
+let data: any = {
+    "sections": [
+        {
+            "blocks": [
+                {
+                    "paragraphFormat": {
+                        "styleName": "Normal"
+                    },
+                    "inlines": [
+                        {
+                            "text": "Spell error sdwewe kdjkjwkewe "
+                        },
+                        {
+                            "name": "_GoBack",
+                            "bookmarkType": 0
+                        },
+                        {
+                            "name": "_GoBack",
+                            "bookmarkType": 1
+                        }
+                    ]
+                }
+            ],
+            "headersFooters": {},
+            "sectionFormat": {
+                "headerDistance": 36.0,
+                "footerDistance": 36.0,
+                "pageWidth": 612.0,
+                "pageHeight": 792.0,
+                "leftMargin": 72.0,
+                "rightMargin": 72.0,
+                "topMargin": 72.0,
+                "bottomMargin": 72.0,
+                "differentFirstPage": false,
+                "differentOddAndEvenPages": false,
+                "bidi": false,
+                "restartPageNumbering": false,
+                "pageStartingNumber": 0
+            }
+        }
+    ],
+    "characterFormat": {
+        "fontSize": 11.0,
+        "fontFamily": "Calibri",
+        "fontSizeBidi": 11.0,
+        "fontFamilyBidi": "Arial"
+    },
+    "paragraphFormat": {
+        "afterSpacing": 8.0,
+        "lineSpacing": 1.0791666507720948,
+        "lineSpacingType": "Multiple"
+    },
+    "background": {
+        "color": "#FFFFFFFF"
+    },
+    "styles": [
+        {
+            "type": "Paragraph",
+            "name": "Normal",
+            "next": "Normal"
+        },
+        {
+            "type": "Character",
+            "name": "Default Paragraph Font"
+        }
+    ],
+    "defaultTabWidth": 36.0,
+    "formatting": false,
+    "protectionType": "NoProtection",
+    "enforcement": false
+};
 describe('Spell Checker API', () => {
     let editor: DocumentEditor = undefined;
     beforeAll(() => {
@@ -368,7 +439,7 @@ describe('Spell Checker API', () => {
     it('Spell check ManageSpecial character API testing 1', () => {
         editor.openBlank();
         let text: string = editor.spellChecker.manageSpecialCharacters(',&helo*#', 'helo', false);
-        expect(text).toBe(',&helo*#');
+        expect(text).toBe(',&helo');
     });
     it('Spell check CheckTextElementError API testing', () => {
         editor.openBlank();
@@ -529,16 +600,23 @@ describe('Spell Checker API', () => {
         let elementInfo: ElementInfo = lineInfo.line.getInline(0, 0);
         expect(() => { editor.spellChecker.retrieveExactElementInfo(elementInfo)}).not.toThrowError();
     });
-    // it('Spell check text search result',() => {
-    //     editor.openBlank();
-    //     editor.editorModule.insertText('Helo world', false);
-    //     editor.editorModule.insertText(' ', false);
-    //     editor.editorModule.insertText('Helo world', false);
-    //     let paragraph: ParagraphWidget = editor.viewer.selection.start.paragraph;
-    //     let lineInfo: LineInfo = editor.viewer.selection.getLineInfo(paragraph, 0);
-    //     let element: TextElementBox = lineInfo.line.children[0] as TextElementBox;
-    //     let matchResults: MatchResults = this.getMatchedResultsFromElement(element);
-    //     let results: TextSearchResults = matchResults.textResults;
+    it('Spell checked unique count', () => {
+        editor.open(data)
+        editor.spellChecker.uniqueWordsCount = 10;
+        editor.spellChecker.clearCache();
+        editor.spellChecker.enableOptimizedSpellCheck = true;
+        let data1: string = '{"SpellCollection":[{"Text":"Spell","HasSpellError":false},{"Text":"error","HasSpellError":false},{"Text":"sdwewe","HasSpellError":true},{"Text":"kdjkjwkewe","HasSpellError":true}],"HasSpellingError":true,"Suggestions":null}';
+        let jsonObject: any = JSON.parse(data1);
+        editor.spellChecker.updateUniqueWords(jsonObject.SpellCollection);
+        jsonObject = JSON.parse(localStorage.getItem(editor.spellChecker.uniqueKey));
+        expect(jsonObject.length).toBe(4);
+    });
+    it('Spell check by page content', () => {
+        editor.open(data);
+        let wordSpec: WordSpellInfo = editor.spellChecker.checkSpellingInPageInfo('error')
+        expect(wordSpec.hasSpellError).toBe(false);
+        expect(wordSpec.isElementPresent).toBe(true);
+    });
     //     let markIndex: number = element.line.getOffset(element, 0);
     //     // tslint:disable-next-line:max-line-length
     //     editor.searchModule.textSearch.updateMatchedTextLocation(matchResults.matches, results, matchResults.elementInfo, 0,element , false, null, markIndex);  

@@ -1,7 +1,7 @@
 import { ListBase, ListBaseOptions, ItemCreatedArgs } from '@syncfusion/ej2-lists';
 import { createElement, select, selectAll, EventHandler, KeyboardEvents, closest, DragEventArgs, Draggable } from '@syncfusion/ej2-base';
 import { isNullOrUndefined as isNOU, addClass, removeClass, Touch, TapEventArgs, isVisible } from '@syncfusion/ej2-base';
-import { TouchEventArgs, MouseEventArgs, KeyboardEventArgs, getValue, setValue, remove } from '@syncfusion/ej2-base';
+import { TouchEventArgs, MouseEventArgs, KeyboardEventArgs, getValue, setValue, remove, BlazorDragEventArgs } from '@syncfusion/ej2-base';
 import { IFileManager, FileOpenEventArgs, FileSelectEventArgs, NotifyArgs, FileLoadEventArgs } from '../base/interface';
 import { DataManager, Query } from '@syncfusion/ej2-data';
 import { hideSpinner, showSpinner } from '@syncfusion/ej2-popups';
@@ -199,7 +199,9 @@ export class LargeIconsView {
                     dragStop: dragStopHandler.bind(this, this.parent),
                     drag: draggingHandler.bind(this, this.parent),
                     clone: true,
-                    dragStart: dragStartHandler.bind(this, this.parent)
+                    dragStart: (args: DragEventArgs & BlazorDragEventArgs) => {
+                        dragStartHandler(this.parent, args, this.dragObj);
+                    },
                 });
             } else if (this.dragObj && !this.parent.allowDragAndDrop) {
                 this.dragObj.destroy();
@@ -466,8 +468,19 @@ export class LargeIconsView {
         this.updateSelectedData();
     }
 
+    private onPathColumn(): void {
+        if (this.parent.view === 'LargeIcons' && !isNOU(this.listObj) &&
+            this.parent.breadcrumbbarModule.searchObj.element.value === '' && !this.parent.isFiltered
+            && this.parent.sortBy === 'filterPath') {
+            this.parent.sortBy = 'name';
+            this.parent.notify(events.sortByChange, {});
+
+        }
+    }
+
     private removeEventListener(): void {
         if (this.parent.isDestroyed) { return; }
+        this.parent.off(events.pathColumn, this.onPathColumn);
         this.parent.off(events.finalizeEnd, this.onFinalizeEnd);
         this.parent.off(events.createEnd, this.onCreateEnd);
         this.parent.off(events.selectedData, this.onSelectedData);
@@ -504,6 +517,7 @@ export class LargeIconsView {
     }
 
     private addEventListener(): void {
+        this.parent.on(events.pathColumn, this.onPathColumn, this);
         this.parent.on(events.finalizeEnd, this.onFinalizeEnd, this);
         this.parent.on(events.createEnd, this.onCreateEnd, this);
         this.parent.on(events.refreshEnd, this.onRefreshEnd, this);
@@ -826,7 +840,7 @@ export class LargeIconsView {
             this.updateType(item);
             let details: Object = this.getItemObject(item);
             if (!hasReadAccess(details)) {
-                createDeniedDialog(this.parent, details);
+                createDeniedDialog(this.parent, details, events.permissionRead);
                 return;
             }
             let eventArgs: FileOpenEventArgs = { cancel: false, fileDetails: details, module: 'LargeIconsView' };
@@ -1031,7 +1045,7 @@ export class LargeIconsView {
             let data: Object[] = this.parent.itemData;
             for (let i: number = 0; i < data.length; i++) {
                 if (!hasEditAccess(data[i])) {
-                    createDeniedDialog(this.parent, data[i]);
+                    createDeniedDialog(this.parent, data[i], events.permissionEdit);
                     return;
                 }
             }
@@ -1450,7 +1464,7 @@ export class LargeIconsView {
                 doRename(this.parent);
             } else {
                 if (!hasEditAccess(this.parent.itemData[0])) {
-                    createDeniedDialog(this.parent, this.parent.itemData[0]);
+                    createDeniedDialog(this.parent, this.parent.itemData[0], events.permissionEdit);
                 } else {
                     rename(this.parent, this.parent.path, name);
                 }

@@ -8,7 +8,7 @@ import { Maps, FontModel, BorderModel, LayerSettings, ProjectionType } from '../
 import { animationComplete, IAnimationCompleteEventArgs, Alignment, LayerSettingsModel } from '../index';
 import { MarkerType, IShapeSelectedEventArgs, ITouches, IShapes, SelectionSettingsModel, HighlightSettingsModel,
     MarkerClusterSettingsModel, IMarkerRenderingEventArgs, MarkerSettings, markerClusterRendering,
-IMarkerClusterRenderingEventArgs} from '../index';
+IMarkerClusterRenderingEventArgs, SameMarkerClusterData} from '../index';
 import { CenterPositionModel } from '../model/base-model';
 
 /**
@@ -654,7 +654,7 @@ export function drawSymbols(shape: MarkerType, imageUrl: string, location: Point
         markerEle = maps.renderer.drawRectangle(rectOptions) as SVGRectElement;
     } else if (shape === 'Image') {
         x = location.x - (size.width / 2);
-        y = location.y - (size.height / 2);
+        y = location.y - size.height;
         merge(pathOptions, { 'href': imageUrl, 'height': size.height, 'width': size.width, x: x, y: y });
         markerEle = maps.renderer.drawImage(pathOptions) as SVGImageElement;
     } else {
@@ -674,6 +674,7 @@ export function clusterTemplate(currentLayer: LayerSettings, markerTemplate: HTM
     let textElement: Element;
     let postionY: number = (15 / 4);
     let m: number = 0;
+    let g: Element = maps.renderer.createGroup({ id: maps.element.id +'_LayerIndex_'+ layerIndex + '_markerCluster' });
     for (let n: number = 0; n < markerTemplate.childElementCount; n++) {
         let tempElement: Element = markerTemplate.childNodes[n] as Element;
         bounds.push(tempElement.getBoundingClientRect() as DOMRect);
@@ -745,21 +746,102 @@ export function clusterTemplate(currentLayer: LayerSettings, markerTemplate: HTM
             maps.trigger('markerClusterRendering', eventArg, (clusterargs: IMarkerClusterRenderingEventArgs) => {
                 tempX = (maps.isTileMap) ? tempX :(markerTemplate.id.indexOf('_Markers_Group') > -1) ? tempX : ((tempX + transPoint.x) * maps.mapScaleValue)
                 tempY = (maps.isTileMap) ? tempY : (markerTemplate.id.indexOf('_Markers_Group') > -1) ? tempY: ((tempY + transPoint.y) * maps.mapScaleValue)
-                let clusterID: string = maps.element.id + '_LayerIndex_'+ layerIndex + '_MarkerIndex_'+ markerIndex + '_dataIndex_'+ dataIndex + '_cluster_' + (m++);
+                let clusterID: string = maps.element.id + '_LayerIndex_'+ layerIndex + '_MarkerIndex_'+ markerIndex + '_dataIndex_'+ dataIndex + '_cluster_' + (m);
                 let labelID: string = maps.element.id + '_LayerIndex_'+ layerIndex + '_MarkerIndex_'+ markerIndex + '_dataIndex_'+ dataIndex + '_cluster_' + (m) +'_datalabel_'+ m;
+                m++;
                 let ele: Element = drawSymbols(eventArg.shape, eventArg.imageUrl, { x: 0, y: 0 }, clusterID, shapeCustom, markerCollection, maps);
                 ele.setAttribute('transform', 'translate( ' + tempX + ' ' + tempY + ' )');
                 options = new TextOption(labelID, (0), postionY, 'middle',(colloideBounds.length + 1).toString() , '', '');
                 textElement = renderTextElement(options, style, style.color, markerCollection)
                 textElement.setAttribute('transform', 'translate( ' + tempX + ' ' + tempY + ' )');
-                markerCollection.appendChild(ele);
-                markerCollection.appendChild(textElement);
+                g.appendChild(textElement);
+                g.appendChild(ele);
             });
         }
     }
     colloideBounds =[];
 }
+while (0 < g.childNodes.length) {
+    markerCollection.insertBefore(g.childNodes[0], markerCollection.firstChild);
+}
 return markerTemplate as HTMLElement | Element
+}
+export function mergeSeparateCluster(sameMarkerData: SameMarkerClusterData[], maps: Maps, markerElement: Element | HTMLElement) {
+    let markerId = maps.element.id + '_LayerIndex_' + sameMarkerData[0].layerIndex + '_MarkerIndex_' + sameMarkerData[0].markerIndex;
+    let clusterId: string = markerId + '_dataIndex_' + sameMarkerData[0].data[0]['index'] + '_cluster_' + sameMarkerData[0].targetClusterIndex;
+    let clusterEle: Element = getElement(clusterId);
+    let clusterEleLabel: Element = getElement(clusterId + '_datalabel_' + sameMarkerData[0].targetClusterIndex);
+    clusterEle.setAttribute('visibility', 'visible');
+    clusterEleLabel.setAttribute('visibility', 'visible');
+    let markerEle: Element;
+    for (let i: number = 0; i < sameMarkerData[0].data.length; i++) {
+        markerEle = getElement(markerId + '_dataIndex_' + sameMarkerData[0].data[i]['index']);
+        markerEle['style']['visibility'] = "hidden";
+    }
+    removeElement(maps.element.id + '_LayerIndex_' + sameMarkerData[0].layerIndex + '_MarkerIndex_' + sameMarkerData[0].markerIndex + '_markerClusterConnectorLine');
+}
+export function clusterSeparate(sameMarkerData: SameMarkerClusterData[], maps: Maps, markerElement: Element | HTMLElement, isDom?: boolean) {
+    let getElementFunction: Function = isDom ? getElement : markerElement.querySelector.bind(markerElement);
+    let getQueryConnect: string = isDom ? '' : '#';
+    let markerId = maps.element.id + '_LayerIndex_' + sameMarkerData[0].layerIndex + '_MarkerIndex_' + sameMarkerData[0].markerIndex;
+    let clusterId: string = markerId + '_dataIndex_' + sameMarkerData[0].data[0]['index'] + '_cluster_' + sameMarkerData[0].targetClusterIndex;
+    let clusterEle: Element = getElementFunction(getQueryConnect + '' + clusterId);
+    let clusterEleLabel: Element = getElementFunction(getQueryConnect + '' + clusterId + '_datalabel_' + sameMarkerData[0].targetClusterIndex);
+    clusterEle.setAttribute('visibility', 'hidden');
+    clusterEleLabel.setAttribute('visibility', 'hidden');
+
+    let markerEle: Element = getElementFunction(getQueryConnect + '' + markerId + '_dataIndex_' + sameMarkerData[0].data[0]['index']);
+    let height: number = maps.layers[sameMarkerData[0].layerIndex].markerSettings[sameMarkerData[0].markerIndex].height;
+    let width: number = maps.layers[sameMarkerData[0].layerIndex].markerSettings[sameMarkerData[0].markerIndex].width;
+    let centerX: number = +clusterEle.getAttribute('transform').split('translate(')[1].trim().split(' ')[0];
+    let centerY: number = +clusterEle.getAttribute('transform').split('translate(')[1].trim().split(' ')[1].split(')')[0].trim() + height / 2;
+
+    let radius = width + 5;
+    let area = 2 * 3.14 * radius;
+    let totalMarker = 0;
+    let numberOfMarker = Math.round(area / width);
+    totalMarker += numberOfMarker;
+    let percent = Math.round((height / area) * 100);
+    percent = sameMarkerData[0].data.length < numberOfMarker ? 100 / sameMarkerData[0].data.length : percent;
+    let angle = (percent / 100) * 360;
+    let newAngle = sameMarkerData[0].data.length < numberOfMarker ? 45 : 0;
+    let count = 1;
+    let start = 'M ' + centerX + ' ' + centerY + ' ';
+    let path = '';
+    for (let i: number = 0; i < sameMarkerData[0].data.length; i++) {
+        if (totalMarker === i || Math.round(newAngle) >= 360) {
+            count++;
+            radius = (width + 5) * count;
+            newAngle = 0;
+            area = 2 * 3.14 * radius;
+            numberOfMarker = Math.round(area / height);
+            percent = Math.round((height / area) * 100);
+            while (percent * numberOfMarker < 100) {
+                numberOfMarker++;
+            }
+            angle = ((percent / 100) * 360);
+            totalMarker += numberOfMarker;
+        }
+        let x1 = centerX + radius * Math.sin((Math.PI * 2 * newAngle) / 360);
+        let y1 = centerY + radius * Math.cos((Math.PI * 2 * newAngle) / 360);
+        path += start + 'L ' + (x1 + 2) + ' ' + y1 + ' ';
+        markerEle = getElementFunction(getQueryConnect + '' + markerId + '_dataIndex_' + sameMarkerData[0].data[i]['index']);
+        markerEle.setAttribute('transform', 'translate( ' + x1 + ' ' + y1 + ')');
+        markerEle['style']['visibility'] = "visible";
+        newAngle += angle;
+    }
+    let options: PathOption;
+    options = {
+        d: path,
+        id: maps.element.id + '_markerClusterConnectorLine',
+        stroke: maps.layers[sameMarkerData[0].layerIndex].markerClusterSettings.connectorLineSettings.color,
+        opacity: maps.layers[sameMarkerData[0].layerIndex].markerClusterSettings.connectorLineSettings.opacity,
+        'stroke-width': maps.layers[sameMarkerData[0].layerIndex].markerClusterSettings.connectorLineSettings.width
+    } as PathOption;
+    markerElement = isDom ? getElementFunction(maps.element.id + '_Markers_Group') : markerElement;
+    let groupEle: Element = maps.renderer.createGroup({ id: maps.element.id + '_LayerIndex_' + sameMarkerData[0].layerIndex + '_MarkerIndex_' + sameMarkerData[0].markerIndex + '_markerClusterConnectorLine' })
+    groupEle.appendChild(maps.renderer.drawPath(options));
+    markerElement.insertBefore(groupEle, markerElement.querySelector('#' + markerId + '_dataIndex_0'));
 }
 export function marker(eventArgs: IMarkerRenderingEventArgs, markerSettings: MarkerSettings, markerData: object[], dataIndex: number,
     location: Point, transPoint: Point, markerID : string, offset: Point, scale: number, maps: Maps,
@@ -787,8 +869,7 @@ export function marker(eventArgs: IMarkerRenderingEventArgs, markerSettings: Mar
 export function markerTemplate(eventArgs: IMarkerRenderingEventArgs, templateFn: Function, markerID: string, data:object,
     markerIndex: number, markerTemplate: HTMLElement, location: Point, scale: number, offset: Point, maps: Maps): HTMLElement{
     templateFn = getTemplateFunction(eventArgs.template);
-    let blazor: string = 'Blazor';
-    if (templateFn && (!window[blazor] ? templateFn(data, null, null, maps.element.id + '_MarkerTemplate', false).length : {})) {
+    if (templateFn && (!maps.isBlazor ? templateFn(data, null, null, maps.element.id + '_MarkerTemplate', false).length : {})) {
         let templateElement: HTMLCollection = templateFn(data, null, null, maps.element.id + '_MarkerTemplate', false);
         let markerElement: HTMLElement = <HTMLElement>convertElement(
             templateElement, markerID, data, markerIndex, maps

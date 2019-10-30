@@ -29,6 +29,7 @@ export type AnnotationToolbarItem =
     'OpacityEditTool' |
     'AnnotationDeleteTool' |
     'StampAnnotationTool' |
+    'HandWrittenSignatureTool' |
     'FreeTextAnnotationTool' |
     'FontFamilyAnnotationTool' |
     'FontSizeAnnotationTool' |
@@ -49,7 +50,7 @@ export type InteractionMode = 'TextSelection' | 'Pan';
  * Enum AnnotationType for specifying Annotations
  */
 // tslint:disable-next-line:max-line-length
-export type AnnotationType = 'None' | 'Highlight' | 'Underline' | 'Strikethrough' | 'Line' | 'Arrow' | 'Rectangle' | 'Circle' | 'Polygon' | 'Distance' | 'Perimeter' | 'Area' | 'Radius' | 'Volume' | 'FreeText';
+export type AnnotationType = 'None' | 'Highlight' | 'Underline' | 'Strikethrough' | 'Line' | 'Arrow' | 'Rectangle' | 'Circle' | 'Polygon' | 'Distance' | 'Perimeter' | 'Area' | 'Radius' | 'Volume' | 'FreeText' | 'HandWrittenSignature';
 
 /**
  * Enum LineHeadStyle for line and arrow annotation

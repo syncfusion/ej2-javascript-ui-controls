@@ -6,7 +6,7 @@ import { NavigationPane } from '../../../src/file-manager/layout/navigation-pane
 import { DetailsView } from '../../../src/file-manager/layout/details-view';
 import { Toolbar } from '../../../src/file-manager/actions/toolbar';
 import { createElement } from '@syncfusion/ej2-base';
-import { data1, data17, data18, data19, data20, data21, data22, searchpng, searchhellopng, doubleClickRead, searchdocstart, searchdoccase } from '../data';
+import { data1, data17, data18, data19, data20, data21, data22, searchpng, searchhellopng, doubleClickRead, searchdocstart, searchdoccase, data15 } from '../data';
 import { BeforeSendEventArgs } from '../../../src';
 
 FileManager.Inject(Toolbar, NavigationPane, DetailsView);
@@ -88,6 +88,108 @@ describe('FileManager control Grid view', () => {
                 check = true;
                 (<HTMLElement>document.getElementsByClassName('e-addressbar-ul')[0].firstElementChild.firstElementChild).click();
                 done();
+            }, 500);
+        });
+        it('Search sort testing (navigate)', (done: Function) => {
+            let treeObj: any = (document.getElementById("file_tree") as any).ej2_instances[0];
+            let treeLi: any = treeObj.element.querySelectorAll('li');
+            let gridLi: any = document.getElementById('file_grid').querySelectorAll('.e-row');
+            expect(treeObj.selectedNodes[0]).toEqual("fe_tree");
+            expect(treeLi.length).toEqual(5);
+            expect(gridLi.length).toEqual(5);
+            let searchEle: any = feObj.element.querySelector("#file_search");
+            let searchObj: any = searchEle.ej2_instances[0];
+            searchEle.value = '.png';
+            searchObj.value = '.png';
+            let eventArgs: any = { value: '.png', container: searchEle };
+            searchObj.change(eventArgs);
+            this.request = jasmine.Ajax.requests.mostRecent();
+            this.request.respondWith({
+                status: 200,
+                responseText: JSON.stringify(searchpng)
+            });
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+            setTimeout(function () {
+                let gridLi: any = document.getElementById('file_grid').querySelectorAll('.e-row');
+                expect(gridLi.length).toEqual(2);
+                (<HTMLElement>document.querySelector('.e-headercell.e-lastcell')).click();
+                expect(feObj.sortBy).toBe('filterPath');
+                let li: any = feObj.navigationpaneModule.treeObj.element.querySelectorAll("li");
+                mouseEventArgs.target = li[3].querySelector('.e-fullrow');
+                (<any>feObj.navigationpaneModule.treeObj).touchClickObj.tap(tapEvent);
+                this.request = jasmine.Ajax.requests.mostRecent();
+                this.request.respondWith({
+                    status: 200,
+                    responseText: JSON.stringify(data15)
+                });
+                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                setTimeout(function () {
+                    let gridLi: any = document.getElementById('file_grid').querySelectorAll('.e-row');
+                    expect(gridLi.length).toEqual(3);
+                    done();
+                }, 500);
+            }, 500);
+        });
+        it('Search sort testing (layout change && clear search)', (done: Function) => {
+            let treeObj: any = (document.getElementById("file_tree") as any).ej2_instances[0];
+            let treeLi: any = treeObj.element.querySelectorAll('li');
+            let gridLi: any = document.getElementById('file_grid').querySelectorAll('.e-row');
+            expect(treeObj.selectedNodes[0]).toEqual("fe_tree");
+            expect(treeLi.length).toEqual(5);
+            expect(gridLi.length).toEqual(5);
+            let searchEle: any = feObj.element.querySelector("#file_search");
+            let searchObj: any = searchEle.ej2_instances[0];
+            searchEle.value = '.png';
+            searchObj.value = '.png';
+            let eventArgs: any = { value: '.png', container: searchEle };
+            searchObj.change(eventArgs);
+            this.request = jasmine.Ajax.requests.mostRecent();
+            this.request.respondWith({
+                status: 200,
+                responseText: JSON.stringify(searchpng)
+            });
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+            setTimeout(function () {
+                let gridLi: any = document.getElementById('file_grid').querySelectorAll('.e-row');
+                expect(gridLi.length).toEqual(2);
+                (<HTMLElement>document.querySelector('.e-headercell.e-lastcell')).click();
+                expect(feObj.sortBy).toBe('filterPath');
+                feObj.view = "LargeIcons";
+                feObj.dataBind();
+                this.request = jasmine.Ajax.requests.mostRecent();
+                this.request.respondWith({
+                    status: 200,
+                    responseText: JSON.stringify(searchpng)
+                });
+                jasmine.DEFAULT_TIMEOUT_INTERVAL = 5000;
+                setTimeout(function () {
+                    let largeLi: any = document.getElementById('file_largeicons').querySelectorAll('.e-list-item');
+                    let treeObj: any = (document.getElementById("file_tree") as any).ej2_instances[0];
+                    let treeLi: any = treeObj.element.querySelectorAll('li');
+                    expect(treeObj.selectedNodes[0]).toEqual("fe_tree");
+                    expect(treeLi.length).toEqual(5);
+                    expect(largeLi.length).toEqual(2);
+                    searchEle.value = '';
+                    searchObj.value = '';
+                    let eventArgs: any = { value: '', container: searchEle };
+                    searchObj.change(eventArgs);
+                    this.request = jasmine.Ajax.requests.mostRecent();
+                    this.request.respondWith({
+                        status: 200,
+                        responseText: JSON.stringify(data1)
+                    });
+                    jasmine.DEFAULT_TIMEOUT_INTERVAL = 1000;
+                    setTimeout(function () {
+                        let treeObj: any = (document.getElementById("file_tree") as any).ej2_instances[0];
+                        let treeLi: any = treeObj.element.querySelectorAll('li');
+                        let largeLi: any = document.getElementById('file_largeicons').querySelectorAll('.e-list-item');
+                        expect(treeObj.selectedNodes[0]).toEqual("fe_tree");
+                        expect(treeLi.length).toEqual(5);
+                        expect(largeLi.length).toEqual(5);
+                        expect(feObj.sortBy).toBe('name');
+                        done();
+                    }, 500);
+                }, 500);
             }, 500);
         });
         it('Search (empty) testing', (done: Function) => {

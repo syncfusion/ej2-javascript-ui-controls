@@ -3676,6 +3676,58 @@ describe('Splitter Control', () => {
             expect(splitterObj.element.querySelectorAll('.e-split-bar.e-split-bar-horizontal')[0].getAttribute("aria-orientation")).toBe('horizontal');
         });
     });
+    describe('Expand method - Horizontal splitter', function() {
+        let splitterObj : Splitter;
+        beforeAll(function() {
+            var element = createElement('div', { id: 'default' });
+            document.body.appendChild(element);
+            splitterObj = new Splitter({ height: '400px', width: '400px', paneSettings: [{ collapsed: true }, { collapsed: true }, {}] });
+            splitterObj.appendTo(document.getElementById('default'));
+        });
+        afterAll(function() {
+            document.body.innerHTML = '';
+        });
+        it('First two panes', function() {
+            expect((splitterObj.element.childNodes[0] as HTMLElement).classList.contains('e-collapsed')).toBe(true);
+            expect((splitterObj.element.childNodes[1] as HTMLElement).classList.contains('e-collapsed')).toBe(true);
+            expect((splitterObj.element.childNodes[2] as HTMLElement).classList.contains('e-collapsed')).toBe(false)
+            splitterObj.expand(0);
+            expect((splitterObj.element.childNodes[0] as HTMLElement).classList.contains('e-collapsed')).toBe(false)
+            expect((splitterObj.element.childNodes[1] as HTMLElement).classList.contains('e-collapsed')).toBe(true);
+            expect((splitterObj.element.childNodes[2] as HTMLElement).classList.contains('e-collapsed')).toBe(false)
+            splitterObj.expand(1);
+            expect((splitterObj.element.childNodes[0] as HTMLElement).classList.contains('e-collapsed')).toBe(false)
+            expect((splitterObj.element.childNodes[1] as HTMLElement).classList.contains('e-collapsed')).toBe(false);
+            expect((splitterObj.element.childNodes[2] as HTMLElement).classList.contains('e-collapsed')).toBe(false)
+        });
+    });
+    describe('Expand method - Vertical splitter', function() {
+        let splitterObj : Splitter;
+        beforeAll(function() {
+            var element = createElement('div', { id: 'default' });
+            document.body.appendChild(element);
+            splitterObj = new Splitter({ height: '400px', width: '400px', paneSettings: [{ collapsed: true }, { collapsed: true }, {}] });
+            splitterObj.appendTo(document.getElementById('default'));
+        });
+        afterAll(function() {
+            document.body.innerHTML = '';
+        });
+        it('First two panes', function() {
+            expect((splitterObj.element.childNodes[0] as HTMLElement).classList.contains('e-collapsed')).toBe(true);
+            expect((splitterObj.element.childNodes[1] as HTMLElement).classList.contains('e-collapsed')).toBe(true);
+            expect((splitterObj.element.childNodes[2] as HTMLElement).classList.contains('e-collapsed')).toBe(false)
+            splitterObj.expand(0);
+            expect((splitterObj.element.childNodes[0] as HTMLElement).classList.contains('e-collapsed')).toBe(false)
+            expect((splitterObj.element.childNodes[1] as HTMLElement).classList.contains('e-collapsed')).toBe(true);
+            expect((splitterObj.element.childNodes[2] as HTMLElement).classList.contains('e-collapsed')).toBe(false)
+            splitterObj.expand(1);
+            expect((splitterObj.element.childNodes[0] as HTMLElement).classList.contains('e-collapsed')).toBe(false)
+            expect((splitterObj.element.childNodes[1] as HTMLElement).classList.contains('e-collapsed')).toBe(false);
+            expect((splitterObj.element.childNodes[2] as HTMLElement).classList.contains('e-collapsed')).toBe(false)
+        });
+    });
+
+
       // mouse over on splitbar
     describe('mouseover on splitbar', () => {
         let splitterObj1: any;
@@ -3743,6 +3795,56 @@ describe('Splitter Control', () => {
             splitterObj.onMouseMove(eventArgs);
             expect(splitterObj.previousPane.classList.contains('e-pane')).toBe(true);
             expect(splitterObj.nextPane.classList.contains('e-pane')).toBe(true);
+        });
+    });
+    describe('Last two pane collapsed', () => {
+        let splitterObj: any;
+        beforeAll((): void => {
+        let element: HTMLElement = createElement('div', { id: 'default'});
+        let child1: HTMLElement = createElement('div');
+        let child2: HTMLElement = createElement('div');
+        let child3: HTMLElement = createElement('div');
+        element.appendChild(child1);
+        element.appendChild(child2);
+        element.appendChild(child3);
+        document.body.appendChild(element);
+        splitterObj = new Splitter({ height: '400px', width: '400px', paneSettings: [{ size: '50%', collapsed: false }, { size: '50%', collapsed: true }, { collapsed: true }] });
+        splitterObj.appendTo(document.getElementById('default'));
+        });
+        afterAll((): void => {
+        document.body.innerHTML = '';
+        });
+        it('For horizontal pane', function() {
+            expect(splitterObj.allPanes.length).toBe(3);
+            expect(splitterObj.allPanes[1].classList.contains('e-collapsed')).toBe(true);
+            expect(splitterObj.allPanes[1].classList.contains('e-pane-hidden')).toBe(true);
+            expect(splitterObj.allPanes[2].classList.contains('e-collapsed')).toBe(true);
+            expect(splitterObj.allPanes[2].classList.contains('e-pane-hidden')).toBe(true);
+        });
+    });
+    describe('Last two pane collapsed', () => {
+        let splitterObj: any;
+        beforeAll((): void => {
+        let element: HTMLElement = createElement('div', { id: 'default'});
+        let child1: HTMLElement = createElement('div');
+        let child2: HTMLElement = createElement('div');
+        let child3: HTMLElement = createElement('div');
+        element.appendChild(child1);
+        element.appendChild(child2);
+        element.appendChild(child3);
+        document.body.appendChild(element);
+        splitterObj = new Splitter({ height: '400px', width: '400px', orientation:'Vertical', paneSettings: [{ size: '50%', collapsed: false }, { size: '50%', collapsed: true }, { collapsed: true }] });
+        splitterObj.appendTo(document.getElementById('default'));
+        });
+        afterAll((): void => {
+        document.body.innerHTML = '';
+        });
+        it('For Vetical pane', function() {
+            expect(splitterObj.allPanes.length).toBe(3);
+            expect(splitterObj.allPanes[1].classList.contains('e-collapsed')).toBe(true);
+            expect(splitterObj.allPanes[1].classList.contains('e-pane-hidden')).toBe(true);
+            expect(splitterObj.allPanes[2].classList.contains('e-collapsed')).toBe(true);
+            expect(splitterObj.allPanes[2].classList.contains('e-pane-hidden')).toBe(true);
         });
     });
  });

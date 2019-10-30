@@ -10,7 +10,7 @@ import { EventHandler, Property, Event, compile, L10n, EmitType, KeyboardEventAr
 import { Animation, AnimationModel, Browser, prepend, isBlazor } from '@syncfusion/ej2-base';
 import { MultiSelectModel } from '../multi-select';
 import { Search } from '../common/incremental-search';
-import { append, addClass, removeClass, setStyleAttribute, closest, detach, remove, select } from '@syncfusion/ej2-base';
+import { append, addClass, removeClass, closest, detach, remove, select } from '@syncfusion/ej2-base';
 import { getUniqueID, formatUnit, isNullOrUndefined, isUndefined, ModuleDeclaration } from '@syncfusion/ej2-base';
 /* tslint:disable */
 import { DataManager, Query, Predicate } from '@syncfusion/ej2-data';
@@ -2011,6 +2011,15 @@ export class MultiSelect extends DropDownBase implements IInput {
         }
 
     }
+    private setWidth(width: number | string): void {
+        if (!isNullOrUndefined(width)) {
+            if (typeof width === 'number') {
+                this.overAllWrapper.style.width = formatUnit(width);
+            } else if (typeof width === 'string') {
+                this.overAllWrapper.style.width = (width.match(/px|%|em/)) ? <string>(width) : <string>(formatUnit(width));
+            }
+        }
+    }
     private updateChipStatus(): void {
         if (this.value.length) {
             if (!isNullOrUndefined(this.chipCollectionWrapper)) {
@@ -2499,11 +2508,7 @@ export class MultiSelect extends DropDownBase implements IInput {
             this.updateValueState(e, this.value, this.tempValues);
         }
         this.listData = <{ [key: string]: Object }[]>tempData;
-        if (!isNullOrUndefined(this.value) && this.value.length) {
-            addClass([this.overAllWrapper], 'e-valid-input');
-        } else {
-            removeClass([this.overAllWrapper], 'e-valid-input');
-        }
+        this.addValidInputClass();
     }
     private initialTextUpdate(): void {
         if (!isNullOrUndefined(this.text)) {
@@ -3370,9 +3375,10 @@ export class MultiSelect extends DropDownBase implements IInput {
                     break;
                 case 'value':
                     this.updateVal(this.value, oldProp.value, 'value');
+                    this.addValidInputClass();
                     break;
                 case 'width':
-                    setStyleAttribute(this.overAllWrapper, { 'width': formatUnit(newProp.width) });
+                    this.setWidth(newProp.width);
                     this.popupObj.setProperties({ width: this.calcPopupWidth() });
                     break;
                 case 'placeholder': this.refreshPlaceHolder();
@@ -3412,16 +3418,15 @@ export class MultiSelect extends DropDownBase implements IInput {
                     }
                     this.renderPopup();
                     break;
-                case 'showDropDownIcon':
-                    this.dropDownIcon();
+                case 'showDropDownIcon': this.dropDownIcon();
                     break;
                 case 'floatLabelType':
                     this.setFloatLabelType();
+                    this.addValidInputClass();
                     break;
                 case 'enableSelectionOrder':
                     break;
-                case 'selectAllText':
-                    this.notify('selectAllText', false);
+                case 'selectAllText': this.notify('selectAllText', false);
                     break;
                 case 'popupHeight':
                 case 'headerTemplate':
@@ -3554,7 +3559,7 @@ export class MultiSelect extends DropDownBase implements IInput {
         if (Browser.isDevice) {
             this.componentWrapper.classList.add(ELEMENT_MOBILE_WRAPPER);
         }
-        this.overAllWrapper.style.width = formatUnit(this.width);
+        this.setWidth(this.width);
         this.overAllWrapper.appendChild(this.componentWrapper);
         this.popupWrapper = this.createElement('div', { id: this.element.id + '_popup', className: POPUP_WRAPPER }) as HTMLDivElement;
         if (this.mode === 'Delimiter' || this.mode === 'CheckBox') {
@@ -3607,6 +3612,7 @@ export class MultiSelect extends DropDownBase implements IInput {
         } else if (this.floatLabelType === 'Never') {
             this.refreshPlaceHolder();
         }
+        this.addValidInputClass();
         this.element.style.opacity = '';
         let id: string = this.element.getAttribute('id') ? this.element.getAttribute('id') : getUniqueID('ej2_dropdownlist');
         this.element.id = id;
@@ -3699,6 +3705,13 @@ export class MultiSelect extends DropDownBase implements IInput {
                 this.floatLabelType,
                 this.placeholder
             );
+        }
+    }
+    private addValidInputClass(): void {
+        if ((!isNullOrUndefined(this.value) && this.value.length) || this.floatLabelType === 'Always') {
+            addClass([this.overAllWrapper], 'e-valid-input');
+        } else {
+            removeClass([this.overAllWrapper], 'e-valid-input');
         }
     }
     private dropDownIcon(): void {

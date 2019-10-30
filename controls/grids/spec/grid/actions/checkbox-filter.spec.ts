@@ -108,7 +108,7 @@ describe('Checkbox Filter module => ', () => {
             gridObj.actionComplete = actionComplete;        
             let searchElement : any  =gridObj.element.querySelector('.e-searchinput');
             searchElement.value = '1024';
-            (gridObj.filterModule as any).filterModule.searchBoxKeyUp(getKeyUpObj(13,searchElement));
+            (gridObj.filterModule as any).filterModule.checkBoxBase.searchBoxKeyUp(getKeyUpObj(13,searchElement));
         });
 
         it('search box keyup repeat testing', (done: Function) => {
@@ -125,7 +125,7 @@ describe('Checkbox Filter module => ', () => {
             gridObj.actionComplete = actionComplete;        
             let searchElement : any  =gridObj.element.querySelector('.e-searchinput');
             searchElement.value = '10249';
-            (gridObj.filterModule as any).filterModule.searchBoxKeyUp(getKeyUpObj(13,searchElement));
+            (gridObj.filterModule as any).filterModule.checkBoxBase.searchBoxKeyUp(getKeyUpObj(13,searchElement));
         });
 
         it('search box keyup invalid input testing', (done: Function) => {
@@ -143,7 +143,7 @@ describe('Checkbox Filter module => ', () => {
             gridObj.actionComplete = actionComplete;        
             let searchElement : any  =gridObj.element.querySelector('.e-searchinput');
             searchElement.value = '1024923';
-            (gridObj.filterModule as any).filterModule.searchBoxKeyUp(getKeyUpObj(13,searchElement));
+            (gridObj.filterModule as any).filterModule.checkBoxBase.searchBoxKeyUp(getKeyUpObj(13,searchElement));
         });
 
         it('search box keyup invalid - corrected input testing', (done: Function) => {
@@ -161,7 +161,7 @@ describe('Checkbox Filter module => ', () => {
             gridObj.actionComplete = actionComplete;        
             let searchElement : any  =gridObj.element.querySelector('.e-searchinput');
             searchElement.value = '10248';
-            (gridObj.filterModule as any).filterModule.searchBoxKeyUp(getKeyUpObj(13,searchElement));
+            (gridObj.filterModule as any).filterModule.checkBoxBase.searchBoxKeyUp(getKeyUpObj(13,searchElement));
         });
 
         it('clear searchbox testing', (done: Function) => {                                    
@@ -178,7 +178,7 @@ describe('Checkbox Filter module => ', () => {
             gridObj.actionComplete = actionComplete;        
             let searchElement : any  =gridObj.element.querySelector('.e-searchinput');
             searchElement.value = '';
-            (gridObj.filterModule as any).filterModule.searchBoxKeyUp(getKeyUpObj(13,searchElement));
+            (gridObj.filterModule as any).filterModule.checkBoxBase.searchBoxKeyUp(getKeyUpObj(13,searchElement));
         });
 
         it('intermediate state with keyup testing', (done: Function) => {                        
@@ -200,7 +200,7 @@ describe('Checkbox Filter module => ', () => {
             gridObj.actionComplete = actionComplete;        
             let searchElement : any  =gridObj.element.querySelector('.e-searchinput');
             searchElement.value = '10255';
-            (gridObj.filterModule as any).filterModule.searchBoxKeyUp(getKeyUpObj(13,searchElement));
+            (gridObj.filterModule as any).filterModule.checkBoxBase.searchBoxKeyUp(getKeyUpObj(13,searchElement));
         });
 
         it('intermediate state with keyup - clear testing', (done: Function) => {                                    
@@ -217,7 +217,7 @@ describe('Checkbox Filter module => ', () => {
             gridObj.actionComplete = actionComplete;        
             let searchElement : any  =gridObj.element.querySelector('.e-searchinput');
             searchElement.value = '';
-            (gridObj.filterModule as any).filterModule.searchBoxKeyUp(getKeyUpObj(13,searchElement));
+            (gridObj.filterModule as any).filterModule.checkBoxBase.searchBoxKeyUp(getKeyUpObj(13,searchElement));
         });
 
         it('select all testing', () => {                        
@@ -1644,8 +1644,8 @@ describe('Checkbox Filter module => ', () => {
                 if(args.requestType === 'filterafteropen'){
                     expect(gridObj.getColumnByField('OrderDate').type).toBe('datetime');
                     checkBoxFilter = gridObj.element.querySelector('.e-checkboxfilter');
-                    (<any>gridObj.filterModule).filterModule.sInput.value = '7/9/1996';
-                    (<any>gridObj.filterModule).filterModule.refreshCheckboxes();
+                    (<any>gridObj.filterModule).filterModule.checkBoxBase.sInput.value = '7/9/1996';
+                    (<any>gridObj.filterModule).filterModule.checkBoxBase.refreshCheckboxes();
                     expect(checkBoxFilter.querySelector('.e-checkboxlist.e-fields').children.length).toBeGreaterThanOrEqual(2);
                     gridObj.actionComplete =null;
                     done();
@@ -1658,8 +1658,8 @@ describe('Checkbox Filter module => ', () => {
         it('EJ2-7690-Search In Filtering Dialog Box Get Closed While Press "Enter Key" ', (done: Function) => {
             actionComplete = (args?: any): void => {
                 if(args.requestType === 'filterafteropen'){
-                    (<any>gridObj.filterModule).filterModule.sInput.value = 'Vinet';
-                    (<any>gridObj.filterModule).filterModule.btnClick({target: (<any>gridObj.filterModule).filterModule.sInput});
+                    (<any>gridObj.filterModule).filterModule.checkBoxBase.sInput.value = 'Vinet';
+                    (<any>gridObj.filterModule).filterModule.checkBoxBase.btnClick({target: (<any>gridObj.filterModule).filterModule.checkBoxBase.sInput});
                 }
                 if (args.requestType === 'filtering') {
                     expect(gridObj.currentViewData[0]['CustomerID']).toBe('VINET');

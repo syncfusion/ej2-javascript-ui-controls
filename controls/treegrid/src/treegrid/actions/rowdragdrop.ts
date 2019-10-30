@@ -22,6 +22,8 @@ export class RowDD {
     /** @hidden */
     private treeGridData: ITreeData[];
     /** @hidden */
+    private treeData: ITreeData[];
+    /** @hidden */
     private canDrop: boolean = true;
     /** @hidden */
     private isDraggedWithChild: boolean = false;
@@ -607,13 +609,13 @@ export class RowDD {
                     if (this.dropPosition === 'bottomSegment') {
                         if (!droppedRecord.hasChildRecords) {
                             if (this.parent.parentIdMapping) {
-                               (this.parent.dataSource as ITreeData[]).splice(recordIndex1 + 1, 0, this.draggedRecord.taskData);
+                               this.treeData.splice(recordIndex1 + 1, 0, this.draggedRecord.taskData);
                             }
                             this.treeGridData.splice(recordIndex1 + 1, 0, this.draggedRecord);
                         } else {
                             count = this.getChildCount(droppedRecord, 0);
                             if (this.parent.parentIdMapping) {
-                               (this.parent.dataSource as ITreeData[]).splice(recordIndex1 + count + 1, 0, this.draggedRecord.taskData);
+                                this.treeData.splice(recordIndex1 + count + 1, 0, this.draggedRecord.taskData);
                             }
                             this.treeGridData.splice(recordIndex1 + count + 1, 0, this.draggedRecord);
                         }
@@ -657,7 +659,7 @@ export class RowDD {
             childRecords.length + recordIndex1 + 1;
         if (this.dropPosition === 'middleSegment') {
             if (tObj.parentIdMapping) {
-                (this.parent.dataSource as ITreeData[]).splice(childRecordsLength, 0, this.draggedRecord.taskData);
+                this.treeData.splice(childRecordsLength, 0, this.draggedRecord.taskData);
                 this.treeGridData.splice(childRecordsLength, 0, this.draggedRecord);
             } else {
                 this.treeGridData.splice(childRecordsLength, 0, this.draggedRecord);
@@ -672,7 +674,7 @@ export class RowDD {
         let tObj: TreeGrid = this.parent;
         if (this.dropPosition === 'topSegment') {
             if (tObj.parentIdMapping) {
-                (this.parent.dataSource as ITreeData[]).splice(recordIndex1, 0, this.draggedRecord.taskData);
+                this.treeData.splice(recordIndex1, 0, this.draggedRecord.taskData);
             }
             this.draggedRecord.parentItem = this.treeGridData[recordIndex1].parentItem;
             this.draggedRecord.parentUniqueID = this.treeGridData[recordIndex1].parentUniqueID;
@@ -732,8 +734,10 @@ export class RowDD {
     private deleteDragRow(): void {
         if (this.parent.dataSource instanceof DataManager && isOffline(this.parent)) {
             this.treeGridData = (<DataManager>this.parent.grid.dataSource).dataSource.json;
+            this.treeData = (<DataManager>this.parent.dataSource).dataSource.json;
         } else {
             this.treeGridData = this.parent.grid.dataSource as ITreeData[];
+            this.treeData = this.parent.dataSource as ITreeData[];
         }
         let deletedRow: ITreeData;
         deletedRow = getParentData(this.parent, this.draggedRecord.uniqueID);
@@ -753,7 +757,7 @@ export class RowDD {
             count++;
             tObj.flatData.splice(count, 0, currentRecord);
             if (tObj.parentIdMapping) {
-                (tObj.dataSource as ITreeData[]).splice(count, 0, currentRecord.taskData);
+                this.treeData.splice(count, 0, currentRecord.taskData);
             }
             if (currentRecord.hasChildRecords) {
                 count = this.updateChildRecord(currentRecord, count);
@@ -871,7 +875,7 @@ export class RowDD {
                 }
             }
             if (idx !== -1) {
-                (tObj.dataSource as ITreeData[]).splice(idx, 1);
+                this.treeData.splice(idx, 1);
                 this.treeGridData.splice(idx, 1);
             }
             if (currentRecord.hasChildRecords) {

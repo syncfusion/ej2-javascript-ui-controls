@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 17.3.21 (2019-10-30)
+
+### TreeGrid
+
+#### Bug Fixes
+
+- `#249633` - Row Drag and Drop works fine with RemoteSaveAdaptor in SelfReference Data.
+
 ## 17.3.19 (2019-10-22)
 
 ### TreeGrid

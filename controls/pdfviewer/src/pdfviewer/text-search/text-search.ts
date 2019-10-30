@@ -511,6 +511,13 @@ export class TextSearch {
             textDiv.style.top = top * this.pdfViewerBase.getZoomFactor() + 'px';
             textDiv.style.left = left * this.pdfViewerBase.getZoomFactor() + 'px';
             textDiv.classList.add(className);
+            if (className === 'e-pv-search-text-highlight') {
+                // tslint:disable-next-line:max-line-length
+                textDiv.style.backgroundColor = (this.pdfViewer.textSearchColorSettings.currentOccurrence === '') ? '#fdd835' : this.pdfViewer.textSearchColorSettings.currentOccurrence;
+            } else if (className === 'e-pv-search-text-highlightother') {
+                // tslint:disable-next-line:max-line-length
+                textDiv.style.backgroundColor = (this.pdfViewer.textSearchColorSettings.otherOccurrence === '') ? '#8b4c12' : this.pdfViewer.textSearchColorSettings.otherOccurrence;
+            }
             let textLayer: HTMLElement = this.pdfViewerBase.getElement('_textLayer_' + pageIndex);
             if (textLayer) {
                 textLayer.appendChild(textDiv);

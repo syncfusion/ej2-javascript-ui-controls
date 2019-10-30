@@ -1,5 +1,14 @@
 var instances = 'ej2_instances';
 var uid = 0;
+var isBlazorPlatform = false;
+/**
+ * Function to check whether the platform is blazor or not.
+ * @return {boolean} result
+ * @private
+ */
+function disableBlazorMode() {
+    isBlazorPlatform = false;
+}
 /**
  * Create Instance from constructor function with desired parameters.
  * @param {Function} classFunction - Class function to which need to create instance
@@ -339,8 +348,16 @@ function formatUnit(value) {
  * @return {boolean} result
  * @private
  */
+function enableBlazorMode() {
+    isBlazorPlatform = true;
+}
+/**
+ * Function to check whether the platform is blazor or not.
+ * @return {boolean} result
+ * @private
+ */
 function isBlazor() {
-    return window && Object.keys(window).indexOf('Blazor') >= 0;
+    return isBlazorPlatform;
 }
 /**
  * Function to convert xPath to DOM element in blazor platform
@@ -1086,9 +1103,8 @@ var Observer = /** @__PURE__ @class */ (function () {
         if (argument) {
             argument.name = property;
         }
-        var blazor = 'Blazor';
         var curObject = getValue(property, this.boundedEvents).slice(0);
-        if (window[blazor]) {
+        if (isBlazor()) {
             return this.blazorCallback(curObject, argument, successHandler, errorHandler, 0);
         }
         else {
@@ -1322,8 +1338,7 @@ var Base = /** @__PURE__ @class */ (function () {
             if (isColEName.test(eventName)) {
                 var handler = getValue(eventName, this);
                 if (handler) {
-                    var blazor = 'Blazor';
-                    if (window[blazor]) {
+                    if (isBlazor()) {
                         var promise = handler.call(this, eventProp);
                         if (promise && typeof promise.then === 'function') {
                             if (!successHandler) {
@@ -5610,6 +5625,7 @@ var __decorate$2 = (undefined && undefined.__decorate) || function (decorators, 
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 };
 var defaultPosition = { left: 0, top: 0, bottom: 0, right: 0 };
+var isDraggedObject = { isDragged: false };
 /**
  * Specifies the position coordinates
  */
@@ -5745,10 +5761,21 @@ var Draggable = /** @__PURE__ @class */ (function (_super) {
         var horizontalScrollParent = this.getScrollableParent(this.element.parentNode, 'horizontal');
     };
     Draggable.prototype.initialize = function (evt, curTarget) {
+        if (this.isDragStarted()) {
+            return;
+        }
+        else {
+            this.isDragStarted(true);
+            this.externalInitialize = false;
+        }
         this.target = (evt.currentTarget || curTarget);
         this.dragProcessStarted = false;
         if (this.abort) {
             if (!isNullOrUndefined(closest(evt.target, this.abort))) {
+                /* istanbul ignore next */
+                if (this.isDragStarted()) {
+                    this.isDragStarted(true);
+                }
                 return;
             }
         }
@@ -6037,6 +6064,9 @@ var Draggable = /** @__PURE__ @class */ (function (_super) {
         this.setGlobalDroppables(true);
         document.body.classList.remove('e-prevent-select');
     };
+    /**
+     * @private
+     */
     Draggable.prototype.intDestroy = function (evt) {
         this.dragProcessStarted = false;
         this.toggleEvents();
@@ -6046,6 +6076,9 @@ var Draggable = /** @__PURE__ @class */ (function (_super) {
         EventHandler.remove(document, Browser.touchEndEvent, this.intDragStop);
         EventHandler.remove(document, Browser.touchEndEvent, this.intDestroy);
         EventHandler.remove(document, Browser.touchMoveEvent, this.intDrag);
+        if (this.isDragStarted()) {
+            this.isDragStarted(true);
+        }
     };
     // triggers when property changed
     Draggable.prototype.onPropertyChanged = function (newProp, oldProp) {
@@ -6053,6 +6086,12 @@ var Draggable = /** @__PURE__ @class */ (function (_super) {
     };
     Draggable.prototype.getModuleName = function () {
         return 'draggable';
+    };
+    Draggable.prototype.isDragStarted = function (change) {
+        if (change) {
+            isDraggedObject.isDragged = !isDraggedObject.isDragged;
+        }
+        return isDraggedObject.isDragged;
     };
     Draggable.prototype.setDragArea = function () {
         var eleWidthBound;
@@ -6109,8 +6148,8 @@ var Draggable = /** @__PURE__ @class */ (function (_super) {
         var intCoord = this.getCoordinates(evt);
         var pageX;
         var pageY;
-        /* istanbul ignore next */
         var isOffsetParent = isNullOrUndefined(dragEle.offsetParent);
+        /* istanbul ignore next */
         if (isdragscroll) {
             pageX = this.clone ? intCoord.pageX :
                 (intCoord.pageX + (isOffsetParent ? 0 : dragEle.offsetParent.scrollLeft)) - this.relativeXPosition;
@@ -7190,9 +7229,8 @@ function compile$$1(templateString, helper) {
     //tslint:disable-next-line
     return function (data, component, propName, templateId, isStringTemplate, index, isSvg) {
         var result = compiler(data, component, propName);
-        var blazor = 'Blazor';
         var blazorTemplateId = 'BlazorTemplateId';
-        if (window && window[blazor] && !isStringTemplate) {
+        if (isBlazor() && !isStringTemplate) {
             var randomId = getRandomId();
             var blazorId = templateId + randomId;
             if (!blazorTemplates[templateId]) {
@@ -7237,8 +7275,7 @@ function compile$$1(templateString, helper) {
     };
 }
 function updateBlazorTemplate(templateId, templateName, comp, isEmpty, callBack) {
-    var blazor = 'Blazor';
-    if (window && window[blazor]) {
+    if (isBlazor()) {
         var ejsIntrop = 'ejsInterop';
         window[ejsIntrop].updateTemplate(templateName, blazorTemplates[templateId], templateId, comp, callBack);
         if (isEmpty !== false) {
@@ -7307,5 +7344,5 @@ var engineObj = { compile: new Engine().compile };
  * Base modules
  */
 
-export { Ajax, Animation, rippleEffect, isRippleEnabled, enableRipple, Base, getComponent, Browser, Component, ChildProperty, Position, Draggable, Droppable, EventHandler, onIntlChange, rightToLeft, cldrData, defaultCulture, defaultCurrencyCode, Internationalization, setCulture, setCurrencyCode, loadCldr, enableRtl, getNumericObject, getNumberDependable, getDefaultDateObject, KeyboardEvents, L10n, ModuleLoader, Property, Complex, ComplexFactory, Collection, CollectionFactory, Event, NotifyPropertyChanges, CreateBuilder, SwipeSettings, Touch, HijriParser, blazorTemplates, getRandomId, compile$$1 as compile, updateBlazorTemplate, resetBlazorTemplate, setTemplateEngine, getTemplateEngine, createInstance, setImmediate, getValue, setValue, deleteObject, isObject, getEnumValue, merge, extend, isNullOrUndefined, isUndefined, getUniqueID, debounce, queryParams, isObjectArray, compareElementParent, throwError, print, formatUnit, isBlazor, getElement, getInstance, addInstance, uniqueID, createElement, addClass, removeClass, isVisible, prepend, append, detach, remove, attributes, select, selectAll, closest, siblings, getAttributeOrDefault, setStyleAttribute, classList, matches, Observer };
+export { Ajax, Animation, rippleEffect, isRippleEnabled, enableRipple, Base, getComponent, Browser, Component, ChildProperty, Position, Draggable, Droppable, EventHandler, onIntlChange, rightToLeft, cldrData, defaultCulture, defaultCurrencyCode, Internationalization, setCulture, setCurrencyCode, loadCldr, enableRtl, getNumericObject, getNumberDependable, getDefaultDateObject, KeyboardEvents, L10n, ModuleLoader, Property, Complex, ComplexFactory, Collection, CollectionFactory, Event, NotifyPropertyChanges, CreateBuilder, SwipeSettings, Touch, HijriParser, blazorTemplates, getRandomId, compile$$1 as compile, updateBlazorTemplate, resetBlazorTemplate, setTemplateEngine, getTemplateEngine, disableBlazorMode, createInstance, setImmediate, getValue, setValue, deleteObject, isObject, getEnumValue, merge, extend, isNullOrUndefined, isUndefined, getUniqueID, debounce, queryParams, isObjectArray, compareElementParent, throwError, print, formatUnit, enableBlazorMode, isBlazor, getElement, getInstance, addInstance, uniqueID, createElement, addClass, removeClass, isVisible, prepend, append, detach, remove, attributes, select, selectAll, closest, siblings, getAttributeOrDefault, setStyleAttribute, classList, matches, Observer };
 //# sourceMappingURL=ej2-base.es5.js.map

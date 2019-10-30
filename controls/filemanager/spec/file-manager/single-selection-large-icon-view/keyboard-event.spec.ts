@@ -1403,7 +1403,7 @@ describe('FileManager control single selection LargeIcons view', () => {
                 keyboardEventArgs.action = 'altN';
                 feObj.keyActionHandler(keyboardEventArgs);
                 let dialogObj: any = (document.getElementById("file_dialog") as any).ej2_instances[0];
-                expect(dialogObj.element.querySelector('.e-dlg-header').innerHTML).toEqual("Access Denied");
+                expect(dialogObj.element.querySelector('.e-dlg-header').innerText).toEqual("Access Denied");
                 let treeLi1: any = treeObj.element.querySelectorAll('li');
                 let largeLi1: any = document.getElementById('file_largeicons').querySelectorAll('.e-list-item');
                 expect(treeLi1.length).toEqual(5);
@@ -1540,7 +1540,7 @@ describe('FileManager control single selection LargeIcons view', () => {
                 keyboardEventArgs.target = largeLi[1];
                 feObj.largeiconsviewModule.keyActionHandler(keyboardEventArgs);
                 let dialogObj: any = (document.getElementById("file_dialog") as any).ej2_instances[0];
-                expect(dialogObj.element.querySelector('.e-dlg-header').innerHTML).toEqual("Access Denied");
+                expect(dialogObj.element.querySelector('.e-dlg-header').innerText).toEqual("Access Denied");
                 done();
             }, 500);
         });
@@ -1618,7 +1618,7 @@ describe('FileManager control single selection LargeIcons view', () => {
                 keyboardEventArgs.target = largeLi[1];
                 feObj.largeiconsviewModule.keyActionHandler(keyboardEventArgs);
                 let dialogObj: any = (document.getElementById("file_dialog") as any).ej2_instances[0];
-                expect(dialogObj.element.querySelector('.e-dlg-header').innerHTML).toEqual("Access Denied");
+                expect(dialogObj.element.querySelector('.e-dlg-header').innerText).toEqual("Access Denied");
                 let treeLi1: any = treeObj.element.querySelectorAll('li');
                 let largeLi1: any = document.getElementById('file_largeicons').querySelectorAll('.e-list-item');
                 expect(treeLi1.length).toEqual(5);
@@ -1758,7 +1758,7 @@ describe('FileManager control single selection LargeIcons view', () => {
                 keyboardEventArgs.target = largeLi[1];
                 feObj.largeiconsviewModule.keyActionHandler(keyboardEventArgs);
                 let dialogObj: any = (document.getElementById("file_dialog") as any).ej2_instances[0];
-                expect(dialogObj.element.querySelector('.e-dlg-header').innerHTML).toEqual("Access Denied");
+                expect(dialogObj.element.querySelector('.e-dlg-header').innerText).toEqual("Access Denied");
                 let treeLi1: any = treeObj.element.querySelectorAll('li');
                 let largeLi1: any = document.getElementById('file_largeicons').querySelectorAll('.e-list-item');
                 expect(treeLi1.length).toEqual(5);
@@ -1859,14 +1859,14 @@ describe('FileManager control single selection LargeIcons view', () => {
                 keyboardEventArgs.target = largeLi[1];
                 feObj.largeiconsviewModule.keyActionHandler(keyboardEventArgs);
                 let dialogObj: any = (document.getElementById("file_dialog") as any).ej2_instances[0];
-                expect(dialogObj.element.querySelector('.e-dlg-header').innerHTML).toEqual("Access Denied");
+                expect(dialogObj.element.querySelector('.e-dlg-header').innerText).toEqual("Access Denied");
                 dialogObj.element.querySelector('.e-primary').click();
                 mouseEventArgs.target = largeLi[7];
                 feObj.largeiconsviewModule.clickObj.tap(tapEvent);
                 keyboardEventArgs.action = 'enter';
                 keyboardEventArgs.target = largeLi[7];
                 feObj.largeiconsviewModule.keyActionHandler(keyboardEventArgs);
-                expect(dialogObj.element.querySelector('.e-dlg-header').innerHTML).toEqual("Access Denied");
+                expect(dialogObj.element.querySelector('.e-dlg-header').innerText).toEqual("Access Denied");
                 done();
             }, 500);
         });
@@ -1927,7 +1927,7 @@ describe('FileManager control single selection LargeIcons view', () => {
                     keyboardEventArgs.target = largeLi1[2];
                     feObj.largeiconsviewModule.keyActionHandler(keyboardEventArgs);
                     let dialogObj: any = (document.getElementById("file_dialog") as any).ej2_instances[0];
-                    expect(dialogObj.element.querySelector('.e-dlg-header').innerHTML).toEqual("Access Denied");
+                    expect(dialogObj.element.querySelector('.e-dlg-header').innerText).toEqual("Access Denied");
                     dialogObj.element.querySelector('.e-primary').click();
                     mouseEventArgs.target = largeLi1[7];
                     feObj.largeiconsviewModule.clickObj.tap(tapEvent);

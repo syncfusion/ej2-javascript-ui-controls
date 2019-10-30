@@ -142,6 +142,9 @@ export class ContextMenu {
                     this.pdfViewerBase.getElement('_context_menu_separator').classList.add('e-menu-hide');
                     this.pdfViewerBase.getElement('_context_menu_comment_separator').classList.add('e-menu-hide');
                     // tslint:disable-next-line:max-line-length
+                } else if (this.pdfViewer.selectedItems.annotations.length !== 0 && this.pdfViewer.selectedItems.annotations[0].shapeAnnotationType === 'HandWrittenSignature') {
+                    this.onOpeningForShape(false, true);
+                    // tslint:disable-next-line:max-line-length
                 } else if (this.pdfViewer.selectedItems.annotations.length !== 0 && this.pdfViewer.selectedItems.annotations[0].shapeAnnotationType !== 'Path') {
                     this.onOpeningForShape(true);
                 } else {
@@ -175,11 +178,7 @@ export class ContextMenu {
                 this.pdfViewerBase.getElement('_context_menu_separator').classList.add('e-menu-hide');
                 this.pdfViewerBase.getElement('_context_menu_comment_separator').classList.add('e-menu-hide');
             } else {
-                if (this.pdfViewer.selectedItems.annotations.length === 0) {
-                    // tslint:disable-next-line:max-line-length
-                    this.contextMenuObj.hideItems([this.pdfViewer.localeObj.getConstant('Cut'), this.pdfViewer.localeObj.getConstant('Paste'), this.pdfViewer.localeObj.getConstant('Delete Context'), this.pdfViewer.localeObj.getConstant('Scale Ratio'), this.pdfViewer.localeObj.getConstant('Properties')]);
-                    this.pdfViewerBase.getElement('_context_menu_separator').classList.add('e-menu-hide');
-                }
+                this.hideContextItems();
             }
             this.enableCommentPanelItem();
         } else {
@@ -187,6 +186,13 @@ export class ContextMenu {
         }
         if (this.pdfViewer.contextMenuOption === 'None') {
             args.cancel = true;
+        }
+    }
+    private hideContextItems(): void {
+        if (this.pdfViewer.selectedItems.annotations.length === 0) {
+            // tslint:disable-next-line:max-line-length
+            this.contextMenuObj.hideItems([this.pdfViewer.localeObj.getConstant('Cut'), this.pdfViewer.localeObj.getConstant('Paste'), this.pdfViewer.localeObj.getConstant('Delete Context'), this.pdfViewer.localeObj.getConstant('Scale Ratio'), this.pdfViewer.localeObj.getConstant('Properties')]);
+            this.pdfViewerBase.getElement('_context_menu_separator').classList.add('e-menu-hide');
         }
     }
 
@@ -198,7 +204,7 @@ export class ContextMenu {
         }
     }
 
-    private onOpeningForShape(isProp: boolean): void {
+    private onOpeningForShape(isProp: boolean, isSignature?: boolean): void {
         if (this.pdfViewer.annotation && this.pdfViewer.annotation.isShapeCopied) {
             this.contextMenuObj.enableItems([this.pdfViewer.localeObj.getConstant('Paste')], true);
         } else {
@@ -215,6 +221,12 @@ export class ContextMenu {
                 this.contextMenuObj.hideItems([this.pdfViewer.localeObj.getConstant('Properties')]);
                 this.pdfViewerBase.getElement('_context_menu_separator').classList.add('e-menu-hide');
             }
+        } else if (isSignature) {
+            // tslint:disable-next-line:max-line-length
+            this.contextMenuObj.hideItems([this.pdfViewer.localeObj.getConstant('Properties'), this.pdfViewer.localeObj.getConstant('Comment')]);
+            // tslint:disable-next-line:max-line-length
+            this.pdfViewerBase.getElement('_context_menu_separator').classList.add('e-menu-hide');
+            this.pdfViewerBase.getElement('_context_menu_comment_separator').classList.add('e-menu-hide');
         } else {
             this.contextMenuObj.hideItems([this.pdfViewer.localeObj.getConstant('Cut'), this.pdfViewer.localeObj.getConstant('Copy'),
             // tslint:disable-next-line:max-line-length

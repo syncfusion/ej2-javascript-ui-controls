@@ -10,6 +10,7 @@ import { Property, Complex, NotifyPropertyChanges, INotifyPropertyChanged, Event
 import { Touch } from '../src/touch';
 import { enableRtl, setCulture } from '../src/internationalization';
 import { setCurrencyCode } from '../src/index';
+import * as Util from '../src/util';
 //classes
 
 
@@ -831,12 +832,12 @@ describe('Component', () => {
         });
         it(' - isRendered property as true after renderComplete call', () => {
             let obj: any = new Styler();
-            delete window['Blazor'];
+            Util.disableBlazorMode();
             obj.renderComplete();
             expect(obj.isRendered).toBe(true);
         });
         it(' - wrapper element and blazor testing', () => {
-            window['Blazor'] = {};
+            Util.enableBlazorMode();
             window['ejsInterop'] = {
                 renderComplete: function (wrapper: any) {
                     return wrapper;
@@ -852,7 +853,7 @@ describe('Component', () => {
 
     describe('blazor child save changes', () => {
         it(' - before component render', () => {
-            window['Blazor'] = {};
+            Util.enableBlazorMode();
             window['ejsInterop'] = {
                 childSaveChanges: function (wrapper: any) {
                     return wrapper;
@@ -864,11 +865,11 @@ describe('Component', () => {
             let obj: any = new Styler({ size: '10px' }, elem);
             obj.fields.name = 'childchange';
             expect(curSpy).not.toHaveBeenCalled();
-            delete window['Blazor'];
+            Util.disableBlazorMode();
             delete window['ejsInterop'];
         });
         it(' - after component render', () => {
-            window['Blazor'] = {};
+            Util.enableBlazorMode();
             window['ejsInterop'] = {
                 childSaveChanges: function (wrapper: any) {
                     return wrapper;
@@ -886,7 +887,7 @@ describe('Component', () => {
             obj.renderComplete(wrapper);
             obj.fields.name = 'childchange';
             expect(curSpy).toHaveBeenCalled();
-            delete window['Blazor'];
+            Util.disableBlazorMode();
             delete window['ejsInterop'];
         });
     });

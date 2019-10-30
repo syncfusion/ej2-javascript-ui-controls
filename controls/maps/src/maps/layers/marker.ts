@@ -1,7 +1,7 @@
 import { Maps } from '../../index';
 import {
     LayerSettings, MarkerSettings, IMarkerRenderingEventArgs, markerRendering,
-     convertTileLatLongToPoint, MapLocation
+     convertTileLatLongToPoint, MapLocation, SameMarkerClusterData
 } from '../index';
 import { IMarkerClickEventArgs, markerClick, IMarkerMoveEventArgs, markerMouseMove,
     IMarkerClusterClickEventArgs, IMarkerClusterMoveEventArgs, markerClusterClick, markerClusterMouseMove,
@@ -9,7 +9,7 @@ import { IMarkerClickEventArgs, markerClick, IMarkerMoveEventArgs, markerMouseMo
 import { isNullOrUndefined, createElement } from '@syncfusion/ej2-base';
 import { Point, getTranslate, convertGeoToPoint, clusterTemplate, marker, markerTemplate, getZoomTranslate } from '../utils/helper';
 import {
-     getElementByID
+     getElementByID, mergeSeparateCluster, clusterSeparate
 } from '../utils/helper';
 
 /**
@@ -21,9 +21,14 @@ export class Marker {
     private trackElements: Element[];
     private markerSVGObject: Element;
     private previousExplodeId: string;
+    /**
+     * @private
+     */
+    public sameMarkerData: SameMarkerClusterData[];
     constructor(maps: Maps) {
         this.maps = maps;
         this.trackElements = [];
+        this.sameMarkerData = [];
     }
 
     /* tslint:disable:no-string-literal */
@@ -137,9 +142,22 @@ export class Marker {
         if (target.indexOf('_LayerIndex_') === -1  || target.indexOf('_cluster_') === -1) {
             return;
         }
-        let options: { marker: MarkerSettingsModel, data: object } = this.getMarker(target);
+        let options: { marker: MarkerSettingsModel, data: object, clusterCollection: SameMarkerClusterData[] } = this.getMarker(target);
         if (isNullOrUndefined(options)) {
             return;
+        }
+        let textElement = document.getElementById(target.indexOf('_datalabel_') > -1 ? target : target + '_datalabel_' + target.split('_cluster_')[1]);
+        if (options.clusterCollection.length > 0) {
+            let textElement = document.getElementById(target.indexOf('_datalabel_') > -1 ? target : target + '_datalabel_' + target.split('_cluster_')[1]);
+            if (+textElement.textContent === options.clusterCollection[0].data.length) {
+                if (this.sameMarkerData.length > 0) {
+                    mergeSeparateCluster(this.sameMarkerData, this.maps, this.markerSVGObject);
+                }
+                this.sameMarkerData = options.clusterCollection;
+                clusterSeparate(this.sameMarkerData, this.maps, this.markerSVGObject, true);
+            } else {
+                this.sameMarkerData = [];
+            }
         }
         let eventArgs: IMarkerClusterClickEventArgs = {
             cancel: false, name: markerClusterClick, data: options.data, maps: this.maps,
@@ -155,11 +173,12 @@ export class Marker {
     /**
      * To get marker from target id
      */
-    private getMarker(target: string): { marker: MarkerSettingsModel, data: object } {
+    private getMarker(target: string): { marker: MarkerSettingsModel, data: object, clusterCollection: SameMarkerClusterData[] } {
         let id: string[] = target.split('_LayerIndex_');
         let index: number = parseInt(id[1].split('_')[0], 10);
         let layer: LayerSettings = <LayerSettings>this.maps.layers[index];
         let data: object;
+        let clusterCollection: SameMarkerClusterData[] = [];
         let marker: MarkerSettingsModel;
         if (target.indexOf('_MarkerIndex_') > -1) {
             let markerIndex: number = parseInt(id[1].split('_MarkerIndex_')[1].split('_')[0], 10);
@@ -167,7 +186,19 @@ export class Marker {
             marker = layer.markerSettings[markerIndex];
             if (!isNaN(markerIndex)) {
                 data = marker.dataSource[dataIndex];
-                return { marker: marker, data: data };
+                let colo: Object[] = [];
+                if ((this.maps.layers[index].markerClusterSettings.allowClusterExpand) && target.indexOf('_cluster_') > -1) {
+                    marker.dataSource.forEach((loc, index) => {
+                        if (loc['latitude'] === data['latitude'] && loc['longitude'] === data['longitude']) {
+                            colo.push({ data: data, index: index });
+                        }
+                    });
+                    clusterCollection.push(<SameMarkerClusterData>{
+                        data: colo, layerIndex: index, markerIndex: markerIndex,
+                        targetClusterIndex: +(target.split('_cluster_')[1].indexOf('_datalabel_') > -1 ? target.split('_cluster_')[1].split('_datalabel_')[0] : target.split('_cluster_')[1])
+                    });
+                }
+                return { marker: marker, data: data, clusterCollection: clusterCollection };
             }
         }
         return null;

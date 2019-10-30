@@ -2849,7 +2849,8 @@ let TreeGrid = TreeGrid_1 = class TreeGrid extends Component {
         let gridColumn;
         let gridColumnCollection = [];
         for (let i = 0; i < column.length; i++) {
-            gridColumn = {};
+            let treeColumn = this.grid.getColumnByUid(column[i].uid);
+            gridColumn = treeColumn ? treeColumn : {};
             treeGridColumn = {};
             if (typeof this.columns[i] === 'string') {
                 gridColumn.field = treeGridColumn.field = this.columns[i];
@@ -3525,9 +3526,14 @@ let TreeGrid = TreeGrid_1 = class TreeGrid extends Component {
     /**
      * Refreshes the TreeGrid column changes.
      */
-    refreshColumns() {
-        this.grid.columns = this.getGridColumns(this.columns);
-        this.grid.refreshColumns();
+    refreshColumns(refreshUI) {
+        if (isNullOrUndefined(refreshUI) || refreshUI) {
+            this.grid.columns = this.getGridColumns(this.columns);
+            this.grid.refreshColumns();
+        }
+        else {
+            this.grid.setProperties({ columns: this.getGridColumns(this.columns) }, true);
+        }
     }
     /**
      * Refreshes the TreeGrid header.
@@ -5386,14 +5392,14 @@ class RowDD$1 {
                     if (this.dropPosition === 'bottomSegment') {
                         if (!droppedRecord.hasChildRecords) {
                             if (this.parent.parentIdMapping) {
-                                this.parent.dataSource.splice(recordIndex1 + 1, 0, this.draggedRecord.taskData);
+                                this.treeData.splice(recordIndex1 + 1, 0, this.draggedRecord.taskData);
                             }
                             this.treeGridData.splice(recordIndex1 + 1, 0, this.draggedRecord);
                         }
                         else {
                             count = this.getChildCount(droppedRecord, 0);
                             if (this.parent.parentIdMapping) {
-                                this.parent.dataSource.splice(recordIndex1 + count + 1, 0, this.draggedRecord.taskData);
+                                this.treeData.splice(recordIndex1 + count + 1, 0, this.draggedRecord.taskData);
                             }
                             this.treeGridData.splice(recordIndex1 + count + 1, 0, this.draggedRecord);
                         }
@@ -5436,7 +5442,7 @@ class RowDD$1 {
             childRecords.length + recordIndex1 + 1;
         if (this.dropPosition === 'middleSegment') {
             if (tObj.parentIdMapping) {
-                this.parent.dataSource.splice(childRecordsLength, 0, this.draggedRecord.taskData);
+                this.treeData.splice(childRecordsLength, 0, this.draggedRecord.taskData);
                 this.treeGridData.splice(childRecordsLength, 0, this.draggedRecord);
             }
             else {
@@ -5452,7 +5458,7 @@ class RowDD$1 {
         let tObj = this.parent;
         if (this.dropPosition === 'topSegment') {
             if (tObj.parentIdMapping) {
-                this.parent.dataSource.splice(recordIndex1, 0, this.draggedRecord.taskData);
+                this.treeData.splice(recordIndex1, 0, this.draggedRecord.taskData);
             }
             this.draggedRecord.parentItem = this.treeGridData[recordIndex1].parentItem;
             this.draggedRecord.parentUniqueID = this.treeGridData[recordIndex1].parentUniqueID;
@@ -5512,9 +5518,11 @@ class RowDD$1 {
     deleteDragRow() {
         if (this.parent.dataSource instanceof DataManager && isOffline(this.parent)) {
             this.treeGridData = this.parent.grid.dataSource.dataSource.json;
+            this.treeData = this.parent.dataSource.dataSource.json;
         }
         else {
             this.treeGridData = this.parent.grid.dataSource;
+            this.treeData = this.parent.dataSource;
         }
         let deletedRow;
         deletedRow = getParentData(this.parent, this.draggedRecord.uniqueID);
@@ -5533,7 +5541,7 @@ class RowDD$1 {
             count++;
             tObj.flatData.splice(count, 0, currentRecord);
             if (tObj.parentIdMapping) {
-                tObj.dataSource.splice(count, 0, currentRecord.taskData);
+                this.treeData.splice(count, 0, currentRecord.taskData);
             }
             if (currentRecord.hasChildRecords) {
                 count = this.updateChildRecord(currentRecord, count);
@@ -5649,7 +5657,7 @@ class RowDD$1 {
                 }
             }
             if (idx !== -1) {
-                tObj.dataSource.splice(idx, 1);
+                this.treeData.splice(idx, 1);
                 this.treeGridData.splice(idx, 1);
             }
             if (currentRecord.hasChildRecords) {

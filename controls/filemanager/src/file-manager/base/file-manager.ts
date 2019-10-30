@@ -928,7 +928,7 @@ export class FileManager extends Component<HTMLElement> implements INotifyProper
         let details: Object = getPathObject(this);
         if (!hasUploadAccess(details)) {
             args.cancel = true;
-            createDeniedDialog(this, details);
+            createDeniedDialog(this, details, events.permissionUpload);
             return;
         }
         this.uploadDialogObj.show();
@@ -995,7 +995,7 @@ export class FileManager extends Component<HTMLElement> implements INotifyProper
                 e.preventDefault();
                 this.itemData = [getPathObject(this)];
                 if (!hasContentAccess(this.itemData[0])) {
-                    createDeniedDialog(this, this.itemData[0]);
+                    createDeniedDialog(this, this.itemData[0], events.permissionEditContents);
                 } else {
                     createDialog(this, 'NewFolder');
                 }
@@ -1246,7 +1246,7 @@ export class FileManager extends Component<HTMLElement> implements INotifyProper
                 createDialog(this, 'Error', result);
             } else {
                 if (!hasContentAccess(details[0])) {
-                    createDeniedDialog(this, details[0]);
+                    createDeniedDialog(this, details[0], events.permissionEditContents);
                 } else {
                     createFolder(this, name);
                 }

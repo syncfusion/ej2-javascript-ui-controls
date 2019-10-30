@@ -2309,7 +2309,7 @@ export enum DiagramEvent {
     'sourcePointChange', 'targetPointChange', 'connectionChange', 'animationComplete', 'click', 'doubleClick',
     'scrollChange', 'dragEnter', 'dragLeave', 'dragOver', 'textEdit', 'paletteSelectionChange', 'historyChange',
     'mouseEnter', 'mouseLeave', 'mouseOver', 'expandStateChange', 'segmentCollectionChange', 'commandExecute', 'historyStateChange',
-    'onUserHandleMouseDown', 'onUserHandleMouseUp', 'onUserHandleMouseEnter', 'onUserHandleMouseLeave'
+    'onUserHandleMouseDown', 'onUserHandleMouseUp', 'onUserHandleMouseEnter', 'onUserHandleMouseLeave', 'onImageLoad'
 }
 
 export type HistoryEntryType =

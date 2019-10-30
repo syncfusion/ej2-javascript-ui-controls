@@ -806,25 +806,6 @@ describe('Grid Selection module', () => {
             expect(selectionModule.selectedRowCellIndexes.length).toBe(0);
         });
 
-        it('Single Cell selection while refreshing grid testing', function (done) {
-            gridObj.dataBound = function () {
-                gridObj.selectCell({ rowIndex: 0, cellIndex: 0 }, true);
-                gridObj.refresh();
-                gridObj.dataBound = function () {
-                    gridObj.selectCell({ rowIndex: 0, cellIndex: 0 }, true);
-                    expect(gridObj.getCellFromIndex(0,0).classList.contains('e-cellselectionbackground')).toBeTruthy;
-                    expect(selectionModule.selectedRowCellIndexes.length).toBe(1);
-                    selectionModule.clearCellSelection();
-                    gridObj.selectRow(0);
-                    expect(gridObj.getRowByIndex(0).querySelector('td').classList.contains('e-selectionbackground')).toBeTruthy;
-                    expect(selectionModule.getSelectedRecords().length).toBe(1);
-                    done();
-                }
-            };
-            gridObj.refresh();
-            gridObj.refresh();
-        });
-
         afterAll(() => {
             destroy(gridObj);
             gridObj = selectionModule = rows = null;
@@ -906,25 +887,6 @@ describe('Grid Selection module', () => {
             expect(selectionModule.selectedRecords.length).toBe(0);
             expect(selectionModule.selectedRowIndexes.length).toBe(0);
             expect(selectionModule.selectedRowCellIndexes.length).toBe(0);
-        });
-
-        it('Single Cell selection while refreshing grid testing freeze', function (done) {
-            gridObj.dataBound = function () {
-                gridObj.selectCell({ rowIndex: 0, cellIndex: 0 }, true);
-                gridObj.refresh();
-                gridObj.dataBound = function () {
-                    gridObj.selectCell({ rowIndex: 0, cellIndex: 0 }, true);
-                    expect(gridObj.getCellFromIndex(0,0).classList.contains('e-cellselectionbackground')).toBeTruthy;
-                    expect(selectionModule.selectedRowCellIndexes.length).toBe(1);
-                    selectionModule.clearCellSelection();
-                    gridObj.selectRow(0);
-                    expect(gridObj.getRowByIndex(0).querySelector('td').classList.contains('e-selectionbackground')).toBeTruthy;
-                    expect(gridObj.getMovableRowByIndex(0).querySelector('td').classList.contains('e-selectionbackground')).toBeTruthy;
-                    done();
-                }
-            };
-            gridObj.refresh();
-            gridObj.refresh();
         });
 
         afterAll(() => {

@@ -6,9 +6,9 @@ import { createElement, remove } from '@syncfusion/ej2-base';
 import { World_Map, usMap, CustomPathData, flightRoutes, intermediatestops1 } from '../data/data.spec';
 import { MouseEvents } from '../../../spec/maps/base/events.spec';
 import { getElement } from '../../../src/maps/utils/helper';
-import { Marker, ILoadEventArgs, BingMap } from '../../../src/maps/index';
+import { Marker, ILoadEventArgs, BingMap, Zoom, MapsTooltip } from '../../../src/maps/index';
 import  {profile , inMB, getMemoryProfile} from '../common.spec';
-Maps.Inject(Marker);
+Maps.Inject(Marker, Zoom, MapsTooltip);
 
 let imageUrl: string = "http:\/\/ecn.{subdomain}.tiles.virtualearth.net\/tiles\/a{quadkey}.jpeg?g=6465";
 let subDomains: string[] = ["t0","t1","t2","t3"];
@@ -730,6 +730,211 @@ describe('Map marker properties tesing', () => {
             map.layers[0].layerType = 'OSM';
             map.refresh();
         });
+    });
+    describe('Marker Checking with cluster expand feature ', () => {
+        let id: string = 'container';
+       let map: Maps;
+       let ele: HTMLDivElement;
+       let spec: Element;
+       let prevent: Function = (): void => {
+       };
+       let trigger: MouseEvents = new MouseEvents();
+       beforeAll(() => {
+           ele = <HTMLDivElement>createElement('div', { id: id, styles: 'height: 512px; width: 512px;' });
+           document.body.appendChild(ele);
+           map = new Maps({
+               baseLayerIndex: 0,
+               zoomSettings: {
+                   enable: true,
+                   zoomOnClick: true
+               },
+               layers: [
+                   {
+                       shapeData: MapData,
+                       markerClusterSettings: {
+                           allowClustering: true,
+                           allowClusterExpand: false,
+                           height: 20, width: 20
+                       },
+                   }
+               ]
+           }, '#' + id);
+       });
+       afterAll(() => {
+           remove(ele);
+           map.destroy();
+       });
+       
+       it('checking the click on the cluster when allowClusterExpand false', () => {
+           map.loaded = (args: ILoadedEventArgs) => {
+               let element: Element = document.getElementById(map.element.id + '_LayerIndex_0_MarkerIndex_0_dataIndex_2_cluster_0');
+               let triger: MouseEvents = new MouseEvents();
+               triger.clickEvent(element);
+               element = document.getElementById(map.element.id + '_LayerIndex_0_MarkerIndex_0_dataIndex_3');
+               expect(element['style'].visibility === 'hidden').toBe(true);
+           };
+           map.layers[0].markerSettings = [
+               {
+                   visible: true, height: 20, width: 20,
+                   dataSource: [{ Name: "USA", latitude: 38.8833, longitude: -77.0167 },
+                   { Name: "Brazil", latitude: -15.7833, longitude: -47.8667 },
+                   { Name: "India Data1", latitude: 21.0000, longitude: 78.0000 },
+                   { Name: "India Data2", latitude: 21.0000, longitude: 78.0000 },
+                   { Name: "India Data3", latitude: 21.0000, longitude: 78.0000 },
+                   { Name: "China", latitude: 35.0000, longitude: 103.0000 },
+                   { Name: "Indonesia", latitude: -6.1750, longitude: 106.8283 }]
+               }
+           ];
+           map.refresh();
+       });
+
+       it('checking the click on the cluster when allowClusterExpand true', () => {
+           map.loaded = (args: ILoadedEventArgs) => {
+               let element: Element = document.getElementById(map.element.id + '_LayerIndex_0_MarkerIndex_0_dataIndex_2_cluster_0');
+               let triger: MouseEvents = new MouseEvents();
+               triger.clickEvent(element);
+               element = document.getElementById(map.element.id + '_LayerIndex_0_MarkerIndex_0_dataIndex_3');
+               expect(element['style'].visibility === 'visible').toBe(true);
+           };
+           map.layers[0].markerClusterSettings.allowClusterExpand = true;
+           map.refresh();
+       });
+       it('clusterexpand for more number of markers', () => {
+           map.loaded = (args: ILoadedEventArgs) => {
+               //When click on different markers location clusters, there should not markers expand and map should zoomed
+               let element: Element = document.getElementById(map.element.id + '_LayerIndex_0_MarkerIndex_0_dataIndex_19_cluster_2');
+               let triger: MouseEvents = new MouseEvents();
+               triger.clickEvent(element);
+               expect(element['style'].visibility === '' || element['style'].visibility === 'hidden').toBe(true);
+
+               element = document.getElementById(map.element.id + '_LayerIndex_0_MarkerIndex_0_dataIndex_4_cluster_1');
+               triger = new MouseEvents();
+               triger.clickEvent(element);
+               element = document.getElementById(map.element.id + '_LayerIndex_0_MarkerIndex_0_dataIndex_4_cluster_1');
+               expect(element['style'].visibility === '' || element['style'].visibility === 'hidden').toBe(true);
+               element = document.getElementById(map.element.id + '_LayerIndex_0_MarkerIndex_0_dataIndex_6');
+               expect(element['style'].visibility === 'visible').toBe(true);
+           };
+           map.layers[0].markerSettings = [
+               {
+                   visible: true, height: 20, width: 20,
+                   dataSource: [{ Name: "USA 1", latitude: 38.8833, longitude: -77.0167 },
+                   { Name: "USA 2", latitude: 38.8833, longitude: -77.0167 },
+                   { Name: "USA 3", latitude: 38.8833, longitude: -77.0167 },
+                   { Name: "Brazil", latitude: -15.7833, longitude: -47.8667 },
+                   { Name: "India Data1", latitude: 21.0000, longitude: 78.0000 },
+                   { Name: "India Data2", latitude: 21.0000, longitude: 78.0000 },
+                   { Name: "India Data3", latitude: 21.0000, longitude: 78.0000 },
+                   { Name: "India Data4", latitude: 21.0000, longitude: 78.0000 },
+                   { Name: "India Data5", latitude: 21.0000, longitude: 78.0000 },
+                   { Name: "India Data6", latitude: 21.0000, longitude: 78.0000 },
+                   { Name: "India Data7", latitude: 21.0000, longitude: 78.0000 },
+                   { Name: "India Data8", latitude: 21.0000, longitude: 78.0000 },
+                   { Name: "India Data9", latitude: 21.0000, longitude: 78.0000 },
+                   { Name: "India Data10", latitude: 21.0000, longitude: 78.0000 },
+                   { Name: "India Data11", latitude: 21.0000, longitude: 78.0000 },
+                   { Name: "India Data12", latitude: 21.0000, longitude: 78.0000 },
+                   { Name: "India Data13", latitude: 21.0000, longitude: 78.0000 },
+                   { Name: "India Data14", latitude: 21.0000, longitude: 78.0000 },
+                   { Name: "India Data15", latitude: 21.0000, longitude: 78.0000 },
+                   { latitude: 48.8773406, longitude: 2.3299627, Name: 'Paris' },
+                   { latitude: 52.4643089, longitude: 13.4107368, Name: 'Berlin' },
+                   { Name: "China", latitude: 35.0000, longitude: 103.0000 },
+                   { Name: "Indonesia", latitude: -6.1750, longitude: 106.8283 }]
+               }
+           ];
+           map.refresh();
+       });
+       it('Click on some another cluster markers and check the previous one is merged', () => {
+           let element: Element = document.getElementById(map.element.id + '_LayerIndex_0_MarkerIndex_0_dataIndex_0_cluster_0');
+           let triger: MouseEvents = new MouseEvents();
+           triger.clickEvent(element);
+           element = document.getElementById(map.element.id + '_LayerIndex_0_MarkerIndex_0_dataIndex_0_cluster_0');
+           expect(element['style'].visibility === '' || element['style'].visibility === 'hidden').toBe(true);
+           element = document.getElementById(map.element.id + '_LayerIndex_0_MarkerIndex_0_dataIndex_2');
+           expect(element['style'].visibility === 'visible').toBe(true);
+           element = document.getElementById(map.element.id + '_LayerIndex_0_MarkerIndex_0_dataIndex_6');
+           expect(element['style'].visibility === 'hidden').toBe(true);
+
+           //When we click on the maps, then expanded markers should be merged
+           element = document.getElementById(map.element.id + '_Zooming_ToolBar_ZoomIn_Rect');
+           let eventObj: Object = {
+               target: element,
+               type: 'touchstart',
+               stopImmediatePropagation: prevent,
+               pageX: element.getBoundingClientRect().left,
+               pageY: element.getBoundingClientRect().top
+           };
+           map.zoomModule.performToolBarAction(<PointerEvent>eventObj);
+           element = document.getElementById(map.element.id + '_LayerIndex_0_MarkerIndex_0_dataIndex_0_cluster_0');
+           expect(element['style'].visibility === '' || element['style'].visibility === 'hidden').toBe(true);
+           element = document.getElementById(map.element.id + '_LayerIndex_0_MarkerIndex_0_dataIndex_2');
+           expect(element['style'].visibility === '' || element['style'].visibility === 'hidden').toBe(true);
+
+           //After the zoom then expand the markers and pan the map, there should markers is expanded state
+           element = document.getElementById(map.element.id + '_LayerIndex_0_MarkerIndex_0_dataIndex_0_cluster_0');
+           triger = new MouseEvents();
+           triger.clickEvent(element);
+           element = document.getElementById(map.element.id + '_LayerIndex_0_shapeIndex_26_dataIndex_undefined');
+           triger = new MouseEvents();
+           triger.dragAndDropEvent(element, 250, 250, 250, 280,'touch', map);
+           element = document.getElementById(map.element.id + '_LayerIndex_0_MarkerIndex_0_dataIndex_0_cluster_0');
+           expect(element['style'].visibility === 'hidden' || element['style'].visibility === '').toBe(true);
+           element = document.getElementById(map.element.id + '_LayerIndex_0_MarkerIndex_0_dataIndex_2');
+           expect(element['style'].visibility === 'visible').toBe(true);
+       });
+       it('Show Tooltip for marker on click and checking in zoom panning', () => {
+           map.loaded = (args: ILoadedEventArgs) => {
+               let element: Element = document.getElementById(map.element.id + '_Zooming_ToolBar_ZoomIn_Rect');
+               let eventObj: Object = {
+                   target: element,
+                   type: 'touchstart',
+                   stopImmediatePropagation: prevent,
+                   pageX: element.getBoundingClientRect().left,
+                   pageY: element.getBoundingClientRect().top
+               };
+               map.zoomModule.performToolBarAction(<PointerEvent>eventObj);
+               let triger: MouseEvents = new MouseEvents();
+               //Show tooltip on click on the marker
+               element = document.getElementById(map.element.id + '_LayerIndex_0_MarkerIndex_0_dataIndex_19');
+               let x: number = element.getClientRects()[0]['x'];
+               let y: number = element.getClientRects()[0]['y'];
+               triger.mouseupEvent(element, x, y, x + 5, y + 5);
+               let tooltipEle: Element = document.getElementById(map.element.id + '_mapsTooltip');
+               expect(tooltipEle['style'].visibility === '' || tooltipEle['style'].visibility === 'visible').toBe(true);
+               triger.dragAndDropEvent(element, 250, 250, 250, 280, 'touch', map);
+               expect(tooltipEle['style'].visibility === '' || tooltipEle['style'].visibility === 'visible').toBe(true);           
+           };
+           map.tooltipDisplayMode = 'Click';
+           map.layers[0].markerSettings[0].tooltipSettings.visible = true;
+           map.layers[0].markerSettings[0].tooltipSettings.valuePath = 'Name';
+           map.refresh();
+       });
+       it('Show Tooltip for marker on click and checking in zoom panning for OSM maps', () => {
+        map.loaded = (args: ILoadedEventArgs) => {
+            let element: Element = document.getElementById(map.element.id + '_Zooming_ToolBar_ZoomIn_Rect');
+            let eventObj: Object = {
+                target: element,
+                type: 'touchstart',
+                stopImmediatePropagation: prevent,
+                pageX: element.getBoundingClientRect().left,
+                pageY: element.getBoundingClientRect().top
+            };
+            map.zoomModule.performToolBarAction(<PointerEvent>eventObj);
+            let triger: MouseEvents = new MouseEvents();
+            //Show tooltip on click on the marker
+            element = document.getElementById(map.element.id + '_LayerIndex_0_MarkerIndex_0_dataIndex_19');
+            let x: number = element.getClientRects()[0]['x'];
+            let y: number = element.getClientRects()[0]['y'];
+            triger.mouseupEvent(element, x, y, x + 5, y + 5);
+            let tooltipEle: Element = document.getElementById(map.element.id + '_mapsTooltip');
+            expect(tooltipEle['style'].visibility === '' || tooltipEle['style'].visibility === 'visible').toBe(true);
+            triger.dragAndDropEvent(element, 250, 250, 250, 280, 'touch', map);
+            expect(tooltipEle['style'].visibility === '' || tooltipEle['style'].visibility === 'visible').toBe(true);           
+        };
+        map.layers[0].layerType = 'OSM';
+        map.refresh();
+    });
     });
     it('memory leak', () => {
         profile.sample();

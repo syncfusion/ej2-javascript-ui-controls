@@ -237,7 +237,7 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
   public expandStateMapping: string;
 
   /**
-   * Specifies the mapping property path for the expand status of a record in data source
+   * If `allowRowDragAndDrop` is set to true, you can drag and drop treegrid rows at another treegrid.  
    * @default false
    */
   @Property(false)
@@ -2069,12 +2069,13 @@ private getGridEditSettings(): GridEditModel {
     let gridColumn: GridColumnModel;
     let gridColumnCollection: GridColumnModel[] = [];
     for (let i: number = 0; i < column.length; i++) {
-      gridColumn = {}; treeGridColumn = {};
+      let treeColumn: GridColumnModel = this.grid.getColumnByUid(column[i].uid);
+      gridColumn = treeColumn ? treeColumn : {}; treeGridColumn = {};
       if (typeof this.columns[i] === 'string') {
         gridColumn.field =  treeGridColumn.field = <string>this.columns[i];
       } else {
         for (let prop of Object.keys(column[i])) {
-          gridColumn[prop] =  treeGridColumn[prop] = column[i][prop];
+          gridColumn[prop] = treeGridColumn[prop] = column[i][prop];
         }
       }
       if (column[i].columns) {
@@ -2756,9 +2757,13 @@ private getGridEditSettings(): GridEditModel {
   /**
    * Refreshes the TreeGrid column changes.
    */
-  public refreshColumns(): void {
-    this.grid.columns = this.getGridColumns(this.columns as Column[]);
-    this.grid.refreshColumns();
+  public refreshColumns(refreshUI?: boolean): void {
+    if (isNullOrUndefined(refreshUI) || refreshUI) {
+      this.grid.columns = this.getGridColumns(this.columns as Column[]);
+      this.grid.refreshColumns();
+    } else {
+      this.grid.setProperties({columns : this.getGridColumns(this.columns as Column[])}, true);
+    }
   }
 
     /**
@@ -2809,6 +2814,7 @@ private getGridEditSettings(): GridEditModel {
     }
    });
   }
+
   private getCollapseExpandRecords(row?: HTMLTableRowElement, record?: Object): Object {
     if (this.allowPaging && this.pageSettings.pageSizeMode === 'All' && this.isExpandAll && isNullOrUndefined(record) &&
       !isRemoteData(this)) {

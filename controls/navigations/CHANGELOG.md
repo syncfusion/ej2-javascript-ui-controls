@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 17.3.21 (2019-10-30)
+
+### ContextMenu
+
+#### Bug Fixes
+
+- `#F147793` - ContextMenu not closed while scrolling the target element has been resolved.
+
 ## 17.3.17 (2019-10-15)
 
 ### Tab

@@ -5325,7 +5325,7 @@ describe('MultiSelect', () => {
             listObj.appendTo(element);
             let wrapper: HTMLElement = (<any>listObj).inputElement.parentElement.parentElement;
             if (wrapper && wrapper.firstElementChild && wrapper.firstChild.nextSibling) {
-                expect(getComputedStyle((<any>listObj).searchWrapper).width).toBe('calc(100% + -20px)');
+                expect(getComputedStyle((<any>listObj).searchWrapper).width).toBe('calc(100% - 20px)');
             }
             else
                 expect(true).toBe(false);            
@@ -5338,7 +5338,7 @@ describe('MultiSelect', () => {
             let wrapper: HTMLElement = (<any>listObj).inputElement.parentElement.parentElement;
             (<any>listObj).focusInHandler();
             if (wrapper && wrapper.firstElementChild && wrapper.firstChild.nextSibling) {
-                expect(getComputedStyle((<any>listObj).searchWrapper).width).toBe('calc(100% + -20px)');
+                expect(getComputedStyle((<any>listObj).searchWrapper).width).toBe('calc(100% - 20px)');
             }
             else
                 expect(true).toBe(false);            
@@ -5409,7 +5409,7 @@ describe('MultiSelect', () => {
            (<any>listObj).removelastSelection(keyboardEventArgs);
             let wrapper: HTMLElement = (<any>listObj).inputElement.parentElement.parentElement;
             if (wrapper && wrapper.firstElementChild && wrapper.firstChild.nextSibling) {
-                expect(getComputedStyle((<any>listObj).searchWrapper).width).toBe('calc(100% + -20px)');
+                expect(getComputedStyle((<any>listObj).searchWrapper).width).toBe('calc(100% - 20px)');
             }
             else
                 expect(true).toBe(false);            
@@ -5426,7 +5426,7 @@ describe('MultiSelect', () => {
            });
             let wrapper: HTMLElement = (<any>listObj).inputElement.parentElement.parentElement;
             if (wrapper && wrapper.firstElementChild && wrapper.firstChild.nextSibling) {
-                expect(getComputedStyle((<any>listObj).searchWrapper).width).toBe('calc(100% + -20px)');
+                expect(getComputedStyle((<any>listObj).searchWrapper).width).toBe('calc(100% - 20px)');
             }
             else
                 expect(true).toBe(false);            
@@ -5440,7 +5440,7 @@ describe('MultiSelect', () => {
            (<any>listObj).ClearAll(keyboardEventArgs);
             let wrapper: HTMLElement = (<any>listObj).inputElement.parentElement.parentElement;
             if (wrapper && wrapper.firstElementChild && wrapper.firstChild.nextSibling) {
-                expect(getComputedStyle((<any>listObj).searchWrapper).width).toBe('calc(100% + -20px)');
+                expect(getComputedStyle((<any>listObj).searchWrapper).width).toBe('calc(100% - 20px)');
             }
             else
                 expect(true).toBe(false);            
@@ -6259,6 +6259,30 @@ describe('MultiSelect', () => {
             listObj.destroy();
         });
     });
+    describe('Set Outline theme with float type always', () => {
+        let listObj: any;
+        let element: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'multiselect' });
+        beforeAll(() => {
+            document.body.innerHTML = '';
+            document.body.appendChild(element);
+        });
+        afterAll(() => {
+            if (element) {
+                element.remove();
+            }
+        });
+        it('Set floatlabeltype always', () => {
+            listObj = new MultiSelect({ floatLabelType: 'Always' });
+            listObj.appendTo(element);
+            expect(listObj.overAllWrapper.classList.contains('e-valid-input')).toEqual(true);
+            listObj.floatLabelType = 'Auto';
+            listObj.dataBind();
+            expect(listObj.overAllWrapper.classList.contains('e-valid-input')).toEqual(false);
+            listObj.floatLabelType = 'Always';
+            listObj.dataBind();
+            expect(listObj.overAllWrapper.classList.contains('e-valid-input')).toEqual(true);
+        });
+    });
     describe('Multiselect- Hidepopup', () => {
         let listObj: MultiSelect;
         let divElement: HTMLElement = createElement('div', { id: 'divElement' });
@@ -6324,4 +6348,62 @@ describe('MultiSelect', () => {
         //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
         expect(memory).toBeLessThan(profile.samples[0] + 0.25);
     })
+    describe('Width value with unit em', () => {
+        let listObj: any;
+        let element: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'multiselect' });
+        beforeAll(() => {
+            document.body.innerHTML = '';
+            document.body.appendChild(element);
+        });
+        afterAll(() => {
+            if (element) {
+                element.remove();
+            }
+        });
+        it('Set the width to unit em', () => {
+            listObj = new MultiSelect({ width: "50em" });
+            listObj.appendTo(element);
+            listObj.showPopup();
+            expect(listObj.overAllWrapper.style.width).toEqual('50em');
+            listObj.width = '100px';
+            listObj.dataBind();
+            expect(listObj.overAllWrapper.style.width).toEqual('100px');
+            listObj.width = '90em';
+            listObj.dataBind();
+            expect(listObj.overAllWrapper.style.width).toEqual('90em');
+            listObj.width = '100%';
+            listObj.dataBind();
+            expect(listObj.overAllWrapper.style.width).toEqual('100%');
+            listObj.width = '30';
+            listObj.dataBind();
+            expect(listObj.overAllWrapper.style.width).toEqual('30px');
+            listObj.width = 50;
+            listObj.dataBind();
+            expect(listObj.overAllWrapper.style.width).toEqual('50px');
+        });
+        it('Set the width to unit px', () => {
+            listObj = new MultiSelect({ width: "120px" });
+            listObj.appendTo(element);
+            listObj.showPopup();
+            expect(listObj.overAllWrapper.style.width).toEqual('120px');
+            listObj.width = '40em';
+            listObj.dataBind();
+            expect(listObj.overAllWrapper.style.width).toEqual('40em');
+            listObj.width = '90px';
+            listObj.dataBind();
+            expect(listObj.overAllWrapper.style.width).toEqual('90px');
+        });
+        it('Set the width to unit %', () => {
+            listObj = new MultiSelect({ width: "120%" });
+            listObj.appendTo(element);
+            listObj.showPopup();
+            expect(listObj.overAllWrapper.style.width).toEqual('120%');
+            listObj.width = '90px';
+            listObj.dataBind();
+            expect(listObj.overAllWrapper.style.width).toEqual('90px');
+            listObj.width = '40em';
+            listObj.dataBind();
+            expect(listObj.overAllWrapper.style.width).toEqual('40em');
+        });
+    });
 });

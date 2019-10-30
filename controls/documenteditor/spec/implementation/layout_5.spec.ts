@@ -62,7 +62,7 @@ describe('Normal text and RTL Text layout combination validation', () => {
     });
     it('Hebrew text RTL validation with bidi false', () => {        
         let lineWidget: LineWidget = (((editor.viewer as PageLayoutViewer).pages[0].bodyWidgets[0].childWidgets[0] as ParagraphWidget).childWidgets[0] as LineWidget);
-        expect((lineWidget.children[1] as TextElementBox).text).toBe("גג'ג'ג'ג'ג'גק'");
+        expect((lineWidget.children[1] as TextElementBox).text).toBe("'");
     });
     it('Space after RTL text valdiation with bidi false', () => {        
         let lineWidget: LineWidget = (((editor.viewer as PageLayoutViewer).pages[0].bodyWidgets[0].childWidgets[1] as ParagraphWidget).childWidgets[0] as LineWidget);

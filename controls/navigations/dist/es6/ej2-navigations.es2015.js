@@ -1132,6 +1132,7 @@ let MenuBase = class MenuBase extends Component {
             }
             this.targetElement = target;
             if (!this.isMenu) {
+                EventHandler.add(this.targetElement, 'scroll', this.scrollHandler, this);
                 for (let parent of getScrollableParent(this.targetElement)) {
                     EventHandler.add(parent, 'scroll', this.scrollHandler, this);
                 }
@@ -2287,6 +2288,7 @@ let MenuBase = class MenuBase extends Component {
                 }
             }
             if (!this.isMenu) {
+                EventHandler.remove(this.targetElement, 'scroll', this.scrollHandler);
                 for (let parent of getScrollableParent(this.targetElement)) {
                     EventHandler.remove(parent, 'scroll', this.scrollHandler);
                 }
@@ -6553,7 +6555,7 @@ let Tab = class Tab extends Component {
     renderHeader() {
         let hdrPlace = this.headerPlacement;
         let tabItems = [];
-        this.hdrEle = select('.' + CLS_HEADER$1, this.element);
+        this.hdrEle = this.getTabHeader();
         this.addVerticalClass();
         if (!this.isTemplate) {
             tabItems = this.parseObject(this.items, 0);
@@ -6571,7 +6573,8 @@ let Tab = class Tab extends Component {
                 while (this.hdrEle.firstElementChild) {
                     detach(this.hdrEle.firstElementChild);
                 }
-                this.hdrEle.appendChild(this.createElement('div', { className: CLS_ITEMS$1 }));
+                let tabItems = this.createElement('div', { className: CLS_ITEMS$1 });
+                this.hdrEle.appendChild(tabItems);
                 hdrItems.forEach((item, index) => {
                     this.lastIndex = index;
                     let attr = {
@@ -6585,8 +6588,8 @@ let Tab = class Tab extends Component {
                         className: CLS_TEXT_WRAP, innerHTML: txt + this.btnCls.outerHTML
                     }).outerHTML;
                     let wrap = this.createElement('div', { className: CLS_WRAP, innerHTML: cont, attrs: { tabIndex: '-1' } });
-                    select('.' + CLS_ITEMS$1, this.element).appendChild(this.createElement('div', attr));
-                    selectAll('.' + CLS_ITEM$2, this.element)[index].appendChild(wrap);
+                    tabItems.appendChild(this.createElement('div', attr));
+                    selectAll('.' + CLS_ITEM$2, tabItems)[index].appendChild(wrap);
                 });
             }
         }
@@ -9161,7 +9164,8 @@ let TreeView = TreeView_1 = class TreeView extends Component {
         let eUids = this.expandedNodes;
         if (this.isInitalExpand && eUids.length > 0) {
             this.setProperties({ expandedNodes: [] }, true);
-            if (this.fields.dataSource instanceof DataManager) {
+            // tslint:disable
+            if (this.fields.dataSource instanceof DataManager && (this.fields.dataSource.adaptorName !== 'BlazorAdaptor')) {
                 this.expandGivenNodes(eUids);
             }
             else {
@@ -9387,7 +9391,12 @@ let TreeView = TreeView_1 = class TreeView extends Component {
         removeClass([liEle], NODECOLLAPSED);
         let id = liEle.getAttribute('data-uid');
         if (!isNullOrUndefined(id) && this.expandedNodes.indexOf(id) === -1) {
-            this.expandedNodes.push(id);
+            if (this.isBlazorPlatform) {
+                this.setProperties({ expandedNodes: [].concat([], this.expandedNodes, [id]) }, true);
+            }
+            else {
+                this.expandedNodes.push(id);
+            }
         }
     }
     collapseNode(currLi, icon, e) {
@@ -9470,7 +9479,14 @@ let TreeView = TreeView_1 = class TreeView extends Component {
         }
         let index = this.expandedNodes.indexOf(liEle.getAttribute('data-uid'));
         if (index > -1) {
-            this.expandedNodes.splice(index, 1);
+            if (this.isBlazorPlatform) {
+                let removeVal = this.expandedNodes.slice(0);
+                removeVal.splice(index, 1);
+                this.setProperties({ expandedNodes: [].concat([], removeVal) }, true);
+            }
+            else {
+                this.expandedNodes.splice(index, 1);
+            }
         }
     }
     disableExpandAttr(liEle) {
@@ -9519,6 +9535,9 @@ let TreeView = TreeView_1 = class TreeView extends Component {
                 mapper.dataSource.executeQuery(this.getQuery(mapper, parentLi.getAttribute('data-uid'))).then((e) => {
                     this.treeList.pop();
                     childItems = e.result;
+                    if (this.dataType === 1) {
+                        this.dataType = 2;
+                    }
                     this.loadChild(childItems, mapper, eicon, parentLi, expandChild, callback, loaded);
                     if (this.nodeTemplate && this.isBlazorPlatform && !this.isStringTemplate) {
                         this.updateBlazorTemplate();
@@ -10680,11 +10699,13 @@ let TreeView = TreeView_1 = class TreeView extends Component {
                 }
                 let eventArgs = this.getDragEvent(e.event, this, null, e.target, null, virtualEle, level);
                 if (eventArgs.draggedNode.classList.contains(EDITING)) {
+                    this.dragObj.intDestroy(e.event);
                     this.dragCancelAction(virtualEle);
                 }
                 else {
                     this.trigger('nodeDragStart', eventArgs, (observedArgs) => {
                         if (observedArgs.cancel) {
+                            this.dragObj.intDestroy(e.event);
                             this.dragCancelAction(virtualEle);
                         }
                         else {
@@ -11820,6 +11841,7 @@ let TreeView = TreeView_1 = class TreeView extends Component {
      * @returns void
      * @private
      */
+    // tslint:disable-next-line:max-func-body-length
     onPropertyChanged(newProp, oldProp) {
         for (let prop of Object.keys(newProp)) {
             switch (prop) {
@@ -11860,10 +11882,14 @@ let TreeView = TreeView_1 = class TreeView extends Component {
                     break;
                 case 'expandedNodes':
                     this.isAnimate = false;
-                    this.setProperties({ expandedNodes: [] }, true);
+                    if (!this.isBlazorPlatform) {
+                        this.setProperties({ expandedNodes: [] }, true);
+                    }
                     this.collapseAll();
                     this.isInitalExpand = true;
-                    this.setProperties({ expandedNodes: isNullOrUndefined(newProp.expandedNodes) ? [] : newProp.expandedNodes }, true);
+                    if (!this.isBlazorPlatform) {
+                        this.setProperties({ expandedNodes: isNullOrUndefined(newProp.expandedNodes) ? [] : newProp.expandedNodes }, true);
+                    }
                     this.doExpandAction();
                     this.isInitalExpand = false;
                     this.isAnimate = true;
@@ -11989,7 +12015,7 @@ let TreeView = TreeView_1 = class TreeView extends Component {
         if (this.showCheckBox && dropLi) {
             this.ensureParentCheckState(dropLi);
         }
-        if (this.fields.dataSource instanceof DataManager === false) {
+        if ((this.fields.dataSource instanceof DataManager === false) || (this.fields.dataSource instanceof DataManager) && (this.fields.dataSource.adaptorName === 'BlazorAdaptor')) {
             this.preventExpand = false;
             this.triggerEvent();
         }

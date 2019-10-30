@@ -339,6 +339,7 @@ export class Selection {
         this.editRangeCollection = [];
         this.editRegionHighlighters = new Dictionary<LineWidget, SelectionWidgetInfo[]>();
     }
+
     private getModuleName(): string {
         return 'Selection';
     }

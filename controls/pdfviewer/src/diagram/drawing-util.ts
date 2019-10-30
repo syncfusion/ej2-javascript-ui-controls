@@ -18,7 +18,8 @@ export function isLineShapes(obj: PdfAnnotationBaseModel): boolean {
  */
 export function setElementStype(obj: PdfAnnotationBaseModel, element: DrawingElement): void {
     if (obj && element) {
-        element.style.fill = obj.fillColor;
+        let fillColor: string = (obj.fillColor === '#ffffff00' ? 'transparent' : obj.fillColor);
+        element.style.fill = fillColor;
         element.style.strokeColor = obj.strokeColor;
         (element as TextElement).style.color = obj.strokeColor;
         element.style.strokeWidth = obj.thickness;

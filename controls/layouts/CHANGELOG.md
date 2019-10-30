@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 17.3.21 (2019-10-30)
+
+### Splitter
+
+#### Bug Fixes
+
+- '#252410' - Resolved the issue with collapsing panes when set `collapsed` property as true in Splitter.
+
 ## 17.2.48-beta (2019-08-28)
 
 ### Splitter

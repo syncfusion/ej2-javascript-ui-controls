@@ -5477,9 +5477,12 @@ var Widget = /** @__PURE__ @class */ (function () {
                 if (index < widget.page.bodyWidgets.length - 1) {
                     widget = widget.page.bodyWidgets[index + 1];
                 }
-                else {
+                else if (widget.page.allowNextPageRendering) {
                     var page = widget.page.nextPage;
                     widget = page && page.bodyWidgets.length > 0 ? page.bodyWidgets[0] : undefined;
+                }
+                else {
+                    widget = undefined;
                 }
             }
             else {
@@ -11575,6 +11578,10 @@ var Page = /** @__PURE__ @class */ (function () {
          * @private
          */
         this.currentPageNum = 0;
+        /**
+         *
+         */
+        this.allowNextPageRendering = true;
         // let text: string = 'DocumentEditor';
     }
     Object.defineProperty(Page.prototype, "index", {
@@ -12048,6 +12055,7 @@ var ColumnSizeInfo = /** @__PURE__ @class */ (function () {
     return ColumnSizeInfo;
 }());
 
+//import { XmlHttpRequestHandler } from '../..';
 /**
  * The spell checker module
  */
@@ -12058,11 +12066,23 @@ var SpellChecker = /** @__PURE__ @class */ (function () {
     function SpellChecker(viewer) {
         this.langIDInternal = 0;
         this.spellSuggestionInternal = true;
+        /**
+         * @private
+         */
+        this.uniqueKey = '';
         this.removeUnderlineInternal = false;
+        /**
+         * @default 1000
+         */
+        this.uniqueWordsCountInternal = 10000;
+        this.spellJsonData = '';
+        this.performOptimizedCheck = false;
         this.viewer = viewer;
         this.errorWordCollection = new Dictionary();
         this.errorSuggestions = new Dictionary();
         this.ignoreAllItems = [];
+        this.uniqueSpelledWords = [];
+        this.uniqueKey = this.viewer.owner.element.id + '_' + this.createGuid();
     }
     /**
      * Gets module name.
@@ -12070,6 +12090,46 @@ var SpellChecker = /** @__PURE__ @class */ (function () {
     SpellChecker.prototype.getModuleName = function () {
         return 'SpellChecker';
     };
+    Object.defineProperty(SpellChecker.prototype, "enableOptimizedSpellCheck", {
+        /**
+         * Gets the boolean indicating whether optimized spell check to be performed.
+         * @aspType bool
+         * @blazorType bool
+         */
+        get: function () {
+            return this.performOptimizedCheck;
+        },
+        /**
+         * Sets the boolean indicating whether optimized spell check to be performed.
+         * @aspType bool
+         * @blazorType bool
+         */
+        set: function (value) {
+            this.performOptimizedCheck = value;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(SpellChecker.prototype, "uniqueWordsCount", {
+        /**
+         * Gets the spell checked Unique words.
+         * @aspType int
+         * @blazorType int
+         */
+        get: function () {
+            return isNullOrUndefined(this.uniqueWordsCountInternal) ? 0 : this.uniqueWordsCountInternal;
+        },
+        /**
+         * Sets the spell checked Unique words.
+         * @aspType int
+         * @blazorType int
+         */
+        set: function (value) {
+            this.uniqueWordsCountInternal = value;
+        },
+        enumerable: true,
+        configurable: true
+    });
     Object.defineProperty(SpellChecker.prototype, "languageID", {
         /**
          * Gets the languageID.
@@ -12306,7 +12366,7 @@ var SpellChecker = /** @__PURE__ @class */ (function () {
                 replaceText = exactText;
             }
             // tslint:disable-next-line:max-line-length
-            var pattern = new RegExp('^[#\\@\\!\\~\\$\\%\\^\\&\\*\\(\\)\\-\\_\\+\\=\\{\\}\\[\\]\\:\\;\\"\'\\,\\<\\.\\>\\/\\?\\`\\s]+', 'g');
+            var pattern = new RegExp('^[#\\@\\!\\~\\$\\%\\^\\&\\*\\(\\)\\-\\_\\+\\=\\{\\}\\[\\]\\:\\;\\"\\”\'\\,\\<\\.\\>\\/\\?\\`\\s]+', 'g');
             var matches = [];
             var matchInfo = void 0;
             //tslint:disable no-conditional-assignment
@@ -12321,17 +12381,17 @@ var SpellChecker = /** @__PURE__ @class */ (function () {
                 }
             }
             // tslint:disable-next-line:max-line-length
-            var endPattern = new RegExp('[#\\@\\!\\~\\$\\%\\^\\&\\*\\(\\)\\-\\_\\+\\=\\{\\}\\[\\]\\:\\;\\"\'\\,\\<\\.\\>\\/\\?\\s\\`]+$', 'g');
+            var endPattern = new RegExp('[#\\@\\!\\~\\$\\%\\^\\&\\*\\(\\)\\-\\_\\+\\=\\{\\}\\[\\]\\:\\;\\"\\”\'\\,\\<\\.\\>\\/\\?\\s\\`]+$', 'g');
             matches = [];
             //tslint:disable no-conditional-assignment
-            while (!isNullOrUndefined(matchInfo = endPattern.exec(exactText))) {
+            while (!isNullOrUndefined(matchInfo = endPattern.exec(replaceText))) {
                 matches.push(matchInfo);
             }
             if (matches.length > 0) {
                 for (var i = 0; i < matches.length; i++) {
                     /* tslint:disable:no-any */
                     var match = matches[i];
-                    replaceText = (!isRemove) ? replaceText + match[0] : replaceText.replace(match[0], '');
+                    replaceText = (!isRemove) ? replaceText + match[0] : replaceText.slice(0, match.index);
                 }
             }
         }
@@ -12642,41 +12702,81 @@ var SpellChecker = /** @__PURE__ @class */ (function () {
      * @private
      */
     // tslint:disable-next-line:max-line-length
-    SpellChecker.prototype.checkElementCanBeCombined = function (elementBox, underlineY, beforeIndex, callSpellChecker) {
-        var currentText = '';
-        var isCombined = false;
+    SpellChecker.prototype.checkElementCanBeCombined = function (elementBox, underlineY, beforeIndex, callSpellChecker, textToCombine, isNext, isPrevious, canCombine) {
+        var currentText = isNullOrUndefined(textToCombine) ? '' : textToCombine;
+        var isCombined = isNullOrUndefined(canCombine) ? false : canCombine;
+        var checkPrevious = !isNullOrUndefined(isPrevious) ? isPrevious : true;
+        var checkNext = !isNullOrUndefined(isNext) ? isNext : true;
         var combinedElements = [];
         var line = this.viewer.selection.getLineWidget(elementBox, 0);
         var index = line.children.indexOf(elementBox);
         var prevText = elementBox.text;
         combinedElements.push(elementBox);
-        for (var i = index - 1; i >= 0; i--) {
-            if (line.children[i] instanceof TextElementBox) {
-                var textElement = line.children[i];
-                if (prevText.indexOf(' ') !== 0 && textElement.text.lastIndexOf(' ') !== textElement.text.length - 1) {
-                    currentText = textElement.text + currentText;
-                    prevText = textElement.text;
-                    combinedElements.push(textElement);
-                    isCombined = true;
+        var difference = (isPrevious) ? 0 : 1;
+        var prevCombined = false;
+        var isPrevField = false;
+        if (elementBox.text !== '\v') {
+            if (checkPrevious) {
+                var textElement = undefined;
+                for (var i = index - difference; i >= 0; i--) {
+                    if (line.children[i] instanceof TextElementBox && !isPrevField) {
+                        textElement = line.children[i];
+                        if (prevText.indexOf(' ') !== 0 && textElement.text.lastIndexOf(' ') !== textElement.text.length - 1) {
+                            prevCombined = !isNullOrUndefined(textToCombine) ? true : false;
+                            currentText = textElement.text + currentText;
+                            prevText = textElement.text;
+                            isPrevField = false;
+                            combinedElements.push(textElement);
+                            isCombined = true;
+                        }
+                        else if (!isNullOrUndefined(textElement)) {
+                            textElement = textElement.nextElement;
+                            break;
+                        }
+                    }
+                    else if (line.children[i] instanceof FieldElementBox) {
+                        isPrevField = true;
+                    }
                 }
-                else if (!isNullOrUndefined(textElement)) {
-                    break;
+                var currentElement = (isCombined) ? textElement : elementBox;
+                if (this.lookThroughPreviousLine(currentText, prevText, currentElement, underlineY, beforeIndex)) {
+                    return true;
                 }
             }
-        }
-        currentText += elementBox.text;
-        var nextText = elementBox.text;
-        for (var i = index + 1; i < line.children.length; i++) {
-            if (line.children[i] instanceof TextElementBox) {
-                var element = line.children[i];
-                if (nextText.lastIndexOf(' ') !== nextText.length - 1 && element.text.indexOf(' ') !== 0) {
-                    currentText += element.text;
-                    nextText = element.text;
-                    combinedElements.push(element);
-                    isCombined = true;
+            if (isPrevious) {
+                currentText = (prevCombined) ? currentText : elementBox.text + currentText;
+            }
+            else {
+                currentText += elementBox.text;
+            }
+            isPrevField = false;
+            var nextText = elementBox.text;
+            if (checkNext) {
+                var canCombine_1 = false;
+                var element = undefined;
+                for (var i = index + 1; i < line.children.length; i++) {
+                    if (line.children[i] instanceof TextElementBox && !isPrevField) {
+                        element = line.children[i];
+                        if (nextText.lastIndexOf(' ') !== nextText.length - 1 && element.text.indexOf(' ') !== 0) {
+                            currentText += element.text;
+                            nextText = element.text;
+                            isPrevField = false;
+                            combinedElements.push(element);
+                            canCombine_1 = true;
+                            isCombined = true;
+                        }
+                        else if (!isNullOrUndefined(element)) {
+                            element = element.previousElement;
+                            break;
+                        }
+                    }
+                    else if (line.children[i] instanceof FieldElementBox) {
+                        isPrevField = true;
+                    }
                 }
-                else if (!isNullOrUndefined(element)) {
-                    break;
+                var currentElement = (canCombine_1) ? element : elementBox;
+                if (this.lookThroughNextLine(currentText, prevText, currentElement, underlineY, beforeIndex)) {
+                    return true;
                 }
             }
         }
@@ -12684,6 +12784,39 @@ var SpellChecker = /** @__PURE__ @class */ (function () {
             this.handleCombinedElements(elementBox, currentText, underlineY, beforeIndex);
         }
         return isCombined;
+    };
+    // tslint:disable-next-line:max-line-length
+    SpellChecker.prototype.lookThroughPreviousLine = function (currentText, prevText, currentElement, underlineY, beforeIndex) {
+        // tslint:disable-next-line:max-line-length
+        if (!isNullOrUndefined(currentElement) && currentElement.indexInOwner === 0 && !isNullOrUndefined(currentElement.line.previousLine)) {
+            var previousLine = currentElement.line.previousLine;
+            var index = previousLine.children.length - 1;
+            if (!isNullOrUndefined(previousLine.children[index]) && previousLine.children[index] instanceof TextElementBox) {
+                var firstElement = previousLine.children[index];
+                if (currentElement.text.indexOf(' ') !== 0 && firstElement.text.lastIndexOf(' ') !== firstElement.text.length - 1) {
+                    currentText = (currentText.length > 0) ? currentText : prevText;
+                    this.checkElementCanBeCombined(firstElement, underlineY, beforeIndex, true, currentText, false, true, true);
+                    return true;
+                }
+            }
+        }
+        return false;
+    };
+    // tslint:disable-next-line:max-line-length
+    SpellChecker.prototype.lookThroughNextLine = function (currentText, prevText, elementBox, underlineY, beforeIndex) {
+        // tslint:disable-next-line:max-line-length
+        if (!isNullOrUndefined(elementBox) && elementBox.indexInOwner === elementBox.line.children.length - 1 && !isNullOrUndefined(elementBox.line.nextLine)) {
+            var nextLine = elementBox.line.nextLine;
+            if (!isNullOrUndefined(nextLine.children[0]) && nextLine.children[0] instanceof TextElementBox) {
+                var firstElement = nextLine.children[0];
+                if (elementBox.text.lastIndexOf(' ') !== elementBox.text.length - 1 && firstElement.text.indexOf(' ') !== 0) {
+                    currentText = (currentText.length > 0) ? currentText : prevText;
+                    this.checkElementCanBeCombined(firstElement, underlineY, beforeIndex, true, currentText, true, false, true);
+                    return true;
+                }
+            }
+        }
+        return false;
     };
     /**
      * Method to handle combined elements
@@ -12696,15 +12829,18 @@ var SpellChecker = /** @__PURE__ @class */ (function () {
     SpellChecker.prototype.handleCombinedElements = function (elementBox, currentText, underlineY, beforeIndex) {
         elementBox.istextCombined = true;
         var splittedText = currentText.split(/[\s]+/);
-        if (this.ignoreAllItems.indexOf(currentText) === -1 && elementBox.ignoreOnceItems.indexOf(currentText) === -1) {
+        // tslint:disable-next-line:max-line-length
+        if (this.ignoreAllItems.indexOf(currentText) === -1 && elementBox instanceof TextElementBox && elementBox.ignoreOnceItems.indexOf(currentText) === -1) {
             if (splittedText.length > 1) {
                 for (var i = 0; i < splittedText.length; i++) {
                     var currentText_1 = splittedText[i];
+                    currentText_1 = this.manageSpecialCharacters(currentText_1, undefined, true);
                     // tslint:disable-next-line:max-line-length
                     this.viewer.render.handleUnorderdElements(currentText_1, elementBox, underlineY, i, 0, i === splittedText.length - 1, beforeIndex);
                 }
             }
             else {
+                currentText = this.manageSpecialCharacters(currentText, undefined, true);
                 this.viewer.render.handleUnorderdElements(currentText, elementBox, underlineY, 0, 0, true, beforeIndex);
             }
         }
@@ -12786,14 +12922,20 @@ var SpellChecker = /** @__PURE__ @class */ (function () {
      */
     /* tslint:disable:no-any */
     // tslint:disable-next-line:max-line-length
-    SpellChecker.prototype.CallSpellChecker = function (languageID, word, checkSpelling, checkSuggestion, addWord) {
+    SpellChecker.prototype.CallSpellChecker = function (languageID, word, checkSpelling, checkSuggestion, addWord, isByPage) {
         var _this = this;
         return new Promise(function (resolve, reject) {
             if (!isNullOrUndefined(_this)) {
                 var httpRequest_1 = new XMLHttpRequest();
                 // tslint:disable-next-line:max-line-length
-                httpRequest_1.open('POST', _this.viewer.owner.serviceUrl + _this.viewer.owner.serverActionSettings.spellCheck, true);
+                var service = _this.viewer.owner.serviceUrl + _this.viewer.owner.serverActionSettings.spellCheck;
+                service = (isByPage) ? service + 'ByPage' : service;
+                httpRequest_1.open('POST', service, true);
                 httpRequest_1.setRequestHeader('Content-Type', 'application/json');
+                // tslint:disable-next-line:max-line-length
+                /* tslint:disable:no-any */
+                var spellCheckData = { LanguageID: languageID, TexttoCheck: word, CheckSpelling: checkSpelling, CheckSuggestion: checkSuggestion, AddWord: addWord };
+                httpRequest_1.send(JSON.stringify(spellCheckData));
                 httpRequest_1.onreadystatechange = function () {
                     if (httpRequest_1.readyState === 4) {
                         if (httpRequest_1.status === 200 || httpRequest_1.status === 304) {
@@ -12804,10 +12946,6 @@ var SpellChecker = /** @__PURE__ @class */ (function () {
                         }
                     }
                 };
-                // tslint:disable-next-line:max-line-length
-                /* tslint:disable:no-any */
-                var spellCheckData = { LanguageID: languageID, TexttoCheck: word, CheckSpelling: checkSpelling, CheckSuggestion: checkSuggestion, AddWord: addWord };
-                httpRequest_1.send(JSON.stringify(spellCheckData));
             }
         });
     };
@@ -13000,10 +13138,101 @@ var SpellChecker = /** @__PURE__ @class */ (function () {
     /**
      * @private
      */
+    SpellChecker.prototype.getPageContent = function (page) {
+        var content = '';
+        if (this.viewer.owner.sfdtExportModule) {
+            var sfdtExport = this.viewer.owner.sfdtExportModule;
+            sfdtExport.Initialize();
+            var document_1 = sfdtExport.writePage(page);
+            if (this.viewer.owner.textExportModule) {
+                var textExport = this.viewer.owner.textExportModule;
+                textExport.pageContent = '';
+                textExport.setDocument(document_1);
+                textExport.writeInternal();
+                content = textExport.pageContent;
+            }
+        }
+        return content;
+    };
+    /**
+     * @private
+     * @param spelledWords
+     */
+    SpellChecker.prototype.updateUniqueWords = function (spelledWords) {
+        if (!isNullOrUndefined(localStorage.getItem(this.uniqueKey))) {
+            this.uniqueSpelledWords = JSON.parse(localStorage.getItem(this.uniqueKey));
+        }
+        var totalCount = spelledWords.length + this.uniqueSpelledWords.length;
+        if (totalCount <= this.uniqueWordsCount) {
+            for (var i = 0; i < spelledWords.length; i++) {
+                this.checkForUniqueWords(spelledWords[i]);
+            }
+        }
+        localStorage.setItem(this.uniqueKey, JSON.stringify(this.uniqueSpelledWords));
+        this.uniqueSpelledWords = [];
+    };
+    SpellChecker.prototype.checkForUniqueWords = function (spellData) {
+        var identityMatched = false;
+        for (var i = 0; i < this.uniqueSpelledWords.length; i++) {
+            if (this.uniqueSpelledWords[i].Text === spellData.Text) {
+                identityMatched = true;
+                break;
+            }
+        }
+        if (!identityMatched) {
+            this.uniqueSpelledWords.push(spellData);
+        }
+    };
+    /**
+     * Method to clear cached words for spell check
+     */
+    SpellChecker.prototype.clearCache = function () {
+        if (!isNullOrUndefined(localStorage.getItem(this.uniqueKey))) {
+            localStorage.removeItem(this.uniqueKey);
+        }
+    };
+    /**
+     * Method to create GUID
+     */
+    SpellChecker.prototype.createGuid = function () {
+        var dateTime = new Date().getTime();
+        var uuid = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (char) {
+            var randNo = (dateTime + Math.random() * 16) % 16 | 0;
+            dateTime = Math.floor(dateTime / 16);
+            return (char === 'x' ? randNo : (randNo & 0x3 | 0x8)).toString(16);
+        });
+        return uuid;
+    };
+    /**
+     * Check spelling in page data
+     * @private
+     * @param {string} wordToCheck
+     */
+    SpellChecker.prototype.checkSpellingInPageInfo = function (wordToCheck) {
+        var hasError = false;
+        var elementPresent = false;
+        /* tslint:disable:no-any */
+        var uniqueWords = JSON.parse(localStorage.getItem(this.viewer.owner.spellChecker.uniqueKey));
+        if (!isNullOrUndefined(uniqueWords)) {
+            for (var i = 0; i < uniqueWords.length; i++) {
+                if (uniqueWords[i].Text === wordToCheck) {
+                    return { hasSpellError: uniqueWords[i].HasSpellError, isElementPresent: true };
+                }
+            }
+        }
+        return { hasSpellError: hasError, isElementPresent: elementPresent };
+    };
+    /**
+     * @private
+     */
     SpellChecker.prototype.destroy = function () {
         this.errorWordCollection = undefined;
         this.ignoreAllItems = undefined;
         this.errorSuggestions = undefined;
+        this.uniqueSpelledWords = [];
+        if (!isNullOrUndefined(localStorage.getItem(this.uniqueKey))) {
+            localStorage.removeItem(this.uniqueKey);
+        }
     };
     return SpellChecker;
 }());
@@ -14359,16 +14588,21 @@ var DocumentEditor = /** @__PURE__ @class */ (function (_super) {
             this.viewer.lists = [];
             this.viewer.abstractLists = [];
             this.viewer.styles = new WStyles();
-            this.viewer.triggerElementsOnLoading = true;
-            this.viewer.triggerSpellCheck = true;
+            this.viewer.cachedPages = [];
+            if (this.enableSpellCheck && !this.spellChecker.enableOptimizedSpellCheck) {
+                this.viewer.triggerElementsOnLoading = true;
+                this.viewer.triggerSpellCheck = true;
+            }
             if (!isNullOrUndefined(sfdtText) && this.viewer) {
                 this.viewer.onDocumentChanged(this.parser.convertJsonToDocument(sfdtText));
                 if (this.editorModule) {
                     this.editorModule.intializeDefaultStyles();
                 }
             }
-            this.viewer.triggerElementsOnLoading = false;
-            this.viewer.triggerSpellCheck = false;
+            if (this.enableSpellCheck && !this.spellChecker.enableOptimizedSpellCheck) {
+                this.viewer.triggerElementsOnLoading = false;
+                this.viewer.triggerSpellCheck = false;
+            }
         }
     };
     /**
@@ -14539,6 +14773,7 @@ var DocumentEditor = /** @__PURE__ @class */ (function (_super) {
         if (this.viewer) {
             this.clearPreservedCollectionsInViewer();
             this.viewer.userCollection.push('Everyone');
+            this.viewer.cachedPages = [];
             this.viewer.setDefaultDocumentFormat();
             this.viewer.headersFooters.push(hfs);
             this.viewer.onDocumentChanged(sections);
@@ -15138,19 +15373,29 @@ var ContextMenu$1 = /** @__PURE__ @class */ (function () {
             if (_this.viewer.owner.enableSpellCheck && _this.spellChecker.allowSpellCheckAndSuggestion) {
                 event.preventDefault();
                 _this.currentContextInfo = _this.spellChecker.findCurretText();
-                var splittedSuggestion = void 0;
+                var splittedSuggestion_1;
                 /* tslint:disable:no-any */
-                var allSuggestions = void 0;
-                var exactData = _this.spellChecker.manageSpecialCharacters(_this.currentContextInfo.text, undefined, true);
-                if (!isNullOrUndefined(exactData) && _this.spellChecker.errorWordCollection.containsKey(exactData)) {
+                var allSuggestions_1;
+                var exactData_1 = _this.spellChecker.manageSpecialCharacters(_this.currentContextInfo.text, undefined, true);
+                if (!isNullOrUndefined(exactData_1) && _this.spellChecker.errorWordCollection.containsKey(exactData_1)) {
                     _this.spellChecker.currentContextInfo = _this.currentContextInfo;
-                    if (_this.spellChecker.errorSuggestions.containsKey(exactData)) {
-                        allSuggestions = _this.spellChecker.errorSuggestions.get(exactData).slice();
-                        splittedSuggestion = _this.spellChecker.handleSuggestions(allSuggestions);
-                        _this.processSuggestions(allSuggestions, splittedSuggestion, isTouch ? event : event);
+                    if (_this.spellChecker.errorSuggestions.containsKey(exactData_1)) {
+                        allSuggestions_1 = _this.spellChecker.errorSuggestions.get(exactData_1).slice();
+                        splittedSuggestion_1 = _this.spellChecker.handleSuggestions(allSuggestions_1);
+                        _this.processSuggestions(allSuggestions_1, splittedSuggestion_1, isTouch ? event : event);
                     }
                     else {
-                        _this.processSuggestions(allSuggestions, splittedSuggestion, isTouch ? event : event);
+                        // tslint:disable-next-line:max-line-length
+                        _this.spellChecker.CallSpellChecker(_this.spellChecker.languageID, exactData_1, false, true, false, false).then(function (data) {
+                            /* tslint:disable:no-any */
+                            var jsonObject = JSON.parse(data);
+                            allSuggestions_1 = jsonObject.Suggestions;
+                            if (!isNullOrUndefined(allSuggestions_1)) {
+                                _this.spellChecker.errorSuggestions.add(exactData_1, allSuggestions_1.slice());
+                                splittedSuggestion_1 = _this.spellChecker.handleSuggestions(allSuggestions_1);
+                            }
+                            _this.processSuggestions(allSuggestions_1, splittedSuggestion_1, isTouch ? event : event);
+                        });
                     }
                 }
                 else {
@@ -16129,6 +16374,7 @@ var Layout = /** @__PURE__ @class */ (function () {
         setTimeout(function () {
             if (_this.viewer) {
                 _this.viewer.isScrollHandler = true;
+                _this.viewer.triggerElementsOnLoading = true;
                 _this.viewer.updateScrollBars();
                 _this.viewer.isScrollHandler = false;
                 _this.isInitialLoad = false;
@@ -16558,6 +16804,7 @@ var Layout = /** @__PURE__ @class */ (function () {
         }
         else if (element instanceof TextElementBox) {
             this.checkAndSplitTabOrLineBreakCharacter(element.text, element);
+            this.splitBySpecialCharacters(element);
             text = element.text;
         }
         // Here field code width and height update need to skipped based on the hidden property.
@@ -17276,6 +17523,39 @@ var Layout = /** @__PURE__ @class */ (function () {
         else if (remainder !== '') {
             newSpan.text = value.substring(index + 1);
             span.text = spiltBy;
+        }
+    };
+    Layout.prototype.splitBySpecialCharacters = function (span) {
+        if (this.viewer.textHelper.isRTLText(span.text) && this.viewer.textHelper.containsSpecialChar(span.text)) {
+            var inlineIndex = span.line.children.indexOf(span);
+            var text = span.text;
+            var specialChars = '*|,\":<>[]{}`\';()@&$#%!~';
+            var textToReplace = '';
+            var spanTextUpdated = false;
+            for (var i = 0; i < text.length; i++) {
+                if (specialChars.indexOf(text.charAt(i)) !== -1) {
+                    if (spanTextUpdated) {
+                        var newSpan1 = new TextElementBox();
+                        newSpan1.line = span.line;
+                        newSpan1.characterFormat.copyFormat(span.characterFormat);
+                        span.line.children.splice(inlineIndex = inlineIndex + 1, 0, newSpan1);
+                        newSpan1.text = textToReplace;
+                    }
+                    var newSpan = new TextElementBox();
+                    newSpan.line = span.line;
+                    newSpan.characterFormat.copyFormat(span.characterFormat);
+                    span.line.children.splice(inlineIndex = inlineIndex + 1, 0, newSpan);
+                    newSpan.text = text.charAt(i);
+                    if (!spanTextUpdated) {
+                        span.text = textToReplace;
+                        spanTextUpdated = true;
+                    }
+                    textToReplace = '';
+                }
+                else {
+                    textToReplace += text.charAt(i);
+                }
+            }
         }
     };
     /**
@@ -21118,6 +21398,7 @@ var Layout = /** @__PURE__ @class */ (function () {
             }
             var isRtl = false;
             var text = '';
+            var containsSpecchrs = false;
             if (element instanceof BookmarkElementBox) {
                 if (isParaBidi) {
                     if (lastAddedElementIsRtl || element.bookmarkType === 0 && element.nextElement
@@ -21139,6 +21420,13 @@ var Layout = /** @__PURE__ @class */ (function () {
             }
             if (element instanceof TextElementBox) {
                 text = element.text;
+                containsSpecchrs = this.viewer.textHelper.containsSpecialCharAlone(text);
+                if (containsSpecchrs) {
+                    if (text.length > 1 && elementCharacterFormat.bidi) {
+                        text = HelperMethods.ReverseString(text);
+                        element.text = text;
+                    }
+                }
             }
             // The list element box shold be added in the last position in line widget for the RTL paragraph 
             // and first in the line widget for LTR paragrph.
@@ -21150,7 +21438,7 @@ var Layout = /** @__PURE__ @class */ (function () {
                     || elementCharacterFormat.bdo === 'RTL';
             }
             // If the text element box contains only whitespaces, then need to check the previous and next elements.
-            if (!isRtl && !isNullOrUndefined(text) && text !== '' && text.trim() === '') {
+            if (!isRtl && !isNullOrUndefined(text) && ((text !== '' && text.trim() === '') || containsSpecchrs)) {
                 var elements = line.children;
                 //Checks whether the langugae is RTL.
                 if (elementCharacterFormat.bidi) {
@@ -21695,7 +21983,7 @@ var Renderer = /** @__PURE__ @class */ (function () {
                     if (elementBox instanceof TextElementBox) {
                         elementBox.canTrigger = true;
                         elementBox.isVisible = false;
-                        if (!elementBox.isSpellChecked) {
+                        if (!elementBox.isSpellChecked || elementBox.line.paragraph.isChangeDetected) {
                             elementBox.ischangeDetected = true;
                         }
                     }
@@ -21917,6 +22205,9 @@ var Renderer = /** @__PURE__ @class */ (function () {
         var _this = this;
         var checkText = elementBox.text.trim();
         var beforeIndex = this.pageIndex;
+        if (elementBox.text === '\v') {
+            return;
+        }
         if (!this.spellChecker.checkElementCanBeCombined(elementBox, underlineY, beforeIndex, true)) {
             /* tslint:disable:no-any */
             var splittedText = checkText.split(/[\s]+/);
@@ -21935,20 +22226,30 @@ var Renderer = /** @__PURE__ @class */ (function () {
             }
             else {
                 var retrievedText = this.spellChecker.manageSpecialCharacters(checkText, undefined, true);
-                // tslint:disable-next-line:max-line-length
-                if (this.spellChecker.ignoreAllItems.indexOf(retrievedText) === -1 && elementBox.ignoreOnceItems.indexOf(retrievedText) === -1) {
-                    var indexInLine_1 = elementBox.indexInOwner;
-                    var indexinParagraph_1 = elementBox.line.paragraph.indexInOwner;
-                    /* tslint:disable:no-any */
+                if (checkText.length > 0) {
                     // tslint:disable-next-line:max-line-length
-                    this.spellChecker.CallSpellChecker(this.spellChecker.languageID, checkText, true, this.spellChecker.allowSpellCheckAndSuggestion).then(function (data) {
-                        /* tslint:disable:no-any */
-                        var jsonObject = JSON.parse(data);
-                        // tslint:disable-next-line:max-line-length
-                        var canUpdate = (beforeIndex === _this.pageIndex || elementBox.isVisible) && (indexInLine_1 === elementBox.indexInOwner) && (indexinParagraph_1 === elementBox.line.paragraph.indexInOwner);
-                        // tslint:disable-next-line:max-line-length
-                        _this.spellChecker.handleWordByWordSpellCheck(jsonObject, elementBox, left, top, underlineY, baselineAlignment, canUpdate);
-                    });
+                    if (this.spellChecker.ignoreAllItems.indexOf(retrievedText) === -1 && elementBox.ignoreOnceItems.indexOf(retrievedText) === -1) {
+                        var indexInLine_1 = elementBox.indexInOwner;
+                        var indexinParagraph_1 = elementBox.line.paragraph.indexInOwner;
+                        var spellInfo = this.spellChecker.checkSpellingInPageInfo(retrievedText);
+                        if (spellInfo.isElementPresent && this.spellChecker.enableOptimizedSpellCheck) {
+                            var jsonObject = JSON.parse('{\"HasSpellingError\":' + spellInfo.hasSpellError + '}');
+                            // tslint:disable-next-line:max-line-length
+                            this.spellChecker.handleWordByWordSpellCheck(jsonObject, elementBox, left, top, underlineY, baselineAlignment, true);
+                        }
+                        else {
+                            /* tslint:disable:no-any */
+                            // tslint:disable-next-line:max-line-length
+                            this.spellChecker.CallSpellChecker(this.spellChecker.languageID, checkText, true, this.spellChecker.allowSpellCheckAndSuggestion).then(function (data) {
+                                /* tslint:disable:no-any */
+                                var jsonObject = JSON.parse(data);
+                                // tslint:disable-next-line:max-line-length
+                                var canUpdate = (beforeIndex === _this.pageIndex || elementBox.isVisible) && (indexInLine_1 === elementBox.indexInOwner) && (indexinParagraph_1 === elementBox.line.paragraph.indexInOwner);
+                                // tslint:disable-next-line:max-line-length
+                                _this.spellChecker.handleWordByWordSpellCheck(jsonObject, elementBox, left, top, underlineY, baselineAlignment, canUpdate);
+                            });
+                        }
+                    }
                 }
             }
         }
@@ -21966,16 +22267,26 @@ var Renderer = /** @__PURE__ @class */ (function () {
         var _this = this;
         var indexInLine = elementBox.indexInOwner;
         var indexinParagraph = elementBox.line.paragraph.indexInOwner;
-        /* tslint:disable:no-any */
-        // tslint:disable-next-line:max-line-length
-        this.spellChecker.CallSpellChecker(this.spellChecker.languageID, currentText, true, this.spellChecker.allowSpellCheckAndSuggestion).then(function (data) {
-            /* tslint:disable:no-any */
-            var jsonObject = JSON.parse(data);
-            // tslint:disable-next-line:max-line-length
-            var canUpdate = (elementBox.isVisible) && (indexInLine === elementBox.indexInOwner) && (indexinParagraph === elementBox.line.paragraph.indexInOwner);
-            // tslint:disable-next-line:max-line-length
-            _this.spellChecker.handleSplitWordSpellCheck(jsonObject, currentText, elementBox, canUpdate, underlineY, iteration, markindex, isLastItem);
-        });
+        if (currentText.length > 0) {
+            var spellInfo = this.spellChecker.checkSpellingInPageInfo(currentText);
+            if (spellInfo.isElementPresent && this.spellChecker.enableOptimizedSpellCheck) {
+                var jsonObject = JSON.parse('{\"HasSpellingError\":' + spellInfo.hasSpellError + '}');
+                // tslint:disable-next-line:max-line-length
+                this.spellChecker.handleSplitWordSpellCheck(jsonObject, currentText, elementBox, true, underlineY, iteration, markindex, isLastItem);
+            }
+            else {
+                /* tslint:disable:no-any */
+                // tslint:disable-next-line:max-line-length
+                this.spellChecker.CallSpellChecker(this.spellChecker.languageID, currentText, true, this.spellChecker.allowSpellCheckAndSuggestion).then(function (data) {
+                    /* tslint:disable:no-any */
+                    var jsonObject = JSON.parse(data);
+                    // tslint:disable-next-line:max-line-length
+                    var canUpdate = (elementBox.isVisible) && (indexInLine === elementBox.indexInOwner) && (indexinParagraph === elementBox.line.paragraph.indexInOwner);
+                    // tslint:disable-next-line:max-line-length
+                    _this.spellChecker.handleSplitWordSpellCheck(jsonObject, currentText, elementBox, canUpdate, underlineY, iteration, markindex, isLastItem);
+                });
+            }
+        }
     };
     /**
      * Render Wavy Line
@@ -22704,6 +23015,32 @@ var TextHelper = /** @__PURE__ @class */ (function () {
             }
         }
         return isRTL;
+    };
+    /**
+     * @private
+     * @param text
+     */
+    TextHelper.prototype.containsSpecialCharAlone = function (text) {
+        var specialChars = '*|,\":<>[]{}`\';()@&$#%!~';
+        for (var i = 0; i < text.length; i++) {
+            if (specialChars.indexOf(text.charAt(i)) === -1) {
+                return false;
+            }
+        }
+        return true;
+    };
+    /**
+     * @private
+     * @param text
+     */
+    TextHelper.prototype.containsSpecialChar = function (text) {
+        var specialChars = '*|,\":<>[]{}`\';()@&$#%!~';
+        for (var i = 0; i < text.length; i++) {
+            if (specialChars.indexOf(text.charAt(i)) !== -1) {
+                return true;
+            }
+        }
+        return false;
     };
     /**
      * @private
@@ -23746,6 +24083,14 @@ var LayoutViewer = /** @__PURE__ @class */ (function () {
          * @private
          */
         this.userCollection = [];
+        /**
+         * @private
+         */
+        this.cachedPages = [];
+        /**
+         * @private
+         */
+        this.skipScrollToPosition = false;
         this.onIframeLoad = function () {
             if (!isNullOrUndefined(_this.iframe) && _this.iframe.contentDocument.body.children.length === 0) {
                 _this.initIframeContent();
@@ -23835,6 +24180,7 @@ var LayoutViewer = /** @__PURE__ @class */ (function () {
         // tslint:enable:no-any 
         this.onKeyPressInternal = function (event) {
             var key = event.which || event.keyCode;
+            _this.triggerElementsOnLoading = false;
             var ctrl = (event.ctrlKey || event.metaKey) ? true : ((key === 17) ? true : false); // ctrl detection
             if (ctrl && event.key === 'v' || ctrl && event.key === 'a') {
                 return;
@@ -25671,6 +26017,10 @@ var LayoutViewer = /** @__PURE__ @class */ (function () {
      * @private
      */
     LayoutViewer.prototype.scrollToPosition = function (startPosition, endPosition, skipCursorUpdate) {
+        if (this.skipScrollToPosition) {
+            this.skipScrollToPosition = false;
+            return;
+        }
         if (this.owner.enableImageResizerMode && this.owner.imageResizerModule.isImageResizing
             || this.isMouseDownInFooterRegion || this.isRowOrCellResizing) {
             return;
@@ -26544,6 +26894,7 @@ var PageLayoutViewer = /** @__PURE__ @class */ (function (_super) {
      * Adds visible pages.
      */
     PageLayoutViewer.prototype.addVisiblePage = function (page, x, y) {
+        var _this = this;
         var width = page.boundingRectangle.width * this.zoomFactor;
         var height = page.boundingRectangle.height * this.zoomFactor;
         // tslint:disable-next-line:max-line-length
@@ -26551,7 +26902,32 @@ var PageLayoutViewer = /** @__PURE__ @class */ (function (_super) {
             this.owner.imageResizerModule.setImageResizerPositions(x, y, width, height);
         }
         this.visiblePages.push(page);
-        this.renderPage(page, x, y, width, height);
+        // tslint:disable-next-line:max-line-length
+        if (this.owner.enableSpellCheck && this.owner.spellChecker.enableOptimizedSpellCheck && (this.triggerElementsOnLoading || this.isScrollHandler) && this.cachedPages.indexOf(page.index) < 0) {
+            page.allowNextPageRendering = false;
+            this.cachedPages.push(page.index);
+            var content = this.owner.spellChecker.getPageContent(page);
+            if (content.trim().length > 0) {
+                // tslint:disable-next-line:max-line-length
+                /* tslint:disable:no-any */
+                this.owner.spellChecker.CallSpellChecker(this.owner.spellChecker.languageID, content, true, false, false, true).then(function (data) {
+                    /* tslint:disable:no-any */
+                    var jsonObject = JSON.parse(data);
+                    _this.owner.spellChecker.updateUniqueWords(jsonObject.SpellCollection);
+                    page.allowNextPageRendering = true;
+                    _this.triggerSpellCheck = true;
+                    _this.renderPage(page, x, y, width, height);
+                    _this.triggerSpellCheck = false;
+                    _this.triggerElementsOnLoading = false;
+                });
+            }
+            else {
+                this.renderPage(page, x, y, width, height);
+            }
+        }
+        else {
+            this.renderPage(page, x, y, width, height);
+        }
     };
     /**
      * Render specified page widgets.
@@ -47656,6 +48032,7 @@ var Editor = /** @__PURE__ @class */ (function () {
             table.isGridUpdated = false;
             table.buildTableColumns();
             table.isGridUpdated = true;
+            this.viewer.skipScrollToPosition = true;
             this.viewer.layout.reLayoutTable(table);
             this.selection.start.setPosition(startParagraph.firstChild, true);
             this.selection.end.setPosition(this.selection.getLastParagraph(newCell).firstChild, false);
@@ -63902,7 +64279,10 @@ var WordExport = /** @__PURE__ @class */ (function () {
  */
 var TextExport = /** @__PURE__ @class */ (function () {
     function TextExport() {
-        this.text = '';
+        /**
+         * @private
+         */
+        this.pageContent = '';
         this.curSectionIndex = 0;
         this.inField = false;
     }
@@ -63935,10 +64315,18 @@ var TextExport = /** @__PURE__ @class */ (function () {
         var document = viewer.owner.sfdtExportModule.write();
         this.setDocument(document);
     };
+    /**
+     * @private
+     * @param document
+     */
     TextExport.prototype.setDocument = function (document) {
         this.document = document;
         this.mSections = document.sections;
     };
+    /**
+     * @private
+     * @param streamWriter
+     */
     TextExport.prototype.writeInternal = function (streamWriter) {
         var section = undefined;
         var sectionCount = this.document.sections.length - 1;
@@ -64027,10 +64415,20 @@ var TextExport = /** @__PURE__ @class */ (function () {
         this.curSectionIndex++;
     };
     TextExport.prototype.writeNewLine = function (writer) {
-        writer.writeLine('');
+        if (!isNullOrUndefined(writer)) {
+            writer.writeLine('');
+        }
+        else {
+            this.pageContent = this.pageContent + ' ';
+        }
     };
     TextExport.prototype.writeText = function (writer, text) {
-        writer.write(text);
+        if (!isNullOrUndefined(writer)) {
+            writer.write(text);
+        }
+        else {
+            this.pageContent += text;
+        }
     };
     TextExport.prototype.updateLastParagraph = function () {
         var cnt = this.document.sections.length;
@@ -64135,17 +64533,7 @@ var SfdtExport = /** @__PURE__ @class */ (function () {
         if (writeInlineStyles) {
             this.writeInlineStyles = true;
         }
-        this.lists = [];
-        this.document = {};
-        this.document.sections = [];
-        this.document.characterFormat = this.writeCharacterFormat(this.viewer.characterFormat);
-        this.document.paragraphFormat = this.writeParagraphFormat(this.viewer.paragraphFormat);
-        this.document.defaultTabWidth = this.viewer.defaultTabWidth;
-        this.document.enforcement = this.viewer.isDocumentProtected;
-        this.document.hashValue = this.viewer.hashValue;
-        this.document.saltValue = this.viewer.saltValue;
-        this.document.formatting = this.viewer.restrictFormatting;
-        this.document.protectionType = this.viewer.protectionType;
+        this.Initialize();
         this.updateEditRangeId();
         if (line instanceof LineWidget && endLine instanceof LineWidget) {
             // For selection
@@ -64218,12 +64606,7 @@ var SfdtExport = /** @__PURE__ @class */ (function () {
         else {
             if (this.viewer.pages.length > 0) {
                 var page = this.viewer.pages[0];
-                if (page.bodyWidgets.length > 0) {
-                    var nextBlock = page.bodyWidgets[0];
-                    do {
-                        nextBlock = this.writeBodyWidget(nextBlock, 0);
-                    } while (!isNullOrUndefined(nextBlock));
-                }
+                this.writePage(page);
             }
         }
         this.writeStyles(this.viewer);
@@ -64231,6 +64614,34 @@ var SfdtExport = /** @__PURE__ @class */ (function () {
         var doc = this.document;
         this.clear();
         return doc;
+    };
+    /**
+     * @private
+     */
+    SfdtExport.prototype.Initialize = function () {
+        this.lists = [];
+        this.document = {};
+        this.document.sections = [];
+        this.document.characterFormat = this.writeCharacterFormat(this.viewer.characterFormat);
+        this.document.paragraphFormat = this.writeParagraphFormat(this.viewer.paragraphFormat);
+        this.document.defaultTabWidth = this.viewer.defaultTabWidth;
+        this.document.enforcement = this.viewer.isDocumentProtected;
+        this.document.hashValue = this.viewer.hashValue;
+        this.document.saltValue = this.viewer.saltValue;
+        this.document.formatting = this.viewer.restrictFormatting;
+        this.document.protectionType = this.viewer.protectionType;
+    };
+    /**
+     * @private
+     */
+    SfdtExport.prototype.writePage = function (page) {
+        if (page.bodyWidgets.length > 0) {
+            var nextBlock = page.bodyWidgets[0];
+            do {
+                nextBlock = this.writeBodyWidget(nextBlock, 0);
+            } while (!isNullOrUndefined(nextBlock));
+        }
+        return this.document;
     };
     SfdtExport.prototype.writeBodyWidget = function (bodyWidget, index) {
         if (!(bodyWidget instanceof BodyWidget)) {
@@ -71069,8 +71480,7 @@ var TablePropertiesDialog = /** @__PURE__ @class */ (function () {
         }
         this.rowHeightBox.enabled = enableRowHeight;
         this.rowHeightType.enabled = enableRowHeight;
-        // let enabledHeader: boolean = this.enableRepeatHeader() ? false : true;
-        var enabledHeader = true;
+        var enabledHeader = this.enableRepeatHeader() ? false : true;
         if (isNullOrUndefined(this.owner.selection.rowFormat.isHeader)) {
             this.repeatHeader.indeterminate = true;
             this.repeatHeader.disabled = true;
@@ -71126,18 +71536,18 @@ var TablePropertiesDialog = /** @__PURE__ @class */ (function () {
     /**
      * @private
      */
-    // public enableRepeatHeader(): boolean {
-    //     let isFirstRow: number = 0;
-    //     for (let i: number = 0; i < this.owner.selection.selectionRanges.length; i++) {
-    //         let range: SelectionRange = this.owner.selection.selectionRanges.getRange(i);
-    //         let table: WTable = range.start.paragraph.associatedCell.ownerTable;
-    //         if (table.childNodes.indexOf(range.start.paragraph.associatedCell.ownerRow) === 0 ||
-    //             table.childNodes.indexOf(range.start.paragraph.associatedCell.ownerRow) === 0) {
-    //             isFirstRow++;
-    //         }
-    //     }
-    //     return isFirstRow === this.owner.selection.selectionRanges.length;
-    // }
+    TablePropertiesDialog.prototype.enableRepeatHeader = function () {
+        var selection = this.owner.selection;
+        var start = selection.start;
+        var end = selection.end;
+        if (!selection.isForward) {
+            start = selection.end;
+            end = selection.start;
+        }
+        var startCell = start.paragraph.associatedCell;
+        var endCell = end.paragraph.associatedCell;
+        return startCell.ownerRow.index === 0 && endCell.ownerTable.equals(startCell.ownerTable);
+    };
     //#endregion
     //#region Cell Format
     /**
@@ -75569,8 +75979,8 @@ var HeaderFooterProperties = /** @__PURE__ @class */ (function () {
         return divElement;
     };
     HeaderFooterProperties.prototype.onSelectionChange = function () {
-        this.headerFromTop.value = this.documentEditor.sectionFormat.headerDistance;
-        this.footerFromTop.value = this.documentEditor.sectionFormat.footerDistance;
+        this.headerFromTop.value = this.documentEditor.selection.sectionFormat.headerDistance;
+        this.footerFromTop.value = this.documentEditor.selection.sectionFormat.footerDistance;
         if (this.documentEditor.selection.sectionFormat.differentFirstPage) {
             this.firstPage.checked = true;
         }

@@ -2,7 +2,7 @@
 import { EventHandler, Property, Event, compile, EmitType, KeyboardEvents, append } from '@syncfusion/ej2-base';
 import { attributes, isNullOrUndefined, getUniqueID, formatUnit, isUndefined, getValue } from '@syncfusion/ej2-base';
 import { Animation, AnimationModel, Browser, KeyboardEventArgs, NotifyPropertyChanges } from '@syncfusion/ej2-base';
-import { addClass, removeClass, setStyleAttribute, closest, prepend, detach, classList, isBlazor } from '@syncfusion/ej2-base';
+import { addClass, removeClass, closest, prepend, detach, classList, isBlazor } from '@syncfusion/ej2-base';
 import { Popup, isCollide, createSpinner, showSpinner, hideSpinner } from '@syncfusion/ej2-popups';
 import { IInput, Input, InputObject, FloatLabelType } from '@syncfusion/ej2-inputs';
 import { incrementalSearch } from '../common/incremental-search';
@@ -277,6 +277,7 @@ export class DropDownList extends DropDownBase implements IInput {
      * @default null
      * @blazorType int
      * @isBlazorNullableType true
+     * @blazorDefaultValue 
      */
     @Property(null)
     public index: number;
@@ -1374,6 +1375,9 @@ export class DropDownList extends DropDownBase implements IInput {
                     if (!this.isPopupOpen && this.typedString !== '' || this.isPopupOpen && this.queryString.length > 0) {
                         this.preventAutoFill = true;
                         this.searchLists(e);
+                    } else if (this.typedString === '' && this.queryString === '' && this.getModuleName() !== 'autocomplete') {
+                        this.preventAutoFill = true;
+                        this.searchLists(e);
                     } else if (this.typedString === '') {
                         this.resetFocusElement();
                         this.activeIndex = null;
@@ -1784,7 +1788,8 @@ export class DropDownList extends DropDownBase implements IInput {
                     if (!eventArgs.cancel) {
                         addClass([this.inputWrapper.container], [dropDownListClasses.iconAnimation]);
                         this.popupObj.show(new Animation(eventArgs.animation), (this.zIndex === 1000) ? this.element : null);
-                    }
+                    } else { this.beforePopupOpen = false;
+                             this.destroyPopup(); }
                 });
             } else { this.beforePopupOpen = false; }
         });
@@ -1995,6 +2000,16 @@ export class DropDownList extends DropDownBase implements IInput {
         this.filterInput.blur();
     }
 
+    private setEleWidth(width: string | number): void {
+        if (!isNullOrUndefined(width)) {
+            if (typeof width === 'number') {
+                this.inputWrapper.container.style.width = formatUnit(width);
+            } else if (typeof width === 'string') {
+                this.inputWrapper.container.style.width = (width.match(/px|%|em/)) ? <string>(width) : <string>(formatUnit(width));
+            }
+        }
+    }
+
     private closePopup(delay?: number): void {
         this.isTyped = false;
         if (!(this.popupObj && document.body.contains(this.popupObj.element) && this.beforePopupOpen)) {
@@ -2113,7 +2128,7 @@ export class DropDownList extends DropDownBase implements IInput {
         prepend([this.hiddenElement], this.inputWrapper.container);
         this.validationAttribute(this.element, this.hiddenElement);
         this.setFields();
-        this.inputWrapper.container.style.width = formatUnit(this.width);
+        this.setEleWidth(this.width);
         this.inputWrapper.container.classList.add('e-ddl');
         this.wireEvent();
         this.tabIndex = this.element.hasAttribute('tabindex') ? this.element.getAttribute('tabindex') : '0';
@@ -2243,7 +2258,7 @@ export class DropDownList extends DropDownBase implements IInput {
                     break;
                 case 'htmlAttributes': this.setHTMLAttributes();
                     break;
-                case 'width': setStyleAttribute(this.inputWrapper.container, { 'width': formatUnit(newProp.width) }); break;
+                case 'width': this.setEleWidth(newProp.width); break;
                 case 'placeholder': Input.setPlaceholder(newProp.placeholder, this.inputElement as HTMLInputElement); break;
                 case 'filterBarPlaceholder':
                     if (this.filterInput) { Input.setPlaceholder(newProp.filterBarPlaceholder, this.filterInput as HTMLInputElement); }

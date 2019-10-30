@@ -128,6 +128,7 @@ export interface AutoCompleteModel extends ComboBoxModel{
      * @private
      * @blazorType int
      * @isBlazorNullableType true
+     * @blazorDefaultValue 
      */
     index?: number;
 

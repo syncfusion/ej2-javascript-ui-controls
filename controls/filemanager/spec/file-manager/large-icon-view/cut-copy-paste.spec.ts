@@ -1182,7 +1182,7 @@ describe('FileManager control LargeIcons view', () => {
             mousemove = setMouseCordinates(mousemove, rect[0].x + 5, rect[0].y + 5);
             EventHandler.trigger(<any>(document), 'mousemove', mousemove);
             let mouseup: any = getEventObject('MouseEvents', 'mouseup', li[1].querySelector('.e-fullrow'), li[1].querySelector('.e-fullrow'), rect[0].x + 5, rect[0].y + 5);
-            mouseup.type = 'mouseup';
+            mouseup.type = 'mouseup'; mouseup.currentTarget = document;
             EventHandler.trigger(<any>(document), 'mouseup', mouseup);
             expect(document.querySelector('.e-fe-clone')).toBe(null);
             expect(start).toBe(1);
@@ -1219,7 +1219,7 @@ describe('FileManager control LargeIcons view', () => {
             mousemove = setMouseCordinates(mousemove, rect[0].x + 5, rect[0].y + 5);
             EventHandler.trigger(<any>(document), 'mousemove', mousemove);
             let mouseup: any = getEventObject('MouseEvents', 'mouseup', li[1].querySelector('.e-text-content'), li[1].querySelector('.e-text-content'), rect[0].x + 5, rect[0].y + 5);
-            mouseup.type = 'mouseup';
+            mouseup.type = 'mouseup'; mouseup.currentTarget = document;
             EventHandler.trigger(<any>(document), 'mouseup', mouseup);
             expect(document.querySelector('.e-fe-clone')).toBe(null);
             expect(start).toBe(1);
@@ -1250,7 +1250,7 @@ describe('FileManager control LargeIcons view', () => {
             mousemove = setMouseCordinates(mousemove, rect[0].x + 5, rect[0].y + 5);
             EventHandler.trigger(<any>(document), 'mousemove', mousemove);
             let mouseup: any = getEventObject('MouseEvents', 'mouseup', li[3].querySelector('.e-fullrow'), li[3].querySelector('.e-fullrow'), rect[0].x + 5, rect[0].y + 5);
-            mouseup.type = 'mouseup';
+            mouseup.type = 'mouseup'; mouseup.currentTarget = document;
             EventHandler.trigger(<any>(document), 'mouseup', mouseup);
             expect(document.querySelector('.e-fe-clone')).toBe(null);
             expect(start).toBe(1);
@@ -1301,7 +1301,7 @@ describe('FileManager control LargeIcons view', () => {
             mousemove = setMouseCordinates(mousemove, rect[0].x + 5, rect[0].y + 5);
             EventHandler.trigger(<any>(document), 'mousemove', mousemove);
             let mouseup: any = getEventObject('MouseEvents', 'mouseup', li[2].querySelector('.e-text-content'), li[2].querySelector('.e-text-content'), rect[0].x + 5, rect[0].y + 5);
-            mouseup.type = 'mouseup';
+            mouseup.type = 'mouseup'; mouseup.currentTarget = document;
             EventHandler.trigger(<any>(document), 'mouseup', mouseup);
             expect(document.querySelector('.e-fe-clone')).toBe(null);
             expect(start).toBe(1);
@@ -1359,7 +1359,7 @@ describe('FileManager control LargeIcons view', () => {
             mousemove = setMouseCordinates(mousemove, rect[0].x + 5, rect[0].y + 5);
             EventHandler.trigger(<any>(document), 'mousemove', mousemove);
             let mouseup: any = getEventObject('MouseEvents', 'mouseup', li[3].querySelector('.e-fullrow'), li[3].querySelector('.e-fullrow'), rect[0].x + 5, rect[0].y + 5);
-            mouseup.type = 'mouseup';
+            mouseup.type = 'mouseup'; mouseup.currentTarget = document;
             EventHandler.trigger(<any>(document), 'mouseup', mouseup);
             expect(document.querySelector('.e-fe-clone')).toBe(null);
             expect(start).toBe(1);
@@ -1395,7 +1395,7 @@ describe('FileManager control LargeIcons view', () => {
             expect(document.querySelector('.e-fe-clone') === null).toBe(false);
             expect(li[4].classList.contains('e-blur')).toBe(true);
             let mouseup: any = getEventObject('MouseEvents', 'mouseup', feObj.toolbarModule.toolbarObj.element, feObj.toolbarModule.toolbarObj.element, rect[0].x + 5, rect[0].y + 5);
-            mouseup.type = 'mouseup';
+            mouseup.type = 'mouseup'; mouseup.currentTarget = document;
             EventHandler.trigger(<any>(document), 'mouseup', mouseup);
             expect(document.querySelector('.e-fe-clone')).toBe(null);
             expect(start).toBe(1);
@@ -1412,7 +1412,7 @@ describe('FileManager control LargeIcons view', () => {
             expect(document.querySelector('.e-fe-clone') === null).toBe(false);
             expect(li[4].classList.contains('e-blur')).toBe(true);
             let mouseup1: any = getEventObject('MouseEvents', 'mouseup', feObj.navigationpaneModule.treeObj.element, feObj.navigationpaneModule.treeObj.element, rect[0].x + 5, rect[0].y + 5);
-            mouseup.type = 'mouseup';
+            mouseup.type = 'mouseup'; mouseup.currentTarget = document;
             EventHandler.trigger(<any>(document), 'mouseup', mouseup1);
             expect(document.querySelector('.e-fe-clone')).toBe(null);
             expect(start).toBe(1);
@@ -1451,7 +1451,7 @@ describe('FileManager control LargeIcons view', () => {
             mousemove = setMouseCordinates(mousemove, rect[0].x + 5, rect[0].y + 5);
             EventHandler.trigger(<any>(document), 'mousemove', mousemove);
             let mouseup: any = getEventObject('MouseEvents', 'mouseup', li[2].querySelector('.e-text-content'), li[2].querySelector('.e-text-content'), rect[0].x + 5, rect[0].y + 5);
-            mouseup.type = 'mouseup';
+            mouseup.type = 'mouseup'; mouseup.currentTarget = document;
             EventHandler.trigger(<any>(document), 'mouseup', mouseup);
             expect(document.querySelector('.e-fe-clone')).toBe(null);
             expect(start).toBe(1);
@@ -1523,7 +1523,7 @@ describe('FileManager control LargeIcons view', () => {
                 mousemove = setMouseCordinates(mousemove, rect[0].x + 5, rect[0].y + 5);
                 EventHandler.trigger(<any>(document), 'mousemove', mousemove);
                 let mouseup: any = getEventObject('MouseEvents', 'mouseup', li[0].querySelector('.e-text-content'), li[0].querySelector('.e-text-content'), rect[0].x + 5, rect[0].y + 5);
-                mouseup.type = 'mouseup';
+                mouseup.type = 'mouseup'; mouseup.currentTarget = document;
                 EventHandler.trigger(<any>(document), 'mouseup', mouseup);
                 expect(document.querySelector('.e-fe-clone')).toBe(null);
                 expect(start).toBe(1);
@@ -1590,7 +1590,7 @@ describe('FileManager control LargeIcons view', () => {
         //             mousemove = setMouseCordinates(mousemove, rect[0].x + 5, rect[0].y + 5);
         //             EventHandler.trigger(<any>(document), 'mousemove', mousemove);
         //             let mouseup: any = getEventObject('MouseEvents', 'mouseup', li[4].querySelector('.e-fullrow'), li[4].querySelector('.e-fullrow'), rect[0].x + 5, rect[0].y + 5);
-        //             mouseup.type = 'mouseup';
+        //             mouseup.type = 'mouseup'; mouseup.currentTarget = document;
         //             EventHandler.trigger(<any>(document), 'mouseup', mouseup);
         //             expect(document.querySelector('.e-fe-clone')).toBe(null);
         //             expect(start).toBe(1);
@@ -1645,7 +1645,7 @@ describe('FileManager control LargeIcons view', () => {
             mousemove = setMouseCordinates(mousemove, rect[0].x + 5, rect[0].y + 5);
             EventHandler.trigger(<any>(document), 'mousemove', mousemove);
             let mouseup: any = getEventObject('MouseEvents', 'mouseup', li[2].querySelector('.e-text-content'), li[2].querySelector('.e-text-content'), rect[0].x + 5, rect[0].y + 5);
-            mouseup.type = 'mouseup';
+            mouseup.type = 'mouseup'; mouseup.currentTarget = document;
             EventHandler.trigger(<any>(document), 'mouseup', mouseup);
             expect(document.querySelector('.e-fe-clone')).toBe(null);
             expect(start).toBe(1);
@@ -1709,7 +1709,7 @@ describe('FileManager control LargeIcons view', () => {
             mousemove = setMouseCordinates(mousemove, rect[0].x + 5, rect[0].y + 5);
             EventHandler.trigger(<any>(document), 'mousemove', mousemove);
             let mouseup: any = getEventObject('MouseEvents', 'mouseup', li[2].querySelector('.e-text-content'), li[2].querySelector('.e-text-content'), rect[0].x + 5, rect[0].y + 5);
-            mouseup.type = 'mouseup';
+            mouseup.type = 'mouseup'; mouseup.currentTarget = document;
             EventHandler.trigger(<any>(document), 'mouseup', mouseup);
             expect(document.querySelector('.e-fe-clone')).toBe(null);
             expect(start).toBe(1);
@@ -1792,7 +1792,7 @@ describe('FileManager control LargeIcons view', () => {
             mousemove = setMouseCordinates(mousemove, rect[0].x + 5, rect[0].y + 5);
             EventHandler.trigger(<any>(document), 'mousemove', mousemove);
             let mouseup: any = getEventObject('MouseEvents', 'mouseup', li[2].querySelector('.e-text-content'), li[2].querySelector('.e-text-content'), rect[0].x + 5, rect[0].y + 5);
-            mouseup.type = 'mouseup';
+            mouseup.type = 'mouseup'; mouseup.currentTarget = document;
             EventHandler.trigger(<any>(document), 'mouseup', mouseup);
             expect(document.querySelector('.e-fe-clone')).toBe(null);
             expect(start).toBe(1);
@@ -1875,7 +1875,7 @@ describe('FileManager control LargeIcons view', () => {
             mousemove = setMouseCordinates(mousemove, rect[0].x + 5, rect[0].y + 5);
             EventHandler.trigger(<any>(document), 'mousemove', mousemove);
             let mouseup: any = getEventObject('MouseEvents', 'mouseup', li[2].querySelector('.e-text-content'), li[2].querySelector('.e-text-content'), rect[0].x + 5, rect[0].y + 5);
-            mouseup.type = 'mouseup';
+            mouseup.type = 'mouseup'; mouseup.currentTarget = document;
             EventHandler.trigger(<any>(document), 'mouseup', mouseup);
             expect(document.querySelector('.e-fe-clone')).toBe(null);
             expect(start).toBe(1);

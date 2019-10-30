@@ -176,6 +176,15 @@ export class Drawing {
                 content = pathContent;
                 canvas.children.push(content);
                 break;
+            case 'HandWrittenSignature':
+                pathContent = new PathElement();
+                pathContent.data = obj.data;
+                pathContent.style.strokeColor = obj.strokeColor;
+                pathContent.style.strokeWidth = obj.thickness;
+                pathContent.style.opacity = obj.opacity;
+                content = pathContent;
+                canvas.children.push(content);
+                break;
             case 'Polygon':
                 pathContent = new PathElement();
                 pathContent.data = getPolygonPath(obj.vertexPoints);
@@ -721,7 +730,7 @@ export class Drawing {
                                         this.renderResizeHandle(
                                             node.wrapper.children[0], selectorElement, selectorModel.thumbsConstraints, zoom,
                                             // tslint:disable-next-line:max-line-length
-                                            undefined, undefined, undefined, node.shapeAnnotationType === 'Stamp', false, node.shapeAnnotationType === 'Path', node.shapeAnnotationType === 'FreeText');
+                                            undefined, undefined, undefined, node.shapeAnnotationType === 'Stamp', false, node.shapeAnnotationType === 'Path', (node.shapeAnnotationType === 'FreeText' || node.shapeAnnotationType === 'HandWrittenSignature'));
                                     }
                                 }
                             }
@@ -818,7 +827,7 @@ export class Drawing {
             // tslint:disable-next-line:max-line-length
             options.strokeWidth = isNullOrUndefined(this.pdfViewer.annotationSelectorSettings.selectionBorderThickness) ? 2 : this.pdfViewer.annotationSelectorSettings.selectionBorderThickness;
             options.dashArray = '6,3';
-            options.class = 'e-diagram-border';
+            options.class = 'e-pv-diagram-border';
             if (isSwimlane) { options.class += ' e-diagram-lane'; }
             options.id = 'borderRect';
             options.id = 'borderRect';
@@ -968,27 +977,27 @@ export class Drawing {
                     'resizeNorthWest', element, left, top, canvas, true,
                     constraints & ThumbsConstraints.ResizeNorthWest, transform, undefined,
                     canMask, { 'aria-label': 'Thumb to resize the selected object on top left side direction' },
-                    undefined, 'e-diagram-resize-handle e-northwest');
+                    undefined, 'e-pv-diagram-resize-handle e-northwest');
 
                 this.renderCircularHandle(
                     'resizeNorthEast', element, left + width, top, canvas, true,
                     constraints & ThumbsConstraints.ResizeNorthEast, transform, undefined,
                     canMask, { 'aria-label': 'Thumb to resize the selected object on top right side direction' },
-                    undefined, 'e-diagram-resize-handle e-northeast');
+                    undefined, 'e-pv-diagram-resize-handle e-northeast');
 
                 this.renderCircularHandle(
                     'resizeSouthWest', element, left, top + height, canvas, true,
                     constraints & ThumbsConstraints.ResizeSouthWest, transform, undefined,
                     canMask, { 'aria-label': 'Thumb to resize the selected object on bottom left side direction' },
                     undefined,
-                    'e-diagram-resize-handle e-southwest');
+                    'e-pv-diagram-resize-handle e-southwest');
 
                 this.renderCircularHandle(
                     'resizeSouthEast', element, left + width, top + height, canvas,
                     true, constraints & ThumbsConstraints.ResizeSouthEast, transform,
                     undefined, canMask, { 'aria-label': 'Thumb to resize the selected object on bottom right side direction' },
                     undefined,
-                    'e-diagram-resize-handle e-southeast');
+                    'e-pv-diagram-resize-handle e-southeast');
 
             }
             if (!isStamp) {
@@ -996,25 +1005,25 @@ export class Drawing {
                     'resizeNorth', element, left + width / 2, top, canvas,
                     true, constraints & ThumbsConstraints.ResizeNorth, transform, undefined,
                     canMask, { 'aria-label': 'Thumb to resize the selected object on top side direction' }, undefined,
-                    'e-diagram-resize-handle e-north');
+                    'e-pv-diagram-resize-handle e-north');
 
                 this.renderCircularHandle(
                     'resizeSouth', element, left + width / 2, top + height, canvas,
                     true, constraints & ThumbsConstraints.ResizeSouth, transform, undefined,
                     canMask, { 'aria-label': 'Thumb to resize the selected object on bottom side direction' }, undefined,
-                    'e-diagram-resize-handle e-south');
+                    'e-pv-diagram-resize-handle e-south');
 
                 this.renderCircularHandle(
                     'resizeWest', element, left, top + height / 2, canvas, true,
                     constraints & ThumbsConstraints.ResizeWest, transform, undefined,
                     canMask, { 'aria-label': 'Thumb to resize the selected object on left side direction' }, undefined,
-                    'e-diagram-resize-handle e-west');
+                    'e-pv-diagram-resize-handle e-west');
 
                 this.renderCircularHandle(
                     'resizeEast', element, left + width, top + height / 2, canvas, true,
                     constraints & ThumbsConstraints.ResizeEast, transform, undefined,
                     canMask, { 'aria-label': 'Thumb to resize the selected object on right side direction' }, undefined,
-                    'e-diagram-resize-handle e-east');
+                    'e-pv-diagram-resize-handle e-east');
             }
         }
     }

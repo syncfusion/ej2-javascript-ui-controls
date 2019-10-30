@@ -673,6 +673,12 @@ const beforeCustomFilterOpen = 'beforeCustomFilterOpen';
 const selectVirtualRow = 'select-virtual-Row';
 /** @hidden */
 const columnsPrepared = 'columns-prepared';
+/** @hidden */
+const cBoxFltrBegin = 'cbox-filter-begin';
+/** @hidden */
+const cBoxFltrComplete = 'cbox-filter-complete';
+/** @hidden */
+const cBoxFltrPrevent = 'cbox-filter-Prevent';
 
 /**
  * @hidden
@@ -1824,14 +1830,14 @@ var ToolbarItem;
 /* tslint:disable-next-line:max-line-length */
 /**
  * @hidden
- * `CheckBoxFilter` module is used to handle filtering action.
+ * `CheckBoxFilterBase` module is used to handle filtering action.
  */
-class CheckBoxFilter {
+class CheckBoxFilterBase {
     /**
      * Constructor for checkbox filtering module
      * @hidden
      */
-    constructor(parent, filterSettings, serviceLocator) {
+    constructor(parent, filterSettings) {
         this.existingPredicate = {};
         this.foreignKeyQuery = new Query();
         this.filterState = true;
@@ -1839,7 +1845,6 @@ class CheckBoxFilter {
         this.renderEmpty = false;
         this.parent = parent;
         this.id = this.parent.element.id;
-        this.serviceLocator = serviceLocator;
         this.filterSettings = filterSettings;
         this.valueFormatter = new ValueFormatter(this.parent.locale);
         this.cBoxTrue = createCheckBox(this.parent.createElement, false, { checked: true, label: ' ' });
@@ -1953,7 +1958,6 @@ class CheckBoxFilter {
         this.existingPredicate = options.actualPredicate || {};
         this.options.dataSource = options.dataSource;
         this.updateDataSource();
-        this.parent.log('column_type_missing', { column: options.column });
         this.options.type = options.type;
         this.options.format = options.format || '';
         this.options.filteredColumns = options.filteredColumns || this.parent.filterSettings.columns;
@@ -2010,7 +2014,7 @@ class CheckBoxFilter {
             let filterModel = 'filterModel';
             args[filterModel] = this;
         }
-        this.parent.trigger(actionBegin, args);
+        this.parent.notify(cBoxFltrBegin, args);
         if (args.cancel) {
             return;
         }
@@ -2037,7 +2041,7 @@ class CheckBoxFilter {
         let isStringTemplate = 'isStringTemplate';
         this.dialogObj[isStringTemplate] = true;
         this.dialogObj.appendTo(this.dlg);
-        this.dialogObj.element.style.maxHeight = '800px';
+        this.dialogObj.element.style.maxHeight = this.options.height + 'px';
         this.dialogObj.show();
         this.wireEvents();
         createSpinner({ target: this.spinner }, this.parent.createElement);
@@ -2072,8 +2076,10 @@ class CheckBoxFilter {
         }
     }
     clearFilter() {
-        if (isActionPrevent(this.parent)) {
-            this.parent.notify(preventBatch, { instance: this, handler: this.clearFilter });
+        /* tslint:disable-next-line:max-line-length */
+        let args = { instance: this, handler: this.clearFilter, cancel: false };
+        this.parent.notify(cBoxFltrPrevent, args);
+        if (args.cancel) {
             return;
         }
         this.options.handler({ action: 'clear-filter', field: this.options.field });
@@ -2167,11 +2173,12 @@ class CheckBoxFilter {
                 else {
                     coll.push(fObj);
                 }
-                if (isActionPrevent(this.parent)) {
-                    this.parent.notify(preventBatch, {
-                        instance: this, handler: this.fltrBtnHandler, arg1: fObj.field, arg2: fObj.predicate, arg3: fObj.operator,
-                        arg4: fObj.matchCase, arg5: fObj.ignoreAccent, arg6: fObj.value
-                    });
+                let args = {
+                    instance: this, handler: this.fltrBtnHandler, arg1: fObj.field, arg2: fObj.predicate, arg3: fObj.operator,
+                    arg4: fObj.matchCase, arg5: fObj.ignoreAccent, arg6: fObj.value, cancel: false
+                };
+                this.parent.notify(cBoxFltrPrevent, args);
+                if (args.cancel) {
                     return;
                 }
             }
@@ -2228,13 +2235,14 @@ class CheckBoxFilter {
             operator = 'equal';
         }
         this.addDistinct(query);
+        /* tslint:disable-next-line:max-line-length */
         let args = {
             requestType: filterSearchBegin,
             filterModel: this, columnName: field, column: column,
             operator: operator, matchCase: matchCase, ignoreAccent: ignoreAccent, filterChoiceCount: null,
             query: query
         };
-        this.parent.trigger(actionBegin, args);
+        this.parent.notify(cBoxFltrBegin, args);
         predicte = new Predicate(field, args.operator, parsed, args.matchCase, args.ignoreAccent);
         if (this.options.type === 'date' || this.options.type === 'datetime') {
             parsed = this.valueFormatter.fromView(val, this.options.parserFn, this.options.type);
@@ -2286,7 +2294,7 @@ class CheckBoxFilter {
         }
     }
     getPredicateFromCols(columns) {
-        let predicates = CheckBoxFilter.getPredicate(columns);
+        let predicates = CheckBoxFilterBase.getPredicate(columns);
         let predicateList = [];
         let fPredicate = {};
         let foreignColumn = this.parent.getForeignKeyColumns();
@@ -2318,7 +2326,7 @@ class CheckBoxFilter {
             let filterModel = 'filterModel';
             args[filterModel] = this;
         }
-        this.parent.trigger(actionBegin, args);
+        this.parent.notify(cBoxFltrBegin, args);
         args.filterChoiceCount = !isNullOrUndefined(args.filterChoiceCount) ? args.filterChoiceCount : 1000;
         query.take(args.filterChoiceCount);
         if (this.parent.dataSource && 'result' in this.parent.dataSource) {
@@ -2384,15 +2392,23 @@ class CheckBoxFilter {
         if (this.parent.searchSettings.key.length) {
             let sSettings = this.parent.searchSettings;
             let fields = sSettings.fields.length ? sSettings.fields : this.parent.getColumns().map((f) => f.field);
+            /* tslint:disable-next-line:max-line-length */
             query.search(sSettings.key, fields, sSettings.operator, sSettings.ignoreCase, sSettings.ignoreAccent);
         }
         if ((this.options.filteredColumns.length)) {
             let cols = [];
             for (let i = 0; i < this.options.filteredColumns.length; i++) {
                 let filterColumn = this.options.filteredColumns[i];
-                filterColumn.uid = filterColumn.uid || this.parent.getColumnByField(filterColumn.field).uid;
-                if (filterColumn.uid !== this.options.uid) {
-                    cols.push(this.options.filteredColumns[i]);
+                if (this.options.uid) {
+                    filterColumn.uid = filterColumn.uid || this.parent.getColumnByField(filterColumn.field).uid;
+                    if (filterColumn.uid !== this.options.uid) {
+                        cols.push(this.options.filteredColumns[i]);
+                    }
+                }
+                else {
+                    if (filterColumn.field !== this.options.field) {
+                        cols.push(this.options.filteredColumns[i]);
+                    }
                 }
             }
             let predicate = this.getPredicateFromCols(cols);
@@ -2403,7 +2419,7 @@ class CheckBoxFilter {
         // query.select(this.options.field);
         let result = new DataManager(this.fullData).executeLocal(query);
         let col = this.options.column;
-        this.filteredData = CheckBoxFilter.
+        this.filteredData = CheckBoxFilterBase.
             getDistinct(result, this.options.field, col, this.foreignKeyData).records || [];
         this.processDataSource(null, true, this.filteredData);
         this.sInput.focus();
@@ -2415,7 +2431,7 @@ class CheckBoxFilter {
             let filterModel = 'filterModel';
             args[filterModel] = this;
         }
-        this.parent.trigger(actionComplete, args);
+        this.parent.notify(cBoxFltrComplete, args);
     }
     processDataSource(query, isInitial, dataSource) {
         showSpinner(this.spinner);
@@ -2560,7 +2576,7 @@ class CheckBoxFilter {
             let filterModel = 'filterModel';
             args[filterModel] = this;
         }
-        this.parent.trigger(actionComplete, args);
+        this.parent.notify(cBoxFltrComplete, args);
         hideSpinner(this.spinner);
     }
     getCheckedState(isColFiltered, value) {
@@ -2604,7 +2620,7 @@ class CheckBoxFilter {
         for (let i = 0; i < cols.length; i++) {
             collection = new DataManager(columns).executeLocal(new Query().where('field', 'equal', cols[i].field));
             if (collection.length !== 0) {
-                pred[cols[i].field] = CheckBoxFilter.generatePredicate(collection);
+                pred[cols[i].field] = CheckBoxFilterBase.generatePredicate(collection);
             }
         }
         return pred;
@@ -2613,23 +2629,23 @@ class CheckBoxFilter {
         let len = cols ? cols.length : 0;
         let predicate;
         let first;
-        first = CheckBoxFilter.updateDateFilter(cols[0]);
+        first = CheckBoxFilterBase.updateDateFilter(cols[0]);
         first.ignoreAccent = !isNullOrUndefined(first.ignoreAccent) ? first.ignoreAccent : false;
         if (first.type === 'date' || first.type === 'datetime') {
             predicate = getDatePredicate(first, first.type);
         }
         else {
             predicate = first.ejpredicate ? first.ejpredicate :
-                new Predicate(first.field, first.operator, first.value, !CheckBoxFilter.getCaseValue(first), first.ignoreAccent);
+                new Predicate(first.field, first.operator, first.value, !CheckBoxFilterBase.getCaseValue(first), first.ignoreAccent);
         }
         for (let p = 1; p < len; p++) {
-            cols[p] = CheckBoxFilter.updateDateFilter(cols[p]);
+            cols[p] = CheckBoxFilterBase.updateDateFilter(cols[p]);
             if (len > 2 && p > 1 && cols[p].predicate === 'or') {
                 if (cols[p].type === 'date' || cols[p].type === 'datetime') {
                     predicate.predicates.push(getDatePredicate(cols[p], cols[p].type));
                 }
                 else {
-                    predicate.predicates.push(new Predicate(cols[p].field, cols[p].operator, cols[p].value, !CheckBoxFilter.getCaseValue(cols[p]), cols[p].ignoreAccent));
+                    predicate.predicates.push(new Predicate(cols[p].field, cols[p].operator, cols[p].value, !CheckBoxFilterBase.getCaseValue(cols[p]), cols[p].ignoreAccent));
                 }
             }
             else {
@@ -2637,9 +2653,10 @@ class CheckBoxFilter {
                     predicate = predicate[(cols[p].predicate)](getDatePredicate(cols[p]), cols[p].type, cols[p].ignoreAccent);
                 }
                 else {
+                    /* tslint:disable-next-line:max-line-length */
                     predicate = cols[p].ejpredicate ?
                         predicate[cols[p].predicate](cols[p].ejpredicate) :
-                        predicate[(cols[p].predicate)](cols[p].field, cols[p].operator, cols[p].value, !CheckBoxFilter.getCaseValue(cols[p]), cols[p].ignoreAccent);
+                        predicate[(cols[p].predicate)](cols[p].field, cols[p].operator, cols[p].value, !CheckBoxFilterBase.getCaseValue(cols[p]), cols[p].ignoreAccent);
                 }
             }
         }
@@ -2658,13 +2675,6 @@ class CheckBoxFilter {
             filter.type = filter.type || 'date';
         }
         return filter;
-    }
-    /**
-     * For internal use only - Get the module name.
-     * @private
-     */
-    getModuleName() {
-        return 'checkboxFilter';
     }
 }
 
@@ -2887,7 +2897,7 @@ class Data {
                 }
             }
             if (checkBoxCols.length) {
-                let excelPredicate = CheckBoxFilter.getPredicate(checkBoxCols);
+                let excelPredicate = CheckBoxFilterBase.getPredicate(checkBoxCols);
                 for (let prop of Object.keys(excelPredicate)) {
                     let col;
                     if (this.parent.getColumnByField(prop).isForeignColumn()) {
@@ -6171,6 +6181,7 @@ class Render {
             if (dataArgs.cancel) {
                 return;
             }
+            dataArgs.result = isNullOrUndefined(dataArgs.result) ? [] : dataArgs.result;
             let len = Object.keys(dataArgs.result).length;
             if (this.parent.isDestroyed) {
                 return;
@@ -9445,7 +9456,14 @@ class Selection {
             this.refreshPersistSelection();
         }
         if (e.requestType === 'delete' && this.parent.isPersistSelection) {
-            e.data.slice().forEach((data) => {
+            let records = [];
+            if (!isBlazor()) {
+                records = e.data;
+            }
+            else {
+                records = this.getSelectedRecords();
+            }
+            records.slice().forEach((data) => {
                 if (!isNullOrUndefined(data[this.primaryKey])) {
                     this.updatePersistDelete(data[this.primaryKey]);
                 }
@@ -12597,6 +12615,10 @@ let Grid = Grid_1 = class Grid extends Component {
                 row = this.rowObject(this.contentModule.getMovableRows(), uid);
                 return row;
             }
+        }
+        if (isNullOrUndefined(row) && this.enableVirtualization && this.groupSettings.columns.length > 0) {
+            row = this.rowObject(this.vRows, uid);
+            return row;
         }
         return row;
     }
@@ -16965,15 +16987,83 @@ class FilterMenuRenderer {
 
 /**
  * @hidden
+ * `CheckBoxFilter` module is used to handle filtering action.
+ */
+class CheckBoxFilter {
+    /**
+     * Constructor for checkbox filtering module
+     * @hidden
+     */
+    constructor(parent, filterSettings, serviceLocator) {
+        this.parent = parent;
+        this.checkBoxBase = new CheckBoxFilterBase(parent, filterSettings);
+        this.addEventListener();
+    }
+    /**
+     * To destroy the check box filter.
+     * @return {void}
+     * @hidden
+     */
+    destroy() {
+        this.removeEventListener();
+        this.checkBoxBase.closeDialog();
+    }
+    openDialog(options) {
+        this.checkBoxBase.openDialog(options);
+        this.parent.log('column_type_missing', { column: options.column });
+    }
+    closeDialog() {
+        this.removeEventListener();
+        this.checkBoxBase.closeDialog();
+    }
+    /**
+     * For internal use only - Get the module name.
+     * @private
+     */
+    getModuleName() {
+        return 'checkboxFilter';
+    }
+    actionBegin(args) {
+        this.parent.trigger(actionBegin, args);
+    }
+    actionComplete(args) {
+        this.parent.trigger(actionComplete, args);
+    }
+    actionPrevent(args) {
+        if (isActionPrevent(this.parent)) {
+            this.parent.notify(preventBatch, args);
+            args.cancel = true;
+        }
+    }
+    addEventListener() {
+        if (this.parent.isDestroyed) {
+            return;
+        }
+        this.parent.on(cBoxFltrBegin, this.actionBegin, this);
+        this.parent.on(cBoxFltrComplete, this.actionComplete, this);
+        this.parent.on(cBoxFltrPrevent, this.actionPrevent, this);
+    }
+    removeEventListener() {
+        if (this.parent.isDestroyed) {
+            return;
+        }
+        this.parent.off(cBoxFltrBegin, this.actionBegin);
+        this.parent.off(cBoxFltrComplete, this.actionComplete);
+        this.parent.off(cBoxFltrPrevent, this.actionPrevent);
+    }
+}
+
+/**
+ * @hidden
  * `ExcelFilter` module is used to handle filtering action.
  */
-class ExcelFilter extends CheckBoxFilter {
+class ExcelFilterBase extends CheckBoxFilterBase {
     /**
      * Constructor for excel filtering module
      * @hidden
      */
-    constructor(parent, filterSettings, serviceLocator, customFltrOperators) {
-        super(parent, filterSettings, serviceLocator);
+    constructor(parent, filterSettings, customFltrOperators) {
+        super(parent, filterSettings);
         this.customFilterOperators = customFltrOperators;
         this.isExcel = true;
     }
@@ -17300,6 +17390,7 @@ class ExcelFilter extends CheckBoxFilter {
         this.removeDialog();
     }
     /**
+     * @hidden
      * Filters grid row by column name with given options.
      * @param {string} fieldName - Defines the field name of the filter column.
      * @param {string} firstOperator - Defines the first operator by how to filter records.
@@ -17538,6 +17629,7 @@ class ExcelFilter extends CheckBoxFilter {
             types[this.options.type](this.options, column, valueInput, flValue, this.parent.enableRtl);
         }
     }
+    /* tslint:disable-next-line:max-line-length */
     getExcelFilterData(elementId, data, columnObj, predicates, fltrPredicates) {
         let predIndex = elementId === '-xlfl-frstvalue' ? 0 : 1;
         if (elementId === '-xlfl-frstvalue' || fltrPredicates.length > 1) {
@@ -17666,6 +17758,41 @@ class ExcelFilter extends CheckBoxFilter {
             duplicateMap = returnObj;
         }
         return returnObj;
+    }
+}
+
+/**
+ * @hidden
+ * `ExcelFilter` module is used to handle filtering action.
+ */
+class ExcelFilter extends CheckBoxFilter {
+    /**
+     * Constructor for excelbox filtering module
+     * @hidden
+     */
+    constructor(parent, filterSettings, serviceLocator, customFltrOperators) {
+        super(parent, filterSettings, serviceLocator);
+        this.parent = parent;
+        this.excelFilterBase = new ExcelFilterBase(parent, filterSettings, customFltrOperators);
+    }
+    /**
+     * To destroy the excel filter.
+     * @return {void}
+     * @hidden
+     */
+    destroy() {
+        this.excelFilterBase.closeDialog();
+    }
+    openDialog(options) {
+        this.excelFilterBase.openDialog(options);
+    }
+    closeDialog() {
+        this.excelFilterBase.closeDialog();
+    }
+    /* tslint:disable-next-line:max-line-length */
+    filterByColumn(fieldName, firstOperator, firstValue, predicate, matchCase, ignoreAccent, secondOperator, secondValue) {
+        /* tslint:disable-next-line:max-line-length */
+        this.excelFilterBase.filterByColumn(fieldName, firstOperator, firstValue, predicate, matchCase, ignoreAccent, secondOperator, secondValue);
     }
     /**
      * For internal use only - Get the module name.
@@ -18157,7 +18284,7 @@ class Filter {
         let dataSource = col.filter.dataSource || gObj.getDataModule().dataManager;
         this.filterModule.openDialog({
             type: col.type, field: col.field, displayName: col.headerText,
-            dataSource: dataSource, format: col.format,
+            dataSource: dataSource, format: col.format, height: 800,
             filteredColumns: gObj.filterSettings.columns, target: target,
             sortedColumns: gObj.sortSettings.columns, formatFn: col.getFormatter(),
             parserFn: col.getParser(), query: gObj.query, template: col.getFilterItemTemplate(),
@@ -24102,7 +24229,7 @@ class NormalEdit {
         }
     }
     editFailure(e) {
-        this.parent.trigger(actionFailure, e);
+        this.parent.trigger(actionFailure, ((isBlazor() && e instanceof Array) ? e[0] : e));
         this.parent.hideSpinner();
         this.parent.log('actionfailure', { error: e });
     }
@@ -31702,5 +31829,5 @@ class MaskedTextBoxCellEdit {
  * Export Grid components
  */
 
-export { SortDescriptor, SortSettings, Predicate$1 as Predicate, FilterSettings, SelectionSettings, SearchSettings, RowDropSettings, TextWrapSettings, GroupSettings, EditSettings, Grid, CellType, RenderType, ToolbarItem, doesImplementInterface, valueAccessor, getUpdateUsingRaf, updatecloneRow, getCollapsedRowsCount, recursive, iterateArrayOrObject, iterateExtend, templateCompiler, setStyleAndAttributes, extend$1 as extend, setColumnIndex, prepareColumns, setCssInGridPopUp, getActualProperties, parentsUntil, getElementIndex, inArray, getActualPropFromColl, removeElement, getPosition, getUid, appendChildren, parents, calculateAggregate, getScrollBarWidth, getRowHeight, isComplexField, getComplexFieldID, setComplexFieldID, isEditable, isActionPrevent, wrap, setFormatter, addRemoveActiveClasses, distinctStringValues, getFilterMenuPostion, getZIndexCalcualtion, toogleCheckbox, createCboxWithWrap, removeAddCboxClasses, refreshForeignData, getForeignData, getColumnByForeignKeyValue, getDatePredicate, renderMovable, isGroupAdaptive, getObject, getCustomDateFormat, getExpandedState, getPrintGridModel, extendObjWithFn, measureColumnDepth, checkDepth, refreshFilteredColsUid, Global, created, destroyed, load, rowDataBound, queryCellInfo, headerCellInfo, actionBegin, actionComplete, actionFailure, dataBound, rowSelecting, rowSelected, rowDeselecting, rowDeselected, cellSelecting, cellSelected, cellDeselecting, cellDeselected, columnDragStart, columnDrag, columnDrop, rowDragStartHelper, rowDragStart, rowDrag, rowDrop, beforePrint, printComplete, detailDataBound, toolbarClick, batchAdd, batchCancel, batchDelete, beforeBatchAdd, beforeBatchDelete, beforeBatchSave, beginEdit, cellEdit, cellSave, cellSaved, endAdd, endDelete, endEdit, recordDoubleClick, recordClick, beforeDataBound, beforeOpenColumnChooser, resizeStart, onResize, resizeStop, checkBoxChange, beforeCopy, beforePaste, filterChoiceRequest, filterAfterOpen, filterBeforeOpen, filterSearchBegin, commandClick, initialLoad, initialEnd, dataReady, contentReady, uiUpdate, onEmpty, inBoundModelChanged, modelChanged, colGroupRefresh, headerRefreshed, pageBegin, pageComplete, sortBegin, sortComplete, filterBegin, filterComplete, searchBegin, searchComplete, reorderBegin, reorderComplete, rowDragAndDropBegin, rowDragAndDropComplete, groupBegin, groupComplete, ungroupBegin, ungroupComplete, groupAggregates, refreshFooterRenderer, refreshAggregateCell, refreshAggregates, rowSelectionBegin, rowSelectionComplete, columnSelectionBegin, columnSelectionComplete, cellSelectionBegin, cellSelectionComplete, beforeCellFocused, cellFocused, keyPressed, click, destroy, columnVisibilityChanged, scroll, columnWidthChanged, columnPositionChanged, rowDragAndDrop, rowsAdded, rowsRemoved, columnDragStop, headerDrop, dataSourceModified, refreshComplete, refreshVirtualBlock, dblclick, toolbarRefresh, bulkSave, autoCol, tooltipDestroy, updateData, editBegin, editComplete, addBegin, addComplete, saveComplete, deleteBegin, deleteComplete, preventBatch, dialogDestroy, crudAction, addDeleteAction, destroyForm, doubleTap, beforeExcelExport, excelExportComplete, excelQueryCellInfo, excelHeaderQueryCellInfo, exportDetailDataBound, beforePdfExport, pdfExportComplete, pdfQueryCellInfo, pdfHeaderQueryCellInfo, accessPredicate, contextMenuClick, freezeRender, freezeRefresh, contextMenuOpen, columnMenuClick, columnMenuOpen, filterOpen, filterDialogCreated, filterMenuClose, initForeignKeyColumn, getForeignKeyData, generateQuery, showEmptyGrid, foreignKeyData, dataStateChange, dataSourceChanged, rtlUpdated, beforeFragAppend, frozenHeight, textWrapRefresh, recordAdded, cancelBegin, editNextValCell, hierarchyPrint, expandChildGrid, printGridInit, exportRowDataBound, rowPositionChanged, columnChooserOpened, batchForm, beforeStartEdit, beforeBatchCancel, batchEditFormRendered, partialRefresh, beforeCustomFilterOpen, selectVirtualRow, columnsPrepared, Data, Sort, Page, Selection, Filter, Search, Scroll, resizeClassList, Resize, Reorder, RowDD, Group, getCloneProperties, Print, DetailRow, Toolbar$1 as Toolbar, Aggregate, summaryIterator, VirtualScroll, Edit, BatchEdit, InlineEdit, NormalEdit, DialogEdit, ColumnChooser, ExcelExport, PdfExport, ExportHelper, ExportValueFormatter, Clipboard, CommandColumn, CheckBoxFilter, menuClass, ContextMenu$1 as ContextMenu, Freeze, ColumnMenu, ExcelFilter, ForeignKey, Logger, detailLists, Column, CommandColumnModel, Row, Cell, HeaderRender, ContentRender, RowRenderer, CellRenderer, HeaderCellRenderer, FilterCellRenderer, StackedHeaderCellRenderer, Render, IndentCellRenderer, GroupCaptionCellRenderer, GroupCaptionEmptyCellRenderer, BatchEditRender, DialogEditRender, InlineEditRender, EditRender, BooleanEditCell, DefaultEditCell, DropDownEditCell, NumericEditCell, DatePickerEditCell, CommandColumnRenderer, FreezeContentRender, FreezeRender, StringFilterUI, NumberFilterUI, DateFilterUI, BooleanFilterUI, FlMenuOptrUI, AutoCompleteEditCell, ComboboxEditCell, MultiSelectEditCell, TimePickerEditCell, ToggleEditCell, MaskedTextBoxCellEdit, VirtualContentRenderer, VirtualHeaderRenderer, VirtualElementHandler, CellRendererFactory, ServiceLocator, RowModelGenerator, GroupModelGenerator, FreezeRowModelGenerator, ValueFormatter, VirtualRowModelGenerator, InterSectionObserver, Pager, ExternalMessage, NumericContainer, PagerMessage, PagerDropDown };
+export { SortDescriptor, SortSettings, Predicate$1 as Predicate, FilterSettings, SelectionSettings, SearchSettings, RowDropSettings, TextWrapSettings, GroupSettings, EditSettings, Grid, CellType, RenderType, ToolbarItem, doesImplementInterface, valueAccessor, getUpdateUsingRaf, updatecloneRow, getCollapsedRowsCount, recursive, iterateArrayOrObject, iterateExtend, templateCompiler, setStyleAndAttributes, extend$1 as extend, setColumnIndex, prepareColumns, setCssInGridPopUp, getActualProperties, parentsUntil, getElementIndex, inArray, getActualPropFromColl, removeElement, getPosition, getUid, appendChildren, parents, calculateAggregate, getScrollBarWidth, getRowHeight, isComplexField, getComplexFieldID, setComplexFieldID, isEditable, isActionPrevent, wrap, setFormatter, addRemoveActiveClasses, distinctStringValues, getFilterMenuPostion, getZIndexCalcualtion, toogleCheckbox, createCboxWithWrap, removeAddCboxClasses, refreshForeignData, getForeignData, getColumnByForeignKeyValue, getDatePredicate, renderMovable, isGroupAdaptive, getObject, getCustomDateFormat, getExpandedState, getPrintGridModel, extendObjWithFn, measureColumnDepth, checkDepth, refreshFilteredColsUid, Global, created, destroyed, load, rowDataBound, queryCellInfo, headerCellInfo, actionBegin, actionComplete, actionFailure, dataBound, rowSelecting, rowSelected, rowDeselecting, rowDeselected, cellSelecting, cellSelected, cellDeselecting, cellDeselected, columnDragStart, columnDrag, columnDrop, rowDragStartHelper, rowDragStart, rowDrag, rowDrop, beforePrint, printComplete, detailDataBound, toolbarClick, batchAdd, batchCancel, batchDelete, beforeBatchAdd, beforeBatchDelete, beforeBatchSave, beginEdit, cellEdit, cellSave, cellSaved, endAdd, endDelete, endEdit, recordDoubleClick, recordClick, beforeDataBound, beforeOpenColumnChooser, resizeStart, onResize, resizeStop, checkBoxChange, beforeCopy, beforePaste, filterChoiceRequest, filterAfterOpen, filterBeforeOpen, filterSearchBegin, commandClick, initialLoad, initialEnd, dataReady, contentReady, uiUpdate, onEmpty, inBoundModelChanged, modelChanged, colGroupRefresh, headerRefreshed, pageBegin, pageComplete, sortBegin, sortComplete, filterBegin, filterComplete, searchBegin, searchComplete, reorderBegin, reorderComplete, rowDragAndDropBegin, rowDragAndDropComplete, groupBegin, groupComplete, ungroupBegin, ungroupComplete, groupAggregates, refreshFooterRenderer, refreshAggregateCell, refreshAggregates, rowSelectionBegin, rowSelectionComplete, columnSelectionBegin, columnSelectionComplete, cellSelectionBegin, cellSelectionComplete, beforeCellFocused, cellFocused, keyPressed, click, destroy, columnVisibilityChanged, scroll, columnWidthChanged, columnPositionChanged, rowDragAndDrop, rowsAdded, rowsRemoved, columnDragStop, headerDrop, dataSourceModified, refreshComplete, refreshVirtualBlock, dblclick, toolbarRefresh, bulkSave, autoCol, tooltipDestroy, updateData, editBegin, editComplete, addBegin, addComplete, saveComplete, deleteBegin, deleteComplete, preventBatch, dialogDestroy, crudAction, addDeleteAction, destroyForm, doubleTap, beforeExcelExport, excelExportComplete, excelQueryCellInfo, excelHeaderQueryCellInfo, exportDetailDataBound, beforePdfExport, pdfExportComplete, pdfQueryCellInfo, pdfHeaderQueryCellInfo, accessPredicate, contextMenuClick, freezeRender, freezeRefresh, contextMenuOpen, columnMenuClick, columnMenuOpen, filterOpen, filterDialogCreated, filterMenuClose, initForeignKeyColumn, getForeignKeyData, generateQuery, showEmptyGrid, foreignKeyData, dataStateChange, dataSourceChanged, rtlUpdated, beforeFragAppend, frozenHeight, textWrapRefresh, recordAdded, cancelBegin, editNextValCell, hierarchyPrint, expandChildGrid, printGridInit, exportRowDataBound, rowPositionChanged, columnChooserOpened, batchForm, beforeStartEdit, beforeBatchCancel, batchEditFormRendered, partialRefresh, beforeCustomFilterOpen, selectVirtualRow, columnsPrepared, cBoxFltrBegin, cBoxFltrComplete, cBoxFltrPrevent, Data, Sort, Page, Selection, Filter, Search, Scroll, resizeClassList, Resize, Reorder, RowDD, Group, getCloneProperties, Print, DetailRow, Toolbar$1 as Toolbar, Aggregate, summaryIterator, VirtualScroll, Edit, BatchEdit, InlineEdit, NormalEdit, DialogEdit, ColumnChooser, ExcelExport, PdfExport, ExportHelper, ExportValueFormatter, Clipboard, CommandColumn, CheckBoxFilter, menuClass, ContextMenu$1 as ContextMenu, Freeze, ColumnMenu, ExcelFilter, ForeignKey, Logger, detailLists, Column, CommandColumnModel, Row, Cell, HeaderRender, ContentRender, RowRenderer, CellRenderer, HeaderCellRenderer, FilterCellRenderer, StackedHeaderCellRenderer, Render, IndentCellRenderer, GroupCaptionCellRenderer, GroupCaptionEmptyCellRenderer, BatchEditRender, DialogEditRender, InlineEditRender, EditRender, BooleanEditCell, DefaultEditCell, DropDownEditCell, NumericEditCell, DatePickerEditCell, CommandColumnRenderer, FreezeContentRender, FreezeRender, StringFilterUI, NumberFilterUI, DateFilterUI, BooleanFilterUI, FlMenuOptrUI, AutoCompleteEditCell, ComboboxEditCell, MultiSelectEditCell, TimePickerEditCell, ToggleEditCell, MaskedTextBoxCellEdit, VirtualContentRenderer, VirtualHeaderRenderer, VirtualElementHandler, CellRendererFactory, ServiceLocator, RowModelGenerator, GroupModelGenerator, FreezeRowModelGenerator, ValueFormatter, VirtualRowModelGenerator, InterSectionObserver, Pager, ExternalMessage, NumericContainer, PagerMessage, PagerDropDown };
 //# sourceMappingURL=ej2-grids.es2015.js.map

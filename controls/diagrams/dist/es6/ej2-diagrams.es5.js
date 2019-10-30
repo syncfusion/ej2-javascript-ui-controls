@@ -2479,6 +2479,7 @@ var DiagramEvent;
     DiagramEvent[DiagramEvent["onUserHandleMouseUp"] = 28] = "onUserHandleMouseUp";
     DiagramEvent[DiagramEvent["onUserHandleMouseEnter"] = 29] = "onUserHandleMouseEnter";
     DiagramEvent[DiagramEvent["onUserHandleMouseLeave"] = 30] = "onUserHandleMouseLeave";
+    DiagramEvent[DiagramEvent["onImageLoad"] = 31] = "onImageLoad";
 })(DiagramEvent || (DiagramEvent = {}));
 /** Enables/Disables certain features of port connection
  * @aspNumberEnum
@@ -2764,7 +2765,7 @@ var DiagramElement = /** @__PURE__ @class */ (function () {
      * Measures the minimum space that the element requires
      * @param availableSize
      */
-    DiagramElement.prototype.measure = function (availableSize) {
+    DiagramElement.prototype.measure = function (availableSize, obj, callback) {
         var width = this.width !== undefined ? this.width : (availableSize.width || 0) - this.margin.left - this.margin.right;
         var height = this.height !== undefined ? this.height : (availableSize.height || 0) - this.margin.top - this.margin.bottom;
         this.desiredSize = new Size(width, height);
@@ -2874,7 +2875,7 @@ var Container = /** @__PURE__ @class */ (function (_super) {
      *
      * @param availableSize
      */
-    Container.prototype.measure = function (availableSize) {
+    Container.prototype.measure = function (availableSize, id, callback) {
         // measure the element and find the desired size
         this.desiredBounds = undefined;
         var desired = undefined;
@@ -2892,7 +2893,7 @@ var Container = /** @__PURE__ @class */ (function (_super) {
                 }
                 var force = child.horizontalAlignment === 'Stretch' || child.verticalAlignment === 'Stretch';
                 if (this.measureChildren || force || (child instanceof Container && child.measureChildren !== undefined)) {
-                    child.measure(availableSize);
+                    child.measure(availableSize, id, callback);
                 }
                 childBounds = this.GetChildrenBounds(child);
                 if (child.horizontalAlignment !== 'Stretch' && child.verticalAlignment !== 'Stretch') {
@@ -3228,7 +3229,7 @@ var Canvas = /** @__PURE__ @class */ (function (_super) {
      * Measures the minimum space that the canvas requires
      * @param availableSize
      */
-    Canvas.prototype.measure = function (availableSize) {
+    Canvas.prototype.measure = function (availableSize, id, callback) {
         var desired = undefined;
         var desiredBounds = undefined;
         if (this.hasChildren()) {
@@ -3242,7 +3243,7 @@ var Canvas = /** @__PURE__ @class */ (function (_super) {
                     }
                 }
                 else if (!(child instanceof TextElement)) {
-                    child.measure(availableSize);
+                    child.measure(availableSize, id, callback);
                 }
                 var childSize = child.desiredSize.clone();
                 if (child.rotateAngle !== 0) {
@@ -3680,9 +3681,9 @@ var ImageElement = /** @__PURE__ @class */ (function (_super) {
      * Measures minimum space that is required to render the image
      * @param availableSize
      */
-    ImageElement.prototype.measure = function (availableSize) {
+    ImageElement.prototype.measure = function (availableSize, id, callback) {
         if (this.isDirt && (this.stretch !== 'Stretch' || this.width === undefined && this.height === undefined)) {
-            this.contentSize = measureImage(this.source, this.contentSize);
+            this.contentSize = measureImage(this.source, this.contentSize, id, callback);
             this.isDirt = false;
         }
         if (this.width !== undefined && this.height !== undefined) {
@@ -11449,7 +11450,7 @@ function addLane(diagram, parent, lane, count) {
         laneIndex = (count !== undefined) ? count : shape.lanes.length;
         index += laneIndex;
         args = {
-            element: laneObj, cause: this.diagramActions, state: 'Changing', type: 'Addition', cancel: false, laneIndex: laneIndex
+            element: laneObj, cause: diagram.diagramActions, state: 'Changing', type: 'Addition', cancel: false, laneIndex: laneIndex
         };
         diagram.triggerEvent(DiagramEvent.collectionChange, args);
         if (!args.cancel) {
@@ -11482,7 +11483,7 @@ function addLane(diagram, parent, lane, count) {
                 shape.lanes.push(laneObj);
             }
             args = {
-                element: laneObj, cause: this.diagramActions, state: 'Changed', type: 'Addition', cancel: false, laneIndex: laneIndex
+                element: laneObj, cause: diagram.diagramActions, state: 'Changed', type: 'Addition', cancel: false, laneIndex: laneIndex
             };
             diagram.triggerEvent(DiagramEvent.collectionChange, args);
             laneCollection(grid, diagram, swimLane, index, laneIndex, orientation_1);
@@ -12089,7 +12090,7 @@ function removeLane(diagram, lane, swimLane, lanes) {
             var grid = swimLane.wrapper.children[0];
             laneIndex = (lanes) ? (shape.lanes.indexOf(lanes)) : findLaneIndex(swimLane, lane);
             args = {
-                element: lane, cause: this.diagramActions, state: 'Changing', type: 'Removal', cancel: false, laneIndex: laneIndex
+                element: lane, cause: diagram.diagramActions, state: 'Changing', type: 'Removal', cancel: false, laneIndex: laneIndex
             };
             diagram.triggerEvent(DiagramEvent.collectionChange, args);
             if (!args.cancel) {
@@ -12133,7 +12134,7 @@ function removeLane(diagram, lane, swimLane, lanes) {
                     grid.removeColumn(index);
                 }
                 args = {
-                    element: lane, cause: this.diagramActions, state: 'Changed', type: 'Removal', cancel: false, laneIndex: laneIndex
+                    element: lane, cause: diagram.diagramActions, state: 'Changed', type: 'Removal', cancel: false, laneIndex: laneIndex
                 };
                 diagram.triggerEvent(DiagramEvent.collectionChange, args);
                 swimLane.width = swimLane.wrapper.width = grid.width;
@@ -14438,6 +14439,13 @@ function cloneBlazorObject(args) {
         args = cloneObject(args);
     }
     return args;
+}
+/** @private */
+function checkBrowserInfo() {
+    if (navigator.platform.indexOf('Mac') && Browser.info.name === 'Safari') {
+        return true;
+    }
+    return false;
 }
 
 var __extends$21 = (undefined && undefined.__extends) || (function () {
@@ -16770,7 +16778,7 @@ function measureText(text, style, content, maxWidth, textValue) {
     return bounds;
 }
 /** @private */
-function measureImage(source, contentSize) {
+function measureImage(source, contentSize, id, callback) {
     var measureElement = 'measureElement';
     window[measureElement].style.visibility = 'visible';
     var imageElement = window[measureElement].children[1];
@@ -16780,6 +16788,17 @@ function measureImage(source, contentSize) {
     var height = bounds.height;
     contentSize = new Size(width, height);
     window[measureElement].style.visibility = 'hidden';
+    var element = document.createElement('img');
+    element.setAttribute('src', source);
+    setAttributeHtml(element, { id: id + 'sf-imageNode', style: 'display: none;' });
+    document.body.appendChild(element);
+    // tslint:disable-next-line:no-any
+    element.onload = function (event) {
+        var loadedImage = event.currentTarget;
+        if (callback) {
+            callback(id, { width: loadedImage.width, height: loadedImage.height });
+        }
+    };
     return contentSize;
 }
 /** @private */
@@ -18729,7 +18748,12 @@ var SvgRenderer = /** @__PURE__ @class */ (function () {
             'x': x.toString(), 'y': y.toString()
         };
         setAttributeSvg(rect, attr);
-        group.setAttribute('clip-path', 'url(#' + node.id + '_clip)');
+        if (checkBrowserInfo()) {
+            group.setAttribute('clip-path', 'url(' + location.href + '#' + node.id + '_clip)');
+        }
+        else {
+            group.setAttribute('clip-path', 'url(#' + node.id + '_clip)');
+        }
         return group;
     };
     /**   @private  */
@@ -18808,7 +18832,12 @@ var SvgRenderer = /** @__PURE__ @class */ (function () {
             }
             if (style.gradient && style.gradient.type !== 'None') {
                 var grd = this.renderGradient(style, svg, diagramId);
-                fill = 'url(#' + grd.id + ')';
+                if (checkBrowserInfo()) {
+                    fill = 'url(' + location.href + '#' + grd.id + ')';
+                }
+                else {
+                    fill = 'url(#' + grd.id + ')';
+                }
             }
             else {
                 fill = style.fill;
@@ -33483,9 +33512,14 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
         svgGridSvg.setAttribute('class', 'e-grid-layer');
         var svgGrid = createSvgElement('g', { 'id': this.element.id + '_gridline', 'width': '100%', 'height': '100%' });
         var rect = createSvgElement('rect', {
-            'id': this.element.id + '_grid_rect', 'x': '0', 'y': '0', 'width': '100%', 'height': '100%',
-            'fill': 'url(#' + this.element.id + '_pattern)'
+            'id': this.element.id + '_grid_rect', 'x': '0', 'y': '0', 'width': '100%', 'height': '100%'
         });
+        if (checkBrowserInfo()) {
+            rect.setAttribute('fill', 'url(' + location.href + '#' + this.element.id + '_pattern ');
+        }
+        else {
+            rect.setAttribute('fill', 'url(#' + this.element.id + '_pattern)');
+        }
         svgGrid.appendChild(rect);
         svgGridSvg.appendChild(svgGrid);
         this.diagramCanvas.appendChild(svgGridSvg);
@@ -34210,7 +34244,7 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
             this.updateDiagramElementQuad();
         }
         else {
-            canvas.measure(new Size(obj.width, obj.height));
+            canvas.measure(new Size(obj.width, obj.height), obj.id, this.onLoadImageSize.bind(this));
             if (canvas instanceof GridPanel) {
                 canvas.arrange(canvas.desiredSize, true);
             }
@@ -34237,6 +34271,16 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
         for (var i = 0; i < this.nodes.length; i++) {
             this.updateQuad(this.nodes[i]);
         }
+    };
+    Diagram.prototype.onLoadImageSize = function (id, size) {
+        var obj = this.getObject(id);
+        var image = document.getElementById(id + 'sf-imageNode');
+        if (image) {
+            image.parentNode.removeChild(image);
+        }
+        this.nodePropertyChange(obj, {}, { width: size.width, height: size.height });
+        var args = { element: cloneObject(obj), size: size };
+        this.triggerEvent(DiagramEvent.onImageLoad, args);
     };
     Diagram.prototype.updateChildPosition = function (obj) {
         for (var i = 0; i < obj.children.length; i++) {
@@ -35884,7 +35928,7 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
             if (this.bpmnModule !== undefined) {
                 this.bpmnModule.updateTextAnnotationProp(actualObject, { offsetX: (oldObject.offsetX || actualObject.offsetX), offsetY: (oldObject.offsetY || actualObject.offsetY) }, this);
             }
-            actualObject.wrapper.measure(new Size(actualObject.wrapper.bounds.width, actualObject.wrapper.bounds.height));
+            actualObject.wrapper.measure(new Size(actualObject.wrapper.bounds.width, actualObject.wrapper.bounds.height), actualObject.id, this.onLoadImageSize.bind(this));
             actualObject.wrapper.arrange(actualObject.wrapper.desiredSize);
             this.updateObject(actualObject, oldObject, node);
             if (actualObject.shape.type === 'SwimLane' && !this.currentSymbol && !(this.diagramActions & DiagramAction.ToolAction)) {
@@ -37539,6 +37583,9 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
     __decorate([
         Event()
     ], Diagram.prototype, "segmentCollectionChange", void 0);
+    __decorate([
+        Event()
+    ], Diagram.prototype, "onImageLoad", void 0);
     __decorate([
         Event()
     ], Diagram.prototype, "expandStateChange", void 0);
@@ -51870,5 +51917,5 @@ var Overview = /** @__PURE__ @class */ (function (_super) {
  * Diagram component exported items
  */
 
-export { Diagram, PrintAndExport, Size, Rect, MatrixTypes, Matrix, identityMatrix, transformPointByMatrix, transformPointsByMatrix, rotateMatrix, scaleMatrix, translateMatrix, multiplyMatrix, Point, PortVisibility, SnapConstraints, SelectorConstraints, ConnectorConstraints, AnnotationConstraints, NodeConstraints, ElementAction, ThumbsConstraints, DiagramConstraints, DiagramTools, Transform, RenderMode, KeyModifiers, Keys, DiagramAction, RendererAction, RealAction, NoOfSegments, DiagramEvent, PortConstraints, contextMenuClick, contextMenuOpen, contextMenuBeforeItemRender, Thickness, Margin, Shadow, Stop, Gradient, LinearGradient, RadialGradient, ShapeStyle, StrokeStyle, TextStyle, DiagramElement, PathElement, ImageElement, TextElement, Container, Canvas, GridPanel, RowDefinition, ColumnDefinition, GridRow, GridCell, StackPanel, findConnectorPoints, swapBounds, findAngle, findPoint, getIntersection, getIntersectionPoints, orthoConnection2Segment, getPortDirection, getOuterBounds, getOppositeDirection, processPathData, parsePathData, getRectanglePath, getPolygonPath, pathSegmentCollection, transformPath, updatedSegment, scalePathData, splitArrayCollection, getPathString, getString, randomId, cornersPointsBeforeRotation, getBounds, cloneObject, getInternalProperties, cloneArray, extendObject, extendArray, textAlignToString, wordBreakToString, bBoxText, middleElement, overFlow, whiteSpaceToString, rotateSize, rotatePoint, getOffset, getFunction, completeRegion, findNodeByName, findObjectType, setSwimLaneDefaults, setUMLActivityDefaults, setConnectorDefaults, findNearestPoint, isDiagramChild, groupHasType, updateDefaultValues, updateLayoutValue, isPointOverConnector, intersect3, intersect2, getLineSegment, getPoints, getTooltipOffset, sort, getAnnotationPosition, getOffsetOfConnector, getAlignedPosition, alignLabelOnSegments, getBezierDirection, removeChildNodes, serialize, deserialize, upgrade, updateStyle, updateHyperlink, updateShapeContent, updateShape, updateContent, updateUmlActivityNode, getUMLFinalNode, getUMLActivityShapes, removeGradient, removeItem, updateConnector, getUserHandlePosition, canResizeCorner, canShowCorner, checkPortRestriction, findAnnotation, findPort, getInOutConnectPorts, findObjectIndex, getObjectFromCollection, scaleElement, arrangeChild, insertObject, getElement, getCollectionChangeEventArguements, getDropEventArguements, getPoint, getObjectType, flipConnector, updatePortEdges, alignElement, updatePathElement, findPath, findDistance, cloneBlazorObject, CanvasRenderer, DiagramRenderer, DataBinding, getBasicShape, getPortShape, getDecoratorShape, getIconShape, getFlowShape, Hyperlink, Annotation, ShapeAnnotation, PathAnnotation, Port, PointPort, menuClass, DiagramContextMenu, Shape, Path, Native, Html, Image$1 as Image, Text, BasicShape, FlowShape, BpmnGateway, BpmnDataObject, BpmnTask, BpmnEvent, BpmnSubEvent, BpmnTransactionSubProcess, BpmnSubProcess, BpmnActivity, BpmnAnnotation, BpmnShape, UmlActivityShape, MethodArguments, UmlClassAttribute, UmlClassMethod, UmlClass, UmlInterface, UmlEnumerationMember, UmlEnumeration, UmlClassifierShape, Node, Header, Lane, Phase, SwimLane, ChildContainer, Selector, BpmnDiagrams, getBpmnShapePathData, getBpmnTriggerShapePathData, getBpmnGatewayShapePathData, getBpmnTaskShapePathData, getBpmnLoopShapePathData, Decorator, Vector, ConnectorShape, ActivityFlow, BpmnFlow, ConnectorSegment, StraightSegment, BezierSegment, OrthogonalSegment, getDirection, isEmptyVector, getBezierPoints, getBezierBounds, bezierPoints, MultiplicityLabel, ClassifierMultiplicity, RelationShip, Connector, ConnectorBridging, Snapping, UndoRedo, DiagramTooltip, initTooltip, updateTooltip, LayoutAnimation, UserHandle, ToolBase, SelectTool, ConnectTool, MoveTool, RotateTool, ResizeTool, NodeDrawingTool, ConnectorDrawingTool, TextDrawingTool, ZoomPanTool, ExpandTool, LabelTool, PolygonDrawingTool, PolyLineDrawingTool, LabelDragTool, LabelResizeTool, LabelRotateTool, DiagramEventHandler, CommandHandler, findToolToActivate, findPortToolToActivate, contains, hasSelection, hasSingleConnection, isSelected, getCursor, ConnectorEditing, updateCanvasBounds, removeChildInContainer, findBounds, createHelper, renderContainerHelper, checkParentAsContainer, checkChildNodeInContainer, addChildToContainer, updateLaneBoundsAfterAddChild, renderStackHighlighter, moveChildInStack, LineRouting, CrudAction, ConnectionDataSource, DataSource, Gridlines, SnapSettings, KeyGesture, Command, CommandManager, ContextMenuSettings, CustomCursorAction, DataMappingItems, Layout, MindMap, HierarchicalTree, RadialTree, GraphForceNode, SymmetricLayout, GraphLayoutManager, ComplexHierarchicalTree, Palette, SymbolPreview, SymbolPalette, Ruler, Overview };
+export { Diagram, PrintAndExport, Size, Rect, MatrixTypes, Matrix, identityMatrix, transformPointByMatrix, transformPointsByMatrix, rotateMatrix, scaleMatrix, translateMatrix, multiplyMatrix, Point, PortVisibility, SnapConstraints, SelectorConstraints, ConnectorConstraints, AnnotationConstraints, NodeConstraints, ElementAction, ThumbsConstraints, DiagramConstraints, DiagramTools, Transform, RenderMode, KeyModifiers, Keys, DiagramAction, RendererAction, RealAction, NoOfSegments, DiagramEvent, PortConstraints, contextMenuClick, contextMenuOpen, contextMenuBeforeItemRender, Thickness, Margin, Shadow, Stop, Gradient, LinearGradient, RadialGradient, ShapeStyle, StrokeStyle, TextStyle, DiagramElement, PathElement, ImageElement, TextElement, Container, Canvas, GridPanel, RowDefinition, ColumnDefinition, GridRow, GridCell, StackPanel, findConnectorPoints, swapBounds, findAngle, findPoint, getIntersection, getIntersectionPoints, orthoConnection2Segment, getPortDirection, getOuterBounds, getOppositeDirection, processPathData, parsePathData, getRectanglePath, getPolygonPath, pathSegmentCollection, transformPath, updatedSegment, scalePathData, splitArrayCollection, getPathString, getString, randomId, cornersPointsBeforeRotation, getBounds, cloneObject, getInternalProperties, cloneArray, extendObject, extendArray, textAlignToString, wordBreakToString, bBoxText, middleElement, overFlow, whiteSpaceToString, rotateSize, rotatePoint, getOffset, getFunction, completeRegion, findNodeByName, findObjectType, setSwimLaneDefaults, setUMLActivityDefaults, setConnectorDefaults, findNearestPoint, isDiagramChild, groupHasType, updateDefaultValues, updateLayoutValue, isPointOverConnector, intersect3, intersect2, getLineSegment, getPoints, getTooltipOffset, sort, getAnnotationPosition, getOffsetOfConnector, getAlignedPosition, alignLabelOnSegments, getBezierDirection, removeChildNodes, serialize, deserialize, upgrade, updateStyle, updateHyperlink, updateShapeContent, updateShape, updateContent, updateUmlActivityNode, getUMLFinalNode, getUMLActivityShapes, removeGradient, removeItem, updateConnector, getUserHandlePosition, canResizeCorner, canShowCorner, checkPortRestriction, findAnnotation, findPort, getInOutConnectPorts, findObjectIndex, getObjectFromCollection, scaleElement, arrangeChild, insertObject, getElement, getCollectionChangeEventArguements, getDropEventArguements, getPoint, getObjectType, flipConnector, updatePortEdges, alignElement, updatePathElement, findPath, findDistance, cloneBlazorObject, checkBrowserInfo, CanvasRenderer, DiagramRenderer, DataBinding, getBasicShape, getPortShape, getDecoratorShape, getIconShape, getFlowShape, Hyperlink, Annotation, ShapeAnnotation, PathAnnotation, Port, PointPort, menuClass, DiagramContextMenu, Shape, Path, Native, Html, Image$1 as Image, Text, BasicShape, FlowShape, BpmnGateway, BpmnDataObject, BpmnTask, BpmnEvent, BpmnSubEvent, BpmnTransactionSubProcess, BpmnSubProcess, BpmnActivity, BpmnAnnotation, BpmnShape, UmlActivityShape, MethodArguments, UmlClassAttribute, UmlClassMethod, UmlClass, UmlInterface, UmlEnumerationMember, UmlEnumeration, UmlClassifierShape, Node, Header, Lane, Phase, SwimLane, ChildContainer, Selector, BpmnDiagrams, getBpmnShapePathData, getBpmnTriggerShapePathData, getBpmnGatewayShapePathData, getBpmnTaskShapePathData, getBpmnLoopShapePathData, Decorator, Vector, ConnectorShape, ActivityFlow, BpmnFlow, ConnectorSegment, StraightSegment, BezierSegment, OrthogonalSegment, getDirection, isEmptyVector, getBezierPoints, getBezierBounds, bezierPoints, MultiplicityLabel, ClassifierMultiplicity, RelationShip, Connector, ConnectorBridging, Snapping, UndoRedo, DiagramTooltip, initTooltip, updateTooltip, LayoutAnimation, UserHandle, ToolBase, SelectTool, ConnectTool, MoveTool, RotateTool, ResizeTool, NodeDrawingTool, ConnectorDrawingTool, TextDrawingTool, ZoomPanTool, ExpandTool, LabelTool, PolygonDrawingTool, PolyLineDrawingTool, LabelDragTool, LabelResizeTool, LabelRotateTool, DiagramEventHandler, CommandHandler, findToolToActivate, findPortToolToActivate, contains, hasSelection, hasSingleConnection, isSelected, getCursor, ConnectorEditing, updateCanvasBounds, removeChildInContainer, findBounds, createHelper, renderContainerHelper, checkParentAsContainer, checkChildNodeInContainer, addChildToContainer, updateLaneBoundsAfterAddChild, renderStackHighlighter, moveChildInStack, LineRouting, CrudAction, ConnectionDataSource, DataSource, Gridlines, SnapSettings, KeyGesture, Command, CommandManager, ContextMenuSettings, CustomCursorAction, DataMappingItems, Layout, MindMap, HierarchicalTree, RadialTree, GraphForceNode, SymmetricLayout, GraphLayoutManager, ComplexHierarchicalTree, Palette, SymbolPreview, SymbolPalette, Ruler, Overview };
 //# sourceMappingURL=ej2-diagrams.es5.js.map
