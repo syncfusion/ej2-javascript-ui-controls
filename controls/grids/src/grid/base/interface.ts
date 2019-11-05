@@ -1955,6 +1955,7 @@ export interface IFilterArgs {
     actualPredicate?: { [key: string]: PredicateModel[] };
     uid?: string;
     isForeignKey?: boolean;
+    isRemote?: boolean;
 }
 
 export interface PdfExportProperties {

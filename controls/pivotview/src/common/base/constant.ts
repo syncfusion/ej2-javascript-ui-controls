@@ -99,6 +99,10 @@ export const contextMenuOpen: string = 'contextMenuOpen';
 export const fieldListRefreshed: string = 'fieldListRefreshed';
 /** @hidden */
 export const conditionalFormatting: string = 'conditionalFormatting';
+/** @hidden */
+export const beforePdfExport: string = 'beforePdfExport';
+/** @hidden */
+export const beforeExcelExport: string = 'beforeExcelExport';
 
 /** 
  * Specifies pivot internal events

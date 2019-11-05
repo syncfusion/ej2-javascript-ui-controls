@@ -1266,7 +1266,7 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
         if (this.isMenu) {
             if (!this.showItemOnClick && (trgt.parentElement !== wrapper && !closest(trgt, '.e-' + this.getModuleName() + '-popup'))
                 && (!cli || (cli && !this.getIndex(cli.id, true).length))) {
-                this.removeLIStateByClass([FOCUSED, SELECTED], [wrapper]);
+                this.removeLIStateByClass([FOCUSED], [wrapper]);
                 if (this.navIdx.length) {
                     this.isClosed = true;
                     this.closeMenu(null, e);
@@ -1345,9 +1345,16 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
             let wrapper: Element = this.getWrapper();
             let trgt: Element = e.target as Element;
             let cli: Element = this.cli = this.getLI(trgt);
+            let regex: RegExp = new RegExp('-ej2menu-(.*)-popup');
             let cliWrapper: Element = cli ? closest(cli, '.e-' + this.getModuleName() + '-wrapper') : null;
             let isInstLI: boolean = cli && cliWrapper && (this.isMenu ? this.getIndex(cli.id, true).length > 0
                 : wrapper.firstElementChild.id === cliWrapper.firstElementChild.id);
+            if (cli && cliWrapper && this.isMenu) {
+                let cliWrapperId: string = cliWrapper.id ? regex.exec(cliWrapper.id)[1] : cliWrapper.querySelector('.e-menu-parent').id;
+                if (this.element.id !== cliWrapperId) {
+                    return;
+                }
+            }
             if (isInstLI && e.type === 'click' && !cli.classList.contains(HEADER)) {
                 this.setLISelected(cli);
                 let navIdx: number[] = this.getIndex(cli.id, true);
@@ -1408,6 +1415,9 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
                 } else {
                     if (trgt.tagName !== 'UL' || (this.isMenu ? trgt.parentElement.classList.contains('e-menu-wrapper') &&
                     !this.getIndex(trgt.querySelector('.' + ITEM).id, true).length : trgt.parentElement !== wrapper)) {
+                        if (!cli) {
+                            this.removeLIStateByClass([SELECTED], [wrapper]);
+                        }
                         if (!cli || !cli.querySelector('.' + CARET)) {
                             this.closeMenu(null, e);
                         }
@@ -1809,9 +1819,22 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
         let ul: Element;
         let idx: number;
         let navIdx: number[];
-        let disabled: string = DISABLED;
+        let disabled: string = DISABLED; let skipItem: boolean;
         for (let i: number = 0; i < items.length; i++) {
             navIdx = this.getIndex(items[i], isUniqueId);
+            if (this.navIdx.length) {
+                if (navIdx.length !== 1) {
+                    skipItem = false;
+                    for (let i: number = 0, len: number = navIdx.length - 1; i < len; i++) {
+                        if (navIdx[i] !== this.navIdx[i]) {
+                            skipItem = true; break;
+                        }
+                    }
+                    if (skipItem) { continue; }
+                }
+            } else {
+                if (navIdx.length !== 1) { continue; }
+            }
             idx = navIdx.pop();
             ul = this.getUlByNavIdx(navIdx.length);
             if (ul) {

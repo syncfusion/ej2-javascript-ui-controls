@@ -73,7 +73,7 @@ export class SplineBase extends LineBase {
         return i;
     }
     public filterEmptyPoints(series: Series): Points[] {
-        if (series.emptyPointSettings.mode !== 'Drop') {
+        if (series.emptyPointSettings.mode !== 'Drop' && this.isPointInRange(series.points)) {
             return series.points;
         }
         let points: Points[] = extend([], series.points, null, true) as Points[];
@@ -87,6 +87,18 @@ export class SplineBase extends LineBase {
             }
         }
         return points;
+    }
+    /**
+     * To find points in the range
+     * @private 
+     */
+    public isPointInRange(points: Points[]): boolean {
+        for (let point of points) {
+            if (!point.isPointInRange) {
+                return false;
+            }
+        }
+        return true;
     }
     /**
      * To find the natural spline. 

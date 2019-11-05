@@ -162,7 +162,7 @@ export interface AnnotationAddEventArgs extends BaseEventArgs {
     /**
      * Defines the id of the annotation added in the page of the PDF document.
      */
-    annotationId: number;
+    annotationId: string;
     /**
      * Defines the page number in which the annotation is added.
      */
@@ -192,7 +192,7 @@ export interface AnnotationRemoveEventArgs extends BaseEventArgs {
     /**
      * Defines the id of the annotation removed from the page of the PDF document.
      */
-    annotationId: number;
+    annotationId: string;
     /**
      * Defines the page number in which the annotation is removed.
      */
@@ -210,7 +210,7 @@ export interface AnnotationPropertiesChangeEventArgs extends BaseEventArgs {
     /**
      * Defines the id of the annotation property is changed in the page of the PDF document.
      */
-    annotationId: number;
+    annotationId: string;
     /**
      * Defines the page number in which the annotation property is changed.
      */
@@ -264,7 +264,7 @@ export interface AnnotationResizeEventArgs extends BaseEventArgs {
     /**
      * Defines the id of the annotation resized in the page of the PDF document.
      */
-    annotationId: number;
+    annotationId: string;
     /**
      * Defines the page number in which the annotation is resized.
      */

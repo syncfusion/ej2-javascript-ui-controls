@@ -334,7 +334,7 @@ export class TextPosition {
         let startParagraph: ParagraphWidget = this.currentWidget.paragraph;
         let endParagraph: ParagraphWidget = textPosition.currentWidget.paragraph;
         if (startParagraph.containerWidget instanceof BodyWidget && endParagraph.containerWidget instanceof BodyWidget &&
-            startParagraph.containerWidget.index === endParagraph.containerWidget.index) {
+            startParagraph.containerWidget === endParagraph.containerWidget) {
             if (startParagraph.isInsideTable && endParagraph.isInsideTable) {
                 return startParagraph.associatedCell.childWidgets.indexOf(startParagraph) >
                     endParagraph.associatedCell.childWidgets.indexOf(endParagraph);

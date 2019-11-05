@@ -266,6 +266,12 @@ export interface QueryBuilderModel extends ComponentModel{
     matchCase?: boolean;
 
     /**
+     * If immediateModeDelay is set by particular number, the rule Change event is triggered after that period.
+     * @default 0
+     */
+    immediateModeDelay?: number;
+
+    /**
      * Defines rules in the QueryBuilder.
      * Specifies the initial rule, which is JSON data.
      * @default {}

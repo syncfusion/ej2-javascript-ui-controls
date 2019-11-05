@@ -359,4 +359,4 @@ export const cBoxFltrBegin: string = 'cbox-filter-begin';
 /** @hidden */
 export const cBoxFltrComplete: string = 'cbox-filter-complete';
 /** @hidden */
-export const cBoxFltrPrevent: string = 'cbox-filter-Prevent';
+export const fltrPrevent: string = 'filter-Prevent';

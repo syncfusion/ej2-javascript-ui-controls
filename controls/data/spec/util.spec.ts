@@ -48,18 +48,6 @@ describe('DataUtil', () => {
             result = query.executeLocal(dataManager);
             expect(result[sData.length - 1]['EmployeeID']).toBe(23);
         });
-        it('Ensure sensitivity of the locale compare method - ascending', () => {
-            let str1: string = 'réservé';
-            let str2: string = 'RESERVE';
-            let value: number = DataUtil.fnAscending(str1, str2, 'en', { sensitivity: 'base' });
-            expect(value).toBe(0);
-        });
-        it('Ensure sensitivity of the locale compare method - descending', () => {
-            let str1: string = 'réservé';
-            let str2: string = 'RESERVE';
-            let value: number = DataUtil.fnDescending(str1, str2, 'en', { sensitivity: 'base' });
-            expect(value).toBe(0);
-        });
     });
     describe('getValue method', () => {
         it('To check function in getValue method.', () => {

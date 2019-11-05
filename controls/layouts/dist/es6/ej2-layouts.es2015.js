@@ -196,6 +196,9 @@ let Splitter = class Splitter extends Component {
         removeClass([this.wrapper], ['e-control', 'e-lib', ROOT]);
         let orientation = this.orientation === 'Horizontal' ? HORIZONTAL_PANE : VERTICAL_PANE;
         addClass([this.element], orientation);
+        let name = Browser.info.name;
+        let css = (name === 'msie') ? 'e-ie' : '';
+        this.setCssClass(css);
         if (Browser.isDevice) {
             addClass([this.element], SPLIT_TOUCH);
         }

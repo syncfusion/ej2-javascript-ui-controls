@@ -71,14 +71,14 @@ export class CheckBoxFilter {
         if (this.parent.isDestroyed) { return; }
         this.parent.on(events.cBoxFltrBegin, this.actionBegin, this);
         this.parent.on(events.cBoxFltrComplete, this.actionComplete, this);
-        this.parent.on(events.cBoxFltrPrevent, this.actionPrevent, this);
+        this.parent.on(events.fltrPrevent, this.actionPrevent, this);
     }
 
     public removeEventListener(): void {
         if (this.parent.isDestroyed) { return; }
         this.parent.off(events.cBoxFltrBegin, this.actionBegin);
         this.parent.off(events.cBoxFltrComplete, this.actionComplete);
-        this.parent.off(events.cBoxFltrPrevent, this.actionPrevent);
+        this.parent.off(events.fltrPrevent, this.actionPrevent);
     }
 
 }

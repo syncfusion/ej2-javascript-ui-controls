@@ -3741,4 +3741,24 @@ describe('Datepicker', () => {
             expect(datePicker.popupWrapper === null).toBe(true);
         });
     });
+    describe('Timezone offset', function (){
+        let datePicker: any;
+        beforeEach(function() {
+            let inputElement: HTMLElement = createElement('input', { id: 'datepicker'});
+            document.body.appendChild(inputElement);
+        });
+        afterEach(function() {
+            if (datePicker) {
+                datePicker.destroy();
+                document.body.innerHTML = '';
+            }
+        });
+        it('server timezone offset with +10',function() {
+            datePicker = new DatePicker({
+                value: new Date('5/7/2018'),
+                serverTimezoneOffset: +4.5
+            });
+            datePicker.appendTo('#datepicker');
+        });
+    });
 });

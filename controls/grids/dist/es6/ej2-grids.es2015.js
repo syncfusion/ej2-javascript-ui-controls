@@ -58,7 +58,7 @@ class ValueFormatter {
     }
 }
 
-var __decorate$1 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
+var __decorate = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
     else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
@@ -69,6 +69,11 @@ var __decorate$1 = (undefined && undefined.__decorate) || function (decorators, 
  */
 class Column {
     constructor(options) {
+        /**
+         * If `disableHtmlEncode` is set to true, it encodes the HTML of the header and content cells.
+         * @default true
+         */
+        this.disableHtmlEncode = true;
         /**
          * If `allowSorting` set to false, then it disables sorting option of a particular column.
          * By default all columns are sortable.
@@ -308,13 +313,13 @@ class Column {
  */
 class CommandColumnModel {
 }
-__decorate$1([
+__decorate([
     Property()
 ], CommandColumnModel.prototype, "title", void 0);
-__decorate$1([
+__decorate([
     Property()
 ], CommandColumnModel.prototype, "type", void 0);
-__decorate$1([
+__decorate([
     Property()
 ], CommandColumnModel.prototype, "buttonOption", void 0);
 
@@ -678,1078 +683,7 @@ const cBoxFltrBegin = 'cbox-filter-begin';
 /** @hidden */
 const cBoxFltrComplete = 'cbox-filter-complete';
 /** @hidden */
-const cBoxFltrPrevent = 'cbox-filter-Prevent';
-
-/**
- * @hidden
- */
-function getCloneProperties() {
-    return ['aggregates', 'allowGrouping', 'allowFiltering', 'allowMultiSorting', 'allowReordering', 'allowSorting',
-        'allowTextWrap', 'childGrid', 'columns', 'currentViewData', 'dataSource', 'detailTemplate', 'enableAltRow',
-        'enableColumnVirtualization', 'filterSettings', 'gridLines',
-        'groupSettings', 'height', 'locale', 'pageSettings', 'printMode', 'query', 'queryString', 'enableRtl',
-        'rowHeight', 'rowTemplate', 'sortSettings', 'textWrapSettings', 'allowPaging', 'hierarchyPrintMode', 'searchSettings'];
-}
-/**
- *
- * The `Print` module is used to handle print action.
- */
-class Print {
-    /**
-     * Constructor for the Grid print module
-     * @hidden
-     */
-    constructor(parent, scrollModule) {
-        this.isAsyncPrint = false;
-        this.defered = new Deferred();
-        this.parent = parent;
-        if (this.parent.isDestroyed) {
-            return;
-        }
-        this.parent.on(contentReady, this.isContentReady(), this);
-        this.parent.addEventListener(actionBegin, this.actionBegin.bind(this));
-        this.parent.on(onEmpty, this.onEmpty.bind(this));
-        this.parent.on(hierarchyPrint, this.hierarchyPrint, this);
-        this.scrollModule = scrollModule;
-    }
-    isContentReady() {
-        if (this.isPrintGrid() && (this.parent.hierarchyPrintMode === 'None' || !this.parent.childGrid)) {
-            return this.contentReady;
-        }
-        return () => {
-            this.defered.promise.then(() => {
-                this.contentReady();
-            });
-            if (this.isPrintGrid()) {
-                this.hierarchyPrint();
-            }
-        };
-    }
-    hierarchyPrint() {
-        this.removeColGroup(this.parent);
-        let printGridObj = window.printGridObj;
-        if (printGridObj && !printGridObj.element.querySelector('[aria-busy=true')) {
-            printGridObj.printModule.defered.resolve();
-        }
-    }
-    /**
-     * By default, prints all the Grid pages and hides the pager.
-     * > You can customize print options using the
-     * [`printMode`](grid/#printmode-string/).
-     * @return {void}
-     */
-    print() {
-        this.renderPrintGrid();
-        this.printWind = window.open('', 'print', 'height=' + window.outerHeight + ',width=' + window.outerWidth + ',tabbar=no');
-        this.printWind.moveTo(0, 0);
-        this.printWind.resizeTo(screen.availWidth, screen.availHeight);
-    }
-    onEmpty() {
-        if (this.isPrintGrid()) {
-            this.contentReady();
-        }
-    }
-    actionBegin() {
-        if (this.isPrintGrid()) {
-            this.isAsyncPrint = true;
-        }
-    }
-    renderPrintGrid() {
-        let gObj = this.parent;
-        let element = createElement('div', {
-            id: this.parent.element.id + '_print', className: gObj.element.className + ' e-print-grid'
-        });
-        document.body.appendChild(element);
-        let printGrid = new Grid(getPrintGridModel(gObj, gObj.hierarchyPrintMode));
-        printGrid.query = gObj.getQuery().clone();
-        window.printGridObj = printGrid;
-        printGrid.isPrinting = true;
-        let modules = printGrid.getInjectedModules();
-        let injectedModues = gObj.getInjectedModules();
-        if (!modules || modules.length !== injectedModues.length) {
-            printGrid.setInjectedModules(injectedModues);
-        }
-        gObj.notify(printGridInit, { element: element, printgrid: printGrid });
-        this.parent.log('exporting_begin', this.getModuleName());
-        printGrid.appendTo(element);
-        printGrid.registeredTemplate = this.parent.registeredTemplate;
-        printGrid.trigger = gObj.trigger;
-    }
-    contentReady() {
-        if (this.isPrintGrid()) {
-            let gObj = this.parent;
-            if (this.isAsyncPrint) {
-                this.printGrid();
-                return;
-            }
-            let args = {
-                requestType: 'print',
-                element: gObj.element,
-                selectedRows: gObj.getContentTable().querySelectorAll('tr[aria-selected="true"]'),
-                cancel: false,
-                hierarchyPrintMode: gObj.hierarchyPrintMode
-            };
-            if (!this.isAsyncPrint) {
-                gObj.trigger(beforePrint, args);
-            }
-            if (args.cancel) {
-                detach(gObj.element);
-                return;
-            }
-            if (!this.isAsyncPrint) {
-                this.printGrid();
-            }
-        }
-    }
-    printGrid() {
-        let gObj = this.parent;
-        // Height adjustment on print grid
-        if (gObj.height !== 'auto') { // if scroller enabled
-            let cssProps = this.scrollModule.getCssProperties();
-            let contentDiv = gObj.element.querySelector('.e-content');
-            let headerDiv = gObj.element.querySelector('.e-gridheader');
-            contentDiv.style.height = 'auto';
-            contentDiv.style.overflowY = 'auto';
-            headerDiv.style[cssProps.padding] = '';
-            headerDiv.firstElementChild.style[cssProps.border] = '';
-        }
-        // Grid alignment adjustment on grouping
-        if (gObj.allowGrouping) {
-            if (!gObj.groupSettings.columns.length) {
-                gObj.element.querySelector('.e-groupdroparea').style.display = 'none';
-            }
-            else {
-                this.removeColGroup(gObj);
-            }
-        }
-        // hide horizontal scroll
-        for (let element of [].slice.call(gObj.element.querySelectorAll('.e-content'))) {
-            element.style.overflowX = 'hidden';
-        }
-        // Hide the waiting popup
-        let waitingPop = gObj.element.querySelectorAll('.e-spin-show');
-        for (let element of [].slice.call(waitingPop)) {
-            classList(element, ['e-spin-hide'], ['e-spin-show']);
-        }
-        this.printGridElement(gObj);
-        gObj.isPrinting = false;
-        delete window.printGridObj;
-        let args = {
-            element: gObj.element
-        };
-        gObj.trigger(printComplete, args);
-        this.parent.log('exporting_complete', this.getModuleName());
-    }
-    printGridElement(gObj) {
-        classList(gObj.element, ['e-print-grid-layout'], ['e-print-grid']);
-        if (gObj.isPrinting) {
-            detach(gObj.element);
-        }
-        this.printWind = print(gObj.element, this.printWind);
-    }
-    removeColGroup(gObj) {
-        let depth = gObj.groupSettings.columns.length;
-        let element = gObj.element;
-        let id = '#' + gObj.element.id;
-        if (!depth) {
-            return;
-        }
-        let groupCaption = element.querySelectorAll(`${id}captioncell.e-groupcaption`);
-        let colSpan = groupCaption[depth - 1].getAttribute('colspan');
-        for (let i = 0; i < groupCaption.length; i++) {
-            groupCaption[i].setAttribute('colspan', colSpan);
-        }
-        let colGroups = element.querySelectorAll(`colgroup${id}colGroup`);
-        let contentColGroups = element.querySelector('.e-content').querySelectorAll('colgroup');
-        this.hideColGroup(colGroups, depth);
-        this.hideColGroup(contentColGroups, depth);
-    }
-    hideColGroup(colGroups, depth) {
-        for (let i = 0; i < colGroups.length; i++) {
-            for (let j = 0; j < depth; j++) {
-                colGroups[i].childNodes[j].style.display = 'none';
-            }
-        }
-    }
-    isPrintGrid() {
-        return this.parent.element.id.indexOf('_print') > 0 && this.parent.isPrinting;
-    }
-    /**
-     * To destroy the print
-     * @return {void}
-     * @hidden
-     */
-    destroy() {
-        if (this.parent.isDestroyed) {
-            return;
-        }
-        this.parent.off(contentReady, this.contentReady.bind(this));
-        this.parent.removeEventListener(actionBegin, this.actionBegin.bind(this));
-        this.parent.off(onEmpty, this.onEmpty.bind(this));
-        this.parent.off(hierarchyPrint, this.hierarchyPrint);
-    }
-    /**
-     * For internal use only - Get the module name.
-     * @private
-     */
-    getModuleName() {
-        return 'print';
-    }
-}
-Print.printGridProp = [...getCloneProperties(), beforePrint, printComplete];
-
-//https://typescript.codeplex.com/discussions/401501
-/**
- * Function to check whether target object implement specific interface
- * @param  {Object} target
- * @param  {string} checkFor
- * @returns no
- * @hidden
- */
-function doesImplementInterface(target, checkFor) {
-    /* tslint:disable:no-any */
-    return target.prototype && checkFor in target.prototype;
-}
-/**
- * Function to get value from provided data
- * @param  {string} field
- * @param  {Object} data
- * @param  {IColumn} column
- * @hidden
- */
-function valueAccessor(field, data, column) {
-    return (isNullOrUndefined(field) || field === '') ? '' : DataUtil.getObject(field, data);
-}
-/**
- * The function used to update Dom using requestAnimationFrame.
- * @param  {Function} fn - Function that contains the actual action
- * @return {Promise<T>}
- * @hidden
- */
-function getUpdateUsingRaf(updateFunction, callBack) {
-    requestAnimationFrame(() => {
-        try {
-            callBack(null, updateFunction());
-        }
-        catch (e) {
-            callBack(e);
-        }
-    });
-}
-/**
- * @hidden
- */
-function updatecloneRow(grid) {
-    let nRows = [];
-    let actualRows = grid.vRows;
-    for (let i = 0; i < actualRows.length; i++) {
-        if (actualRows[i].isDataRow) {
-            nRows.push(actualRows[i]);
-        }
-        else if (!actualRows[i].isDataRow) {
-            nRows.push(actualRows[i]);
-            if (!actualRows[i].isExpand && actualRows[i].isCaptionRow) {
-                i += getCollapsedRowsCount(actualRows[i], grid);
-            }
-        }
-    }
-    grid.vcRows = nRows;
-}
-/**
- * @hidden
- */
-let count = 0;
-function getCollapsedRowsCount(val, grid) {
-    count = 0;
-    let gSummary = 'gSummary';
-    let total = 'count';
-    let gLen = grid.groupSettings.columns.length;
-    let records = 'records';
-    let items = 'items';
-    let value = val[gSummary];
-    let dataRowCnt = 0;
-    let agrCnt = 'aggregatesCount';
-    if (value === val.data[total]) {
-        if (grid.groupSettings.columns.length && !isNullOrUndefined(val[agrCnt])) {
-            if (grid.groupSettings.columns.length !== 1 && val[agrCnt]) {
-                count += (val.indent !== 0 && (value) < 2) ? (val[gSummary] * ((gLen - val.indent) + (gLen - val.indent) * val[agrCnt])) :
-                    (val[gSummary] * ((gLen - val.indent) + (gLen - val.indent - 1) * val[agrCnt])) + val[agrCnt];
-            }
-            else if (val[agrCnt] && grid.groupSettings.columns.length === 1) {
-                count += (val[gSummary] * (gLen - val.indent)) + val[agrCnt];
-            }
-        }
-        else if (grid.groupSettings.columns.length) {
-            if (grid.groupSettings.columns.length !== 1) {
-                count += val[gSummary] * (grid.groupSettings.columns.length - val.indent);
-            }
-            else {
-                count += val[gSummary];
-            }
-        }
-        return count;
-    }
-    else {
-        for (let i = 0, len = val.data[items].length; i < len; i++) {
-            let gLevel = val.data[items][i];
-            count += gLevel[items].length + ((gLen !== grid.columns.length) &&
-                !isNullOrUndefined(gLevel[items][records]) ? gLevel[items][records].length : 0);
-            dataRowCnt += (!isNullOrUndefined(gLevel[items][records]) && !isNullOrUndefined(val[agrCnt])) ? gLevel[items][records].length :
-                gLevel[items].length;
-            if (gLevel[items].GroupGuid && gLevel[items].childLevels !== 0) {
-                recursive(gLevel);
-            }
-        }
-        count += val.data[items].length;
-        if (!isNullOrUndefined(val[agrCnt])) {
-            if (val[agrCnt] && count && dataRowCnt !== 0) {
-                count += ((count - dataRowCnt) * val[agrCnt]) + val[agrCnt];
-            }
-        }
-    }
-    return count;
-}
-/**
- * @hidden
- */
-function recursive(row) {
-    let items = 'items';
-    let rCount = 'count';
-    for (let j = 0, length = row[items].length; j < length; j++) {
-        let nLevel = row[items][j];
-        count += nLevel[rCount];
-        if (nLevel[items].childLevels !== 0) {
-            recursive(nLevel);
-        }
-    }
-}
-/**
- * @hidden
- */
-function iterateArrayOrObject(collection, predicate) {
-    let result = [];
-    for (let i = 0, len = collection.length; i < len; i++) {
-        let pred = predicate(collection[i], i);
-        if (!isNullOrUndefined(pred)) {
-            result.push(pred);
-        }
-    }
-    return result;
-}
-/** @hidden */
-function iterateExtend(array) {
-    let obj = [];
-    for (let i = 0; i < array.length; i++) {
-        obj.push(extend({}, getActualProperties(array[i]), {}, true));
-    }
-    return obj;
-}
-/** @hidden */
-function templateCompiler(template) {
-    if (template) {
-        try {
-            if (document.querySelectorAll(template).length) {
-                return compile(document.querySelector(template).innerHTML.trim());
-            }
-        }
-        catch (e) {
-            return compile(template);
-        }
-    }
-    return undefined;
-}
-/** @hidden */
-function setStyleAndAttributes(node, customAttributes) {
-    let copyAttr = {};
-    let literals = ['style', 'class'];
-    //Dont touch the original object - make a copy
-    extend(copyAttr, customAttributes, {});
-    if ('style' in copyAttr) {
-        setStyleAttribute(node, copyAttr[literals[0]]);
-        delete copyAttr[literals[0]];
-    }
-    if ('class' in copyAttr) {
-        addClass([node], copyAttr[literals[1]]);
-        delete copyAttr[literals[1]];
-    }
-    attributes(node, copyAttr);
-}
-/** @hidden */
-function extend$1(copied, first, second, exclude) {
-    let moved = extend(copied, first, second);
-    Object.keys(moved).forEach((value, index) => {
-        if (exclude && exclude.indexOf(value) !== -1) {
-            delete moved[value];
-        }
-    });
-    return moved;
-}
-/** @hidden */
-function setColumnIndex(columnModel, ind = 0) {
-    for (let i = 0, len = columnModel.length; i < len; i++) {
-        if (columnModel[i].columns) {
-            columnModel[i].index = isNullOrUndefined(columnModel[i].index) ? ind : columnModel[i].index;
-            ind++;
-            ind = setColumnIndex(columnModel[i].columns, ind);
-        }
-        else {
-            columnModel[i].index = isNullOrUndefined(columnModel[i].index) ? ind : columnModel[i].index;
-            ind++;
-        }
-    }
-    return ind;
-}
-/** @hidden */
-function prepareColumns(columns, autoWidth) {
-    for (let c = 0, len = columns.length; c < len; c++) {
-        let column;
-        if (typeof columns[c] === 'string') {
-            column = new Column({ field: columns[c] });
-        }
-        else if (!(columns[c] instanceof Column)) {
-            if (!columns[c].columns) {
-                column = new Column(columns[c]);
-            }
-            else {
-                columns[c].columns = prepareColumns(columns[c].columns);
-                column = new Column(columns[c]);
-            }
-        }
-        else {
-            column = columns[c];
-        }
-        column.headerText = isNullOrUndefined(column.headerText) ? column.foreignKeyValue || column.field || '' : column.headerText;
-        column.foreignKeyField = column.foreignKeyField || column.field;
-        column.valueAccessor = (typeof column.valueAccessor === 'string' ? getValue(column.valueAccessor, window)
-            : column.valueAccessor) || valueAccessor;
-        column.width = autoWidth && isNullOrUndefined(column.width) ? 200 : column.width;
-        if (isNullOrUndefined(column.visible)) {
-            column.visible = true;
-        }
-        columns[c] = column;
-    }
-    return columns;
-}
-/** @hidden */
-function setCssInGridPopUp(popUp, e, className) {
-    let popUpSpan = popUp.querySelector('span');
-    let position = popUp.parentElement.getBoundingClientRect();
-    let targetPosition = e.target.getBoundingClientRect();
-    let isBottomTail;
-    popUpSpan.className = className;
-    popUp.style.display = '';
-    isBottomTail = (isNullOrUndefined(e.clientY) ? e.changedTouches[0].clientY :
-        e.clientY) > popUp.offsetHeight + 10;
-    popUp.style.top = targetPosition.top - position.top +
-        (isBottomTail ? -(popUp.offsetHeight + 10) : popUp.offsetHeight + 10) + 'px'; //10px for tail element
-    popUp.style.left = getPopupLeftPosition(popUp, e, targetPosition, position.left) + 'px';
-    if (isBottomTail) {
-        popUp.querySelector('.e-downtail').style.display = '';
-        popUp.querySelector('.e-uptail').style.display = 'none';
-    }
-    else {
-        popUp.querySelector('.e-downtail').style.display = 'none';
-        popUp.querySelector('.e-uptail').style.display = '';
-    }
-}
-/** @hidden */
-function getPopupLeftPosition(popup, e, targetPosition, left) {
-    let width = popup.offsetWidth / 2;
-    let x = getPosition(e).x;
-    if (x - targetPosition.left < width) {
-        return targetPosition.left - left;
-    }
-    else if (targetPosition.right - x < width) {
-        return targetPosition.right - left - width * 2;
-    }
-    else {
-        return x - left - width;
-    }
-}
-/** @hidden */
-function getActualProperties(obj) {
-    if (obj instanceof ChildProperty) {
-        return getValue('properties', obj);
-    }
-    else {
-        return obj;
-    }
-}
-/** @hidden */
-function parentsUntil(elem, selector, isID) {
-    let parent = elem;
-    while (parent) {
-        if (isID ? parent.id === selector : parent.classList.contains(selector)) {
-            break;
-        }
-        parent = parent.parentElement;
-    }
-    return parent;
-}
-/** @hidden */
-function getElementIndex(element, elements) {
-    let index = -1;
-    for (let i = 0, len = elements.length; i < len; i++) {
-        if (elements[i].isEqualNode(element)) {
-            index = i;
-            break;
-        }
-    }
-    return index;
-}
-/** @hidden */
-function inArray(value, collection) {
-    for (let i = 0, len = collection.length; i < len; i++) {
-        if (collection[i] === value) {
-            return i;
-        }
-    }
-    return -1;
-}
-/** @hidden */
-function getActualPropFromColl(collection) {
-    let coll = [];
-    for (let i = 0, len = collection.length; i < len; i++) {
-        if (collection[i].hasOwnProperty('properties')) {
-            coll.push(collection[i].properties);
-        }
-        else {
-            coll.push(collection[i]);
-        }
-    }
-    return coll;
-}
-/** @hidden */
-function removeElement(target, selector) {
-    let elements = [].slice.call(target.querySelectorAll(selector));
-    for (let i = 0; i < elements.length; i++) {
-        remove(elements[i]);
-    }
-}
-/** @hidden */
-function getPosition(e) {
-    let position = {};
-    position.x = (isNullOrUndefined(e.clientX) ? e.changedTouches[0].clientX :
-        e.clientX);
-    position.y = (isNullOrUndefined(e.clientY) ? e.changedTouches[0].clientY :
-        e.clientY);
-    return position;
-}
-let uid = 0;
-/** @hidden */
-function getUid(prefix) {
-    return prefix + uid++;
-}
-/** @hidden */
-function appendChildren(elem, children) {
-    for (let i = 0, len = children.length; i < len; i++) {
-        if (len === children.length) {
-            elem.appendChild(children[i]);
-        }
-        else {
-            elem.appendChild(children[0]);
-        }
-    }
-    return elem;
-}
-/** @hidden */
-function parents(elem, selector, isID) {
-    let parent = elem;
-    let parents = [];
-    while (parent) {
-        if (isID ? parent.id === selector : parent.classList.contains(selector)) {
-            parents.push(parent);
-        }
-        parent = parent.parentElement;
-    }
-    return parents;
-}
-/** @hidden */
-function calculateAggregate(type, data, column, context) {
-    if (type === 'Custom') {
-        let temp = column.customAggregate;
-        if (typeof temp === 'string') {
-            temp = getValue(temp, window);
-        }
-        return temp ? temp.call(context, data, column) : '';
-    }
-    return (column.field in data || data instanceof Array) ? DataUtil.aggregates[type.toLowerCase()](data, column.field) : null;
-}
-/** @hidden */
-let scrollWidth = null;
-/** @hidden */
-function getScrollBarWidth() {
-    if (scrollWidth !== null) {
-        return scrollWidth;
-    }
-    let divNode = document.createElement('div');
-    let value = 0;
-    divNode.style.cssText = 'width:100px;height: 100px;overflow: scroll;position: absolute;top: -9999px;';
-    document.body.appendChild(divNode);
-    value = (divNode.offsetWidth - divNode.clientWidth) | 0;
-    document.body.removeChild(divNode);
-    return scrollWidth = value;
-}
-/** @hidden */
-let rowHeight;
-/** @hidden */
-function getRowHeight(element) {
-    if (rowHeight !== undefined) {
-        return rowHeight;
-    }
-    let table = createElement('table', { className: 'e-table', styles: 'visibility: hidden' });
-    table.innerHTML = '<tr><td class="e-rowcell">A<td></tr>';
-    element.appendChild(table);
-    let rect = table.querySelector('td').getBoundingClientRect();
-    element.removeChild(table);
-    rowHeight = Math.ceil(rect.height);
-    return rowHeight;
-}
-/** @hidden */
-function isComplexField(field) {
-    return field.split('.').length > 1;
-}
-/** @hidden */
-function getComplexFieldID(field = '') {
-    return field.replace(/\./g, '___');
-}
-/** @hidden */
-function setComplexFieldID(field = '') {
-    return field.replace(/___/g, '.');
-}
-/** @hidden */
-function isEditable(col, type, elem) {
-    let row = parentsUntil(elem, 'e-row');
-    let isOldRow = !row ? true : row && !row.classList.contains('e-insertedrow');
-    if (type === 'beginEdit' && isOldRow) {
-        if (col.isIdentity || col.isPrimaryKey || !col.allowEditing) {
-            return false;
-        }
-        return true;
-    }
-    else if (type === 'add' && col.isIdentity) {
-        return false;
-    }
-    else {
-        if (isOldRow && !col.allowEditing && !col.isIdentity && !col.isPrimaryKey) {
-            return false;
-        }
-        return true;
-    }
-}
-/** @hidden */
-function isActionPrevent(inst) {
-    let dlg = inst.element.querySelector('#' + inst.element.id + 'EditConfirm');
-    return inst.editSettings.mode === 'Batch' &&
-        (inst.element.querySelectorAll('.e-updatedtd').length) && inst.editSettings.showConfirmDialog &&
-        (dlg ? dlg.classList.contains('e-popup-close') : true);
-}
-/** @hidden */
-function wrap(elem, action) {
-    let clName = 'e-wrap';
-    elem = elem instanceof Array ? elem : [elem];
-    for (let i = 0; i < elem.length; i++) {
-        action ? elem[i].classList.add(clName) : elem[i].classList.remove(clName);
-    }
-}
-/** @hidden */
-function setFormatter(serviceLocator, column) {
-    let fmtr = serviceLocator.getService('valueFormatter');
-    switch (column.type) {
-        case 'date':
-            column.setFormatter(fmtr.getFormatFunction({ type: 'date', skeleton: column.format }));
-            column.setParser(fmtr.getParserFunction({ type: 'date', skeleton: column.format }));
-            break;
-        case 'datetime':
-            column.setFormatter(fmtr.getFormatFunction({ type: 'dateTime', skeleton: column.format }));
-            column.setParser(fmtr.getParserFunction({ type: 'dateTime', skeleton: column.format }));
-            break;
-        case 'number':
-            column.setFormatter(fmtr.getFormatFunction({ format: column.format }));
-            column.setParser(fmtr.getParserFunction({ format: column.format }));
-            break;
-    }
-}
-/** @hidden */
-function addRemoveActiveClasses(cells, add, ...args) {
-    for (let i = 0, len = cells.length; i < len; i++) {
-        if (add) {
-            classList(cells[i], [...args], []);
-            cells[i].setAttribute('aria-selected', 'true');
-        }
-        else {
-            classList(cells[i], [], [...args]);
-            cells[i].removeAttribute('aria-selected');
-        }
-    }
-}
-/** @hidden */
-function distinctStringValues(result) {
-    let temp = {};
-    let res = [];
-    for (let i = 0; i < result.length; i++) {
-        if (!(result[i] in temp)) {
-            res.push(result[i].toString());
-            temp[result[i]] = 1;
-        }
-    }
-    return res;
-}
-/** @hidden */
-function getFilterMenuPostion(target, dialogObj, grid) {
-    let elementVisible = dialogObj.element.style.display;
-    dialogObj.element.style.display = 'block';
-    let dlgWidth = dialogObj.width;
-    let newpos;
-    if (!grid.enableRtl) {
-        newpos = calculateRelativeBasedPosition(target, dialogObj.element);
-        dialogObj.element.style.display = elementVisible;
-        dialogObj.element.style.top = (newpos.top + target.getBoundingClientRect().height) - 5 + 'px';
-        let leftPos = ((newpos.left - dlgWidth) + target.clientWidth);
-        if (leftPos < 1) {
-            dialogObj.element.style.left = (dlgWidth + leftPos) - 16 + 'px'; // right calculation
-        }
-        else {
-            dialogObj.element.style.left = leftPos + -4 + 'px';
-        }
-    }
-    else {
-        newpos = calculatePosition(target, 'left', 'bottom');
-        dialogObj.element.style.top = (newpos.top + target.getBoundingClientRect().height) - 35 + 'px';
-        dialogObj.element.style.display = elementVisible;
-        let leftPos = ((newpos.left - dlgWidth) + target.clientWidth);
-        if (leftPos < 1) {
-            dialogObj.element.style.left = (dlgWidth + leftPos) + -16 + 'px';
-        }
-        else {
-            dialogObj.element.style.left = leftPos - 16 + 'px';
-        }
-    }
-}
-/** @hidden */
-function getZIndexCalcualtion(args, dialogObj) {
-    args.popup.element.style.zIndex = (dialogObj.zIndex + 1).toString();
-}
-/** @hidden */
-function toogleCheckbox(elem) {
-    let span = elem.querySelector('.e-frame');
-    span.classList.contains('e-check') ? classList(span, ['e-uncheck'], ['e-check']) :
-        classList(span, ['e-check'], ['e-uncheck']);
-}
-/** @hidden */
-function createCboxWithWrap(uid, elem, className) {
-    let div = createElement('div', { className: className });
-    div.appendChild(elem);
-    div.setAttribute('uid', uid);
-    return div;
-}
-/** @hidden */
-function removeAddCboxClasses(elem, checked) {
-    removeClass([elem], ['e-check', 'e-stop', 'e-uncheck']);
-    if (checked) {
-        elem.classList.add('e-check');
-    }
-    else {
-        elem.classList.add('e-uncheck');
-    }
-}
-/**
- * Refresh the Row model's foreign data.
- * @param row - Grid Row model object.
- * @param columns - Foreign columns array.
- * @param data - Updated Row data.
- * @hidden
- */
-function refreshForeignData(row, columns, data) {
-    columns.forEach((col) => {
-        setValue(col.field, getForeignData(col, data), row.foreignKeyData);
-    });
-    row.cells.forEach((cell) => {
-        if (cell.isForeignKey) {
-            setValue('foreignKeyData', getValue(cell.column.field, row.foreignKeyData), cell);
-        }
-    });
-}
-/**
- * Get the foreign data for the corresponding cell value.
- * @param column - Foreign Key column
- * @param data - Row data.
- * @param lValue - cell value.
- * @param foreignData - foreign data source.
- * @hidden
- */
-function getForeignData(column, data, lValue, foreignKeyData) {
-    let fField = column.foreignKeyField;
-    let key = (!isNullOrUndefined(lValue) ? lValue : valueAccessor(column.field, data, column));
-    key = isNullOrUndefined(key) ? '' : key;
-    let query = new Query();
-    let fdata = foreignKeyData || ((column.dataSource instanceof DataManager) && column.dataSource.dataSource.json.length ?
-        column.dataSource.dataSource.json : column.columnData);
-    if (key.getDay) {
-        query.where(getDatePredicate({ field: fField, operator: 'equal', value: key, matchCase: false }));
-    }
-    else {
-        query.where(fField, '==', key, false);
-    }
-    return new DataManager(fdata).executeLocal(query);
-}
-/**
- * To use to get the column's object by the foreign key value.
- * @param foreignKeyValue - Defines ForeignKeyValue.
- * @param columns - Array of column object.
- * @hidden
- */
-function getColumnByForeignKeyValue(foreignKeyValue, columns) {
-    let column;
-    return columns.some((col) => {
-        column = col;
-        return col.foreignKeyValue === foreignKeyValue;
-    }) && column;
-}
-/**
- * @hidden
- * @param filterObject - Defines predicate model object
- */
-function getDatePredicate(filterObject, type) {
-    let datePredicate;
-    let prevDate;
-    let nextDate;
-    let prevObj = extend({}, getActualProperties(filterObject));
-    let nextObj = extend({}, getActualProperties(filterObject));
-    if (filterObject.value === null) {
-        datePredicate = new Predicate(prevObj.field, prevObj.operator, prevObj.value, false);
-        return datePredicate;
-    }
-    let value = new Date(filterObject.value);
-    if (filterObject.operator === 'equal' || filterObject.operator === 'notequal') {
-        if (type === 'datetime') {
-            prevDate = new Date(value.setSeconds(value.getSeconds() - 1));
-            nextDate = new Date(value.setSeconds(value.getSeconds() + 2));
-            filterObject.value = new Date(value.setSeconds(nextDate.getSeconds() - 1));
-        }
-        else {
-            prevDate = new Date(value.setHours(0) - 1);
-            nextDate = new Date(value.setHours(24));
-        }
-        prevObj.value = prevDate;
-        nextObj.value = nextDate;
-        if (filterObject.operator === 'equal') {
-            prevObj.operator = 'greaterthan';
-            nextObj.operator = 'lessthan';
-        }
-        else if (filterObject.operator === 'notequal') {
-            prevObj.operator = 'lessthanorequal';
-            nextObj.operator = 'greaterthanorequal';
-        }
-        let predicateSt = new Predicate(prevObj.field, prevObj.operator, prevObj.value, false);
-        let predicateEnd = new Predicate(nextObj.field, nextObj.operator, nextObj.value, false);
-        datePredicate = filterObject.operator === 'equal' ? predicateSt.and(predicateEnd) : predicateSt.or(predicateEnd);
-    }
-    else {
-        if (typeof (prevObj.value) === 'string') {
-            prevObj.value = new Date(prevObj.value);
-        }
-        let predicates = new Predicate(prevObj.field, prevObj.operator, prevObj.value, false);
-        datePredicate = predicates;
-    }
-    if (filterObject.setProperties) {
-        filterObject.setProperties({ ejpredicate: datePredicate }, true);
-    }
-    else {
-        filterObject.ejpredicate = datePredicate;
-    }
-    return datePredicate;
-}
-/**
- * @hidden
- */
-function renderMovable(ele, frzCols) {
-    let mEle = ele.cloneNode(true);
-    for (let i = 0; i < frzCols; i++) {
-        mEle.removeChild(mEle.children[0]);
-    }
-    for (let i = frzCols, len = ele.childElementCount; i < len; i++) {
-        ele.removeChild(ele.children[ele.childElementCount - 1]);
-    }
-    return mEle;
-}
-/**
- * @hidden
- */
-function isGroupAdaptive(grid) {
-    return grid.enableVirtualization && grid.groupSettings.columns.length > 0 && grid.isVirtualAdaptive;
-}
-/**
- * @hidden
- */
-function getObject(field = '', object) {
-    if (field) {
-        let value = object;
-        let splits = field.split('.');
-        for (let i = 0; i < splits.length && !isNullOrUndefined(value); i++) {
-            value = value[splits[i]];
-        }
-        return value;
-    }
-}
-/**
- * @hidden
- */
-function getCustomDateFormat(format, colType) {
-    let intl = new Internationalization();
-    let formatvalue;
-    let formatter = 'format';
-    let type = 'type';
-    if (colType === 'date') {
-        formatvalue = typeof (format) === 'object' ?
-            intl.getDatePattern({ type: format[type] ? format[type] : 'date', format: format[formatter] }, false) :
-            intl.getDatePattern({ type: 'date', skeleton: format }, false);
-    }
-    else {
-        formatvalue = typeof (format) === 'object' ?
-            intl.getDatePattern({ type: format[type] ? format[type] : 'dateTime', format: format[formatter] }, false) :
-            intl.getDatePattern({ type: 'dateTime', skeleton: format }, false);
-    }
-    return formatvalue;
-}
-/**
- * @hidden
- */
-function getExpandedState(gObj, hierarchyPrintMode) {
-    let rows = gObj.getRowsObject();
-    let obj = {};
-    for (const row of rows) {
-        if (row.isExpand && !row.isDetailRow) {
-            let index = gObj.allowPaging && gObj.printMode === 'AllPages' ? row.index +
-                (gObj.pageSettings.currentPage * gObj.pageSettings.pageSize) - gObj.pageSettings.pageSize : row.index;
-            obj[index] = {};
-            obj[index].isExpand = true;
-            obj[index].gridModel = getPrintGridModel(row.childGrid, hierarchyPrintMode);
-            obj[index].gridModel.query = gObj.childGrid.query;
-        }
-    }
-    return obj;
-}
-/**
- * @hidden
- */
-function getPrintGridModel(gObj, hierarchyPrintMode = 'Expanded') {
-    let printGridModel = {};
-    if (!gObj) {
-        return printGridModel;
-    }
-    for (let key of Print.printGridProp) {
-        if (key === 'columns') {
-            printGridModel[key] = getActualPropFromColl(gObj[key]);
-        }
-        else if (key === 'allowPaging') {
-            printGridModel[key] = gObj.printMode === 'CurrentPage';
-        }
-        else {
-            printGridModel[key] = getActualProperties(gObj[key]);
-        }
-    }
-    if (gObj.childGrid && hierarchyPrintMode !== 'None') {
-        printGridModel.expandedRows = getExpandedState(gObj, hierarchyPrintMode);
-    }
-    return printGridModel;
-}
-/**
- * @hidden
- */
-function extendObjWithFn(copied, first, second, deep) {
-    let res = copied || {};
-    let len = arguments.length;
-    if (deep) {
-        len = len - 1;
-    }
-    for (let i = 1; i < len; i++) {
-        if (!arguments[i]) {
-            continue;
-        }
-        let obj1 = arguments[i];
-        let keys = Object.keys(Object.getPrototypeOf(obj1)).length ?
-            Object.keys(obj1).concat(getPrototypesOfObj(obj1)) : Object.keys(obj1);
-        keys.forEach((key) => {
-            let source = res[key];
-            let cpy = obj1[key];
-            let cln;
-            if (deep && (isObject(cpy) || Array.isArray(cpy))) {
-                if (isObject(cpy)) {
-                    cln = source ? source : {};
-                    res[key] = extend({}, cln, cpy, deep);
-                }
-                else {
-                    cln = source ? source : [];
-                    res[key] = extend([], cln, cpy, deep);
-                }
-            }
-            else {
-                res[key] = cpy;
-            }
-        });
-    }
-    return res;
-}
-/**
- * @hidden
- */
-function getPrototypesOfObj(obj) {
-    let keys = [];
-    while (Object.getPrototypeOf(obj) && Object.keys(Object.getPrototypeOf(obj)).length) {
-        keys = keys.concat(Object.keys(Object.getPrototypeOf(obj)));
-        obj = Object.getPrototypeOf(obj);
-    }
-    return keys;
-}
-/**
- * @hidden
- */
-function measureColumnDepth(column) {
-    let max = 0;
-    for (let i = 0; i < column.length; i++) {
-        let depth = checkDepth(column[i], 0);
-        if (max < depth) {
-            max = depth;
-        }
-    }
-    return max + 1;
-}
-/**
- * @hidden
- */
-function checkDepth(col, index) {
-    let max = index;
-    let indices = [];
-    if (col.columns) {
-        index++;
-        for (let i = 0; i < col.columns.length; i++) {
-            indices[i] = checkDepth(col.columns[i], index);
-        }
-        for (let j = 0; j < indices.length; j++) {
-            if (max < indices[j]) {
-                max = indices[j];
-            }
-        }
-        index = max;
-    }
-    return index;
-}
-/**
- * @hidden
- */
-function refreshFilteredColsUid(gObj, filteredCols) {
-    for (let i = 0; i < filteredCols.length; i++) {
-        filteredCols[i].uid = filteredCols[i].isForeignKey ?
-            getColumnByForeignKeyValue(filteredCols[i].field, gObj.getForeignKeyColumns()).uid
-            : gObj.getColumnByField(filteredCols[i].field).uid;
-    }
-}
-/** @hidden */
-var Global;
-(function (Global) {
-    Global.timer = null;
-})(Global || (Global = {}));
+const fltrPrevent = 'filter-Prevent';
 
 /**
  * Defines types of Cell
@@ -1826,857 +760,6 @@ var ToolbarItem;
     ToolbarItem[ToolbarItem["CsvExport"] = 10] = "CsvExport";
     ToolbarItem[ToolbarItem["WordExport"] = 11] = "WordExport";
 })(ToolbarItem || (ToolbarItem = {}));
-
-/* tslint:disable-next-line:max-line-length */
-/**
- * @hidden
- * `CheckBoxFilterBase` module is used to handle filtering action.
- */
-class CheckBoxFilterBase {
-    /**
-     * Constructor for checkbox filtering module
-     * @hidden
-     */
-    constructor(parent, filterSettings) {
-        this.existingPredicate = {};
-        this.foreignKeyQuery = new Query();
-        this.filterState = true;
-        this.values = {};
-        this.renderEmpty = false;
-        this.parent = parent;
-        this.id = this.parent.element.id;
-        this.filterSettings = filterSettings;
-        this.valueFormatter = new ValueFormatter(this.parent.locale);
-        this.cBoxTrue = createCheckBox(this.parent.createElement, false, { checked: true, label: ' ' });
-        this.cBoxFalse = createCheckBox(this.parent.createElement, false, { checked: false, label: ' ' });
-        this.cBoxTrue.insertBefore(this.parent.createElement('input', {
-            className: 'e-chk-hidden', attrs: { type: 'checkbox' }
-        }), this.cBoxTrue.firstChild);
-        this.cBoxFalse.insertBefore(this.parent.createElement('input', {
-            className: 'e-chk-hidden', attrs: { 'type': 'checkbox' }
-        }), this.cBoxFalse.firstChild);
-        this.cBoxFalse.querySelector('.e-frame').classList.add('e-uncheck');
-        if (this.parent.enableRtl) {
-            addClass([this.cBoxTrue, this.cBoxFalse], ['e-rtl']);
-        }
-    }
-    /**
-     * To destroy the filter bar.
-     * @return {void}
-     * @hidden
-     */
-    destroy() {
-        this.closeDialog();
-    }
-    wireEvents() {
-        EventHandler.add(this.dlg, 'click', this.clickHandler, this);
-        this.searchHandler = debounce(this.searchBoxKeyUp, 200);
-        EventHandler.add(this.dlg.querySelector('.e-searchinput'), 'keyup', this.searchHandler, this);
-    }
-    unWireEvents() {
-        EventHandler.remove(this.dlg, 'click', this.clickHandler);
-        let elem = this.dlg.querySelector('.e-searchinput');
-        if (elem) {
-            EventHandler.remove(elem, 'keyup', this.searchHandler);
-        }
-    }
-    foreignKeyFilter(args, fColl, mPredicate) {
-        let fPredicate = {};
-        let filterCollection = [];
-        let query = this.foreignKeyQuery.clone();
-        this.options.column.dataSource.
-            executeQuery(query.where(mPredicate)).then((e) => {
-            this.options.column.columnData = e.result;
-            this.parent.notify(generateQuery, { predicate: fPredicate, column: this.options.column });
-            args.ejpredicate = fPredicate.predicate.predicates;
-            fPredicate.predicate.predicates.forEach((fpred) => {
-                filterCollection.push({
-                    field: fpred.field,
-                    predicate: 'or',
-                    matchCase: fpred.ignoreCase,
-                    ignoreAccent: fpred.ignoreAccent,
-                    operator: fpred.operator,
-                    value: fpred.value,
-                    type: this.options.type
-                });
-            });
-            args.filterCollection = filterCollection.length ? filterCollection :
-                fColl.filter((col) => col.field = this.options.field);
-            this.options.handler(args);
-        });
-    }
-    foreignFilter(args, value) {
-        let operator = this.parent.getDataModule().isRemote() ?
-            (this.options.column.type === 'string' ? 'contains' : 'equal') : (this.options.column.type ? 'startswith' : 'contains');
-        let initalPredicate = new Predicate(this.options.column.foreignKeyValue, operator, value, true, this.parent.filterSettings.ignoreAccent);
-        this.foreignKeyFilter(args, [args.filterCollection], initalPredicate);
-    }
-    searchBoxClick(e) {
-        let target = e.target;
-        if (target.classList.contains('e-searchclear')) {
-            this.sInput.value = '';
-            this.refreshCheckboxes();
-            this.updateSearchIcon();
-            this.sInput.focus();
-        }
-    }
-    searchBoxKeyUp(e) {
-        this.refreshCheckboxes();
-        this.updateSearchIcon();
-    }
-    updateSearchIcon() {
-        if (this.sInput.value.length) {
-            classList(this.sIcon, ['e-chkcancel-icon'], ['e-search-icon']);
-        }
-        else {
-            classList(this.sIcon, ['e-search-icon'], ['e-chkcancel-icon']);
-        }
-    }
-    /**
-     * Gets the localized label by locale keyword.
-     * @param  {string} key
-     * @return {string}
-     */
-    getLocalizedLabel(key) {
-        return this.localeObj.getConstant(key);
-    }
-    updateDataSource() {
-        let dataSource = this.options.dataSource;
-        let str = 'object';
-        if (!(dataSource instanceof DataManager)) {
-            for (let i = 0; i < dataSource.length; i++) {
-                if (typeof dataSource !== str) {
-                    let obj = {};
-                    obj[this.options.field] = dataSource[i];
-                    dataSource[i] = obj;
-                }
-            }
-        }
-    }
-    updateModel(options) {
-        this.options = options;
-        this.existingPredicate = options.actualPredicate || {};
-        this.options.dataSource = options.dataSource;
-        this.updateDataSource();
-        this.options.type = options.type;
-        this.options.format = options.format || '';
-        this.options.filteredColumns = options.filteredColumns || this.parent.filterSettings.columns;
-        this.options.sortedColumns = options.sortedColumns || this.parent.sortSettings.columns;
-        this.options.query = options.query || new Query();
-        this.options.allowCaseSensitive = options.allowCaseSensitive || false;
-        this.options.uid = options.column.uid;
-        this.values = {};
-        this.localeObj = options.localeObj;
-        this.isFiltered = options.filteredColumns.length;
-    }
-    getAndSetChkElem(options) {
-        this.dlg = this.parent.createElement('div', {
-            id: this.id + this.options.type + '_excelDlg',
-            className: 'e-checkboxfilter e-filter-popup'
-        });
-        this.sBox = this.parent.createElement('div', { className: 'e-searchcontainer' });
-        if (!options.hideSearchbox) {
-            this.sInput = this.parent.createElement('input', {
-                id: this.id + '_SearchBox',
-                className: 'e-searchinput'
-            });
-            this.sIcon = this.parent.createElement('span', {
-                className: 'e-searchclear e-search-icon e-icons e-input-group-icon', attrs: {
-                    type: 'text', title: this.getLocalizedLabel('Search')
-                }
-            });
-            this.searchBox = this.parent.createElement('span', { className: 'e-searchbox e-fields' });
-            this.searchBox.appendChild(this.sInput);
-            this.sBox.appendChild(this.searchBox);
-            let inputargs = {
-                element: this.sInput, floatLabelType: 'Never', properties: {
-                    placeholder: this.getLocalizedLabel('Search')
-                }
-            };
-            Input.createInput(inputargs, this.parent.createElement);
-            this.searchBox.querySelector('.e-input-group').appendChild(this.sIcon);
-        }
-        this.spinner = this.parent.createElement('div', { className: 'e-spinner' }); //for spinner
-        this.cBox = this.parent.createElement('div', {
-            id: this.id + this.options.type + '_CheckBoxList',
-            className: 'e-checkboxlist e-fields'
-        });
-        this.spinner.appendChild(this.cBox);
-        this.sBox.appendChild(this.spinner);
-        return this.sBox;
-    }
-    showDialog(options) {
-        let args = {
-            requestType: filterBeforeOpen,
-            columnName: this.options.field, columnType: this.options.type, cancel: false
-        };
-        if (!isBlazor() || this.parent.isJsComponent) {
-            let filterModel = 'filterModel';
-            args[filterModel] = this;
-        }
-        this.parent.notify(cBoxFltrBegin, args);
-        if (args.cancel) {
-            return;
-        }
-        this.dialogObj = new Dialog({
-            visible: false, content: this.sBox,
-            close: this.closeDialog.bind(this),
-            width: (!isNullOrUndefined(parentsUntil(options.target, 'e-bigger')))
-                || this.parent.element.classList.contains('e-device') ? 260 : 255,
-            target: this.parent.element, animationSettings: { effect: 'None' },
-            buttons: [{
-                    click: this.btnClick.bind(this),
-                    buttonModel: {
-                        content: this.getLocalizedLabel(this.isExcel ? 'OKButton' : 'FilterButton'),
-                        cssClass: 'e-primary', isPrimary: true
-                    }
-                },
-                {
-                    click: this.btnClick.bind(this),
-                    buttonModel: { cssClass: 'e-flat', content: this.getLocalizedLabel(this.isExcel ? 'CancelButton' : 'ClearButton') }
-                }],
-            created: this.dialogCreated.bind(this),
-            open: this.dialogOpen.bind(this)
-        });
-        let isStringTemplate = 'isStringTemplate';
-        this.dialogObj[isStringTemplate] = true;
-        this.dialogObj.appendTo(this.dlg);
-        this.dialogObj.element.style.maxHeight = this.options.height + 'px';
-        this.dialogObj.show();
-        this.wireEvents();
-        createSpinner({ target: this.spinner }, this.parent.createElement);
-        showSpinner(this.spinner);
-        this.getAllData();
-    }
-    dialogCreated(e) {
-        if (!Browser.isDevice) {
-            getFilterMenuPostion(this.options.target, this.dialogObj, this.parent);
-        }
-        else {
-            this.dialogObj.position = { X: 'center', Y: 'center' };
-        }
-        this.parent.notify(filterDialogCreated, e);
-    }
-    openDialog(options) {
-        this.updateModel(options);
-        this.getAndSetChkElem(options);
-        this.showDialog(options);
-    }
-    closeDialog() {
-        if (this.dialogObj && !this.dialogObj.isDestroyed) {
-            let filterTemplateCol = this.parent.getColumns().filter((col) => col.getFilterItemTemplate());
-            if (filterTemplateCol.length) {
-                this.parent.destroyTemplate(['filterItemTemplate']);
-            }
-            this.parent.notify(filterMenuClose, { field: this.options.field });
-            this.dialogObj.destroy();
-            this.unWireEvents();
-            remove(this.dlg);
-            this.dlg = null;
-        }
-    }
-    clearFilter() {
-        /* tslint:disable-next-line:max-line-length */
-        let args = { instance: this, handler: this.clearFilter, cancel: false };
-        this.parent.notify(cBoxFltrPrevent, args);
-        if (args.cancel) {
-            return;
-        }
-        this.options.handler({ action: 'clear-filter', field: this.options.field });
-    }
-    btnClick(e) {
-        if (this.filterState) {
-            if (e.target.tagName.toLowerCase() === 'input') {
-                let value = e.target.value;
-                if (this.options.column.type === 'boolean') {
-                    if (value !== undefined &&
-                        this.getLocalizedLabel('FilterTrue').toLowerCase().indexOf(value.toLowerCase()) !== -1) {
-                        value = 'true';
-                    }
-                    else if (value !== undefined &&
-                        this.getLocalizedLabel('FilterFalse').toLowerCase().indexOf(value.toLowerCase()) !== -1) {
-                        value = 'false';
-                    }
-                }
-                let args = {
-                    action: 'filtering', filterCollection: {
-                        field: this.options.field,
-                        operator: this.parent.getDataModule().isRemote() ?
-                            (this.options.column.type === 'string' ? 'contains' : 'equal') :
-                            (this.options.column.type === 'date' || this.options.column.type === 'datetime' ||
-                                this.options.column.type === 'boolean' ? 'equal' : 'contains'),
-                        value: value, matchCase: false, type: this.options.column.type
-                    },
-                    field: this.options.field
-                };
-                value ? this.options.column.isForeignColumn() ? this.foreignFilter(args, value) :
-                    this.options.handler(args) : this.closeDialog();
-            }
-            else {
-                let text = e.target.firstChild.textContent.toLowerCase();
-                if (this.getLocalizedLabel(this.isExcel ? 'OKButton' : 'FilterButton').toLowerCase() === text) {
-                    this.fltrBtnHandler();
-                }
-                else if (this.getLocalizedLabel('ClearButton').toLowerCase() === text) {
-                    this.clearFilter();
-                }
-            }
-            this.closeDialog();
-        }
-        else if (!(e.target.tagName.toLowerCase() === 'input')) {
-            this.clearFilter();
-            this.closeDialog();
-        }
-    }
-    fltrBtnHandler() {
-        let checked = [].slice.call(this.cBox.querySelectorAll('.e-check:not(.e-selectall)'));
-        let optr = 'equal';
-        let searchInput = this.searchBox.querySelector('.e-searchinput');
-        let caseSen = this.filterSettings.enableCaseSensitivity;
-        let defaults = {
-            field: this.options.field, predicate: 'or', uid: this.options.uid,
-            operator: optr, type: this.options.type, matchCase: caseSen, ignoreAccent: this.parent.filterSettings.ignoreAccent
-        };
-        let isNotEqual = this.itemsCnt !== checked.length && this.itemsCnt - checked.length < checked.length;
-        if (isNotEqual && searchInput.value === '') {
-            optr = 'notequal';
-            checked = [].slice.call(this.cBox.querySelectorAll('.e-uncheck:not(.e-selectall)'));
-            defaults.predicate = 'and';
-            defaults.operator = 'notequal';
-        }
-        let value;
-        let fObj;
-        let coll = [];
-        if (checked.length !== this.itemsCnt || (searchInput.value && searchInput.value !== '')) {
-            for (let i = 0; i < checked.length; i++) {
-                value = this.values[parentsUntil(checked[i], 'e-ftrchk').getAttribute('uid')];
-                fObj = extend({}, { value: value }, defaults);
-                if (value && !value.toString().length) {
-                    fObj.operator = isNotEqual ? 'notequal' : 'equal';
-                }
-                if (value === '' || isNullOrUndefined(value)) {
-                    if (this.options.type === 'string') {
-                        coll.push({
-                            field: defaults.field, ignoreAccent: defaults.ignoreAccent, matchCase: defaults.matchCase,
-                            operator: defaults.operator, predicate: defaults.predicate, value: ''
-                        });
-                    }
-                    coll.push({
-                        field: defaults.field,
-                        matchCase: defaults.matchCase, operator: defaults.operator, predicate: defaults.predicate, value: null
-                    });
-                    coll.push({
-                        field: defaults.field, matchCase: defaults.matchCase, operator: defaults.operator,
-                        predicate: defaults.predicate, value: undefined
-                    });
-                }
-                else {
-                    coll.push(fObj);
-                }
-                let args = {
-                    instance: this, handler: this.fltrBtnHandler, arg1: fObj.field, arg2: fObj.predicate, arg3: fObj.operator,
-                    arg4: fObj.matchCase, arg5: fObj.ignoreAccent, arg6: fObj.value, cancel: false
-                };
-                this.parent.notify(cBoxFltrPrevent, args);
-                if (args.cancel) {
-                    return;
-                }
-            }
-            this.initiateFilter(coll);
-        }
-        else {
-            this.clearFilter();
-        }
-    }
-    initiateFilter(fColl) {
-        let firstVal = fColl[0];
-        let predicate;
-        if (!isNullOrUndefined(firstVal)) {
-            predicate = firstVal.ejpredicate ? firstVal.ejpredicate :
-                new Predicate(firstVal.field, firstVal.operator, firstVal.value, !firstVal.matchCase, firstVal.ignoreAccent);
-            for (let j = 1; j < fColl.length; j++) {
-                predicate = fColl[j].ejpredicate !== undefined ?
-                    predicate[fColl[j].predicate](fColl[j].ejpredicate) :
-                    predicate[fColl[j].predicate](fColl[j].field, fColl[j].operator, fColl[j].value, !fColl[j].matchCase, fColl[j].ignoreAccent);
-            }
-            let args = {
-                action: 'filtering', filterCollection: fColl, field: this.options.field,
-                ejpredicate: Predicate.or(predicate)
-            };
-            this.options.handler(args);
-        }
-    }
-    refreshCheckboxes() {
-        let val = this.sInput.value;
-        let column = this.options.column;
-        let query = column.isForeignColumn() ? this.foreignKeyQuery.clone() : this.options.query.clone();
-        let foreignQuery = this.options.query.clone();
-        query.queries = [];
-        foreignQuery.queries = [];
-        let parsed = (this.options.type !== 'string' && parseFloat(val)) ? parseFloat(val) : val;
-        let operator = this.parent.getDataModule().isRemote() ?
-            (this.options.type === 'string' ? 'contains' : 'equal') : (this.options.type ? 'startswith' : 'contains');
-        let matchCase = true;
-        let ignoreAccent = this.parent.filterSettings.ignoreAccent;
-        let field = column.isForeignColumn() ? column.foreignKeyValue : column.field;
-        parsed = (parsed === '' || parsed === undefined) ? undefined : parsed;
-        let predicte;
-        if (this.options.type === 'boolean') {
-            if (parsed !== undefined &&
-                this.getLocalizedLabel('FilterTrue').toLowerCase().indexOf(parsed.toLowerCase()) !== -1) {
-                parsed = (this.parent.getDataModule().dataManager.adaptor.getModuleName()
-                    === 'ODataAdaptor' || 'ODataV4Adaptor') ? true : 'true';
-            }
-            else if (parsed !== undefined &&
-                this.getLocalizedLabel('FilterFalse').toLowerCase().indexOf(parsed.toLowerCase()) !== -1) {
-                parsed = (this.parent.getDataModule().dataManager.adaptor.getModuleName()
-                    === 'ODataAdaptor' || 'ODataV4Adaptor') ? false : 'false';
-            }
-            operator = 'equal';
-        }
-        this.addDistinct(query);
-        /* tslint:disable-next-line:max-line-length */
-        let args = {
-            requestType: filterSearchBegin,
-            filterModel: this, columnName: field, column: column,
-            operator: operator, matchCase: matchCase, ignoreAccent: ignoreAccent, filterChoiceCount: null,
-            query: query
-        };
-        this.parent.notify(cBoxFltrBegin, args);
-        predicte = new Predicate(field, args.operator, parsed, args.matchCase, args.ignoreAccent);
-        if (this.options.type === 'date' || this.options.type === 'datetime') {
-            parsed = this.valueFormatter.fromView(val, this.options.parserFn, this.options.type);
-            operator = 'equal';
-            if (isNullOrUndefined(parsed) && val.length) {
-                return;
-            }
-            let filterObj = {
-                field: field, operator: operator, value: parsed, matchCase: matchCase,
-                ignoreAccent: ignoreAccent
-            };
-            predicte = getDatePredicate(filterObj, this.options.type);
-        }
-        if (val.length) {
-            query.where(predicte);
-        }
-        args.filterChoiceCount = !isNullOrUndefined(args.filterChoiceCount) ? args.filterChoiceCount : 1000;
-        let fPredicate = {};
-        showSpinner(this.spinner);
-        this.renderEmpty = false;
-        if (column.isForeignColumn() && val.length) {
-            // tslint:disable-next-line:no-any
-            column.dataSource.executeQuery(query).then((e) => {
-                let columnData = this.options.column.columnData;
-                this.options.column.columnData = e.result;
-                this.parent.notify(generateQuery, { predicate: fPredicate, column: column });
-                if (fPredicate.predicate.predicates.length) {
-                    foreignQuery.where(fPredicate.predicate);
-                }
-                else {
-                    this.renderEmpty = true;
-                }
-                this.options.column.columnData = columnData;
-                foreignQuery.take(args.filterChoiceCount);
-                this.search(args, foreignQuery);
-            });
-        }
-        else {
-            query.take(args.filterChoiceCount);
-            this.search(args, query);
-        }
-    }
-    search(args, query) {
-        if (this.parent.dataSource && 'result' in this.parent.dataSource) {
-            this.filterEvent(args, query);
-        }
-        else {
-            this.processSearch(query);
-        }
-    }
-    getPredicateFromCols(columns) {
-        let predicates = CheckBoxFilterBase.getPredicate(columns);
-        let predicateList = [];
-        let fPredicate = {};
-        let foreignColumn = this.parent.getForeignKeyColumns();
-        for (let prop of Object.keys(predicates)) {
-            let col;
-            if (this.parent.getColumnByField(prop).isForeignColumn()) {
-                col = getColumnByForeignKeyValue(prop, foreignColumn);
-            }
-            if (col) {
-                this.parent.notify(generateQuery, { predicate: fPredicate, column: col });
-                if (fPredicate.predicate.predicates.length) {
-                    predicateList.push(Predicate.or(fPredicate.predicate.predicates));
-                }
-            }
-            else {
-                predicateList.push(predicates[prop]);
-            }
-        }
-        return predicateList.length && Predicate.and(predicateList);
-    }
-    getAllData() {
-        let query = this.parent.getQuery().clone();
-        query.requiresCount(); //consider take query
-        this.addDistinct(query);
-        let args = {
-            requestType: filterChoiceRequest, query: query, filterChoiceCount: null
-        };
-        if (!isBlazor() || this.parent.isJsComponent) {
-            let filterModel = 'filterModel';
-            args[filterModel] = this;
-        }
-        this.parent.notify(cBoxFltrBegin, args);
-        args.filterChoiceCount = !isNullOrUndefined(args.filterChoiceCount) ? args.filterChoiceCount : 1000;
-        query.take(args.filterChoiceCount);
-        if (this.parent.dataSource && 'result' in this.parent.dataSource) {
-            this.filterEvent(args, query);
-        }
-        else {
-            this.processDataOperation(query, true);
-        }
-    }
-    addDistinct(query) {
-        let filteredColumn = DataUtil.distinct(this.parent.filterSettings.columns, 'field');
-        if (filteredColumn.indexOf(this.options.column.field) <= -1) {
-            filteredColumn = filteredColumn.concat(this.options.column.field);
-        }
-        query.distinct(filteredColumn);
-        return query;
-    }
-    filterEvent(args, query) {
-        let def = this.eventPromise(args, query);
-        def.promise.then((e) => {
-            this.dataSuccess(e);
-        });
-    }
-    eventPromise(args, query) {
-        let state;
-        state = this.getStateEventArgument(query);
-        let def = new Deferred();
-        state.dataSource = def.resolve;
-        state.action = args;
-        this.parent.trigger(dataStateChange, state);
-        return def;
-    }
-    ;
-    getStateEventArgument(query) {
-        let adaptr = new UrlAdaptor();
-        let dm = new DataManager({ url: '', adaptor: new UrlAdaptor });
-        let state = adaptr.processQuery(dm, query);
-        let data = JSON.parse(state.data);
-        return data;
-    }
-    ;
-    processDataOperation(query, isInitial) {
-        this.options.dataSource = this.options.dataSource instanceof DataManager ?
-            this.options.dataSource : new DataManager(this.options.dataSource);
-        let allPromise = [];
-        let runArray = [];
-        if (this.options.column.isForeignColumn() && isInitial) {
-            allPromise.push(this.options.column.dataSource.executeQuery(this.foreignKeyQuery));
-            runArray.push((data) => this.foreignKeyData = data);
-        }
-        allPromise.push(this.options.dataSource.executeQuery(query));
-        runArray.push(this.dataSuccess.bind(this));
-        let i = 0;
-        Promise.all(allPromise).then((e) => {
-            e.forEach((data) => {
-                runArray[i++](data.result);
-            });
-        });
-    }
-    dataSuccess(e) {
-        this.fullData = e;
-        let query = new Query();
-        if (this.parent.searchSettings.key.length) {
-            let sSettings = this.parent.searchSettings;
-            let fields = sSettings.fields.length ? sSettings.fields : this.parent.getColumns().map((f) => f.field);
-            /* tslint:disable-next-line:max-line-length */
-            query.search(sSettings.key, fields, sSettings.operator, sSettings.ignoreCase, sSettings.ignoreAccent);
-        }
-        if ((this.options.filteredColumns.length)) {
-            let cols = [];
-            for (let i = 0; i < this.options.filteredColumns.length; i++) {
-                let filterColumn = this.options.filteredColumns[i];
-                if (this.options.uid) {
-                    filterColumn.uid = filterColumn.uid || this.parent.getColumnByField(filterColumn.field).uid;
-                    if (filterColumn.uid !== this.options.uid) {
-                        cols.push(this.options.filteredColumns[i]);
-                    }
-                }
-                else {
-                    if (filterColumn.field !== this.options.field) {
-                        cols.push(this.options.filteredColumns[i]);
-                    }
-                }
-            }
-            let predicate = this.getPredicateFromCols(cols);
-            if (predicate) {
-                query.where(predicate);
-            }
-        }
-        // query.select(this.options.field);
-        let result = new DataManager(this.fullData).executeLocal(query);
-        let col = this.options.column;
-        this.filteredData = CheckBoxFilterBase.
-            getDistinct(result, this.options.field, col, this.foreignKeyData).records || [];
-        this.processDataSource(null, true, this.filteredData);
-        this.sInput.focus();
-        let args = {
-            requestType: filterAfterOpen,
-            columnName: this.options.field, columnType: this.options.type
-        };
-        if (!isBlazor() || this.parent.isJsComponent) {
-            let filterModel = 'filterModel';
-            args[filterModel] = this;
-        }
-        this.parent.notify(cBoxFltrComplete, args);
-    }
-    processDataSource(query, isInitial, dataSource) {
-        showSpinner(this.spinner);
-        // query = query ? query : this.options.query.clone();
-        // query.requiresCount();
-        // let result: Object = new DataManager(dataSource as JSON[]).executeLocal(query);
-        // let res: { result: Object[] } = result as { result: Object[] };
-        this.updateResult();
-        this.createFilterItems(dataSource, isInitial);
-    }
-    processSearch(query) {
-        this.processDataOperation(query);
-    }
-    updateResult() {
-        this.result = {};
-        let predicate = this.getPredicateFromCols(this.options.filteredColumns);
-        let query = new Query();
-        if (predicate) {
-            query.where(predicate);
-        }
-        let result = new DataManager(this.fullData).executeLocal(query);
-        for (let res of result) {
-            this.result[getValue(this.options.field, res)] = true;
-        }
-    }
-    clickHandler(e) {
-        let target = e.target;
-        let elem = parentsUntil(target, 'e-checkbox-wrapper');
-        if (parentsUntil(target, 'e-searchbox')) {
-            this.searchBoxClick(e);
-        }
-        if (elem) {
-            let selectAll = elem.querySelector('.e-selectall');
-            if (selectAll) {
-                this.updateAllCBoxes(!selectAll.classList.contains('e-check'));
-            }
-            else {
-                toogleCheckbox(elem.parentElement);
-            }
-            this.updateIndeterminatenBtn();
-            elem.querySelector('.e-chk-hidden').focus();
-        }
-    }
-    updateAllCBoxes(checked) {
-        let cBoxes = [].slice.call(this.cBox.querySelectorAll('.e-frame'));
-        for (let cBox of cBoxes) {
-            removeAddCboxClasses(cBox, checked);
-        }
-    }
-    dialogOpen() {
-        if (this.parent.element.classList.contains('e-device')) {
-            this.dialogObj.element.querySelector('.e-input-group').classList.remove('e-input-focus');
-            this.dialogObj.element.querySelector('.e-btn').focus();
-        }
-    }
-    createCheckbox(value, checked, data) {
-        let elem = checked ? this.cBoxTrue.cloneNode(true) :
-            this.cBoxFalse.cloneNode(true);
-        let label = elem.querySelector('.e-label');
-        label.innerHTML = !isNullOrUndefined(value) && value.toString().length ? value :
-            this.getLocalizedLabel('Blanks');
-        addClass([label], ['e-checkboxfiltertext']);
-        if (this.options.template) {
-            label.innerHTML = '';
-            appendChildren(label, this.options.template(data, this.parent, 'filterItemTemplate'));
-        }
-        return elem;
-    }
-    updateIndeterminatenBtn() {
-        let cnt = this.cBox.children.length - 1;
-        let className = [];
-        let elem = this.cBox.querySelector('.e-selectall');
-        let selected = this.cBox.querySelectorAll('.e-check:not(.e-selectall)').length;
-        let btn = this.dialogObj.btnObj[0];
-        btn.disabled = false;
-        if (cnt === selected) {
-            className = ['e-check'];
-        }
-        else if (selected) {
-            className = ['e-stop'];
-        }
-        else {
-            className = ['e-uncheck'];
-            btn.disabled = true;
-        }
-        this.filterState = !btn.disabled;
-        btn.dataBind();
-        removeClass([elem], ['e-check', 'e-stop', 'e-uncheck']);
-        addClass([elem], className);
-    }
-    createFilterItems(data, isInitial) {
-        let cBoxes = this.parent.createElement('div');
-        let btn = this.dialogObj.btnObj[0];
-        let nullCounter = -1;
-        for (let i = 0; i < data.length; i++) {
-            let val = getValue('ejValue', data[i]);
-            if (val === '' || isNullOrUndefined(val)) {
-                nullCounter = nullCounter + 1;
-            }
-        }
-        this.itemsCnt = nullCounter !== -1 ? data.length - nullCounter : data.length;
-        if (data.length && !this.renderEmpty) {
-            let selectAllValue = this.getLocalizedLabel('SelectAll');
-            let checkBox = this.createCheckbox(selectAllValue, false, { [this.options.field]: selectAllValue });
-            let selectAll = createCboxWithWrap(getUid('cbox'), checkBox, 'e-ftrchk');
-            selectAll.querySelector('.e-frame').classList.add('e-selectall');
-            cBoxes.appendChild(selectAll);
-            let predicate = new Predicate('field', 'equal', this.options.field);
-            if (this.options.foreignKeyValue) {
-                predicate = predicate.or('field', 'equal', this.options.foreignKeyValue);
-            }
-            let isColFiltered = new DataManager(this.options.filteredColumns).executeLocal(new Query().where(predicate)).length;
-            let isRndere;
-            for (let i = 0; i < data.length; i++) {
-                let uid = getUid('cbox');
-                this.values[uid] = getValue('ejValue', data[i]);
-                let value = this.valueFormatter.toView(getValue(this.options.field, data[i]), this.options.formatFn);
-                if ((value === '' || isNullOrUndefined(value))) {
-                    if (isRndere) {
-                        continue;
-                    }
-                    isRndere = true;
-                }
-                let checkbox = this.createCheckbox(value, this.getCheckedState(isColFiltered, this.values[uid]), getValue('dataObj', data[i]));
-                cBoxes.appendChild(createCboxWithWrap(uid, checkbox, 'e-ftrchk'));
-            }
-            this.cBox.innerHTML = '';
-            appendChildren(this.cBox, [].slice.call(cBoxes.children));
-            this.updateIndeterminatenBtn();
-            btn.disabled = false;
-        }
-        else {
-            cBoxes.appendChild(this.parent.createElement('span', { innerHTML: this.getLocalizedLabel('NoResult') }));
-            this.cBox.innerHTML = '';
-            appendChildren(this.cBox, [].slice.call(cBoxes.children));
-            btn.disabled = true;
-        }
-        this.filterState = !btn.disabled;
-        btn.dataBind();
-        let args = { requestType: filterChoiceRequest, dataSource: this.renderEmpty ? [] : data };
-        if (!isBlazor() || this.parent.isJsComponent) {
-            let filterModel = 'filterModel';
-            args[filterModel] = this;
-        }
-        this.parent.notify(cBoxFltrComplete, args);
-        hideSpinner(this.spinner);
-    }
-    getCheckedState(isColFiltered, value) {
-        if (!this.isFiltered || !isColFiltered) {
-            return true;
-        }
-        else {
-            return this.result[value];
-        }
-    }
-    static getDistinct(json, field, column, foreignKeyData$$1) {
-        let len = json.length;
-        let result = [];
-        let value;
-        let ejValue = 'ejValue';
-        let lookup = {};
-        let isForeignKey = column && column.isForeignColumn();
-        while (len--) {
-            value = json[len];
-            value = getValue(field, value); //local remote diff, check with mdu   
-            if (!(value in lookup)) {
-                let obj = {};
-                obj[ejValue] = value;
-                lookup[value] = true;
-                if (isForeignKey) {
-                    let foreignDataObj = getForeignData(column, {}, value, foreignKeyData$$1)[0];
-                    setValue(foreignKeyData, foreignDataObj, json[len]);
-                    value = getValue(column.foreignKeyValue, foreignDataObj);
-                }
-                setValue(field, isNullOrUndefined(value) ? null : value, obj);
-                setValue('dataObj', json[len], obj);
-                result.push(obj);
-            }
-        }
-        return DataUtil.group(DataUtil.sort(result, field, DataUtil.fnAscending), 'ejValue');
-    }
-    static getPredicate(columns) {
-        let cols = DataUtil.distinct(columns, 'field', true) || [];
-        let collection = [];
-        let pred = {};
-        for (let i = 0; i < cols.length; i++) {
-            collection = new DataManager(columns).executeLocal(new Query().where('field', 'equal', cols[i].field));
-            if (collection.length !== 0) {
-                pred[cols[i].field] = CheckBoxFilterBase.generatePredicate(collection);
-            }
-        }
-        return pred;
-    }
-    static generatePredicate(cols) {
-        let len = cols ? cols.length : 0;
-        let predicate;
-        let first;
-        first = CheckBoxFilterBase.updateDateFilter(cols[0]);
-        first.ignoreAccent = !isNullOrUndefined(first.ignoreAccent) ? first.ignoreAccent : false;
-        if (first.type === 'date' || first.type === 'datetime') {
-            predicate = getDatePredicate(first, first.type);
-        }
-        else {
-            predicate = first.ejpredicate ? first.ejpredicate :
-                new Predicate(first.field, first.operator, first.value, !CheckBoxFilterBase.getCaseValue(first), first.ignoreAccent);
-        }
-        for (let p = 1; p < len; p++) {
-            cols[p] = CheckBoxFilterBase.updateDateFilter(cols[p]);
-            if (len > 2 && p > 1 && cols[p].predicate === 'or') {
-                if (cols[p].type === 'date' || cols[p].type === 'datetime') {
-                    predicate.predicates.push(getDatePredicate(cols[p], cols[p].type));
-                }
-                else {
-                    predicate.predicates.push(new Predicate(cols[p].field, cols[p].operator, cols[p].value, !CheckBoxFilterBase.getCaseValue(cols[p]), cols[p].ignoreAccent));
-                }
-            }
-            else {
-                if (cols[p].type === 'date' || cols[p].type === 'datetime') {
-                    predicate = predicate[(cols[p].predicate)](getDatePredicate(cols[p]), cols[p].type, cols[p].ignoreAccent);
-                }
-                else {
-                    /* tslint:disable-next-line:max-line-length */
-                    predicate = cols[p].ejpredicate ?
-                        predicate[cols[p].predicate](cols[p].ejpredicate) :
-                        predicate[(cols[p].predicate)](cols[p].field, cols[p].operator, cols[p].value, !CheckBoxFilterBase.getCaseValue(cols[p]), cols[p].ignoreAccent);
-                }
-            }
-        }
-        return predicate || null;
-    }
-    static getCaseValue(filter) {
-        if (isNullOrUndefined(filter.matchCase)) {
-            return true;
-        }
-        else {
-            return filter.matchCase;
-        }
-    }
-    static updateDateFilter(filter) {
-        if ((filter.type === 'date' || filter.type === 'datetime' || filter.value instanceof Date)) {
-            filter.type = filter.type || 'date';
-        }
-        return filter;
-    }
-}
 
 /**
  * Grid data module is used to generate query and data source.
@@ -7240,6 +5323,7 @@ class ContentFocus {
         let gObj = this.parent;
         let editNextRow = gObj.editSettings.allowNextRowEdit && (gObj.isEdit || gObj.isLastCellPrimaryKey);
         let visibleIndex = gObj.getColumnIndexByField(gObj.getVisibleColumns()[0].field);
+        let cell = this.getTable().rows[rowIndex].cells[cellIndex];
         if (action === 'tab' && editNextRow) {
             rowIndex++;
             let index = (this.getTable().rows[rowIndex].querySelectorAll('.e-indentcell').length +
@@ -7250,7 +5334,7 @@ class ContentFocus {
             rowIndex--;
             cellIndex = gObj.getColumnIndexByField(gObj.getVisibleColumns()[gObj.getVisibleColumns().length - 1].field);
         }
-        return !this.getTable().rows[rowIndex].cells[cellIndex].classList.contains('e-rowcell') ?
+        return !cell.classList.contains('e-rowcell') && !cell.classList.contains('e-headercell') ?
             this.editNextRow(rowIndex, cellIndex, action) : [rowIndex, cellIndex];
     }
     getCurrentFromAction(action, navigator = [0, 0], isPresent, e) {
@@ -7873,6 +5957,7 @@ class Selection {
             return;
         }
         let args = {
+            cancel: false,
             rowIndexes: rowIndexes, row: selectedRow, rowIndex: rowIndex, target: this.actualTarget,
             prevRow: gObj.getRows()[this.prevRowIndex], previousRowIndex: this.prevRowIndex,
             isCtrlPressed: this.isMultiCtrlRequest, isShiftPressed: this.isMultiShiftRequest,
@@ -7952,6 +6037,7 @@ class Selection {
             }
             else {
                 args = {
+                    cancel: false,
                     data: rowObj.data, rowIndex: rowIndex, row: selectedRow, target: this.actualTarget,
                     prevRow: gObj.getRows()[this.prevRowIndex], previousRowIndex: this.prevRowIndex,
                     isCtrlPressed: this.isMultiCtrlRequest, isShiftPressed: this.isMultiShiftRequest,
@@ -8336,7 +6422,6 @@ class Selection {
             if (!isToggle) {
                 this.updateCellSelection(selectedCell, cellIndex.rowIndex, cellIndex.cellIndex);
             }
-            this.updateCellProps(cellIndex, cellIndex);
             if (!isToggle) {
                 let args = {
                     data: selectedData, cellIndex: cellIndex, currentCell: selectedCell,
@@ -8348,6 +6433,7 @@ class Selection {
                     let previousRowCellIndex = 'previousRowCellIndex';
                     args[previousRowCellIndex] = this.prevECIdxs;
                 }
+                this.updateCellProps(cellIndex, cellIndex);
                 this.onActionComplete(args, cellSelected);
             }
         };
@@ -8433,9 +6519,8 @@ class Selection {
                 }
                 this.selectedRowCellIndexes.push({ rowIndex: i, cellIndexes: cellIndexes });
             }
-            this.updateCellProps(stIndex, edIndex);
             let cellSelectedArgs = {
-                data: selectedData, cellIndex: startIndex, currentCell: selectedCell,
+                data: selectedData, cellIndex: edIndex, currentCell: gObj.getCellFromIndex(edIndex.rowIndex, edIndex.cellIndex),
                 selectedRowCellIndex: this.selectedRowCellIndexes,
                 previousRowCell: this.prevECIdxs ? this.getCellIndex(this.prevECIdxs.rowIndex, this.prevECIdxs.cellIndex) : undefined
             };
@@ -8444,6 +6529,7 @@ class Selection {
                 cellSelectedArgs[previousRowCellIndex] = this.prevECIdxs;
             }
             this.onActionComplete(cellSelectedArgs, cellSelected);
+            this.updateCellProps(stIndex, edIndex);
         });
     }
     /**
@@ -8525,6 +6611,7 @@ class Selection {
         let frzCols = gObj.getFrozenColumns();
         let index;
         this.currentIndex = cellIndexes[0].rowIndex;
+        let cncl = 'cancel';
         let selectedData = this.getCurrentBatchRecordChanges()[this.currentIndex];
         if (this.isSingleSel() || !this.isCellType() || this.isEditing()) {
             return;
@@ -8552,7 +6639,7 @@ class Selection {
             foreignKeyData$$1.push(rowObj.cells[frzCols && cellIndexes[0].cellIndex >= frzCols
                 ? cellIndex.cellIndex - frzCols : cellIndex.cellIndex].foreignKeyData);
             let args = {
-                data: selectedData, cellIndex: cellIndexes[0],
+                cancel: false, data: selectedData, cellIndex: cellIndexes[0],
                 isShiftPressed: this.isMultiShiftRequest,
                 currentCell: selectedCell, isCtrlPressed: this.isMultiCtrlRequest,
                 previousRowCell: this.prevECIdxs ?
@@ -8585,9 +6672,11 @@ class Selection {
             }
             else {
                 this.onActionBegin(args, cellSelecting);
+                if (!isNullOrUndefined(args) && args[cncl] === true) {
+                    return;
+                }
                 this.updateCellSelection(selectedCell, cellIndex.rowIndex, cellIndex.cellIndex);
             }
-            this.updateCellProps(cellIndex, cellIndex);
             if (!isUnSelected) {
                 let cellSelectedArgs = {
                     data: selectedData, cellIndex: cellIndexes[0], currentCell: selectedCell,
@@ -8600,6 +6689,7 @@ class Selection {
                 }
                 this.onActionComplete(cellSelectedArgs, cellSelected);
             }
+            this.updateCellProps(cellIndex, cellIndex);
         }
     }
     getColIndex(rowIndex, index) {
@@ -11080,7 +9170,7 @@ class Clipboard {
     }
 }
 
-var __decorate = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
+var __decorate$1 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
     else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
@@ -11092,13 +9182,13 @@ var Grid_1;
  */
 class SortDescriptor extends ChildProperty {
 }
-__decorate([
+__decorate$1([
     Property()
 ], SortDescriptor.prototype, "field", void 0);
-__decorate([
+__decorate$1([
     Property()
 ], SortDescriptor.prototype, "direction", void 0);
-__decorate([
+__decorate$1([
     Property(false)
 ], SortDescriptor.prototype, "isFromGroup", void 0);
 /**
@@ -11106,10 +9196,10 @@ __decorate([
  */
 class SortSettings extends ChildProperty {
 }
-__decorate([
+__decorate$1([
     Collection([], SortDescriptor)
 ], SortSettings.prototype, "columns", void 0);
-__decorate([
+__decorate$1([
     Property(true)
 ], SortSettings.prototype, "allowUnsort", void 0);
 /**
@@ -11117,40 +9207,40 @@ __decorate([
  */
 class Predicate$1 extends ChildProperty {
 }
-__decorate([
+__decorate$1([
     Property()
 ], Predicate$1.prototype, "field", void 0);
-__decorate([
+__decorate$1([
     Property()
 ], Predicate$1.prototype, "operator", void 0);
-__decorate([
+__decorate$1([
     Property()
 ], Predicate$1.prototype, "value", void 0);
-__decorate([
+__decorate$1([
     Property()
 ], Predicate$1.prototype, "matchCase", void 0);
-__decorate([
+__decorate$1([
     Property()
 ], Predicate$1.prototype, "ignoreAccent", void 0);
-__decorate([
+__decorate$1([
     Property()
 ], Predicate$1.prototype, "predicate", void 0);
-__decorate([
+__decorate$1([
     Property({})
 ], Predicate$1.prototype, "actualFilterValue", void 0);
-__decorate([
+__decorate$1([
     Property({})
 ], Predicate$1.prototype, "actualOperator", void 0);
-__decorate([
+__decorate$1([
     Property()
 ], Predicate$1.prototype, "type", void 0);
-__decorate([
+__decorate$1([
     Property()
 ], Predicate$1.prototype, "ejpredicate", void 0);
-__decorate([
+__decorate$1([
     Property()
 ], Predicate$1.prototype, "uid", void 0);
-__decorate([
+__decorate$1([
     Property()
 ], Predicate$1.prototype, "isForeignKey", void 0);
 /**
@@ -11158,28 +9248,28 @@ __decorate([
  */
 class FilterSettings extends ChildProperty {
 }
-__decorate([
+__decorate$1([
     Collection([], Predicate$1)
 ], FilterSettings.prototype, "columns", void 0);
-__decorate([
+__decorate$1([
     Property('FilterBar')
 ], FilterSettings.prototype, "type", void 0);
-__decorate([
+__decorate$1([
     Property()
 ], FilterSettings.prototype, "mode", void 0);
-__decorate([
+__decorate$1([
     Property(true)
 ], FilterSettings.prototype, "showFilterBarStatus", void 0);
-__decorate([
+__decorate$1([
     Property(1500)
 ], FilterSettings.prototype, "immediateModeDelay", void 0);
-__decorate([
+__decorate$1([
     Property()
 ], FilterSettings.prototype, "operators", void 0);
-__decorate([
+__decorate$1([
     Property(false)
 ], FilterSettings.prototype, "ignoreAccent", void 0);
-__decorate([
+__decorate$1([
     Property(false)
 ], FilterSettings.prototype, "enableCaseSensitivity", void 0);
 /**
@@ -11187,28 +9277,28 @@ __decorate([
  */
 class SelectionSettings extends ChildProperty {
 }
-__decorate([
+__decorate$1([
     Property('Row')
 ], SelectionSettings.prototype, "mode", void 0);
-__decorate([
+__decorate$1([
     Property('Flow')
 ], SelectionSettings.prototype, "cellSelectionMode", void 0);
-__decorate([
+__decorate$1([
     Property('Single')
 ], SelectionSettings.prototype, "type", void 0);
-__decorate([
+__decorate$1([
     Property(false)
 ], SelectionSettings.prototype, "checkboxOnly", void 0);
-__decorate([
+__decorate$1([
     Property(false)
 ], SelectionSettings.prototype, "persistSelection", void 0);
-__decorate([
+__decorate$1([
     Property('Default')
 ], SelectionSettings.prototype, "checkboxMode", void 0);
-__decorate([
+__decorate$1([
     Property(false)
 ], SelectionSettings.prototype, "enableSimpleMultiRowSelection", void 0);
-__decorate([
+__decorate$1([
     Property(true)
 ], SelectionSettings.prototype, "enableToggle", void 0);
 /**
@@ -11216,19 +9306,19 @@ __decorate([
  */
 class SearchSettings extends ChildProperty {
 }
-__decorate([
+__decorate$1([
     Property([])
 ], SearchSettings.prototype, "fields", void 0);
-__decorate([
+__decorate$1([
     Property('')
 ], SearchSettings.prototype, "key", void 0);
-__decorate([
+__decorate$1([
     Property('contains')
 ], SearchSettings.prototype, "operator", void 0);
-__decorate([
+__decorate$1([
     Property(true)
 ], SearchSettings.prototype, "ignoreCase", void 0);
-__decorate([
+__decorate$1([
     Property(false)
 ], SearchSettings.prototype, "ignoreAccent", void 0);
 /**
@@ -11236,7 +9326,7 @@ __decorate([
  */
 class RowDropSettings extends ChildProperty {
 }
-__decorate([
+__decorate$1([
     Property()
 ], RowDropSettings.prototype, "targetID", void 0);
 /**
@@ -11244,7 +9334,7 @@ __decorate([
  */
 class TextWrapSettings extends ChildProperty {
 }
-__decorate([
+__decorate$1([
     Property('Both')
 ], TextWrapSettings.prototype, "wrapMode", void 0);
 /**
@@ -11252,25 +9342,25 @@ __decorate([
  */
 class GroupSettings extends ChildProperty {
 }
-__decorate([
+__decorate$1([
     Property(true)
 ], GroupSettings.prototype, "showDropArea", void 0);
-__decorate([
+__decorate$1([
     Property(false)
 ], GroupSettings.prototype, "showToggleButton", void 0);
-__decorate([
+__decorate$1([
     Property(false)
 ], GroupSettings.prototype, "showGroupedColumn", void 0);
-__decorate([
+__decorate$1([
     Property(true)
 ], GroupSettings.prototype, "showUngroupButton", void 0);
-__decorate([
+__decorate$1([
     Property(false)
 ], GroupSettings.prototype, "disablePageWiseAggregates", void 0);
-__decorate([
+__decorate$1([
     Property([])
 ], GroupSettings.prototype, "columns", void 0);
-__decorate([
+__decorate$1([
     Property()
 ], GroupSettings.prototype, "captionTemplate", void 0);
 /**
@@ -11278,37 +9368,37 @@ __decorate([
  */
 class EditSettings extends ChildProperty {
 }
-__decorate([
+__decorate$1([
     Property(false)
 ], EditSettings.prototype, "allowAdding", void 0);
-__decorate([
+__decorate$1([
     Property(false)
 ], EditSettings.prototype, "allowEditing", void 0);
-__decorate([
+__decorate$1([
     Property(false)
 ], EditSettings.prototype, "allowDeleting", void 0);
-__decorate([
+__decorate$1([
     Property('Normal')
 ], EditSettings.prototype, "mode", void 0);
-__decorate([
+__decorate$1([
     Property(true)
 ], EditSettings.prototype, "allowEditOnDblClick", void 0);
-__decorate([
+__decorate$1([
     Property(true)
 ], EditSettings.prototype, "showConfirmDialog", void 0);
-__decorate([
+__decorate$1([
     Property(false)
 ], EditSettings.prototype, "showDeleteConfirmDialog", void 0);
-__decorate([
+__decorate$1([
     Property('')
 ], EditSettings.prototype, "template", void 0);
-__decorate([
+__decorate$1([
     Property('Top')
 ], EditSettings.prototype, "newRowPosition", void 0);
-__decorate([
+__decorate$1([
     Property({})
 ], EditSettings.prototype, "dialog", void 0);
-__decorate([
+__decorate$1([
     Property(false)
 ], EditSettings.prototype, "allowNextRowEdit", void 0);
 /**
@@ -13982,10 +12072,16 @@ let Grid = Grid_1 = class Grid extends Component {
      * Refreshes the Grid column changes.
      */
     refreshColumns() {
-        this.isPreventScrollEvent = true;
-        this.updateColumnObject();
-        this.checkLockColumns(this.getColumns());
-        this.refresh();
+        let fCnt = this.getContent().querySelector('.e-frozencontent');
+        if ((this.getFrozenColumns() === 1 && !fCnt) || (this.getFrozenColumns() === 0 && fCnt)) {
+            this.freezeRefresh();
+        }
+        else {
+            this.isPreventScrollEvent = true;
+            this.updateColumnObject();
+            this.checkLockColumns(this.getColumns());
+            this.refresh();
+        }
     }
     /**
      * Export Grid data to Excel file(.xlsx).
@@ -14306,363 +12402,3002 @@ let Grid = Grid_1 = class Grid extends Component {
         }
     }
 };
-__decorate([
+__decorate$1([
     Property([])
 ], Grid.prototype, "columns", void 0);
-__decorate([
+__decorate$1([
     Property(true)
 ], Grid.prototype, "enableAltRow", void 0);
-__decorate([
+__decorate$1([
     Property(true)
 ], Grid.prototype, "enableHover", void 0);
-__decorate([
+__decorate$1([
     Property(false)
 ], Grid.prototype, "enableAutoFill", void 0);
-__decorate([
+__decorate$1([
     Property(true)
 ], Grid.prototype, "allowKeyboard", void 0);
-__decorate([
+__decorate$1([
     Property(false)
 ], Grid.prototype, "allowTextWrap", void 0);
-__decorate([
+__decorate$1([
     Complex({}, TextWrapSettings)
 ], Grid.prototype, "textWrapSettings", void 0);
-__decorate([
+__decorate$1([
     Property(false)
 ], Grid.prototype, "allowPaging", void 0);
-__decorate([
+__decorate$1([
     Complex({}, PageSettings)
 ], Grid.prototype, "pageSettings", void 0);
-__decorate([
+__decorate$1([
     Property(false)
 ], Grid.prototype, "enableVirtualization", void 0);
-__decorate([
+__decorate$1([
     Property(false)
 ], Grid.prototype, "enableColumnVirtualization", void 0);
-__decorate([
+__decorate$1([
     Complex({}, SearchSettings)
 ], Grid.prototype, "searchSettings", void 0);
-__decorate([
+__decorate$1([
     Property(false)
 ], Grid.prototype, "allowSorting", void 0);
-__decorate([
+__decorate$1([
     Property(true)
 ], Grid.prototype, "allowMultiSorting", void 0);
-__decorate([
+__decorate$1([
     Property(false)
 ], Grid.prototype, "allowExcelExport", void 0);
-__decorate([
+__decorate$1([
     Property(false)
 ], Grid.prototype, "allowPdfExport", void 0);
-__decorate([
+__decorate$1([
     Complex({}, SortSettings)
 ], Grid.prototype, "sortSettings", void 0);
-__decorate([
+__decorate$1([
     Property(true)
 ], Grid.prototype, "allowSelection", void 0);
-__decorate([
+__decorate$1([
     Property(-1)
 ], Grid.prototype, "selectedRowIndex", void 0);
-__decorate([
+__decorate$1([
     Complex({}, SelectionSettings)
 ], Grid.prototype, "selectionSettings", void 0);
-__decorate([
+__decorate$1([
     Property(false)
 ], Grid.prototype, "allowFiltering", void 0);
-__decorate([
+__decorate$1([
     Property(false)
 ], Grid.prototype, "allowReordering", void 0);
-__decorate([
+__decorate$1([
     Property(false)
 ], Grid.prototype, "allowResizing", void 0);
-__decorate([
+__decorate$1([
     Property(false)
 ], Grid.prototype, "allowRowDragAndDrop", void 0);
-__decorate([
+__decorate$1([
     Complex({}, RowDropSettings)
 ], Grid.prototype, "rowDropSettings", void 0);
-__decorate([
+__decorate$1([
     Complex({}, FilterSettings)
 ], Grid.prototype, "filterSettings", void 0);
-__decorate([
+__decorate$1([
     Property(false)
 ], Grid.prototype, "allowGrouping", void 0);
-__decorate([
+__decorate$1([
     Property(false)
 ], Grid.prototype, "showColumnMenu", void 0);
-__decorate([
+__decorate$1([
     Complex({}, GroupSettings)
 ], Grid.prototype, "groupSettings", void 0);
-__decorate([
+__decorate$1([
     Complex({}, EditSettings)
 ], Grid.prototype, "editSettings", void 0);
-__decorate([
+__decorate$1([
     Collection([], AggregateRow)
 ], Grid.prototype, "aggregates", void 0);
-__decorate([
+__decorate$1([
     Property(false)
 ], Grid.prototype, "showColumnChooser", void 0);
-__decorate([
+__decorate$1([
     Property('auto')
 ], Grid.prototype, "height", void 0);
-__decorate([
+__decorate$1([
     Property('auto')
 ], Grid.prototype, "width", void 0);
-__decorate([
+__decorate$1([
     Property('Default')
 ], Grid.prototype, "gridLines", void 0);
-__decorate([
+__decorate$1([
     Property()
 ], Grid.prototype, "rowTemplate", void 0);
-__decorate([
+__decorate$1([
     Property()
 ], Grid.prototype, "detailTemplate", void 0);
-__decorate([
+__decorate$1([
     Property()
 ], Grid.prototype, "childGrid", void 0);
-__decorate([
+__decorate$1([
     Property()
 ], Grid.prototype, "queryString", void 0);
-__decorate([
+__decorate$1([
     Property('AllPages')
 ], Grid.prototype, "printMode", void 0);
-__decorate([
+__decorate$1([
     Property('Expanded')
 ], Grid.prototype, "hierarchyPrintMode", void 0);
-__decorate([
+__decorate$1([
     Property([])
 ], Grid.prototype, "dataSource", void 0);
-__decorate([
+__decorate$1([
     Property(null)
 ], Grid.prototype, "rowHeight", void 0);
-__decorate([
+__decorate$1([
     Property()
 ], Grid.prototype, "query", void 0);
-__decorate([
+__decorate$1([
     Property('USD')
 ], Grid.prototype, "currencyCode", void 0);
-__decorate([
+__decorate$1([
     Property()
 ], Grid.prototype, "toolbar", void 0);
-__decorate([
+__decorate$1([
     Property()
 ], Grid.prototype, "contextMenuItems", void 0);
-__decorate([
+__decorate$1([
     Property()
 ], Grid.prototype, "columnMenuItems", void 0);
-__decorate([
+__decorate$1([
     Property()
 ], Grid.prototype, "toolbarTemplate", void 0);
-__decorate([
+__decorate$1([
     Property()
 ], Grid.prototype, "pagerTemplate", void 0);
-__decorate([
+__decorate$1([
     Property(0)
 ], Grid.prototype, "frozenRows", void 0);
-__decorate([
+__decorate$1([
     Property(0)
 ], Grid.prototype, "frozenColumns", void 0);
-__decorate([
+__decorate$1([
     Property('All')
 ], Grid.prototype, "columnQueryMode", void 0);
-__decorate([
+__decorate$1([
     Event()
 ], Grid.prototype, "created", void 0);
-__decorate([
+__decorate$1([
     Event()
 ], Grid.prototype, "destroyed", void 0);
-__decorate([
+__decorate$1([
     Event()
 ], Grid.prototype, "load", void 0);
-__decorate([
+__decorate$1([
     Event()
 ], Grid.prototype, "rowDataBound", void 0);
-__decorate([
+__decorate$1([
     Event()
 ], Grid.prototype, "queryCellInfo", void 0);
-__decorate([
+__decorate$1([
     Event()
 ], Grid.prototype, "headerCellInfo", void 0);
-__decorate([
+__decorate$1([
     Event()
 ], Grid.prototype, "actionBegin", void 0);
-__decorate([
+__decorate$1([
     Event()
 ], Grid.prototype, "actionComplete", void 0);
-__decorate([
+__decorate$1([
     Event()
 ], Grid.prototype, "actionFailure", void 0);
-__decorate([
+__decorate$1([
     Event()
 ], Grid.prototype, "dataBound", void 0);
-__decorate([
+__decorate$1([
     Event()
 ], Grid.prototype, "recordDoubleClick", void 0);
-__decorate([
+__decorate$1([
     Event()
 ], Grid.prototype, "rowSelecting", void 0);
-__decorate([
+__decorate$1([
     Event()
 ], Grid.prototype, "rowSelected", void 0);
-__decorate([
+__decorate$1([
     Event()
 ], Grid.prototype, "rowDeselecting", void 0);
-__decorate([
+__decorate$1([
     Event()
 ], Grid.prototype, "rowDeselected", void 0);
-__decorate([
+__decorate$1([
     Event()
 ], Grid.prototype, "cellSelecting", void 0);
-__decorate([
+__decorate$1([
     Event()
 ], Grid.prototype, "cellSelected", void 0);
-__decorate([
+__decorate$1([
     Event()
 ], Grid.prototype, "cellDeselecting", void 0);
-__decorate([
+__decorate$1([
     Event()
 ], Grid.prototype, "cellDeselected", void 0);
-__decorate([
+__decorate$1([
     Event()
 ], Grid.prototype, "columnDragStart", void 0);
-__decorate([
+__decorate$1([
     Event()
 ], Grid.prototype, "columnDrag", void 0);
-__decorate([
+__decorate$1([
     Event()
 ], Grid.prototype, "columnDrop", void 0);
-__decorate([
+__decorate$1([
     Event()
 ], Grid.prototype, "printComplete", void 0);
-__decorate([
+__decorate$1([
     Event()
 ], Grid.prototype, "beforePrint", void 0);
-__decorate([
+__decorate$1([
     Event()
 ], Grid.prototype, "pdfQueryCellInfo", void 0);
-__decorate([
+__decorate$1([
     Event()
 ], Grid.prototype, "pdfHeaderQueryCellInfo", void 0);
-__decorate([
+__decorate$1([
     Event()
 ], Grid.prototype, "exportDetailDataBound", void 0);
-__decorate([
+__decorate$1([
     Event()
 ], Grid.prototype, "excelQueryCellInfo", void 0);
-__decorate([
+__decorate$1([
     Event()
 ], Grid.prototype, "excelHeaderQueryCellInfo", void 0);
-__decorate([
+__decorate$1([
     Event()
 ], Grid.prototype, "beforeExcelExport", void 0);
-__decorate([
+__decorate$1([
     Event()
 ], Grid.prototype, "excelExportComplete", void 0);
-__decorate([
+__decorate$1([
     Event()
 ], Grid.prototype, "beforePdfExport", void 0);
-__decorate([
+__decorate$1([
     Event()
 ], Grid.prototype, "pdfExportComplete", void 0);
-__decorate([
+__decorate$1([
     Event()
 ], Grid.prototype, "rowDragStartHelper", void 0);
-__decorate([
+__decorate$1([
     Event()
 ], Grid.prototype, "detailDataBound", void 0);
-__decorate([
+__decorate$1([
     Event()
 ], Grid.prototype, "rowDragStart", void 0);
-__decorate([
+__decorate$1([
     Event()
 ], Grid.prototype, "rowDrag", void 0);
-__decorate([
+__decorate$1([
     Event()
 ], Grid.prototype, "rowDrop", void 0);
-__decorate([
+__decorate$1([
     Event()
 ], Grid.prototype, "toolbarClick", void 0);
-__decorate([
+__decorate$1([
     Event()
 ], Grid.prototype, "beforeOpenColumnChooser", void 0);
-__decorate([
+__decorate$1([
     Event()
 ], Grid.prototype, "batchAdd", void 0);
-__decorate([
+__decorate$1([
     Event()
 ], Grid.prototype, "batchDelete", void 0);
-__decorate([
+__decorate$1([
     Event()
 ], Grid.prototype, "batchCancel", void 0);
-__decorate([
+__decorate$1([
     Event()
 ], Grid.prototype, "beforeBatchAdd", void 0);
-__decorate([
+__decorate$1([
     Event()
 ], Grid.prototype, "beforeBatchDelete", void 0);
-__decorate([
+__decorate$1([
     Event()
 ], Grid.prototype, "beforeBatchSave", void 0);
-__decorate([
+__decorate$1([
     Event()
 ], Grid.prototype, "beginEdit", void 0);
-__decorate([
+__decorate$1([
     Event()
 ], Grid.prototype, "commandClick", void 0);
-__decorate([
+__decorate$1([
     Event()
 ], Grid.prototype, "cellEdit", void 0);
-__decorate([
+__decorate$1([
     Event()
 ], Grid.prototype, "cellSave", void 0);
-__decorate([
+__decorate$1([
     Event()
 ], Grid.prototype, "cellSaved", void 0);
-__decorate([
+__decorate$1([
     Event()
 ], Grid.prototype, "resizeStart", void 0);
-__decorate([
+__decorate$1([
     Event()
 ], Grid.prototype, "resizing", void 0);
-__decorate([
+__decorate$1([
     Event()
 ], Grid.prototype, "resizeStop", void 0);
-__decorate([
+__decorate$1([
     Event()
 ], Grid.prototype, "keyPressed", void 0);
-__decorate([
+__decorate$1([
     Event()
 ], Grid.prototype, "beforeDataBound", void 0);
-__decorate([
+__decorate$1([
     Event()
 ], Grid.prototype, "contextMenuOpen", void 0);
-__decorate([
+__decorate$1([
     Event()
 ], Grid.prototype, "contextMenuClick", void 0);
-__decorate([
+__decorate$1([
     Event()
 ], Grid.prototype, "columnMenuOpen", void 0);
-__decorate([
+__decorate$1([
     Event()
 ], Grid.prototype, "columnMenuClick", void 0);
-__decorate([
+__decorate$1([
     Event()
 ], Grid.prototype, "checkBoxChange", void 0);
-__decorate([
+__decorate$1([
     Event()
 ], Grid.prototype, "beforeCopy", void 0);
-__decorate([
+__decorate$1([
     Event()
 ], Grid.prototype, "beforePaste", void 0);
-__decorate([
+__decorate$1([
     Event()
 ], Grid.prototype, "dataStateChange", void 0);
-__decorate([
+__decorate$1([
     Event()
 ], Grid.prototype, "dataSourceChanged", void 0);
-Grid = Grid_1 = __decorate([
+Grid = Grid_1 = __decorate$1([
     NotifyPropertyChanges
 ], Grid);
+
+/**
+ * @hidden
+ */
+function getCloneProperties() {
+    return ['aggregates', 'allowGrouping', 'allowFiltering', 'allowMultiSorting', 'allowReordering', 'allowSorting',
+        'allowTextWrap', 'childGrid', 'columns', 'currentViewData', 'dataSource', 'detailTemplate', 'enableAltRow',
+        'enableColumnVirtualization', 'filterSettings', 'gridLines',
+        'groupSettings', 'height', 'locale', 'pageSettings', 'printMode', 'query', 'queryString', 'enableRtl',
+        'rowHeight', 'rowTemplate', 'sortSettings', 'textWrapSettings', 'allowPaging', 'hierarchyPrintMode', 'searchSettings'];
+}
+/**
+ *
+ * The `Print` module is used to handle print action.
+ */
+class Print {
+    /**
+     * Constructor for the Grid print module
+     * @hidden
+     */
+    constructor(parent, scrollModule) {
+        this.isAsyncPrint = false;
+        this.defered = new Deferred();
+        this.parent = parent;
+        if (this.parent.isDestroyed) {
+            return;
+        }
+        this.parent.on(contentReady, this.isContentReady(), this);
+        this.parent.addEventListener(actionBegin, this.actionBegin.bind(this));
+        this.parent.on(onEmpty, this.onEmpty.bind(this));
+        this.parent.on(hierarchyPrint, this.hierarchyPrint, this);
+        this.scrollModule = scrollModule;
+    }
+    isContentReady() {
+        if (this.isPrintGrid() && (this.parent.hierarchyPrintMode === 'None' || !this.parent.childGrid)) {
+            return this.contentReady;
+        }
+        return () => {
+            this.defered.promise.then(() => {
+                this.contentReady();
+            });
+            if (this.isPrintGrid()) {
+                this.hierarchyPrint();
+            }
+        };
+    }
+    hierarchyPrint() {
+        this.removeColGroup(this.parent);
+        let printGridObj = window.printGridObj;
+        if (printGridObj && !printGridObj.element.querySelector('[aria-busy=true')) {
+            printGridObj.printModule.defered.resolve();
+        }
+    }
+    /**
+     * By default, prints all the Grid pages and hides the pager.
+     * > You can customize print options using the
+     * [`printMode`](grid/#printmode-string/).
+     * @return {void}
+     */
+    print() {
+        this.renderPrintGrid();
+        this.printWind = window.open('', 'print', 'height=' + window.outerHeight + ',width=' + window.outerWidth + ',tabbar=no');
+        this.printWind.moveTo(0, 0);
+        this.printWind.resizeTo(screen.availWidth, screen.availHeight);
+    }
+    onEmpty() {
+        if (this.isPrintGrid()) {
+            this.contentReady();
+        }
+    }
+    actionBegin() {
+        if (this.isPrintGrid()) {
+            this.isAsyncPrint = true;
+        }
+    }
+    renderPrintGrid() {
+        let gObj = this.parent;
+        let element = createElement('div', {
+            id: this.parent.element.id + '_print', className: gObj.element.className + ' e-print-grid'
+        });
+        document.body.appendChild(element);
+        let printGrid = new Grid(getPrintGridModel(gObj, gObj.hierarchyPrintMode));
+        printGrid.query = gObj.getQuery().clone();
+        window.printGridObj = printGrid;
+        printGrid.isPrinting = true;
+        let modules = printGrid.getInjectedModules();
+        let injectedModues = gObj.getInjectedModules();
+        if (!modules || modules.length !== injectedModues.length) {
+            printGrid.setInjectedModules(injectedModues);
+        }
+        gObj.notify(printGridInit, { element: element, printgrid: printGrid });
+        this.parent.log('exporting_begin', this.getModuleName());
+        printGrid.appendTo(element);
+        printGrid.registeredTemplate = this.parent.registeredTemplate;
+        printGrid.trigger = gObj.trigger;
+    }
+    contentReady() {
+        if (this.isPrintGrid()) {
+            let gObj = this.parent;
+            if (this.isAsyncPrint) {
+                this.printGrid();
+                return;
+            }
+            let args = {
+                requestType: 'print',
+                element: gObj.element,
+                selectedRows: gObj.getContentTable().querySelectorAll('tr[aria-selected="true"]'),
+                cancel: false,
+                hierarchyPrintMode: gObj.hierarchyPrintMode
+            };
+            if (!this.isAsyncPrint) {
+                gObj.trigger(beforePrint, args);
+            }
+            if (args.cancel) {
+                detach(gObj.element);
+                return;
+            }
+            if (!this.isAsyncPrint) {
+                this.printGrid();
+            }
+        }
+    }
+    printGrid() {
+        let gObj = this.parent;
+        // Height adjustment on print grid
+        if (gObj.height !== 'auto') { // if scroller enabled
+            let cssProps = this.scrollModule.getCssProperties();
+            let contentDiv = gObj.element.querySelector('.e-content');
+            let headerDiv = gObj.element.querySelector('.e-gridheader');
+            contentDiv.style.height = 'auto';
+            contentDiv.style.overflowY = 'auto';
+            headerDiv.style[cssProps.padding] = '';
+            headerDiv.firstElementChild.style[cssProps.border] = '';
+        }
+        // Grid alignment adjustment on grouping
+        if (gObj.allowGrouping) {
+            if (!gObj.groupSettings.columns.length) {
+                gObj.element.querySelector('.e-groupdroparea').style.display = 'none';
+            }
+            else {
+                this.removeColGroup(gObj);
+            }
+        }
+        // hide horizontal scroll
+        for (let element of [].slice.call(gObj.element.querySelectorAll('.e-content'))) {
+            element.style.overflowX = 'hidden';
+        }
+        // Hide the waiting popup
+        let waitingPop = gObj.element.querySelectorAll('.e-spin-show');
+        for (let element of [].slice.call(waitingPop)) {
+            classList(element, ['e-spin-hide'], ['e-spin-show']);
+        }
+        this.printGridElement(gObj);
+        gObj.isPrinting = false;
+        delete window.printGridObj;
+        let args = {
+            element: gObj.element
+        };
+        gObj.trigger(printComplete, args);
+        this.parent.log('exporting_complete', this.getModuleName());
+    }
+    printGridElement(gObj) {
+        classList(gObj.element, ['e-print-grid-layout'], ['e-print-grid']);
+        if (gObj.isPrinting) {
+            detach(gObj.element);
+        }
+        this.printWind = print(gObj.element, this.printWind);
+    }
+    removeColGroup(gObj) {
+        let depth = gObj.groupSettings.columns.length;
+        let element = gObj.element;
+        let id = '#' + gObj.element.id;
+        if (!depth) {
+            return;
+        }
+        let groupCaption = element.querySelectorAll(`${id}captioncell.e-groupcaption`);
+        let colSpan = groupCaption[depth - 1].getAttribute('colspan');
+        for (let i = 0; i < groupCaption.length; i++) {
+            groupCaption[i].setAttribute('colspan', colSpan);
+        }
+        let colGroups = element.querySelectorAll(`colgroup${id}colGroup`);
+        let contentColGroups = element.querySelector('.e-content').querySelectorAll('colgroup');
+        this.hideColGroup(colGroups, depth);
+        this.hideColGroup(contentColGroups, depth);
+    }
+    hideColGroup(colGroups, depth) {
+        for (let i = 0; i < colGroups.length; i++) {
+            for (let j = 0; j < depth; j++) {
+                colGroups[i].childNodes[j].style.display = 'none';
+            }
+        }
+    }
+    isPrintGrid() {
+        return this.parent.element.id.indexOf('_print') > 0 && this.parent.isPrinting;
+    }
+    /**
+     * To destroy the print
+     * @return {void}
+     * @hidden
+     */
+    destroy() {
+        if (this.parent.isDestroyed) {
+            return;
+        }
+        this.parent.off(contentReady, this.contentReady.bind(this));
+        this.parent.removeEventListener(actionBegin, this.actionBegin.bind(this));
+        this.parent.off(onEmpty, this.onEmpty.bind(this));
+        this.parent.off(hierarchyPrint, this.hierarchyPrint);
+    }
+    /**
+     * For internal use only - Get the module name.
+     * @private
+     */
+    getModuleName() {
+        return 'print';
+    }
+}
+Print.printGridProp = [...getCloneProperties(), beforePrint, printComplete];
+
+//https://typescript.codeplex.com/discussions/401501
+/**
+ * Function to check whether target object implement specific interface
+ * @param  {Object} target
+ * @param  {string} checkFor
+ * @returns no
+ * @hidden
+ */
+function doesImplementInterface(target, checkFor) {
+    /* tslint:disable:no-any */
+    return target.prototype && checkFor in target.prototype;
+}
+/**
+ * Function to get value from provided data
+ * @param  {string} field
+ * @param  {Object} data
+ * @param  {IColumn} column
+ * @hidden
+ */
+function valueAccessor(field, data, column) {
+    return (isNullOrUndefined(field) || field === '') ? '' : DataUtil.getObject(field, data);
+}
+/**
+ * The function used to update Dom using requestAnimationFrame.
+ * @param  {Function} fn - Function that contains the actual action
+ * @return {Promise<T>}
+ * @hidden
+ */
+function getUpdateUsingRaf(updateFunction, callBack) {
+    requestAnimationFrame(() => {
+        try {
+            callBack(null, updateFunction());
+        }
+        catch (e) {
+            callBack(e);
+        }
+    });
+}
+/**
+ * @hidden
+ */
+function updatecloneRow(grid) {
+    let nRows = [];
+    let actualRows = grid.vRows;
+    for (let i = 0; i < actualRows.length; i++) {
+        if (actualRows[i].isDataRow) {
+            nRows.push(actualRows[i]);
+        }
+        else if (!actualRows[i].isDataRow) {
+            nRows.push(actualRows[i]);
+            if (!actualRows[i].isExpand && actualRows[i].isCaptionRow) {
+                i += getCollapsedRowsCount(actualRows[i], grid);
+            }
+        }
+    }
+    grid.vcRows = nRows;
+}
+/**
+ * @hidden
+ */
+let count = 0;
+function getCollapsedRowsCount(val, grid) {
+    count = 0;
+    let gSummary = 'gSummary';
+    let total = 'count';
+    let gLen = grid.groupSettings.columns.length;
+    let records = 'records';
+    let items = 'items';
+    let value = val[gSummary];
+    let dataRowCnt = 0;
+    let agrCnt = 'aggregatesCount';
+    if (value === val.data[total]) {
+        if (grid.groupSettings.columns.length && !isNullOrUndefined(val[agrCnt])) {
+            if (grid.groupSettings.columns.length !== 1 && val[agrCnt]) {
+                count += (val.indent !== 0 && (value) < 2) ? (val[gSummary] * ((gLen - val.indent) + (gLen - val.indent) * val[agrCnt])) :
+                    (val[gSummary] * ((gLen - val.indent) + (gLen - val.indent - 1) * val[agrCnt])) + val[agrCnt];
+            }
+            else if (val[agrCnt] && grid.groupSettings.columns.length === 1) {
+                count += (val[gSummary] * (gLen - val.indent)) + val[agrCnt];
+            }
+        }
+        else if (grid.groupSettings.columns.length) {
+            if (grid.groupSettings.columns.length !== 1) {
+                count += val[gSummary] * (grid.groupSettings.columns.length - val.indent);
+            }
+            else {
+                count += val[gSummary];
+            }
+        }
+        return count;
+    }
+    else {
+        for (let i = 0, len = val.data[items].length; i < len; i++) {
+            let gLevel = val.data[items][i];
+            count += gLevel[items].length + ((gLen !== grid.columns.length) &&
+                !isNullOrUndefined(gLevel[items][records]) ? gLevel[items][records].length : 0);
+            dataRowCnt += (!isNullOrUndefined(gLevel[items][records]) && !isNullOrUndefined(val[agrCnt])) ? gLevel[items][records].length :
+                gLevel[items].length;
+            if (gLevel[items].GroupGuid && gLevel[items].childLevels !== 0) {
+                recursive(gLevel);
+            }
+        }
+        count += val.data[items].length;
+        if (!isNullOrUndefined(val[agrCnt])) {
+            if (val[agrCnt] && count && dataRowCnt !== 0) {
+                count += ((count - dataRowCnt) * val[agrCnt]) + val[agrCnt];
+            }
+        }
+    }
+    return count;
+}
+/**
+ * @hidden
+ */
+function recursive(row) {
+    let items = 'items';
+    let rCount = 'count';
+    for (let j = 0, length = row[items].length; j < length; j++) {
+        let nLevel = row[items][j];
+        count += nLevel[rCount];
+        if (nLevel[items].childLevels !== 0) {
+            recursive(nLevel);
+        }
+    }
+}
+/**
+ * @hidden
+ */
+function iterateArrayOrObject(collection, predicate) {
+    let result = [];
+    for (let i = 0, len = collection.length; i < len; i++) {
+        let pred = predicate(collection[i], i);
+        if (!isNullOrUndefined(pred)) {
+            result.push(pred);
+        }
+    }
+    return result;
+}
+/** @hidden */
+function iterateExtend(array) {
+    let obj = [];
+    for (let i = 0; i < array.length; i++) {
+        obj.push(extend({}, getActualProperties(array[i]), {}, true));
+    }
+    return obj;
+}
+/** @hidden */
+function templateCompiler(template) {
+    if (template) {
+        try {
+            if (document.querySelectorAll(template).length) {
+                return compile(document.querySelector(template).innerHTML.trim());
+            }
+        }
+        catch (e) {
+            return compile(template);
+        }
+    }
+    return undefined;
+}
+/** @hidden */
+function setStyleAndAttributes(node, customAttributes) {
+    let copyAttr = {};
+    let literals = ['style', 'class'];
+    //Dont touch the original object - make a copy
+    extend(copyAttr, customAttributes, {});
+    if ('style' in copyAttr) {
+        setStyleAttribute(node, copyAttr[literals[0]]);
+        delete copyAttr[literals[0]];
+    }
+    if ('class' in copyAttr) {
+        addClass([node], copyAttr[literals[1]]);
+        delete copyAttr[literals[1]];
+    }
+    attributes(node, copyAttr);
+}
+/** @hidden */
+function extend$1(copied, first, second, exclude) {
+    let moved = extend(copied, first, second);
+    Object.keys(moved).forEach((value, index) => {
+        if (exclude && exclude.indexOf(value) !== -1) {
+            delete moved[value];
+        }
+    });
+    return moved;
+}
+/** @hidden */
+function setColumnIndex(columnModel, ind = 0) {
+    for (let i = 0, len = columnModel.length; i < len; i++) {
+        if (columnModel[i].columns) {
+            columnModel[i].index = isNullOrUndefined(columnModel[i].index) ? ind : columnModel[i].index;
+            ind++;
+            ind = setColumnIndex(columnModel[i].columns, ind);
+        }
+        else {
+            columnModel[i].index = isNullOrUndefined(columnModel[i].index) ? ind : columnModel[i].index;
+            ind++;
+        }
+    }
+    return ind;
+}
+/** @hidden */
+function prepareColumns(columns, autoWidth) {
+    for (let c = 0, len = columns.length; c < len; c++) {
+        let column;
+        if (typeof columns[c] === 'string') {
+            column = new Column({ field: columns[c] });
+        }
+        else if (!(columns[c] instanceof Column)) {
+            if (!columns[c].columns) {
+                column = new Column(columns[c]);
+            }
+            else {
+                columns[c].columns = prepareColumns(columns[c].columns);
+                column = new Column(columns[c]);
+            }
+        }
+        else {
+            column = columns[c];
+        }
+        column.headerText = isNullOrUndefined(column.headerText) ? column.foreignKeyValue || column.field || '' : column.headerText;
+        column.foreignKeyField = column.foreignKeyField || column.field;
+        column.valueAccessor = (typeof column.valueAccessor === 'string' ? getValue(column.valueAccessor, window)
+            : column.valueAccessor) || valueAccessor;
+        column.width = autoWidth && isNullOrUndefined(column.width) ? 200 : column.width;
+        if (isNullOrUndefined(column.visible)) {
+            column.visible = true;
+        }
+        columns[c] = column;
+    }
+    return columns;
+}
+/** @hidden */
+function setCssInGridPopUp(popUp, e, className) {
+    let popUpSpan = popUp.querySelector('span');
+    let position = popUp.parentElement.getBoundingClientRect();
+    let targetPosition = e.target.getBoundingClientRect();
+    let isBottomTail;
+    popUpSpan.className = className;
+    popUp.style.display = '';
+    isBottomTail = (isNullOrUndefined(e.clientY) ? e.changedTouches[0].clientY :
+        e.clientY) > popUp.offsetHeight + 10;
+    popUp.style.top = targetPosition.top - position.top +
+        (isBottomTail ? -(popUp.offsetHeight + 10) : popUp.offsetHeight + 10) + 'px'; //10px for tail element
+    popUp.style.left = getPopupLeftPosition(popUp, e, targetPosition, position.left) + 'px';
+    if (isBottomTail) {
+        popUp.querySelector('.e-downtail').style.display = '';
+        popUp.querySelector('.e-uptail').style.display = 'none';
+    }
+    else {
+        popUp.querySelector('.e-downtail').style.display = 'none';
+        popUp.querySelector('.e-uptail').style.display = '';
+    }
+}
+/** @hidden */
+function getPopupLeftPosition(popup, e, targetPosition, left) {
+    let width = popup.offsetWidth / 2;
+    let x = getPosition(e).x;
+    if (x - targetPosition.left < width) {
+        return targetPosition.left - left;
+    }
+    else if (targetPosition.right - x < width) {
+        return targetPosition.right - left - width * 2;
+    }
+    else {
+        return x - left - width;
+    }
+}
+/** @hidden */
+function getActualProperties(obj) {
+    if (obj instanceof ChildProperty) {
+        return getValue('properties', obj);
+    }
+    else {
+        return obj;
+    }
+}
+/** @hidden */
+function parentsUntil(elem, selector, isID) {
+    let parent = elem;
+    while (parent) {
+        if (isID ? parent.id === selector : parent.classList.contains(selector)) {
+            break;
+        }
+        parent = parent.parentElement;
+    }
+    return parent;
+}
+/** @hidden */
+function getElementIndex(element, elements) {
+    let index = -1;
+    for (let i = 0, len = elements.length; i < len; i++) {
+        if (elements[i].isEqualNode(element)) {
+            index = i;
+            break;
+        }
+    }
+    return index;
+}
+/** @hidden */
+function inArray(value, collection) {
+    for (let i = 0, len = collection.length; i < len; i++) {
+        if (collection[i] === value) {
+            return i;
+        }
+    }
+    return -1;
+}
+/** @hidden */
+function getActualPropFromColl(collection) {
+    let coll = [];
+    for (let i = 0, len = collection.length; i < len; i++) {
+        if (collection[i].hasOwnProperty('properties')) {
+            coll.push(collection[i].properties);
+        }
+        else {
+            coll.push(collection[i]);
+        }
+    }
+    return coll;
+}
+/** @hidden */
+function removeElement(target, selector) {
+    let elements = [].slice.call(target.querySelectorAll(selector));
+    for (let i = 0; i < elements.length; i++) {
+        remove(elements[i]);
+    }
+}
+/** @hidden */
+function getPosition(e) {
+    let position = {};
+    position.x = (isNullOrUndefined(e.clientX) ? e.changedTouches[0].clientX :
+        e.clientX);
+    position.y = (isNullOrUndefined(e.clientY) ? e.changedTouches[0].clientY :
+        e.clientY);
+    return position;
+}
+let uid = 0;
+/** @hidden */
+function getUid(prefix) {
+    return prefix + uid++;
+}
+/** @hidden */
+function appendChildren(elem, children) {
+    for (let i = 0, len = children.length; i < len; i++) {
+        if (len === children.length) {
+            elem.appendChild(children[i]);
+        }
+        else {
+            elem.appendChild(children[0]);
+        }
+    }
+    return elem;
+}
+/** @hidden */
+function parents(elem, selector, isID) {
+    let parent = elem;
+    let parents = [];
+    while (parent) {
+        if (isID ? parent.id === selector : parent.classList.contains(selector)) {
+            parents.push(parent);
+        }
+        parent = parent.parentElement;
+    }
+    return parents;
+}
+/** @hidden */
+function calculateAggregate(type, data, column, context) {
+    if (type === 'Custom') {
+        let temp = column.customAggregate;
+        if (typeof temp === 'string') {
+            temp = getValue(temp, window);
+        }
+        return temp ? temp.call(context, data, column) : '';
+    }
+    return (column.field in data || data instanceof Array) ? DataUtil.aggregates[type.toLowerCase()](data, column.field) : null;
+}
+/** @hidden */
+let scrollWidth = null;
+/** @hidden */
+function getScrollBarWidth() {
+    if (scrollWidth !== null) {
+        return scrollWidth;
+    }
+    let divNode = document.createElement('div');
+    let value = 0;
+    divNode.style.cssText = 'width:100px;height: 100px;overflow: scroll;position: absolute;top: -9999px;';
+    document.body.appendChild(divNode);
+    value = (divNode.offsetWidth - divNode.clientWidth) | 0;
+    document.body.removeChild(divNode);
+    return scrollWidth = value;
+}
+/** @hidden */
+let rowHeight;
+/** @hidden */
+function getRowHeight(element) {
+    if (rowHeight !== undefined) {
+        return rowHeight;
+    }
+    let table = createElement('table', { className: 'e-table', styles: 'visibility: hidden' });
+    table.innerHTML = '<tr><td class="e-rowcell">A<td></tr>';
+    element.appendChild(table);
+    let rect = table.querySelector('td').getBoundingClientRect();
+    element.removeChild(table);
+    rowHeight = Math.ceil(rect.height);
+    return rowHeight;
+}
+/** @hidden */
+function isComplexField(field) {
+    return field.split('.').length > 1;
+}
+/** @hidden */
+function getComplexFieldID(field = '') {
+    return field.replace(/\./g, '___');
+}
+/** @hidden */
+function setComplexFieldID(field = '') {
+    return field.replace(/___/g, '.');
+}
+/** @hidden */
+function isEditable(col, type, elem) {
+    let row = parentsUntil(elem, 'e-row');
+    let isOldRow = !row ? true : row && !row.classList.contains('e-insertedrow');
+    if (type === 'beginEdit' && isOldRow) {
+        if (col.isIdentity || col.isPrimaryKey || !col.allowEditing) {
+            return false;
+        }
+        return true;
+    }
+    else if (type === 'add' && col.isIdentity) {
+        return false;
+    }
+    else {
+        if (isOldRow && !col.allowEditing && !col.isIdentity && !col.isPrimaryKey) {
+            return false;
+        }
+        return true;
+    }
+}
+/** @hidden */
+function isActionPrevent(inst) {
+    let dlg = inst.element.querySelector('#' + inst.element.id + 'EditConfirm');
+    return inst.editSettings.mode === 'Batch' &&
+        (inst.element.querySelectorAll('.e-updatedtd').length) && inst.editSettings.showConfirmDialog &&
+        (dlg ? dlg.classList.contains('e-popup-close') : true);
+}
+/** @hidden */
+function wrap(elem, action) {
+    let clName = 'e-wrap';
+    elem = elem instanceof Array ? elem : [elem];
+    for (let i = 0; i < elem.length; i++) {
+        action ? elem[i].classList.add(clName) : elem[i].classList.remove(clName);
+    }
+}
+/** @hidden */
+function setFormatter(serviceLocator, column) {
+    let fmtr = serviceLocator.getService('valueFormatter');
+    switch (column.type) {
+        case 'date':
+            column.setFormatter(fmtr.getFormatFunction({ type: 'date', skeleton: column.format }));
+            column.setParser(fmtr.getParserFunction({ type: 'date', skeleton: column.format }));
+            break;
+        case 'datetime':
+            column.setFormatter(fmtr.getFormatFunction({ type: 'dateTime', skeleton: column.format }));
+            column.setParser(fmtr.getParserFunction({ type: 'dateTime', skeleton: column.format }));
+            break;
+        case 'number':
+            column.setFormatter(fmtr.getFormatFunction({ format: column.format }));
+            column.setParser(fmtr.getParserFunction({ format: column.format }));
+            break;
+    }
+}
+/** @hidden */
+function addRemoveActiveClasses(cells, add, ...args) {
+    for (let i = 0, len = cells.length; i < len; i++) {
+        if (add) {
+            classList(cells[i], [...args], []);
+            cells[i].setAttribute('aria-selected', 'true');
+        }
+        else {
+            classList(cells[i], [], [...args]);
+            cells[i].removeAttribute('aria-selected');
+        }
+    }
+}
+/** @hidden */
+function distinctStringValues(result) {
+    let temp = {};
+    let res = [];
+    for (let i = 0; i < result.length; i++) {
+        if (!(result[i] in temp)) {
+            res.push(result[i].toString());
+            temp[result[i]] = 1;
+        }
+    }
+    return res;
+}
+/** @hidden */
+function getFilterMenuPostion(target, dialogObj, grid) {
+    let elementVisible = dialogObj.element.style.display;
+    dialogObj.element.style.display = 'block';
+    let dlgWidth = dialogObj.width;
+    let newpos;
+    if (!grid.enableRtl) {
+        newpos = calculateRelativeBasedPosition(target, dialogObj.element);
+        dialogObj.element.style.display = elementVisible;
+        dialogObj.element.style.top = (newpos.top + target.getBoundingClientRect().height) - 5 + 'px';
+        let leftPos = ((newpos.left - dlgWidth) + target.clientWidth);
+        if (leftPos < 1) {
+            dialogObj.element.style.left = (dlgWidth + leftPos) - 16 + 'px'; // right calculation
+        }
+        else {
+            dialogObj.element.style.left = leftPos + -4 + 'px';
+        }
+    }
+    else {
+        newpos = calculatePosition(target, 'left', 'bottom');
+        dialogObj.element.style.top = (newpos.top + target.getBoundingClientRect().height) - 35 + 'px';
+        dialogObj.element.style.display = elementVisible;
+        let leftPos = ((newpos.left - dlgWidth) + target.clientWidth);
+        if (leftPos < 1) {
+            dialogObj.element.style.left = (dlgWidth + leftPos) + -16 + 'px';
+        }
+        else {
+            dialogObj.element.style.left = leftPos - 16 + 'px';
+        }
+    }
+}
+/** @hidden */
+function getZIndexCalcualtion(args, dialogObj) {
+    args.popup.element.style.zIndex = (dialogObj.zIndex + 1).toString();
+}
+/** @hidden */
+function toogleCheckbox(elem) {
+    let span = elem.querySelector('.e-frame');
+    span.classList.contains('e-check') ? classList(span, ['e-uncheck'], ['e-check']) :
+        classList(span, ['e-check'], ['e-uncheck']);
+}
+/** @hidden */
+function createCboxWithWrap(uid, elem, className) {
+    let div = createElement('div', { className: className });
+    div.appendChild(elem);
+    div.setAttribute('uid', uid);
+    return div;
+}
+/** @hidden */
+function removeAddCboxClasses(elem, checked) {
+    removeClass([elem], ['e-check', 'e-stop', 'e-uncheck']);
+    if (checked) {
+        elem.classList.add('e-check');
+    }
+    else {
+        elem.classList.add('e-uncheck');
+    }
+}
+/**
+ * Refresh the Row model's foreign data.
+ * @param row - Grid Row model object.
+ * @param columns - Foreign columns array.
+ * @param data - Updated Row data.
+ * @hidden
+ */
+function refreshForeignData(row, columns, data) {
+    columns.forEach((col) => {
+        setValue(col.field, getForeignData(col, data), row.foreignKeyData);
+    });
+    row.cells.forEach((cell) => {
+        if (cell.isForeignKey) {
+            setValue('foreignKeyData', getValue(cell.column.field, row.foreignKeyData), cell);
+        }
+    });
+}
+/**
+ * Get the foreign data for the corresponding cell value.
+ * @param column - Foreign Key column
+ * @param data - Row data.
+ * @param lValue - cell value.
+ * @param foreignData - foreign data source.
+ * @hidden
+ */
+function getForeignData(column, data, lValue, foreignKeyData) {
+    let fField = column.foreignKeyField;
+    let key = (!isNullOrUndefined(lValue) ? lValue : valueAccessor(column.field, data, column));
+    key = isNullOrUndefined(key) ? '' : key;
+    let query = new Query();
+    let fdata = foreignKeyData || ((column.dataSource instanceof DataManager) && column.dataSource.dataSource.json.length ?
+        column.dataSource.dataSource.json : column.columnData);
+    if (key.getDay) {
+        query.where(getDatePredicate({ field: fField, operator: 'equal', value: key, matchCase: false }));
+    }
+    else {
+        query.where(fField, '==', key, false);
+    }
+    return new DataManager(fdata).executeLocal(query);
+}
+/**
+ * To use to get the column's object by the foreign key value.
+ * @param foreignKeyValue - Defines ForeignKeyValue.
+ * @param columns - Array of column object.
+ * @hidden
+ */
+function getColumnByForeignKeyValue(foreignKeyValue, columns) {
+    let column;
+    return columns.some((col) => {
+        column = col;
+        return col.foreignKeyValue === foreignKeyValue;
+    }) && column;
+}
+/**
+ * @hidden
+ * @param filterObject - Defines predicate model object
+ */
+function getDatePredicate(filterObject, type) {
+    let datePredicate;
+    let prevDate;
+    let nextDate;
+    let prevObj = extend({}, getActualProperties(filterObject));
+    let nextObj = extend({}, getActualProperties(filterObject));
+    if (filterObject.value === null) {
+        datePredicate = new Predicate(prevObj.field, prevObj.operator, prevObj.value, false);
+        return datePredicate;
+    }
+    let value = new Date(filterObject.value);
+    if (filterObject.operator === 'equal' || filterObject.operator === 'notequal') {
+        if (type === 'datetime') {
+            prevDate = new Date(value.setSeconds(value.getSeconds() - 1));
+            nextDate = new Date(value.setSeconds(value.getSeconds() + 2));
+            filterObject.value = new Date(value.setSeconds(nextDate.getSeconds() - 1));
+        }
+        else {
+            prevDate = new Date(value.setHours(0) - 1);
+            nextDate = new Date(value.setHours(24));
+        }
+        prevObj.value = prevDate;
+        nextObj.value = nextDate;
+        if (filterObject.operator === 'equal') {
+            prevObj.operator = 'greaterthan';
+            nextObj.operator = 'lessthan';
+        }
+        else if (filterObject.operator === 'notequal') {
+            prevObj.operator = 'lessthanorequal';
+            nextObj.operator = 'greaterthanorequal';
+        }
+        let predicateSt = new Predicate(prevObj.field, prevObj.operator, prevObj.value, false);
+        let predicateEnd = new Predicate(nextObj.field, nextObj.operator, nextObj.value, false);
+        datePredicate = filterObject.operator === 'equal' ? predicateSt.and(predicateEnd) : predicateSt.or(predicateEnd);
+    }
+    else {
+        if (typeof (prevObj.value) === 'string') {
+            prevObj.value = new Date(prevObj.value);
+        }
+        let predicates = new Predicate(prevObj.field, prevObj.operator, prevObj.value, false);
+        datePredicate = predicates;
+    }
+    if (filterObject.setProperties) {
+        filterObject.setProperties({ ejpredicate: datePredicate }, true);
+    }
+    else {
+        filterObject.ejpredicate = datePredicate;
+    }
+    return datePredicate;
+}
+/**
+ * @hidden
+ */
+function renderMovable(ele, frzCols) {
+    let mEle = ele.cloneNode(true);
+    for (let i = 0; i < frzCols; i++) {
+        mEle.removeChild(mEle.children[0]);
+    }
+    for (let i = frzCols, len = ele.childElementCount; i < len; i++) {
+        ele.removeChild(ele.children[ele.childElementCount - 1]);
+    }
+    return mEle;
+}
+/**
+ * @hidden
+ */
+function isGroupAdaptive(grid) {
+    return grid.enableVirtualization && grid.groupSettings.columns.length > 0 && grid.isVirtualAdaptive;
+}
+/**
+ * @hidden
+ */
+function getObject(field = '', object) {
+    if (field) {
+        let value = object;
+        let splits = field.split('.');
+        for (let i = 0; i < splits.length && !isNullOrUndefined(value); i++) {
+            value = value[splits[i]];
+        }
+        return value;
+    }
+}
+/**
+ * @hidden
+ */
+function getCustomDateFormat(format, colType) {
+    let intl = new Internationalization();
+    let formatvalue;
+    let formatter = 'format';
+    let type = 'type';
+    if (colType === 'date') {
+        formatvalue = typeof (format) === 'object' ?
+            intl.getDatePattern({ type: format[type] ? format[type] : 'date', format: format[formatter] }, false) :
+            intl.getDatePattern({ type: 'date', skeleton: format }, false);
+    }
+    else {
+        formatvalue = typeof (format) === 'object' ?
+            intl.getDatePattern({ type: format[type] ? format[type] : 'dateTime', format: format[formatter] }, false) :
+            intl.getDatePattern({ type: 'dateTime', skeleton: format }, false);
+    }
+    return formatvalue;
+}
+/**
+ * @hidden
+ */
+function getExpandedState(gObj, hierarchyPrintMode) {
+    let rows = gObj.getRowsObject();
+    let obj = {};
+    for (const row of rows) {
+        if (row.isExpand && !row.isDetailRow) {
+            let index = gObj.allowPaging && gObj.printMode === 'AllPages' ? row.index +
+                (gObj.pageSettings.currentPage * gObj.pageSettings.pageSize) - gObj.pageSettings.pageSize : row.index;
+            obj[index] = {};
+            obj[index].isExpand = true;
+            obj[index].gridModel = getPrintGridModel(row.childGrid, hierarchyPrintMode);
+            obj[index].gridModel.query = gObj.childGrid.query;
+        }
+    }
+    return obj;
+}
+/**
+ * @hidden
+ */
+function getPrintGridModel(gObj, hierarchyPrintMode = 'Expanded') {
+    let printGridModel = {};
+    if (!gObj) {
+        return printGridModel;
+    }
+    for (let key of Print.printGridProp) {
+        if (key === 'columns') {
+            printGridModel[key] = getActualPropFromColl(gObj[key]);
+        }
+        else if (key === 'allowPaging') {
+            printGridModel[key] = gObj.printMode === 'CurrentPage';
+        }
+        else {
+            printGridModel[key] = getActualProperties(gObj[key]);
+        }
+    }
+    if (gObj.childGrid && hierarchyPrintMode !== 'None') {
+        printGridModel.expandedRows = getExpandedState(gObj, hierarchyPrintMode);
+    }
+    return printGridModel;
+}
+/**
+ * @hidden
+ */
+function extendObjWithFn(copied, first, second, deep) {
+    let res = copied || {};
+    let len = arguments.length;
+    if (deep) {
+        len = len - 1;
+    }
+    for (let i = 1; i < len; i++) {
+        if (!arguments[i]) {
+            continue;
+        }
+        let obj1 = arguments[i];
+        let keys = Object.keys(Object.getPrototypeOf(obj1)).length ?
+            Object.keys(obj1).concat(getPrototypesOfObj(obj1)) : Object.keys(obj1);
+        keys.forEach((key) => {
+            let source = res[key];
+            let cpy = obj1[key];
+            let cln;
+            if (deep && (isObject(cpy) || Array.isArray(cpy))) {
+                if (isObject(cpy)) {
+                    cln = source ? source : {};
+                    res[key] = extend({}, cln, cpy, deep);
+                }
+                else {
+                    cln = source ? source : [];
+                    res[key] = extend([], cln, cpy, deep);
+                }
+            }
+            else {
+                res[key] = cpy;
+            }
+        });
+    }
+    return res;
+}
+/**
+ * @hidden
+ */
+function getPrototypesOfObj(obj) {
+    let keys = [];
+    while (Object.getPrototypeOf(obj) && Object.keys(Object.getPrototypeOf(obj)).length) {
+        keys = keys.concat(Object.keys(Object.getPrototypeOf(obj)));
+        obj = Object.getPrototypeOf(obj);
+    }
+    return keys;
+}
+/**
+ * @hidden
+ */
+function measureColumnDepth(column) {
+    let max = 0;
+    for (let i = 0; i < column.length; i++) {
+        let depth = checkDepth(column[i], 0);
+        if (max < depth) {
+            max = depth;
+        }
+    }
+    return max + 1;
+}
+/**
+ * @hidden
+ */
+function checkDepth(col, index) {
+    let max = index;
+    let indices = [];
+    if (col.columns) {
+        index++;
+        for (let i = 0; i < col.columns.length; i++) {
+            indices[i] = checkDepth(col.columns[i], index);
+        }
+        for (let j = 0; j < indices.length; j++) {
+            if (max < indices[j]) {
+                max = indices[j];
+            }
+        }
+        index = max;
+    }
+    return index;
+}
+/**
+ * @hidden
+ */
+function refreshFilteredColsUid(gObj, filteredCols) {
+    for (let i = 0; i < filteredCols.length; i++) {
+        filteredCols[i].uid = filteredCols[i].isForeignKey ?
+            getColumnByForeignKeyValue(filteredCols[i].field, gObj.getForeignKeyColumns()).uid
+            : gObj.getColumnByField(filteredCols[i].field).uid;
+    }
+}
+/** @hidden */
+var Global;
+(function (Global) {
+    Global.timer = null;
+})(Global || (Global = {}));
+
+/* tslint:disable-next-line:max-line-length */
+/**
+ * @hidden
+ * `CheckBoxFilterBase` module is used to handle filtering action.
+ */
+class CheckBoxFilterBase {
+    /**
+     * Constructor for checkbox filtering module
+     * @hidden
+     */
+    constructor(parent, filterSettings) {
+        this.existingPredicate = {};
+        this.foreignKeyQuery = new Query();
+        this.filterState = true;
+        this.values = {};
+        this.renderEmpty = false;
+        this.parent = parent;
+        this.id = this.parent.element.id;
+        this.filterSettings = filterSettings;
+        this.valueFormatter = new ValueFormatter(this.parent.locale);
+        this.cBoxTrue = createCheckBox(this.parent.createElement, false, { checked: true, label: ' ' });
+        this.cBoxFalse = createCheckBox(this.parent.createElement, false, { checked: false, label: ' ' });
+        this.cBoxTrue.insertBefore(this.parent.createElement('input', {
+            className: 'e-chk-hidden', attrs: { type: 'checkbox' }
+        }), this.cBoxTrue.firstChild);
+        this.cBoxFalse.insertBefore(this.parent.createElement('input', {
+            className: 'e-chk-hidden', attrs: { 'type': 'checkbox' }
+        }), this.cBoxFalse.firstChild);
+        this.cBoxFalse.querySelector('.e-frame').classList.add('e-uncheck');
+        if (this.parent.enableRtl) {
+            addClass([this.cBoxTrue, this.cBoxFalse], ['e-rtl']);
+        }
+    }
+    /**
+     * To destroy the filter bar.
+     * @return {void}
+     * @hidden
+     */
+    destroy() {
+        this.closeDialog();
+    }
+    wireEvents() {
+        EventHandler.add(this.dlg, 'click', this.clickHandler, this);
+        this.searchHandler = debounce(this.searchBoxKeyUp, 200);
+        EventHandler.add(this.dlg.querySelector('.e-searchinput'), 'keyup', this.searchHandler, this);
+    }
+    unWireEvents() {
+        EventHandler.remove(this.dlg, 'click', this.clickHandler);
+        let elem = this.dlg.querySelector('.e-searchinput');
+        if (elem) {
+            EventHandler.remove(elem, 'keyup', this.searchHandler);
+        }
+    }
+    foreignKeyFilter(args, fColl, mPredicate) {
+        let fPredicate = {};
+        let filterCollection = [];
+        let query = this.foreignKeyQuery.clone();
+        this.options.column.dataSource.
+            executeQuery(query.where(mPredicate)).then((e) => {
+            this.options.column.columnData = e.result;
+            this.parent.notify(generateQuery, { predicate: fPredicate, column: this.options.column });
+            args.ejpredicate = fPredicate.predicate.predicates;
+            fPredicate.predicate.predicates.forEach((fpred) => {
+                filterCollection.push({
+                    field: fpred.field,
+                    predicate: 'or',
+                    matchCase: fpred.ignoreCase,
+                    ignoreAccent: fpred.ignoreAccent,
+                    operator: fpred.operator,
+                    value: fpred.value,
+                    type: this.options.type
+                });
+            });
+            args.filterCollection = filterCollection.length ? filterCollection :
+                fColl.filter((col) => col.field = this.options.field);
+            this.options.handler(args);
+        });
+    }
+    foreignFilter(args, value) {
+        let operator = this.parent.getDataModule().isRemote() ?
+            (this.options.column.type === 'string' ? 'contains' : 'equal') : (this.options.column.type ? 'startswith' : 'contains');
+        let initalPredicate = new Predicate(this.options.column.foreignKeyValue, operator, value, true, this.parent.filterSettings.ignoreAccent);
+        this.foreignKeyFilter(args, [args.filterCollection], initalPredicate);
+    }
+    searchBoxClick(e) {
+        let target = e.target;
+        if (target.classList.contains('e-searchclear')) {
+            this.sInput.value = '';
+            this.refreshCheckboxes();
+            this.updateSearchIcon();
+            this.sInput.focus();
+        }
+    }
+    searchBoxKeyUp(e) {
+        this.refreshCheckboxes();
+        this.updateSearchIcon();
+    }
+    updateSearchIcon() {
+        if (this.sInput.value.length) {
+            classList(this.sIcon, ['e-chkcancel-icon'], ['e-search-icon']);
+        }
+        else {
+            classList(this.sIcon, ['e-search-icon'], ['e-chkcancel-icon']);
+        }
+    }
+    /**
+     * Gets the localized label by locale keyword.
+     * @param  {string} key
+     * @return {string}
+     */
+    getLocalizedLabel(key) {
+        return this.localeObj.getConstant(key);
+    }
+    updateDataSource() {
+        let dataSource = this.options.dataSource;
+        let str = 'object';
+        if (!(dataSource instanceof DataManager)) {
+            for (let i = 0; i < dataSource.length; i++) {
+                if (typeof dataSource !== str) {
+                    let obj = {};
+                    obj[this.options.field] = dataSource[i];
+                    dataSource[i] = obj;
+                }
+            }
+        }
+    }
+    updateModel(options) {
+        this.options = options;
+        this.existingPredicate = options.actualPredicate || {};
+        this.options.dataSource = options.dataSource;
+        this.updateDataSource();
+        this.options.type = options.type;
+        this.options.format = options.format || '';
+        this.options.filteredColumns = options.filteredColumns || this.parent.filterSettings.columns;
+        this.options.sortedColumns = options.sortedColumns || this.parent.sortSettings.columns;
+        this.options.query = options.query || new Query();
+        this.options.allowCaseSensitive = options.allowCaseSensitive || false;
+        this.options.uid = options.column.uid;
+        this.values = {};
+        this.localeObj = options.localeObj;
+        this.isFiltered = options.filteredColumns.length;
+    }
+    getAndSetChkElem(options) {
+        this.dlg = this.parent.createElement('div', {
+            id: this.id + this.options.type + '_excelDlg',
+            className: 'e-checkboxfilter e-filter-popup'
+        });
+        this.sBox = this.parent.createElement('div', { className: 'e-searchcontainer' });
+        if (!options.hideSearchbox) {
+            this.sInput = this.parent.createElement('input', {
+                id: this.id + '_SearchBox',
+                className: 'e-searchinput'
+            });
+            this.sIcon = this.parent.createElement('span', {
+                className: 'e-searchclear e-search-icon e-icons e-input-group-icon', attrs: {
+                    type: 'text', title: this.getLocalizedLabel('Search')
+                }
+            });
+            this.searchBox = this.parent.createElement('span', { className: 'e-searchbox e-fields' });
+            this.searchBox.appendChild(this.sInput);
+            this.sBox.appendChild(this.searchBox);
+            let inputargs = {
+                element: this.sInput, floatLabelType: 'Never', properties: {
+                    placeholder: this.getLocalizedLabel('Search')
+                }
+            };
+            Input.createInput(inputargs, this.parent.createElement);
+            this.searchBox.querySelector('.e-input-group').appendChild(this.sIcon);
+        }
+        this.spinner = this.parent.createElement('div', { className: 'e-spinner' }); //for spinner
+        this.cBox = this.parent.createElement('div', {
+            id: this.id + this.options.type + '_CheckBoxList',
+            className: 'e-checkboxlist e-fields'
+        });
+        this.spinner.appendChild(this.cBox);
+        this.sBox.appendChild(this.spinner);
+        return this.sBox;
+    }
+    showDialog(options) {
+        let args = {
+            requestType: filterBeforeOpen,
+            columnName: this.options.field, columnType: this.options.type, cancel: false
+        };
+        if (!isBlazor() || this.parent.isJsComponent) {
+            let filterModel = 'filterModel';
+            args[filterModel] = this;
+        }
+        this.parent.notify(cBoxFltrBegin, args);
+        if (args.cancel) {
+            return;
+        }
+        this.dialogObj = new Dialog({
+            visible: false, content: this.sBox,
+            close: this.closeDialog.bind(this),
+            width: (!isNullOrUndefined(parentsUntil(options.target, 'e-bigger')))
+                || this.parent.element.classList.contains('e-device') ? 260 : 255,
+            target: this.parent.element, animationSettings: { effect: 'None' },
+            buttons: [{
+                    click: this.btnClick.bind(this),
+                    buttonModel: {
+                        content: this.getLocalizedLabel(this.isExcel ? 'OKButton' : 'FilterButton'),
+                        cssClass: 'e-primary', isPrimary: true
+                    }
+                },
+                {
+                    click: this.btnClick.bind(this),
+                    buttonModel: { cssClass: 'e-flat', content: this.getLocalizedLabel(this.isExcel ? 'CancelButton' : 'ClearButton') }
+                }],
+            created: this.dialogCreated.bind(this),
+            open: this.dialogOpen.bind(this)
+        });
+        let isStringTemplate = 'isStringTemplate';
+        this.dialogObj[isStringTemplate] = true;
+        this.dialogObj.appendTo(this.dlg);
+        this.dialogObj.element.style.maxHeight = this.options.height + 'px';
+        this.dialogObj.show();
+        this.wireEvents();
+        createSpinner({ target: this.spinner }, this.parent.createElement);
+        showSpinner(this.spinner);
+        this.getAllData();
+    }
+    dialogCreated(e) {
+        if (!Browser.isDevice) {
+            getFilterMenuPostion(this.options.target, this.dialogObj, this.parent);
+        }
+        else {
+            this.dialogObj.position = { X: 'center', Y: 'center' };
+        }
+        this.parent.notify(filterDialogCreated, e);
+    }
+    openDialog(options) {
+        this.updateModel(options);
+        this.getAndSetChkElem(options);
+        this.showDialog(options);
+    }
+    closeDialog() {
+        if (this.dialogObj && !this.dialogObj.isDestroyed) {
+            let filterTemplateCol = this.parent.getColumns().filter((col) => col.getFilterItemTemplate());
+            if (filterTemplateCol.length) {
+                this.parent.destroyTemplate(['filterItemTemplate']);
+            }
+            this.parent.notify(filterMenuClose, { field: this.options.field });
+            this.dialogObj.destroy();
+            this.unWireEvents();
+            remove(this.dlg);
+            this.dlg = null;
+        }
+    }
+    clearFilter() {
+        /* tslint:disable-next-line:max-line-length */
+        let args = { instance: this, handler: this.clearFilter, cancel: false };
+        this.parent.notify(fltrPrevent, args);
+        if (args.cancel) {
+            return;
+        }
+        this.options.handler({ action: 'clear-filter', field: this.options.field });
+    }
+    btnClick(e) {
+        if (this.filterState) {
+            if (e.target.tagName.toLowerCase() === 'input') {
+                let value = e.target.value;
+                if (this.options.column.type === 'boolean') {
+                    if (value !== undefined &&
+                        this.getLocalizedLabel('FilterTrue').toLowerCase().indexOf(value.toLowerCase()) !== -1) {
+                        value = 'true';
+                    }
+                    else if (value !== undefined &&
+                        this.getLocalizedLabel('FilterFalse').toLowerCase().indexOf(value.toLowerCase()) !== -1) {
+                        value = 'false';
+                    }
+                }
+                let args = {
+                    action: 'filtering', filterCollection: {
+                        field: this.options.field,
+                        operator: this.options.isRemote ?
+                            (this.options.column.type === 'string' ? 'contains' : 'equal') :
+                            (this.options.column.type === 'date' || this.options.column.type === 'datetime' ||
+                                this.options.column.type === 'boolean' ? 'equal' : 'contains'),
+                        value: value, matchCase: false, type: this.options.column.type
+                    },
+                    field: this.options.field
+                };
+                value ? this.options.column.isForeignColumn() ? this.foreignFilter(args, value) :
+                    this.options.handler(args) : this.closeDialog();
+            }
+            else {
+                let text = e.target.firstChild.textContent.toLowerCase();
+                if (this.getLocalizedLabel(this.isExcel ? 'OKButton' : 'FilterButton').toLowerCase() === text) {
+                    this.fltrBtnHandler();
+                }
+                else if (this.getLocalizedLabel('ClearButton').toLowerCase() === text) {
+                    this.clearFilter();
+                }
+            }
+            this.closeDialog();
+        }
+        else if (!(e.target.tagName.toLowerCase() === 'input')) {
+            this.clearFilter();
+            this.closeDialog();
+        }
+    }
+    fltrBtnHandler() {
+        let checked = [].slice.call(this.cBox.querySelectorAll('.e-check:not(.e-selectall)'));
+        let optr = 'equal';
+        let searchInput = this.searchBox.querySelector('.e-searchinput');
+        let caseSen = this.options.allowCaseSensitive;
+        let defaults = {
+            field: this.options.field, predicate: 'or', uid: this.options.uid,
+            operator: optr, type: this.options.type, matchCase: caseSen, ignoreAccent: this.parent.filterSettings.ignoreAccent
+        };
+        let isNotEqual = this.itemsCnt !== checked.length && this.itemsCnt - checked.length < checked.length;
+        if (isNotEqual && searchInput.value === '') {
+            optr = 'notequal';
+            checked = [].slice.call(this.cBox.querySelectorAll('.e-uncheck:not(.e-selectall)'));
+            defaults.predicate = 'and';
+            defaults.operator = 'notequal';
+        }
+        let value;
+        let fObj;
+        let coll = [];
+        if (checked.length !== this.itemsCnt || (searchInput.value && searchInput.value !== '')) {
+            for (let i = 0; i < checked.length; i++) {
+                value = this.values[parentsUntil(checked[i], 'e-ftrchk').getAttribute('uid')];
+                fObj = extend({}, { value: value }, defaults);
+                if (value && !value.toString().length) {
+                    fObj.operator = isNotEqual ? 'notequal' : 'equal';
+                }
+                if (value === '' || isNullOrUndefined(value)) {
+                    if (this.options.type === 'string') {
+                        coll.push({
+                            field: defaults.field, ignoreAccent: defaults.ignoreAccent, matchCase: defaults.matchCase,
+                            operator: defaults.operator, predicate: defaults.predicate, value: ''
+                        });
+                    }
+                    coll.push({
+                        field: defaults.field,
+                        matchCase: defaults.matchCase, operator: defaults.operator, predicate: defaults.predicate, value: null
+                    });
+                    coll.push({
+                        field: defaults.field, matchCase: defaults.matchCase, operator: defaults.operator,
+                        predicate: defaults.predicate, value: undefined
+                    });
+                }
+                else {
+                    coll.push(fObj);
+                }
+                let args = {
+                    instance: this, handler: this.fltrBtnHandler, arg1: fObj.field, arg2: fObj.predicate, arg3: fObj.operator,
+                    arg4: fObj.matchCase, arg5: fObj.ignoreAccent, arg6: fObj.value, cancel: false
+                };
+                this.parent.notify(fltrPrevent, args);
+                if (args.cancel) {
+                    return;
+                }
+            }
+            this.initiateFilter(coll);
+        }
+        else {
+            this.clearFilter();
+        }
+    }
+    initiateFilter(fColl) {
+        let firstVal = fColl[0];
+        let predicate;
+        if (!isNullOrUndefined(firstVal)) {
+            predicate = firstVal.ejpredicate ? firstVal.ejpredicate :
+                new Predicate(firstVal.field, firstVal.operator, firstVal.value, !firstVal.matchCase, firstVal.ignoreAccent);
+            for (let j = 1; j < fColl.length; j++) {
+                predicate = fColl[j].ejpredicate !== undefined ?
+                    predicate[fColl[j].predicate](fColl[j].ejpredicate) :
+                    predicate[fColl[j].predicate](fColl[j].field, fColl[j].operator, fColl[j].value, !fColl[j].matchCase, fColl[j].ignoreAccent);
+            }
+            let args = {
+                action: 'filtering', filterCollection: fColl, field: this.options.field,
+                ejpredicate: Predicate.or(predicate)
+            };
+            this.options.handler(args);
+        }
+    }
+    refreshCheckboxes() {
+        let val = this.sInput.value;
+        let column = this.options.column;
+        let query = column.isForeignColumn() ? this.foreignKeyQuery.clone() : this.options.query.clone();
+        let foreignQuery = this.options.query.clone();
+        query.queries = [];
+        foreignQuery.queries = [];
+        let parsed = (this.options.type !== 'string' && parseFloat(val)) ? parseFloat(val) : val;
+        let operator = this.parent.getDataModule().isRemote() ?
+            (this.options.type === 'string' ? 'contains' : 'equal') : (this.options.type ? 'startswith' : 'contains');
+        let matchCase = true;
+        let ignoreAccent = this.parent.filterSettings.ignoreAccent;
+        let field = column.isForeignColumn() ? column.foreignKeyValue : column.field;
+        parsed = (parsed === '' || parsed === undefined) ? undefined : parsed;
+        let predicte;
+        if (this.options.type === 'boolean') {
+            if (parsed !== undefined &&
+                this.getLocalizedLabel('FilterTrue').toLowerCase().indexOf(parsed.toLowerCase()) !== -1) {
+                parsed = (this.parent.getDataModule().dataManager.adaptor.getModuleName()
+                    === 'ODataAdaptor' || 'ODataV4Adaptor') ? true : 'true';
+            }
+            else if (parsed !== undefined &&
+                this.getLocalizedLabel('FilterFalse').toLowerCase().indexOf(parsed.toLowerCase()) !== -1) {
+                parsed = (this.parent.getDataModule().dataManager.adaptor.getModuleName()
+                    === 'ODataAdaptor' || 'ODataV4Adaptor') ? false : 'false';
+            }
+            operator = 'equal';
+        }
+        this.addDistinct(query);
+        /* tslint:disable-next-line:max-line-length */
+        let args = {
+            requestType: filterSearchBegin,
+            filterModel: this, columnName: field, column: column,
+            operator: operator, matchCase: matchCase, ignoreAccent: ignoreAccent, filterChoiceCount: null,
+            query: query
+        };
+        this.parent.notify(cBoxFltrBegin, args);
+        predicte = new Predicate(field, args.operator, parsed, args.matchCase, args.ignoreAccent);
+        if (this.options.type === 'date' || this.options.type === 'datetime') {
+            parsed = this.valueFormatter.fromView(val, this.options.parserFn, this.options.type);
+            operator = 'equal';
+            if (isNullOrUndefined(parsed) && val.length) {
+                return;
+            }
+            let filterObj = {
+                field: field, operator: operator, value: parsed, matchCase: matchCase,
+                ignoreAccent: ignoreAccent
+            };
+            predicte = getDatePredicate(filterObj, this.options.type);
+        }
+        if (val.length) {
+            query.where(predicte);
+        }
+        args.filterChoiceCount = !isNullOrUndefined(args.filterChoiceCount) ? args.filterChoiceCount : 1000;
+        let fPredicate = {};
+        showSpinner(this.spinner);
+        this.renderEmpty = false;
+        if (column.isForeignColumn() && val.length) {
+            // tslint:disable-next-line:no-any
+            column.dataSource.executeQuery(query).then((e) => {
+                let columnData = this.options.column.columnData;
+                this.options.column.columnData = e.result;
+                this.parent.notify(generateQuery, { predicate: fPredicate, column: column });
+                if (fPredicate.predicate.predicates.length) {
+                    foreignQuery.where(fPredicate.predicate);
+                }
+                else {
+                    this.renderEmpty = true;
+                }
+                this.options.column.columnData = columnData;
+                foreignQuery.take(args.filterChoiceCount);
+                this.search(args, foreignQuery);
+            });
+        }
+        else {
+            query.take(args.filterChoiceCount);
+            this.search(args, query);
+        }
+    }
+    search(args, query) {
+        if (this.parent.dataSource && 'result' in this.parent.dataSource) {
+            this.filterEvent(args, query);
+        }
+        else {
+            this.processSearch(query);
+        }
+    }
+    getPredicateFromCols(columns) {
+        let predicates = CheckBoxFilterBase.getPredicate(columns);
+        let predicateList = [];
+        let fPredicate = {};
+        let isGrid = this.parent.getForeignKeyColumns !== undefined;
+        let foreignColumn = isGrid ? this.parent.getForeignKeyColumns() : [];
+        for (let prop of Object.keys(predicates)) {
+            let col;
+            if (isGrid && this.parent.getColumnByField(prop).isForeignColumn()) {
+                col = getColumnByForeignKeyValue(prop, foreignColumn);
+            }
+            if (col) {
+                this.parent.notify(generateQuery, { predicate: fPredicate, column: col });
+                if (fPredicate.predicate.predicates.length) {
+                    predicateList.push(Predicate.or(fPredicate.predicate.predicates));
+                }
+            }
+            else {
+                predicateList.push(predicates[prop]);
+            }
+        }
+        return predicateList.length && Predicate.and(predicateList);
+    }
+    getQuery() {
+        return this.parent.getQuery ? this.parent.getQuery().clone() : new Query();
+    }
+    getAllData() {
+        let query = this.getQuery();
+        query.requiresCount(); //consider take query
+        this.addDistinct(query);
+        let args = {
+            requestType: filterChoiceRequest, query: query, filterChoiceCount: null
+        };
+        if (!isBlazor() || this.parent.isJsComponent) {
+            let filterModel = 'filterModel';
+            args[filterModel] = this;
+        }
+        this.parent.notify(cBoxFltrBegin, args);
+        args.filterChoiceCount = !isNullOrUndefined(args.filterChoiceCount) ? args.filterChoiceCount : 1000;
+        query.take(args.filterChoiceCount);
+        if (this.parent.dataSource && 'result' in this.parent.dataSource) {
+            this.filterEvent(args, query);
+        }
+        else {
+            this.processDataOperation(query, true);
+        }
+    }
+    addDistinct(query) {
+        let filteredColumn = DataUtil.distinct(this.options.filteredColumns, 'field');
+        if (filteredColumn.indexOf(this.options.column.field) <= -1) {
+            filteredColumn = filteredColumn.concat(this.options.column.field);
+        }
+        query.distinct(filteredColumn);
+        return query;
+    }
+    filterEvent(args, query) {
+        let def = this.eventPromise(args, query);
+        def.promise.then((e) => {
+            this.dataSuccess(e);
+        });
+    }
+    eventPromise(args, query) {
+        let state;
+        state = this.getStateEventArgument(query);
+        let def = new Deferred();
+        state.dataSource = def.resolve;
+        state.action = args;
+        this.parent.trigger(dataStateChange, state);
+        return def;
+    }
+    ;
+    getStateEventArgument(query) {
+        let adaptr = new UrlAdaptor();
+        let dm = new DataManager({ url: '', adaptor: new UrlAdaptor });
+        let state = adaptr.processQuery(dm, query);
+        let data = JSON.parse(state.data);
+        return data;
+    }
+    ;
+    processDataOperation(query, isInitial) {
+        this.options.dataSource = this.options.dataSource instanceof DataManager ?
+            this.options.dataSource : new DataManager(this.options.dataSource);
+        let allPromise = [];
+        let runArray = [];
+        if (this.options.column.isForeignColumn() && isInitial) {
+            allPromise.push(this.options.column.dataSource.executeQuery(this.foreignKeyQuery));
+            runArray.push((data) => this.foreignKeyData = data);
+        }
+        allPromise.push(this.options.dataSource.executeQuery(query));
+        runArray.push(this.dataSuccess.bind(this));
+        let i = 0;
+        Promise.all(allPromise).then((e) => {
+            e.forEach((data) => {
+                runArray[i++](data.result);
+            });
+        });
+    }
+    dataSuccess(e) {
+        this.fullData = e;
+        let query = new Query();
+        if (this.parent.searchSettings && this.parent.searchSettings.key.length) {
+            let sSettings = this.parent.searchSettings;
+            let fields = sSettings.fields.length ? sSettings.fields : this.parent.getColumns().map((f) => f.field);
+            /* tslint:disable-next-line:max-line-length */
+            query.search(sSettings.key, fields, sSettings.operator, sSettings.ignoreCase, sSettings.ignoreAccent);
+        }
+        if ((this.options.filteredColumns.length)) {
+            let cols = [];
+            for (let i = 0; i < this.options.filteredColumns.length; i++) {
+                let filterColumn = this.options.filteredColumns[i];
+                if (this.options.uid) {
+                    filterColumn.uid = filterColumn.uid || this.parent.getColumnByField(filterColumn.field).uid;
+                    if (filterColumn.uid !== this.options.uid) {
+                        cols.push(this.options.filteredColumns[i]);
+                    }
+                }
+                else {
+                    if (filterColumn.field !== this.options.field) {
+                        cols.push(this.options.filteredColumns[i]);
+                    }
+                }
+            }
+            let predicate = this.getPredicateFromCols(cols);
+            if (predicate) {
+                query.where(predicate);
+            }
+        }
+        // query.select(this.options.field);
+        let result = new DataManager(this.fullData).executeLocal(query);
+        let col = this.options.column;
+        this.filteredData = CheckBoxFilterBase.
+            getDistinct(result, this.options.field, col, this.foreignKeyData).records || [];
+        this.processDataSource(null, true, this.filteredData);
+        this.sInput.focus();
+        let args = {
+            requestType: filterAfterOpen,
+            columnName: this.options.field, columnType: this.options.type
+        };
+        if (!isBlazor() || this.parent.isJsComponent) {
+            let filterModel = 'filterModel';
+            args[filterModel] = this;
+        }
+        this.parent.notify(cBoxFltrComplete, args);
+    }
+    processDataSource(query, isInitial, dataSource) {
+        showSpinner(this.spinner);
+        // query = query ? query : this.options.query.clone();
+        // query.requiresCount();
+        // let result: Object = new DataManager(dataSource as JSON[]).executeLocal(query);
+        // let res: { result: Object[] } = result as { result: Object[] };
+        this.updateResult();
+        this.createFilterItems(dataSource, isInitial);
+    }
+    processSearch(query) {
+        this.processDataOperation(query);
+    }
+    updateResult() {
+        this.result = {};
+        let predicate = this.getPredicateFromCols(this.options.filteredColumns);
+        let query = new Query();
+        if (predicate) {
+            query.where(predicate);
+        }
+        let result = new DataManager(this.fullData).executeLocal(query);
+        for (let res of result) {
+            this.result[getObject(this.options.field, res)] = true;
+        }
+    }
+    clickHandler(e) {
+        let target = e.target;
+        let elem = parentsUntil(target, 'e-checkbox-wrapper');
+        if (parentsUntil(target, 'e-searchbox')) {
+            this.searchBoxClick(e);
+        }
+        if (elem) {
+            let selectAll = elem.querySelector('.e-selectall');
+            if (selectAll) {
+                this.updateAllCBoxes(!selectAll.classList.contains('e-check'));
+            }
+            else {
+                toogleCheckbox(elem.parentElement);
+            }
+            this.updateIndeterminatenBtn();
+            elem.querySelector('.e-chk-hidden').focus();
+        }
+    }
+    updateAllCBoxes(checked) {
+        let cBoxes = [].slice.call(this.cBox.querySelectorAll('.e-frame'));
+        for (let cBox of cBoxes) {
+            removeAddCboxClasses(cBox, checked);
+        }
+    }
+    dialogOpen() {
+        if (this.parent.element.classList.contains('e-device')) {
+            this.dialogObj.element.querySelector('.e-input-group').classList.remove('e-input-focus');
+            this.dialogObj.element.querySelector('.e-btn').focus();
+        }
+    }
+    createCheckbox(value, checked, data) {
+        let elem = checked ? this.cBoxTrue.cloneNode(true) :
+            this.cBoxFalse.cloneNode(true);
+        let label = elem.querySelector('.e-label');
+        label.innerHTML = !isNullOrUndefined(value) && value.toString().length ? value :
+            this.getLocalizedLabel('Blanks');
+        addClass([label], ['e-checkboxfiltertext']);
+        if (this.options.template) {
+            label.innerHTML = '';
+            appendChildren(label, this.options.template(data, this.parent, 'filterItemTemplate'));
+        }
+        return elem;
+    }
+    updateIndeterminatenBtn() {
+        let cnt = this.cBox.children.length - 1;
+        let className = [];
+        let elem = this.cBox.querySelector('.e-selectall');
+        let selected = this.cBox.querySelectorAll('.e-check:not(.e-selectall)').length;
+        let btn = this.dialogObj.btnObj[0];
+        btn.disabled = false;
+        if (cnt === selected) {
+            className = ['e-check'];
+        }
+        else if (selected) {
+            className = ['e-stop'];
+        }
+        else {
+            className = ['e-uncheck'];
+            btn.disabled = true;
+        }
+        this.filterState = !btn.disabled;
+        btn.dataBind();
+        removeClass([elem], ['e-check', 'e-stop', 'e-uncheck']);
+        addClass([elem], className);
+    }
+    createFilterItems(data, isInitial) {
+        let cBoxes = this.parent.createElement('div');
+        let btn = this.dialogObj.btnObj[0];
+        let nullCounter = -1;
+        for (let i = 0; i < data.length; i++) {
+            let val = getValue('ejValue', data[i]);
+            if (val === '' || isNullOrUndefined(val)) {
+                nullCounter = nullCounter + 1;
+            }
+        }
+        this.itemsCnt = nullCounter !== -1 ? data.length - nullCounter : data.length;
+        if (data.length && !this.renderEmpty) {
+            let selectAllValue = this.getLocalizedLabel('SelectAll');
+            let checkBox = this.createCheckbox(selectAllValue, false, { [this.options.field]: selectAllValue });
+            let selectAll = createCboxWithWrap(getUid('cbox'), checkBox, 'e-ftrchk');
+            selectAll.querySelector('.e-frame').classList.add('e-selectall');
+            cBoxes.appendChild(selectAll);
+            let predicate = new Predicate('field', 'equal', this.options.field);
+            if (this.options.foreignKeyValue) {
+                predicate = predicate.or('field', 'equal', this.options.foreignKeyValue);
+            }
+            let isColFiltered = new DataManager(this.options.filteredColumns).executeLocal(new Query().where(predicate)).length;
+            let isRndere;
+            for (let i = 0; i < data.length; i++) {
+                let uid = getUid('cbox');
+                this.values[uid] = getValue('ejValue', data[i]);
+                let value = this.valueFormatter.toView(getValue(this.options.field, data[i]), this.options.formatFn);
+                if ((value === '' || isNullOrUndefined(value))) {
+                    if (isRndere) {
+                        continue;
+                    }
+                    isRndere = true;
+                }
+                let checkbox = this.createCheckbox(value, this.getCheckedState(isColFiltered, this.values[uid]), getValue('dataObj', data[i]));
+                cBoxes.appendChild(createCboxWithWrap(uid, checkbox, 'e-ftrchk'));
+            }
+            this.cBox.innerHTML = '';
+            appendChildren(this.cBox, [].slice.call(cBoxes.children));
+            this.updateIndeterminatenBtn();
+            btn.disabled = false;
+        }
+        else {
+            cBoxes.appendChild(this.parent.createElement('span', { innerHTML: this.getLocalizedLabel('NoResult') }));
+            this.cBox.innerHTML = '';
+            appendChildren(this.cBox, [].slice.call(cBoxes.children));
+            btn.disabled = true;
+        }
+        this.filterState = !btn.disabled;
+        btn.dataBind();
+        let args = { requestType: filterChoiceRequest, dataSource: this.renderEmpty ? [] : data };
+        if (!isBlazor() || this.parent.isJsComponent) {
+            let filterModel = 'filterModel';
+            args[filterModel] = this;
+        }
+        this.parent.notify(cBoxFltrComplete, args);
+        hideSpinner(this.spinner);
+    }
+    getCheckedState(isColFiltered, value) {
+        if (!this.isFiltered || !isColFiltered) {
+            return true;
+        }
+        else {
+            return this.result[value];
+        }
+    }
+    static getDistinct(json, field, column, foreignKeyData$$1) {
+        let len = json.length;
+        let result = [];
+        let value;
+        let ejValue = 'ejValue';
+        let lookup = {};
+        let isForeignKey = column && column.isForeignColumn();
+        while (len--) {
+            value = json[len];
+            value = getObject(field, value); //local remote diff, check with mdu   
+            if (!(value in lookup)) {
+                let obj = {};
+                obj[ejValue] = value;
+                lookup[value] = true;
+                if (isForeignKey) {
+                    let foreignDataObj = getForeignData(column, {}, value, foreignKeyData$$1)[0];
+                    setValue(foreignKeyData, foreignDataObj, json[len]);
+                    value = getValue(column.foreignKeyValue, foreignDataObj);
+                }
+                setValue(field, isNullOrUndefined(value) ? null : value, obj);
+                setValue('dataObj', json[len], obj);
+                result.push(obj);
+            }
+        }
+        return DataUtil.group(DataUtil.sort(result, field, DataUtil.fnAscending), 'ejValue');
+    }
+    static getPredicate(columns) {
+        let cols = DataUtil.distinct(columns, 'field', true) || [];
+        let collection = [];
+        let pred = {};
+        for (let i = 0; i < cols.length; i++) {
+            collection = new DataManager(columns).executeLocal(new Query().where('field', 'equal', cols[i].field));
+            if (collection.length !== 0) {
+                pred[cols[i].field] = CheckBoxFilterBase.generatePredicate(collection);
+            }
+        }
+        return pred;
+    }
+    static generatePredicate(cols) {
+        let len = cols ? cols.length : 0;
+        let predicate;
+        let first;
+        first = CheckBoxFilterBase.updateDateFilter(cols[0]);
+        first.ignoreAccent = !isNullOrUndefined(first.ignoreAccent) ? first.ignoreAccent : false;
+        if (first.type === 'date' || first.type === 'datetime') {
+            predicate = getDatePredicate(first, first.type);
+        }
+        else {
+            predicate = first.ejpredicate ? first.ejpredicate :
+                new Predicate(first.field, first.operator, first.value, !CheckBoxFilterBase.getCaseValue(first), first.ignoreAccent);
+        }
+        for (let p = 1; p < len; p++) {
+            cols[p] = CheckBoxFilterBase.updateDateFilter(cols[p]);
+            if (len > 2 && p > 1 && cols[p].predicate === 'or') {
+                if (cols[p].type === 'date' || cols[p].type === 'datetime') {
+                    predicate.predicates.push(getDatePredicate(cols[p], cols[p].type));
+                }
+                else {
+                    predicate.predicates.push(new Predicate(cols[p].field, cols[p].operator, cols[p].value, !CheckBoxFilterBase.getCaseValue(cols[p]), cols[p].ignoreAccent));
+                }
+            }
+            else {
+                if (cols[p].type === 'date' || cols[p].type === 'datetime') {
+                    predicate = predicate[(cols[p].predicate)](getDatePredicate(cols[p]), cols[p].type, cols[p].ignoreAccent);
+                }
+                else {
+                    /* tslint:disable-next-line:max-line-length */
+                    predicate = cols[p].ejpredicate ?
+                        predicate[cols[p].predicate](cols[p].ejpredicate) :
+                        predicate[(cols[p].predicate)](cols[p].field, cols[p].operator, cols[p].value, !CheckBoxFilterBase.getCaseValue(cols[p]), cols[p].ignoreAccent);
+                }
+            }
+        }
+        return predicate || null;
+    }
+    static getCaseValue(filter) {
+        if (isNullOrUndefined(filter.matchCase)) {
+            return true;
+        }
+        else {
+            return filter.matchCase;
+        }
+    }
+    static updateDateFilter(filter) {
+        if ((filter.type === 'date' || filter.type === 'datetime' || filter.value instanceof Date)) {
+            filter.type = filter.type || 'date';
+        }
+        return filter;
+    }
+}
+
+/**
+ * @hidden
+ * `ExcelFilter` module is used to handle filtering action.
+ */
+class ExcelFilterBase extends CheckBoxFilterBase {
+    /**
+     * Constructor for excel filtering module
+     * @hidden
+     */
+    constructor(parent, filterSettings, customFltrOperators) {
+        super(parent, filterSettings);
+        this.customFilterOperators = customFltrOperators;
+        this.isExcel = true;
+    }
+    getCMenuDS(type, operator) {
+        let options = {
+            number: ['Equal', 'NotEqual', '', 'LessThan', 'LessThanOrEqual', 'GreaterThan',
+                'GreaterThanOrEqual', 'Between', '', 'CustomFilter'],
+            string: ['Equal', 'NotEqual', '', 'StartsWith', 'EndsWith', '', 'Contains', '', 'CustomFilter'],
+        };
+        options.date = options.number;
+        options.datetime = options.number;
+        let model = [];
+        for (let i = 0; i < options[type].length; i++) {
+            if (options[type][i].length) {
+                if (operator) {
+                    model.push({
+                        text: this.getLocalizedLabel(options[type][i]) + '...',
+                        iconCss: 'e-icons e-icon-check ' + (operator === options[type][i].toLowerCase() ? '' : 'e-emptyicon')
+                    });
+                }
+                else {
+                    model.push({
+                        text: this.getLocalizedLabel(options[type][i]) + '...'
+                    });
+                }
+            }
+            else {
+                model.push({ separator: true });
+            }
+        }
+        return model;
+    }
+    /**
+     * To destroy the filter bar.
+     * @return {void}
+     * @hidden
+     */
+    destroy() {
+        if (this.dlg) {
+            this.unwireExEvents();
+            super.destroy();
+        }
+        if (this.cmenu && this.cmenu.parentElement) {
+            remove(this.cmenu);
+        }
+    }
+    createMenu(type, isFiltered, isCheckIcon) {
+        let options = { string: 'TextFilter', date: 'DateFilter', datetime: 'DateTimeFilter', number: 'NumberFilter' };
+        this.menu = this.parent.createElement('div', { className: 'e-contextmenu-wrapper' });
+        if (this.parent.enableRtl) {
+            this.menu.classList.add('e-rtl');
+        }
+        else {
+            this.menu.classList.remove('e-rtl');
+        }
+        let ul = this.parent.createElement('ul');
+        let icon = isFiltered ? 'e-excl-filter-icon e-filtered' : 'e-excl-filter-icon';
+        ul.appendChild(this.createMenuElem(this.getLocalizedLabel('ClearFilter'), isFiltered ? '' : 'e-disabled', icon));
+        if (type !== 'boolean') {
+            ul.appendChild(this.createMenuElem(this.getLocalizedLabel(options[type]), 'e-submenu', isCheckIcon && this.ensureTextFilter() ? 'e-icon-check' : icon + ' e-emptyicon', true));
+        }
+        this.menu.appendChild(ul);
+    }
+    createMenuElem(val, className, iconName, isSubMenu) {
+        let li = this.parent.createElement('li', { className: className + ' e-menu-item' });
+        li.innerHTML = val;
+        li.insertBefore(this.parent.createElement('span', { className: 'e-menu-icon e-icons ' + iconName }), li.firstChild);
+        if (isSubMenu) {
+            li.appendChild(this.parent.createElement('span', { className: 'e-icons e-caret' }));
+        }
+        return li;
+    }
+    wireExEvents() {
+        EventHandler.add(this.dlg, 'mouseover', this.hoverHandler, this);
+        EventHandler.add(this.dlg, 'click', this.clickExHandler, this);
+    }
+    unwireExEvents() {
+        EventHandler.remove(this.dlg, 'mouseover', this.hoverHandler);
+        EventHandler.remove(this.dlg, 'click', this.clickExHandler);
+    }
+    clickExHandler(e) {
+        let menuItem = parentsUntil(e.target, 'e-menu-item');
+        if (menuItem && this.getLocalizedLabel('ClearFilter') === menuItem.innerText.trim()) {
+            this.clearFilter();
+            this.closeDialog();
+        }
+    }
+    destroyCMenu() {
+        if (this.menuObj && !this.menuObj.isDestroyed) {
+            this.menuObj.destroy();
+            remove(this.cmenu);
+        }
+    }
+    hoverHandler(e) {
+        let target = e.target.querySelector('.e-contextmenu');
+        let li = parentsUntil(e.target, 'e-menu-item');
+        let focused = this.menu.querySelector('.e-focused');
+        let isSubMenu;
+        if (focused) {
+            focused.classList.remove('e-focused');
+        }
+        if (li) {
+            li.classList.add('e-focused');
+            isSubMenu = li.classList.contains('e-submenu');
+        }
+        if (target) {
+            return;
+        }
+        if (!isSubMenu) {
+            let submenu = this.menu.querySelector('.e-submenu');
+            if (!isNullOrUndefined(submenu)) {
+                submenu.classList.remove('e-selected');
+            }
+            this.isCMenuOpen = false;
+            this.destroyCMenu();
+        }
+        let selectedMenu = this.ensureTextFilter();
+        if (!this.isCMenuOpen && isSubMenu) {
+            li.classList.add('e-selected');
+            this.isCMenuOpen = true;
+            let menuOptions = {
+                items: this.getCMenuDS(this.options.type, selectedMenu ? selectedMenu.replace(/\s/g, '') : undefined),
+                select: this.selectHandler.bind(this),
+                onClose: this.destroyCMenu.bind(this),
+                enableRtl: this.parent.enableRtl,
+                beforeClose: this.preventClose
+            };
+            this.parent.element.appendChild(this.cmenu);
+            this.menuObj = new ContextMenu(menuOptions, this.cmenu);
+            let client = this.menu.querySelector('.e-submenu').getBoundingClientRect();
+            let pos = { top: 0, left: 0 };
+            if (Browser.isDevice) {
+                let contextRect = this.getContextBounds(this.menuObj);
+                pos.top = (window.innerHeight - contextRect.height) / 2;
+                pos.left = (window.innerWidth - contextRect.width) / 2;
+                this.closeDialog();
+            }
+            else {
+                pos.top = Browser.isIE ? window.pageYOffset + client.top : window.scrollY + client.top;
+                pos.left = this.getCMenuYPosition(this.dlg, this.menuObj);
+            }
+            this.menuObj.open(pos.top, pos.left, e.target);
+            this.parent.applyBiggerTheme(this.menuObj.element.parentElement);
+        }
+    }
+    ensureTextFilter() {
+        let selectedMenu;
+        let predicates = this.existingPredicate[this.options.field];
+        if (predicates && predicates.length === 2) {
+            if (predicates[0].operator === 'greaterthanorequal' && predicates[1].operator === 'lessthanorequal') {
+                selectedMenu = 'between';
+            }
+            else {
+                selectedMenu = 'customfilter';
+            }
+        }
+        else {
+            if (predicates && predicates.length === 1) {
+                this.optrData = this.customFilterOperators[this.options.type + 'Operator'];
+                selectedMenu = predicates[0].operator;
+            }
+        }
+        return selectedMenu;
+    }
+    preventClose(args) {
+        if (args.event instanceof MouseEvent && args.event.target.classList.contains('e-submenu')) {
+            args.cancel = true;
+        }
+    }
+    getContextBounds(context) {
+        let elementVisible = this.menuObj.element.style.display;
+        this.menuObj.element.style.display = 'block';
+        return this.menuObj.element.getBoundingClientRect();
+    }
+    getCMenuYPosition(target, context) {
+        let contextWidth = this.getContextBounds(context).width;
+        let targetPosition = target.getBoundingClientRect();
+        let leftPos = targetPosition.right + contextWidth - this.parent.element.clientWidth;
+        let targetBorder = target.offsetWidth - target.clientWidth;
+        targetBorder = targetBorder ? targetBorder + 1 : 0;
+        return (leftPos < 1) ? (targetPosition.right + 1 - targetBorder) : (targetPosition.left - contextWidth - 1 + targetBorder);
+    }
+    openDialog(options) {
+        this.updateModel(options);
+        this.getAndSetChkElem(options);
+        this.showDialog(options);
+        this.dialogObj.dataBind();
+        let filterLength = (this.existingPredicate[options.field] && this.existingPredicate[options.field].length) ||
+            this.options.filteredColumns.filter((col) => {
+                return this.options.field === col.field;
+            }).length;
+        this.createMenu(options.type, filterLength > 0, (filterLength === 1 || filterLength === 2));
+        this.dlg.insertBefore(this.menu, this.dlg.firstChild);
+        this.dlg.classList.add('e-excelfilter');
+        this.dlg.classList.remove('e-checkboxfilter');
+        this.cmenu = this.parent.createElement('ul', { className: 'e-excel-menu' });
+        this.wireExEvents();
+    }
+    closeDialog() {
+        super.closeDialog();
+    }
+    selectHandler(e) {
+        if (e.item) {
+            this.menuItem = e.item;
+            this.renderDialogue(e);
+        }
+    }
+    renderDialogue(e) {
+        let target = e.element;
+        let column = this.options.field;
+        let isComplex = !isNullOrUndefined(column) && isComplexField(column);
+        let complexFieldName = !isNullOrUndefined(column) && getComplexFieldID(column);
+        let mainDiv = this.parent.createElement('div', {
+            className: 'e-xlfl-maindiv',
+            id: isComplex ? complexFieldName + '-xlflmenu' : column + '-xlflmenu'
+        });
+        this.dlgDiv = this.parent.createElement('div', {
+            className: 'e-xlflmenu',
+            id: isComplex ? complexFieldName + '-xlfldlg' : column + '-xlfldlg'
+        });
+        this.parent.element.appendChild(this.dlgDiv);
+        this.dlgObj = new Dialog({
+            header: this.getLocalizedLabel('CustomFilter'),
+            isModal: true,
+            overlayClick: this.removeDialog.bind(this),
+            showCloseIcon: true,
+            closeOnEscape: false,
+            target: document.body,
+            // target: this.parent.element,
+            visible: false,
+            enableRtl: this.parent.enableRtl,
+            open: () => {
+                let row = this.dlgObj.element.querySelector('table.e-xlfl-table>tr');
+                if (this.options.column.filterTemplate) {
+                    if (isBlazor()) {
+                        row.querySelector('.e-xlfl-valuediv').children[0].focus();
+                    }
+                    else {
+                        row.querySelector('#' + this.options.column.field + '-xlfl-frstvalue').focus();
+                    }
+                }
+                else {
+                    row.cells[1].querySelector('input:not([type=hidden])').focus();
+                }
+            },
+            close: this.removeDialog.bind(this),
+            created: this.createdDialog.bind(this, target, column),
+            buttons: [{
+                    click: this.filterBtnClick.bind(this, column),
+                    buttonModel: {
+                        content: this.getLocalizedLabel('OKButton'), isPrimary: true, cssClass: 'e-xlfl-okbtn'
+                    }
+                },
+                {
+                    click: this.removeDialog.bind(this),
+                    buttonModel: { content: this.getLocalizedLabel('CancelButton'), cssClass: 'e-xlfl-cancelbtn' }
+                }],
+            content: mainDiv,
+            width: 430,
+            animationSettings: { effect: 'None' },
+        });
+        let isStringTemplate = 'isStringTemplate';
+        this.dlgObj[isStringTemplate] = true;
+        this.dlgObj.appendTo(this.dlgDiv);
+    }
+    removeDialog() {
+        if (isBlazor()) {
+            let columns = this.parent.getColumns();
+            for (let i = 0; i < columns.length; i++) {
+                if (columns[i].filterTemplate) {
+                    let tempID = this.parent.element.id + columns[i].uid + 'filterTemplate';
+                    updateBlazorTemplate(tempID, 'FilterTemplate', columns[i]);
+                }
+            }
+        }
+        this.removeObjects([this.dropOptr, this.datePicker, this.dateTimePicker, this.actObj, this.numericTxtObj, this.dlgObj]);
+        remove(this.dlgDiv);
+    }
+    createdDialog(target, column) {
+        this.renderCustomFilter(target, column);
+        this.dlgObj.element.style.left = '0px';
+        this.dlgObj.element.style.top = '0px';
+        if (Browser.isDevice && window.innerWidth < 440) {
+            this.dlgObj.element.style.width = '90%';
+        }
+        this.parent.notify(beforeCustomFilterOpen, { column: column, dialog: this.dialogObj });
+        this.dlgObj.show();
+        this.parent.applyBiggerTheme(this.dlgObj.element.parentElement);
+    }
+    renderCustomFilter(target, column) {
+        let dlgConetntEle = this.dlgObj.element.querySelector('.e-xlfl-maindiv');
+        /* tslint:disable-next-line:max-line-length */
+        let dlgFields = this.parent.createElement('div', { innerHTML: this.getLocalizedLabel('ShowRowsWhere'), className: 'e-xlfl-dlgfields' });
+        dlgConetntEle.appendChild(dlgFields);
+        //column name
+        let fieldSet = this.parent.createElement('div', { innerHTML: this.options.displayName, className: 'e-xlfl-fieldset' });
+        dlgConetntEle.appendChild(fieldSet);
+        this.renderFilterUI(column, dlgConetntEle);
+    }
+    filterBtnClick(col) {
+        let isComplex = !isNullOrUndefined(col) && isComplexField(col);
+        let complexFieldName = !isNullOrUndefined(col) && getComplexFieldID(col);
+        let colValue = isComplex ? complexFieldName : col;
+        let fValue = this.parent.getColumnByField(col).filterTemplate && isBlazor() ?
+            this.dlgDiv.querySelector('.-xlfl-frstvalue').children[0].querySelector('.e-control').ej2_instances[0]
+            : this.dlgDiv.querySelector('#' + colValue + '-xlfl-frstvalue').ej2_instances[0];
+        let fOperator = this.dlgDiv.querySelector('#' + colValue + '-xlfl-frstoptr').ej2_instances[0];
+        let sValue = this.parent.getColumnByField(col).filterTemplate && isBlazor() ?
+            this.dlgDiv.querySelector('.-xlfl-secndvalue').children[0].querySelector('.e-control').ej2_instances[0]
+            : this.dlgDiv.querySelector('#' + colValue + '-xlfl-secndvalue').ej2_instances[0];
+        let sOperator = this.dlgDiv.querySelector('#' + colValue + '-xlfl-secndoptr').ej2_instances[0];
+        let checkBoxValue;
+        if (this.options.type === 'string') {
+            let checkBox = this.dlgDiv.querySelector('#' + colValue + '-xlflmtcase').ej2_instances[0];
+            checkBoxValue = checkBox.checked;
+        }
+        let andRadio = this.dlgDiv.querySelector('#' + colValue + 'e-xlfl-frstpredicate').ej2_instances[0];
+        let orRadio = this.dlgDiv.querySelector('#' + colValue + 'e-xlfl-secndpredicate').ej2_instances[0];
+        let predicate = (andRadio.checked ? 'and' : 'or');
+        if (sValue.value === null) {
+            predicate = 'or';
+        }
+        this.filterByColumn(this.options.field, fOperator.value, fValue.value, predicate, checkBoxValue, this.parent.filterSettings.ignoreAccent, sOperator.value, sValue.value);
+        this.removeDialog();
+    }
+    /**
+     * @hidden
+     * Filters grid row by column name with given options.
+     * @param {string} fieldName - Defines the field name of the filter column.
+     * @param {string} firstOperator - Defines the first operator by how to filter records.
+     * @param {string | number | Date | boolean} firstValue - Defines the first value which is used to filter records.
+     * @param  {string} predicate - Defines the relationship between one filter query with another by using AND or OR predicate.
+     * @param {boolean} matchCase - If ignore case set to true, then filter records with exact match or else
+     * filter records with case insensitive(uppercase and lowercase letters treated as same).
+     * @param {boolean} ignoreAccent - If ignoreAccent set to true, then ignores the diacritic characters or accents when filtering.
+     * @param {string} secondOperator - Defines the second operator by how to filter records.
+     * @param {string | number | Date | boolean} secondValue - Defines the first value which is used to filter records.
+     */
+    filterByColumn(fieldName, firstOperator, firstValue, predicate, matchCase, ignoreAccent, secondOperator, secondValue) {
+        let col = this.parent.getColumnByField(fieldName);
+        let field = col.isForeignColumn() ? col.foreignKeyValue : fieldName;
+        let fColl = [];
+        let mPredicate;
+        fColl.push({
+            field: field,
+            predicate: predicate,
+            matchCase: matchCase,
+            ignoreAccent: ignoreAccent,
+            operator: firstOperator,
+            value: firstValue,
+            type: this.options.type
+        });
+        let arg = {
+            instance: this, handler: this.filterByColumn, arg1: fieldName, arg2: firstOperator, arg3: firstValue, arg4: predicate,
+            arg5: matchCase, arg6: ignoreAccent, arg7: secondOperator, arg8: secondValue, cancel: false
+        };
+        this.parent.notify(fltrPrevent, arg);
+        if (arg.cancel) {
+            return;
+        }
+        mPredicate = new Predicate(field, firstOperator.toLowerCase(), firstValue, !matchCase, ignoreAccent);
+        if (!isNullOrUndefined(secondValue)) {
+            secondOperator = !isNullOrUndefined(secondOperator) ? secondOperator : 'equal';
+            fColl.push({
+                field: field,
+                predicate: predicate,
+                matchCase: matchCase,
+                ignoreAccent: ignoreAccent,
+                operator: secondOperator,
+                value: secondValue,
+                type: this.options.type
+            });
+            /* tslint:disable-next-line:max-line-length */
+            mPredicate = mPredicate[predicate](field, secondOperator.toLowerCase(), secondValue, !matchCase, ignoreAccent);
+        }
+        let args = {
+            action: 'filtering', filterCollection: fColl, field: this.options.field,
+            ejpredicate: mPredicate, actualPredicate: fColl
+        };
+        if (col.isForeignColumn()) {
+            this.foreignKeyFilter(args, fColl, mPredicate);
+        }
+        else {
+            this.options.handler(args);
+        }
+    }
+    /* tslint:disable-next-line:max-line-length */
+    renderOperatorUI(column, table, elementID, predicates, isFirst) {
+        let fieldElement = this.parent.createElement('tr', { className: 'e-xlfl-fields' });
+        table.appendChild(fieldElement);
+        let xlfloptr = this.parent.createElement('td', { className: 'e-xlfl-optr' });
+        fieldElement.appendChild(xlfloptr);
+        let optrDiv = this.parent.createElement('div', { className: 'e-xlfl-optrdiv' });
+        let isComplex = !isNullOrUndefined(column) && isComplexField(column);
+        let complexFieldName = !isNullOrUndefined(column) && getComplexFieldID(column);
+        let optrInput = this.parent
+            .createElement('input', { id: isComplex ? complexFieldName + elementID : column + elementID });
+        optrDiv.appendChild(optrInput);
+        xlfloptr.appendChild(optrDiv);
+        let optr = this.options.type + 'Operator';
+        let dropDatasource = this.customFilterOperators[optr];
+        this.optrData = dropDatasource;
+        let selectedValue = this.dropSelectedVal(this.parent.getColumnByField(column), predicates, isFirst);
+        //Trailing three dots are sliced.
+        let menuText = '';
+        if (this.menuItem) {
+            menuText = this.menuItem.text.slice(0, -3);
+            if (menuText !== this.getLocalizedLabel('CustomFilter')) {
+                selectedValue = isFirst ? menuText : undefined;
+            }
+            if (menuText === this.getLocalizedLabel('Between')) {
+                selectedValue = this.getLocalizedLabel(isFirst ? 'GreaterThanOrEqual' : 'LessThanOrEqual');
+            }
+        }
+        let col = this.parent.getColumnByField(column);
+        this.dropOptr = new DropDownList(extend$1({
+            dataSource: dropDatasource,
+            fields: { text: 'text', value: 'value' },
+            text: selectedValue,
+            open: this.dropDownOpen.bind(this),
+            enableRtl: this.parent.enableRtl
+        }, col.filter.params));
+        this.dropOptr.appendTo(optrInput);
+        let operator = this.getSelectedValue(selectedValue);
+        return { fieldElement, operator };
+    }
+    dropDownOpen(args) {
+        args.popup.element.style.zIndex = (this.dialogObj.zIndex + 1).toString();
+    }
+    getSelectedValue(text) {
+        let selectedField = new DataManager(this.optrData).executeLocal(new Query().where('text', 'equal', text));
+        return !isNullOrUndefined(selectedField[0]) ? selectedField[0].value : '';
+    }
+    dropSelectedVal(col, predicates, isFirst) {
+        let operator;
+        if (predicates && predicates.length > 0) {
+            operator = predicates.length === 2 ?
+                (isFirst ? predicates[0].operator : predicates[1].operator) :
+                (isFirst ? predicates[0].operator : undefined);
+        }
+        else {
+            operator = isFirst ? col.filter.operator || 'equal' : undefined;
+        }
+        return this.getSelectedText(operator);
+    }
+    getSelectedText(operator) {
+        let selectedField = new DataManager(this.optrData).executeLocal(new Query().where('value', 'equal', operator));
+        return !isNullOrUndefined(selectedField[0]) ? selectedField[0].text : '';
+    }
+    renderFilterUI(column, dlgConetntEle) {
+        let predicates = this.existingPredicate[column];
+        let table = this.parent.createElement('table', { className: 'e-xlfl-table' });
+        dlgConetntEle.appendChild(table);
+        let colGroup = this.parent.createElement('colGroup');
+        colGroup.innerHTML = '<col style="width: 50%"></col><col style="width: 50%"></col>';
+        table.appendChild(colGroup);
+        //Renders first dropdown
+        /* tslint:disable-next-line:max-line-length */
+        let optr = this.renderOperatorUI(column, table, '-xlfl-frstoptr', predicates, true);
+        //Renders first value
+        this.renderFlValueUI(column, optr, '-xlfl-frstvalue', predicates, true);
+        let predicate = this.parent.createElement('tr', { className: 'e-xlfl-predicate' });
+        table.appendChild(predicate);
+        //Renders first radion button
+        this.renderRadioButton(column, predicate, predicates);
+        //Renders second dropdown
+        optr = this.renderOperatorUI(column, table, '-xlfl-secndoptr', predicates, false);
+        //Renders second text box
+        this.renderFlValueUI(column, optr, '-xlfl-secndvalue', predicates, false);
+    }
+    renderRadioButton(column, tr, predicates) {
+        let td = this.parent.createElement('td', { className: 'e-xlfl-radio', attrs: { 'colSpan': '2' } });
+        tr.appendChild(td);
+        let radioDiv = this.parent
+            .createElement('div', { className: 'e-xlfl-radiodiv', attrs: { 'style': 'display: inline-block' } });
+        let isComplex = !isNullOrUndefined(column) && isComplexField(column);
+        let complexFieldName = !isNullOrUndefined(column) && getComplexFieldID(column);
+        /* tslint:disable-next-line:max-line-length */
+        let frstpredicate = this.parent.createElement('input', { id: isComplex ? complexFieldName + 'e-xlfl-frstpredicate' : column + 'e-xlfl-frstpredicate', attrs: { 'type': 'radio' } });
+        /* tslint:disable-next-line:max-line-length */
+        let secndpredicate = this.parent.createElement('input', { id: isComplex ? complexFieldName + 'e-xlfl-secndpredicate' : column + 'e-xlfl-secndpredicate', attrs: { 'type': 'radio' } });
+        //appends into div
+        radioDiv.appendChild(frstpredicate);
+        radioDiv.appendChild(secndpredicate);
+        td.appendChild(radioDiv);
+        if (this.options.type === 'string') {
+            this.renderMatchCase(column, tr, td, '-xlflmtcase', predicates);
+        }
+        // Initialize AND RadioButton component.
+        /* tslint:disable-next-line:max-line-length */
+        let andRadio = new RadioButton({ label: this.getLocalizedLabel('AND'), name: 'default', cssClass: 'e-xlfl-radio-and', checked: true, enableRtl: this.parent.enableRtl });
+        // Initialize OR RadioButton component.
+        /* tslint:disable-next-line:max-line-length */
+        let orRadio = new RadioButton({ label: this.getLocalizedLabel('OR'), name: 'default', cssClass: 'e-xlfl-radio-or', enableRtl: this.parent.enableRtl });
+        let flValue = predicates && predicates.length === 2 ? predicates[1].predicate : 'and';
+        if (flValue === 'and') {
+            andRadio.checked = true;
+            orRadio.checked = false;
+        }
+        else {
+            orRadio.checked = true;
+            andRadio.checked = false;
+        }
+        // Render initialized RadioButton.
+        andRadio.appendTo(frstpredicate);
+        orRadio.appendTo(secndpredicate);
+    }
+    /* tslint:disable-next-line:no-any */
+    removeObjects(elements) {
+        for (let obj of elements) {
+            if (obj && !obj.isDestroyed) {
+                obj.destroy();
+            }
+        }
+    }
+    /* tslint:disable-next-line:max-line-length */
+    renderFlValueUI(column, optr, elementId, predicates, isFirst) {
+        let value = this.parent.createElement('td', { className: 'e-xlfl-value' });
+        optr.fieldElement.appendChild(value);
+        let isComplex = !isNullOrUndefined(column) && isComplexField(column);
+        let complexFieldName = !isNullOrUndefined(column) && getComplexFieldID(column);
+        let valueDiv = this.parent.createElement('div', { className: 'e-xlfl-valuediv' });
+        let isFilteredCol = this.filterSettings.columns.some((col) => { return column === col.field; });
+        let fltrPredicates = this.options.filteredColumns.filter((col) => col.field === column);
+        if (this.options.column.filterTemplate) {
+            let data = {};
+            let columnObj = this.parent.getColumnByField(column);
+            if (isFilteredCol && elementId) {
+                data = this.getExcelFilterData(elementId, data, columnObj, predicates, fltrPredicates);
+            }
+            let tempID = this.parent.element.id + columnObj.uid + 'filterTemplate';
+            let element = this.options.column.getFilterTemplate()(data, this.parent, 'filterTemplate', tempID);
+            appendChildren(valueDiv, element);
+            if (isBlazor()) {
+                valueDiv.children[0].classList.add(elementId);
+                if (this.dlgDiv.querySelectorAll('.e-xlfl-value').length > 1) {
+                    updateBlazorTemplate(tempID, 'FilterTemplate', columnObj);
+                }
+            }
+            else {
+                valueDiv.children[0].id = isComplex ? complexFieldName + elementId : column + elementId;
+            }
+            value.appendChild(valueDiv);
+        }
+        else {
+            let valueInput = this.parent
+                .createElement('input', { id: isComplex ? complexFieldName + elementId : column + elementId });
+            valueDiv.appendChild(valueInput);
+            value.appendChild(valueDiv);
+            let flValue;
+            let predicate;
+            if (predicates && predicates.length > 0) {
+                predicate = predicates.length === 2 ?
+                    (isFirst ? predicates[0] : predicates[1]) :
+                    (isFirst ? predicates[0] : undefined);
+                flValue = (predicate && predicate.operator === optr.operator) ? predicate.value : undefined;
+            }
+            let types = {
+                'string': this.renderAutoComplete.bind(this),
+                'number': this.renderNumericTextBox.bind(this),
+                'date': this.renderDate.bind(this),
+                'datetime': this.renderDateTime.bind(this)
+            };
+            types[this.options.type](this.options, column, valueInput, flValue, this.parent.enableRtl);
+        }
+    }
+    /* tslint:disable-next-line:max-line-length */
+    getExcelFilterData(elementId, data, columnObj, predicates, fltrPredicates) {
+        let predIndex = elementId === '-xlfl-frstvalue' ? 0 : 1;
+        if (elementId === '-xlfl-frstvalue' || fltrPredicates.length > 1) {
+            data = { column: predicates instanceof Array ? predicates[predIndex] : predicates };
+            let indx = this.options.column.columnData && fltrPredicates.length > 1 ?
+                (this.options.column.columnData.length === 1 ? 0 : 1) : predIndex;
+            data[this.options.field] = columnObj.foreignKeyValue ? this.options.column.columnData[indx][columnObj.foreignKeyValue] :
+                fltrPredicates[indx].value;
+            if (this.options.foreignKeyValue) {
+                data[this.options.foreignKeyValue] = this.options.column.columnData[indx][columnObj.foreignKeyValue];
+            }
+        }
+        return data;
+    }
+    /* tslint:disable-next-line:max-line-length */
+    renderMatchCase(column, tr, matchCase, elementId, predicates) {
+        /* tslint:disable-next-line:max-line-length */
+        let matchCaseDiv = this.parent.createElement('div', { className: 'e-xlfl-matchcasediv', attrs: { 'style': 'display: inline-block' } });
+        let isComplex = !isNullOrUndefined(column) && isComplexField(column);
+        let complexFieldName = !isNullOrUndefined(column) && getComplexFieldID(column);
+        let matchCaseInput = this.parent.createElement('input', { id: isComplex ? complexFieldName + elementId : column + elementId, attrs: { 'type': 'checkbox' } });
+        matchCaseDiv.appendChild(matchCaseInput);
+        matchCase.appendChild(matchCaseDiv);
+        let flValue = predicates && predicates.length > 0 ?
+            (predicates && predicates.length === 2 ? predicates[1].matchCase : predicates[0].matchCase) :
+            false;
+        // Initialize Match Case check box.
+        let checkbox = new CheckBox({
+            label: this.getLocalizedLabel('MatchCase'),
+            enableRtl: this.parent.enableRtl, checked: flValue
+        });
+        // Render initialized CheckBox.
+        checkbox.appendTo(matchCaseInput);
+    }
+    /* tslint:disable-next-line:max-line-length */
+    renderDate(options, column, inputValue, fValue, isRtl) {
+        let format = getCustomDateFormat(options.format, options.type);
+        this.datePicker = new DatePicker(extend$1({
+            format: format,
+            cssClass: 'e-popup-flmenu',
+            placeholder: this.getLocalizedLabel('CustomFilterDatePlaceHolder'),
+            width: '100%',
+            enableRtl: isRtl,
+            value: new Date(fValue),
+        }, options.column.filter.params));
+        this.datePicker.appendTo(inputValue);
+    }
+    /* tslint:disable-next-line:max-line-length */
+    renderDateTime(options, column, inputValue, fValue, isRtl) {
+        let format = getCustomDateFormat(options.format, options.type);
+        this.dateTimePicker = new DateTimePicker(extend$1({
+            format: format,
+            cssClass: 'e-popup-flmenu',
+            placeholder: this.getLocalizedLabel('CustomFilterDatePlaceHolder'),
+            width: '100%',
+            enableRtl: isRtl,
+            value: new Date(fValue),
+        }, options.column.filter.params));
+        this.dateTimePicker.appendTo(inputValue);
+    }
+    completeAction(e) {
+        e.result = distinctStringValues(e.result);
+    }
+    /* tslint:disable-next-line:max-line-length */
+    renderNumericTextBox(options, column, inputValue, fValue, isRtl) {
+        this.numericTxtObj = new NumericTextBox(extend$1({
+            format: options.format,
+            placeholder: this.getLocalizedLabel('CustomFilterPlaceHolder'),
+            enableRtl: isRtl,
+            value: fValue
+        }, options.column.filter.params));
+        this.numericTxtObj.appendTo(inputValue);
+    }
+    /* tslint:disable-next-line:max-line-length */
+    renderAutoComplete(options, column, inputValue, fValue, isRtl) {
+        let colObj = this.parent.getColumnByField(column);
+        let isForeignColumn = colObj.isForeignColumn();
+        let dataSource = isForeignColumn ? colObj.dataSource : options.dataSource;
+        let fields = { value: isForeignColumn ? colObj.foreignKeyValue : column };
+        let actObj = new AutoComplete(extend$1({
+            dataSource: dataSource instanceof DataManager ? dataSource : new DataManager(dataSource),
+            fields: fields,
+            query: this.getQuery(),
+            sortOrder: 'Ascending',
+            locale: this.parent.locale,
+            cssClass: 'e-popup-flmenu',
+            autofill: true,
+            focus: () => {
+                let isComplex = !isNullOrUndefined(column) && isComplexField(column);
+                let complexFieldName = !isNullOrUndefined(column) && getComplexFieldID(column);
+                let columnvalue = isComplex ? complexFieldName : column;
+                actObj.filterType = this.dlgDiv.querySelector('#' + columnvalue +
+                    (inputValue.id === (columnvalue + '-xlfl-frstvalue') ?
+                        '-xlfl-frstoptr' :
+                        '-xlfl-secndoptr')).ej2_instances[0].value;
+                actObj.ignoreCase = options.type === 'string' ?
+                    !this.dlgDiv.querySelector('#' + columnvalue + '-xlflmtcase').ej2_instances[0].checked :
+                    true;
+                actObj.filterType = !isNullOrUndefined(actObj.filterType) ? actObj.filterType :
+                    'equal';
+            },
+            placeholder: this.getLocalizedLabel('CustomFilterPlaceHolder'),
+            enableRtl: isRtl,
+            actionComplete: (e) => {
+                let isComplex = !isNullOrUndefined(column) && isComplexField(column);
+                e.result = e.result.filter((obj, index, arr) => {
+                    return arr.map((mapObject) => {
+                        return isComplex ? this.performComplexDataOperation(actObj.fields.value, mapObject)
+                            : mapObject[actObj.fields.value];
+                    }).indexOf(isComplex ? this.performComplexDataOperation(actObj.fields.value, obj) :
+                        obj[this.actObj.fields.value]) === index;
+                });
+            },
+            value: fValue
+        }, colObj.filter.params));
+        actObj.appendTo(inputValue);
+        this.actObj = actObj;
+    }
+    performComplexDataOperation(value, mapObject) {
+        let returnObj;
+        let length = value.split('.').length;
+        let splits = value.split('.');
+        let duplicateMap = mapObject;
+        for (let i = 0; i < length; i++) {
+            returnObj = duplicateMap[splits[i]];
+            duplicateMap = returnObj;
+        }
+        return returnObj;
+    }
+}
+
+/**
+ * Common export
+ */
 
 /**
  * Base export
@@ -17041,7 +17776,7 @@ class CheckBoxFilter {
         }
         this.parent.on(cBoxFltrBegin, this.actionBegin, this);
         this.parent.on(cBoxFltrComplete, this.actionComplete, this);
-        this.parent.on(cBoxFltrPrevent, this.actionPrevent, this);
+        this.parent.on(fltrPrevent, this.actionPrevent, this);
     }
     removeEventListener() {
         if (this.parent.isDestroyed) {
@@ -17049,715 +17784,7 @@ class CheckBoxFilter {
         }
         this.parent.off(cBoxFltrBegin, this.actionBegin);
         this.parent.off(cBoxFltrComplete, this.actionComplete);
-        this.parent.off(cBoxFltrPrevent, this.actionPrevent);
-    }
-}
-
-/**
- * @hidden
- * `ExcelFilter` module is used to handle filtering action.
- */
-class ExcelFilterBase extends CheckBoxFilterBase {
-    /**
-     * Constructor for excel filtering module
-     * @hidden
-     */
-    constructor(parent, filterSettings, customFltrOperators) {
-        super(parent, filterSettings);
-        this.customFilterOperators = customFltrOperators;
-        this.isExcel = true;
-    }
-    getCMenuDS(type, operator) {
-        let options = {
-            number: ['Equal', 'NotEqual', '', 'LessThan', 'LessThanOrEqual', 'GreaterThan',
-                'GreaterThanOrEqual', 'Between', '', 'CustomFilter'],
-            string: ['Equal', 'NotEqual', '', 'StartsWith', 'EndsWith', '', 'Contains', '', 'CustomFilter'],
-        };
-        options.date = options.number;
-        options.datetime = options.number;
-        let model = [];
-        for (let i = 0; i < options[type].length; i++) {
-            if (options[type][i].length) {
-                if (operator) {
-                    model.push({
-                        text: this.getLocalizedLabel(options[type][i]) + '...',
-                        iconCss: 'e-icons e-icon-check ' + (operator === options[type][i].toLowerCase() ? '' : 'e-emptyicon')
-                    });
-                }
-                else {
-                    model.push({
-                        text: this.getLocalizedLabel(options[type][i]) + '...'
-                    });
-                }
-            }
-            else {
-                model.push({ separator: true });
-            }
-        }
-        return model;
-    }
-    /**
-     * To destroy the filter bar.
-     * @return {void}
-     * @hidden
-     */
-    destroy() {
-        if (this.dlg) {
-            this.unwireExEvents();
-            super.destroy();
-        }
-        if (this.cmenu && this.cmenu.parentElement) {
-            remove(this.cmenu);
-        }
-    }
-    createMenu(type, isFiltered, isCheckIcon) {
-        let options = { string: 'TextFilter', date: 'DateFilter', datetime: 'DateTimeFilter', number: 'NumberFilter' };
-        this.menu = this.parent.createElement('div', { className: 'e-contextmenu-wrapper' });
-        if (this.parent.enableRtl) {
-            this.menu.classList.add('e-rtl');
-        }
-        else {
-            this.menu.classList.remove('e-rtl');
-        }
-        let ul = this.parent.createElement('ul');
-        let icon = isFiltered ? 'e-excl-filter-icon e-filtered' : 'e-excl-filter-icon';
-        ul.appendChild(this.createMenuElem(this.getLocalizedLabel('ClearFilter'), isFiltered ? '' : 'e-disabled', icon));
-        if (type !== 'boolean') {
-            ul.appendChild(this.createMenuElem(this.getLocalizedLabel(options[type]), 'e-submenu', isCheckIcon && this.ensureTextFilter() ? 'e-icon-check' : icon + ' e-emptyicon', true));
-        }
-        this.menu.appendChild(ul);
-    }
-    createMenuElem(val, className, iconName, isSubMenu) {
-        let li = this.parent.createElement('li', { className: className + ' e-menu-item' });
-        li.innerHTML = val;
-        li.insertBefore(this.parent.createElement('span', { className: 'e-menu-icon e-icons ' + iconName }), li.firstChild);
-        if (isSubMenu) {
-            li.appendChild(this.parent.createElement('span', { className: 'e-icons e-caret' }));
-        }
-        return li;
-    }
-    wireExEvents() {
-        EventHandler.add(this.dlg, 'mouseover', this.hoverHandler, this);
-        EventHandler.add(this.dlg, 'click', this.clickExHandler, this);
-    }
-    unwireExEvents() {
-        EventHandler.remove(this.dlg, 'mouseover', this.hoverHandler);
-        EventHandler.remove(this.dlg, 'click', this.clickExHandler);
-    }
-    clickExHandler(e) {
-        let menuItem = parentsUntil(e.target, 'e-menu-item');
-        if (menuItem && this.getLocalizedLabel('ClearFilter') === menuItem.innerText.trim()) {
-            this.clearFilter();
-            this.closeDialog();
-        }
-    }
-    destroyCMenu() {
-        if (this.menuObj && !this.menuObj.isDestroyed) {
-            this.menuObj.destroy();
-            remove(this.cmenu);
-        }
-    }
-    hoverHandler(e) {
-        let target = e.target.querySelector('.e-contextmenu');
-        let li = parentsUntil(e.target, 'e-menu-item');
-        let focused = this.menu.querySelector('.e-focused');
-        let isSubMenu;
-        if (focused) {
-            focused.classList.remove('e-focused');
-        }
-        if (li) {
-            li.classList.add('e-focused');
-            isSubMenu = li.classList.contains('e-submenu');
-        }
-        if (target) {
-            return;
-        }
-        if (!isSubMenu) {
-            let submenu = this.menu.querySelector('.e-submenu');
-            if (!isNullOrUndefined(submenu)) {
-                submenu.classList.remove('e-selected');
-            }
-            this.isCMenuOpen = false;
-            this.destroyCMenu();
-        }
-        let selectedMenu = this.ensureTextFilter();
-        if (!this.isCMenuOpen && isSubMenu) {
-            li.classList.add('e-selected');
-            this.isCMenuOpen = true;
-            let menuOptions = {
-                items: this.getCMenuDS(this.options.type, selectedMenu ? selectedMenu.replace(/\s/g, '') : undefined),
-                select: this.selectHandler.bind(this),
-                onClose: this.destroyCMenu.bind(this),
-                enableRtl: this.parent.enableRtl,
-                beforeClose: this.preventClose
-            };
-            this.parent.element.appendChild(this.cmenu);
-            this.menuObj = new ContextMenu(menuOptions, this.cmenu);
-            let client = this.menu.querySelector('.e-submenu').getBoundingClientRect();
-            let pos = { top: 0, left: 0 };
-            if (Browser.isDevice) {
-                let contextRect = this.getContextBounds(this.menuObj);
-                pos.top = (window.innerHeight - contextRect.height) / 2;
-                pos.left = (window.innerWidth - contextRect.width) / 2;
-                this.closeDialog();
-            }
-            else {
-                pos.top = Browser.isIE ? window.pageYOffset + client.top : window.scrollY + client.top;
-                pos.left = this.getCMenuYPosition(this.dlg, this.menuObj);
-            }
-            this.menuObj.open(pos.top, pos.left, e.target);
-            this.parent.applyBiggerTheme(this.menuObj.element.parentElement);
-        }
-    }
-    ensureTextFilter() {
-        let selectedMenu;
-        let predicates = this.existingPredicate[this.options.field];
-        if (predicates && predicates.length === 2) {
-            if (predicates[0].operator === 'greaterthanorequal' && predicates[1].operator === 'lessthanorequal') {
-                selectedMenu = 'between';
-            }
-            else {
-                selectedMenu = 'customfilter';
-            }
-        }
-        else {
-            if (predicates && predicates.length === 1) {
-                this.optrData = this.customFilterOperators[this.options.type + 'Operator'];
-                selectedMenu = predicates[0].operator;
-            }
-        }
-        return selectedMenu;
-    }
-    preventClose(args) {
-        if (args.event instanceof MouseEvent && args.event.target.classList.contains('e-submenu')) {
-            args.cancel = true;
-        }
-    }
-    getContextBounds(context) {
-        let elementVisible = this.menuObj.element.style.display;
-        this.menuObj.element.style.display = 'block';
-        return this.menuObj.element.getBoundingClientRect();
-    }
-    getCMenuYPosition(target, context) {
-        let contextWidth = this.getContextBounds(context).width;
-        let targetPosition = target.getBoundingClientRect();
-        let leftPos = targetPosition.right + contextWidth - this.parent.element.clientWidth;
-        let targetBorder = target.offsetWidth - target.clientWidth;
-        targetBorder = targetBorder ? targetBorder + 1 : 0;
-        return (leftPos < 1) ? (targetPosition.right + 1 - targetBorder) : (targetPosition.left - contextWidth - 1 + targetBorder);
-    }
-    openDialog(options) {
-        this.updateModel(options);
-        this.getAndSetChkElem(options);
-        this.showDialog(options);
-        this.dialogObj.dataBind();
-        let filterLength = (this.existingPredicate[options.field] && this.existingPredicate[options.field].length) ||
-            this.options.filteredColumns.filter((col) => {
-                return this.options.field === col.field;
-            }).length;
-        this.createMenu(options.type, filterLength > 0, (filterLength === 1 || filterLength === 2));
-        this.dlg.insertBefore(this.menu, this.dlg.firstChild);
-        this.dlg.classList.add('e-excelfilter');
-        this.dlg.classList.remove('e-checkboxfilter');
-        this.cmenu = this.parent.createElement('ul', { className: 'e-excel-menu' });
-        this.wireExEvents();
-    }
-    closeDialog() {
-        super.closeDialog();
-    }
-    selectHandler(e) {
-        if (e.item) {
-            this.menuItem = e.item;
-            this.renderDialogue(e);
-        }
-    }
-    renderDialogue(e) {
-        let target = e.element;
-        let column = this.options.field;
-        let isComplex = !isNullOrUndefined(column) && isComplexField(column);
-        let complexFieldName = !isNullOrUndefined(column) && getComplexFieldID(column);
-        let mainDiv = this.parent.createElement('div', {
-            className: 'e-xlfl-maindiv',
-            id: isComplex ? complexFieldName + '-xlflmenu' : column + '-xlflmenu'
-        });
-        this.dlgDiv = this.parent.createElement('div', {
-            className: 'e-xlflmenu',
-            id: isComplex ? complexFieldName + '-xlfldlg' : column + '-xlfldlg'
-        });
-        this.parent.element.appendChild(this.dlgDiv);
-        this.dlgObj = new Dialog({
-            header: this.getLocalizedLabel('CustomFilter'),
-            isModal: true,
-            overlayClick: this.removeDialog.bind(this),
-            showCloseIcon: true,
-            closeOnEscape: false,
-            target: document.body,
-            // target: this.parent.element,
-            visible: false,
-            enableRtl: this.parent.enableRtl,
-            open: () => {
-                let row = this.dlgObj.element.querySelector('table.e-xlfl-table>tr');
-                if (this.options.column.filterTemplate) {
-                    if (isBlazor()) {
-                        row.querySelector('.e-xlfl-valuediv').children[0].focus();
-                    }
-                    else {
-                        row.querySelector('#' + this.options.column.field + '-xlfl-frstvalue').focus();
-                    }
-                }
-                else {
-                    row.cells[1].querySelector('input:not([type=hidden])').focus();
-                }
-            },
-            close: this.removeDialog.bind(this),
-            created: this.createdDialog.bind(this, target, column),
-            buttons: [{
-                    click: this.filterBtnClick.bind(this, column),
-                    buttonModel: {
-                        content: this.getLocalizedLabel('OKButton'), isPrimary: true, cssClass: 'e-xlfl-okbtn'
-                    }
-                },
-                {
-                    click: this.removeDialog.bind(this),
-                    buttonModel: { content: this.getLocalizedLabel('CancelButton'), cssClass: 'e-xlfl-cancelbtn' }
-                }],
-            content: mainDiv,
-            width: 430,
-            animationSettings: { effect: 'None' },
-        });
-        let isStringTemplate = 'isStringTemplate';
-        this.dlgObj[isStringTemplate] = true;
-        this.dlgObj.appendTo(this.dlgDiv);
-    }
-    removeDialog() {
-        if (isBlazor()) {
-            let columns = this.parent.getColumns();
-            for (let i = 0; i < columns.length; i++) {
-                if (columns[i].filterTemplate) {
-                    let tempID = this.parent.element.id + columns[i].uid + 'filterTemplate';
-                    updateBlazorTemplate(tempID, 'FilterTemplate', columns[i]);
-                }
-            }
-        }
-        this.removeObjects([this.dropOptr, this.datePicker, this.dateTimePicker, this.actObj, this.numericTxtObj, this.dlgObj]);
-        remove(this.dlgDiv);
-    }
-    createdDialog(target, column) {
-        this.renderCustomFilter(target, column);
-        this.dlgObj.element.style.left = '0px';
-        this.dlgObj.element.style.top = '0px';
-        if (Browser.isDevice && window.innerWidth < 440) {
-            this.dlgObj.element.style.width = '90%';
-        }
-        this.parent.notify(beforeCustomFilterOpen, { column: column, dialog: this.dialogObj });
-        this.dlgObj.show();
-        this.parent.applyBiggerTheme(this.dlgObj.element.parentElement);
-    }
-    renderCustomFilter(target, column) {
-        let dlgConetntEle = this.dlgObj.element.querySelector('.e-xlfl-maindiv');
-        /* tslint:disable-next-line:max-line-length */
-        let dlgFields = this.parent.createElement('div', { innerHTML: this.getLocalizedLabel('ShowRowsWhere'), className: 'e-xlfl-dlgfields' });
-        dlgConetntEle.appendChild(dlgFields);
-        //column name
-        let fieldSet = this.parent.createElement('div', { innerHTML: this.options.displayName, className: 'e-xlfl-fieldset' });
-        dlgConetntEle.appendChild(fieldSet);
-        this.renderFilterUI(column, dlgConetntEle);
-    }
-    filterBtnClick(col) {
-        let isComplex = !isNullOrUndefined(col) && isComplexField(col);
-        let complexFieldName = !isNullOrUndefined(col) && getComplexFieldID(col);
-        let colValue = isComplex ? complexFieldName : col;
-        let fValue = this.parent.getColumnByField(col).filterTemplate && isBlazor() ?
-            this.dlgDiv.querySelector('.-xlfl-frstvalue').children[0].querySelector('.e-control').ej2_instances[0]
-            : this.dlgDiv.querySelector('#' + colValue + '-xlfl-frstvalue').ej2_instances[0];
-        let fOperator = this.dlgDiv.querySelector('#' + colValue + '-xlfl-frstoptr').ej2_instances[0];
-        let sValue = this.parent.getColumnByField(col).filterTemplate && isBlazor() ?
-            this.dlgDiv.querySelector('.-xlfl-secndvalue').children[0].querySelector('.e-control').ej2_instances[0]
-            : this.dlgDiv.querySelector('#' + colValue + '-xlfl-secndvalue').ej2_instances[0];
-        let sOperator = this.dlgDiv.querySelector('#' + colValue + '-xlfl-secndoptr').ej2_instances[0];
-        let checkBoxValue;
-        if (this.options.type === 'string') {
-            let checkBox = this.dlgDiv.querySelector('#' + colValue + '-xlflmtcase').ej2_instances[0];
-            checkBoxValue = checkBox.checked;
-        }
-        let andRadio = this.dlgDiv.querySelector('#' + colValue + 'e-xlfl-frstpredicate').ej2_instances[0];
-        let orRadio = this.dlgDiv.querySelector('#' + colValue + 'e-xlfl-secndpredicate').ej2_instances[0];
-        let predicate = (andRadio.checked ? 'and' : 'or');
-        if (sValue.value === null) {
-            predicate = 'or';
-        }
-        this.filterByColumn(this.options.field, fOperator.value, fValue.value, predicate, checkBoxValue, this.parent.filterSettings.ignoreAccent, sOperator.value, sValue.value);
-        this.removeDialog();
-    }
-    /**
-     * @hidden
-     * Filters grid row by column name with given options.
-     * @param {string} fieldName - Defines the field name of the filter column.
-     * @param {string} firstOperator - Defines the first operator by how to filter records.
-     * @param {string | number | Date | boolean} firstValue - Defines the first value which is used to filter records.
-     * @param  {string} predicate - Defines the relationship between one filter query with another by using AND or OR predicate.
-     * @param {boolean} matchCase - If ignore case set to true, then filter records with exact match or else
-     * filter records with case insensitive(uppercase and lowercase letters treated as same).
-     * @param {boolean} ignoreAccent - If ignoreAccent set to true, then ignores the diacritic characters or accents when filtering.
-     * @param {string} secondOperator - Defines the second operator by how to filter records.
-     * @param {string | number | Date | boolean} secondValue - Defines the first value which is used to filter records.
-     */
-    filterByColumn(fieldName, firstOperator, firstValue, predicate, matchCase, ignoreAccent, secondOperator, secondValue) {
-        let col = this.parent.getColumnByField(fieldName);
-        let field = col.isForeignColumn() ? col.foreignKeyValue : fieldName;
-        let fColl = [];
-        let mPredicate;
-        fColl.push({
-            field: field,
-            predicate: predicate,
-            matchCase: matchCase,
-            ignoreAccent: ignoreAccent,
-            operator: firstOperator,
-            value: firstValue,
-            type: this.options.type
-        });
-        if (isActionPrevent(this.parent)) {
-            this.parent.notify(preventBatch, {
-                instance: this, handler: this.filterByColumn, arg1: fieldName, arg2: firstOperator, arg3: firstValue, arg4: predicate,
-                arg5: matchCase, arg6: ignoreAccent, arg7: secondOperator, arg8: secondValue
-            });
-            return;
-        }
-        mPredicate = new Predicate(field, firstOperator.toLowerCase(), firstValue, !matchCase, ignoreAccent);
-        if (!isNullOrUndefined(secondValue)) {
-            secondOperator = !isNullOrUndefined(secondOperator) ? secondOperator : 'equal';
-            fColl.push({
-                field: field,
-                predicate: predicate,
-                matchCase: matchCase,
-                ignoreAccent: ignoreAccent,
-                operator: secondOperator,
-                value: secondValue,
-                type: this.options.type
-            });
-            /* tslint:disable-next-line:max-line-length */
-            mPredicate = mPredicate[predicate](field, secondOperator.toLowerCase(), secondValue, !matchCase, ignoreAccent);
-        }
-        let args = {
-            action: 'filtering', filterCollection: fColl, field: this.options.field,
-            ejpredicate: mPredicate, actualPredicate: fColl
-        };
-        if (col.isForeignColumn()) {
-            this.foreignKeyFilter(args, fColl, mPredicate);
-        }
-        else {
-            this.options.handler(args);
-        }
-    }
-    /* tslint:disable-next-line:max-line-length */
-    renderOperatorUI(column, table, elementID, predicates, isFirst) {
-        let fieldElement = this.parent.createElement('tr', { className: 'e-xlfl-fields' });
-        table.appendChild(fieldElement);
-        let xlfloptr = this.parent.createElement('td', { className: 'e-xlfl-optr' });
-        fieldElement.appendChild(xlfloptr);
-        let optrDiv = this.parent.createElement('div', { className: 'e-xlfl-optrdiv' });
-        let isComplex = !isNullOrUndefined(column) && isComplexField(column);
-        let complexFieldName = !isNullOrUndefined(column) && getComplexFieldID(column);
-        let optrInput = this.parent
-            .createElement('input', { id: isComplex ? complexFieldName + elementID : column + elementID });
-        optrDiv.appendChild(optrInput);
-        xlfloptr.appendChild(optrDiv);
-        let optr = this.options.type + 'Operator';
-        let dropDatasource = this.customFilterOperators[optr];
-        this.optrData = dropDatasource;
-        let selectedValue = this.dropSelectedVal(this.parent.getColumnByField(column), predicates, isFirst);
-        //Trailing three dots are sliced.
-        let menuText = '';
-        if (this.menuItem) {
-            menuText = this.menuItem.text.slice(0, -3);
-            if (menuText !== this.getLocalizedLabel('CustomFilter')) {
-                selectedValue = isFirst ? menuText : undefined;
-            }
-            if (menuText === this.getLocalizedLabel('Between')) {
-                selectedValue = this.getLocalizedLabel(isFirst ? 'GreaterThanOrEqual' : 'LessThanOrEqual');
-            }
-        }
-        let col = this.parent.getColumnByField(column);
-        this.dropOptr = new DropDownList(extend$1({
-            dataSource: dropDatasource,
-            fields: { text: 'text', value: 'value' },
-            text: selectedValue,
-            open: this.dropDownOpen.bind(this),
-            enableRtl: this.parent.enableRtl
-        }, col.filter.params));
-        this.dropOptr.appendTo(optrInput);
-        let operator = this.getSelectedValue(selectedValue);
-        return { fieldElement, operator };
-    }
-    dropDownOpen(args) {
-        args.popup.element.style.zIndex = (this.dialogObj.zIndex + 1).toString();
-    }
-    getSelectedValue(text) {
-        let selectedField = new DataManager(this.optrData).executeLocal(new Query().where('text', 'equal', text));
-        return !isNullOrUndefined(selectedField[0]) ? selectedField[0].value : '';
-    }
-    dropSelectedVal(col, predicates, isFirst) {
-        let operator;
-        if (predicates && predicates.length > 0) {
-            operator = predicates.length === 2 ?
-                (isFirst ? predicates[0].operator : predicates[1].operator) :
-                (isFirst ? predicates[0].operator : undefined);
-        }
-        else {
-            operator = isFirst ? col.filter.operator || 'equal' : undefined;
-        }
-        return this.getSelectedText(operator);
-    }
-    getSelectedText(operator) {
-        let selectedField = new DataManager(this.optrData).executeLocal(new Query().where('value', 'equal', operator));
-        return !isNullOrUndefined(selectedField[0]) ? selectedField[0].text : '';
-    }
-    renderFilterUI(column, dlgConetntEle) {
-        let predicates = this.existingPredicate[column];
-        let table = this.parent.createElement('table', { className: 'e-xlfl-table' });
-        dlgConetntEle.appendChild(table);
-        let colGroup = this.parent.createElement('colGroup');
-        colGroup.innerHTML = '<col style="width: 50%"></col><col style="width: 50%"></col>';
-        table.appendChild(colGroup);
-        //Renders first dropdown
-        /* tslint:disable-next-line:max-line-length */
-        let optr = this.renderOperatorUI(column, table, '-xlfl-frstoptr', predicates, true);
-        //Renders first value
-        this.renderFlValueUI(column, optr, '-xlfl-frstvalue', predicates, true);
-        let predicate = this.parent.createElement('tr', { className: 'e-xlfl-predicate' });
-        table.appendChild(predicate);
-        //Renders first radion button
-        this.renderRadioButton(column, predicate, predicates);
-        //Renders second dropdown
-        optr = this.renderOperatorUI(column, table, '-xlfl-secndoptr', predicates, false);
-        //Renders second text box
-        this.renderFlValueUI(column, optr, '-xlfl-secndvalue', predicates, false);
-    }
-    renderRadioButton(column, tr, predicates) {
-        let td = this.parent.createElement('td', { className: 'e-xlfl-radio', attrs: { 'colSpan': '2' } });
-        tr.appendChild(td);
-        let radioDiv = this.parent
-            .createElement('div', { className: 'e-xlfl-radiodiv', attrs: { 'style': 'display: inline-block' } });
-        let isComplex = !isNullOrUndefined(column) && isComplexField(column);
-        let complexFieldName = !isNullOrUndefined(column) && getComplexFieldID(column);
-        /* tslint:disable-next-line:max-line-length */
-        let frstpredicate = this.parent.createElement('input', { id: isComplex ? complexFieldName + 'e-xlfl-frstpredicate' : column + 'e-xlfl-frstpredicate', attrs: { 'type': 'radio' } });
-        /* tslint:disable-next-line:max-line-length */
-        let secndpredicate = this.parent.createElement('input', { id: isComplex ? complexFieldName + 'e-xlfl-secndpredicate' : column + 'e-xlfl-secndpredicate', attrs: { 'type': 'radio' } });
-        //appends into div
-        radioDiv.appendChild(frstpredicate);
-        radioDiv.appendChild(secndpredicate);
-        td.appendChild(radioDiv);
-        if (this.options.type === 'string') {
-            this.renderMatchCase(column, tr, td, '-xlflmtcase', predicates);
-        }
-        // Initialize AND RadioButton component.
-        /* tslint:disable-next-line:max-line-length */
-        let andRadio = new RadioButton({ label: this.getLocalizedLabel('AND'), name: 'default', cssClass: 'e-xlfl-radio-and', checked: true, enableRtl: this.parent.enableRtl });
-        // Initialize OR RadioButton component.
-        /* tslint:disable-next-line:max-line-length */
-        let orRadio = new RadioButton({ label: this.getLocalizedLabel('OR'), name: 'default', cssClass: 'e-xlfl-radio-or', enableRtl: this.parent.enableRtl });
-        let flValue = predicates && predicates.length === 2 ? predicates[1].predicate : 'and';
-        if (flValue === 'and') {
-            andRadio.checked = true;
-            orRadio.checked = false;
-        }
-        else {
-            orRadio.checked = true;
-            andRadio.checked = false;
-        }
-        // Render initialized RadioButton.
-        andRadio.appendTo(frstpredicate);
-        orRadio.appendTo(secndpredicate);
-    }
-    /* tslint:disable-next-line:no-any */
-    removeObjects(elements) {
-        for (let obj of elements) {
-            if (obj && !obj.isDestroyed) {
-                obj.destroy();
-            }
-        }
-    }
-    /* tslint:disable-next-line:max-line-length */
-    renderFlValueUI(column, optr, elementId, predicates, isFirst) {
-        let value = this.parent.createElement('td', { className: 'e-xlfl-value' });
-        optr.fieldElement.appendChild(value);
-        let isComplex = !isNullOrUndefined(column) && isComplexField(column);
-        let complexFieldName = !isNullOrUndefined(column) && getComplexFieldID(column);
-        let valueDiv = this.parent.createElement('div', { className: 'e-xlfl-valuediv' });
-        let isFilteredCol = this.filterSettings.columns.some((col) => { return column === col.field; });
-        let fltrPredicates = this.options.filteredColumns.filter((col) => col.field === column);
-        if (this.options.column.filterTemplate) {
-            let data = {};
-            let columnObj = this.parent.getColumnByField(column);
-            if (isFilteredCol && elementId) {
-                data = this.getExcelFilterData(elementId, data, columnObj, predicates, fltrPredicates);
-            }
-            let tempID = this.parent.element.id + columnObj.uid + 'filterTemplate';
-            let element = this.options.column.getFilterTemplate()(data, this.parent, 'filterTemplate', tempID);
-            appendChildren(valueDiv, element);
-            if (isBlazor()) {
-                valueDiv.children[0].classList.add(elementId);
-                if (this.dlgDiv.querySelectorAll('.e-xlfl-value').length > 1) {
-                    updateBlazorTemplate(tempID, 'FilterTemplate', columnObj);
-                }
-            }
-            else {
-                valueDiv.children[0].id = isComplex ? complexFieldName + elementId : column + elementId;
-            }
-            value.appendChild(valueDiv);
-        }
-        else {
-            let valueInput = this.parent
-                .createElement('input', { id: isComplex ? complexFieldName + elementId : column + elementId });
-            valueDiv.appendChild(valueInput);
-            value.appendChild(valueDiv);
-            let flValue;
-            let predicate;
-            if (predicates && predicates.length > 0) {
-                predicate = predicates.length === 2 ?
-                    (isFirst ? predicates[0] : predicates[1]) :
-                    (isFirst ? predicates[0] : undefined);
-                flValue = (predicate && predicate.operator === optr.operator) ? predicate.value : undefined;
-            }
-            let types = {
-                'string': this.renderAutoComplete.bind(this),
-                'number': this.renderNumericTextBox.bind(this),
-                'date': this.renderDate.bind(this),
-                'datetime': this.renderDateTime.bind(this)
-            };
-            types[this.options.type](this.options, column, valueInput, flValue, this.parent.enableRtl);
-        }
-    }
-    /* tslint:disable-next-line:max-line-length */
-    getExcelFilterData(elementId, data, columnObj, predicates, fltrPredicates) {
-        let predIndex = elementId === '-xlfl-frstvalue' ? 0 : 1;
-        if (elementId === '-xlfl-frstvalue' || fltrPredicates.length > 1) {
-            data = { column: predicates instanceof Array ? predicates[predIndex] : predicates };
-            let indx = this.options.column.columnData && fltrPredicates.length > 1 ?
-                (this.options.column.columnData.length === 1 ? 0 : 1) : predIndex;
-            data[this.options.field] = columnObj.foreignKeyValue ? this.options.column.columnData[indx][columnObj.foreignKeyValue] :
-                fltrPredicates[indx].value;
-            if (this.options.foreignKeyValue) {
-                data[this.options.foreignKeyValue] = this.options.column.columnData[indx][columnObj.foreignKeyValue];
-            }
-        }
-        return data;
-    }
-    /* tslint:disable-next-line:max-line-length */
-    renderMatchCase(column, tr, matchCase, elementId, predicates) {
-        /* tslint:disable-next-line:max-line-length */
-        let matchCaseDiv = this.parent.createElement('div', { className: 'e-xlfl-matchcasediv', attrs: { 'style': 'display: inline-block' } });
-        let isComplex = !isNullOrUndefined(column) && isComplexField(column);
-        let complexFieldName = !isNullOrUndefined(column) && getComplexFieldID(column);
-        let matchCaseInput = this.parent.createElement('input', { id: isComplex ? complexFieldName + elementId : column + elementId, attrs: { 'type': 'checkbox' } });
-        matchCaseDiv.appendChild(matchCaseInput);
-        matchCase.appendChild(matchCaseDiv);
-        let flValue = predicates && predicates.length > 0 ?
-            (predicates && predicates.length === 2 ? predicates[1].matchCase : predicates[0].matchCase) :
-            false;
-        // Initialize Match Case check box.
-        let checkbox = new CheckBox({
-            label: this.getLocalizedLabel('MatchCase'),
-            enableRtl: this.parent.enableRtl, checked: flValue
-        });
-        // Render initialized CheckBox.
-        checkbox.appendTo(matchCaseInput);
-    }
-    /* tslint:disable-next-line:max-line-length */
-    renderDate(options, column, inputValue, fValue, isRtl) {
-        let format = getCustomDateFormat(options.format, options.type);
-        this.datePicker = new DatePicker(extend$1({
-            format: format,
-            cssClass: 'e-popup-flmenu',
-            placeholder: this.getLocalizedLabel('CustomFilterDatePlaceHolder'),
-            width: '100%',
-            enableRtl: isRtl,
-            value: new Date(fValue),
-        }, options.column.filter.params));
-        this.datePicker.appendTo(inputValue);
-    }
-    /* tslint:disable-next-line:max-line-length */
-    renderDateTime(options, column, inputValue, fValue, isRtl) {
-        let format = getCustomDateFormat(options.format, options.type);
-        this.dateTimePicker = new DateTimePicker(extend$1({
-            format: format,
-            cssClass: 'e-popup-flmenu',
-            placeholder: this.getLocalizedLabel('CustomFilterDatePlaceHolder'),
-            width: '100%',
-            enableRtl: isRtl,
-            value: new Date(fValue),
-        }, options.column.filter.params));
-        this.dateTimePicker.appendTo(inputValue);
-    }
-    completeAction(e) {
-        e.result = distinctStringValues(e.result);
-    }
-    /* tslint:disable-next-line:max-line-length */
-    renderNumericTextBox(options, column, inputValue, fValue, isRtl) {
-        this.numericTxtObj = new NumericTextBox(extend$1({
-            format: options.format,
-            placeholder: this.getLocalizedLabel('CustomFilterPlaceHolder'),
-            enableRtl: isRtl,
-            value: fValue
-        }, options.column.filter.params));
-        this.numericTxtObj.appendTo(inputValue);
-    }
-    /* tslint:disable-next-line:max-line-length */
-    renderAutoComplete(options, column, inputValue, fValue, isRtl) {
-        let colObj = this.parent.getColumnByField(column);
-        let isForeignColumn = colObj.isForeignColumn();
-        let dataSource = isForeignColumn ? colObj.dataSource : options.dataSource;
-        let fields = { value: isForeignColumn ? colObj.foreignKeyValue : column };
-        let actObj = new AutoComplete(extend$1({
-            dataSource: dataSource instanceof DataManager ? dataSource : new DataManager(dataSource),
-            fields: fields,
-            query: this.parent.getQuery().clone(),
-            sortOrder: 'Ascending',
-            locale: this.parent.locale,
-            cssClass: 'e-popup-flmenu',
-            autofill: true,
-            focus: () => {
-                let isComplex = !isNullOrUndefined(column) && isComplexField(column);
-                let complexFieldName = !isNullOrUndefined(column) && getComplexFieldID(column);
-                let columnvalue = isComplex ? complexFieldName : column;
-                actObj.filterType = this.dlgDiv.querySelector('#' + columnvalue +
-                    (inputValue.id === (columnvalue + '-xlfl-frstvalue') ?
-                        '-xlfl-frstoptr' :
-                        '-xlfl-secndoptr')).ej2_instances[0].value;
-                actObj.ignoreCase = options.type === 'string' ?
-                    !this.dlgDiv.querySelector('#' + columnvalue + '-xlflmtcase').ej2_instances[0].checked :
-                    true;
-                actObj.filterType = !isNullOrUndefined(actObj.filterType) ? actObj.filterType :
-                    'equal';
-            },
-            placeholder: this.getLocalizedLabel('CustomFilterPlaceHolder'),
-            enableRtl: isRtl,
-            actionComplete: (e) => {
-                let isComplex = !isNullOrUndefined(column) && isComplexField(column);
-                e.result = e.result.filter((obj, index, arr) => {
-                    return arr.map((mapObject) => {
-                        return isComplex ? this.performComplexDataOperation(actObj.fields.value, mapObject)
-                            : mapObject[actObj.fields.value];
-                    }).indexOf(isComplex ? this.performComplexDataOperation(actObj.fields.value, obj) :
-                        obj[this.actObj.fields.value]) === index;
-                });
-            },
-            value: fValue
-        }, colObj.filter.params));
-        actObj.appendTo(inputValue);
-        this.actObj = actObj;
-    }
-    performComplexDataOperation(value, mapObject) {
-        let returnObj;
-        let length = value.split('.').length;
-        let splits = value.split('.');
-        let duplicateMap = mapObject;
-        for (let i = 0; i < length; i++) {
-            returnObj = duplicateMap[splits[i]];
-            duplicateMap = returnObj;
-        }
-        return returnObj;
+        this.parent.off(fltrPrevent, this.actionPrevent);
     }
 }
 
@@ -18291,7 +18318,8 @@ class Filter {
             hideSearchbox: isNullOrUndefined(col.filter.hideSearchbox) ? false : col.filter.hideSearchbox,
             handler: this.filterHandler.bind(this), localizedStrings: gObj.getLocaleConstants(),
             position: { X: left, Y: top }, column: col, foreignKeyValue: col.foreignKeyValue,
-            actualPredicate: this.actualPredicate, localeObj: this.parent.localeObj
+            actualPredicate: this.actualPredicate, localeObj: this.parent.localeObj,
+            isRemote: this.parent.getDataModule().isRemote(), allowCaseSensitive: this.filterSettings.enableCaseSensitivity
         });
     }
     /**
@@ -24052,7 +24080,7 @@ class NormalEdit {
             this.previousData = gObj.getCurrentViewRecords()[this.rowIndex];
         }
         for (let i = 0; i < primaryKeys.length; i++) {
-            primaryKeyValues.push(this.previousData[primaryKeys[i]]);
+            primaryKeyValues.push(getObject(primaryKeys[i], this.previousData));
         }
         this.uid = tr.getAttribute('data-uid');
         let rowObj = gObj.getRowObjectFromUID(this.uid);
@@ -24745,8 +24773,9 @@ class BatchEdit {
             return;
         }
         let changes = this.getBatchChanges();
-        if (this.parent.selectionSettings.type === 'Multiple' && changes[deletedRecords].length) {
-            changes[deletedRecords] = changes[deletedRecords].concat(this.removeSelectedData);
+        if (this.parent.selectionSettings.type === 'Multiple' && changes[deletedRecords].length &&
+            this.parent.selectionSettings.persistSelection) {
+            changes[deletedRecords] = this.removeSelectedData;
             this.removeSelectedData = [];
         }
         let original = {
@@ -31829,5 +31858,5 @@ class MaskedTextBoxCellEdit {
  * Export Grid components
  */
 
-export { SortDescriptor, SortSettings, Predicate$1 as Predicate, FilterSettings, SelectionSettings, SearchSettings, RowDropSettings, TextWrapSettings, GroupSettings, EditSettings, Grid, CellType, RenderType, ToolbarItem, doesImplementInterface, valueAccessor, getUpdateUsingRaf, updatecloneRow, getCollapsedRowsCount, recursive, iterateArrayOrObject, iterateExtend, templateCompiler, setStyleAndAttributes, extend$1 as extend, setColumnIndex, prepareColumns, setCssInGridPopUp, getActualProperties, parentsUntil, getElementIndex, inArray, getActualPropFromColl, removeElement, getPosition, getUid, appendChildren, parents, calculateAggregate, getScrollBarWidth, getRowHeight, isComplexField, getComplexFieldID, setComplexFieldID, isEditable, isActionPrevent, wrap, setFormatter, addRemoveActiveClasses, distinctStringValues, getFilterMenuPostion, getZIndexCalcualtion, toogleCheckbox, createCboxWithWrap, removeAddCboxClasses, refreshForeignData, getForeignData, getColumnByForeignKeyValue, getDatePredicate, renderMovable, isGroupAdaptive, getObject, getCustomDateFormat, getExpandedState, getPrintGridModel, extendObjWithFn, measureColumnDepth, checkDepth, refreshFilteredColsUid, Global, created, destroyed, load, rowDataBound, queryCellInfo, headerCellInfo, actionBegin, actionComplete, actionFailure, dataBound, rowSelecting, rowSelected, rowDeselecting, rowDeselected, cellSelecting, cellSelected, cellDeselecting, cellDeselected, columnDragStart, columnDrag, columnDrop, rowDragStartHelper, rowDragStart, rowDrag, rowDrop, beforePrint, printComplete, detailDataBound, toolbarClick, batchAdd, batchCancel, batchDelete, beforeBatchAdd, beforeBatchDelete, beforeBatchSave, beginEdit, cellEdit, cellSave, cellSaved, endAdd, endDelete, endEdit, recordDoubleClick, recordClick, beforeDataBound, beforeOpenColumnChooser, resizeStart, onResize, resizeStop, checkBoxChange, beforeCopy, beforePaste, filterChoiceRequest, filterAfterOpen, filterBeforeOpen, filterSearchBegin, commandClick, initialLoad, initialEnd, dataReady, contentReady, uiUpdate, onEmpty, inBoundModelChanged, modelChanged, colGroupRefresh, headerRefreshed, pageBegin, pageComplete, sortBegin, sortComplete, filterBegin, filterComplete, searchBegin, searchComplete, reorderBegin, reorderComplete, rowDragAndDropBegin, rowDragAndDropComplete, groupBegin, groupComplete, ungroupBegin, ungroupComplete, groupAggregates, refreshFooterRenderer, refreshAggregateCell, refreshAggregates, rowSelectionBegin, rowSelectionComplete, columnSelectionBegin, columnSelectionComplete, cellSelectionBegin, cellSelectionComplete, beforeCellFocused, cellFocused, keyPressed, click, destroy, columnVisibilityChanged, scroll, columnWidthChanged, columnPositionChanged, rowDragAndDrop, rowsAdded, rowsRemoved, columnDragStop, headerDrop, dataSourceModified, refreshComplete, refreshVirtualBlock, dblclick, toolbarRefresh, bulkSave, autoCol, tooltipDestroy, updateData, editBegin, editComplete, addBegin, addComplete, saveComplete, deleteBegin, deleteComplete, preventBatch, dialogDestroy, crudAction, addDeleteAction, destroyForm, doubleTap, beforeExcelExport, excelExportComplete, excelQueryCellInfo, excelHeaderQueryCellInfo, exportDetailDataBound, beforePdfExport, pdfExportComplete, pdfQueryCellInfo, pdfHeaderQueryCellInfo, accessPredicate, contextMenuClick, freezeRender, freezeRefresh, contextMenuOpen, columnMenuClick, columnMenuOpen, filterOpen, filterDialogCreated, filterMenuClose, initForeignKeyColumn, getForeignKeyData, generateQuery, showEmptyGrid, foreignKeyData, dataStateChange, dataSourceChanged, rtlUpdated, beforeFragAppend, frozenHeight, textWrapRefresh, recordAdded, cancelBegin, editNextValCell, hierarchyPrint, expandChildGrid, printGridInit, exportRowDataBound, rowPositionChanged, columnChooserOpened, batchForm, beforeStartEdit, beforeBatchCancel, batchEditFormRendered, partialRefresh, beforeCustomFilterOpen, selectVirtualRow, columnsPrepared, cBoxFltrBegin, cBoxFltrComplete, cBoxFltrPrevent, Data, Sort, Page, Selection, Filter, Search, Scroll, resizeClassList, Resize, Reorder, RowDD, Group, getCloneProperties, Print, DetailRow, Toolbar$1 as Toolbar, Aggregate, summaryIterator, VirtualScroll, Edit, BatchEdit, InlineEdit, NormalEdit, DialogEdit, ColumnChooser, ExcelExport, PdfExport, ExportHelper, ExportValueFormatter, Clipboard, CommandColumn, CheckBoxFilter, menuClass, ContextMenu$1 as ContextMenu, Freeze, ColumnMenu, ExcelFilter, ForeignKey, Logger, detailLists, Column, CommandColumnModel, Row, Cell, HeaderRender, ContentRender, RowRenderer, CellRenderer, HeaderCellRenderer, FilterCellRenderer, StackedHeaderCellRenderer, Render, IndentCellRenderer, GroupCaptionCellRenderer, GroupCaptionEmptyCellRenderer, BatchEditRender, DialogEditRender, InlineEditRender, EditRender, BooleanEditCell, DefaultEditCell, DropDownEditCell, NumericEditCell, DatePickerEditCell, CommandColumnRenderer, FreezeContentRender, FreezeRender, StringFilterUI, NumberFilterUI, DateFilterUI, BooleanFilterUI, FlMenuOptrUI, AutoCompleteEditCell, ComboboxEditCell, MultiSelectEditCell, TimePickerEditCell, ToggleEditCell, MaskedTextBoxCellEdit, VirtualContentRenderer, VirtualHeaderRenderer, VirtualElementHandler, CellRendererFactory, ServiceLocator, RowModelGenerator, GroupModelGenerator, FreezeRowModelGenerator, ValueFormatter, VirtualRowModelGenerator, InterSectionObserver, Pager, ExternalMessage, NumericContainer, PagerMessage, PagerDropDown };
+export { CheckBoxFilterBase, ExcelFilterBase, SortDescriptor, SortSettings, Predicate$1 as Predicate, FilterSettings, SelectionSettings, SearchSettings, RowDropSettings, TextWrapSettings, GroupSettings, EditSettings, Grid, CellType, RenderType, ToolbarItem, doesImplementInterface, valueAccessor, getUpdateUsingRaf, updatecloneRow, getCollapsedRowsCount, recursive, iterateArrayOrObject, iterateExtend, templateCompiler, setStyleAndAttributes, extend$1 as extend, setColumnIndex, prepareColumns, setCssInGridPopUp, getActualProperties, parentsUntil, getElementIndex, inArray, getActualPropFromColl, removeElement, getPosition, getUid, appendChildren, parents, calculateAggregate, getScrollBarWidth, getRowHeight, isComplexField, getComplexFieldID, setComplexFieldID, isEditable, isActionPrevent, wrap, setFormatter, addRemoveActiveClasses, distinctStringValues, getFilterMenuPostion, getZIndexCalcualtion, toogleCheckbox, createCboxWithWrap, removeAddCboxClasses, refreshForeignData, getForeignData, getColumnByForeignKeyValue, getDatePredicate, renderMovable, isGroupAdaptive, getObject, getCustomDateFormat, getExpandedState, getPrintGridModel, extendObjWithFn, measureColumnDepth, checkDepth, refreshFilteredColsUid, Global, created, destroyed, load, rowDataBound, queryCellInfo, headerCellInfo, actionBegin, actionComplete, actionFailure, dataBound, rowSelecting, rowSelected, rowDeselecting, rowDeselected, cellSelecting, cellSelected, cellDeselecting, cellDeselected, columnDragStart, columnDrag, columnDrop, rowDragStartHelper, rowDragStart, rowDrag, rowDrop, beforePrint, printComplete, detailDataBound, toolbarClick, batchAdd, batchCancel, batchDelete, beforeBatchAdd, beforeBatchDelete, beforeBatchSave, beginEdit, cellEdit, cellSave, cellSaved, endAdd, endDelete, endEdit, recordDoubleClick, recordClick, beforeDataBound, beforeOpenColumnChooser, resizeStart, onResize, resizeStop, checkBoxChange, beforeCopy, beforePaste, filterChoiceRequest, filterAfterOpen, filterBeforeOpen, filterSearchBegin, commandClick, initialLoad, initialEnd, dataReady, contentReady, uiUpdate, onEmpty, inBoundModelChanged, modelChanged, colGroupRefresh, headerRefreshed, pageBegin, pageComplete, sortBegin, sortComplete, filterBegin, filterComplete, searchBegin, searchComplete, reorderBegin, reorderComplete, rowDragAndDropBegin, rowDragAndDropComplete, groupBegin, groupComplete, ungroupBegin, ungroupComplete, groupAggregates, refreshFooterRenderer, refreshAggregateCell, refreshAggregates, rowSelectionBegin, rowSelectionComplete, columnSelectionBegin, columnSelectionComplete, cellSelectionBegin, cellSelectionComplete, beforeCellFocused, cellFocused, keyPressed, click, destroy, columnVisibilityChanged, scroll, columnWidthChanged, columnPositionChanged, rowDragAndDrop, rowsAdded, rowsRemoved, columnDragStop, headerDrop, dataSourceModified, refreshComplete, refreshVirtualBlock, dblclick, toolbarRefresh, bulkSave, autoCol, tooltipDestroy, updateData, editBegin, editComplete, addBegin, addComplete, saveComplete, deleteBegin, deleteComplete, preventBatch, dialogDestroy, crudAction, addDeleteAction, destroyForm, doubleTap, beforeExcelExport, excelExportComplete, excelQueryCellInfo, excelHeaderQueryCellInfo, exportDetailDataBound, beforePdfExport, pdfExportComplete, pdfQueryCellInfo, pdfHeaderQueryCellInfo, accessPredicate, contextMenuClick, freezeRender, freezeRefresh, contextMenuOpen, columnMenuClick, columnMenuOpen, filterOpen, filterDialogCreated, filterMenuClose, initForeignKeyColumn, getForeignKeyData, generateQuery, showEmptyGrid, foreignKeyData, dataStateChange, dataSourceChanged, rtlUpdated, beforeFragAppend, frozenHeight, textWrapRefresh, recordAdded, cancelBegin, editNextValCell, hierarchyPrint, expandChildGrid, printGridInit, exportRowDataBound, rowPositionChanged, columnChooserOpened, batchForm, beforeStartEdit, beforeBatchCancel, batchEditFormRendered, partialRefresh, beforeCustomFilterOpen, selectVirtualRow, columnsPrepared, cBoxFltrBegin, cBoxFltrComplete, fltrPrevent, Data, Sort, Page, Selection, Filter, Search, Scroll, resizeClassList, Resize, Reorder, RowDD, Group, getCloneProperties, Print, DetailRow, Toolbar$1 as Toolbar, Aggregate, summaryIterator, VirtualScroll, Edit, BatchEdit, InlineEdit, NormalEdit, DialogEdit, ColumnChooser, ExcelExport, PdfExport, ExportHelper, ExportValueFormatter, Clipboard, CommandColumn, CheckBoxFilter, menuClass, ContextMenu$1 as ContextMenu, Freeze, ColumnMenu, ExcelFilter, ForeignKey, Logger, detailLists, Column, CommandColumnModel, Row, Cell, HeaderRender, ContentRender, RowRenderer, CellRenderer, HeaderCellRenderer, FilterCellRenderer, StackedHeaderCellRenderer, Render, IndentCellRenderer, GroupCaptionCellRenderer, GroupCaptionEmptyCellRenderer, BatchEditRender, DialogEditRender, InlineEditRender, EditRender, BooleanEditCell, DefaultEditCell, DropDownEditCell, NumericEditCell, DatePickerEditCell, CommandColumnRenderer, FreezeContentRender, FreezeRender, StringFilterUI, NumberFilterUI, DateFilterUI, BooleanFilterUI, FlMenuOptrUI, AutoCompleteEditCell, ComboboxEditCell, MultiSelectEditCell, TimePickerEditCell, ToggleEditCell, MaskedTextBoxCellEdit, VirtualContentRenderer, VirtualHeaderRenderer, VirtualElementHandler, CellRendererFactory, ServiceLocator, RowModelGenerator, GroupModelGenerator, FreezeRowModelGenerator, ValueFormatter, VirtualRowModelGenerator, InterSectionObserver, Pager, ExternalMessage, NumericContainer, PagerMessage, PagerDropDown };
 //# sourceMappingURL=ej2-grids.es2015.js.map

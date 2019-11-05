@@ -277,6 +277,9 @@ var CalendarBase = /** @__PURE__ @class */ (function (_super) {
         }
         return culShortNames;
     };
+    CalendarBase.prototype.toCapitalize = function (text) {
+        return !isNullOrUndefined(text) && text.length ? text[0].toUpperCase() + text.slice(1) : text;
+    };
     CalendarBase.prototype.createContentHeader = function () {
         if (this.getModuleName() === 'calendar') {
             if (!isNullOrUndefined(this.element.querySelectorAll('.e-content .e-week-header')[0])) {
@@ -306,7 +309,7 @@ var CalendarBase = /** @__PURE__ @class */ (function (_super) {
         }
         shortNames = this.shiftArray(((this.getCultureValues().length > 0 && this.getCultureValues())), this.firstDayOfWeek);
         for (var days = 0; days <= daysCount; days++) {
-            html += '<th  class="">' + shortNames[days] + '</th>';
+            html += '<th  class="">' + this.toCapitalize(shortNames[days]) + '</th>';
         }
         html = '<tr>' + html + '</tr>';
         this.tableHeadElement.innerHTML = html;
@@ -770,7 +773,7 @@ var CalendarBase = /** @__PURE__ @class */ (function (_super) {
             var dayLink = this.createElement('span');
             var localMonth = (value && (value).getMonth() === localDate.getMonth());
             var select$$1 = (value && (value).getFullYear() === yr && localMonth);
-            dayLink.textContent = this.globalize.formatDate(localDate, { type: 'dateTime', skeleton: 'MMM' });
+            dayLink.textContent = this.toCapitalize(this.globalize.formatDate(localDate, { type: 'dateTime', skeleton: 'MMM' }));
             if ((this.min && (curYrs < minYr || (month < minMonth && curYrs === minYr))) || (this.max && (curYrs > maxYr || (month > maxMonth && curYrs >= maxYr)))) {
                 addClass([tdEle], DISABLED);
             }
@@ -1233,7 +1236,7 @@ var CalendarBase = /** @__PURE__ @class */ (function (_super) {
         }
         switch (view) {
             case 'days':
-                this.headerTitleElement.textContent = dayFormatOptions;
+                this.headerTitleElement.textContent = this.toCapitalize(dayFormatOptions);
                 break;
             case 'months':
                 this.headerTitleElement.textContent = monthFormatOptions;
@@ -1824,6 +1827,9 @@ var CalendarBase = /** @__PURE__ @class */ (function (_super) {
         Property(null)
     ], CalendarBase.prototype, "keyConfigs", void 0);
     __decorate([
+        Property(null)
+    ], CalendarBase.prototype, "serverTimezoneOffset", void 0);
+    __decorate([
         Event()
     ], CalendarBase.prototype, "created", void 0);
     __decorate([
@@ -1905,8 +1911,23 @@ var Calendar = /** @__PURE__ @class */ (function (_super) {
             if (form) {
                 EventHandler.add(form, 'reset', this.formResetHandler.bind(this));
             }
+            this.setTimeZone(this.serverTimezoneOffset);
         }
         this.renderComplete();
+    };
+    Calendar.prototype.isDayLightSaving = function () {
+        var secondOffset = new Date(this.value.getFullYear(), 6, 1).getTimezoneOffset();
+        var firstOffset = new Date(this.value.getFullYear(), 0, 1).getTimezoneOffset();
+        return (this.value.getTimezoneOffset() < Math.max(firstOffset, secondOffset));
+    };
+    Calendar.prototype.setTimeZone = function (offsetValue) {
+        if (this.serverTimezoneOffset && this.value) {
+            var serverTimezoneDiff = offsetValue;
+            var clientTimeZoneDiff = new Date().getTimezoneOffset() / 60;
+            var timeZoneDiff = serverTimezoneDiff + clientTimeZoneDiff;
+            timeZoneDiff = this.isDayLightSaving() ? timeZoneDiff-- : timeZoneDiff;
+            this.value = new Date(this.value.getTime() + (timeZoneDiff * 60 * 60 * 1000));
+        }
     };
     Calendar.prototype.formResetHandler = function () {
         this.setProperties({ value: null }, true);
@@ -2888,6 +2909,22 @@ var DatePicker = /** @__PURE__ @class */ (function (_super) {
         this.initialize();
         this.bindEvents();
         this.renderComplete();
+        this.setTimeZone(this.serverTimezoneOffset);
+    };
+    DatePicker.prototype.setTimeZone = function (offsetValue) {
+        if (this.serverTimezoneOffset && this.value) {
+            var clientTimeZoneDiff = new Date().getTimezoneOffset() / 60;
+            var serverTimezoneDiff = offsetValue;
+            var timeZoneDiff = serverTimezoneDiff + clientTimeZoneDiff;
+            timeZoneDiff = this.isDayLightSaving() ? timeZoneDiff-- : timeZoneDiff;
+            this.value = new Date((this.value).getTime() + (timeZoneDiff * 60 * 60 * 1000));
+            this.updateInput();
+        }
+    };
+    DatePicker.prototype.isDayLightSaving = function () {
+        var firstOffset = new Date(this.value.getFullYear(), 0, 1).getTimezoneOffset();
+        var secondOffset = new Date(this.value.getFullYear(), 6, 1).getTimezoneOffset();
+        return (this.value.getTimezoneOffset() < Math.max(firstOffset, secondOffset));
     };
     DatePicker.prototype.setAllowEdit = function () {
         if (this.allowEdit) {
@@ -4384,6 +4421,9 @@ var DatePicker = /** @__PURE__ @class */ (function (_super) {
     __decorate$1([
         Property('Never')
     ], DatePicker.prototype, "floatLabelType", void 0);
+    __decorate$1([
+        Property(null)
+    ], DatePicker.prototype, "serverTimezoneOffset", void 0);
     __decorate$1([
         Event()
     ], DatePicker.prototype, "open", void 0);
@@ -12258,6 +12298,9 @@ var DateTimePicker = /** @__PURE__ @class */ (function (_super) {
     __decorate$4([
         Property(false)
     ], DateTimePicker.prototype, "strictMode", void 0);
+    __decorate$4([
+        Property(null)
+    ], DateTimePicker.prototype, "serverTimezoneOffset", void 0);
     __decorate$4([
         Event()
     ], DateTimePicker.prototype, "open", void 0);

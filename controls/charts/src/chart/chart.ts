@@ -4,7 +4,7 @@ import { TapEventArgs, EmitType, ChildProperty } from '@syncfusion/ej2-base';
 import { remove, extend } from '@syncfusion/ej2-base';
 import { INotifyPropertyChanged, Browser, Touch } from '@syncfusion/ej2-base';
 import { Event, EventHandler, Complex, Collection } from '@syncfusion/ej2-base';
-import { findClipRect, showTooltip, removeElement, appendChildElement, blazorTemplatesReset } from '../common/utils/helper';
+import { findClipRect, showTooltip, ImageOption, removeElement, appendChildElement, blazorTemplatesReset } from '../common/utils/helper';
 import { textElement, RectOption, createSvg, firstToLowerCase, titlePositionX, PointData, redrawElement } from '../common/utils/helper';
 import { appendClipElement } from '../common/utils/helper';
 import { ChartModel, CrosshairSettingsModel, ZoomSettingsModel } from './chart-model';
@@ -766,6 +766,13 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
       */
     @Property(false)
     public enableCanvas: boolean;
+
+    /**
+     * The background image of the chart that accepts value in string as url link or location of an image.
+     * @default null
+     */
+    @Property(null)
+    public backGroundImageUrl: string;
 
     /**
      * Defines the collection of technical indicators, that are used in financial markets
@@ -2020,15 +2027,30 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
     }
     private renderBorder(): void {
         let width: number = this.border.width;
+        let backGroundImage: string = this.backGroundImageUrl;
+        let fillColor: string = backGroundImage ? 'transparent' : (this.background || this.themeStyle.background);
         let rect: RectOption = new RectOption(
-            this.element.id + '_ChartBorder', this.background || this.themeStyle.background, this.border, 1,
+            this.element.id + '_ChartBorder', fillColor, this.border, 1,
             new Rect(width * 0.5, width * 0.5, this.availableSize.width - width, this.availableSize.height - width));
 
         this.htmlObject = redrawElement(this.redraw, this.element.id + '_ChartBorder', rect, this.renderer) as HTMLElement
             || this.renderer.drawRectangle(rect) as HTMLElement;
 
         appendChildElement(this.enableCanvas, this.svgObject, this.htmlObject, this.redraw);
-
+        // to draw back ground image for chart
+        if (backGroundImage) {
+            let image: ImageOption = new ImageOption(
+                this.availableSize.height - width,
+                this.availableSize.width - width,
+                backGroundImage,
+                0, 0,
+                this.element.id + '_ChartBackground',
+                'visible', 'none'
+            );
+            this.htmlObject = redrawElement(this.redraw, this.element.id + '_ChartBackground', image, this.renderer) as HTMLElement
+                        || this.renderer.drawImage(image) as HTMLElement;
+            appendChildElement(this.enableCanvas, this.svgObject, this.htmlObject, this.redraw);
+        }
     }
     /**
      * @private
@@ -2053,6 +2075,24 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
                 null, null, true, true, previousRect
             );
             this.htmlObject = null;
+        }
+        // to draw back ground image for chart area    
+        let backGroundImage: string = this.chartArea.backGroundImageUrl;
+        if (backGroundImage) {
+            let width: number = this.chartArea.border.width;
+            let image: ImageOption = new ImageOption(
+                this.initialClipRect.height - width,
+                this.initialClipRect.width - width,
+                backGroundImage,
+                this.initialClipRect.x, this.initialClipRect.y,
+                this.element.id + '_ChartAreaBackground',
+                'visible', 'none'
+            );
+            this.htmlObject = this.renderer.drawImage(image) as HTMLElement;
+            appendChildElement(
+                this.enableCanvas, this.svgObject, this.htmlObject, this.redraw, true, 'x', 'y',
+                null, null, true, true
+            );
         }
     }
 

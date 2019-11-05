@@ -2,6 +2,22 @@
 
 ## [Unreleased]
 
+## 17.3.26 (2019-11-05)
+
+### PDF Viewer
+
+#### New Features
+
+- `#252805` - Exposed the annotation unique ID in the annotationAdd event arguments.
+
+#### Bug Fixes
+
+- `#252806` - Annotation bounds are retrieved properly when importing and exporting the annotation details in rotated PDF documents.
+- `#253016` - Free text annotation bounds are preserved properly in the rotated PDF document while saving the document.
+- `#251152` - Text markup annotation resizer position will be updated properly in the doctype HTML pages.
+- `#252879` - Script errors will no longer occur if we disable the magnification module.
+- `#253504` - The character start and end indexes will be updated properly in the text markup annotationAdd event arguments.
+
 ## 17.3.21 (2019-10-30)
 
 ### PDF Viewer
@@ -9,7 +25,7 @@
 #### New Features
 
 - `#252111` - Provided the support for handwritten signature.
-- `#251149` – Provided the support for customizing the text search highlight color.
+- `#251149` - Provided the support for customizing the text search highlight color.
 
 #### Bug Fixes
 

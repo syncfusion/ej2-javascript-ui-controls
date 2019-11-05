@@ -366,6 +366,14 @@ export interface PivotViewModel extends ComponentModel{
     allowDeferLayoutUpdate?: boolean;
 
     /**
+     * If `allowDataCompression` is set to true when virtual scrolling is enabled, 
+     * the performance of drag and drop, add/remove operations can be improved.
+     * Note: It is having limitations in Drill-through, editing and some of the aggregation types.
+     * @default false
+     */
+    allowDataCompression?: boolean;
+
+    /**
      * It allows to set the maximum number of nodes to be displayed in the member editor.
      * @default 1000    
      */
@@ -455,6 +463,12 @@ export interface PivotViewModel extends ComponentModel{
 
     /**
     columnDrop?: EmitType<ColumnDragEventArgs>;
+
+    /**
+    beforePdfExport?: EmitType<Object>;
+
+    /**
+    beforeExcelExport?: EmitType<Object>;
 
     /**
      * @hidden

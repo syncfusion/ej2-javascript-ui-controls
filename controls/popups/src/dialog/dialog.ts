@@ -911,22 +911,27 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
             if (!isNaN(parseFloat(this.position.X as string)) && !isNaN(parseFloat(this.position.Y as string))) {
                 this.setPopupPosition();
             } else if ((!isNaN(parseFloat(this.position.X as string)) && isNaN(parseFloat(this.position.Y as string)))
-            || (isNaN(parseFloat(this.position.X as string)) && !isNaN(parseFloat(this.position.Y as string)))) {
+                || (isNaN(parseFloat(this.position.X as string)) && !isNaN(parseFloat(this.position.Y as string)))) {
                 this.setPopupPosition();
             } else {
                 this.element.style.top = '0px';
                 this.element.style.left = '0px';
-                this.dlgContainer.classList.add('e-dlg-' + this.position.X + '-' + this.position.Y);
+                let positonX: string | number = typeof (this.position.X) === 'number' ? this.position.X :
+                 this.position.X.toLocaleLowerCase();
+                let positionY: string | number = typeof (this.position.Y) === 'number' ? this.position.Y :
+                 this.position.Y.toLocaleLowerCase();
+                this.dlgContainer.classList.add('e-dlg-' + positonX + '-' + positionY);
             }
         } else {
             this.setPopupPosition();
         }
     }
 
-    private setPopupPosition() : void {
+    private setPopupPosition(): void {
         this.popupObj.setProperties({
             position: {
-                X: this.position.X, Y: this.position.Y
+                X: typeof (this.position.X) === 'number' ? this.position.X : this.position.X.toLocaleLowerCase(),
+                Y: typeof (this.position.Y) === 'number' ? this.position.Y : this.position.Y.toLocaleLowerCase()
             }
         });
     }

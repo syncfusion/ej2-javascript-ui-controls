@@ -107,7 +107,7 @@ export class NormalEdit {
             this.previousData = gObj.getCurrentViewRecords()[this.rowIndex];
         }
         for (let i: number = 0; i < primaryKeys.length; i++) {
-            primaryKeyValues.push(this.previousData[primaryKeys[i]]);
+            primaryKeyValues.push(getObject(primaryKeys[i], this.previousData));
         }
         this.uid = tr.getAttribute('data-uid');
         let rowObj: Row<Column> = gObj.getRowObjectFromUID(this.uid);

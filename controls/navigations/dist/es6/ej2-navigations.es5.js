@@ -2002,7 +2002,7 @@ var MenuBase = /** @__PURE__ @class */ (function (_super) {
         if (this.isMenu) {
             if (!this.showItemOnClick && (trgt.parentElement !== wrapper && !closest(trgt, '.e-' + this.getModuleName() + '-popup'))
                 && (!cli || (cli && !this.getIndex(cli.id, true).length))) {
-                this.removeLIStateByClass([FOCUSED, SELECTED], [wrapper]);
+                this.removeLIStateByClass([FOCUSED], [wrapper]);
                 if (this.navIdx.length) {
                     this.isClosed = true;
                     this.closeMenu(null, e);
@@ -2082,9 +2082,16 @@ var MenuBase = /** @__PURE__ @class */ (function (_super) {
             var wrapper = this.getWrapper();
             var trgt = e.target;
             var cli = this.cli = this.getLI(trgt);
+            var regex = new RegExp('-ej2menu-(.*)-popup');
             var cliWrapper = cli ? closest(cli, '.e-' + this.getModuleName() + '-wrapper') : null;
             var isInstLI = cli && cliWrapper && (this.isMenu ? this.getIndex(cli.id, true).length > 0
                 : wrapper.firstElementChild.id === cliWrapper.firstElementChild.id);
+            if (cli && cliWrapper && this.isMenu) {
+                var cliWrapperId = cliWrapper.id ? regex.exec(cliWrapper.id)[1] : cliWrapper.querySelector('.e-menu-parent').id;
+                if (this.element.id !== cliWrapperId) {
+                    return;
+                }
+            }
             if (isInstLI && e.type === 'click' && !cli.classList.contains(HEADER)) {
                 this.setLISelected(cli);
                 var navIdx = this.getIndex(cli.id, true);
@@ -2148,6 +2155,9 @@ var MenuBase = /** @__PURE__ @class */ (function (_super) {
                 else {
                     if (trgt.tagName !== 'UL' || (this.isMenu ? trgt.parentElement.classList.contains('e-menu-wrapper') &&
                         !this.getIndex(trgt.querySelector('.' + ITEM).id, true).length : trgt.parentElement !== wrapper)) {
+                        if (!cli) {
+                            this.removeLIStateByClass([SELECTED], [wrapper]);
+                        }
                         if (!cli || !cli.querySelector('.' + CARET)) {
                             this.closeMenu(null, e);
                         }
@@ -2563,8 +2573,28 @@ var MenuBase = /** @__PURE__ @class */ (function (_super) {
         var idx;
         var navIdx;
         var disabled = DISABLED;
+        var skipItem;
         for (var i = 0; i < items.length; i++) {
             navIdx = this.getIndex(items[i], isUniqueId);
+            if (this.navIdx.length) {
+                if (navIdx.length !== 1) {
+                    skipItem = false;
+                    for (var i_1 = 0, len = navIdx.length - 1; i_1 < len; i_1++) {
+                        if (navIdx[i_1] !== this.navIdx[i_1]) {
+                            skipItem = true;
+                            break;
+                        }
+                    }
+                    if (skipItem) {
+                        continue;
+                    }
+                }
+            }
+            else {
+                if (navIdx.length !== 1) {
+                    continue;
+                }
+            }
             idx = navIdx.pop();
             ul = this.getUlByNavIdx(navIdx.length);
             if (ul) {
@@ -5162,10 +5192,18 @@ var Accordion = /** @__PURE__ @class */ (function (_super) {
     };
     Accordion.prototype.updateContentBlazorTemplate = function (item, index) {
         if (this.itemTemplate && isBlazor() && !this.isStringTemplate) {
-            updateBlazorTemplate(this.element.id + '_itemTemplate', 'ItemTemplate', this);
+            updateBlazorTemplate(this.element.id + '_itemTemplate', 'ItemTemplate', this, false);
         }
         if (item && item.content && isBlazor() && !this.isStringTemplate && item.content.indexOf('<div>Blazor') === 0) {
             updateBlazorTemplate(this.element.id + index + '_content', 'ContentTemplate', item);
+        }
+    };
+    Accordion.prototype.updateHeaderBlazorTemplate = function (item, index) {
+        if (this.headerTemplate && isBlazor() && !this.isStringTemplate) {
+            updateBlazorTemplate(this.element.id + '_headerTemplate', 'HeaderTemplate', this, false);
+        }
+        if (item && item.header && isBlazor() && !this.isStringTemplate && item.header.indexOf('<div>Blazor') === 0) {
+            updateBlazorTemplate(this.element.id + index + '_header', 'HeaderTemplate', item);
         }
     };
     Accordion.prototype.focusIn = function (e) {
@@ -5239,9 +5277,7 @@ var Accordion = /** @__PURE__ @class */ (function (_super) {
                     EventHandler.add(innerDataSourceItem.querySelector('.' + CLS_HEADER), 'blur', _this.focusOut, _this);
                 }
             });
-            if (this.headerTemplate && isBlazor() && !this.isStringTemplate) {
-                updateBlazorTemplate(this.element.id + '_headerTemplate', 'headerTemplate', this);
-            }
+            this.updateHeaderBlazorTemplate();
         }
         else {
             var items = this.items;
@@ -5249,9 +5285,7 @@ var Accordion = /** @__PURE__ @class */ (function (_super) {
                 items.forEach(function (item, index) {
                     innerItem = _this.renderInnerItem(item, index);
                     ele.appendChild(innerItem);
-                    if (item.header && isBlazor() && !_this.isStringTemplate && item.header.indexOf('<div>Blazor') === 0) {
-                        updateBlazorTemplate(_this.element.id + index + '_header', 'HeaderTemplate', item);
-                    }
+                    _this.updateHeaderBlazorTemplate(item, index);
                     if (innerItem.childElementCount > 0) {
                         EventHandler.add(innerItem.querySelector('.' + CLS_HEADER), 'focus', _this.focusIn, _this);
                         EventHandler.add(innerItem.querySelector('.' + CLS_HEADER), 'blur', _this.focusOut, _this);
@@ -5297,17 +5331,7 @@ var Accordion = /** @__PURE__ @class */ (function (_super) {
         eventArgs.originalEvent = e;
         var ctnCheck = !isNullOrUndefined(tglIcon) && acrdnItem.childElementCount <= 1;
         if (ctnCheck && (isNullOrUndefined(acrdnCtn) || !isNullOrUndefined(select('.' + CLS_HEADER + ' .' + CLS_TOOGLEICN, acrdnCtnItem)))) {
-            if (this.dataSource.length > 0) {
-                this.dataSource.forEach(function (item, index) {
-                    var itemEle = _this.getItemElements();
-                    var ele = itemEle[index];
-                    var ctn = _this.contentRendering(index);
-                    ele.appendChild(ctn);
-                });
-            }
-            else {
-                acrdnItem.appendChild(this.contentRendering(index));
-            }
+            acrdnItem.appendChild(this.contentRendering(index));
             this.updateContentBlazorTemplate(eventArgs.item, index);
             this.ariaAttrUpdate(acrdnItem);
         }
@@ -5820,6 +5844,7 @@ var Accordion = /** @__PURE__ @class */ (function (_super) {
             else {
                 ele.insertBefore(innerItemEle, itemEle[index]);
             }
+            this.updateHeaderBlazorTemplate();
             EventHandler.add(innerItemEle.querySelector('.' + CLS_HEADER), 'focus', this.focusIn, this);
             EventHandler.add(innerItemEle.querySelector('.' + CLS_HEADER), 'blur', this.focusOut, this);
             this.itemAttribUpdate();

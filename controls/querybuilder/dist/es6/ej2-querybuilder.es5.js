@@ -723,7 +723,6 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
     };
     QueryBuilder.prototype.changeValue = function (i, args) {
         var _this = this;
-        var eventsArgs;
         var groupID;
         var ruleID;
         var element;
@@ -768,14 +767,25 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
         else {
             value = args.value;
         }
-        eventsArgs = { groupID: groupID, ruleID: ruleID, value: value, cancel: false, type: 'value' };
+        if (args.name === 'input' && this.immediateModeDelay) {
+            window.clearInterval(this.timer);
+            this.timer = window.setInterval(function () { _this.filterValue(groupID, ruleID, value, i, element); }, this.immediateModeDelay);
+        }
+        else {
+            this.filterValue(groupID, ruleID, value, i, element);
+        }
+    };
+    QueryBuilder.prototype.filterValue = function (grID, rlID, value, i, ele) {
+        var _this = this;
+        var eventsArgs = { groupID: grID, ruleID: rlID, value: value, cancel: false, type: 'value' };
+        window.clearInterval(this.timer);
         if (!this.isImportRules) {
             this.trigger('beforeChange', eventsArgs, function (observedChangeArgs) {
-                _this.changeValueSuccessCallBack(observedChangeArgs, element, i, groupID, ruleID);
+                _this.changeValueSuccessCallBack(observedChangeArgs, ele, i, grID, rlID);
             });
         }
         else {
-            this.changeValueSuccessCallBack(eventsArgs, element, i, groupID, ruleID);
+            this.changeValueSuccessCallBack(eventsArgs, ele, i, grID, rlID);
         }
     };
     QueryBuilder.prototype.changeValueSuccessCallBack = function (args, element, i, groupID, ruleID) {
@@ -1013,6 +1023,11 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
             }
             detach(divElement[i]);
         }
+        var templateElement;
+        templateElement = target.nextElementSibling.querySelectorAll('.e-template:not(.e-control)');
+        for (var i = 0, len = templateElement.length; i < len; i++) {
+            detach(templateElement[i]);
+        }
     };
     QueryBuilder.prototype.templateDestroy = function (column, elemId) {
         var temp = column.template.destroy;
@@ -1143,21 +1158,27 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
         this.updateRules(element, value, i);
     };
     QueryBuilder.prototype.processTemplate = function (target, itemData, rule, tempRule) {
-        var tempElements = closest(target, '.e-rule-container').querySelectorAll('.e-template');
+        var container = closest(target, '.e-rule-container');
+        var tempElements = container.querySelectorAll('.e-template');
+        var idx = getComponent(container.querySelector('.e-rule-filter .e-filter-input'), 'dropdownlist').index;
         if (tempElements.length < 2) {
             if (itemData.template && typeof itemData.template.write === 'string') {
-                getValue(itemData.template.write, window)({ elements: tempElements[0], values: rule.value, operator: tempRule.operator });
+                getValue(itemData.template.write, window)({ elements: tempElements[0], values: rule.value, operator: tempRule.operator,
+                    dataSource: this.columns[idx].values });
             }
             else if (itemData.template && itemData.template.write) {
-                itemData.template.write({ elements: tempElements[0], values: rule.value, operator: tempRule.operator });
+                itemData.template.write({ elements: tempElements[0], values: rule.value, operator: tempRule.operator,
+                    dataSource: this.columns[idx].values });
             }
         }
         else {
             if (itemData.template && typeof itemData.template.write === 'string') {
-                getValue(itemData.template.write, window)({ elements: tempElements, values: rule.value, operator: tempRule.operator });
+                getValue(itemData.template.write, window)({ elements: tempElements, values: rule.value, operator: tempRule.operator,
+                    dataSource: this.columns[idx].values });
             }
             else if (itemData.template && itemData.template.write) {
-                itemData.template.write({ elements: tempElements, values: rule.value, operator: tempRule.operator });
+                itemData.template.write({ elements: tempElements, values: rule.value, operator: tempRule.operator,
+                    dataSource: this.columns[idx].values });
             }
         }
     };
@@ -1449,7 +1470,7 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
                 if (valElem instanceof Element) {
                     valElem.id = parentId + '_valuekey0';
                     addClass([valElem], 'e-template');
-                    addClass([valElem], 'e-' + itemData.field);
+                    addClass([valElem], 'e-' + this.columns[filtObj.index].field);
                     target.nextElementSibling.appendChild(valElem);
                 }
                 else if (valElem instanceof Array) {
@@ -2055,7 +2076,7 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
                 { value: 'isempty', key: this.l10n.getConstant('IsEmpty') },
                 { value: 'isnotempty', key: this.l10n.getConstant('IsNotEmpty') },
                 { value: 'isnull', key: this.l10n.getConstant('IsNull') },
-                { value: 'isnotnull', key: this.l10n.getConstant('IsNotNull') },
+                { value: 'isnotnull', key: this.l10n.getConstant('IsNotNull') }
             ],
             dateOperator: [
                 { value: 'equal', key: this.l10n.getConstant('Equal') },
@@ -2087,7 +2108,8 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
         this.operators = {
             equal: '=', notequal: '!=', greaterthan: '>', greaterthanorequal: '>=', lessthan: '<', in: 'IN', notin: 'NOT IN',
             lessthanorequal: '<=', startswith: 'LIKE', endswith: 'LIKE', between: 'BETWEEN', notbetween: 'NOT BETWEEN', contains: 'LIKE',
-            isnull: 'IS NULL', isnotnull: 'IS NOT NULL', isempty: 'IS EMPTY', isnotempty: 'IS NOT EMPTY'
+            isnull: 'IS NULL', isnotnull: 'IS NOT NULL', isempty: 'IS EMPTY', isnotempty: 'IS NOT EMPTY', notstartswith: 'NOT LIKE',
+            notendswith: 'NOT LIKE', notcontains: 'NOT LIKE'
         };
         this.fields = { text: 'label', value: 'field' };
     };
@@ -2449,6 +2471,7 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
         var ruleValue;
         var ignoreCase = false;
         var column;
+        var ignoreOper = ['notcontains', 'notstartswith', 'notendswith'];
         if (!ruleColl) {
             return pred;
         }
@@ -2497,19 +2520,22 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
                 }
                 if (i === 0) {
                     if ((oper.indexOf('in') > -1 || oper.indexOf('between') > -1 || oper.indexOf('null') > -1 ||
-                        oper.indexOf('empty') > -1) && oper !== 'contains') {
+                        oper.indexOf('empty') > -1) && oper.indexOf('contains') < 0) {
                         pred = isDateFilter ? this.datePredicate(ruleColl[i], ruleValue) : this.arrayPredicate(ruleColl[i]);
                     }
                     else {
                         var value = ruleValue;
-                        if (value !== '') {
+                        if (value !== '' && ignoreOper.indexOf(oper) < 0) {
                             pred = new Predicate(ruleColl[i].field, ruleColl[i].operator, ruleValue, ignoreCase);
                         }
                     }
                 }
                 else {
+                    if (ignoreOper.indexOf(oper) > -1) {
+                        continue;
+                    }
                     if (isDateFilter || (oper.indexOf('in') > -1 || oper.indexOf('between') > -1 ||
-                        oper.indexOf('null') > -1 || oper.indexOf('empty') > -1) && oper !== 'contains') {
+                        oper.indexOf('null') > -1 || oper.indexOf('empty') > -1) && oper.indexOf('contains') < 0) {
                         pred = isDateFilter ? this.datePredicate(ruleColl[i], ruleValue, pred, rule.condition) :
                             this.arrayPredicate(ruleColl[i], pred, rule.condition);
                     }
@@ -2701,7 +2727,7 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
             this.addRuleElement(parentElem.querySelector('.e-group-container'), rule); //Create group
         }
     };
-    QueryBuilder.prototype.getSqlString = function (rules, queryStr) {
+    QueryBuilder.prototype.getSqlString = function (rules, enableEscape, queryStr) {
         var isRoot = false;
         if (!queryStr) {
             queryStr = '';
@@ -2713,7 +2739,7 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
         var condition = rules.condition;
         for (var j = 0, jLen = rules.rules.length; j < jLen; j++) {
             if (rules.rules[j].rules) {
-                queryStr = this.getSqlString(rules.rules[j], queryStr);
+                queryStr = this.getSqlString(rules.rules[j], enableEscape, queryStr);
             }
             else {
                 var rule = rules.rules[j];
@@ -2736,13 +2762,13 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
                     }
                 }
                 else {
-                    if (rule.operator === 'startswith') {
+                    if (rule.operator.indexOf('startswith') > -1) {
                         valueStr += '("' + rule.value + '%")';
                     }
-                    else if (rule.operator === 'endswith') {
+                    else if (rule.operator.indexOf('endswith') > -1) {
                         valueStr += '("%' + rule.value + '")';
                     }
-                    else if (rule.operator === 'contains') {
+                    else if (rule.operator.indexOf('contains') > -1) {
                         valueStr += '("%' + rule.value + '%")';
                     }
                     else {
@@ -2755,10 +2781,16 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
                     }
                 }
                 if (rule.operator.indexOf('null') > -1 || (rule.operator.indexOf('empty') > -1)) {
+                    if (enableEscape) {
+                        rule.field = '`' + rule.field + '`';
+                    }
                     queryStr += rule.field + ' ' + this.operators[rule.operator];
                 }
                 else {
-                    queryStr += rule.field + ' ' + (this.operators[rule.operator] || rule.operator) + ' ' + valueStr;
+                    if (enableEscape) {
+                        rule.field = '`' + rule.field + '`';
+                    }
+                    queryStr += rule.field + ' ' + this.operators[rule.operator] + ' ' + valueStr;
                 }
             }
             if (j !== jLen - 1) {
@@ -2774,6 +2806,7 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
      * Sets the rules from the sql query.
      */
     QueryBuilder.prototype.setRulesFromSql = function (sqlString) {
+        sqlString = sqlString.replace(/`/g, '');
         var ruleModel = this.getRulesFromSql(sqlString);
         this.setRules({ condition: ruleModel.condition, rules: ruleModel.rules });
     };
@@ -2792,9 +2825,9 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
      * Gets the sql query from rules.
      * @returns object.
      */
-    QueryBuilder.prototype.getSqlFromRules = function (rule) {
+    QueryBuilder.prototype.getSqlFromRules = function (rule, allowEscape) {
         rule = this.getRuleCollection(rule, false);
-        return this.getSqlString(this.getValidRules(rule)).replace(/"/g, '\'');
+        return this.getSqlString(this.getValidRules(rule), allowEscape).replace(/"/g, '\'');
     };
     QueryBuilder.prototype.sqlParser = function (sqlString) {
         var st = 0;
@@ -2885,14 +2918,14 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
             '>=': 'greaterthanorequal', 'in': 'in', 'not in': 'notin', 'between': 'between', 'not between': 'notbetween',
             'is empty': 'isempty', 'is null': 'isnull', 'is not null': 'isnotnull', 'is not empty': 'isnotempty'
         };
-        if (value.indexOf('%') === 0 && value.indexOf('%') === value.length - 1) {
-            return 'contains';
+        if (value.indexOf('%') === 0 && value[value.length - 1] === '%') {
+            return (operator === 'not like') ? 'notcontains' : 'contains';
         }
         else if (value.indexOf('%') === 0 && value.indexOf('%') !== value.length - 1) {
-            return 'startswith';
+            return (operator === 'not like') ? 'notstartswith' : 'startswith';
         }
         else if (value.indexOf('%') !== 0 && value.indexOf('%') === value.length - 1) {
-            return 'endswith';
+            return (operator === 'not like') ? 'notendswith' : 'endswith';
         }
         return operators[operator];
     };
@@ -2944,7 +2977,7 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
                             if (operator.indexOf('null') > -1 || operator.indexOf('empty') > -1) {
                                 break;
                             }
-                            if (operator === 'like' && parser[j][0] === 'String') {
+                            if (operator.indexOf('like') > -1 && parser[j][0] === 'String') {
                                 rule.value = parser[j][1].replace(/'/g, '').replace(/%/g, '');
                                 rule.type = 'string';
                             }
@@ -2966,7 +2999,7 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
                             }
                         }
                     }
-                    if (operator !== 'like') {
+                    if (operator.indexOf('like') < 0) {
                         if (parser[j - 1][0] === 'Number') {
                             rule.value = numVal;
                             rule.type = 'number';
@@ -3080,6 +3113,9 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
     __decorate([
         Property(false)
     ], QueryBuilder.prototype, "matchCase", void 0);
+    __decorate([
+        Property(0)
+    ], QueryBuilder.prototype, "immediateModeDelay", void 0);
     __decorate([
         Complex({ condition: 'and', rules: [] }, Rule)
     ], QueryBuilder.prototype, "rule", void 0);

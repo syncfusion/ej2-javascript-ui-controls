@@ -87,6 +87,9 @@ export class Filter {
                 //let parRecord: Object = this.flatFilteredData.filter((e: ITreeData) => {
                 //          return e.uniqueID === rec.parentItem.uniqueID; })[0];
                 setValue('hasFilteredChildRecords', true, parRecord);
+                if (parRecord && parRecord.parentItem) {
+                    this.updateParentFilteredRecord(parRecord);
+                }
             }
         }
         if (this.flatFilteredData.length > 0 && this.isHierarchyFilter) {
@@ -94,6 +97,16 @@ export class Filter {
         }
         this.parent.notify('updateAction', { result: this.filteredResult });
     }
+    private updateParentFilteredRecord(record: ITreeData): void {
+        let parRecord: ITreeData = getParentData(this.parent, record.parentItem.uniqueID, true);
+        let uniqueIDValue: Object = getValue('uniqueIDFilterCollection', this.parent);
+        if (parRecord && uniqueIDValue.hasOwnProperty(parRecord.uniqueID)) {
+            setValue('hasFilteredChildRecords', true, parRecord);
+        }
+        if (parRecord && parRecord.parentItem) {
+            this.updateParentFilteredRecord(parRecord);
+        }
+    };
     private addParentRecord(record: ITreeData): void {
         let parent: Object = getParentData(this.parent, record.parentUniqueID);
         //let parent: Object = this.parent.flatData.filter((e: ITreeData) => {return e.uniqueID === record.parentUniqueID; })[0];

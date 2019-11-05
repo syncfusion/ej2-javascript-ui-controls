@@ -691,6 +691,7 @@ var DECIMALSEPARATOR = '.';
 var COMPONENT = 'e-numerictextbox';
 var CONTROL = 'e-control';
 var NUMERIC_FOCUS = 'e-input-focus';
+var HIDDENELEMENT = 'e-numeric-hidden';
 var wrapperAttributes = ['title', 'style', 'class'];
 /**
  * Represents the NumericTextBox component that allows the user to enter only numeric values.
@@ -774,9 +775,7 @@ var NumericTextBox = /** @__PURE__ @class */ (function (_super) {
             if (this.showSpinButton) {
                 this.spinBtnCreation();
             }
-            if (!isNullOrUndefined(this.width)) {
-                setStyleAttribute(this.container, { 'width': formatUnit(this.width) });
-            }
+            this.setElementWidth(this.width);
             if (!this.container.classList.contains('e-input-group')) {
                 this.container.classList.add('e-input-group');
             }
@@ -906,13 +905,32 @@ var NumericTextBox = /** @__PURE__ @class */ (function (_super) {
         if (this.readonly) {
             attributes(this.element, { 'aria-readonly': 'true' });
         }
-        this.hiddenInput = (this.createElement('input', { attrs: { type: 'hidden', 'validateHidden': 'true' } }));
+        this.hiddenInput = (this.createElement('input', { attrs: { type: 'text',
+                'validateHidden': 'true', 'class': HIDDENELEMENT } }));
         this.inputName = this.inputName !== null ? this.inputName : this.element.id;
         this.element.removeAttribute('name');
         attributes(this.hiddenInput, { 'name': this.inputName });
         this.container.insertBefore(this.hiddenInput, this.container.childNodes[1]);
+        this.updateDataAttribute(false);
         if (this.inputStyle !== null) {
             attributes(this.container, { 'style': this.inputStyle });
+        }
+    };
+    NumericTextBox.prototype.updateDataAttribute = function (isDynamic) {
+        var attr = {};
+        if (!isDynamic) {
+            for (var a = 0; a < this.element.attributes.length; a++) {
+                attr[this.element.attributes[a].name] = this.element.getAttribute(this.element.attributes[a].name);
+            }
+        }
+        else {
+            attr = this.htmlAttributes;
+        }
+        for (var _i = 0, _a = Object.keys(attr); _i < _a.length; _i++) {
+            var key = _a[_i];
+            if (key.indexOf('data') === 0) {
+                this.hiddenInput.setAttribute(key, attr[key]);
+            }
         }
     };
     NumericTextBox.prototype.updateHTMLAttrToElement = function () {
@@ -943,6 +961,16 @@ var NumericTextBox = /** @__PURE__ @class */ (function (_super) {
                         this.container.setAttribute(pro, this.htmlAttributes[pro]);
                     }
                 }
+            }
+        }
+    };
+    NumericTextBox.prototype.setElementWidth = function (width) {
+        if (!isNullOrUndefined(width)) {
+            if (typeof width === 'number') {
+                this.container.style.width = formatUnit(width);
+            }
+            else if (typeof width === 'string') {
+                this.container.style.width = (width.match(/px|%|em/)) ? (width) : (formatUnit(width));
             }
         }
     };
@@ -1674,7 +1702,7 @@ var NumericTextBox = /** @__PURE__ @class */ (function (_super) {
             var prop = _a[_i];
             switch (prop) {
                 case 'width':
-                    setStyleAttribute(this.container, { 'width': formatUnit(newProp.width) });
+                    this.setElementWidth(newProp.width);
                     break;
                 case 'cssClass':
                     Input.setCssClass(newProp.cssClass, [this.container], oldProp.cssClass);
@@ -1697,6 +1725,7 @@ var NumericTextBox = /** @__PURE__ @class */ (function (_super) {
                 case 'htmlAttributes':
                     this.updateHTMLAttrToElement();
                     this.updateHTMLAttrToWrapper();
+                    this.updateDataAttribute(true);
                     this.checkAttributes(true);
                     break;
                 case 'placeholder':
@@ -3101,8 +3130,15 @@ var MaskedTextBox = /** @__PURE__ @class */ (function (_super) {
     };
     MaskedTextBox.prototype.setWidth = function (width) {
         if (!isNullOrUndefined(width)) {
-            this.element.style.width = formatUnit(width);
-            this.inputObj.container.style.width = formatUnit(width);
+            if (typeof width === 'number') {
+                this.inputObj.container.style.width = formatUnit(width);
+                this.element.style.width = formatUnit(width);
+            }
+            else if (typeof width === 'string') {
+                var elementWidth = (width.match(/px|%|em/)) ? (width) : (formatUnit(width));
+                this.inputObj.container.style.width = elementWidth;
+                this.element.style.width = elementWidth;
+            }
         }
     };
     MaskedTextBox.prototype.checkHtmlAttributes = function (isDynamic) {
@@ -6976,41 +7012,6 @@ var __decorate$4 = (undefined && undefined.__decorate) || function (decorators, 
     else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 };
-var __awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : new P(function (resolve) { resolve(result.value); }).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
-var __generator = (undefined && undefined.__generator) || function (thisArg, body) {
-    var _ = { label: 0, sent: function() { if (t[0] & 1) throw t[1]; return t[1]; }, trys: [], ops: [] }, f, y, t, g;
-    return g = { next: verb(0), "throw": verb(1), "return": verb(2) }, typeof Symbol === "function" && (g[Symbol.iterator] = function() { return this; }), g;
-    function verb(n) { return function (v) { return step([n, v]); }; }
-    function step(op) {
-        if (f) throw new TypeError("Generator is already executing.");
-        while (_) try {
-            if (f = 1, y && (t = op[0] & 2 ? y["return"] : op[0] ? y["throw"] || ((t = y["return"]) && t.call(y), 0) : y.next) && !(t = t.call(y, op[1])).done) return t;
-            if (y = 0, t) op = [op[0] & 2, t.value];
-            switch (op[0]) {
-                case 0: case 1: t = op; break;
-                case 4: _.label++; return { value: op[1], done: false };
-                case 5: _.label++; y = op[1]; op = [0]; continue;
-                case 7: op = _.ops.pop(); _.trys.pop(); continue;
-                default:
-                    if (!(t = _.trys, t = t.length > 0 && t[t.length - 1]) && (op[0] === 6 || op[0] === 2)) { _ = 0; continue; }
-                    if (op[0] === 3 && (!t || (op[1] > t[0] && op[1] < t[3]))) { _.label = op[1]; break; }
-                    if (op[0] === 6 && _.label < t[1]) { _.label = t[1]; t = op; break; }
-                    if (t && _.label < t[2]) { _.label = t[2]; _.ops.push(op); break; }
-                    if (t[2]) _.ops.pop();
-                    _.trys.pop(); continue;
-            }
-            op = body.call(thisArg, _);
-        } catch (e) { op = [6, e]; y = 0; } finally { f = t = 0; }
-        if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
-    }
-};
 var CONTROL_WRAPPER = 'e-upload e-control-wrapper';
 var INPUT_WRAPPER = 'e-file-select';
 var DROP_AREA = 'e-file-drop';
@@ -7047,6 +7048,10 @@ var PAUSE_UPLOAD = 'e-file-pause-btn';
 var RESUME_UPLOAD = 'e-file-play-btn';
 var RESTRICT_RETRY = 'e-restrict-retry';
 var wrapperAttr$1 = ['title', 'style', 'class'];
+var FORM_UPLOAD = 'e-form-upload';
+var HIDDEN_INPUT = 'e-hidden-file-input';
+var INVALID_FILE = 'e-file-invalid';
+var INFORMATION = 'e-file-information';
 var FilesProp = /** @__PURE__ @class */ (function (_super) {
     __extends$4(FilesProp, _super);
     function FilesProp() {
@@ -7121,8 +7126,6 @@ var Uploader = /** @__PURE__ @class */ (function (_super) {
     function Uploader(options, element) {
         var _this = _super.call(this, options, element) || this;
         _this.initialAttr = { accept: null, multiple: false, disabled: false };
-        _this.fileList = [];
-        _this.filesData = [];
         _this.uploadedFilesData = [];
         _this.base64String = [];
         _this.isForm = false;
@@ -7136,6 +7139,17 @@ var Uploader = /** @__PURE__ @class */ (function (_super) {
         _this.actionCompleteCount = 0;
         _this.flag = true;
         _this.selectedFiles = [];
+        _this.uploaderName = 'UploadFiles';
+        /**
+         * Get the file item(li) which are shown in file list.
+         * @private
+         */
+        _this.fileList = [];
+        /**
+         * Get the data of files which are shown in file list.
+         * @private
+         */
+        _this.filesData = [];
         _this.uploaderOptions = options;
         return _this;
     }
@@ -7268,7 +7282,6 @@ var Uploader = /** @__PURE__ @class */ (function (_super) {
         }
     };
     Uploader.prototype.preRender = function () {
-        this.cloneElement = this.element.cloneNode(true);
         this.localeText = { Browse: 'Browse...', Clear: 'Clear', Upload: 'Upload',
             dropFilesHint: 'Or drop files here', invalidMaxFileSize: 'File size is too large',
             invalidMinFileSize: 'File size is too small', invalidFileType: 'File type is not allowed',
@@ -7276,7 +7289,8 @@ var Uploader = /** @__PURE__ @class */ (function (_super) {
             removedSuccessMessage: 'File removed successfully', removedFailedMessage: 'Unable to remove file', inProgress: 'Uploading',
             readyToUploadMessage: 'Ready to upload', abort: 'Abort', remove: 'Remove', cancel: 'Cancel', delete: 'Delete file',
             pauseUpload: 'File upload paused', pause: 'Pause', resume: 'Resume', retry: 'Retry',
-            fileUploadCancel: 'File upload canceled'
+            fileUploadCancel: 'File upload canceled', invalidFileSelection: 'Invalid files selected', totalFiles: 'Total files',
+            size: 'Size'
         };
         this.l10n = new L10n('uploader', this.localeText, this.locale);
         this.preLocaleObj = getValue('currentLocale', this.l10n);
@@ -7336,6 +7350,7 @@ var Uploader = /** @__PURE__ @class */ (function (_super) {
             this.tabIndex = this.element.getAttribute('tabindex');
         }
         this.browserName = Browser.info.name;
+        this.uploaderName = this.element.getAttribute('name');
     };
     Uploader.prototype.getPersistData = function () {
         return this.addOnPersist([]);
@@ -7777,13 +7792,22 @@ var Uploader = /** @__PURE__ @class */ (function (_super) {
         }
         var pasteFile = [].slice.call(item)[0];
         if ((pasteFile.kind === 'file') && pasteFile.type.match('^image/')) {
-            if (isBlazor()) {
-                this.renderSelectedFiles(event, [pasteFile.getAsFile()], false, true);
-            }
-            else {
-                this._renderSelectedFiles(event, [pasteFile.getAsFile()], false, true);
-            }
+            this.renderSelectedFiles(event, [pasteFile.getAsFile()], false, true);
         }
+    };
+    Uploader.prototype.getSelectedFiles = function (index) {
+        var data = [];
+        var liElement = this.fileList[index];
+        var allFiles = this.getFilesData();
+        var nameElements = +liElement.getAttribute('data-files-count');
+        var startIndex = 0;
+        for (var i = 0; i < index; i++) {
+            startIndex += (+this.fileList[i].getAttribute('data-files-count'));
+        }
+        for (var j = startIndex; j < (startIndex + nameElements); j++) {
+            data.push(allFiles[j]);
+        }
+        return data;
     };
     Uploader.prototype.removeFiles = function (args) {
         if (!this.enabled) {
@@ -7792,12 +7816,13 @@ var Uploader = /** @__PURE__ @class */ (function (_super) {
         var selectedElement = args.target.parentElement;
         var index = this.fileList.indexOf(selectedElement);
         var liElement = this.fileList[index];
-        var fileData = this.filesData[index];
+        var formUpload = this.isFormUpload();
+        var fileData = formUpload ? this.getSelectedFiles(index) : this.getFilesInArray(this.filesData[index]);
         if (isNullOrUndefined(fileData)) {
             return;
         }
-        if (args.target.classList.contains(ABORT_ICON)) {
-            fileData.statusCode = '5';
+        if (args.target.classList.contains(ABORT_ICON) && !formUpload) {
+            fileData[0].statusCode = '5';
             if (!isNullOrUndefined(liElement)) {
                 var spinnerTarget = liElement.querySelector('.' + ABORT_ICON);
                 createSpinner({ target: spinnerTarget, width: '20px' });
@@ -7989,12 +8014,7 @@ var Uploader = /** @__PURE__ @class */ (function (_super) {
                     var path = item.fullPath;
                     files_2.push({ 'path': path, 'file': fileObj });
                 });
-                if (isBlazor()) {
-                    this_1.renderSelectedFiles(event, files_2, true);
-                }
-                else {
-                    this_1._renderSelectedFiles(event, files_2, true);
-                }
+                this_1.renderSelectedFiles(event, files_2, true);
             }
             else if (item.isDirectory) {
                 this_1.traverseFileTree(item, event);
@@ -8032,12 +8052,7 @@ var Uploader = /** @__PURE__ @class */ (function (_super) {
             for (var i = 0; i < this.filesEntries.length; i++) {
                 _loop_4(i);
             }
-            if (isBlazor()) {
-                this.renderSelectedFiles(event, files_3, true);
-            }
-            else {
-                this._renderSelectedFiles(event, files_3, true);
-            }
+            this.renderSelectedFiles(event, files_3, true);
         }
         else if (item.isFile) {
             this.filesEntries.push(item);
@@ -8074,22 +8089,12 @@ var Uploader = /** @__PURE__ @class */ (function (_super) {
                     this.element.files = files;
                 }
                 targetFiles = this.multiple ? this.sortFileList(files) : [files[0]];
-                if (isBlazor()) {
-                    this.renderSelectedFiles(args, targetFiles);
-                }
-                else {
-                    this._renderSelectedFiles(args, targetFiles);
-                }
+                this.renderSelectedFiles(args, targetFiles);
             }
         }
         else {
             targetFiles = [].slice.call(args.target.files);
-            if (isBlazor()) {
-                this.renderSelectedFiles(args, targetFiles);
-            }
-            else {
-                this._renderSelectedFiles(args, targetFiles);
-            }
+            this.renderSelectedFiles(args, targetFiles);
         }
     };
     /* istanbul ignore next */
@@ -8106,77 +8111,10 @@ var Uploader = /** @__PURE__ @class */ (function (_super) {
     Uploader.prototype.renderSelectedFiles = function (args, 
     // tslint:disable-next-line
     targetFiles, directory, paste) {
-        return __awaiter(this, void 0, void 0, function () {
-            var eventArgs, fileData, i, file, data;
-            var _this = this;
-            return __generator(this, function (_a) {
-                switch (_a.label) {
-                    case 0:
-                        this.base64String = [];
-                        eventArgs = {
-                            event: args,
-                            cancel: false,
-                            filesData: [],
-                            isModified: false,
-                            modifiedFilesData: [],
-                            progressInterval: '',
-                            isCanceled: false,
-                            currentRequest: null,
-                            customFormData: null
-                        };
-                        /* istanbul ignore next */
-                        if (targetFiles.length < 1) {
-                            eventArgs.isCanceled = true;
-                            this.trigger('selected', eventArgs);
-                            return [2 /*return*/];
-                        }
-                        this.flag = true;
-                        fileData = [];
-                        if (!this.multiple) {
-                            this.clearData(true);
-                            targetFiles = [targetFiles[0]];
-                        }
-                        i = 0;
-                        _a.label = 1;
-                    case 1:
-                        if (!(i < targetFiles.length)) return [3 /*break*/, 5];
-                        file = directory ? targetFiles[i].file : targetFiles[i];
-                        if (!isBlazor()) return [3 /*break*/, 3];
-                        return [4 /*yield*/, this.getBase64(file)];
-                    case 2:
-                        data = _a.sent();
-                        this.base64String.push(data);
-                        _a.label = 3;
-                    case 3:
-                        this.updateInitialFileDetails(args, targetFiles, file, i, fileData, directory, paste);
-                        _a.label = 4;
-                    case 4:
-                        i++;
-                        return [3 /*break*/, 1];
-                    case 5:
-                        eventArgs.filesData = fileData;
-                        if (this.allowedExtensions.indexOf('*') > -1) {
-                            this.allTypes = true;
-                        }
-                        if (!this.allTypes) {
-                            fileData = this.checkExtension(fileData);
-                        }
-                        this.trigger('selected', eventArgs, function (eventArgs) {
-                            _this._internalRenderSelect(eventArgs, fileData);
-                        });
-                        return [2 /*return*/];
-                }
-            });
-        });
-    };
-    /* istanbul ignore next */
-    /* tslint: ignore*/
-    Uploader.prototype._renderSelectedFiles = function (args, 
-    // tslint:disable-next-line
-    targetFiles, directory, paste) {
         var _this = this;
+        this.base64String = [];
         // tslint:disable-next-line
-        var eventArg = {
+        var eventArgs = {
             event: args,
             cancel: false,
             filesData: [],
@@ -8189,14 +8127,12 @@ var Uploader = /** @__PURE__ @class */ (function (_super) {
         };
         /* istanbul ignore next */
         if (targetFiles.length < 1) {
-            eventArg.isCanceled = true;
-            this.trigger('selected', eventArg);
+            eventArgs.isCanceled = true;
+            this.trigger('selected', eventArgs);
             return;
         }
         this.flag = true;
-        // tslint:disable-next-line
         var fileData = [];
-        // tslint:disable-next-line
         if (!this.multiple) {
             this.clearData(true);
             targetFiles = [targetFiles[0]];
@@ -8205,15 +8141,15 @@ var Uploader = /** @__PURE__ @class */ (function (_super) {
             var file = directory ? targetFiles[i].file : targetFiles[i];
             this.updateInitialFileDetails(args, targetFiles, file, i, fileData, directory, paste);
         }
-        eventArg.filesData = fileData;
+        eventArgs.filesData = fileData;
         if (this.allowedExtensions.indexOf('*') > -1) {
             this.allTypes = true;
         }
         if (!this.allTypes) {
             fileData = this.checkExtension(fileData);
         }
-        this.trigger('selected', eventArg, function (eventArg) {
-            _this._internalRenderSelect(eventArg, fileData);
+        this.trigger('selected', eventArgs, function (eventArgs) {
+            _this._internalRenderSelect(eventArgs, fileData);
         });
     };
     Uploader.prototype.updateInitialFileDetails = function (args, 
@@ -8288,6 +8224,14 @@ var Uploader = /** @__PURE__ @class */ (function (_super) {
             allowFormUpload = true;
         }
         return allowFormUpload;
+    };
+    Uploader.prototype.isFormUpload = function () {
+        var isFormUpload = false;
+        if (this.isForm && ((isNullOrUndefined(this.asyncSettings.saveUrl) || this.asyncSettings.saveUrl === '')
+            && (isNullOrUndefined(this.asyncSettings.removeUrl) || this.asyncSettings.removeUrl === ''))) {
+            isFormUpload = true;
+        }
+        return isFormUpload;
     };
     Uploader.prototype.clearData = function (singleUpload) {
         if (!isNullOrUndefined(this.listParent)) {
@@ -8420,15 +8364,226 @@ var Uploader = /** @__PURE__ @class */ (function (_super) {
             this.uploadWrapper.appendChild(this.listParent);
         }
     };
+    Uploader.prototype.formFileList = function (fileData, files) {
+        var fileList = this.createElement('li', { className: FILE });
+        fileList.setAttribute('data-files-count', fileData.length + '');
+        var fileContainer = this.createElement('span', { className: TEXT_CONTAINER });
+        var statusMessage;
+        for (var _i = 0, fileData_2 = fileData; _i < fileData_2.length; _i++) {
+            var listItem = fileData_2[_i];
+            var fileNameEle = this.createElement('span', { className: FILE_NAME });
+            fileNameEle.innerHTML = this.getFileNameOnly(listItem.name);
+            var fileTypeEle = this.createElement('span', { className: FILE_TYPE });
+            fileTypeEle.innerHTML = '.' + this.getFileType(listItem.name);
+            if (!this.enableRtl) {
+                fileContainer.appendChild(fileNameEle);
+                fileContainer.appendChild(fileTypeEle);
+            }
+            else {
+                var rtlContainer = this.createElement('span', { className: RTL_CONTAINER });
+                rtlContainer.appendChild(fileTypeEle);
+                rtlContainer.appendChild(fileNameEle);
+                fileContainer.appendChild(rtlContainer);
+            }
+            this.truncateName(fileNameEle);
+            statusMessage = this.formValidateFileInfo(listItem, fileList);
+        }
+        fileList.appendChild(fileContainer);
+        this.setListToFileInfo(fileData, fileList);
+        var index = this.listParent.querySelectorAll('li').length;
+        var infoEle = this.createElement('span');
+        if (fileList.classList.contains(INVALID_FILE)) {
+            infoEle.classList.add(STATUS);
+            infoEle.classList.add(INVALID_FILE);
+            infoEle.innerText = fileData.length > 1 ? this.localizedTexts('invalidFileSelection') : statusMessage;
+        }
+        else {
+            infoEle.classList.add(fileData.length > 1 ? INFORMATION : FILE_SIZE);
+            infoEle.innerText = fileData.length > 1 ? this.localizedTexts('totalFiles') + ': ' + fileData.length + ' , '
+                + this.localizedTexts('size') + ': ' +
+                this.bytesToSize(this.getFileSize(fileData)) : this.bytesToSize(fileData[0].size);
+            this.createFormInput(fileData);
+        }
+        fileContainer.appendChild(infoEle);
+        if (isNullOrUndefined(fileList.querySelector('.e-icons'))) {
+            var iconElement = this.createElement('span', { className: 'e-icons', attrs: { 'tabindex': this.btnTabIndex } });
+            /* istanbul ignore next */
+            if (this.browserName === 'msie') {
+                iconElement.classList.add('e-msie');
+            }
+            iconElement.setAttribute('title', this.localizedTexts('remove'));
+            fileList.appendChild(fileContainer);
+            fileList.appendChild(iconElement);
+            EventHandler.add(iconElement, 'click', this.removeFiles, this);
+            iconElement.classList.add(REMOVE_ICON);
+        }
+        var eventArgs = {
+            element: fileList,
+            fileInfo: this.mergeFileInfo(fileData, fileList),
+            index: index,
+            isPreload: this.isPreLoadFile(this.mergeFileInfo(fileData, fileList))
+        };
+        var eventsArgs = {
+            element: fileList,
+            fileInfo: this.mergeFileInfo(fileData, fileList),
+            index: index,
+            isPreload: this.isPreLoadFile(this.mergeFileInfo(fileData, fileList))
+        };
+        this.trigger('rendering', eventArgs);
+        this.trigger('fileListRendering', eventsArgs);
+        this.listParent.appendChild(fileList);
+        this.fileList.push(fileList);
+    };
+    Uploader.prototype.formValidateFileInfo = function (listItem, fileList) {
+        var statusMessage = listItem.status;
+        var validationMessages = this.validatedFileSize(listItem.size);
+        if (validationMessages.minSize !== '' || validationMessages.maxSize !== '') {
+            this.addInvalidClass(fileList);
+            statusMessage = validationMessages.minSize !== '' ? this.localizedTexts('invalidMinFileSize') :
+                validationMessages.maxSize !== '' ? this.localizedTexts('invalidMaxFileSize') : statusMessage;
+        }
+        var typeValidationMessage = this.checkExtension(this.getFilesInArray(listItem))[0].status;
+        if (typeValidationMessage === this.localizedTexts('invalidFileType')) {
+            this.addInvalidClass(fileList);
+            statusMessage = typeValidationMessage;
+        }
+        return statusMessage;
+    };
+    Uploader.prototype.addInvalidClass = function (fileList) {
+        fileList.classList.add(INVALID_FILE);
+    };
+    Uploader.prototype.createFormInput = function (fileData) {
+        var inputElement = this.element.cloneNode(true);
+        inputElement.classList.add(HIDDEN_INPUT);
+        for (var _i = 0, fileData_3 = fileData; _i < fileData_3.length; _i++) {
+            var listItem = fileData_3[_i];
+            listItem.input = inputElement;
+        }
+        inputElement.setAttribute('name', this.uploaderName);
+        this.uploadWrapper.querySelector('.' + INPUT_WRAPPER).appendChild(inputElement);
+        if (this.browserName !== 'msie' && this.browserName !== 'edge') {
+            this.element.files = null;
+        }
+    };
+    Uploader.prototype.getFileSize = function (fileData) {
+        var fileSize = 0;
+        for (var _i = 0, fileData_4 = fileData; _i < fileData_4.length; _i++) {
+            var file = fileData_4[_i];
+            fileSize += file.size;
+        }
+        return fileSize;
+    };
+    Uploader.prototype.mergeFileInfo = function (fileData, fileList) {
+        var result = {
+            name: '',
+            rawFile: '',
+            size: 0,
+            status: '',
+            type: '',
+            validationMessages: { minSize: '', maxSize: '' },
+            statusCode: '1',
+            list: fileList
+        };
+        var fileNames = [];
+        var type = '';
+        for (var _i = 0, fileData_5 = fileData; _i < fileData_5.length; _i++) {
+            var listItem = fileData_5[_i];
+            fileNames.push(listItem.name);
+            type = listItem.type;
+        }
+        result.name = fileNames.join(', ');
+        result.size = this.getFileSize(fileData);
+        result.type = type;
+        result.status = this.statusForFormUpload(fileData, fileList);
+        return result;
+    };
+    Uploader.prototype.statusForFormUpload = function (fileData, fileList) {
+        var isValid = true;
+        var statusMessage;
+        for (var _i = 0, fileData_6 = fileData; _i < fileData_6.length; _i++) {
+            var listItem = fileData_6[_i];
+            statusMessage = listItem.status;
+            var validationMessages = this.validatedFileSize(listItem.size);
+            if (validationMessages.minSize !== '' || validationMessages.maxSize !== '') {
+                isValid = false;
+                statusMessage = validationMessages.minSize !== '' ? this.localizedTexts('invalidMinFileSize') :
+                    validationMessages.maxSize !== '' ? this.localizedTexts('invalidMaxFileSize') : statusMessage;
+            }
+            var typeValidationMessage = this.checkExtension(this.getFilesInArray(listItem))[0].status;
+            if (typeValidationMessage === this.localizedTexts('invalidFileType')) {
+                isValid = false;
+                statusMessage = typeValidationMessage;
+            }
+        }
+        if (!isValid) {
+            fileList.classList.add(INVALID_FILE);
+            statusMessage = fileData.length > 1 ? this.localizedTexts('invalidFileSelection') : statusMessage;
+        }
+        else {
+            statusMessage = this.localizedTexts('totalFiles') + ': ' + fileData.length + ' , '
+                + this.localizedTexts('size') + ': ' +
+                this.bytesToSize(this.getFileSize(fileData));
+        }
+        return statusMessage;
+    };
+    Uploader.prototype.formCustomFileList = function (fileData, files) {
+        this.createParentUL();
+        resetBlazorTemplate(this.element.id + 'Template', 'Template');
+        var fileList = this.createElement('li', { className: FILE });
+        fileList.setAttribute('data-files-count', fileData.length + '');
+        this.setListToFileInfo(fileData, fileList);
+        var result = this.mergeFileInfo(fileData, fileList);
+        fileList.setAttribute('data-file-name', result.name);
+        this.uploadTemplateFn = this.templateComplier(this.template);
+        var fromElements = [].slice.call(this.uploadTemplateFn(result, null, null, this.element.id + 'Template', this.isStringTemplate));
+        var index = this.listParent.querySelectorAll('li').length;
+        append(fromElements, fileList);
+        if (!fileList.classList.contains(INVALID_FILE)) {
+            this.createFormInput(fileData);
+        }
+        var eventArgs = {
+            element: fileList,
+            fileInfo: result,
+            index: index,
+            isPreload: this.isPreLoadFile(result)
+        };
+        var eventsArgs = {
+            element: fileList,
+            fileInfo: result,
+            index: index,
+            isPreload: this.isPreLoadFile(result)
+        };
+        this.trigger('rendering', eventArgs);
+        this.trigger('fileListRendering', eventsArgs);
+        this.listParent.appendChild(fileList);
+        this.fileList.push(fileList);
+        updateBlazorTemplate(this.element.id + 'Template', 'Template', this, false);
+    };
+    /**
+     * Create the file list for specified files data.
+     * @param { FileInfo[] } fileData - specifies the files data for file list creation.
+     * @returns void
+     */
     Uploader.prototype.createFileList = function (fileData) {
         this.createParentUL();
         if (this.template !== '' && !isNullOrUndefined(this.template)) {
-            this.createCustomfileList(fileData);
+            if (this.isFormUpload()) {
+                this.uploadWrapper.classList.add(FORM_UPLOAD);
+                this.formCustomFileList(fileData, this.element.files);
+            }
+            else {
+                this.createCustomfileList(fileData);
+            }
+        }
+        else if (this.isFormUpload()) {
+            this.uploadWrapper.classList.add(FORM_UPLOAD);
+            this.formFileList(fileData, this.element.files);
         }
         else {
-            for (var _i = 0, fileData_2 = fileData; _i < fileData_2.length; _i++) {
-                var listItem = fileData_2[_i];
-                var liElement = this.createElement('li', { className: FILE, attrs: { 'data-file-name': listItem.name } });
+            for (var _i = 0, fileData_7 = fileData; _i < fileData_7.length; _i++) {
+                var listItem = fileData_7[_i];
+                var liElement = this.createElement('li', { className: FILE,
+                    attrs: { 'data-file-name': listItem.name, 'data-files-count': '1' } });
                 var textContainer = this.createElement('span', { className: TEXT_CONTAINER });
                 var textElement = this.createElement('span', { className: FILE_NAME, attrs: { 'title': listItem.name } });
                 textElement.innerHTML = this.getFileNameOnly(listItem.name);
@@ -8499,6 +8654,12 @@ var Uploader = /** @__PURE__ @class */ (function (_super) {
         var text;
         text = nameElement.textContent;
         nameElement.dataset.tail = text.slice(text.length - 10);
+    };
+    Uploader.prototype.setListToFileInfo = function (fileData, fileList) {
+        for (var _i = 0, fileData_8 = fileData; _i < fileData_8.length; _i++) {
+            var listItem = fileData_8[_i];
+            listItem.list = fileList;
+        }
     };
     Uploader.prototype.truncateName = function (name) {
         var nameElement = name;
@@ -8986,7 +9147,6 @@ var Uploader = /** @__PURE__ @class */ (function (_super) {
     Uploader.prototype.sendRequest = function (file, metaData, custom, fileIndex) {
         var _this = this;
         var formData = new FormData();
-        var cloneFile;
         var blob = file.rawFile.slice(metaData.start, metaData.end);
         formData.append('chunkFile', blob, file.name);
         formData.append('chunk-index', metaData.chunkIndex.toString());
@@ -9012,8 +9172,6 @@ var Uploader = /** @__PURE__ @class */ (function (_super) {
             eventArgs.currentChunkIndex = metaData.chunkIndex;
             /* istanbul ignore next */
             if (isBlazor()) {
-                cloneFile = file.rawFile;
-                eventArgs.fileData.rawFile = (fileIndex === 0) ? _this.base64String[fileIndex] : null;
                 if (_this.currentRequestHeader) {
                     _this.updateCustomheader(ajax.httpRequest, _this.currentRequestHeader);
                 }
@@ -9024,17 +9182,11 @@ var Uploader = /** @__PURE__ @class */ (function (_super) {
             if (eventArgs.currentChunkIndex === 0) {
                 // This event is currently not required but to avoid breaking changes for previous customer, we have included.
                 _this.trigger('uploading', eventArgs, function (eventArgs) {
-                    if (isBlazor()) {
-                        eventArgs.fileData.rawFile = file.rawFile = cloneFile;
-                    }
                     _this.uploadingEventCallback(formData, eventArgs, e, file);
                 });
             }
             else {
                 _this.trigger('chunkUploading', eventArgs, function (eventArgs) {
-                    if (isBlazor()) {
-                        eventArgs.fileData.rawFile = file.rawFile = cloneFile;
-                    }
                     _this.uploadingEventCallback(formData, eventArgs, e, file);
                 });
             }
@@ -9523,7 +9675,7 @@ var Uploader = /** @__PURE__ @class */ (function (_super) {
     Uploader.prototype.upload = function (files, custom) {
         var _this = this;
         files = files ? files : this.filesData;
-        var uploadFiles = this.validateFileType(files);
+        var uploadFiles = this.getFilesInArray(files);
         var eventArgs = {
             customFormData: [],
             currentRequest: null
@@ -9537,7 +9689,7 @@ var Uploader = /** @__PURE__ @class */ (function (_super) {
             _this.uploadFiles(uploadFiles, custom);
         });
     };
-    Uploader.prototype.validateFileType = function (files) {
+    Uploader.prototype.getFilesInArray = function (files) {
         var uploadFiles = [];
         if (files instanceof Array) {
             uploadFiles = files;
@@ -9550,7 +9702,6 @@ var Uploader = /** @__PURE__ @class */ (function (_super) {
     Uploader.prototype.uploadFiles = function (files, custom) {
         var _this = this;
         var selectedFiles = [];
-        var cloneFiles = [];
         if (this.asyncSettings.saveUrl === '' || isNullOrUndefined(this.asyncSettings.saveUrl)) {
             return;
         }
@@ -9567,79 +9718,108 @@ var Uploader = /** @__PURE__ @class */ (function (_super) {
         else {
             selectedFiles = files;
         }
-        var chunkEnabled = this.checkChunkUpload();
         var _loop_5 = function (i) {
-            var ajax = new Ajax(this_3.asyncSettings.saveUrl, 'POST', true, null);
-            ajax.emitError = false;
-            var getFileData = void 0;
-            /* istanbul ignore next */
-            if (isBlazor()) {
-                getFileData = selectedFiles.slice(0);
-                cloneFiles.push(getFileData[i].rawFile);
-            }
-            var eventArgs = {
-                fileData: (isBlazor()) ? getFileData[i] : selectedFiles[i],
-                customFormData: [],
-                cancel: false
-            };
-            var formData = new FormData();
-            ajax.beforeSend = function (e) {
-                eventArgs.currentRequest = ajax.httpRequest;
+            if (isBlazor() && !this_3.checkChunkUpload()) {
                 /* istanbul ignore next */
-                if (isBlazor()) {
-                    eventArgs.fileData.rawFile = _this.base64String[i];
-                    if (_this.currentRequestHeader) {
-                        _this.updateCustomheader(ajax.httpRequest, _this.currentRequestHeader);
-                    }
-                    if (_this.customFormDatas) {
-                        _this.updateFormData(formData, _this.customFormDatas);
-                    }
-                }
-                _this.trigger('uploading', eventArgs, function (eventArgs) {
-                    /* istanbul ignore next */
-                    if (isBlazor()) {
-                        selectedFiles[i].rawFile = eventArgs.fileData.rawFile = cloneFiles[i];
-                    }
-                    if (eventArgs.cancel) {
-                        _this.eventCancelByArgs(e, eventArgs, selectedFiles[i]);
-                    }
-                    _this.updateFormData(formData, eventArgs.customFormData);
+                /* tslint:disable */
+                this_3.getBase64(selectedFiles[i].rawFile).then(function (data) {
+                    _this.base64String.push(data);
+                    _this.uploadFilesRequest(selectedFiles, i, custom);
                 });
-            };
-            if (selectedFiles[i].statusCode === '1') {
-                var name_4 = this_3.element.getAttribute('name');
-                formData.append(name_4, selectedFiles[i].rawFile, selectedFiles[i].name);
-                if (chunkEnabled && selectedFiles[i].size > this_3.asyncSettings.chunkSize) {
-                    this_3.chunkUpload(selectedFiles[i], custom, i);
-                }
-                else {
-                    ajax.onLoad = function (e) {
-                        if (eventArgs.cancel && isBlazor()) {
-                            return {};
-                        }
-                        else {
-                            _this.uploadComplete(e, selectedFiles[i], custom);
-                            return {};
-                        }
-                    };
-                    ajax.onUploadProgress = function (e) {
-                        if (eventArgs.cancel && isBlazor()) {
-                            return {};
-                        }
-                        else {
-                            _this.uploadInProgress(e, selectedFiles[i], custom, ajax);
-                            return {};
-                        }
-                    };
-                    /* istanbul ignore next */
-                    ajax.onError = function (e) { _this.uploadFailed(e, selectedFiles[i]); return {}; };
-                    ajax.send(formData);
-                }
+                /* tslint:disable */
+            }
+            else {
+                this_3.uploadFilesRequest(selectedFiles, i, custom);
             }
         };
         var this_3 = this;
         for (var i = 0; i < selectedFiles.length; i++) {
             _loop_5(i);
+        }
+    };
+    Uploader.prototype.uploadFilesRequest = function (selectedFiles, i, custom) {
+        var _this = this;
+        var cloneFiles = [];
+        var chunkEnabled = this.checkChunkUpload();
+        var ajax = new Ajax(this.asyncSettings.saveUrl, 'POST', true, null);
+        ajax.emitError = false;
+        var getFileData;
+        /* istanbul ignore next */
+        if (isBlazor()) {
+            getFileData = selectedFiles.slice(0);
+            cloneFiles.push(getFileData[i].rawFile);
+        }
+        var eventArgs = {
+            fileData: (isBlazor()) ? getFileData[i] : selectedFiles[i],
+            customFormData: [],
+            cancel: false
+        };
+        var formData = new FormData();
+        ajax.beforeSend = function (e) {
+            eventArgs.currentRequest = ajax.httpRequest;
+            /* istanbul ignore next */
+            if (isBlazor()) {
+                eventArgs.fileData.rawFile = !chunkEnabled ? _this.base64String[i] : eventArgs.fileData.rawFile;
+                if (_this.currentRequestHeader) {
+                    _this.updateCustomheader(ajax.httpRequest, _this.currentRequestHeader);
+                }
+                if (_this.customFormDatas) {
+                    _this.updateFormData(formData, _this.customFormDatas);
+                }
+            }
+            _this.trigger('uploading', eventArgs, function (eventArgs) {
+                /* istanbul ignore next */
+                if (isBlazor() && !chunkEnabled) {
+                    selectedFiles[i].rawFile = eventArgs.fileData.rawFile = cloneFiles[i];
+                }
+                if (eventArgs.cancel) {
+                    _this.eventCancelByArgs(e, eventArgs, selectedFiles[i]);
+                }
+                _this.updateFormData(formData, eventArgs.customFormData);
+            });
+        };
+        if (selectedFiles[i].statusCode === '1') {
+            var name_4 = this.element.getAttribute('name');
+            formData.append(name_4, selectedFiles[i].rawFile, selectedFiles[i].name);
+            if (chunkEnabled && selectedFiles[i].size > this.asyncSettings.chunkSize) {
+                this.chunkUpload(selectedFiles[i], custom, i);
+            }
+            else {
+                ajax.onLoad = function (e) {
+                    if (eventArgs.cancel && isBlazor()) {
+                        return {};
+                    }
+                    else {
+                        _this.uploadComplete(e, selectedFiles[i], custom);
+                        return {};
+                    }
+                };
+                ajax.onUploadProgress = function (e) {
+                    if (eventArgs.cancel && isBlazor()) {
+                        return {};
+                    }
+                    else {
+                        _this.uploadInProgress(e, selectedFiles[i], custom, ajax);
+                        return {};
+                    }
+                };
+                /* istanbul ignore next */
+                ajax.onError = function (e) { _this.uploadFailed(e, selectedFiles[i]); return {}; };
+                ajax.send(formData);
+            }
+        }
+    };
+    Uploader.prototype.spliceFiles = function (liIndex) {
+        var liElement = this.fileList[liIndex];
+        var allFiles = this.getFilesData();
+        var nameElements = +liElement.getAttribute('data-files-count');
+        var startIndex = 0;
+        for (var i = 0; i < liIndex; i++) {
+            startIndex += (+this.fileList[i].getAttribute('data-files-count'));
+        }
+        var endIndex = (startIndex + nameElements) - 1;
+        for (var j = endIndex; j >= startIndex; j--) {
+            allFiles.splice(j, 1);
         }
     };
     /**
@@ -9677,7 +9857,34 @@ var Uploader = /** @__PURE__ @class */ (function (_super) {
                     _this.customFormDatas = beforeEventArgs.customFormData;
                 }
                 var index = void 0;
-                if (_this.isForm && (isNullOrUndefined(_this.asyncSettings.removeUrl) || _this.asyncSettings.removeUrl === '')) {
+                if (_this.isFormUpload()) {
+                    eventArgs.filesData = fileData;
+                    _this.trigger('removing', eventArgs, function (eventArgs) {
+                        if (!eventArgs.cancel) {
+                            var removingFiles = _this.getFilesInArray(fileData);
+                            var isLiRemoved = false;
+                            var liIndex = void 0;
+                            for (var _i = 0, removingFiles_1 = removingFiles; _i < removingFiles_1.length; _i++) {
+                                var data = removingFiles_1[_i];
+                                if (!isLiRemoved) {
+                                    liIndex = _this.fileList.indexOf(data.list);
+                                }
+                                if (liIndex > -1) {
+                                    var inputElement = !isNullOrUndefined(data.input) ? data.input : null;
+                                    if (inputElement) {
+                                        detach(inputElement);
+                                    }
+                                    _this.spliceFiles(liIndex);
+                                    detach(_this.fileList[liIndex]);
+                                    _this.fileList.splice(liIndex, 1);
+                                    isLiRemoved = true;
+                                    liIndex = -1;
+                                }
+                            }
+                        }
+                    });
+                }
+                else if (_this.isForm && (isNullOrUndefined(_this.asyncSettings.removeUrl) || _this.asyncSettings.removeUrl === '')) {
                     eventArgs.filesData = _this.getFilesData();
                     _this.trigger('removing', eventArgs, function (eventArgs) {
                         if (!eventArgs.cancel) {
@@ -9759,11 +9966,17 @@ var Uploader = /** @__PURE__ @class */ (function (_super) {
     };
     /**
      * Get the data of files which are shown in file list.
+     * @param { number } index - specifies the file list item(li) index.
      * @returns FileInfo[]
      */
-    Uploader.prototype.getFilesData = function () {
+    Uploader.prototype.getFilesData = function (index) {
         if (!isBlazor()) {
-            return this.filesData;
+            if (isNullOrUndefined(index)) {
+                return this.filesData;
+            }
+            else {
+                return this.getSelectedFiles(index);
+            }
         }
         else {
             for (var i = 0; i < this.filesData.length; i++) {
@@ -9780,7 +9993,7 @@ var Uploader = /** @__PURE__ @class */ (function (_super) {
      */
     Uploader.prototype.pause = function (fileData, custom) {
         fileData = fileData ? fileData : this.filesData;
-        var fileDataFiles = this.validateFileType(fileData);
+        var fileDataFiles = this.getFilesInArray(fileData);
         this.pauseUploading(fileDataFiles, custom);
     };
     Uploader.prototype.pauseUploading = function (fileData, custom) {
@@ -9809,7 +10022,7 @@ var Uploader = /** @__PURE__ @class */ (function (_super) {
      */
     Uploader.prototype.resume = function (fileData, custom) {
         fileData = fileData ? fileData : this.filesData;
-        var fileDataFiles = this.validateFileType(fileData);
+        var fileDataFiles = this.getFilesInArray(fileData);
         this.resumeFiles(fileDataFiles, custom);
     };
     Uploader.prototype.resumeFiles = function (fileData, custom) {
@@ -9828,7 +10041,7 @@ var Uploader = /** @__PURE__ @class */ (function (_super) {
      */
     Uploader.prototype.retry = function (fileData, fromcanceledStage, custom) {
         fileData = fileData ? fileData : this.filesData;
-        var fileDataFiles = this.validateFileType(fileData);
+        var fileDataFiles = this.getFilesInArray(fileData);
         this.retryFailedFiles(fileDataFiles, fromcanceledStage, custom);
     };
     Uploader.prototype.retryFailedFiles = function (fileData, fromcanceledStage, custom) {
@@ -9856,7 +10069,7 @@ var Uploader = /** @__PURE__ @class */ (function (_super) {
      */
     Uploader.prototype.cancel = function (fileData) {
         fileData = fileData ? fileData : this.filesData;
-        var cancelingFiles = this.validateFileType(fileData);
+        var cancelingFiles = this.getFilesInArray(fileData);
         this.cancelUpload(cancelingFiles);
     };
     Uploader.prototype.cancelUpload = function (fileData) {
@@ -10124,12 +10337,20 @@ var ColorPicker = /** @__PURE__ @class */ (function (_super) {
         this.container = this.createElement('div', { className: CONTAINER });
         this.getWrapper().appendChild(this.container);
         var value = this.value ? this.roundValue(this.value).toLowerCase() : '#008000ff';
+        if (this.noColor && this.mode === 'Palette' && this.value === '') {
+            value = '';
+        }
         var slicedValue = value.slice(0, 7);
         if (isNullOrUndefined(this.initialInputValue)) {
             this.initialInputValue = slicedValue;
         }
         this.element.value = slicedValue;
-        this.setProperties({ 'value': value }, true);
+        if (this.enableOpacity) {
+            this.setProperties({ 'value': value }, true);
+        }
+        else {
+            this.setProperties({ 'value': slicedValue }, true);
+        }
         if (this.enableRtl) {
             wrapper.classList.add(RTL$1);
         }
@@ -10857,7 +11078,12 @@ var ColorPicker = /** @__PURE__ @class */ (function (_super) {
             previousValue: { hex: this.value.slice(0, 7), rgba: this.convertToRgbString(this.hexToRgb(this.value)) },
             value: value
         });
-        this.setProperties({ 'value': value }, true);
+        if (this.enableOpacity) {
+            this.setProperties({ 'value': value }, true);
+        }
+        else {
+            this.setProperties({ 'value': hex }, true);
+        }
         this.element.value = hex ? hex : '#000000';
     };
     ColorPicker.prototype.handlerDragPosition = function (prob, value, e) {

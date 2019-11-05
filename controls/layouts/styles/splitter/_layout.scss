@@ -415,4 +415,12 @@
     background-size: 100px 110px;
     min-height: 110px;
   }
+
+  .e-splitter.e-ie .e-navigate-arrow.e-arrow-left {
+    margin-left: -26px;
+  }
+
+  .e-splitter.e-ie .e-split-bar-horizontal .e-resize-handler {
+    flex-direction: column;
+  }
 }

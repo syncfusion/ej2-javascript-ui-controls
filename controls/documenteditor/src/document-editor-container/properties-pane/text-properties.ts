@@ -376,12 +376,14 @@ export class Text {
             fields: { text: 'FontName', value: 'FontName' },
             popupHeight: '150px',
             cssClass: 'e-de-prop-dropdown',
-            itemTemplate: '<span style="font-family: ${FontName};">${FontName}</span>',
             allowCustom: true,
             showClearButton: false,
             enableRtl: this.isRtl
         });
-        this.fontFamily.isStringTemplate = true;
+        if (!this.container.enableCsp) {
+            this.fontFamily.itemTemplate = '<span style="font-family: ${FontName};">${FontName}</span>';
+            this.fontFamily.isStringTemplate = true;
+        }
         this.fontFamily.focus = (): void => { this.isRetrieving = false; (this.fontFamily.element as HTMLInputElement).select(); };
         this.fontFamily.appendTo(fontSelectElement);
         this.fontFamily.element.parentElement.setAttribute('title', this.localObj.getConstant('Font'));

@@ -42,7 +42,8 @@ export class AreaSeries extends MultiColoredSeries {
                     currentXValue, point.yValue, series, isInverted, getCoordinate, null,
                     'L'
                 );
-                if (seriesPoints[i + 1] && !seriesPoints[i + 1].visible && !isDropMode) {
+                if (seriesPoints[i + 1] && (!seriesPoints[i + 1].visible &&
+                    (!isPolar || (isPolar && this.withinYRange(seriesPoints[i + 1], yAxis)))) && !isDropMode) {
                     direction += this.getAreaEmptyDirection(
                         { 'x': currentXValue, 'y': origin },
                         startPoint, series, isInverted, getCoordinate
@@ -70,7 +71,6 @@ export class AreaSeries extends MultiColoredSeries {
         );
         this.renderMarker(series);
     }
-
     /**
      * To destroy the area series.
      * @return {void}

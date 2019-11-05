@@ -408,12 +408,14 @@ export class Paragraph {
             enableRtl: this.isRtl,
             query: new Query().select(['StyleName', 'Style']),
             fields: { text: 'StyleName', value: 'StyleName' },
-            open: this.updateOptions,
-            change: this.selectStyleValue,
-            itemTemplate: '<span style="${Style}">${StyleName}</span>',
-            footerTemplate: '<span class="e-de-ctnr-dropdown-ftr">' + this.localObj.getConstant('Manage Styles') + '</span>'
+            change: this.selectStyleValue
         });
-        this.style.isStringTemplate = true;
+        if (!this.container.enableCsp) {
+            this.style.open = this.updateOptions;
+            this.style.itemTemplate = '<span style="${Style}">${StyleName}</span>';
+            this.style.footerTemplate = '<span class="e-de-ctnr-dropdown-ftr">' + this.localObj.getConstant('Manage Styles') + '</span>';
+            this.style.isStringTemplate = true;
+        }
         this.style.appendTo(selectElement);
         selectElement.parentElement.setAttribute('title', this.localObj.getConstant('Styles'));
     }

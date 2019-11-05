@@ -355,6 +355,7 @@ export class Selection implements IAction {
             return;
         }
         let args: Object = {
+            cancel: false,
             rowIndexes: rowIndexes, row: selectedRow, rowIndex: rowIndex, target: this.actualTarget,
             prevRow: gObj.getRows()[this.prevRowIndex], previousRowIndex: this.prevRowIndex,
             isCtrlPressed: this.isMultiCtrlRequest, isShiftPressed: this.isMultiShiftRequest,
@@ -430,6 +431,7 @@ export class Selection implements IAction {
                 this.isInteracted = false;
             } else {
                 args = {
+                    cancel: false,
                     data: rowObj.data, rowIndex: rowIndex, row: selectedRow, target: this.actualTarget,
                     prevRow: gObj.getRows()[this.prevRowIndex], previousRowIndex: this.prevRowIndex,
                     isCtrlPressed: this.isMultiCtrlRequest, isShiftPressed: this.isMultiShiftRequest,
@@ -823,7 +825,6 @@ export class Selection implements IAction {
         if (!isToggle) {
             this.updateCellSelection(selectedCell, cellIndex.rowIndex, cellIndex.cellIndex);
         }
-        this.updateCellProps(cellIndex, cellIndex);
         if (!isToggle) {
             let args: Object = {
                 data: selectedData, cellIndex: cellIndex, currentCell: selectedCell,
@@ -835,7 +836,8 @@ export class Selection implements IAction {
                 let previousRowCellIndex: string = 'previousRowCellIndex';
                 args[previousRowCellIndex] = this.prevECIdxs;
             }
-            this.onActionComplete(args , events.cellSelected);
+            this.updateCellProps(cellIndex, cellIndex);
+            this.onActionComplete(args, events.cellSelected);
         }
     };
 }
@@ -917,9 +919,9 @@ export class Selection implements IAction {
                 }
                 this.selectedRowCellIndexes.push({ rowIndex: i, cellIndexes: cellIndexes });
             }
-            this.updateCellProps(stIndex, edIndex);
+
             let cellSelectedArgs: Object = {
-                data: selectedData, cellIndex: startIndex, currentCell: selectedCell,
+                data: selectedData, cellIndex: edIndex, currentCell: gObj.getCellFromIndex(edIndex.rowIndex, edIndex.cellIndex),
                 selectedRowCellIndex: this.selectedRowCellIndexes,
                 previousRowCell: this.prevECIdxs ? this.getCellIndex(this.prevECIdxs.rowIndex, this.prevECIdxs.cellIndex) : undefined
             };
@@ -928,6 +930,7 @@ export class Selection implements IAction {
                 cellSelectedArgs[previousRowCellIndex] = this.prevECIdxs;
             }
             this.onActionComplete(cellSelectedArgs, events.cellSelected);
+            this.updateCellProps(stIndex, edIndex);
         });
     }
 
@@ -1009,6 +1012,7 @@ export class Selection implements IAction {
         let frzCols: number = gObj.getFrozenColumns();
         let index: number;
         this.currentIndex = cellIndexes[0].rowIndex;
+        let cncl: string = 'cancel';
         let selectedData: Object = this.getCurrentBatchRecordChanges()[this.currentIndex];
         if (this.isSingleSel() || !this.isCellType() || this.isEditing()) {
             return;
@@ -1036,7 +1040,7 @@ export class Selection implements IAction {
             foreignKeyData.push(rowObj.cells[frzCols && cellIndexes[0].cellIndex >= frzCols
                 ? cellIndex.cellIndex - frzCols : cellIndex.cellIndex].foreignKeyData);
             let args: Object = {
-                data: selectedData, cellIndex: cellIndexes[0],
+                cancel: false, data: selectedData, cellIndex: cellIndexes[0],
                 isShiftPressed: this.isMultiShiftRequest,
                 currentCell: selectedCell, isCtrlPressed: this.isMultiCtrlRequest,
                 previousRowCell: this.prevECIdxs ?
@@ -1071,9 +1075,11 @@ export class Selection implements IAction {
                 }
             } else {
                 this.onActionBegin(args, events.cellSelecting);
+                if (!isNullOrUndefined(args) && args[cncl] === true) {
+                    return;
+                }
                 this.updateCellSelection(selectedCell, cellIndex.rowIndex, cellIndex.cellIndex);
             }
-            this.updateCellProps(cellIndex, cellIndex);
             if (!isUnSelected) {
                 let cellSelectedArgs: Object = {
                     data: selectedData, cellIndex: cellIndexes[0], currentCell: selectedCell,
@@ -1086,6 +1092,7 @@ export class Selection implements IAction {
                 }
                 this.onActionComplete(cellSelectedArgs, events.cellSelected);
             }
+            this.updateCellProps(cellIndex, cellIndex);
         }
     }
 

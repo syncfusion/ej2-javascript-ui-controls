@@ -468,10 +468,18 @@ export class Accordion extends Component<HTMLElement> implements INotifyProperty
     }
     private updateContentBlazorTemplate(item?: AccordionItemModel, index?: number): void {
       if (this.itemTemplate && isBlazor() && !this.isStringTemplate) {
-        updateBlazorTemplate(this.element.id + '_itemTemplate', 'ItemTemplate', this);
+        updateBlazorTemplate(this.element.id + '_itemTemplate', 'ItemTemplate', this, false);
       }
       if (item && item.content && isBlazor() && !this.isStringTemplate && item.content.indexOf('<div>Blazor') === 0) {
         updateBlazorTemplate(this.element.id + index + '_content', 'ContentTemplate', item);
+      }
+    }
+    private updateHeaderBlazorTemplate(item?: AccordionItemModel, index?: number): void {
+      if (this.headerTemplate && isBlazor() && !this.isStringTemplate) {
+        updateBlazorTemplate(this.element.id + '_headerTemplate', 'HeaderTemplate', this, false);
+      }
+      if (item && item.header && isBlazor() && !this.isStringTemplate && item.header.indexOf('<div>Blazor') === 0) {
+        updateBlazorTemplate(this.element.id + index + '_header', 'HeaderTemplate', item);
       }
     }
     private focusIn(e: FocusEvent): void {
@@ -539,18 +547,14 @@ export class Accordion extends Component<HTMLElement> implements INotifyProperty
             EventHandler.add(innerDataSourceItem.querySelector('.' + CLS_HEADER), 'blur', this.focusOut, this);
           }
         });
-        if (this.headerTemplate && isBlazor() && !this.isStringTemplate) {
-          updateBlazorTemplate(this.element.id + '_headerTemplate', 'headerTemplate', this);
-        }
+        this.updateHeaderBlazorTemplate();
       } else {
         let items: AccordionItem[] = <AccordionItem[]>this.items;
         if (ele && items.length > 0) {
           items.forEach((item: AccordionItem, index: number) => {
             innerItem = this.renderInnerItem(item, index);
             ele.appendChild(innerItem);
-            if (item.header && isBlazor() && !this.isStringTemplate && item.header.indexOf('<div>Blazor') === 0) {
-              updateBlazorTemplate(this.element.id + index + '_header', 'HeaderTemplate', item);
-            }
+            this.updateHeaderBlazorTemplate(item, index);
             if (innerItem.childElementCount > 0) {
               EventHandler.add(innerItem.querySelector('.' + CLS_HEADER), 'focus', this.focusIn, this);
               EventHandler.add(innerItem.querySelector('.' + CLS_HEADER), 'blur', this.focusOut, this);
@@ -588,16 +592,7 @@ export class Accordion extends Component<HTMLElement> implements INotifyProperty
      eventArgs.originalEvent = e;
      let ctnCheck: Boolean = !isNOU(tglIcon) && acrdnItem.childElementCount <= 1;
      if (ctnCheck && (isNOU(acrdnCtn) || !isNOU(select('.' + CLS_HEADER + ' .' + CLS_TOOGLEICN, acrdnCtnItem )))) {
-       if (this.dataSource.length > 0) {
-         this.dataSource.forEach((item: object, index: number) => {
-           let itemEle: HTEle[] = this.getItemElements();
-           let ele: HTEle = <HTEle>itemEle[index];
-           let ctn: HTEle = this.contentRendering(index);
-           ele.appendChild(ctn);
-         });
-       } else {
-         acrdnItem.appendChild(this.contentRendering(index));
-       }
+       acrdnItem.appendChild(this.contentRendering(index));
        this.updateContentBlazorTemplate(eventArgs.item, index);
        this.ariaAttrUpdate(acrdnItem);
      }
@@ -1066,6 +1061,7 @@ export class Accordion extends Component<HTMLElement> implements INotifyProperty
         } else {
           ele.insertBefore(innerItemEle, itemEle[index]);
         }
+        this.updateHeaderBlazorTemplate();
         EventHandler.add(innerItemEle.querySelector('.' + CLS_HEADER), 'focus', this.focusIn, this);
         EventHandler.add(innerItemEle.querySelector('.' + CLS_HEADER), 'blur', this.focusOut, this);
         this.itemAttribUpdate();

@@ -1913,7 +1913,7 @@ let MenuBase = class MenuBase extends Component {
         if (this.isMenu) {
             if (!this.showItemOnClick && (trgt.parentElement !== wrapper && !closest(trgt, '.e-' + this.getModuleName() + '-popup'))
                 && (!cli || (cli && !this.getIndex(cli.id, true).length))) {
-                this.removeLIStateByClass([FOCUSED, SELECTED], [wrapper]);
+                this.removeLIStateByClass([FOCUSED], [wrapper]);
                 if (this.navIdx.length) {
                     this.isClosed = true;
                     this.closeMenu(null, e);
@@ -1988,9 +1988,16 @@ let MenuBase = class MenuBase extends Component {
             let wrapper = this.getWrapper();
             let trgt = e.target;
             let cli = this.cli = this.getLI(trgt);
+            let regex = new RegExp('-ej2menu-(.*)-popup');
             let cliWrapper = cli ? closest(cli, '.e-' + this.getModuleName() + '-wrapper') : null;
             let isInstLI = cli && cliWrapper && (this.isMenu ? this.getIndex(cli.id, true).length > 0
                 : wrapper.firstElementChild.id === cliWrapper.firstElementChild.id);
+            if (cli && cliWrapper && this.isMenu) {
+                let cliWrapperId = cliWrapper.id ? regex.exec(cliWrapper.id)[1] : cliWrapper.querySelector('.e-menu-parent').id;
+                if (this.element.id !== cliWrapperId) {
+                    return;
+                }
+            }
             if (isInstLI && e.type === 'click' && !cli.classList.contains(HEADER)) {
                 this.setLISelected(cli);
                 let navIdx = this.getIndex(cli.id, true);
@@ -2054,6 +2061,9 @@ let MenuBase = class MenuBase extends Component {
                 else {
                     if (trgt.tagName !== 'UL' || (this.isMenu ? trgt.parentElement.classList.contains('e-menu-wrapper') &&
                         !this.getIndex(trgt.querySelector('.' + ITEM).id, true).length : trgt.parentElement !== wrapper)) {
+                        if (!cli) {
+                            this.removeLIStateByClass([SELECTED], [wrapper]);
+                        }
                         if (!cli || !cli.querySelector('.' + CARET)) {
                             this.closeMenu(null, e);
                         }
@@ -2453,8 +2463,28 @@ let MenuBase = class MenuBase extends Component {
         let idx;
         let navIdx;
         let disabled = DISABLED;
+        let skipItem;
         for (let i = 0; i < items.length; i++) {
             navIdx = this.getIndex(items[i], isUniqueId);
+            if (this.navIdx.length) {
+                if (navIdx.length !== 1) {
+                    skipItem = false;
+                    for (let i = 0, len = navIdx.length - 1; i < len; i++) {
+                        if (navIdx[i] !== this.navIdx[i]) {
+                            skipItem = true;
+                            break;
+                        }
+                    }
+                    if (skipItem) {
+                        continue;
+                    }
+                }
+            }
+            else {
+                if (navIdx.length !== 1) {
+                    continue;
+                }
+            }
             idx = navIdx.pop();
             ul = this.getUlByNavIdx(navIdx.length);
             if (ul) {
@@ -4981,10 +5011,18 @@ let Accordion = class Accordion extends Component {
     }
     updateContentBlazorTemplate(item, index) {
         if (this.itemTemplate && isBlazor() && !this.isStringTemplate) {
-            updateBlazorTemplate(this.element.id + '_itemTemplate', 'ItemTemplate', this);
+            updateBlazorTemplate(this.element.id + '_itemTemplate', 'ItemTemplate', this, false);
         }
         if (item && item.content && isBlazor() && !this.isStringTemplate && item.content.indexOf('<div>Blazor') === 0) {
             updateBlazorTemplate(this.element.id + index + '_content', 'ContentTemplate', item);
+        }
+    }
+    updateHeaderBlazorTemplate(item, index) {
+        if (this.headerTemplate && isBlazor() && !this.isStringTemplate) {
+            updateBlazorTemplate(this.element.id + '_headerTemplate', 'HeaderTemplate', this, false);
+        }
+        if (item && item.header && isBlazor() && !this.isStringTemplate && item.header.indexOf('<div>Blazor') === 0) {
+            updateBlazorTemplate(this.element.id + index + '_header', 'HeaderTemplate', item);
         }
     }
     focusIn(e) {
@@ -5057,9 +5095,7 @@ let Accordion = class Accordion extends Component {
                     EventHandler.add(innerDataSourceItem.querySelector('.' + CLS_HEADER), 'blur', this.focusOut, this);
                 }
             });
-            if (this.headerTemplate && isBlazor() && !this.isStringTemplate) {
-                updateBlazorTemplate(this.element.id + '_headerTemplate', 'headerTemplate', this);
-            }
+            this.updateHeaderBlazorTemplate();
         }
         else {
             let items = this.items;
@@ -5067,9 +5103,7 @@ let Accordion = class Accordion extends Component {
                 items.forEach((item, index) => {
                     innerItem = this.renderInnerItem(item, index);
                     ele.appendChild(innerItem);
-                    if (item.header && isBlazor() && !this.isStringTemplate && item.header.indexOf('<div>Blazor') === 0) {
-                        updateBlazorTemplate(this.element.id + index + '_header', 'HeaderTemplate', item);
-                    }
+                    this.updateHeaderBlazorTemplate(item, index);
                     if (innerItem.childElementCount > 0) {
                         EventHandler.add(innerItem.querySelector('.' + CLS_HEADER), 'focus', this.focusIn, this);
                         EventHandler.add(innerItem.querySelector('.' + CLS_HEADER), 'blur', this.focusOut, this);
@@ -5114,17 +5148,7 @@ let Accordion = class Accordion extends Component {
         eventArgs.originalEvent = e;
         let ctnCheck = !isNullOrUndefined(tglIcon) && acrdnItem.childElementCount <= 1;
         if (ctnCheck && (isNullOrUndefined(acrdnCtn) || !isNullOrUndefined(select('.' + CLS_HEADER + ' .' + CLS_TOOGLEICN, acrdnCtnItem)))) {
-            if (this.dataSource.length > 0) {
-                this.dataSource.forEach((item, index) => {
-                    let itemEle = this.getItemElements();
-                    let ele = itemEle[index];
-                    let ctn = this.contentRendering(index);
-                    ele.appendChild(ctn);
-                });
-            }
-            else {
-                acrdnItem.appendChild(this.contentRendering(index));
-            }
+            acrdnItem.appendChild(this.contentRendering(index));
             this.updateContentBlazorTemplate(eventArgs.item, index);
             this.ariaAttrUpdate(acrdnItem);
         }
@@ -5632,6 +5656,7 @@ let Accordion = class Accordion extends Component {
             else {
                 ele.insertBefore(innerItemEle, itemEle[index]);
             }
+            this.updateHeaderBlazorTemplate();
             EventHandler.add(innerItemEle.querySelector('.' + CLS_HEADER), 'focus', this.focusIn, this);
             EventHandler.add(innerItemEle.querySelector('.' + CLS_HEADER), 'blur', this.focusOut, this);
             this.itemAttribUpdate();

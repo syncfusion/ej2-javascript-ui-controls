@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 17.3.19 (2019-10-22)
+
+### Dialog
+
+#### Bug Fixes
+
+- `#251762` - The issue with position property that accepts camel case alone has been resolved in Dialog.
+
 ## 17.3.16 (2019-10-09)
 
 ### Dialog

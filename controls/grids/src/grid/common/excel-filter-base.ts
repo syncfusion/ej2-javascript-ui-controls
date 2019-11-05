@@ -10,7 +10,7 @@ import { Column } from '../models/column';
 import { DatePicker, DateTimePicker } from '@syncfusion/ej2-calendars';
 import { OffsetPosition } from '@syncfusion/ej2-popups';
 import { FilterSettings } from '../base/grid';
-import { parentsUntil, isActionPrevent, appendChildren, extend } from '../base/util';
+import { parentsUntil, appendChildren, extend } from '../base/util';
 import { IGrid, IFilterArgs, EJ2Intance } from '../base/interface';
 import * as events from '../base/constant';
 import { ContextMenu, MenuItemModel, ContextMenuModel, MenuEventArgs, BeforeOpenCloseMenuEventArgs } from '@syncfusion/ej2-navigations';
@@ -412,11 +412,15 @@ export class ExcelFilterBase extends CheckBoxFilterBase {
             value: firstValue,
             type: this.options.type
         });
-        if (isActionPrevent(this.parent)) {
-            this.parent.notify(events.preventBatch, {
-                instance: this, handler: this.filterByColumn, arg1: fieldName, arg2: firstOperator, arg3: firstValue, arg4: predicate,
-                arg5: matchCase, arg6: ignoreAccent, arg7: secondOperator, arg8: secondValue
-            });
+        let arg: {
+            instance: ExcelFilterBase, handler: Function, cancel: boolean, arg1: string, arg2: string,
+            arg3: string, arg4: string, arg5: boolean, arg6: boolean, arg7: string, arg8: string
+        } = {
+            instance: this, handler: this.filterByColumn, arg1: fieldName, arg2: firstOperator, arg3: firstValue as string, arg4: predicate,
+            arg5: matchCase, arg6: ignoreAccent, arg7: secondOperator, arg8: secondValue as string, cancel: false
+        };
+        this.parent.notify(events.fltrPrevent, arg);
+        if (arg.cancel) {
             return;
         }
         mPredicate = new Predicate(field, firstOperator.toLowerCase(), firstValue, !matchCase, ignoreAccent);
@@ -765,7 +769,7 @@ export class ExcelFilterBase extends CheckBoxFilterBase {
             {
                 dataSource: dataSource instanceof DataManager ? dataSource : new DataManager(dataSource as object),
                 fields: fields,
-                query: this.parent.getQuery().clone(),
+                query: this.getQuery(),
                 sortOrder: 'Ascending',
                 locale: this.parent.locale,
                 cssClass: 'e-popup-flmenu',

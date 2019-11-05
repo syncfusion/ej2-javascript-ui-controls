@@ -138,9 +138,9 @@ export class BaseTooltip extends ChartData {
         }
     }
 
-    public createTooltip(chart: Chart | AccumulationChart, isFirst: boolean, location: ChartLocation,
-                         clipLocation: ChartLocation, point: Points | AccPoints, shapes : ChartShape[], offset : number,
-                         bounds : Rect, extraPoints: PointData[] = null, templatePoint : Points | AccPoints = null ): void {
+    public createTooltip(chart: Chart | AccumulationChart, isFirst: boolean, location: ChartLocation, clipLocation: ChartLocation,
+                         point: Points | AccPoints, shapes : ChartShape[], offset : number, bounds : Rect,
+                         extraPoints: PointData[] = null, templatePoint : Points | AccPoints = null, customTemplate?: string): void {
         let series: Series = <Series>this.currentPoints[0].series;
         let module : AccumulationTooltip | Tooltip = (<Chart>chart).tooltipModule || (<AccumulationChart>chart).accumulationTooltipModule;
         if (isFirst) {
@@ -150,12 +150,12 @@ export class BaseTooltip extends ChartData {
                 header: this.headerText, content: this.text, fill: chart.tooltip.fill, border: chart.tooltip.border,
                 enableAnimation: chart.tooltip.enableAnimation, location: location, shared: chart.tooltip.shared,
                 shapes: shapes, clipBounds: this.chart.chartAreaType === 'PolarRadar' ? new ChartLocation(0, 0) : clipLocation,
-                areaBounds: bounds, palette: this.findPalette(), template: chart.tooltip.template, data: templatePoint,
+                areaBounds: bounds, palette: this.findPalette(), template: customTemplate || chart.tooltip.template, data: templatePoint,
                 theme : chart.theme,  offset: offset, textStyle : chart.tooltip.textStyle,
                 isNegative: (series.isRectSeries && series.type !== 'Waterfall' && point && point.y < 0),
                 inverted: this.chart.requireInvertedAxis && series.isRectSeries,
                 arrowPadding : this.text.length > 1 || this.chart.stockChart ? 0 : 12,
-                availableSize: chart.availableSize,
+                availableSize: chart.availableSize, duration: this.chart.tooltip.duration,
                 isCanvas: this.chart.enableCanvas,
                 blazorTemplate: { name: 'Template', parent: this.chart.tooltip },
                 tooltipRender: () => {

@@ -4,7 +4,7 @@ import * as events from '../../common/base/constant';
 import { IAxisSet, IDataSet, PivotEngine, OlapEngine, ITupInfo } from '../../base';
 import { DrillThroughEventArgs } from '../../common';
 import { DrillThroughDialog } from '../../common/popups/drillthrough-dialog';
-import { EventHandler, isBlazor, isNullOrUndefined } from '@syncfusion/ej2-base';
+import { EventHandler, isNullOrUndefined } from '@syncfusion/ej2-base';
 
 /**
  * `DrillThrough` module.
@@ -82,7 +82,8 @@ export class DrillThrough {
                 } else {
                     tupleInfo = (engine as OlapEngine).tupColumnInfo[pivotValue.colOrdinal];
                 }
-                let measureName: string = tupleInfo ? tupleInfo.measureName : pivotValue.actualText as string;
+                let measureName: string = tupleInfo ?
+                    (engine as OlapEngine).getUniqueName(tupleInfo.measureName) : pivotValue.actualText as string;
                 if (engine.fieldList[measureName] && (engine as OlapEngine).fieldList[measureName].isCalculatedField) {
                     this.parent.pivotCommon.errorDialog.createErrorDialog(
                         this.parent.localeObj.getConstant('error'), this.parent.localeObj.getConstant('drillError'));
@@ -104,11 +105,7 @@ export class DrillThrough {
                 aggType = engine.fieldList[pivotValue.actualText] ? engine.fieldList[pivotValue.actualText].aggregateType : '';
                 let indexArray: string[] = Object.keys(pivotValue.indexObject);
                 for (let index of indexArray) {
-                    if (isBlazor()) {
-                        rawData.push((this.parent.engineModule.data as IDataSet[])[Number(index)]);
-                    } else {
-                        rawData.push((this.parent.dataSourceSettings.dataSource as IDataSet[])[Number(index)]);
-                    }
+                    rawData.push((this.parent.engineModule.data as IDataSet[])[Number(index)]);
                 }
             }
             let valuetText: string = aggType === 'CalculatedField' ? valueCaption.toString() :

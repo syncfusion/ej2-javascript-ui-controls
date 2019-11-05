@@ -390,8 +390,14 @@ export class MaskedTextBox extends Component<HTMLInputElement> implements INotif
 
     private setWidth(width: string | number): void {
         if (!isNullOrUndefined(width)) {
-            this.element.style.width = formatUnit(width);
-            this.inputObj.container.style.width = formatUnit(width);
+            if (typeof width === 'number') {
+                this.inputObj.container.style.width = formatUnit(width);
+                this.element.style.width = formatUnit(width);
+            } else if (typeof width === 'string') {
+                let elementWidth: string = (width.match(/px|%|em/)) ? <string>(width) : <string>(formatUnit(width));
+                this.inputObj.container.style.width = elementWidth;
+                this.element.style.width = elementWidth;
+            }
         }
     }
     private checkHtmlAttributes(isDynamic: boolean): void {

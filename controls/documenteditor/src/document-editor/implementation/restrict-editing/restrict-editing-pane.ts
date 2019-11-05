@@ -287,7 +287,7 @@ export class RestrictEditing {
     }
 
     public navigateNextRegion = () => {
-        this.viewer.selection.navigateNextEditRegion();
+        this.viewer.selection.navigateToNextEditingRegion();
     }
     public addUserCollection(): void {
         if (this.viewer.selection && this.viewer.selection.editRangeCollection.length > 0) {
@@ -305,7 +305,7 @@ export class RestrictEditing {
         this.addedUser.refresh();
     }
     public showAllRegion = () => {
-        this.viewer.selection.SelectAllEditRegion();
+        this.viewer.selection.showAllEditingRegion();
     }
     public updateUserInformation(): void {
         this.addedUser.uncheckAllItems();

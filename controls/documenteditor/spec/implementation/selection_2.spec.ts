@@ -420,7 +420,7 @@ describe('Selection with out clearing multi selection', () => {
 
         editor.selection.start = startPos;
         editor.selection.end = endPos;
-        editor.selection.selectCurrentParagraph();
+        editor.selection.selectParagraph();
         editor.selection.extendToLineStart();
         editor.selection.extendToLineEnd();
         editor.selection.extendToParagraphStart();

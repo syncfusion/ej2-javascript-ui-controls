@@ -4690,10 +4690,15 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      * Refreshes the Grid column changes.
      */
     public refreshColumns(): void {
-        this.isPreventScrollEvent = true;
-        this.updateColumnObject();
-        this.checkLockColumns(this.getColumns());
-        this.refresh();
+        let fCnt: Element = this.getContent().querySelector('.e-frozencontent');
+        if ((this.getFrozenColumns() === 1 && !fCnt) || (this.getFrozenColumns() === 0 && fCnt)) {
+            this.freezeRefresh();
+        } else {
+            this.isPreventScrollEvent = true;
+            this.updateColumnObject();
+            this.checkLockColumns(this.getColumns());
+            this.refresh();
+        }
     }
     /**
      * Export Grid data to Excel file(.xlsx).

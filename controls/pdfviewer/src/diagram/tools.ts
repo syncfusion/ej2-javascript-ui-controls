@@ -1108,7 +1108,7 @@ export class PolygonDrawingTool extends ToolBase {
                             // tslint:disable-next-line
                             let bounds: any = { left: drawingObject.bounds.x, top: drawingObject.bounds.y, width: drawingObject.bounds.width, height: drawingObject.bounds.height };
                             // tslint:disable-next-line:max-line-length
-                            this.commandHandler.fireAnnotationAdd(drawingObject.pageIndex, this.commandHandler.annotation.getAnnotationIndex(drawingObject.pageIndex, drawingObject.id), this.commandHandler.annotation.getAnnotationType(drawingObject.shapeAnnotationType, drawingObject.measureType), bounds, setting);
+                            this.commandHandler.fireAnnotationAdd(drawingObject.pageIndex, drawingObject.annotName, this.commandHandler.annotation.getAnnotationType(drawingObject.shapeAnnotationType, drawingObject.measureType), bounds, setting);
                         } else {
                             if (!isMouseLeave) {
                                 if (isDoubleClineck) {
@@ -1140,7 +1140,7 @@ export class PolygonDrawingTool extends ToolBase {
                                 // tslint:disable-next-line
                                 let bounds: any = { left: drawingObject.bounds.x, top: drawingObject.bounds.y, width: drawingObject.bounds.width, height: drawingObject.bounds.height };
                                 // tslint:disable-next-line:max-line-length
-                                this.commandHandler.fireAnnotationAdd(drawingObject.pageIndex, 0, this.commandHandler.annotation.getAnnotationType(drawingObject.shapeAnnotationType, drawingObject.measureType), bounds, setting);
+                                this.commandHandler.fireAnnotationAdd(drawingObject.pageIndex, drawingObject.annotName, this.commandHandler.annotation.getAnnotationType(drawingObject.shapeAnnotationType, drawingObject.measureType), bounds, setting);
                             }
 
                         }

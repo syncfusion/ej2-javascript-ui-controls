@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 17.3.26 (2019-11-05)
+
+### Menu
+
+#### Bug Fixes
+
+- `#253129` - Menu child item disable issue resolved.
+
 ## 17.3.21 (2019-10-30)
 
 ### ContextMenu

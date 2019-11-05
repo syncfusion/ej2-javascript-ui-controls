@@ -2,6 +2,22 @@
 
 ## [Unreleased]
 
+## 17.3.26 (2019-11-05)
+
+### Document Editor
+
+#### New Features
+
+- `#250061`, `#246305` - Added property to retrieve bookmarks on selection.
+- `#251247` - Added API for restrict editing.
+- `#251247`, `#238969`, `#252954`,`#253149` - Added API for selection.
+
+#### Bug Fixes
+
+- `251355` - Script error while importing the document is now resolved.
+- `251910` - Status bar disappear on mouse hover is now resolved.
+- `251219` - Script errors due to Content security policy are now resolved.
+
 ## 17.3.21 (2019-10-30)
 
 ### Document Editor
@@ -11,7 +27,6 @@
 - `#251576` - Enable repeat row header is now enabled properly in table properties dialog.
 - `#250638` - Scroll position is now maintained after inserting columns.
 - `#253260` - Script error now resolved when double click on header footer.
-- `#250770` - RTL text with special character is now layout properly.
 - `#252506` - Spell checker performance has been improved.
 
 ## 17.3.19 (2019-10-22)

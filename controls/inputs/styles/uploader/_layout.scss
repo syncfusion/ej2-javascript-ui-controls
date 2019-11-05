@@ -11,8 +11,8 @@
         & .e-file-drop {
           font-size: $drop-area-font-size;
           margin-left: $drop-area-padding-left;
+        }
       }
-    }
 
       & .e-upload-files {
 
@@ -42,7 +42,8 @@
             top: initial;
           }
 
-          .e-file-container .e-file-status {
+          .e-file-container .e-file-status,
+          .e-file-container .e-file-information {
             font-size: $list-item-status-font-size;
             padding-bottom: $file-name-padding-top;
           }
@@ -73,6 +74,7 @@
         & .e-file-reload-btn.e-icons,
         & .e-file-play-btn.e-icons,
         & .e-file-pause-btn.e-icons {
+          box-sizing: border-box;
           font-size: $remove-icon-font-size;
           height: $remove-bigger-icon-height;
           margin: $remove-icon-margin;
@@ -104,7 +106,7 @@
         & .e-file-abort-btn.e-icons {
           font-size: $abort-icon-font-size;
         }
-    }
+      }
 
       & .e-upload-actions .e-btn {
         margin-left: $list-item-margin-left;
@@ -153,7 +155,8 @@
               margin-right: $margin-rtl;
 
 
-              & .e-file-status {
+              & .e-file-status,
+              & .e-file-information {
                 top: $file-status-rtl;
               }
 
@@ -172,6 +175,7 @@
             & .e-file-reload-btn.e-icons,
             & .e-file-play-btn.e-icons,
             & .e-file-pause-btn.e-icons {
+              box-sizing: border-box;
               left: $remove-icon-rtl-bigger;
               margin-left: $margin-rtl;
               margin-right: $margin-rtl;
@@ -198,16 +202,87 @@
           }
         }
       }
+
+      &.e-form-upload .e-upload-files {
+        & .e-upload-file-list {
+          min-height: $form-upload-bigger-file-list-height;
+          padding-bottom: $form-upload-bigger-file-list-padding-bottom;
+          padding-top: $form-upload-bigger-file-list-padding-top;
+
+          & .e-file-container {
+            top: 0;
+
+            & .e-hidden-input {
+              display: none;
+            }
+
+            & .e-file-name,
+            & .e-file-type {
+              line-height: $form-upload-bigger-file-name-line-height;
+              padding-top: $form-upload-bigger-file-name-padding;
+            }
+
+            & .e-file-name.e-error,
+            & .e-file-type.e-error,
+            & .e-file-status.e-error {
+              color: $upload-failure-color;
+            }
+
+            & .e-file-status,
+            & .e-file-information {
+              color: $file-size-color;
+              display: block;
+              font-size: $form-upload-bigger-file-status-font-size;
+              line-height: $form-upload-bigger-file-name-line-height;
+              padding-bottom: 0;
+              padding-top: $form-upload-bigger-file-name-padding;
+              position: relative;
+            }
+          }
+
+          &.e-file-invalid {
+            color: $upload-failure-color;
+
+            & .e-file-name,
+            & .e-file-type,
+            & .e-file-status {
+              color: $upload-failure-color;
+            }
+          }
+        }
+
+        & .e-file-remove-btn.e-icons,
+        & .e-file-delete-btn.e-icons,
+        & .e-file-abort-btn.e-icons,
+        & .e-file-reload-btn.e-icons,
+        & .e-file-play-btn.e-icons,
+        & .e-file-pause-btn.e-icons {
+          box-sizing: border-box;
+          top: $form-upload-bigger-remove-icon-top;
+        }
+      }
     }
   }
 
   // For Desktop view
 
-  .e-upload {
+  .e-upload,
+  .e-bigger.e-small .e-upload {
     width: 100%;
 
     &.e-control-wrapper {
       font-family: $upload-root-font-family;
+    }
+
+    .e-hidden-file-input {
+      border: 0;
+      height: 0;
+      margin: 0;
+      outline: none;
+      padding: 0;
+      text-indent: 0;
+      visibility: hidden;
+      width: 0;
     }
 
     .e-file-select-wrap {
@@ -227,8 +302,67 @@
         font-family: $upload-font-family;
         font-size: $drop-area-font-size-smaller;
         margin-left: $drop-area-padding-left-smaller;
+      }
     }
-  }
+
+    &.e-form-upload .e-upload-files {
+      & .e-upload-file-list {
+        min-height: $form-upload-file-list-height;
+        padding-bottom: $form-upload-file-list-padding-bottom;
+        padding-top: $form-upload-file-list-padding-top;
+
+        & .e-file-container {
+          top: 0;
+
+          & .e-hidden-input {
+            display: none;
+          }
+
+          & .e-file-name,
+          & .e-file-type {
+            line-height: $form-upload-file-name-line-height;
+            padding-top: $form-upload-file-name-padding;
+          }
+
+          & .e-file-name.e-error,
+          & .e-file-type.e-error,
+          & .e-file-status.e-error {
+            color: $upload-failure-color;
+          }
+
+          & .e-file-status,
+          & .e-file-information {
+            color: $file-size-color;
+            display: block;
+            font-size: $form-upload-file-status-font-size;
+            line-height: $form-upload-file-name-line-height;
+            padding-bottom: 0;
+            padding-top: $form-upload-file-name-padding;
+            position: relative;
+          }
+        }
+
+        &.e-file-invalid {
+          color: $upload-failure-color;
+
+          & .e-file-name,
+          & .e-file-type,
+          & .e-file-status {
+            color: $upload-failure-color;
+          }
+        }
+      }
+
+      & .e-file-remove-btn.e-icons,
+      & .e-file-delete-btn.e-icons,
+      & .e-file-abort-btn.e-icons,
+      & .e-file-reload-btn.e-icons,
+      & .e-file-play-btn.e-icons,
+      & .e-file-pause-btn.e-icons {
+        box-sizing: border-box;
+        top: $form-upload-remove-icon-top;
+      }
+    }
 
     & .e-upload-files {
       list-style-type: none;
@@ -238,8 +372,8 @@
       .e-icons:focus {
         @if ($skin-name == 'material') {
           outline: none;
+        }
       }
-    }
 
       .e-upload-file-list {
         font-family: $upload-font-family;
@@ -289,7 +423,8 @@
             padding: $file-size-padding-smaller;
           }
 
-          & .e-file-status {
+          & .e-file-status,
+          & .e-file-information {
             display: block;
             font-family: $upload-font-family;
             font-size: $list-item-status-font-size-smaller;
@@ -298,7 +433,7 @@
             &.e-upload-progress {
               display: none;
             }
-        }
+          }
 
           & .e-upload-progress-wrap {
             display: block;
@@ -340,6 +475,7 @@
       & .e-file-play-btn.e-icons,
       & .e-file-reload-btn.e-icons {
         align-items: center;
+        box-sizing: border-box;
         cursor: pointer;
         display: inline-flex;
         font-size: $remove-icon-font-size-smaller;
@@ -506,7 +642,7 @@
           & .e-file-abort-btn,
           & .e-file-reload-btn,
           & .e-file-pause-btn,
-          & .e-file-play-btn, {
+          & .e-file-play-btn {
             &.e-icons {
               left: $left;
               margin-left: $margin-rtl-smaller;
@@ -544,7 +680,8 @@
           & .e-file-container .e-file-name,
           & .e-file-container .e-file-type,
           & .e-file-container .e-file-size,
-          & .e-file-container .e-file-status {
+          & .e-file-container .e-file-status,
+          & .e-file-container .e-file-information {
             color: $disabled-state;
           }
         }
@@ -560,6 +697,127 @@
     .e-bigger.e-content-placeholder.e-upload.e-placeholder-upload {
       background-size: 400px 80px;
       min-height: 80px;
+    }
+  }
+
+  .e-small {
+    .e-upload {
+      .e-file-select-wrap {
+        padding: $header-padding-small;
+
+        & .e-file-drop {
+          font-size: $drop-area-small-font-size;
+          margin-left: $drop-small-area-padding-left;
+      }
+    }
+
+      & .e-upload-files {
+        .e-upload-file-list {
+          min-height: $li-min-height-small;
+
+          .e-file-container .e-file-name {
+            font-size: $file-small-name-font-size;
+            padding-top: $file-small-name-padding-top;
+          }
+
+          .e-file-container .e-file-size {
+            font-size: $list-small-item-status-font-size;
+            padding: $file-small-size-padding;
+          }
+
+          .e-file-container .e-file-type {
+            font-size: $file-small-name-font-size;
+            padding-top: $file-small-name-padding-top;
+          }
+
+          .e-file-container .e-file-status,
+          .e-file-container .e-file-information {
+            padding-bottom: $file-small-name-padding-top;
+          }
+
+          .e-file-container .e-upload-progress-wrap {
+            padding-bottom: $progress-bar-bottom-paddding-small;
+            padding-top: $progress-bar-bottom-paddding-small;
+          }
+        }
+
+        & .e-file-remove-btn.e-icons,
+        & .e-file-delete-btn.e-icons,
+        & .e-file-abort-btn.e-icons,
+        & .e-file-reload-btn.e-icons,
+        & .e-file-play-btn.e-icons,
+        & .e-file-pause-btn.e-icons {
+          font-size: $remove-small-icon-font-size;
+          height: $remove-small-icon-height;
+          padding: $delete-small-icon-padding;
+          width: $remove-small-icon-width;
+        }
+      }
+
+      &.e-rtl {
+        & .e-file-select-wrap {
+          padding: $header-padding-rtl-small;
+        }
+      }
+
+      &.e-form-upload .e-upload-files {
+        & .e-upload-file-list {
+          min-height: $form-upload-small-file-list-height;
+          padding-bottom: $form-upload-small-file-list-padding-bottom;
+          padding-top: $form-upload-small-file-list-padding-top;
+
+          & .e-file-container {
+            top: 0;
+
+            & .e-hidden-input {
+              display: none;
+            }
+
+            & .e-file-name,
+            & .e-file-type {
+              line-height: $form-upload-small-file-name-line-height;
+              padding-top: $form-upload-small-file-name-padding;
+            }
+
+            & .e-file-name.e-error,
+            & .e-file-type.e-error,
+            & .e-file-status.e-error {
+              color: $upload-failure-color;
+            }
+
+            & .e-file-status,
+            & .e-file-information {
+              color: $file-size-color;
+              display: block;
+              font-size: $form-upload-small-file-status-font-size;
+              line-height: $form-upload-small-file-name-line-height;
+              padding-bottom: 0;
+              padding-top: $form-upload-small-file-name-padding;
+              position: relative;
+            }
+          }
+
+          &.e-file-invalid {
+            color: $upload-failure-color;
+
+            & .e-file-name,
+            & .e-file-type,
+            & .e-file-status {
+              color: $upload-failure-color;
+            }
+          }
+        }
+
+        & .e-file-remove-btn.e-icons,
+        & .e-file-delete-btn.e-icons,
+        & .e-file-abort-btn.e-icons,
+        & .e-file-reload-btn.e-icons,
+        & .e-file-play-btn.e-icons,
+        & .e-file-pause-btn.e-icons {
+          box-sizing: border-box;
+          top: $form-upload-small-remove-icon-top;
+        }
+      }
     }
   }
 }

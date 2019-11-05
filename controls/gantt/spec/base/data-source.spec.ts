@@ -502,8 +502,7 @@ export let projectData1: Object[] = [
                 EndDate: new Date('03/10/2017'), Duration: 2, Progress: '0', Predecessor: '37FS', ResourceId: [4]
             },
             {
-                TaskID: 39, TaskName: 'Final Delivery', StartDate: new Date('03/10/2017'),
-                EndDate: new Date('03/10/2017'), Duration: 0, Predecessor: '38FS'
+                TaskID: 39, TaskName: 'Final Delivery'
             }
         ]
     }

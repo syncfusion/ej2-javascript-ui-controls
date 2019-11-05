@@ -578,14 +578,21 @@ export class DataSourceSettings extends ChildProperty<DataSourceSettings> implem
     public enableSorting: boolean;
 
     /**
-     * It allows excel-like label filtering operation.
+     * It allows member filtering operation through UI and code-behind.
+     * @default true
+     */
+    @Property(true)
+    public allowMemberFilter: boolean;
+
+    /**
+     * It allows excel-like label filtering operation through UI and code-behind.
      * @default false
      */
     @Property(false)
     public allowLabelFilter: boolean;
 
     /**
-     * It allows excel-like value filtering operation.
+     * It allows excel-like value filtering operation through UI and code-behind.
      * @default false
      */
     @Property(false)

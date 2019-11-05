@@ -3088,4 +3088,26 @@ describe('invalid String', () => {
             (popupObj as any).ej2_instances[0].trigger('targetExitViewport');
         });
     });
+    describe('Timezone offset', function (){
+        let datetimepicker: any;
+        beforeEach(function() {
+            let inputElement: HTMLElement = createElement('input', { id: 'datetimepicker'});
+            document.body.appendChild(inputElement);
+        });
+        afterEach(function() {
+            if (datetimepicker) {
+                datetimepicker.destroy();
+                document.body.innerHTML = '';
+            }
+        });
+        it('server timezone with offset +10 testing',function() {
+            datetimepicker = new DateTimePicker({
+                value: new Date("9/25/2019 16:00"),
+                placeholder: "select Date Time",
+                width: "250px",
+                serverTimezoneOffset: +10
+            });
+            datetimepicker.appendTo('#datetimepicker');
+        });
+    });
 });

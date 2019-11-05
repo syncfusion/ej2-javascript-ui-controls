@@ -1,6 +1,6 @@
 import { LayoutViewer } from '../index';
 import { createElement, isNullOrUndefined, L10n } from '@syncfusion/ej2-base';
-import { Tab } from '@syncfusion/ej2-navigations';
+import { Tab, SelectingEventArgs } from '@syncfusion/ej2-navigations';
 import { ListLevelPattern } from '../../base/types';
 import { WList } from '../list/list';
 import { WAbstractList } from '../list/abstract-list';
@@ -21,6 +21,14 @@ export class BulletsAndNumberingDialog {
     private listFormat: WListFormat;
     private abstractList: WAbstractList;
     private tabObj: Tab;
+    /**
+     * @private
+     */
+    public numberListDiv: HTMLElement;
+   /**
+    * @private
+    */
+    public bulletListDiv: HTMLElement;
 
     /**
      * @private
@@ -49,26 +57,31 @@ export class BulletsAndNumberingDialog {
         this.tabObj = new Tab({
             items: [
                 {
-                    header: { 'text': locale.getConstant('Numbering') },
-                    /* tslint:disable-next-line:max-line-length */
-                    content: ('#' + id + '_Number'),
+                    header: { 'text': createElement('div', { innerHTML: locale.getConstant('Numbering') }) },
+                    content: this.numberListDiv,
 
                 },
                 {
-                    header: { 'text': locale.getConstant('Bullets') },
-                    /* tslint:disable-next-line:max-line-length */
-                    content: ('#' + id + '_Bullet'),
-                },
+                    header: { 'text': createElement('div', { innerHTML: locale.getConstant('Bullets') }) },
+                    content: this.bulletListDiv,
+                }
             ],
             heightAdjustMode: 'None',
             width: 272,
+            selecting: this.onTabSelect.bind(this)
         });
         //Render initialized Tab component
         this.tabObj.appendTo(tabTarget);
+
+    }
+    private onTabSelect(args: SelectingEventArgs): void {
+        if (args.selectingIndex === 1) {
+            this.bulletListDiv.style.display = 'block';
+        }
     }
     private createNumberList(id: string): void {
-        let numberListDiv: HTMLElement = createElement('div', { className: 'e-de-style-numbered-list', id: id + '_Number' });
-        numberListDiv.style.display = 'none';
+        this.numberListDiv = createElement('div', { className: 'e-de-style-numbered-list', id: id + '_Number' });
+        let numberListDiv: HTMLElement = this.numberListDiv;
         numberListDiv.style.height = '270px';
         let ulTag: HTMLElement = createElement('ul', {
             styles: 'display: block; outline: 0px;',
@@ -142,9 +155,10 @@ export class BulletsAndNumberingDialog {
         return liTag;
     }
     private createBulletList(id: string): void {
-        let bulletListDiv: HTMLElement = createElement('div', { className: 'e-de-ui-bullet-list-header-presetmenu', id: id + '_Bullet' });
-        bulletListDiv.style.display = 'none';
+        this.bulletListDiv = createElement('div', { className: 'e-de-ui-bullet-list-header-presetmenu', id: id + '_Bullet' });
+        let bulletListDiv: HTMLElement = this.bulletListDiv;
         bulletListDiv.style.height = '270px';
+        bulletListDiv.style.display = 'none';
         let ulTag: HTMLElement = createElement('ul', {
             styles: 'display: block; outline: 0px;', id: 'listMenu',
             className: 'e-de-ui-wfloating-menu e-de-ui-bullets-menu e-de-list-container e-de-list-thumbnail'
@@ -166,8 +180,6 @@ export class BulletsAndNumberingDialog {
         bulletFlower.addEventListener('click', this.bulletListClick);
         bulletArrow.addEventListener('click', this.bulletListClick);
         bulletTick.addEventListener('click', this.bulletListClick);
-
-        // bulletListDiv.appendChild(table1);        
         this.target.appendChild(bulletListDiv);
     }
     /**
@@ -372,6 +384,8 @@ export class BulletsAndNumberingDialog {
             }
             this.target = undefined;
         }
+        this.bulletListDiv = undefined;
+        this.numberListDiv = undefined;
     }
 }
 /* tslint:enable:no-any */

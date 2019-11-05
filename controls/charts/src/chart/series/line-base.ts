@@ -1,6 +1,6 @@
 import { getAnimationFunction, ChartLocation, pathAnimation, getElement } from '../../common/utils/helper';
 import { PathOption, Rect } from '@syncfusion/ej2-svg-base';
-import { VisibleRangeModel } from '../axis/axis';
+import { VisibleRangeModel, Axis } from '../axis/axis';
 import { Series, Points } from './chart-series';
 import { Chart } from '../chart';
 import { AnimationModel } from '../../common/model/base-model';
@@ -159,6 +159,15 @@ export class LineBase {
                 2 * markerHeight
             )
         );
+    }
+    /**
+     * To find point with in the visible range
+     * @param point 
+     * @param yAxis 
+     * @private
+     */
+    public withinYRange(point: Points, yAxis: Axis): boolean {
+        return point.yValue >= yAxis.visibleRange.min && point.yValue <= yAxis.visibleRange.max;
     }
 
     /**

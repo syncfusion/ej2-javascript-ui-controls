@@ -443,7 +443,6 @@ export class PdfViewerBase {
             if (this.pdfViewer.annotationModule) {
                 this.pdfViewer.annotationModule.initializeCollection();
             }
-            this.signatureModule.createSignaturePanel();
         }
     }
 
@@ -709,8 +708,7 @@ export class PdfViewerBase {
         // tslint:disable-next-line:radix
         viewportWidth = parseInt(viewportWidth);
         let pageWidth: number = this.pageSize[pageIndex].width;
-        let isTileRendering: boolean = this.pdfViewer.magnificationModule.isAutoZoom && !(viewportWidth < pageWidth);
-        if (this.renderedPagesList.indexOf(pageIndex) === -1 && isTileRendering) {
+        if (this.renderedPagesList.indexOf(pageIndex) === -1) {
             this.createRequestForRender(pageIndex);
             let pageNumber: number = pageIndex + 1;
             if (pageNumber < this.pageCount) {
@@ -848,7 +846,9 @@ export class PdfViewerBase {
             } else {
                 waitingPopup.style.top = this.viewerContainer.clientHeight / 2 + 'px';
             }
-            if (this.getZoomFactor() > 1.25 && pageCurrentRect.width > this.viewerContainer.clientWidth) {
+            if (Browser.isDevice && pageCurrentRect.width > this.viewerContainer.clientWidth) {
+                waitingPopup.style.left = (this.viewerContainer.clientWidth / 2) + (this.viewerContainer.scrollLeft) + 'px';
+            } else if (this.getZoomFactor() > 1.25 && pageCurrentRect.width > this.viewerContainer.clientWidth) {
                 waitingPopup.style.left = this.viewerContainer.clientWidth / 2 + 'px';
             } else {
                 waitingPopup.style.left = pageCurrentRect.width / 2 + 'px';
@@ -2850,8 +2850,8 @@ export class PdfViewerBase {
                             if (!isNaN(parseFloat(pagecanvas.style.width)) && parseInt((pagecanvas as HTMLCanvasElement).width.toString()) !== parseInt(pagecanvas.style.width)) {
                                 pagecanvas.style.width = pageWidth + 'px';
                                 pagecanvas.style.height = pageHeight + 'px';
-                                (pagecanvas as HTMLCanvasElement).height = pageHeight * window.devicePixelRatio;
-                                (pagecanvas as HTMLCanvasElement).width = pageWidth * window.devicePixelRatio;
+                                (pagecanvas as HTMLCanvasElement).height = pageHeight;
+                                (pagecanvas as HTMLCanvasElement).width = pageWidth;
                             }
                             let context: CanvasRenderingContext2D = (pagecanvas as HTMLCanvasElement).getContext('2d');
                             // tslint:disable-next-line
@@ -3153,6 +3153,7 @@ export class PdfViewerBase {
             let ratio: any = (this.viewerContainer.scrollHeight - this.viewerContainer.clientHeight) / (this.viewerContainer.clientHeight - this.toolbarHeight);
             if (this.isThumb) {
                 this.ispageMoved = true;
+                event.preventDefault();
                 this.mobilePageNoContainer.style.display = 'block';
                 scrollposX = event.touches[0].pageX - this.scrollX;
                 scrollposY = event.touches[0].pageY - this.viewerContainer.offsetTop;

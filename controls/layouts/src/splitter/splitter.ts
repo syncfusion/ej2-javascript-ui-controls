@@ -386,6 +386,9 @@ export class Splitter extends Component<HTMLElement> {
         removeClass([this.wrapper], ['e-control', 'e-lib' , ROOT]);
         let orientation: string = this.orientation === 'Horizontal' ? HORIZONTAL_PANE : VERTICAL_PANE;
         addClass([this.element], orientation);
+        let name: string = Browser.info.name;
+        let css: string = (name === 'msie') ? 'e-ie' : '';
+        this.setCssClass(css);
         if ( Browser.isDevice ) {
             addClass([this.element], SPLIT_TOUCH);
         }

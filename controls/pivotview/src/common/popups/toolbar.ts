@@ -3,6 +3,7 @@ import { remove, createElement, formatUnit, isBlazor } from '@syncfusion/ej2-bas
 import * as events from '../../common/base/constant';
 import { Dialog } from '@syncfusion/ej2-popups';
 import { SaveReportArgs, FetchReportArgs, LoadReportArgs, RemoveReportArgs, RenameReportArgs, ToolbarArgs } from '../base/interface';
+import { BeforeExportEventArgs } from '../base/interface';
 import { DropDownList, ChangeEventArgs } from '@syncfusion/ej2-dropdowns';
 import * as cls from '../../common/base/css-constant';
 import { Common } from '../actions/common';
@@ -90,22 +91,25 @@ export class Toolbar {
     }
 
     private fetchReports(): FetchReportArgs {
+        /* tslint:disable */
         let reports: any = { reportName: [] };
+        /* tslint:enable */
         let tool: Toolbar = this;
-        if(isBlazor()){
+        if (isBlazor()) {
             reports = this.fetchReportsArgs();
-            reports.then( function(e : any){
+            /* tslint:disable */
+            reports.then((e: any) => {
+                /* tslint:enable */
                 tool.reportList.dataSource = e.reportName;
-                return e
-            })
+                return e;
+            });
         }
         this.parent.trigger(events.fetchReport, reports);
         return reports;
-
     }
 
     private fetchReportsArgs(): FetchReportArgs | Deferred {
-        let callbackPromise = new Deferred();
+        let callbackPromise: Deferred = new Deferred();
         let reports: FetchReportArgs = { reportName: [] };
         this.parent.trigger(events.fetchReport, reports, (observedArgs: FetchReportArgs) => {
             callbackPromise.resolve(observedArgs);
@@ -882,13 +886,26 @@ export class Toolbar {
     }
 
     private menuItemClick(args: ClickEventArgs): void {
+        let exportArgs: BeforeExportEventArgs = {
+            pdfExportProperties: undefined,
+            isMultipleExport: undefined,
+            pdfDoc: undefined,
+            isBlob: undefined,
+            excelExportProperties: undefined,
+            workbook: undefined,
+            type: undefined,
+            fileName: undefined,
+            orientation: undefined,
+            width: undefined,
+            height: undefined,
+        };
         switch (args.item.id) {
             case (this.parent.element.id + 'grid'):
                 if (this.parent.grid && this.parent.chart) {
                     this.parent.grid.element.style.display = '';
                     this.parent.chart.element.style.display = 'none';
                     this.parent.currentView = 'Table';
-                    this.parent.setProperties({ displayOption:{primary: 'Table'} }, true);
+                    this.parent.setProperties({ displayOption: { primary: 'Table' } }, true);
                     if (this.parent.showGroupingBar) {
                         (this.parent.element.querySelector('.e-pivot-grouping-bar') as HTMLElement).style.display = "";
                         (this.parent.element.querySelector('.e-chart-grouping-bar') as HTMLElement).style.display = "none";
@@ -908,7 +925,7 @@ export class Toolbar {
                         this.parent.grid.element.style.display = 'none';
                         this.parent.chart.element.style.display = '';
                         this.parent.currentView = 'Chart';
-                        this.parent.setProperties({ displayOption:{primary: 'Chart'} }, true);
+                        this.parent.setProperties({ displayOption: { primary: 'Chart' } }, true);
                         this.parent.chart.element.style.width = formatUnit(this.parent.grid ? this.parent.getGridWidthAsNumber() : this.parent.getWidthAsNumber());
                         this.parent.chart.width = formatUnit(this.parent.grid ? this.parent.getGridWidthAsNumber() : this.parent.getWidthAsNumber());
                         if (this.parent.showGroupingBar) {
@@ -923,35 +940,42 @@ export class Toolbar {
                     if (this.parent.pdfExportModule) {
                         this.parent.pdfExportModule.exportToPDF();
                     } else {
-                        this.parent.pdfExport();
+                        this.parent.trigger(events.beforeExport, exportArgs);
+                        this.parent.pdfExport(exportArgs.pdfExportProperties, exportArgs.isMultipleExport, exportArgs.pdfDoc, exportArgs.isBlob);
                     }
                 }
                 else {
-                    this.parent.chartExport('PDF', 'result');
+                    this.parent.trigger(events.beforeExport, exportArgs);
+                    this.parent.chartExport(exportArgs.type ? exportArgs.type : 'PDF', exportArgs.fileName ? exportArgs.fileName : 'result', exportArgs.orientation, exportArgs.width, exportArgs.height);
                 }
                 break;
             case (this.parent.element.id + 'excel'):
                 if (this.parent.excelExportModule) {
                     this.parent.excelExportModule.exportToExcel('Excel');
                 } else {
-                    this.parent.excelExport();
+                    this.parent.trigger(events.beforeExport, exportArgs);
+                    this.parent.excelExport(exportArgs.excelExportProperties, exportArgs.isMultipleExport, exportArgs.workbook, exportArgs.isBlob);
                 }
                 break;
             case (this.parent.element.id + 'csv'):
                 if (this.parent.excelExportModule) {
                     this.parent.excelExportModule.exportToExcel('csv');
                 } else {
-                    this.parent.csvExport();
+                    this.parent.trigger(events.beforeExport, exportArgs);
+                    this.parent.csvExport(exportArgs.excelExportProperties, exportArgs.isMultipleExport, exportArgs.workbook, exportArgs.isBlob);
                 }
                 break;
             case (this.parent.element.id + 'png'):
-                this.parent.chartExport('PNG', 'result');
+                this.parent.trigger(events.beforeExport, exportArgs);
+                this.parent.chartExport(exportArgs.type ? exportArgs.type : 'PNG', exportArgs.fileName ? exportArgs.fileName : 'result', exportArgs.orientation, exportArgs.width, exportArgs.height);
                 break;
             case (this.parent.element.id + 'jpeg'):
-                this.parent.chartExport('JPEG', 'result');
+                this.parent.trigger(events.beforeExport, exportArgs);
+                this.parent.chartExport(exportArgs.type ? exportArgs.type : 'JPEG', exportArgs.fileName ? exportArgs.fileName : 'result', exportArgs.orientation, exportArgs.width, exportArgs.height);
                 break;
             case (this.parent.element.id + 'svg'):
-                this.parent.chartExport('SVG', 'result');
+                this.parent.trigger(events.beforeExport, exportArgs);
+                this.parent.chartExport(exportArgs.type ? exportArgs.type : 'SVG', exportArgs.fileName ? exportArgs.fileName : 'result', exportArgs.orientation, exportArgs.width, exportArgs.height);
                 break;
             case (this.parent.element.id + 'notsubtotal'):
                 this.parent.dataSourceSettings.showSubTotals = false;

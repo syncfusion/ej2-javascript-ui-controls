@@ -2990,7 +2990,7 @@ describe('Uploader Control', () => {
             uploadObj.onSelectFiles(eventArgs);
             let element : HTMLFormElement = <HTMLFormElement>document.getElementById("form1");
             expect(uploadObj.getFilesData().length).toEqual(2);
-            expect(uploadObj.fileList.length).toEqual(2);
+            expect(uploadObj.fileList.length).toEqual(1);
             uploadObj.uploadWrapper.querySelector('.e-file-remove-btn').click();
             expect(uploadObj.getFilesData().length).toEqual(0);
             expect(uploadObj.fileList.length).toEqual(0);
@@ -3972,5 +3972,408 @@ describe('Uploader Control', () => {
             uploadObj.dataBind();
             expect(uploadObj.uploadWrapper.querySelectorAll('li').length).toBe(3);
         });
-    })
+    });
+
+    describe('Form support - UI changes - Single File', () => {
+        let uploadObj: any;
+        beforeAll((): void => {
+            let element: HTMLElement = createElement('input', {id: 'upload'});            
+            let form: Element = createElement('form', {attrs: {id: 'form1'}});            
+            let submitButton: HTMLElement = createElement('button',{attrs: {type: 'submit'}});
+            form.appendChild(element);
+            form.appendChild(submitButton);
+            document.body.appendChild(form);
+            element.setAttribute('type', 'file');
+            uploadObj = new Uploader({
+            });
+            uploadObj.appendTo(document.getElementById('upload'));
+        })
+        afterAll((): void => {
+            uploadObj.destroy();
+            document.body.innerHTML = '';
+        });
+        it('ensure form support UI changes with valid files', (done) => {
+            let fileObj: File = new File(["Nice One"], "sample2.txt", {lastModified: 0, type: "overide/mimetype"});
+            let eventArgs = { type: 'click', target: {files: [fileObj]}, preventDefault: (): void => { } };
+            uploadObj.onSelectFiles(eventArgs);
+            let element : HTMLFormElement = <HTMLFormElement>document.getElementById("form1");
+            expect(uploadObj.element.getAttribute('name')).toEqual('upload');
+            expect(uploadObj.isForm).toBe(true);
+            expect(uploadObj.element.value).toEqual('');
+            expect(uploadObj.getFilesData()[0].statusCode).toBe('1');
+            expect(uploadObj.getFilesData()[0].input.getAttribute('name')).toEqual('upload');
+            expect(uploadObj.getFilesData()[0].list.classList.contains('e-file-invalid')).toBe(false);
+            expect(uploadObj.getFilesData()[0].list.querySelector('.e-file-status')).toBe(null);
+            expect(uploadObj.getFilesData()[0].list.querySelector('.e-file-information')).toBe(null);
+            expect(uploadObj.getFilesData()[0].list.querySelectorAll('.e-file-size').length).toBe(1);
+            expect(uploadObj.uploadWrapper.querySelectorAll('input').length).toBe(2);
+            uploadObj.uploadWrapper.querySelector('.e-file-remove-btn').click();
+            expect(uploadObj.getFilesData().length).toEqual(0);
+            expect(uploadObj.fileList.length).toEqual(0);
+            expect(uploadObj.uploadWrapper.querySelectorAll('input').length).toBe(1);
+            done()
+        });
+    });
+
+    describe('Form support - UI changes - Single File - RTL', () => {
+        let uploadObj: any;
+        beforeAll((): void => {
+            let element: HTMLElement = createElement('input', {id: 'upload'});            
+            let form: Element = createElement('form', {attrs: {id: 'form1'}});            
+            let submitButton: HTMLElement = createElement('button',{attrs: {type: 'submit'}});
+            form.appendChild(element);
+            form.appendChild(submitButton);
+            document.body.appendChild(form);
+            element.setAttribute('type', 'file');
+            uploadObj = new Uploader({
+                enableRtl: true
+            });
+            uploadObj.appendTo(document.getElementById('upload'));
+        })
+        afterAll((): void => {
+            uploadObj.destroy();
+            document.body.innerHTML = '';
+        });
+        it('ensure form support UI changes with valid files', (done) => {
+            let fileObj: File = new File(["Nice One"], "sample2.txt", {lastModified: 0, type: "overide/mimetype"});
+            let eventArgs = { type: 'click', target: {files: [fileObj]}, preventDefault: (): void => { } };
+            uploadObj.onSelectFiles(eventArgs);
+            let element : HTMLFormElement = <HTMLFormElement>document.getElementById("form1");
+            expect(uploadObj.element.getAttribute('name')).toEqual('upload');
+            expect(uploadObj.isForm).toBe(true);
+            expect(uploadObj.element.value).toEqual('');
+            expect(uploadObj.getFilesData()[0].statusCode).toBe('1');
+            expect(uploadObj.getFilesData()[0].input.getAttribute('name')).toEqual('upload');
+            expect(uploadObj.getFilesData()[0].list.classList.contains('e-file-invalid')).toBe(false);
+            expect(uploadObj.getFilesData()[0].list.querySelector('.e-file-status')).toBe(null);
+            expect(uploadObj.getFilesData()[0].list.querySelector('.e-file-information')).toBe(null);
+            expect(uploadObj.getFilesData()[0].list.querySelectorAll('.e-file-size').length).toBe(1);
+            expect(uploadObj.uploadWrapper.querySelectorAll('input').length).toBe(2);
+            uploadObj.uploadWrapper.querySelector('.e-file-remove-btn').click();
+            expect(uploadObj.getFilesData().length).toEqual(0);
+            expect(uploadObj.fileList.length).toEqual(0);
+            expect(uploadObj.uploadWrapper.querySelectorAll('input').length).toBe(1);
+            done()
+        });
+    });
+
+    describe('Form support - UI changes - Single File - Invalid', () => {
+        let uploadObj: any;
+        beforeAll((): void => {
+            let element: HTMLElement = createElement('input', {id: 'upload'});            
+            let form: Element = createElement('form', {attrs: {id: 'form1'}});            
+            let submitButton: HTMLElement = createElement('button',{attrs: {type: 'submit'}});
+            form.appendChild(element);
+            form.appendChild(submitButton);
+            document.body.appendChild(form);
+            element.setAttribute('type', 'file');
+            uploadObj = new Uploader({
+                allowedExtensions:'.pdf'
+            });
+            uploadObj.appendTo(document.getElementById('upload'));
+        })
+        afterAll((): void => {
+            uploadObj.destroy();
+            document.body.innerHTML = '';
+        });
+        it('ensure form support UI changes with invalid files', (done) => {
+            let fileObj: File = new File(["Nice One"], "sample2.txt", {lastModified: 0, type: "overide/mimetype"});
+            let eventArgs = { type: 'click', target: {files: [fileObj]}, preventDefault: (): void => { } };
+            uploadObj.onSelectFiles(eventArgs);
+            let element : HTMLFormElement = <HTMLFormElement>document.getElementById("form1");
+            expect(uploadObj.element.getAttribute('name')).toEqual('upload');
+            expect(uploadObj.isForm).toBe(true);
+            expect(uploadObj.element.value).toEqual('');
+            expect(uploadObj.getFilesData()[0].list.classList.contains('e-file-invalid')).toBe(true);
+            expect(uploadObj.getFilesData()[0].list.querySelectorAll('.e-file-status').length).toBe(1);
+            expect(uploadObj.getFilesData()[0].list.querySelector('.e-file-information')).toBe(null);
+            expect(uploadObj.getFilesData()[0].list.querySelector('.e-file-size')).toBe(null);
+            expect(uploadObj.uploadWrapper.querySelectorAll('input').length).toBe(1);
+            uploadObj.uploadWrapper.querySelector('.e-file-remove-btn').click();
+            expect(uploadObj.getFilesData().length).toEqual(0);
+            expect(uploadObj.fileList.length).toEqual(0);
+            expect(uploadObj.uploadWrapper.querySelectorAll('input').length).toBe(1);
+            done()
+        });
+    });
+
+    describe('Form support - UI changes - Single File -Template', () => {
+        let uploadObj: any;
+        beforeAll((): void => {
+            let element: HTMLElement = createElement('input', {id: 'upload'});            
+            let form: Element = createElement('form', {attrs: {id: 'form1'}});            
+            let submitButton: HTMLElement = createElement('button',{attrs: {type: 'submit'}});
+            form.appendChild(element);
+            form.appendChild(submitButton);
+            document.body.appendChild(form);
+            element.setAttribute('type', 'file');
+            uploadObj = new Uploader({
+                template: "<div class='wrapper'><table><tbody><tr><td><span class='file-name'>${name}</span></td><td><span class='file-size'>${size} bytes</span></td></tr></tbody></table></div>" 
+            });
+            uploadObj.appendTo(document.getElementById('upload'));
+        })
+        afterAll((): void => {
+            uploadObj.destroy();
+            document.body.innerHTML = '';
+        });
+        it('ensure form support UI changes with valid files', (done) => {
+            let fileObj: File = new File(["Nice One"], "sample2.txt", {lastModified: 0, type: "overide/mimetype"});
+            let eventArgs = { type: 'click', target: {files: [fileObj]}, preventDefault: (): void => { } };
+            uploadObj.onSelectFiles(eventArgs);
+            let element : HTMLFormElement = <HTMLFormElement>document.getElementById("form1");
+            expect(uploadObj.element.getAttribute('name')).toEqual('upload');
+            expect(uploadObj.isForm).toBe(true);
+            expect(uploadObj.element.value).toEqual('');
+            expect(uploadObj.getFilesData()[0].input.getAttribute('name')).toEqual('upload');
+            expect(uploadObj.getFilesData()[0].list.classList.contains('e-file-invalid')).toBe(false);
+            expect(uploadObj.uploadWrapper.querySelectorAll('input').length).toBe(2);
+            expect(uploadObj.fileList.length).toEqual(1);
+            expect(uploadObj.remove(uploadObj.getFilesData(0)));
+            expect(uploadObj.getFilesData().length).toEqual(0);
+            expect(uploadObj.fileList.length).toEqual(0);
+            expect(uploadObj.uploadWrapper.querySelectorAll('input').length).toBe(1);
+            done()
+        });
+    });
+
+    describe('Form support - UI changes - Single File -Template - invalid', () => {
+        let uploadObj: any;
+        beforeAll((): void => {
+            let element: HTMLElement = createElement('input', {id: 'upload'});            
+            let form: Element = createElement('form', {attrs: {id: 'form1'}});            
+            let submitButton: HTMLElement = createElement('button',{attrs: {type: 'submit'}});
+            form.appendChild(element);
+            form.appendChild(submitButton);
+            document.body.appendChild(form);
+            element.setAttribute('type', 'file');
+            uploadObj = new Uploader({
+                allowedExtensions:'.pdf',
+                template: "<div class='wrapper'><table><tbody><tr><td><span class='file-name'>${name}</span></td><td><span class='file-size'>${size} bytes</span></td></tr></tbody></table></div>" 
+            });
+            uploadObj.appendTo(document.getElementById('upload'));
+        })
+        afterAll((): void => {
+            uploadObj.destroy();
+            document.body.innerHTML = '';
+        });
+        it('ensure form support UI changes with invalid files', (done) => {
+            let fileObj: File = new File(["Nice One"], "sample2.txt", {lastModified: 0, type: "overide/mimetype"});
+            let eventArgs = { type: 'click', target: {files: [fileObj]}, preventDefault: (): void => { } };
+            uploadObj.onSelectFiles(eventArgs);
+            let element : HTMLFormElement = <HTMLFormElement>document.getElementById("form1");
+            expect(uploadObj.element.getAttribute('name')).toEqual('upload');
+            expect(uploadObj.isForm).toBe(true);
+            expect(uploadObj.element.value).toEqual('');
+            expect(uploadObj.getFilesData()[0].list.classList.contains('e-file-invalid')).toBe(true);
+            expect(uploadObj.uploadWrapper.querySelectorAll('input').length).toBe(1);
+            expect(uploadObj.fileList.length).toEqual(1);
+            expect(uploadObj.remove(uploadObj.getFilesData(0)));
+            expect(uploadObj.getFilesData().length).toEqual(0);
+            expect(uploadObj.fileList.length).toEqual(0);
+            expect(uploadObj.uploadWrapper.querySelectorAll('input').length).toBe(1);
+            done()
+        });
+    });
+
+    describe('Form support - UI changes - Multiple File - Template', () => {
+        let uploadObj: any;
+        beforeAll((): void => {
+            let element: HTMLElement = createElement('input', {id: 'upload'});            
+            let form: Element = createElement('form', {attrs: {id: 'form1'}});            
+            let submitButton: HTMLElement = createElement('button',{attrs: {type: 'submit'}});
+            form.appendChild(element);
+            form.appendChild(submitButton);
+            document.body.appendChild(form);
+            element.setAttribute('type', 'file');
+            uploadObj = new Uploader({
+                template: "<div class='wrapper'><table><tbody><tr><td><span class='file-name'>${name}</span></td><td><span class='file-size'>${size} bytes</span></td></tr></tbody></table></div>" 
+            });
+            uploadObj.appendTo(document.getElementById('upload'));
+        })
+        afterAll((): void => {
+            uploadObj.destroy();
+            document.body.innerHTML = '';
+        });
+        it('ensure form support UI changes with valid files', (done) => {
+            var fileObj = new File(["Nice One"], "sample.txt", { lastModified: 0, type: "overide/mimetype" });
+            var fileObj1 = new File(["2nd File"], "demo.txt", { lastModified: 0, type: "overide/mimetype" });
+            var eventArgs = { type: 'click', target: { files: [fileObj, fileObj1] }, preventDefault: function () { } };
+            uploadObj.onSelectFiles(eventArgs);
+            expect(uploadObj.element.getAttribute('name')).toEqual('upload');
+            expect(uploadObj.isForm).toBe(true);
+            expect(uploadObj.element.value).toEqual('');
+            expect(uploadObj.getFilesData()[0].input.getAttribute('name')).toEqual('upload');
+            expect(uploadObj.getFilesData()[0].list.classList.contains('e-file-invalid')).toBe(false);
+            expect(uploadObj.fileList.length).toBe(1);
+            expect(uploadObj.uploadWrapper.querySelectorAll('input').length).toBe(2);
+            expect(uploadObj.remove(uploadObj.getFilesData(0)));
+            expect(uploadObj.getFilesData().length).toEqual(0);
+            expect(uploadObj.fileList.length).toEqual(0);
+            expect(uploadObj.uploadWrapper.querySelectorAll('input').length).toBe(1);
+            done()
+        });
+    });
+
+    describe('Form support - UI changes - Multiple File - Template - Invalid files', () => {
+        let uploadObj: any;
+        beforeAll((): void => {
+            let element: HTMLElement = createElement('input', {id: 'upload'});            
+            let form: Element = createElement('form', {attrs: {id: 'form1'}});            
+            let submitButton: HTMLElement = createElement('button',{attrs: {type: 'submit'}});
+            form.appendChild(element);
+            form.appendChild(submitButton);
+            document.body.appendChild(form);
+            element.setAttribute('type', 'file');
+            uploadObj = new Uploader({
+                allowedExtensions:'.pdf',
+                template: "<div class='wrapper'><table><tbody><tr><td><span class='file-name'>${name}</span></td><td><span class='file-size'>${size} bytes</span></td></tr></tbody></table></div>" 
+            });
+            uploadObj.appendTo(document.getElementById('upload'));
+        })
+        afterAll((): void => {
+            uploadObj.destroy();
+            document.body.innerHTML = '';
+        });
+        it('ensure form support UI changes with valid files', (done) => {
+            var fileObj = new File(["Nice One"], "sample.txt", { lastModified: 0, type: "overide/mimetype" });
+            var fileObj1 = new File(["2nd File"], "demo.txt", { lastModified: 0, type: "overide/mimetype" });
+            var eventArgs = { type: 'click', target: { files: [fileObj, fileObj1] }, preventDefault: function () { } };
+            uploadObj.onSelectFiles(eventArgs);
+            expect(uploadObj.element.getAttribute('name')).toEqual('upload');
+            expect(uploadObj.isForm).toBe(true);
+            expect(uploadObj.element.value).toEqual('');
+            expect(uploadObj.getFilesData()[0].list.classList.contains('e-file-invalid')).toBe(true);
+            expect(uploadObj.fileList.length).toBe(1);
+            expect(uploadObj.uploadWrapper.querySelectorAll('input').length).toBe(1);
+            expect(uploadObj.remove(uploadObj.getFilesData(0)));
+            expect(uploadObj.getFilesData().length).toEqual(0);
+            expect(uploadObj.fileList.length).toEqual(0);
+            expect(uploadObj.uploadWrapper.querySelectorAll('input').length).toBe(1);
+            done()
+        });
+    });
+
+    describe('Form support - UI changes - Multiple File', () => {
+        let uploadObj: any;
+        beforeAll((): void => {
+            let element: HTMLElement = createElement('input', {id: 'upload'});            
+            let form: Element = createElement('form', {attrs: {id: 'form1'}});            
+            let submitButton: HTMLElement = createElement('button',{attrs: {type: 'submit'}});
+            form.appendChild(element);
+            form.appendChild(submitButton);
+            document.body.appendChild(form);
+            element.setAttribute('type', 'file');
+            uploadObj = new Uploader({
+            });
+            uploadObj.appendTo(document.getElementById('upload'));
+        })
+        afterAll((): void => {
+            uploadObj.destroy();
+            document.body.innerHTML = '';
+        });
+        it('ensure form support UI changes with valid files', (done) => {
+            var fileObj = new File(["Nice One"], "sample.txt", { lastModified: 0, type: "overide/mimetype" });
+            var fileObj1 = new File(["2nd File"], "demo.txt", { lastModified: 0, type: "overide/mimetype" });
+            var eventArgs = { type: 'click', target: { files: [fileObj, fileObj1] }, preventDefault: function () { } };
+            uploadObj.onSelectFiles(eventArgs);
+            expect(uploadObj.element.getAttribute('name')).toEqual('upload');
+            expect(uploadObj.isForm).toBe(true);
+            expect(uploadObj.element.value).toEqual('');
+            expect(uploadObj.getFilesData()[0].statusCode).toBe('1');
+            expect(uploadObj.getFilesData()[0].input.getAttribute('name')).toEqual('upload');
+            expect(uploadObj.getFilesData()[0].list.classList.contains('e-file-invalid')).toBe(false);
+            expect(uploadObj.getFilesData()[0].list.querySelector('.e-file-status')).toBe(null);
+            expect(uploadObj.getFilesData()[0].list.querySelectorAll('.e-file-information').length).toBe(1);
+            expect(uploadObj.getFilesData()[0].list.querySelector('.e-file-size')).toBe(null);
+            expect(uploadObj.fileList.length).toBe(1);
+            expect(uploadObj.uploadWrapper.querySelectorAll('input').length).toBe(2);
+            uploadObj.uploadWrapper.querySelector('.e-file-remove-btn').click();
+            expect(uploadObj.getFilesData().length).toEqual(0);
+            expect(uploadObj.fileList.length).toEqual(0);
+            expect(uploadObj.uploadWrapper.querySelectorAll('input').length).toBe(1);
+            done()
+        });
+    });
+
+    describe('Form support - UI changes - Multiple File - Invalid', () => {
+        let uploadObj: any;
+        beforeAll((): void => {
+            let element: HTMLElement = createElement('input', {id: 'upload'});            
+            let form: Element = createElement('form', {attrs: {id: 'form1'}});            
+            let submitButton: HTMLElement = createElement('button',{attrs: {type: 'submit'}});
+            form.appendChild(element);
+            form.appendChild(submitButton);
+            document.body.appendChild(form);
+            element.setAttribute('type', 'file');
+            uploadObj = new Uploader({
+                allowedExtensions:'.pdf'
+            });
+            uploadObj.appendTo(document.getElementById('upload'));
+        })
+        afterAll((): void => {
+            uploadObj.destroy();
+            document.body.innerHTML = '';
+        });
+        it('ensure form support UI changes with invalid files', (done) => {
+            var fileObj = new File(["Nice One"], "sample.txt", { lastModified: 0, type: "overide/mimetype" });
+            var fileObj1 = new File(["2nd File"], "demo.txt", { lastModified: 0, type: "overide/mimetype" });
+            var eventArgs = { type: 'click', target: { files: [fileObj, fileObj1] }, preventDefault: function () { } };
+            uploadObj.onSelectFiles(eventArgs);
+            expect(uploadObj.element.getAttribute('name')).toEqual('upload');
+            expect(uploadObj.isForm).toBe(true);
+            expect(uploadObj.element.value).toEqual('');
+            expect(uploadObj.getFilesData()[0].list.classList.contains('e-file-invalid')).toBe(true);
+            expect(uploadObj.getFilesData()[0].list.querySelectorAll('.e-file-status').length).toBe(1);
+            expect(uploadObj.getFilesData()[0].list.querySelectorAll('.e-file-information').length).toBe(0);
+            expect(uploadObj.getFilesData()[0].list.querySelector('.e-file-size')).toBe(null);
+            expect(uploadObj.fileList.length).toBe(1);
+            expect(uploadObj.uploadWrapper.querySelectorAll('input').length).toBe(1);
+            uploadObj.uploadWrapper.querySelector('.e-file-remove-btn').click();
+            expect(uploadObj.getFilesData().length).toEqual(0);
+            expect(uploadObj.fileList.length).toEqual(0);
+            expect(uploadObj.uploadWrapper.querySelectorAll('input').length).toBe(1);
+            done()
+        });
+    });
+
+    describe('Form support - UI changes - Multiple File - Invalid /valid combination', () => {
+        let uploadObj: any;
+        beforeAll((): void => {
+            let element: HTMLElement = createElement('input', {id: 'upload'});            
+            let form: Element = createElement('form', {attrs: {id: 'form1'}});            
+            let submitButton: HTMLElement = createElement('button',{attrs: {type: 'submit'}});
+            form.appendChild(element);
+            form.appendChild(submitButton);
+            document.body.appendChild(form);
+            element.setAttribute('type', 'file');
+            uploadObj = new Uploader({
+                allowedExtensions:'.pdf'
+            });
+            uploadObj.appendTo(document.getElementById('upload'));
+        })
+        afterAll((): void => {
+            uploadObj.destroy();
+            document.body.innerHTML = '';
+        });
+        it('ensure form support UI changes with valid/invalid files', (done) => {
+            var fileObj = new File(["Nice One"], "sample.pdf", { lastModified: 0, type: "overide/mimetype" });
+            var fileObj1 = new File(["2nd File"], "demo.txt", { lastModified: 0, type: "overide/mimetype" });
+            var eventArgs = { type: 'click', target: { files: [fileObj, fileObj1] }, preventDefault: function () { } };
+            uploadObj.onSelectFiles(eventArgs);
+            expect(uploadObj.element.getAttribute('name')).toEqual('upload');
+            expect(uploadObj.isForm).toBe(true);
+            expect(uploadObj.element.value).toEqual('');
+            expect(uploadObj.getFilesData()[0].list.classList.contains('e-file-invalid')).toBe(true);
+            expect(uploadObj.getFilesData()[0].list.querySelectorAll('.e-file-status').length).toBe(1);
+            expect(uploadObj.getFilesData()[0].list.querySelectorAll('.e-file-information').length).toBe(0);
+            expect(uploadObj.getFilesData()[0].list.querySelector('.e-file-size')).toBe(null);
+            expect(uploadObj.fileList.length).toBe(1);
+            expect(uploadObj.uploadWrapper.querySelectorAll('input').length).toBe(1);
+            uploadObj.uploadWrapper.querySelector('.e-file-remove-btn').click();
+            expect(uploadObj.getFilesData().length).toEqual(0);
+            expect(uploadObj.fileList.length).toEqual(0);
+            expect(uploadObj.uploadWrapper.querySelectorAll('input').length).toBe(1);
+            done()
+        });
+    });
 });

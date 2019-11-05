@@ -576,3 +576,31 @@ describe('EJ2-28175: Duplicate records of search result after sorting', () => {
     destroy(gridObj);
   });
 });
+describe('Hierarchy Search Mode Testing - deep child', () => {
+  let gridObj: TreeGrid;
+  let actionComplete: () => void;
+  beforeAll((done: Function) => {
+    gridObj = createGrid(
+      {
+        dataSource: sampleData,
+        childMapping: 'subtasks',
+        treeColumnIndex: 1,
+        toolbar: ['Search'],
+        columns: ['taskID', 'taskName', 'duration', 'progress'],
+      },
+      done
+    );
+  });
+  it('Check the search records for parent mode', (done: Function) => {
+      actionComplete = (args?: Object): void => {
+       expect(gridObj.getCurrentViewRecords()[1]['taskName']).toBe("Phase 1");
+       expect(gridObj.getRows()[1].querySelector(".e-treegridexpand")).not.toBeNull();
+       done();
+      }
+      gridObj.grid.actionComplete = actionComplete;
+      gridObj.search("Phase");
+  });
+  afterAll(() => {
+    destroy(gridObj);
+  });
+});

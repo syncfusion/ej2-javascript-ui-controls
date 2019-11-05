@@ -12422,7 +12422,7 @@ var PasteCleanup = /** @__PURE__ @class */ (function () {
         this.detachInlineElements(clipBoardElem);
         this.getTextContent(clipBoardElem);
         if (clipBoardElem.textContent.trim() !== '') {
-            if (clipBoardElem.firstElementChild.tagName !== 'BR') {
+            if (!isNullOrUndefined(clipBoardElem.firstElementChild) && clipBoardElem.firstElementChild.tagName !== 'BR') {
                 var firstElm = clipBoardElem.firstElementChild;
                 if (!isNullOrUndefined(clipBoardElem.firstElementChild)) {
                     var spanElm = this.parent.createElement('span');

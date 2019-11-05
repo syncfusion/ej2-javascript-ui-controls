@@ -60,7 +60,23 @@ describe('Gantt sort support', () => {
             done();
         });
 
+        it('Sort column by method without sort module', () => {
+            ganttObj.clearSorting();
+            ganttObj.allowSorting = false;
+            ganttObj.dataBind();
+            ganttObj.sortColumn('Duration', 'Descending', false);
+            expect(ganttObj.element.getElementsByClassName('e-columnheader')[0].querySelectorAll('.e-descending').length).toBe(0);
+        });
+
+        it('Sort column by method with sort value false', () => {
+            ganttObj.dataBind();
+            ganttObj.sortColumn('Duration', 'Descending', false);
+            expect(ganttObj.element.getElementsByClassName('e-columnheader')[0].querySelectorAll('.e-descending').length).toBe(0);
+        });
+
         it('Destroy Method', () => {
+            ganttObj.allowSorting = true;
+            ganttObj.dataBind();
             ganttObj.sortModule.destroy();
         });
     });

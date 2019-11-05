@@ -73,3 +73,53 @@ describe('Paste list content from outside editor ', () => {
         expect(editor.viewer.lists.length).toBe(1);
     });
 });
+describe('Restrict editing public API validation', () => {
+    let editor: DocumentEditor = undefined;
+    beforeAll(() => {
+        document.body.innerHTML = '';
+        let ele: HTMLElement = createElement('div', { id: 'container' });
+        document.body.appendChild(ele);
+        editor = new DocumentEditor({ enableEditor: true, isReadOnly: false, enableLocalPaste: false });
+        DocumentEditor.Inject(Editor, Selection);
+        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        editor.appendTo('#container');
+    });
+    afterAll((done) => {
+        editor.destroy();
+        document.body.removeChild(document.getElementById('container'));
+        editor = undefined;
+        document.body.innerHTML = '';
+        setTimeout(() => {
+            done();
+        }, 1000);
+    });
+    it('insert edit region', () => {
+        editor.editor.insertText('Hello world');
+        editor.selection.extendToWordStart();
+        editor.editor.insertEditingRegion();
+        editor.editor.onEnter();
+        editor.editor.insertText('Hello world');
+        editor.selection.extendToWordStart();
+        editor.editor.insertEditingRegion();
+        expect(editor.viewer.editRanges.get('Everyone').length).toBe(2);
+    });
+    it('enfore protection', () => {
+        editor.editor.enforceProtection('aa', false, true);
+    });
+    it('navigate to next edit region', () => {
+        let end: string = editor.selection.end.hierarchicalPosition;
+        editor.selection.navigateToNextEditingRegion();
+        expect(editor.selection.end.hierarchicalPosition).not.toBe(end);
+    });
+    it('show to all edit region', () => {
+        let end: TextPosition = editor.selection.end;
+        editor.selection.showAllEditingRegion();
+        expect(editor.selection.editRangeCollection.length).toBe(2);
+    });
+    it('stop protection', () => {
+        editor.editor.stopProtection('aa');
+    });
+});

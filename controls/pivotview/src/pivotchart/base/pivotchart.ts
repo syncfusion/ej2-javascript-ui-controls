@@ -158,8 +158,9 @@ export class PivotChart {
                 this.maxLevel = currrentLevel > this.maxLevel ? currrentLevel : this.maxLevel;
                 let name: string = this.parent.dataType === 'olap' ? firstRowCell.formattedText :
                     (firstRowCell.actualText ? firstRowCell.actualText.toString() : firstRowCell.formattedText.toString());
+                let text: string = firstRowCell.formattedText ? firstRowCell.formattedText.toString() : name;
                 let caption: string = (firstRowCell.hasChild && !firstRowCell.isNamedSet) ?
-                    ((firstRowCell.isDrilled ? ' - ' : ' + ') + name) : name;
+                    ((firstRowCell.isDrilled ? ' - ' : ' + ') + text) : text;
                 let levelName: string = tupInfo ? tupInfo.uNameCollection : firstRowCell.valueSort['levelName'].toString();
                 let cellInfo: ChartLabelInfo = {
                     name: name,
@@ -304,6 +305,10 @@ export class PivotChart {
             if (this.parent.showToolbar && this.parent.grid) {
                 width = this.parent.getGridWidthAsNumber().toString();
             }
+            let height: string | number = this.parent.getHeightAsNumber();
+            if (isNullOrUndefined(height)) {
+                height = "auto";
+            }
             Chart.Inject(
                 ColumnSeries, StackingColumnSeries, RangeColumnSeries, BarSeries, StackingBarSeries, ScatterSeries, BubbleSeries,
                 LineSeries, StepLineSeries, SplineSeries, SplineAreaSeries, MultiColoredLineSeries, PolarSeries, RadarSeries,
@@ -311,7 +316,7 @@ export class PivotChart {
                 Legend, Tooltip, Category, MultiLevelLabel, ScrollBar, Zoom, Export, Crosshair);
             this.parent.chart = new Chart(
                 {
-                    series: this.chartSeries,
+                    series: this.chartSeries.length > 0 ? this.chartSeries : [{}],
                     legendSettings: currentLegendSettings,
                     tooltip: currentTooltipSettings,
                     zoomSettings: currentZoomSettings,
@@ -325,7 +330,7 @@ export class PivotChart {
                     primaryYAxis: (type === 'Polar' || type === 'Radar') ? axesWithRows.axes[0] : { visible: false },
                     primaryXAxis: currentXAxis,
                     width: width,
-                    height: this.parent.height.toString(),
+                    height: height.toString(),
                     title: this.chartSettings.title,
                     titleStyle: this.chartSettings.titleStyle,
                     subTitle: this.chartSettings.subTitle,
@@ -428,7 +433,7 @@ export class PivotChart {
                     }
                 }
                 let format: string = PivotUtil.inArray(measureField.aggregateType, percentAggregateTypes) !== -1 ? 'P2' : (formatSetting ?
-                    formatSetting.format : this.parent.dataType === 'olap' ? this.getFormat(measureField.formatString) : 'N');
+                    (formatSetting.format.toLowerCase().match(/n|p|c/) === null ? 'N' : formatSetting.format) : this.parent.dataType === 'olap' ? this.getFormat(measureField.formatString) : 'N');
                 let resFormat: boolean =
                     (this.chartSettings.chartSeries.type === 'Polar' || this.chartSettings.chartSeries.type === 'Radar') ? true : false;
                 let currentYAxis: AxisModel = {};
@@ -467,7 +472,8 @@ export class PivotChart {
             }
             let currentYAxis: AxisModel = {};
             let format: string = PivotUtil.inArray(measureField.aggregateType, percentAggregateTypes) !== -1 ? 'P2' : (formatSetting ?
-                formatSetting.format : this.parent.dataType === 'olap' ? this.getFormat(measureField.formatString) : 'N');
+                (formatSetting.format.toLowerCase().match(/n|p|c/) === null ? 'N' : formatSetting.format) :
+                this.parent.dataType === 'olap' ? this.getFormat(measureField.formatString) : 'N');
             currentYAxis = this.persistSettings.primaryYAxis ? this.frameObjectWithKeys(this.persistSettings.primaryYAxis) : currentYAxis;
             currentYAxis.rowIndex = 0;
             currentYAxis.columnIndex = 0;
@@ -660,6 +666,9 @@ export class PivotChart {
         currentXAxis.title = currentXAxis.title ? currentXAxis.title :
             this.dataSourceSettings.rows.map((args: IFieldOptions) => { return args.caption || args.name; }).join(' / ');
         currentXAxis.zoomFactor = this.getZoomFactor();
+        if (!this.parent.chartSettings.zoomSettings.enableScrollbar) {
+            currentXAxis.zoomFactor = 1;
+        }
         if (this.chartSettings.showMultiLevelLabels) {
             currentXAxis.multiLevelLabels = this.frameMultiLevelLabels();
             currentXAxis.border = { width: 1, type: 'WithoutTopandBottomBorder' };
@@ -683,7 +692,8 @@ export class PivotChart {
         let measureAggregatedName: string = (this.parent.dataType === 'olap' ? '' : (this.parent.localeObj.getConstant(measureField.aggregateType) + ' ' +
             this.parent.localeObj.getConstant('of') + ' ')) + measureField.caption;
         let formattedText: string = args.text.split('<b>')[1].split('</b>')[0];
-        let formattedValue: string = ((this.engineModule.formatFields[measureField.id] &&
+        let formatField: IField = this.engineModule.formatFields[measureField.id];
+        let formattedValue: string = ((formatField && formatField.format && formatField.format.toLowerCase().match(/n|p|c/) !== null &&
             this.chartSettings.useGroupingSeparator) ? this.parent.dataType === 'olap' ?
                 (this.engineModule as OlapEngine).getFormattedValue(args.point.y as number, measureField.id, formattedText) :
                 this.parent.engineModule.getFormattedValue(args.point.y as number, measureField.id).formattedText :
@@ -709,6 +719,15 @@ export class PivotChart {
                 this.parent.element.querySelector(
                     "#" + this.parent.element.id + multilabelAxisName).setAttribute('cursor', 'pointer');
             }
+        }
+        if (this.parent.chart && this.parent.showToolbar && this.parent.element.querySelector(".e-pivot-toolbar")) {
+            this.parent.chart.height = (this.parent.getHeightAsNumber() - this.parent.element.querySelector(".e-pivot-toolbar").clientHeight).toString();
+        }
+        if (this.parent.chart && this.parent.showGroupingBar && this.parent.element.querySelector(".e-chart-grouping-bar")) {
+            this.parent.chart.height = (this.parent.getHeightAsNumber() - this.parent.element.querySelector(".e-chart-grouping-bar").clientHeight).toString();
+        }
+        if (parseInt(this.parent.chart.height) < 200) {
+            this.parent.chart.height = "200";
         }
         this.parent.notify(events.contentReady, {});
         this.parent.trigger(events.chartLoaded, args);
@@ -802,6 +821,9 @@ export class PivotChart {
             args.chart = this.parent.chart;
         }
         (args.chart as Chart).primaryXAxis.zoomFactor = this.getZoomFactor();
+        if (!this.parent.chartSettings.zoomSettings.enableScrollbar) {
+            (args.chart as Chart).primaryXAxis.zoomFactor = 1;
+        }
         this.parent.trigger(events.chartResized, args);
     }
 

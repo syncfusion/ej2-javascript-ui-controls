@@ -846,7 +846,7 @@ export function doDownloadFiles(parent: IFileManager, data: Object[], newIds: st
 
 export function createDeniedDialog(parent: IFileManager, data: Object, action: string): void {
     let message: string = getValue('message', getValue('permission', data));
-    message = (message === '') ? '"' + getValue('name', data) + '" is not accessible. you need permission to perform the ' +
+    message = (message === '') ? '"' + getValue('name', data) + '" is not accessible. You need permission to perform the ' +
         action + ' action.' : message;
     let response: ReadArgs = {
         error: {
@@ -869,22 +869,22 @@ export function hasReadAccess(data: Object): boolean {
 
 export function hasEditAccess(data: Object): boolean {
     let permission: Object = getValue('permission', data);
-    return permission ? ((getValue('read', permission) && getValue('edit', permission)) ? true : false) : true;
+    return permission ? ((getValue('read', permission) && (getValue('write', permission)))) : true;
 }
 
 export function hasContentAccess(data: Object): boolean {
     let permission: Object = getValue('permission', data);
-    return permission ? ((getValue('read', permission) && getValue('editContents', permission)) ? true : false) : true;
+    return permission ? ((getValue('read', permission) && (getValue('writeContents', permission)))) : true;
 }
 
 export function hasUploadAccess(data: Object): boolean {
     let permission: Object = getValue('permission', data);
-    return permission ? ((getValue('read', permission) && getValue('upload', permission)) ? true : false) : true;
+    return permission ? ((getValue('read', permission) && getValue('upload', permission))) : true;
 }
 
 export function hasDownloadAccess(data: Object): boolean {
     let permission: Object = getValue('permission', data);
-    return permission ? ((getValue('read', permission) && getValue('download', permission)) ? true : false) : true;
+    return permission ? ((getValue('read', permission) && getValue('download', permission))) : true;
 }
 
 export function createNewFolder(parent: IFileManager): void {

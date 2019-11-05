@@ -507,13 +507,19 @@ export interface DataSourceSettingsModel {
     enableSorting?: boolean;
 
     /**
-     * It allows excel-like label filtering operation.
+     * It allows member filtering operation through UI and code-behind.
+     * @default true
+     */
+    allowMemberFilter?: boolean;
+
+    /**
+     * It allows excel-like label filtering operation through UI and code-behind.
      * @default false
      */
     allowLabelFilter?: boolean;
 
     /**
-     * It allows excel-like value filtering operation.
+     * It allows excel-like value filtering operation through UI and code-behind.
      * @default false
      */
     allowValueFilter?: boolean;

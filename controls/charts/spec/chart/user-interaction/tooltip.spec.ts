@@ -39,7 +39,7 @@ describe('Chart Control', () => {  beforeAll(() => {
         let chartObj: Chart;
         let elem: HTMLElement = createElement('div', { id: 'container' });
         let targetElement: HTMLElement;
-        let loaded: EmitType<ILoadedEventArgs>; 
+        let loaded: EmitType<ILoadedEventArgs>;
         let pointEvent: EmitType<IPointEventArgs>;
         let loaded1: EmitType<ILoadedEventArgs>;
         let trigger: MouseEvents = new MouseEvents();
@@ -60,7 +60,7 @@ describe('Chart Control', () => {  beforeAll(() => {
                             border: { width: 1, color: null }
                         }
                     }], width: '800',
-                    tooltip: { enable: true},  
+                    tooltip: { enable: true},
                     title: 'Chart TS Title', loaded: loaded, legendSettings: { visible: false }
                 });
             chartObj.appendTo('#container');
@@ -78,7 +78,7 @@ describe('Chart Control', () => {  beforeAll(() => {
                 y = parseFloat(targetElement.getAttribute('cy')) + parseFloat(chartArea.getAttribute('y')) + elem.offsetTop;
                 x = parseFloat(targetElement.getAttribute('cx')) + parseFloat(chartArea.getAttribute('x')) + elem.offsetLeft;
                 trigger.mousemovetEvent(targetElement, Math.ceil(x), Math.ceil(y));
-                trigger.clickEvent(targetElement);              
+                trigger.clickEvent(targetElement);
                 done();
             };
             pointEvent = (args: IPointEventArgs) : void => {
@@ -124,7 +124,7 @@ describe('Chart Control', () => {  beforeAll(() => {
             chartObj.loaded = loaded;
             chartObj.refresh();
         });
-        
+
 
         it('Edge Tooltip', () => {
 
@@ -140,7 +140,7 @@ describe('Chart Control', () => {  beforeAll(() => {
 
             let text2: HTMLElement = tooltip.childNodes[0].childNodes[0].childNodes[1] as HTMLElement;
             expect(text2.textContent.replace(/\u200E/g, '')).toEqual('ChartSeriesNameGold$1000.00 : 70');
-            
+
             //expect(text2.textContent.replace(/\u200E/g, '') == '70').toBe(true);
 
             let trackSymbol: HTMLElement = document.getElementById('containerSymbolGroup0').lastChild as HTMLElement;
@@ -573,6 +573,33 @@ describe('Chart Control', () => {  beforeAll(() => {
                 args.headerText = '${point.x}';
             };
             chartObj.tooltip.header = '';
+            chartObj.refresh();
+        });
+        it('checking with tooltipRender event with template', (done: Function) => {
+            loaded = (args: Object): void => {
+                let target: HTMLElement = document.getElementById('container_Series_0_Point_6_Symbol');
+                let target1: HTMLElement = document.getElementById('container_Series_0_Point_5_Symbol');
+                let chartArea: HTMLElement = document.getElementById('container_ChartAreaBorder');
+                y = parseFloat(target.getAttribute('cy')) + parseFloat(chartArea.getAttribute('y')) + elem.offsetTop;
+                x = parseFloat(target.getAttribute('cx')) + parseFloat(chartArea.getAttribute('x')) + elem.offsetLeft;
+                trigger.mousemovetEvent(target, Math.ceil(x), Math.ceil(y));
+
+                let tooltip: HTMLElement = document.getElementById('container_tooltip');
+                expect(tooltip != null).toBe(true);
+                expect(tooltip.firstElementChild.innerHTML).toEqual('<div>40C</div><div>7000</div>');
+                y = parseFloat(target1.getAttribute('cy')) + parseFloat(chartArea.getAttribute('y')) + elem.offsetTop;
+                x = parseFloat(target1.getAttribute('cx')) + parseFloat(chartArea.getAttribute('x')) + elem.offsetLeft;
+                trigger.mousemovetEvent(target1, Math.ceil(x), Math.ceil(y));
+                expect(tooltip.firstElementChild.innerHTML).toEqual('<div>6000</div><div>-20C</div>');
+                done();
+            };
+            chartObj.loaded = loaded;
+            chartObj.tooltip = { enable: true };
+            chartObj.tooltip.template = "<div>${x}</div><div>${y}</div>";
+            chartObj.tooltipRender = (args: ITooltipRenderEventArgs) => {
+                if(args.point.index == 6)
+                args.template = '<div>${y}</div><div>${x}</div>';
+            };
             chartObj.refresh();
         });
     });

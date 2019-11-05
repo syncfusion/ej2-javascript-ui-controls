@@ -4427,6 +4427,28 @@ describe(' Islamic Calendar', () => {
             expect((calendar.tableBodyElement.querySelector('tr td.e-selected')).nextElementSibling.classList.contains('e-disabled')).toBe(true);
         });
     });
+    describe('Timezone offset', () => {
+        let Cal: any;
+        beforeEach(() => {
+            let ele: HTMLElement = createElement('div', { id: 'calendar' });
+            document.body.appendChild(ele);
+        });
+        afterEach(() => {
+            if (Cal) {
+                Cal.destroy();
+                document.body.innerHTML = '';
+            }
+        });
+    
+        it('server timezone with offset +5 testing', () => {
+            Cal = new Calendar({
+                value: new Date('5/5/2017'),
+                serverTimezoneOffset: +5
+            });
+            Cal.appendTo('#calendar');
+            expect(Cal.value !== new Date('5/5/2017')).toBe(true);
+        });
+    });
 });
     it('memory leak', () => {     
         profile.sample();

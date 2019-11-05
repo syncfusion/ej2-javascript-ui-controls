@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 17.3.26 (2019-11-05)
+
+### QueryBuilder
+
+#### New Features
+
+- Provided Not Contains, Not Starts With and Not Ends With operator support.
+
 ## 17.3.21 (2019-10-30)
 
 ### QueryBuilder

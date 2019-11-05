@@ -176,17 +176,17 @@ class WorkerHelper {
         let i;
         let keys;
         if (typeof this.workerTask === 'function') {
-            workerCode += ('self.workerTask = ' + this.workerTask.toString() + '; \n');
+            workerCode += ('self.workerTask = function ' + this.workerTask.toString() + '; \n');
         }
         else {
             if (typeof this.workerTask === 'object') {
                 keys = Object.keys(this.workerTask);
                 for (i = 0; i < keys.length; i++) {
-                    workerCode += ((i === 0 ? 'self.workerTask' : keys[i]) + '=' + this.workerTask[keys[i]].toString() + '; \n');
+                    workerCode += ((i === 0 ? 'self.workerTask' : keys[i]) + '= function ' + this.workerTask[keys[i]].toString() + '; \n');
                 }
             }
         }
-        workerCode += 'self.onmessage = ' +
+        workerCode += 'self.onmessage = function ' +
             (this.preventCallback ? this.getMessageFn.toString() : this.getCallbackMessageFn.toString()) + '; \n';
         return workerCode;
     }
@@ -14461,7 +14461,7 @@ class SheetTabs {
                     this.dropDownInstance.setProperties({ 'items': this.dropDownInstance.items }, true);
                     if (value.indexOf('  ') > -1) {
                         this.tabInstance.setProperties({ 'items': this.tabInstance.items }, true);
-                        items.querySelector('.e-toolbar-item.e-active .e-tab-text').innerHTML = value;
+                        items.querySelector('.e-toolbar-item.e-active .e-tab-text').textContent = value;
                     }
                     else {
                         this.tabInstance.items = this.tabInstance.items;

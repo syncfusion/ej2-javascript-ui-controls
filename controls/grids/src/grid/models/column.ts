@@ -87,10 +87,10 @@ export class Column {
 
     /**    
      * If `disableHtmlEncode` is set to true, it encodes the HTML of the header and content cells.  
-     * @default false    
+     * @default true    
      */
 
-    public disableHtmlEncode: boolean;
+    public disableHtmlEncode: boolean = true;
 
     /**    
      * Defines the data type of the column.    
@@ -672,7 +672,7 @@ export interface ColumnModel {
 
     /**    
      * If `disableHtmlEncode` is set to true, it encodes the HTML of the header and content cells.  
-     * @default false    
+     * @default true    
      */
     disableHtmlEncode?: boolean;
 
@@ -937,7 +937,7 @@ export interface ColumnModel {
     editType?: string;
 
     /**    
-     * Defines rules to validate data before creating and updating.
+     * `editType`(../../grid/edit/#cell-edit-type-and-its-params) Defines rules to validate data before creating and updating.
      * @default null         
      */
     validationRules?: Object;
@@ -951,7 +951,7 @@ export interface ColumnModel {
     defaultValue?: string;
 
     /**    
-     * Defines the `IEditCell` object to customize default edit cell.
+     * Defines the `IEditCell`(../../grid/edit/#cell-edit-template) object to customize default edit cell.
      * @default {}         
      */
     edit?: IEditCell;

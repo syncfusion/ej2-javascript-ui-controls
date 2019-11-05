@@ -132,5 +132,10 @@ describe('Gantt filter support', () => {
             }
             ganttObj.refresh();
         });
+
+        // it('Filter by public method', () => {
+        //     ganttObj.filterByColumn('TaskName', 'startswith', 'planning', '', true);
+        //     expect(ganttObj.currentViewData.length).toBe(0);
+        // });
     });
 });

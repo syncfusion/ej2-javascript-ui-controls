@@ -2,6 +2,7 @@
  * Freeze Renderer spec
  */
 import { Grid } from '../../../src/grid/base/grid';
+import { Column } from '../../../src/grid/models';
 import { createElement, remove, EmitType } from '@syncfusion/ej2-base';
 import { data } from '../base/datasource.spec';
 import { Freeze } from '../../../src/grid/actions/freeze';
@@ -298,6 +299,27 @@ describe('Freeze render module', () => {
             expect(memory).toBeLessThan(profile.samples[0] + 0.25);
         });   
 
+        it('Ensure the grid table while dynamically disable isFrozen in the Grid column', (done: Function) => {
+            (gridObj.columns[1] as Column).isFrozen = false;
+            let dataBound = (args: Object) => {
+                 expect(gridObj.getContent().querySelector('.e-frozencontent')).toBeNull();
+                 done();
+             };
+            gridObj.dataBound = dataBound;
+            gridObj.refreshColumns();
+         });
+
+         it('Ensure the grid table while dynamically enable isFrozen in the Grid column', (done: Function) => {
+            (gridObj.columns[1] as Column).isFrozen = true;
+            let dataBound = (args: Object) => {
+                 expect(gridObj.getContent().querySelector('.e-frozencontent')).not.toBeUndefined();
+                 expect(gridObj.getContent().querySelector('.e-frozencontent')).not.toBeNull();
+                 done();
+             };
+            gridObj.dataBound = dataBound;
+            gridObj.refreshColumns();
+         });
+         
         afterAll(() => {
             gridObj['freezeModule'].destroy();
             destroy(gridObj);

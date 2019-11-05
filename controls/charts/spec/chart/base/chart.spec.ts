@@ -358,6 +358,25 @@ describe('Chart Control', () => {
             expect(text.getAttribute('text-anchor')).toBe('start');
             expect(text.getAttribute('x') == text.children[0].getAttribute('x')).toBe(true);
         });
+        it('checking chart area background image', (done: Function) => {
+            setTimeout(() => {
+                let background: HTMLElement = document.getElementById('container_ChartAreaBackground');
+                expect(background.getAttribute('href') != null).toBe(true);
+                done();
+            }, 500);
+            chart.chartArea.backGroundImageUrl = 
+            'https://cdn.syncfusion.com/content/images/freetrials/essential-studio.png?v=03102019101652';
+            chart.refresh();
+        });
+        it('checking chart background image', (done: Function) => {
+            setTimeout(() => {
+                let background: HTMLElement = document.getElementById('container_ChartBackground');
+                expect(background.getAttribute('href') != null).toBe(true);
+                done();
+            }, 500);
+            chart.backGroundImageUrl = 'https://cdn.syncfusion.com/content/images/freetrials/essential-studio.png?v=03102019101652';
+            chart.refresh();
+        });
     });
     describe('Chart checking localization', () => {
         L10n.load({

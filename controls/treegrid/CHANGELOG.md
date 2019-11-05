@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 17.3.26 (2019-11-05)
+
+### TreeGrid
+
+#### Bug Fixes
+
+- `#252667` - Expand icon shows properly for nested parent record while doing search operation.
+
 ## 17.3.21 (2019-10-30)
 
 ### TreeGrid

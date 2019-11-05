@@ -285,12 +285,20 @@ export class ColorPicker extends Component<HTMLInputElement> implements INotifyP
         this.container = this.createElement('div', { className: CONTAINER });
         this.getWrapper().appendChild(this.container);
         let value: string = this.value ? this.roundValue(this.value).toLowerCase() : '#008000ff';
+        if (this.noColor && this.mode === 'Palette' && this.value === '') {
+            value = '';
+        }
         let slicedValue: string = value.slice(0, 7);
         if (isNullOrUndefined(this.initialInputValue)) {
             this.initialInputValue = slicedValue;
         }
         this.element.value = slicedValue;
-        this.setProperties({ 'value': value }, true);
+        if (this.enableOpacity) {
+            this.setProperties({ 'value': value }, true);
+        } else {
+            this.setProperties({ 'value': slicedValue }, true);
+        }
+
         if (this.enableRtl) {
             wrapper.classList.add(RTL);
         }
@@ -1050,7 +1058,11 @@ export class ColorPicker extends Component<HTMLInputElement> implements INotifyP
             previousValue: { hex: this.value.slice(0, 7), rgba: this.convertToRgbString(this.hexToRgb(this.value)) },
             value: value
         });
-        this.setProperties({ 'value': value }, true);
+        if (this.enableOpacity) {
+            this.setProperties({ 'value': value }, true);
+        } else {
+            this.setProperties({ 'value': hex }, true);
+        }
         this.element.value = hex ? hex : '#000000';
     }
 

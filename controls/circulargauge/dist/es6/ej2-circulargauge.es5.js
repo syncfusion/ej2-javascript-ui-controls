@@ -1,4 +1,4 @@
-import { Animation, Browser, ChildProperty, Collection, Complex, Component, Event, EventHandler, Internationalization, NotifyPropertyChanges, Property, compile, createElement, isNullOrUndefined, merge, remove, resetBlazorTemplate, setStyleAttribute, updateBlazorTemplate } from '@syncfusion/ej2-base';
+import { Animation, Browser, ChildProperty, Collection, Complex, Component, Event, EventHandler, Internationalization, NotifyPropertyChanges, Property, compile, createElement, isBlazor, isNullOrUndefined, merge, remove, resetBlazorTemplate, setStyleAttribute, updateBlazorTemplate } from '@syncfusion/ej2-base';
 import { SvgRenderer, Tooltip } from '@syncfusion/ej2-svg-base';
 
 var __extends$1 = (undefined && undefined.__extends) || (function () {
@@ -1398,11 +1398,10 @@ var Annotations = /** @__PURE__ @class */ (function () {
         this.gauge.trigger('annotationRender', argsData, function (observedArgs) {
             var templateFn;
             var templateElement;
-            var blazor = 'Blazor';
             if (!argsData.cancel) {
                 templateFn = getTemplateFunction(argsData.content, _this.gauge);
-                if (templateFn && (!window[blazor] ? templateFn(axis, null, null, _this.gauge.element.id + '_Axis' + axisIndex + '_ContentTemplate' + annotationIndex).length : {})) {
-                    templateElement = Array.prototype.slice.call(templateFn(!window[blazor] ? axis : {}, null, null, _this.gauge.element.id + '_Axis' + axisIndex + '_ContentTemplate' + annotationIndex));
+                if (templateFn && (!_this.gauge.isBlazor ? templateFn(axis, null, null, _this.gauge.element.id + '_Axis' + axisIndex + '_ContentTemplate' + annotationIndex).length : {})) {
+                    templateElement = Array.prototype.slice.call(templateFn(!_this.gauge.isBlazor ? axis : {}, null, null, _this.gauge.element.id + '_Axis' + axisIndex + '_ContentTemplate' + annotationIndex));
                     var length_1 = templateElement.length;
                     for (var i = 0; i < length_1; i++) {
                         childElement.appendChild(templateElement[i]);
@@ -3698,8 +3697,7 @@ var CircularGauge = /** @__PURE__ @class */ (function (_super) {
      */
     //tslint:disable
     CircularGauge.prototype.preRender = function () {
-        var blazor = 'Blazor';
-        this.isBlazor = Object.keys(window).indexOf(blazor) >= 0;
+        this.isBlazor = isBlazor();
         this.unWireEvents();
         this.trigger(load, this.isBlazor ? null : { gauge: this });
         this.initPrivateVariable();

@@ -2,6 +2,15 @@
 
 ## [Unreleased]
 
+## 17.3.26 (2019-11-05)
+
+### DataManager
+
+#### Bug Fixes
+
+- `252550` - DataManager performance issue has been fixed.
+- `251226`, `252997` - Complex field primary key column is not working while the column type is string.
+
 ## 17.3.19 (2019-10-22)
 
 ### DataManager

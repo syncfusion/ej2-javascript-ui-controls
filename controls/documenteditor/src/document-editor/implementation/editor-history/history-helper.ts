@@ -188,7 +188,7 @@ export class TableHistoryInfo {
             }
             this.rows.push(rowFormat);
         }
-        this.tableHierarchicalIndex = this.owner.editorModule.getHierarchicalIndex(table, '0');
+        this.tableHierarchicalIndex = this.owner.selection.getHierarchicalIndex(table, '0');
     }
     public destroy(): void {
         this.tableHierarchicalIndex = undefined;

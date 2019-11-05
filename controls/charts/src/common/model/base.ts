@@ -176,6 +176,13 @@ export class ChartArea extends ChildProperty<ChartArea> {
     @Property(1)
     public opacity: number;
 
+    /**
+     * The background image of the chart area that accepts value in string as url link or location of an image.
+     * @default null
+     */
+    @Property(null)
+    public backGroundImageUrl: string;
+
 }
 /**
  * Configures the chart margins.
@@ -240,7 +247,7 @@ export class Animation extends ChildProperty<Animation> {
     @Property(0)
     public delay: number;
 }
-/** 
+/**
  * Series and point index
  * @public
  */
@@ -398,14 +405,14 @@ export class TooltipSettings extends ChildProperty<TooltipSettings> {
 
     /**
      * The fill color of the tooltip that accepts value in hex and rgba as a valid CSS color string.
-     * @default null 
+     * @default null
      */
 
     @Property(null)
     public fill: string;
 
     /**
-     * Header for tooltip. 
+     * Header for tooltip.
      * @default null
      */
 
@@ -413,7 +420,7 @@ export class TooltipSettings extends ChildProperty<TooltipSettings> {
     public header: string;
 
     /**
-     * The fill color of the tooltip that accepts value in hex and rgba as a valid CSS color string. 
+     * The fill color of the tooltip that accepts value in hex and rgba as a valid CSS color string.
      * @default 0.75
      */
 
@@ -451,11 +458,11 @@ export class TooltipSettings extends ChildProperty<TooltipSettings> {
     public enableAnimation: boolean;
 
     /**
-     * Duration for the ToolTip hide.
-     * @default 1000
+     * Duration for the ToolTip animation.
+     * @default 300
      */
 
-    @Property(1000)
+    @Property(300)
     public duration: number;
 
     /**

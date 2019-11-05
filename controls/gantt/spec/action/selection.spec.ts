@@ -22,6 +22,11 @@ describe('Gantt Selection support', () => {
                         child: 'subtasks',
                         dependency: 'Predecessor',
                     },
+                    editSettings: {
+                        allowAdding: true,
+                        allowEditing: true,
+                        allowDeleting: true,
+                    },
                     toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel'],
                     projectStartDate: new Date('02/01/2017'),
                     projectEndDate: new Date('12/30/2017'),
@@ -76,6 +81,18 @@ describe('Gantt Selection support', () => {
             triggerMouseEvent(row, 'mouseup', 10, 10);
             triggerMouseEvent(row1, 'mouseup', 30, 30);
             expect(ganttObj.selectionModule.getSelectedRowIndexes()[0]).toBe(4);
+        });
+        it('Ensuring Selection After cell editing', () => {
+            ganttObj.selectionModule.clearSelection();
+            ganttObj.rowSelecting = null;
+            ganttObj.dataBind();
+            let taskName: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(5) > td:nth-child(2)') as HTMLElement;
+            triggerMouseEvent(taskName, 'dblclick');
+            let taskValue: HTMLInputElement = (<HTMLInputElement>ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrolTaskName'));
+            taskValue.value = 'Update TaskName';
+            let updateToolbar: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + '_update') as HTMLElement;
+            triggerMouseEvent(updateToolbar, 'click');
+            expect((ganttObj.selectionModule.getSelectedRows().length)).toBe(1);
         });
         it('Enabling persist selection', () => {
             ganttObj.selectionSettings.persistSelection = true;

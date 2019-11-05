@@ -1,6 +1,6 @@
 /* tslint:disable-next-line:max-line-length */
 import { EventHandler, L10n, isNullOrUndefined, extend, classList, addClass, removeClass, Browser, getValue, setValue, isBlazor } from '@syncfusion/ej2-base';
-import { parentsUntil, getUid, appendChildren, getDatePredicate } from '../base/util';
+import { parentsUntil, getUid, appendChildren, getDatePredicate, getObject } from '../base/util';
 import { remove, debounce } from '@syncfusion/ej2-base';
 import { Button } from '@syncfusion/ej2-buttons';
 import { DataUtil, Query, DataManager, Predicate, UrlAdaptor, Deferred } from '@syncfusion/ej2-data';
@@ -326,7 +326,7 @@ export class CheckBoxFilterBase {
     protected clearFilter(): void {
         /* tslint:disable-next-line:max-line-length */
         let args: { instance: CheckBoxFilterBase, handler: Function, cancel: boolean } = { instance: this, handler: this.clearFilter, cancel: false };
-        this.parent.notify(events.cBoxFltrPrevent, args);
+        this.parent.notify(events.fltrPrevent, args);
         if (args.cancel) {
             return;
         }
@@ -349,7 +349,7 @@ export class CheckBoxFilterBase {
                 let args: Object = {
                     action: 'filtering', filterCollection: {
                         field: this.options.field,
-                        operator: this.parent.getDataModule().isRemote() ?
+                        operator: this.options.isRemote ?
                             (this.options.column.type === 'string' ? 'contains' : 'equal') :
                             (this.options.column.type === 'date' || this.options.column.type === 'datetime' ||
                                 this.options.column.type === 'boolean' ? 'equal' : 'contains'),
@@ -378,7 +378,7 @@ export class CheckBoxFilterBase {
         let checked: Element[] = [].slice.call(this.cBox.querySelectorAll('.e-check:not(.e-selectall)'));
         let optr: string = 'equal';
         let searchInput: HTMLInputElement = this.searchBox.querySelector('.e-searchinput') as HTMLInputElement;
-        let caseSen: boolean = this.filterSettings.enableCaseSensitivity;
+        let caseSen: boolean = this.options.allowCaseSensitive;
         let defaults: {
             predicate?: string, field?: string, type?: string, uid?: string
             operator?: string, matchCase?: boolean, ignoreAccent?: boolean
@@ -433,7 +433,7 @@ export class CheckBoxFilterBase {
                     instance: this, handler: this.fltrBtnHandler, arg1: fObj.field, arg2: fObj.predicate, arg3: fObj.operator,
                     arg4: fObj.matchCase, arg5: fObj.ignoreAccent, arg6: fObj.value as string, cancel: false
                 };
-                this.parent.notify(events.cBoxFltrPrevent, args);
+                this.parent.notify(events.fltrPrevent, args);
                 if (args.cancel) {
                     return;
                 }
@@ -554,10 +554,11 @@ export class CheckBoxFilterBase {
         let predicates: Predicate = CheckBoxFilterBase.getPredicate(columns);
         let predicateList: Predicate[] = [];
         let fPredicate: { predicate?: Predicate } = {};
-        let foreignColumn: Column[] = this.parent.getForeignKeyColumns();
+        let isGrid: boolean = this.parent.getForeignKeyColumns !== undefined;
+        let foreignColumn: Column[] = isGrid ? this.parent.getForeignKeyColumns() : [];
         for (let prop of Object.keys(predicates)) {
             let col: Column;
-            if (this.parent.getColumnByField(prop).isForeignColumn()) {
+            if (isGrid && this.parent.getColumnByField(prop).isForeignColumn()) {
                 col = getColumnByForeignKeyValue(prop, foreignColumn);
             }
             if (col) {
@@ -572,8 +573,12 @@ export class CheckBoxFilterBase {
         return predicateList.length && Predicate.and(predicateList);
     }
 
+    protected getQuery(): Query {
+        return this.parent.getQuery ? this.parent.getQuery().clone() : new Query();
+    }
+
     private getAllData(): void {
-        let query: Query = this.parent.getQuery().clone();
+        let query: Query = this.getQuery();
         query.requiresCount(); //consider take query
         this.addDistinct(query);
         let args: {
@@ -597,7 +602,7 @@ export class CheckBoxFilterBase {
     }
 
     private addDistinct(query: Query): Query {
-        let filteredColumn: Object[] = DataUtil.distinct(this.parent.filterSettings.columns, 'field');
+        let filteredColumn: Object[] = DataUtil.distinct(this.options.filteredColumns, 'field');
         if (filteredColumn.indexOf(this.options.column.field) <= -1) {
             filteredColumn = filteredColumn.concat(this.options.column.field);
         }
@@ -654,7 +659,7 @@ export class CheckBoxFilterBase {
     private dataSuccess(e: Object[]): void {
         this.fullData = e;
         let query: Query = new Query();
-        if (this.parent.searchSettings.key.length) {
+        if (this.parent.searchSettings && this.parent.searchSettings.key.length) {
             let sSettings: SearchSettingsModel = this.parent.searchSettings;
             let fields: string[] = sSettings.fields.length ? sSettings.fields : this.parent.getColumns().map((f: Column) => f.field);
             /* tslint:disable-next-line:max-line-length */
@@ -721,7 +726,7 @@ export class CheckBoxFilterBase {
         }
         let result: Object[] = new DataManager(this.fullData as JSON[]).executeLocal(query);
         for (let res of result) {
-            this.result[getValue(this.options.field, res)] = true;
+            this.result[getObject(this.options.field, res)] = true;
         }
     }
 
@@ -872,7 +877,7 @@ export class CheckBoxFilterBase {
 
         while (len--) {
             value = json[len] as string;
-            value = getValue(field, value); //local remote diff, check with mdu   
+            value = getObject(field, value); //local remote diff, check with mdu   
             if (!(value in lookup)) {
                 let obj: Object = {};
                 obj[ejValue] = value;

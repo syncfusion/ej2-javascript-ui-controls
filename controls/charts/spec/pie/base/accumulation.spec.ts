@@ -335,6 +335,15 @@ describe('accumulation and Doughnut Control Checking', () => {
         accumulation.title = '';
         accumulation.refresh();
     });
+    it('Background image checking', (done: Function) => {
+        setTimeout(() => {
+            let background: HTMLElement = document.getElementById(id + '_background');
+            expect(background.getAttribute('href') != null).toBe(true);
+            done();
+        }, 500);
+        accumulation.backGroundImageUrl = 'https://cdn.syncfusion.com/content/images/freetrials/essential-studio.png?v=03102019101652';
+        accumulation.refresh();
+    });
    /* it('center aligned div checking tooltip', (done: Function) => {
         accumulation.loaded = (args: IAccLoadedEventArgs) => {
             accumulation.loaded = null;

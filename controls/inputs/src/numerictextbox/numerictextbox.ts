@@ -1,6 +1,6 @@
 import { Component, EventHandler, Property, Event, Browser, L10n, EmitType } from '@syncfusion/ej2-base';
 import { NotifyPropertyChanges, INotifyPropertyChanged, BaseEventArgs } from '@syncfusion/ej2-base';
-import { createElement, attributes, addClass, removeClass, setStyleAttribute, detach, closest } from '@syncfusion/ej2-base';
+import { createElement, attributes, addClass, removeClass, detach, closest } from '@syncfusion/ej2-base';
 import { isNullOrUndefined, getValue, formatUnit, setValue, merge } from '@syncfusion/ej2-base';
 import { Internationalization, NumberFormatOptions, getNumericObject } from '@syncfusion/ej2-base';
 import { NumericTextBoxModel } from './numerictextbox-model';
@@ -18,6 +18,7 @@ const DECIMALSEPARATOR: string = '.';
 const COMPONENT: string = 'e-numerictextbox';
 const CONTROL: string = 'e-control';
 const NUMERIC_FOCUS: string = 'e-input-focus';
+const HIDDENELEMENT: string = 'e-numeric-hidden';
 const wrapperAttributes: string[] = ['title', 'style', 'class'];
 
 /**
@@ -375,7 +376,7 @@ export class NumericTextBox extends Component<HTMLInputElement> implements INoti
         if (this.element.tagName.toLowerCase() === 'input') {
             this.createWrapper();
             if (this.showSpinButton) { this.spinBtnCreation(); }
-            if (!isNullOrUndefined(this.width)) { setStyleAttribute(this.container, { 'width': formatUnit(this.width) }); }
+            this.setElementWidth(this.width);
             if (!this.container.classList.contains('e-input-group')) { this.container.classList.add('e-input-group'); }
             this.changeValue(this.value === null || isNaN(this.value) ? null : this.strictMode ? this.trimValue(this.value) : this.value);
             this.wireEvents();
@@ -508,12 +509,29 @@ export class NumericTextBox extends Component<HTMLInputElement> implements INoti
         this.container.setAttribute('class', ROOT + ' ' + this.container.getAttribute('class'));
         this.updateHTMLAttrToWrapper();
         if (this.readonly) { attributes(this.element, { 'aria-readonly': 'true' }); }
-        this.hiddenInput = <HTMLInputElement>(this.createElement('input', { attrs: { type: 'hidden', 'validateHidden': 'true' } }));
+        this.hiddenInput = <HTMLInputElement>(this.createElement('input', { attrs: { type: 'text',
+                            'validateHidden': 'true', 'class': HIDDENELEMENT } }));
         this.inputName = this.inputName !== null ? this.inputName : this.element.id;
         this.element.removeAttribute('name');
         attributes(this.hiddenInput, { 'name': this.inputName });
         this.container.insertBefore(this.hiddenInput, this.container.childNodes[1]);
+        this.updateDataAttribute(false);
         if (this.inputStyle !== null) { attributes(this.container, { 'style': this.inputStyle }); }
+    }
+    private updateDataAttribute(isDynamic: boolean) : void {
+        let attr: { [key: string]: string; } = {};
+        if (!isDynamic) {
+            for (let a: number = 0; a < this.element.attributes.length; a++) {
+                attr[this.element.attributes[a].name] = this.element.getAttribute(this.element.attributes[a].name);
+            }
+        } else {
+                attr = this.htmlAttributes;
+        }
+        for (let key of Object.keys(attr)) {
+            if (key.indexOf('data') === 0 ) {
+                this.hiddenInput.setAttribute(key, attr[key]);
+            }
+        }
     }
     private updateHTMLAttrToElement(): void {
         if ( !isNullOrUndefined(this.htmlAttributes)) {
@@ -539,6 +557,16 @@ export class NumericTextBox extends Component<HTMLInputElement> implements INoti
                         this.container.setAttribute(pro, this.htmlAttributes[pro]);
                     }
                 }
+            }
+        }
+    }
+
+    private setElementWidth(width: number | string): void {
+        if (!isNullOrUndefined(width)) {
+            if (typeof width === 'number') {
+                this.container.style.width = formatUnit(width);
+            } else if (typeof width === 'string') {
+                this.container.style.width = (width.match(/px|%|em/)) ? <string>(width) : <string>(formatUnit(width));
             }
         }
     }
@@ -1254,7 +1282,7 @@ export class NumericTextBox extends Component<HTMLInputElement> implements INoti
         for (let prop of Object.keys(newProp)) {
             switch (prop) {
                 case 'width':
-                    setStyleAttribute(this.container, { 'width': formatUnit(newProp.width) });
+                    this.setElementWidth(newProp.width);
                     break;
                 case 'cssClass':
                     Input.setCssClass(newProp.cssClass, [this.container], oldProp.cssClass);
@@ -1276,6 +1304,7 @@ export class NumericTextBox extends Component<HTMLInputElement> implements INoti
                 case 'htmlAttributes':
                     this.updateHTMLAttrToElement();
                     this.updateHTMLAttrToWrapper();
+                    this.updateDataAttribute(true);
                     this.checkAttributes(true);
                     break;
                 case 'placeholder':

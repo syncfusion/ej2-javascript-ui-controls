@@ -257,9 +257,10 @@ describe('Numerictextbox Control', () => {
         it('Render numeric textbox with value as 5', () => {
             numerictextbox = new NumericTextBox({ value: 5 }, '#tsNumeric');
             expect((<HTMLInputElement>document.getElementById('tsNumeric')).value).toEqual('5.00');
-            expect(document.getElementById('tsNumeric').parentElement.querySelector("input[type='hidden']").getAttribute('value')).toEqual('5');
+            expect(numerictextbox.hiddenInput.classList.contains('e-numeric-hidden')).toEqual(true);
+            expect(numerictextbox.hiddenInput.value).toEqual('5');
             expect(document.getElementById('tsNumeric').getAttribute('value')).not.toBe('5');
-            expect(document.getElementById('tsNumeric').parentElement.querySelector("input[type='hidden']").getAttribute('name')).toEqual('tsNumeric');
+            expect(numerictextbox.hiddenInput.getAttribute('name')).toEqual('tsNumeric');
             expect(numerictextbox.element.classList.contains('e-numerictextbox')).toEqual(true);
             expect(document.getElementById('tsNumeric').getAttribute('aria-valuenow')).toBe('5');
             expect(document.getElementById('tsNumeric').getAttribute('role')).toBe('spinbutton');
@@ -268,9 +269,10 @@ describe('Numerictextbox Control', () => {
         it('Render currency textbox with value as 5', () => {
             numerictextbox = new NumericTextBox({ value: 5, format: 'c2' }, '#tsNumeric');
             expect((<HTMLInputElement>document.getElementById('tsNumeric')).value).toEqual('$5.00');
-            expect(document.getElementById('tsNumeric').parentElement.querySelector("input[type='hidden']").getAttribute('value')).toEqual('5');
+            expect(numerictextbox.hiddenInput.classList.contains('e-numeric-hidden')).toEqual(true);
+            expect(numerictextbox.hiddenInput.value).toEqual('5');
             expect(document.getElementById('tsNumeric').getAttribute('value')).not.toBe('5');
-            expect(document.getElementById('tsNumeric').parentElement.querySelector("input[type='hidden']").getAttribute('name')).toEqual('tsNumeric');
+            expect(numerictextbox.hiddenInput.getAttribute('name')).toEqual('tsNumeric');
             expect(numerictextbox.element.classList.contains('e-numerictextbox')).toEqual(true);
             expect(document.getElementById('tsNumeric').getAttribute('aria-valuenow')).toBe('5');
             expect(document.getElementById('tsNumeric').getAttribute('role')).toBe('spinbutton');
@@ -279,9 +281,10 @@ describe('Numerictextbox Control', () => {
         it('Render percentage textbox with value as 0.5', () => {
             numerictextbox = new NumericTextBox({ value: 0.5, format: 'p2' }, '#tsNumeric');
             expect((<HTMLInputElement>document.getElementById('tsNumeric')).value).toEqual('50.00%');
-            expect(document.getElementById('tsNumeric').parentElement.querySelector("input[type='hidden']").getAttribute('value')).toEqual('0.5');
+            expect(numerictextbox.hiddenInput.classList.contains('e-numeric-hidden')).toEqual(true);
+            expect(numerictextbox.hiddenInput.value).toEqual('0.5');
             expect(document.getElementById('tsNumeric').getAttribute('value')).not.toBe('0.5');
-            expect(document.getElementById('tsNumeric').parentElement.querySelector("input[type='hidden']").getAttribute('name')).toEqual('tsNumeric');
+            expect(numerictextbox.hiddenInput.getAttribute('name')).toEqual('tsNumeric');
             expect(numerictextbox.element.classList.contains('e-numerictextbox')).toEqual(true);
             expect(document.getElementById('tsNumeric').getAttribute('aria-valuenow')).toBe('0.5');
             expect(document.getElementById('tsNumeric').getAttribute('role')).toBe('spinbutton');
@@ -518,6 +521,35 @@ describe('Numerictextbox Control', () => {
             expect(numerictextbox.hiddenInput.getAttribute('name')).toBe('sample');
         });
     });
+    describe('Error message validation', () => {
+        let numerictextbox: any;
+        beforeEach((): void => {
+            numerictextbox = undefined;
+            let ele: HTMLInputElement = <HTMLInputElement>createElement('EJS-NUMERICTEXTBOX', { id: 'Numeric' });
+            ele.setAttribute("data-value","true");
+            document.body.appendChild(ele);
+        });
+        afterEach((): void => {
+            if (numerictextbox) {
+                numerictextbox.destroy();
+            }
+            document.body.innerHTML = '';
+        });
+        it('Data attribute at hidden element testing at initial rendering', () => {
+            numerictextbox = new NumericTextBox();
+            numerictextbox.appendTo('#Numeric');
+            expect(numerictextbox.hiddenInput.hasAttribute('data-value')).toBe(true);
+            expect(numerictextbox.hiddenInput.getAttribute('type')).toBe('text');
+            expect(numerictextbox.hiddenInput.classList.contains('e-numeric-hidden')).toBe(true);
+        });
+        it('Data attribute at hidden element testing at dynamic rendering', () => {
+            numerictextbox = new NumericTextBox({ htmlAttributes:{"data-valmsg-replace":"true"}});
+            numerictextbox.appendTo('#Numeric');
+            expect(numerictextbox.hiddenInput.hasAttribute('data-valmsg-replace')).toBe(true);
+            expect(numerictextbox.hiddenInput.getAttribute('type')).toBe('text');
+            expect(numerictextbox.hiddenInput.classList.contains('e-numeric-hidden')).toBe(true);
+        });
+    });
 
     describe('Checking ID attribute in wrapper for angular platform', () => {
         let numerictextbox: any;
@@ -565,7 +597,8 @@ describe('Numerictextbox Control', () => {
             expect(numeric.container.children[0].getAttribute("name")).toBeNull();
             expect(numeric.container.children[0].classList.contains('e-numerictextbox')).toBe(true);
             expect(numeric.container.children[1].nodeName).toBe("INPUT");
-            expect(numeric.container.children[1].getAttribute("type")).toBe("hidden");
+            expect(numeric.container.children[1].getAttribute("type")).toBe("text");
+            expect(numeric.container.children[1].classList.contains('e-numeric-hidden')).toEqual(true);
             expect(numeric.container.children[2].classList.contains('e-spin-down')).toEqual(true);
             expect(numeric.container.children[3].classList.contains('e-spin-up')).toEqual(true);
             expect(numeric.container.children[2].nodeName && numeric.container.children[3].nodeName).toBe("SPAN");
@@ -1053,14 +1086,16 @@ describe('Change Event testing', () => {
             let ele: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'tsNumeric', attrs: { name: 'custom' } });
             document.body.appendChild(ele);
             numerictextbox = new NumericTextBox({}, ele);
-            expect(document.getElementById('tsNumeric').parentElement.querySelector("input[type='hidden']").getAttribute('name')).toEqual('custom');
+            expect((numerictextbox as any).hiddenInput.getAttribute('name')).toEqual('custom');
+            expect((numerictextbox as any).hiddenInput.classList.contains('e-numeric-hidden')).toBe(true);
         });
 
         it('Add the html attribute (name) in the input element', () => {
             let ele: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'tsNumeric' });
             document.body.appendChild(ele);
             numerictextbox = new NumericTextBox({}, ele);
-            expect(document.getElementById('tsNumeric').parentElement.querySelector("input[type='hidden']").getAttribute('name')).toEqual('tsNumeric');
+            expect((numerictextbox as any).hiddenInput.getAttribute('name')).toEqual('tsNumeric');
+            expect((numerictextbox as any).hiddenInput.classList.contains('e-numeric-hidden')).toBe(true);
         });
 
     });
@@ -1770,7 +1805,7 @@ describe('Change Event testing', () => {
             mouseEvent2.initEvent("mouseup", true, true);
             ele.dispatchEvent(mouseEvent2);
             expect((<HTMLInputElement>document.getElementById('tsNumeric')).value).toEqual('11.00');
-            expect(document.getElementById('tsNumeric').parentElement.querySelector("input[type='hidden']").getAttribute('value')).toEqual('11');
+            expect(numerictextbox.hiddenInput.value).toEqual('11');
             expect(document.getElementById('tsNumeric').getAttribute('value')).not.toBe('11');
         });
 
@@ -1782,7 +1817,7 @@ describe('Change Event testing', () => {
             mouseEvent2.initEvent("mouseup", true, true);
             ele.dispatchEvent(mouseEvent2);
             expect((<HTMLInputElement>document.getElementById('tsNumeric')).value).toEqual('9.00');
-            expect(document.getElementById('tsNumeric').parentElement.querySelector("input[type='hidden']").getAttribute('value')).toEqual('9');
+            expect(numerictextbox.hiddenInput.value).toEqual('9');
             expect(document.getElementById('tsNumeric').getAttribute('value')).not.toBe('9');
         });
 
@@ -5634,6 +5669,59 @@ describe('Change Event testing', () => {
             expect(numeric.inputWrapper.container.classList.contains('e-secondary')).toBe(false);
             expect(numeric.inputWrapper.container.classList.contains('e-test')).toBe(true);
             expect(numeric.inputWrapper.container.classList.contains('e-ternary')).toBe(true);
+        });
+    });
+    describe('Width value with unit em', () => {
+        let numerictextbox: any;
+        beforeEach((): void => {
+            numerictextbox = undefined;
+            let ele: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'tsNumeric' });
+            document.body.appendChild(ele);
+        });
+        afterEach((): void => {
+            if (numerictextbox) {
+                numerictextbox.destroy();
+            }
+            document.body.innerHTML = '';
+        });
+        it('Set the width to unit em', () => {
+            numerictextbox = new NumericTextBox({ width: "30em" }, '#tsNumeric');
+            expect(document.getElementById('tsNumeric').parentElement.getAttribute("style")).toEqual("width: 30em;");
+            numerictextbox.width = "100px";
+            numerictextbox.dataBind();
+            expect(document.getElementById('tsNumeric').parentElement.getAttribute("style")).toEqual("width: 100px;");
+            numerictextbox.width = "50em";
+            numerictextbox.dataBind();
+            expect(document.getElementById('tsNumeric').parentElement.getAttribute("style")).toEqual("width: 50em;");
+            numerictextbox.width = 30;
+            numerictextbox.dataBind();
+            expect(document.getElementById('tsNumeric').parentElement.getAttribute("style")).toEqual("width: 30px;");
+            numerictextbox.width = "60";
+            numerictextbox.dataBind();
+            expect(document.getElementById('tsNumeric').parentElement.getAttribute("style")).toEqual("width: 60px;");
+            numerictextbox.width = "20%";
+            numerictextbox.dataBind();
+            expect(document.getElementById('tsNumeric').parentElement.getAttribute("style")).toEqual("width: 20%;");
+        });
+        it('Set the width to unit px', () => {
+            numerictextbox = new NumericTextBox({ width: "100px" }, '#tsNumeric');
+            expect(document.getElementById('tsNumeric').parentElement.getAttribute("style")).toEqual("width: 100px;");
+            numerictextbox.width = "30em";
+            numerictextbox.dataBind();
+            expect(document.getElementById('tsNumeric').parentElement.getAttribute("style")).toEqual("width: 30em;");
+            numerictextbox.width = "50px";
+            numerictextbox.dataBind();
+            expect(document.getElementById('tsNumeric').parentElement.getAttribute("style")).toEqual("width: 50px;");
+        });
+        it('Set the width to unit %', () => {
+            numerictextbox = new NumericTextBox({ width: "30%" }, '#tsNumeric');
+            expect(document.getElementById('tsNumeric').parentElement.getAttribute("style")).toEqual("width: 30%;");
+            numerictextbox.width = "100px";
+            numerictextbox.dataBind();
+            expect(document.getElementById('tsNumeric').parentElement.getAttribute("style")).toEqual("width: 100px;");
+            numerictextbox.width = "50em";
+            numerictextbox.dataBind();
+            expect(document.getElementById('tsNumeric').parentElement.getAttribute("style")).toEqual("width: 50em;");
         });
     });
 });

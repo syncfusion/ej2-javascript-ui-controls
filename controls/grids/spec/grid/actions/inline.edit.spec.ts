@@ -2031,4 +2031,60 @@ describe('Inline Editing module', () => {
         });
     });
 
+    describe('Keyboard shortcuts => ', () => {
+        let gridObj: Grid;
+        let dataSource: object[] = [
+            { OrderID: {Id:'V101'} , CustomerID: 'Vinet' },
+            { OrderID: {Id:'V102'} , CustomerID: 'Cruze' },
+            { OrderID: {Id:'V103'} , CustomerID: 'Vincet' },
+            { OrderID: {Id:'V104'} , CustomerID: 'drone' }
+        ];
+        let preventDefault: Function = new Function();
+        let actionBegin: () => void;
+        let actionComplete: () => void;
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource:dataSource,
+                    editSettings: { allowEditing: true, allowAdding: true, allowDeleting: true, mode: 'Normal' },
+                    toolbar: ['Add', 'Edit', 'Delete', 'Update', 'Cancel'],
+                    columns: [
+                        { field: 'OrderID.Id', type: 'number', isPrimaryKey: true,width:120 },
+                        { field: 'CustomerID', type: 'string' ,width:120},
+                    ],
+                    actionBegin: actionBegin,
+                    actionComplete: actionComplete
+                }, done);
+        });
+
+        it('Edit start', (done: Function) => {
+            actionComplete = (args?: any): void => {
+                if (args.requestType === 'beginEdit') {
+                    expect(gridObj.element.querySelectorAll('.e-editedrow').length).toBe(1);
+                    expect(gridObj.element.querySelectorAll('.e-gridform').length).toBe(1);
+                    done();
+                }
+            };
+            gridObj.actionComplete = actionComplete;
+            (gridObj.editModule as any).editModule.startEdit(gridObj.getRows()[1]);
+        });
+
+        it('Edit complete', (done: Function) => {
+            actionComplete = (args?: any): void => {
+                if (args.requestType === 'save') {
+                    expect((gridObj.getCurrentViewRecords()[1] as any).CustomerID).toBe('updated');
+                    expect((gridObj.getCurrentViewRecords()[0] as any).CustomerID).toBe('Vinet');
+                    done();
+                }
+            };
+            gridObj.actionComplete = actionComplete;
+            (gridObj.element.querySelector('#' + gridObj.element.id + 'CustomerID') as any).value = 'updated';
+            gridObj.keyboardModule.keyAction({ action: 'enter', preventDefault: preventDefault, target: gridObj.getContent().querySelector('.e-row') } as any);
+        });
+        afterAll(() => {
+            gridObj.notify('tooltip-destroy', {});
+            destroy(gridObj);
+            gridObj = actionComplete = null;
+        });
+    });
 });

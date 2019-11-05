@@ -313,6 +313,11 @@ export class Points {
     public marker: MarkerSettingsModel = {
         visible: false
     };
+    /**
+     * To identify point y value with in the range.
+     * @private 
+     */
+    public isPointInRange: boolean = true;
 }
 
 /**
@@ -1000,7 +1005,7 @@ export class SeriesBase extends ChildProperty<SeriesBase> {
             return null;
         }
         point.isEmpty = true;
-        let mode: EmptyPointMode = this instanceof Series ? this.emptyPointSettings.mode : 'Drop';
+        let mode: EmptyPointMode = this instanceof Series && point.isPointInRange ? this.emptyPointSettings.mode : 'Drop';
         switch (mode) {
             case 'Zero':
                 point.visible = true;
@@ -1040,8 +1045,15 @@ export class SeriesBase extends ChildProperty<SeriesBase> {
     private findVisibility(point: Points): boolean {
         let type: SeriesValueType = this instanceof Series ? this.seriesType : 'HighLowOpenClose';
         let yValues: number[];
+        let yAxisMin: number =  <number>this.yAxis.minimum;
+        let yAxisMax: number = <number>this.yAxis.maximum;
         switch (type) {
             case 'XY':
+                if (this.chart.chartAreaType === 'PolarRadar' && ((!isNullOrUndefined(yAxisMin) && point.yValue < yAxisMin) ||
+                (!isNullOrUndefined(yAxisMax) && point.yValue > yAxisMax))) {
+                    point.isPointInRange = false;
+                    return true;
+                }
                 this.setXYMinMax(point.yValue);
                 this.yData.push(point.yValue);
                 if (this instanceof Series && this.type === 'Bubble') {

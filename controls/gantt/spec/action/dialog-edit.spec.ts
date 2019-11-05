@@ -215,6 +215,19 @@ describe('Gantt dialog module', () => {
             let cancel: HTMLElement = ganttObj.element.querySelectorAll('#' + ganttObj.element.id + '_dialog > div.e-footer-content > button.e-control')[1] as HTMLElement;
             triggerMouseEvent(cancel, 'click');
         });
+        it('Unschedule duration validation', () => {
+            ganttObj.dataBind();
+            let cancelRecord: HTMLElement = ganttObj.element.querySelectorAll('#' + ganttObj.element.id + '_dialog > div.e-footer-content > button.e-control')[1] as HTMLElement;
+            triggerMouseEvent(cancelRecord, 'click');
+            ganttObj.openEditDialog(7);
+            let ED: any = (<EJ2Instance>document.getElementById(ganttObj.element.id + 'EndDate')).ej2_instances[0];
+            ED.value = new Date('04/08/2019');
+            ED.dataBind();
+            let SD: any = (<EJ2Instance>document.getElementById(ganttObj.element.id + 'StartDate')).ej2_instances[0];
+            expect(ganttObj.getFormatedDate(SD.value, 'M/d/yyyy')).toBe('4/2/2019');
+            let cancel: HTMLElement = ganttObj.element.querySelectorAll('#' + ganttObj.element.id + '_dialog > div.e-footer-content > button.e-control')[1] as HTMLElement;
+            triggerMouseEvent(cancel, 'click');
+        });
         it('Schedule validation- Null values', () => {
             ganttObj.dataBind();
             let cancelRecord: HTMLElement = ganttObj.element.querySelectorAll('#' + ganttObj.element.id + '_dialog > div.e-footer-content > button.e-control')[1] as HTMLElement;
@@ -373,6 +386,19 @@ describe('Gantt dialog module', () => {
         });
         beforeEach(() => {
             ganttObj.openEditDialog(4);
+        });
+        it('Dynamic property change', () => {
+            ganttObj.editSettings.mode = "Dialog";
+            ganttObj.dataBind();
+            let cancelRecord1: HTMLElement = ganttObj.element.querySelectorAll('#' + ganttObj.element.id + '_dialog > div.e-footer-content > button.e-control')[1] as HTMLElement;
+            triggerMouseEvent(cancelRecord1, 'click');
+            let taskName: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(2) > td:nth-child(2)') as HTMLElement;
+            triggerMouseEvent(taskName, 'dblclick');
+            let name: any = (<EJ2Instance>document.getElementById(ganttObj.element.id + 'TaskName')).ej2_instances[0];
+            name.value = "updated";
+            name.dataBind();
+            let cancelRecord2: HTMLElement = ganttObj.element.querySelectorAll('#' + ganttObj.element.id + '_dialog > div.e-footer-content > button.e-control')[1] as HTMLElement;
+            triggerMouseEvent(cancelRecord2, 'click');
         });
         it('Click event', () => {
             ganttObj.isAdaptive = true;

@@ -125,6 +125,35 @@ describe('Custom Atrributes and html encode module', () => {
         });
     });
 
+    describe('html encode check', () => {
+        let gridObj: Grid;
+
+        beforeAll((done: Function) => {
+            gridObj = createGrid({
+                columns: [
+                    {
+                        field: 'data.a', headerText: 'Field1', headerTextAlign: 'Center',
+                        textAlign: 'Right', 
+                    },
+                    { field: 'c', headerText: 'Field2', displayAsCheckBox: true, type: 'boolean' },
+                    { field: 'b', headerText: 'Field3', }
+                ],
+                dataSource: [{ data: { a: '<i>VINET</i>' }, b: '<i>TOMSP</i>', c: true, d: new Date() },
+                { data: { a: 2 }, b: null, c: false, d: new Date() }],
+            }, done);
+        });
+
+        it('content testing', () => {
+            expect(gridObj.getContent().querySelectorAll('.e-rowcell')[0].innerHTML).toBe('&lt;i&gt;VINET&lt;/i&gt;');
+            expect(gridObj.getContent().querySelectorAll('.e-rowcell')[2].innerHTML).toBe('&lt;i&gt;TOMSP&lt;/i&gt;');
+        });
+
+        afterAll(() => {
+            destroy(gridObj);
+        });
+
+    });
+
 
     describe('Custom Formatter as Function', () => {
         let customFn: { fn: Function } = {

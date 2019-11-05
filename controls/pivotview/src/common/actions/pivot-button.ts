@@ -27,7 +27,7 @@ export class PivotButton implements IAction {
     private draggable: Draggable;
     private handlers: { load: Function };
     public menuOption: AggregateMenu;
-    private axisField: AxisFieldRenderer;
+    public axisField: AxisFieldRenderer;
     private fieldName: string;
     private valueFiedDropDownList: DropDownList;
     private index: number;
@@ -133,7 +133,7 @@ export class PivotButton implements IAction {
                                     this.createSortOption(buttonElement, field[i].name);
                                 }
                                 if (axis !== 'values' && valuePos !== i) {
-                                    this.createFilterOption(buttonElement, field[i].name);
+                                    this.createFilterOption(buttonElement, field[i].name, axis);
                                 }
                                 if (axis === 'values') {
                                     this.getTypeStatus(field, i, buttonElement);
@@ -350,7 +350,7 @@ export class PivotButton implements IAction {
         pivotButton.appendChild(spanElement);
         return spanElement;
     }
-    private createFilterOption(pivotButton: HTMLElement, fieldName: string): Element {
+    private createFilterOption(pivotButton: HTMLElement, fieldName: string, axis: string): Element {
         let filterCLass: string;
         let engineModule: PivotEngine | OlapEngine;
         if (this.parent.dataType === 'olap') {
@@ -375,8 +375,16 @@ export class PivotButton implements IAction {
             },
             className: cls.FILTER_COMMON_CLASS + ' ' + cls.ICON + ' ' + filterCLass
         });
+        if ((((this.parent.dataSourceSettings.allowLabelFilter || this.parent.dataSourceSettings.allowValueFilter) &&
+            axis !== 'filters') || this.parent.dataSourceSettings.allowMemberFilter)) {
+            removeClass([spanElement], cls.ICON_DISABLE);
+        } else {
+            addClass([spanElement], cls.ICON_DISABLE);
+        }
         if (this.parent.getModuleName() === 'pivotview') {
-            if ((this.parent as PivotView).groupingBarSettings.showFilterIcon) {
+            if ((this.parent as PivotView).groupingBarSettings.showFilterIcon &&
+                (((this.parent.dataSourceSettings.allowLabelFilter || this.parent.dataSourceSettings.allowValueFilter) &&
+                    axis !== 'filters') || this.parent.dataSourceSettings.allowMemberFilter)) {
                 removeClass([spanElement], cls.ICON_DISABLE);
             } else {
                 addClass([spanElement], cls.ICON_DISABLE);
@@ -637,7 +645,8 @@ export class PivotButton implements IAction {
             }
         }
     }
-    private updateDataSource(isRefreshGrid?: boolean): void {
+    /** @hidden */
+    public updateDataSource(isRefreshGrid?: boolean): void {
         if (!this.parent.allowDeferLayoutUpdate || this.parent.getModuleName() === 'pivotview') {
             this.parent.updateDataSource(isRefreshGrid);
         } else {
@@ -672,7 +681,7 @@ export class PivotButton implements IAction {
             this.dialogPopUp.buttons = this.buttonModel();
             this.dialogPopUp.dataBind();
             this.parent.pivotCommon.filterDialog.tabObj.selected = this.tabSelect.bind(this);
-        } else {
+        } else if (this.parent.dataSourceSettings.allowMemberFilter) {
             this.index = 0;
             this.updateDialogButtonEvents();
         }

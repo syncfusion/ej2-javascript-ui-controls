@@ -2,6 +2,32 @@
 
 ## [Unreleased]
 
+## 17.3.26 (2019-11-05)
+
+### ColorPicker
+
+#### Bug Fixes
+
+- `F147566` - In Palette mode, Empty string color value shows the default color(green) instead of no color has been fixed.
+
+#### Breaking Changes
+
+- Opacity value is removed from `value` when `enableOpacity` property is set a false.
+
+### Uploader
+
+#### New Features
+
+- `#226384`, `#F147065` - Now, the file upload UI get changed for `synchronous upload`.
+
+## 17.3.21 (2019-10-30)
+
+### NumericTextBox
+
+#### Bug Fixes
+
+- `#251466` - Now, you can set width property in `em` unit.
+
 ## 17.3.16 (2019-10-09)
 
 ### TextBox

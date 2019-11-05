@@ -2435,8 +2435,8 @@ describe('Grid Touch Selection', () => {
                 expect(JSON.stringify(args['data'])).not.toBeUndefined();
                 expect(JSON.stringify(args['cellIndex'])).toEqual(JSON.stringify({ rowIndex: 0, cellIndex: 0 }));
                 expect(args['currentCell']).toEqual(gridObj.getRows()[0].children[2]);
-                expect(JSON.stringify(args['previousRowCellIndex'])).toEqual(JSON.stringify({ rowIndex: 0, cellIndex: 0 }));
-                expect(args['previousRowCell']).toEqual(gridObj.getRows()[0].children[2]);
+                expect(JSON.stringify(args['previousRowCellIndex'])).toBeUndefined();
+                expect(args['previousRowCell']).toBeUndefined();
                 expect(JSON.stringify(args['selectedRowCellIndex'])).toEqual(JSON.stringify([{ rowIndex: 0, cellIndexes: [0] }]));
                 expect(gridObj.getRows()[0].children[2].classList.contains('e-cellselectionbackground')).toBeTruthy();
                 previousRowCell = args['previousRowCell'];
@@ -2487,7 +2487,7 @@ describe('Grid Touch Selection', () => {
                 expect(JSON.stringify(args['cellIndex'])).toEqual(JSON.stringify({ rowIndex: 0, cellIndex: 1 }));
                 expect(args['currentCell']).toEqual(gridObj.getRows()[0].children[3]);
                 expect(JSON.stringify(args['previousRowCellIndex'])).toEqual(JSON.stringify({ rowIndex: 0, cellIndex: 0 }));
-                expect(args['previousRowCell']).toEqual(previousRowCell);
+                expect(args['previousRowCell']).toEqual(gridObj.getRows()[0].children[2]);
                 expect(args['isCtrlPressed']).toBeFalsy();
                 expect(args['isShiftPressed']).toBeFalsy();
             };
@@ -2495,8 +2495,8 @@ describe('Grid Touch Selection', () => {
                 expect(JSON.stringify(args['data'])).not.toBeUndefined();
                 expect(JSON.stringify(args['cellIndex'])).toEqual(JSON.stringify({ rowIndex: 0, cellIndex: 1 }));
                 expect(args['currentCell']).toEqual(gridObj.getRows()[0].children[3]);
-                expect(JSON.stringify(args['previousRowCellIndex'])).toEqual(JSON.stringify({ rowIndex: 0, cellIndex: 1 }));
-                expect(args['previousRowCell']).toEqual(gridObj.getRows()[0].children[3]);
+                expect(JSON.stringify(args['previousRowCellIndex'])).toEqual(JSON.stringify({ rowIndex: 0, cellIndex: 0 }));
+                expect(args['previousRowCell']).toEqual(gridObj.getRows()[0].children[2]);
                 expect(JSON.stringify(args['selectedRowCellIndex'])).toEqual(JSON.stringify([{ rowIndex: 0, cellIndexes: [1] }]));
                 expect(gridObj.getRows()[0].children[3].classList.contains('e-cellselectionbackground')).toBeTruthy();
                 done();
@@ -3858,6 +3858,97 @@ describe('selectRow with virtualScrolling', () => {
         }
         gridObj.dataBound = dataBound;
         gridObj.selectRow(100);
+    });
+
+    afterAll(() => {
+        destroy(gridObj);
+        gridObj = null;
+    });
+});
+
+describe('selectRow with virtualScrolling', () => {
+    let gridObj: Grid;
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: data,
+                columns: [
+                    { headerText: 'OrderID', field: 'OrderID', isPrimaryKey: true },
+                    { headerText: 'CustomerID', field: 'CustomerID' },
+                    { headerText: 'EmployeeID', field: 'EmployeeID' },
+                    { headerText: 'ShipCountry', field: 'ShipCountry' },
+                    { headerText: 'ShipCity', field: 'ShipCity' },
+                ],
+                allowSelection: true,
+                selectionSettings:{mode:'Cell',type:'Multiple'},
+            }, done);
+    });
+
+    it('check cell select args', (done: Function) => {
+        let cellSelecting = (args: any) => {
+            expect(args['previousRowCell']).toBeUndefined();
+            expect(args['previousRowCellIndex']).toBeUndefined();
+        }
+        let cellSelected = (args: any) => {
+            expect(args['previousRowCell']).toBeUndefined();
+            expect(args['previousRowCellIndex']).toBeUndefined();
+            done();
+        }
+        gridObj.cellSelecting = cellSelecting;
+        gridObj.cellSelected = cellSelected;
+        gridObj.selectCell({ rowIndex: 0, cellIndex: 0 }, false);
+    });
+
+    it('check cell select args multiselect', (done: Function) => {
+        let cellSelecting = (args: any) => {
+            expect(args['previousRowCell']).toEqual(gridObj.getRows()[0].children[0]);
+            expect(args['previousRowCellIndex']).toEqual({ rowIndex: 0, cellIndex: 0 });
+        }
+        let cellSelected = (args: any) => {
+            expect(args['previousRowCell']).toEqual(gridObj.getRows()[0].children[0]);
+            expect(args['previousRowCellIndex']).toEqual({ rowIndex: 0, cellIndex: 0 });
+            done();
+        }
+        gridObj.cellSelecting = cellSelecting;
+        gridObj.cellSelected = cellSelected;
+        gridObj.selectionModule.addCellsToSelection([{ rowIndex: 0, cellIndex: 1 }]);
+    });
+    it('check cell select args multiselect with range', (done: Function) => {
+        let cellSelecting = (args: any) => {
+            expect(args['previousRowCell']).toEqual(gridObj.getRows()[0].children[1]);
+            expect(args['previousRowCellIndex']).toEqual({ rowIndex: 0, cellIndex: 1 });
+        }
+        let cellSelected = (args: any) => {
+            expect(args['previousRowCell']).toEqual(gridObj.getRows()[0].children[1]);
+            expect(args['previousRowCellIndex']).toEqual({ rowIndex: 0, cellIndex: 1 });
+            gridObj.clearCellSelection();
+            done();
+        }
+        gridObj.cellSelecting = cellSelecting;
+        gridObj.cellSelected = cellSelected;
+        gridObj.selectionModule.selectCellsByRange({ rowIndex: 1, cellIndex: 0 }, { rowIndex: 1, cellIndex: 3 });
+    });
+
+    it('check cell select args multiselect with cancel args', (done: Function) => {
+        let cellSelecting = (args: any) => {
+            args.cancel = true;
+            expect(gridObj.getSelectedRowCellIndexes.length).toBe(0);
+            done();
+        }
+        gridObj.cellSelecting = cellSelecting;
+        gridObj.selectionModule.selectCellsByRange({ rowIndex: 1, cellIndex: 0 }, { rowIndex: 1, cellIndex: 3 });
+    });
+
+    it('check row select args multiselect with cancel args', (done: Function) => {
+        let rowSelecting = (args: any) => {
+            args.cancel = true;
+            expect(gridObj.getSelectedRowIndexes.length).toBe(0);
+            expect(gridObj.getSelectedRows.length).toBe(0);
+            done();
+        }
+        gridObj.selectionSettings.mode = 'Row';
+        gridObj.rowSelecting = rowSelecting;
+        gridObj.selectionModule.selectRowsByRange(1,2);
     });
 
     afterAll(() => {

@@ -29,7 +29,7 @@ describe('NumberBullet dialog', () => {
         document.body.appendChild(ele);
         DocumentEditor.Inject(Editor, Selection, ContextMenu, EditorHistory);
         editor = new DocumentEditor({
-            enableEditor: true,enableEditorHistory: true, enableSelection: true, isReadOnly: false, enableContextMenu: true
+            enableEditor: true, enableEditorHistory: true, enableSelection: true, isReadOnly: false, enableContextMenu: true
         });
         (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
         (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
@@ -52,6 +52,26 @@ describe('NumberBullet dialog', () => {
     it('module name validation', () => {
         let name: string = numBulletDialog.getModuleName();
         expect(name).toBe('BulletsAndNumberingDialog')
+    });
+    it('Select bullet style tab', (done) => {
+        createDocument(editor);
+        let event: any;
+        numBulletDialog.showNumberBulletDialog(undefined, undefined);
+        (numBulletDialog as any).tabObj.select(1);
+        setTimeout(function () {
+            expect((numBulletDialog as any).bulletListDiv.style.display).not.toBe("none");
+            done();
+        }, 10);
+    });
+    it('Select number style tab', (done) => {
+        createDocument(editor);
+        let event: any;
+        numBulletDialog.showNumberBulletDialog(undefined, undefined);
+        (numBulletDialog as any).tabObj.select(0);
+        setTimeout(function () {
+            expect((numBulletDialog as any).numberListDiv.style.display).not.toBe("none");
+            done();
+        }, 10);
     });
     it('Show & Cancel', () => {
         createDocument(editor);
@@ -149,7 +169,7 @@ describe('NumberBullet dialog', () => {
         event = { keyCode: 36, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
         editor.viewer.onKeyDownInternal(event);
         numBulletDialog.showNumberBulletDialog(undefined, undefined);
-        editor.viewer.dialog.element.getElementsByClassName('e-de-icon-bullet-list-none').item(0).dispatchEvent(new Event('click'));
+        numBulletDialog.bulletListDiv.getElementsByClassName('e-de-icon-bullet-list-none').item(0).dispatchEvent(new Event('click'));
         numBulletDialog.onOkButtonClick();
     });
     it('e-de-list-bullet-dot', () => {
@@ -158,7 +178,7 @@ describe('NumberBullet dialog', () => {
         event = { keyCode: 36, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
         editor.viewer.onKeyDownInternal(event);
         numBulletDialog.showNumberBulletDialog(undefined, undefined);
-        editor.viewer.dialog.element.getElementsByClassName('e-de-icon-bullet-list-dot').item(0).dispatchEvent(new Event('click'));
+        numBulletDialog.bulletListDiv.getElementsByClassName('e-de-icon-bullet-list-dot').item(0).dispatchEvent(new Event('click'));
         numBulletDialog.onOkButtonClick();
     });
     it('e-de-list-bullet-circle', () => {
@@ -167,7 +187,7 @@ describe('NumberBullet dialog', () => {
         event = { keyCode: 36, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
         editor.viewer.onKeyDownInternal(event);
         numBulletDialog.showNumberBulletDialog(undefined, undefined);
-        editor.viewer.dialog.element.getElementsByClassName('e-de-icon-bullet-list-circle').item(0).dispatchEvent(new Event('click'));
+        numBulletDialog.bulletListDiv.getElementsByClassName('e-de-icon-bullet-list-circle').item(0).dispatchEvent(new Event('click'));
         numBulletDialog.onOkButtonClick();
     });
     it('e-de-list-bullet-square', () => {
@@ -176,7 +196,7 @@ describe('NumberBullet dialog', () => {
         event = { keyCode: 36, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
         editor.viewer.onKeyDownInternal(event);
         numBulletDialog.showNumberBulletDialog(undefined, undefined);
-        editor.viewer.dialog.element.getElementsByClassName('e-de-icon-bullet-list-square').item(0).dispatchEvent(new Event('click'));
+        numBulletDialog.bulletListDiv.getElementsByClassName('e-de-icon-bullet-list-square').item(0).dispatchEvent(new Event('click'));
         numBulletDialog.onOkButtonClick();
     });
     it('e-de-list-bullet-flower', () => {
@@ -185,7 +205,7 @@ describe('NumberBullet dialog', () => {
         event = { keyCode: 36, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
         editor.viewer.onKeyDownInternal(event);
         numBulletDialog.showNumberBulletDialog(undefined, undefined);
-        editor.viewer.dialog.element.getElementsByClassName('e-de-icon-bullet-list-flower').item(0).dispatchEvent(new Event('click'));
+        numBulletDialog.bulletListDiv.getElementsByClassName('e-de-icon-bullet-list-flower').item(0).dispatchEvent(new Event('click'));
         numBulletDialog.onOkButtonClick();
     });
     it('e-de-list-bullet-arrow', () => {
@@ -194,7 +214,7 @@ describe('NumberBullet dialog', () => {
         event = { keyCode: 36, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
         editor.viewer.onKeyDownInternal(event);
         numBulletDialog.showNumberBulletDialog(undefined, undefined);
-        editor.viewer.dialog.element.getElementsByClassName('e-de-icon-bullet-list-arrow').item(0).dispatchEvent(new Event('click'));
+        numBulletDialog.bulletListDiv.getElementsByClassName('e-de-icon-bullet-list-arrow').item(0).dispatchEvent(new Event('click'));
         numBulletDialog.onOkButtonClick();
     });
     it('e-de-icon-bullet-list-tick', () => {
@@ -203,7 +223,7 @@ describe('NumberBullet dialog', () => {
         event = { keyCode: 36, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
         editor.viewer.onKeyDownInternal(event);
         numBulletDialog.showNumberBulletDialog(undefined, undefined);
-        editor.viewer.dialog.element.getElementsByClassName('e-de-icon-bullet-list-tick').item(0).dispatchEvent(new Event('click'));
+        numBulletDialog.bulletListDiv.getElementsByClassName('e-de-icon-bullet-list-tick').item(0).dispatchEvent(new Event('click'));
         numBulletDialog.onOkButtonClick();
     });
 });

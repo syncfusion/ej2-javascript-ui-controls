@@ -88,6 +88,7 @@ describe('Menu', () => {
                         },
                         {
                             text: 'Wifi Hacking',
+                            id: 'hacking',
                             iconCss: 'e-icons e-share',
                         },
                         {
@@ -350,13 +351,22 @@ describe('Menu', () => {
 
         it('Enable and Disable items', () => {
             document.body.appendChild(ul);
-            menu = new Menu({ items: items }, '#menu');
-            menu.enableItems(['login', 'purchase'], false, true);
+            menu = new Menu({ items: items, showItemOnClick: true }, '#menu');
+            menu.enableItems(['hacking', 'purchase', 'cookbooks'], false, true);
             expect(ul.children[2].classList.contains('e-disabled')).toBeTruthy();
-            expect(ul.children[5].classList.contains('e-disabled')).toBeTruthy();
-            menu.enableItems(['Login', 'Purchase'], true);
+            (menu.element.children[1] as HTMLElement).click();
+            menu.enableItems(['hacking', 'purchase', 'cookbooks'], false, true);
+            let popup: Element = menu.getPopups()[0].firstElementChild;
+            expect(popup.children[0].classList.contains('e-disabled')).toBeTruthy();
+            (popup.children[1] as HTMLElement).click();
+            expect(menu.getPopups()[1].firstElementChild.children[1].classList.contains('e-disabled')).toBeFalsy();
+            (popup.children[2] as HTMLElement).click();
+            menu.enableItems(['hacking', 'purchase', 'cookbooks'], false, true);
+            expect(menu.getPopups()[1].firstElementChild.children[1].classList.contains('e-disabled')).toBeTruthy();
+            menu.enableItems(['Wifi Hacking', 'Purchase', 'Cookbooks'], true);
             expect(ul.children[2].classList.contains('e-disabled')).toBeFalsy();
-            expect(ul.children[5].classList.contains('e-disabled')).toBeFalsy();
+            expect(popup.children[0].classList.contains('e-disabled')).toBeFalsy();
+            expect(menu.getPopups()[1].firstElementChild.children[1].classList.contains('e-disabled')).toBeFalsy();
         });
 
         it('intertAfter, insertBefore and removeItems', () => {

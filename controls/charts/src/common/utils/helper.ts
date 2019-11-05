@@ -763,7 +763,7 @@ export function calculateShapes(location: ChartLocation, size: Size, shape: stri
             dir = 'M' + ' ' + x + ' ' + ly + ' ' + 'L' + ' ' + (lx + (width / 2)) + ' ' + ly + ' ' +
                 'M' + ' ' + lx + ' ' + (ly + (height / 2)) + ' ' + 'L' + ' ' + lx + ' ' +
                 (ly + (-height / 2));
-            merge(options, { 'd': dir });
+            merge(options, { 'd': dir, stroke : options.fill });
             break;
         case 'HorizontalLine':
             dir = 'M' + ' ' + x + ' ' + ly + ' ' + 'L' + ' ' + (lx + (width / 2)) + ' ' + ly;
@@ -1596,6 +1596,30 @@ export class RectOption extends PathOption {
         this.ry = ry ? ry : 0;
         this.transform = transform ? transform : '';
         this.stroke = (border.width !== 0 && this.stroke !== '') ? border.color : 'transparent';
+    }
+}
+/** @private */
+export class ImageOption {
+
+    public height: number;
+    public width: number;
+    public href: string;
+    public x: number;
+    public y: number;
+    public id: string;
+    public visibility: string;
+    public preserveAspectRatio: string;
+
+    constructor(height: number, width: number, href: string, x: number, y: number,
+                id: string, visibility: string, preserveAspectRatio: string) {
+        this.height = height;
+        this.width = width;
+        this.href = href;
+        this.x = x;
+        this.y = y;
+        this.id = id;
+        this.visibility = visibility;
+        this.preserveAspectRatio = preserveAspectRatio;
     }
 }
 /** @private */

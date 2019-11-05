@@ -71,7 +71,7 @@ export class DataUtil {
      * @param  {string|number} y
      * @returns number
      */
-    public static fnAscending(x: string | number, y: string | number, locales?: string | string[], options?: Intl.CollatorOptions)
+    public static fnAscending(x: string | number, y: string | number)
         : number {
         if (isNullOrUndefined(x) && isNullOrUndefined(y)) {
             return -1;
@@ -80,7 +80,7 @@ export class DataUtil {
             return -1;
         }
         if (typeof x === 'string') {
-            return x.localeCompare(<string>y, locales, options);
+            return x.localeCompare(<string>y);
         }
         if (x === null || x === undefined) {
             return 1;
@@ -93,7 +93,7 @@ export class DataUtil {
      * @param  {string|number} y
      * @returns number
      */
-    public static fnDescending(x: string | number, y: string | number, locales?: string | string[], options?: Intl.CollatorOptions)
+    public static fnDescending(x: string | number, y: string | number)
         : number {
         if (isNullOrUndefined(x) && isNullOrUndefined(y)) {
             return -1;
@@ -102,7 +102,7 @@ export class DataUtil {
             return 1;
         }
         if (typeof x === 'string') {
-            return x.localeCompare(y as string, locales, options) * -1;
+            return x.localeCompare(y as string) * -1;
         }
         if (x === null || x === undefined) {
             return -1;

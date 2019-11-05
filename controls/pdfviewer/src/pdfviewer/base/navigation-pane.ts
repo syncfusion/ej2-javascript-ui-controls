@@ -380,6 +380,9 @@ export class NavigationPane {
             if (proxy.pdfViewerBase) {
                 proxy.pdfViewerBase.updateZoomValue();
             }
+            if (this.pdfViewer.annotation && this.pdfViewer.annotation.textMarkupAnnotationModule) {
+                this.pdfViewer.annotation.textMarkupAnnotationModule.showHideDropletDiv(true);
+            }
         }
     }
 

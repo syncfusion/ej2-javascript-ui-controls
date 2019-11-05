@@ -235,6 +235,13 @@ export interface DateTimePickerModel extends DatePickerModel{
     strictMode?: boolean;
 
     /**
+     * By default, the date value will be processed based on system time zone.
+     * If you want to process the initial date value using server time zone 
+     * then specify the time zone value to `serverTimezoneOffset` property.
+     */
+    serverTimezoneOffset?: number;
+
+    /**
      * Triggers when popup is opened.
      * @event 
      * @blazorProperty 'OnOpen'

@@ -584,7 +584,14 @@ export class ListBox extends DropDownBase {
         let droppedData: dataType;
         let listObj: ListBox = this.getComponent(args.droppedElement);
         let getArgs: Object = this.getDragArgs({ target: args.droppedElement } as DragEventArgs & BlazorDragEventArgs, true);
-        let dragArgs: Object = extend({}, getArgs, { target: args.target });
+        let sourceArgs: Object = { previousData: this.dataSource };
+        let destArgs: Object = { previousData: listObj.dataSource };
+        let dragArgs: Object = extend({}, getArgs, { target: args.target, source: { previousData: this.dataSource },
+            targetId: listObj.element.id });
+        if (listObj !== this) {
+        let sourceArgs1: Object = extend( sourceArgs, {currentData: this.listData});
+        dragArgs = extend(dragArgs, { source: sourceArgs1, destination: destArgs} );
+        }
         if (Browser.isIos) {
             this.list.style.overflow = '';
         }
@@ -637,12 +644,20 @@ export class ListBox extends DropDownBase {
                 ul.appendChild(args.helper);
                 listObj.setSelection();
             }
-            this.setProperties({ dataSource: this.listData }, true);
-            (listObj.listData as dataType[]) = listData;
-            listObj.setProperties({ dataSource: listObj.listData }, true);
+            let fromList: dataType[] = extend([], [], this.listData, false) as dataType[];
+            this.setProperties({ dataSource: fromList }, true);
+            (listObj.listData as dataType[]) = extend([], [], listData, false) as dataType[];
+            listObj.setProperties({ dataSource: listData }, true);
             if (this.listData.length === 0) {
                 this.l10nUpdate();
             }
+        }
+        if (this === listObj) {
+            let sourceArgs1: Object = extend( sourceArgs, {currentData: listData});
+            dragArgs = extend(dragArgs, {source: sourceArgs1});
+        } else {
+            let dragArgs1: Object = extend(destArgs, {currentData: listData});
+            dragArgs = extend(dragArgs, { destination: dragArgs1 });
         }
         this.trigger('drop', dragArgs);
     }
@@ -856,22 +871,24 @@ export class ListBox extends DropDownBase {
     }
 
     private updateMainList(): void {
-        let mainCount: number = this.mainList.childElementCount;
-        let ulEleCount: number = this.ulElement.childElementCount;
+        let mainCount: number = this.mainList.querySelectorAll('.e-list-item').length;
+        let ulEleCount: number = this.ulElement.querySelectorAll('.e-list-item').length;
         if (this.selectionSettings.showCheckbox || (document.querySelectorAll('ul').length > 1 || mainCount !== ulEleCount)) {
             let listindex: number = 0;
             let valueindex: number = 0;
             let count: number = 0;
-            for (listindex; listindex < this.mainList.childElementCount; ) {
+            for (listindex; listindex < this.mainList.querySelectorAll('.e-list-item').length; ) {
                 if (this.value) {
                     for (valueindex; valueindex < this.value.length; valueindex++) {
-                        if (this.mainList.getElementsByTagName('li')[listindex].getAttribute('data-value') === this.value[valueindex]) {
+                        if (this.mainList.querySelectorAll('.e-list-item')
+                        [listindex].getAttribute('data-value') === this.value[valueindex]) {
                             count++;
                         }
                     }
                 }
                 if (!count && this.selectionSettings.showCheckbox) {
-                    this.mainList.getElementsByTagName('li')[listindex].getElementsByClassName('e-frame')[0].classList.remove('e-check');
+                    this.mainList.querySelectorAll('.e-list-item')
+                    [listindex].getElementsByClassName('e-frame')[0].classList.remove('e-check');
                 }
                 if (document.querySelectorAll('ul').length > 1 && count && mainCount !== ulEleCount) {
                     this.mainList.removeChild(this.mainList.getElementsByTagName('li')[listindex]);
@@ -1139,6 +1156,7 @@ export class ListBox extends DropDownBase {
     private moveData(fListBox: ListBox, tListBox: ListBox, isKey?: boolean): void {
         let count: number = 0;
         let idx: number[] = [];
+        let dupIdx: number[] = [];
         let dataIdx: number[] = [];
         let listData: dataType[] = [].slice.call(fListBox.listData);
         let tListData: dataType[] = [].slice.call(tListBox.listData);
@@ -1162,6 +1180,7 @@ export class ListBox extends DropDownBase {
             }
             elems.forEach((ele: Element, i: number) => {
                 idx.push(Array.prototype.indexOf.call(fListBox.ulElement.children, ele));
+                dupIdx.push(Array.prototype.indexOf.call(fListBox.ulElement.querySelectorAll('.e-list-item'), ele));
                 dataIdx.push(Array.prototype.indexOf.call(listData, fListBox.sortedData[idx[i]]));
             });
             if (tListBox.listData.length === 0) {
@@ -1195,6 +1214,7 @@ export class ListBox extends DropDownBase {
                     }
                 }
                 fListBox.setProperties({ dataSource: fListBox.sortedData }, true);
+                tListBox.setProperties({ dataSource: tListBox.sortedData }, true);
             });
             if (tListBox.sortedData.length !== (tListBox.dataSource as string[]).length) {
                 tListBox.setProperties({ sortedData: tListBox.dataSource }, true);
@@ -1213,19 +1233,18 @@ export class ListBox extends DropDownBase {
                 tListBox.mainList = tListBox.ulElement;
             }
             fListBox.updateMainList();
-            let childCnt: number = fListBox.ulElement.childElementCount;
+            let childCnt: number = fListBox.ulElement.querySelectorAll('.e-list-item').length;
             let ele: Element;
             let liIdx: number;
             if (elems.length === 1 && childCnt && !fListBox.selectionSettings.showCheckbox) {
-                liIdx = childCnt <= idx[0] ? childCnt - 1 : idx[0];
-                ele = fListBox.ulElement.children[liIdx];
-                fListBox.ulElement.children[fListBox.getValidIndex(ele, liIdx, childCnt === idx[0]
+                liIdx = childCnt <= dupIdx[0] ? childCnt - 1 : dupIdx[0];
+                ele = fListBox.ulElement.querySelectorAll('.e-list-item')[liIdx];
+                fListBox.ulElement.querySelectorAll('.e-list-item')[fListBox.getValidIndex(ele, liIdx, childCnt === dupIdx[0]
                     ? 38 : 40)].classList.add(cssClass.selected);
             }
             if (isKey) {
                 this.list.focus();
             }
-            listData = fListBox.dataSource as dataType[];
             (fListBox.listData as dataType[]) = listData;
             fListBox.setProperties({ dataSource: listData }, true);
             tListData = tListData.concat(data.reverse());
@@ -1509,7 +1528,7 @@ export class ListBox extends DropDownBase {
         if (index < 0 || index === cul.childElementCount) {
             return -1;
         }
-        cli = cul.children[index];
+        cli = cul.querySelectorAll('.e-list-item')[index];
         if (cli.classList.contains('e-disabled') || cli.classList.contains(cssClass.group)) {
             index = this.getValidIndex(cli, index, keyCode);
         }
@@ -1864,6 +1883,14 @@ export interface BeforeItemRenderEventArgs extends BaseEventArgs {
 }
 
 /**
+ * Interface for drag and drop event args.
+ */
+export interface SourceDestinationModel {
+    previousData?: string[] | boolean[] | number[] | { [key: string]: Object; }[] | DataManager;
+    currentData?: string[] | boolean[] | number[] | { [key: string]: Object; }[] | DataManager;
+}
+
+/**
  * Interface for drag and drop event.
  */
 export interface DragEventArgs {
@@ -1871,6 +1898,10 @@ export interface DragEventArgs {
     items: Object[];
     target?: Element;
     dragSelected?: boolean;
+    previousItem?: object[];
+    targetId?: string;
+    source?: SourceDestinationModel;
+    destination?: SourceDestinationModel;
 }
 
 /**

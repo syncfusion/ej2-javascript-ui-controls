@@ -3492,7 +3492,7 @@ describe('Selection test script2', () => {
         }, 1000);
     });
     it('Select Current Paragraph', () => {
-        editor.selection.selectCurrentParagraph();
+        editor.selection.selectParagraph();
         //expect(editor.selection.text).toBe('Syncfusion Software pvt ltd ');
         expect(editor.selection.text).not.toBe('');
     });
@@ -3591,9 +3591,9 @@ describe('Selection test scrip4', () => {
         }, 1000);
     });
     it('Extend selection validation', () => {
-        editor.selection.extendToWordStart(false);
+        editor.selection.extendToWordStartInternal(false);
         expect(editor.selection.isEmpty).toBe(true);
-        editor.selection.extendToWordEnd(false);
+        editor.selection.extendToWordEndInternal(false);
         expect(editor.selection.text).toBe('Syncfusion ');
     });
     it('Selection extend to line start and end', () => {
@@ -3941,9 +3941,9 @@ describe('Selection test script11', () => {
         }, 1000);
     });
     it('Select paragraph testing', () => {
-        editor.selection.selectParagraph(editor.selection.start.paragraph, false);
+        editor.selection.selectParagraphInternal(editor.selection.start.paragraph, false);
         expect(editor.selection.end.offset).toBe(editor.selection.getParagraphLength(editor.selection.end.paragraph));
-        editor.selection.selectParagraph(editor.selection.start.paragraph, true);
+        editor.selection.selectParagraphInternal(editor.selection.start.paragraph, true);
         expect(editor.selection.end.offset).toBe(0);
     });
     it('Fit image to page testing', () => {
@@ -4015,11 +4015,11 @@ describe('Selection test script12', () => {
         editor.selection.moveDown();
         editor.selection.moveDown();
         // editor.selection.selectTableCell();
-        editor.selection.extendToWordStart(false);
-        editor.selection.extendToWordStart(true);
-        editor.selection.extendToWordStart(false);
-        editor.selection.extendToWordStart(false);
-        editor.selection.extendToWordStart(false);
+        editor.selection.extendToWordStartInternal(false);
+        editor.selection.extendToWordStartInternal(true);
+        editor.selection.extendToWordStartInternal(false);
+        editor.selection.extendToWordStartInternal(false);
+        editor.selection.extendToWordStartInternal(false);
     });
     it('Move to next paragraph', () => {
         editor.selection.moveDown();
@@ -4027,11 +4027,11 @@ describe('Selection test script12', () => {
         editor.selection.moveDown();
         editor.selection.moveDown();
         // editor.selection.selectTableCell();
-        editor.selection.extendToWordEnd(false);
-        editor.selection.extendToWordEnd(true);
-        editor.selection.extendToWordEnd(false);
-        editor.selection.extendToWordEnd(false);
-        editor.selection.extendToWordEnd(false);
+        editor.selection.extendToWordEndInternal(false);
+        editor.selection.extendToWordEndInternal(true);
+        editor.selection.extendToWordEndInternal(false);
+        editor.selection.extendToWordEndInternal(false);
+        editor.selection.extendToWordEndInternal(false);
     });
     it('Move previous Position', () => {
         let line: LineWidget = editor.selection.start.paragraph.childWidgets[0] as LineWidget;

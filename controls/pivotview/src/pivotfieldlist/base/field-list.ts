@@ -811,6 +811,11 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
                     pivot.pivotGridModule.notify(events.uiUpdate, pivot);
                     hideSpinner(pivot.fieldListSpinnerElement as HTMLElement);
                 }
+                if (pivot.renderMode === 'Popup' && pivot.pivotGridModule &&
+                    pivot.pivotGridModule.allowDeferLayoutUpdate && !pivot.isRequiredUpdate) {
+                    hideSpinner(pivot.fieldListSpinnerElement as HTMLElement);
+                    hideSpinner(pivot.pivotGridModule.element);
+                }
                 pivot.isRequiredUpdate = true;
                 if (!pivot.pivotGridModule || isOlapDataRefreshed) {
                     hideSpinner(pivot.fieldListSpinnerElement as HTMLElement);

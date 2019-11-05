@@ -16,3 +16,5 @@ export * from './summary';
 export * from './summary-model';
 export * from './sort-settings';
 export * from './sort-settings-model';
+export * from './rowdrop-settings';
+export * from './rowdrop-settings-model';

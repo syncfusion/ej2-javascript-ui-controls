@@ -232,7 +232,7 @@ export class SheetTabs {
                     this.dropDownInstance.setProperties({ 'items': this.dropDownInstance.items }, true);
                     if (value.indexOf('  ') > -1) {
                         this.tabInstance.setProperties({ 'items': this.tabInstance.items }, true);
-                        items.querySelector('.e-toolbar-item.e-active .e-tab-text').innerHTML = value;
+                        items.querySelector('.e-toolbar-item.e-active .e-tab-text').textContent = value;
                     } else {
                         this.tabInstance.items = this.tabInstance.items;
                         this.tabInstance.dataBind();

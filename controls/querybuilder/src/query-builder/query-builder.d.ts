@@ -162,6 +162,7 @@ export declare class QueryBuilder extends Component<HTMLDivElement> implements I
     private selectedColumn;
     private actionButton;
     private isInitialLoad;
+    private timer;
     /**
      * Triggers when the component is created.
      * @event
@@ -257,6 +258,11 @@ export declare class QueryBuilder extends Component<HTMLDivElement> implements I
      */
     matchCase: boolean;
     /**
+     * If immediateModeDelay is set by particular number, the rule Change event is triggered after that period.
+     * @default 0
+     */
+    immediateModeDelay: number;
+    /**
      * Defines rules in the QueryBuilder.
      * Specifies the initial rule, which is JSON data.
      * @default {}
@@ -291,6 +297,7 @@ export declare class QueryBuilder extends Component<HTMLDivElement> implements I
     private addGroupSuccess;
     notifyChange(value: string | number | boolean | Date | string[] | number[] | Date[], element: Element): void;
     private changeValue;
+    private filterValue;
     private changeValueSuccessCallBack;
     private changeField;
     private changeRule;
@@ -431,7 +438,7 @@ export declare class QueryBuilder extends Component<HTMLDivElement> implements I
      * Gets the sql query from rules.
      * @returns object.
      */
-    getSqlFromRules(rule: RuleModel): string;
+    getSqlFromRules(rule: RuleModel, allowEscape?: boolean): string;
     private sqlParser;
     private parseSqlStrings;
     private getOperator;

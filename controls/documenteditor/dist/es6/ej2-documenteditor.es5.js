@@ -9112,8 +9112,8 @@ var ElementBox = /** @__PURE__ @class */ (function () {
             if (isNullOrUndefined(fieldSeparator.fieldBegin)) {
                 this.linkFieldTraversingBackwardSeparator(this.line, fieldSeparator, fieldSeparator);
             }
-            fieldSeparator.fieldBegin.fieldSeparator = fieldSeparator;
             if (!isNullOrUndefined(fieldSeparator.fieldBegin)) {
+                fieldSeparator.fieldBegin.fieldSeparator = fieldSeparator;
                 //Links to field end traversing from field separator.
                 var isFieldEnd = this.linkFieldTraversingForward(this.line, fieldSeparator.fieldBegin, fieldSeparator);
                 if (isNullOrUndefined(fieldSeparator.fieldEnd) && isFieldEnd) {
@@ -12055,7 +12055,6 @@ var ColumnSizeInfo = /** @__PURE__ @class */ (function () {
     return ColumnSizeInfo;
 }());
 
-//import { XmlHttpRequestHandler } from '../..';
 /**
  * The spell checker module
  */
@@ -12075,7 +12074,6 @@ var SpellChecker = /** @__PURE__ @class */ (function () {
          * @default 1000
          */
         this.uniqueWordsCountInternal = 10000;
-        this.spellJsonData = '';
         this.performOptimizedCheck = false;
         this.viewer = viewer;
         this.errorWordCollection = new Dictionary();
@@ -12719,8 +12717,8 @@ var SpellChecker = /** @__PURE__ @class */ (function () {
             if (checkPrevious) {
                 var textElement = undefined;
                 for (var i = index - difference; i >= 0; i--) {
-                    if (line.children[i] instanceof TextElementBox && !isPrevField) {
-                        textElement = line.children[i];
+                    textElement = line.children[i];
+                    if (textElement instanceof TextElementBox && !isPrevField) {
                         if (prevText.indexOf(' ') !== 0 && textElement.text.lastIndexOf(' ') !== textElement.text.length - 1) {
                             prevCombined = !isNullOrUndefined(textToCombine) ? true : false;
                             currentText = textElement.text + currentText;
@@ -12734,7 +12732,7 @@ var SpellChecker = /** @__PURE__ @class */ (function () {
                             break;
                         }
                     }
-                    else if (line.children[i] instanceof FieldElementBox) {
+                    else if (textElement instanceof FieldElementBox && textElement.fieldType !== 1) {
                         isPrevField = true;
                     }
                 }
@@ -12755,8 +12753,8 @@ var SpellChecker = /** @__PURE__ @class */ (function () {
                 var canCombine_1 = false;
                 var element = undefined;
                 for (var i = index + 1; i < line.children.length; i++) {
-                    if (line.children[i] instanceof TextElementBox && !isPrevField) {
-                        element = line.children[i];
+                    element = line.children[i];
+                    if (element instanceof TextElementBox && !isPrevField) {
                         if (nextText.lastIndexOf(' ') !== nextText.length - 1 && element.text.indexOf(' ') !== 0) {
                             currentText += element.text;
                             nextText = element.text;
@@ -12770,12 +12768,13 @@ var SpellChecker = /** @__PURE__ @class */ (function () {
                             break;
                         }
                     }
-                    else if (line.children[i] instanceof FieldElementBox) {
+                    else if (element instanceof FieldElementBox && element.fieldType !== 2) {
                         isPrevField = true;
                     }
                 }
                 var currentElement = (canCombine_1) ? element : elementBox;
-                if (this.lookThroughNextLine(currentText, prevText, currentElement, underlineY, beforeIndex)) {
+                // tslint:disable-next-line:max-line-length
+                if (currentElement.text !== '\f' && this.lookThroughNextLine(currentText, prevText, currentElement, underlineY, beforeIndex)) {
                     return true;
                 }
             }
@@ -15385,17 +15384,24 @@ var ContextMenu$1 = /** @__PURE__ @class */ (function () {
                         _this.processSuggestions(allSuggestions_1, splittedSuggestion_1, isTouch ? event : event);
                     }
                     else {
-                        // tslint:disable-next-line:max-line-length
-                        _this.spellChecker.CallSpellChecker(_this.spellChecker.languageID, exactData_1, false, true, false, false).then(function (data) {
-                            /* tslint:disable:no-any */
-                            var jsonObject = JSON.parse(data);
-                            allSuggestions_1 = jsonObject.Suggestions;
-                            if (!isNullOrUndefined(allSuggestions_1)) {
-                                _this.spellChecker.errorSuggestions.add(exactData_1, allSuggestions_1.slice());
-                                splittedSuggestion_1 = _this.spellChecker.handleSuggestions(allSuggestions_1);
-                            }
+                        if (_this.spellChecker.enableOptimizedSpellCheck) {
+                            // tslint:disable-next-line:max-line-length
+                            _this.spellChecker.CallSpellChecker(_this.spellChecker.languageID, exactData_1, false, true, false, false).then(function (data) {
+                                /* tslint:disable:no-any */
+                                var jsonObject = JSON.parse(data);
+                                allSuggestions_1 = jsonObject.Suggestions;
+                                if (!isNullOrUndefined(allSuggestions_1)) {
+                                    _this.spellChecker.errorSuggestions.add(exactData_1, allSuggestions_1.slice());
+                                    splittedSuggestion_1 = _this.spellChecker.handleSuggestions(allSuggestions_1);
+                                }
+                                // tslint:disable-next-line:max-line-length
+                                _this.processSuggestions(allSuggestions_1, splittedSuggestion_1, isTouch ? event : event);
+                            });
+                        }
+                        else {
+                            // tslint:disable-next-line:max-line-length
                             _this.processSuggestions(allSuggestions_1, splittedSuggestion_1, isTouch ? event : event);
-                        });
+                        }
                     }
                 }
                 else {
@@ -16374,7 +16380,9 @@ var Layout = /** @__PURE__ @class */ (function () {
         setTimeout(function () {
             if (_this.viewer) {
                 _this.viewer.isScrollHandler = true;
-                _this.viewer.triggerElementsOnLoading = true;
+                if (_this.viewer.owner.enableSpellCheck && _this.viewer.owner.spellChecker.enableOptimizedSpellCheck) {
+                    _this.viewer.triggerElementsOnLoading = true;
+                }
                 _this.viewer.updateScrollBars();
                 _this.viewer.isScrollHandler = false;
                 _this.isInitialLoad = false;
@@ -16804,7 +16812,6 @@ var Layout = /** @__PURE__ @class */ (function () {
         }
         else if (element instanceof TextElementBox) {
             this.checkAndSplitTabOrLineBreakCharacter(element.text, element);
-            this.splitBySpecialCharacters(element);
             text = element.text;
         }
         // Here field code width and height update need to skipped based on the hidden property.
@@ -17523,39 +17530,6 @@ var Layout = /** @__PURE__ @class */ (function () {
         else if (remainder !== '') {
             newSpan.text = value.substring(index + 1);
             span.text = spiltBy;
-        }
-    };
-    Layout.prototype.splitBySpecialCharacters = function (span) {
-        if (this.viewer.textHelper.isRTLText(span.text) && this.viewer.textHelper.containsSpecialChar(span.text)) {
-            var inlineIndex = span.line.children.indexOf(span);
-            var text = span.text;
-            var specialChars = '*|,\":<>[]{}`\';()@&$#%!~';
-            var textToReplace = '';
-            var spanTextUpdated = false;
-            for (var i = 0; i < text.length; i++) {
-                if (specialChars.indexOf(text.charAt(i)) !== -1) {
-                    if (spanTextUpdated) {
-                        var newSpan1 = new TextElementBox();
-                        newSpan1.line = span.line;
-                        newSpan1.characterFormat.copyFormat(span.characterFormat);
-                        span.line.children.splice(inlineIndex = inlineIndex + 1, 0, newSpan1);
-                        newSpan1.text = textToReplace;
-                    }
-                    var newSpan = new TextElementBox();
-                    newSpan.line = span.line;
-                    newSpan.characterFormat.copyFormat(span.characterFormat);
-                    span.line.children.splice(inlineIndex = inlineIndex + 1, 0, newSpan);
-                    newSpan.text = text.charAt(i);
-                    if (!spanTextUpdated) {
-                        span.text = textToReplace;
-                        spanTextUpdated = true;
-                    }
-                    textToReplace = '';
-                }
-                else {
-                    textToReplace += text.charAt(i);
-                }
-            }
         }
     };
     /**
@@ -21398,7 +21372,7 @@ var Layout = /** @__PURE__ @class */ (function () {
             }
             var isRtl = false;
             var text = '';
-            var containsSpecchrs = false;
+            //let containsSpecchrs: boolean = false;
             if (element instanceof BookmarkElementBox) {
                 if (isParaBidi) {
                     if (lastAddedElementIsRtl || element.bookmarkType === 0 && element.nextElement
@@ -21420,13 +21394,6 @@ var Layout = /** @__PURE__ @class */ (function () {
             }
             if (element instanceof TextElementBox) {
                 text = element.text;
-                containsSpecchrs = this.viewer.textHelper.containsSpecialCharAlone(text);
-                if (containsSpecchrs) {
-                    if (text.length > 1 && elementCharacterFormat.bidi) {
-                        text = HelperMethods.ReverseString(text);
-                        element.text = text;
-                    }
-                }
             }
             // The list element box shold be added in the last position in line widget for the RTL paragraph 
             // and first in the line widget for LTR paragrph.
@@ -21438,7 +21405,7 @@ var Layout = /** @__PURE__ @class */ (function () {
                     || elementCharacterFormat.bdo === 'RTL';
             }
             // If the text element box contains only whitespaces, then need to check the previous and next elements.
-            if (!isRtl && !isNullOrUndefined(text) && ((text !== '' && text.trim() === '') || containsSpecchrs)) {
+            if (!isRtl && !isNullOrUndefined(text) && text !== '' && text.trim() === '') {
                 var elements = line.children;
                 //Checks whether the langugae is RTL.
                 if (elementCharacterFormat.bidi) {
@@ -23018,32 +22985,6 @@ var TextHelper = /** @__PURE__ @class */ (function () {
     };
     /**
      * @private
-     * @param text
-     */
-    TextHelper.prototype.containsSpecialCharAlone = function (text) {
-        var specialChars = '*|,\":<>[]{}`\';()@&$#%!~';
-        for (var i = 0; i < text.length; i++) {
-            if (specialChars.indexOf(text.charAt(i)) === -1) {
-                return false;
-            }
-        }
-        return true;
-    };
-    /**
-     * @private
-     * @param text
-     */
-    TextHelper.prototype.containsSpecialChar = function (text) {
-        var specialChars = '*|,\":<>[]{}`\';()@&$#%!~';
-        for (var i = 0; i < text.length; i++) {
-            if (specialChars.indexOf(text.charAt(i)) !== -1) {
-                return true;
-            }
-        }
-        return false;
-    };
-    /**
-     * @private
      */
     TextHelper.prototype.getRtlLanguage = function (text) {
         if (isNullOrUndefined(text) || text === '') {
@@ -23363,26 +23304,11 @@ var EnforceProtectionDialog = /** @__PURE__ @class */ (function () {
             }
             else {
                 _this.password = _this.passwordTextBox.value;
-                var passwordBase64 = _this.owner.base64.encodeString(_this.password);
-                /* tslint:disable:no-any */
-                var formObject = {
-                    passwordBase64: passwordBase64,
-                    saltBase64: '',
-                    spinCount: 100000
-                };
-                /* tslint:enable:no-any */
-                var url = _this.viewer.owner.serviceUrl + _this.viewer.owner.serverActionSettings.restrictEditing;
-                _this.enforceProtectionHandler.url = url;
-                _this.enforceProtectionHandler.contentType = 'application/json;charset=UTF-8';
-                _this.enforceProtectionHandler.onSuccess = _this.enforceProtection.bind(_this);
-                _this.enforceProtectionHandler.onFailure = _this.failureHandler.bind(_this);
-                _this.enforceProtectionHandler.onError = _this.failureHandler.bind(_this);
-                _this.enforceProtectionHandler.send(formObject);
+                _this.viewer.owner.editor.addProtection(_this.password);
             }
         };
         this.viewer = viewer;
         this.owner = owner;
-        this.enforceProtectionHandler = new XmlHttpRequestHandler();
     }
     /**
      * @private
@@ -23405,29 +23331,6 @@ var EnforceProtectionDialog = /** @__PURE__ @class */ (function () {
         container.appendChild(confirmPassword);
         container.appendChild(this.confirmPasswordTextBox);
         this.target.appendChild(container);
-    };
-    /* tslint:disable:no-any */
-    EnforceProtectionDialog.prototype.failureHandler = function (result) {
-        if (result.name === 'onError') {
-            DialogUtility.alert(this.localeValue.getConstant('Error in establishing connection with web server'));
-        }
-        else {
-            console.error(result.statusText);
-        }
-    };
-    EnforceProtectionDialog.prototype.enforceProtection = function (result) {
-        var data = JSON.parse(result.data);
-        this.viewer.saltValue = data[0];
-        this.viewer.hashValue = data[1];
-        this.protectDocument();
-    };
-    /* tslint:enable:no-any */
-    EnforceProtectionDialog.prototype.protectDocument = function () {
-        this.viewer.owner.editor.protect(this.owner.protectionType);
-        this.viewer.restrictFormatting = this.owner.restrictFormatting;
-        this.viewer.restrictEditingPane.showStopProtectionPane(true);
-        this.viewer.restrictEditingPane.loadPaneValue();
-        this.viewer.dialog.hide();
     };
     return EnforceProtectionDialog;
 }());
@@ -23467,22 +23370,11 @@ var UnProtectDocumentDialog = /** @__PURE__ @class */ (function () {
          */
         /* tslint:disable:no-any */
         this.okButtonClick = function () {
-            if (_this.passwordTextBox.value === '') {
+            var password = _this.passwordTextBox.value;
+            if (password === '') {
                 return;
             }
-            var password = _this.passwordTextBox.value;
-            var passwordBase64 = _this.owner.base64.encodeString(password);
-            var formObject = {
-                passwordBase64: passwordBase64,
-                saltBase64: _this.viewer.saltValue,
-                spinCount: 100000
-            };
-            _this.unProtectDocumentHandler.url = _this.viewer.owner.serviceUrl + _this.viewer.owner.serverActionSettings.restrictEditing;
-            _this.unProtectDocumentHandler.contentType = 'application/json;charset=UTF-8';
-            _this.unProtectDocumentHandler.onSuccess = _this.onUnProtectionSuccess.bind(_this);
-            _this.unProtectDocumentHandler.onFailure = _this.failureHandler.bind(_this);
-            _this.unProtectDocumentHandler.onError = _this.failureHandler.bind(_this);
-            _this.unProtectDocumentHandler.send(formObject);
+            _this.viewer.owner.editor.stopProtection(password);
         };
         /**
          * @private
@@ -23493,7 +23385,6 @@ var UnProtectDocumentDialog = /** @__PURE__ @class */ (function () {
         };
         this.viewer = viewer;
         this.owner = owner;
-        this.unProtectDocumentHandler = new XmlHttpRequestHandler;
     }
     /**
      * @private
@@ -23514,48 +23405,6 @@ var UnProtectDocumentDialog = /** @__PURE__ @class */ (function () {
         container.appendChild(newPassWord);
         container.appendChild(this.passwordTextBox);
         this.target.appendChild(container);
-    };
-    UnProtectDocumentDialog.prototype.onUnProtectionSuccess = function (result) {
-        var encodeString = JSON.parse(result.data);
-        this.currentHashValue = encodeString[1];
-        this.currentSaltValue = encodeString[0];
-        this.validateHashValue();
-    };
-    UnProtectDocumentDialog.prototype.failureHandler = function (result) {
-        if (result.name === 'onError') {
-            DialogUtility.alert(this.localObj.getConstant('Error in establishing connection with web server'));
-        }
-        else {
-            console.error(result.statusText);
-        }
-    };
-    /* tslint:enable:no-any */
-    UnProtectDocumentDialog.prototype.validateHashValue = function () {
-        var decodeUserHashValue = this.owner.base64.decodeString(this.currentHashValue);
-        var documentHashValue = this.viewer.hashValue;
-        var defaultHashValue = this.owner.base64.decodeString(documentHashValue);
-        var stopProtection = true;
-        if (decodeUserHashValue.length === defaultHashValue.length) {
-            for (var i = 0; i < decodeUserHashValue.length; i++) {
-                if (decodeUserHashValue[i] !== defaultHashValue[i]) {
-                    stopProtection = false;
-                    break;
-                }
-            }
-        }
-        else {
-            stopProtection = false;
-        }
-        if (stopProtection) {
-            this.viewer.restrictEditingPane.showStopProtectionPane(false);
-            this.viewer.isDocumentProtected = false;
-            this.viewer.restrictFormatting = false;
-            this.viewer.selection.highlightEditRegion();
-            this.viewer.dialog.hide();
-        }
-        else {
-            DialogUtility.alert(this.localObj.getConstant('The password is incorrect'));
-        }
     };
     return UnProtectDocumentDialog;
 }());
@@ -23606,10 +23455,10 @@ var RestrictEditing = /** @__PURE__ @class */ (function () {
             _this.enforceProtectionDialog.show();
         };
         this.navigateNextRegion = function () {
-            _this.viewer.selection.navigateNextEditRegion();
+            _this.viewer.selection.navigateToNextEditingRegion();
         };
         this.showAllRegion = function () {
-            _this.viewer.selection.SelectAllEditRegion();
+            _this.viewer.selection.showAllEditingRegion();
         };
         this.viewer = viewer;
         this.addUserDialog = new AddUserDialog(viewer, this);
@@ -25235,7 +25084,7 @@ var LayoutViewer = /** @__PURE__ @class */ (function () {
     LayoutViewer.prototype.createEditableIFrame = function () {
         this.iframe = createElement('iframe', {
             attrs: {
-                'scrolling': 'no', 'src': 'javascript:false',
+                'scrolling': 'no',
                 // tslint:disable-next-line:max-line-length
                 'style': 'pointer-events:none;position:absolute;left:0px;top:0px;outline:none;background-color:transparent;width:0px;height:0px;overflow:hidden'
             },
@@ -26005,7 +25854,7 @@ var LayoutViewer = /** @__PURE__ @class */ (function () {
                     this.owner.selection.selectCurrentWord();
                 }
                 else {
-                    this.owner.selection.selectCurrentParagraph();
+                    this.owner.selection.selectParagraph();
                 }
             }
         }
@@ -31593,7 +31442,7 @@ var TextPosition = /** @__PURE__ @class */ (function () {
         var startParagraph = this.currentWidget.paragraph;
         var endParagraph = textPosition.currentWidget.paragraph;
         if (startParagraph.containerWidget instanceof BodyWidget && endParagraph.containerWidget instanceof BodyWidget &&
-            startParagraph.containerWidget.index === endParagraph.containerWidget.index) {
+            startParagraph.containerWidget === endParagraph.containerWidget) {
             if (startParagraph.isInsideTable && endParagraph.isInsideTable) {
                 return startParagraph.associatedCell.childWidgets.indexOf(startParagraph) >
                     endParagraph.associatedCell.childWidgets.indexOf(endParagraph);
@@ -33894,6 +33743,26 @@ var Selection = /** @__PURE__ @class */ (function () {
         enumerable: true,
         configurable: true
     });
+    Object.defineProperty(Selection.prototype, "startOffset", {
+        /**
+         * Returns start hierarchical index.
+         */
+        get: function () {
+            return this.getHierarchicalIndexByPosition(this.start);
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(Selection.prototype, "endOffset", {
+        /**
+         * Returns end hierarchical index.
+         */
+        get: function () {
+            return this.getHierarchicalIndexByPosition(this.end);
+        },
+        enumerable: true,
+        configurable: true
+    });
     Object.defineProperty(Selection.prototype, "text", {
         /**
          * Gets the text within selection.
@@ -33918,6 +33787,16 @@ var Selection = /** @__PURE__ @class */ (function () {
         enumerable: true,
         configurable: true
     });
+    Object.defineProperty(Selection.prototype, "bookmarks", {
+        /**
+         * Gets bookmark name collection.
+         */
+        get: function () {
+            return this.getSelBookmarks();
+        },
+        enumerable: true,
+        configurable: true
+    });
     Object.defineProperty(Selection.prototype, "isCleared", {
         /**
          * @private
@@ -33928,6 +33807,67 @@ var Selection = /** @__PURE__ @class */ (function () {
         enumerable: true,
         configurable: true
     });
+    Selection.prototype.getSelBookmarks = function () {
+        var bookmarkCln = [];
+        var bookmarks = this.viewer.bookmarks;
+        var start = this.start;
+        var end = this.end;
+        if (!this.isForward) {
+            start = this.end;
+            end = this.start;
+        }
+        var bookmrkStart;
+        var bookmrkEnd;
+        var isCellSelected = false;
+        var selectedCells = this.getSelectedCells();
+        for (var i = 0; i < bookmarks.length; i++) {
+            if (bookmarks.keys[i].indexOf('_') !== 0) {
+                bookmrkStart = bookmarks.get(bookmarks.keys[i]);
+                bookmrkEnd = bookmrkStart.reference;
+                var bmStartPos = this.getElementPosition(bookmrkStart).startPosition;
+                var bmEndPos = this.getElementPosition(bookmrkEnd).startPosition;
+                if (bmStartPos.paragraph.isInsideTable || bmEndPos.paragraph.isInsideTable) {
+                    if (selectedCells.length > 0) {
+                        if (selectedCells.indexOf(bmStartPos.paragraph.associatedCell) >= 0
+                            || selectedCells.indexOf(bmEndPos.paragraph.associatedCell) >= 0) {
+                            isCellSelected = true;
+                        }
+                        else {
+                            isCellSelected = false;
+                            if (selectedCells.indexOf(bmStartPos.paragraph.associatedCell) < 0
+                                || selectedCells.indexOf(bmEndPos.paragraph.associatedCell) < 0) {
+                                var endCell = end.paragraph.isInsideTable && end.paragraph.associatedCell;
+                                var bmEndPosCell = bmEndPos.paragraph.associatedCell;
+                                if (endCell && endCell.ownerTable.equals(bmEndPos.paragraph.associatedCell.ownerTable) &&
+                                    endCell.ownerTable.equals(bmEndPosCell.ownerTable) &&
+                                    !(endCell.ownerTable
+                                        && selectedCells.indexOf(this.getCellInTable(endCell.ownerTable, bmEndPosCell)) >= 0)) {
+                                    continue;
+                                }
+                            }
+                        }
+                    }
+                    else {
+                        isCellSelected = false;
+                    }
+                }
+                else {
+                    isCellSelected = false;
+                }
+                if ((start.isExistAfter(bmStartPos) || start.isAtSamePosition(bmStartPos))
+                    && (end.isExistBefore(bmEndPos) || end.isAtSamePosition(bmEndPos)) ||
+                    ((bmStartPos.isExistAfter(start) || bmStartPos.isAtSamePosition(start))
+                        && (bmEndPos.isExistBefore(end) || bmEndPos.isAtSamePosition(end))) ||
+                    (bmStartPos.isExistAfter(start) && bmStartPos.isExistBefore(end)
+                        && (end.isExistAfter(bmEndPos) || end.isExistBefore(bmEndPos))) ||
+                    (bmEndPos.isExistBefore(end) && bmEndPos.isExistAfter(start)
+                        && (start.isExistBefore(bmStartPos) || start.isExistAfter(bmStartPos))) || isCellSelected) {
+                    bookmarkCln.push(bookmrkStart.name);
+                }
+            }
+        }
+        return bookmarkCln;
+    };
     Selection.prototype.getModuleName = function () {
         return 'Selection';
     };
@@ -33997,18 +33937,30 @@ var Selection = /** @__PURE__ @class */ (function () {
         }
         this.selectTableCell();
     };
-    /**
-     * Select content based on selection settings
-     */
-    Selection.prototype.select = function (selectionSettings) {
-        var point = new Point(selectionSettings.x, selectionSettings.y);
-        var pageCoordinates = this.viewer.findFocusedPage(point, true);
-        if (selectionSettings.extend) {
-            this.moveTextPosition(pageCoordinates, this.end);
+    Selection.prototype.select = function (selectionSettings, startOrEnd) {
+        if (typeof (selectionSettings) === 'string') {
+            var startPosition = this.getTextPosBasedOnLogicalIndex(selectionSettings);
+            var endPosition = this.getTextPosBasedOnLogicalIndex(startOrEnd);
+            this.selectPosition(startPosition, endPosition);
         }
         else {
-            this.viewer.updateTextPositionForSelection(pageCoordinates, 1);
+            var point = new Point(selectionSettings.x, selectionSettings.y);
+            var pageCoordinates = this.viewer.findFocusedPage(point, true);
+            if (selectionSettings.extend) {
+                this.moveTextPosition(pageCoordinates, this.end);
+            }
+            else {
+                this.viewer.updateTextPositionForSelection(pageCoordinates, 1);
+            }
         }
+    };
+    /**
+     * Selects based on start and end hierarchical index.
+     */
+    Selection.prototype.selectByHierarchicalIndex = function (start, end) {
+        var startPosition = this.getTextPosBasedOnLogicalIndex(start);
+        var endPosition = this.getTextPosBasedOnLogicalIndex(end);
+        this.selectPosition(startPosition, endPosition);
     };
     /**
      * Toggles the bold property of selected contents.
@@ -34470,26 +34422,101 @@ var Selection = /** @__PURE__ @class */ (function () {
         }
     };
     /**
-     * Select Current word
-     * @private
+     * Selects Current word
      */
-    Selection.prototype.selectCurrentWord = function () {
+    Selection.prototype.selectCurrentWord = function (excludeSpace) {
         var startPosition = this.start.clone();
         var endPosition = this.end.clone();
-        this.selectCurrentWordRange(startPosition, endPosition, false);
+        this.selectCurrentWordRange(startPosition, endPosition, excludeSpace ? excludeSpace : false);
         this.selectRange(startPosition, endPosition);
     };
     /**
-     * Select current paragraph
-     * @private
+     * Selects current paragraph
      */
-    Selection.prototype.selectCurrentParagraph = function () {
+    Selection.prototype.selectParagraph = function () {
         if (!isNullOrUndefined(this.start)) {
             this.start.paragraphStartInternal(this, false);
             this.end.moveToParagraphEndInternal(this, false);
             this.upDownSelectionLength = this.end.location.x;
             this.fireSelectionChanged(true);
         }
+    };
+    /**
+     * Selects current line.
+     */
+    Selection.prototype.selectLine = function () {
+        if (!isNullOrUndefined(this.start)) {
+            this.moveToLineStart();
+            this.handleShiftEndKey();
+        }
+    };
+    /**
+     * Moves selection to start of the document.
+     */
+    Selection.prototype.moveToDocumentStart = function () {
+        this.handleControlHomeKey();
+    };
+    /**
+     * Moves selection to end of the document.
+     */
+    Selection.prototype.moveToDocumentEnd = function () {
+        this.handleControlEndKey();
+    };
+    /**
+     * Moves selection to current paragraph start.
+     */
+    Selection.prototype.moveToParagraphStart = function () {
+        if (this.isForward) {
+            this.start.paragraphStartInternal(this, false);
+            this.end.setPositionInternal(this.start);
+            this.upDownSelectionLength = this.end.location.x;
+        }
+        else {
+            this.end.paragraphStartInternal(this, false);
+            this.start.setPositionInternal(this.end);
+            this.upDownSelectionLength = this.start.location.x;
+        }
+        this.fireSelectionChanged(true);
+    };
+    /**
+     * Moves selection to current paragraph end.
+     */
+    Selection.prototype.moveToParagraphEnd = function () {
+        if (this.isForward) {
+            this.start.moveToParagraphEndInternal(this, false);
+            this.end.setPositionInternal(this.start);
+            this.upDownSelectionLength = this.end.location.x;
+        }
+        else {
+            this.end.moveToParagraphEndInternal(this, false);
+            this.start.setPositionInternal(this.end);
+            this.upDownSelectionLength = this.start.location.x;
+        }
+        this.fireSelectionChanged(true);
+    };
+    /**
+     * Moves selection to next line.
+     */
+    Selection.prototype.moveToNextLine = function () {
+        this.moveDown();
+    };
+    /**
+     * Moves selection to previous line.
+     */
+    Selection.prototype.moveToPreviousLine = function () {
+        this.moveUp();
+    };
+    /**
+     * Moves selection to next character.
+     */
+    Selection.prototype.moveToNextCharacter = function () {
+        this.handleRightKey();
+    };
+    /**
+     * Moves selection to previous character.
+     */
+    Selection.prototype.moveToPreviousCharacter = function () {
+        this.handleLeftKey();
     };
     /**
      * Select current word range
@@ -34532,8 +34559,7 @@ var Selection = /** @__PURE__ @class */ (function () {
         }
     };
     /**
-     * Extend selection to paragraph start
-     * @private
+     * Extends selection to paragraph start.
      */
     Selection.prototype.extendToParagraphStart = function () {
         if (isNullOrUndefined(this.start)) {
@@ -34544,8 +34570,7 @@ var Selection = /** @__PURE__ @class */ (function () {
         this.fireSelectionChanged(true);
     };
     /**
-     * Extend selection to paragraph end
-     * @private
+     * Extend selection to paragraph end.
      */
     Selection.prototype.extendToParagraphEnd = function () {
         if (isNullOrUndefined(this.start)) {
@@ -34614,8 +34639,7 @@ var Selection = /** @__PURE__ @class */ (function () {
         this.fireSelectionChanged(true);
     };
     /**
-     * Extend selection to previous line
-     * @private
+     * Extends selection to previous line.
      */
     Selection.prototype.extendToPreviousLine = function () {
         if (isNullOrUndefined(this.start)) {
@@ -34626,7 +34650,6 @@ var Selection = /** @__PURE__ @class */ (function () {
     };
     /**
      * Extend selection to line end
-     * @private
      */
     Selection.prototype.extendToLineEnd = function () {
         if (isNullOrUndefined(this.start)) {
@@ -34637,8 +34660,7 @@ var Selection = /** @__PURE__ @class */ (function () {
         this.fireSelectionChanged(true);
     };
     /**
-     * Extend to line start
-     * @private
+     * Extends selection to line start.
      */
     Selection.prototype.extendToLineStart = function () {
         if (isNullOrUndefined(this.start)) {
@@ -34791,8 +34813,7 @@ var Selection = /** @__PURE__ @class */ (function () {
         return undefined;
     };
     /**
-     * Move to line start
-     * @private
+     * Moves selection to start of the current line.
      */
     Selection.prototype.moveToLineStart = function () {
         if (isNullOrUndefined(this.start)) {
@@ -34805,8 +34826,7 @@ var Selection = /** @__PURE__ @class */ (function () {
         this.fireSelectionChanged(true);
     };
     /**
-     * Move to line end
-     * @private
+     * Moves selection to end of the current line.
      */
     Selection.prototype.moveToLineEnd = function () {
         if (isNullOrUndefined(this.start)) {
@@ -34918,7 +34938,7 @@ var Selection = /** @__PURE__ @class */ (function () {
      * Handles control left key.
      */
     Selection.prototype.handleControlLeftKey = function () {
-        this.extendToWordStart(true);
+        this.extendToWordStartInternal(true);
         this.checkForCursorVisibility();
     };
     /**
@@ -34926,7 +34946,7 @@ var Selection = /** @__PURE__ @class */ (function () {
      * Handles control right key.
      */
     Selection.prototype.handleControlRightKey = function () {
-        this.extendToWordEnd(true);
+        this.extendToWordEndInternal(true);
         this.checkForCursorVisibility();
     };
     /**
@@ -34984,10 +35004,10 @@ var Selection = /** @__PURE__ @class */ (function () {
     Selection.prototype.handleControlShiftLeftKey = function () {
         var isForward = this.isForward ? this.start.isCurrentParaBidi : this.end.isCurrentParaBidi;
         if (isForward) {
-            this.extendToWordEnd(false);
+            this.extendToWordEndInternal(false);
         }
         else {
-            this.extendToWordStart(false);
+            this.extendToWordStartInternal(false);
         }
         this.checkForCursorVisibility();
     };
@@ -35006,10 +35026,10 @@ var Selection = /** @__PURE__ @class */ (function () {
     Selection.prototype.handleControlShiftRightKey = function () {
         var isForward = this.isForward ? this.start.isCurrentParaBidi : this.end.isCurrentParaBidi;
         if (isForward) {
-            this.extendToWordStart(false);
+            this.extendToWordStartInternal(false);
         }
         else {
-            this.extendToWordEnd(false);
+            this.extendToWordEndInternal(false);
         }
         this.checkForCursorVisibility();
     };
@@ -35218,7 +35238,7 @@ var Selection = /** @__PURE__ @class */ (function () {
         var firstParagraph = this.getFirstParagraph(tableCell);
         var lastParagraph = this.getLastParagraph(tableCell);
         if (firstParagraph === lastParagraph && lastParagraph.isEmpty()) {
-            this.selectParagraph(lastParagraph, true);
+            this.selectParagraphInternal(lastParagraph, true);
         }
         else {
             var firstLineWidget = lastParagraph.childWidgets[0];
@@ -35372,7 +35392,6 @@ var Selection = /** @__PURE__ @class */ (function () {
         this.selectPosition(this.start, this.end);
     };
     /**
-     * @private
      * Selects the entire document.
      */
     Selection.prototype.selectAll = function () {
@@ -35396,8 +35415,7 @@ var Selection = /** @__PURE__ @class */ (function () {
         }
     };
     /**
-     * Extend selection backward
-     * @private
+     * Extends selection backward.
      */
     Selection.prototype.extendBackward = function () {
         if (isNullOrUndefined(this.start)) {
@@ -35414,8 +35432,7 @@ var Selection = /** @__PURE__ @class */ (function () {
         this.fireSelectionChanged(true);
     };
     /**
-     * Extent selection forward
-     * @private
+     * Extends selection forward.
      */
     Selection.prototype.extendForward = function () {
         if (isNullOrUndefined(this.start)) {
@@ -35444,10 +35461,22 @@ var Selection = /** @__PURE__ @class */ (function () {
         return false;
     };
     /**
-     * Extend selection to word start
+     * Extends selection to word start.
+     */
+    Selection.prototype.extendToWordStart = function () {
+        this.extendToWordStartInternal(false);
+    };
+    /**
+     * Extends selection to word end.
+     */
+    Selection.prototype.extendToWordEnd = function () {
+        this.extendToWordEndInternal(false);
+    };
+    /**
+     * Extends selection to word start
      * @private
      */
-    Selection.prototype.extendToWordStart = function (isNavigation) {
+    Selection.prototype.extendToWordStartInternal = function (isNavigation) {
         if (isNullOrUndefined(this.start)) {
             return;
         }
@@ -35470,10 +35499,9 @@ var Selection = /** @__PURE__ @class */ (function () {
         this.fireSelectionChanged(true);
     };
     /**
-     * Extent selection to word end
-     * @private
+     * Extends selection to word end.
      */
-    Selection.prototype.extendToWordEnd = function (isNavigation) {
+    Selection.prototype.extendToWordEndInternal = function (isNavigation) {
         if (isNullOrUndefined(this.start)) {
             return;
         }
@@ -35496,8 +35524,7 @@ var Selection = /** @__PURE__ @class */ (function () {
         this.fireSelectionChanged(true);
     };
     /**
-     * Extend selection to next line
-     * @private
+     * Extend selection to next line.
      */
     Selection.prototype.extendToNextLine = function () {
         if (isNullOrUndefined(this.start)) {
@@ -35607,6 +35634,225 @@ var Selection = /** @__PURE__ @class */ (function () {
             return text;
         }
         return undefined;
+    };
+    /**
+     * @private
+     * @param block
+     * @param offset
+     */
+    Selection.prototype.getHierarchicalIndex = function (block, offset) {
+        var index;
+        if (block) {
+            if (block instanceof HeaderFooterWidget) {
+                var hfString = block.headerFooterType.indexOf('Header') !== -1 ? 'H' : 'F';
+                var pageIndex = block.page.index.toString();
+                var headerFooterIndex = this.viewer.getHeaderFooter(block.headerFooterType).toString();
+                var sectionIndex = block.page.sectionIndex;
+                index = sectionIndex + ';' + hfString + ';' + pageIndex + ';' + offset;
+            }
+            else {
+                index = block.index + ';' + offset;
+            }
+            if (block.containerWidget) {
+                if (block instanceof TableCellWidget && block.rowIndex !== block.containerWidget.index) {
+                    index = block.rowIndex + ';' + index;
+                    block = block.containerWidget;
+                }
+                return this.getHierarchicalIndex(block.containerWidget, index);
+            }
+        }
+        return index;
+    };
+    Selection.prototype.getHierarchicalIndexByPosition = function (position) {
+        var info = this.getParagraphInfo(position);
+        return this.getHierarchicalIndex(info.paragraph, info.offset.toString());
+    };
+    /**
+     * @private
+     * Gets logical position.
+     */
+    Selection.prototype.getTextPosBasedOnLogicalIndex = function (hierarchicalIndex) {
+        var textPosition = new TextPosition(this.owner);
+        var blockInfo = this.getParagraph({ index: hierarchicalIndex });
+        var lineInfo = this.getLineInfoBasedOnParagraph(blockInfo.paragraph, blockInfo.offset);
+        textPosition.setPositionForLineWidget(lineInfo.line, lineInfo.offset);
+        return textPosition;
+    };
+    /**
+     * Get offset value to update in selection
+     * @private
+     */
+    Selection.prototype.getLineInfoBasedOnParagraph = function (paragraph, offset) {
+        var length = this.getParagraphLength(paragraph);
+        var next = paragraph.nextSplitWidget;
+        if (offset > length + 1 && isNullOrUndefined(next)) {
+            offset = length;
+        }
+        while (offset > length && next instanceof ParagraphWidget) {
+            offset -= length;
+            paragraph = next;
+            length = this.getParagraphLength(paragraph);
+            next = paragraph.nextSplitWidget;
+        }
+        return this.getLineInfo(paragraph, offset);
+    };
+    /**
+     * @private
+     */
+    Selection.prototype.getParagraph = function (position) {
+        var paragraph = this.getParagraphInternal(this.getBodyWidget(position), position);
+        return { paragraph: paragraph, offset: parseInt(position.index, 10) };
+    };
+    /**
+     * Gets body widget based on position.
+     * @private
+     */
+    Selection.prototype.getBodyWidget = function (position) {
+        var index = position.index.indexOf(';');
+        var value = position.index.substring(0, index);
+        position.index = position.index.substring(index).replace(';', '');
+        var sectionIndex = parseInt(value, 10);
+        index = parseInt(value, 10);
+        index = position.index.indexOf(';');
+        value = position.index.substring(0, index);
+        // position = position.substring(index).replace(';', '');
+        if (value === 'H' || value === 'F') {
+            return this.getHeaderFooterWidget(position);
+        }
+        index = parseInt(value, 10);
+        return this.getBodyWidgetInternal(sectionIndex, index);
+    };
+    Selection.prototype.getHeaderFooterWidget = function (position) {
+        //HEADER OR FOOTER WIDGET
+        var index = position.index.indexOf(';');
+        var value = position.index.substring(0, index);
+        position.index = position.index.substring(index).replace(';', '');
+        var isHeader = value === 'H';
+        index = position.index.indexOf(';');
+        value = position.index.substring(0, index);
+        position.index = position.index.substring(index).replace(';', '');
+        index = parseInt(value, 10);
+        var page = this.viewer.pages[index];
+        if (isHeader) {
+            return page.headerWidget;
+        }
+        else {
+            return page.footerWidget;
+        }
+    };
+    /**
+     * @private
+     */
+    Selection.prototype.getBodyWidgetInternal = function (sectionIndex, blockIndex) {
+        for (var i = 0; i < this.viewer.pages.length; i++) {
+            var bodyWidget = this.viewer.pages[i].bodyWidgets[0];
+            if (bodyWidget.index === sectionIndex) {
+                if (bodyWidget.childWidgets.length > 0 && bodyWidget.firstChild.index <= blockIndex &&
+                    bodyWidget.lastChild.index >= blockIndex) {
+                    return bodyWidget;
+                }
+            }
+            if (bodyWidget.index > sectionIndex) {
+                break;
+            }
+        }
+        return undefined;
+    };
+    /**
+     * Get paragraph relative to position
+     * @private
+     */
+    Selection.prototype.getParagraphInternal = function (container, position) {
+        if (isNullOrUndefined(position.index)) {
+            return undefined;
+        }
+        // let ins: Widget = container;
+        var index = position.index.indexOf(';');
+        var value = '0';
+        if (index >= 0) {
+            value = position.index.substring(0, index);
+            position.index = position.index.substring(index).replace(';', '');
+        }
+        // if (container instanceof BodyWidget && value === 'HF') {
+        //     return this.getParagraph(container.headerFooters, position);
+        // }
+        index = parseInt(value, 10);
+        if (container instanceof TableRowWidget && index >= container.childWidgets.length) {
+            position.index = '0;0';
+            index = container.childWidgets.length - 1;
+        }
+        var childWidget = this.getBlockByIndex(container, index);
+        if (childWidget) {
+            var child = childWidget;
+            if (child instanceof ParagraphWidget) {
+                if (position.index.indexOf(';') > 0) {
+                    position.index = '0';
+                }
+                return child;
+            }
+            if (child instanceof Widget) {
+                if (position.index.indexOf(';') > 0) {
+                    return this.getParagraphInternal(child, position);
+                }
+                else {
+                    //If table is shifted to previous text position then return the first paragraph within table.
+                    if (child instanceof TableWidget) {
+                        return this.viewer.selection.getFirstParagraphInFirstCell(child);
+                    }
+                    return undefined;
+                }
+            }
+        }
+        else if (container) {
+            var nextWidget = container.getSplitWidgets().pop().nextRenderedWidget;
+            if (nextWidget instanceof Widget) {
+                position.index = '0';
+                if (nextWidget instanceof TableWidget) {
+                    return this.viewer.selection.getFirstParagraphInFirstCell(nextWidget);
+                }
+                return nextWidget;
+            }
+        }
+        return undefined;
+    };
+    /**
+     * @private
+     */
+    Selection.prototype.getBlockByIndex = function (container, blockIndex) {
+        var childWidget;
+        if (container) {
+            for (var j = 0; j < container.childWidgets.length; j++) {
+                if (container.childWidgets[j].index === blockIndex) {
+                    childWidget = container.childWidgets[j];
+                    break;
+                }
+            }
+            if (!childWidget && !(container instanceof HeaderFooterWidget)) {
+                return this.getBlockByIndex(container.nextSplitWidget, blockIndex);
+            }
+        }
+        return childWidget;
+    };
+    /**
+     * Get logical offset of paragraph.
+     * @private
+     */
+    Selection.prototype.getParagraphInfo = function (position) {
+        return this.getParagraphInfoInternal(position.currentWidget, position.offset);
+    };
+    /**
+     * @private
+     */
+    Selection.prototype.getParagraphInfoInternal = function (line, lineOffset) {
+        var paragraph = line.paragraph;
+        var offset = this.getParagraphLength(paragraph, line) + lineOffset;
+        var previous = paragraph.previousSplitWidget;
+        while (previous instanceof ParagraphWidget) {
+            paragraph = previous;
+            offset += this.viewer.selection.getParagraphLength(paragraph);
+            previous = paragraph.previousSplitWidget;
+        }
+        return { 'paragraph': paragraph, 'offset': offset };
     };
     /**
      * @private
@@ -38937,7 +39183,7 @@ var Selection = /** @__PURE__ @class */ (function () {
      * Selects current paragraph
      * @private
      */
-    Selection.prototype.selectParagraph = function (paragraph, positionAtStart) {
+    Selection.prototype.selectParagraphInternal = function (paragraph, positionAtStart) {
         var line;
         if (!isNullOrUndefined(paragraph) && !isNullOrUndefined(paragraph.firstChild)) {
             line = paragraph.firstChild;
@@ -40133,10 +40379,10 @@ var Selection = /** @__PURE__ @class */ (function () {
     Selection.prototype.hideToolTip = function () {
         this.toolTipField = undefined;
         if (this.toolTipObject) {
+            this.toolTipElement.style.display = 'none';
             this.toolTipObject.hide();
             this.toolTipObject.destroy();
             this.toolTipObject = undefined;
-            this.toolTipElement.style.display = 'none';
         }
     };
     /**
@@ -41091,7 +41337,7 @@ var Selection = /** @__PURE__ @class */ (function () {
     Selection.prototype.shiftBlockOnHeaderFooterEnableDisable = function () {
         for (var i = 0; i < this.viewer.headersFooters.length; i++) {
             var headerFooter = this.viewer.headersFooters[i];
-            var sectionFormat = this.owner.editor.getBodyWidgetInternal(i, 0).sectionFormat;
+            var sectionFormat = this.getBodyWidgetInternal(i, 0).sectionFormat;
             for (var _i = 0, _a = Object.keys(headerFooter); _i < _a.length; _i++) {
                 var key = _a[_i];
                 var widget = headerFooter[key];
@@ -41109,7 +41355,7 @@ var Selection = /** @__PURE__ @class */ (function () {
         if (block instanceof TableWidget) {
             block = this.getFirstBlockInFirstCell(block);
         }
-        this.selectParagraph(block, true);
+        this.selectParagraphInternal(block, true);
     };
     /**
      * Disable Header footer
@@ -41356,9 +41602,9 @@ var Selection = /** @__PURE__ @class */ (function () {
         this.isCurrentUser = false;
     };
     /**
-     * @private
+     * Shows all the editing region, where current user can edit.
      */
-    Selection.prototype.SelectAllEditRegion = function () {
+    Selection.prototype.showAllEditingRegion = function () {
         if (this.editRangeCollection.length === 0) {
             this.updateEditRangeCollection();
         }
@@ -41396,9 +41642,9 @@ var Selection = /** @__PURE__ @class */ (function () {
         }
     };
     /**
-     * @private
+     * Navigate to next editing region, where current user can edit.
      */
-    Selection.prototype.navigateNextEditRegion = function () {
+    Selection.prototype.navigateToNextEditingRegion = function () {
         var editRange = this.getEditRangeStartElement();
         //Sort based on position
         for (var i = this.editRangeCollection.length - 1; i >= 0; i--) {
@@ -41419,6 +41665,12 @@ var Selection = /** @__PURE__ @class */ (function () {
         var startPosition = positionInfo.startPosition;
         var endPosition = positionInfo.endPosition;
         this.selectRange(startPosition, endPosition);
+    };
+    /**
+     * Highlight all the editing region, where current user can edit.
+     */
+    Selection.prototype.toggleEditingRegionHighlight = function () {
+        this.isHighlightEditRegion = !this.isHighlightEditRegion;
     };
     /**
      * @private
@@ -41473,6 +41725,12 @@ var Selection = /** @__PURE__ @class */ (function () {
         var endPosition = new TextPosition(this.viewer.owner);
         endPosition.setPositionParagraph(endElement.line, offset);
         return { 'startPosition': startPosition, 'endPosition': endPosition };
+    };
+    Selection.prototype.getElementPosition = function (element) {
+        var offset = element.line.getOffset(element, 1);
+        var startPosition = new TextPosition(this.viewer.owner);
+        startPosition.setPositionParagraph(element.line, offset);
+        return { 'startPosition': startPosition, 'endPosition': undefined };
     };
     return Selection;
 }());
@@ -45019,6 +45277,7 @@ var Editor = /** @__PURE__ @class */ (function () {
         };
         this.viewer = viewer;
         this.tableResize = new TableResizer(this.viewer.owner);
+        this.base64 = new Base64();
     }
     Object.defineProperty(Editor.prototype, "restrictFormatting", {
         /**
@@ -45150,6 +45409,127 @@ var Editor = /** @__PURE__ @class */ (function () {
             return;
         }
         this.selection.copySelectedContent(true);
+    };
+    /**
+     * Insert editing region in current selection range.
+     */
+    Editor.prototype.insertEditingRegion = function (user) {
+        this.insertEditRangeElement(user && user !== '' ? user : 'Everyone');
+    };
+    /**
+     * Enforce document protection.
+     */
+    Editor.prototype.enforceProtection = function (credential, limitToFormatting, isReadOnly) {
+        this.viewer.restrictFormatting = limitToFormatting;
+        this.viewer.protectionType = isReadOnly ? 'ReadOnly' : this.viewer.protectionType;
+        this.selection.isHighlightEditRegion = true;
+        this.addProtection(credential);
+    };
+    /**
+     * @private
+     */
+    Editor.prototype.addProtection = function (password) {
+        var enforceProtectionHandler = new XmlHttpRequestHandler();
+        var passwordBase64 = this.base64.encodeString(password);
+        /* tslint:disable:no-any */
+        var formObject = {
+            passwordBase64: passwordBase64,
+            saltBase64: '',
+            spinCount: 100000
+        };
+        /* tslint:enable:no-any */
+        var url = this.owner.serviceUrl + this.owner.serverActionSettings.restrictEditing;
+        enforceProtectionHandler.url = url;
+        enforceProtectionHandler.contentType = 'application/json;charset=UTF-8';
+        enforceProtectionHandler.onSuccess = this.enforceProtectionInternal.bind(this);
+        enforceProtectionHandler.onFailure = this.protectionFailureHandler.bind(this);
+        enforceProtectionHandler.onError = this.protectionFailureHandler.bind(this);
+        enforceProtectionHandler.send(formObject);
+    };
+    /* tslint:disable:no-any */
+    Editor.prototype.protectionFailureHandler = function (result) {
+        var localeValue = new L10n('documenteditor', this.owner.defaultLocale);
+        localeValue.setLocale(this.viewer.owner.locale);
+        if (result.name === 'onError') {
+            DialogUtility.alert(localeValue.getConstant('Error in establishing connection with web server'));
+        }
+        else {
+            console.error(result.statusText);
+        }
+    };
+    Editor.prototype.enforceProtectionInternal = function (result) {
+        var data = JSON.parse(result.data);
+        this.viewer.saltValue = data[0];
+        this.viewer.hashValue = data[1];
+        this.protectDocument();
+    };
+    /* tslint:enable:no-any */
+    Editor.prototype.protectDocument = function () {
+        this.protect(this.viewer.protectionType);
+        var restrictPane = this.viewer.restrictEditingPane.restrictPane;
+        if (restrictPane && restrictPane.style.display === 'block') {
+            this.viewer.restrictEditingPane.showStopProtectionPane(true);
+            this.viewer.restrictEditingPane.loadPaneValue();
+            this.viewer.dialog.hide();
+        }
+    };
+    /**
+     * Stop document protection.
+     */
+    /* tslint:disable:no-any */
+    Editor.prototype.stopProtection = function (password) {
+        if (this.viewer.isDocumentProtected) {
+            var unProtectDocumentHandler = new XmlHttpRequestHandler();
+            var passwordBase64 = this.base64.encodeString(password);
+            var formObject = {
+                passwordBase64: passwordBase64,
+                saltBase64: this.viewer.saltValue,
+                spinCount: 100000
+            };
+            unProtectDocumentHandler.url = this.owner.serviceUrl + this.owner.serverActionSettings.restrictEditing;
+            unProtectDocumentHandler.contentType = 'application/json;charset=UTF-8';
+            unProtectDocumentHandler.onSuccess = this.onUnProtectionSuccess.bind(this);
+            unProtectDocumentHandler.onFailure = this.protectionFailureHandler.bind(this);
+            unProtectDocumentHandler.onError = this.protectionFailureHandler.bind(this);
+            unProtectDocumentHandler.send(formObject);
+        }
+    };
+    Editor.prototype.onUnProtectionSuccess = function (result) {
+        var encodeString = JSON.parse(result.data);
+        this.validateHashValue(encodeString[1]);
+    };
+    /* tslint:enable:no-any */
+    Editor.prototype.validateHashValue = function (currentHashValue) {
+        var localeValue = new L10n('documenteditor', this.owner.defaultLocale);
+        localeValue.setLocale(this.viewer.owner.locale);
+        var decodeUserHashValue = this.base64.decodeString(currentHashValue);
+        var documentHashValue = this.viewer.hashValue;
+        var defaultHashValue = this.base64.decodeString(documentHashValue);
+        var stopProtection = true;
+        if (decodeUserHashValue.length === defaultHashValue.length) {
+            for (var i = 0; i < decodeUserHashValue.length; i++) {
+                if (decodeUserHashValue[i] !== defaultHashValue[i]) {
+                    stopProtection = false;
+                    break;
+                }
+            }
+        }
+        else {
+            stopProtection = false;
+        }
+        if (stopProtection) {
+            this.viewer.isDocumentProtected = false;
+            this.viewer.restrictFormatting = false;
+            this.viewer.selection.highlightEditRegion();
+            var restrictPane = this.viewer.restrictEditingPane.restrictPane;
+            if (restrictPane && restrictPane.style.display === 'block') {
+                this.viewer.restrictEditingPane.showStopProtectionPane(false);
+            }
+            this.viewer.dialog.hide();
+        }
+        else {
+            DialogUtility.alert(localeValue.getConstant('The password is incorrect'));
+        }
     };
     /**
      * Notify content change event
@@ -45691,13 +46071,13 @@ var Editor = /** @__PURE__ @class */ (function () {
         var isRemoved = true;
         this.isListTextSelected();
         this.initHistory('Insert');
-        var paragraphInfo = this.getParagraphInfo(selection.start);
-        this.viewer.selection.editPosition = this.getHierarchicalIndex(paragraphInfo.paragraph, paragraphInfo.offset.toString());
+        var paragraphInfo = this.selection.getParagraphInfo(selection.start);
+        selection.editPosition = selection.getHierarchicalIndex(paragraphInfo.paragraph, paragraphInfo.offset.toString());
         var bidi = selection.start.paragraph.paragraphFormat.bidi;
         if (!bidi && this.viewer.layout.isContainsRtl(selection.start.currentWidget)) {
             this.viewer.layout.reArrangeElementsForRtl(selection.start.currentWidget, bidi);
         }
-        if ((!selection.isEmpty && !this.viewer.selection.isImageSelected) ||
+        if ((!selection.isEmpty && !selection.isImageSelected) ||
             this.viewer.isListTextSelected && selection.contextType === 'List') {
             selection.isSkipLayouting = true;
             selection.skipFormatRetrieval = true;
@@ -45708,7 +46088,7 @@ var Editor = /** @__PURE__ @class */ (function () {
         else if (selection.isEmpty && !this.viewer.isListTextSelected && !isReplace) {
             this.viewer.isTextInput = true;
         }
-        paragraphInfo = this.getParagraphInfo(selection.start);
+        paragraphInfo = this.selection.getParagraphInfo(selection.start);
         if (isRemoved) {
             selection.owner.isShiftingEnabled = true;
             this.updateInsertPosition();
@@ -45838,8 +46218,8 @@ var Editor = /** @__PURE__ @class */ (function () {
             return;
         }
         // Clone selection start position
-        var paragraphInfo = this.getParagraphInfo(this.selection.start);
-        var startPosition = this.getHierarchicalIndex(paragraphInfo.paragraph, paragraphInfo.offset.toString());
+        var paragraphInfo = this.selection.getParagraphInfo(this.selection.start);
+        var startPosition = this.selection.getHierarchicalIndex(paragraphInfo.paragraph, paragraphInfo.offset.toString());
         // Insert IME text in current selection
         this.insertText(text);
         this.viewer.lastComposedText = text;
@@ -45909,8 +46289,8 @@ var Editor = /** @__PURE__ @class */ (function () {
             lastBlock = newParagraph;
         }
         else {
-            var paragraphInfo = this.getParagraphInfo(selection.start);
-            var selectionStart = this.getHierarchicalIndex(paragraphInfo.paragraph, paragraphInfo.offset.toString());
+            var paragraphInfo = this.selection.getParagraphInfo(selection.start);
+            var selectionStart = this.selection.getHierarchicalIndex(paragraphInfo.paragraph, paragraphInfo.offset.toString());
             //Split Paragraph
             this.splitParagraphInternal(selection, selection.start.paragraph, selection.start.currentWidget, selection.start.offset);
             this.setPositionForCurrentIndex(selection.start, selectionStart);
@@ -45926,7 +46306,7 @@ var Editor = /** @__PURE__ @class */ (function () {
             firstBlock = selection.getFirstParagraphInFirstCell(firstBlock);
         }
         if (selectFirstBlock) {
-            selection.selectParagraph(firstBlock, true);
+            selection.selectParagraphInternal(firstBlock, true);
         }
         return firstBlock;
     };
@@ -46376,8 +46756,8 @@ var Editor = /** @__PURE__ @class */ (function () {
     };
     Editor.prototype.autoFormatHyperlink = function (selection, url, startPosition, endPosition) {
         this.initComplexHistory('AutoFormatHyperlink');
-        var blockInfo = this.getParagraphInfo(startPosition);
-        var start = this.getHierarchicalIndex(blockInfo.paragraph, blockInfo.offset.toString());
+        var blockInfo = this.selection.getParagraphInfo(startPosition);
+        var start = this.selection.getHierarchicalIndex(blockInfo.paragraph, blockInfo.offset.toString());
         if (this.editorHistory && this.editorHistory.currentHistoryInfo) {
             this.editorHistory.currentHistoryInfo.insertPosition = start;
         }
@@ -46394,8 +46774,8 @@ var Editor = /** @__PURE__ @class */ (function () {
         // Moves to next text position. (To achieve common behavior for space and enter).
         selection.start.moveNextPosition();
         selection.end.setPositionInternal(selection.start);
-        blockInfo = this.getParagraphInfo(selection.end);
-        var end = this.getHierarchicalIndex(blockInfo.paragraph, blockInfo.offset.toString());
+        blockInfo = this.selection.getParagraphInfo(selection.end);
+        var end = this.selection.getHierarchicalIndex(blockInfo.paragraph, blockInfo.offset.toString());
         if (this.editorHistory && this.editorHistory.currentHistoryInfo) {
             this.editorHistory.currentHistoryInfo.endPosition = end;
             this.editorHistory.updateComplexHistory();
@@ -46548,11 +46928,11 @@ var Editor = /** @__PURE__ @class */ (function () {
             var format = new WCharacterFormat(undefined);
             format.copyFormat(temp);
             this.initComplexHistory('InsertHyperlink');
-            var blockInfo = this.getParagraphInfo(startPosition);
-            var start = this.getHierarchicalIndex(blockInfo.paragraph, blockInfo.offset.toString());
+            var blockInfo = this.selection.getParagraphInfo(startPosition);
+            var start = this.selection.getHierarchicalIndex(blockInfo.paragraph, blockInfo.offset.toString());
             if (this.editorHistory && this.editorHistory.currentHistoryInfo) {
                 // tslint:disable-next-line:max-line-length
-                this.editorHistory.currentHistoryInfo.insertPosition = this.getHierarchicalIndex(blockInfo.paragraph, blockInfo.offset.toString());
+                this.editorHistory.currentHistoryInfo.insertPosition = this.selection.getHierarchicalIndex(blockInfo.paragraph, blockInfo.offset.toString());
             }
             this.appylingHyperlinkFormat(selection);
             this.viewer.layout.allowLayout = true;
@@ -46575,11 +46955,11 @@ var Editor = /** @__PURE__ @class */ (function () {
             this.viewer.layout.reLayoutParagraph(selection.start.paragraph, lineIndex, index);
             var lineWidget = fieldEnd.line;
             selection.selects(lineWidget, lineWidget.getOffset(fieldEnd, fieldEnd.length), true);
-            blockInfo = this.getParagraphInfo(endPosition);
-            var end = this.getHierarchicalIndex(blockInfo.paragraph, blockInfo.offset.toString());
+            blockInfo = this.selection.getParagraphInfo(endPosition);
+            var end = this.selection.getHierarchicalIndex(blockInfo.paragraph, blockInfo.offset.toString());
             if (this.editorHistory && this.editorHistory.currentHistoryInfo) {
                 // tslint:disable-next-line:max-line-length
-                this.editorHistory.currentHistoryInfo.endPosition = this.getHierarchicalIndex(blockInfo.paragraph, blockInfo.offset.toString());
+                this.editorHistory.currentHistoryInfo.endPosition = this.selection.getHierarchicalIndex(blockInfo.paragraph, blockInfo.offset.toString());
                 this.editorHistory.updateComplexHistory();
             }
             else {
@@ -46765,7 +47145,7 @@ var Editor = /** @__PURE__ @class */ (function () {
                             paragraph = this.getClonedFieldResult(fieldSeparator.line.paragraph, fieldSeparator);
                             this.insertParagraph(paragraph, true);
                         }
-                        selection.selectParagraph(selection.getNextParagraphBlock(paragraph), true);
+                        selection.selectParagraphInternal(selection.getNextParagraphBlock(paragraph), true);
                     }
                     continue;
                 }
@@ -47277,8 +47657,8 @@ var Editor = /** @__PURE__ @class */ (function () {
             if (!this.selection.isForward) {
                 position = this.selection.end;
             }
-            var blockInfo = this.getParagraphInfo(position);
-            insertPosition = this.getHierarchicalIndex(blockInfo.paragraph, blockInfo.offset.toString());
+            var blockInfo = this.selection.getParagraphInfo(position);
+            insertPosition = this.selection.getHierarchicalIndex(blockInfo.paragraph, blockInfo.offset.toString());
         }
         this.viewer.owner.isLayoutEnabled = true;
         this.viewer.owner.isPastingContent = true;
@@ -47289,8 +47669,8 @@ var Editor = /** @__PURE__ @class */ (function () {
             endPosition = this.editorHistory.currentBaseHistoryInfo.endPosition;
         }
         else {
-            var blockInfo = this.getParagraphInfo(this.selection.start);
-            endPosition = this.getHierarchicalIndex(blockInfo.paragraph, blockInfo.offset.toString());
+            var blockInfo = this.selection.getParagraphInfo(this.selection.start);
+            endPosition = this.selection.getHierarchicalIndex(blockInfo.paragraph, blockInfo.offset.toString());
         }
         var startPosition = new TextPosition(this.viewer.owner);
         this.setPositionForCurrentIndex(startPosition, insertPosition);
@@ -47394,9 +47774,9 @@ var Editor = /** @__PURE__ @class */ (function () {
             //Moves the inline items before selection start to the inserted paragraph.
             // tslint:disable-next-line:max-line-length
             this.moveInlines(selection.start.paragraph, block, 0, 0, selection.start.paragraph.firstChild, offset, selection.start.currentWidget);
-            selection.selectParagraph(selection.start.paragraph, true);
+            selection.selectParagraphInternal(selection.start.paragraph, true);
             if (this.checkInsertPosition(selection)) {
-                this.updateHistoryPosition(this.getHierarchicalIndex(block, offset.toString()), true);
+                this.updateHistoryPosition(this.selection.getHierarchicalIndex(block, offset.toString()), true);
             }
         }
         if (offset > 0 && this.checkInsertPosition(selection)) {
@@ -47416,7 +47796,7 @@ var Editor = /** @__PURE__ @class */ (function () {
             if (block instanceof TableWidget) {
                 paragraph = selection.getFirstParagraphInFirstCell(block);
             }
-            this.updateHistoryPosition(this.getHierarchicalIndex(paragraph, '0'), true);
+            this.updateHistoryPosition(this.selection.getHierarchicalIndex(paragraph, '0'), true);
         }
     };
     /**
@@ -47434,8 +47814,8 @@ var Editor = /** @__PURE__ @class */ (function () {
             endPosition = selection.start;
         }
         // this.owner.isShiftingEnabled = true;
-        var blockInfo = this.getParagraphInfo(startPosition);
-        selection.editPosition = this.getHierarchicalIndex(blockInfo.paragraph, blockInfo.offset.toString());
+        var blockInfo = this.selection.getParagraphInfo(startPosition);
+        selection.editPosition = this.selection.getHierarchicalIndex(blockInfo.paragraph, blockInfo.offset.toString());
         if (startPosition.paragraph === endPosition.paragraph && startPosition.offset + 1 === endPosition.offset) {
             //Gets selected image and copy image to clipboard.
             var index = 0;
@@ -47464,7 +47844,7 @@ var Editor = /** @__PURE__ @class */ (function () {
     Editor.prototype.insertInlineInternal = function (element) {
         var selection = this.selection;
         var length = element.length;
-        var paragraphInfo = this.getParagraphInfo(selection.start);
+        var paragraphInfo = this.selection.getParagraphInfo(selection.start);
         if (selection.start.paragraph.isEmpty()) {
             var paragraph = selection.start.paragraph;
             if ((paragraph.paragraphFormat.textAlignment === 'Center' || paragraph.paragraphFormat.textAlignment === 'Right')
@@ -47492,7 +47872,7 @@ var Editor = /** @__PURE__ @class */ (function () {
         var lineIndex = -1;
         var lineWidget = undefined;
         var insertIndex = 0;
-        var paragraphInfo = this.getParagraphInfo(selection.start);
+        var paragraphInfo = this.selection.getParagraphInfo(selection.start);
         if (selection.start.paragraph.isEmpty()) {
             paragraph = selection.start.paragraph;
             lineWidget = paragraph.childWidgets[0];
@@ -47609,7 +47989,7 @@ var Editor = /** @__PURE__ @class */ (function () {
                 paragraph = this.selection.getFirstParagraphInFirstCell(block);
             }
             // tslint:disable-next-line:max-line-length
-            this.updateHistoryPosition(this.getHierarchicalIndex(paragraph, '0'), true);
+            this.updateHistoryPosition(this.selection.getHierarchicalIndex(paragraph, '0'), true);
         }
         this.fireContentChange();
     };
@@ -47631,7 +48011,7 @@ var Editor = /** @__PURE__ @class */ (function () {
             startPara = startPara.combineWidget(this.viewer);
             // tslint:disable-next-line:max-line-length
             this.splitParagraph(startPara, startPara.firstChild, 0, selection.start.currentWidget, selection.start.offset, false);
-            selection.selectParagraph(this.selection.start.paragraph, true);
+            selection.selectParagraphInternal(this.selection.start.paragraph, true);
         }
         var bodyWidget = selection.start.paragraph.containerWidget;
         var blockIndex = selection.start.paragraph.index;
@@ -47702,7 +48082,7 @@ var Editor = /** @__PURE__ @class */ (function () {
         var endOffset = lastParagraph.getLength() + 1;
         if (this.editorHistory && this.editorHistory.currentBaseHistoryInfo) {
             // tslint:disable-next-line:max-line-length
-            this.editorHistory.currentBaseHistoryInfo.endPosition = this.getHierarchicalIndex(lastParagraph, endOffset.toString());
+            this.editorHistory.currentBaseHistoryInfo.endPosition = this.selection.getHierarchicalIndex(lastParagraph, endOffset.toString());
         }
         this.reLayout(this.selection);
     };
@@ -47771,7 +48151,7 @@ var Editor = /** @__PURE__ @class */ (function () {
                 paragraph = this.selection.getFirstParagraphInFirstCell(widget);
             }
             this.viewer.layout.reLayoutTable(table);
-            this.selection.selectParagraph(paragraph, true);
+            this.selection.selectParagraphInternal(paragraph, true);
         }
         this.reLayout(this.selection, true);
     };
@@ -47913,7 +48293,7 @@ var Editor = /** @__PURE__ @class */ (function () {
         var paragraph = this.selection.getFirstParagraph(row.nextWidget.childWidgets[0]);
         prevBlock.isDefaultFormatUpdated = false;
         this.viewer.layout.reLayoutTable(prevBlock);
-        this.selection.selectParagraph(paragraph, true);
+        this.selection.selectParagraphInternal(paragraph, true);
         if (this.editorHistory && this.editorHistory.currentBaseHistoryInfo) {
             this.updateHistoryPosition(this.selection.start, true);
             this.updateHistoryPosition(this.selection.end, false);
@@ -48531,10 +48911,10 @@ var Editor = /** @__PURE__ @class */ (function () {
                 currentParagraph = nextParagraph;
             } while (nextParagraph && nextParagraph.equals(newParagraph));
             if (!isNullOrUndefined(nextParagraph)) {
-                this.selection.selectParagraph(nextParagraph, true);
+                this.selection.selectParagraphInternal(nextParagraph, true);
             }
             else {
-                this.selection.selectParagraph(newParagraph, true);
+                this.selection.selectParagraphInternal(newParagraph, true);
             }
         }
         this.fireContentChange();
@@ -49124,10 +49504,10 @@ var Editor = /** @__PURE__ @class */ (function () {
      * @private
      */
     Editor.prototype.setOffsetValue = function (selection) {
-        var info = this.getParagraphInfo(selection.start);
+        var info = this.selection.getParagraphInfo(selection.start);
         this.startParagraph = info.paragraph;
         this.startOffset = info.offset;
-        info = this.getParagraphInfo(selection.end);
+        info = this.selection.getParagraphInfo(selection.end);
         this.endParagraph = info.paragraph;
         this.endOffset = info.offset;
     };
@@ -50978,10 +51358,10 @@ var Editor = /** @__PURE__ @class */ (function () {
             startPosition = this.viewer.selection.end;
             endPosition = this.viewer.selection.start;
         }
-        var startInfo = this.getParagraphInfo(startPosition);
-        var endInfo = this.getParagraphInfo(startPosition);
-        var startIndex = this.getHierarchicalIndex(startInfo.paragraph, startInfo.offset.toString());
-        var endIndex = this.getHierarchicalIndex(endInfo.paragraph, endInfo.offset.toString());
+        var startInfo = this.selection.getParagraphInfo(startPosition);
+        var endInfo = this.selection.getParagraphInfo(startPosition);
+        var startIndex = this.selection.getHierarchicalIndex(startInfo.paragraph, startInfo.offset.toString());
+        var endIndex = this.selection.getHierarchicalIndex(endInfo.paragraph, endInfo.offset.toString());
         this.viewer.renderedLists.clear();
         // this.viewer.owner.isLayoutEnabled = true;
         var sections = this.combineSection();
@@ -51321,8 +51701,8 @@ var Editor = /** @__PURE__ @class */ (function () {
             selection.selectContent(startPos, true);
             return true;
         }
-        var paragraphInfo = this.getParagraphInfo(startPos);
-        selection.editPosition = this.getHierarchicalIndex(paragraphInfo.paragraph, paragraphInfo.offset.toString());
+        var paragraphInfo = this.selection.getParagraphInfo(startPos);
+        selection.editPosition = this.selection.getHierarchicalIndex(paragraphInfo.paragraph, paragraphInfo.offset.toString());
         var isRemoved = this.removeSelectedContent(endPos.paragraph, selection, startPos, endPos);
         var textPosition = new TextPosition(selection.owner);
         this.setPositionForCurrentIndex(textPosition, selection.editPosition);
@@ -51442,7 +51822,7 @@ var Editor = /** @__PURE__ @class */ (function () {
                 this.editorHistory.currentBaseHistoryInfo.removedNodes.push(table.clone());
             }
             this.removeBlock(table);
-            this.selection.selectParagraph(paragraph, true);
+            this.selection.selectParagraphInternal(paragraph, true);
             if (this.checkIsNotRedoing() || isNullOrUndefined(this.editorHistory)) {
                 this.reLayout(this.selection);
             }
@@ -51522,7 +51902,7 @@ var Editor = /** @__PURE__ @class */ (function () {
                 table.isGridUpdated = true;
                 this.viewer.layout.reLayoutTable(table);
             }
-            this.selection.selectParagraph(paragraph, true);
+            this.selection.selectParagraphInternal(paragraph, true);
             if (isNullOrUndefined(this.editorHistory) || this.checkIsNotRedoing()) {
                 this.reLayout(this.selection, true);
             }
@@ -51603,7 +51983,7 @@ var Editor = /** @__PURE__ @class */ (function () {
             else {
                 this.removeRow(row);
             }
-            this.selection.selectParagraph(paragraph, true);
+            this.selection.selectParagraphInternal(paragraph, true);
             if (isNullOrUndefined(this.editorHistory) || this.checkIsNotRedoing()) {
                 this.reLayout(this.selection, true);
             }
@@ -51742,17 +52122,17 @@ var Editor = /** @__PURE__ @class */ (function () {
                 }
                 this.addRemovedNodes(paragraph);
                 if (!isNullOrUndefined(newParagraph)) {
-                    selection.editPosition = this.getHierarchicalIndex(newParagraph, '0');
+                    selection.editPosition = this.selection.getHierarchicalIndex(newParagraph, '0');
                     var offset = selection.getParagraphLength(newParagraph) + 1;
                     if (this.editorHistory && !isNullOrUndefined(this.editorHistory.currentBaseHistoryInfo)) {
                         //tslint:disable-next-line:max-line-length
-                        this.editorHistory.currentBaseHistoryInfo.endPosition = this.getHierarchicalIndex(newParagraph, offset.toString());
+                        this.editorHistory.currentBaseHistoryInfo.endPosition = this.selection.getHierarchicalIndex(newParagraph, offset.toString());
                     }
                 }
                 else if (paragraph === start.paragraph && isNullOrUndefined(nextWidget) && !isNullOrUndefined(prevParagraph)) {
                     var offset = this.selection.getParagraphLength(prevParagraph);
                     // if (isNullOrUndefined(block)) {
-                    selection.editPosition = this.getHierarchicalIndex(prevParagraph, offset.toString());
+                    selection.editPosition = this.selection.getHierarchicalIndex(prevParagraph, offset.toString());
                     if (this.editorHistory && !isNullOrUndefined(this.editorHistory.currentBaseHistoryInfo)) {
                         this.updateHistoryPosition(selection.editPosition, true);
                         this.editorHistory.currentBaseHistoryInfo.endPosition = selection.editPosition;
@@ -52070,7 +52450,7 @@ var Editor = /** @__PURE__ @class */ (function () {
         //Layouts the table after delete cells.
         selection.owner.isLayoutEnabled = true;
         if (table.childWidgets.length === 0) {
-            selection.editPosition = this.getHierarchicalIndex(table, '0');
+            selection.editPosition = this.selection.getHierarchicalIndex(table, '0');
             this.setActionInternal(selection, action);
             this.removeBlock(table);
         }
@@ -52115,7 +52495,7 @@ var Editor = /** @__PURE__ @class */ (function () {
                     }
                     if (this.checkClearCells(selection)) {
                         //Add Index for line Widget
-                        selection.editPosition = this.getHierarchicalIndex(paragraph, '0');
+                        selection.editPosition = this.selection.getHierarchicalIndex(paragraph, '0');
                         this.updateHistoryPosition(selection.editPosition, true);
                     }
                     break;
@@ -52165,7 +52545,7 @@ var Editor = /** @__PURE__ @class */ (function () {
                 this.viewer.layout.layoutBodyWidgetCollection(newTable.index, newTable.containerWidget, newTable, false);
             }
             if (!isNullOrUndefined(previousBlock)) {
-                selection.editPosition = this.getHierarchicalIndex(previousBlock, '0');
+                selection.editPosition = this.selection.getHierarchicalIndex(previousBlock, '0');
                 if (this.editorHistory && !isNullOrUndefined(this.editorHistory.currentBaseHistoryInfo)) {
                     this.editorHistory.currentBaseHistoryInfo.endPosition = selection.editPosition;
                 }
@@ -52209,7 +52589,7 @@ var Editor = /** @__PURE__ @class */ (function () {
     };
     Editor.prototype.updateEditPosition = function (cell, selection) {
         var firstParagraph = selection.getFirstParagraphInCell(cell);
-        selection.editPosition = this.getHierarchicalIndex(firstParagraph, '0');
+        selection.editPosition = this.selection.getHierarchicalIndex(firstParagraph, '0');
     };
     /**
      * @private
@@ -52230,8 +52610,8 @@ var Editor = /** @__PURE__ @class */ (function () {
         return this.editorHistory && this.editorHistory.currentBaseHistoryInfo && this.editorHistory.currentBaseHistoryInfo.action !== 'ClearCells';
     };
     Editor.prototype.isEndInAdjacentTable = function (paragraph, endParagraph) {
-        var start = this.getHierarchicalIndex(paragraph, '');
-        var end = this.getHierarchicalIndex(endParagraph, '');
+        var start = this.selection.getHierarchicalIndex(paragraph, '');
+        var end = this.selection.getHierarchicalIndex(endParagraph, '');
         var selectionStart = start.split(';');
         var selectionEnd = end.split(';');
         return selectionStart.length < selectionEnd.length;
@@ -52245,7 +52625,7 @@ var Editor = /** @__PURE__ @class */ (function () {
             //Sets the insert position in history info as current table.
             if (this.viewer.selection.start.paragraph.isInsideTable &&
                 this.viewer.selection.start.paragraph.associatedCell.ownerTable === table) {
-                this.updateHistoryPosition(this.getHierarchicalIndex(table, '0'), true);
+                this.updateHistoryPosition(this.selection.getHierarchicalIndex(table, '0'), true);
             }
             return clonedTable;
         }
@@ -52274,7 +52654,7 @@ var Editor = /** @__PURE__ @class */ (function () {
                     this.viewer.layout.reLayoutParagraph(nextParagraph, 0, 0);
                     isCombineNextParagraph = false;
                     var offset = this.selection.editPosition.substring(this.selection.editPosition.lastIndexOf(';') + 1);
-                    this.selection.editPosition = this.getHierarchicalIndex(nextParagraph, offset);
+                    this.selection.editPosition = this.selection.getHierarchicalIndex(nextParagraph, offset);
                 }
             }
         }
@@ -52658,8 +53038,8 @@ var Editor = /** @__PURE__ @class */ (function () {
         if (isRemoved) {
             selection.owner.isShiftingEnabled = true;
             this.updateInsertPosition();
-            var blockInfo = this.getParagraphInfo(selection.start);
-            var initialStart = this.getHierarchicalIndex(blockInfo.paragraph, blockInfo.offset.toString());
+            var blockInfo = this.selection.getParagraphInfo(selection.start);
+            var initialStart = this.selection.getHierarchicalIndex(blockInfo.paragraph, blockInfo.offset.toString());
             this.splitParagraphInternal(selection, selection.start.paragraph, selection.start.currentWidget, selection.start.offset);
             this.setPositionForCurrentIndex(selection.start, initialStart);
             if (isInsertPageBreak) {
@@ -52674,13 +53054,13 @@ var Editor = /** @__PURE__ @class */ (function () {
                 pageBreak.line = line;
                 breakParagraph.childWidgets.push(line);
                 this.insertParagraph(breakParagraph, true);
-                selection.selectParagraph(breakParagraph, true);
+                selection.selectParagraphInternal(breakParagraph, true);
             }
             var nextNode = selection.start.paragraph.nextWidget;
             if (isNullOrUndefined(nextNode)) {
                 nextNode = selection.getNextRenderedBlock(selection.start.paragraph);
             }
-            selection.selectParagraph(nextNode, true);
+            selection.selectParagraphInternal(nextNode, true);
             this.updateEndPosition();
             if (isInsertPageBreak && this.editorHistory) {
                 this.owner.editorHistory.updateHistory();
@@ -52920,10 +53300,7 @@ var Editor = /** @__PURE__ @class */ (function () {
      */
     Editor.prototype.deleteSelectedContents = function (selection, isBackSpace) {
         var skipBackSpace = this.deleteSelectedContentInternal(selection, isBackSpace, selection.start, selection.end);
-        var textPosition = new TextPosition(selection.owner);
-        var blockInfo = this.getParagraph({ index: selection.editPosition });
-        var lineInfo = this.getLineInfo(blockInfo.paragraph, blockInfo.offset);
-        textPosition.setPositionForLineWidget(lineInfo.line, lineInfo.offset);
+        var textPosition = selection.getTextPosBasedOnLogicalIndex(selection.editPosition);
         selection.selectContent(textPosition, true);
         return skipBackSpace;
     };
@@ -52943,11 +53320,11 @@ var Editor = /** @__PURE__ @class */ (function () {
         // If backspace is pressed after auto format to hyperlink is done, need to undo auto format.
         if (history && !isRedoing && !history.canRedo() && history.canUndo()) {
             var historyInfo = history.undoStack[history.undoStack.length - 1];
-            var startBlockInfo = this.getParagraphInfo(selection.start);
-            var endBlockInfo = this.getParagraphInfo(selection.end);
+            var startBlockInfo = this.selection.getParagraphInfo(selection.start);
+            var endBlockInfo = this.selection.getParagraphInfo(selection.end);
             // tslint:disable-next-line:max-line-length
-            if (historyInfo.action === 'AutoFormatHyperlink' && historyInfo.insertPosition === this.getHierarchicalIndex(startBlockInfo.paragraph, startBlockInfo.offset.toString()) &&
-                historyInfo.endPosition === this.getHierarchicalIndex(endBlockInfo.paragraph, endBlockInfo.offset.toString())) {
+            if (historyInfo.action === 'AutoFormatHyperlink' && historyInfo.insertPosition === this.selection.getHierarchicalIndex(startBlockInfo.paragraph, startBlockInfo.offset.toString()) &&
+                historyInfo.endPosition === this.selection.getHierarchicalIndex(endBlockInfo.paragraph, endBlockInfo.offset.toString())) {
                 history.undo();
                 return;
             }
@@ -53094,7 +53471,7 @@ var Editor = /** @__PURE__ @class */ (function () {
             if (!isRedoing) {
                 selection.owner.isShiftingEnabled = true;
             }
-            var paragraphInfo = this.getParagraphInfo(selection.start);
+            var paragraphInfo = this.selection.getParagraphInfo(selection.start);
             var lineWidget = selection.start.currentWidget;
             var removeOffset = offset - 1;
             if (removeOffset < 0) {
@@ -53315,8 +53692,8 @@ var Editor = /** @__PURE__ @class */ (function () {
             if (!isRedoing) {
                 this.initHistory('Delete');
             }
-            var blockInfo = this.getParagraphInfo(selection.start);
-            selection.editPosition = this.getHierarchicalIndex(blockInfo.paragraph, blockInfo.offset.toString());
+            var blockInfo = this.selection.getParagraphInfo(selection.start);
+            selection.editPosition = this.selection.getHierarchicalIndex(blockInfo.paragraph, blockInfo.offset.toString());
             if (this.checkInsertPosition(selection)) {
                 this.setPositionForHistory(selection.editPosition);
             }
@@ -53326,21 +53703,21 @@ var Editor = /** @__PURE__ @class */ (function () {
                 this.addRemovedNodes(paragraph);
                 if (isNullOrUndefined(nextParagraph)) {
                     if (isNullOrUndefined(previousParagraph)) {
-                        // selection.selectParagraph(newParagraph, true, true);
+                        // selection.selectParagraphInternal(newParagraph, true, true);
                         var paraEndOffset = selection.getParagraphLength(newParagraph) + 1;
                         if (this.editorHistory && !isNullOrUndefined(this.editorHistory.currentBaseHistoryInfo)) {
                             this.updateHistoryPosition(selection.start, true);
                             //tslint:disable-next-line:max-line-length
-                            this.editorHistory.currentBaseHistoryInfo.endPosition = this.getHierarchicalIndex(newParagraph, paraEndOffset.toString());
+                            this.editorHistory.currentBaseHistoryInfo.endPosition = this.selection.getHierarchicalIndex(newParagraph, paraEndOffset.toString());
                         }
                     }
                     else {
-                        selection.selectParagraph(previousParagraph, false);
+                        selection.selectParagraphInternal(previousParagraph, false);
                         this.setPositionForHistory();
                     }
                 }
                 else {
-                    selection.selectParagraph(nextParagraph, true);
+                    selection.selectParagraphInternal(nextParagraph, true);
                 }
             }
             else {
@@ -53369,7 +53746,7 @@ var Editor = /** @__PURE__ @class */ (function () {
             this.updateHistoryPosition(selection.start, true);
             this.editorHistory.currentBaseHistoryInfo.endPosition = this.editorHistory.currentBaseHistoryInfo.insertPosition;
         }
-        var paragraphInfo = this.getParagraphInfo(selection.start);
+        var paragraphInfo = this.selection.getParagraphInfo(selection.start);
         var lineWidget = selection.start.currentWidget;
         var removeOffset = selection.start.offset;
         var lineLength = selection.getLineLength(selection.start.currentWidget);
@@ -53426,7 +53803,7 @@ var Editor = /** @__PURE__ @class */ (function () {
                 }
                 this.viewer.layout.reLayoutParagraph(nextParagraph, 0, 0);
                 if (offset > 0) {
-                    selection.editPosition = this.getHierarchicalIndex(nextParagraph, offset.toString());
+                    selection.editPosition = this.selection.getHierarchicalIndex(nextParagraph, offset.toString());
                 }
             }
         }
@@ -53459,10 +53836,10 @@ var Editor = /** @__PURE__ @class */ (function () {
         }
     };
     Editor.prototype.updateEditPositionOnMerge = function (currentParagraph, nextParagraph) {
-        if (this.viewer.selection.editPosition === this.getHierarchicalIndex(nextParagraph, '0') &&
+        if (this.viewer.selection.editPosition === this.selection.getHierarchicalIndex(nextParagraph, '0') &&
             nextParagraph.nextRenderedWidget === undefined) {
             // tslint:disable-next-line:max-line-length
-            this.viewer.selection.editPosition = this.getHierarchicalIndex(currentParagraph, this.viewer.selection.getLineLength(currentParagraph.lastChild).toString());
+            this.viewer.selection.editPosition = this.selection.getHierarchicalIndex(currentParagraph, this.viewer.selection.getLineLength(currentParagraph.lastChild).toString());
         }
     };
     Editor.prototype.checkEndPosition = function (selection) {
@@ -53484,8 +53861,8 @@ var Editor = /** @__PURE__ @class */ (function () {
             startPos = endPosition;
             endPos = startPosition;
         }
-        var blockInfo = this.getParagraphInfo(startPos);
-        selection.editPosition = this.getHierarchicalIndex(blockInfo.paragraph, blockInfo.offset.toString());
+        var blockInfo = this.selection.getParagraphInfo(startPos);
+        selection.editPosition = this.selection.getHierarchicalIndex(blockInfo.paragraph, blockInfo.offset.toString());
         var skipBackSpace = false;
         if (isBackSpace && startPos.isInSameParagraph(endPos)) {
             //Handled specifically to skip removal of contents, if selection is only paragraph mark and next rendered block is table.
@@ -53944,33 +54321,12 @@ var Editor = /** @__PURE__ @class */ (function () {
         }
     };
     /**
-     * Get logical offset of paragraph.
-     * @private
-     */
-    Editor.prototype.getParagraphInfo = function (position) {
-        return this.getParagraphInfoInternal(position.currentWidget, position.offset);
-    };
-    /**
-     * @private
-     */
-    Editor.prototype.getParagraphInfoInternal = function (line, lineOffset) {
-        var paragraph = line.paragraph;
-        var offset = this.selection.getParagraphLength(paragraph, line) + lineOffset;
-        var previous = paragraph.previousSplitWidget;
-        while (previous instanceof ParagraphWidget) {
-            paragraph = previous;
-            offset += this.viewer.selection.getParagraphLength(paragraph);
-            previous = paragraph.previousSplitWidget;
-        }
-        return { 'paragraph': paragraph, 'offset': offset };
-    };
-    /**
      * Get offset value to update in selection
      * @private
      */
     Editor.prototype.getOffsetValue = function (selection) {
         if (this.startParagraph) {
-            var lineInfo = this.getLineInfo(this.startParagraph, this.startOffset);
+            var lineInfo = selection.getLineInfoBasedOnParagraph(this.startParagraph, this.startOffset);
             selection.start.setPositionFromLine(lineInfo.line, lineInfo.offset);
         }
         selection.start.updatePhysicalPosition(true);
@@ -53979,36 +54335,18 @@ var Editor = /** @__PURE__ @class */ (function () {
         }
         else {
             if (this.endParagraph) {
-                var lineInfo = this.getLineInfo(this.endParagraph, this.endOffset);
+                var lineInfo = selection.getLineInfoBasedOnParagraph(this.endParagraph, this.endOffset);
                 selection.end.setPositionFromLine(lineInfo.line, lineInfo.offset);
             }
             selection.end.updatePhysicalPosition(true);
         }
     };
     /**
-     * Get offset value to update in selection
-     * @private
-     */
-    Editor.prototype.getLineInfo = function (paragraph, offset) {
-        var length = this.selection.getParagraphLength(paragraph);
-        var next = paragraph.nextSplitWidget;
-        if (offset > length + 1 && isNullOrUndefined(next)) {
-            offset = length;
-        }
-        while (offset > length && next instanceof ParagraphWidget) {
-            offset -= length;
-            paragraph = next;
-            length = this.selection.getParagraphLength(paragraph);
-            next = paragraph.nextSplitWidget;
-        }
-        return this.selection.getLineInfo(paragraph, offset);
-    };
-    /**
      * @private
      */
     Editor.prototype.setPositionParagraph = function (paragraph, offset, skipSelectionChange) {
         var selection = this.viewer.selection;
-        var lineInfo = this.getLineInfo(paragraph, offset);
+        var lineInfo = selection.getLineInfoBasedOnParagraph(paragraph, offset);
         selection.start.setPositionFromLine(lineInfo.line, lineInfo.offset);
         selection.end.setPositionInternal(selection.start);
         if (!skipSelectionChange) {
@@ -54019,8 +54357,8 @@ var Editor = /** @__PURE__ @class */ (function () {
      * @private
      */
     Editor.prototype.setPositionForCurrentIndex = function (textPosition, editPosition) {
-        var blockInfo = this.getParagraph({ index: editPosition });
-        var lineInfo = this.getLineInfo(blockInfo.paragraph, blockInfo.offset);
+        var blockInfo = this.selection.getParagraph({ index: editPosition });
+        var lineInfo = this.selection.getLineInfoBasedOnParagraph(blockInfo.paragraph, blockInfo.offset);
         textPosition.setPositionForLineWidget(lineInfo.line, lineInfo.offset);
     };
     /**
@@ -54165,7 +54503,7 @@ var Editor = /** @__PURE__ @class */ (function () {
         this.initHistory('InsertElements');
         this.updateInsertPosition();
         var indexInInline = 0;
-        var paragraphInfo = this.getParagraphInfo(this.selection.start);
+        var paragraphInfo = this.selection.getParagraphInfo(this.selection.start);
         if (this.selection.start.paragraph.isEmpty()) {
             var paragraph = this.selection.start.paragraph;
             paragraph.childWidgets[0].children.push(elements[0]);
@@ -54201,34 +54539,8 @@ var Editor = /** @__PURE__ @class */ (function () {
     /**
      * @private
      */
-    Editor.prototype.getHierarchicalIndex = function (block, offset) {
-        var index;
-        if (block) {
-            if (block instanceof HeaderFooterWidget) {
-                var hfString = block.headerFooterType.indexOf('Header') !== -1 ? 'H' : 'F';
-                var pageIndex = block.page.index.toString();
-                var headerFooterIndex = this.viewer.getHeaderFooter(block.headerFooterType).toString();
-                var sectionIndex = block.page.sectionIndex;
-                index = sectionIndex + ';' + hfString + ';' + pageIndex + ';' + offset;
-            }
-            else {
-                index = block.index + ';' + offset;
-            }
-            if (block.containerWidget) {
-                if (block instanceof TableCellWidget && block.rowIndex !== block.containerWidget.index) {
-                    index = block.rowIndex + ';' + index;
-                    block = block.containerWidget;
-                }
-                return this.getHierarchicalIndex(block.containerWidget, index);
-            }
-        }
-        return index;
-    };
-    /**
-     * @private
-     */
     Editor.prototype.getBlock = function (position) {
-        var bodyWidget = this.getBodyWidget(position);
+        var bodyWidget = this.selection.getBodyWidget(position);
         return this.getBlockInternal(bodyWidget, position);
     };
     /**
@@ -54250,7 +54562,7 @@ var Editor = /** @__PURE__ @class */ (function () {
         //     return { 'node': (!isNullOrUndefined(blockObj)) ? blockObj.node : undefined, 'position': (!isNullOrUndefined(blockObj)) ? blockObj.position : undefined };
         // }
         index = parseInt(value, 10);
-        var childWidget = this.getBlockByIndex(widget, index);
+        var childWidget = this.selection.getBlockByIndex(widget, index);
         if (childWidget) {
             var child = childWidget;
             if (position.index.indexOf(';') >= 0) {
@@ -54278,145 +54590,12 @@ var Editor = /** @__PURE__ @class */ (function () {
     /**
      * @private
      */
-    Editor.prototype.getParagraph = function (position) {
-        var paragraph = this.getParagraphInternal(this.getBodyWidget(position), position);
-        return { paragraph: paragraph, offset: parseInt(position.index, 10) };
-    };
-    /**
-     * Get paragraph relative to position
-     * @private
-     */
-    Editor.prototype.getParagraphInternal = function (container, position) {
-        if (isNullOrUndefined(position.index)) {
-            return undefined;
-        }
-        // let ins: Widget = container;
-        var index = position.index.indexOf(';');
-        var value = '0';
-        if (index >= 0) {
-            value = position.index.substring(0, index);
-            position.index = position.index.substring(index).replace(';', '');
-        }
-        // if (container instanceof BodyWidget && value === 'HF') {
-        //     return this.getParagraph(container.headerFooters, position);
-        // }
-        index = parseInt(value, 10);
-        if (container instanceof TableRowWidget && index >= container.childWidgets.length) {
-            position.index = '0;0';
-            index = container.childWidgets.length - 1;
-        }
-        var childWidget = this.getBlockByIndex(container, index);
-        if (childWidget) {
-            var child = childWidget;
-            if (child instanceof ParagraphWidget) {
-                if (position.index.indexOf(';') > 0) {
-                    position.index = '0';
-                }
-                return child;
-            }
-            if (child instanceof Widget) {
-                if (position.index.indexOf(';') > 0) {
-                    return this.getParagraphInternal(child, position);
-                }
-                else {
-                    //If table is shifted to previous text position then return the first paragraph within table.
-                    if (child instanceof TableWidget) {
-                        return this.viewer.selection.getFirstParagraphInFirstCell(child);
-                    }
-                    return undefined;
-                }
-            }
-        }
-        else if (container) {
-            var nextWidget = container.getSplitWidgets().pop().nextRenderedWidget;
-            if (nextWidget instanceof Widget) {
-                position.index = '0';
-                if (nextWidget instanceof TableWidget) {
-                    return this.viewer.selection.getFirstParagraphInFirstCell(nextWidget);
-                }
-                return nextWidget;
-            }
-        }
-        return undefined;
-    };
-    Editor.prototype.getBodyWidget = function (position) {
-        var index = position.index.indexOf(';');
-        var value = position.index.substring(0, index);
-        position.index = position.index.substring(index).replace(';', '');
-        var sectionIndex = parseInt(value, 10);
-        index = parseInt(value, 10);
-        index = position.index.indexOf(';');
-        value = position.index.substring(0, index);
-        // position = position.substring(index).replace(';', '');
-        if (value === 'H' || value === 'F') {
-            return this.getHeaderFooterWidget(position);
-        }
-        index = parseInt(value, 10);
-        return this.getBodyWidgetInternal(sectionIndex, index);
-    };
-    Editor.prototype.getHeaderFooterWidget = function (position) {
-        //HEADER OR FOOTER WIDGET
-        var index = position.index.indexOf(';');
-        var value = position.index.substring(0, index);
-        position.index = position.index.substring(index).replace(';', '');
-        var isHeader = value === 'H';
-        index = position.index.indexOf(';');
-        value = position.index.substring(0, index);
-        position.index = position.index.substring(index).replace(';', '');
-        index = parseInt(value, 10);
-        var page = this.viewer.pages[index];
-        if (isHeader) {
-            return page.headerWidget;
-        }
-        else {
-            return page.footerWidget;
-        }
-    };
-    /**
-     * @private
-     */
-    Editor.prototype.getBodyWidgetInternal = function (sectionIndex, blockIndex) {
-        for (var i = 0; i < this.viewer.pages.length; i++) {
-            var bodyWidget = this.viewer.pages[i].bodyWidgets[0];
-            if (bodyWidget.index === sectionIndex) {
-                if (bodyWidget.childWidgets.length > 0 && bodyWidget.firstChild.index <= blockIndex &&
-                    bodyWidget.lastChild.index >= blockIndex) {
-                    return bodyWidget;
-                }
-            }
-            if (bodyWidget.index > sectionIndex) {
-                break;
-            }
-        }
-        return undefined;
-    };
-    /**
-     * @private
-     */
-    Editor.prototype.getBlockByIndex = function (container, blockIndex) {
-        var childWidget;
-        if (container) {
-            for (var j = 0; j < container.childWidgets.length; j++) {
-                if (container.childWidgets[j].index === blockIndex) {
-                    childWidget = container.childWidgets[j];
-                    break;
-                }
-            }
-            if (!childWidget && !(container instanceof HeaderFooterWidget)) {
-                return this.getBlockByIndex(container.nextSplitWidget, blockIndex);
-            }
-        }
-        return childWidget;
-    };
-    /**
-     * @private
-     */
     Editor.prototype.updateHistoryPosition = function (position, isInsertPosition) {
         if (this.editorHistory && !isNullOrUndefined(this.editorHistory.currentBaseHistoryInfo)) {
             var hierarchicalIndex = void 0;
             if (position instanceof TextPosition) {
-                var blockInfo = this.getParagraphInfo(position);
-                hierarchicalIndex = this.getHierarchicalIndex(blockInfo.paragraph, blockInfo.offset.toString());
+                var blockInfo = this.selection.getParagraphInfo(position);
+                hierarchicalIndex = this.selection.getHierarchicalIndex(blockInfo.paragraph, blockInfo.offset.toString());
             }
             else {
                 hierarchicalIndex = position;
@@ -55380,8 +55559,8 @@ var Editor = /** @__PURE__ @class */ (function () {
         // Build TOC field code based on parameter
         code = this.constructTocFieldCode(tableOfContentsSettings);
         var isStartParagraph = this.selection.start.isAtParagraphStart;
-        var blockInfo = this.getParagraphInfo(this.selection.start);
-        var initialStart = this.getHierarchicalIndex(blockInfo.paragraph, blockInfo.offset.toString());
+        var blockInfo = this.selection.getParagraphInfo(this.selection.start);
+        var initialStart = this.selection.getHierarchicalIndex(blockInfo.paragraph, blockInfo.offset.toString());
         // Build TOC fields
         // tslint:disable-next-line:max-line-length
         var widgets = this.buildToc(this.validateTocSettings(tableOfContentsSettings), code, true, isStartParagraph);
@@ -56263,7 +56442,7 @@ var TableHistoryInfo = /** @__PURE__ @class */ (function () {
             }
             this.rows.push(rowFormat);
         }
-        this.tableHierarchicalIndex = this.owner.editorModule.getHierarchicalIndex(table, '0');
+        this.tableHierarchicalIndex = this.owner.selection.getHierarchicalIndex(table, '0');
     };
     TableHistoryInfo.prototype.destroy = function () {
         this.tableHierarchicalIndex = undefined;
@@ -56428,10 +56607,10 @@ var BaseHistoryInfo = /** @__PURE__ @class */ (function () {
      * @private
      */
     BaseHistoryInfo.prototype.updateSelection = function () {
-        var blockInfo = this.owner.editorModule.getParagraphInfo(this.owner.selection.start);
-        this.selectionStart = this.owner.editorModule.getHierarchicalIndex(blockInfo.paragraph, blockInfo.offset.toString());
-        blockInfo = this.owner.editorModule.getParagraphInfo(this.owner.selection.end);
-        this.selectionEnd = this.owner.editorModule.getHierarchicalIndex(blockInfo.paragraph, blockInfo.offset.toString());
+        var blockInfo = this.owner.selection.getParagraphInfo(this.owner.selection.start);
+        this.selectionStart = this.owner.selection.getHierarchicalIndex(blockInfo.paragraph, blockInfo.offset.toString());
+        blockInfo = this.owner.selection.getParagraphInfo(this.owner.selection.end);
+        this.selectionEnd = this.owner.selection.getHierarchicalIndex(blockInfo.paragraph, blockInfo.offset.toString());
     };
     BaseHistoryInfo.prototype.setBookmarkInfo = function (bookmark) {
         this.removedNodes.push({ 'bookmark': bookmark, 'startIndex': bookmark.indexInOwner, 'endIndex': bookmark.reference.indexInOwner });
@@ -56492,21 +56671,22 @@ var BaseHistoryInfo = /** @__PURE__ @class */ (function () {
         var isForwardSelection = TextPosition.isForwardSelection(start, end);
         if (this.modifiedProperties.length > 0 || this.action === 'Selection' || this.action === 'ClearCharacterFormat'
             || this.action === 'ClearParagraphFormat') {
-            selectionStartTextPosition = this.getTextPosition(start);
-            selectionEndTextPosition = this.getTextPosition(end);
+            selectionStartTextPosition = this.owner.selection.getTextPosBasedOnLogicalIndex(start);
+            selectionEndTextPosition = this.owner.selection.getTextPosBasedOnLogicalIndex(end);
             this.revertModifiedProperties(selectionStartTextPosition, selectionEndTextPosition);
         }
         else {
+            var sel = this.owner.selection;
             var deletedNodes = this.removedNodes;
             this.removedNodesIn = [];
             var isForward = TextPosition.isForwardSelection(this.insertPosition, this.endPosition);
-            var insertTextPosition = this.getTextPosition(isForward ? this.insertPosition : this.endPosition);
-            var endTextPosition = this.getTextPosition(isForward ? this.endPosition : this.insertPosition);
+            var insertTextPosition = sel.getTextPosBasedOnLogicalIndex(isForward ? this.insertPosition : this.endPosition);
+            var endTextPosition = sel.getTextPosBasedOnLogicalIndex(isForward ? this.endPosition : this.insertPosition);
             if (insertTextPosition.isAtSamePosition(endTextPosition)) {
-                this.owner.selection.selectContent(insertTextPosition, true);
+                sel.selectContent(insertTextPosition, true);
             }
             else {
-                this.owner.selection.selectPosition(insertTextPosition, endTextPosition);
+                sel.selectPosition(insertTextPosition, endTextPosition);
             }
             if (this.action === 'InsertHyperlink' && this.editorHistory.isRedoing) {
                 var fieldBegin = this.owner.selection.getHyperlinkField();
@@ -56531,13 +56711,13 @@ var BaseHistoryInfo = /** @__PURE__ @class */ (function () {
                     && this.action !== 'InsertRowBelow' && this.action !== 'InsertColumnLeft'
                     && this.action !== 'InsertColumnRight' && this.action !== 'Borders'
                     && this.action !== 'DeleteTable' && this.action !== 'DeleteColumn' && this.action !== 'DeleteRow') {
-                    this.owner.selection.end.setPositionInternal(endTextPosition);
+                    sel.end.setPositionInternal(endTextPosition);
                     if (!this.owner.selection.isEmpty) {
                         if (this.editorHistory.isRedoing) {
-                            this.owner.editorModule.removeSelectedContents(this.owner.selection);
+                            this.owner.editorModule.removeSelectedContents(sel);
                         }
                         else {
-                            this.owner.editorModule.deleteSelectedContents(this.owner.selection, true);
+                            this.owner.editorModule.deleteSelectedContents(sel, true);
                         }
                         if (!isNullOrUndefined(this.editorHistory.currentHistoryInfo) &&
                             this.editorHistory.currentHistoryInfo.action === 'PageBreak' && this.viewer.blockToShift) {
@@ -56559,8 +56739,8 @@ var BaseHistoryInfo = /** @__PURE__ @class */ (function () {
                 || this.action === 'InsertColumnLeft'
                 || this.action === 'InsertColumnRight') && (this.editorHistory.isRedoing
                 || this.editorHistory.currentHistoryInfo.action === 'Paste'))) {
-            selectionStartTextPosition = this.getTextPosition(start);
-            selectionEndTextPosition = this.getTextPosition(end);
+            selectionStartTextPosition = this.owner.selection.getTextPosBasedOnLogicalIndex(start);
+            selectionEndTextPosition = this.owner.selection.getTextPosBasedOnLogicalIndex(end);
             this.owner.selection.selectRange(selectionStartTextPosition, selectionEndTextPosition);
             isSelectionChanged = true;
         }
@@ -56577,7 +56757,7 @@ var BaseHistoryInfo = /** @__PURE__ @class */ (function () {
         if (!isNullOrUndefined(this.editorHistory.currentHistoryInfo)) {
             // tslint:disable-next-line:max-line-length
             if (this.action === 'ListCharacterFormat' || (this.editorHistory.currentHistoryInfo.action === 'ListSelect' && this.action === 'ListFormat')) {
-                var selectionStartTextPosition = this.getTextPosition(this.selectionStart);
+                var selectionStartTextPosition = this.owner.selection.getTextPosBasedOnLogicalIndex(this.selectionStart);
                 var widget = selectionStartTextPosition.currentWidget;
                 this.viewer.selection.highlightListText(widget);
             }
@@ -56732,7 +56912,7 @@ var BaseHistoryInfo = /** @__PURE__ @class */ (function () {
                             this.owner.selection.getNextRenderedBlock(lastNode);
                             if (isNullOrUndefined(nextBlock)) {
                                 //Sets the selection as starting of last paragraph.
-                                this.owner.selection.selectParagraph(lastNode, true);
+                                this.owner.selection.selectParagraphInternal(lastNode, true);
                             }
                         }
                     }
@@ -56746,7 +56926,7 @@ var BaseHistoryInfo = /** @__PURE__ @class */ (function () {
                                 var nextBlock = this.viewer.selection.getNextParagraphBlock(firstBlock.getSplitWidgets().pop());
                                 if (isNullOrUndefined(nextBlock)) {
                                     //Sets the selection as starting of last paragraph.
-                                    this.owner.selection.selectParagraph(firstBlock, true);
+                                    this.owner.selection.selectParagraphInternal(firstBlock, true);
                                 }
                             }
                         }
@@ -56784,7 +56964,7 @@ var BaseHistoryInfo = /** @__PURE__ @class */ (function () {
                         // tslint:disable-next-line:max-line-length
                         var paragraph = this.viewer.selection.getNextParagraphBlock(firstNode.getSplitWidgets().pop());
                         if (!isNullOrUndefined(paragraph)) {
-                            this.owner.selection.selectParagraph(paragraph, true);
+                            this.owner.selection.selectParagraphInternal(paragraph, true);
                         }
                     }
                     else if (deletedNodes[0] instanceof TableWidget && deletedNodes.length !== 1) {
@@ -56885,13 +57065,6 @@ var BaseHistoryInfo = /** @__PURE__ @class */ (function () {
         }
         this.currentPropertyIndex = 0;
         this.owner.isShiftingEnabled = true;
-    };
-    BaseHistoryInfo.prototype.getTextPosition = function (hierarchicalIndex) {
-        var textPosition = new TextPosition(this.owner);
-        var blockInfo = this.owner.editorModule.getParagraph({ index: hierarchicalIndex });
-        var lineInfo = this.owner.editorModule.getLineInfo(blockInfo.paragraph, blockInfo.offset);
-        textPosition.setPositionForLineWidget(lineInfo.line, lineInfo.offset);
-        return textPosition;
     };
     /**
      * Add modified properties for section format
@@ -69747,25 +69920,29 @@ var BulletsAndNumberingDialog = /** @__PURE__ @class */ (function () {
         this.tabObj = new Tab({
             items: [
                 {
-                    header: { 'text': locale.getConstant('Numbering') },
-                    /* tslint:disable-next-line:max-line-length */
-                    content: ('#' + id + '_Number'),
+                    header: { 'text': createElement('div', { innerHTML: locale.getConstant('Numbering') }) },
+                    content: this.numberListDiv,
                 },
                 {
-                    header: { 'text': locale.getConstant('Bullets') },
-                    /* tslint:disable-next-line:max-line-length */
-                    content: ('#' + id + '_Bullet'),
-                },
+                    header: { 'text': createElement('div', { innerHTML: locale.getConstant('Bullets') }) },
+                    content: this.bulletListDiv,
+                }
             ],
             heightAdjustMode: 'None',
             width: 272,
+            selecting: this.onTabSelect.bind(this)
         });
         //Render initialized Tab component
         this.tabObj.appendTo(tabTarget);
     };
+    BulletsAndNumberingDialog.prototype.onTabSelect = function (args) {
+        if (args.selectingIndex === 1) {
+            this.bulletListDiv.style.display = 'block';
+        }
+    };
     BulletsAndNumberingDialog.prototype.createNumberList = function (id) {
-        var numberListDiv = createElement('div', { className: 'e-de-style-numbered-list', id: id + '_Number' });
-        numberListDiv.style.display = 'none';
+        this.numberListDiv = createElement('div', { className: 'e-de-style-numbered-list', id: id + '_Number' });
+        var numberListDiv = this.numberListDiv;
         numberListDiv.style.height = '270px';
         var ulTag = createElement('ul', {
             styles: 'display: block; outline: 0px;',
@@ -69838,9 +70015,10 @@ var BulletsAndNumberingDialog = /** @__PURE__ @class */ (function () {
         return liTag;
     };
     BulletsAndNumberingDialog.prototype.createBulletList = function (id) {
-        var bulletListDiv = createElement('div', { className: 'e-de-ui-bullet-list-header-presetmenu', id: id + '_Bullet' });
-        bulletListDiv.style.display = 'none';
+        this.bulletListDiv = createElement('div', { className: 'e-de-ui-bullet-list-header-presetmenu', id: id + '_Bullet' });
+        var bulletListDiv = this.bulletListDiv;
         bulletListDiv.style.height = '270px';
+        bulletListDiv.style.display = 'none';
         var ulTag = createElement('ul', {
             styles: 'display: block; outline: 0px;', id: 'listMenu',
             className: 'e-de-ui-wfloating-menu e-de-ui-bullets-menu e-de-list-container e-de-list-thumbnail'
@@ -69862,7 +70040,6 @@ var BulletsAndNumberingDialog = /** @__PURE__ @class */ (function () {
         bulletFlower.addEventListener('click', this.bulletListClick);
         bulletArrow.addEventListener('click', this.bulletListClick);
         bulletTick.addEventListener('click', this.bulletListClick);
-        // bulletListDiv.appendChild(table1);        
         this.target.appendChild(bulletListDiv);
     };
     /**
@@ -69948,6 +70125,8 @@ var BulletsAndNumberingDialog = /** @__PURE__ @class */ (function () {
             }
             this.target = undefined;
         }
+        this.bulletListDiv = undefined;
+        this.numberListDiv = undefined;
     };
     return BulletsAndNumberingDialog;
 }());
@@ -74698,12 +74877,14 @@ var Text = /** @__PURE__ @class */ (function () {
             fields: { text: 'FontName', value: 'FontName' },
             popupHeight: '150px',
             cssClass: 'e-de-prop-dropdown',
-            itemTemplate: '<span style="font-family: ${FontName};">${FontName}</span>',
             allowCustom: true,
             showClearButton: false,
             enableRtl: this.isRtl
         });
-        this.fontFamily.isStringTemplate = true;
+        if (!this.container.enableCsp) {
+            this.fontFamily.itemTemplate = '<span style="font-family: ${FontName};">${FontName}</span>';
+            this.fontFamily.isStringTemplate = true;
+        }
         this.fontFamily.focus = function () { _this.isRetrieving = false; _this.fontFamily.element.select(); };
         this.fontFamily.appendTo(fontSelectElement);
         this.fontFamily.element.parentElement.setAttribute('title', this.localObj.getConstant('Font'));
@@ -75457,12 +75638,14 @@ var Paragraph = /** @__PURE__ @class */ (function () {
             enableRtl: this.isRtl,
             query: new Query().select(['StyleName', 'Style']),
             fields: { text: 'StyleName', value: 'StyleName' },
-            open: this.updateOptions,
-            change: this.selectStyleValue,
-            itemTemplate: '<span style="${Style}">${StyleName}</span>',
-            footerTemplate: '<span class="e-de-ctnr-dropdown-ftr">' + this.localObj.getConstant('Manage Styles') + '</span>'
+            change: this.selectStyleValue
         });
-        this.style.isStringTemplate = true;
+        if (!this.container.enableCsp) {
+            this.style.open = this.updateOptions;
+            this.style.itemTemplate = '<span style="${Style}">${StyleName}</span>';
+            this.style.footerTemplate = '<span class="e-de-ctnr-dropdown-ftr">' + this.localObj.getConstant('Manage Styles') + '</span>';
+            this.style.isStringTemplate = true;
+        }
         this.style.appendTo(selectElement);
         selectElement.parentElement.setAttribute('title', this.localObj.getConstant('Styles'));
     };
@@ -76561,11 +76744,13 @@ var TableProperties = /** @__PURE__ @class */ (function () {
             _this.wireEvent();
         };
         this.addTablePropertyTab = function () {
+            var tableHeader = createElement('div', { innerHTML: _this.localObj.getConstant('Table') });
+            var textHeader = createElement('div', { innerHTML: _this.localObj.getConstant('Text') });
             // tslint:disable-next-line:max-line-length
             _this.parentElement = createElement('div', { styles: 'height:100%;overflow:auto;display:none', className: 'e-de-prop-pane' });
             _this.element = createElement('div', { id: _this.elementId + '_propertyTabDiv', className: 'e-de-property-tab' });
             // tslint:disable-next-line:max-line-length
-            var items = [{ header: { text: _this.localObj.getConstant('Table') }, content: _this.tableProperties }, { header: { text: _this.localObj.getConstant('Text') }, content: _this.tableTextProperties.element }];
+            var items = [{ header: { text: tableHeader }, content: _this.tableProperties }, { header: { text: textHeader }, content: _this.tableTextProperties.element }];
             _this.propertiesTab = new Tab({ items: items, animation: { previous: { effect: 'None' }, next: { effect: 'None' } }, selected: _this.onTabSelection });
             _this.propertiesTab.isStringTemplate = true;
             _this.propertiesTab.appendTo(_this.element);
@@ -78084,6 +78269,9 @@ var DocumentEditorContainer = /** @__PURE__ @class */ (function (_super) {
     __decorate$1([
         Property(2000)
     ], DocumentEditorContainer.prototype, "zIndex", void 0);
+    __decorate$1([
+        Property(false)
+    ], DocumentEditorContainer.prototype, "enableCsp", void 0);
     __decorate$1([
         Event()
     ], DocumentEditorContainer.prototype, "created", void 0);

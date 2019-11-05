@@ -417,9 +417,9 @@ export class FilterDialog {
         for (let type of types) {
             if (((type === 'Label') && this.parent.dataSourceSettings.allowLabelFilter) ||
                 (type === 'Value' && this.parent.dataSourceSettings.allowValueFilter)) {
-                let filterType: FilterType = (type === 'Label' && ((member).match(regx) &&
+                let filterType: FilterType = (type === 'Label' && member && ((member).match(regx) &&
                     (member).match(regx)[0].length === (member).length) && fieldType === 'number') ? 'Number' :
-                    (type === 'Label' && (new Date(member).toString() !== 'Invalid Date') &&
+                    (type === 'Label' && member && (new Date(member).toString() !== 'Invalid Date') &&
                         ((formatObj && formatObj.type) || (this.filterObject && this.filterObject.type === 'Date'))) ? 'Date' : type;
                 let item: TabItemModel = {
                     header: {
@@ -437,6 +437,7 @@ export class FilterDialog {
             (this.filterObject ? ((['Label', 'Date', 'Number'] as FilterType[]).indexOf(this.filterObject.type) >= 0) ?
                 1 : this.filterObject.type === 'Value' ?
                     (this.parent.dataSourceSettings.allowLabelFilter && this.parent.dataSourceSettings.allowValueFilter) ? 2 : 1 : 0 : 0);
+        selectedIndex = (!this.parent.dataSourceSettings.allowMemberFilter && selectedIndex === 0) ? 1 : selectedIndex;
         this.tabObj = new Tab({
             heightAdjustMode: 'Auto',
             items: items,
@@ -446,10 +447,14 @@ export class FilterDialog {
         });
         this.tabObj.isStringTemplate = true;
         this.tabObj.appendTo(wrapper);
+        if (!this.parent.dataSourceSettings.allowMemberFilter) {
+            this.tabObj.hideTab(0);
+        }
         if (selectedIndex > 0) {
             /* tslint:disable-next-line:max-line-length */
             addClass([this.dialogPopUp.element.querySelector('.e-filter-div-content' + '.' + (selectedIndex === 1 && this.parent.dataSourceSettings.allowLabelFilter ? 'e-label-filter' : 'e-value-filter'))], 'e-selected-tab');
         }
+
     }
     /* tslint:disable */
     private createCustomFilter(fieldName: string, filterObject: IFilter, type: string): HTMLElement {
@@ -925,7 +930,8 @@ export class FilterDialog {
         if (filterObj && ((((['Label', 'Date', 'Number'] as FilterType[]).indexOf(filterObj.type) >= 0) &&
             this.parent.dataSourceSettings.allowLabelFilter) ||
             (filterObj.type === 'Value' && this.parent.dataSourceSettings.allowValueFilter) ||
-            ((['Include', 'Exclude'] as FilterType[]).indexOf(filterObj.type) >= 0))) {
+            ((['Include', 'Exclude'] as FilterType[]).indexOf(filterObj.type) >= 0 &&
+                this.parent.eventBase.isValidFilterItemsAvail(fieldName, filterObj)))) {
             return filterObj;
         }
         return undefined;

@@ -2,6 +2,18 @@
 
 ## [Unreleased]
 
+## 17.3.26 (2019-11-05)
+
+### Chart
+
+#### New Features
+
+- #250563 - Provided support to render background image for chart.
+
+#### Bug Fixes
+
+- #253297 - Cross shape is now working fine in scatter chart.
+
 ## 17.3.21 (2019-10-30)
 
 ### Chart

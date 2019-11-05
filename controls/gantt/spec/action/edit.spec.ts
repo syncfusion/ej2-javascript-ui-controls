@@ -1,12 +1,12 @@
 /**
  * Gantt taskbaredit spec
  */
-import { Gantt, Edit, Selection, IGanttData, IActionBeginEventArgs } from '../../src/index';
+import { Gantt, Edit, Selection, IGanttData, Filter, IActionBeginEventArgs } from '../../src/index';
 import { cellEditData, resourcesData } from '../base/data-source.spec';
 import { createGantt, destroyGantt } from '../base/gantt-util.spec';
 import { getValue } from '@syncfusion/ej2-base';
 
-Gantt.Inject(Edit, Selection);
+Gantt.Inject(Edit, Selection, Filter);
 describe('Gantt Edit support', () => {
     describe('Gantt Edit action', () => {
         let ganttObj: Gantt;
@@ -26,6 +26,7 @@ describe('Gantt Edit support', () => {
                         baselineEndDate: 'BaselineEndDate',
                         resourceInfo: 'Resource',
                         dependency: 'Predecessor',
+                        indicators: 'Indicators',
                         child: 'subtasks'
                     },
                     resourceIDMapping: 'resourceId',
@@ -50,6 +51,7 @@ describe('Gantt Edit support', () => {
                     },
                     allowSelection: true,
                     allowUnscheduledTasks: true,
+                    allowFiltering: true,
                     columns: [
                         { field: 'TaskID', width: 60 },
                         { field: 'TaskName', editType: 'stringedit', width: 100 },
@@ -248,15 +250,99 @@ describe('Gantt Edit support', () => {
             expect(ganttObj.flatData.length).toBe(20);
         });
 
-        it('Arg cancel true value to remove record', () => {
-            ganttObj.actionBegin = (args: IActionBeginEventArgs) => {
-                args.cancel = true;
-            };
+        it('Add record with Editing module false value', () => {
+            ganttObj.editSettings.allowAdding = false;
             ganttObj.dataBind();
-            let data: object[] = [{ TaskID: 21, TaskName: 'Addparenttask', Duration: 5, Notes: 'Notes 6',
-            BaselineStartDate: new Date('04/02/2019'), BaselineEndDate: new Date('04/07/2019'), Resource: [2] }];
-            ganttObj.addRecord(data[0],'Child',3);
+            let data: object[] = [{ TaskID: 20, TaskName: 'New Task', Duration: 5, Notes: 'Notes 6',
+            BaselineStartDate: new Date('04/02/2019'), BaselineEndDate: new Date('04/07/2019'), Resource: [2]  }];
+            ganttObj.editModule.addRecord(data[0],'Below');
             expect(ganttObj.flatData.length).toBe(20);
+        });
+
+        it('Add record without Editing module', () => {
+            ganttObj.editModule.destroy();
+            ganttObj.dataBind();
+            let data: object[] = [{ TaskID: 20, TaskName: 'New Task', Duration: 5, Notes: 'Notes 6',
+            BaselineStartDate: new Date('04/02/2019'), BaselineEndDate: new Date('04/07/2019'), Resource: [2]  }];
+            ganttObj.editModule.addRecord(data[0],'Below');
+            expect(ganttObj.flatData.length).toBe(20);
+        });
+
+        it('Search record without Filter module', () => {
+            ganttObj.filterModule.destroy();
+            ganttObj.dataBind();
+            ganttObj.search("child");
+            expect(ganttObj.flatData.length).toBe(20);
+        });
+
+        it('Changing height', () => {
+            ganttObj.height = "auto";
+            expect(ganttObj.height).toBe("auto");
+        });
+
+        it('Datasource based on indicators', () => {
+            var datasource: object[] = [
+                {
+                    TaskID: 1,
+                    TaskName: 'Parent Task',                
+                    subtasks: [
+                        { TaskID: 2, TaskName: 'Child Task 1',
+                            'Indicators': [
+                                {
+                                    'date': '10/29/2017',
+                                    'iconCls': 'fas fa-cat',
+                                    'name': 'Custom String',
+                                    'tooltip': 'Follow up'
+                                }
+                            ] 
+                        },
+                        { TaskID: 3, TaskName: 'Child Task 2' }
+                    ]
+                }
+            ];
+            ganttObj.dataSource = datasource;
+            ganttObj.projectStartDate = null;
+            ganttObj.projectEndDate = null;
+            ganttObj.dataBind();
+            expect(ganttObj.getFormatedDate(ganttObj.timelineModule.timelineStartDate, 'M/d/yyyy')).toBe('10/29/2017');
+        });
+
+        it('Datasource with P-P-unscheduled child', () => {
+            var datasource: object[] = [
+                {
+                    TaskID: 1,
+                    TaskName: 'Parent Task',                
+                    subtasks: [
+                        { TaskID: 2, TaskName: 'Child Task 1',
+                            subtasks: [
+                                { TaskID: 3, TaskName: 'Child Task 2', StartDate: new Date('04/02/2019') }
+                            ]
+                        }
+                    ]
+                }
+            ];
+            ganttObj.dataSource = datasource;
+            ganttObj.dataBind();
+            expect(ganttObj.flatData[0].ganttProperties.progress).toBe(0);
+        });
+
+        it('Datasource dates with empty string', () => {
+            var datasource: object[] = [
+                {
+                    TaskID: 1,
+                    TaskName: 'Parent Task', StartDate:"", EndDate: "",
+                    subtasks: [
+                        { TaskID: 2, TaskName: 'Child Task 1', EndDate: "",
+                            subtasks: [
+                                { TaskID: 3, TaskName: 'Child Task 2', StartDate:"" }
+                            ]
+                        }
+                    ]
+                }
+            ];
+            ganttObj.dataSource = datasource;
+            ganttObj.dataBind();
+            expect(ganttObj.flatData.length).toBe(3);
         });
     });
 });

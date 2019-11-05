@@ -49,7 +49,7 @@ export class AccumulationTooltip extends BaseTooltip {
 
     private mouseMoveHandler(e: PointerEvent | TouchEvent): void {
         let control: AccumulationChart = this.accumulation;
-        // Tooltip for chart series.    
+        // Tooltip for chart series.
         if (control.tooltip.enable && withInBounds(control.mouseX, control.mouseY, control.initialClipRect)) {
             this.tooltip(e);
         }
@@ -84,7 +84,7 @@ export class AccumulationTooltip extends BaseTooltip {
             }
         } else {
             if (!data.point && this.isRemove) {
-                this.removeTooltip(this.accumulation.tooltip.duration);
+                this.removeTooltip(this.accumulation.tooltip.fadeOutDuration);
                 this.isRemove = false;
             }
         }
@@ -92,6 +92,7 @@ export class AccumulationTooltip extends BaseTooltip {
 
     private triggerTooltipRender(point: AccPointData, isFirst: boolean, textCollection: string,
                                  headerText: string, firstText: boolean = true): void {
+        let template: string;
         let argsData: ITooltipRenderEventArgs = {
             cancel: false, name: tooltipRender, text: textCollection, point: point.point, textStyle: this.textStyle,
             series: this.accumulation.isBlazor  ?  {} as AccumulationSeries : point.series,  headerText : headerText,
@@ -104,7 +105,8 @@ export class AccumulationTooltip extends BaseTooltip {
                 this.text = this.formattedText;
                 this.headerText = argsData.headerText;
                 this.createTooltip(this.chart, isFirst, point.point.symbolLocation,
-                                   point.series.clipRect, point.point, ['Circle'], 0, this.chart.initialClipRect, null, point.point);
+                                   point.series.clipRect, point.point, ['Circle'], 0, this.chart.initialClipRect,
+                                   null, point.point, this.accumulation.tooltip.template ? argsData.template : '');
             } else {
                 this.removeHighlight(this.control);
                 remove(this.getElement(this.element.id + '_tooltip'));
@@ -178,7 +180,7 @@ export class AccumulationTooltip extends BaseTooltip {
         return 'AccumulationTooltip';
     }
     /**
-     * To destroy the Tooltip. 
+     * To destroy the Tooltip.
      * @return {void}
      * @private
      */

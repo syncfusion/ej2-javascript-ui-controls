@@ -129,7 +129,7 @@ $chip-outline-avatar-choice-active-bg-color: darken($chip-outline-choice-active-
 $chip-outline-avatar-focus-active-bg-color: darken($chip-outline-focus-active-bg-color, 12%) !default;
 $chip-outline-avatar-choice-focus-active-bg-color: darken($chip-outline-choice-focus-active-bg-color, 12%) !default;
 $chip-outline-avatar-pressed-bg-color: darken($chip-outline-pressed-bg-color, 12%) !default;
-$chip-outline-avatar-pressed-active-bg-color: darken($chip-outline-pressed-active-bg-color, 12%);
+$chip-outline-avatar-pressed-active-bg-color: darken($chip-outline-pressed-active-bg-color, 12%) !default;
 $chip-outline-avatar-disabled-bg-color: darken($chip-outline-disabled-bg-color, 12%) !default;
 $chip-outline-font-color: rgba($grey-light-font, .87) !default;
 $chip-outline-hover-font-color: rgba($grey-light-font, .87) !default;

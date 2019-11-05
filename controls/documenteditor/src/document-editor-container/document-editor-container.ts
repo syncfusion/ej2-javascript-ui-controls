@@ -64,6 +64,11 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
     @Property(2000)
     public zIndex: number;
     /**
+     * Enable rendering with strict Content Security policy.
+     */
+    @Property(false)
+    public enableCsp: boolean;
+    /**
      * Triggers when the component is created
      * @event
      * @blazorproperty 'Created'

@@ -2,6 +2,7 @@ import { Chart } from '../chart';
 import { Series } from './chart-series';
 import { firstToLowerCase } from '../../common/utils/helper';
 import { PolarSeries } from '../series/polar-series';
+import { isNullOrUndefined } from '@syncfusion/ej2-base';
 import { Axis } from '../axis/axis';
 
 /**
@@ -16,6 +17,12 @@ export class RadarSeries extends PolarSeries {
      */
     public render(series: Series, xAxis: Axis, yAxis: Axis, inverted: boolean): void {
         let seriesType: string = firstToLowerCase(series.drawType);
+        let yAxisMin: number =  <number>yAxis.minimum;
+        let yAxisMax: number = <number>yAxis.maximum;
+        for (let point of series.points)  {
+            point.visible = point.visible && !((!isNullOrUndefined(yAxisMin) && point.yValue < yAxisMin) ||
+            (!isNullOrUndefined(yAxisMax) && point.yValue > yAxisMax));
+        }
         if (series.drawType.indexOf('Column') === -1) {
             series.chart[seriesType + 'SeriesModule'].render(series, xAxis, yAxis, inverted);
         } else {

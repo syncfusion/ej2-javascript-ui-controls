@@ -415,7 +415,16 @@ describe('Gantt connector line support', () => {
             }
             ganttObj.refresh();
         });
+        it('Remove Predecessor with edit module false value', () => {
+            expect(ganttObj.flatData[2].ganttProperties.predecessorsName).toBe('2FS');
+            ganttObj.editSettings.allowTaskbarEditing = false;
+            ganttObj.dataBind();
+            ganttObj.removePredecessor(Number(ganttObj.flatData[2].ganttProperties.taskId));
+            expect(ganttObj.flatData[2].ganttProperties.predecessorsName).toBe('2FS');
+        });
         it('Remove Predecessor', () => {
+            ganttObj.editSettings.allowTaskbarEditing = true;
+            ganttObj.dataBind();
             expect(ganttObj.flatData[2].ganttProperties.predecessorsName).toBe('2FS');
             ganttObj.removePredecessor(Number(ganttObj.flatData[2].ganttProperties.taskId));
             expect(ganttObj.flatData[2].ganttProperties.predecessorsName).toBe('');
@@ -425,7 +434,22 @@ describe('Gantt connector line support', () => {
             ganttObj.addPredecessor(Number(ganttObj.flatData[2].ganttProperties.taskId), '2FS');
             expect(ganttObj.flatData[2].ganttProperties.predecessorsName).toBe('2FS');
         });
+        it('Add Predecessor with edit module false value', () => {
+            expect(ganttObj.flatData[2].ganttProperties.predecessorsName).toBe('2FS');
+            ganttObj.editSettings.allowTaskbarEditing = false;
+            ganttObj.dataBind();
+            ganttObj.addPredecessor(Number(ganttObj.flatData[2].ganttProperties.taskId), '4FS');
+            expect(ganttObj.flatData[2].ganttProperties.predecessorsName).toBe('2FS');
+        });
+        it('Update Predecessor with edit module false value', () => {
+            ganttObj.editSettings.allowTaskbarEditing = false;
+            ganttObj.dataBind();
+            ganttObj.updatePredecessor(Number(ganttObj.flatData[4].ganttProperties.taskId), '3FS');
+            expect(ganttObj.flatData[2].ganttProperties.predecessorsName).toBe('2FS');
+        });
         it('Update Predecessor with same taskID', () => {
+            ganttObj.editSettings.allowTaskbarEditing = true;
+            ganttObj.dataBind();
             ganttObj.updatePredecessor(Number(ganttObj.flatData[2].ganttProperties.taskId), '2FS,2');
             expect(ganttObj.flatData[2].ganttProperties.predecessorsName).toBe('2FS');
         });

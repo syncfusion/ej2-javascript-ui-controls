@@ -333,6 +333,14 @@ export class DatePicker extends Calendar implements IInput {
     @Property('Never')
     public floatLabelType: FloatLabelType | string;
 
+    /**
+     * By default, the date value will be processed based on system time zone.
+     * If you want to process the initial date value using server time zone 
+     * then specify the time zone value to `serverTimezoneOffset` property.
+     */
+    @Property(null)
+    public serverTimezoneOffset: number;
+
     /** 
      * Triggers when the popup is opened.
      * @event
@@ -391,6 +399,22 @@ export class DatePicker extends Calendar implements IInput {
         this.initialize();
         this.bindEvents();
         this.renderComplete();
+        this.setTimeZone(this.serverTimezoneOffset);
+    }
+    protected setTimeZone(offsetValue: number ): void {
+        if (this.serverTimezoneOffset && this.value) {
+            let clientTimeZoneDiff: number = new Date().getTimezoneOffset() / 60;
+            let serverTimezoneDiff: number = offsetValue;
+            let timeZoneDiff: number = serverTimezoneDiff + clientTimeZoneDiff;
+            timeZoneDiff = this.isDayLightSaving() ? timeZoneDiff-- : timeZoneDiff;
+            this.value = new Date((this.value).getTime() + (timeZoneDiff * 60 * 60 * 1000));
+            this.updateInput();
+        }
+    }
+    protected isDayLightSaving(): boolean {
+        let firstOffset: number = new Date(this.value.getFullYear(), 0 , 1).getTimezoneOffset();
+        let secondOffset: number = new Date(this.value.getFullYear(), 6 , 1).getTimezoneOffset();
+        return (this.value.getTimezoneOffset() < Math.max(firstOffset, secondOffset));
     }
 
     protected setAllowEdit(): void {

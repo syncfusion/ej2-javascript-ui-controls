@@ -778,7 +778,7 @@ export abstract class LayoutViewer {
     private createEditableIFrame(): void {
         this.iframe = createElement('iframe', {
             attrs: {
-                'scrolling': 'no', 'src': 'javascript:false',
+                'scrolling': 'no',
                 // tslint:disable-next-line:max-line-length
                 'style': 'pointer-events:none;position:absolute;left:0px;top:0px;outline:none;background-color:transparent;width:0px;height:0px;overflow:hidden'
             },
@@ -2205,7 +2205,7 @@ export abstract class LayoutViewer {
                 if (tapCount % 2 === 0) {
                     this.owner.selection.selectCurrentWord();
                 } else {
-                    this.owner.selection.selectCurrentParagraph();
+                    this.owner.selection.selectParagraph();
                 }
             }
         }

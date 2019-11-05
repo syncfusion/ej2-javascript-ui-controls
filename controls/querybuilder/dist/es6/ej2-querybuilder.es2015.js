@@ -663,7 +663,6 @@ let QueryBuilder = class QueryBuilder extends Component {
         this.updateRules(element, (tempColl.length > 1) ? valueColl : value);
     }
     changeValue(i, args) {
-        let eventsArgs;
         let groupID;
         let ruleID;
         let element;
@@ -708,14 +707,24 @@ let QueryBuilder = class QueryBuilder extends Component {
         else {
             value = args.value;
         }
-        eventsArgs = { groupID: groupID, ruleID: ruleID, value: value, cancel: false, type: 'value' };
+        if (args.name === 'input' && this.immediateModeDelay) {
+            window.clearInterval(this.timer);
+            this.timer = window.setInterval(() => { this.filterValue(groupID, ruleID, value, i, element); }, this.immediateModeDelay);
+        }
+        else {
+            this.filterValue(groupID, ruleID, value, i, element);
+        }
+    }
+    filterValue(grID, rlID, value, i, ele) {
+        let eventsArgs = { groupID: grID, ruleID: rlID, value: value, cancel: false, type: 'value' };
+        window.clearInterval(this.timer);
         if (!this.isImportRules) {
             this.trigger('beforeChange', eventsArgs, (observedChangeArgs) => {
-                this.changeValueSuccessCallBack(observedChangeArgs, element, i, groupID, ruleID);
+                this.changeValueSuccessCallBack(observedChangeArgs, ele, i, grID, rlID);
             });
         }
         else {
-            this.changeValueSuccessCallBack(eventsArgs, element, i, groupID, ruleID);
+            this.changeValueSuccessCallBack(eventsArgs, ele, i, grID, rlID);
         }
     }
     changeValueSuccessCallBack(args, element, i, groupID, ruleID) {
@@ -951,6 +960,11 @@ let QueryBuilder = class QueryBuilder extends Component {
             }
             detach(divElement[i]);
         }
+        let templateElement;
+        templateElement = target.nextElementSibling.querySelectorAll('.e-template:not(.e-control)');
+        for (let i = 0, len = templateElement.length; i < len; i++) {
+            detach(templateElement[i]);
+        }
     }
     templateDestroy(column, elemId) {
         let temp = column.template.destroy;
@@ -1074,21 +1088,27 @@ let QueryBuilder = class QueryBuilder extends Component {
         this.updateRules(element, value, i);
     }
     processTemplate(target, itemData, rule, tempRule) {
-        let tempElements = closest(target, '.e-rule-container').querySelectorAll('.e-template');
+        let container = closest(target, '.e-rule-container');
+        let tempElements = container.querySelectorAll('.e-template');
+        let idx = getComponent(container.querySelector('.e-rule-filter .e-filter-input'), 'dropdownlist').index;
         if (tempElements.length < 2) {
             if (itemData.template && typeof itemData.template.write === 'string') {
-                getValue(itemData.template.write, window)({ elements: tempElements[0], values: rule.value, operator: tempRule.operator });
+                getValue(itemData.template.write, window)({ elements: tempElements[0], values: rule.value, operator: tempRule.operator,
+                    dataSource: this.columns[idx].values });
             }
             else if (itemData.template && itemData.template.write) {
-                itemData.template.write({ elements: tempElements[0], values: rule.value, operator: tempRule.operator });
+                itemData.template.write({ elements: tempElements[0], values: rule.value, operator: tempRule.operator,
+                    dataSource: this.columns[idx].values });
             }
         }
         else {
             if (itemData.template && typeof itemData.template.write === 'string') {
-                getValue(itemData.template.write, window)({ elements: tempElements, values: rule.value, operator: tempRule.operator });
+                getValue(itemData.template.write, window)({ elements: tempElements, values: rule.value, operator: tempRule.operator,
+                    dataSource: this.columns[idx].values });
             }
             else if (itemData.template && itemData.template.write) {
-                itemData.template.write({ elements: tempElements, values: rule.value, operator: tempRule.operator });
+                itemData.template.write({ elements: tempElements, values: rule.value, operator: tempRule.operator,
+                    dataSource: this.columns[idx].values });
             }
         }
     }
@@ -1380,7 +1400,7 @@ let QueryBuilder = class QueryBuilder extends Component {
                 if (valElem instanceof Element) {
                     valElem.id = parentId + '_valuekey0';
                     addClass([valElem], 'e-template');
-                    addClass([valElem], 'e-' + itemData.field);
+                    addClass([valElem], 'e-' + this.columns[filtObj.index].field);
                     target.nextElementSibling.appendChild(valElem);
                 }
                 else if (valElem instanceof Array) {
@@ -1985,7 +2005,7 @@ let QueryBuilder = class QueryBuilder extends Component {
                 { value: 'isempty', key: this.l10n.getConstant('IsEmpty') },
                 { value: 'isnotempty', key: this.l10n.getConstant('IsNotEmpty') },
                 { value: 'isnull', key: this.l10n.getConstant('IsNull') },
-                { value: 'isnotnull', key: this.l10n.getConstant('IsNotNull') },
+                { value: 'isnotnull', key: this.l10n.getConstant('IsNotNull') }
             ],
             dateOperator: [
                 { value: 'equal', key: this.l10n.getConstant('Equal') },
@@ -2017,7 +2037,8 @@ let QueryBuilder = class QueryBuilder extends Component {
         this.operators = {
             equal: '=', notequal: '!=', greaterthan: '>', greaterthanorequal: '>=', lessthan: '<', in: 'IN', notin: 'NOT IN',
             lessthanorequal: '<=', startswith: 'LIKE', endswith: 'LIKE', between: 'BETWEEN', notbetween: 'NOT BETWEEN', contains: 'LIKE',
-            isnull: 'IS NULL', isnotnull: 'IS NOT NULL', isempty: 'IS EMPTY', isnotempty: 'IS NOT EMPTY'
+            isnull: 'IS NULL', isnotnull: 'IS NOT NULL', isempty: 'IS EMPTY', isnotempty: 'IS NOT EMPTY', notstartswith: 'NOT LIKE',
+            notendswith: 'NOT LIKE', notcontains: 'NOT LIKE'
         };
         this.fields = { text: 'label', value: 'field' };
     }
@@ -2376,6 +2397,7 @@ let QueryBuilder = class QueryBuilder extends Component {
         let ruleValue;
         let ignoreCase = false;
         let column;
+        let ignoreOper = ['notcontains', 'notstartswith', 'notendswith'];
         if (!ruleColl) {
             return pred;
         }
@@ -2424,19 +2446,22 @@ let QueryBuilder = class QueryBuilder extends Component {
                 }
                 if (i === 0) {
                     if ((oper.indexOf('in') > -1 || oper.indexOf('between') > -1 || oper.indexOf('null') > -1 ||
-                        oper.indexOf('empty') > -1) && oper !== 'contains') {
+                        oper.indexOf('empty') > -1) && oper.indexOf('contains') < 0) {
                         pred = isDateFilter ? this.datePredicate(ruleColl[i], ruleValue) : this.arrayPredicate(ruleColl[i]);
                     }
                     else {
                         let value = ruleValue;
-                        if (value !== '') {
+                        if (value !== '' && ignoreOper.indexOf(oper) < 0) {
                             pred = new Predicate(ruleColl[i].field, ruleColl[i].operator, ruleValue, ignoreCase);
                         }
                     }
                 }
                 else {
+                    if (ignoreOper.indexOf(oper) > -1) {
+                        continue;
+                    }
                     if (isDateFilter || (oper.indexOf('in') > -1 || oper.indexOf('between') > -1 ||
-                        oper.indexOf('null') > -1 || oper.indexOf('empty') > -1) && oper !== 'contains') {
+                        oper.indexOf('null') > -1 || oper.indexOf('empty') > -1) && oper.indexOf('contains') < 0) {
                         pred = isDateFilter ? this.datePredicate(ruleColl[i], ruleValue, pred, rule.condition) :
                             this.arrayPredicate(ruleColl[i], pred, rule.condition);
                     }
@@ -2628,7 +2653,7 @@ let QueryBuilder = class QueryBuilder extends Component {
             this.addRuleElement(parentElem.querySelector('.e-group-container'), rule); //Create group
         }
     }
-    getSqlString(rules, queryStr) {
+    getSqlString(rules, enableEscape, queryStr) {
         let isRoot = false;
         if (!queryStr) {
             queryStr = '';
@@ -2640,7 +2665,7 @@ let QueryBuilder = class QueryBuilder extends Component {
         let condition = rules.condition;
         for (let j = 0, jLen = rules.rules.length; j < jLen; j++) {
             if (rules.rules[j].rules) {
-                queryStr = this.getSqlString(rules.rules[j], queryStr);
+                queryStr = this.getSqlString(rules.rules[j], enableEscape, queryStr);
             }
             else {
                 let rule = rules.rules[j];
@@ -2663,13 +2688,13 @@ let QueryBuilder = class QueryBuilder extends Component {
                     }
                 }
                 else {
-                    if (rule.operator === 'startswith') {
+                    if (rule.operator.indexOf('startswith') > -1) {
                         valueStr += '("' + rule.value + '%")';
                     }
-                    else if (rule.operator === 'endswith') {
+                    else if (rule.operator.indexOf('endswith') > -1) {
                         valueStr += '("%' + rule.value + '")';
                     }
-                    else if (rule.operator === 'contains') {
+                    else if (rule.operator.indexOf('contains') > -1) {
                         valueStr += '("%' + rule.value + '%")';
                     }
                     else {
@@ -2682,10 +2707,16 @@ let QueryBuilder = class QueryBuilder extends Component {
                     }
                 }
                 if (rule.operator.indexOf('null') > -1 || (rule.operator.indexOf('empty') > -1)) {
+                    if (enableEscape) {
+                        rule.field = '`' + rule.field + '`';
+                    }
                     queryStr += rule.field + ' ' + this.operators[rule.operator];
                 }
                 else {
-                    queryStr += rule.field + ' ' + (this.operators[rule.operator] || rule.operator) + ' ' + valueStr;
+                    if (enableEscape) {
+                        rule.field = '`' + rule.field + '`';
+                    }
+                    queryStr += rule.field + ' ' + this.operators[rule.operator] + ' ' + valueStr;
                 }
             }
             if (j !== jLen - 1) {
@@ -2701,6 +2732,7 @@ let QueryBuilder = class QueryBuilder extends Component {
      * Sets the rules from the sql query.
      */
     setRulesFromSql(sqlString) {
+        sqlString = sqlString.replace(/`/g, '');
         let ruleModel = this.getRulesFromSql(sqlString);
         this.setRules({ condition: ruleModel.condition, rules: ruleModel.rules });
     }
@@ -2719,9 +2751,9 @@ let QueryBuilder = class QueryBuilder extends Component {
      * Gets the sql query from rules.
      * @returns object.
      */
-    getSqlFromRules(rule) {
+    getSqlFromRules(rule, allowEscape) {
         rule = this.getRuleCollection(rule, false);
-        return this.getSqlString(this.getValidRules(rule)).replace(/"/g, '\'');
+        return this.getSqlString(this.getValidRules(rule), allowEscape).replace(/"/g, '\'');
     }
     sqlParser(sqlString) {
         let st = 0;
@@ -2812,14 +2844,14 @@ let QueryBuilder = class QueryBuilder extends Component {
             '>=': 'greaterthanorequal', 'in': 'in', 'not in': 'notin', 'between': 'between', 'not between': 'notbetween',
             'is empty': 'isempty', 'is null': 'isnull', 'is not null': 'isnotnull', 'is not empty': 'isnotempty'
         };
-        if (value.indexOf('%') === 0 && value.indexOf('%') === value.length - 1) {
-            return 'contains';
+        if (value.indexOf('%') === 0 && value[value.length - 1] === '%') {
+            return (operator === 'not like') ? 'notcontains' : 'contains';
         }
         else if (value.indexOf('%') === 0 && value.indexOf('%') !== value.length - 1) {
-            return 'startswith';
+            return (operator === 'not like') ? 'notstartswith' : 'startswith';
         }
         else if (value.indexOf('%') !== 0 && value.indexOf('%') === value.length - 1) {
-            return 'endswith';
+            return (operator === 'not like') ? 'notendswith' : 'endswith';
         }
         return operators[operator];
     }
@@ -2871,7 +2903,7 @@ let QueryBuilder = class QueryBuilder extends Component {
                             if (operator.indexOf('null') > -1 || operator.indexOf('empty') > -1) {
                                 break;
                             }
-                            if (operator === 'like' && parser[j][0] === 'String') {
+                            if (operator.indexOf('like') > -1 && parser[j][0] === 'String') {
                                 rule.value = parser[j][1].replace(/'/g, '').replace(/%/g, '');
                                 rule.type = 'string';
                             }
@@ -2893,7 +2925,7 @@ let QueryBuilder = class QueryBuilder extends Component {
                             }
                         }
                     }
-                    if (operator !== 'like') {
+                    if (operator.indexOf('like') < 0) {
                         if (parser[j - 1][0] === 'Number') {
                             rule.value = numVal;
                             rule.type = 'number';
@@ -3008,6 +3040,9 @@ __decorate([
 __decorate([
     Property(false)
 ], QueryBuilder.prototype, "matchCase", void 0);
+__decorate([
+    Property(0)
+], QueryBuilder.prototype, "immediateModeDelay", void 0);
 __decorate([
     Complex({ condition: 'and', rules: [] }, Rule)
 ], QueryBuilder.prototype, "rule", void 0);

@@ -1531,7 +1531,7 @@ export class AnnotationToolbar {
                 break;
             case this.pdfViewer.element.id + '_annotation_signature':
             case this.pdfViewer.element.id + '_annotation_signatureIcon':
-                this.resetFreeTextAnnot();
+                this.deselectAllItems();
                 this.showSignaturepanel();
         }
     }
@@ -2002,6 +2002,7 @@ export class AnnotationToolbar {
         this.isStrikethroughEnabled = false;
         if (this.pdfViewerBase.isTextMarkupAnnotationModule()) {
             this.pdfViewer.annotationModule.textMarkupAnnotationModule.isTextMarkupAnnotationMode = false;
+            this.pdfViewer.annotationModule.textMarkupAnnotationModule.showHideDropletDiv(true);
         }
         if (!Browser.isDevice) {
             this.primaryToolbar.deSelectItem(this.highlightItem);

@@ -12324,7 +12324,7 @@ class PasteCleanup {
         this.detachInlineElements(clipBoardElem);
         this.getTextContent(clipBoardElem);
         if (clipBoardElem.textContent.trim() !== '') {
-            if (clipBoardElem.firstElementChild.tagName !== 'BR') {
+            if (!isNullOrUndefined(clipBoardElem.firstElementChild) && clipBoardElem.firstElementChild.tagName !== 'BR') {
                 let firstElm = clipBoardElem.firstElementChild;
                 if (!isNullOrUndefined(clipBoardElem.firstElementChild)) {
                     let spanElm = this.parent.createElement('span');

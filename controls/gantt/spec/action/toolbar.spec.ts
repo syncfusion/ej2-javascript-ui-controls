@@ -51,6 +51,12 @@ describe('Gantt toolbar support', () => {
             expect(toolbar.getElementsByClassName('e-toolbar-item').length).toBe(15);
         });
 
+        it('Ensuring proper toolbar display', () => {
+            ganttObj.toolbar = ["Add", "Cancel", "CollapseAll", "Delete", "Edit", "ExpandAll", "NextTimeSpan", "PrevTimeSpan", "Search" ,"Update","ZoomIn","ZoomOut","ZoomToFit"];
+            ganttObj.dataBind();
+            expect(expect(ganttObj.element.getElementsByClassName('e-hidden').length).toBe(4));
+        });
+
         it('Add handler function', () => {
             let add: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + '_add') as HTMLElement;
             triggerMouseEvent(add, 'click');

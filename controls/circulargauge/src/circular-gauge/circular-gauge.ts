@@ -1,7 +1,7 @@
 /**
  * Circular Gauge
  */
-import { Property, NotifyPropertyChanges, Component, INotifyPropertyChanged } from '@syncfusion/ej2-base';
+import { Property, NotifyPropertyChanges, Component, INotifyPropertyChanged, isBlazor } from '@syncfusion/ej2-base';
 import { Complex, Browser, isNullOrUndefined, resetBlazorTemplate } from '@syncfusion/ej2-base';
 import { Event, EmitType, EventHandler, Collection, Internationalization, ModuleDeclaration } from '@syncfusion/ej2-base';
 import { remove, createElement } from '@syncfusion/ej2-base';
@@ -387,8 +387,7 @@ export class CircularGauge extends Component<HTMLElement> implements INotifyProp
      */
     //tslint:disable
     protected preRender(): void {
-        let blazor: string = 'Blazor';
-        this.isBlazor = Object.keys(window).indexOf(blazor) >= 0;
+        this.isBlazor = isBlazor();
         this.unWireEvents();
         this.trigger(load, this.isBlazor ? null : { gauge: this });
         this.initPrivateVariable();

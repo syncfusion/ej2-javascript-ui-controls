@@ -460,7 +460,7 @@ export class PasteCleanup {
     this.detachInlineElements(clipBoardElem);
     this.getTextContent(clipBoardElem);
     if (clipBoardElem.textContent.trim() !== '') {
-      if (clipBoardElem.firstElementChild.tagName !== 'BR') {
+      if (!isNOU(clipBoardElem.firstElementChild) && clipBoardElem.firstElementChild.tagName !== 'BR') {
         let firstElm: Element | Node = clipBoardElem.firstElementChild;
         if (!isNOU(clipBoardElem.firstElementChild)) {
           let spanElm: HTMLElement = this.parent.createElement('span') as HTMLElement;

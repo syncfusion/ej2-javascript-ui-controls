@@ -9,9 +9,9 @@ import {
 import { WCharacterFormat } from '../format/character-format';
 import {
     ElementInfo, HelperMethods, CellInfo, HyperlinkTextInfo,
-    ParagraphInfo, LineInfo, IndexInfo, BlockInfo, CellCountInfo, PositionInfo
+    ParagraphInfo, LineInfo, IndexInfo, BlockInfo, CellCountInfo, PositionInfo, Base64
 } from './editor-helper';
-import { isNullOrUndefined, Browser, classList } from '@syncfusion/ej2-base';
+import { isNullOrUndefined, Browser, classList, L10n } from '@syncfusion/ej2-base';
 import {
     WParagraphFormat, WSectionFormat, WListFormat,
     WTableFormat, WRowFormat, WCellFormat, WStyle,
@@ -42,6 +42,7 @@ import {
 } from '../../base/types';
 import { DocumentEditor } from '../../document-editor';
 import { showSpinner, hideSpinner } from '@syncfusion/ej2-popups';
+import { DialogUtility } from '@syncfusion/ej2-popups';
 
 /** 
  * Editor module 
@@ -117,6 +118,7 @@ export class Editor {
     public isSkipHistory: boolean = false;
     public isPaste: boolean = false;
     public isPasteListUpdated: boolean = false;
+    public base64: Base64;
 
     /**
      * Initialize the editor module
@@ -126,6 +128,7 @@ export class Editor {
     constructor(viewer: LayoutViewer) {
         this.viewer = viewer;
         this.tableResize = new TableResizer(this.viewer.owner);
+        this.base64 = new Base64();
     }
     private get editorHistory(): EditorHistory {
         return this.viewer.owner.editorHistory;
@@ -230,6 +233,132 @@ export class Editor {
             return;
         }
         this.selection.copySelectedContent(true);
+    }
+    /**
+     * Insert editing region where everyone can edit.
+     */
+    public insertEditingRegion(): void;
+    /**
+     * Insert editing region where mentioned user can edit.
+     */
+    public insertEditingRegion(user: string): void
+    /**
+     * Insert editing region in current selection range.
+     */
+    public insertEditingRegion(user?: string): void {
+        this.insertEditRangeElement(user && user !== '' ? user : 'Everyone');
+    }
+    /**
+     * Enforce document protection.
+     */
+    public enforceProtection(credential: string, limitToFormatting: boolean, isReadOnly: boolean): void {
+        this.viewer.restrictFormatting = limitToFormatting;
+        this.viewer.protectionType = isReadOnly ? 'ReadOnly' : this.viewer.protectionType;
+        this.selection.isHighlightEditRegion = true;
+        this.addProtection(credential);
+    }
+    /**
+     * @private
+     */
+    public addProtection(password: string): void {
+        let enforceProtectionHandler: XmlHttpRequestHandler = new XmlHttpRequestHandler();
+        let passwordBase64: string = this.base64.encodeString(password);
+        /* tslint:disable:no-any */
+        let formObject: any = {
+            passwordBase64: passwordBase64,
+            saltBase64: '',
+            spinCount: 100000
+        };
+        /* tslint:enable:no-any */
+        let url: string = this.owner.serviceUrl + this.owner.serverActionSettings.restrictEditing;
+        enforceProtectionHandler.url = url;
+        enforceProtectionHandler.contentType = 'application/json;charset=UTF-8';
+        enforceProtectionHandler.onSuccess = this.enforceProtectionInternal.bind(this);
+        enforceProtectionHandler.onFailure = this.protectionFailureHandler.bind(this);
+        enforceProtectionHandler.onError = this.protectionFailureHandler.bind(this);
+        enforceProtectionHandler.send(formObject);
+    }
+    /* tslint:disable:no-any */
+    private protectionFailureHandler(result: any): void {
+        let localeValue: L10n = new L10n('documenteditor', this.owner.defaultLocale);
+        localeValue.setLocale(this.viewer.owner.locale);
+        if (result.name === 'onError') {
+            DialogUtility.alert(localeValue.getConstant('Error in establishing connection with web server'));
+        } else {
+            console.error(result.statusText);
+        }
+    }
+    private enforceProtectionInternal(result: any): void {
+        let data: string[] = JSON.parse(result.data);
+        this.viewer.saltValue = data[0];
+        this.viewer.hashValue = data[1];
+        this.protectDocument();
+    }
+    /* tslint:enable:no-any */
+    private protectDocument(): void {
+        this.protect(this.viewer.protectionType);
+        let restrictPane: HTMLElement = this.viewer.restrictEditingPane.restrictPane;
+        if (restrictPane && restrictPane.style.display === 'block') {
+            this.viewer.restrictEditingPane.showStopProtectionPane(true);
+            this.viewer.restrictEditingPane.loadPaneValue();
+            this.viewer.dialog.hide();
+        }
+    }
+    /**
+     * Stop document protection.
+     */
+    /* tslint:disable:no-any */
+    public stopProtection(password: string): void {
+        if (this.viewer.isDocumentProtected) {
+            let unProtectDocumentHandler: XmlHttpRequestHandler = new XmlHttpRequestHandler();
+            let passwordBase64: string = this.base64.encodeString(password);
+            let formObject: any = {
+                passwordBase64: passwordBase64,
+                saltBase64: this.viewer.saltValue,
+                spinCount: 100000
+            };
+            unProtectDocumentHandler.url = this.owner.serviceUrl + this.owner.serverActionSettings.restrictEditing;
+            unProtectDocumentHandler.contentType = 'application/json;charset=UTF-8';
+            unProtectDocumentHandler.onSuccess = this.onUnProtectionSuccess.bind(this);
+            unProtectDocumentHandler.onFailure = this.protectionFailureHandler.bind(this);
+            unProtectDocumentHandler.onError = this.protectionFailureHandler.bind(this);
+            unProtectDocumentHandler.send(formObject);
+        }
+    }
+    private onUnProtectionSuccess(result: any): void {
+        let encodeString: string[] = JSON.parse(result.data);
+        this.validateHashValue(encodeString[1]);
+    }
+    /* tslint:enable:no-any */
+    private validateHashValue(currentHashValue: string): void {
+        let localeValue: L10n = new L10n('documenteditor', this.owner.defaultLocale);
+        localeValue.setLocale(this.viewer.owner.locale);
+        let decodeUserHashValue: Uint8Array = this.base64.decodeString(currentHashValue);
+        let documentHashValue: string = this.viewer.hashValue;
+        let defaultHashValue: Uint8Array = this.base64.decodeString(documentHashValue);
+        let stopProtection: boolean = true;
+        if (decodeUserHashValue.length === defaultHashValue.length) {
+            for (let i: number = 0; i < decodeUserHashValue.length; i++) {
+                if (decodeUserHashValue[i] !== defaultHashValue[i]) {
+                    stopProtection = false;
+                    break;
+                }
+            }
+        } else {
+            stopProtection = false;
+        }
+        if (stopProtection) {
+            this.viewer.isDocumentProtected = false;
+            this.viewer.restrictFormatting = false;
+            this.viewer.selection.highlightEditRegion();
+            let restrictPane: HTMLElement = this.viewer.restrictEditingPane.restrictPane;
+            if (restrictPane && restrictPane.style.display === 'block') {
+                this.viewer.restrictEditingPane.showStopProtectionPane(false);
+            }
+            this.viewer.dialog.hide();
+        } else {
+            DialogUtility.alert(localeValue.getConstant('The password is incorrect'));
+        }
     }
     /**
      * Notify content change event
@@ -872,13 +1001,13 @@ export class Editor {
         let insertPosition: TextPosition; let isRemoved: boolean = true;
         this.isListTextSelected();
         this.initHistory('Insert');
-        let paragraphInfo: ParagraphInfo = this.getParagraphInfo(selection.start);
-        this.viewer.selection.editPosition = this.getHierarchicalIndex(paragraphInfo.paragraph, paragraphInfo.offset.toString());
+        let paragraphInfo: ParagraphInfo = this.selection.getParagraphInfo(selection.start);
+        selection.editPosition = selection.getHierarchicalIndex(paragraphInfo.paragraph, paragraphInfo.offset.toString());
         let bidi: boolean = selection.start.paragraph.paragraphFormat.bidi;
         if (!bidi && this.viewer.layout.isContainsRtl(selection.start.currentWidget)) {
             this.viewer.layout.reArrangeElementsForRtl(selection.start.currentWidget, bidi);
         }
-        if ((!selection.isEmpty && !this.viewer.selection.isImageSelected) ||
+        if ((!selection.isEmpty && !selection.isImageSelected) ||
             this.viewer.isListTextSelected && selection.contextType === 'List') {
             selection.isSkipLayouting = true;
             selection.skipFormatRetrieval = true;
@@ -888,7 +1017,7 @@ export class Editor {
         } else if (selection.isEmpty && !this.viewer.isListTextSelected && !isReplace) {
             this.viewer.isTextInput = true;
         }
-        paragraphInfo = this.getParagraphInfo(selection.start);
+        paragraphInfo = this.selection.getParagraphInfo(selection.start);
         if (isRemoved) {
             selection.owner.isShiftingEnabled = true;
             this.updateInsertPosition();
@@ -1013,8 +1142,8 @@ export class Editor {
             return;
         }
         // Clone selection start position
-        let paragraphInfo: ParagraphInfo = this.getParagraphInfo(this.selection.start);
-        let startPosition: string = this.getHierarchicalIndex(paragraphInfo.paragraph, paragraphInfo.offset.toString());
+        let paragraphInfo: ParagraphInfo = this.selection.getParagraphInfo(this.selection.start);
+        let startPosition: string = this.selection.getHierarchicalIndex(paragraphInfo.paragraph, paragraphInfo.offset.toString());
         // Insert IME text in current selection
         this.insertText(text);
         this.viewer.lastComposedText = text;
@@ -1081,8 +1210,8 @@ export class Editor {
             this.viewer.layout.layoutBodyWidgetCollection(newParagraph.index, newParagraph.containerWidget, newParagraph, false);
             lastBlock = newParagraph;
         } else {
-            let paragraphInfo: ParagraphInfo = this.getParagraphInfo(selection.start);
-            let selectionStart: string = this.getHierarchicalIndex(paragraphInfo.paragraph, paragraphInfo.offset.toString());
+            let paragraphInfo: ParagraphInfo = this.selection.getParagraphInfo(selection.start);
+            let selectionStart: string = this.selection.getHierarchicalIndex(paragraphInfo.paragraph, paragraphInfo.offset.toString());
             //Split Paragraph
             this.splitParagraphInternal(selection, selection.start.paragraph, selection.start.currentWidget, selection.start.offset);
             this.setPositionForCurrentIndex(selection.start, selectionStart);
@@ -1098,7 +1227,7 @@ export class Editor {
             firstBlock = selection.getFirstParagraphInFirstCell(firstBlock);
         }
         if (selectFirstBlock) {
-            selection.selectParagraph(firstBlock as ParagraphWidget, true);
+            selection.selectParagraphInternal(firstBlock as ParagraphWidget, true);
         }
         return firstBlock;
     }
@@ -1526,8 +1655,8 @@ export class Editor {
     }
     private autoFormatHyperlink(selection: Selection, url: string, startPosition: TextPosition, endPosition: TextPosition): void {
         this.initComplexHistory('AutoFormatHyperlink');
-        let blockInfo: ParagraphInfo = this.getParagraphInfo(startPosition);
-        let start: string = this.getHierarchicalIndex(blockInfo.paragraph, blockInfo.offset.toString());
+        let blockInfo: ParagraphInfo = this.selection.getParagraphInfo(startPosition);
+        let start: string = this.selection.getHierarchicalIndex(blockInfo.paragraph, blockInfo.offset.toString());
         if (this.editorHistory && this.editorHistory.currentHistoryInfo) {
             this.editorHistory.currentHistoryInfo.insertPosition = start;
         }
@@ -1547,8 +1676,8 @@ export class Editor {
         // Moves to next text position. (To achieve common behavior for space and enter).
         selection.start.moveNextPosition();
         selection.end.setPositionInternal(selection.start);
-        blockInfo = this.getParagraphInfo(selection.end);
-        let end: string = this.getHierarchicalIndex(blockInfo.paragraph, blockInfo.offset.toString());
+        blockInfo = this.selection.getParagraphInfo(selection.end);
+        let end: string = this.selection.getHierarchicalIndex(blockInfo.paragraph, blockInfo.offset.toString());
         if (this.editorHistory && this.editorHistory.currentHistoryInfo) {
             this.editorHistory.currentHistoryInfo.endPosition = end;
             this.editorHistory.updateComplexHistory();
@@ -1699,11 +1828,11 @@ export class Editor {
             let format: WCharacterFormat = new WCharacterFormat(undefined);
             format.copyFormat(temp);
             this.initComplexHistory('InsertHyperlink');
-            let blockInfo: ParagraphInfo = this.getParagraphInfo(startPosition);
-            let start: string = this.getHierarchicalIndex(blockInfo.paragraph, blockInfo.offset.toString());
+            let blockInfo: ParagraphInfo = this.selection.getParagraphInfo(startPosition);
+            let start: string = this.selection.getHierarchicalIndex(blockInfo.paragraph, blockInfo.offset.toString());
             if (this.editorHistory && this.editorHistory.currentHistoryInfo) {
                 // tslint:disable-next-line:max-line-length
-                this.editorHistory.currentHistoryInfo.insertPosition = this.getHierarchicalIndex(blockInfo.paragraph, blockInfo.offset.toString());
+                this.editorHistory.currentHistoryInfo.insertPosition = this.selection.getHierarchicalIndex(blockInfo.paragraph, blockInfo.offset.toString());
             }
             this.appylingHyperlinkFormat(selection);
             this.viewer.layout.allowLayout = true;
@@ -1727,11 +1856,11 @@ export class Editor {
             this.viewer.layout.reLayoutParagraph(selection.start.paragraph, lineIndex, index);
             let lineWidget: LineWidget = fieldEnd.line;
             selection.selects(lineWidget, lineWidget.getOffset(fieldEnd, fieldEnd.length), true);
-            blockInfo = this.getParagraphInfo(endPosition);
-            let end: string = this.getHierarchicalIndex(blockInfo.paragraph, blockInfo.offset.toString());
+            blockInfo = this.selection.getParagraphInfo(endPosition);
+            let end: string = this.selection.getHierarchicalIndex(blockInfo.paragraph, blockInfo.offset.toString());
             if (this.editorHistory && this.editorHistory.currentHistoryInfo) {
                 // tslint:disable-next-line:max-line-length
-                this.editorHistory.currentHistoryInfo.endPosition = this.getHierarchicalIndex(blockInfo.paragraph, blockInfo.offset.toString());
+                this.editorHistory.currentHistoryInfo.endPosition = this.selection.getHierarchicalIndex(blockInfo.paragraph, blockInfo.offset.toString());
                 this.editorHistory.updateComplexHistory();
             } else {
                 this.updateComplexWithoutHistory(1, start, end);
@@ -1914,7 +2043,7 @@ export class Editor {
                             paragraph = this.getClonedFieldResult(fieldSeparator.line.paragraph, fieldSeparator);
                             this.insertParagraph(paragraph, true);
                         }
-                        selection.selectParagraph(selection.getNextParagraphBlock(paragraph), true);
+                        selection.selectParagraphInternal(selection.getNextParagraphBlock(paragraph), true);
                     }
                     continue;
                 }
@@ -2415,8 +2544,8 @@ export class Editor {
             if (!this.selection.isForward) {
                 position = this.selection.end;
             }
-            let blockInfo: ParagraphInfo = this.getParagraphInfo(position);
-            insertPosition = this.getHierarchicalIndex(blockInfo.paragraph, blockInfo.offset.toString());
+            let blockInfo: ParagraphInfo = this.selection.getParagraphInfo(position);
+            insertPosition = this.selection.getHierarchicalIndex(blockInfo.paragraph, blockInfo.offset.toString());
         }
         this.viewer.owner.isLayoutEnabled = true;
         this.viewer.owner.isPastingContent = true;
@@ -2428,8 +2557,8 @@ export class Editor {
         if (this.editorHistory && this.editorHistory.currentBaseHistoryInfo) {
             endPosition = this.editorHistory.currentBaseHistoryInfo.endPosition;
         } else {
-            let blockInfo: ParagraphInfo = this.getParagraphInfo(this.selection.start);
-            endPosition = this.getHierarchicalIndex(blockInfo.paragraph, blockInfo.offset.toString());
+            let blockInfo: ParagraphInfo = this.selection.getParagraphInfo(this.selection.start);
+            endPosition = this.selection.getHierarchicalIndex(blockInfo.paragraph, blockInfo.offset.toString());
         }
         let startPosition: TextPosition = new TextPosition(this.viewer.owner);
         this.setPositionForCurrentIndex(startPosition, insertPosition);
@@ -2531,9 +2660,9 @@ export class Editor {
             //Moves the inline items before selection start to the inserted paragraph.
             // tslint:disable-next-line:max-line-length
             this.moveInlines(selection.start.paragraph, block as ParagraphWidget, 0, 0, selection.start.paragraph.firstChild as LineWidget, offset, selection.start.currentWidget);
-            selection.selectParagraph(selection.start.paragraph, true);
+            selection.selectParagraphInternal(selection.start.paragraph, true);
             if (this.checkInsertPosition(selection)) {
-                this.updateHistoryPosition(this.getHierarchicalIndex((block as ParagraphWidget), offset.toString()), true);
+                this.updateHistoryPosition(this.selection.getHierarchicalIndex((block as ParagraphWidget), offset.toString()), true);
             }
         }
         if (offset > 0 && this.checkInsertPosition(selection)) {
@@ -2554,7 +2683,7 @@ export class Editor {
             if (block instanceof TableWidget) {
                 paragraph = selection.getFirstParagraphInFirstCell(block as TableWidget);
             }
-            this.updateHistoryPosition(this.getHierarchicalIndex(paragraph, '0'), true);
+            this.updateHistoryPosition(this.selection.getHierarchicalIndex(paragraph, '0'), true);
         }
     }
     /**
@@ -2572,8 +2701,8 @@ export class Editor {
             endPosition = selection.start;
         }
         // this.owner.isShiftingEnabled = true;
-        let blockInfo: ParagraphInfo = this.getParagraphInfo(startPosition);
-        selection.editPosition = this.getHierarchicalIndex(blockInfo.paragraph, blockInfo.offset.toString());
+        let blockInfo: ParagraphInfo = this.selection.getParagraphInfo(startPosition);
+        selection.editPosition = this.selection.getHierarchicalIndex(blockInfo.paragraph, blockInfo.offset.toString());
         let image: ImageElementBox = undefined;
         if (startPosition.paragraph === endPosition.paragraph && startPosition.offset + 1 === endPosition.offset) {
             //Gets selected image and copy image to clipboard.
@@ -2603,7 +2732,7 @@ export class Editor {
     private insertInlineInternal(element: ElementBox): void {
         let selection: Selection = this.selection;
         let length: number = element.length;
-        let paragraphInfo: ParagraphInfo = this.getParagraphInfo(selection.start);
+        let paragraphInfo: ParagraphInfo = this.selection.getParagraphInfo(selection.start);
         if (selection.start.paragraph.isEmpty()) {
             let paragraph: ParagraphWidget = selection.start.paragraph as ParagraphWidget;
             if ((paragraph.paragraphFormat.textAlignment === 'Center' || paragraph.paragraphFormat.textAlignment === 'Right')
@@ -2630,7 +2759,7 @@ export class Editor {
         let lineIndex: number = -1;
         let lineWidget: LineWidget = undefined;
         let insertIndex: number = 0;
-        let paragraphInfo: ParagraphInfo = this.getParagraphInfo(selection.start);
+        let paragraphInfo: ParagraphInfo = this.selection.getParagraphInfo(selection.start);
         if (selection.start.paragraph.isEmpty()) {
             paragraph = selection.start.paragraph as ParagraphWidget;
             lineWidget = (paragraph.childWidgets[0] as LineWidget);
@@ -2741,7 +2870,7 @@ export class Editor {
                 paragraph = this.selection.getFirstParagraphInFirstCell(block as TableWidget);
             }
             // tslint:disable-next-line:max-line-length
-            this.updateHistoryPosition(this.getHierarchicalIndex(paragraph, '0'), true);
+            this.updateHistoryPosition(this.selection.getHierarchicalIndex(paragraph, '0'), true);
         }
         this.fireContentChange();
     }
@@ -2764,7 +2893,7 @@ export class Editor {
             startPara = startPara.combineWidget(this.viewer) as ParagraphWidget;
             // tslint:disable-next-line:max-line-length
             this.splitParagraph(startPara, startPara.firstChild as LineWidget, 0, selection.start.currentWidget, selection.start.offset, false);
-            selection.selectParagraph(this.selection.start.paragraph as ParagraphWidget, true);
+            selection.selectParagraphInternal(this.selection.start.paragraph as ParagraphWidget, true);
         }
         let bodyWidget: BodyWidget = selection.start.paragraph.containerWidget as BodyWidget;
         let blockIndex: number = selection.start.paragraph.index;
@@ -2834,7 +2963,7 @@ export class Editor {
         let endOffset: number = lastParagraph.getLength() + 1;
         if (this.editorHistory && this.editorHistory.currentBaseHistoryInfo) {
             // tslint:disable-next-line:max-line-length
-            this.editorHistory.currentBaseHistoryInfo.endPosition = this.getHierarchicalIndex(lastParagraph, endOffset.toString());
+            this.editorHistory.currentBaseHistoryInfo.endPosition = this.selection.getHierarchicalIndex(lastParagraph, endOffset.toString());
         }
         this.reLayout(this.selection);
     }
@@ -2902,7 +3031,7 @@ export class Editor {
                 paragraph = this.selection.getFirstParagraphInFirstCell(widget);
             }
             this.viewer.layout.reLayoutTable(table);
-            this.selection.selectParagraph(paragraph, true);
+            this.selection.selectParagraphInternal(paragraph, true);
         }
         this.reLayout(this.selection, true);
     }
@@ -3039,7 +3168,7 @@ export class Editor {
         let paragraph: ParagraphWidget = this.selection.getFirstParagraph(row.nextWidget.childWidgets[0] as TableCellWidget);
         prevBlock.isDefaultFormatUpdated = false;
         this.viewer.layout.reLayoutTable(prevBlock);
-        this.selection.selectParagraph(paragraph, true);
+        this.selection.selectParagraphInternal(paragraph, true);
         if (this.editorHistory && this.editorHistory.currentBaseHistoryInfo) {
             this.updateHistoryPosition(this.selection.start, true);
             this.updateHistoryPosition(this.selection.end, false);
@@ -3643,9 +3772,9 @@ export class Editor {
                 currentParagraph = nextParagraph;
             } while (nextParagraph && nextParagraph.equals(newParagraph));
             if (!isNullOrUndefined(nextParagraph)) {
-                this.selection.selectParagraph(nextParagraph, true);
+                this.selection.selectParagraphInternal(nextParagraph, true);
             } else {
-                this.selection.selectParagraph(newParagraph, true);
+                this.selection.selectParagraphInternal(newParagraph, true);
             }
         }
         this.fireContentChange();
@@ -4224,10 +4353,10 @@ export class Editor {
      * @private
      */
     public setOffsetValue(selection: Selection): void {
-        let info: ParagraphInfo = this.getParagraphInfo(selection.start);
+        let info: ParagraphInfo = this.selection.getParagraphInfo(selection.start);
         this.startParagraph = info.paragraph;
         this.startOffset = info.offset;
-        info = this.getParagraphInfo(selection.end);
+        info = this.selection.getParagraphInfo(selection.end);
         this.endParagraph = info.paragraph;
         this.endOffset = info.offset;
     }
@@ -5999,10 +6128,10 @@ export class Editor {
             startPosition = this.viewer.selection.end;
             endPosition = this.viewer.selection.start;
         }
-        let startInfo: ParagraphInfo = this.getParagraphInfo(startPosition);
-        let endInfo: ParagraphInfo = this.getParagraphInfo(startPosition);
-        let startIndex: string = this.getHierarchicalIndex(startInfo.paragraph, startInfo.offset.toString());
-        let endIndex: string = this.getHierarchicalIndex(endInfo.paragraph, endInfo.offset.toString());
+        let startInfo: ParagraphInfo = this.selection.getParagraphInfo(startPosition);
+        let endInfo: ParagraphInfo = this.selection.getParagraphInfo(startPosition);
+        let startIndex: string = this.selection.getHierarchicalIndex(startInfo.paragraph, startInfo.offset.toString());
+        let endIndex: string = this.selection.getHierarchicalIndex(endInfo.paragraph, endInfo.offset.toString());
         this.viewer.renderedLists.clear();
         // this.viewer.owner.isLayoutEnabled = true;
         let sections: BodyWidget[] = this.combineSection();
@@ -6338,8 +6467,8 @@ export class Editor {
             selection.selectContent(startPos, true);
             return true;
         }
-        let paragraphInfo: ParagraphInfo = this.getParagraphInfo(startPos);
-        selection.editPosition = this.getHierarchicalIndex(paragraphInfo.paragraph, paragraphInfo.offset.toString());
+        let paragraphInfo: ParagraphInfo = this.selection.getParagraphInfo(startPos);
+        selection.editPosition = this.selection.getHierarchicalIndex(paragraphInfo.paragraph, paragraphInfo.offset.toString());
         let isRemoved: boolean = this.removeSelectedContent(endPos.paragraph, selection, startPos, endPos);
         let textPosition: TextPosition = new TextPosition(selection.owner);
         this.setPositionForCurrentIndex(textPosition, selection.editPosition);
@@ -6458,7 +6587,7 @@ export class Editor {
                 this.editorHistory.currentBaseHistoryInfo.removedNodes.push(table.clone());
             }
             this.removeBlock(table);
-            this.selection.selectParagraph(paragraph, true);
+            this.selection.selectParagraphInternal(paragraph, true);
             if (this.checkIsNotRedoing() || isNullOrUndefined(this.editorHistory)) {
                 this.reLayout(this.selection);
             }
@@ -6535,7 +6664,7 @@ export class Editor {
                 table.isGridUpdated = true;
                 this.viewer.layout.reLayoutTable(table);
             }
-            this.selection.selectParagraph(paragraph, true);
+            this.selection.selectParagraphInternal(paragraph, true);
             if (isNullOrUndefined(this.editorHistory) || this.checkIsNotRedoing()) {
                 this.reLayout(this.selection, true);
             }
@@ -6613,7 +6742,7 @@ export class Editor {
             } else {
                 this.removeRow(row);
             }
-            this.selection.selectParagraph(paragraph, true);
+            this.selection.selectParagraphInternal(paragraph, true);
             if (isNullOrUndefined(this.editorHistory) || this.checkIsNotRedoing()) {
                 this.reLayout(this.selection, true);
             }
@@ -6744,16 +6873,16 @@ export class Editor {
                 }
                 this.addRemovedNodes(paragraph);
                 if (!isNullOrUndefined(newParagraph)) {
-                    selection.editPosition = this.getHierarchicalIndex(newParagraph, '0');
+                    selection.editPosition = this.selection.getHierarchicalIndex(newParagraph, '0');
                     let offset: number = selection.getParagraphLength(newParagraph) + 1;
                     if (this.editorHistory && !isNullOrUndefined(this.editorHistory.currentBaseHistoryInfo)) {
                         //tslint:disable-next-line:max-line-length
-                        this.editorHistory.currentBaseHistoryInfo.endPosition = this.getHierarchicalIndex(newParagraph, offset.toString());
+                        this.editorHistory.currentBaseHistoryInfo.endPosition = this.selection.getHierarchicalIndex(newParagraph, offset.toString());
                     }
                 } else if (paragraph === start.paragraph && isNullOrUndefined(nextWidget) && !isNullOrUndefined(prevParagraph)) {
                     let offset: number = this.selection.getParagraphLength(prevParagraph);
                     // if (isNullOrUndefined(block)) {
-                    selection.editPosition = this.getHierarchicalIndex(prevParagraph, offset.toString());
+                    selection.editPosition = this.selection.getHierarchicalIndex(prevParagraph, offset.toString());
                     if (this.editorHistory && !isNullOrUndefined(this.editorHistory.currentBaseHistoryInfo)) {
                         this.updateHistoryPosition(selection.editPosition, true);
                         this.editorHistory.currentBaseHistoryInfo.endPosition = selection.editPosition;
@@ -7060,7 +7189,7 @@ export class Editor {
         //Layouts the table after delete cells.
         selection.owner.isLayoutEnabled = true;
         if (table.childWidgets.length === 0) {
-            selection.editPosition = this.getHierarchicalIndex(table, '0');
+            selection.editPosition = this.selection.getHierarchicalIndex(table, '0');
             this.setActionInternal(selection, action);
             this.removeBlock(table);
         } else {
@@ -7104,7 +7233,7 @@ export class Editor {
                     }
                     if (this.checkClearCells(selection)) {
                         //Add Index for line Widget
-                        selection.editPosition = this.getHierarchicalIndex(paragraph, '0');
+                        selection.editPosition = this.selection.getHierarchicalIndex(paragraph, '0');
                         this.updateHistoryPosition(selection.editPosition, true);
                     }
                     break;
@@ -7152,7 +7281,7 @@ export class Editor {
                 this.viewer.layout.layoutBodyWidgetCollection(newTable.index, newTable.containerWidget, newTable, false);
             }
             if (!isNullOrUndefined(previousBlock)) {
-                selection.editPosition = this.getHierarchicalIndex(previousBlock, '0');
+                selection.editPosition = this.selection.getHierarchicalIndex(previousBlock, '0');
                 if (this.editorHistory && !isNullOrUndefined(this.editorHistory.currentBaseHistoryInfo)) {
                     this.editorHistory.currentBaseHistoryInfo.endPosition = selection.editPosition;
                 }
@@ -7195,7 +7324,7 @@ export class Editor {
     }
     private updateEditPosition(cell: TableCellWidget, selection: Selection): void {
         let firstParagraph: ParagraphWidget = selection.getFirstParagraphInCell(cell);
-        selection.editPosition = this.getHierarchicalIndex(firstParagraph, '0');
+        selection.editPosition = this.selection.getHierarchicalIndex(firstParagraph, '0');
     }
     /**
      * @private
@@ -7217,8 +7346,8 @@ export class Editor {
         return this.editorHistory && this.editorHistory.currentBaseHistoryInfo && this.editorHistory.currentBaseHistoryInfo.action !== 'ClearCells';
     }
     private isEndInAdjacentTable(paragraph: ParagraphWidget, endParagraph: ParagraphWidget): boolean {
-        let start: string = this.getHierarchicalIndex(paragraph, '');
-        let end: string = this.getHierarchicalIndex(endParagraph, '');
+        let start: string = this.selection.getHierarchicalIndex(paragraph, '');
+        let end: string = this.selection.getHierarchicalIndex(endParagraph, '');
         let selectionStart: string[] = start.split(';');
         let selectionEnd: string[] = end.split(';');
         return selectionStart.length < selectionEnd.length;
@@ -7232,7 +7361,7 @@ export class Editor {
             //Sets the insert position in history info as current table.
             if (this.viewer.selection.start.paragraph.isInsideTable &&
                 this.viewer.selection.start.paragraph.associatedCell.ownerTable === table) {
-                this.updateHistoryPosition(this.getHierarchicalIndex(table, '0'), true);
+                this.updateHistoryPosition(this.selection.getHierarchicalIndex(table, '0'), true);
             }
 
             return clonedTable;
@@ -7262,7 +7391,7 @@ export class Editor {
                     this.viewer.layout.reLayoutParagraph(nextParagraph, 0, 0);
                     isCombineNextParagraph = false;
                     let offset: string = this.selection.editPosition.substring(this.selection.editPosition.lastIndexOf(';') + 1);
-                    this.selection.editPosition = this.getHierarchicalIndex(nextParagraph, offset);
+                    this.selection.editPosition = this.selection.getHierarchicalIndex(nextParagraph, offset);
                 }
             }
         }
@@ -7635,8 +7764,8 @@ export class Editor {
         if (isRemoved) {
             selection.owner.isShiftingEnabled = true;
             this.updateInsertPosition();
-            let blockInfo: ParagraphInfo = this.getParagraphInfo(selection.start);
-            let initialStart: string = this.getHierarchicalIndex(blockInfo.paragraph, blockInfo.offset.toString());
+            let blockInfo: ParagraphInfo = this.selection.getParagraphInfo(selection.start);
+            let initialStart: string = this.selection.getHierarchicalIndex(blockInfo.paragraph, blockInfo.offset.toString());
             this.splitParagraphInternal(selection, selection.start.paragraph, selection.start.currentWidget, selection.start.offset);
             this.setPositionForCurrentIndex(selection.start, initialStart);
             if (isInsertPageBreak) {
@@ -7651,13 +7780,13 @@ export class Editor {
                 pageBreak.line = line;
                 breakParagraph.childWidgets.push(line);
                 this.insertParagraph(breakParagraph, true);
-                selection.selectParagraph(breakParagraph, true);
+                selection.selectParagraphInternal(breakParagraph, true);
             }
             let nextNode: BlockWidget = selection.start.paragraph.nextWidget as BlockWidget;
             if (isNullOrUndefined(nextNode)) {
                 nextNode = selection.getNextRenderedBlock(selection.start.paragraph);
             }
-            selection.selectParagraph(nextNode as ParagraphWidget, true);
+            selection.selectParagraphInternal(nextNode as ParagraphWidget, true);
             this.updateEndPosition();
             if (isInsertPageBreak && this.editorHistory) {
                 this.owner.editorHistory.updateHistory();
@@ -7884,10 +8013,7 @@ export class Editor {
      */
     public deleteSelectedContents(selection: Selection, isBackSpace: boolean): boolean {
         let skipBackSpace: boolean = this.deleteSelectedContentInternal(selection, isBackSpace, selection.start, selection.end);
-        let textPosition: TextPosition = new TextPosition(selection.owner);
-        let blockInfo: ParagraphInfo = this.getParagraph({ index: selection.editPosition });
-        let lineInfo: LineInfo = this.getLineInfo(blockInfo.paragraph, blockInfo.offset);
-        textPosition.setPositionForLineWidget(lineInfo.line, lineInfo.offset);
+        let textPosition: TextPosition = selection.getTextPosBasedOnLogicalIndex(selection.editPosition);
         selection.selectContent(textPosition, true);
         return skipBackSpace;
     }
@@ -7907,11 +8033,11 @@ export class Editor {
         // If backspace is pressed after auto format to hyperlink is done, need to undo auto format.
         if (history && !isRedoing && !history.canRedo() && history.canUndo()) {
             let historyInfo: BaseHistoryInfo = history.undoStack[history.undoStack.length - 1];
-            let startBlockInfo: ParagraphInfo = this.getParagraphInfo(selection.start);
-            let endBlockInfo: ParagraphInfo = this.getParagraphInfo(selection.end);
+            let startBlockInfo: ParagraphInfo = this.selection.getParagraphInfo(selection.start);
+            let endBlockInfo: ParagraphInfo = this.selection.getParagraphInfo(selection.end);
             // tslint:disable-next-line:max-line-length
-            if (historyInfo.action === 'AutoFormatHyperlink' && historyInfo.insertPosition === this.getHierarchicalIndex(startBlockInfo.paragraph, startBlockInfo.offset.toString()) &&
-                historyInfo.endPosition === this.getHierarchicalIndex(endBlockInfo.paragraph, endBlockInfo.offset.toString())) {
+            if (historyInfo.action === 'AutoFormatHyperlink' && historyInfo.insertPosition === this.selection.getHierarchicalIndex(startBlockInfo.paragraph, startBlockInfo.offset.toString()) &&
+                historyInfo.endPosition === this.selection.getHierarchicalIndex(endBlockInfo.paragraph, endBlockInfo.offset.toString())) {
                 history.undo();
                 return;
             }
@@ -8055,7 +8181,7 @@ export class Editor {
             if (!isRedoing) {
                 selection.owner.isShiftingEnabled = true;
             }
-            let paragraphInfo: ParagraphInfo = this.getParagraphInfo(selection.start);
+            let paragraphInfo: ParagraphInfo = this.selection.getParagraphInfo(selection.start);
             let lineWidget: LineWidget = selection.start.currentWidget;
             let removeOffset: number = offset - 1;
             if (removeOffset < 0) {
@@ -8265,8 +8391,8 @@ export class Editor {
             if (!isRedoing) {
                 this.initHistory('Delete');
             }
-            let blockInfo: ParagraphInfo = this.getParagraphInfo(selection.start);
-            selection.editPosition = this.getHierarchicalIndex(blockInfo.paragraph, blockInfo.offset.toString());
+            let blockInfo: ParagraphInfo = this.selection.getParagraphInfo(selection.start);
+            selection.editPosition = this.selection.getHierarchicalIndex(blockInfo.paragraph, blockInfo.offset.toString());
             if (this.checkInsertPosition(selection)) {
                 this.setPositionForHistory(selection.editPosition);
             }
@@ -8276,19 +8402,19 @@ export class Editor {
                 this.addRemovedNodes(paragraph);
                 if (isNullOrUndefined(nextParagraph)) {
                     if (isNullOrUndefined(previousParagraph)) {
-                        // selection.selectParagraph(newParagraph, true, true);
+                        // selection.selectParagraphInternal(newParagraph, true, true);
                         let paraEndOffset: number = selection.getParagraphLength(newParagraph) + 1;
                         if (this.editorHistory && !isNullOrUndefined(this.editorHistory.currentBaseHistoryInfo)) {
                             this.updateHistoryPosition(selection.start, true);
                             //tslint:disable-next-line:max-line-length
-                            this.editorHistory.currentBaseHistoryInfo.endPosition = this.getHierarchicalIndex(newParagraph, paraEndOffset.toString());
+                            this.editorHistory.currentBaseHistoryInfo.endPosition = this.selection.getHierarchicalIndex(newParagraph, paraEndOffset.toString());
                         }
                     } else {
-                        selection.selectParagraph(previousParagraph, false);
+                        selection.selectParagraphInternal(previousParagraph, false);
                         this.setPositionForHistory();
                     }
                 } else {
-                    selection.selectParagraph(nextParagraph, true);
+                    selection.selectParagraphInternal(nextParagraph, true);
                 }
             } else {
                 paragraph = paragraph.combineWidget(this.viewer) as ParagraphWidget;
@@ -8315,7 +8441,7 @@ export class Editor {
             this.updateHistoryPosition(selection.start, true);
             this.editorHistory.currentBaseHistoryInfo.endPosition = this.editorHistory.currentBaseHistoryInfo.insertPosition;
         }
-        let paragraphInfo: ParagraphInfo = this.getParagraphInfo(selection.start);
+        let paragraphInfo: ParagraphInfo = this.selection.getParagraphInfo(selection.start);
         let lineWidget: LineWidget = selection.start.currentWidget;
         let removeOffset: number = selection.start.offset;
         let lineLength: number = selection.getLineLength(selection.start.currentWidget);
@@ -8371,7 +8497,7 @@ export class Editor {
                 }
                 this.viewer.layout.reLayoutParagraph(nextParagraph, 0, 0);
                 if (offset > 0) {
-                    selection.editPosition = this.getHierarchicalIndex(nextParagraph, offset.toString());
+                    selection.editPosition = this.selection.getHierarchicalIndex(nextParagraph, offset.toString());
                 }
             }
         } else {
@@ -8403,10 +8529,10 @@ export class Editor {
         }
     }
     private updateEditPositionOnMerge(currentParagraph: ParagraphWidget, nextParagraph: ParagraphWidget): void {
-        if (this.viewer.selection.editPosition === this.getHierarchicalIndex(nextParagraph, '0') &&
+        if (this.viewer.selection.editPosition === this.selection.getHierarchicalIndex(nextParagraph, '0') &&
             nextParagraph.nextRenderedWidget === undefined) {
             // tslint:disable-next-line:max-line-length
-            this.viewer.selection.editPosition = this.getHierarchicalIndex(currentParagraph, this.viewer.selection.getLineLength(currentParagraph.lastChild as LineWidget).toString());
+            this.viewer.selection.editPosition = this.selection.getHierarchicalIndex(currentParagraph, this.viewer.selection.getLineLength(currentParagraph.lastChild as LineWidget).toString());
         }
     }
     private checkEndPosition(selection?: Selection): boolean {
@@ -8428,8 +8554,8 @@ export class Editor {
             startPos = endPosition;
             endPos = startPosition;
         }
-        let blockInfo: ParagraphInfo = this.getParagraphInfo(startPos);
-        selection.editPosition = this.getHierarchicalIndex(blockInfo.paragraph, blockInfo.offset.toString());
+        let blockInfo: ParagraphInfo = this.selection.getParagraphInfo(startPos);
+        selection.editPosition = this.selection.getHierarchicalIndex(blockInfo.paragraph, blockInfo.offset.toString());
         let skipBackSpace: boolean = false;
         if (isBackSpace && startPos.isInSameParagraph(endPos)) {
             //Handled specifically to skip removal of contents, if selection is only paragraph mark and next rendered block is table.
@@ -8868,33 +8994,12 @@ export class Editor {
         }
     }
     /**
-     * Get logical offset of paragraph.
-     * @private
-     */
-    public getParagraphInfo(position: TextPosition): ParagraphInfo {
-        return this.getParagraphInfoInternal(position.currentWidget, position.offset);
-    }
-    /**
-     * @private
-     */
-    public getParagraphInfoInternal(line: LineWidget, lineOffset: number): ParagraphInfo {
-        let paragraph: ParagraphWidget = line.paragraph;
-        let offset: number = this.selection.getParagraphLength(paragraph, line) + lineOffset;
-        let previous: ParagraphWidget = paragraph.previousSplitWidget as ParagraphWidget;
-        while (previous instanceof ParagraphWidget) {
-            paragraph = previous;
-            offset += this.viewer.selection.getParagraphLength(paragraph);
-            previous = paragraph.previousSplitWidget as ParagraphWidget;
-        }
-        return { 'paragraph': paragraph, 'offset': offset };
-    }
-    /**
      * Get offset value to update in selection
      * @private
      */
     public getOffsetValue(selection: Selection): void {
         if (this.startParagraph) {
-            let lineInfo: LineInfo = this.getLineInfo(this.startParagraph, this.startOffset);
+            let lineInfo: LineInfo = selection.getLineInfoBasedOnParagraph(this.startParagraph, this.startOffset);
             selection.start.setPositionFromLine(lineInfo.line, lineInfo.offset);
         }
         selection.start.updatePhysicalPosition(true);
@@ -8902,38 +9007,18 @@ export class Editor {
             selection.end.setPositionInternal(selection.start);
         } else {
             if (this.endParagraph) {
-                let lineInfo: LineInfo = this.getLineInfo(this.endParagraph, this.endOffset);
+                let lineInfo: LineInfo = selection.getLineInfoBasedOnParagraph(this.endParagraph, this.endOffset);
                 selection.end.setPositionFromLine(lineInfo.line, lineInfo.offset);
             }
             selection.end.updatePhysicalPosition(true);
         }
     }
     /**
-     * Get offset value to update in selection
-     * @private
-     */
-    public getLineInfo(paragraph: ParagraphWidget, offset: number): LineInfo {
-        let position: TextPosition = undefined;
-        let element: ElementBox = undefined;
-        let length: number = this.selection.getParagraphLength(paragraph);
-        let next: ParagraphWidget = paragraph.nextSplitWidget as ParagraphWidget;
-        if (offset > length + 1 && isNullOrUndefined(next)) {
-            offset = length;
-        }
-        while (offset > length && next instanceof ParagraphWidget) {
-            offset -= length;
-            paragraph = next;
-            length = this.selection.getParagraphLength(paragraph);
-            next = paragraph.nextSplitWidget as ParagraphWidget;
-        }
-        return this.selection.getLineInfo(paragraph, offset);
-    }
-    /**
      * @private
      */
     public setPositionParagraph(paragraph: ParagraphWidget, offset: number, skipSelectionChange: boolean): void {
         let selection: Selection = this.viewer.selection;
-        let lineInfo: LineInfo = this.getLineInfo(paragraph, offset);
+        let lineInfo: LineInfo = selection.getLineInfoBasedOnParagraph(paragraph, offset);
         selection.start.setPositionFromLine(lineInfo.line, lineInfo.offset);
         selection.end.setPositionInternal(selection.start);
         if (!skipSelectionChange) {
@@ -8944,8 +9029,8 @@ export class Editor {
      * @private
      */
     public setPositionForCurrentIndex(textPosition: TextPosition, editPosition: string): void {
-        let blockInfo: ParagraphInfo = this.getParagraph({ index: editPosition });
-        let lineInfo: LineInfo = this.getLineInfo(blockInfo.paragraph, blockInfo.offset);
+        let blockInfo: ParagraphInfo = this.selection.getParagraph({ index: editPosition });
+        let lineInfo: LineInfo = this.selection.getLineInfoBasedOnParagraph(blockInfo.paragraph, blockInfo.offset);
         textPosition.setPositionForLineWidget(lineInfo.line, lineInfo.offset);
     }
     /**
@@ -9091,7 +9176,7 @@ export class Editor {
         this.initHistory('InsertElements');
         this.updateInsertPosition();
         let indexInInline: number = 0;
-        let paragraphInfo: ParagraphInfo = this.getParagraphInfo(this.selection.start);
+        let paragraphInfo: ParagraphInfo = this.selection.getParagraphInfo(this.selection.start);
         if (this.selection.start.paragraph.isEmpty()) {
             let paragraph: ParagraphWidget = this.selection.start.paragraph as ParagraphWidget;
             (paragraph.childWidgets[0] as LineWidget).children.push(elements[0]);
@@ -9126,33 +9211,8 @@ export class Editor {
     /**
      * @private
      */
-    public getHierarchicalIndex(block: Widget, offset: string): string {
-        let index: string;
-        if (block) {
-            if (block instanceof HeaderFooterWidget) {
-                let hfString: string = block.headerFooterType.indexOf('Header') !== -1 ? 'H' : 'F';
-                let pageIndex: string = block.page.index.toString();
-                let headerFooterIndex: string = (this.viewer as PageLayoutViewer).getHeaderFooter(block.headerFooterType).toString();
-                let sectionIndex: number = block.page.sectionIndex;
-                index = sectionIndex + ';' + hfString + ';' + pageIndex + ';' + offset;
-            } else {
-                index = block.index + ';' + offset;
-            }
-            if (block.containerWidget) {
-                if (block instanceof TableCellWidget && block.rowIndex !== block.containerWidget.index) {
-                    index = block.rowIndex + ';' + index;
-                    block = block.containerWidget;
-                }
-                return this.getHierarchicalIndex(block.containerWidget, index);
-            }
-        }
-        return index;
-    }
-    /**
-     * @private
-     */
     public getBlock(position: IndexInfo): BlockInfo {
-        let bodyWidget: BodyWidget = this.getBodyWidget(position);
+        let bodyWidget: BodyWidget = this.selection.getBodyWidget(position);
         return this.getBlockInternal(bodyWidget, position);
     }
     /**
@@ -9174,7 +9234,7 @@ export class Editor {
         //     return { 'node': (!isNullOrUndefined(blockObj)) ? blockObj.node : undefined, 'position': (!isNullOrUndefined(blockObj)) ? blockObj.position : undefined };
         // }
         index = parseInt(value, 10);
-        let childWidget: Widget = this.getBlockByIndex(widget, index);
+        let childWidget: Widget = this.selection.getBlockByIndex(widget, index);
         if (childWidget) {
             let child: Widget = childWidget as Widget;
             if (position.index.indexOf(';') >= 0) {
@@ -9200,143 +9260,12 @@ export class Editor {
     /**
      * @private
      */
-    public getParagraph(position: IndexInfo): ParagraphInfo {
-        let paragraph: ParagraphWidget = this.getParagraphInternal(this.getBodyWidget(position), position);
-        return { paragraph: paragraph, offset: parseInt(position.index, 10) };
-    }
-    /**
-     * Get paragraph relative to position
-     * @private
-     */
-    private getParagraphInternal(container: Widget, position: IndexInfo): ParagraphWidget {
-        if (isNullOrUndefined(position.index)) {
-            return undefined;
-        }
-        // let ins: Widget = container;
-        let index: number = position.index.indexOf(';');
-        let value: string = '0';
-        if (index >= 0) {
-            value = position.index.substring(0, index);
-            position.index = position.index.substring(index).replace(';', '');
-        }
-        // if (container instanceof BodyWidget && value === 'HF') {
-        //     return this.getParagraph(container.headerFooters, position);
-        // }
-        index = parseInt(value, 10);
-        if (container instanceof TableRowWidget && index >= container.childWidgets.length) {
-            position.index = '0;0';
-            index = container.childWidgets.length - 1;
-        }
-        let childWidget: Widget = this.getBlockByIndex(container, index);
-        if (childWidget) {
-            let child: Widget = childWidget as Widget;
-            if (child instanceof ParagraphWidget) {
-                if (position.index.indexOf(';') > 0) {
-                    position.index = '0';
-                }
-                return child as ParagraphWidget;
-            }
-            if (child instanceof Widget) {
-                if (position.index.indexOf(';') > 0) {
-                    return this.getParagraphInternal((child as Widget), position);
-                } else {
-                    //If table is shifted to previous text position then return the first paragraph within table.
-                    if (child instanceof TableWidget) {
-                        return this.viewer.selection.getFirstParagraphInFirstCell((child as TableWidget));
-                    }
-                    return undefined;
-                }
-            }
-        } else if (container) {
-            let nextWidget: Widget = container.getSplitWidgets().pop().nextRenderedWidget;
-            if (nextWidget instanceof Widget) {
-                position.index = '0';
-                if (nextWidget instanceof TableWidget) {
-                    return this.viewer.selection.getFirstParagraphInFirstCell((nextWidget as TableWidget));
-                }
-                return nextWidget as ParagraphWidget;
-            }
-        }
-        return undefined;
-    }
-
-    private getBodyWidget(position: IndexInfo): BlockContainer {
-        let index: number = position.index.indexOf(';');
-        let value: string = position.index.substring(0, index);
-        position.index = position.index.substring(index).replace(';', '');
-        let sectionIndex: number = parseInt(value, 10);
-        index = parseInt(value, 10);
-        index = position.index.indexOf(';');
-        value = position.index.substring(0, index);
-        // position = position.substring(index).replace(';', '');
-        if (value === 'H' || value === 'F') {
-            return this.getHeaderFooterWidget(position);
-        }
-        index = parseInt(value, 10);
-        return this.getBodyWidgetInternal(sectionIndex, index);
-    }
-    private getHeaderFooterWidget(position: IndexInfo): HeaderFooterWidget {
-        //HEADER OR FOOTER WIDGET
-        let index: number = position.index.indexOf(';');
-        let value: string = position.index.substring(0, index);
-        position.index = position.index.substring(index).replace(';', '');
-        let isHeader: boolean = value === 'H';
-        index = position.index.indexOf(';');
-        value = position.index.substring(0, index);
-        position.index = position.index.substring(index).replace(';', '');
-        index = parseInt(value, 10);
-        let page: Page = this.viewer.pages[index];
-        if (isHeader) {
-            return page.headerWidget;
-        } else {
-            return page.footerWidget;
-        }
-    }
-    /**
-     * @private
-     */
-    public getBodyWidgetInternal(sectionIndex: number, blockIndex: number): BodyWidget {
-        for (let i: number = 0; i < this.viewer.pages.length; i++) {
-            let bodyWidget: BodyWidget = this.viewer.pages[i].bodyWidgets[0];
-            if (bodyWidget.index === sectionIndex) {
-                if (bodyWidget.childWidgets.length > 0 && (bodyWidget.firstChild as Widget).index <= blockIndex &&
-                    (bodyWidget.lastChild as Widget).index >= blockIndex) {
-                    return bodyWidget;
-                }
-            }
-            if (bodyWidget.index > sectionIndex) {
-                break;
-            }
-        }
-        return undefined;
-    }
-    /**
-     * @private
-     */
-    public getBlockByIndex(container: Widget, blockIndex: number): Widget {
-        let childWidget: Widget;
-        if (container) {
-            for (let j: number = 0; j < container.childWidgets.length; j++) {
-                if ((container.childWidgets[j] as Widget).index === blockIndex) {
-                    childWidget = container.childWidgets[j] as Widget;
-                    break;
-                }
-            }
-            if (!childWidget && !(container instanceof HeaderFooterWidget)) {
-                return this.getBlockByIndex(container.nextSplitWidget, blockIndex);
-            }
-        }
-        return childWidget;
-    }
-    /**
-     * @private
-     */
     public updateHistoryPosition(position: TextPosition | string, isInsertPosition: boolean): void {
         if (this.editorHistory && !isNullOrUndefined(this.editorHistory.currentBaseHistoryInfo)) {
             let hierarchicalIndex: string;
             if (position instanceof TextPosition) {
-                let blockInfo: ParagraphInfo = this.getParagraphInfo(position);
-                hierarchicalIndex = this.getHierarchicalIndex(blockInfo.paragraph, blockInfo.offset.toString());
+                let blockInfo: ParagraphInfo = this.selection.getParagraphInfo(position);
+                hierarchicalIndex = this.selection.getHierarchicalIndex(blockInfo.paragraph, blockInfo.offset.toString());
             } else {
                 hierarchicalIndex = position;
             }
@@ -10269,8 +10198,8 @@ export class Editor {
         // Build TOC field code based on parameter
         code = this.constructTocFieldCode(tableOfContentsSettings);
         let isStartParagraph: boolean = this.selection.start.isAtParagraphStart;
-        let blockInfo: ParagraphInfo = this.getParagraphInfo(this.selection.start);
-        let initialStart: string = this.getHierarchicalIndex(blockInfo.paragraph, blockInfo.offset.toString());
+        let blockInfo: ParagraphInfo = this.selection.getParagraphInfo(this.selection.start);
+        let initialStart: string = this.selection.getHierarchicalIndex(blockInfo.paragraph, blockInfo.offset.toString());
 
         // Build TOC fields
         // tslint:disable-next-line:max-line-length

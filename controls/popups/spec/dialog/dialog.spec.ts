@@ -534,6 +534,18 @@ describe('Dialog Control', () => {
             expect(dialog.position.Y).toBe('top');
         });
 
+        it('position property offset value for x and y testing - Camel case', () => {
+            dialog = new Dialog({ header: "Dialog", position: { X: '300', Y: 'Top' } }, '#dialog');
+            expect(dialog.position.X).toBe(300);
+            expect(dialog.position.Y).toBe('Top');
+        });
+
+        it('position property offset value for x and y testing - Camel case', () => {
+            dialog = new Dialog({ header: "Dialog", position: { X: 'Center', Y: 'Center' } }, '#dialog');
+            expect(dialog.position.X).toBe('Center');
+            expect(dialog.position.Y).toBe('Center');
+        });
+
         it('dynamic change on position property value testing', () => {
             dialog = new Dialog({ header: "Dialog", position: { X: 100, Y: 200 } }, '#dialog');
             expect((dialog.element as HTMLElement).style.left).toBe('100px');

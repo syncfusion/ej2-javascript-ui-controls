@@ -1,4 +1,4 @@
-import { Ajax, extend, isNullOrUndefined, merge, setValue } from '@syncfusion/ej2-base';
+import { Ajax, extend, getValue, isNullOrUndefined, merge, setValue } from '@syncfusion/ej2-base';
 
 /**
  * Query class is used to build query which is used by the DataManager to communicate with datasource.
@@ -637,7 +637,7 @@ class DataUtil {
      * @param  {string|number} y
      * @returns number
      */
-    static fnAscending(x, y, locales, options) {
+    static fnAscending(x, y) {
         if (isNullOrUndefined(x) && isNullOrUndefined(y)) {
             return -1;
         }
@@ -645,7 +645,7 @@ class DataUtil {
             return -1;
         }
         if (typeof x === 'string') {
-            return x.localeCompare(y, locales, options);
+            return x.localeCompare(y);
         }
         if (x === null || x === undefined) {
             return 1;
@@ -658,7 +658,7 @@ class DataUtil {
      * @param  {string|number} y
      * @returns number
      */
-    static fnDescending(x, y, locales, options) {
+    static fnDescending(x, y) {
         if (isNullOrUndefined(x) && isNullOrUndefined(y)) {
             return -1;
         }
@@ -666,7 +666,7 @@ class DataUtil {
             return 1;
         }
         if (typeof x === 'string') {
-            return x.localeCompare(y, locales, options) * -1;
+            return x.localeCompare(y) * -1;
         }
         if (x === null || x === undefined) {
             return -1;
@@ -2815,9 +2815,12 @@ class JsonAdaptor extends Adaptor {
     update(dm, keyField, value, tableName) {
         let ds = dm.dataSource.json;
         let i;
-        let key = value[keyField];
+        let key;
+        if (!isNullOrUndefined(keyField)) {
+            key = getValue(keyField, value);
+        }
         for (i = 0; i < ds.length; i++) {
-            if (ds[i][keyField] === key) {
+            if (!isNullOrUndefined(keyField) && (getValue(keyField, ds[i])) === key) {
                 break;
             }
         }

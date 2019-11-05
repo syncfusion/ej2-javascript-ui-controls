@@ -515,17 +515,23 @@ export class ContextMenu {
                     splittedSuggestion = this.spellChecker.handleSuggestions(allSuggestions);
                     this.processSuggestions(allSuggestions, splittedSuggestion, isTouch ? event as TouchEvent : event as PointerEvent);
                 } else {
-                    // tslint:disable-next-line:max-line-length
-                    this.spellChecker.CallSpellChecker(this.spellChecker.languageID, exactData, false, true, false, false).then((data: any) => {
-                        /* tslint:disable:no-any */
-                        let jsonObject: any = JSON.parse(data);
-                        allSuggestions = jsonObject.Suggestions;
-                        if (!isNullOrUndefined(allSuggestions)) {
-                            this.spellChecker.errorSuggestions.add(exactData, allSuggestions.slice());
-                            splittedSuggestion = this.spellChecker.handleSuggestions(allSuggestions);
-                        }
+                    if (this.spellChecker.enableOptimizedSpellCheck) {
+                        // tslint:disable-next-line:max-line-length
+                        this.spellChecker.CallSpellChecker(this.spellChecker.languageID, exactData, false, true, false, false).then((data: any) => {
+                            /* tslint:disable:no-any */
+                            let jsonObject: any = JSON.parse(data);
+                            allSuggestions = jsonObject.Suggestions;
+                            if (!isNullOrUndefined(allSuggestions)) {
+                                this.spellChecker.errorSuggestions.add(exactData, allSuggestions.slice());
+                                splittedSuggestion = this.spellChecker.handleSuggestions(allSuggestions);
+                            }
+                            // tslint:disable-next-line:max-line-length
+                            this.processSuggestions(allSuggestions, splittedSuggestion, isTouch ? event as TouchEvent : event as PointerEvent);
+                        });
+                    } else {
+                        // tslint:disable-next-line:max-line-length
                         this.processSuggestions(allSuggestions, splittedSuggestion, isTouch ? event as TouchEvent : event as PointerEvent);
-                    });
+                    }
                 }
             } else {
                 this.hideSpellContextItems();

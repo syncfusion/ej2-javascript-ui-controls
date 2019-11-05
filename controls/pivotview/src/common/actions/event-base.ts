@@ -2,11 +2,12 @@ import { isNullOrUndefined, removeClass, addClass } from '@syncfusion/ej2-base';
 import { DataManager, Query } from '@syncfusion/ej2-data';
 import { PivotCommon } from '../base/pivot-common';
 import * as cls from '../base/css-constant';
-import { ISort, IFilter, IAxisSet, IFormatSettings, IFieldOptions, IMembers, PivotEngine } from '../../base/engine';
+import { ISort, IFilter, IAxisSet, IFormatSettings, IFieldOptions, IMembers, PivotEngine, IField } from '../../base/engine';
 import { MaskChangeEventArgs } from '@syncfusion/ej2-inputs';
 import { TreeView } from '@syncfusion/ej2-navigations';
 import { OlapEngine, IOlapField } from '../../base/olap/engine';
 import { PivotUtil } from '../../base/util';
+import { FilterType } from '../../base/types';
 
 /**
  * `EventBase` for active fields action.
@@ -101,25 +102,28 @@ export class EventBase {
         let isInclude: boolean = false;
         let filterItems: string[] = [];
         let treeData: { [key: string]: Object }[] = [];
-        if (this.parent.dataType === 'olap') {
-            treeData = this.getOlapData(fieldName, isInclude);
-        } else {
-            /* tslint:disable:typedef */
-            this.parent.engineModule.fieldList[fieldName].dateMember = this.parent.engineModule.fieldList[fieldName].sort === 'Ascending' ?
-                (this.parent.engineModule.fieldList[fieldName].dateMember.sort((a, b) => (a.actualText > b.actualText) ? 1 :
-                    ((b.actualText > a.actualText) ? -1 : 0))) :
-                this.parent.engineModule.fieldList[fieldName].sort === 'Descending' ?
-                    (this.parent.engineModule.fieldList[fieldName].dateMember.sort((a, b) => (a.actualText < b.actualText) ? 1 :
-                        ((b.actualText < a.actualText) ? -1 : 0))) :
-                    this.parent.engineModule.fieldList[fieldName].dateMember;
-            /* tslint:enable:typedef */
-            let filterObj: IFilter = this.getFilterItemByName(fieldName);
-            if (!isNullOrUndefined(filterObj)) {
-                isInclude = filterObj.type === 'Include' ? true : false;
-                filterItems = filterObj.items ? filterObj.items : [];
+        if (this.parent.dataSourceSettings.allowMemberFilter) {
+            if (this.parent.dataType === 'olap') {
+                treeData = this.getOlapData(fieldName, isInclude);
+            } else {
+                /* tslint:disable:typedef */
+                this.parent.engineModule.fieldList[fieldName].dateMember =
+                    this.parent.engineModule.fieldList[fieldName].sort === 'Ascending' ?
+                        (this.parent.engineModule.fieldList[fieldName].dateMember.sort((a, b) => (a.actualText > b.actualText) ? 1 :
+                            ((b.actualText > a.actualText) ? -1 : 0))) :
+                        this.parent.engineModule.fieldList[fieldName].sort === 'Descending' ?
+                            (this.parent.engineModule.fieldList[fieldName].dateMember.sort((a, b) => (a.actualText < b.actualText) ? 1 :
+                                ((b.actualText < a.actualText) ? -1 : 0))) :
+                            this.parent.engineModule.fieldList[fieldName].dateMember;
+                /* tslint:enable:typedef */
+                let filterObj: IFilter = this.getFilterItemByName(fieldName);
+                if (!isNullOrUndefined(filterObj)) {
+                    isInclude = this.isValidFilterItemsAvail(fieldName, filterObj) && filterObj.type === 'Include' ? true : false;
+                    filterItems = filterObj.items ? filterObj.items : [];
+                }
+                treeData =
+                    this.getTreeData(isInclude, this.parent.engineModule.fieldList[fieldName].dateMember, filterItems, fieldName);
             }
-            treeData =
-                this.getTreeData(isInclude, this.parent.engineModule.fieldList[fieldName].dateMember, filterItems, fieldName);
         }
         if (this.parent.filterDialog.dialogPopUp) {
             this.parent.filterDialog.dialogPopUp.close();
@@ -129,7 +133,31 @@ export class EventBase {
             popupTarget = this.parent.element : popupTarget = document.getElementById(this.parent.parentID + '_Wrapper');
         this.parent.filterDialog.createFilterDialog(treeData, fieldName, fieldCaption, popupTarget);
     }
-
+    /**
+     * Returns boolean by checing the valid filter members from the selected filter settings.
+     * @method isValidFilterItemsAvail
+     * @param  {string} fieldName - Gets filter members for the given field name.
+     * @return {boolean}
+     * @hidden
+     */
+    public isValidFilterItemsAvail(fieldName: string, filterObj: IFilter): boolean {
+        let isItemAvail: boolean = false;
+        let filterTypes: FilterType[] = ['Include', 'Exclude'];
+        if (filterObj && filterTypes.indexOf(filterObj.type) >= 0) {
+            let engineModule: PivotEngine = this.parent.engineModule as PivotEngine;
+            let field: IField = engineModule.fieldList[fieldName];
+            let members: IMembers = (engineModule.formatFields[fieldName] &&
+                (['date', 'dateTime', 'time'].indexOf(engineModule.formatFields[fieldName].type) > -1)) ?
+                field.formattedMembers : field.members;
+            for (let item of filterObj.items) {
+                if (members[item]) {
+                    isItemAvail = true;
+                    break;
+                }
+            }
+        }
+        return isItemAvail;
+    }
     private getOlapData(fieldName: string, isInclude: boolean): { [key: string]: Object }[] {
         let treeData: { [key: string]: Object }[] = [];
         let filterItems: string[] = [];

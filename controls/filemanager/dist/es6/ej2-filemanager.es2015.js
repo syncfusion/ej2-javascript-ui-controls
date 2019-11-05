@@ -1448,7 +1448,7 @@ function doDownloadFiles(parent, data, newIds) {
 }
 function createDeniedDialog(parent, data, action) {
     let message = getValue('message', getValue('permission', data));
-    message = (message === '') ? '"' + getValue('name', data) + '" is not accessible. you need permission to perform the ' +
+    message = (message === '') ? '"' + getValue('name', data) + '" is not accessible. You need permission to perform the ' +
         action + ' action.' : message;
     let response = {
         error: {
@@ -1468,19 +1468,19 @@ function hasReadAccess(data) {
 }
 function hasEditAccess(data) {
     let permission = getValue('permission', data);
-    return permission ? ((getValue('read', permission) && getValue('edit', permission)) ? true : false) : true;
+    return permission ? ((getValue('read', permission) && (getValue('write', permission)))) : true;
 }
 function hasContentAccess(data) {
     let permission = getValue('permission', data);
-    return permission ? ((getValue('read', permission) && getValue('editContents', permission)) ? true : false) : true;
+    return permission ? ((getValue('read', permission) && (getValue('writeContents', permission)))) : true;
 }
 function hasUploadAccess(data) {
     let permission = getValue('permission', data);
-    return permission ? ((getValue('read', permission) && getValue('upload', permission)) ? true : false) : true;
+    return permission ? ((getValue('read', permission) && getValue('upload', permission))) : true;
 }
 function hasDownloadAccess(data) {
     let permission = getValue('permission', data);
-    return permission ? ((getValue('read', permission) && getValue('download', permission)) ? true : false) : true;
+    return permission ? ((getValue('read', permission) && getValue('download', permission))) : true;
 }
 function createNewFolder(parent) {
     let details = parent.itemData[0];

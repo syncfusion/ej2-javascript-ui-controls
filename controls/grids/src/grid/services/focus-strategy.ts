@@ -496,6 +496,7 @@ export class ContentFocus implements IFocus {
         let gObj: IGrid = this.parent;
         let editNextRow: boolean = gObj.editSettings.allowNextRowEdit && (gObj.isEdit || gObj.isLastCellPrimaryKey);
         let visibleIndex: number = gObj.getColumnIndexByField(gObj.getVisibleColumns()[0].field);
+        let cell: HTMLElement = this.getTable().rows[rowIndex].cells[cellIndex];
         if (action === 'tab' && editNextRow) {
             rowIndex ++;
             let index: number = (this.getTable().rows[rowIndex].querySelectorAll('.e-indentcell').length +
@@ -506,7 +507,7 @@ export class ContentFocus implements IFocus {
             rowIndex --;
             cellIndex = gObj.getColumnIndexByField(gObj.getVisibleColumns()[gObj.getVisibleColumns().length - 1].field);
         }
-        return !this.getTable().rows[rowIndex].cells[cellIndex].classList.contains('e-rowcell') ?
+        return !cell.classList.contains('e-rowcell') && !cell.classList.contains('e-headercell') ?
         this.editNextRow(rowIndex, cellIndex, action) : [rowIndex, cellIndex];
     }
 

@@ -191,7 +191,8 @@ export class Render {
             excelHeaderQueryCellInfo: this.excelHeaderQueryCellInfo.bind(this),
             pdfHeaderQueryCellInfo: this.pdfHeaderQueryCellInfo.bind(this),
             excelQueryCellInfo: this.excelQueryCellInfo.bind(this),
-            pdfQueryCellInfo: this.pdfQueryCellInfo.bind(this)
+            pdfQueryCellInfo: this.pdfQueryCellInfo.bind(this),
+            beforePdfExport: this.gridSettings.beforePdfExport ? this.gridSettings.beforePdfExport.bind(this) : undefined
         });
         this.parent.grid.on('header-refreshed', this.headerRefreshed.bind(this));
     }
@@ -212,6 +213,7 @@ export class Render {
             args.gridObject.columns[args.gridObject.columns.length - 1].width =
                 this.parent.pivotColumns[this.parent.pivotColumns.length - 1].width;
         }
+        this.parent.trigger(events.beforeExcelExport, args);
     }
 
     private rowSelected(args: RowSelectEventArgs): void {
@@ -991,8 +993,7 @@ export class Render {
             if (cell) {
                 let customClass: string = this.parent.hyperlinkSettings.cssClass;
                 let level: number = cell.level ? cell.level : 0;
-                if ((cell.level === -1 && !cell.rowSpan && cell.rowIndex !== this.engine.headerContent.length - 1)
-                    || cell.rowSpan === -1) {
+                if ((cell.level === -1 && !cell.rowSpan) || cell.rowSpan === -1) {
                     (args.node as HTMLElement).style.display = 'none';
                 } else if (cell.rowSpan > 1) {
                     args.node.setAttribute('rowspan', cell.rowSpan.toString());

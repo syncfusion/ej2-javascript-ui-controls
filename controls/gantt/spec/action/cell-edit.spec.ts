@@ -15,6 +15,7 @@ describe('Gantt Edit module', () => {
     describe('Gantt editing action', () => {
         let ganttObj: Gantt;
         let interval: number;
+        let preventDefault: Function = new Function();
         beforeAll((done: Function) => {
             ganttObj = createGantt(
                 {
@@ -196,6 +197,27 @@ describe('Gantt Edit module', () => {
             triggerMouseEvent(element, 'click');
             expect(ganttObj.currentViewData[1]['Customcol']).toBe('updated');
             expect(ganttObj.dataSource[0].subtasks[0]["Customcol"]).toBe('updated');
+        });
+        it('Editing parent task name with expand/collapse actions', () => {
+            ganttObj.dataBind();
+            let taskName: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(1) > td:nth-child(2)') as HTMLElement;
+            triggerMouseEvent(taskName, 'dblclick');
+            let element: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(1) > td:nth-child(1) > div > span') as HTMLElement;
+            triggerMouseEvent(element, 'click');
+            expect(ganttObj.currentViewData[0].expanded).toBe(false);
+        });
+        it('Editing parent task name with enter key', () => {
+            ganttObj.dataBind();
+            let taskName: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(1) > td:nth-child(2)') as HTMLElement;
+            triggerMouseEvent(taskName, 'dblclick');
+            let input: any = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrolTaskName') as HTMLElement;
+            input.value = 'TaskName updated';
+            let args1: any = { action: 'saveRequest', preventDefault: preventDefault };
+            ganttObj.keyboardModule.keyAction(args1); 
+            expect(ganttObj.currentViewData[0].ganttProperties.taskName).toBe('TaskName updated');
+            let element: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(1) > td:nth-child(1) > div > span') as HTMLElement;
+            triggerMouseEvent(element, 'click');
+            expect(ganttObj.currentViewData[0].expanded).toBe(true);
         });
         it('Editing parent taskbar', () => {
             ganttObj.dataBind();
@@ -399,6 +421,21 @@ describe('Gantt Edit module', () => {
             expect(ganttObj.currentViewData[3].ganttProperties.predecessorsName).toBe('2FF+3 days');
             expect(ganttObj.currentViewData[4].ganttProperties.predecessorsName).toBe('3SF+5 hours');
             expect(ganttObj.currentViewData[5].ganttProperties.predecessorsName).toBe('4SS+50 minutes');
+        });
+        it('Editing task name with dialog close arguments', () => {
+            ganttObj.actionBegin = function (args: any): void {
+                if (args.requestType === "beforeOpenEdiaDialog") {
+                    args.dialogModel.animationSettings = { 'effect': 'none' };
+                }
+            };
+            ganttObj.dataBind();
+            let taskName: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(2) > td:nth-child(2)') as HTMLElement;
+            triggerMouseEvent(taskName, 'dblclick');
+            let input: any = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrolTaskName') as HTMLElement;
+            input.value = 'TaskName updated';
+            let element: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(3) > td:nth-child(2)') as HTMLElement;
+            triggerMouseEvent(element, 'click');
+            expect(ganttObj.currentViewData[1].ganttProperties.taskName).toBe('TaskName updated');
         });
         // it('Editing notes column-Dialog', (done) => {
         //     ganttObj.dataBind();

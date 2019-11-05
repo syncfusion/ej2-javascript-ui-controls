@@ -947,7 +947,7 @@ describe('Chart Control', () => {
                 ele = document.getElementById('chartContainer_Series_0_Point_0');
                 expect(ele !== null).toBe(true);
                 ele = document.getElementById('chartContainer_Series_0_Point_1_Text_0');
-                expect(ele !== null).toBe(true);
+                expect(ele === null).toBe(true);
                 done();
             };
             chartObj.loaded = loaded;
@@ -1574,12 +1574,12 @@ describe('Chart Control', () => {
         });
         it('Checking with ColumnSeries OnTicks label', () => {
            let point: Element = document.getElementById('customerIssue_Series_0_Point_1');
-           expect(point.getAttribute('d')).toBe('M 290.075 224.625 A 94.425 94.425 0 0 1 317.7313754179358 157.85650895505148 L 384.5 224.625 Z');
+           expect(point.getAttribute('d')).toBe('M 290.075 224.625 A 94.425 94.425 0 0 1 317.7313754179358 157.85650895505148 L 273.218959029893 113.34418159175245 A 157.375 157.375 1 0 0 227.125 224.62500000000003 Z');
         });
         it('checking columnSeries with between ticks', (done: Function) => {
             chartObj.loaded = () => {
                 let point: Element = document.getElementById('customerIssue_Series_0_Point_1');
-                expect(point.getAttribute('d')).toBe('M 317.73144218646024 291.39355781353976 A 94.425 94.425 0 0 1 290.0750000000472 224.62509442500001 L 384.5 224.625 Z');
+                expect(point.getAttribute('d')).toBe('M 317.73144218646024 291.39355781353976 A 94.425 94.425 0 0 1 290.0750000000472 224.62509442500001 L 227.1250000000787 224.62515737500004 A 157.375 157.375 1 0 0 273.2190703107671 335.90592968923295 Z');
                 done();
             };
             chartObj.primaryXAxis.labelPlacement = 'BetweenTicks';
@@ -1640,12 +1640,12 @@ describe('Chart Control', () => {
         });
         it('Checking with OnTicks label', () => {
            let point: Element = document.getElementById('container_Series_0_Point_0');
-           expect(point.getAttribute('d')).toBe('M 274.68886110046446 210.01160714285714 L 299.9999707732143 195.3982142857289 L 300 224.625 Z');
+           expect(point.getAttribute('d')).toBe('M 274.68886110046446 210.01160714285714 L 299.9999707732143 195.3982142857289 L 300 224.625 L 300 224.625 Z');
         });
         it('checking with between ticks', (done: Function) => {
             chartObj.loaded = () => {
                 let point: Element = document.getElementById('container_Series_0_Point_0');
-                expect(point.getAttribute('d')).toBe('M 300 195.3982142857143 L 325.31112428613005 210.01158183172555 L 300 224.625 Z');
+                expect(point.getAttribute('d')).toBe('M 300 195.3982142857143 L 325.31112428613005 210.01158183172555 L 300 224.625 L 300 224.625 Z');
                 done();
             };
             chartObj.primaryXAxis.labelPlacement = 'BetweenTicks';

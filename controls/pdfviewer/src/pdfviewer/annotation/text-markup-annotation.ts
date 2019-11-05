@@ -214,7 +214,7 @@ export class TextMarkupAnnotation {
      * @private
      */
     public showHideDropletDiv(hide: boolean): void {
-        if (this.pdfViewer.enableTextMarkupResizer) {
+        if (this.pdfViewer.enableTextMarkupResizer && this.dropDivAnnotationLeft && this.dropDivAnnotationRight) {
             if (hide) {
                 this.dropDivAnnotationLeft.style.display = 'none';
                 this.dropDivAnnotationRight.style.display = 'none';
@@ -285,7 +285,7 @@ export class TextMarkupAnnotation {
             // tslint:disable-next-line:max-line-length
             rightDivElement.style.top = topClientValue + pageTopValue * this.pdfViewerBase.getZoomFactor() + 'px';
         }
-        rightDivElement.style.left = x - this.pdfViewerBase.viewerContainer.getBoundingClientRect().left;
+        rightDivElement.style.left = x - this.pdfViewerBase.viewerContainer.getBoundingClientRect().left + 'px';
     }
     /**
      * @private
@@ -394,7 +394,9 @@ export class TextMarkupAnnotation {
         }
         if (this.pdfViewer.enableTextMarkupResizer && this.isExtended && window.getSelection().toString()) {
             let pageBounds: IPageAnnotationBounds[] = this.getDrawnBounds();
-            this.updateTextMarkupAnnotationBounds(pageBounds[0].bounds);
+            if (pageBounds[0] && pageBounds[0].bounds) {
+                this.updateTextMarkupAnnotationBounds(pageBounds[0].bounds);
+            }
 
         } else if (window.getSelection().toString()) {
             let pageBounds: IPageAnnotationBounds[] = this.getDrawnBounds();
@@ -416,9 +418,17 @@ export class TextMarkupAnnotation {
 
     private convertSelectionToTextMarkup(type: string, selectionObject: ISelection[], factor: number): void {
         for (let i: number = 0; i < selectionObject.length; i++) {
+            let textValue: string = selectionObject[i].textContent.replace(/(\r\n|\n|\r)/gm, '');
             // tslint:disable-next-line
-            let indexes: any = this.getIndexNumbers(i, selectionObject[i].textContent);
-            this.drawTextMarkups(type, selectionObject[i].rectangleBounds, selectionObject[i].pageNumber, selectionObject[i].bound, factor, selectionObject[i].textContent, indexes.startIndex, indexes.endIndex);
+            let indexes: any;
+            if (selectionObject[i].startNode === selectionObject[i].endNode) {
+                let parentText: string = document.getElementById(selectionObject[i].startNode).textContent.replace(/(\r\n|\n|\r)/gm, '');
+                indexes = this.getIndexNumbers(selectionObject[i].pageNumber, textValue, parentText);
+            } else {
+                indexes = this.getIndexNumbers(selectionObject[i].pageNumber, textValue);
+            }
+            // tslint:disable-next-line:max-line-length
+            this.drawTextMarkups(type, selectionObject[i].rectangleBounds, selectionObject[i].pageNumber, selectionObject[i].bound, factor, textValue, indexes.startIndex, indexes.endIndex);
         }
     }
 
@@ -479,7 +489,7 @@ export class TextMarkupAnnotation {
                 let settings: any = { opacity: annotation.opacity, color: annotation.color, author: annotation.author, subject: annotation.subject, modifiedDate: annotation.modifiedDate };
                 let index: number = this.pdfViewer.annotationModule.actionCollection[this.pdfViewer.annotationModule.actionCollection.length - 1].index;
                 // tslint:disable-next-line:max-line-length
-                this.pdfViewer.fireAnnotationAdd(pageNumber, index, (type as AnnotationType), annotation.bounds, settings, textContent, startIndex, endIndex);
+                this.pdfViewer.fireAnnotationAdd(pageNumber, annotation.annotName, (type as AnnotationType), annotation.bounds, settings, textContent, startIndex, endIndex);
             }
         }
     }
@@ -643,11 +653,12 @@ export class TextMarkupAnnotation {
                     }
                 }
                 this.manageAnnotations(pageAnnotations, this.selectTextMarkupCurrentPage);
+                let annotationId: string = this.currentTextMarkupAnnotation.annotName;
                 this.currentTextMarkupAnnotation = null;
                 this.pdfViewer.annotationModule.renderAnnotations(this.selectTextMarkupCurrentPage, null, null, null);
                 this.pdfViewerBase.isDocumentEdited = true;
                 // tslint:disable-next-line:max-line-length
-                this.pdfViewer.fireAnnotationRemove(this.selectTextMarkupCurrentPage, this.currentAnnotationIndex, deletedAnnotation.textMarkupAnnotationType as AnnotationType);
+                this.pdfViewer.fireAnnotationRemove(this.selectTextMarkupCurrentPage, annotationId, deletedAnnotation.textMarkupAnnotationType as AnnotationType);
                 this.currentAnnotationIndex = null;
                 this.selectTextMarkupCurrentPage = null;
                 if (Browser.isDevice) {
@@ -669,7 +680,7 @@ export class TextMarkupAnnotation {
             this.pdfViewer.annotationModule.renderAnnotations(this.selectTextMarkupCurrentPage, null, null, null);
             this.pdfViewerBase.isDocumentEdited = true;
             // tslint:disable-next-line:max-line-length
-            this.pdfViewer.fireAnnotationPropertiesChange(this.selectTextMarkupCurrentPage, this.currentAnnotationIndex, this.currentTextMarkupAnnotation.textMarkupAnnotationType as AnnotationType, true, false, false, false);
+            this.pdfViewer.fireAnnotationPropertiesChange(this.selectTextMarkupCurrentPage, this.currentTextMarkupAnnotation.annotName, this.currentTextMarkupAnnotation.textMarkupAnnotationType as AnnotationType, true, false, false, false);
             this.currentAnnotationIndex = null;
         }
     }
@@ -691,7 +702,7 @@ export class TextMarkupAnnotation {
                 if (isOpacity || args.name === 'changed') {
                     this.pdfViewerBase.isDocumentEdited = true;
                     // tslint:disable-next-line:max-line-length
-                    this.pdfViewer.fireAnnotationPropertiesChange(this.selectTextMarkupCurrentPage, this.currentAnnotationIndex, this.currentTextMarkupAnnotation.textMarkupAnnotationType as AnnotationType, false, true, false, false);
+                    this.pdfViewer.fireAnnotationPropertiesChange(this.selectTextMarkupCurrentPage, this.currentTextMarkupAnnotation.annotName, this.currentTextMarkupAnnotation.textMarkupAnnotationType as AnnotationType, false, true, false, false);
                     this.currentAnnotationIndex = null;
                 }
             }
@@ -919,7 +930,7 @@ export class TextMarkupAnnotation {
                     }
                     let boundingRect: ClientRect = range.getBoundingClientRect();
                     // tslint:disable-next-line
-                    let indexes: any = this.getIndexNumbers(pageId, range.toString())
+                    let indexes: any = this.getIndexNumbers(pageId, range.toString(), range.commonAncestorContainer.textContent.toString().replace(/(\r\n|\n|\r)/gm, ''));
                     // tslint:disable-next-line:max-line-length
                     let rectangle: IRectangle = { left: this.getDefaultValue(boundingRect.left - pageRect.left), top: this.getDefaultValue(boundingRect.top - pageRect.top), width: this.getDefaultValue(boundingRect.width), height: this.getDefaultValue(boundingRect.height), right: this.getDefaultValue(boundingRect.right - pageRect.left), bottom: this.getDefaultValue(boundingRect.bottom - pageRect.top) };
                     let rectangleArray: IRectangle[] = [];
@@ -996,13 +1007,14 @@ export class TextMarkupAnnotation {
                     pageRange.setStart(startElementNode, pageStartOffset);
                     pageRange.setEnd(endElementNode, pageEndOffset);
                     let pageRectBounds: ClientRect = pageRange.getBoundingClientRect();
+                    let textValue: string = pageRange.toString().replace(/(\r\n|\n|\r)/gm, '');
                     // tslint:disable-next-line
-                    let indexes: any = this.getIndexNumbers(i, pageRange.toString());
+                    let indexes: any = this.getIndexNumbers(i, textValue);
                     // tslint:disable-next-line:max-line-length
                     let pageRectangle: IRectangle = { left: this.getDefaultValue(pageRectBounds.left - pageRect.left), top: this.getDefaultValue(pageRectBounds.top - pageRect.top), width: this.getDefaultValue(pageRectBounds.width), height: this.getDefaultValue(pageRectBounds.height), right: this.getDefaultValue(pageRectBounds.right - pageRect.left), bottom: this.getDefaultValue(pageRectBounds.bottom - pageRect.top) };
                     // tslint:disable-next-line
                     let rect: any = { left: pageRectangle.left, top: pageRectangle.top, right: pageRectangle.right, bottom: pageRectangle.bottom };
-                    pageBounds.push({ pageIndex: i, bounds: selectionRects, rect: rect, startIndex: indexes.startIndex, endIndex: indexes.endIndex, textContent: pageRange.toString() });
+                    pageBounds.push({ pageIndex: i, bounds: selectionRects, rect: rect, startIndex: indexes.startIndex, endIndex: indexes.endIndex, textContent: textValue });
                 }
             }
         }
@@ -1011,15 +1023,21 @@ export class TextMarkupAnnotation {
     }
 
     // tslint:disable-next-line
-    private getIndexNumbers(pageNumber: number, content: string): any {
+    private getIndexNumbers(pageNumber: number, content: string, parentText?: string): any {
         // tslint:disable-next-line
         let storedData: any = this.pdfViewerBase.getStoredData(pageNumber);
         let startIndex: number;
         let endIndex: number;
         if (storedData) {
-            let pageText: string = storedData.pageText;
-            startIndex = pageText.replace(/(\r\n|\n|\r)/gm, '').indexOf(content.replace(/(\r\n|\n|\r)/gm, ''));
-            endIndex = startIndex + content.length;
+            let pageText: string = storedData.pageText.replace(/(\r\n|\n|\r)/gm, '');
+            if (!isNullOrUndefined(parentText)) {
+                let parentIndex: number = pageText.indexOf(parentText);
+                let initialIndex: number = parentText.indexOf(content);
+                startIndex = parentIndex + initialIndex;
+            } else {
+                startIndex = pageText.indexOf(content);
+            }
+            endIndex = startIndex + (content.length - 1);
         }
         return { startIndex: startIndex, endIndex: endIndex };
     }

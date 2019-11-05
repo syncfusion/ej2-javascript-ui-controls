@@ -90,6 +90,7 @@ describe('PivotView spec', () => {
         describe('Filter settings', () => {
             let ds: IDataSet[] = pivot_dataset as IDataSet[];
             let dataSourceSettings: IDataOptions = {
+                allowMemberFilter: true,
                 filterSettings: [{ name: 'name', type: 'Include', items: ['Knight Wooten'] },
                 { name: 'company', type: 'Include', items: ['NIPAZ'] },
                 { name: 'gender', type: 'Include', items: ['male'] }],
@@ -690,6 +691,7 @@ describe('PivotView spec', () => {
             let dataSourceSettings: IDataOptions = {
                 expandAll: false,
                 enableSorting: true,
+                allowMemberFilter: true,
                 sortSettings: [{ name: 'company', order: 'Descending' }],
                 filterSettings: [{ name: 'name', type: 'Include', items: ['Knight Wooten'] },
                 { name: 'company', type: 'Include', items: ['NIPAZ'] },
@@ -712,6 +714,102 @@ describe('PivotView spec', () => {
                 pivotEngine = new PivotEngine(); pivotEngine.renderEngine(dataSourceSettings);
                 expect((pivotEngine.pivotValues[1][2] as IDataSet).formattedText).toBe('price');
                 expect((pivotEngine.pivotValues[2][2] as IDataSet).formattedText).toBe('11673.65');
+            });
+            it('Calculated field using min function', () => {
+                dataSourceSettings.calculatedFieldSettings[0].formula = 'min("Sum(balance)","Count(quantity)")';
+                pivotEngine = new PivotEngine(); pivotEngine.renderEngine(dataSourceSettings);
+                expect((pivotEngine.pivotValues[1][2] as IDataSet).formattedText).toBe('price');
+                expect((pivotEngine.pivotValues[2][2] as IDataSet).formattedText).toBe('1');
+            });
+            it('Calculated field using max function', () => {
+                dataSourceSettings.calculatedFieldSettings[0].formula = 'max("Sum(balance)","Count(quantity)")';
+                pivotEngine = new PivotEngine(); pivotEngine.renderEngine(dataSourceSettings);
+                expect((pivotEngine.pivotValues[1][2] as IDataSet).formattedText).toBe('price');
+                expect((pivotEngine.pivotValues[2][2] as IDataSet).formattedText).toBe('1061.24');
+            });
+            it('Calculated field using abs function', () => {
+                dataSourceSettings.calculatedFieldSettings[0].formula = 'abs("Sum(balance)") + "Count(quantity)"';
+                pivotEngine = new PivotEngine(); pivotEngine.renderEngine(dataSourceSettings);
+                expect((pivotEngine.pivotValues[1][2] as IDataSet).formattedText).toBe('price');
+                expect((pivotEngine.pivotValues[2][2] as IDataSet).formattedText).toBe('1062.24');
+            });
+            it('Calculated field using Math.min function', () => {
+                dataSourceSettings.calculatedFieldSettings[0].formula = 'Math.min("Sum(balance)","Count(quantity)")';
+                pivotEngine = new PivotEngine(); pivotEngine.renderEngine(dataSourceSettings);
+                expect((pivotEngine.pivotValues[1][2] as IDataSet).formattedText).toBe('price');
+                expect((pivotEngine.pivotValues[2][2] as IDataSet).formattedText).toBe('1');
+            });
+            it('Calculated field using Math.max function', () => {
+                dataSourceSettings.calculatedFieldSettings[0].formula = 'Math.max("Sum(balance)","Count(quantity)")';
+                pivotEngine = new PivotEngine(); pivotEngine.renderEngine(dataSourceSettings);
+                expect((pivotEngine.pivotValues[1][2] as IDataSet).formattedText).toBe('price');
+                expect((pivotEngine.pivotValues[2][2] as IDataSet).formattedText).toBe('1061.24');
+            });
+            it('Calculated field using Math.abs function', () => {
+                dataSourceSettings.calculatedFieldSettings[0].formula = 'Math.abs("Sum(balance)") + "Count(quantity)"';
+                pivotEngine = new PivotEngine(); pivotEngine.renderEngine(dataSourceSettings);
+                expect((pivotEngine.pivotValues[1][2] as IDataSet).formattedText).toBe('price');
+                expect((pivotEngine.pivotValues[2][2] as IDataSet).formattedText).toBe('1062.24');
+            });
+            it('Calculated field using > condition', () => {
+                dataSourceSettings.calculatedFieldSettings[0].formula = '"Sum(balance)" > "Count(quantity)" ? "Count(quantity)" : "Sum(balance)"';
+                pivotEngine = new PivotEngine(); pivotEngine.renderEngine(dataSourceSettings);
+                expect((pivotEngine.pivotValues[1][2] as IDataSet).formattedText).toBe('price');
+                expect((pivotEngine.pivotValues[2][2] as IDataSet).formattedText).toBe('1');
+            });
+            it('Calculated field using < condition', () => {
+                dataSourceSettings.calculatedFieldSettings[0].formula = '"Sum(balance)" < "Count(quantity)" ? "Count(quantity)" : "Sum(balance)"';
+                pivotEngine = new PivotEngine(); pivotEngine.renderEngine(dataSourceSettings);
+                expect((pivotEngine.pivotValues[1][2] as IDataSet).formattedText).toBe('price');
+                expect((pivotEngine.pivotValues[2][2] as IDataSet).formattedText).toBe('1061.24');
+            });
+            it('Calculated field using >= condition', () => {
+                dataSourceSettings.calculatedFieldSettings[0].formula = '"Sum(balance)" >= "Count(quantity)" ? "Count(quantity)" : "Sum(balance)"';
+                pivotEngine = new PivotEngine(); pivotEngine.renderEngine(dataSourceSettings);
+                expect((pivotEngine.pivotValues[1][2] as IDataSet).formattedText).toBe('price');
+                expect((pivotEngine.pivotValues[2][2] as IDataSet).formattedText).toBe('1');
+            });
+            it('Calculated field using <= condition', () => {
+                dataSourceSettings.calculatedFieldSettings[0].formula = '"Sum(balance)" <= "Count(quantity)" ? "Count(quantity)" : "Sum(balance)"';
+                pivotEngine = new PivotEngine(); pivotEngine.renderEngine(dataSourceSettings);
+                expect((pivotEngine.pivotValues[1][2] as IDataSet).formattedText).toBe('price');
+                expect((pivotEngine.pivotValues[2][2] as IDataSet).formattedText).toBe('1061.24');
+            });
+            it('Calculated field using == condition', () => {
+                dataSourceSettings.calculatedFieldSettings[0].formula = '"Sum(balance)" == "Count(quantity)" ? "Count(quantity)" : "Sum(balance)"';
+                pivotEngine = new PivotEngine(); pivotEngine.renderEngine(dataSourceSettings);
+                expect((pivotEngine.pivotValues[1][2] as IDataSet).formattedText).toBe('price');
+                expect((pivotEngine.pivotValues[2][2] as IDataSet).formattedText).toBe('1061.24');
+            });
+            it('Calculated field using != condition', () => {
+                dataSourceSettings.calculatedFieldSettings[0].formula = '"Sum(balance)" != "Count(quantity)" ? "Count(quantity)" : "Sum(balance)"';
+                pivotEngine = new PivotEngine(); pivotEngine.renderEngine(dataSourceSettings);
+                expect((pivotEngine.pivotValues[1][2] as IDataSet).formattedText).toBe('price');
+                expect((pivotEngine.pivotValues[2][2] as IDataSet).formattedText).toBe('1');
+            });
+            it('Calculated field using | condition', () => {
+                dataSourceSettings.calculatedFieldSettings[0].formula = '"Sum(balance)" | "Count(quantity)" ? "Count(quantity)" : "Sum(balance)"';
+                pivotEngine = new PivotEngine(); pivotEngine.renderEngine(dataSourceSettings);
+                expect((pivotEngine.pivotValues[1][2] as IDataSet).formattedText).toBe('price');
+                expect((pivotEngine.pivotValues[2][2] as IDataSet).formattedText).toBe('1');
+            });
+            it('Calculated field using & condition', () => {
+                dataSourceSettings.calculatedFieldSettings[0].formula = '"Sum(balance)" & "Count(quantity)" ? "Count(quantity)" : "Sum(balance)"';
+                pivotEngine = new PivotEngine(); pivotEngine.renderEngine(dataSourceSettings);
+                expect((pivotEngine.pivotValues[1][2] as IDataSet).formattedText).toBe('price');
+                expect((pivotEngine.pivotValues[2][2] as IDataSet).formattedText).toBe('1');
+            });
+            it('Calculated field using isNaN condition', () => {
+                dataSourceSettings.calculatedFieldSettings[0].formula = 'isNaN("Sum(balance)") ? "Count(quantity)" : "Sum(balance)"';
+                pivotEngine = new PivotEngine(); pivotEngine.renderEngine(dataSourceSettings);
+                expect((pivotEngine.pivotValues[1][2] as IDataSet).formattedText).toBe('price');
+                expect((pivotEngine.pivotValues[2][2] as IDataSet).formattedText).toBe('1061.24');
+            });
+            it('Calculated field using !isNaN condition', () => {
+                dataSourceSettings.calculatedFieldSettings[0].formula = '!isNaN("Sum(balance)") ? "Count(quantity)" : "Sum(balance)"';
+                pivotEngine = new PivotEngine(); pivotEngine.renderEngine(dataSourceSettings);
+                expect((pivotEngine.pivotValues[1][2] as IDataSet).formattedText).toBe('price');
+                expect((pivotEngine.pivotValues[2][2] as IDataSet).formattedText).toBe('1');
             });
         });
         describe('Paging', () => {
@@ -772,6 +870,7 @@ describe('PivotView spec', () => {
                 dataSource: pivot_dataset as IDataSet[],
                 expandAll: false,
                 enableSorting: true,
+                allowMemberFilter: true,
                 sortSettings: [{ name: 'state', order: 'Descending' }],
                 formatSettings: [{ name: 'balance', format: 'C' }],
                 filterSettings: [
@@ -818,6 +917,7 @@ describe('PivotView spec', () => {
             let dataSourceSettings: IDataOptions = {
                 dataSource: pivot_dataset as IDataSet[],
                 allowLabelFilter: true,
+                allowMemberFilter: true,
                 filterSettings: [{ name: 'company', type: 'Label', condition: 'Contains', value1: 'z' }],
                 rows: [{ name: 'product', caption: 'Items' }, { name: 'eyeColor' }],
                 columns: [{ name: 'company' }, { name: 'isActive' }],
@@ -1008,6 +1108,7 @@ describe('PivotView spec', () => {
             let dataSourceSettings: IDataOptions = {
                 dataSource: pivot_dataset as IDataSet[],
                 allowLabelFilter: true,
+                allowMemberFilter: true,
                 formatSettings: [{ name: 'date', format: 'dd/MM/yyyy-hh:mm', type: 'date' }],
                 filterSettings: [{ name: 'date', type: 'Date', condition: 'Between', value1: new Date('02/16/2000'), value2: new Date('02/16/2002') }],
                 rows: [{ name: 'date', caption: 'TimeLine' }],
@@ -1218,6 +1319,7 @@ describe('PivotView spec', () => {
             let dataSourceSettings: IDataOptions = {
                 dataSource: pivot_dataset as IDataSet[],
                 allowLabelFilter: true,
+                allowMemberFilter: true,
                 filterSettings: [{ name: 'age', type: 'Number', condition: 'Equals', value1: '25', value2: '35' }],
                 rows: [{ name: 'age', caption: 'Age' }],
                 columns: [{ name: 'product', caption: 'Items' }, { name: 'eyeColor' }],
@@ -1425,6 +1527,7 @@ describe('PivotView spec', () => {
                 dataSource: pivot_dataset as IDataSet[],
                 allowLabelFilter: true,
                 allowValueFilter: true,
+                allowMemberFilter: true,
                 filterSettings: [{ name: 'eyeColor', type: 'Value', condition: 'GreaterThan', value1: '400', measure: 'quantity' }],
                 rows: [{ name: 'product', caption: 'Items' }, { name: 'eyeColor' }],
                 columns: [{ name: 'gender', caption: 'Population' }, { name: 'isActive' }],
@@ -1566,11 +1669,809 @@ describe('PivotView spec', () => {
                 expect((pivotEngine.pivotValues[0][1] as IDataSet).actualText).toBe('female');
             });
         });
+        describe('Filter settings without member filtering enabled', () => {
+            let ds: IDataSet[] = pivot_dataset as IDataSet[];
+            let dataSourceSettings: IDataOptions = {
+                allowMemberFilter: false,
+                filterSettings: [{ name: 'name', type: 'Include', items: ['Knight Wooten'] },
+                { name: 'company', type: 'Include', items: ['NIPAZ'] },
+                { name: 'gender', type: 'Include', items: ['male'] }],
+                dataSource: ds,
+                rows: [{ name: 'company' }, { name: 'state' }],
+                columns: [{ name: 'name' }],
+                values: [{ name: 'balance' },
+                { name: 'quantity' }], filters: [{ name: 'gender' }]
+            };
+            let pivotEngine: PivotEngine = new PivotEngine(); pivotEngine.renderEngine(dataSourceSettings);
+            it('Only include filters', () => {
+                expect(pivotEngine.pivotValues.length).toBe(423);
+                expect(pivotEngine.pivotValues[0].length).toBe(843);
+            });
+            it('Exclude with include filter', () => {
+                dataSourceSettings.filterSettings[0].type = 'Exclude';
+                dataSourceSettings.filterSettings[1].type = 'Exclude';
+                // dataSource.filterSettings.length = 1;
+                pivotEngine = new PivotEngine(); pivotEngine.renderEngine(dataSourceSettings);
+                expect(pivotEngine.pivotValues.length).toBe(423);
+                expect(pivotEngine.pivotValues[0].length).toBe(843);
+            });
+            it('Only exclude filter', () => {
+                dataSourceSettings.filterSettings[0].type = 'Exclude';
+                dataSourceSettings.filterSettings[1].type = 'Exclude';
+                dataSourceSettings.filterSettings.length = 1;
+                pivotEngine = new PivotEngine(); pivotEngine.renderEngine(dataSourceSettings);
+                expect(pivotEngine.pivotValues.length).toBe(423);
+                expect(pivotEngine.pivotValues[0].length).toBe(843);
+            });
+            it('Clear filters items', () => {
+                dataSourceSettings.filterSettings = [];
+                pivotEngine = new PivotEngine(); pivotEngine.renderEngine(dataSourceSettings);
+                expect(pivotEngine.pivotValues).toBeTruthy;
+            });
+        });
+        describe('Label Filtering without member filtering enabled', () => {
+            let ds: IDataSet[] = pivot_dataset as IDataSet[];
+            let dataSourceSettings: IDataOptions = {
+                dataSource: pivot_dataset as IDataSet[],
+                allowLabelFilter: true,
+                allowMemberFilter: false,
+                filterSettings: [{ name: 'company', type: 'Label', condition: 'Contains', value1: 'z' }],
+                rows: [{ name: 'product', caption: 'Items' }, { name: 'eyeColor' }],
+                columns: [{ name: 'company' }, { name: 'isActive' }],
+                values: [{ name: 'balance' }, { name: 'quantity' }],
+                filters: [{ name: 'gender', caption: 'Population' }]
+            };
+            let pivotEngine: PivotEngine = new PivotEngine(); pivotEngine.renderEngine(dataSourceSettings);
+            it('With single label filters', () => {
+                expect(pivotEngine.pivotValues.length).toBe(10);
+                expect(pivotEngine.pivotValues[0].length).toBe(89);
+                expect((pivotEngine.pivotValues[0][1] as IDataSet).actualText).toBe('BIZMATIC');
+                expect((pivotEngine.pivotValues[3][0] as IDataSet).actualText).toBe('Bike');
+            });
+            it('With two label filters', () => {
+                dataSourceSettings.filterSettings.push({ name: 'product', type: 'Label', condition: 'DoesNotContains', value1: 'i' });
+                expect(dataSourceSettings.filterSettings.length === 2).toBeTruthy;
+                pivotEngine = new PivotEngine(); pivotEngine.renderEngine(dataSourceSettings);
+                expect(pivotEngine.pivotValues.length).toBe(8);
+                expect(pivotEngine.pivotValues[0].length).toBe(67);
+                expect((pivotEngine.pivotValues[0][1] as IDataSet).actualText).toBe('BIZMATIC');
+                expect((pivotEngine.pivotValues[3][0] as IDataSet).actualText).toBe('Car');
+            });
+            it('With Include filter', () => {
+                dataSourceSettings.filterSettings.push({ name: 'eyeColor', type: 'Include', items: ['blue'] });
+                expect(dataSourceSettings.filterSettings.length === 3).toBeTruthy;
+                pivotEngine = new PivotEngine(); pivotEngine.renderEngine(dataSourceSettings);
+                expect(pivotEngine.pivotValues.length).toBe(8);
+                expect(pivotEngine.pivotValues[0].length).toBe(67);
+                expect((pivotEngine.pivotValues[0][1] as IDataSet).actualText).toBe('BIZMATIC');
+                expect((pivotEngine.pivotValues[3][0] as IDataSet).actualText).toBe('Car');
+            });
+            it('With Exclude filter', () => {
+                dataSourceSettings.filterSettings[2].type = 'Exclude';
+                expect(dataSourceSettings.filterSettings.length === 3).toBeTruthy;
+                pivotEngine = new PivotEngine(); pivotEngine.renderEngine(dataSourceSettings);
+                expect(pivotEngine.pivotValues.length).toBe(8);
+                expect(pivotEngine.pivotValues[0].length).toBe(67);
+                expect((pivotEngine.pivotValues[0][1] as IDataSet).actualText).toBe('BIZMATIC');
+                expect((pivotEngine.pivotValues[3][0] as IDataSet).actualText).toBe('Car');
+            });
+            it('With sorting enabled', () => {
+                dataSourceSettings.enableSorting = true;
+                dataSourceSettings.sortSettings = [{ name: 'product', order: 'Descending' }];
+                expect(dataSourceSettings.sortSettings.length === 1).toBeTruthy;
+                pivotEngine = new PivotEngine(); pivotEngine.renderEngine(dataSourceSettings);
+                expect(pivotEngine.pivotValues.length).toBe(8);
+                expect(pivotEngine.pivotValues[0].length).toBe(67);
+                expect((pivotEngine.pivotValues[0][1] as IDataSet).actualText).toBe('BIZMATIC');
+                expect((pivotEngine.pivotValues[3][0] as IDataSet).actualText).toBe('Van');
+            });
+            it('With valuesorting enabled', () => {
+                dataSourceSettings.valueSortSettings = {
+                    headerText: 'Grand Total##balance',
+                    headerDelimiter: '##',
+                    sortOrder: 'Descending'
+                };
+                let customProperties: ICustomProperties = {
+                    mode: '',
+                    savedFieldList: undefined,
+                    enableValueSorting: true,
+                    isDrillThrough: undefined,
+                    localeObj: undefined
+                };
+                pivotEngine = new PivotEngine(); pivotEngine.renderEngine(dataSourceSettings, customProperties);
+                expect(pivotEngine.pivotValues.length).toBe(8);
+                expect(pivotEngine.pivotValues[0].length).toBe(67);
+                expect((pivotEngine.pivotValues[0][1] as IDataSet).actualText).toBe('BIZMATIC');
+                expect((pivotEngine.pivotValues[3][0] as IDataSet).actualText).toBe('Car');
+            });
+            it('With ExpandAll enabled', () => {
+                dataSourceSettings.expandAll = true;
+                let customProperties: ICustomProperties = {
+                    mode: '',
+                    savedFieldList: undefined,
+                    enableValueSorting: true,
+                    isDrillThrough: undefined,
+                    localeObj: undefined
+                };
+                pivotEngine = new PivotEngine(); pivotEngine.renderEngine(dataSourceSettings, customProperties);
+                expect(pivotEngine.pivotValues.length).toBe(20);
+                expect(pivotEngine.pivotValues[0].length).toBe(131);
+                expect((pivotEngine.pivotValues[0][1] as IDataSet).actualText).toBe('BIZMATIC');
+                expect((pivotEngine.pivotValues[3][0] as IDataSet).actualText).toBe('Car');
+            });
+            it('With Drilled members', () => {
+                dataSourceSettings.drilledMembers = [{ name: 'product', items: ['Bike', 'Van'] }, { name: 'company', items: ['BIZMATIC'] }];
+                let customProperties: ICustomProperties = {
+                    mode: '',
+                    savedFieldList: undefined,
+                    enableValueSorting: true,
+                    isDrillThrough: undefined,
+                    localeObj: undefined
+                };
+                pivotEngine = new PivotEngine(); pivotEngine.renderEngine(dataSourceSettings, customProperties);
+                expect(pivotEngine.pivotValues.length).toBe(17);
+                expect(pivotEngine.pivotValues[0].length).toBe(129);
+                expect((pivotEngine.pivotValues[0][1] as IDataSet).actualText).toBe('BIZMATIC');
+                expect((pivotEngine.pivotValues[3][0] as IDataSet).actualText).toBe('Car');
+            });
+            it('With Format Settings', () => {
+                dataSourceSettings.formatSettings = [{ name: 'balance', format: 'C' }];
+                let customProperties: ICustomProperties = {
+                    mode: '',
+                    savedFieldList: undefined,
+                    enableValueSorting: true,
+                    isDrillThrough: undefined,
+                    localeObj: undefined
+                };
+                pivotEngine = new PivotEngine(); pivotEngine.renderEngine(dataSourceSettings, customProperties);
+                expect(pivotEngine.pivotValues.length).toBe(17);
+                expect(pivotEngine.pivotValues[0].length).toBe(129);
+                expect((pivotEngine.pivotValues[0][1] as IDataSet).actualText).toBe('BIZMATIC');
+                expect((pivotEngine.pivotValues[3][0] as IDataSet).actualText).toBe('Car');
+            });
+            it('With Calculated Settings', () => {
+                dataSourceSettings.calculatedFieldSettings = [{ name: 'total', formula: '"Sum(balance)"+"Sum(quantity)"' }];
+                dataSourceSettings.values = [{ name: 'balance' }, { name: 'total' }, { name: 'quantity' }];
+                let customProperties: ICustomProperties = {
+                    mode: '',
+                    savedFieldList: undefined,
+                    enableValueSorting: true,
+                    isDrillThrough: undefined,
+                    localeObj: undefined
+                };
+                pivotEngine = new PivotEngine(); pivotEngine.renderEngine(dataSourceSettings, customProperties);
+                expect(pivotEngine.pivotValues.length).toBe(17);
+                expect(pivotEngine.pivotValues[0].length).toBe(193);
+                expect((pivotEngine.pivotValues[0][1] as IDataSet).actualText).toBe('BIZMATIC');
+                expect((pivotEngine.pivotValues[3][0] as IDataSet).actualText).toBe('Car');
+            });
+            it('With label filter condition(Equals and NotEquals)', () => {
+                dataSourceSettings.filterSettings[0] = { name: 'company', type: 'Label', condition: 'Equals', value1: 'BIZMATIC' };
+                dataSourceSettings.filterSettings[1] = { name: 'product', type: 'Label', condition: 'DoesNotEquals', value1: 'bike' };
+                pivotEngine = new PivotEngine(); pivotEngine.renderEngine(dataSourceSettings);
+                expect(pivotEngine.pivotValues.length).toBe(6);
+                expect(pivotEngine.pivotValues[0].length).toBe(7);
+                expect((pivotEngine.pivotValues[0][1] as IDataSet).actualText).toBe('BIZMATIC');
+                expect((pivotEngine.pivotValues[3][0] as IDataSet).actualText).toBe('Tempo');
+            });
+            it('With label filter condition(BeginWith and DoesNotBeginWith)', () => {
+                dataSourceSettings.filterSettings[0] = { name: 'company', type: 'Label', condition: 'BeginWith', value1: 'BIZMATIC' };
+                dataSourceSettings.filterSettings[1] = { name: 'product', type: 'Label', condition: 'DoesNotBeginWith', value1: 'bike' };
+                pivotEngine = new PivotEngine(); pivotEngine.renderEngine(dataSourceSettings);
+                expect(pivotEngine.pivotValues.length).toBe(6);
+                expect(pivotEngine.pivotValues[0].length).toBe(7);
+                expect((pivotEngine.pivotValues[0][1] as IDataSet).actualText).toBe('BIZMATIC');
+                expect((pivotEngine.pivotValues[3][0] as IDataSet).actualText).toBe('Tempo');
+            });
+            it('With label filter condition(EndsWith and DoesNotEndsWith)', () => {
+                dataSourceSettings.filterSettings[0] = { name: 'company', type: 'Label', condition: 'EndsWith', value1: 'BIZMATIC' };
+                dataSourceSettings.filterSettings[1] = { name: 'product', type: 'Label', condition: 'DoesNotEndsWith', value1: 'bike' };
+                pivotEngine = new PivotEngine(); pivotEngine.renderEngine(dataSourceSettings);
+                expect(pivotEngine.pivotValues.length).toBe(6);
+                expect(pivotEngine.pivotValues[0].length).toBe(7);
+                expect((pivotEngine.pivotValues[0][1] as IDataSet).actualText).toBe('BIZMATIC');
+                expect((pivotEngine.pivotValues[3][0] as IDataSet).actualText).toBe('Tempo');
+            });
+            it('With label filter condition(GreaterThan and GreaterThanOrEqualTo)', () => {
+                dataSourceSettings.filterSettings[0] = { name: 'company', type: 'Label', condition: 'GreaterThan', value1: 'z' };
+                dataSourceSettings.filterSettings[1] = { name: 'product', type: 'Label', condition: 'GreaterThanOrEqualTo', value1: 'bike' };
+                pivotEngine = new PivotEngine(); pivotEngine.renderEngine(dataSourceSettings);
+                expect(pivotEngine.pivotValues.length).toBe(17);
+                expect(pivotEngine.pivotValues[0].length).toBe(160);
+                expect((pivotEngine.pivotValues[0][1] as IDataSet).actualText).toBe('ZAGGLE');
+                expect((pivotEngine.pivotValues[3][0] as IDataSet).actualText).toBe('Van');
+            });
+            it('With label filter condition(LessThan and LessThanOrEqualTo)', () => {
+                dataSourceSettings.filterSettings[0] = { name: 'company', type: 'Label', condition: 'LessThan', value1: 'b' };
+                dataSourceSettings.filterSettings[1] = { name: 'product', type: 'Label', condition: 'LessThanOrEqualTo', value1: 'bike' };
+                pivotEngine = new PivotEngine(); pivotEngine.renderEngine(dataSourceSettings);
+                expect(pivotEngine.pivotValues.length).toBe(5);
+                expect(pivotEngine.pivotValues[0].length).toBe(22);
+                expect((pivotEngine.pivotValues[0][1] as IDataSet).actualText).toBe('AQUACINE');
+                expect((pivotEngine.pivotValues[3][0] as IDataSet).actualText).toBe('Bike');
+            });
+            it('With label filter condition(Between and NotBetween)', () => {
+                dataSourceSettings.filterSettings[0] = { name: 'company', type: 'Label', condition: 'Between', value1: 'a', value2: 'c' };
+                dataSourceSettings.filterSettings[1] = { name: 'product', type: 'Label', condition: 'NotBetween', value1: 'a', value2: 'c' };
+                pivotEngine = new PivotEngine(); pivotEngine.renderEngine(dataSourceSettings);
+                expect(pivotEngine.pivotValues.length).toBe(21);
+                expect(pivotEngine.pivotValues[0].length).toBe(235);
+                expect((pivotEngine.pivotValues[0][1] as IDataSet).actualText).toBe('ACCEL');
+                expect((pivotEngine.pivotValues[3][0] as IDataSet).actualText).toBe('Van');
+            });
+        });
+        describe('Date Filtering without member filtering enabled', () => {
+            let ds: IDataSet[] = pivot_dataset as IDataSet[];
+            let dataSourceSettings: IDataOptions = {
+                dataSource: pivot_dataset as IDataSet[],
+                allowLabelFilter: true,
+                allowMemberFilter: false,
+                formatSettings: [{ name: 'date', format: 'dd/MM/yyyy-hh:mm', type: 'date' }],
+                filterSettings: [{ name: 'date', type: 'Date', condition: 'Between', value1: new Date('02/16/2000'), value2: new Date('02/16/2002') }],
+                rows: [{ name: 'date', caption: 'TimeLine' }],
+                columns: [{ name: 'company' }, { name: 'isActive' }],
+                values: [{ name: 'balance' }, { name: 'quantity' }],
+                filters: [{ name: 'gender', caption: 'Population' }]
+            };
+            let pivotEngine: PivotEngine = new PivotEngine(); pivotEngine.renderEngine(dataSourceSettings);
+            it('With date filters at code-behind', () => {
+                expect(pivotEngine.pivotValues.length).toBe(29);
+                expect(pivotEngine.pivotValues[0].length).toBe(53);
+                expect((pivotEngine.pivotValues[0][1] as IDataSet).actualText).toBe('ACRUEX');
+                expect(((pivotEngine.pivotValues[3][0] as IDataSet).dateText.toString()).indexOf('2000/02/16/')).toBeGreaterThanOrEqual(0);
+            });
+            it('With label filters', () => {
+                dataSourceSettings.filterSettings.push({ name: 'company', type: 'Label', condition: 'BeginWith', value1: 'a' });
+                expect(dataSourceSettings.filterSettings.length === 2).toBeTruthy;
+                pivotEngine = new PivotEngine(); pivotEngine.renderEngine(dataSourceSettings);
+                expect(pivotEngine.pivotValues.length).toBe(5);
+                expect(pivotEngine.pivotValues[0].length).toBe(5);
+                expect((pivotEngine.pivotValues[0][1] as IDataSet).actualText).toBe('ACRUEX');
+                expect(((pivotEngine.pivotValues[3][0] as IDataSet).dateText.toString()).indexOf('2001/08/31/')).toBeGreaterThanOrEqual(0);
+            });
+            it('With Include filter', () => {
+                dataSourceSettings.filterSettings.push({ name: 'isActive', type: 'Include', items: ['true'] });
+                expect(dataSourceSettings.filterSettings.length === 3).toBeTruthy;
+                pivotEngine = new PivotEngine(); pivotEngine.renderEngine(dataSourceSettings);
+                expect(pivotEngine.pivotValues.length).toBe(5);
+                expect(pivotEngine.pivotValues[0].length).toBe(5);
+                expect((pivotEngine.pivotValues[0][1] as IDataSet).actualText).toBe('ACRUEX');
+                expect(((pivotEngine.pivotValues[3][0] as IDataSet).dateText.toString()).indexOf('2001/08/31/')).toBeGreaterThanOrEqual(0);
+            });
+            it('With Exclude filter', () => {
+                dataSourceSettings.filterSettings[2].type = 'Exclude';
+                expect(dataSourceSettings.filterSettings.length === 3).toBeTruthy;
+                pivotEngine = new PivotEngine(); pivotEngine.renderEngine(dataSourceSettings);
+                expect(pivotEngine.pivotValues.length).toBe(5);
+                expect(pivotEngine.pivotValues[0].length).toBe(5);
+                expect((pivotEngine.pivotValues[0][1] as IDataSet).actualText).toBe('ACRUEX');
+                expect(((pivotEngine.pivotValues[3][0] as IDataSet).dateText.toString()).indexOf('2001/08/31/')).toBeGreaterThanOrEqual(0);
+            });
+            it('With sorting enabled', () => {
+                dataSourceSettings.filterSettings.pop();
+                dataSourceSettings.enableSorting = true;
+                dataSourceSettings.sortSettings = [{ name: 'date', order: 'Descending' }];
+                expect(dataSourceSettings.filterSettings.length === 2).toBeTruthy;
+                expect(dataSourceSettings.sortSettings.length === 1).toBeTruthy;
+                pivotEngine = new PivotEngine(); pivotEngine.renderEngine(dataSourceSettings);
+                expect(pivotEngine.pivotValues.length).toBe(5);
+                expect(pivotEngine.pivotValues[0].length).toBe(5);
+                expect((pivotEngine.pivotValues[0][1] as IDataSet).actualText).toBe('ACRUEX');
+                expect(((pivotEngine.pivotValues[3][0] as IDataSet).dateText.toString()).indexOf('2001/08/31/')).toBeGreaterThanOrEqual(0);
+            });
+            it('With valuesorting enabled', () => {
+                dataSourceSettings.valueSortSettings = {
+                    headerText: 'Grand Total##balance',
+                    headerDelimiter: '##',
+                    sortOrder: 'Descending'
+                };
+                pivotEngine = new PivotEngine(); pivotEngine.renderEngine(dataSourceSettings);
+                expect(pivotEngine.pivotValues.length).toBe(5);
+                expect(pivotEngine.pivotValues[0].length).toBe(5);
+                expect((pivotEngine.pivotValues[0][1] as IDataSet).actualText).toBe('ACRUEX');
+                expect(((pivotEngine.pivotValues[3][0] as IDataSet).dateText.toString()).indexOf('2001/08/31/')).toBeGreaterThanOrEqual(0);
+            });
+            it('With ExpandAll enabled', () => {
+                dataSourceSettings.expandAll = true;
+                pivotEngine = new PivotEngine(); pivotEngine.renderEngine(dataSourceSettings);
+                expect(pivotEngine.pivotValues.length).toBe(5);
+                expect(pivotEngine.pivotValues[0].length).toBe(7);
+                expect((pivotEngine.pivotValues[0][1] as IDataSet).actualText).toBe('ACRUEX');
+                expect(((pivotEngine.pivotValues[3][0] as IDataSet).dateText.toString()).indexOf('2001/08/31/')).toBeGreaterThanOrEqual(0);
+            });
+            it('With Drilled members', () => {
+                dataSourceSettings.drilledMembers = [{ name: 'company', items: ['ACRUEX'] }];
+                pivotEngine = new PivotEngine(); pivotEngine.renderEngine(dataSourceSettings);
+                expect(pivotEngine.pivotValues.length).toBe(5);
+                expect(pivotEngine.pivotValues[0].length).toBe(5);
+                expect((pivotEngine.pivotValues[0][1] as IDataSet).actualText).toBe('ACRUEX');
+                expect(((pivotEngine.pivotValues[3][0] as IDataSet).dateText.toString()).indexOf('2001/08/31/')).toBeGreaterThanOrEqual(0);
+            });
+            it('With Format Settings', () => {
+                dataSourceSettings.formatSettings = [{ name: 'balance', format: 'C' }];
+                pivotEngine = new PivotEngine(); pivotEngine.renderEngine(dataSourceSettings);
+                expect(pivotEngine.pivotValues.length).toBe(5);
+                expect(pivotEngine.pivotValues[0].length).toBe(5);
+                expect((pivotEngine.pivotValues[0][1] as IDataSet).actualText).toBe('ACRUEX');
+                expect((pivotEngine.pivotValues[3][0] as IDataSet).actualText).toBe('Fri Aug 31 2001 20:48:59 GMT+0530 (India Standard Time)');
+            });
+            it('With Calculated Settings', () => {
+                dataSourceSettings.calculatedFieldSettings = [{ name: 'total', formula: '"Sum(balance)"+"Sum(quantity)"' }];
+                dataSourceSettings.values = [{ name: 'balance' }, { name: 'total' }, { name: 'quantity' }];
+                pivotEngine = new PivotEngine(); pivotEngine.renderEngine(dataSourceSettings);
+                expect(pivotEngine.pivotValues.length).toBe(5);
+                expect(pivotEngine.pivotValues[0].length).toBe(7);
+                expect((pivotEngine.pivotValues[0][1] as IDataSet).actualText).toBe('ACRUEX');
+                expect((pivotEngine.pivotValues[3][0] as IDataSet).actualText).toBe('Fri Aug 31 2001 20:48:59 GMT+0530 (India Standard Time)');
+            });
+            it('With date filter condition(Equals)', () => {
+                dataSourceSettings.filterSettings[0] = { name: 'date', type: 'Date', condition: 'Equals', value1: new Date('02/16/2000'), value2: new Date('02/16/2002') };
+                pivotEngine = new PivotEngine(); pivotEngine.renderEngine(dataSourceSettings);
+                expect(pivotEngine.pivotValues.length).toBe(4);
+                expect(pivotEngine.pivotValues[0].length).toBe(4);
+                expect((pivotEngine.pivotValues[0][1] as IDataSet).actualText).toBe(undefined);
+                expect((pivotEngine.pivotValues[3][0] as IDataSet).actualText).toBe(undefined);
+            });
+            it('With date filter condition(NotEquals)', () => {
+                dataSourceSettings.filterSettings[0] = { name: 'date', type: 'Date', condition: 'DoesNotEquals', value1: new Date('02/16/2000'), value2: new Date('02/16/2002') };
+                let customProperties: ICustomProperties = {
+                    mode: '',
+                    savedFieldList: undefined,
+                    enableValueSorting: true,
+                    isDrillThrough: undefined,
+                    localeObj: undefined
+                };
+                pivotEngine = new PivotEngine(); pivotEngine.renderEngine(dataSourceSettings, customProperties);
+                expect(pivotEngine.pivotValues.length).toBe(30);
+                expect(pivotEngine.pivotValues[0].length).toBe(157);
+                expect((pivotEngine.pivotValues[0][1] as IDataSet).actualText).toBe('ACCEL');
+                expect((pivotEngine.pivotValues[3][0] as IDataSet).actualText).toBe('Fri Jul 17 1998 03:22:30 GMT+0530 (India Standard Time)');
+            });
+            it('With date filter condition(Before)', () => {
+                dataSourceSettings.filterSettings[0] = { name: 'date', type: 'Date', condition: 'Before', value1: new Date('02/16/2000'), value2: new Date('02/16/2002') };
+                let customProperties: ICustomProperties = {
+                    mode: '',
+                    savedFieldList: undefined,
+                    enableValueSorting: true,
+                    isDrillThrough: undefined,
+                    localeObj: undefined
+                };
+                pivotEngine = new PivotEngine(); pivotEngine.renderEngine(dataSourceSettings, customProperties);
+                expect(pivotEngine.pivotValues.length).toBe(23);
+                expect(pivotEngine.pivotValues[0].length).toBe(118);
+                expect((pivotEngine.pivotValues[0][1] as IDataSet).actualText).toBe('ACCEL');
+                expect((pivotEngine.pivotValues[3][0] as IDataSet).actualText).toBe('Fri Jul 17 1998 03:22:30 GMT+0530 (India Standard Time)');
+            });
+            it('With date filter condition(BeforeOrEqualTo)', () => {
+                dataSourceSettings.filterSettings[0] = { name: 'date', type: 'Date', condition: 'BeforeOrEqualTo', value1: new Date('02/16/2000'), value2: new Date('02/16/2002') };
+                let customProperties: ICustomProperties = {
+                    mode: '',
+                    savedFieldList: undefined,
+                    enableValueSorting: true,
+                    isDrillThrough: undefined,
+                    localeObj: undefined
+                };
+                pivotEngine = new PivotEngine(); pivotEngine.renderEngine(dataSourceSettings, customProperties);
+                expect(pivotEngine.pivotValues.length).toBe(23);
+                expect(pivotEngine.pivotValues[0].length).toBe(118);
+                expect((pivotEngine.pivotValues[0][1] as IDataSet).actualText).toBe('ACCEL');
+                expect((pivotEngine.pivotValues[3][0] as IDataSet).actualText).toBe('Fri Jul 17 1998 03:22:30 GMT+0530 (India Standard Time)');
+            });
+            it('With date filter condition(After)', () => {
+                dataSourceSettings.filterSettings[0] = { name: 'date', type: 'Date', condition: 'After', value1: new Date('02/16/2000'), value2: new Date('02/16/2002') };
+                let customProperties: ICustomProperties = {
+                    mode: '',
+                    savedFieldList: undefined,
+                    enableValueSorting: true,
+                    isDrillThrough: undefined,
+                    localeObj: undefined
+                };
+                pivotEngine = new PivotEngine(); pivotEngine.renderEngine(dataSourceSettings, customProperties);
+                expect(pivotEngine.pivotValues.length).toBe(11);
+                expect(pivotEngine.pivotValues[0].length).toBe(43);
+                expect((pivotEngine.pivotValues[0][1] as IDataSet).actualText).toBe('ACCUFARM');
+                expect((pivotEngine.pivotValues[3][0] as IDataSet).actualText).toBe('Fri Jan 01 2016 13:46:21 GMT+0530 (India Standard Time)');
+            });
+            it('With date filter condition(AfterOrEqualTo)', () => {
+                dataSourceSettings.filterSettings[0] = { name: 'date', type: 'Date', condition: 'AfterOrEqualTo', value1: new Date('02/16/2000'), value2: new Date('02/16/2002') };
+                let customProperties: ICustomProperties = {
+                    mode: '',
+                    savedFieldList: undefined,
+                    enableValueSorting: true,
+                    isDrillThrough: undefined,
+                    localeObj: undefined
+                };
+                pivotEngine = new PivotEngine(); pivotEngine.renderEngine(dataSourceSettings, customProperties);
+                expect(pivotEngine.pivotValues.length).toBe(11);
+                expect(pivotEngine.pivotValues[0].length).toBe(43);
+                expect((pivotEngine.pivotValues[0][1] as IDataSet).actualText).toBe('ACCUFARM');
+                expect((pivotEngine.pivotValues[3][0] as IDataSet).actualText).toBe('Fri Jan 01 2016 13:46:21 GMT+0530 (India Standard Time)');
+            });
+            it('With date filter condition(Between)', () => {
+                dataSourceSettings.filterSettings[0] = { name: 'date', type: 'Date', condition: 'Between', value1: new Date('02/16/2000'), value2: new Date('02/16/2002') };
+                pivotEngine = new PivotEngine(); pivotEngine.renderEngine(dataSourceSettings);
+                expect(pivotEngine.pivotValues.length).toBe(5);
+                expect(pivotEngine.pivotValues[0].length).toBe(7);
+                expect((pivotEngine.pivotValues[0][1] as IDataSet).actualText).toBe('ACRUEX');
+                expect((pivotEngine.pivotValues[3][0] as IDataSet).actualText).toBe('Fri Aug 31 2001 20:48:59 GMT+0530 (India Standard Time)');
+            });
+            it('With date filter condition(NotBetween)', () => {
+                dataSourceSettings.filterSettings[0] = { name: 'date', type: 'Date', condition: 'NotBetween', value1: new Date('02/16/2000'), value2: new Date('02/16/2002') };
+                let customProperties: ICustomProperties = {
+                    mode: '',
+                    savedFieldList: undefined,
+                    enableValueSorting: true,
+                    isDrillThrough: undefined,
+                    localeObj: undefined
+                };
+                pivotEngine = new PivotEngine(); pivotEngine.renderEngine(dataSourceSettings, customProperties);
+                expect(pivotEngine.pivotValues.length).toBe(29);
+                expect(pivotEngine.pivotValues[0].length).toBe(154);
+                expect((pivotEngine.pivotValues[0][1] as IDataSet).actualText).toBe('ACCEL');
+                expect((pivotEngine.pivotValues[3][0] as IDataSet).actualText).toBe('Fri Jul 17 1998 03:22:30 GMT+0530 (India Standard Time)');
+            });
+        });
+        describe('Number Filtering without member filtering enabled', () => {
+            let ds: IDataSet[] = pivot_dataset as IDataSet[];
+            let dataSourceSettings: IDataOptions = {
+                dataSource: pivot_dataset as IDataSet[],
+                allowLabelFilter: true,
+                allowMemberFilter: false,
+                filterSettings: [{ name: 'age', type: 'Number', condition: 'Equals', value1: '25', value2: '35' }],
+                rows: [{ name: 'age', caption: 'Age' }],
+                columns: [{ name: 'product', caption: 'Items' }, { name: 'eyeColor' }],
+                values: [{ name: 'balance' }, { name: 'quantity' }],
+                filters: [],
+            };
+            let pivotEngine: PivotEngine = new PivotEngine(); pivotEngine.renderEngine(dataSourceSettings);
+            it('With number filters at code-behind', () => {
+                expect(pivotEngine.pivotValues.length).toBe(5);
+                expect(pivotEngine.pivotValues[0].length).toBe(13);
+                expect((pivotEngine.pivotValues[0][1] as IDataSet).actualText).toBe('Bike');
+                expect((pivotEngine.pivotValues[3][0] as IDataSet).actualText).toBe(25);
+            });
+            it('With label filters', () => {
+                dataSourceSettings.filterSettings.push({ name: 'product', type: 'Label', condition: 'Contains', value1: 'e' });
+                expect(dataSourceSettings.filterSettings.length === 2).toBeTruthy;
+                pivotEngine = new PivotEngine(); pivotEngine.renderEngine(dataSourceSettings);
+                expect(pivotEngine.pivotValues.length).toBe(5);
+                expect(pivotEngine.pivotValues[0].length).toBe(9);
+                expect((pivotEngine.pivotValues[0][1] as IDataSet).actualText).toBe('Bike');
+                expect((pivotEngine.pivotValues[3][0] as IDataSet).actualText).toBe(25);
+            });
+            it('With Include filter', () => {
+                dataSourceSettings.filterSettings.push({ name: 'eyeColor', type: 'Include', items: ['blue', 'brown'] });
+                expect(dataSourceSettings.filterSettings.length === 3).toBeTruthy;
+                pivotEngine = new PivotEngine(); pivotEngine.renderEngine(dataSourceSettings);
+                expect(pivotEngine.pivotValues.length).toBe(5);
+                expect(pivotEngine.pivotValues[0].length).toBe(9);
+                expect((pivotEngine.pivotValues[0][1] as IDataSet).actualText).toBe('Bike');
+                expect((pivotEngine.pivotValues[3][0] as IDataSet).actualText).toBe(25);
+            });
+            it('With Exclude filter', () => {
+                dataSourceSettings.filterSettings.pop();
+                dataSourceSettings.filterSettings.push({ name: 'eyeColor', type: 'Exclude', items: ['green'] })
+                expect(dataSourceSettings.filterSettings.length === 3).toBeTruthy;
+                pivotEngine = new PivotEngine(); pivotEngine.renderEngine(dataSourceSettings);
+                expect(pivotEngine.pivotValues.length).toBe(5);
+                expect(pivotEngine.pivotValues[0].length).toBe(9);
+                expect((pivotEngine.pivotValues[0][1] as IDataSet).actualText).toBe('Bike');
+                expect((pivotEngine.pivotValues[3][0] as IDataSet).actualText).toBe(25);
+            });
+            it('With sorting enabled', () => {
+                dataSourceSettings.enableSorting = true;
+                dataSourceSettings.sortSettings = [{ name: 'product', order: 'Descending' }];
+                expect(dataSourceSettings.sortSettings.length === 1).toBeTruthy;
+                pivotEngine = new PivotEngine(); pivotEngine.renderEngine(dataSourceSettings);
+                expect(pivotEngine.pivotValues.length).toBe(5);
+                expect(pivotEngine.pivotValues[0].length).toBe(9);
+                expect((pivotEngine.pivotValues[0][1] as IDataSet).actualText).toBe('Tempo');
+                expect((pivotEngine.pivotValues[3][0] as IDataSet).actualText).toBe(25);
+            });
+            it('With valuesorting enabled', () => {
+                dataSourceSettings.valueSortSettings = {
+                    headerText: 'Grand Total##balance',
+                    headerDelimiter: '##',
+                    sortOrder: 'Descending'
+                };
+                pivotEngine = new PivotEngine(); pivotEngine.renderEngine(dataSourceSettings);
+                expect(pivotEngine.pivotValues.length).toBe(5);
+                expect(pivotEngine.pivotValues[0].length).toBe(9);
+                expect((pivotEngine.pivotValues[0][1] as IDataSet).actualText).toBe('Tempo');
+                expect((pivotEngine.pivotValues[3][0] as IDataSet).actualText).toBe(25);
+            });
+            it('With ExpandAll enabled', () => {
+                dataSourceSettings.expandAll = true;
+                pivotEngine = new PivotEngine(); pivotEngine.renderEngine(dataSourceSettings);
+                expect(pivotEngine.pivotValues.length).toBe(5);
+                expect(pivotEngine.pivotValues[0].length).toBe(23);
+                expect((pivotEngine.pivotValues[0][1] as IDataSet).actualText).toBe('Tempo');
+                expect((pivotEngine.pivotValues[3][0] as IDataSet).actualText).toBe(25);
+            });
+            it('With Drilled members', () => {
+                dataSourceSettings.drilledMembers = [{ name: 'product', items: ['Bike', 'Car'] }];
+                pivotEngine = new PivotEngine(); pivotEngine.renderEngine(dataSourceSettings);
+                expect(pivotEngine.pivotValues.length).toBe(5);
+                expect(pivotEngine.pivotValues[0].length).toBe(19);
+                expect((pivotEngine.pivotValues[0][1] as IDataSet).actualText).toBe('Tempo');
+                expect((pivotEngine.pivotValues[3][0] as IDataSet).actualText).toBe(25);
+            });
+            it('With Format Settings', () => {
+                dataSourceSettings.formatSettings = [{ name: 'balance', format: 'C' }];
+                pivotEngine = new PivotEngine(); pivotEngine.renderEngine(dataSourceSettings);
+                expect(pivotEngine.pivotValues.length).toBe(5);
+                expect(pivotEngine.pivotValues[0].length).toBe(19);
+                expect((pivotEngine.pivotValues[0][1] as IDataSet).actualText).toBe('Tempo');
+                expect((pivotEngine.pivotValues[3][0] as IDataSet).actualText).toBe(25);
+            });
+            it('With number filter condition(Equals)', () => {
+                dataSourceSettings.filterSettings[0] = { name: 'age', type: 'Number', condition: 'Equals', value1: '25', value2: '35' };
+                pivotEngine = new PivotEngine(); pivotEngine.renderEngine(dataSourceSettings);
+                expect(pivotEngine.pivotValues.length).toBe(5);
+                expect(pivotEngine.pivotValues[0].length).toBe(19);
+                expect((pivotEngine.pivotValues[0][1] as IDataSet).actualText).toBe('Tempo');
+                expect((pivotEngine.pivotValues[3][0] as IDataSet).actualText).toBe(25);
+            });
+            it('With number filter condition(NotEquals)', () => {
+                dataSourceSettings.filterSettings[0] = { name: 'age', type: 'Number', condition: 'DoesNotEquals', value1: '25', value2: '35' };
+                let customProperties: ICustomProperties = {
+                    mode: '',
+                    savedFieldList: undefined,
+                    enableValueSorting: true,
+                    isDrillThrough: undefined,
+                    localeObj: undefined
+                };
+                pivotEngine = new PivotEngine(); pivotEngine.renderEngine(dataSourceSettings, customProperties);
+                expect(pivotEngine.pivotValues.length).toBe(24);
+                expect(pivotEngine.pivotValues[0].length).toBe(21);
+                expect((pivotEngine.pivotValues[0][1] as IDataSet).actualText).toBe('Tempo');
+                expect((pivotEngine.pivotValues[3][0] as IDataSet).actualText).toBe(40);
+            });
+            it('With number filter condition(GreaterThan)', () => {
+                dataSourceSettings.filterSettings[0] = { name: 'age', type: 'Number', condition: 'GreaterThan', value1: '25', value2: '35' };
+                let customProperties: ICustomProperties = {
+                    mode: '',
+                    savedFieldList: undefined,
+                    enableValueSorting: true,
+                    isDrillThrough: undefined,
+                    localeObj: undefined
+                };
+                pivotEngine = new PivotEngine(); pivotEngine.renderEngine(dataSourceSettings, customProperties);
+                expect(pivotEngine.pivotValues.length).toBe(19);
+                expect(pivotEngine.pivotValues[0].length).toBe(21);
+                expect((pivotEngine.pivotValues[0][1] as IDataSet).actualText).toBe('Tempo');
+                expect((pivotEngine.pivotValues[3][0] as IDataSet).actualText).toBe(40);
+            });
+            it('With number filter condition(GreaterThanOrEqualTo)', () => {
+                dataSourceSettings.filterSettings[0] = { name: 'age', type: 'Number', condition: 'GreaterThanOrEqualTo', value1: '25', value2: '35' };
+                let customProperties: ICustomProperties = {
+                    mode: '',
+                    savedFieldList: undefined,
+                    enableValueSorting: true,
+                    isDrillThrough: undefined,
+                    localeObj: undefined
+                };
+                pivotEngine = new PivotEngine(); pivotEngine.renderEngine(dataSourceSettings, customProperties);
+                expect(pivotEngine.pivotValues.length).toBe(20);
+                expect(pivotEngine.pivotValues[0].length).toBe(21);
+                expect((pivotEngine.pivotValues[0][1] as IDataSet).actualText).toBe('Tempo');
+                expect((pivotEngine.pivotValues[3][0] as IDataSet).actualText).toBe(40);
+            });
+            it('With number filter condition(LessThan)', () => {
+                dataSourceSettings.filterSettings[0] = { name: 'age', type: 'Number', condition: 'LessThan', value1: '25', value2: '35' };
+                let customProperties: ICustomProperties = {
+                    mode: '',
+                    savedFieldList: undefined,
+                    enableValueSorting: true,
+                    isDrillThrough: undefined,
+                    localeObj: undefined
+                };
+                pivotEngine = new PivotEngine(); pivotEngine.renderEngine(dataSourceSettings, customProperties);
+                expect(pivotEngine.pivotValues.length).toBe(9);
+                expect(pivotEngine.pivotValues[0].length).toBe(21);
+                expect((pivotEngine.pivotValues[0][1] as IDataSet).actualText).toBe('Tempo');
+                expect((pivotEngine.pivotValues[3][0] as IDataSet).actualText).toBe(22);
+            });
+            it('With number filter condition(LessThanOrEqualTo)', () => {
+                dataSourceSettings.filterSettings[0] = { name: 'age', type: 'Number', condition: 'LessThanOrEqualTo', value1: '25', value2: '35' };
+                let customProperties: ICustomProperties = {
+                    mode: '',
+                    savedFieldList: undefined,
+                    enableValueSorting: true,
+                    isDrillThrough: undefined,
+                    localeObj: undefined
+                };
+                pivotEngine = new PivotEngine(); pivotEngine.renderEngine(dataSourceSettings, customProperties);
+                expect(pivotEngine.pivotValues.length).toBe(10);
+                expect(pivotEngine.pivotValues[0].length).toBe(21);
+                expect((pivotEngine.pivotValues[0][1] as IDataSet).actualText).toBe('Tempo');
+                expect((pivotEngine.pivotValues[3][0] as IDataSet).actualText).toBe(22);
+            });
+            it('With number filter condition(Between)', () => {
+                dataSourceSettings.filterSettings[0] = { name: 'age', type: 'Number', condition: 'Between', value1: '25', value2: '35' };
+                let customProperties: ICustomProperties = {
+                    mode: '',
+                    savedFieldList: undefined,
+                    enableValueSorting: true,
+                    isDrillThrough: undefined,
+                    localeObj: undefined
+                };
+                pivotEngine = new PivotEngine(); pivotEngine.renderEngine(dataSourceSettings, customProperties);
+                expect(pivotEngine.pivotValues.length).toBe(15);
+                expect(pivotEngine.pivotValues[0].length).toBe(21);
+                expect((pivotEngine.pivotValues[0][1] as IDataSet).actualText).toBe('Tempo');
+                expect((pivotEngine.pivotValues[3][0] as IDataSet).actualText).toBe(27);
+            });
+            it('With number filter condition(NotBetween)', () => {
+                dataSourceSettings.filterSettings[0] = { name: 'age', type: 'Number', condition: 'NotBetween', value1: '25', value2: '35' };
+                let customProperties: ICustomProperties = {
+                    mode: '',
+                    savedFieldList: undefined,
+                    enableValueSorting: true,
+                    isDrillThrough: undefined,
+                    localeObj: undefined
+                };
+                pivotEngine = new PivotEngine(); pivotEngine.renderEngine(dataSourceSettings, customProperties);
+                expect(pivotEngine.pivotValues.length).toBe(14);
+                expect(pivotEngine.pivotValues[0].length).toBe(21);
+                expect((pivotEngine.pivotValues[0][1] as IDataSet).actualText).toBe('Tempo');
+                expect((pivotEngine.pivotValues[3][0] as IDataSet).actualText).toBe(40);
+            });
+        });
+        describe('Value Filtering without member filtering enabled', () => {
+            let ds: IDataSet[] = pivot_dataset as IDataSet[];
+            let dataSourceSettings: IDataOptions = {
+                dataSource: pivot_dataset as IDataSet[],
+                allowLabelFilter: true,
+                allowValueFilter: true,
+                allowMemberFilter: false,
+                filterSettings: [{ name: 'eyeColor', type: 'Value', condition: 'GreaterThan', value1: '400', measure: 'quantity' }],
+                rows: [{ name: 'product', caption: 'Items' }, { name: 'eyeColor' }],
+                columns: [{ name: 'gender', caption: 'Population' }, { name: 'isActive' }],
+                values: [{ name: 'balance' }, { name: 'quantity' }],
+                filters: [],
+            };
+            let pivotEngine: PivotEngine = new PivotEngine(); pivotEngine.renderEngine(dataSourceSettings);
+            it('With single value filters', () => {
+                expect(pivotEngine.pivotValues.length).toBe(9);
+                expect(pivotEngine.pivotValues[0].length).toBe(7);
+                expect((pivotEngine.pivotValues[0][1] as IDataSet).actualText).toBe('female');
+                expect((pivotEngine.pivotValues[3][0] as IDataSet).actualText).toBe('Bike');
+            });
+            it('With two value filters', () => {
+                dataSourceSettings.filterSettings.push({ name: 'product', type: 'Value', condition: 'GreaterThan', value1: '500', measure: 'quantity' });
+                expect(dataSourceSettings.filterSettings.length === 2).toBeTruthy;
+                pivotEngine = new PivotEngine(); pivotEngine.renderEngine(dataSourceSettings);
+                expect(pivotEngine.pivotValues.length).toBe(5);
+                expect(pivotEngine.pivotValues[0].length).toBe(7);
+                expect((pivotEngine.pivotValues[0][1] as IDataSet).actualText).toBe('female');
+                expect((pivotEngine.pivotValues[3][0] as IDataSet).actualText).toBe('Car');
+            });
+            it('With label filters', () => {
+                dataSourceSettings.filterSettings[1] = { name: 'product', type: 'Label', condition: 'Equals', value1: 'Van' };
+                expect(dataSourceSettings.filterSettings.length === 2).toBeTruthy;
+                pivotEngine = new PivotEngine(); pivotEngine.renderEngine(dataSourceSettings);
+                expect(pivotEngine.pivotValues.length).toBe(5);
+                expect(pivotEngine.pivotValues[0].length).toBe(7);
+                expect((pivotEngine.pivotValues[0][1] as IDataSet).actualText).toBe('female');
+                expect((pivotEngine.pivotValues[3][0] as IDataSet).actualText).toBe('Van');
+            });
+            it('With Include filter', () => {
+                dataSourceSettings.filterSettings.pop();
+                dataSourceSettings.filterSettings[0].type = 'Value';
+                dataSourceSettings.filterSettings[0].condition = 'GreaterThanOrEqualTo';
+                dataSourceSettings.filterSettings[0].value1 = '500';
+                dataSourceSettings.filterSettings.push({ name: 'eyeColor', type: 'Include', items: ['blue', 'green'] });
+                expect(dataSourceSettings.filterSettings.length === 2).toBeTruthy;
+                pivotEngine = new PivotEngine(); pivotEngine.renderEngine(dataSourceSettings);
+                expect(pivotEngine.pivotValues.length).toBe(5);
+                expect(pivotEngine.pivotValues[0].length).toBe(7);
+                expect((pivotEngine.pivotValues[0][1] as IDataSet).actualText).toBe('female');
+            });
+            it('With Exclude filter', () => {
+                dataSourceSettings.filterSettings.pop();
+                dataSourceSettings.filterSettings.push({ name: 'eyeColor', type: 'Exclude', items: ['blue'] })
+                expect(dataSourceSettings.filterSettings.length === 2).toBeTruthy;
+                pivotEngine = new PivotEngine(); pivotEngine.renderEngine(dataSourceSettings);
+                expect(pivotEngine.pivotValues.length).toBe(5);
+                expect(pivotEngine.pivotValues[0].length).toBe(7);
+                expect((pivotEngine.pivotValues[0][1] as IDataSet).actualText).toBe('female');
+                expect((pivotEngine.pivotValues[3][0] as IDataSet).actualText).toBe('Car');
+            });
+            it('With sorting enabled', () => {
+                dataSourceSettings.enableSorting = true;
+                dataSourceSettings.sortSettings = [{ name: 'product', order: 'Descending' }];
+                expect(dataSourceSettings.sortSettings.length === 1).toBeTruthy;
+                pivotEngine = new PivotEngine(); pivotEngine.renderEngine(dataSourceSettings);
+                expect(pivotEngine.pivotValues.length).toBe(5);
+                expect(pivotEngine.pivotValues[0].length).toBe(7);
+                expect((pivotEngine.pivotValues[0][1] as IDataSet).actualText).toBe('female');
+                expect((pivotEngine.pivotValues[3][0] as IDataSet).actualText).toBe('Car');
+            });
+            it('With valuesorting enabled', () => {
+                dataSourceSettings.valueSortSettings = {
+                    headerText: 'Grand Total##balance',
+                    headerDelimiter: '##',
+                    sortOrder: 'Descending'
+                };
+                let customProperties: ICustomProperties = {
+                    mode: '',
+                    savedFieldList: undefined,
+                    enableValueSorting: true,
+                    isDrillThrough: undefined,
+                    localeObj: undefined
+                };
+                pivotEngine = new PivotEngine(); pivotEngine.renderEngine(dataSourceSettings, customProperties);
+                expect(pivotEngine.pivotValues.length).toBe(5);
+                expect(pivotEngine.pivotValues[0].length).toBe(7);
+                expect((pivotEngine.pivotValues[0][1] as IDataSet).actualText).toBe('female');
+                expect((pivotEngine.pivotValues[3][0] as IDataSet).actualText).toBe('Car');
+            });
+            it('With ExpandAll enabled', () => {
+                dataSourceSettings.expandAll = true;
+                pivotEngine = new PivotEngine(); pivotEngine.renderEngine(dataSourceSettings);
+                expect(pivotEngine.pivotValues.length).toBe(6);
+                expect(pivotEngine.pivotValues[0].length).toBe(15);
+                expect((pivotEngine.pivotValues[0][1] as IDataSet).actualText).toBe('female');
+                expect((pivotEngine.pivotValues[3][0] as IDataSet).actualText).toBe('Car');
+            });
+            it('With Drilled members', () => {
+                dataSourceSettings.drilledMembers = [{ name: 'product', items: ['Bike', 'Car'] }, { name: 'gender', items: ['male'] }];
+                pivotEngine = new PivotEngine(); pivotEngine.renderEngine(dataSourceSettings);
+                expect(pivotEngine.pivotValues.length).toBe(5);
+                expect(pivotEngine.pivotValues[0].length).toBe(11);
+                expect((pivotEngine.pivotValues[0][1] as IDataSet).actualText).toBe('female');
+                expect((pivotEngine.pivotValues[3][0] as IDataSet).actualText).toBe('Car');
+            });
+            it('With Format Settings', () => {
+                dataSourceSettings.formatSettings = [{ name: 'balance', format: 'C' }];
+                pivotEngine = new PivotEngine(); pivotEngine.renderEngine(dataSourceSettings);
+                expect(pivotEngine.pivotValues.length).toBe(5);
+                expect(pivotEngine.pivotValues[0].length).toBe(11);
+                expect((pivotEngine.pivotValues[0][1] as IDataSet).actualText).toBe('female');
+                expect((pivotEngine.pivotValues[3][0] as IDataSet).actualText).toBe('Car');
+            });
+            it('With value filter condition(Equals and NotEquals)', () => {
+                dataSourceSettings.filterSettings[0] = { name: 'isActive', type: 'Value', condition: 'Equals', value1: '1339', measure: 'quantity' };
+                dataSourceSettings.filterSettings[1] = { name: 'eyeColor', type: 'Value', condition: 'DoesNotEquals', value1: '194', measure: 'quantity' };
+                pivotEngine = new PivotEngine(); pivotEngine.renderEngine(dataSourceSettings);
+                expect(pivotEngine.pivotValues.length).toBe(22);
+                expect(pivotEngine.pivotValues[0].length).toBe(3);
+                expect((pivotEngine.pivotValues[3][0] as IDataSet).actualText).toBe('Van');
+            });
+            it('With value filter condition(GreaterThan and GreaterThanOrEqualTo)', () => {
+                dataSourceSettings.filterSettings[0] = { name: 'eyeColor', type: 'Value', condition: 'GreaterThan', value1: '400', measure: 'quantity' };
+                dataSourceSettings.filterSettings[1] = { name: 'product', type: 'Value', condition: 'GreaterThanOrEqualTo', value1: '500', measure: 'quantity' };
+                pivotEngine = new PivotEngine(); pivotEngine.renderEngine(dataSourceSettings);
+                expect(pivotEngine.pivotValues.length).toBe(5);
+                expect(pivotEngine.pivotValues[0].length).toBe(11);
+                expect((pivotEngine.pivotValues[0][1] as IDataSet).actualText).toBe('female');
+                expect((pivotEngine.pivotValues[3][0] as IDataSet).actualText).toBe('Car');
+            });
+            it('With value filter condition(LessThan and LessThanOrEqualTo)', () => {
+                dataSourceSettings.filterSettings[0] = { name: 'eyeColor', type: 'Value', condition: 'LessThan', value1: '400', measure: 'quantity' };
+                dataSourceSettings.filterSettings[1] = { name: 'product', type: 'Value', condition: 'LessThanOrEqualTo', value1: '500', measure: 'quantity' };
+                pivotEngine = new PivotEngine(); pivotEngine.renderEngine(dataSourceSettings);
+                expect(pivotEngine.pivotValues.length).toBe(7);
+                expect(pivotEngine.pivotValues[0].length).toBe(11);
+                expect((pivotEngine.pivotValues[0][1] as IDataSet).actualText).toBe('female');
+                expect((pivotEngine.pivotValues[3][0] as IDataSet).actualText).toBe('Tempo');
+            });
+            it('With value filter condition(Between and NotBetween)', () => {
+                dataSourceSettings.filterSettings[0] = { name: 'eyeColor', type: 'Value', condition: 'Between', value1: '400', value2: '550', measure: 'quantity' };
+                dataSourceSettings.filterSettings[1] = { name: 'product', type: 'Value', condition: 'NotBetween', value1: '400', value2: '660', measure: 'quantity' };
+                pivotEngine = new PivotEngine(); pivotEngine.renderEngine(dataSourceSettings);
+                expect(pivotEngine.pivotValues.length).toBe(4);
+                expect(pivotEngine.pivotValues[0].length).toBe(11);
+                expect((pivotEngine.pivotValues[0][1] as IDataSet).actualText).toBe('female');
+            });
+        });
         describe('Group by date', () => {
             let ds: IDataSet[] = (PivotUtil.getClonedData(pivot_dataset) as IDataSet[]);
             let dataSourceSettings: IDataOptions = {
                 dataSource: ds,
                 allowLabelFilter: true,
+                allowMemberFilter: true,
                 formatSettings: [{ name: 'balance', format: 'C' }, { name: 'date', format: 'dd/MM/yyyy-hh:mm a', type: 'date' }],
                 filterSettings: [{ name: 'date_years', type: 'Include', items: ['1970', '1971', '1972', '1973', '1974', '1975'] }],
                 rows: [{ name: 'date', caption: 'TimeLine' }],
@@ -1667,6 +2568,7 @@ describe('PivotView spec', () => {
             let dataSourceSettings: IDataOptions = {
                 dataSource: ds,
                 allowLabelFilter: true,
+                allowMemberFilter: true,
                 formatSettings: [{ name: 'balance', format: 'C' }, { name: 'date', format: 'dd/MM/yyyy-hh:mm a', type: 'date' }],
                 filterSettings: [{ name: 'date_years', type: 'Include', items: ['1970', '1971', '1972', '1973', '1974', '1975'] }],
                 columns: [{ name: 'date', caption: 'TimeLine' }],
@@ -1751,6 +2653,7 @@ describe('PivotView spec', () => {
             let dataSourceSettings: IDataOptions = {
                 dataSource: ds,
                 allowLabelFilter: true,
+                allowMemberFilter: true,
                 formatSettings: [{ name: 'balance', format: 'C' }, { name: 'date', format: 'dd/MM/yyyy-hh:mm a', type: 'date' }],
                 filterSettings: [{ name: 'date_years', type: 'Include', items: ['1970', '1971', '1972', '1973', '1974', '1975'] }],
                 columns: [{ name: 'date', caption: 'TimeLine' }],
@@ -2023,6 +2926,7 @@ describe('PivotView spec', () => {
                 dataSource: pivot_dataset as IDataSet[],
                 expandAll: false,
                 enableSorting: true,
+                allowMemberFilter: true,
                 sortSettings: [{ name: 'state', order: 'Descending' }],
                 formatSettings: [{ name: 'balance', format: 'C' }],
                 filterSettings: [
@@ -2078,6 +2982,7 @@ describe('PivotView spec', () => {
                 dataSource: pivot_dataset as IDataSet[],
                 expandAll: false,
                 enableSorting: true,
+                allowMemberFilter: true,
                 excludeFields: ['age', 'advance', 'guid', 'index', 'pno', 'phone', 'email'],
                 sortSettings: [{ name: 'state', order: 'Descending' }],
                 formatSettings: [{ name: 'balance', format: 'C' }],
@@ -2135,6 +3040,7 @@ describe('PivotView spec', () => {
                 columns: [{ name: 'Product' }, { name: 'Date' }],
                 values: [{ name: 'Amount' }, { name: 'Quantity' }],
                 showHeaderWhenEmpty: false,
+                allowMemberFilter: true,
                 allowLabelFilter: true,
                 allowValueFilter: true
             };

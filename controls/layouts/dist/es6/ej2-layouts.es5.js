@@ -217,6 +217,9 @@ var Splitter = /** @__PURE__ @class */ (function (_super) {
         removeClass([this.wrapper], ['e-control', 'e-lib', ROOT]);
         var orientation = this.orientation === 'Horizontal' ? HORIZONTAL_PANE : VERTICAL_PANE;
         addClass([this.element], orientation);
+        var name = Browser.info.name;
+        var css = (name === 'msie') ? 'e-ie' : '';
+        this.setCssClass(css);
         if (Browser.isDevice) {
             addClass([this.element], SPLIT_TOUCH);
         }

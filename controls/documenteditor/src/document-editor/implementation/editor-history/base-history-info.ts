@@ -19,7 +19,7 @@ import { isNullOrUndefined } from '@syncfusion/ej2-base';
 import { ElementBox } from '../viewer/page';
 import { TableResizer } from '../editor/table-resizer';
 import { WTableFormat, WRowFormat, WCellFormat, WParagraphStyle } from '../format/index';
-import { LineInfo, ParagraphInfo } from '../editor/editor-helper';
+import { ParagraphInfo } from '../editor/editor-helper';
 import { BookmarkInfo } from './history-helper';
 
 /** 
@@ -114,10 +114,10 @@ export class BaseHistoryInfo {
      * @private
      */
     public updateSelection(): void {
-        let blockInfo: ParagraphInfo = this.owner.editorModule.getParagraphInfo(this.owner.selection.start);
-        this.selectionStart = this.owner.editorModule.getHierarchicalIndex(blockInfo.paragraph, blockInfo.offset.toString());
-        blockInfo = this.owner.editorModule.getParagraphInfo(this.owner.selection.end);
-        this.selectionEnd = this.owner.editorModule.getHierarchicalIndex(blockInfo.paragraph, blockInfo.offset.toString());
+        let blockInfo: ParagraphInfo = this.owner.selection.getParagraphInfo(this.owner.selection.start);
+        this.selectionStart = this.owner.selection.getHierarchicalIndex(blockInfo.paragraph, blockInfo.offset.toString());
+        blockInfo = this.owner.selection.getParagraphInfo(this.owner.selection.end);
+        this.selectionEnd = this.owner.selection.getHierarchicalIndex(blockInfo.paragraph, blockInfo.offset.toString());
     }
     public setBookmarkInfo(bookmark: BookmarkElementBox): void {
         this.removedNodes.push({ 'bookmark': bookmark, 'startIndex': bookmark.indexInOwner, 'endIndex': bookmark.reference.indexInOwner });
@@ -176,19 +176,20 @@ export class BaseHistoryInfo {
         let isForwardSelection: boolean = TextPosition.isForwardSelection(start, end);
         if (this.modifiedProperties.length > 0 || this.action === 'Selection' || this.action === 'ClearCharacterFormat'
             || this.action === 'ClearParagraphFormat') {
-            selectionStartTextPosition = this.getTextPosition(start);
-            selectionEndTextPosition = this.getTextPosition(end);
+            selectionStartTextPosition = this.owner.selection.getTextPosBasedOnLogicalIndex(start);
+            selectionEndTextPosition = this.owner.selection.getTextPosBasedOnLogicalIndex(end);
             this.revertModifiedProperties(selectionStartTextPosition, selectionEndTextPosition);
         } else {
+            let sel: Selection = this.owner.selection;
             let deletedNodes: IWidget[] = this.removedNodes;
             this.removedNodesIn = [];
             let isForward: boolean = TextPosition.isForwardSelection(this.insertPosition, this.endPosition);
-            let insertTextPosition: TextPosition = this.getTextPosition(isForward ? this.insertPosition : this.endPosition);
-            let endTextPosition: TextPosition = this.getTextPosition(isForward ? this.endPosition : this.insertPosition);
+            let insertTextPosition: TextPosition = sel.getTextPosBasedOnLogicalIndex(isForward ? this.insertPosition : this.endPosition);
+            let endTextPosition: TextPosition = sel.getTextPosBasedOnLogicalIndex(isForward ? this.endPosition : this.insertPosition);
             if (insertTextPosition.isAtSamePosition(endTextPosition)) {
-                this.owner.selection.selectContent(insertTextPosition, true);
+                sel.selectContent(insertTextPosition, true);
             } else {
-                this.owner.selection.selectPosition(insertTextPosition, endTextPosition);
+                sel.selectPosition(insertTextPosition, endTextPosition);
             }
             if (this.action === 'InsertHyperlink' && this.editorHistory.isRedoing) {
                 let fieldBegin: FieldElementBox = this.owner.selection.getHyperlinkField();
@@ -211,12 +212,12 @@ export class BaseHistoryInfo {
                     && this.action !== 'InsertRowBelow' && this.action !== 'InsertColumnLeft'
                     && this.action !== 'InsertColumnRight' && this.action !== 'Borders'
                     && this.action !== 'DeleteTable' && this.action !== 'DeleteColumn' && this.action !== 'DeleteRow') {
-                    this.owner.selection.end.setPositionInternal(endTextPosition);
+                    sel.end.setPositionInternal(endTextPosition);
                     if (!this.owner.selection.isEmpty) {
                         if (this.editorHistory.isRedoing) {
-                            this.owner.editorModule.removeSelectedContents(this.owner.selection);
+                            this.owner.editorModule.removeSelectedContents(sel);
                         } else {
-                            this.owner.editorModule.deleteSelectedContents(this.owner.selection, true);
+                            this.owner.editorModule.deleteSelectedContents(sel, true);
                         }
                         if (!isNullOrUndefined(this.editorHistory.currentHistoryInfo) &&
                             this.editorHistory.currentHistoryInfo.action === 'PageBreak' && this.viewer.blockToShift) {
@@ -238,8 +239,8 @@ export class BaseHistoryInfo {
                 || this.action === 'InsertColumnLeft'
                 || this.action === 'InsertColumnRight') && (this.editorHistory.isRedoing
                     || this.editorHistory.currentHistoryInfo.action === 'Paste'))) {
-            selectionStartTextPosition = this.getTextPosition(start);
-            selectionEndTextPosition = this.getTextPosition(end);
+            selectionStartTextPosition = this.owner.selection.getTextPosBasedOnLogicalIndex(start);
+            selectionEndTextPosition = this.owner.selection.getTextPosBasedOnLogicalIndex(end);
             this.owner.selection.selectRange(selectionStartTextPosition, selectionEndTextPosition);
             isSelectionChanged = true;
         }
@@ -256,7 +257,7 @@ export class BaseHistoryInfo {
         if (!isNullOrUndefined(this.editorHistory.currentHistoryInfo)) {
             // tslint:disable-next-line:max-line-length
             if (this.action === 'ListCharacterFormat' || (this.editorHistory.currentHistoryInfo.action === 'ListSelect' && this.action === 'ListFormat')) {
-                let selectionStartTextPosition: TextPosition = this.getTextPosition(this.selectionStart);
+                let selectionStartTextPosition: TextPosition = this.owner.selection.getTextPosBasedOnLogicalIndex(this.selectionStart);
                 let widget: LineWidget = selectionStartTextPosition.currentWidget as LineWidget;
                 this.viewer.selection.highlightListText(widget);
             }
@@ -408,7 +409,7 @@ export class BaseHistoryInfo {
                             this.owner.selection.getNextRenderedBlock((lastNode as ParagraphWidget));
                             if (isNullOrUndefined(nextBlock)) {
                                 //Sets the selection as starting of last paragraph.
-                                this.owner.selection.selectParagraph(lastNode as ParagraphWidget, true);
+                                this.owner.selection.selectParagraphInternal(lastNode as ParagraphWidget, true);
                             }
                         }
                     }
@@ -422,7 +423,7 @@ export class BaseHistoryInfo {
                                 let nextBlock: BlockWidget = this.viewer.selection.getNextParagraphBlock(firstBlock.getSplitWidgets().pop() as BlockWidget);
                                 if (isNullOrUndefined(nextBlock)) {
                                     //Sets the selection as starting of last paragraph.
-                                    this.owner.selection.selectParagraph(firstBlock as ParagraphWidget, true);
+                                    this.owner.selection.selectParagraphInternal(firstBlock as ParagraphWidget, true);
                                 }
                             }
                         }
@@ -459,7 +460,7 @@ export class BaseHistoryInfo {
                         // tslint:disable-next-line:max-line-length
                         let paragraph: ParagraphWidget = this.viewer.selection.getNextParagraphBlock(firstNode.getSplitWidgets().pop() as BlockWidget);
                         if (!isNullOrUndefined(paragraph)) {
-                            this.owner.selection.selectParagraph(paragraph, true);
+                            this.owner.selection.selectParagraphInternal(paragraph, true);
                         }
                     } else if (deletedNodes[0] instanceof TableWidget && deletedNodes.length !== 1) {
                         let nextNode: BlockWidget = deletedNodes[1] as BlockWidget;
@@ -554,13 +555,6 @@ export class BaseHistoryInfo {
         }
         this.currentPropertyIndex = 0;
         this.owner.isShiftingEnabled = true;
-    }
-    public getTextPosition(hierarchicalIndex: string): TextPosition {
-        let textPosition: TextPosition = new TextPosition(this.owner);
-        let blockInfo: ParagraphInfo = this.owner.editorModule.getParagraph({ index: hierarchicalIndex });
-        let lineInfo: LineInfo = this.owner.editorModule.getLineInfo(blockInfo.paragraph, blockInfo.offset);
-        textPosition.setPositionForLineWidget(lineInfo.line, lineInfo.offset);
-        return textPosition;
     }
     /**
      * Add modified properties for section format

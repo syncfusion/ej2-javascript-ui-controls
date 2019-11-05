@@ -1,4 +1,4 @@
-import { Ajax, extend, isNullOrUndefined, merge, setValue } from '@syncfusion/ej2-base';
+import { Ajax, extend, getValue, isNullOrUndefined, merge, setValue } from '@syncfusion/ej2-base';
 
 /**
  * Query class is used to build query which is used by the DataManager to communicate with datasource.
@@ -650,7 +650,7 @@ var DataUtil = /** @__PURE__ @class */ (function () {
      * @param  {string|number} y
      * @returns number
      */
-    DataUtil.fnAscending = function (x, y, locales, options) {
+    DataUtil.fnAscending = function (x, y) {
         if (isNullOrUndefined(x) && isNullOrUndefined(y)) {
             return -1;
         }
@@ -658,7 +658,7 @@ var DataUtil = /** @__PURE__ @class */ (function () {
             return -1;
         }
         if (typeof x === 'string') {
-            return x.localeCompare(y, locales, options);
+            return x.localeCompare(y);
         }
         if (x === null || x === undefined) {
             return 1;
@@ -671,7 +671,7 @@ var DataUtil = /** @__PURE__ @class */ (function () {
      * @param  {string|number} y
      * @returns number
      */
-    DataUtil.fnDescending = function (x, y, locales, options) {
+    DataUtil.fnDescending = function (x, y) {
         if (isNullOrUndefined(x) && isNullOrUndefined(y)) {
             return -1;
         }
@@ -679,7 +679,7 @@ var DataUtil = /** @__PURE__ @class */ (function () {
             return 1;
         }
         if (typeof x === 'string') {
-            return x.localeCompare(y, locales, options) * -1;
+            return x.localeCompare(y) * -1;
         }
         if (x === null || x === undefined) {
             return -1;
@@ -2861,9 +2861,12 @@ var JsonAdaptor = /** @__PURE__ @class */ (function (_super) {
     JsonAdaptor.prototype.update = function (dm, keyField, value, tableName) {
         var ds = dm.dataSource.json;
         var i;
-        var key = value[keyField];
+        var key;
+        if (!isNullOrUndefined(keyField)) {
+            key = getValue(keyField, value);
+        }
         for (i = 0; i < ds.length; i++) {
-            if (ds[i][keyField] === key) {
+            if (!isNullOrUndefined(keyField) && (getValue(keyField, ds[i])) === key) {
                 break;
             }
         }

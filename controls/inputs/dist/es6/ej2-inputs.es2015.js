@@ -675,6 +675,7 @@ const DECIMALSEPARATOR = '.';
 const COMPONENT = 'e-numerictextbox';
 const CONTROL = 'e-control';
 const NUMERIC_FOCUS = 'e-input-focus';
+const HIDDENELEMENT = 'e-numeric-hidden';
 const wrapperAttributes = ['title', 'style', 'class'];
 /**
  * Represents the NumericTextBox component that allows the user to enter only numeric values.
@@ -756,9 +757,7 @@ let NumericTextBox = class NumericTextBox extends Component {
             if (this.showSpinButton) {
                 this.spinBtnCreation();
             }
-            if (!isNullOrUndefined(this.width)) {
-                setStyleAttribute(this.container, { 'width': formatUnit(this.width) });
-            }
+            this.setElementWidth(this.width);
             if (!this.container.classList.contains('e-input-group')) {
                 this.container.classList.add('e-input-group');
             }
@@ -887,13 +886,31 @@ let NumericTextBox = class NumericTextBox extends Component {
         if (this.readonly) {
             attributes(this.element, { 'aria-readonly': 'true' });
         }
-        this.hiddenInput = (this.createElement('input', { attrs: { type: 'hidden', 'validateHidden': 'true' } }));
+        this.hiddenInput = (this.createElement('input', { attrs: { type: 'text',
+                'validateHidden': 'true', 'class': HIDDENELEMENT } }));
         this.inputName = this.inputName !== null ? this.inputName : this.element.id;
         this.element.removeAttribute('name');
         attributes(this.hiddenInput, { 'name': this.inputName });
         this.container.insertBefore(this.hiddenInput, this.container.childNodes[1]);
+        this.updateDataAttribute(false);
         if (this.inputStyle !== null) {
             attributes(this.container, { 'style': this.inputStyle });
+        }
+    }
+    updateDataAttribute(isDynamic) {
+        let attr = {};
+        if (!isDynamic) {
+            for (let a = 0; a < this.element.attributes.length; a++) {
+                attr[this.element.attributes[a].name] = this.element.getAttribute(this.element.attributes[a].name);
+            }
+        }
+        else {
+            attr = this.htmlAttributes;
+        }
+        for (let key of Object.keys(attr)) {
+            if (key.indexOf('data') === 0) {
+                this.hiddenInput.setAttribute(key, attr[key]);
+            }
         }
     }
     updateHTMLAttrToElement() {
@@ -922,6 +939,16 @@ let NumericTextBox = class NumericTextBox extends Component {
                         this.container.setAttribute(pro, this.htmlAttributes[pro]);
                     }
                 }
+            }
+        }
+    }
+    setElementWidth(width) {
+        if (!isNullOrUndefined(width)) {
+            if (typeof width === 'number') {
+                this.container.style.width = formatUnit(width);
+            }
+            else if (typeof width === 'string') {
+                this.container.style.width = (width.match(/px|%|em/)) ? (width) : (formatUnit(width));
             }
         }
     }
@@ -1644,7 +1671,7 @@ let NumericTextBox = class NumericTextBox extends Component {
         for (let prop of Object.keys(newProp)) {
             switch (prop) {
                 case 'width':
-                    setStyleAttribute(this.container, { 'width': formatUnit(newProp.width) });
+                    this.setElementWidth(newProp.width);
                     break;
                 case 'cssClass':
                     Input.setCssClass(newProp.cssClass, [this.container], oldProp.cssClass);
@@ -1667,6 +1694,7 @@ let NumericTextBox = class NumericTextBox extends Component {
                 case 'htmlAttributes':
                     this.updateHTMLAttrToElement();
                     this.updateHTMLAttrToWrapper();
+                    this.updateDataAttribute(true);
                     this.checkAttributes(true);
                     break;
                 case 'placeholder':
@@ -3046,8 +3074,15 @@ let MaskedTextBox = class MaskedTextBox extends Component {
     }
     setWidth(width) {
         if (!isNullOrUndefined(width)) {
-            this.element.style.width = formatUnit(width);
-            this.inputObj.container.style.width = formatUnit(width);
+            if (typeof width === 'number') {
+                this.inputObj.container.style.width = formatUnit(width);
+                this.element.style.width = formatUnit(width);
+            }
+            else if (typeof width === 'string') {
+                let elementWidth = (width.match(/px|%|em/)) ? (width) : (formatUnit(width));
+                this.inputObj.container.style.width = elementWidth;
+                this.element.style.width = elementWidth;
+            }
         }
     }
     checkHtmlAttributes(isDynamic) {
@@ -6828,14 +6863,6 @@ var __decorate$4 = (undefined && undefined.__decorate) || function (decorators, 
     else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 };
-var __awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : new P(function (resolve) { resolve(result.value); }).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
 const CONTROL_WRAPPER = 'e-upload e-control-wrapper';
 const INPUT_WRAPPER = 'e-file-select';
 const DROP_AREA = 'e-file-drop';
@@ -6872,6 +6899,10 @@ const PAUSE_UPLOAD = 'e-file-pause-btn';
 const RESUME_UPLOAD = 'e-file-play-btn';
 const RESTRICT_RETRY = 'e-restrict-retry';
 const wrapperAttr$1 = ['title', 'style', 'class'];
+const FORM_UPLOAD = 'e-form-upload';
+const HIDDEN_INPUT = 'e-hidden-file-input';
+const INVALID_FILE = 'e-file-invalid';
+const INFORMATION = 'e-file-information';
 class FilesProp extends ChildProperty {
 }
 __decorate$4([
@@ -6930,8 +6961,6 @@ let Uploader = class Uploader extends Component {
     constructor(options, element) {
         super(options, element);
         this.initialAttr = { accept: null, multiple: false, disabled: false };
-        this.fileList = [];
-        this.filesData = [];
         this.uploadedFilesData = [];
         this.base64String = [];
         this.isForm = false;
@@ -6945,6 +6974,17 @@ let Uploader = class Uploader extends Component {
         this.actionCompleteCount = 0;
         this.flag = true;
         this.selectedFiles = [];
+        this.uploaderName = 'UploadFiles';
+        /**
+         * Get the file item(li) which are shown in file list.
+         * @private
+         */
+        this.fileList = [];
+        /**
+         * Get the data of files which are shown in file list.
+         * @private
+         */
+        this.filesData = [];
         this.uploaderOptions = options;
     }
     /**
@@ -7074,7 +7114,6 @@ let Uploader = class Uploader extends Component {
         }
     }
     preRender() {
-        this.cloneElement = this.element.cloneNode(true);
         this.localeText = { Browse: 'Browse...', Clear: 'Clear', Upload: 'Upload',
             dropFilesHint: 'Or drop files here', invalidMaxFileSize: 'File size is too large',
             invalidMinFileSize: 'File size is too small', invalidFileType: 'File type is not allowed',
@@ -7082,7 +7121,8 @@ let Uploader = class Uploader extends Component {
             removedSuccessMessage: 'File removed successfully', removedFailedMessage: 'Unable to remove file', inProgress: 'Uploading',
             readyToUploadMessage: 'Ready to upload', abort: 'Abort', remove: 'Remove', cancel: 'Cancel', delete: 'Delete file',
             pauseUpload: 'File upload paused', pause: 'Pause', resume: 'Resume', retry: 'Retry',
-            fileUploadCancel: 'File upload canceled'
+            fileUploadCancel: 'File upload canceled', invalidFileSelection: 'Invalid files selected', totalFiles: 'Total files',
+            size: 'Size'
         };
         this.l10n = new L10n('uploader', this.localeText, this.locale);
         this.preLocaleObj = getValue('currentLocale', this.l10n);
@@ -7142,6 +7182,7 @@ let Uploader = class Uploader extends Component {
             this.tabIndex = this.element.getAttribute('tabindex');
         }
         this.browserName = Browser.info.name;
+        this.uploaderName = this.element.getAttribute('name');
     }
     getPersistData() {
         return this.addOnPersist([]);
@@ -7580,13 +7621,22 @@ let Uploader = class Uploader extends Component {
         }
         let pasteFile = [].slice.call(item)[0];
         if ((pasteFile.kind === 'file') && pasteFile.type.match('^image/')) {
-            if (isBlazor()) {
-                this.renderSelectedFiles(event, [pasteFile.getAsFile()], false, true);
-            }
-            else {
-                this._renderSelectedFiles(event, [pasteFile.getAsFile()], false, true);
-            }
+            this.renderSelectedFiles(event, [pasteFile.getAsFile()], false, true);
         }
+    }
+    getSelectedFiles(index) {
+        let data = [];
+        let liElement = this.fileList[index];
+        let allFiles = this.getFilesData();
+        let nameElements = +liElement.getAttribute('data-files-count');
+        let startIndex = 0;
+        for (let i = 0; i < index; i++) {
+            startIndex += (+this.fileList[i].getAttribute('data-files-count'));
+        }
+        for (let j = startIndex; j < (startIndex + nameElements); j++) {
+            data.push(allFiles[j]);
+        }
+        return data;
     }
     removeFiles(args) {
         if (!this.enabled) {
@@ -7595,12 +7645,13 @@ let Uploader = class Uploader extends Component {
         let selectedElement = args.target.parentElement;
         let index = this.fileList.indexOf(selectedElement);
         let liElement = this.fileList[index];
-        let fileData = this.filesData[index];
+        let formUpload = this.isFormUpload();
+        let fileData = formUpload ? this.getSelectedFiles(index) : this.getFilesInArray(this.filesData[index]);
         if (isNullOrUndefined(fileData)) {
             return;
         }
-        if (args.target.classList.contains(ABORT_ICON)) {
-            fileData.statusCode = '5';
+        if (args.target.classList.contains(ABORT_ICON) && !formUpload) {
+            fileData[0].statusCode = '5';
             if (!isNullOrUndefined(liElement)) {
                 let spinnerTarget = liElement.querySelector('.' + ABORT_ICON);
                 createSpinner({ target: spinnerTarget, width: '20px' });
@@ -7785,12 +7836,7 @@ let Uploader = class Uploader extends Component {
                     let path = item.fullPath;
                     files.push({ 'path': path, 'file': fileObj });
                 });
-                if (isBlazor()) {
-                    this.renderSelectedFiles(event, files, true);
-                }
-                else {
-                    this._renderSelectedFiles(event, files, true);
-                }
+                this.renderSelectedFiles(event, files, true);
             }
             else if (item.isDirectory) {
                 this.traverseFileTree(item, event);
@@ -7819,12 +7865,7 @@ let Uploader = class Uploader extends Component {
                     files.push({ 'path': path, 'file': fileObj });
                 });
             }
-            if (isBlazor()) {
-                this.renderSelectedFiles(event, files, true);
-            }
-            else {
-                this._renderSelectedFiles(event, files, true);
-            }
+            this.renderSelectedFiles(event, files, true);
         }
         else if (item.isFile) {
             this.filesEntries.push(item);
@@ -7861,22 +7902,12 @@ let Uploader = class Uploader extends Component {
                     this.element.files = files;
                 }
                 targetFiles = this.multiple ? this.sortFileList(files) : [files[0]];
-                if (isBlazor()) {
-                    this.renderSelectedFiles(args, targetFiles);
-                }
-                else {
-                    this._renderSelectedFiles(args, targetFiles);
-                }
+                this.renderSelectedFiles(args, targetFiles);
             }
         }
         else {
             targetFiles = [].slice.call(args.target.files);
-            if (isBlazor()) {
-                this.renderSelectedFiles(args, targetFiles);
-            }
-            else {
-                this._renderSelectedFiles(args, targetFiles);
-            }
+            this.renderSelectedFiles(args, targetFiles);
         }
     }
     /* istanbul ignore next */
@@ -7893,60 +7924,9 @@ let Uploader = class Uploader extends Component {
     renderSelectedFiles(args, 
     // tslint:disable-next-line
     targetFiles, directory, paste) {
-        return __awaiter(this, void 0, void 0, function* () {
-            this.base64String = [];
-            // tslint:disable-next-line
-            let eventArgs = {
-                event: args,
-                cancel: false,
-                filesData: [],
-                isModified: false,
-                modifiedFilesData: [],
-                progressInterval: '',
-                isCanceled: false,
-                currentRequest: null,
-                customFormData: null
-            };
-            /* istanbul ignore next */
-            if (targetFiles.length < 1) {
-                eventArgs.isCanceled = true;
-                this.trigger('selected', eventArgs);
-                return;
-            }
-            this.flag = true;
-            let fileData = [];
-            if (!this.multiple) {
-                this.clearData(true);
-                targetFiles = [targetFiles[0]];
-            }
-            for (let i = 0; i < targetFiles.length; i++) {
-                let file = directory ? targetFiles[i].file : targetFiles[i];
-                /* istanbul ignore next */
-                if (isBlazor()) {
-                    let data = yield this.getBase64(file);
-                    this.base64String.push(data);
-                }
-                this.updateInitialFileDetails(args, targetFiles, file, i, fileData, directory, paste);
-            }
-            eventArgs.filesData = fileData;
-            if (this.allowedExtensions.indexOf('*') > -1) {
-                this.allTypes = true;
-            }
-            if (!this.allTypes) {
-                fileData = this.checkExtension(fileData);
-            }
-            this.trigger('selected', eventArgs, (eventArgs) => {
-                this._internalRenderSelect(eventArgs, fileData);
-            });
-        });
-    }
-    /* istanbul ignore next */
-    /* tslint: ignore*/
-    _renderSelectedFiles(args, 
-    // tslint:disable-next-line
-    targetFiles, directory, paste) {
+        this.base64String = [];
         // tslint:disable-next-line
-        let eventArg = {
+        let eventArgs = {
             event: args,
             cancel: false,
             filesData: [],
@@ -7959,14 +7939,12 @@ let Uploader = class Uploader extends Component {
         };
         /* istanbul ignore next */
         if (targetFiles.length < 1) {
-            eventArg.isCanceled = true;
-            this.trigger('selected', eventArg);
+            eventArgs.isCanceled = true;
+            this.trigger('selected', eventArgs);
             return;
         }
         this.flag = true;
-        // tslint:disable-next-line
         let fileData = [];
-        // tslint:disable-next-line
         if (!this.multiple) {
             this.clearData(true);
             targetFiles = [targetFiles[0]];
@@ -7975,15 +7953,15 @@ let Uploader = class Uploader extends Component {
             let file = directory ? targetFiles[i].file : targetFiles[i];
             this.updateInitialFileDetails(args, targetFiles, file, i, fileData, directory, paste);
         }
-        eventArg.filesData = fileData;
+        eventArgs.filesData = fileData;
         if (this.allowedExtensions.indexOf('*') > -1) {
             this.allTypes = true;
         }
         if (!this.allTypes) {
             fileData = this.checkExtension(fileData);
         }
-        this.trigger('selected', eventArg, (eventArg) => {
-            this._internalRenderSelect(eventArg, fileData);
+        this.trigger('selected', eventArgs, (eventArgs) => {
+            this._internalRenderSelect(eventArgs, fileData);
         });
     }
     updateInitialFileDetails(args, 
@@ -8058,6 +8036,14 @@ let Uploader = class Uploader extends Component {
             allowFormUpload = true;
         }
         return allowFormUpload;
+    }
+    isFormUpload() {
+        let isFormUpload = false;
+        if (this.isForm && ((isNullOrUndefined(this.asyncSettings.saveUrl) || this.asyncSettings.saveUrl === '')
+            && (isNullOrUndefined(this.asyncSettings.removeUrl) || this.asyncSettings.removeUrl === ''))) {
+            isFormUpload = true;
+        }
+        return isFormUpload;
     }
     clearData(singleUpload) {
         if (!isNullOrUndefined(this.listParent)) {
@@ -8187,14 +8173,220 @@ let Uploader = class Uploader extends Component {
             this.uploadWrapper.appendChild(this.listParent);
         }
     }
+    formFileList(fileData, files) {
+        let fileList = this.createElement('li', { className: FILE });
+        fileList.setAttribute('data-files-count', fileData.length + '');
+        let fileContainer = this.createElement('span', { className: TEXT_CONTAINER });
+        let statusMessage;
+        for (let listItem of fileData) {
+            let fileNameEle = this.createElement('span', { className: FILE_NAME });
+            fileNameEle.innerHTML = this.getFileNameOnly(listItem.name);
+            let fileTypeEle = this.createElement('span', { className: FILE_TYPE });
+            fileTypeEle.innerHTML = '.' + this.getFileType(listItem.name);
+            if (!this.enableRtl) {
+                fileContainer.appendChild(fileNameEle);
+                fileContainer.appendChild(fileTypeEle);
+            }
+            else {
+                let rtlContainer = this.createElement('span', { className: RTL_CONTAINER });
+                rtlContainer.appendChild(fileTypeEle);
+                rtlContainer.appendChild(fileNameEle);
+                fileContainer.appendChild(rtlContainer);
+            }
+            this.truncateName(fileNameEle);
+            statusMessage = this.formValidateFileInfo(listItem, fileList);
+        }
+        fileList.appendChild(fileContainer);
+        this.setListToFileInfo(fileData, fileList);
+        let index = this.listParent.querySelectorAll('li').length;
+        let infoEle = this.createElement('span');
+        if (fileList.classList.contains(INVALID_FILE)) {
+            infoEle.classList.add(STATUS);
+            infoEle.classList.add(INVALID_FILE);
+            infoEle.innerText = fileData.length > 1 ? this.localizedTexts('invalidFileSelection') : statusMessage;
+        }
+        else {
+            infoEle.classList.add(fileData.length > 1 ? INFORMATION : FILE_SIZE);
+            infoEle.innerText = fileData.length > 1 ? this.localizedTexts('totalFiles') + ': ' + fileData.length + ' , '
+                + this.localizedTexts('size') + ': ' +
+                this.bytesToSize(this.getFileSize(fileData)) : this.bytesToSize(fileData[0].size);
+            this.createFormInput(fileData);
+        }
+        fileContainer.appendChild(infoEle);
+        if (isNullOrUndefined(fileList.querySelector('.e-icons'))) {
+            let iconElement = this.createElement('span', { className: 'e-icons', attrs: { 'tabindex': this.btnTabIndex } });
+            /* istanbul ignore next */
+            if (this.browserName === 'msie') {
+                iconElement.classList.add('e-msie');
+            }
+            iconElement.setAttribute('title', this.localizedTexts('remove'));
+            fileList.appendChild(fileContainer);
+            fileList.appendChild(iconElement);
+            EventHandler.add(iconElement, 'click', this.removeFiles, this);
+            iconElement.classList.add(REMOVE_ICON);
+        }
+        let eventArgs = {
+            element: fileList,
+            fileInfo: this.mergeFileInfo(fileData, fileList),
+            index: index,
+            isPreload: this.isPreLoadFile(this.mergeFileInfo(fileData, fileList))
+        };
+        let eventsArgs = {
+            element: fileList,
+            fileInfo: this.mergeFileInfo(fileData, fileList),
+            index: index,
+            isPreload: this.isPreLoadFile(this.mergeFileInfo(fileData, fileList))
+        };
+        this.trigger('rendering', eventArgs);
+        this.trigger('fileListRendering', eventsArgs);
+        this.listParent.appendChild(fileList);
+        this.fileList.push(fileList);
+    }
+    formValidateFileInfo(listItem, fileList) {
+        let statusMessage = listItem.status;
+        let validationMessages = this.validatedFileSize(listItem.size);
+        if (validationMessages.minSize !== '' || validationMessages.maxSize !== '') {
+            this.addInvalidClass(fileList);
+            statusMessage = validationMessages.minSize !== '' ? this.localizedTexts('invalidMinFileSize') :
+                validationMessages.maxSize !== '' ? this.localizedTexts('invalidMaxFileSize') : statusMessage;
+        }
+        let typeValidationMessage = this.checkExtension(this.getFilesInArray(listItem))[0].status;
+        if (typeValidationMessage === this.localizedTexts('invalidFileType')) {
+            this.addInvalidClass(fileList);
+            statusMessage = typeValidationMessage;
+        }
+        return statusMessage;
+    }
+    addInvalidClass(fileList) {
+        fileList.classList.add(INVALID_FILE);
+    }
+    createFormInput(fileData) {
+        let inputElement = this.element.cloneNode(true);
+        inputElement.classList.add(HIDDEN_INPUT);
+        for (let listItem of fileData) {
+            listItem.input = inputElement;
+        }
+        inputElement.setAttribute('name', this.uploaderName);
+        this.uploadWrapper.querySelector('.' + INPUT_WRAPPER).appendChild(inputElement);
+        if (this.browserName !== 'msie' && this.browserName !== 'edge') {
+            this.element.files = null;
+        }
+    }
+    getFileSize(fileData) {
+        let fileSize = 0;
+        for (let file of fileData) {
+            fileSize += file.size;
+        }
+        return fileSize;
+    }
+    mergeFileInfo(fileData, fileList) {
+        let result = {
+            name: '',
+            rawFile: '',
+            size: 0,
+            status: '',
+            type: '',
+            validationMessages: { minSize: '', maxSize: '' },
+            statusCode: '1',
+            list: fileList
+        };
+        let fileNames = [];
+        let type = '';
+        for (let listItem of fileData) {
+            fileNames.push(listItem.name);
+            type = listItem.type;
+        }
+        result.name = fileNames.join(', ');
+        result.size = this.getFileSize(fileData);
+        result.type = type;
+        result.status = this.statusForFormUpload(fileData, fileList);
+        return result;
+    }
+    statusForFormUpload(fileData, fileList) {
+        let isValid = true;
+        let statusMessage;
+        for (let listItem of fileData) {
+            statusMessage = listItem.status;
+            let validationMessages = this.validatedFileSize(listItem.size);
+            if (validationMessages.minSize !== '' || validationMessages.maxSize !== '') {
+                isValid = false;
+                statusMessage = validationMessages.minSize !== '' ? this.localizedTexts('invalidMinFileSize') :
+                    validationMessages.maxSize !== '' ? this.localizedTexts('invalidMaxFileSize') : statusMessage;
+            }
+            let typeValidationMessage = this.checkExtension(this.getFilesInArray(listItem))[0].status;
+            if (typeValidationMessage === this.localizedTexts('invalidFileType')) {
+                isValid = false;
+                statusMessage = typeValidationMessage;
+            }
+        }
+        if (!isValid) {
+            fileList.classList.add(INVALID_FILE);
+            statusMessage = fileData.length > 1 ? this.localizedTexts('invalidFileSelection') : statusMessage;
+        }
+        else {
+            statusMessage = this.localizedTexts('totalFiles') + ': ' + fileData.length + ' , '
+                + this.localizedTexts('size') + ': ' +
+                this.bytesToSize(this.getFileSize(fileData));
+        }
+        return statusMessage;
+    }
+    formCustomFileList(fileData, files) {
+        this.createParentUL();
+        resetBlazorTemplate(this.element.id + 'Template', 'Template');
+        let fileList = this.createElement('li', { className: FILE });
+        fileList.setAttribute('data-files-count', fileData.length + '');
+        this.setListToFileInfo(fileData, fileList);
+        let result = this.mergeFileInfo(fileData, fileList);
+        fileList.setAttribute('data-file-name', result.name);
+        this.uploadTemplateFn = this.templateComplier(this.template);
+        let fromElements = [].slice.call(this.uploadTemplateFn(result, null, null, this.element.id + 'Template', this.isStringTemplate));
+        let index = this.listParent.querySelectorAll('li').length;
+        append(fromElements, fileList);
+        if (!fileList.classList.contains(INVALID_FILE)) {
+            this.createFormInput(fileData);
+        }
+        let eventArgs = {
+            element: fileList,
+            fileInfo: result,
+            index: index,
+            isPreload: this.isPreLoadFile(result)
+        };
+        let eventsArgs = {
+            element: fileList,
+            fileInfo: result,
+            index: index,
+            isPreload: this.isPreLoadFile(result)
+        };
+        this.trigger('rendering', eventArgs);
+        this.trigger('fileListRendering', eventsArgs);
+        this.listParent.appendChild(fileList);
+        this.fileList.push(fileList);
+        updateBlazorTemplate(this.element.id + 'Template', 'Template', this, false);
+    }
+    /**
+     * Create the file list for specified files data.
+     * @param { FileInfo[] } fileData - specifies the files data for file list creation.
+     * @returns void
+     */
     createFileList(fileData) {
         this.createParentUL();
         if (this.template !== '' && !isNullOrUndefined(this.template)) {
-            this.createCustomfileList(fileData);
+            if (this.isFormUpload()) {
+                this.uploadWrapper.classList.add(FORM_UPLOAD);
+                this.formCustomFileList(fileData, this.element.files);
+            }
+            else {
+                this.createCustomfileList(fileData);
+            }
+        }
+        else if (this.isFormUpload()) {
+            this.uploadWrapper.classList.add(FORM_UPLOAD);
+            this.formFileList(fileData, this.element.files);
         }
         else {
             for (let listItem of fileData) {
-                let liElement = this.createElement('li', { className: FILE, attrs: { 'data-file-name': listItem.name } });
+                let liElement = this.createElement('li', { className: FILE,
+                    attrs: { 'data-file-name': listItem.name, 'data-files-count': '1' } });
                 let textContainer = this.createElement('span', { className: TEXT_CONTAINER });
                 let textElement = this.createElement('span', { className: FILE_NAME, attrs: { 'title': listItem.name } });
                 textElement.innerHTML = this.getFileNameOnly(listItem.name);
@@ -8265,6 +8457,11 @@ let Uploader = class Uploader extends Component {
         let text;
         text = nameElement.textContent;
         nameElement.dataset.tail = text.slice(text.length - 10);
+    }
+    setListToFileInfo(fileData, fileList) {
+        for (let listItem of fileData) {
+            listItem.list = fileList;
+        }
     }
     truncateName(name) {
         let nameElement = name;
@@ -8744,7 +8941,6 @@ let Uploader = class Uploader extends Component {
     }
     sendRequest(file, metaData, custom, fileIndex) {
         let formData = new FormData();
-        let cloneFile;
         let blob = file.rawFile.slice(metaData.start, metaData.end);
         formData.append('chunkFile', blob, file.name);
         formData.append('chunk-index', metaData.chunkIndex.toString());
@@ -8770,8 +8966,6 @@ let Uploader = class Uploader extends Component {
             eventArgs.currentChunkIndex = metaData.chunkIndex;
             /* istanbul ignore next */
             if (isBlazor()) {
-                cloneFile = file.rawFile;
-                eventArgs.fileData.rawFile = (fileIndex === 0) ? this.base64String[fileIndex] : null;
                 if (this.currentRequestHeader) {
                     this.updateCustomheader(ajax.httpRequest, this.currentRequestHeader);
                 }
@@ -8782,17 +8976,11 @@ let Uploader = class Uploader extends Component {
             if (eventArgs.currentChunkIndex === 0) {
                 // This event is currently not required but to avoid breaking changes for previous customer, we have included.
                 this.trigger('uploading', eventArgs, (eventArgs) => {
-                    if (isBlazor()) {
-                        eventArgs.fileData.rawFile = file.rawFile = cloneFile;
-                    }
                     this.uploadingEventCallback(formData, eventArgs, e, file);
                 });
             }
             else {
                 this.trigger('chunkUploading', eventArgs, (eventArgs) => {
-                    if (isBlazor()) {
-                        eventArgs.fileData.rawFile = file.rawFile = cloneFile;
-                    }
                     this.uploadingEventCallback(formData, eventArgs, e, file);
                 });
             }
@@ -9274,7 +9462,7 @@ let Uploader = class Uploader extends Component {
      */
     upload(files, custom) {
         files = files ? files : this.filesData;
-        let uploadFiles = this.validateFileType(files);
+        let uploadFiles = this.getFilesInArray(files);
         let eventArgs = {
             customFormData: [],
             currentRequest: null
@@ -9288,7 +9476,7 @@ let Uploader = class Uploader extends Component {
             this.uploadFiles(uploadFiles, custom);
         });
     }
-    validateFileType(files) {
+    getFilesInArray(files) {
         let uploadFiles = [];
         if (files instanceof Array) {
             uploadFiles = files;
@@ -9300,7 +9488,6 @@ let Uploader = class Uploader extends Component {
     }
     uploadFiles(files, custom) {
         let selectedFiles = [];
-        let cloneFiles = [];
         if (this.asyncSettings.saveUrl === '' || isNullOrUndefined(this.asyncSettings.saveUrl)) {
             return;
         }
@@ -9317,75 +9504,103 @@ let Uploader = class Uploader extends Component {
         else {
             selectedFiles = files;
         }
-        let chunkEnabled = this.checkChunkUpload();
         for (let i = 0; i < selectedFiles.length; i++) {
-            let ajax = new Ajax(this.asyncSettings.saveUrl, 'POST', true, null);
-            ajax.emitError = false;
-            let getFileData;
+            if (isBlazor() && !this.checkChunkUpload()) {
+                /* istanbul ignore next */
+                /* tslint:disable */
+                this.getBase64(selectedFiles[i].rawFile).then((data) => {
+                    this.base64String.push(data);
+                    this.uploadFilesRequest(selectedFiles, i, custom);
+                });
+                /* tslint:disable */
+            }
+            else {
+                this.uploadFilesRequest(selectedFiles, i, custom);
+            }
+        }
+    }
+    uploadFilesRequest(selectedFiles, i, custom) {
+        let cloneFiles = [];
+        let chunkEnabled = this.checkChunkUpload();
+        let ajax = new Ajax(this.asyncSettings.saveUrl, 'POST', true, null);
+        ajax.emitError = false;
+        let getFileData;
+        /* istanbul ignore next */
+        if (isBlazor()) {
+            getFileData = selectedFiles.slice(0);
+            cloneFiles.push(getFileData[i].rawFile);
+        }
+        let eventArgs = {
+            fileData: (isBlazor()) ? getFileData[i] : selectedFiles[i],
+            customFormData: [],
+            cancel: false
+        };
+        let formData = new FormData();
+        ajax.beforeSend = (e) => {
+            eventArgs.currentRequest = ajax.httpRequest;
             /* istanbul ignore next */
             if (isBlazor()) {
-                getFileData = selectedFiles.slice(0);
-                cloneFiles.push(getFileData[i].rawFile);
+                eventArgs.fileData.rawFile = !chunkEnabled ? this.base64String[i] : eventArgs.fileData.rawFile;
+                if (this.currentRequestHeader) {
+                    this.updateCustomheader(ajax.httpRequest, this.currentRequestHeader);
+                }
+                if (this.customFormDatas) {
+                    this.updateFormData(formData, this.customFormDatas);
+                }
             }
-            let eventArgs = {
-                fileData: (isBlazor()) ? getFileData[i] : selectedFiles[i],
-                customFormData: [],
-                cancel: false
-            };
-            let formData = new FormData();
-            ajax.beforeSend = (e) => {
-                eventArgs.currentRequest = ajax.httpRequest;
+            this.trigger('uploading', eventArgs, (eventArgs) => {
                 /* istanbul ignore next */
-                if (isBlazor()) {
-                    eventArgs.fileData.rawFile = this.base64String[i];
-                    if (this.currentRequestHeader) {
-                        this.updateCustomheader(ajax.httpRequest, this.currentRequestHeader);
-                    }
-                    if (this.customFormDatas) {
-                        this.updateFormData(formData, this.customFormDatas);
-                    }
+                if (isBlazor() && !chunkEnabled) {
+                    selectedFiles[i].rawFile = eventArgs.fileData.rawFile = cloneFiles[i];
                 }
-                this.trigger('uploading', eventArgs, (eventArgs) => {
-                    /* istanbul ignore next */
-                    if (isBlazor()) {
-                        selectedFiles[i].rawFile = eventArgs.fileData.rawFile = cloneFiles[i];
-                    }
-                    if (eventArgs.cancel) {
-                        this.eventCancelByArgs(e, eventArgs, selectedFiles[i]);
-                    }
-                    this.updateFormData(formData, eventArgs.customFormData);
-                });
-            };
-            if (selectedFiles[i].statusCode === '1') {
-                let name = this.element.getAttribute('name');
-                formData.append(name, selectedFiles[i].rawFile, selectedFiles[i].name);
-                if (chunkEnabled && selectedFiles[i].size > this.asyncSettings.chunkSize) {
-                    this.chunkUpload(selectedFiles[i], custom, i);
+                if (eventArgs.cancel) {
+                    this.eventCancelByArgs(e, eventArgs, selectedFiles[i]);
                 }
-                else {
-                    ajax.onLoad = (e) => {
-                        if (eventArgs.cancel && isBlazor()) {
-                            return {};
-                        }
-                        else {
-                            this.uploadComplete(e, selectedFiles[i], custom);
-                            return {};
-                        }
-                    };
-                    ajax.onUploadProgress = (e) => {
-                        if (eventArgs.cancel && isBlazor()) {
-                            return {};
-                        }
-                        else {
-                            this.uploadInProgress(e, selectedFiles[i], custom, ajax);
-                            return {};
-                        }
-                    };
-                    /* istanbul ignore next */
-                    ajax.onError = (e) => { this.uploadFailed(e, selectedFiles[i]); return {}; };
-                    ajax.send(formData);
-                }
+                this.updateFormData(formData, eventArgs.customFormData);
+            });
+        };
+        if (selectedFiles[i].statusCode === '1') {
+            let name = this.element.getAttribute('name');
+            formData.append(name, selectedFiles[i].rawFile, selectedFiles[i].name);
+            if (chunkEnabled && selectedFiles[i].size > this.asyncSettings.chunkSize) {
+                this.chunkUpload(selectedFiles[i], custom, i);
             }
+            else {
+                ajax.onLoad = (e) => {
+                    if (eventArgs.cancel && isBlazor()) {
+                        return {};
+                    }
+                    else {
+                        this.uploadComplete(e, selectedFiles[i], custom);
+                        return {};
+                    }
+                };
+                ajax.onUploadProgress = (e) => {
+                    if (eventArgs.cancel && isBlazor()) {
+                        return {};
+                    }
+                    else {
+                        this.uploadInProgress(e, selectedFiles[i], custom, ajax);
+                        return {};
+                    }
+                };
+                /* istanbul ignore next */
+                ajax.onError = (e) => { this.uploadFailed(e, selectedFiles[i]); return {}; };
+                ajax.send(formData);
+            }
+        }
+    }
+    spliceFiles(liIndex) {
+        let liElement = this.fileList[liIndex];
+        let allFiles = this.getFilesData();
+        let nameElements = +liElement.getAttribute('data-files-count');
+        let startIndex = 0;
+        for (let i = 0; i < liIndex; i++) {
+            startIndex += (+this.fileList[i].getAttribute('data-files-count'));
+        }
+        let endIndex = (startIndex + nameElements) - 1;
+        for (let j = endIndex; j >= startIndex; j--) {
+            allFiles.splice(j, 1);
         }
     }
     /**
@@ -9422,7 +9637,33 @@ let Uploader = class Uploader extends Component {
                     this.customFormDatas = beforeEventArgs.customFormData;
                 }
                 let index;
-                if (this.isForm && (isNullOrUndefined(this.asyncSettings.removeUrl) || this.asyncSettings.removeUrl === '')) {
+                if (this.isFormUpload()) {
+                    eventArgs.filesData = fileData;
+                    this.trigger('removing', eventArgs, (eventArgs) => {
+                        if (!eventArgs.cancel) {
+                            let removingFiles = this.getFilesInArray(fileData);
+                            let isLiRemoved = false;
+                            let liIndex;
+                            for (let data of removingFiles) {
+                                if (!isLiRemoved) {
+                                    liIndex = this.fileList.indexOf(data.list);
+                                }
+                                if (liIndex > -1) {
+                                    let inputElement = !isNullOrUndefined(data.input) ? data.input : null;
+                                    if (inputElement) {
+                                        detach(inputElement);
+                                    }
+                                    this.spliceFiles(liIndex);
+                                    detach(this.fileList[liIndex]);
+                                    this.fileList.splice(liIndex, 1);
+                                    isLiRemoved = true;
+                                    liIndex = -1;
+                                }
+                            }
+                        }
+                    });
+                }
+                else if (this.isForm && (isNullOrUndefined(this.asyncSettings.removeUrl) || this.asyncSettings.removeUrl === '')) {
                     eventArgs.filesData = this.getFilesData();
                     this.trigger('removing', eventArgs, (eventArgs) => {
                         if (!eventArgs.cancel) {
@@ -9499,11 +9740,17 @@ let Uploader = class Uploader extends Component {
     }
     /**
      * Get the data of files which are shown in file list.
+     * @param { number } index - specifies the file list item(li) index.
      * @returns FileInfo[]
      */
-    getFilesData() {
+    getFilesData(index) {
         if (!isBlazor()) {
-            return this.filesData;
+            if (isNullOrUndefined(index)) {
+                return this.filesData;
+            }
+            else {
+                return this.getSelectedFiles(index);
+            }
         }
         else {
             for (let i = 0; i < this.filesData.length; i++) {
@@ -9520,7 +9767,7 @@ let Uploader = class Uploader extends Component {
      */
     pause(fileData, custom) {
         fileData = fileData ? fileData : this.filesData;
-        let fileDataFiles = this.validateFileType(fileData);
+        let fileDataFiles = this.getFilesInArray(fileData);
         this.pauseUploading(fileDataFiles, custom);
     }
     pauseUploading(fileData, custom) {
@@ -9549,7 +9796,7 @@ let Uploader = class Uploader extends Component {
      */
     resume(fileData, custom) {
         fileData = fileData ? fileData : this.filesData;
-        let fileDataFiles = this.validateFileType(fileData);
+        let fileDataFiles = this.getFilesInArray(fileData);
         this.resumeFiles(fileDataFiles, custom);
     }
     resumeFiles(fileData, custom) {
@@ -9568,7 +9815,7 @@ let Uploader = class Uploader extends Component {
      */
     retry(fileData, fromcanceledStage, custom) {
         fileData = fileData ? fileData : this.filesData;
-        let fileDataFiles = this.validateFileType(fileData);
+        let fileDataFiles = this.getFilesInArray(fileData);
         this.retryFailedFiles(fileDataFiles, fromcanceledStage, custom);
     }
     retryFailedFiles(fileData, fromcanceledStage, custom) {
@@ -9596,7 +9843,7 @@ let Uploader = class Uploader extends Component {
      */
     cancel(fileData) {
         fileData = fileData ? fileData : this.filesData;
-        let cancelingFiles = this.validateFileType(fileData);
+        let cancelingFiles = this.getFilesInArray(fileData);
         this.cancelUpload(cancelingFiles);
     }
     cancelUpload(fileData) {
@@ -9849,12 +10096,20 @@ let ColorPicker = class ColorPicker extends Component {
         this.container = this.createElement('div', { className: CONTAINER });
         this.getWrapper().appendChild(this.container);
         let value = this.value ? this.roundValue(this.value).toLowerCase() : '#008000ff';
+        if (this.noColor && this.mode === 'Palette' && this.value === '') {
+            value = '';
+        }
         let slicedValue = value.slice(0, 7);
         if (isNullOrUndefined(this.initialInputValue)) {
             this.initialInputValue = slicedValue;
         }
         this.element.value = slicedValue;
-        this.setProperties({ 'value': value }, true);
+        if (this.enableOpacity) {
+            this.setProperties({ 'value': value }, true);
+        }
+        else {
+            this.setProperties({ 'value': slicedValue }, true);
+        }
         if (this.enableRtl) {
             wrapper.classList.add(RTL$1);
         }
@@ -10574,7 +10829,12 @@ let ColorPicker = class ColorPicker extends Component {
             previousValue: { hex: this.value.slice(0, 7), rgba: this.convertToRgbString(this.hexToRgb(this.value)) },
             value: value
         });
-        this.setProperties({ 'value': value }, true);
+        if (this.enableOpacity) {
+            this.setProperties({ 'value': value }, true);
+        }
+        else {
+            this.setProperties({ 'value': hex }, true);
+        }
         this.element.value = hex ? hex : '#000000';
     }
     handlerDragPosition(prob, value, e) {

@@ -329,6 +329,13 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
      */
     @Property(null)
     public keyConfigs: { [key: string]: string };
+    /**
+     * By default, the date value will be processed based on system time zone.
+     * If you want to process the initial date value using server time zone 
+     * then specify the time zone value to `serverTimezoneOffset` property.
+     */
+    @Property(null)
+    public serverTimezoneOffset: number;
     /** 
      * Triggers when Calendar is created.
      * @event
@@ -542,6 +549,9 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
         }
         return culShortNames;
     }
+    protected toCapitalize(text: string): string {
+        return !isNullOrUndefined(text) && text.length ? text[0].toUpperCase() + text.slice(1) : text;
+    }
     protected createContentHeader(): void {
         if (this.getModuleName() === 'calendar') {
             if (!isNullOrUndefined(this.element.querySelectorAll('.e-content .e-week-header')[0])) {
@@ -569,7 +579,7 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
         }
         shortNames = this.shiftArray(((this.getCultureValues().length > 0 && this.getCultureValues())), this.firstDayOfWeek);
         for (let days: number = 0; days <= daysCount; days++) {
-            html += '<th  class="">' + shortNames[days] + '</th>';
+            html += '<th  class="">' + this.toCapitalize(shortNames[days]) + '</th>';
         }
         html = '<tr>' + html + '</tr>';
         this.tableHeadElement.innerHTML = html;
@@ -1016,7 +1026,7 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
             let dayLink: HTMLElement = this.createElement('span');
             let localMonth: boolean = (value && (value).getMonth() === localDate.getMonth());
             let select: boolean = (value && (value).getFullYear() === yr && localMonth);
-            dayLink.textContent = this.globalize.formatDate(localDate, { type: 'dateTime', skeleton: 'MMM' });
+            dayLink.textContent = this.toCapitalize(this.globalize.formatDate(localDate, { type: 'dateTime', skeleton: 'MMM' }));
             if ((this.min && (curYrs < minYr || (month < minMonth && curYrs === minYr))) || (
                 this.max && (curYrs > maxYr || (month > maxMonth && curYrs >= maxYr)))) {
                 addClass([tdEle], DISABLED);
@@ -1468,7 +1478,7 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
         }
         switch (view) {
             case 'days':
-                this.headerTitleElement.textContent = dayFormatOptions;
+                this.headerTitleElement.textContent = this.toCapitalize(dayFormatOptions);
                 break;
             case 'months':
                 this.headerTitleElement.textContent = monthFormatOptions;
@@ -2101,8 +2111,23 @@ export class Calendar extends CalendarBase {
             if (form) {
                 EventHandler.add(form, 'reset', this.formResetHandler.bind(this));
             }
+            this.setTimeZone(this.serverTimezoneOffset);
         }
         this.renderComplete();
+    }
+    protected isDayLightSaving(): boolean {
+        let secondOffset: number = new Date(this.value.getFullYear(), 6 , 1).getTimezoneOffset();
+        let firstOffset: number = new Date(this.value.getFullYear(), 0 , 1).getTimezoneOffset();
+        return (this.value.getTimezoneOffset() < Math.max(firstOffset, secondOffset));
+    }
+    protected setTimeZone(offsetValue: number ): void {
+        if (this.serverTimezoneOffset && this.value) {
+            let serverTimezoneDiff: number = offsetValue;
+            let clientTimeZoneDiff: number = new Date().getTimezoneOffset() / 60;
+            let timeZoneDiff: number = serverTimezoneDiff + clientTimeZoneDiff;
+            timeZoneDiff = this.isDayLightSaving() ? timeZoneDiff-- : timeZoneDiff;
+            this.value = new Date(this.value.getTime() + (timeZoneDiff * 60 * 60 * 1000));
+        }
     }
     protected formResetHandler(): void {
         this.setProperties({ value: null }, true);

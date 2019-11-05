@@ -26,6 +26,15 @@
 
 - `#251466` - Now, you can set width property in `em` unit.
 
+### ListBox
+
+#### Bug Fixes
+
+- `#F147087` - script error "class List of undefined" while grouping has been fixed.
+- `#F147087` - script error "contains of undefined in ListBox" while rendering the ListBox and multi select in the same router page has been fixed.
+- `#F147408` - Move To toolbar button not working when loading the list box using `remote data` has been resolved.
+- `#249771` - script error while performing the toolbar actions in dual ListBox with `data manager` in `EJ2 MVC` has been resolved
+
 ## 17.3.19 (2019-10-22)
 
 ### ListBox

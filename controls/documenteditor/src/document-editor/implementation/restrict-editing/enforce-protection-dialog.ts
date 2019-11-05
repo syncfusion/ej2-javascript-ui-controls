@@ -2,7 +2,6 @@ import { LayoutViewer } from '../viewer';
 import { L10n, createElement } from '@syncfusion/ej2-base';
 import { RestrictEditing } from './restrict-editing-pane';
 import { DialogUtility } from '@syncfusion/ej2-popups';
-import { XmlHttpRequestHandler } from '../../base/ajax-helper';
 /**
  * @private 
  */
@@ -18,12 +17,9 @@ export class EnforceProtectionDialog {
      */
     public password: string;
 
-    private enforceProtectionHandler: XmlHttpRequestHandler;
-
     constructor(viewer: LayoutViewer, owner: RestrictEditing) {
         this.viewer = viewer;
         this.owner = owner;
-        this.enforceProtectionHandler = new XmlHttpRequestHandler();
     }
 
     /**
@@ -91,45 +87,10 @@ export class EnforceProtectionDialog {
             /* tslint:enable */
         } else {
             this.password = this.passwordTextBox.value;
-            let passwordBase64: string = this.owner.base64.encodeString(this.password);
-            /* tslint:disable:no-any */
-            let formObject: any = {
-                passwordBase64: passwordBase64,
-                saltBase64: '',
-                spinCount: 100000
-            };
-            /* tslint:enable:no-any */
-            let url: string = this.viewer.owner.serviceUrl + this.viewer.owner.serverActionSettings.restrictEditing;
-            this.enforceProtectionHandler.url = url;
-            this.enforceProtectionHandler.contentType = 'application/json;charset=UTF-8';
-            this.enforceProtectionHandler.onSuccess = this.enforceProtection.bind(this);
-            this.enforceProtectionHandler.onFailure = this.failureHandler.bind(this);
-            this.enforceProtectionHandler.onError = this.failureHandler.bind(this);
-            this.enforceProtectionHandler.send(formObject);
+            this.viewer.owner.editor.addProtection(this.password);
         }
     }
-    /* tslint:disable:no-any */
-    private failureHandler(result: any): void {
-        if (result.name === 'onError') {
-            DialogUtility.alert(this.localeValue.getConstant('Error in establishing connection with web server'));
-        } else {
-            console.error(result.statusText);
-        }
-    }
-    private enforceProtection(result: any): void {
-        let data: string[] = JSON.parse(result.data);
-        this.viewer.saltValue = data[0];
-        this.viewer.hashValue = data[1];
-        this.protectDocument();
-    }
-    /* tslint:enable:no-any */
-    private protectDocument(): void {
-        this.viewer.owner.editor.protect(this.owner.protectionType);
-        this.viewer.restrictFormatting = this.owner.restrictFormatting;
-        this.viewer.restrictEditingPane.showStopProtectionPane(true);
-        this.viewer.restrictEditingPane.loadPaneValue();
-        this.viewer.dialog.hide();
-    }
+
 }
 /**
  * @private 
@@ -144,11 +105,9 @@ export class UnProtectDocumentDialog {
     private currentHashValue: string;
     private currentSaltValue: string;
 
-    private unProtectDocumentHandler: XmlHttpRequestHandler;
     constructor(viewer: LayoutViewer, owner: RestrictEditing) {
         this.viewer = viewer;
         this.owner = owner;
-        this.unProtectDocumentHandler = new XmlHttpRequestHandler;
     }
 
     /**
@@ -203,35 +162,11 @@ export class UnProtectDocumentDialog {
      */
     /* tslint:disable:no-any */
     public okButtonClick = (): void => {
-        if (this.passwordTextBox.value === '') {
+        let password: string = this.passwordTextBox.value;
+        if (password === '') {
             return;
         }
-        let password: string = this.passwordTextBox.value;
-        let passwordBase64: string = this.owner.base64.encodeString(password);
-        let formObject: any = {
-            passwordBase64: passwordBase64,
-            saltBase64: this.viewer.saltValue,
-            spinCount: 100000
-        };
-        this.unProtectDocumentHandler.url = this.viewer.owner.serviceUrl + this.viewer.owner.serverActionSettings.restrictEditing;
-        this.unProtectDocumentHandler.contentType = 'application/json;charset=UTF-8';
-        this.unProtectDocumentHandler.onSuccess = this.onUnProtectionSuccess.bind(this);
-        this.unProtectDocumentHandler.onFailure = this.failureHandler.bind(this);
-        this.unProtectDocumentHandler.onError = this.failureHandler.bind(this);
-        this.unProtectDocumentHandler.send(formObject);
-    }
-    private onUnProtectionSuccess(result: any): void {
-        let encodeString: string[] = JSON.parse(result.data);
-        this.currentHashValue = encodeString[1];
-        this.currentSaltValue = encodeString[0];
-        this.validateHashValue();
-    }
-    private failureHandler(result: any): void {
-        if (result.name === 'onError') {
-            DialogUtility.alert(this.localObj.getConstant('Error in establishing connection with web server'));
-        } else {
-            console.error(result.statusText);
-        }
+        this.viewer.owner.editor.stopProtection(password);
     }
     /**
      * @private
@@ -241,29 +176,4 @@ export class UnProtectDocumentDialog {
         this.viewer.dialog.hide();
     }
     /* tslint:enable:no-any */
-    private validateHashValue(): void {
-        let decodeUserHashValue: Uint8Array = this.owner.base64.decodeString(this.currentHashValue);
-        let documentHashValue: string = this.viewer.hashValue;
-        let defaultHashValue: Uint8Array = this.owner.base64.decodeString(documentHashValue);
-        let stopProtection: boolean = true;
-        if (decodeUserHashValue.length === defaultHashValue.length) {
-            for (let i: number = 0; i < decodeUserHashValue.length; i++) {
-                if (decodeUserHashValue[i] !== defaultHashValue[i]) {
-                    stopProtection = false;
-                    break;
-                }
-            }
-        } else {
-            stopProtection = false;
-        }
-        if (stopProtection) {
-            this.viewer.restrictEditingPane.showStopProtectionPane(false);
-            this.viewer.isDocumentProtected = false;
-            this.viewer.restrictFormatting = false;
-            this.viewer.selection.highlightEditRegion();
-            this.viewer.dialog.hide();
-        } else {
-            DialogUtility.alert(this.localObj.getConstant('The password is incorrect'));
-        }
-    }
 }    

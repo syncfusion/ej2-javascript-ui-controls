@@ -742,7 +742,7 @@ describe('ColorPicker', () => {
                 triggerMouseEvent(target, 'mouseup');
                 target = colorPicker.container.querySelector('.e-previous') as HTMLElement;
                 target.click();
-                expect(colorPicker.value).toEqual('#8321a4ff');
+                expect(colorPicker.value).toEqual('#8321a4');
             });
         });
 

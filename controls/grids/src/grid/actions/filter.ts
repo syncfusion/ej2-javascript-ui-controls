@@ -332,7 +332,7 @@ export class Filter implements IAction {
             filterCell = gObj.getHeaderContent().querySelector('[id=\'' + this.column.field + '_filterBarcell\']') as HTMLInputElement;
         }
         if (!isNullOrUndefined(this.column.allowFiltering) && !this.column.allowFiltering) {
-            this.parent.log('action_disabled_column', {moduleName: this.getModuleName(), columnName: this.column.headerText});
+            this.parent.log('action_disabled_column', { moduleName: this.getModuleName(), columnName: this.column.headerText });
             return;
         }
         if (isActionPrevent(gObj)) {
@@ -549,7 +549,8 @@ export class Filter implements IAction {
             hideSearchbox: isNullOrUndefined(col.filter.hideSearchbox) ? false : col.filter.hideSearchbox,
             handler: this.filterHandler.bind(this), localizedStrings: gObj.getLocaleConstants(),
             position: { X: left, Y: top }, column: col, foreignKeyValue: col.foreignKeyValue,
-            actualPredicate: this.actualPredicate, localeObj: this.parent.localeObj
+            actualPredicate: this.actualPredicate, localeObj: this.parent.localeObj,
+            isRemote: this.parent.getDataModule().isRemote(), allowCaseSensitive: this.filterSettings.enableCaseSensitivity
         });
     }
 
@@ -584,9 +585,9 @@ export class Filter implements IAction {
                         delete this.values[field];
                     }
                 }
-                while (len --) {
+                while (len--) {
                     if (cols[len].uid === column.uid) {
-                         cols.splice(len, 1);
+                        cols.splice(len, 1);
                     }
                 }
                 let fltrElement: Element = this.parent.getColumnHeaderByField(column.field);
@@ -753,8 +754,9 @@ export class Filter implements IAction {
             return;
         }
         this.validateFilterValue(this.value as string);
-        this.filterByColumn(this.column.field, this.operator, this.value as string, this.predicate,
-                            this.filterSettings.enableCaseSensitivity, this.ignoreAccent);
+        this.filterByColumn(
+            this.column.field, this.operator, this.value as string, this.predicate,
+            this.filterSettings.enableCaseSensitivity, this.ignoreAccent);
         filterElement.value = filterValue;
         this.updateFilterMsg();
     }
@@ -803,7 +805,7 @@ export class Filter implements IAction {
                 }
                 break;
             case 'string':
-            this.matchCase = false;
+                this.matchCase = false;
                 if (value.charAt(0) === '*') {
                     this.value = (this.value as string).slice(1);
                     this.operator = this.filterOperators.startsWith;
@@ -837,7 +839,7 @@ export class Filter implements IAction {
                 } else {
                     this.operator = this.filterOperators.equal;
                 }
-            }
+        }
     }
 
     private getOperator(value: string): void {
@@ -1015,7 +1017,7 @@ export class Filter implements IAction {
             operator: operator,
             value: value,
             type: type
-            };
+        };
         this.actualPredicate[fieldName] ? this.actualPredicate[fieldName].push(obj) : this.actualPredicate[fieldName] = [obj];
         let field: string = uid ? this.parent.grabColumnByUidFromAllCols(uid).field : fieldName;
         this.addFilteredClass(field);

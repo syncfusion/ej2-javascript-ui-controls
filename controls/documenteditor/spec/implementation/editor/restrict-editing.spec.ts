@@ -49,7 +49,7 @@ describe('Restrict editing Add edit region', () => {
         editor.selection.highlightEditRegion();
     });
     it('SelectAll for editable region', () => {
-        editor.selection.SelectAllEditRegion();
+        editor.selection.showAllEditingRegion();
     });
     it('remove editrange at current selection', () => {
         editor.selection.handleControlHomeKey();
@@ -93,9 +93,9 @@ describe('Restrict editing Add edit region with everyone validation', () => {
         editor.selection.highlightEditRegion();
     });
     it('Navigate edit region validation', () => {
-        editor.selection.navigateNextEditRegion();
-        editor.selection.navigateNextEditRegion();
-        editor.selection.navigateNextEditRegion();
+        editor.selection.navigateToNextEditingRegion();
+        editor.selection.navigateToNextEditingRegion();
+        editor.selection.navigateToNextEditingRegion();
     });
     it('Formatting inside edit region validation', () => {
         editor.selection.handleControlHomeKey();
@@ -169,9 +169,9 @@ describe('Restrict editing Add edit region based on currentuser validation', () 
         expect(editor.selection.editRegionHighlighters).toBeUndefined();
     });
     it('Navigate edit region validation', () => {
-        editor.selection.navigateNextEditRegion();
-        editor.selection.navigateNextEditRegion();
-        editor.selection.navigateNextEditRegion();
+        editor.selection.navigateToNextEditingRegion();
+        editor.selection.navigateToNextEditingRegion();
+        editor.selection.navigateToNextEditingRegion();
     });
     it('Formatting inside edit region validation', () => {
         editor.selection.handleControlHomeKey();
@@ -244,12 +244,12 @@ describe('Restrict editing Add edit region inside Table', () => {
         expect(editor.selection.editRegionHighlighters).toBeUndefined();
     });
     it('Navigate edit region validation', () => {
-        editor.selection.navigateNextEditRegion();
-        editor.selection.navigateNextEditRegion();
-        editor.selection.navigateNextEditRegion();
+        editor.selection.navigateToNextEditingRegion();
+        editor.selection.navigateToNextEditingRegion();
+        editor.selection.navigateToNextEditingRegion();
     });
     it('BackSpace Validation', () => {
-        editor.selection.navigateNextEditRegion();
+        editor.selection.navigateToNextEditingRegion();
         editor.editor.insertText('T');
         editor.editor.onBackSpace();
         editor.editor.onBackSpace();

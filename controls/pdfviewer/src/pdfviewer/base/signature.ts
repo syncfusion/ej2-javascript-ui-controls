@@ -73,9 +73,16 @@ export class Signature {
         } else {
             this.signatureDialog = new Dialog({
                 showCloseIcon: true, closeOnEscape: false, isModal: true, header: this.pdfViewer.localeObj.getConstant('Draw Signature'),
-                target: this.pdfViewer.element, content: appearanceTab, width: '750px', visible: false,
-                close: () => {
+                target: this.pdfViewer.element, content: appearanceTab, width: '750px', visible: true,
+                beforeClose: (): void => {
                     this.clearSignatureCanvas();
+                    this.signatureDialog.destroy();
+                    this.signatureDialog = null;
+                    // tslint:disable-next-line
+                    let signatureWindow: any = document.getElementById(this.pdfViewer.element.id + '_signature_window');
+                    if (signatureWindow) {
+                        signatureWindow.remove();
+                    }
                 }
             });
             this.signatureDialog.buttons = [
@@ -118,11 +125,18 @@ export class Signature {
                 id: 'sign' + this.pdfViewerBase.signatureCount, bounds: { x: currentLeft, y: currentTop, width: currentWidth, height: currentHeight }, pageIndex: pageIndex, data: this.outputString,
                 shapeAnnotationType: 'HandWrittenSignature', opacity: opacity, strokeColor: strokeColor, thickness: thickness,
             };
-            this.signatureDialog.hide();
+            this.hideSignaturePanel();
             this.pdfViewerBase.currentSignatureAnnot = annot;
             this.pdfViewerBase.isToolbarSignClicked = false;
         } else {
             this.pdfViewer.formFieldsModule.drawSignature();
+            this.hideSignaturePanel();
+        }
+    }
+
+    private hideSignaturePanel(): void {
+        if (this.signatureDialog) {
+            this.signatureDialog.hide();
         }
     }
     // tslint:disable-next-line
@@ -482,9 +496,7 @@ export class Signature {
      */
     public showSignatureDialog(isShow: boolean): void {
         if (isShow) {
-            this.signatureDialog.show();
-        } else {
-            this.signatureDialog.hide();
+            this.createSignaturePanel();
         }
     }
 
@@ -501,8 +513,5 @@ export class Signature {
      */
     public destroy(): void {
         window.sessionStorage.removeItem('_annotations_sign');
-        if (this.signatureDialog) {
-            this.signatureDialog.destroy();
-        }
     }
 }

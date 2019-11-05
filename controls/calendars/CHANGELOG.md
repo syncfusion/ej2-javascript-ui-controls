@@ -2,7 +2,21 @@
 
 ## [Unreleased]
 
-## 17.3.21 (2019-10-30)
+## 17.3.26 (2019-11-05)
+
+### DateTimePicker
+
+#### New Features
+
+- `#249683` - Now, you can set the server time zone for initial date value process using `serverTimezoneOffset` property.
+
+### Calendar
+
+#### New Features
+
+- `#246049` - Now, month name, day name are capitalized for all localization.
+
+## 17.3.19 (2019-10-22)
 
 ### TimePicker
 

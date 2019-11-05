@@ -4,8 +4,6 @@ import { Dictionary } from '../../base/dictionary';
 import { ElementBox, TextElementBox, ErrorTextElementBox, LineWidget, TableCellWidget, Page, FieldElementBox } from '../viewer/page';
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
 import { BaselineAlignment } from '../../base/types';
-import { XmlHttpRequestHandler } from '../../base/ajax-helper';
-//import { XmlHttpRequestHandler } from '../..';
 /**
  * The spell checker module
  */
@@ -48,8 +46,6 @@ export class SpellChecker {
      * @private
      */
     public errorSuggestions: Dictionary<string, string[]>;
-
-    public spellJsonData: string = '';
 
     private performOptimizedCheck: boolean = false;
 
@@ -698,8 +694,8 @@ export class SpellChecker {
             if (checkPrevious) {
                 let textElement: TextElementBox = undefined;
                 for (let i: number = index - difference; i >= 0; i--) {
-                    if (line.children[i] instanceof TextElementBox && !isPrevField) {
-                        textElement = line.children[i] as TextElementBox;
+                    textElement = line.children[i] as TextElementBox;
+                    if (textElement instanceof TextElementBox && !isPrevField) {
                         if (prevText.indexOf(' ') !== 0 && textElement.text.lastIndexOf(' ') !== textElement.text.length - 1) {
                             prevCombined = !isNullOrUndefined(textToCombine) ? true : false;
                             currentText = textElement.text + currentText;
@@ -711,7 +707,7 @@ export class SpellChecker {
                             textElement = textElement.nextElement as TextElementBox;
                             break;
                         }
-                    } else if (line.children[i] instanceof FieldElementBox) {
+                    } else if (textElement instanceof FieldElementBox && textElement.fieldType !== 1) {
                         isPrevField = true;
                     }
                 }
@@ -731,8 +727,8 @@ export class SpellChecker {
                 let canCombine: boolean = false;
                 let element: TextElementBox = undefined;
                 for (let i: number = index + 1; i < line.children.length; i++) {
-                    if (line.children[i] instanceof TextElementBox && !isPrevField) {
-                        element = (line.children[i] as TextElementBox);
+                    element = (line.children[i] as TextElementBox);
+                    if (element instanceof TextElementBox && !isPrevField) {
                         if (nextText.lastIndexOf(' ') !== nextText.length - 1 && element.text.indexOf(' ') !== 0) {
                             currentText += element.text;
                             nextText = element.text;
@@ -744,12 +740,13 @@ export class SpellChecker {
                             element = element.previousElement as TextElementBox;
                             break;
                         }
-                    } else if (line.children[i] instanceof FieldElementBox) {
+                    } else if (element instanceof FieldElementBox && element.fieldType !== 2) {
                         isPrevField = true;
                     }
                 }
                 let currentElement: TextElementBox = (canCombine) ? element : elementBox;
-                if (this.lookThroughNextLine(currentText, prevText, currentElement, underlineY, beforeIndex)) {
+                // tslint:disable-next-line:max-line-length
+                if (currentElement.text !== '\f' && this.lookThroughNextLine(currentText, prevText, currentElement, underlineY, beforeIndex)) {
                     return true;
                 }
             }

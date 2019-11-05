@@ -9201,7 +9201,14 @@ var ListBox = /** @__PURE__ @class */ (function (_super) {
         var droppedData;
         var listObj = this.getComponent(args.droppedElement);
         var getArgs = this.getDragArgs({ target: args.droppedElement }, true);
-        var dragArgs = extend({}, getArgs, { target: args.target });
+        var sourceArgs = { previousData: this.dataSource };
+        var destArgs = { previousData: listObj.dataSource };
+        var dragArgs = extend({}, getArgs, { target: args.target, source: { previousData: this.dataSource },
+            targetId: listObj.element.id });
+        if (listObj !== this) {
+            var sourceArgs1 = extend(sourceArgs, { currentData: this.listData });
+            dragArgs = extend(dragArgs, { source: sourceArgs1, destination: destArgs });
+        }
         if (Browser.isIos) {
             this.list.style.overflow = '';
         }
@@ -9255,12 +9262,21 @@ var ListBox = /** @__PURE__ @class */ (function (_super) {
                 ul_2.appendChild(args.helper);
                 listObj.setSelection();
             }
-            this.setProperties({ dataSource: this.listData }, true);
-            listObj.listData = listData;
-            listObj.setProperties({ dataSource: listObj.listData }, true);
+            var fromList = extend([], [], this.listData, false);
+            this.setProperties({ dataSource: fromList }, true);
+            listObj.listData = extend([], [], listData, false);
+            listObj.setProperties({ dataSource: listData }, true);
             if (this.listData.length === 0) {
                 this.l10nUpdate();
             }
+        }
+        if (this === listObj) {
+            var sourceArgs1 = extend(sourceArgs, { currentData: listData });
+            dragArgs = extend(dragArgs, { source: sourceArgs1 });
+        }
+        else {
+            var dragArgs1 = extend(destArgs, { currentData: listData });
+            dragArgs = extend(dragArgs, { destination: dragArgs1 });
         }
         this.trigger('drop', dragArgs);
     };
@@ -9482,22 +9498,22 @@ var ListBox = /** @__PURE__ @class */ (function (_super) {
         this.triggerChange(this.getSelectedItems(), event);
     };
     ListBox.prototype.updateMainList = function () {
-        var mainCount = this.mainList.childElementCount;
-        var ulEleCount = this.ulElement.childElementCount;
+        var mainCount = this.mainList.querySelectorAll('.e-list-item').length;
+        var ulEleCount = this.ulElement.querySelectorAll('.e-list-item').length;
         if (this.selectionSettings.showCheckbox || (document.querySelectorAll('ul').length > 1 || mainCount !== ulEleCount)) {
             var listindex = 0;
             var valueindex = 0;
             var count = 0;
-            for (listindex; listindex < this.mainList.childElementCount;) {
+            for (listindex; listindex < this.mainList.querySelectorAll('.e-list-item').length;) {
                 if (this.value) {
                     for (valueindex; valueindex < this.value.length; valueindex++) {
-                        if (this.mainList.getElementsByTagName('li')[listindex].getAttribute('data-value') === this.value[valueindex]) {
+                        if (this.mainList.querySelectorAll('.e-list-item')[listindex].getAttribute('data-value') === this.value[valueindex]) {
                             count++;
                         }
                     }
                 }
                 if (!count && this.selectionSettings.showCheckbox) {
-                    this.mainList.getElementsByTagName('li')[listindex].getElementsByClassName('e-frame')[0].classList.remove('e-check');
+                    this.mainList.querySelectorAll('.e-list-item')[listindex].getElementsByClassName('e-frame')[0].classList.remove('e-check');
                 }
                 if (document.querySelectorAll('ul').length > 1 && count && mainCount !== ulEleCount) {
                     this.mainList.removeChild(this.mainList.getElementsByTagName('li')[listindex]);
@@ -9758,6 +9774,7 @@ var ListBox = /** @__PURE__ @class */ (function (_super) {
     ListBox.prototype.moveData = function (fListBox, tListBox, isKey) {
         var count = 0;
         var idx = [];
+        var dupIdx = [];
         var dataIdx = [];
         var listData = [].slice.call(fListBox.listData);
         var tListData = [].slice.call(tListBox.listData);
@@ -9779,6 +9796,7 @@ var ListBox = /** @__PURE__ @class */ (function (_super) {
             }
             elems.forEach(function (ele, i) {
                 idx.push(Array.prototype.indexOf.call(fListBox.ulElement.children, ele));
+                dupIdx.push(Array.prototype.indexOf.call(fListBox.ulElement.querySelectorAll('.e-list-item'), ele));
                 dataIdx.push(Array.prototype.indexOf.call(listData, fListBox.sortedData[idx[i]]));
             });
             if (tListBox.listData.length === 0) {
@@ -9812,6 +9830,7 @@ var ListBox = /** @__PURE__ @class */ (function (_super) {
                     }
                 }
                 fListBox.setProperties({ dataSource: fListBox.sortedData }, true);
+                tListBox.setProperties({ dataSource: tListBox.sortedData }, true);
             });
             if (tListBox.sortedData.length !== tListBox.dataSource.length) {
                 tListBox.setProperties({ sortedData: tListBox.dataSource }, true);
@@ -9832,19 +9851,18 @@ var ListBox = /** @__PURE__ @class */ (function (_super) {
                 tListBox.mainList = tListBox.ulElement;
             }
             fListBox.updateMainList();
-            var childCnt = fListBox.ulElement.childElementCount;
+            var childCnt = fListBox.ulElement.querySelectorAll('.e-list-item').length;
             var ele = void 0;
             var liIdx = void 0;
             if (elems.length === 1 && childCnt && !fListBox.selectionSettings.showCheckbox) {
-                liIdx = childCnt <= idx[0] ? childCnt - 1 : idx[0];
-                ele = fListBox.ulElement.children[liIdx];
-                fListBox.ulElement.children[fListBox.getValidIndex(ele, liIdx, childCnt === idx[0]
+                liIdx = childCnt <= dupIdx[0] ? childCnt - 1 : dupIdx[0];
+                ele = fListBox.ulElement.querySelectorAll('.e-list-item')[liIdx];
+                fListBox.ulElement.querySelectorAll('.e-list-item')[fListBox.getValidIndex(ele, liIdx, childCnt === dupIdx[0]
                     ? 38 : 40)].classList.add(cssClass.selected);
             }
             if (isKey) {
                 this.list.focus();
             }
-            listData = fListBox.dataSource;
             fListBox.listData = listData;
             fListBox.setProperties({ dataSource: listData }, true);
             tListData = tListData.concat(data.reverse());
@@ -10113,7 +10131,7 @@ var ListBox = /** @__PURE__ @class */ (function (_super) {
         if (index < 0 || index === cul.childElementCount) {
             return -1;
         }
-        cli = cul.children[index];
+        cli = cul.querySelectorAll('.e-list-item')[index];
         if (cli.classList.contains('e-disabled') || cli.classList.contains(cssClass.group)) {
             index = this.getValidIndex(cli, index, keyCode);
         }

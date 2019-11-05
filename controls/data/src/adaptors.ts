@@ -338,10 +338,12 @@ export class JsonAdaptor extends Adaptor {
     public update(dm: DataManager, keyField: string, value: Object, tableName?: string): void {
         let ds: Object[] = dm.dataSource.json;
         let i: number;
-        let key: string = (value as { [key: string]: string })[keyField];
-
+        let key: string;
+        if (!isNullOrUndefined(keyField)) {
+            key = getValue(keyField, value as { [key: string]: string });
+        }
         for (i = 0; i < ds.length; i++) {
-            if ((ds[i] as { [key: string]: string })[keyField] === key) { break; }
+            if (!isNullOrUndefined(keyField) && (getValue(keyField, ds[i] as { [key: string]: string })) === key) { break; }
         }
         return i < ds.length ? merge(ds[i], value) : null;
     }

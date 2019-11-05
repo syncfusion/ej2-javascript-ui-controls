@@ -67,14 +67,14 @@ export class Tooltip extends BaseTooltip {
                 }
             } else {
                 if (chart.tooltip.shared) {
-                    this.removeTooltip(1000);
+                    this.removeTooltip(this.chart.tooltip.fadeOutDuration);
                 }
             }
         }
     }
 
     /**
-     * Handles the long press on chart. 
+     * Handles the long press on chart.
      * @return {boolean}
      * @private
      */
@@ -147,7 +147,7 @@ export class Tooltip extends BaseTooltip {
             }
         } else {
             if (!data.point && this.isRemove) {
-                this.removeTooltip(this.chart.tooltip.duration);
+                this.removeTooltip(this.chart.tooltip.fadeOutDuration);
                 this.isRemove = false;
             } else {
                 for (let series of chart.visibleSeries) {
@@ -180,13 +180,11 @@ export class Tooltip extends BaseTooltip {
                 this.headerText = argsData.headerText;
                 this.formattedText = this.formattedText.concat(argsData.text);
                 this.text = this.formattedText;
-                if (argsData.template) {
-                    this.chart.tooltip.template = argsData.template;
-                }
                 this.createTooltip(this.chart, isFirst, this.getSymbolLocation(point),
                                    point.series.clipRect, point.point, this.findShapes(),
                                    this.findMarkerHeight(<PointData>this.currentPoints[0]),
-                                   this.chart.chartAxisLayoutPanel.seriesClipRect, null, this.getTemplateText(point));
+                                   this.chart.chartAxisLayoutPanel.seriesClipRect, null, this.getTemplateText(point),
+                                   this.chart.tooltip.template ? argsData.template : '');
             } else {
                 this.removeHighlight(this.control);
                 remove(this.getElement(this.element.id + '_tooltip'));

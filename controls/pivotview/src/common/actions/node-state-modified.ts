@@ -1,4 +1,4 @@
-import { DragEventArgs, isNullOrUndefined, closest } from '@syncfusion/ej2-base';
+import { DragEventArgs, isNullOrUndefined, closest, isBlazor } from '@syncfusion/ej2-base';
 import { PivotCommon } from '../base/pivot-common';
 import * as cls from '../base/css-constant';
 import { DragAndDropEventArgs } from '@syncfusion/ej2-navigations';
@@ -109,7 +109,8 @@ export class NodeStateModified {
             }
         }
         this.parent.dataSourceUpdate.updateDataSource(fieldName, droppedClass, droppedPosition);
-        return nodeDropped;
+        return isBlazor() ? false : nodeDropped;
+
     }
 
     private getButtonPosition(target: HTMLElement, droppedClass: string): number {

@@ -395,27 +395,27 @@ let json: any = {
     ]
 };
 
-describe('RTL special character validation', () => {
-    let editor: DocumentEditor = undefined;
-    beforeAll(() => {
-        document.body.innerHTML = '';
-        let ele: HTMLElement = createElement('div', { id: 'container' });
-        document.body.appendChild(ele);
-        DocumentEditor.Inject(Selection, Editor);
-        editor = new DocumentEditor({ isReadOnly: false, enableSelection: true, enableEditor: true });
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
-        editor.appendTo('#container');
-    });
-    afterAll(() => {
-        editor.destroy();
-        document.body.removeChild(document.getElementById('container'));
-        editor = undefined;
-    });
-    it('RTl with special character validation', () => {
-        editor.open(JSON.stringify(json));
-        expect((editor.selection.start.currentWidget.children[4] as TextElementBox).text).toBe('@');
-    });
-});
+// describe('RTL special character validation', () => {
+//     let editor: DocumentEditor = undefined;
+//     beforeAll(() => {
+//         document.body.innerHTML = '';
+//         let ele: HTMLElement = createElement('div', { id: 'container' });
+//         document.body.appendChild(ele);
+//         DocumentEditor.Inject(Selection, Editor);
+//         editor = new DocumentEditor({ isReadOnly: false, enableSelection: true, enableEditor: true });
+//         (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
+//         (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
+//         (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
+//         (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+//         editor.appendTo('#container');
+//     });
+//     afterAll(() => {
+//         editor.destroy();
+//         document.body.removeChild(document.getElementById('container'));
+//         editor = undefined;
+//     });
+//     it('RTl with special character validation', () => {
+//         editor.open(JSON.stringify(json));
+//         expect((editor.selection.start.currentWidget.children[4] as TextElementBox).text).toBe('@');
+//     });
+// });

@@ -10,7 +10,7 @@ import { RectPosition } from './column-base';
 import { IPointRenderEventArgs } from '../../chart/model/chart-interface';
 import { AnimationModel } from '../../common/model/base-model';
 import { pointRender } from '../../common/model/constants';
-import { Animation, AnimationOptions } from '@syncfusion/ej2-base';
+import { Animation, AnimationOptions, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { Axis } from '../axis/axis';
 
 /**
@@ -25,6 +25,12 @@ export class PolarSeries extends PolarRadarPanel {
      */
     public render(series: Series, xAxis: Axis, yAxis: Axis, inverted: boolean): void {
         let seriesType: string = firstToLowerCase(series.drawType);
+        let yAxisMin: number =  <number>yAxis.minimum;
+        let yAxisMax: number = <number>yAxis.maximum;
+        for (let visiblePoint of series.points)  {
+            visiblePoint.visible = visiblePoint.visible && !((!isNullOrUndefined(yAxisMin) && visiblePoint.yValue < yAxisMin) ||
+            (!isNullOrUndefined(yAxisMax) && visiblePoint.yValue > yAxisMax));
+        }
         if (series.drawType.indexOf('Column') > -1) {
             this.columnDrawTypeRender(series, xAxis, yAxis);
         } else {
@@ -59,8 +65,7 @@ export class PolarSeries extends PolarRadarPanel {
         for (let point of series.points) {
             point.symbolLocations = []; point.regions = [];
             if (point.visible && withInRange(series.points[point.index - 1], point, series.points[point.index + 1], series)) {
-                inversedValue = xAxis.isInversed ? (xAxis.visibleRange.max - point.xValue) :
-                    point.xValue - xAxis.visibleRange.min;
+                inversedValue = xAxis.isInversed ? (xAxis.visibleRange.max - point.xValue) : point.xValue - xAxis.visibleRange.min;
                 itemCurrentXPos = (inversedValue) +
                     ((interval / series.rectCount) * position - ticks) + (sumofYValues / 360 * xAxis.startAngle);
                 itemCurrentXPos = (((itemCurrentXPos) / (sumofYValues)));
@@ -68,9 +73,7 @@ export class PolarSeries extends PolarRadarPanel {
                 endAngle = 2 * Math.PI * ((itemCurrentXPos + xAxis.startAngle) + (interval / series.rectCount) / (sumofYValues));
                 if (startAngle === 0 && endAngle === 0) {
                     endAngle = 2 * Math.PI; arcValue = '1';
-                } else {
-                    arcValue = '0';
-                }
+                } else { arcValue = '0'; }
                 pointStartAngle = startAngle; pointEndAngle = endAngle;
                 startAngle = (startAngle - 0.5 * Math.PI); endAngle = (endAngle - 0.5 * Math.PI) - 0.000001;
                 if (isStacking || isRangeColumn) {
@@ -78,38 +81,27 @@ export class PolarSeries extends PolarRadarPanel {
                     endValue = isRangeColumn ? <number>point.high : series.stackedValues.endValues[point.index];
                     endValue = (isLogAxis ? logBase(endValue === 0 ? 1 : endValue, yAxis.logBase) : endValue);
                     endValue = endValue > yAxis.actualRange.max ? yAxis.actualRange.max : endValue;
-                    radius = startValue === endValue ? 0 : series.chart.radius * valueToCoefficient(endValue, yAxis);
-                    x1 = centerX + radius * Math.cos(startAngle); x2 = centerX + radius * Math.cos(endAngle);
-                    y1 = centerY + radius * Math.sin(startAngle); y2 = centerY + radius * Math.sin(endAngle);
-                    innerRadius = series.chart.radius * valueToCoefficient(
-                        (startValue === 0 && yAxis.visibleRange.min !== 0) ? yAxis.visibleRange.min : startValue, yAxis);
-                    dStartX = centerX + innerRadius * Math.cos(startAngle); dStartY = centerY + innerRadius * Math.sin(startAngle);
-                    dEndX = centerX + innerRadius * Math.cos(endAngle); dEndY = centerY + innerRadius * Math.sin(endAngle);
-                    if (isPolar) {
-                        direction = ('M' + ' ' + x1 + ' ' + y1 + ' ' + 'A' + ' ' + radius + ' ' + radius + ' ' + '0' + ' '
-                            + arcValue + ' ' + 1 + ' ' + x2 + ' ' + y2 + ' ' + 'L' + ' ' + dEndX + ' ' + dEndY + ' ' +
-                            'A' + ' ' + innerRadius + ' ' + innerRadius + ' ' + '1' + ' ' + '0' + ' ' + '0' + ' '
-                            + dStartX + ' ' + dStartY + ' ' + 'Z');
-                    } else {
-                        direction = ('M' + ' ' + x1 + ' ' + y1 + ' ' + 'L' + ' ' + x2 + ' ' + y2 + ' ' + 'L '
-                            + dEndX + ' ' + dEndY + ' ' + 'L' + ' ' + dStartX + ' ' + dStartY + ' ' + 'Z');
-                    }
-                    point.regionData = new PolarArc(pointStartAngle, pointEndAngle, innerRadius, radius, itemCurrentXPos);
                 } else {
+                    startValue = yAxis.visibleRange.min;
                     endValue = point.yValue > yAxis.actualRange.max ? yAxis.actualRange.max : point.yValue;
-                    radius = series.chart.radius *
-                        valueToCoefficient((isLogAxis ? logBase(endValue, yAxis.logBase) : endValue), yAxis);
-                    x1 = centerX + radius * Math.cos(startAngle); x2 = centerX + radius * Math.cos(endAngle);
-                    y1 = centerY + radius * Math.sin(startAngle); y2 = centerY + radius * Math.sin(endAngle);
-                    if (isPolar) {
-                        direction = ('M' + ' ' + x1 + ' ' + y1 + ' ' + 'A' + ' ' + radius + ' ' + radius + ' ' + '0' + ' ' +
-                            arcValue + ' ' + 1 + ' ' + x2 + ' ' + y2 + ' ' + 'L' + ' ' + centerX + ' ' + centerY + ' ' + 'Z');
-                    } else {
-                        direction = ('M' + ' ' + x1 + ' ' + y1 + ' ' + 'L' + ' ' + x2 + ' ' + y2 + ' ' + 'L' + ' '
-                            + centerX + ' ' + centerY + ' ' + 'Z');
-                    }
-                    point.regionData = new PolarArc(pointStartAngle, pointEndAngle, 0, radius, itemCurrentXPos);
                 }
+                radius = startValue === endValue ? 0 : series.chart.radius * valueToCoefficient(endValue, yAxis);
+                x1 = centerX + radius * Math.cos(startAngle); x2 = centerX + radius * Math.cos(endAngle);
+                y1 = centerY + radius * Math.sin(startAngle); y2 = centerY + radius * Math.sin(endAngle);
+                innerRadius = series.chart.radius * valueToCoefficient(
+                    (startValue === 0 && yAxis.visibleRange.min !== 0) ? yAxis.visibleRange.min : startValue, yAxis);
+                dStartX = centerX + innerRadius * Math.cos(startAngle); dStartY = centerY + innerRadius * Math.sin(startAngle);
+                dEndX = centerX + innerRadius * Math.cos(endAngle); dEndY = centerY + innerRadius * Math.sin(endAngle);
+                if (isPolar) {
+                    direction = ('M' + ' ' + x1 + ' ' + y1 + ' ' + 'A' + ' ' + radius + ' ' + radius + ' ' + '0' + ' '
+                        + arcValue + ' ' + 1 + ' ' + x2 + ' ' + y2 + ' ' + 'L' + ' ' + dEndX + ' ' + dEndY + ' ' +
+                        'A' + ' ' + innerRadius + ' ' + innerRadius + ' ' + '1' + ' ' + '0' + ' ' + '0' + ' '
+                        + dStartX + ' ' + dStartY + ' ' + 'Z');
+                } else {
+                    direction = ('M' + ' ' + x1 + ' ' + y1 + ' ' + 'L' + ' ' + x2 + ' ' + y2 + ' ' + 'L '
+                        + dEndX + ' ' + dEndY + ' ' + 'L' + ' ' + dStartX + ' ' + dStartY + ' ' + 'Z');
+                }
+                point.regionData = new PolarArc(pointStartAngle, pointEndAngle, innerRadius, radius, itemCurrentXPos);
                 argsData = this.triggerEvent(series.chart, series, point);
                 options = new PathOption(
                     series.chart.element.id + '_Series_' + series.index + '_Point_' + point.index, argsData.fill,
@@ -133,9 +125,8 @@ export class PolarSeries extends PolarRadarPanel {
                         if (isRangeColumn) {
                             point.symbolLocations.push({ x: (dEndX + dStartX) / 2, y: (dEndY + dStartY) / 2 });
                         }
-                    } } } }
-        this.renderMarker(series);
-        series.isRectSeries = true;
+                    }}}}
+        this.renderMarker(series); series.isRectSeries = true;
     }
 
     /**

@@ -166,4 +166,47 @@ $upload-hover-icon-color: $neutral-light-font !default;
 $disabled-state: $neutral-tertiary-alt !default;
 
 $uploader-icons-hover-radius: 50% !default;
+// mouse small
+$header-padding-small: 12px 0 12px 12px !default;
+$drop-area-small-font-size: 13px !default;
+$file-small-name-font-size: 12px !default;
+$file-small-name-padding-top: 10px !default;
+$list-small-item-status-font-size: 11px !default;
+$file-small-size-padding: 6px 0 !default;
+$remove-small-icon-font-size: 10px !default;
+$remove-small-icon-height: 24px !default;
+$delete-small-icon-padding: 12px !default;
+$remove-small-icon-width: 24px !default;
+$progress-bar-bottom-paddding-small: 2px !default;
+$drop-small-area-padding-left: 12px !default;
+$li-min-height-small: 76px !default;
+$header-padding-rtl-small: 12px 12px 12px 0 !default;
 //enddefault
+
+// form upload
+
+$form-upload-file-name-line-height: 1.5 !default;
+$form-upload-file-list-height: $list-item-height !default;
+$form-upload-file-list-padding-top: $file-name-padding-top - 4 !default;
+$form-upload-file-list-padding-bottom: $file-name-padding-top !default;
+$form-upload-file-name-padding: 4px !default;
+$form-upload-file-status-font-size: $list-item-status-font-size-smaller !default;
+$form-upload-remove-icon-top: 42px !default;
+$form-upload-bigger-remove-icon-top: 37px !default;
+$form-upload-small-remove-icon-top: 38px !default;
+
+// form upload - bigger
+$form-upload-bigger-file-name-line-height: 1.5 !default;
+$form-upload-bigger-file-list-height: $list-item-height !default;
+$form-upload-bigger-file-list-padding-top: $file-name-padding-top - 4 !default;
+$form-upload-bigger-file-list-padding-bottom: $file-name-padding-top !default;
+$form-upload-bigger-file-name-padding: 4px !default;
+$form-upload-bigger-file-status-font-size: $list-item-status-font-size !default;
+
+// form upload - small
+$form-upload-small-file-name-line-height: 1.5 !default;
+$form-upload-small-file-list-height: $list-item-height !default;
+$form-upload-small-file-list-padding-top: $file-small-name-padding-top - 4 !default;
+$form-upload-small-file-list-padding-bottom: $file-small-name-padding-top !default;
+$form-upload-small-file-name-padding: 4px !default;
+$form-upload-small-file-status-font-size: $list-item-status-font-size-smaller !default;

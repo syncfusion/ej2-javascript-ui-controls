@@ -59,7 +59,7 @@ var ValueFormatter = /** @__PURE__ @class */ (function () {
     return ValueFormatter;
 }());
 
-var __decorate$1 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
+var __decorate = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
     else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
@@ -71,6 +71,11 @@ var __decorate$1 = (undefined && undefined.__decorate) || function (decorators, 
 var Column = /** @__PURE__ @class */ (function () {
     function Column(options) {
         var _this = this;
+        /**
+         * If `disableHtmlEncode` is set to true, it encodes the HTML of the header and content cells.
+         * @default true
+         */
+        this.disableHtmlEncode = true;
         /**
          * If `allowSorting` set to false, then it disables sorting option of a particular column.
          * By default all columns are sortable.
@@ -312,13 +317,13 @@ var Column = /** @__PURE__ @class */ (function () {
 var CommandColumnModel = /** @__PURE__ @class */ (function () {
     function CommandColumnModel() {
     }
-    __decorate$1([
+    __decorate([
         Property()
     ], CommandColumnModel.prototype, "title", void 0);
-    __decorate$1([
+    __decorate([
         Property()
     ], CommandColumnModel.prototype, "type", void 0);
-    __decorate$1([
+    __decorate([
         Property()
     ], CommandColumnModel.prototype, "buttonOption", void 0);
     return CommandColumnModel;
@@ -684,1097 +689,7 @@ var cBoxFltrBegin = 'cbox-filter-begin';
 /** @hidden */
 var cBoxFltrComplete = 'cbox-filter-complete';
 /** @hidden */
-var cBoxFltrPrevent = 'cbox-filter-Prevent';
-
-/**
- * @hidden
- */
-function getCloneProperties() {
-    return ['aggregates', 'allowGrouping', 'allowFiltering', 'allowMultiSorting', 'allowReordering', 'allowSorting',
-        'allowTextWrap', 'childGrid', 'columns', 'currentViewData', 'dataSource', 'detailTemplate', 'enableAltRow',
-        'enableColumnVirtualization', 'filterSettings', 'gridLines',
-        'groupSettings', 'height', 'locale', 'pageSettings', 'printMode', 'query', 'queryString', 'enableRtl',
-        'rowHeight', 'rowTemplate', 'sortSettings', 'textWrapSettings', 'allowPaging', 'hierarchyPrintMode', 'searchSettings'];
-}
-/**
- *
- * The `Print` module is used to handle print action.
- */
-var Print = /** @__PURE__ @class */ (function () {
-    /**
-     * Constructor for the Grid print module
-     * @hidden
-     */
-    function Print(parent, scrollModule) {
-        this.isAsyncPrint = false;
-        this.defered = new Deferred();
-        this.parent = parent;
-        if (this.parent.isDestroyed) {
-            return;
-        }
-        this.parent.on(contentReady, this.isContentReady(), this);
-        this.parent.addEventListener(actionBegin, this.actionBegin.bind(this));
-        this.parent.on(onEmpty, this.onEmpty.bind(this));
-        this.parent.on(hierarchyPrint, this.hierarchyPrint, this);
-        this.scrollModule = scrollModule;
-    }
-    Print.prototype.isContentReady = function () {
-        var _this = this;
-        if (this.isPrintGrid() && (this.parent.hierarchyPrintMode === 'None' || !this.parent.childGrid)) {
-            return this.contentReady;
-        }
-        return function () {
-            _this.defered.promise.then(function () {
-                _this.contentReady();
-            });
-            if (_this.isPrintGrid()) {
-                _this.hierarchyPrint();
-            }
-        };
-    };
-    Print.prototype.hierarchyPrint = function () {
-        this.removeColGroup(this.parent);
-        var printGridObj = window.printGridObj;
-        if (printGridObj && !printGridObj.element.querySelector('[aria-busy=true')) {
-            printGridObj.printModule.defered.resolve();
-        }
-    };
-    /**
-     * By default, prints all the Grid pages and hides the pager.
-     * > You can customize print options using the
-     * [`printMode`](grid/#printmode-string/).
-     * @return {void}
-     */
-    Print.prototype.print = function () {
-        this.renderPrintGrid();
-        this.printWind = window.open('', 'print', 'height=' + window.outerHeight + ',width=' + window.outerWidth + ',tabbar=no');
-        this.printWind.moveTo(0, 0);
-        this.printWind.resizeTo(screen.availWidth, screen.availHeight);
-    };
-    Print.prototype.onEmpty = function () {
-        if (this.isPrintGrid()) {
-            this.contentReady();
-        }
-    };
-    Print.prototype.actionBegin = function () {
-        if (this.isPrintGrid()) {
-            this.isAsyncPrint = true;
-        }
-    };
-    Print.prototype.renderPrintGrid = function () {
-        var gObj = this.parent;
-        var element = createElement('div', {
-            id: this.parent.element.id + '_print', className: gObj.element.className + ' e-print-grid'
-        });
-        document.body.appendChild(element);
-        var printGrid = new Grid(getPrintGridModel(gObj, gObj.hierarchyPrintMode));
-        printGrid.query = gObj.getQuery().clone();
-        window.printGridObj = printGrid;
-        printGrid.isPrinting = true;
-        var modules = printGrid.getInjectedModules();
-        var injectedModues = gObj.getInjectedModules();
-        if (!modules || modules.length !== injectedModues.length) {
-            printGrid.setInjectedModules(injectedModues);
-        }
-        gObj.notify(printGridInit, { element: element, printgrid: printGrid });
-        this.parent.log('exporting_begin', this.getModuleName());
-        printGrid.appendTo(element);
-        printGrid.registeredTemplate = this.parent.registeredTemplate;
-        printGrid.trigger = gObj.trigger;
-    };
-    Print.prototype.contentReady = function () {
-        if (this.isPrintGrid()) {
-            var gObj = this.parent;
-            if (this.isAsyncPrint) {
-                this.printGrid();
-                return;
-            }
-            var args = {
-                requestType: 'print',
-                element: gObj.element,
-                selectedRows: gObj.getContentTable().querySelectorAll('tr[aria-selected="true"]'),
-                cancel: false,
-                hierarchyPrintMode: gObj.hierarchyPrintMode
-            };
-            if (!this.isAsyncPrint) {
-                gObj.trigger(beforePrint, args);
-            }
-            if (args.cancel) {
-                detach(gObj.element);
-                return;
-            }
-            if (!this.isAsyncPrint) {
-                this.printGrid();
-            }
-        }
-    };
-    Print.prototype.printGrid = function () {
-        var gObj = this.parent;
-        // Height adjustment on print grid
-        if (gObj.height !== 'auto') { // if scroller enabled
-            var cssProps = this.scrollModule.getCssProperties();
-            var contentDiv = gObj.element.querySelector('.e-content');
-            var headerDiv = gObj.element.querySelector('.e-gridheader');
-            contentDiv.style.height = 'auto';
-            contentDiv.style.overflowY = 'auto';
-            headerDiv.style[cssProps.padding] = '';
-            headerDiv.firstElementChild.style[cssProps.border] = '';
-        }
-        // Grid alignment adjustment on grouping
-        if (gObj.allowGrouping) {
-            if (!gObj.groupSettings.columns.length) {
-                gObj.element.querySelector('.e-groupdroparea').style.display = 'none';
-            }
-            else {
-                this.removeColGroup(gObj);
-            }
-        }
-        // hide horizontal scroll
-        for (var _i = 0, _a = [].slice.call(gObj.element.querySelectorAll('.e-content')); _i < _a.length; _i++) {
-            var element = _a[_i];
-            element.style.overflowX = 'hidden';
-        }
-        // Hide the waiting popup
-        var waitingPop = gObj.element.querySelectorAll('.e-spin-show');
-        for (var _b = 0, _c = [].slice.call(waitingPop); _b < _c.length; _b++) {
-            var element = _c[_b];
-            classList(element, ['e-spin-hide'], ['e-spin-show']);
-        }
-        this.printGridElement(gObj);
-        gObj.isPrinting = false;
-        delete window.printGridObj;
-        var args = {
-            element: gObj.element
-        };
-        gObj.trigger(printComplete, args);
-        this.parent.log('exporting_complete', this.getModuleName());
-    };
-    Print.prototype.printGridElement = function (gObj) {
-        classList(gObj.element, ['e-print-grid-layout'], ['e-print-grid']);
-        if (gObj.isPrinting) {
-            detach(gObj.element);
-        }
-        this.printWind = print(gObj.element, this.printWind);
-    };
-    Print.prototype.removeColGroup = function (gObj) {
-        var depth = gObj.groupSettings.columns.length;
-        var element = gObj.element;
-        var id = '#' + gObj.element.id;
-        if (!depth) {
-            return;
-        }
-        var groupCaption = element.querySelectorAll(id + "captioncell.e-groupcaption");
-        var colSpan = groupCaption[depth - 1].getAttribute('colspan');
-        for (var i = 0; i < groupCaption.length; i++) {
-            groupCaption[i].setAttribute('colspan', colSpan);
-        }
-        var colGroups = element.querySelectorAll("colgroup" + id + "colGroup");
-        var contentColGroups = element.querySelector('.e-content').querySelectorAll('colgroup');
-        this.hideColGroup(colGroups, depth);
-        this.hideColGroup(contentColGroups, depth);
-    };
-    Print.prototype.hideColGroup = function (colGroups, depth) {
-        for (var i = 0; i < colGroups.length; i++) {
-            for (var j = 0; j < depth; j++) {
-                colGroups[i].childNodes[j].style.display = 'none';
-            }
-        }
-    };
-    Print.prototype.isPrintGrid = function () {
-        return this.parent.element.id.indexOf('_print') > 0 && this.parent.isPrinting;
-    };
-    /**
-     * To destroy the print
-     * @return {void}
-     * @hidden
-     */
-    Print.prototype.destroy = function () {
-        if (this.parent.isDestroyed) {
-            return;
-        }
-        this.parent.off(contentReady, this.contentReady.bind(this));
-        this.parent.removeEventListener(actionBegin, this.actionBegin.bind(this));
-        this.parent.off(onEmpty, this.onEmpty.bind(this));
-        this.parent.off(hierarchyPrint, this.hierarchyPrint);
-    };
-    /**
-     * For internal use only - Get the module name.
-     * @private
-     */
-    Print.prototype.getModuleName = function () {
-        return 'print';
-    };
-    Print.printGridProp = getCloneProperties().concat([beforePrint, printComplete]);
-    return Print;
-}());
-
-//https://typescript.codeplex.com/discussions/401501
-/**
- * Function to check whether target object implement specific interface
- * @param  {Object} target
- * @param  {string} checkFor
- * @returns no
- * @hidden
- */
-function doesImplementInterface(target, checkFor) {
-    /* tslint:disable:no-any */
-    return target.prototype && checkFor in target.prototype;
-}
-/**
- * Function to get value from provided data
- * @param  {string} field
- * @param  {Object} data
- * @param  {IColumn} column
- * @hidden
- */
-function valueAccessor(field, data, column) {
-    return (isNullOrUndefined(field) || field === '') ? '' : DataUtil.getObject(field, data);
-}
-/**
- * The function used to update Dom using requestAnimationFrame.
- * @param  {Function} fn - Function that contains the actual action
- * @return {Promise<T>}
- * @hidden
- */
-function getUpdateUsingRaf(updateFunction, callBack) {
-    requestAnimationFrame(function () {
-        try {
-            callBack(null, updateFunction());
-        }
-        catch (e) {
-            callBack(e);
-        }
-    });
-}
-/**
- * @hidden
- */
-function updatecloneRow(grid) {
-    var nRows = [];
-    var actualRows = grid.vRows;
-    for (var i = 0; i < actualRows.length; i++) {
-        if (actualRows[i].isDataRow) {
-            nRows.push(actualRows[i]);
-        }
-        else if (!actualRows[i].isDataRow) {
-            nRows.push(actualRows[i]);
-            if (!actualRows[i].isExpand && actualRows[i].isCaptionRow) {
-                i += getCollapsedRowsCount(actualRows[i], grid);
-            }
-        }
-    }
-    grid.vcRows = nRows;
-}
-/**
- * @hidden
- */
-var count = 0;
-function getCollapsedRowsCount(val, grid) {
-    count = 0;
-    var gSummary = 'gSummary';
-    var total = 'count';
-    var gLen = grid.groupSettings.columns.length;
-    var records = 'records';
-    var items = 'items';
-    var value = val[gSummary];
-    var dataRowCnt = 0;
-    var agrCnt = 'aggregatesCount';
-    if (value === val.data[total]) {
-        if (grid.groupSettings.columns.length && !isNullOrUndefined(val[agrCnt])) {
-            if (grid.groupSettings.columns.length !== 1 && val[agrCnt]) {
-                count += (val.indent !== 0 && (value) < 2) ? (val[gSummary] * ((gLen - val.indent) + (gLen - val.indent) * val[agrCnt])) :
-                    (val[gSummary] * ((gLen - val.indent) + (gLen - val.indent - 1) * val[agrCnt])) + val[agrCnt];
-            }
-            else if (val[agrCnt] && grid.groupSettings.columns.length === 1) {
-                count += (val[gSummary] * (gLen - val.indent)) + val[agrCnt];
-            }
-        }
-        else if (grid.groupSettings.columns.length) {
-            if (grid.groupSettings.columns.length !== 1) {
-                count += val[gSummary] * (grid.groupSettings.columns.length - val.indent);
-            }
-            else {
-                count += val[gSummary];
-            }
-        }
-        return count;
-    }
-    else {
-        for (var i = 0, len = val.data[items].length; i < len; i++) {
-            var gLevel = val.data[items][i];
-            count += gLevel[items].length + ((gLen !== grid.columns.length) &&
-                !isNullOrUndefined(gLevel[items][records]) ? gLevel[items][records].length : 0);
-            dataRowCnt += (!isNullOrUndefined(gLevel[items][records]) && !isNullOrUndefined(val[agrCnt])) ? gLevel[items][records].length :
-                gLevel[items].length;
-            if (gLevel[items].GroupGuid && gLevel[items].childLevels !== 0) {
-                recursive(gLevel);
-            }
-        }
-        count += val.data[items].length;
-        if (!isNullOrUndefined(val[agrCnt])) {
-            if (val[agrCnt] && count && dataRowCnt !== 0) {
-                count += ((count - dataRowCnt) * val[agrCnt]) + val[agrCnt];
-            }
-        }
-    }
-    return count;
-}
-/**
- * @hidden
- */
-function recursive(row) {
-    var items = 'items';
-    var rCount = 'count';
-    for (var j = 0, length_1 = row[items].length; j < length_1; j++) {
-        var nLevel = row[items][j];
-        count += nLevel[rCount];
-        if (nLevel[items].childLevels !== 0) {
-            recursive(nLevel);
-        }
-    }
-}
-/**
- * @hidden
- */
-function iterateArrayOrObject(collection, predicate) {
-    var result = [];
-    for (var i = 0, len = collection.length; i < len; i++) {
-        var pred = predicate(collection[i], i);
-        if (!isNullOrUndefined(pred)) {
-            result.push(pred);
-        }
-    }
-    return result;
-}
-/** @hidden */
-function iterateExtend(array) {
-    var obj = [];
-    for (var i = 0; i < array.length; i++) {
-        obj.push(extend({}, getActualProperties(array[i]), {}, true));
-    }
-    return obj;
-}
-/** @hidden */
-function templateCompiler(template) {
-    if (template) {
-        try {
-            if (document.querySelectorAll(template).length) {
-                return compile(document.querySelector(template).innerHTML.trim());
-            }
-        }
-        catch (e) {
-            return compile(template);
-        }
-    }
-    return undefined;
-}
-/** @hidden */
-function setStyleAndAttributes(node, customAttributes) {
-    var copyAttr = {};
-    var literals = ['style', 'class'];
-    //Dont touch the original object - make a copy
-    extend(copyAttr, customAttributes, {});
-    if ('style' in copyAttr) {
-        setStyleAttribute(node, copyAttr[literals[0]]);
-        delete copyAttr[literals[0]];
-    }
-    if ('class' in copyAttr) {
-        addClass([node], copyAttr[literals[1]]);
-        delete copyAttr[literals[1]];
-    }
-    attributes(node, copyAttr);
-}
-/** @hidden */
-function extend$1(copied, first, second, exclude) {
-    var moved = extend(copied, first, second);
-    Object.keys(moved).forEach(function (value, index) {
-        if (exclude && exclude.indexOf(value) !== -1) {
-            delete moved[value];
-        }
-    });
-    return moved;
-}
-/** @hidden */
-function setColumnIndex(columnModel, ind) {
-    if (ind === void 0) { ind = 0; }
-    for (var i = 0, len = columnModel.length; i < len; i++) {
-        if (columnModel[i].columns) {
-            columnModel[i].index = isNullOrUndefined(columnModel[i].index) ? ind : columnModel[i].index;
-            ind++;
-            ind = setColumnIndex(columnModel[i].columns, ind);
-        }
-        else {
-            columnModel[i].index = isNullOrUndefined(columnModel[i].index) ? ind : columnModel[i].index;
-            ind++;
-        }
-    }
-    return ind;
-}
-/** @hidden */
-function prepareColumns(columns, autoWidth) {
-    for (var c = 0, len = columns.length; c < len; c++) {
-        var column = void 0;
-        if (typeof columns[c] === 'string') {
-            column = new Column({ field: columns[c] });
-        }
-        else if (!(columns[c] instanceof Column)) {
-            if (!columns[c].columns) {
-                column = new Column(columns[c]);
-            }
-            else {
-                columns[c].columns = prepareColumns(columns[c].columns);
-                column = new Column(columns[c]);
-            }
-        }
-        else {
-            column = columns[c];
-        }
-        column.headerText = isNullOrUndefined(column.headerText) ? column.foreignKeyValue || column.field || '' : column.headerText;
-        column.foreignKeyField = column.foreignKeyField || column.field;
-        column.valueAccessor = (typeof column.valueAccessor === 'string' ? getValue(column.valueAccessor, window)
-            : column.valueAccessor) || valueAccessor;
-        column.width = autoWidth && isNullOrUndefined(column.width) ? 200 : column.width;
-        if (isNullOrUndefined(column.visible)) {
-            column.visible = true;
-        }
-        columns[c] = column;
-    }
-    return columns;
-}
-/** @hidden */
-function setCssInGridPopUp(popUp, e, className) {
-    var popUpSpan = popUp.querySelector('span');
-    var position = popUp.parentElement.getBoundingClientRect();
-    var targetPosition = e.target.getBoundingClientRect();
-    var isBottomTail;
-    popUpSpan.className = className;
-    popUp.style.display = '';
-    isBottomTail = (isNullOrUndefined(e.clientY) ? e.changedTouches[0].clientY :
-        e.clientY) > popUp.offsetHeight + 10;
-    popUp.style.top = targetPosition.top - position.top +
-        (isBottomTail ? -(popUp.offsetHeight + 10) : popUp.offsetHeight + 10) + 'px'; //10px for tail element
-    popUp.style.left = getPopupLeftPosition(popUp, e, targetPosition, position.left) + 'px';
-    if (isBottomTail) {
-        popUp.querySelector('.e-downtail').style.display = '';
-        popUp.querySelector('.e-uptail').style.display = 'none';
-    }
-    else {
-        popUp.querySelector('.e-downtail').style.display = 'none';
-        popUp.querySelector('.e-uptail').style.display = '';
-    }
-}
-/** @hidden */
-function getPopupLeftPosition(popup, e, targetPosition, left) {
-    var width = popup.offsetWidth / 2;
-    var x = getPosition(e).x;
-    if (x - targetPosition.left < width) {
-        return targetPosition.left - left;
-    }
-    else if (targetPosition.right - x < width) {
-        return targetPosition.right - left - width * 2;
-    }
-    else {
-        return x - left - width;
-    }
-}
-/** @hidden */
-function getActualProperties(obj) {
-    if (obj instanceof ChildProperty) {
-        return getValue('properties', obj);
-    }
-    else {
-        return obj;
-    }
-}
-/** @hidden */
-function parentsUntil(elem, selector, isID) {
-    var parent = elem;
-    while (parent) {
-        if (isID ? parent.id === selector : parent.classList.contains(selector)) {
-            break;
-        }
-        parent = parent.parentElement;
-    }
-    return parent;
-}
-/** @hidden */
-function getElementIndex(element, elements) {
-    var index = -1;
-    for (var i = 0, len = elements.length; i < len; i++) {
-        if (elements[i].isEqualNode(element)) {
-            index = i;
-            break;
-        }
-    }
-    return index;
-}
-/** @hidden */
-function inArray(value, collection) {
-    for (var i = 0, len = collection.length; i < len; i++) {
-        if (collection[i] === value) {
-            return i;
-        }
-    }
-    return -1;
-}
-/** @hidden */
-function getActualPropFromColl(collection) {
-    var coll = [];
-    for (var i = 0, len = collection.length; i < len; i++) {
-        if (collection[i].hasOwnProperty('properties')) {
-            coll.push(collection[i].properties);
-        }
-        else {
-            coll.push(collection[i]);
-        }
-    }
-    return coll;
-}
-/** @hidden */
-function removeElement(target, selector) {
-    var elements = [].slice.call(target.querySelectorAll(selector));
-    for (var i = 0; i < elements.length; i++) {
-        remove(elements[i]);
-    }
-}
-/** @hidden */
-function getPosition(e) {
-    var position = {};
-    position.x = (isNullOrUndefined(e.clientX) ? e.changedTouches[0].clientX :
-        e.clientX);
-    position.y = (isNullOrUndefined(e.clientY) ? e.changedTouches[0].clientY :
-        e.clientY);
-    return position;
-}
-var uid = 0;
-/** @hidden */
-function getUid(prefix) {
-    return prefix + uid++;
-}
-/** @hidden */
-function appendChildren(elem, children) {
-    for (var i = 0, len = children.length; i < len; i++) {
-        if (len === children.length) {
-            elem.appendChild(children[i]);
-        }
-        else {
-            elem.appendChild(children[0]);
-        }
-    }
-    return elem;
-}
-/** @hidden */
-function parents(elem, selector, isID) {
-    var parent = elem;
-    var parents = [];
-    while (parent) {
-        if (isID ? parent.id === selector : parent.classList.contains(selector)) {
-            parents.push(parent);
-        }
-        parent = parent.parentElement;
-    }
-    return parents;
-}
-/** @hidden */
-function calculateAggregate(type, data, column, context) {
-    if (type === 'Custom') {
-        var temp = column.customAggregate;
-        if (typeof temp === 'string') {
-            temp = getValue(temp, window);
-        }
-        return temp ? temp.call(context, data, column) : '';
-    }
-    return (column.field in data || data instanceof Array) ? DataUtil.aggregates[type.toLowerCase()](data, column.field) : null;
-}
-/** @hidden */
-var scrollWidth = null;
-/** @hidden */
-function getScrollBarWidth() {
-    if (scrollWidth !== null) {
-        return scrollWidth;
-    }
-    var divNode = document.createElement('div');
-    var value = 0;
-    divNode.style.cssText = 'width:100px;height: 100px;overflow: scroll;position: absolute;top: -9999px;';
-    document.body.appendChild(divNode);
-    value = (divNode.offsetWidth - divNode.clientWidth) | 0;
-    document.body.removeChild(divNode);
-    return scrollWidth = value;
-}
-/** @hidden */
-var rowHeight;
-/** @hidden */
-function getRowHeight(element) {
-    if (rowHeight !== undefined) {
-        return rowHeight;
-    }
-    var table = createElement('table', { className: 'e-table', styles: 'visibility: hidden' });
-    table.innerHTML = '<tr><td class="e-rowcell">A<td></tr>';
-    element.appendChild(table);
-    var rect = table.querySelector('td').getBoundingClientRect();
-    element.removeChild(table);
-    rowHeight = Math.ceil(rect.height);
-    return rowHeight;
-}
-/** @hidden */
-function isComplexField(field) {
-    return field.split('.').length > 1;
-}
-/** @hidden */
-function getComplexFieldID(field) {
-    if (field === void 0) { field = ''; }
-    return field.replace(/\./g, '___');
-}
-/** @hidden */
-function setComplexFieldID(field) {
-    if (field === void 0) { field = ''; }
-    return field.replace(/___/g, '.');
-}
-/** @hidden */
-function isEditable(col, type, elem) {
-    var row = parentsUntil(elem, 'e-row');
-    var isOldRow = !row ? true : row && !row.classList.contains('e-insertedrow');
-    if (type === 'beginEdit' && isOldRow) {
-        if (col.isIdentity || col.isPrimaryKey || !col.allowEditing) {
-            return false;
-        }
-        return true;
-    }
-    else if (type === 'add' && col.isIdentity) {
-        return false;
-    }
-    else {
-        if (isOldRow && !col.allowEditing && !col.isIdentity && !col.isPrimaryKey) {
-            return false;
-        }
-        return true;
-    }
-}
-/** @hidden */
-function isActionPrevent(inst) {
-    var dlg = inst.element.querySelector('#' + inst.element.id + 'EditConfirm');
-    return inst.editSettings.mode === 'Batch' &&
-        (inst.element.querySelectorAll('.e-updatedtd').length) && inst.editSettings.showConfirmDialog &&
-        (dlg ? dlg.classList.contains('e-popup-close') : true);
-}
-/** @hidden */
-function wrap(elem, action) {
-    var clName = 'e-wrap';
-    elem = elem instanceof Array ? elem : [elem];
-    for (var i = 0; i < elem.length; i++) {
-        action ? elem[i].classList.add(clName) : elem[i].classList.remove(clName);
-    }
-}
-/** @hidden */
-function setFormatter(serviceLocator, column) {
-    var fmtr = serviceLocator.getService('valueFormatter');
-    switch (column.type) {
-        case 'date':
-            column.setFormatter(fmtr.getFormatFunction({ type: 'date', skeleton: column.format }));
-            column.setParser(fmtr.getParserFunction({ type: 'date', skeleton: column.format }));
-            break;
-        case 'datetime':
-            column.setFormatter(fmtr.getFormatFunction({ type: 'dateTime', skeleton: column.format }));
-            column.setParser(fmtr.getParserFunction({ type: 'dateTime', skeleton: column.format }));
-            break;
-        case 'number':
-            column.setFormatter(fmtr.getFormatFunction({ format: column.format }));
-            column.setParser(fmtr.getParserFunction({ format: column.format }));
-            break;
-    }
-}
-/** @hidden */
-function addRemoveActiveClasses(cells, add) {
-    var args = [];
-    for (var _i = 2; _i < arguments.length; _i++) {
-        args[_i - 2] = arguments[_i];
-    }
-    for (var i = 0, len = cells.length; i < len; i++) {
-        if (add) {
-            classList(cells[i], args.slice(), []);
-            cells[i].setAttribute('aria-selected', 'true');
-        }
-        else {
-            classList(cells[i], [], args.slice());
-            cells[i].removeAttribute('aria-selected');
-        }
-    }
-}
-/** @hidden */
-function distinctStringValues(result) {
-    var temp = {};
-    var res = [];
-    for (var i = 0; i < result.length; i++) {
-        if (!(result[i] in temp)) {
-            res.push(result[i].toString());
-            temp[result[i]] = 1;
-        }
-    }
-    return res;
-}
-/** @hidden */
-function getFilterMenuPostion(target, dialogObj, grid) {
-    var elementVisible = dialogObj.element.style.display;
-    dialogObj.element.style.display = 'block';
-    var dlgWidth = dialogObj.width;
-    var newpos;
-    if (!grid.enableRtl) {
-        newpos = calculateRelativeBasedPosition(target, dialogObj.element);
-        dialogObj.element.style.display = elementVisible;
-        dialogObj.element.style.top = (newpos.top + target.getBoundingClientRect().height) - 5 + 'px';
-        var leftPos = ((newpos.left - dlgWidth) + target.clientWidth);
-        if (leftPos < 1) {
-            dialogObj.element.style.left = (dlgWidth + leftPos) - 16 + 'px'; // right calculation
-        }
-        else {
-            dialogObj.element.style.left = leftPos + -4 + 'px';
-        }
-    }
-    else {
-        newpos = calculatePosition(target, 'left', 'bottom');
-        dialogObj.element.style.top = (newpos.top + target.getBoundingClientRect().height) - 35 + 'px';
-        dialogObj.element.style.display = elementVisible;
-        var leftPos = ((newpos.left - dlgWidth) + target.clientWidth);
-        if (leftPos < 1) {
-            dialogObj.element.style.left = (dlgWidth + leftPos) + -16 + 'px';
-        }
-        else {
-            dialogObj.element.style.left = leftPos - 16 + 'px';
-        }
-    }
-}
-/** @hidden */
-function getZIndexCalcualtion(args, dialogObj) {
-    args.popup.element.style.zIndex = (dialogObj.zIndex + 1).toString();
-}
-/** @hidden */
-function toogleCheckbox(elem) {
-    var span = elem.querySelector('.e-frame');
-    span.classList.contains('e-check') ? classList(span, ['e-uncheck'], ['e-check']) :
-        classList(span, ['e-check'], ['e-uncheck']);
-}
-/** @hidden */
-function createCboxWithWrap(uid, elem, className) {
-    var div = createElement('div', { className: className });
-    div.appendChild(elem);
-    div.setAttribute('uid', uid);
-    return div;
-}
-/** @hidden */
-function removeAddCboxClasses(elem, checked) {
-    removeClass([elem], ['e-check', 'e-stop', 'e-uncheck']);
-    if (checked) {
-        elem.classList.add('e-check');
-    }
-    else {
-        elem.classList.add('e-uncheck');
-    }
-}
-/**
- * Refresh the Row model's foreign data.
- * @param row - Grid Row model object.
- * @param columns - Foreign columns array.
- * @param data - Updated Row data.
- * @hidden
- */
-function refreshForeignData(row, columns, data) {
-    columns.forEach(function (col) {
-        setValue(col.field, getForeignData(col, data), row.foreignKeyData);
-    });
-    row.cells.forEach(function (cell) {
-        if (cell.isForeignKey) {
-            setValue('foreignKeyData', getValue(cell.column.field, row.foreignKeyData), cell);
-        }
-    });
-}
-/**
- * Get the foreign data for the corresponding cell value.
- * @param column - Foreign Key column
- * @param data - Row data.
- * @param lValue - cell value.
- * @param foreignData - foreign data source.
- * @hidden
- */
-function getForeignData(column, data, lValue, foreignKeyData) {
-    var fField = column.foreignKeyField;
-    var key = (!isNullOrUndefined(lValue) ? lValue : valueAccessor(column.field, data, column));
-    key = isNullOrUndefined(key) ? '' : key;
-    var query = new Query();
-    var fdata = foreignKeyData || ((column.dataSource instanceof DataManager) && column.dataSource.dataSource.json.length ?
-        column.dataSource.dataSource.json : column.columnData);
-    if (key.getDay) {
-        query.where(getDatePredicate({ field: fField, operator: 'equal', value: key, matchCase: false }));
-    }
-    else {
-        query.where(fField, '==', key, false);
-    }
-    return new DataManager(fdata).executeLocal(query);
-}
-/**
- * To use to get the column's object by the foreign key value.
- * @param foreignKeyValue - Defines ForeignKeyValue.
- * @param columns - Array of column object.
- * @hidden
- */
-function getColumnByForeignKeyValue(foreignKeyValue, columns) {
-    var column;
-    return columns.some(function (col) {
-        column = col;
-        return col.foreignKeyValue === foreignKeyValue;
-    }) && column;
-}
-/**
- * @hidden
- * @param filterObject - Defines predicate model object
- */
-function getDatePredicate(filterObject, type) {
-    var datePredicate;
-    var prevDate;
-    var nextDate;
-    var prevObj = extend({}, getActualProperties(filterObject));
-    var nextObj = extend({}, getActualProperties(filterObject));
-    if (filterObject.value === null) {
-        datePredicate = new Predicate(prevObj.field, prevObj.operator, prevObj.value, false);
-        return datePredicate;
-    }
-    var value = new Date(filterObject.value);
-    if (filterObject.operator === 'equal' || filterObject.operator === 'notequal') {
-        if (type === 'datetime') {
-            prevDate = new Date(value.setSeconds(value.getSeconds() - 1));
-            nextDate = new Date(value.setSeconds(value.getSeconds() + 2));
-            filterObject.value = new Date(value.setSeconds(nextDate.getSeconds() - 1));
-        }
-        else {
-            prevDate = new Date(value.setHours(0) - 1);
-            nextDate = new Date(value.setHours(24));
-        }
-        prevObj.value = prevDate;
-        nextObj.value = nextDate;
-        if (filterObject.operator === 'equal') {
-            prevObj.operator = 'greaterthan';
-            nextObj.operator = 'lessthan';
-        }
-        else if (filterObject.operator === 'notequal') {
-            prevObj.operator = 'lessthanorequal';
-            nextObj.operator = 'greaterthanorequal';
-        }
-        var predicateSt = new Predicate(prevObj.field, prevObj.operator, prevObj.value, false);
-        var predicateEnd = new Predicate(nextObj.field, nextObj.operator, nextObj.value, false);
-        datePredicate = filterObject.operator === 'equal' ? predicateSt.and(predicateEnd) : predicateSt.or(predicateEnd);
-    }
-    else {
-        if (typeof (prevObj.value) === 'string') {
-            prevObj.value = new Date(prevObj.value);
-        }
-        var predicates = new Predicate(prevObj.field, prevObj.operator, prevObj.value, false);
-        datePredicate = predicates;
-    }
-    if (filterObject.setProperties) {
-        filterObject.setProperties({ ejpredicate: datePredicate }, true);
-    }
-    else {
-        filterObject.ejpredicate = datePredicate;
-    }
-    return datePredicate;
-}
-/**
- * @hidden
- */
-function renderMovable(ele, frzCols) {
-    var mEle = ele.cloneNode(true);
-    for (var i = 0; i < frzCols; i++) {
-        mEle.removeChild(mEle.children[0]);
-    }
-    for (var i = frzCols, len = ele.childElementCount; i < len; i++) {
-        ele.removeChild(ele.children[ele.childElementCount - 1]);
-    }
-    return mEle;
-}
-/**
- * @hidden
- */
-function isGroupAdaptive(grid) {
-    return grid.enableVirtualization && grid.groupSettings.columns.length > 0 && grid.isVirtualAdaptive;
-}
-/**
- * @hidden
- */
-function getObject(field, object) {
-    if (field === void 0) { field = ''; }
-    if (field) {
-        var value = object;
-        var splits = field.split('.');
-        for (var i = 0; i < splits.length && !isNullOrUndefined(value); i++) {
-            value = value[splits[i]];
-        }
-        return value;
-    }
-}
-/**
- * @hidden
- */
-function getCustomDateFormat(format, colType) {
-    var intl = new Internationalization();
-    var formatvalue;
-    var formatter = 'format';
-    var type = 'type';
-    if (colType === 'date') {
-        formatvalue = typeof (format) === 'object' ?
-            intl.getDatePattern({ type: format[type] ? format[type] : 'date', format: format[formatter] }, false) :
-            intl.getDatePattern({ type: 'date', skeleton: format }, false);
-    }
-    else {
-        formatvalue = typeof (format) === 'object' ?
-            intl.getDatePattern({ type: format[type] ? format[type] : 'dateTime', format: format[formatter] }, false) :
-            intl.getDatePattern({ type: 'dateTime', skeleton: format }, false);
-    }
-    return formatvalue;
-}
-/**
- * @hidden
- */
-function getExpandedState(gObj, hierarchyPrintMode) {
-    var rows = gObj.getRowsObject();
-    var obj = {};
-    for (var _i = 0, rows_1 = rows; _i < rows_1.length; _i++) {
-        var row = rows_1[_i];
-        if (row.isExpand && !row.isDetailRow) {
-            var index = gObj.allowPaging && gObj.printMode === 'AllPages' ? row.index +
-                (gObj.pageSettings.currentPage * gObj.pageSettings.pageSize) - gObj.pageSettings.pageSize : row.index;
-            obj[index] = {};
-            obj[index].isExpand = true;
-            obj[index].gridModel = getPrintGridModel(row.childGrid, hierarchyPrintMode);
-            obj[index].gridModel.query = gObj.childGrid.query;
-        }
-    }
-    return obj;
-}
-/**
- * @hidden
- */
-function getPrintGridModel(gObj, hierarchyPrintMode) {
-    if (hierarchyPrintMode === void 0) { hierarchyPrintMode = 'Expanded'; }
-    var printGridModel = {};
-    if (!gObj) {
-        return printGridModel;
-    }
-    for (var _i = 0, _a = Print.printGridProp; _i < _a.length; _i++) {
-        var key = _a[_i];
-        if (key === 'columns') {
-            printGridModel[key] = getActualPropFromColl(gObj[key]);
-        }
-        else if (key === 'allowPaging') {
-            printGridModel[key] = gObj.printMode === 'CurrentPage';
-        }
-        else {
-            printGridModel[key] = getActualProperties(gObj[key]);
-        }
-    }
-    if (gObj.childGrid && hierarchyPrintMode !== 'None') {
-        printGridModel.expandedRows = getExpandedState(gObj, hierarchyPrintMode);
-    }
-    return printGridModel;
-}
-/**
- * @hidden
- */
-function extendObjWithFn(copied, first, second, deep) {
-    var res = copied || {};
-    var len = arguments.length;
-    if (deep) {
-        len = len - 1;
-    }
-    var _loop_1 = function (i) {
-        if (!arguments_1[i]) {
-            return "continue";
-        }
-        var obj1 = arguments_1[i];
-        var keys = Object.keys(Object.getPrototypeOf(obj1)).length ?
-            Object.keys(obj1).concat(getPrototypesOfObj(obj1)) : Object.keys(obj1);
-        keys.forEach(function (key) {
-            var source = res[key];
-            var cpy = obj1[key];
-            var cln;
-            if (deep && (isObject(cpy) || Array.isArray(cpy))) {
-                if (isObject(cpy)) {
-                    cln = source ? source : {};
-                    res[key] = extend({}, cln, cpy, deep);
-                }
-                else {
-                    cln = source ? source : [];
-                    res[key] = extend([], cln, cpy, deep);
-                }
-            }
-            else {
-                res[key] = cpy;
-            }
-        });
-    };
-    var arguments_1 = arguments;
-    for (var i = 1; i < len; i++) {
-        _loop_1(i);
-    }
-    return res;
-}
-/**
- * @hidden
- */
-function getPrototypesOfObj(obj) {
-    var keys = [];
-    while (Object.getPrototypeOf(obj) && Object.keys(Object.getPrototypeOf(obj)).length) {
-        keys = keys.concat(Object.keys(Object.getPrototypeOf(obj)));
-        obj = Object.getPrototypeOf(obj);
-    }
-    return keys;
-}
-/**
- * @hidden
- */
-function measureColumnDepth(column) {
-    var max = 0;
-    for (var i = 0; i < column.length; i++) {
-        var depth = checkDepth(column[i], 0);
-        if (max < depth) {
-            max = depth;
-        }
-    }
-    return max + 1;
-}
-/**
- * @hidden
- */
-function checkDepth(col, index) {
-    var max = index;
-    var indices = [];
-    if (col.columns) {
-        index++;
-        for (var i = 0; i < col.columns.length; i++) {
-            indices[i] = checkDepth(col.columns[i], index);
-        }
-        for (var j = 0; j < indices.length; j++) {
-            if (max < indices[j]) {
-                max = indices[j];
-            }
-        }
-        index = max;
-    }
-    return index;
-}
-/**
- * @hidden
- */
-function refreshFilteredColsUid(gObj, filteredCols) {
-    for (var i = 0; i < filteredCols.length; i++) {
-        filteredCols[i].uid = filteredCols[i].isForeignKey ?
-            getColumnByForeignKeyValue(filteredCols[i].field, gObj.getForeignKeyColumns()).uid
-            : gObj.getColumnByField(filteredCols[i].field).uid;
-    }
-}
-/** @hidden */
-var Global;
-(function (Global) {
-    Global.timer = null;
-})(Global || (Global = {}));
+var fltrPrevent = 'filter-Prevent';
 
 /**
  * Defines types of Cell
@@ -1851,866 +766,6 @@ var ToolbarItem;
     ToolbarItem[ToolbarItem["CsvExport"] = 10] = "CsvExport";
     ToolbarItem[ToolbarItem["WordExport"] = 11] = "WordExport";
 })(ToolbarItem || (ToolbarItem = {}));
-
-/* tslint:disable-next-line:max-line-length */
-/**
- * @hidden
- * `CheckBoxFilterBase` module is used to handle filtering action.
- */
-var CheckBoxFilterBase = /** @__PURE__ @class */ (function () {
-    /**
-     * Constructor for checkbox filtering module
-     * @hidden
-     */
-    function CheckBoxFilterBase(parent, filterSettings) {
-        this.existingPredicate = {};
-        this.foreignKeyQuery = new Query();
-        this.filterState = true;
-        this.values = {};
-        this.renderEmpty = false;
-        this.parent = parent;
-        this.id = this.parent.element.id;
-        this.filterSettings = filterSettings;
-        this.valueFormatter = new ValueFormatter(this.parent.locale);
-        this.cBoxTrue = createCheckBox(this.parent.createElement, false, { checked: true, label: ' ' });
-        this.cBoxFalse = createCheckBox(this.parent.createElement, false, { checked: false, label: ' ' });
-        this.cBoxTrue.insertBefore(this.parent.createElement('input', {
-            className: 'e-chk-hidden', attrs: { type: 'checkbox' }
-        }), this.cBoxTrue.firstChild);
-        this.cBoxFalse.insertBefore(this.parent.createElement('input', {
-            className: 'e-chk-hidden', attrs: { 'type': 'checkbox' }
-        }), this.cBoxFalse.firstChild);
-        this.cBoxFalse.querySelector('.e-frame').classList.add('e-uncheck');
-        if (this.parent.enableRtl) {
-            addClass([this.cBoxTrue, this.cBoxFalse], ['e-rtl']);
-        }
-    }
-    /**
-     * To destroy the filter bar.
-     * @return {void}
-     * @hidden
-     */
-    CheckBoxFilterBase.prototype.destroy = function () {
-        this.closeDialog();
-    };
-    CheckBoxFilterBase.prototype.wireEvents = function () {
-        EventHandler.add(this.dlg, 'click', this.clickHandler, this);
-        this.searchHandler = debounce(this.searchBoxKeyUp, 200);
-        EventHandler.add(this.dlg.querySelector('.e-searchinput'), 'keyup', this.searchHandler, this);
-    };
-    CheckBoxFilterBase.prototype.unWireEvents = function () {
-        EventHandler.remove(this.dlg, 'click', this.clickHandler);
-        var elem = this.dlg.querySelector('.e-searchinput');
-        if (elem) {
-            EventHandler.remove(elem, 'keyup', this.searchHandler);
-        }
-    };
-    CheckBoxFilterBase.prototype.foreignKeyFilter = function (args, fColl, mPredicate) {
-        var _this = this;
-        var fPredicate = {};
-        var filterCollection = [];
-        var query = this.foreignKeyQuery.clone();
-        this.options.column.dataSource.
-            executeQuery(query.where(mPredicate)).then(function (e) {
-            _this.options.column.columnData = e.result;
-            _this.parent.notify(generateQuery, { predicate: fPredicate, column: _this.options.column });
-            args.ejpredicate = fPredicate.predicate.predicates;
-            fPredicate.predicate.predicates.forEach(function (fpred) {
-                filterCollection.push({
-                    field: fpred.field,
-                    predicate: 'or',
-                    matchCase: fpred.ignoreCase,
-                    ignoreAccent: fpred.ignoreAccent,
-                    operator: fpred.operator,
-                    value: fpred.value,
-                    type: _this.options.type
-                });
-            });
-            args.filterCollection = filterCollection.length ? filterCollection :
-                fColl.filter(function (col) { return col.field = _this.options.field; });
-            _this.options.handler(args);
-        });
-    };
-    CheckBoxFilterBase.prototype.foreignFilter = function (args, value) {
-        var operator = this.parent.getDataModule().isRemote() ?
-            (this.options.column.type === 'string' ? 'contains' : 'equal') : (this.options.column.type ? 'startswith' : 'contains');
-        var initalPredicate = new Predicate(this.options.column.foreignKeyValue, operator, value, true, this.parent.filterSettings.ignoreAccent);
-        this.foreignKeyFilter(args, [args.filterCollection], initalPredicate);
-    };
-    CheckBoxFilterBase.prototype.searchBoxClick = function (e) {
-        var target = e.target;
-        if (target.classList.contains('e-searchclear')) {
-            this.sInput.value = '';
-            this.refreshCheckboxes();
-            this.updateSearchIcon();
-            this.sInput.focus();
-        }
-    };
-    CheckBoxFilterBase.prototype.searchBoxKeyUp = function (e) {
-        this.refreshCheckboxes();
-        this.updateSearchIcon();
-    };
-    CheckBoxFilterBase.prototype.updateSearchIcon = function () {
-        if (this.sInput.value.length) {
-            classList(this.sIcon, ['e-chkcancel-icon'], ['e-search-icon']);
-        }
-        else {
-            classList(this.sIcon, ['e-search-icon'], ['e-chkcancel-icon']);
-        }
-    };
-    /**
-     * Gets the localized label by locale keyword.
-     * @param  {string} key
-     * @return {string}
-     */
-    CheckBoxFilterBase.prototype.getLocalizedLabel = function (key) {
-        return this.localeObj.getConstant(key);
-    };
-    CheckBoxFilterBase.prototype.updateDataSource = function () {
-        var dataSource = this.options.dataSource;
-        var str = 'object';
-        if (!(dataSource instanceof DataManager)) {
-            for (var i = 0; i < dataSource.length; i++) {
-                if (typeof dataSource !== str) {
-                    var obj = {};
-                    obj[this.options.field] = dataSource[i];
-                    dataSource[i] = obj;
-                }
-            }
-        }
-    };
-    CheckBoxFilterBase.prototype.updateModel = function (options) {
-        this.options = options;
-        this.existingPredicate = options.actualPredicate || {};
-        this.options.dataSource = options.dataSource;
-        this.updateDataSource();
-        this.options.type = options.type;
-        this.options.format = options.format || '';
-        this.options.filteredColumns = options.filteredColumns || this.parent.filterSettings.columns;
-        this.options.sortedColumns = options.sortedColumns || this.parent.sortSettings.columns;
-        this.options.query = options.query || new Query();
-        this.options.allowCaseSensitive = options.allowCaseSensitive || false;
-        this.options.uid = options.column.uid;
-        this.values = {};
-        this.localeObj = options.localeObj;
-        this.isFiltered = options.filteredColumns.length;
-    };
-    CheckBoxFilterBase.prototype.getAndSetChkElem = function (options) {
-        this.dlg = this.parent.createElement('div', {
-            id: this.id + this.options.type + '_excelDlg',
-            className: 'e-checkboxfilter e-filter-popup'
-        });
-        this.sBox = this.parent.createElement('div', { className: 'e-searchcontainer' });
-        if (!options.hideSearchbox) {
-            this.sInput = this.parent.createElement('input', {
-                id: this.id + '_SearchBox',
-                className: 'e-searchinput'
-            });
-            this.sIcon = this.parent.createElement('span', {
-                className: 'e-searchclear e-search-icon e-icons e-input-group-icon', attrs: {
-                    type: 'text', title: this.getLocalizedLabel('Search')
-                }
-            });
-            this.searchBox = this.parent.createElement('span', { className: 'e-searchbox e-fields' });
-            this.searchBox.appendChild(this.sInput);
-            this.sBox.appendChild(this.searchBox);
-            var inputargs = {
-                element: this.sInput, floatLabelType: 'Never', properties: {
-                    placeholder: this.getLocalizedLabel('Search')
-                }
-            };
-            Input.createInput(inputargs, this.parent.createElement);
-            this.searchBox.querySelector('.e-input-group').appendChild(this.sIcon);
-        }
-        this.spinner = this.parent.createElement('div', { className: 'e-spinner' }); //for spinner
-        this.cBox = this.parent.createElement('div', {
-            id: this.id + this.options.type + '_CheckBoxList',
-            className: 'e-checkboxlist e-fields'
-        });
-        this.spinner.appendChild(this.cBox);
-        this.sBox.appendChild(this.spinner);
-        return this.sBox;
-    };
-    CheckBoxFilterBase.prototype.showDialog = function (options) {
-        var args = {
-            requestType: filterBeforeOpen,
-            columnName: this.options.field, columnType: this.options.type, cancel: false
-        };
-        if (!isBlazor() || this.parent.isJsComponent) {
-            var filterModel = 'filterModel';
-            args[filterModel] = this;
-        }
-        this.parent.notify(cBoxFltrBegin, args);
-        if (args.cancel) {
-            return;
-        }
-        this.dialogObj = new Dialog({
-            visible: false, content: this.sBox,
-            close: this.closeDialog.bind(this),
-            width: (!isNullOrUndefined(parentsUntil(options.target, 'e-bigger')))
-                || this.parent.element.classList.contains('e-device') ? 260 : 255,
-            target: this.parent.element, animationSettings: { effect: 'None' },
-            buttons: [{
-                    click: this.btnClick.bind(this),
-                    buttonModel: {
-                        content: this.getLocalizedLabel(this.isExcel ? 'OKButton' : 'FilterButton'),
-                        cssClass: 'e-primary', isPrimary: true
-                    }
-                },
-                {
-                    click: this.btnClick.bind(this),
-                    buttonModel: { cssClass: 'e-flat', content: this.getLocalizedLabel(this.isExcel ? 'CancelButton' : 'ClearButton') }
-                }],
-            created: this.dialogCreated.bind(this),
-            open: this.dialogOpen.bind(this)
-        });
-        var isStringTemplate = 'isStringTemplate';
-        this.dialogObj[isStringTemplate] = true;
-        this.dialogObj.appendTo(this.dlg);
-        this.dialogObj.element.style.maxHeight = this.options.height + 'px';
-        this.dialogObj.show();
-        this.wireEvents();
-        createSpinner({ target: this.spinner }, this.parent.createElement);
-        showSpinner(this.spinner);
-        this.getAllData();
-    };
-    CheckBoxFilterBase.prototype.dialogCreated = function (e) {
-        if (!Browser.isDevice) {
-            getFilterMenuPostion(this.options.target, this.dialogObj, this.parent);
-        }
-        else {
-            this.dialogObj.position = { X: 'center', Y: 'center' };
-        }
-        this.parent.notify(filterDialogCreated, e);
-    };
-    CheckBoxFilterBase.prototype.openDialog = function (options) {
-        this.updateModel(options);
-        this.getAndSetChkElem(options);
-        this.showDialog(options);
-    };
-    CheckBoxFilterBase.prototype.closeDialog = function () {
-        if (this.dialogObj && !this.dialogObj.isDestroyed) {
-            var filterTemplateCol = this.parent.getColumns().filter(function (col) { return col.getFilterItemTemplate(); });
-            if (filterTemplateCol.length) {
-                this.parent.destroyTemplate(['filterItemTemplate']);
-            }
-            this.parent.notify(filterMenuClose, { field: this.options.field });
-            this.dialogObj.destroy();
-            this.unWireEvents();
-            remove(this.dlg);
-            this.dlg = null;
-        }
-    };
-    CheckBoxFilterBase.prototype.clearFilter = function () {
-        /* tslint:disable-next-line:max-line-length */
-        var args = { instance: this, handler: this.clearFilter, cancel: false };
-        this.parent.notify(cBoxFltrPrevent, args);
-        if (args.cancel) {
-            return;
-        }
-        this.options.handler({ action: 'clear-filter', field: this.options.field });
-    };
-    CheckBoxFilterBase.prototype.btnClick = function (e) {
-        if (this.filterState) {
-            if (e.target.tagName.toLowerCase() === 'input') {
-                var value = e.target.value;
-                if (this.options.column.type === 'boolean') {
-                    if (value !== undefined &&
-                        this.getLocalizedLabel('FilterTrue').toLowerCase().indexOf(value.toLowerCase()) !== -1) {
-                        value = 'true';
-                    }
-                    else if (value !== undefined &&
-                        this.getLocalizedLabel('FilterFalse').toLowerCase().indexOf(value.toLowerCase()) !== -1) {
-                        value = 'false';
-                    }
-                }
-                var args = {
-                    action: 'filtering', filterCollection: {
-                        field: this.options.field,
-                        operator: this.parent.getDataModule().isRemote() ?
-                            (this.options.column.type === 'string' ? 'contains' : 'equal') :
-                            (this.options.column.type === 'date' || this.options.column.type === 'datetime' ||
-                                this.options.column.type === 'boolean' ? 'equal' : 'contains'),
-                        value: value, matchCase: false, type: this.options.column.type
-                    },
-                    field: this.options.field
-                };
-                value ? this.options.column.isForeignColumn() ? this.foreignFilter(args, value) :
-                    this.options.handler(args) : this.closeDialog();
-            }
-            else {
-                var text = e.target.firstChild.textContent.toLowerCase();
-                if (this.getLocalizedLabel(this.isExcel ? 'OKButton' : 'FilterButton').toLowerCase() === text) {
-                    this.fltrBtnHandler();
-                }
-                else if (this.getLocalizedLabel('ClearButton').toLowerCase() === text) {
-                    this.clearFilter();
-                }
-            }
-            this.closeDialog();
-        }
-        else if (!(e.target.tagName.toLowerCase() === 'input')) {
-            this.clearFilter();
-            this.closeDialog();
-        }
-    };
-    CheckBoxFilterBase.prototype.fltrBtnHandler = function () {
-        var checked = [].slice.call(this.cBox.querySelectorAll('.e-check:not(.e-selectall)'));
-        var optr = 'equal';
-        var searchInput = this.searchBox.querySelector('.e-searchinput');
-        var caseSen = this.filterSettings.enableCaseSensitivity;
-        var defaults = {
-            field: this.options.field, predicate: 'or', uid: this.options.uid,
-            operator: optr, type: this.options.type, matchCase: caseSen, ignoreAccent: this.parent.filterSettings.ignoreAccent
-        };
-        var isNotEqual = this.itemsCnt !== checked.length && this.itemsCnt - checked.length < checked.length;
-        if (isNotEqual && searchInput.value === '') {
-            optr = 'notequal';
-            checked = [].slice.call(this.cBox.querySelectorAll('.e-uncheck:not(.e-selectall)'));
-            defaults.predicate = 'and';
-            defaults.operator = 'notequal';
-        }
-        var value;
-        var fObj;
-        var coll = [];
-        if (checked.length !== this.itemsCnt || (searchInput.value && searchInput.value !== '')) {
-            for (var i = 0; i < checked.length; i++) {
-                value = this.values[parentsUntil(checked[i], 'e-ftrchk').getAttribute('uid')];
-                fObj = extend({}, { value: value }, defaults);
-                if (value && !value.toString().length) {
-                    fObj.operator = isNotEqual ? 'notequal' : 'equal';
-                }
-                if (value === '' || isNullOrUndefined(value)) {
-                    if (this.options.type === 'string') {
-                        coll.push({
-                            field: defaults.field, ignoreAccent: defaults.ignoreAccent, matchCase: defaults.matchCase,
-                            operator: defaults.operator, predicate: defaults.predicate, value: ''
-                        });
-                    }
-                    coll.push({
-                        field: defaults.field,
-                        matchCase: defaults.matchCase, operator: defaults.operator, predicate: defaults.predicate, value: null
-                    });
-                    coll.push({
-                        field: defaults.field, matchCase: defaults.matchCase, operator: defaults.operator,
-                        predicate: defaults.predicate, value: undefined
-                    });
-                }
-                else {
-                    coll.push(fObj);
-                }
-                var args = {
-                    instance: this, handler: this.fltrBtnHandler, arg1: fObj.field, arg2: fObj.predicate, arg3: fObj.operator,
-                    arg4: fObj.matchCase, arg5: fObj.ignoreAccent, arg6: fObj.value, cancel: false
-                };
-                this.parent.notify(cBoxFltrPrevent, args);
-                if (args.cancel) {
-                    return;
-                }
-            }
-            this.initiateFilter(coll);
-        }
-        else {
-            this.clearFilter();
-        }
-    };
-    CheckBoxFilterBase.prototype.initiateFilter = function (fColl) {
-        var firstVal = fColl[0];
-        var predicate;
-        if (!isNullOrUndefined(firstVal)) {
-            predicate = firstVal.ejpredicate ? firstVal.ejpredicate :
-                new Predicate(firstVal.field, firstVal.operator, firstVal.value, !firstVal.matchCase, firstVal.ignoreAccent);
-            for (var j = 1; j < fColl.length; j++) {
-                predicate = fColl[j].ejpredicate !== undefined ?
-                    predicate[fColl[j].predicate](fColl[j].ejpredicate) :
-                    predicate[fColl[j].predicate](fColl[j].field, fColl[j].operator, fColl[j].value, !fColl[j].matchCase, fColl[j].ignoreAccent);
-            }
-            var args = {
-                action: 'filtering', filterCollection: fColl, field: this.options.field,
-                ejpredicate: Predicate.or(predicate)
-            };
-            this.options.handler(args);
-        }
-    };
-    CheckBoxFilterBase.prototype.refreshCheckboxes = function () {
-        var _this = this;
-        var val = this.sInput.value;
-        var column = this.options.column;
-        var query = column.isForeignColumn() ? this.foreignKeyQuery.clone() : this.options.query.clone();
-        var foreignQuery = this.options.query.clone();
-        query.queries = [];
-        foreignQuery.queries = [];
-        var parsed = (this.options.type !== 'string' && parseFloat(val)) ? parseFloat(val) : val;
-        var operator = this.parent.getDataModule().isRemote() ?
-            (this.options.type === 'string' ? 'contains' : 'equal') : (this.options.type ? 'startswith' : 'contains');
-        var matchCase = true;
-        var ignoreAccent = this.parent.filterSettings.ignoreAccent;
-        var field = column.isForeignColumn() ? column.foreignKeyValue : column.field;
-        parsed = (parsed === '' || parsed === undefined) ? undefined : parsed;
-        var predicte;
-        if (this.options.type === 'boolean') {
-            if (parsed !== undefined &&
-                this.getLocalizedLabel('FilterTrue').toLowerCase().indexOf(parsed.toLowerCase()) !== -1) {
-                parsed = (this.parent.getDataModule().dataManager.adaptor.getModuleName()
-                    === 'ODataAdaptor' || 'ODataV4Adaptor') ? true : 'true';
-            }
-            else if (parsed !== undefined &&
-                this.getLocalizedLabel('FilterFalse').toLowerCase().indexOf(parsed.toLowerCase()) !== -1) {
-                parsed = (this.parent.getDataModule().dataManager.adaptor.getModuleName()
-                    === 'ODataAdaptor' || 'ODataV4Adaptor') ? false : 'false';
-            }
-            operator = 'equal';
-        }
-        this.addDistinct(query);
-        /* tslint:disable-next-line:max-line-length */
-        var args = {
-            requestType: filterSearchBegin,
-            filterModel: this, columnName: field, column: column,
-            operator: operator, matchCase: matchCase, ignoreAccent: ignoreAccent, filterChoiceCount: null,
-            query: query
-        };
-        this.parent.notify(cBoxFltrBegin, args);
-        predicte = new Predicate(field, args.operator, parsed, args.matchCase, args.ignoreAccent);
-        if (this.options.type === 'date' || this.options.type === 'datetime') {
-            parsed = this.valueFormatter.fromView(val, this.options.parserFn, this.options.type);
-            operator = 'equal';
-            if (isNullOrUndefined(parsed) && val.length) {
-                return;
-            }
-            var filterObj = {
-                field: field, operator: operator, value: parsed, matchCase: matchCase,
-                ignoreAccent: ignoreAccent
-            };
-            predicte = getDatePredicate(filterObj, this.options.type);
-        }
-        if (val.length) {
-            query.where(predicte);
-        }
-        args.filterChoiceCount = !isNullOrUndefined(args.filterChoiceCount) ? args.filterChoiceCount : 1000;
-        var fPredicate = {};
-        showSpinner(this.spinner);
-        this.renderEmpty = false;
-        if (column.isForeignColumn() && val.length) {
-            // tslint:disable-next-line:no-any
-            column.dataSource.executeQuery(query).then(function (e) {
-                var columnData = _this.options.column.columnData;
-                _this.options.column.columnData = e.result;
-                _this.parent.notify(generateQuery, { predicate: fPredicate, column: column });
-                if (fPredicate.predicate.predicates.length) {
-                    foreignQuery.where(fPredicate.predicate);
-                }
-                else {
-                    _this.renderEmpty = true;
-                }
-                _this.options.column.columnData = columnData;
-                foreignQuery.take(args.filterChoiceCount);
-                _this.search(args, foreignQuery);
-            });
-        }
-        else {
-            query.take(args.filterChoiceCount);
-            this.search(args, query);
-        }
-    };
-    CheckBoxFilterBase.prototype.search = function (args, query) {
-        if (this.parent.dataSource && 'result' in this.parent.dataSource) {
-            this.filterEvent(args, query);
-        }
-        else {
-            this.processSearch(query);
-        }
-    };
-    CheckBoxFilterBase.prototype.getPredicateFromCols = function (columns) {
-        var predicates = CheckBoxFilterBase.getPredicate(columns);
-        var predicateList = [];
-        var fPredicate = {};
-        var foreignColumn = this.parent.getForeignKeyColumns();
-        for (var _i = 0, _a = Object.keys(predicates); _i < _a.length; _i++) {
-            var prop = _a[_i];
-            var col = void 0;
-            if (this.parent.getColumnByField(prop).isForeignColumn()) {
-                col = getColumnByForeignKeyValue(prop, foreignColumn);
-            }
-            if (col) {
-                this.parent.notify(generateQuery, { predicate: fPredicate, column: col });
-                if (fPredicate.predicate.predicates.length) {
-                    predicateList.push(Predicate.or(fPredicate.predicate.predicates));
-                }
-            }
-            else {
-                predicateList.push(predicates[prop]);
-            }
-        }
-        return predicateList.length && Predicate.and(predicateList);
-    };
-    CheckBoxFilterBase.prototype.getAllData = function () {
-        var query = this.parent.getQuery().clone();
-        query.requiresCount(); //consider take query
-        this.addDistinct(query);
-        var args = {
-            requestType: filterChoiceRequest, query: query, filterChoiceCount: null
-        };
-        if (!isBlazor() || this.parent.isJsComponent) {
-            var filterModel = 'filterModel';
-            args[filterModel] = this;
-        }
-        this.parent.notify(cBoxFltrBegin, args);
-        args.filterChoiceCount = !isNullOrUndefined(args.filterChoiceCount) ? args.filterChoiceCount : 1000;
-        query.take(args.filterChoiceCount);
-        if (this.parent.dataSource && 'result' in this.parent.dataSource) {
-            this.filterEvent(args, query);
-        }
-        else {
-            this.processDataOperation(query, true);
-        }
-    };
-    CheckBoxFilterBase.prototype.addDistinct = function (query) {
-        var filteredColumn = DataUtil.distinct(this.parent.filterSettings.columns, 'field');
-        if (filteredColumn.indexOf(this.options.column.field) <= -1) {
-            filteredColumn = filteredColumn.concat(this.options.column.field);
-        }
-        query.distinct(filteredColumn);
-        return query;
-    };
-    CheckBoxFilterBase.prototype.filterEvent = function (args, query) {
-        var _this = this;
-        var def = this.eventPromise(args, query);
-        def.promise.then(function (e) {
-            _this.dataSuccess(e);
-        });
-    };
-    CheckBoxFilterBase.prototype.eventPromise = function (args, query) {
-        var state;
-        state = this.getStateEventArgument(query);
-        var def = new Deferred();
-        state.dataSource = def.resolve;
-        state.action = args;
-        this.parent.trigger(dataStateChange, state);
-        return def;
-    };
-    
-    CheckBoxFilterBase.prototype.getStateEventArgument = function (query) {
-        var adaptr = new UrlAdaptor();
-        var dm = new DataManager({ url: '', adaptor: new UrlAdaptor });
-        var state = adaptr.processQuery(dm, query);
-        var data = JSON.parse(state.data);
-        return data;
-    };
-    
-    CheckBoxFilterBase.prototype.processDataOperation = function (query, isInitial) {
-        var _this = this;
-        this.options.dataSource = this.options.dataSource instanceof DataManager ?
-            this.options.dataSource : new DataManager(this.options.dataSource);
-        var allPromise = [];
-        var runArray = [];
-        if (this.options.column.isForeignColumn() && isInitial) {
-            allPromise.push(this.options.column.dataSource.executeQuery(this.foreignKeyQuery));
-            runArray.push(function (data) { return _this.foreignKeyData = data; });
-        }
-        allPromise.push(this.options.dataSource.executeQuery(query));
-        runArray.push(this.dataSuccess.bind(this));
-        var i = 0;
-        Promise.all(allPromise).then(function (e) {
-            e.forEach(function (data) {
-                runArray[i++](data.result);
-            });
-        });
-    };
-    CheckBoxFilterBase.prototype.dataSuccess = function (e) {
-        this.fullData = e;
-        var query = new Query();
-        if (this.parent.searchSettings.key.length) {
-            var sSettings = this.parent.searchSettings;
-            var fields = sSettings.fields.length ? sSettings.fields : this.parent.getColumns().map(function (f) { return f.field; });
-            /* tslint:disable-next-line:max-line-length */
-            query.search(sSettings.key, fields, sSettings.operator, sSettings.ignoreCase, sSettings.ignoreAccent);
-        }
-        if ((this.options.filteredColumns.length)) {
-            var cols = [];
-            for (var i = 0; i < this.options.filteredColumns.length; i++) {
-                var filterColumn = this.options.filteredColumns[i];
-                if (this.options.uid) {
-                    filterColumn.uid = filterColumn.uid || this.parent.getColumnByField(filterColumn.field).uid;
-                    if (filterColumn.uid !== this.options.uid) {
-                        cols.push(this.options.filteredColumns[i]);
-                    }
-                }
-                else {
-                    if (filterColumn.field !== this.options.field) {
-                        cols.push(this.options.filteredColumns[i]);
-                    }
-                }
-            }
-            var predicate = this.getPredicateFromCols(cols);
-            if (predicate) {
-                query.where(predicate);
-            }
-        }
-        // query.select(this.options.field);
-        var result = new DataManager(this.fullData).executeLocal(query);
-        var col = this.options.column;
-        this.filteredData = CheckBoxFilterBase.
-            getDistinct(result, this.options.field, col, this.foreignKeyData).records || [];
-        this.processDataSource(null, true, this.filteredData);
-        this.sInput.focus();
-        var args = {
-            requestType: filterAfterOpen,
-            columnName: this.options.field, columnType: this.options.type
-        };
-        if (!isBlazor() || this.parent.isJsComponent) {
-            var filterModel = 'filterModel';
-            args[filterModel] = this;
-        }
-        this.parent.notify(cBoxFltrComplete, args);
-    };
-    CheckBoxFilterBase.prototype.processDataSource = function (query, isInitial, dataSource) {
-        showSpinner(this.spinner);
-        // query = query ? query : this.options.query.clone();
-        // query.requiresCount();
-        // let result: Object = new DataManager(dataSource as JSON[]).executeLocal(query);
-        // let res: { result: Object[] } = result as { result: Object[] };
-        this.updateResult();
-        this.createFilterItems(dataSource, isInitial);
-    };
-    CheckBoxFilterBase.prototype.processSearch = function (query) {
-        this.processDataOperation(query);
-    };
-    CheckBoxFilterBase.prototype.updateResult = function () {
-        this.result = {};
-        var predicate = this.getPredicateFromCols(this.options.filteredColumns);
-        var query = new Query();
-        if (predicate) {
-            query.where(predicate);
-        }
-        var result = new DataManager(this.fullData).executeLocal(query);
-        for (var _i = 0, result_1 = result; _i < result_1.length; _i++) {
-            var res = result_1[_i];
-            this.result[getValue(this.options.field, res)] = true;
-        }
-    };
-    CheckBoxFilterBase.prototype.clickHandler = function (e) {
-        var target = e.target;
-        var elem = parentsUntil(target, 'e-checkbox-wrapper');
-        if (parentsUntil(target, 'e-searchbox')) {
-            this.searchBoxClick(e);
-        }
-        if (elem) {
-            var selectAll = elem.querySelector('.e-selectall');
-            if (selectAll) {
-                this.updateAllCBoxes(!selectAll.classList.contains('e-check'));
-            }
-            else {
-                toogleCheckbox(elem.parentElement);
-            }
-            this.updateIndeterminatenBtn();
-            elem.querySelector('.e-chk-hidden').focus();
-        }
-    };
-    CheckBoxFilterBase.prototype.updateAllCBoxes = function (checked) {
-        var cBoxes = [].slice.call(this.cBox.querySelectorAll('.e-frame'));
-        for (var _i = 0, cBoxes_1 = cBoxes; _i < cBoxes_1.length; _i++) {
-            var cBox = cBoxes_1[_i];
-            removeAddCboxClasses(cBox, checked);
-        }
-    };
-    CheckBoxFilterBase.prototype.dialogOpen = function () {
-        if (this.parent.element.classList.contains('e-device')) {
-            this.dialogObj.element.querySelector('.e-input-group').classList.remove('e-input-focus');
-            this.dialogObj.element.querySelector('.e-btn').focus();
-        }
-    };
-    CheckBoxFilterBase.prototype.createCheckbox = function (value, checked, data) {
-        var elem = checked ? this.cBoxTrue.cloneNode(true) :
-            this.cBoxFalse.cloneNode(true);
-        var label = elem.querySelector('.e-label');
-        label.innerHTML = !isNullOrUndefined(value) && value.toString().length ? value :
-            this.getLocalizedLabel('Blanks');
-        addClass([label], ['e-checkboxfiltertext']);
-        if (this.options.template) {
-            label.innerHTML = '';
-            appendChildren(label, this.options.template(data, this.parent, 'filterItemTemplate'));
-        }
-        return elem;
-    };
-    CheckBoxFilterBase.prototype.updateIndeterminatenBtn = function () {
-        var cnt = this.cBox.children.length - 1;
-        var className = [];
-        var elem = this.cBox.querySelector('.e-selectall');
-        var selected = this.cBox.querySelectorAll('.e-check:not(.e-selectall)').length;
-        var btn = this.dialogObj.btnObj[0];
-        btn.disabled = false;
-        if (cnt === selected) {
-            className = ['e-check'];
-        }
-        else if (selected) {
-            className = ['e-stop'];
-        }
-        else {
-            className = ['e-uncheck'];
-            btn.disabled = true;
-        }
-        this.filterState = !btn.disabled;
-        btn.dataBind();
-        removeClass([elem], ['e-check', 'e-stop', 'e-uncheck']);
-        addClass([elem], className);
-    };
-    CheckBoxFilterBase.prototype.createFilterItems = function (data, isInitial) {
-        var _a;
-        var cBoxes = this.parent.createElement('div');
-        var btn = this.dialogObj.btnObj[0];
-        var nullCounter = -1;
-        for (var i = 0; i < data.length; i++) {
-            var val = getValue('ejValue', data[i]);
-            if (val === '' || isNullOrUndefined(val)) {
-                nullCounter = nullCounter + 1;
-            }
-        }
-        this.itemsCnt = nullCounter !== -1 ? data.length - nullCounter : data.length;
-        if (data.length && !this.renderEmpty) {
-            var selectAllValue = this.getLocalizedLabel('SelectAll');
-            var checkBox = this.createCheckbox(selectAllValue, false, (_a = {}, _a[this.options.field] = selectAllValue, _a));
-            var selectAll = createCboxWithWrap(getUid('cbox'), checkBox, 'e-ftrchk');
-            selectAll.querySelector('.e-frame').classList.add('e-selectall');
-            cBoxes.appendChild(selectAll);
-            var predicate = new Predicate('field', 'equal', this.options.field);
-            if (this.options.foreignKeyValue) {
-                predicate = predicate.or('field', 'equal', this.options.foreignKeyValue);
-            }
-            var isColFiltered = new DataManager(this.options.filteredColumns).executeLocal(new Query().where(predicate)).length;
-            var isRndere = void 0;
-            for (var i = 0; i < data.length; i++) {
-                var uid = getUid('cbox');
-                this.values[uid] = getValue('ejValue', data[i]);
-                var value = this.valueFormatter.toView(getValue(this.options.field, data[i]), this.options.formatFn);
-                if ((value === '' || isNullOrUndefined(value))) {
-                    if (isRndere) {
-                        continue;
-                    }
-                    isRndere = true;
-                }
-                var checkbox = this.createCheckbox(value, this.getCheckedState(isColFiltered, this.values[uid]), getValue('dataObj', data[i]));
-                cBoxes.appendChild(createCboxWithWrap(uid, checkbox, 'e-ftrchk'));
-            }
-            this.cBox.innerHTML = '';
-            appendChildren(this.cBox, [].slice.call(cBoxes.children));
-            this.updateIndeterminatenBtn();
-            btn.disabled = false;
-        }
-        else {
-            cBoxes.appendChild(this.parent.createElement('span', { innerHTML: this.getLocalizedLabel('NoResult') }));
-            this.cBox.innerHTML = '';
-            appendChildren(this.cBox, [].slice.call(cBoxes.children));
-            btn.disabled = true;
-        }
-        this.filterState = !btn.disabled;
-        btn.dataBind();
-        var args = { requestType: filterChoiceRequest, dataSource: this.renderEmpty ? [] : data };
-        if (!isBlazor() || this.parent.isJsComponent) {
-            var filterModel = 'filterModel';
-            args[filterModel] = this;
-        }
-        this.parent.notify(cBoxFltrComplete, args);
-        hideSpinner(this.spinner);
-    };
-    CheckBoxFilterBase.prototype.getCheckedState = function (isColFiltered, value) {
-        if (!this.isFiltered || !isColFiltered) {
-            return true;
-        }
-        else {
-            return this.result[value];
-        }
-    };
-    CheckBoxFilterBase.getDistinct = function (json, field, column, foreignKeyData$$1) {
-        var len = json.length;
-        var result = [];
-        var value;
-        var ejValue = 'ejValue';
-        var lookup = {};
-        var isForeignKey = column && column.isForeignColumn();
-        while (len--) {
-            value = json[len];
-            value = getValue(field, value); //local remote diff, check with mdu   
-            if (!(value in lookup)) {
-                var obj = {};
-                obj[ejValue] = value;
-                lookup[value] = true;
-                if (isForeignKey) {
-                    var foreignDataObj = getForeignData(column, {}, value, foreignKeyData$$1)[0];
-                    setValue(foreignKeyData, foreignDataObj, json[len]);
-                    value = getValue(column.foreignKeyValue, foreignDataObj);
-                }
-                setValue(field, isNullOrUndefined(value) ? null : value, obj);
-                setValue('dataObj', json[len], obj);
-                result.push(obj);
-            }
-        }
-        return DataUtil.group(DataUtil.sort(result, field, DataUtil.fnAscending), 'ejValue');
-    };
-    CheckBoxFilterBase.getPredicate = function (columns) {
-        var cols = DataUtil.distinct(columns, 'field', true) || [];
-        var collection = [];
-        var pred = {};
-        for (var i = 0; i < cols.length; i++) {
-            collection = new DataManager(columns).executeLocal(new Query().where('field', 'equal', cols[i].field));
-            if (collection.length !== 0) {
-                pred[cols[i].field] = CheckBoxFilterBase.generatePredicate(collection);
-            }
-        }
-        return pred;
-    };
-    CheckBoxFilterBase.generatePredicate = function (cols) {
-        var len = cols ? cols.length : 0;
-        var predicate;
-        var first;
-        first = CheckBoxFilterBase.updateDateFilter(cols[0]);
-        first.ignoreAccent = !isNullOrUndefined(first.ignoreAccent) ? first.ignoreAccent : false;
-        if (first.type === 'date' || first.type === 'datetime') {
-            predicate = getDatePredicate(first, first.type);
-        }
-        else {
-            predicate = first.ejpredicate ? first.ejpredicate :
-                new Predicate(first.field, first.operator, first.value, !CheckBoxFilterBase.getCaseValue(first), first.ignoreAccent);
-        }
-        for (var p = 1; p < len; p++) {
-            cols[p] = CheckBoxFilterBase.updateDateFilter(cols[p]);
-            if (len > 2 && p > 1 && cols[p].predicate === 'or') {
-                if (cols[p].type === 'date' || cols[p].type === 'datetime') {
-                    predicate.predicates.push(getDatePredicate(cols[p], cols[p].type));
-                }
-                else {
-                    predicate.predicates.push(new Predicate(cols[p].field, cols[p].operator, cols[p].value, !CheckBoxFilterBase.getCaseValue(cols[p]), cols[p].ignoreAccent));
-                }
-            }
-            else {
-                if (cols[p].type === 'date' || cols[p].type === 'datetime') {
-                    predicate = predicate[(cols[p].predicate)](getDatePredicate(cols[p]), cols[p].type, cols[p].ignoreAccent);
-                }
-                else {
-                    /* tslint:disable-next-line:max-line-length */
-                    predicate = cols[p].ejpredicate ?
-                        predicate[cols[p].predicate](cols[p].ejpredicate) :
-                        predicate[(cols[p].predicate)](cols[p].field, cols[p].operator, cols[p].value, !CheckBoxFilterBase.getCaseValue(cols[p]), cols[p].ignoreAccent);
-                }
-            }
-        }
-        return predicate || null;
-    };
-    CheckBoxFilterBase.getCaseValue = function (filter) {
-        if (isNullOrUndefined(filter.matchCase)) {
-            return true;
-        }
-        else {
-            return filter.matchCase;
-        }
-    };
-    CheckBoxFilterBase.updateDateFilter = function (filter) {
-        if ((filter.type === 'date' || filter.type === 'datetime' || filter.value instanceof Date)) {
-            filter.type = filter.type || 'date';
-        }
-        return filter;
-    };
-    return CheckBoxFilterBase;
-}());
 
 /**
  * Grid data module is used to generate query and data source.
@@ -7581,6 +5636,7 @@ var ContentFocus = /** @__PURE__ @class */ (function () {
         var gObj = this.parent;
         var editNextRow = gObj.editSettings.allowNextRowEdit && (gObj.isEdit || gObj.isLastCellPrimaryKey);
         var visibleIndex = gObj.getColumnIndexByField(gObj.getVisibleColumns()[0].field);
+        var cell = this.getTable().rows[rowIndex].cells[cellIndex];
         if (action === 'tab' && editNextRow) {
             rowIndex++;
             var index = (this.getTable().rows[rowIndex].querySelectorAll('.e-indentcell').length +
@@ -7591,7 +5647,7 @@ var ContentFocus = /** @__PURE__ @class */ (function () {
             rowIndex--;
             cellIndex = gObj.getColumnIndexByField(gObj.getVisibleColumns()[gObj.getVisibleColumns().length - 1].field);
         }
-        return !this.getTable().rows[rowIndex].cells[cellIndex].classList.contains('e-rowcell') ?
+        return !cell.classList.contains('e-rowcell') && !cell.classList.contains('e-headercell') ?
             this.editNextRow(rowIndex, cellIndex, action) : [rowIndex, cellIndex];
     };
     ContentFocus.prototype.getCurrentFromAction = function (action, navigator, isPresent, e) {
@@ -8266,6 +6322,7 @@ var Selection = /** @__PURE__ @class */ (function () {
             return;
         }
         var args = {
+            cancel: false,
             rowIndexes: rowIndexes, row: selectedRow, rowIndex: rowIndex, target: this.actualTarget,
             prevRow: gObj.getRows()[this.prevRowIndex], previousRowIndex: this.prevRowIndex,
             isCtrlPressed: this.isMultiCtrlRequest, isShiftPressed: this.isMultiShiftRequest,
@@ -8347,6 +6404,7 @@ var Selection = /** @__PURE__ @class */ (function () {
             }
             else {
                 args = {
+                    cancel: false,
                     data: rowObj.data, rowIndex: rowIndex, row: selectedRow, target: this.actualTarget,
                     prevRow: gObj.getRows()[this.prevRowIndex], previousRowIndex: this.prevRowIndex,
                     isCtrlPressed: this.isMultiCtrlRequest, isShiftPressed: this.isMultiShiftRequest,
@@ -8737,7 +6795,6 @@ var Selection = /** @__PURE__ @class */ (function () {
             if (!isToggle) {
                 _this.updateCellSelection(selectedCell, cellIndex.rowIndex, cellIndex.cellIndex);
             }
-            _this.updateCellProps(cellIndex, cellIndex);
             if (!isToggle) {
                 var args = {
                     data: selectedData, cellIndex: cellIndex, currentCell: selectedCell,
@@ -8749,6 +6806,7 @@ var Selection = /** @__PURE__ @class */ (function () {
                     var previousRowCellIndex = 'previousRowCellIndex';
                     args[previousRowCellIndex] = _this.prevECIdxs;
                 }
+                _this.updateCellProps(cellIndex, cellIndex);
                 _this.onActionComplete(args, cellSelected);
             }
         };
@@ -8835,9 +6893,8 @@ var Selection = /** @__PURE__ @class */ (function () {
                 }
                 _this.selectedRowCellIndexes.push({ rowIndex: i, cellIndexes: cellIndexes });
             }
-            _this.updateCellProps(stIndex, edIndex);
             var cellSelectedArgs = {
-                data: selectedData, cellIndex: startIndex, currentCell: selectedCell,
+                data: selectedData, cellIndex: edIndex, currentCell: gObj.getCellFromIndex(edIndex.rowIndex, edIndex.cellIndex),
                 selectedRowCellIndex: _this.selectedRowCellIndexes,
                 previousRowCell: _this.prevECIdxs ? _this.getCellIndex(_this.prevECIdxs.rowIndex, _this.prevECIdxs.cellIndex) : undefined
             };
@@ -8846,6 +6903,7 @@ var Selection = /** @__PURE__ @class */ (function () {
                 cellSelectedArgs[previousRowCellIndex] = _this.prevECIdxs;
             }
             _this.onActionComplete(cellSelectedArgs, cellSelected);
+            _this.updateCellProps(stIndex, edIndex);
         });
     };
     /**
@@ -8927,6 +6985,7 @@ var Selection = /** @__PURE__ @class */ (function () {
         var frzCols = gObj.getFrozenColumns();
         var index;
         this.currentIndex = cellIndexes[0].rowIndex;
+        var cncl = 'cancel';
         var selectedData = this.getCurrentBatchRecordChanges()[this.currentIndex];
         if (this.isSingleSel() || !this.isCellType() || this.isEditing()) {
             return;
@@ -8955,7 +7014,7 @@ var Selection = /** @__PURE__ @class */ (function () {
             foreignKeyData$$1.push(rowObj.cells[frzCols && cellIndexes[0].cellIndex >= frzCols
                 ? cellIndex.cellIndex - frzCols : cellIndex.cellIndex].foreignKeyData);
             var args = {
-                data: selectedData, cellIndex: cellIndexes[0],
+                cancel: false, data: selectedData, cellIndex: cellIndexes[0],
                 isShiftPressed: this.isMultiShiftRequest,
                 currentCell: selectedCell, isCtrlPressed: this.isMultiCtrlRequest,
                 previousRowCell: this.prevECIdxs ?
@@ -8988,9 +7047,11 @@ var Selection = /** @__PURE__ @class */ (function () {
             }
             else {
                 this.onActionBegin(args, cellSelecting);
+                if (!isNullOrUndefined(args) && args[cncl] === true) {
+                    return;
+                }
                 this.updateCellSelection(selectedCell, cellIndex.rowIndex, cellIndex.cellIndex);
             }
-            this.updateCellProps(cellIndex, cellIndex);
             if (!isUnSelected) {
                 var cellSelectedArgs = {
                     data: selectedData, cellIndex: cellIndexes[0], currentCell: selectedCell,
@@ -9003,6 +7064,7 @@ var Selection = /** @__PURE__ @class */ (function () {
                 }
                 this.onActionComplete(cellSelectedArgs, cellSelected);
             }
+            this.updateCellProps(cellIndex, cellIndex);
         }
     };
     Selection.prototype.getColIndex = function (rowIndex, index) {
@@ -11541,7 +9603,7 @@ var __extends = (undefined && undefined.__extends) || (function () {
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
-var __decorate = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
+var __decorate$1 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
     else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
@@ -11555,13 +9617,13 @@ var SortDescriptor = /** @__PURE__ @class */ (function (_super) {
     function SortDescriptor() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
-    __decorate([
+    __decorate$1([
         Property()
     ], SortDescriptor.prototype, "field", void 0);
-    __decorate([
+    __decorate$1([
         Property()
     ], SortDescriptor.prototype, "direction", void 0);
-    __decorate([
+    __decorate$1([
         Property(false)
     ], SortDescriptor.prototype, "isFromGroup", void 0);
     return SortDescriptor;
@@ -11574,10 +9636,10 @@ var SortSettings = /** @__PURE__ @class */ (function (_super) {
     function SortSettings() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
-    __decorate([
+    __decorate$1([
         Collection([], SortDescriptor)
     ], SortSettings.prototype, "columns", void 0);
-    __decorate([
+    __decorate$1([
         Property(true)
     ], SortSettings.prototype, "allowUnsort", void 0);
     return SortSettings;
@@ -11590,40 +9652,40 @@ var Predicate$1 = /** @__PURE__ @class */ (function (_super) {
     function Predicate$$1() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
-    __decorate([
+    __decorate$1([
         Property()
     ], Predicate$$1.prototype, "field", void 0);
-    __decorate([
+    __decorate$1([
         Property()
     ], Predicate$$1.prototype, "operator", void 0);
-    __decorate([
+    __decorate$1([
         Property()
     ], Predicate$$1.prototype, "value", void 0);
-    __decorate([
+    __decorate$1([
         Property()
     ], Predicate$$1.prototype, "matchCase", void 0);
-    __decorate([
+    __decorate$1([
         Property()
     ], Predicate$$1.prototype, "ignoreAccent", void 0);
-    __decorate([
+    __decorate$1([
         Property()
     ], Predicate$$1.prototype, "predicate", void 0);
-    __decorate([
+    __decorate$1([
         Property({})
     ], Predicate$$1.prototype, "actualFilterValue", void 0);
-    __decorate([
+    __decorate$1([
         Property({})
     ], Predicate$$1.prototype, "actualOperator", void 0);
-    __decorate([
+    __decorate$1([
         Property()
     ], Predicate$$1.prototype, "type", void 0);
-    __decorate([
+    __decorate$1([
         Property()
     ], Predicate$$1.prototype, "ejpredicate", void 0);
-    __decorate([
+    __decorate$1([
         Property()
     ], Predicate$$1.prototype, "uid", void 0);
-    __decorate([
+    __decorate$1([
         Property()
     ], Predicate$$1.prototype, "isForeignKey", void 0);
     return Predicate$$1;
@@ -11636,28 +9698,28 @@ var FilterSettings = /** @__PURE__ @class */ (function (_super) {
     function FilterSettings() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
-    __decorate([
+    __decorate$1([
         Collection([], Predicate$1)
     ], FilterSettings.prototype, "columns", void 0);
-    __decorate([
+    __decorate$1([
         Property('FilterBar')
     ], FilterSettings.prototype, "type", void 0);
-    __decorate([
+    __decorate$1([
         Property()
     ], FilterSettings.prototype, "mode", void 0);
-    __decorate([
+    __decorate$1([
         Property(true)
     ], FilterSettings.prototype, "showFilterBarStatus", void 0);
-    __decorate([
+    __decorate$1([
         Property(1500)
     ], FilterSettings.prototype, "immediateModeDelay", void 0);
-    __decorate([
+    __decorate$1([
         Property()
     ], FilterSettings.prototype, "operators", void 0);
-    __decorate([
+    __decorate$1([
         Property(false)
     ], FilterSettings.prototype, "ignoreAccent", void 0);
-    __decorate([
+    __decorate$1([
         Property(false)
     ], FilterSettings.prototype, "enableCaseSensitivity", void 0);
     return FilterSettings;
@@ -11670,28 +9732,28 @@ var SelectionSettings = /** @__PURE__ @class */ (function (_super) {
     function SelectionSettings() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
-    __decorate([
+    __decorate$1([
         Property('Row')
     ], SelectionSettings.prototype, "mode", void 0);
-    __decorate([
+    __decorate$1([
         Property('Flow')
     ], SelectionSettings.prototype, "cellSelectionMode", void 0);
-    __decorate([
+    __decorate$1([
         Property('Single')
     ], SelectionSettings.prototype, "type", void 0);
-    __decorate([
+    __decorate$1([
         Property(false)
     ], SelectionSettings.prototype, "checkboxOnly", void 0);
-    __decorate([
+    __decorate$1([
         Property(false)
     ], SelectionSettings.prototype, "persistSelection", void 0);
-    __decorate([
+    __decorate$1([
         Property('Default')
     ], SelectionSettings.prototype, "checkboxMode", void 0);
-    __decorate([
+    __decorate$1([
         Property(false)
     ], SelectionSettings.prototype, "enableSimpleMultiRowSelection", void 0);
-    __decorate([
+    __decorate$1([
         Property(true)
     ], SelectionSettings.prototype, "enableToggle", void 0);
     return SelectionSettings;
@@ -11704,19 +9766,19 @@ var SearchSettings = /** @__PURE__ @class */ (function (_super) {
     function SearchSettings() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
-    __decorate([
+    __decorate$1([
         Property([])
     ], SearchSettings.prototype, "fields", void 0);
-    __decorate([
+    __decorate$1([
         Property('')
     ], SearchSettings.prototype, "key", void 0);
-    __decorate([
+    __decorate$1([
         Property('contains')
     ], SearchSettings.prototype, "operator", void 0);
-    __decorate([
+    __decorate$1([
         Property(true)
     ], SearchSettings.prototype, "ignoreCase", void 0);
-    __decorate([
+    __decorate$1([
         Property(false)
     ], SearchSettings.prototype, "ignoreAccent", void 0);
     return SearchSettings;
@@ -11729,7 +9791,7 @@ var RowDropSettings = /** @__PURE__ @class */ (function (_super) {
     function RowDropSettings() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
-    __decorate([
+    __decorate$1([
         Property()
     ], RowDropSettings.prototype, "targetID", void 0);
     return RowDropSettings;
@@ -11742,7 +9804,7 @@ var TextWrapSettings = /** @__PURE__ @class */ (function (_super) {
     function TextWrapSettings() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
-    __decorate([
+    __decorate$1([
         Property('Both')
     ], TextWrapSettings.prototype, "wrapMode", void 0);
     return TextWrapSettings;
@@ -11755,25 +9817,25 @@ var GroupSettings = /** @__PURE__ @class */ (function (_super) {
     function GroupSettings() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
-    __decorate([
+    __decorate$1([
         Property(true)
     ], GroupSettings.prototype, "showDropArea", void 0);
-    __decorate([
+    __decorate$1([
         Property(false)
     ], GroupSettings.prototype, "showToggleButton", void 0);
-    __decorate([
+    __decorate$1([
         Property(false)
     ], GroupSettings.prototype, "showGroupedColumn", void 0);
-    __decorate([
+    __decorate$1([
         Property(true)
     ], GroupSettings.prototype, "showUngroupButton", void 0);
-    __decorate([
+    __decorate$1([
         Property(false)
     ], GroupSettings.prototype, "disablePageWiseAggregates", void 0);
-    __decorate([
+    __decorate$1([
         Property([])
     ], GroupSettings.prototype, "columns", void 0);
-    __decorate([
+    __decorate$1([
         Property()
     ], GroupSettings.prototype, "captionTemplate", void 0);
     return GroupSettings;
@@ -11786,37 +9848,37 @@ var EditSettings = /** @__PURE__ @class */ (function (_super) {
     function EditSettings() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
-    __decorate([
+    __decorate$1([
         Property(false)
     ], EditSettings.prototype, "allowAdding", void 0);
-    __decorate([
+    __decorate$1([
         Property(false)
     ], EditSettings.prototype, "allowEditing", void 0);
-    __decorate([
+    __decorate$1([
         Property(false)
     ], EditSettings.prototype, "allowDeleting", void 0);
-    __decorate([
+    __decorate$1([
         Property('Normal')
     ], EditSettings.prototype, "mode", void 0);
-    __decorate([
+    __decorate$1([
         Property(true)
     ], EditSettings.prototype, "allowEditOnDblClick", void 0);
-    __decorate([
+    __decorate$1([
         Property(true)
     ], EditSettings.prototype, "showConfirmDialog", void 0);
-    __decorate([
+    __decorate$1([
         Property(false)
     ], EditSettings.prototype, "showDeleteConfirmDialog", void 0);
-    __decorate([
+    __decorate$1([
         Property('')
     ], EditSettings.prototype, "template", void 0);
-    __decorate([
+    __decorate$1([
         Property('Top')
     ], EditSettings.prototype, "newRowPosition", void 0);
-    __decorate([
+    __decorate$1([
         Property({})
     ], EditSettings.prototype, "dialog", void 0);
-    __decorate([
+    __decorate$1([
         Property(false)
     ], EditSettings.prototype, "allowNextRowEdit", void 0);
     return EditSettings;
@@ -14520,10 +12582,16 @@ var Grid = /** @__PURE__ @class */ (function (_super) {
      * Refreshes the Grid column changes.
      */
     Grid.prototype.refreshColumns = function () {
-        this.isPreventScrollEvent = true;
-        this.updateColumnObject();
-        this.checkLockColumns(this.getColumns());
-        this.refresh();
+        var fCnt = this.getContent().querySelector('.e-frozencontent');
+        if ((this.getFrozenColumns() === 1 && !fCnt) || (this.getFrozenColumns() === 0 && fCnt)) {
+            this.freezeRefresh();
+        }
+        else {
+            this.isPreventScrollEvent = true;
+            this.updateColumnObject();
+            this.checkLockColumns(this.getColumns());
+            this.refresh();
+        }
     };
     /**
      * Export Grid data to Excel file(.xlsx).
@@ -14844,365 +12912,3052 @@ var Grid = /** @__PURE__ @class */ (function (_super) {
         }
     };
     var Grid_1;
-    __decorate([
+    __decorate$1([
         Property([])
     ], Grid.prototype, "columns", void 0);
-    __decorate([
+    __decorate$1([
         Property(true)
     ], Grid.prototype, "enableAltRow", void 0);
-    __decorate([
+    __decorate$1([
         Property(true)
     ], Grid.prototype, "enableHover", void 0);
-    __decorate([
+    __decorate$1([
         Property(false)
     ], Grid.prototype, "enableAutoFill", void 0);
-    __decorate([
+    __decorate$1([
         Property(true)
     ], Grid.prototype, "allowKeyboard", void 0);
-    __decorate([
+    __decorate$1([
         Property(false)
     ], Grid.prototype, "allowTextWrap", void 0);
-    __decorate([
+    __decorate$1([
         Complex({}, TextWrapSettings)
     ], Grid.prototype, "textWrapSettings", void 0);
-    __decorate([
+    __decorate$1([
         Property(false)
     ], Grid.prototype, "allowPaging", void 0);
-    __decorate([
+    __decorate$1([
         Complex({}, PageSettings)
     ], Grid.prototype, "pageSettings", void 0);
-    __decorate([
+    __decorate$1([
         Property(false)
     ], Grid.prototype, "enableVirtualization", void 0);
-    __decorate([
+    __decorate$1([
         Property(false)
     ], Grid.prototype, "enableColumnVirtualization", void 0);
-    __decorate([
+    __decorate$1([
         Complex({}, SearchSettings)
     ], Grid.prototype, "searchSettings", void 0);
-    __decorate([
+    __decorate$1([
         Property(false)
     ], Grid.prototype, "allowSorting", void 0);
-    __decorate([
+    __decorate$1([
         Property(true)
     ], Grid.prototype, "allowMultiSorting", void 0);
-    __decorate([
+    __decorate$1([
         Property(false)
     ], Grid.prototype, "allowExcelExport", void 0);
-    __decorate([
+    __decorate$1([
         Property(false)
     ], Grid.prototype, "allowPdfExport", void 0);
-    __decorate([
+    __decorate$1([
         Complex({}, SortSettings)
     ], Grid.prototype, "sortSettings", void 0);
-    __decorate([
+    __decorate$1([
         Property(true)
     ], Grid.prototype, "allowSelection", void 0);
-    __decorate([
+    __decorate$1([
         Property(-1)
     ], Grid.prototype, "selectedRowIndex", void 0);
-    __decorate([
+    __decorate$1([
         Complex({}, SelectionSettings)
     ], Grid.prototype, "selectionSettings", void 0);
-    __decorate([
+    __decorate$1([
         Property(false)
     ], Grid.prototype, "allowFiltering", void 0);
-    __decorate([
+    __decorate$1([
         Property(false)
     ], Grid.prototype, "allowReordering", void 0);
-    __decorate([
+    __decorate$1([
         Property(false)
     ], Grid.prototype, "allowResizing", void 0);
-    __decorate([
+    __decorate$1([
         Property(false)
     ], Grid.prototype, "allowRowDragAndDrop", void 0);
-    __decorate([
+    __decorate$1([
         Complex({}, RowDropSettings)
     ], Grid.prototype, "rowDropSettings", void 0);
-    __decorate([
+    __decorate$1([
         Complex({}, FilterSettings)
     ], Grid.prototype, "filterSettings", void 0);
-    __decorate([
+    __decorate$1([
         Property(false)
     ], Grid.prototype, "allowGrouping", void 0);
-    __decorate([
+    __decorate$1([
         Property(false)
     ], Grid.prototype, "showColumnMenu", void 0);
-    __decorate([
+    __decorate$1([
         Complex({}, GroupSettings)
     ], Grid.prototype, "groupSettings", void 0);
-    __decorate([
+    __decorate$1([
         Complex({}, EditSettings)
     ], Grid.prototype, "editSettings", void 0);
-    __decorate([
+    __decorate$1([
         Collection([], AggregateRow)
     ], Grid.prototype, "aggregates", void 0);
-    __decorate([
+    __decorate$1([
         Property(false)
     ], Grid.prototype, "showColumnChooser", void 0);
-    __decorate([
+    __decorate$1([
         Property('auto')
     ], Grid.prototype, "height", void 0);
-    __decorate([
+    __decorate$1([
         Property('auto')
     ], Grid.prototype, "width", void 0);
-    __decorate([
+    __decorate$1([
         Property('Default')
     ], Grid.prototype, "gridLines", void 0);
-    __decorate([
+    __decorate$1([
         Property()
     ], Grid.prototype, "rowTemplate", void 0);
-    __decorate([
+    __decorate$1([
         Property()
     ], Grid.prototype, "detailTemplate", void 0);
-    __decorate([
+    __decorate$1([
         Property()
     ], Grid.prototype, "childGrid", void 0);
-    __decorate([
+    __decorate$1([
         Property()
     ], Grid.prototype, "queryString", void 0);
-    __decorate([
+    __decorate$1([
         Property('AllPages')
     ], Grid.prototype, "printMode", void 0);
-    __decorate([
+    __decorate$1([
         Property('Expanded')
     ], Grid.prototype, "hierarchyPrintMode", void 0);
-    __decorate([
+    __decorate$1([
         Property([])
     ], Grid.prototype, "dataSource", void 0);
-    __decorate([
+    __decorate$1([
         Property(null)
     ], Grid.prototype, "rowHeight", void 0);
-    __decorate([
+    __decorate$1([
         Property()
     ], Grid.prototype, "query", void 0);
-    __decorate([
+    __decorate$1([
         Property('USD')
     ], Grid.prototype, "currencyCode", void 0);
-    __decorate([
+    __decorate$1([
         Property()
     ], Grid.prototype, "toolbar", void 0);
-    __decorate([
+    __decorate$1([
         Property()
     ], Grid.prototype, "contextMenuItems", void 0);
-    __decorate([
+    __decorate$1([
         Property()
     ], Grid.prototype, "columnMenuItems", void 0);
-    __decorate([
+    __decorate$1([
         Property()
     ], Grid.prototype, "toolbarTemplate", void 0);
-    __decorate([
+    __decorate$1([
         Property()
     ], Grid.prototype, "pagerTemplate", void 0);
-    __decorate([
+    __decorate$1([
         Property(0)
     ], Grid.prototype, "frozenRows", void 0);
-    __decorate([
+    __decorate$1([
         Property(0)
     ], Grid.prototype, "frozenColumns", void 0);
-    __decorate([
+    __decorate$1([
         Property('All')
     ], Grid.prototype, "columnQueryMode", void 0);
-    __decorate([
+    __decorate$1([
         Event()
     ], Grid.prototype, "created", void 0);
-    __decorate([
+    __decorate$1([
         Event()
     ], Grid.prototype, "destroyed", void 0);
-    __decorate([
+    __decorate$1([
         Event()
     ], Grid.prototype, "load", void 0);
-    __decorate([
+    __decorate$1([
         Event()
     ], Grid.prototype, "rowDataBound", void 0);
-    __decorate([
+    __decorate$1([
         Event()
     ], Grid.prototype, "queryCellInfo", void 0);
-    __decorate([
+    __decorate$1([
         Event()
     ], Grid.prototype, "headerCellInfo", void 0);
-    __decorate([
+    __decorate$1([
         Event()
     ], Grid.prototype, "actionBegin", void 0);
-    __decorate([
+    __decorate$1([
         Event()
     ], Grid.prototype, "actionComplete", void 0);
-    __decorate([
+    __decorate$1([
         Event()
     ], Grid.prototype, "actionFailure", void 0);
-    __decorate([
+    __decorate$1([
         Event()
     ], Grid.prototype, "dataBound", void 0);
-    __decorate([
+    __decorate$1([
         Event()
     ], Grid.prototype, "recordDoubleClick", void 0);
-    __decorate([
+    __decorate$1([
         Event()
     ], Grid.prototype, "rowSelecting", void 0);
-    __decorate([
+    __decorate$1([
         Event()
     ], Grid.prototype, "rowSelected", void 0);
-    __decorate([
+    __decorate$1([
         Event()
     ], Grid.prototype, "rowDeselecting", void 0);
-    __decorate([
+    __decorate$1([
         Event()
     ], Grid.prototype, "rowDeselected", void 0);
-    __decorate([
+    __decorate$1([
         Event()
     ], Grid.prototype, "cellSelecting", void 0);
-    __decorate([
+    __decorate$1([
         Event()
     ], Grid.prototype, "cellSelected", void 0);
-    __decorate([
+    __decorate$1([
         Event()
     ], Grid.prototype, "cellDeselecting", void 0);
-    __decorate([
+    __decorate$1([
         Event()
     ], Grid.prototype, "cellDeselected", void 0);
-    __decorate([
+    __decorate$1([
         Event()
     ], Grid.prototype, "columnDragStart", void 0);
-    __decorate([
+    __decorate$1([
         Event()
     ], Grid.prototype, "columnDrag", void 0);
-    __decorate([
+    __decorate$1([
         Event()
     ], Grid.prototype, "columnDrop", void 0);
-    __decorate([
+    __decorate$1([
         Event()
     ], Grid.prototype, "printComplete", void 0);
-    __decorate([
+    __decorate$1([
         Event()
     ], Grid.prototype, "beforePrint", void 0);
-    __decorate([
+    __decorate$1([
         Event()
     ], Grid.prototype, "pdfQueryCellInfo", void 0);
-    __decorate([
+    __decorate$1([
         Event()
     ], Grid.prototype, "pdfHeaderQueryCellInfo", void 0);
-    __decorate([
+    __decorate$1([
         Event()
     ], Grid.prototype, "exportDetailDataBound", void 0);
-    __decorate([
+    __decorate$1([
         Event()
     ], Grid.prototype, "excelQueryCellInfo", void 0);
-    __decorate([
+    __decorate$1([
         Event()
     ], Grid.prototype, "excelHeaderQueryCellInfo", void 0);
-    __decorate([
+    __decorate$1([
         Event()
     ], Grid.prototype, "beforeExcelExport", void 0);
-    __decorate([
+    __decorate$1([
         Event()
     ], Grid.prototype, "excelExportComplete", void 0);
-    __decorate([
+    __decorate$1([
         Event()
     ], Grid.prototype, "beforePdfExport", void 0);
-    __decorate([
+    __decorate$1([
         Event()
     ], Grid.prototype, "pdfExportComplete", void 0);
-    __decorate([
+    __decorate$1([
         Event()
     ], Grid.prototype, "rowDragStartHelper", void 0);
-    __decorate([
+    __decorate$1([
         Event()
     ], Grid.prototype, "detailDataBound", void 0);
-    __decorate([
+    __decorate$1([
         Event()
     ], Grid.prototype, "rowDragStart", void 0);
-    __decorate([
+    __decorate$1([
         Event()
     ], Grid.prototype, "rowDrag", void 0);
-    __decorate([
+    __decorate$1([
         Event()
     ], Grid.prototype, "rowDrop", void 0);
-    __decorate([
+    __decorate$1([
         Event()
     ], Grid.prototype, "toolbarClick", void 0);
-    __decorate([
+    __decorate$1([
         Event()
     ], Grid.prototype, "beforeOpenColumnChooser", void 0);
-    __decorate([
+    __decorate$1([
         Event()
     ], Grid.prototype, "batchAdd", void 0);
-    __decorate([
+    __decorate$1([
         Event()
     ], Grid.prototype, "batchDelete", void 0);
-    __decorate([
+    __decorate$1([
         Event()
     ], Grid.prototype, "batchCancel", void 0);
-    __decorate([
+    __decorate$1([
         Event()
     ], Grid.prototype, "beforeBatchAdd", void 0);
-    __decorate([
+    __decorate$1([
         Event()
     ], Grid.prototype, "beforeBatchDelete", void 0);
-    __decorate([
+    __decorate$1([
         Event()
     ], Grid.prototype, "beforeBatchSave", void 0);
-    __decorate([
+    __decorate$1([
         Event()
     ], Grid.prototype, "beginEdit", void 0);
-    __decorate([
+    __decorate$1([
         Event()
     ], Grid.prototype, "commandClick", void 0);
-    __decorate([
+    __decorate$1([
         Event()
     ], Grid.prototype, "cellEdit", void 0);
-    __decorate([
+    __decorate$1([
         Event()
     ], Grid.prototype, "cellSave", void 0);
-    __decorate([
+    __decorate$1([
         Event()
     ], Grid.prototype, "cellSaved", void 0);
-    __decorate([
+    __decorate$1([
         Event()
     ], Grid.prototype, "resizeStart", void 0);
-    __decorate([
+    __decorate$1([
         Event()
     ], Grid.prototype, "resizing", void 0);
-    __decorate([
+    __decorate$1([
         Event()
     ], Grid.prototype, "resizeStop", void 0);
-    __decorate([
+    __decorate$1([
         Event()
     ], Grid.prototype, "keyPressed", void 0);
-    __decorate([
+    __decorate$1([
         Event()
     ], Grid.prototype, "beforeDataBound", void 0);
-    __decorate([
+    __decorate$1([
         Event()
     ], Grid.prototype, "contextMenuOpen", void 0);
-    __decorate([
+    __decorate$1([
         Event()
     ], Grid.prototype, "contextMenuClick", void 0);
-    __decorate([
+    __decorate$1([
         Event()
     ], Grid.prototype, "columnMenuOpen", void 0);
-    __decorate([
+    __decorate$1([
         Event()
     ], Grid.prototype, "columnMenuClick", void 0);
-    __decorate([
+    __decorate$1([
         Event()
     ], Grid.prototype, "checkBoxChange", void 0);
-    __decorate([
+    __decorate$1([
         Event()
     ], Grid.prototype, "beforeCopy", void 0);
-    __decorate([
+    __decorate$1([
         Event()
     ], Grid.prototype, "beforePaste", void 0);
-    __decorate([
+    __decorate$1([
         Event()
     ], Grid.prototype, "dataStateChange", void 0);
-    __decorate([
+    __decorate$1([
         Event()
     ], Grid.prototype, "dataSourceChanged", void 0);
-    Grid = Grid_1 = __decorate([
+    Grid = Grid_1 = __decorate$1([
         NotifyPropertyChanges
     ], Grid);
     return Grid;
 }(Component));
+
+/**
+ * @hidden
+ */
+function getCloneProperties() {
+    return ['aggregates', 'allowGrouping', 'allowFiltering', 'allowMultiSorting', 'allowReordering', 'allowSorting',
+        'allowTextWrap', 'childGrid', 'columns', 'currentViewData', 'dataSource', 'detailTemplate', 'enableAltRow',
+        'enableColumnVirtualization', 'filterSettings', 'gridLines',
+        'groupSettings', 'height', 'locale', 'pageSettings', 'printMode', 'query', 'queryString', 'enableRtl',
+        'rowHeight', 'rowTemplate', 'sortSettings', 'textWrapSettings', 'allowPaging', 'hierarchyPrintMode', 'searchSettings'];
+}
+/**
+ *
+ * The `Print` module is used to handle print action.
+ */
+var Print = /** @__PURE__ @class */ (function () {
+    /**
+     * Constructor for the Grid print module
+     * @hidden
+     */
+    function Print(parent, scrollModule) {
+        this.isAsyncPrint = false;
+        this.defered = new Deferred();
+        this.parent = parent;
+        if (this.parent.isDestroyed) {
+            return;
+        }
+        this.parent.on(contentReady, this.isContentReady(), this);
+        this.parent.addEventListener(actionBegin, this.actionBegin.bind(this));
+        this.parent.on(onEmpty, this.onEmpty.bind(this));
+        this.parent.on(hierarchyPrint, this.hierarchyPrint, this);
+        this.scrollModule = scrollModule;
+    }
+    Print.prototype.isContentReady = function () {
+        var _this = this;
+        if (this.isPrintGrid() && (this.parent.hierarchyPrintMode === 'None' || !this.parent.childGrid)) {
+            return this.contentReady;
+        }
+        return function () {
+            _this.defered.promise.then(function () {
+                _this.contentReady();
+            });
+            if (_this.isPrintGrid()) {
+                _this.hierarchyPrint();
+            }
+        };
+    };
+    Print.prototype.hierarchyPrint = function () {
+        this.removeColGroup(this.parent);
+        var printGridObj = window.printGridObj;
+        if (printGridObj && !printGridObj.element.querySelector('[aria-busy=true')) {
+            printGridObj.printModule.defered.resolve();
+        }
+    };
+    /**
+     * By default, prints all the Grid pages and hides the pager.
+     * > You can customize print options using the
+     * [`printMode`](grid/#printmode-string/).
+     * @return {void}
+     */
+    Print.prototype.print = function () {
+        this.renderPrintGrid();
+        this.printWind = window.open('', 'print', 'height=' + window.outerHeight + ',width=' + window.outerWidth + ',tabbar=no');
+        this.printWind.moveTo(0, 0);
+        this.printWind.resizeTo(screen.availWidth, screen.availHeight);
+    };
+    Print.prototype.onEmpty = function () {
+        if (this.isPrintGrid()) {
+            this.contentReady();
+        }
+    };
+    Print.prototype.actionBegin = function () {
+        if (this.isPrintGrid()) {
+            this.isAsyncPrint = true;
+        }
+    };
+    Print.prototype.renderPrintGrid = function () {
+        var gObj = this.parent;
+        var element = createElement('div', {
+            id: this.parent.element.id + '_print', className: gObj.element.className + ' e-print-grid'
+        });
+        document.body.appendChild(element);
+        var printGrid = new Grid(getPrintGridModel(gObj, gObj.hierarchyPrintMode));
+        printGrid.query = gObj.getQuery().clone();
+        window.printGridObj = printGrid;
+        printGrid.isPrinting = true;
+        var modules = printGrid.getInjectedModules();
+        var injectedModues = gObj.getInjectedModules();
+        if (!modules || modules.length !== injectedModues.length) {
+            printGrid.setInjectedModules(injectedModues);
+        }
+        gObj.notify(printGridInit, { element: element, printgrid: printGrid });
+        this.parent.log('exporting_begin', this.getModuleName());
+        printGrid.appendTo(element);
+        printGrid.registeredTemplate = this.parent.registeredTemplate;
+        printGrid.trigger = gObj.trigger;
+    };
+    Print.prototype.contentReady = function () {
+        if (this.isPrintGrid()) {
+            var gObj = this.parent;
+            if (this.isAsyncPrint) {
+                this.printGrid();
+                return;
+            }
+            var args = {
+                requestType: 'print',
+                element: gObj.element,
+                selectedRows: gObj.getContentTable().querySelectorAll('tr[aria-selected="true"]'),
+                cancel: false,
+                hierarchyPrintMode: gObj.hierarchyPrintMode
+            };
+            if (!this.isAsyncPrint) {
+                gObj.trigger(beforePrint, args);
+            }
+            if (args.cancel) {
+                detach(gObj.element);
+                return;
+            }
+            if (!this.isAsyncPrint) {
+                this.printGrid();
+            }
+        }
+    };
+    Print.prototype.printGrid = function () {
+        var gObj = this.parent;
+        // Height adjustment on print grid
+        if (gObj.height !== 'auto') { // if scroller enabled
+            var cssProps = this.scrollModule.getCssProperties();
+            var contentDiv = gObj.element.querySelector('.e-content');
+            var headerDiv = gObj.element.querySelector('.e-gridheader');
+            contentDiv.style.height = 'auto';
+            contentDiv.style.overflowY = 'auto';
+            headerDiv.style[cssProps.padding] = '';
+            headerDiv.firstElementChild.style[cssProps.border] = '';
+        }
+        // Grid alignment adjustment on grouping
+        if (gObj.allowGrouping) {
+            if (!gObj.groupSettings.columns.length) {
+                gObj.element.querySelector('.e-groupdroparea').style.display = 'none';
+            }
+            else {
+                this.removeColGroup(gObj);
+            }
+        }
+        // hide horizontal scroll
+        for (var _i = 0, _a = [].slice.call(gObj.element.querySelectorAll('.e-content')); _i < _a.length; _i++) {
+            var element = _a[_i];
+            element.style.overflowX = 'hidden';
+        }
+        // Hide the waiting popup
+        var waitingPop = gObj.element.querySelectorAll('.e-spin-show');
+        for (var _b = 0, _c = [].slice.call(waitingPop); _b < _c.length; _b++) {
+            var element = _c[_b];
+            classList(element, ['e-spin-hide'], ['e-spin-show']);
+        }
+        this.printGridElement(gObj);
+        gObj.isPrinting = false;
+        delete window.printGridObj;
+        var args = {
+            element: gObj.element
+        };
+        gObj.trigger(printComplete, args);
+        this.parent.log('exporting_complete', this.getModuleName());
+    };
+    Print.prototype.printGridElement = function (gObj) {
+        classList(gObj.element, ['e-print-grid-layout'], ['e-print-grid']);
+        if (gObj.isPrinting) {
+            detach(gObj.element);
+        }
+        this.printWind = print(gObj.element, this.printWind);
+    };
+    Print.prototype.removeColGroup = function (gObj) {
+        var depth = gObj.groupSettings.columns.length;
+        var element = gObj.element;
+        var id = '#' + gObj.element.id;
+        if (!depth) {
+            return;
+        }
+        var groupCaption = element.querySelectorAll(id + "captioncell.e-groupcaption");
+        var colSpan = groupCaption[depth - 1].getAttribute('colspan');
+        for (var i = 0; i < groupCaption.length; i++) {
+            groupCaption[i].setAttribute('colspan', colSpan);
+        }
+        var colGroups = element.querySelectorAll("colgroup" + id + "colGroup");
+        var contentColGroups = element.querySelector('.e-content').querySelectorAll('colgroup');
+        this.hideColGroup(colGroups, depth);
+        this.hideColGroup(contentColGroups, depth);
+    };
+    Print.prototype.hideColGroup = function (colGroups, depth) {
+        for (var i = 0; i < colGroups.length; i++) {
+            for (var j = 0; j < depth; j++) {
+                colGroups[i].childNodes[j].style.display = 'none';
+            }
+        }
+    };
+    Print.prototype.isPrintGrid = function () {
+        return this.parent.element.id.indexOf('_print') > 0 && this.parent.isPrinting;
+    };
+    /**
+     * To destroy the print
+     * @return {void}
+     * @hidden
+     */
+    Print.prototype.destroy = function () {
+        if (this.parent.isDestroyed) {
+            return;
+        }
+        this.parent.off(contentReady, this.contentReady.bind(this));
+        this.parent.removeEventListener(actionBegin, this.actionBegin.bind(this));
+        this.parent.off(onEmpty, this.onEmpty.bind(this));
+        this.parent.off(hierarchyPrint, this.hierarchyPrint);
+    };
+    /**
+     * For internal use only - Get the module name.
+     * @private
+     */
+    Print.prototype.getModuleName = function () {
+        return 'print';
+    };
+    Print.printGridProp = getCloneProperties().concat([beforePrint, printComplete]);
+    return Print;
+}());
+
+//https://typescript.codeplex.com/discussions/401501
+/**
+ * Function to check whether target object implement specific interface
+ * @param  {Object} target
+ * @param  {string} checkFor
+ * @returns no
+ * @hidden
+ */
+function doesImplementInterface(target, checkFor) {
+    /* tslint:disable:no-any */
+    return target.prototype && checkFor in target.prototype;
+}
+/**
+ * Function to get value from provided data
+ * @param  {string} field
+ * @param  {Object} data
+ * @param  {IColumn} column
+ * @hidden
+ */
+function valueAccessor(field, data, column) {
+    return (isNullOrUndefined(field) || field === '') ? '' : DataUtil.getObject(field, data);
+}
+/**
+ * The function used to update Dom using requestAnimationFrame.
+ * @param  {Function} fn - Function that contains the actual action
+ * @return {Promise<T>}
+ * @hidden
+ */
+function getUpdateUsingRaf(updateFunction, callBack) {
+    requestAnimationFrame(function () {
+        try {
+            callBack(null, updateFunction());
+        }
+        catch (e) {
+            callBack(e);
+        }
+    });
+}
+/**
+ * @hidden
+ */
+function updatecloneRow(grid) {
+    var nRows = [];
+    var actualRows = grid.vRows;
+    for (var i = 0; i < actualRows.length; i++) {
+        if (actualRows[i].isDataRow) {
+            nRows.push(actualRows[i]);
+        }
+        else if (!actualRows[i].isDataRow) {
+            nRows.push(actualRows[i]);
+            if (!actualRows[i].isExpand && actualRows[i].isCaptionRow) {
+                i += getCollapsedRowsCount(actualRows[i], grid);
+            }
+        }
+    }
+    grid.vcRows = nRows;
+}
+/**
+ * @hidden
+ */
+var count = 0;
+function getCollapsedRowsCount(val, grid) {
+    count = 0;
+    var gSummary = 'gSummary';
+    var total = 'count';
+    var gLen = grid.groupSettings.columns.length;
+    var records = 'records';
+    var items = 'items';
+    var value = val[gSummary];
+    var dataRowCnt = 0;
+    var agrCnt = 'aggregatesCount';
+    if (value === val.data[total]) {
+        if (grid.groupSettings.columns.length && !isNullOrUndefined(val[agrCnt])) {
+            if (grid.groupSettings.columns.length !== 1 && val[agrCnt]) {
+                count += (val.indent !== 0 && (value) < 2) ? (val[gSummary] * ((gLen - val.indent) + (gLen - val.indent) * val[agrCnt])) :
+                    (val[gSummary] * ((gLen - val.indent) + (gLen - val.indent - 1) * val[agrCnt])) + val[agrCnt];
+            }
+            else if (val[agrCnt] && grid.groupSettings.columns.length === 1) {
+                count += (val[gSummary] * (gLen - val.indent)) + val[agrCnt];
+            }
+        }
+        else if (grid.groupSettings.columns.length) {
+            if (grid.groupSettings.columns.length !== 1) {
+                count += val[gSummary] * (grid.groupSettings.columns.length - val.indent);
+            }
+            else {
+                count += val[gSummary];
+            }
+        }
+        return count;
+    }
+    else {
+        for (var i = 0, len = val.data[items].length; i < len; i++) {
+            var gLevel = val.data[items][i];
+            count += gLevel[items].length + ((gLen !== grid.columns.length) &&
+                !isNullOrUndefined(gLevel[items][records]) ? gLevel[items][records].length : 0);
+            dataRowCnt += (!isNullOrUndefined(gLevel[items][records]) && !isNullOrUndefined(val[agrCnt])) ? gLevel[items][records].length :
+                gLevel[items].length;
+            if (gLevel[items].GroupGuid && gLevel[items].childLevels !== 0) {
+                recursive(gLevel);
+            }
+        }
+        count += val.data[items].length;
+        if (!isNullOrUndefined(val[agrCnt])) {
+            if (val[agrCnt] && count && dataRowCnt !== 0) {
+                count += ((count - dataRowCnt) * val[agrCnt]) + val[agrCnt];
+            }
+        }
+    }
+    return count;
+}
+/**
+ * @hidden
+ */
+function recursive(row) {
+    var items = 'items';
+    var rCount = 'count';
+    for (var j = 0, length_1 = row[items].length; j < length_1; j++) {
+        var nLevel = row[items][j];
+        count += nLevel[rCount];
+        if (nLevel[items].childLevels !== 0) {
+            recursive(nLevel);
+        }
+    }
+}
+/**
+ * @hidden
+ */
+function iterateArrayOrObject(collection, predicate) {
+    var result = [];
+    for (var i = 0, len = collection.length; i < len; i++) {
+        var pred = predicate(collection[i], i);
+        if (!isNullOrUndefined(pred)) {
+            result.push(pred);
+        }
+    }
+    return result;
+}
+/** @hidden */
+function iterateExtend(array) {
+    var obj = [];
+    for (var i = 0; i < array.length; i++) {
+        obj.push(extend({}, getActualProperties(array[i]), {}, true));
+    }
+    return obj;
+}
+/** @hidden */
+function templateCompiler(template) {
+    if (template) {
+        try {
+            if (document.querySelectorAll(template).length) {
+                return compile(document.querySelector(template).innerHTML.trim());
+            }
+        }
+        catch (e) {
+            return compile(template);
+        }
+    }
+    return undefined;
+}
+/** @hidden */
+function setStyleAndAttributes(node, customAttributes) {
+    var copyAttr = {};
+    var literals = ['style', 'class'];
+    //Dont touch the original object - make a copy
+    extend(copyAttr, customAttributes, {});
+    if ('style' in copyAttr) {
+        setStyleAttribute(node, copyAttr[literals[0]]);
+        delete copyAttr[literals[0]];
+    }
+    if ('class' in copyAttr) {
+        addClass([node], copyAttr[literals[1]]);
+        delete copyAttr[literals[1]];
+    }
+    attributes(node, copyAttr);
+}
+/** @hidden */
+function extend$1(copied, first, second, exclude) {
+    var moved = extend(copied, first, second);
+    Object.keys(moved).forEach(function (value, index) {
+        if (exclude && exclude.indexOf(value) !== -1) {
+            delete moved[value];
+        }
+    });
+    return moved;
+}
+/** @hidden */
+function setColumnIndex(columnModel, ind) {
+    if (ind === void 0) { ind = 0; }
+    for (var i = 0, len = columnModel.length; i < len; i++) {
+        if (columnModel[i].columns) {
+            columnModel[i].index = isNullOrUndefined(columnModel[i].index) ? ind : columnModel[i].index;
+            ind++;
+            ind = setColumnIndex(columnModel[i].columns, ind);
+        }
+        else {
+            columnModel[i].index = isNullOrUndefined(columnModel[i].index) ? ind : columnModel[i].index;
+            ind++;
+        }
+    }
+    return ind;
+}
+/** @hidden */
+function prepareColumns(columns, autoWidth) {
+    for (var c = 0, len = columns.length; c < len; c++) {
+        var column = void 0;
+        if (typeof columns[c] === 'string') {
+            column = new Column({ field: columns[c] });
+        }
+        else if (!(columns[c] instanceof Column)) {
+            if (!columns[c].columns) {
+                column = new Column(columns[c]);
+            }
+            else {
+                columns[c].columns = prepareColumns(columns[c].columns);
+                column = new Column(columns[c]);
+            }
+        }
+        else {
+            column = columns[c];
+        }
+        column.headerText = isNullOrUndefined(column.headerText) ? column.foreignKeyValue || column.field || '' : column.headerText;
+        column.foreignKeyField = column.foreignKeyField || column.field;
+        column.valueAccessor = (typeof column.valueAccessor === 'string' ? getValue(column.valueAccessor, window)
+            : column.valueAccessor) || valueAccessor;
+        column.width = autoWidth && isNullOrUndefined(column.width) ? 200 : column.width;
+        if (isNullOrUndefined(column.visible)) {
+            column.visible = true;
+        }
+        columns[c] = column;
+    }
+    return columns;
+}
+/** @hidden */
+function setCssInGridPopUp(popUp, e, className) {
+    var popUpSpan = popUp.querySelector('span');
+    var position = popUp.parentElement.getBoundingClientRect();
+    var targetPosition = e.target.getBoundingClientRect();
+    var isBottomTail;
+    popUpSpan.className = className;
+    popUp.style.display = '';
+    isBottomTail = (isNullOrUndefined(e.clientY) ? e.changedTouches[0].clientY :
+        e.clientY) > popUp.offsetHeight + 10;
+    popUp.style.top = targetPosition.top - position.top +
+        (isBottomTail ? -(popUp.offsetHeight + 10) : popUp.offsetHeight + 10) + 'px'; //10px for tail element
+    popUp.style.left = getPopupLeftPosition(popUp, e, targetPosition, position.left) + 'px';
+    if (isBottomTail) {
+        popUp.querySelector('.e-downtail').style.display = '';
+        popUp.querySelector('.e-uptail').style.display = 'none';
+    }
+    else {
+        popUp.querySelector('.e-downtail').style.display = 'none';
+        popUp.querySelector('.e-uptail').style.display = '';
+    }
+}
+/** @hidden */
+function getPopupLeftPosition(popup, e, targetPosition, left) {
+    var width = popup.offsetWidth / 2;
+    var x = getPosition(e).x;
+    if (x - targetPosition.left < width) {
+        return targetPosition.left - left;
+    }
+    else if (targetPosition.right - x < width) {
+        return targetPosition.right - left - width * 2;
+    }
+    else {
+        return x - left - width;
+    }
+}
+/** @hidden */
+function getActualProperties(obj) {
+    if (obj instanceof ChildProperty) {
+        return getValue('properties', obj);
+    }
+    else {
+        return obj;
+    }
+}
+/** @hidden */
+function parentsUntil(elem, selector, isID) {
+    var parent = elem;
+    while (parent) {
+        if (isID ? parent.id === selector : parent.classList.contains(selector)) {
+            break;
+        }
+        parent = parent.parentElement;
+    }
+    return parent;
+}
+/** @hidden */
+function getElementIndex(element, elements) {
+    var index = -1;
+    for (var i = 0, len = elements.length; i < len; i++) {
+        if (elements[i].isEqualNode(element)) {
+            index = i;
+            break;
+        }
+    }
+    return index;
+}
+/** @hidden */
+function inArray(value, collection) {
+    for (var i = 0, len = collection.length; i < len; i++) {
+        if (collection[i] === value) {
+            return i;
+        }
+    }
+    return -1;
+}
+/** @hidden */
+function getActualPropFromColl(collection) {
+    var coll = [];
+    for (var i = 0, len = collection.length; i < len; i++) {
+        if (collection[i].hasOwnProperty('properties')) {
+            coll.push(collection[i].properties);
+        }
+        else {
+            coll.push(collection[i]);
+        }
+    }
+    return coll;
+}
+/** @hidden */
+function removeElement(target, selector) {
+    var elements = [].slice.call(target.querySelectorAll(selector));
+    for (var i = 0; i < elements.length; i++) {
+        remove(elements[i]);
+    }
+}
+/** @hidden */
+function getPosition(e) {
+    var position = {};
+    position.x = (isNullOrUndefined(e.clientX) ? e.changedTouches[0].clientX :
+        e.clientX);
+    position.y = (isNullOrUndefined(e.clientY) ? e.changedTouches[0].clientY :
+        e.clientY);
+    return position;
+}
+var uid = 0;
+/** @hidden */
+function getUid(prefix) {
+    return prefix + uid++;
+}
+/** @hidden */
+function appendChildren(elem, children) {
+    for (var i = 0, len = children.length; i < len; i++) {
+        if (len === children.length) {
+            elem.appendChild(children[i]);
+        }
+        else {
+            elem.appendChild(children[0]);
+        }
+    }
+    return elem;
+}
+/** @hidden */
+function parents(elem, selector, isID) {
+    var parent = elem;
+    var parents = [];
+    while (parent) {
+        if (isID ? parent.id === selector : parent.classList.contains(selector)) {
+            parents.push(parent);
+        }
+        parent = parent.parentElement;
+    }
+    return parents;
+}
+/** @hidden */
+function calculateAggregate(type, data, column, context) {
+    if (type === 'Custom') {
+        var temp = column.customAggregate;
+        if (typeof temp === 'string') {
+            temp = getValue(temp, window);
+        }
+        return temp ? temp.call(context, data, column) : '';
+    }
+    return (column.field in data || data instanceof Array) ? DataUtil.aggregates[type.toLowerCase()](data, column.field) : null;
+}
+/** @hidden */
+var scrollWidth = null;
+/** @hidden */
+function getScrollBarWidth() {
+    if (scrollWidth !== null) {
+        return scrollWidth;
+    }
+    var divNode = document.createElement('div');
+    var value = 0;
+    divNode.style.cssText = 'width:100px;height: 100px;overflow: scroll;position: absolute;top: -9999px;';
+    document.body.appendChild(divNode);
+    value = (divNode.offsetWidth - divNode.clientWidth) | 0;
+    document.body.removeChild(divNode);
+    return scrollWidth = value;
+}
+/** @hidden */
+var rowHeight;
+/** @hidden */
+function getRowHeight(element) {
+    if (rowHeight !== undefined) {
+        return rowHeight;
+    }
+    var table = createElement('table', { className: 'e-table', styles: 'visibility: hidden' });
+    table.innerHTML = '<tr><td class="e-rowcell">A<td></tr>';
+    element.appendChild(table);
+    var rect = table.querySelector('td').getBoundingClientRect();
+    element.removeChild(table);
+    rowHeight = Math.ceil(rect.height);
+    return rowHeight;
+}
+/** @hidden */
+function isComplexField(field) {
+    return field.split('.').length > 1;
+}
+/** @hidden */
+function getComplexFieldID(field) {
+    if (field === void 0) { field = ''; }
+    return field.replace(/\./g, '___');
+}
+/** @hidden */
+function setComplexFieldID(field) {
+    if (field === void 0) { field = ''; }
+    return field.replace(/___/g, '.');
+}
+/** @hidden */
+function isEditable(col, type, elem) {
+    var row = parentsUntil(elem, 'e-row');
+    var isOldRow = !row ? true : row && !row.classList.contains('e-insertedrow');
+    if (type === 'beginEdit' && isOldRow) {
+        if (col.isIdentity || col.isPrimaryKey || !col.allowEditing) {
+            return false;
+        }
+        return true;
+    }
+    else if (type === 'add' && col.isIdentity) {
+        return false;
+    }
+    else {
+        if (isOldRow && !col.allowEditing && !col.isIdentity && !col.isPrimaryKey) {
+            return false;
+        }
+        return true;
+    }
+}
+/** @hidden */
+function isActionPrevent(inst) {
+    var dlg = inst.element.querySelector('#' + inst.element.id + 'EditConfirm');
+    return inst.editSettings.mode === 'Batch' &&
+        (inst.element.querySelectorAll('.e-updatedtd').length) && inst.editSettings.showConfirmDialog &&
+        (dlg ? dlg.classList.contains('e-popup-close') : true);
+}
+/** @hidden */
+function wrap(elem, action) {
+    var clName = 'e-wrap';
+    elem = elem instanceof Array ? elem : [elem];
+    for (var i = 0; i < elem.length; i++) {
+        action ? elem[i].classList.add(clName) : elem[i].classList.remove(clName);
+    }
+}
+/** @hidden */
+function setFormatter(serviceLocator, column) {
+    var fmtr = serviceLocator.getService('valueFormatter');
+    switch (column.type) {
+        case 'date':
+            column.setFormatter(fmtr.getFormatFunction({ type: 'date', skeleton: column.format }));
+            column.setParser(fmtr.getParserFunction({ type: 'date', skeleton: column.format }));
+            break;
+        case 'datetime':
+            column.setFormatter(fmtr.getFormatFunction({ type: 'dateTime', skeleton: column.format }));
+            column.setParser(fmtr.getParserFunction({ type: 'dateTime', skeleton: column.format }));
+            break;
+        case 'number':
+            column.setFormatter(fmtr.getFormatFunction({ format: column.format }));
+            column.setParser(fmtr.getParserFunction({ format: column.format }));
+            break;
+    }
+}
+/** @hidden */
+function addRemoveActiveClasses(cells, add) {
+    var args = [];
+    for (var _i = 2; _i < arguments.length; _i++) {
+        args[_i - 2] = arguments[_i];
+    }
+    for (var i = 0, len = cells.length; i < len; i++) {
+        if (add) {
+            classList(cells[i], args.slice(), []);
+            cells[i].setAttribute('aria-selected', 'true');
+        }
+        else {
+            classList(cells[i], [], args.slice());
+            cells[i].removeAttribute('aria-selected');
+        }
+    }
+}
+/** @hidden */
+function distinctStringValues(result) {
+    var temp = {};
+    var res = [];
+    for (var i = 0; i < result.length; i++) {
+        if (!(result[i] in temp)) {
+            res.push(result[i].toString());
+            temp[result[i]] = 1;
+        }
+    }
+    return res;
+}
+/** @hidden */
+function getFilterMenuPostion(target, dialogObj, grid) {
+    var elementVisible = dialogObj.element.style.display;
+    dialogObj.element.style.display = 'block';
+    var dlgWidth = dialogObj.width;
+    var newpos;
+    if (!grid.enableRtl) {
+        newpos = calculateRelativeBasedPosition(target, dialogObj.element);
+        dialogObj.element.style.display = elementVisible;
+        dialogObj.element.style.top = (newpos.top + target.getBoundingClientRect().height) - 5 + 'px';
+        var leftPos = ((newpos.left - dlgWidth) + target.clientWidth);
+        if (leftPos < 1) {
+            dialogObj.element.style.left = (dlgWidth + leftPos) - 16 + 'px'; // right calculation
+        }
+        else {
+            dialogObj.element.style.left = leftPos + -4 + 'px';
+        }
+    }
+    else {
+        newpos = calculatePosition(target, 'left', 'bottom');
+        dialogObj.element.style.top = (newpos.top + target.getBoundingClientRect().height) - 35 + 'px';
+        dialogObj.element.style.display = elementVisible;
+        var leftPos = ((newpos.left - dlgWidth) + target.clientWidth);
+        if (leftPos < 1) {
+            dialogObj.element.style.left = (dlgWidth + leftPos) + -16 + 'px';
+        }
+        else {
+            dialogObj.element.style.left = leftPos - 16 + 'px';
+        }
+    }
+}
+/** @hidden */
+function getZIndexCalcualtion(args, dialogObj) {
+    args.popup.element.style.zIndex = (dialogObj.zIndex + 1).toString();
+}
+/** @hidden */
+function toogleCheckbox(elem) {
+    var span = elem.querySelector('.e-frame');
+    span.classList.contains('e-check') ? classList(span, ['e-uncheck'], ['e-check']) :
+        classList(span, ['e-check'], ['e-uncheck']);
+}
+/** @hidden */
+function createCboxWithWrap(uid, elem, className) {
+    var div = createElement('div', { className: className });
+    div.appendChild(elem);
+    div.setAttribute('uid', uid);
+    return div;
+}
+/** @hidden */
+function removeAddCboxClasses(elem, checked) {
+    removeClass([elem], ['e-check', 'e-stop', 'e-uncheck']);
+    if (checked) {
+        elem.classList.add('e-check');
+    }
+    else {
+        elem.classList.add('e-uncheck');
+    }
+}
+/**
+ * Refresh the Row model's foreign data.
+ * @param row - Grid Row model object.
+ * @param columns - Foreign columns array.
+ * @param data - Updated Row data.
+ * @hidden
+ */
+function refreshForeignData(row, columns, data) {
+    columns.forEach(function (col) {
+        setValue(col.field, getForeignData(col, data), row.foreignKeyData);
+    });
+    row.cells.forEach(function (cell) {
+        if (cell.isForeignKey) {
+            setValue('foreignKeyData', getValue(cell.column.field, row.foreignKeyData), cell);
+        }
+    });
+}
+/**
+ * Get the foreign data for the corresponding cell value.
+ * @param column - Foreign Key column
+ * @param data - Row data.
+ * @param lValue - cell value.
+ * @param foreignData - foreign data source.
+ * @hidden
+ */
+function getForeignData(column, data, lValue, foreignKeyData) {
+    var fField = column.foreignKeyField;
+    var key = (!isNullOrUndefined(lValue) ? lValue : valueAccessor(column.field, data, column));
+    key = isNullOrUndefined(key) ? '' : key;
+    var query = new Query();
+    var fdata = foreignKeyData || ((column.dataSource instanceof DataManager) && column.dataSource.dataSource.json.length ?
+        column.dataSource.dataSource.json : column.columnData);
+    if (key.getDay) {
+        query.where(getDatePredicate({ field: fField, operator: 'equal', value: key, matchCase: false }));
+    }
+    else {
+        query.where(fField, '==', key, false);
+    }
+    return new DataManager(fdata).executeLocal(query);
+}
+/**
+ * To use to get the column's object by the foreign key value.
+ * @param foreignKeyValue - Defines ForeignKeyValue.
+ * @param columns - Array of column object.
+ * @hidden
+ */
+function getColumnByForeignKeyValue(foreignKeyValue, columns) {
+    var column;
+    return columns.some(function (col) {
+        column = col;
+        return col.foreignKeyValue === foreignKeyValue;
+    }) && column;
+}
+/**
+ * @hidden
+ * @param filterObject - Defines predicate model object
+ */
+function getDatePredicate(filterObject, type) {
+    var datePredicate;
+    var prevDate;
+    var nextDate;
+    var prevObj = extend({}, getActualProperties(filterObject));
+    var nextObj = extend({}, getActualProperties(filterObject));
+    if (filterObject.value === null) {
+        datePredicate = new Predicate(prevObj.field, prevObj.operator, prevObj.value, false);
+        return datePredicate;
+    }
+    var value = new Date(filterObject.value);
+    if (filterObject.operator === 'equal' || filterObject.operator === 'notequal') {
+        if (type === 'datetime') {
+            prevDate = new Date(value.setSeconds(value.getSeconds() - 1));
+            nextDate = new Date(value.setSeconds(value.getSeconds() + 2));
+            filterObject.value = new Date(value.setSeconds(nextDate.getSeconds() - 1));
+        }
+        else {
+            prevDate = new Date(value.setHours(0) - 1);
+            nextDate = new Date(value.setHours(24));
+        }
+        prevObj.value = prevDate;
+        nextObj.value = nextDate;
+        if (filterObject.operator === 'equal') {
+            prevObj.operator = 'greaterthan';
+            nextObj.operator = 'lessthan';
+        }
+        else if (filterObject.operator === 'notequal') {
+            prevObj.operator = 'lessthanorequal';
+            nextObj.operator = 'greaterthanorequal';
+        }
+        var predicateSt = new Predicate(prevObj.field, prevObj.operator, prevObj.value, false);
+        var predicateEnd = new Predicate(nextObj.field, nextObj.operator, nextObj.value, false);
+        datePredicate = filterObject.operator === 'equal' ? predicateSt.and(predicateEnd) : predicateSt.or(predicateEnd);
+    }
+    else {
+        if (typeof (prevObj.value) === 'string') {
+            prevObj.value = new Date(prevObj.value);
+        }
+        var predicates = new Predicate(prevObj.field, prevObj.operator, prevObj.value, false);
+        datePredicate = predicates;
+    }
+    if (filterObject.setProperties) {
+        filterObject.setProperties({ ejpredicate: datePredicate }, true);
+    }
+    else {
+        filterObject.ejpredicate = datePredicate;
+    }
+    return datePredicate;
+}
+/**
+ * @hidden
+ */
+function renderMovable(ele, frzCols) {
+    var mEle = ele.cloneNode(true);
+    for (var i = 0; i < frzCols; i++) {
+        mEle.removeChild(mEle.children[0]);
+    }
+    for (var i = frzCols, len = ele.childElementCount; i < len; i++) {
+        ele.removeChild(ele.children[ele.childElementCount - 1]);
+    }
+    return mEle;
+}
+/**
+ * @hidden
+ */
+function isGroupAdaptive(grid) {
+    return grid.enableVirtualization && grid.groupSettings.columns.length > 0 && grid.isVirtualAdaptive;
+}
+/**
+ * @hidden
+ */
+function getObject(field, object) {
+    if (field === void 0) { field = ''; }
+    if (field) {
+        var value = object;
+        var splits = field.split('.');
+        for (var i = 0; i < splits.length && !isNullOrUndefined(value); i++) {
+            value = value[splits[i]];
+        }
+        return value;
+    }
+}
+/**
+ * @hidden
+ */
+function getCustomDateFormat(format, colType) {
+    var intl = new Internationalization();
+    var formatvalue;
+    var formatter = 'format';
+    var type = 'type';
+    if (colType === 'date') {
+        formatvalue = typeof (format) === 'object' ?
+            intl.getDatePattern({ type: format[type] ? format[type] : 'date', format: format[formatter] }, false) :
+            intl.getDatePattern({ type: 'date', skeleton: format }, false);
+    }
+    else {
+        formatvalue = typeof (format) === 'object' ?
+            intl.getDatePattern({ type: format[type] ? format[type] : 'dateTime', format: format[formatter] }, false) :
+            intl.getDatePattern({ type: 'dateTime', skeleton: format }, false);
+    }
+    return formatvalue;
+}
+/**
+ * @hidden
+ */
+function getExpandedState(gObj, hierarchyPrintMode) {
+    var rows = gObj.getRowsObject();
+    var obj = {};
+    for (var _i = 0, rows_1 = rows; _i < rows_1.length; _i++) {
+        var row = rows_1[_i];
+        if (row.isExpand && !row.isDetailRow) {
+            var index = gObj.allowPaging && gObj.printMode === 'AllPages' ? row.index +
+                (gObj.pageSettings.currentPage * gObj.pageSettings.pageSize) - gObj.pageSettings.pageSize : row.index;
+            obj[index] = {};
+            obj[index].isExpand = true;
+            obj[index].gridModel = getPrintGridModel(row.childGrid, hierarchyPrintMode);
+            obj[index].gridModel.query = gObj.childGrid.query;
+        }
+    }
+    return obj;
+}
+/**
+ * @hidden
+ */
+function getPrintGridModel(gObj, hierarchyPrintMode) {
+    if (hierarchyPrintMode === void 0) { hierarchyPrintMode = 'Expanded'; }
+    var printGridModel = {};
+    if (!gObj) {
+        return printGridModel;
+    }
+    for (var _i = 0, _a = Print.printGridProp; _i < _a.length; _i++) {
+        var key = _a[_i];
+        if (key === 'columns') {
+            printGridModel[key] = getActualPropFromColl(gObj[key]);
+        }
+        else if (key === 'allowPaging') {
+            printGridModel[key] = gObj.printMode === 'CurrentPage';
+        }
+        else {
+            printGridModel[key] = getActualProperties(gObj[key]);
+        }
+    }
+    if (gObj.childGrid && hierarchyPrintMode !== 'None') {
+        printGridModel.expandedRows = getExpandedState(gObj, hierarchyPrintMode);
+    }
+    return printGridModel;
+}
+/**
+ * @hidden
+ */
+function extendObjWithFn(copied, first, second, deep) {
+    var res = copied || {};
+    var len = arguments.length;
+    if (deep) {
+        len = len - 1;
+    }
+    var _loop_1 = function (i) {
+        if (!arguments_1[i]) {
+            return "continue";
+        }
+        var obj1 = arguments_1[i];
+        var keys = Object.keys(Object.getPrototypeOf(obj1)).length ?
+            Object.keys(obj1).concat(getPrototypesOfObj(obj1)) : Object.keys(obj1);
+        keys.forEach(function (key) {
+            var source = res[key];
+            var cpy = obj1[key];
+            var cln;
+            if (deep && (isObject(cpy) || Array.isArray(cpy))) {
+                if (isObject(cpy)) {
+                    cln = source ? source : {};
+                    res[key] = extend({}, cln, cpy, deep);
+                }
+                else {
+                    cln = source ? source : [];
+                    res[key] = extend([], cln, cpy, deep);
+                }
+            }
+            else {
+                res[key] = cpy;
+            }
+        });
+    };
+    var arguments_1 = arguments;
+    for (var i = 1; i < len; i++) {
+        _loop_1(i);
+    }
+    return res;
+}
+/**
+ * @hidden
+ */
+function getPrototypesOfObj(obj) {
+    var keys = [];
+    while (Object.getPrototypeOf(obj) && Object.keys(Object.getPrototypeOf(obj)).length) {
+        keys = keys.concat(Object.keys(Object.getPrototypeOf(obj)));
+        obj = Object.getPrototypeOf(obj);
+    }
+    return keys;
+}
+/**
+ * @hidden
+ */
+function measureColumnDepth(column) {
+    var max = 0;
+    for (var i = 0; i < column.length; i++) {
+        var depth = checkDepth(column[i], 0);
+        if (max < depth) {
+            max = depth;
+        }
+    }
+    return max + 1;
+}
+/**
+ * @hidden
+ */
+function checkDepth(col, index) {
+    var max = index;
+    var indices = [];
+    if (col.columns) {
+        index++;
+        for (var i = 0; i < col.columns.length; i++) {
+            indices[i] = checkDepth(col.columns[i], index);
+        }
+        for (var j = 0; j < indices.length; j++) {
+            if (max < indices[j]) {
+                max = indices[j];
+            }
+        }
+        index = max;
+    }
+    return index;
+}
+/**
+ * @hidden
+ */
+function refreshFilteredColsUid(gObj, filteredCols) {
+    for (var i = 0; i < filteredCols.length; i++) {
+        filteredCols[i].uid = filteredCols[i].isForeignKey ?
+            getColumnByForeignKeyValue(filteredCols[i].field, gObj.getForeignKeyColumns()).uid
+            : gObj.getColumnByField(filteredCols[i].field).uid;
+    }
+}
+/** @hidden */
+var Global;
+(function (Global) {
+    Global.timer = null;
+})(Global || (Global = {}));
+
+/* tslint:disable-next-line:max-line-length */
+/**
+ * @hidden
+ * `CheckBoxFilterBase` module is used to handle filtering action.
+ */
+var CheckBoxFilterBase = /** @__PURE__ @class */ (function () {
+    /**
+     * Constructor for checkbox filtering module
+     * @hidden
+     */
+    function CheckBoxFilterBase(parent, filterSettings) {
+        this.existingPredicate = {};
+        this.foreignKeyQuery = new Query();
+        this.filterState = true;
+        this.values = {};
+        this.renderEmpty = false;
+        this.parent = parent;
+        this.id = this.parent.element.id;
+        this.filterSettings = filterSettings;
+        this.valueFormatter = new ValueFormatter(this.parent.locale);
+        this.cBoxTrue = createCheckBox(this.parent.createElement, false, { checked: true, label: ' ' });
+        this.cBoxFalse = createCheckBox(this.parent.createElement, false, { checked: false, label: ' ' });
+        this.cBoxTrue.insertBefore(this.parent.createElement('input', {
+            className: 'e-chk-hidden', attrs: { type: 'checkbox' }
+        }), this.cBoxTrue.firstChild);
+        this.cBoxFalse.insertBefore(this.parent.createElement('input', {
+            className: 'e-chk-hidden', attrs: { 'type': 'checkbox' }
+        }), this.cBoxFalse.firstChild);
+        this.cBoxFalse.querySelector('.e-frame').classList.add('e-uncheck');
+        if (this.parent.enableRtl) {
+            addClass([this.cBoxTrue, this.cBoxFalse], ['e-rtl']);
+        }
+    }
+    /**
+     * To destroy the filter bar.
+     * @return {void}
+     * @hidden
+     */
+    CheckBoxFilterBase.prototype.destroy = function () {
+        this.closeDialog();
+    };
+    CheckBoxFilterBase.prototype.wireEvents = function () {
+        EventHandler.add(this.dlg, 'click', this.clickHandler, this);
+        this.searchHandler = debounce(this.searchBoxKeyUp, 200);
+        EventHandler.add(this.dlg.querySelector('.e-searchinput'), 'keyup', this.searchHandler, this);
+    };
+    CheckBoxFilterBase.prototype.unWireEvents = function () {
+        EventHandler.remove(this.dlg, 'click', this.clickHandler);
+        var elem = this.dlg.querySelector('.e-searchinput');
+        if (elem) {
+            EventHandler.remove(elem, 'keyup', this.searchHandler);
+        }
+    };
+    CheckBoxFilterBase.prototype.foreignKeyFilter = function (args, fColl, mPredicate) {
+        var _this = this;
+        var fPredicate = {};
+        var filterCollection = [];
+        var query = this.foreignKeyQuery.clone();
+        this.options.column.dataSource.
+            executeQuery(query.where(mPredicate)).then(function (e) {
+            _this.options.column.columnData = e.result;
+            _this.parent.notify(generateQuery, { predicate: fPredicate, column: _this.options.column });
+            args.ejpredicate = fPredicate.predicate.predicates;
+            fPredicate.predicate.predicates.forEach(function (fpred) {
+                filterCollection.push({
+                    field: fpred.field,
+                    predicate: 'or',
+                    matchCase: fpred.ignoreCase,
+                    ignoreAccent: fpred.ignoreAccent,
+                    operator: fpred.operator,
+                    value: fpred.value,
+                    type: _this.options.type
+                });
+            });
+            args.filterCollection = filterCollection.length ? filterCollection :
+                fColl.filter(function (col) { return col.field = _this.options.field; });
+            _this.options.handler(args);
+        });
+    };
+    CheckBoxFilterBase.prototype.foreignFilter = function (args, value) {
+        var operator = this.parent.getDataModule().isRemote() ?
+            (this.options.column.type === 'string' ? 'contains' : 'equal') : (this.options.column.type ? 'startswith' : 'contains');
+        var initalPredicate = new Predicate(this.options.column.foreignKeyValue, operator, value, true, this.parent.filterSettings.ignoreAccent);
+        this.foreignKeyFilter(args, [args.filterCollection], initalPredicate);
+    };
+    CheckBoxFilterBase.prototype.searchBoxClick = function (e) {
+        var target = e.target;
+        if (target.classList.contains('e-searchclear')) {
+            this.sInput.value = '';
+            this.refreshCheckboxes();
+            this.updateSearchIcon();
+            this.sInput.focus();
+        }
+    };
+    CheckBoxFilterBase.prototype.searchBoxKeyUp = function (e) {
+        this.refreshCheckboxes();
+        this.updateSearchIcon();
+    };
+    CheckBoxFilterBase.prototype.updateSearchIcon = function () {
+        if (this.sInput.value.length) {
+            classList(this.sIcon, ['e-chkcancel-icon'], ['e-search-icon']);
+        }
+        else {
+            classList(this.sIcon, ['e-search-icon'], ['e-chkcancel-icon']);
+        }
+    };
+    /**
+     * Gets the localized label by locale keyword.
+     * @param  {string} key
+     * @return {string}
+     */
+    CheckBoxFilterBase.prototype.getLocalizedLabel = function (key) {
+        return this.localeObj.getConstant(key);
+    };
+    CheckBoxFilterBase.prototype.updateDataSource = function () {
+        var dataSource = this.options.dataSource;
+        var str = 'object';
+        if (!(dataSource instanceof DataManager)) {
+            for (var i = 0; i < dataSource.length; i++) {
+                if (typeof dataSource !== str) {
+                    var obj = {};
+                    obj[this.options.field] = dataSource[i];
+                    dataSource[i] = obj;
+                }
+            }
+        }
+    };
+    CheckBoxFilterBase.prototype.updateModel = function (options) {
+        this.options = options;
+        this.existingPredicate = options.actualPredicate || {};
+        this.options.dataSource = options.dataSource;
+        this.updateDataSource();
+        this.options.type = options.type;
+        this.options.format = options.format || '';
+        this.options.filteredColumns = options.filteredColumns || this.parent.filterSettings.columns;
+        this.options.sortedColumns = options.sortedColumns || this.parent.sortSettings.columns;
+        this.options.query = options.query || new Query();
+        this.options.allowCaseSensitive = options.allowCaseSensitive || false;
+        this.options.uid = options.column.uid;
+        this.values = {};
+        this.localeObj = options.localeObj;
+        this.isFiltered = options.filteredColumns.length;
+    };
+    CheckBoxFilterBase.prototype.getAndSetChkElem = function (options) {
+        this.dlg = this.parent.createElement('div', {
+            id: this.id + this.options.type + '_excelDlg',
+            className: 'e-checkboxfilter e-filter-popup'
+        });
+        this.sBox = this.parent.createElement('div', { className: 'e-searchcontainer' });
+        if (!options.hideSearchbox) {
+            this.sInput = this.parent.createElement('input', {
+                id: this.id + '_SearchBox',
+                className: 'e-searchinput'
+            });
+            this.sIcon = this.parent.createElement('span', {
+                className: 'e-searchclear e-search-icon e-icons e-input-group-icon', attrs: {
+                    type: 'text', title: this.getLocalizedLabel('Search')
+                }
+            });
+            this.searchBox = this.parent.createElement('span', { className: 'e-searchbox e-fields' });
+            this.searchBox.appendChild(this.sInput);
+            this.sBox.appendChild(this.searchBox);
+            var inputargs = {
+                element: this.sInput, floatLabelType: 'Never', properties: {
+                    placeholder: this.getLocalizedLabel('Search')
+                }
+            };
+            Input.createInput(inputargs, this.parent.createElement);
+            this.searchBox.querySelector('.e-input-group').appendChild(this.sIcon);
+        }
+        this.spinner = this.parent.createElement('div', { className: 'e-spinner' }); //for spinner
+        this.cBox = this.parent.createElement('div', {
+            id: this.id + this.options.type + '_CheckBoxList',
+            className: 'e-checkboxlist e-fields'
+        });
+        this.spinner.appendChild(this.cBox);
+        this.sBox.appendChild(this.spinner);
+        return this.sBox;
+    };
+    CheckBoxFilterBase.prototype.showDialog = function (options) {
+        var args = {
+            requestType: filterBeforeOpen,
+            columnName: this.options.field, columnType: this.options.type, cancel: false
+        };
+        if (!isBlazor() || this.parent.isJsComponent) {
+            var filterModel = 'filterModel';
+            args[filterModel] = this;
+        }
+        this.parent.notify(cBoxFltrBegin, args);
+        if (args.cancel) {
+            return;
+        }
+        this.dialogObj = new Dialog({
+            visible: false, content: this.sBox,
+            close: this.closeDialog.bind(this),
+            width: (!isNullOrUndefined(parentsUntil(options.target, 'e-bigger')))
+                || this.parent.element.classList.contains('e-device') ? 260 : 255,
+            target: this.parent.element, animationSettings: { effect: 'None' },
+            buttons: [{
+                    click: this.btnClick.bind(this),
+                    buttonModel: {
+                        content: this.getLocalizedLabel(this.isExcel ? 'OKButton' : 'FilterButton'),
+                        cssClass: 'e-primary', isPrimary: true
+                    }
+                },
+                {
+                    click: this.btnClick.bind(this),
+                    buttonModel: { cssClass: 'e-flat', content: this.getLocalizedLabel(this.isExcel ? 'CancelButton' : 'ClearButton') }
+                }],
+            created: this.dialogCreated.bind(this),
+            open: this.dialogOpen.bind(this)
+        });
+        var isStringTemplate = 'isStringTemplate';
+        this.dialogObj[isStringTemplate] = true;
+        this.dialogObj.appendTo(this.dlg);
+        this.dialogObj.element.style.maxHeight = this.options.height + 'px';
+        this.dialogObj.show();
+        this.wireEvents();
+        createSpinner({ target: this.spinner }, this.parent.createElement);
+        showSpinner(this.spinner);
+        this.getAllData();
+    };
+    CheckBoxFilterBase.prototype.dialogCreated = function (e) {
+        if (!Browser.isDevice) {
+            getFilterMenuPostion(this.options.target, this.dialogObj, this.parent);
+        }
+        else {
+            this.dialogObj.position = { X: 'center', Y: 'center' };
+        }
+        this.parent.notify(filterDialogCreated, e);
+    };
+    CheckBoxFilterBase.prototype.openDialog = function (options) {
+        this.updateModel(options);
+        this.getAndSetChkElem(options);
+        this.showDialog(options);
+    };
+    CheckBoxFilterBase.prototype.closeDialog = function () {
+        if (this.dialogObj && !this.dialogObj.isDestroyed) {
+            var filterTemplateCol = this.parent.getColumns().filter(function (col) { return col.getFilterItemTemplate(); });
+            if (filterTemplateCol.length) {
+                this.parent.destroyTemplate(['filterItemTemplate']);
+            }
+            this.parent.notify(filterMenuClose, { field: this.options.field });
+            this.dialogObj.destroy();
+            this.unWireEvents();
+            remove(this.dlg);
+            this.dlg = null;
+        }
+    };
+    CheckBoxFilterBase.prototype.clearFilter = function () {
+        /* tslint:disable-next-line:max-line-length */
+        var args = { instance: this, handler: this.clearFilter, cancel: false };
+        this.parent.notify(fltrPrevent, args);
+        if (args.cancel) {
+            return;
+        }
+        this.options.handler({ action: 'clear-filter', field: this.options.field });
+    };
+    CheckBoxFilterBase.prototype.btnClick = function (e) {
+        if (this.filterState) {
+            if (e.target.tagName.toLowerCase() === 'input') {
+                var value = e.target.value;
+                if (this.options.column.type === 'boolean') {
+                    if (value !== undefined &&
+                        this.getLocalizedLabel('FilterTrue').toLowerCase().indexOf(value.toLowerCase()) !== -1) {
+                        value = 'true';
+                    }
+                    else if (value !== undefined &&
+                        this.getLocalizedLabel('FilterFalse').toLowerCase().indexOf(value.toLowerCase()) !== -1) {
+                        value = 'false';
+                    }
+                }
+                var args = {
+                    action: 'filtering', filterCollection: {
+                        field: this.options.field,
+                        operator: this.options.isRemote ?
+                            (this.options.column.type === 'string' ? 'contains' : 'equal') :
+                            (this.options.column.type === 'date' || this.options.column.type === 'datetime' ||
+                                this.options.column.type === 'boolean' ? 'equal' : 'contains'),
+                        value: value, matchCase: false, type: this.options.column.type
+                    },
+                    field: this.options.field
+                };
+                value ? this.options.column.isForeignColumn() ? this.foreignFilter(args, value) :
+                    this.options.handler(args) : this.closeDialog();
+            }
+            else {
+                var text = e.target.firstChild.textContent.toLowerCase();
+                if (this.getLocalizedLabel(this.isExcel ? 'OKButton' : 'FilterButton').toLowerCase() === text) {
+                    this.fltrBtnHandler();
+                }
+                else if (this.getLocalizedLabel('ClearButton').toLowerCase() === text) {
+                    this.clearFilter();
+                }
+            }
+            this.closeDialog();
+        }
+        else if (!(e.target.tagName.toLowerCase() === 'input')) {
+            this.clearFilter();
+            this.closeDialog();
+        }
+    };
+    CheckBoxFilterBase.prototype.fltrBtnHandler = function () {
+        var checked = [].slice.call(this.cBox.querySelectorAll('.e-check:not(.e-selectall)'));
+        var optr = 'equal';
+        var searchInput = this.searchBox.querySelector('.e-searchinput');
+        var caseSen = this.options.allowCaseSensitive;
+        var defaults = {
+            field: this.options.field, predicate: 'or', uid: this.options.uid,
+            operator: optr, type: this.options.type, matchCase: caseSen, ignoreAccent: this.parent.filterSettings.ignoreAccent
+        };
+        var isNotEqual = this.itemsCnt !== checked.length && this.itemsCnt - checked.length < checked.length;
+        if (isNotEqual && searchInput.value === '') {
+            optr = 'notequal';
+            checked = [].slice.call(this.cBox.querySelectorAll('.e-uncheck:not(.e-selectall)'));
+            defaults.predicate = 'and';
+            defaults.operator = 'notequal';
+        }
+        var value;
+        var fObj;
+        var coll = [];
+        if (checked.length !== this.itemsCnt || (searchInput.value && searchInput.value !== '')) {
+            for (var i = 0; i < checked.length; i++) {
+                value = this.values[parentsUntil(checked[i], 'e-ftrchk').getAttribute('uid')];
+                fObj = extend({}, { value: value }, defaults);
+                if (value && !value.toString().length) {
+                    fObj.operator = isNotEqual ? 'notequal' : 'equal';
+                }
+                if (value === '' || isNullOrUndefined(value)) {
+                    if (this.options.type === 'string') {
+                        coll.push({
+                            field: defaults.field, ignoreAccent: defaults.ignoreAccent, matchCase: defaults.matchCase,
+                            operator: defaults.operator, predicate: defaults.predicate, value: ''
+                        });
+                    }
+                    coll.push({
+                        field: defaults.field,
+                        matchCase: defaults.matchCase, operator: defaults.operator, predicate: defaults.predicate, value: null
+                    });
+                    coll.push({
+                        field: defaults.field, matchCase: defaults.matchCase, operator: defaults.operator,
+                        predicate: defaults.predicate, value: undefined
+                    });
+                }
+                else {
+                    coll.push(fObj);
+                }
+                var args = {
+                    instance: this, handler: this.fltrBtnHandler, arg1: fObj.field, arg2: fObj.predicate, arg3: fObj.operator,
+                    arg4: fObj.matchCase, arg5: fObj.ignoreAccent, arg6: fObj.value, cancel: false
+                };
+                this.parent.notify(fltrPrevent, args);
+                if (args.cancel) {
+                    return;
+                }
+            }
+            this.initiateFilter(coll);
+        }
+        else {
+            this.clearFilter();
+        }
+    };
+    CheckBoxFilterBase.prototype.initiateFilter = function (fColl) {
+        var firstVal = fColl[0];
+        var predicate;
+        if (!isNullOrUndefined(firstVal)) {
+            predicate = firstVal.ejpredicate ? firstVal.ejpredicate :
+                new Predicate(firstVal.field, firstVal.operator, firstVal.value, !firstVal.matchCase, firstVal.ignoreAccent);
+            for (var j = 1; j < fColl.length; j++) {
+                predicate = fColl[j].ejpredicate !== undefined ?
+                    predicate[fColl[j].predicate](fColl[j].ejpredicate) :
+                    predicate[fColl[j].predicate](fColl[j].field, fColl[j].operator, fColl[j].value, !fColl[j].matchCase, fColl[j].ignoreAccent);
+            }
+            var args = {
+                action: 'filtering', filterCollection: fColl, field: this.options.field,
+                ejpredicate: Predicate.or(predicate)
+            };
+            this.options.handler(args);
+        }
+    };
+    CheckBoxFilterBase.prototype.refreshCheckboxes = function () {
+        var _this = this;
+        var val = this.sInput.value;
+        var column = this.options.column;
+        var query = column.isForeignColumn() ? this.foreignKeyQuery.clone() : this.options.query.clone();
+        var foreignQuery = this.options.query.clone();
+        query.queries = [];
+        foreignQuery.queries = [];
+        var parsed = (this.options.type !== 'string' && parseFloat(val)) ? parseFloat(val) : val;
+        var operator = this.parent.getDataModule().isRemote() ?
+            (this.options.type === 'string' ? 'contains' : 'equal') : (this.options.type ? 'startswith' : 'contains');
+        var matchCase = true;
+        var ignoreAccent = this.parent.filterSettings.ignoreAccent;
+        var field = column.isForeignColumn() ? column.foreignKeyValue : column.field;
+        parsed = (parsed === '' || parsed === undefined) ? undefined : parsed;
+        var predicte;
+        if (this.options.type === 'boolean') {
+            if (parsed !== undefined &&
+                this.getLocalizedLabel('FilterTrue').toLowerCase().indexOf(parsed.toLowerCase()) !== -1) {
+                parsed = (this.parent.getDataModule().dataManager.adaptor.getModuleName()
+                    === 'ODataAdaptor' || 'ODataV4Adaptor') ? true : 'true';
+            }
+            else if (parsed !== undefined &&
+                this.getLocalizedLabel('FilterFalse').toLowerCase().indexOf(parsed.toLowerCase()) !== -1) {
+                parsed = (this.parent.getDataModule().dataManager.adaptor.getModuleName()
+                    === 'ODataAdaptor' || 'ODataV4Adaptor') ? false : 'false';
+            }
+            operator = 'equal';
+        }
+        this.addDistinct(query);
+        /* tslint:disable-next-line:max-line-length */
+        var args = {
+            requestType: filterSearchBegin,
+            filterModel: this, columnName: field, column: column,
+            operator: operator, matchCase: matchCase, ignoreAccent: ignoreAccent, filterChoiceCount: null,
+            query: query
+        };
+        this.parent.notify(cBoxFltrBegin, args);
+        predicte = new Predicate(field, args.operator, parsed, args.matchCase, args.ignoreAccent);
+        if (this.options.type === 'date' || this.options.type === 'datetime') {
+            parsed = this.valueFormatter.fromView(val, this.options.parserFn, this.options.type);
+            operator = 'equal';
+            if (isNullOrUndefined(parsed) && val.length) {
+                return;
+            }
+            var filterObj = {
+                field: field, operator: operator, value: parsed, matchCase: matchCase,
+                ignoreAccent: ignoreAccent
+            };
+            predicte = getDatePredicate(filterObj, this.options.type);
+        }
+        if (val.length) {
+            query.where(predicte);
+        }
+        args.filterChoiceCount = !isNullOrUndefined(args.filterChoiceCount) ? args.filterChoiceCount : 1000;
+        var fPredicate = {};
+        showSpinner(this.spinner);
+        this.renderEmpty = false;
+        if (column.isForeignColumn() && val.length) {
+            // tslint:disable-next-line:no-any
+            column.dataSource.executeQuery(query).then(function (e) {
+                var columnData = _this.options.column.columnData;
+                _this.options.column.columnData = e.result;
+                _this.parent.notify(generateQuery, { predicate: fPredicate, column: column });
+                if (fPredicate.predicate.predicates.length) {
+                    foreignQuery.where(fPredicate.predicate);
+                }
+                else {
+                    _this.renderEmpty = true;
+                }
+                _this.options.column.columnData = columnData;
+                foreignQuery.take(args.filterChoiceCount);
+                _this.search(args, foreignQuery);
+            });
+        }
+        else {
+            query.take(args.filterChoiceCount);
+            this.search(args, query);
+        }
+    };
+    CheckBoxFilterBase.prototype.search = function (args, query) {
+        if (this.parent.dataSource && 'result' in this.parent.dataSource) {
+            this.filterEvent(args, query);
+        }
+        else {
+            this.processSearch(query);
+        }
+    };
+    CheckBoxFilterBase.prototype.getPredicateFromCols = function (columns) {
+        var predicates = CheckBoxFilterBase.getPredicate(columns);
+        var predicateList = [];
+        var fPredicate = {};
+        var isGrid = this.parent.getForeignKeyColumns !== undefined;
+        var foreignColumn = isGrid ? this.parent.getForeignKeyColumns() : [];
+        for (var _i = 0, _a = Object.keys(predicates); _i < _a.length; _i++) {
+            var prop = _a[_i];
+            var col = void 0;
+            if (isGrid && this.parent.getColumnByField(prop).isForeignColumn()) {
+                col = getColumnByForeignKeyValue(prop, foreignColumn);
+            }
+            if (col) {
+                this.parent.notify(generateQuery, { predicate: fPredicate, column: col });
+                if (fPredicate.predicate.predicates.length) {
+                    predicateList.push(Predicate.or(fPredicate.predicate.predicates));
+                }
+            }
+            else {
+                predicateList.push(predicates[prop]);
+            }
+        }
+        return predicateList.length && Predicate.and(predicateList);
+    };
+    CheckBoxFilterBase.prototype.getQuery = function () {
+        return this.parent.getQuery ? this.parent.getQuery().clone() : new Query();
+    };
+    CheckBoxFilterBase.prototype.getAllData = function () {
+        var query = this.getQuery();
+        query.requiresCount(); //consider take query
+        this.addDistinct(query);
+        var args = {
+            requestType: filterChoiceRequest, query: query, filterChoiceCount: null
+        };
+        if (!isBlazor() || this.parent.isJsComponent) {
+            var filterModel = 'filterModel';
+            args[filterModel] = this;
+        }
+        this.parent.notify(cBoxFltrBegin, args);
+        args.filterChoiceCount = !isNullOrUndefined(args.filterChoiceCount) ? args.filterChoiceCount : 1000;
+        query.take(args.filterChoiceCount);
+        if (this.parent.dataSource && 'result' in this.parent.dataSource) {
+            this.filterEvent(args, query);
+        }
+        else {
+            this.processDataOperation(query, true);
+        }
+    };
+    CheckBoxFilterBase.prototype.addDistinct = function (query) {
+        var filteredColumn = DataUtil.distinct(this.options.filteredColumns, 'field');
+        if (filteredColumn.indexOf(this.options.column.field) <= -1) {
+            filteredColumn = filteredColumn.concat(this.options.column.field);
+        }
+        query.distinct(filteredColumn);
+        return query;
+    };
+    CheckBoxFilterBase.prototype.filterEvent = function (args, query) {
+        var _this = this;
+        var def = this.eventPromise(args, query);
+        def.promise.then(function (e) {
+            _this.dataSuccess(e);
+        });
+    };
+    CheckBoxFilterBase.prototype.eventPromise = function (args, query) {
+        var state;
+        state = this.getStateEventArgument(query);
+        var def = new Deferred();
+        state.dataSource = def.resolve;
+        state.action = args;
+        this.parent.trigger(dataStateChange, state);
+        return def;
+    };
+    
+    CheckBoxFilterBase.prototype.getStateEventArgument = function (query) {
+        var adaptr = new UrlAdaptor();
+        var dm = new DataManager({ url: '', adaptor: new UrlAdaptor });
+        var state = adaptr.processQuery(dm, query);
+        var data = JSON.parse(state.data);
+        return data;
+    };
+    
+    CheckBoxFilterBase.prototype.processDataOperation = function (query, isInitial) {
+        var _this = this;
+        this.options.dataSource = this.options.dataSource instanceof DataManager ?
+            this.options.dataSource : new DataManager(this.options.dataSource);
+        var allPromise = [];
+        var runArray = [];
+        if (this.options.column.isForeignColumn() && isInitial) {
+            allPromise.push(this.options.column.dataSource.executeQuery(this.foreignKeyQuery));
+            runArray.push(function (data) { return _this.foreignKeyData = data; });
+        }
+        allPromise.push(this.options.dataSource.executeQuery(query));
+        runArray.push(this.dataSuccess.bind(this));
+        var i = 0;
+        Promise.all(allPromise).then(function (e) {
+            e.forEach(function (data) {
+                runArray[i++](data.result);
+            });
+        });
+    };
+    CheckBoxFilterBase.prototype.dataSuccess = function (e) {
+        this.fullData = e;
+        var query = new Query();
+        if (this.parent.searchSettings && this.parent.searchSettings.key.length) {
+            var sSettings = this.parent.searchSettings;
+            var fields = sSettings.fields.length ? sSettings.fields : this.parent.getColumns().map(function (f) { return f.field; });
+            /* tslint:disable-next-line:max-line-length */
+            query.search(sSettings.key, fields, sSettings.operator, sSettings.ignoreCase, sSettings.ignoreAccent);
+        }
+        if ((this.options.filteredColumns.length)) {
+            var cols = [];
+            for (var i = 0; i < this.options.filteredColumns.length; i++) {
+                var filterColumn = this.options.filteredColumns[i];
+                if (this.options.uid) {
+                    filterColumn.uid = filterColumn.uid || this.parent.getColumnByField(filterColumn.field).uid;
+                    if (filterColumn.uid !== this.options.uid) {
+                        cols.push(this.options.filteredColumns[i]);
+                    }
+                }
+                else {
+                    if (filterColumn.field !== this.options.field) {
+                        cols.push(this.options.filteredColumns[i]);
+                    }
+                }
+            }
+            var predicate = this.getPredicateFromCols(cols);
+            if (predicate) {
+                query.where(predicate);
+            }
+        }
+        // query.select(this.options.field);
+        var result = new DataManager(this.fullData).executeLocal(query);
+        var col = this.options.column;
+        this.filteredData = CheckBoxFilterBase.
+            getDistinct(result, this.options.field, col, this.foreignKeyData).records || [];
+        this.processDataSource(null, true, this.filteredData);
+        this.sInput.focus();
+        var args = {
+            requestType: filterAfterOpen,
+            columnName: this.options.field, columnType: this.options.type
+        };
+        if (!isBlazor() || this.parent.isJsComponent) {
+            var filterModel = 'filterModel';
+            args[filterModel] = this;
+        }
+        this.parent.notify(cBoxFltrComplete, args);
+    };
+    CheckBoxFilterBase.prototype.processDataSource = function (query, isInitial, dataSource) {
+        showSpinner(this.spinner);
+        // query = query ? query : this.options.query.clone();
+        // query.requiresCount();
+        // let result: Object = new DataManager(dataSource as JSON[]).executeLocal(query);
+        // let res: { result: Object[] } = result as { result: Object[] };
+        this.updateResult();
+        this.createFilterItems(dataSource, isInitial);
+    };
+    CheckBoxFilterBase.prototype.processSearch = function (query) {
+        this.processDataOperation(query);
+    };
+    CheckBoxFilterBase.prototype.updateResult = function () {
+        this.result = {};
+        var predicate = this.getPredicateFromCols(this.options.filteredColumns);
+        var query = new Query();
+        if (predicate) {
+            query.where(predicate);
+        }
+        var result = new DataManager(this.fullData).executeLocal(query);
+        for (var _i = 0, result_1 = result; _i < result_1.length; _i++) {
+            var res = result_1[_i];
+            this.result[getObject(this.options.field, res)] = true;
+        }
+    };
+    CheckBoxFilterBase.prototype.clickHandler = function (e) {
+        var target = e.target;
+        var elem = parentsUntil(target, 'e-checkbox-wrapper');
+        if (parentsUntil(target, 'e-searchbox')) {
+            this.searchBoxClick(e);
+        }
+        if (elem) {
+            var selectAll = elem.querySelector('.e-selectall');
+            if (selectAll) {
+                this.updateAllCBoxes(!selectAll.classList.contains('e-check'));
+            }
+            else {
+                toogleCheckbox(elem.parentElement);
+            }
+            this.updateIndeterminatenBtn();
+            elem.querySelector('.e-chk-hidden').focus();
+        }
+    };
+    CheckBoxFilterBase.prototype.updateAllCBoxes = function (checked) {
+        var cBoxes = [].slice.call(this.cBox.querySelectorAll('.e-frame'));
+        for (var _i = 0, cBoxes_1 = cBoxes; _i < cBoxes_1.length; _i++) {
+            var cBox = cBoxes_1[_i];
+            removeAddCboxClasses(cBox, checked);
+        }
+    };
+    CheckBoxFilterBase.prototype.dialogOpen = function () {
+        if (this.parent.element.classList.contains('e-device')) {
+            this.dialogObj.element.querySelector('.e-input-group').classList.remove('e-input-focus');
+            this.dialogObj.element.querySelector('.e-btn').focus();
+        }
+    };
+    CheckBoxFilterBase.prototype.createCheckbox = function (value, checked, data) {
+        var elem = checked ? this.cBoxTrue.cloneNode(true) :
+            this.cBoxFalse.cloneNode(true);
+        var label = elem.querySelector('.e-label');
+        label.innerHTML = !isNullOrUndefined(value) && value.toString().length ? value :
+            this.getLocalizedLabel('Blanks');
+        addClass([label], ['e-checkboxfiltertext']);
+        if (this.options.template) {
+            label.innerHTML = '';
+            appendChildren(label, this.options.template(data, this.parent, 'filterItemTemplate'));
+        }
+        return elem;
+    };
+    CheckBoxFilterBase.prototype.updateIndeterminatenBtn = function () {
+        var cnt = this.cBox.children.length - 1;
+        var className = [];
+        var elem = this.cBox.querySelector('.e-selectall');
+        var selected = this.cBox.querySelectorAll('.e-check:not(.e-selectall)').length;
+        var btn = this.dialogObj.btnObj[0];
+        btn.disabled = false;
+        if (cnt === selected) {
+            className = ['e-check'];
+        }
+        else if (selected) {
+            className = ['e-stop'];
+        }
+        else {
+            className = ['e-uncheck'];
+            btn.disabled = true;
+        }
+        this.filterState = !btn.disabled;
+        btn.dataBind();
+        removeClass([elem], ['e-check', 'e-stop', 'e-uncheck']);
+        addClass([elem], className);
+    };
+    CheckBoxFilterBase.prototype.createFilterItems = function (data, isInitial) {
+        var _a;
+        var cBoxes = this.parent.createElement('div');
+        var btn = this.dialogObj.btnObj[0];
+        var nullCounter = -1;
+        for (var i = 0; i < data.length; i++) {
+            var val = getValue('ejValue', data[i]);
+            if (val === '' || isNullOrUndefined(val)) {
+                nullCounter = nullCounter + 1;
+            }
+        }
+        this.itemsCnt = nullCounter !== -1 ? data.length - nullCounter : data.length;
+        if (data.length && !this.renderEmpty) {
+            var selectAllValue = this.getLocalizedLabel('SelectAll');
+            var checkBox = this.createCheckbox(selectAllValue, false, (_a = {}, _a[this.options.field] = selectAllValue, _a));
+            var selectAll = createCboxWithWrap(getUid('cbox'), checkBox, 'e-ftrchk');
+            selectAll.querySelector('.e-frame').classList.add('e-selectall');
+            cBoxes.appendChild(selectAll);
+            var predicate = new Predicate('field', 'equal', this.options.field);
+            if (this.options.foreignKeyValue) {
+                predicate = predicate.or('field', 'equal', this.options.foreignKeyValue);
+            }
+            var isColFiltered = new DataManager(this.options.filteredColumns).executeLocal(new Query().where(predicate)).length;
+            var isRndere = void 0;
+            for (var i = 0; i < data.length; i++) {
+                var uid = getUid('cbox');
+                this.values[uid] = getValue('ejValue', data[i]);
+                var value = this.valueFormatter.toView(getValue(this.options.field, data[i]), this.options.formatFn);
+                if ((value === '' || isNullOrUndefined(value))) {
+                    if (isRndere) {
+                        continue;
+                    }
+                    isRndere = true;
+                }
+                var checkbox = this.createCheckbox(value, this.getCheckedState(isColFiltered, this.values[uid]), getValue('dataObj', data[i]));
+                cBoxes.appendChild(createCboxWithWrap(uid, checkbox, 'e-ftrchk'));
+            }
+            this.cBox.innerHTML = '';
+            appendChildren(this.cBox, [].slice.call(cBoxes.children));
+            this.updateIndeterminatenBtn();
+            btn.disabled = false;
+        }
+        else {
+            cBoxes.appendChild(this.parent.createElement('span', { innerHTML: this.getLocalizedLabel('NoResult') }));
+            this.cBox.innerHTML = '';
+            appendChildren(this.cBox, [].slice.call(cBoxes.children));
+            btn.disabled = true;
+        }
+        this.filterState = !btn.disabled;
+        btn.dataBind();
+        var args = { requestType: filterChoiceRequest, dataSource: this.renderEmpty ? [] : data };
+        if (!isBlazor() || this.parent.isJsComponent) {
+            var filterModel = 'filterModel';
+            args[filterModel] = this;
+        }
+        this.parent.notify(cBoxFltrComplete, args);
+        hideSpinner(this.spinner);
+    };
+    CheckBoxFilterBase.prototype.getCheckedState = function (isColFiltered, value) {
+        if (!this.isFiltered || !isColFiltered) {
+            return true;
+        }
+        else {
+            return this.result[value];
+        }
+    };
+    CheckBoxFilterBase.getDistinct = function (json, field, column, foreignKeyData$$1) {
+        var len = json.length;
+        var result = [];
+        var value;
+        var ejValue = 'ejValue';
+        var lookup = {};
+        var isForeignKey = column && column.isForeignColumn();
+        while (len--) {
+            value = json[len];
+            value = getObject(field, value); //local remote diff, check with mdu   
+            if (!(value in lookup)) {
+                var obj = {};
+                obj[ejValue] = value;
+                lookup[value] = true;
+                if (isForeignKey) {
+                    var foreignDataObj = getForeignData(column, {}, value, foreignKeyData$$1)[0];
+                    setValue(foreignKeyData, foreignDataObj, json[len]);
+                    value = getValue(column.foreignKeyValue, foreignDataObj);
+                }
+                setValue(field, isNullOrUndefined(value) ? null : value, obj);
+                setValue('dataObj', json[len], obj);
+                result.push(obj);
+            }
+        }
+        return DataUtil.group(DataUtil.sort(result, field, DataUtil.fnAscending), 'ejValue');
+    };
+    CheckBoxFilterBase.getPredicate = function (columns) {
+        var cols = DataUtil.distinct(columns, 'field', true) || [];
+        var collection = [];
+        var pred = {};
+        for (var i = 0; i < cols.length; i++) {
+            collection = new DataManager(columns).executeLocal(new Query().where('field', 'equal', cols[i].field));
+            if (collection.length !== 0) {
+                pred[cols[i].field] = CheckBoxFilterBase.generatePredicate(collection);
+            }
+        }
+        return pred;
+    };
+    CheckBoxFilterBase.generatePredicate = function (cols) {
+        var len = cols ? cols.length : 0;
+        var predicate;
+        var first;
+        first = CheckBoxFilterBase.updateDateFilter(cols[0]);
+        first.ignoreAccent = !isNullOrUndefined(first.ignoreAccent) ? first.ignoreAccent : false;
+        if (first.type === 'date' || first.type === 'datetime') {
+            predicate = getDatePredicate(first, first.type);
+        }
+        else {
+            predicate = first.ejpredicate ? first.ejpredicate :
+                new Predicate(first.field, first.operator, first.value, !CheckBoxFilterBase.getCaseValue(first), first.ignoreAccent);
+        }
+        for (var p = 1; p < len; p++) {
+            cols[p] = CheckBoxFilterBase.updateDateFilter(cols[p]);
+            if (len > 2 && p > 1 && cols[p].predicate === 'or') {
+                if (cols[p].type === 'date' || cols[p].type === 'datetime') {
+                    predicate.predicates.push(getDatePredicate(cols[p], cols[p].type));
+                }
+                else {
+                    predicate.predicates.push(new Predicate(cols[p].field, cols[p].operator, cols[p].value, !CheckBoxFilterBase.getCaseValue(cols[p]), cols[p].ignoreAccent));
+                }
+            }
+            else {
+                if (cols[p].type === 'date' || cols[p].type === 'datetime') {
+                    predicate = predicate[(cols[p].predicate)](getDatePredicate(cols[p]), cols[p].type, cols[p].ignoreAccent);
+                }
+                else {
+                    /* tslint:disable-next-line:max-line-length */
+                    predicate = cols[p].ejpredicate ?
+                        predicate[cols[p].predicate](cols[p].ejpredicate) :
+                        predicate[(cols[p].predicate)](cols[p].field, cols[p].operator, cols[p].value, !CheckBoxFilterBase.getCaseValue(cols[p]), cols[p].ignoreAccent);
+                }
+            }
+        }
+        return predicate || null;
+    };
+    CheckBoxFilterBase.getCaseValue = function (filter) {
+        if (isNullOrUndefined(filter.matchCase)) {
+            return true;
+        }
+        else {
+            return filter.matchCase;
+        }
+    };
+    CheckBoxFilterBase.updateDateFilter = function (filter) {
+        if ((filter.type === 'date' || filter.type === 'datetime' || filter.value instanceof Date)) {
+            filter.type = filter.type || 'date';
+        }
+        return filter;
+    };
+    return CheckBoxFilterBase;
+}());
+
+var __extends$16 = (undefined && undefined.__extends) || (function () {
+    var extendStatics = function (d, b) {
+        extendStatics = Object.setPrototypeOf ||
+            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+        return extendStatics(d, b);
+    };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+/**
+ * @hidden
+ * `ExcelFilter` module is used to handle filtering action.
+ */
+var ExcelFilterBase = /** @__PURE__ @class */ (function (_super) {
+    __extends$16(ExcelFilterBase, _super);
+    /**
+     * Constructor for excel filtering module
+     * @hidden
+     */
+    function ExcelFilterBase(parent, filterSettings, customFltrOperators) {
+        var _this = _super.call(this, parent, filterSettings) || this;
+        _this.customFilterOperators = customFltrOperators;
+        _this.isExcel = true;
+        return _this;
+    }
+    ExcelFilterBase.prototype.getCMenuDS = function (type, operator) {
+        var options = {
+            number: ['Equal', 'NotEqual', '', 'LessThan', 'LessThanOrEqual', 'GreaterThan',
+                'GreaterThanOrEqual', 'Between', '', 'CustomFilter'],
+            string: ['Equal', 'NotEqual', '', 'StartsWith', 'EndsWith', '', 'Contains', '', 'CustomFilter'],
+        };
+        options.date = options.number;
+        options.datetime = options.number;
+        var model = [];
+        for (var i = 0; i < options[type].length; i++) {
+            if (options[type][i].length) {
+                if (operator) {
+                    model.push({
+                        text: this.getLocalizedLabel(options[type][i]) + '...',
+                        iconCss: 'e-icons e-icon-check ' + (operator === options[type][i].toLowerCase() ? '' : 'e-emptyicon')
+                    });
+                }
+                else {
+                    model.push({
+                        text: this.getLocalizedLabel(options[type][i]) + '...'
+                    });
+                }
+            }
+            else {
+                model.push({ separator: true });
+            }
+        }
+        return model;
+    };
+    /**
+     * To destroy the filter bar.
+     * @return {void}
+     * @hidden
+     */
+    ExcelFilterBase.prototype.destroy = function () {
+        if (this.dlg) {
+            this.unwireExEvents();
+            _super.prototype.destroy.call(this);
+        }
+        if (this.cmenu && this.cmenu.parentElement) {
+            remove(this.cmenu);
+        }
+    };
+    ExcelFilterBase.prototype.createMenu = function (type, isFiltered, isCheckIcon) {
+        var options = { string: 'TextFilter', date: 'DateFilter', datetime: 'DateTimeFilter', number: 'NumberFilter' };
+        this.menu = this.parent.createElement('div', { className: 'e-contextmenu-wrapper' });
+        if (this.parent.enableRtl) {
+            this.menu.classList.add('e-rtl');
+        }
+        else {
+            this.menu.classList.remove('e-rtl');
+        }
+        var ul = this.parent.createElement('ul');
+        var icon = isFiltered ? 'e-excl-filter-icon e-filtered' : 'e-excl-filter-icon';
+        ul.appendChild(this.createMenuElem(this.getLocalizedLabel('ClearFilter'), isFiltered ? '' : 'e-disabled', icon));
+        if (type !== 'boolean') {
+            ul.appendChild(this.createMenuElem(this.getLocalizedLabel(options[type]), 'e-submenu', isCheckIcon && this.ensureTextFilter() ? 'e-icon-check' : icon + ' e-emptyicon', true));
+        }
+        this.menu.appendChild(ul);
+    };
+    ExcelFilterBase.prototype.createMenuElem = function (val, className, iconName, isSubMenu) {
+        var li = this.parent.createElement('li', { className: className + ' e-menu-item' });
+        li.innerHTML = val;
+        li.insertBefore(this.parent.createElement('span', { className: 'e-menu-icon e-icons ' + iconName }), li.firstChild);
+        if (isSubMenu) {
+            li.appendChild(this.parent.createElement('span', { className: 'e-icons e-caret' }));
+        }
+        return li;
+    };
+    ExcelFilterBase.prototype.wireExEvents = function () {
+        EventHandler.add(this.dlg, 'mouseover', this.hoverHandler, this);
+        EventHandler.add(this.dlg, 'click', this.clickExHandler, this);
+    };
+    ExcelFilterBase.prototype.unwireExEvents = function () {
+        EventHandler.remove(this.dlg, 'mouseover', this.hoverHandler);
+        EventHandler.remove(this.dlg, 'click', this.clickExHandler);
+    };
+    ExcelFilterBase.prototype.clickExHandler = function (e) {
+        var menuItem = parentsUntil(e.target, 'e-menu-item');
+        if (menuItem && this.getLocalizedLabel('ClearFilter') === menuItem.innerText.trim()) {
+            this.clearFilter();
+            this.closeDialog();
+        }
+    };
+    ExcelFilterBase.prototype.destroyCMenu = function () {
+        if (this.menuObj && !this.menuObj.isDestroyed) {
+            this.menuObj.destroy();
+            remove(this.cmenu);
+        }
+    };
+    ExcelFilterBase.prototype.hoverHandler = function (e) {
+        var target = e.target.querySelector('.e-contextmenu');
+        var li = parentsUntil(e.target, 'e-menu-item');
+        var focused = this.menu.querySelector('.e-focused');
+        var isSubMenu;
+        if (focused) {
+            focused.classList.remove('e-focused');
+        }
+        if (li) {
+            li.classList.add('e-focused');
+            isSubMenu = li.classList.contains('e-submenu');
+        }
+        if (target) {
+            return;
+        }
+        if (!isSubMenu) {
+            var submenu = this.menu.querySelector('.e-submenu');
+            if (!isNullOrUndefined(submenu)) {
+                submenu.classList.remove('e-selected');
+            }
+            this.isCMenuOpen = false;
+            this.destroyCMenu();
+        }
+        var selectedMenu = this.ensureTextFilter();
+        if (!this.isCMenuOpen && isSubMenu) {
+            li.classList.add('e-selected');
+            this.isCMenuOpen = true;
+            var menuOptions = {
+                items: this.getCMenuDS(this.options.type, selectedMenu ? selectedMenu.replace(/\s/g, '') : undefined),
+                select: this.selectHandler.bind(this),
+                onClose: this.destroyCMenu.bind(this),
+                enableRtl: this.parent.enableRtl,
+                beforeClose: this.preventClose
+            };
+            this.parent.element.appendChild(this.cmenu);
+            this.menuObj = new ContextMenu(menuOptions, this.cmenu);
+            var client = this.menu.querySelector('.e-submenu').getBoundingClientRect();
+            var pos = { top: 0, left: 0 };
+            if (Browser.isDevice) {
+                var contextRect = this.getContextBounds(this.menuObj);
+                pos.top = (window.innerHeight - contextRect.height) / 2;
+                pos.left = (window.innerWidth - contextRect.width) / 2;
+                this.closeDialog();
+            }
+            else {
+                pos.top = Browser.isIE ? window.pageYOffset + client.top : window.scrollY + client.top;
+                pos.left = this.getCMenuYPosition(this.dlg, this.menuObj);
+            }
+            this.menuObj.open(pos.top, pos.left, e.target);
+            this.parent.applyBiggerTheme(this.menuObj.element.parentElement);
+        }
+    };
+    ExcelFilterBase.prototype.ensureTextFilter = function () {
+        var selectedMenu;
+        var predicates = this.existingPredicate[this.options.field];
+        if (predicates && predicates.length === 2) {
+            if (predicates[0].operator === 'greaterthanorequal' && predicates[1].operator === 'lessthanorequal') {
+                selectedMenu = 'between';
+            }
+            else {
+                selectedMenu = 'customfilter';
+            }
+        }
+        else {
+            if (predicates && predicates.length === 1) {
+                this.optrData = this.customFilterOperators[this.options.type + 'Operator'];
+                selectedMenu = predicates[0].operator;
+            }
+        }
+        return selectedMenu;
+    };
+    ExcelFilterBase.prototype.preventClose = function (args) {
+        if (args.event instanceof MouseEvent && args.event.target.classList.contains('e-submenu')) {
+            args.cancel = true;
+        }
+    };
+    ExcelFilterBase.prototype.getContextBounds = function (context) {
+        var elementVisible = this.menuObj.element.style.display;
+        this.menuObj.element.style.display = 'block';
+        return this.menuObj.element.getBoundingClientRect();
+    };
+    ExcelFilterBase.prototype.getCMenuYPosition = function (target, context) {
+        var contextWidth = this.getContextBounds(context).width;
+        var targetPosition = target.getBoundingClientRect();
+        var leftPos = targetPosition.right + contextWidth - this.parent.element.clientWidth;
+        var targetBorder = target.offsetWidth - target.clientWidth;
+        targetBorder = targetBorder ? targetBorder + 1 : 0;
+        return (leftPos < 1) ? (targetPosition.right + 1 - targetBorder) : (targetPosition.left - contextWidth - 1 + targetBorder);
+    };
+    ExcelFilterBase.prototype.openDialog = function (options) {
+        var _this = this;
+        this.updateModel(options);
+        this.getAndSetChkElem(options);
+        this.showDialog(options);
+        this.dialogObj.dataBind();
+        var filterLength = (this.existingPredicate[options.field] && this.existingPredicate[options.field].length) ||
+            this.options.filteredColumns.filter(function (col) {
+                return _this.options.field === col.field;
+            }).length;
+        this.createMenu(options.type, filterLength > 0, (filterLength === 1 || filterLength === 2));
+        this.dlg.insertBefore(this.menu, this.dlg.firstChild);
+        this.dlg.classList.add('e-excelfilter');
+        this.dlg.classList.remove('e-checkboxfilter');
+        this.cmenu = this.parent.createElement('ul', { className: 'e-excel-menu' });
+        this.wireExEvents();
+    };
+    ExcelFilterBase.prototype.closeDialog = function () {
+        _super.prototype.closeDialog.call(this);
+    };
+    ExcelFilterBase.prototype.selectHandler = function (e) {
+        if (e.item) {
+            this.menuItem = e.item;
+            this.renderDialogue(e);
+        }
+    };
+    ExcelFilterBase.prototype.renderDialogue = function (e) {
+        var _this = this;
+        var target = e.element;
+        var column = this.options.field;
+        var isComplex = !isNullOrUndefined(column) && isComplexField(column);
+        var complexFieldName = !isNullOrUndefined(column) && getComplexFieldID(column);
+        var mainDiv = this.parent.createElement('div', {
+            className: 'e-xlfl-maindiv',
+            id: isComplex ? complexFieldName + '-xlflmenu' : column + '-xlflmenu'
+        });
+        this.dlgDiv = this.parent.createElement('div', {
+            className: 'e-xlflmenu',
+            id: isComplex ? complexFieldName + '-xlfldlg' : column + '-xlfldlg'
+        });
+        this.parent.element.appendChild(this.dlgDiv);
+        this.dlgObj = new Dialog({
+            header: this.getLocalizedLabel('CustomFilter'),
+            isModal: true,
+            overlayClick: this.removeDialog.bind(this),
+            showCloseIcon: true,
+            closeOnEscape: false,
+            target: document.body,
+            // target: this.parent.element,
+            visible: false,
+            enableRtl: this.parent.enableRtl,
+            open: function () {
+                var row = _this.dlgObj.element.querySelector('table.e-xlfl-table>tr');
+                if (_this.options.column.filterTemplate) {
+                    if (isBlazor()) {
+                        row.querySelector('.e-xlfl-valuediv').children[0].focus();
+                    }
+                    else {
+                        row.querySelector('#' + _this.options.column.field + '-xlfl-frstvalue').focus();
+                    }
+                }
+                else {
+                    row.cells[1].querySelector('input:not([type=hidden])').focus();
+                }
+            },
+            close: this.removeDialog.bind(this),
+            created: this.createdDialog.bind(this, target, column),
+            buttons: [{
+                    click: this.filterBtnClick.bind(this, column),
+                    buttonModel: {
+                        content: this.getLocalizedLabel('OKButton'), isPrimary: true, cssClass: 'e-xlfl-okbtn'
+                    }
+                },
+                {
+                    click: this.removeDialog.bind(this),
+                    buttonModel: { content: this.getLocalizedLabel('CancelButton'), cssClass: 'e-xlfl-cancelbtn' }
+                }],
+            content: mainDiv,
+            width: 430,
+            animationSettings: { effect: 'None' },
+        });
+        var isStringTemplate = 'isStringTemplate';
+        this.dlgObj[isStringTemplate] = true;
+        this.dlgObj.appendTo(this.dlgDiv);
+    };
+    ExcelFilterBase.prototype.removeDialog = function () {
+        if (isBlazor()) {
+            var columns = this.parent.getColumns();
+            for (var i = 0; i < columns.length; i++) {
+                if (columns[i].filterTemplate) {
+                    var tempID = this.parent.element.id + columns[i].uid + 'filterTemplate';
+                    updateBlazorTemplate(tempID, 'FilterTemplate', columns[i]);
+                }
+            }
+        }
+        this.removeObjects([this.dropOptr, this.datePicker, this.dateTimePicker, this.actObj, this.numericTxtObj, this.dlgObj]);
+        remove(this.dlgDiv);
+    };
+    ExcelFilterBase.prototype.createdDialog = function (target, column) {
+        this.renderCustomFilter(target, column);
+        this.dlgObj.element.style.left = '0px';
+        this.dlgObj.element.style.top = '0px';
+        if (Browser.isDevice && window.innerWidth < 440) {
+            this.dlgObj.element.style.width = '90%';
+        }
+        this.parent.notify(beforeCustomFilterOpen, { column: column, dialog: this.dialogObj });
+        this.dlgObj.show();
+        this.parent.applyBiggerTheme(this.dlgObj.element.parentElement);
+    };
+    ExcelFilterBase.prototype.renderCustomFilter = function (target, column) {
+        var dlgConetntEle = this.dlgObj.element.querySelector('.e-xlfl-maindiv');
+        /* tslint:disable-next-line:max-line-length */
+        var dlgFields = this.parent.createElement('div', { innerHTML: this.getLocalizedLabel('ShowRowsWhere'), className: 'e-xlfl-dlgfields' });
+        dlgConetntEle.appendChild(dlgFields);
+        //column name
+        var fieldSet = this.parent.createElement('div', { innerHTML: this.options.displayName, className: 'e-xlfl-fieldset' });
+        dlgConetntEle.appendChild(fieldSet);
+        this.renderFilterUI(column, dlgConetntEle);
+    };
+    ExcelFilterBase.prototype.filterBtnClick = function (col) {
+        var isComplex = !isNullOrUndefined(col) && isComplexField(col);
+        var complexFieldName = !isNullOrUndefined(col) && getComplexFieldID(col);
+        var colValue = isComplex ? complexFieldName : col;
+        var fValue = this.parent.getColumnByField(col).filterTemplate && isBlazor() ?
+            this.dlgDiv.querySelector('.-xlfl-frstvalue').children[0].querySelector('.e-control').ej2_instances[0]
+            : this.dlgDiv.querySelector('#' + colValue + '-xlfl-frstvalue').ej2_instances[0];
+        var fOperator = this.dlgDiv.querySelector('#' + colValue + '-xlfl-frstoptr').ej2_instances[0];
+        var sValue = this.parent.getColumnByField(col).filterTemplate && isBlazor() ?
+            this.dlgDiv.querySelector('.-xlfl-secndvalue').children[0].querySelector('.e-control').ej2_instances[0]
+            : this.dlgDiv.querySelector('#' + colValue + '-xlfl-secndvalue').ej2_instances[0];
+        var sOperator = this.dlgDiv.querySelector('#' + colValue + '-xlfl-secndoptr').ej2_instances[0];
+        var checkBoxValue;
+        if (this.options.type === 'string') {
+            var checkBox = this.dlgDiv.querySelector('#' + colValue + '-xlflmtcase').ej2_instances[0];
+            checkBoxValue = checkBox.checked;
+        }
+        var andRadio = this.dlgDiv.querySelector('#' + colValue + 'e-xlfl-frstpredicate').ej2_instances[0];
+        var orRadio = this.dlgDiv.querySelector('#' + colValue + 'e-xlfl-secndpredicate').ej2_instances[0];
+        var predicate = (andRadio.checked ? 'and' : 'or');
+        if (sValue.value === null) {
+            predicate = 'or';
+        }
+        this.filterByColumn(this.options.field, fOperator.value, fValue.value, predicate, checkBoxValue, this.parent.filterSettings.ignoreAccent, sOperator.value, sValue.value);
+        this.removeDialog();
+    };
+    /**
+     * @hidden
+     * Filters grid row by column name with given options.
+     * @param {string} fieldName - Defines the field name of the filter column.
+     * @param {string} firstOperator - Defines the first operator by how to filter records.
+     * @param {string | number | Date | boolean} firstValue - Defines the first value which is used to filter records.
+     * @param  {string} predicate - Defines the relationship between one filter query with another by using AND or OR predicate.
+     * @param {boolean} matchCase - If ignore case set to true, then filter records with exact match or else
+     * filter records with case insensitive(uppercase and lowercase letters treated as same).
+     * @param {boolean} ignoreAccent - If ignoreAccent set to true, then ignores the diacritic characters or accents when filtering.
+     * @param {string} secondOperator - Defines the second operator by how to filter records.
+     * @param {string | number | Date | boolean} secondValue - Defines the first value which is used to filter records.
+     */
+    ExcelFilterBase.prototype.filterByColumn = function (fieldName, firstOperator, firstValue, predicate, matchCase, ignoreAccent, secondOperator, secondValue) {
+        var col = this.parent.getColumnByField(fieldName);
+        var field = col.isForeignColumn() ? col.foreignKeyValue : fieldName;
+        var fColl = [];
+        var mPredicate;
+        fColl.push({
+            field: field,
+            predicate: predicate,
+            matchCase: matchCase,
+            ignoreAccent: ignoreAccent,
+            operator: firstOperator,
+            value: firstValue,
+            type: this.options.type
+        });
+        var arg = {
+            instance: this, handler: this.filterByColumn, arg1: fieldName, arg2: firstOperator, arg3: firstValue, arg4: predicate,
+            arg5: matchCase, arg6: ignoreAccent, arg7: secondOperator, arg8: secondValue, cancel: false
+        };
+        this.parent.notify(fltrPrevent, arg);
+        if (arg.cancel) {
+            return;
+        }
+        mPredicate = new Predicate(field, firstOperator.toLowerCase(), firstValue, !matchCase, ignoreAccent);
+        if (!isNullOrUndefined(secondValue)) {
+            secondOperator = !isNullOrUndefined(secondOperator) ? secondOperator : 'equal';
+            fColl.push({
+                field: field,
+                predicate: predicate,
+                matchCase: matchCase,
+                ignoreAccent: ignoreAccent,
+                operator: secondOperator,
+                value: secondValue,
+                type: this.options.type
+            });
+            /* tslint:disable-next-line:max-line-length */
+            mPredicate = mPredicate[predicate](field, secondOperator.toLowerCase(), secondValue, !matchCase, ignoreAccent);
+        }
+        var args = {
+            action: 'filtering', filterCollection: fColl, field: this.options.field,
+            ejpredicate: mPredicate, actualPredicate: fColl
+        };
+        if (col.isForeignColumn()) {
+            this.foreignKeyFilter(args, fColl, mPredicate);
+        }
+        else {
+            this.options.handler(args);
+        }
+    };
+    /* tslint:disable-next-line:max-line-length */
+    ExcelFilterBase.prototype.renderOperatorUI = function (column, table, elementID, predicates, isFirst) {
+        var fieldElement = this.parent.createElement('tr', { className: 'e-xlfl-fields' });
+        table.appendChild(fieldElement);
+        var xlfloptr = this.parent.createElement('td', { className: 'e-xlfl-optr' });
+        fieldElement.appendChild(xlfloptr);
+        var optrDiv = this.parent.createElement('div', { className: 'e-xlfl-optrdiv' });
+        var isComplex = !isNullOrUndefined(column) && isComplexField(column);
+        var complexFieldName = !isNullOrUndefined(column) && getComplexFieldID(column);
+        var optrInput = this.parent
+            .createElement('input', { id: isComplex ? complexFieldName + elementID : column + elementID });
+        optrDiv.appendChild(optrInput);
+        xlfloptr.appendChild(optrDiv);
+        var optr = this.options.type + 'Operator';
+        var dropDatasource = this.customFilterOperators[optr];
+        this.optrData = dropDatasource;
+        var selectedValue = this.dropSelectedVal(this.parent.getColumnByField(column), predicates, isFirst);
+        //Trailing three dots are sliced.
+        var menuText = '';
+        if (this.menuItem) {
+            menuText = this.menuItem.text.slice(0, -3);
+            if (menuText !== this.getLocalizedLabel('CustomFilter')) {
+                selectedValue = isFirst ? menuText : undefined;
+            }
+            if (menuText === this.getLocalizedLabel('Between')) {
+                selectedValue = this.getLocalizedLabel(isFirst ? 'GreaterThanOrEqual' : 'LessThanOrEqual');
+            }
+        }
+        var col = this.parent.getColumnByField(column);
+        this.dropOptr = new DropDownList(extend$1({
+            dataSource: dropDatasource,
+            fields: { text: 'text', value: 'value' },
+            text: selectedValue,
+            open: this.dropDownOpen.bind(this),
+            enableRtl: this.parent.enableRtl
+        }, col.filter.params));
+        this.dropOptr.appendTo(optrInput);
+        var operator = this.getSelectedValue(selectedValue);
+        return { fieldElement: fieldElement, operator: operator };
+    };
+    ExcelFilterBase.prototype.dropDownOpen = function (args) {
+        args.popup.element.style.zIndex = (this.dialogObj.zIndex + 1).toString();
+    };
+    ExcelFilterBase.prototype.getSelectedValue = function (text) {
+        var selectedField = new DataManager(this.optrData).executeLocal(new Query().where('text', 'equal', text));
+        return !isNullOrUndefined(selectedField[0]) ? selectedField[0].value : '';
+    };
+    ExcelFilterBase.prototype.dropSelectedVal = function (col, predicates, isFirst) {
+        var operator;
+        if (predicates && predicates.length > 0) {
+            operator = predicates.length === 2 ?
+                (isFirst ? predicates[0].operator : predicates[1].operator) :
+                (isFirst ? predicates[0].operator : undefined);
+        }
+        else {
+            operator = isFirst ? col.filter.operator || 'equal' : undefined;
+        }
+        return this.getSelectedText(operator);
+    };
+    ExcelFilterBase.prototype.getSelectedText = function (operator) {
+        var selectedField = new DataManager(this.optrData).executeLocal(new Query().where('value', 'equal', operator));
+        return !isNullOrUndefined(selectedField[0]) ? selectedField[0].text : '';
+    };
+    ExcelFilterBase.prototype.renderFilterUI = function (column, dlgConetntEle) {
+        var predicates = this.existingPredicate[column];
+        var table = this.parent.createElement('table', { className: 'e-xlfl-table' });
+        dlgConetntEle.appendChild(table);
+        var colGroup = this.parent.createElement('colGroup');
+        colGroup.innerHTML = '<col style="width: 50%"></col><col style="width: 50%"></col>';
+        table.appendChild(colGroup);
+        //Renders first dropdown
+        /* tslint:disable-next-line:max-line-length */
+        var optr = this.renderOperatorUI(column, table, '-xlfl-frstoptr', predicates, true);
+        //Renders first value
+        this.renderFlValueUI(column, optr, '-xlfl-frstvalue', predicates, true);
+        var predicate = this.parent.createElement('tr', { className: 'e-xlfl-predicate' });
+        table.appendChild(predicate);
+        //Renders first radion button
+        this.renderRadioButton(column, predicate, predicates);
+        //Renders second dropdown
+        optr = this.renderOperatorUI(column, table, '-xlfl-secndoptr', predicates, false);
+        //Renders second text box
+        this.renderFlValueUI(column, optr, '-xlfl-secndvalue', predicates, false);
+    };
+    ExcelFilterBase.prototype.renderRadioButton = function (column, tr, predicates) {
+        var td = this.parent.createElement('td', { className: 'e-xlfl-radio', attrs: { 'colSpan': '2' } });
+        tr.appendChild(td);
+        var radioDiv = this.parent
+            .createElement('div', { className: 'e-xlfl-radiodiv', attrs: { 'style': 'display: inline-block' } });
+        var isComplex = !isNullOrUndefined(column) && isComplexField(column);
+        var complexFieldName = !isNullOrUndefined(column) && getComplexFieldID(column);
+        /* tslint:disable-next-line:max-line-length */
+        var frstpredicate = this.parent.createElement('input', { id: isComplex ? complexFieldName + 'e-xlfl-frstpredicate' : column + 'e-xlfl-frstpredicate', attrs: { 'type': 'radio' } });
+        /* tslint:disable-next-line:max-line-length */
+        var secndpredicate = this.parent.createElement('input', { id: isComplex ? complexFieldName + 'e-xlfl-secndpredicate' : column + 'e-xlfl-secndpredicate', attrs: { 'type': 'radio' } });
+        //appends into div
+        radioDiv.appendChild(frstpredicate);
+        radioDiv.appendChild(secndpredicate);
+        td.appendChild(radioDiv);
+        if (this.options.type === 'string') {
+            this.renderMatchCase(column, tr, td, '-xlflmtcase', predicates);
+        }
+        // Initialize AND RadioButton component.
+        /* tslint:disable-next-line:max-line-length */
+        var andRadio = new RadioButton({ label: this.getLocalizedLabel('AND'), name: 'default', cssClass: 'e-xlfl-radio-and', checked: true, enableRtl: this.parent.enableRtl });
+        // Initialize OR RadioButton component.
+        /* tslint:disable-next-line:max-line-length */
+        var orRadio = new RadioButton({ label: this.getLocalizedLabel('OR'), name: 'default', cssClass: 'e-xlfl-radio-or', enableRtl: this.parent.enableRtl });
+        var flValue = predicates && predicates.length === 2 ? predicates[1].predicate : 'and';
+        if (flValue === 'and') {
+            andRadio.checked = true;
+            orRadio.checked = false;
+        }
+        else {
+            orRadio.checked = true;
+            andRadio.checked = false;
+        }
+        // Render initialized RadioButton.
+        andRadio.appendTo(frstpredicate);
+        orRadio.appendTo(secndpredicate);
+    };
+    /* tslint:disable-next-line:no-any */
+    ExcelFilterBase.prototype.removeObjects = function (elements) {
+        for (var _i = 0, elements_1 = elements; _i < elements_1.length; _i++) {
+            var obj = elements_1[_i];
+            if (obj && !obj.isDestroyed) {
+                obj.destroy();
+            }
+        }
+    };
+    /* tslint:disable-next-line:max-line-length */
+    ExcelFilterBase.prototype.renderFlValueUI = function (column, optr, elementId, predicates, isFirst) {
+        var value = this.parent.createElement('td', { className: 'e-xlfl-value' });
+        optr.fieldElement.appendChild(value);
+        var isComplex = !isNullOrUndefined(column) && isComplexField(column);
+        var complexFieldName = !isNullOrUndefined(column) && getComplexFieldID(column);
+        var valueDiv = this.parent.createElement('div', { className: 'e-xlfl-valuediv' });
+        var isFilteredCol = this.filterSettings.columns.some(function (col) { return column === col.field; });
+        var fltrPredicates = this.options.filteredColumns.filter(function (col) { return col.field === column; });
+        if (this.options.column.filterTemplate) {
+            var data = {};
+            var columnObj = this.parent.getColumnByField(column);
+            if (isFilteredCol && elementId) {
+                data = this.getExcelFilterData(elementId, data, columnObj, predicates, fltrPredicates);
+            }
+            var tempID = this.parent.element.id + columnObj.uid + 'filterTemplate';
+            var element = this.options.column.getFilterTemplate()(data, this.parent, 'filterTemplate', tempID);
+            appendChildren(valueDiv, element);
+            if (isBlazor()) {
+                valueDiv.children[0].classList.add(elementId);
+                if (this.dlgDiv.querySelectorAll('.e-xlfl-value').length > 1) {
+                    updateBlazorTemplate(tempID, 'FilterTemplate', columnObj);
+                }
+            }
+            else {
+                valueDiv.children[0].id = isComplex ? complexFieldName + elementId : column + elementId;
+            }
+            value.appendChild(valueDiv);
+        }
+        else {
+            var valueInput = this.parent
+                .createElement('input', { id: isComplex ? complexFieldName + elementId : column + elementId });
+            valueDiv.appendChild(valueInput);
+            value.appendChild(valueDiv);
+            var flValue = void 0;
+            var predicate = void 0;
+            if (predicates && predicates.length > 0) {
+                predicate = predicates.length === 2 ?
+                    (isFirst ? predicates[0] : predicates[1]) :
+                    (isFirst ? predicates[0] : undefined);
+                flValue = (predicate && predicate.operator === optr.operator) ? predicate.value : undefined;
+            }
+            var types = {
+                'string': this.renderAutoComplete.bind(this),
+                'number': this.renderNumericTextBox.bind(this),
+                'date': this.renderDate.bind(this),
+                'datetime': this.renderDateTime.bind(this)
+            };
+            types[this.options.type](this.options, column, valueInput, flValue, this.parent.enableRtl);
+        }
+    };
+    /* tslint:disable-next-line:max-line-length */
+    ExcelFilterBase.prototype.getExcelFilterData = function (elementId, data, columnObj, predicates, fltrPredicates) {
+        var predIndex = elementId === '-xlfl-frstvalue' ? 0 : 1;
+        if (elementId === '-xlfl-frstvalue' || fltrPredicates.length > 1) {
+            data = { column: predicates instanceof Array ? predicates[predIndex] : predicates };
+            var indx = this.options.column.columnData && fltrPredicates.length > 1 ?
+                (this.options.column.columnData.length === 1 ? 0 : 1) : predIndex;
+            data[this.options.field] = columnObj.foreignKeyValue ? this.options.column.columnData[indx][columnObj.foreignKeyValue] :
+                fltrPredicates[indx].value;
+            if (this.options.foreignKeyValue) {
+                data[this.options.foreignKeyValue] = this.options.column.columnData[indx][columnObj.foreignKeyValue];
+            }
+        }
+        return data;
+    };
+    /* tslint:disable-next-line:max-line-length */
+    ExcelFilterBase.prototype.renderMatchCase = function (column, tr, matchCase, elementId, predicates) {
+        /* tslint:disable-next-line:max-line-length */
+        var matchCaseDiv = this.parent.createElement('div', { className: 'e-xlfl-matchcasediv', attrs: { 'style': 'display: inline-block' } });
+        var isComplex = !isNullOrUndefined(column) && isComplexField(column);
+        var complexFieldName = !isNullOrUndefined(column) && getComplexFieldID(column);
+        var matchCaseInput = this.parent.createElement('input', { id: isComplex ? complexFieldName + elementId : column + elementId, attrs: { 'type': 'checkbox' } });
+        matchCaseDiv.appendChild(matchCaseInput);
+        matchCase.appendChild(matchCaseDiv);
+        var flValue = predicates && predicates.length > 0 ?
+            (predicates && predicates.length === 2 ? predicates[1].matchCase : predicates[0].matchCase) :
+            false;
+        // Initialize Match Case check box.
+        var checkbox = new CheckBox({
+            label: this.getLocalizedLabel('MatchCase'),
+            enableRtl: this.parent.enableRtl, checked: flValue
+        });
+        // Render initialized CheckBox.
+        checkbox.appendTo(matchCaseInput);
+    };
+    /* tslint:disable-next-line:max-line-length */
+    ExcelFilterBase.prototype.renderDate = function (options, column, inputValue, fValue, isRtl) {
+        var format = getCustomDateFormat(options.format, options.type);
+        this.datePicker = new DatePicker(extend$1({
+            format: format,
+            cssClass: 'e-popup-flmenu',
+            placeholder: this.getLocalizedLabel('CustomFilterDatePlaceHolder'),
+            width: '100%',
+            enableRtl: isRtl,
+            value: new Date(fValue),
+        }, options.column.filter.params));
+        this.datePicker.appendTo(inputValue);
+    };
+    /* tslint:disable-next-line:max-line-length */
+    ExcelFilterBase.prototype.renderDateTime = function (options, column, inputValue, fValue, isRtl) {
+        var format = getCustomDateFormat(options.format, options.type);
+        this.dateTimePicker = new DateTimePicker(extend$1({
+            format: format,
+            cssClass: 'e-popup-flmenu',
+            placeholder: this.getLocalizedLabel('CustomFilterDatePlaceHolder'),
+            width: '100%',
+            enableRtl: isRtl,
+            value: new Date(fValue),
+        }, options.column.filter.params));
+        this.dateTimePicker.appendTo(inputValue);
+    };
+    ExcelFilterBase.prototype.completeAction = function (e) {
+        e.result = distinctStringValues(e.result);
+    };
+    /* tslint:disable-next-line:max-line-length */
+    ExcelFilterBase.prototype.renderNumericTextBox = function (options, column, inputValue, fValue, isRtl) {
+        this.numericTxtObj = new NumericTextBox(extend$1({
+            format: options.format,
+            placeholder: this.getLocalizedLabel('CustomFilterPlaceHolder'),
+            enableRtl: isRtl,
+            value: fValue
+        }, options.column.filter.params));
+        this.numericTxtObj.appendTo(inputValue);
+    };
+    /* tslint:disable-next-line:max-line-length */
+    ExcelFilterBase.prototype.renderAutoComplete = function (options, column, inputValue, fValue, isRtl) {
+        var _this = this;
+        var colObj = this.parent.getColumnByField(column);
+        var isForeignColumn = colObj.isForeignColumn();
+        var dataSource = isForeignColumn ? colObj.dataSource : options.dataSource;
+        var fields = { value: isForeignColumn ? colObj.foreignKeyValue : column };
+        var actObj = new AutoComplete(extend$1({
+            dataSource: dataSource instanceof DataManager ? dataSource : new DataManager(dataSource),
+            fields: fields,
+            query: this.getQuery(),
+            sortOrder: 'Ascending',
+            locale: this.parent.locale,
+            cssClass: 'e-popup-flmenu',
+            autofill: true,
+            focus: function () {
+                var isComplex = !isNullOrUndefined(column) && isComplexField(column);
+                var complexFieldName = !isNullOrUndefined(column) && getComplexFieldID(column);
+                var columnvalue = isComplex ? complexFieldName : column;
+                actObj.filterType = _this.dlgDiv.querySelector('#' + columnvalue +
+                    (inputValue.id === (columnvalue + '-xlfl-frstvalue') ?
+                        '-xlfl-frstoptr' :
+                        '-xlfl-secndoptr')).ej2_instances[0].value;
+                actObj.ignoreCase = options.type === 'string' ?
+                    !_this.dlgDiv.querySelector('#' + columnvalue + '-xlflmtcase').ej2_instances[0].checked :
+                    true;
+                actObj.filterType = !isNullOrUndefined(actObj.filterType) ? actObj.filterType :
+                    'equal';
+            },
+            placeholder: this.getLocalizedLabel('CustomFilterPlaceHolder'),
+            enableRtl: isRtl,
+            actionComplete: function (e) {
+                var isComplex = !isNullOrUndefined(column) && isComplexField(column);
+                e.result = e.result.filter(function (obj, index, arr) {
+                    return arr.map(function (mapObject) {
+                        return isComplex ? _this.performComplexDataOperation(actObj.fields.value, mapObject)
+                            : mapObject[actObj.fields.value];
+                    }).indexOf(isComplex ? _this.performComplexDataOperation(actObj.fields.value, obj) :
+                        obj[_this.actObj.fields.value]) === index;
+                });
+            },
+            value: fValue
+        }, colObj.filter.params));
+        actObj.appendTo(inputValue);
+        this.actObj = actObj;
+    };
+    ExcelFilterBase.prototype.performComplexDataOperation = function (value, mapObject) {
+        var returnObj;
+        var length = value.split('.').length;
+        var splits = value.split('.');
+        var duplicateMap = mapObject;
+        for (var i = 0; i < length; i++) {
+            returnObj = duplicateMap[splits[i]];
+            duplicateMap = returnObj;
+        }
+        return returnObj;
+    };
+    return ExcelFilterBase;
+}(CheckBoxFilterBase));
+
+/**
+ * Common export
+ */
 
 /**
  * Base export
@@ -16026,7 +16781,7 @@ var PagerMessage = /** @__PURE__ @class */ (function () {
     return PagerMessage;
 }());
 
-var __extends$16 = (undefined && undefined.__extends) || (function () {
+var __extends$17 = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -16058,7 +16813,7 @@ var __decorate$4 = (undefined && undefined.__decorate) || function (decorators, 
  * ```
  */
 var Pager = /** @__PURE__ @class */ (function (_super) {
-    __extends$16(Pager, _super);
+    __extends$17(Pager, _super);
     /**
      * Constructor for creating the component.
      * @hidden
@@ -16911,7 +17666,7 @@ var keyActions = {
     altPageDown: '.e-np'
 };
 
-var __extends$17 = (undefined && undefined.__extends) || (function () {
+var __extends$18 = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -16929,7 +17684,7 @@ var __extends$17 = (undefined && undefined.__extends) || (function () {
  * @hidden
  */
 var FilterCellRenderer = /** @__PURE__ @class */ (function (_super) {
-    __extends$17(FilterCellRenderer, _super);
+    __extends$18(FilterCellRenderer, _super);
     function FilterCellRenderer() {
         var _this = _super !== null && _super.apply(this, arguments) || this;
         _this.element = _this.parent.createElement('TH', { className: 'e-filterbarcell' });
@@ -17635,7 +18390,7 @@ var CheckBoxFilter = /** @__PURE__ @class */ (function () {
         }
         this.parent.on(cBoxFltrBegin, this.actionBegin, this);
         this.parent.on(cBoxFltrComplete, this.actionComplete, this);
-        this.parent.on(cBoxFltrPrevent, this.actionPrevent, this);
+        this.parent.on(fltrPrevent, this.actionPrevent, this);
     };
     CheckBoxFilter.prototype.removeEventListener = function () {
         if (this.parent.isDestroyed) {
@@ -17643,7 +18398,7 @@ var CheckBoxFilter = /** @__PURE__ @class */ (function () {
         }
         this.parent.off(cBoxFltrBegin, this.actionBegin);
         this.parent.off(cBoxFltrComplete, this.actionComplete);
-        this.parent.off(cBoxFltrPrevent, this.actionPrevent);
+        this.parent.off(fltrPrevent, this.actionPrevent);
     };
     return CheckBoxFilter;
 }());
@@ -17665,736 +18420,8 @@ var __extends$19 = (undefined && undefined.__extends) || (function () {
  * @hidden
  * `ExcelFilter` module is used to handle filtering action.
  */
-var ExcelFilterBase = /** @__PURE__ @class */ (function (_super) {
-    __extends$19(ExcelFilterBase, _super);
-    /**
-     * Constructor for excel filtering module
-     * @hidden
-     */
-    function ExcelFilterBase(parent, filterSettings, customFltrOperators) {
-        var _this = _super.call(this, parent, filterSettings) || this;
-        _this.customFilterOperators = customFltrOperators;
-        _this.isExcel = true;
-        return _this;
-    }
-    ExcelFilterBase.prototype.getCMenuDS = function (type, operator) {
-        var options = {
-            number: ['Equal', 'NotEqual', '', 'LessThan', 'LessThanOrEqual', 'GreaterThan',
-                'GreaterThanOrEqual', 'Between', '', 'CustomFilter'],
-            string: ['Equal', 'NotEqual', '', 'StartsWith', 'EndsWith', '', 'Contains', '', 'CustomFilter'],
-        };
-        options.date = options.number;
-        options.datetime = options.number;
-        var model = [];
-        for (var i = 0; i < options[type].length; i++) {
-            if (options[type][i].length) {
-                if (operator) {
-                    model.push({
-                        text: this.getLocalizedLabel(options[type][i]) + '...',
-                        iconCss: 'e-icons e-icon-check ' + (operator === options[type][i].toLowerCase() ? '' : 'e-emptyicon')
-                    });
-                }
-                else {
-                    model.push({
-                        text: this.getLocalizedLabel(options[type][i]) + '...'
-                    });
-                }
-            }
-            else {
-                model.push({ separator: true });
-            }
-        }
-        return model;
-    };
-    /**
-     * To destroy the filter bar.
-     * @return {void}
-     * @hidden
-     */
-    ExcelFilterBase.prototype.destroy = function () {
-        if (this.dlg) {
-            this.unwireExEvents();
-            _super.prototype.destroy.call(this);
-        }
-        if (this.cmenu && this.cmenu.parentElement) {
-            remove(this.cmenu);
-        }
-    };
-    ExcelFilterBase.prototype.createMenu = function (type, isFiltered, isCheckIcon) {
-        var options = { string: 'TextFilter', date: 'DateFilter', datetime: 'DateTimeFilter', number: 'NumberFilter' };
-        this.menu = this.parent.createElement('div', { className: 'e-contextmenu-wrapper' });
-        if (this.parent.enableRtl) {
-            this.menu.classList.add('e-rtl');
-        }
-        else {
-            this.menu.classList.remove('e-rtl');
-        }
-        var ul = this.parent.createElement('ul');
-        var icon = isFiltered ? 'e-excl-filter-icon e-filtered' : 'e-excl-filter-icon';
-        ul.appendChild(this.createMenuElem(this.getLocalizedLabel('ClearFilter'), isFiltered ? '' : 'e-disabled', icon));
-        if (type !== 'boolean') {
-            ul.appendChild(this.createMenuElem(this.getLocalizedLabel(options[type]), 'e-submenu', isCheckIcon && this.ensureTextFilter() ? 'e-icon-check' : icon + ' e-emptyicon', true));
-        }
-        this.menu.appendChild(ul);
-    };
-    ExcelFilterBase.prototype.createMenuElem = function (val, className, iconName, isSubMenu) {
-        var li = this.parent.createElement('li', { className: className + ' e-menu-item' });
-        li.innerHTML = val;
-        li.insertBefore(this.parent.createElement('span', { className: 'e-menu-icon e-icons ' + iconName }), li.firstChild);
-        if (isSubMenu) {
-            li.appendChild(this.parent.createElement('span', { className: 'e-icons e-caret' }));
-        }
-        return li;
-    };
-    ExcelFilterBase.prototype.wireExEvents = function () {
-        EventHandler.add(this.dlg, 'mouseover', this.hoverHandler, this);
-        EventHandler.add(this.dlg, 'click', this.clickExHandler, this);
-    };
-    ExcelFilterBase.prototype.unwireExEvents = function () {
-        EventHandler.remove(this.dlg, 'mouseover', this.hoverHandler);
-        EventHandler.remove(this.dlg, 'click', this.clickExHandler);
-    };
-    ExcelFilterBase.prototype.clickExHandler = function (e) {
-        var menuItem = parentsUntil(e.target, 'e-menu-item');
-        if (menuItem && this.getLocalizedLabel('ClearFilter') === menuItem.innerText.trim()) {
-            this.clearFilter();
-            this.closeDialog();
-        }
-    };
-    ExcelFilterBase.prototype.destroyCMenu = function () {
-        if (this.menuObj && !this.menuObj.isDestroyed) {
-            this.menuObj.destroy();
-            remove(this.cmenu);
-        }
-    };
-    ExcelFilterBase.prototype.hoverHandler = function (e) {
-        var target = e.target.querySelector('.e-contextmenu');
-        var li = parentsUntil(e.target, 'e-menu-item');
-        var focused = this.menu.querySelector('.e-focused');
-        var isSubMenu;
-        if (focused) {
-            focused.classList.remove('e-focused');
-        }
-        if (li) {
-            li.classList.add('e-focused');
-            isSubMenu = li.classList.contains('e-submenu');
-        }
-        if (target) {
-            return;
-        }
-        if (!isSubMenu) {
-            var submenu = this.menu.querySelector('.e-submenu');
-            if (!isNullOrUndefined(submenu)) {
-                submenu.classList.remove('e-selected');
-            }
-            this.isCMenuOpen = false;
-            this.destroyCMenu();
-        }
-        var selectedMenu = this.ensureTextFilter();
-        if (!this.isCMenuOpen && isSubMenu) {
-            li.classList.add('e-selected');
-            this.isCMenuOpen = true;
-            var menuOptions = {
-                items: this.getCMenuDS(this.options.type, selectedMenu ? selectedMenu.replace(/\s/g, '') : undefined),
-                select: this.selectHandler.bind(this),
-                onClose: this.destroyCMenu.bind(this),
-                enableRtl: this.parent.enableRtl,
-                beforeClose: this.preventClose
-            };
-            this.parent.element.appendChild(this.cmenu);
-            this.menuObj = new ContextMenu(menuOptions, this.cmenu);
-            var client = this.menu.querySelector('.e-submenu').getBoundingClientRect();
-            var pos = { top: 0, left: 0 };
-            if (Browser.isDevice) {
-                var contextRect = this.getContextBounds(this.menuObj);
-                pos.top = (window.innerHeight - contextRect.height) / 2;
-                pos.left = (window.innerWidth - contextRect.width) / 2;
-                this.closeDialog();
-            }
-            else {
-                pos.top = Browser.isIE ? window.pageYOffset + client.top : window.scrollY + client.top;
-                pos.left = this.getCMenuYPosition(this.dlg, this.menuObj);
-            }
-            this.menuObj.open(pos.top, pos.left, e.target);
-            this.parent.applyBiggerTheme(this.menuObj.element.parentElement);
-        }
-    };
-    ExcelFilterBase.prototype.ensureTextFilter = function () {
-        var selectedMenu;
-        var predicates = this.existingPredicate[this.options.field];
-        if (predicates && predicates.length === 2) {
-            if (predicates[0].operator === 'greaterthanorequal' && predicates[1].operator === 'lessthanorequal') {
-                selectedMenu = 'between';
-            }
-            else {
-                selectedMenu = 'customfilter';
-            }
-        }
-        else {
-            if (predicates && predicates.length === 1) {
-                this.optrData = this.customFilterOperators[this.options.type + 'Operator'];
-                selectedMenu = predicates[0].operator;
-            }
-        }
-        return selectedMenu;
-    };
-    ExcelFilterBase.prototype.preventClose = function (args) {
-        if (args.event instanceof MouseEvent && args.event.target.classList.contains('e-submenu')) {
-            args.cancel = true;
-        }
-    };
-    ExcelFilterBase.prototype.getContextBounds = function (context) {
-        var elementVisible = this.menuObj.element.style.display;
-        this.menuObj.element.style.display = 'block';
-        return this.menuObj.element.getBoundingClientRect();
-    };
-    ExcelFilterBase.prototype.getCMenuYPosition = function (target, context) {
-        var contextWidth = this.getContextBounds(context).width;
-        var targetPosition = target.getBoundingClientRect();
-        var leftPos = targetPosition.right + contextWidth - this.parent.element.clientWidth;
-        var targetBorder = target.offsetWidth - target.clientWidth;
-        targetBorder = targetBorder ? targetBorder + 1 : 0;
-        return (leftPos < 1) ? (targetPosition.right + 1 - targetBorder) : (targetPosition.left - contextWidth - 1 + targetBorder);
-    };
-    ExcelFilterBase.prototype.openDialog = function (options) {
-        var _this = this;
-        this.updateModel(options);
-        this.getAndSetChkElem(options);
-        this.showDialog(options);
-        this.dialogObj.dataBind();
-        var filterLength = (this.existingPredicate[options.field] && this.existingPredicate[options.field].length) ||
-            this.options.filteredColumns.filter(function (col) {
-                return _this.options.field === col.field;
-            }).length;
-        this.createMenu(options.type, filterLength > 0, (filterLength === 1 || filterLength === 2));
-        this.dlg.insertBefore(this.menu, this.dlg.firstChild);
-        this.dlg.classList.add('e-excelfilter');
-        this.dlg.classList.remove('e-checkboxfilter');
-        this.cmenu = this.parent.createElement('ul', { className: 'e-excel-menu' });
-        this.wireExEvents();
-    };
-    ExcelFilterBase.prototype.closeDialog = function () {
-        _super.prototype.closeDialog.call(this);
-    };
-    ExcelFilterBase.prototype.selectHandler = function (e) {
-        if (e.item) {
-            this.menuItem = e.item;
-            this.renderDialogue(e);
-        }
-    };
-    ExcelFilterBase.prototype.renderDialogue = function (e) {
-        var _this = this;
-        var target = e.element;
-        var column = this.options.field;
-        var isComplex = !isNullOrUndefined(column) && isComplexField(column);
-        var complexFieldName = !isNullOrUndefined(column) && getComplexFieldID(column);
-        var mainDiv = this.parent.createElement('div', {
-            className: 'e-xlfl-maindiv',
-            id: isComplex ? complexFieldName + '-xlflmenu' : column + '-xlflmenu'
-        });
-        this.dlgDiv = this.parent.createElement('div', {
-            className: 'e-xlflmenu',
-            id: isComplex ? complexFieldName + '-xlfldlg' : column + '-xlfldlg'
-        });
-        this.parent.element.appendChild(this.dlgDiv);
-        this.dlgObj = new Dialog({
-            header: this.getLocalizedLabel('CustomFilter'),
-            isModal: true,
-            overlayClick: this.removeDialog.bind(this),
-            showCloseIcon: true,
-            closeOnEscape: false,
-            target: document.body,
-            // target: this.parent.element,
-            visible: false,
-            enableRtl: this.parent.enableRtl,
-            open: function () {
-                var row = _this.dlgObj.element.querySelector('table.e-xlfl-table>tr');
-                if (_this.options.column.filterTemplate) {
-                    if (isBlazor()) {
-                        row.querySelector('.e-xlfl-valuediv').children[0].focus();
-                    }
-                    else {
-                        row.querySelector('#' + _this.options.column.field + '-xlfl-frstvalue').focus();
-                    }
-                }
-                else {
-                    row.cells[1].querySelector('input:not([type=hidden])').focus();
-                }
-            },
-            close: this.removeDialog.bind(this),
-            created: this.createdDialog.bind(this, target, column),
-            buttons: [{
-                    click: this.filterBtnClick.bind(this, column),
-                    buttonModel: {
-                        content: this.getLocalizedLabel('OKButton'), isPrimary: true, cssClass: 'e-xlfl-okbtn'
-                    }
-                },
-                {
-                    click: this.removeDialog.bind(this),
-                    buttonModel: { content: this.getLocalizedLabel('CancelButton'), cssClass: 'e-xlfl-cancelbtn' }
-                }],
-            content: mainDiv,
-            width: 430,
-            animationSettings: { effect: 'None' },
-        });
-        var isStringTemplate = 'isStringTemplate';
-        this.dlgObj[isStringTemplate] = true;
-        this.dlgObj.appendTo(this.dlgDiv);
-    };
-    ExcelFilterBase.prototype.removeDialog = function () {
-        if (isBlazor()) {
-            var columns = this.parent.getColumns();
-            for (var i = 0; i < columns.length; i++) {
-                if (columns[i].filterTemplate) {
-                    var tempID = this.parent.element.id + columns[i].uid + 'filterTemplate';
-                    updateBlazorTemplate(tempID, 'FilterTemplate', columns[i]);
-                }
-            }
-        }
-        this.removeObjects([this.dropOptr, this.datePicker, this.dateTimePicker, this.actObj, this.numericTxtObj, this.dlgObj]);
-        remove(this.dlgDiv);
-    };
-    ExcelFilterBase.prototype.createdDialog = function (target, column) {
-        this.renderCustomFilter(target, column);
-        this.dlgObj.element.style.left = '0px';
-        this.dlgObj.element.style.top = '0px';
-        if (Browser.isDevice && window.innerWidth < 440) {
-            this.dlgObj.element.style.width = '90%';
-        }
-        this.parent.notify(beforeCustomFilterOpen, { column: column, dialog: this.dialogObj });
-        this.dlgObj.show();
-        this.parent.applyBiggerTheme(this.dlgObj.element.parentElement);
-    };
-    ExcelFilterBase.prototype.renderCustomFilter = function (target, column) {
-        var dlgConetntEle = this.dlgObj.element.querySelector('.e-xlfl-maindiv');
-        /* tslint:disable-next-line:max-line-length */
-        var dlgFields = this.parent.createElement('div', { innerHTML: this.getLocalizedLabel('ShowRowsWhere'), className: 'e-xlfl-dlgfields' });
-        dlgConetntEle.appendChild(dlgFields);
-        //column name
-        var fieldSet = this.parent.createElement('div', { innerHTML: this.options.displayName, className: 'e-xlfl-fieldset' });
-        dlgConetntEle.appendChild(fieldSet);
-        this.renderFilterUI(column, dlgConetntEle);
-    };
-    ExcelFilterBase.prototype.filterBtnClick = function (col) {
-        var isComplex = !isNullOrUndefined(col) && isComplexField(col);
-        var complexFieldName = !isNullOrUndefined(col) && getComplexFieldID(col);
-        var colValue = isComplex ? complexFieldName : col;
-        var fValue = this.parent.getColumnByField(col).filterTemplate && isBlazor() ?
-            this.dlgDiv.querySelector('.-xlfl-frstvalue').children[0].querySelector('.e-control').ej2_instances[0]
-            : this.dlgDiv.querySelector('#' + colValue + '-xlfl-frstvalue').ej2_instances[0];
-        var fOperator = this.dlgDiv.querySelector('#' + colValue + '-xlfl-frstoptr').ej2_instances[0];
-        var sValue = this.parent.getColumnByField(col).filterTemplate && isBlazor() ?
-            this.dlgDiv.querySelector('.-xlfl-secndvalue').children[0].querySelector('.e-control').ej2_instances[0]
-            : this.dlgDiv.querySelector('#' + colValue + '-xlfl-secndvalue').ej2_instances[0];
-        var sOperator = this.dlgDiv.querySelector('#' + colValue + '-xlfl-secndoptr').ej2_instances[0];
-        var checkBoxValue;
-        if (this.options.type === 'string') {
-            var checkBox = this.dlgDiv.querySelector('#' + colValue + '-xlflmtcase').ej2_instances[0];
-            checkBoxValue = checkBox.checked;
-        }
-        var andRadio = this.dlgDiv.querySelector('#' + colValue + 'e-xlfl-frstpredicate').ej2_instances[0];
-        var orRadio = this.dlgDiv.querySelector('#' + colValue + 'e-xlfl-secndpredicate').ej2_instances[0];
-        var predicate = (andRadio.checked ? 'and' : 'or');
-        if (sValue.value === null) {
-            predicate = 'or';
-        }
-        this.filterByColumn(this.options.field, fOperator.value, fValue.value, predicate, checkBoxValue, this.parent.filterSettings.ignoreAccent, sOperator.value, sValue.value);
-        this.removeDialog();
-    };
-    /**
-     * @hidden
-     * Filters grid row by column name with given options.
-     * @param {string} fieldName - Defines the field name of the filter column.
-     * @param {string} firstOperator - Defines the first operator by how to filter records.
-     * @param {string | number | Date | boolean} firstValue - Defines the first value which is used to filter records.
-     * @param  {string} predicate - Defines the relationship between one filter query with another by using AND or OR predicate.
-     * @param {boolean} matchCase - If ignore case set to true, then filter records with exact match or else
-     * filter records with case insensitive(uppercase and lowercase letters treated as same).
-     * @param {boolean} ignoreAccent - If ignoreAccent set to true, then ignores the diacritic characters or accents when filtering.
-     * @param {string} secondOperator - Defines the second operator by how to filter records.
-     * @param {string | number | Date | boolean} secondValue - Defines the first value which is used to filter records.
-     */
-    ExcelFilterBase.prototype.filterByColumn = function (fieldName, firstOperator, firstValue, predicate, matchCase, ignoreAccent, secondOperator, secondValue) {
-        var col = this.parent.getColumnByField(fieldName);
-        var field = col.isForeignColumn() ? col.foreignKeyValue : fieldName;
-        var fColl = [];
-        var mPredicate;
-        fColl.push({
-            field: field,
-            predicate: predicate,
-            matchCase: matchCase,
-            ignoreAccent: ignoreAccent,
-            operator: firstOperator,
-            value: firstValue,
-            type: this.options.type
-        });
-        if (isActionPrevent(this.parent)) {
-            this.parent.notify(preventBatch, {
-                instance: this, handler: this.filterByColumn, arg1: fieldName, arg2: firstOperator, arg3: firstValue, arg4: predicate,
-                arg5: matchCase, arg6: ignoreAccent, arg7: secondOperator, arg8: secondValue
-            });
-            return;
-        }
-        mPredicate = new Predicate(field, firstOperator.toLowerCase(), firstValue, !matchCase, ignoreAccent);
-        if (!isNullOrUndefined(secondValue)) {
-            secondOperator = !isNullOrUndefined(secondOperator) ? secondOperator : 'equal';
-            fColl.push({
-                field: field,
-                predicate: predicate,
-                matchCase: matchCase,
-                ignoreAccent: ignoreAccent,
-                operator: secondOperator,
-                value: secondValue,
-                type: this.options.type
-            });
-            /* tslint:disable-next-line:max-line-length */
-            mPredicate = mPredicate[predicate](field, secondOperator.toLowerCase(), secondValue, !matchCase, ignoreAccent);
-        }
-        var args = {
-            action: 'filtering', filterCollection: fColl, field: this.options.field,
-            ejpredicate: mPredicate, actualPredicate: fColl
-        };
-        if (col.isForeignColumn()) {
-            this.foreignKeyFilter(args, fColl, mPredicate);
-        }
-        else {
-            this.options.handler(args);
-        }
-    };
-    /* tslint:disable-next-line:max-line-length */
-    ExcelFilterBase.prototype.renderOperatorUI = function (column, table, elementID, predicates, isFirst) {
-        var fieldElement = this.parent.createElement('tr', { className: 'e-xlfl-fields' });
-        table.appendChild(fieldElement);
-        var xlfloptr = this.parent.createElement('td', { className: 'e-xlfl-optr' });
-        fieldElement.appendChild(xlfloptr);
-        var optrDiv = this.parent.createElement('div', { className: 'e-xlfl-optrdiv' });
-        var isComplex = !isNullOrUndefined(column) && isComplexField(column);
-        var complexFieldName = !isNullOrUndefined(column) && getComplexFieldID(column);
-        var optrInput = this.parent
-            .createElement('input', { id: isComplex ? complexFieldName + elementID : column + elementID });
-        optrDiv.appendChild(optrInput);
-        xlfloptr.appendChild(optrDiv);
-        var optr = this.options.type + 'Operator';
-        var dropDatasource = this.customFilterOperators[optr];
-        this.optrData = dropDatasource;
-        var selectedValue = this.dropSelectedVal(this.parent.getColumnByField(column), predicates, isFirst);
-        //Trailing three dots are sliced.
-        var menuText = '';
-        if (this.menuItem) {
-            menuText = this.menuItem.text.slice(0, -3);
-            if (menuText !== this.getLocalizedLabel('CustomFilter')) {
-                selectedValue = isFirst ? menuText : undefined;
-            }
-            if (menuText === this.getLocalizedLabel('Between')) {
-                selectedValue = this.getLocalizedLabel(isFirst ? 'GreaterThanOrEqual' : 'LessThanOrEqual');
-            }
-        }
-        var col = this.parent.getColumnByField(column);
-        this.dropOptr = new DropDownList(extend$1({
-            dataSource: dropDatasource,
-            fields: { text: 'text', value: 'value' },
-            text: selectedValue,
-            open: this.dropDownOpen.bind(this),
-            enableRtl: this.parent.enableRtl
-        }, col.filter.params));
-        this.dropOptr.appendTo(optrInput);
-        var operator = this.getSelectedValue(selectedValue);
-        return { fieldElement: fieldElement, operator: operator };
-    };
-    ExcelFilterBase.prototype.dropDownOpen = function (args) {
-        args.popup.element.style.zIndex = (this.dialogObj.zIndex + 1).toString();
-    };
-    ExcelFilterBase.prototype.getSelectedValue = function (text) {
-        var selectedField = new DataManager(this.optrData).executeLocal(new Query().where('text', 'equal', text));
-        return !isNullOrUndefined(selectedField[0]) ? selectedField[0].value : '';
-    };
-    ExcelFilterBase.prototype.dropSelectedVal = function (col, predicates, isFirst) {
-        var operator;
-        if (predicates && predicates.length > 0) {
-            operator = predicates.length === 2 ?
-                (isFirst ? predicates[0].operator : predicates[1].operator) :
-                (isFirst ? predicates[0].operator : undefined);
-        }
-        else {
-            operator = isFirst ? col.filter.operator || 'equal' : undefined;
-        }
-        return this.getSelectedText(operator);
-    };
-    ExcelFilterBase.prototype.getSelectedText = function (operator) {
-        var selectedField = new DataManager(this.optrData).executeLocal(new Query().where('value', 'equal', operator));
-        return !isNullOrUndefined(selectedField[0]) ? selectedField[0].text : '';
-    };
-    ExcelFilterBase.prototype.renderFilterUI = function (column, dlgConetntEle) {
-        var predicates = this.existingPredicate[column];
-        var table = this.parent.createElement('table', { className: 'e-xlfl-table' });
-        dlgConetntEle.appendChild(table);
-        var colGroup = this.parent.createElement('colGroup');
-        colGroup.innerHTML = '<col style="width: 50%"></col><col style="width: 50%"></col>';
-        table.appendChild(colGroup);
-        //Renders first dropdown
-        /* tslint:disable-next-line:max-line-length */
-        var optr = this.renderOperatorUI(column, table, '-xlfl-frstoptr', predicates, true);
-        //Renders first value
-        this.renderFlValueUI(column, optr, '-xlfl-frstvalue', predicates, true);
-        var predicate = this.parent.createElement('tr', { className: 'e-xlfl-predicate' });
-        table.appendChild(predicate);
-        //Renders first radion button
-        this.renderRadioButton(column, predicate, predicates);
-        //Renders second dropdown
-        optr = this.renderOperatorUI(column, table, '-xlfl-secndoptr', predicates, false);
-        //Renders second text box
-        this.renderFlValueUI(column, optr, '-xlfl-secndvalue', predicates, false);
-    };
-    ExcelFilterBase.prototype.renderRadioButton = function (column, tr, predicates) {
-        var td = this.parent.createElement('td', { className: 'e-xlfl-radio', attrs: { 'colSpan': '2' } });
-        tr.appendChild(td);
-        var radioDiv = this.parent
-            .createElement('div', { className: 'e-xlfl-radiodiv', attrs: { 'style': 'display: inline-block' } });
-        var isComplex = !isNullOrUndefined(column) && isComplexField(column);
-        var complexFieldName = !isNullOrUndefined(column) && getComplexFieldID(column);
-        /* tslint:disable-next-line:max-line-length */
-        var frstpredicate = this.parent.createElement('input', { id: isComplex ? complexFieldName + 'e-xlfl-frstpredicate' : column + 'e-xlfl-frstpredicate', attrs: { 'type': 'radio' } });
-        /* tslint:disable-next-line:max-line-length */
-        var secndpredicate = this.parent.createElement('input', { id: isComplex ? complexFieldName + 'e-xlfl-secndpredicate' : column + 'e-xlfl-secndpredicate', attrs: { 'type': 'radio' } });
-        //appends into div
-        radioDiv.appendChild(frstpredicate);
-        radioDiv.appendChild(secndpredicate);
-        td.appendChild(radioDiv);
-        if (this.options.type === 'string') {
-            this.renderMatchCase(column, tr, td, '-xlflmtcase', predicates);
-        }
-        // Initialize AND RadioButton component.
-        /* tslint:disable-next-line:max-line-length */
-        var andRadio = new RadioButton({ label: this.getLocalizedLabel('AND'), name: 'default', cssClass: 'e-xlfl-radio-and', checked: true, enableRtl: this.parent.enableRtl });
-        // Initialize OR RadioButton component.
-        /* tslint:disable-next-line:max-line-length */
-        var orRadio = new RadioButton({ label: this.getLocalizedLabel('OR'), name: 'default', cssClass: 'e-xlfl-radio-or', enableRtl: this.parent.enableRtl });
-        var flValue = predicates && predicates.length === 2 ? predicates[1].predicate : 'and';
-        if (flValue === 'and') {
-            andRadio.checked = true;
-            orRadio.checked = false;
-        }
-        else {
-            orRadio.checked = true;
-            andRadio.checked = false;
-        }
-        // Render initialized RadioButton.
-        andRadio.appendTo(frstpredicate);
-        orRadio.appendTo(secndpredicate);
-    };
-    /* tslint:disable-next-line:no-any */
-    ExcelFilterBase.prototype.removeObjects = function (elements) {
-        for (var _i = 0, elements_1 = elements; _i < elements_1.length; _i++) {
-            var obj = elements_1[_i];
-            if (obj && !obj.isDestroyed) {
-                obj.destroy();
-            }
-        }
-    };
-    /* tslint:disable-next-line:max-line-length */
-    ExcelFilterBase.prototype.renderFlValueUI = function (column, optr, elementId, predicates, isFirst) {
-        var value = this.parent.createElement('td', { className: 'e-xlfl-value' });
-        optr.fieldElement.appendChild(value);
-        var isComplex = !isNullOrUndefined(column) && isComplexField(column);
-        var complexFieldName = !isNullOrUndefined(column) && getComplexFieldID(column);
-        var valueDiv = this.parent.createElement('div', { className: 'e-xlfl-valuediv' });
-        var isFilteredCol = this.filterSettings.columns.some(function (col) { return column === col.field; });
-        var fltrPredicates = this.options.filteredColumns.filter(function (col) { return col.field === column; });
-        if (this.options.column.filterTemplate) {
-            var data = {};
-            var columnObj = this.parent.getColumnByField(column);
-            if (isFilteredCol && elementId) {
-                data = this.getExcelFilterData(elementId, data, columnObj, predicates, fltrPredicates);
-            }
-            var tempID = this.parent.element.id + columnObj.uid + 'filterTemplate';
-            var element = this.options.column.getFilterTemplate()(data, this.parent, 'filterTemplate', tempID);
-            appendChildren(valueDiv, element);
-            if (isBlazor()) {
-                valueDiv.children[0].classList.add(elementId);
-                if (this.dlgDiv.querySelectorAll('.e-xlfl-value').length > 1) {
-                    updateBlazorTemplate(tempID, 'FilterTemplate', columnObj);
-                }
-            }
-            else {
-                valueDiv.children[0].id = isComplex ? complexFieldName + elementId : column + elementId;
-            }
-            value.appendChild(valueDiv);
-        }
-        else {
-            var valueInput = this.parent
-                .createElement('input', { id: isComplex ? complexFieldName + elementId : column + elementId });
-            valueDiv.appendChild(valueInput);
-            value.appendChild(valueDiv);
-            var flValue = void 0;
-            var predicate = void 0;
-            if (predicates && predicates.length > 0) {
-                predicate = predicates.length === 2 ?
-                    (isFirst ? predicates[0] : predicates[1]) :
-                    (isFirst ? predicates[0] : undefined);
-                flValue = (predicate && predicate.operator === optr.operator) ? predicate.value : undefined;
-            }
-            var types = {
-                'string': this.renderAutoComplete.bind(this),
-                'number': this.renderNumericTextBox.bind(this),
-                'date': this.renderDate.bind(this),
-                'datetime': this.renderDateTime.bind(this)
-            };
-            types[this.options.type](this.options, column, valueInput, flValue, this.parent.enableRtl);
-        }
-    };
-    /* tslint:disable-next-line:max-line-length */
-    ExcelFilterBase.prototype.getExcelFilterData = function (elementId, data, columnObj, predicates, fltrPredicates) {
-        var predIndex = elementId === '-xlfl-frstvalue' ? 0 : 1;
-        if (elementId === '-xlfl-frstvalue' || fltrPredicates.length > 1) {
-            data = { column: predicates instanceof Array ? predicates[predIndex] : predicates };
-            var indx = this.options.column.columnData && fltrPredicates.length > 1 ?
-                (this.options.column.columnData.length === 1 ? 0 : 1) : predIndex;
-            data[this.options.field] = columnObj.foreignKeyValue ? this.options.column.columnData[indx][columnObj.foreignKeyValue] :
-                fltrPredicates[indx].value;
-            if (this.options.foreignKeyValue) {
-                data[this.options.foreignKeyValue] = this.options.column.columnData[indx][columnObj.foreignKeyValue];
-            }
-        }
-        return data;
-    };
-    /* tslint:disable-next-line:max-line-length */
-    ExcelFilterBase.prototype.renderMatchCase = function (column, tr, matchCase, elementId, predicates) {
-        /* tslint:disable-next-line:max-line-length */
-        var matchCaseDiv = this.parent.createElement('div', { className: 'e-xlfl-matchcasediv', attrs: { 'style': 'display: inline-block' } });
-        var isComplex = !isNullOrUndefined(column) && isComplexField(column);
-        var complexFieldName = !isNullOrUndefined(column) && getComplexFieldID(column);
-        var matchCaseInput = this.parent.createElement('input', { id: isComplex ? complexFieldName + elementId : column + elementId, attrs: { 'type': 'checkbox' } });
-        matchCaseDiv.appendChild(matchCaseInput);
-        matchCase.appendChild(matchCaseDiv);
-        var flValue = predicates && predicates.length > 0 ?
-            (predicates && predicates.length === 2 ? predicates[1].matchCase : predicates[0].matchCase) :
-            false;
-        // Initialize Match Case check box.
-        var checkbox = new CheckBox({
-            label: this.getLocalizedLabel('MatchCase'),
-            enableRtl: this.parent.enableRtl, checked: flValue
-        });
-        // Render initialized CheckBox.
-        checkbox.appendTo(matchCaseInput);
-    };
-    /* tslint:disable-next-line:max-line-length */
-    ExcelFilterBase.prototype.renderDate = function (options, column, inputValue, fValue, isRtl) {
-        var format = getCustomDateFormat(options.format, options.type);
-        this.datePicker = new DatePicker(extend$1({
-            format: format,
-            cssClass: 'e-popup-flmenu',
-            placeholder: this.getLocalizedLabel('CustomFilterDatePlaceHolder'),
-            width: '100%',
-            enableRtl: isRtl,
-            value: new Date(fValue),
-        }, options.column.filter.params));
-        this.datePicker.appendTo(inputValue);
-    };
-    /* tslint:disable-next-line:max-line-length */
-    ExcelFilterBase.prototype.renderDateTime = function (options, column, inputValue, fValue, isRtl) {
-        var format = getCustomDateFormat(options.format, options.type);
-        this.dateTimePicker = new DateTimePicker(extend$1({
-            format: format,
-            cssClass: 'e-popup-flmenu',
-            placeholder: this.getLocalizedLabel('CustomFilterDatePlaceHolder'),
-            width: '100%',
-            enableRtl: isRtl,
-            value: new Date(fValue),
-        }, options.column.filter.params));
-        this.dateTimePicker.appendTo(inputValue);
-    };
-    ExcelFilterBase.prototype.completeAction = function (e) {
-        e.result = distinctStringValues(e.result);
-    };
-    /* tslint:disable-next-line:max-line-length */
-    ExcelFilterBase.prototype.renderNumericTextBox = function (options, column, inputValue, fValue, isRtl) {
-        this.numericTxtObj = new NumericTextBox(extend$1({
-            format: options.format,
-            placeholder: this.getLocalizedLabel('CustomFilterPlaceHolder'),
-            enableRtl: isRtl,
-            value: fValue
-        }, options.column.filter.params));
-        this.numericTxtObj.appendTo(inputValue);
-    };
-    /* tslint:disable-next-line:max-line-length */
-    ExcelFilterBase.prototype.renderAutoComplete = function (options, column, inputValue, fValue, isRtl) {
-        var _this = this;
-        var colObj = this.parent.getColumnByField(column);
-        var isForeignColumn = colObj.isForeignColumn();
-        var dataSource = isForeignColumn ? colObj.dataSource : options.dataSource;
-        var fields = { value: isForeignColumn ? colObj.foreignKeyValue : column };
-        var actObj = new AutoComplete(extend$1({
-            dataSource: dataSource instanceof DataManager ? dataSource : new DataManager(dataSource),
-            fields: fields,
-            query: this.parent.getQuery().clone(),
-            sortOrder: 'Ascending',
-            locale: this.parent.locale,
-            cssClass: 'e-popup-flmenu',
-            autofill: true,
-            focus: function () {
-                var isComplex = !isNullOrUndefined(column) && isComplexField(column);
-                var complexFieldName = !isNullOrUndefined(column) && getComplexFieldID(column);
-                var columnvalue = isComplex ? complexFieldName : column;
-                actObj.filterType = _this.dlgDiv.querySelector('#' + columnvalue +
-                    (inputValue.id === (columnvalue + '-xlfl-frstvalue') ?
-                        '-xlfl-frstoptr' :
-                        '-xlfl-secndoptr')).ej2_instances[0].value;
-                actObj.ignoreCase = options.type === 'string' ?
-                    !_this.dlgDiv.querySelector('#' + columnvalue + '-xlflmtcase').ej2_instances[0].checked :
-                    true;
-                actObj.filterType = !isNullOrUndefined(actObj.filterType) ? actObj.filterType :
-                    'equal';
-            },
-            placeholder: this.getLocalizedLabel('CustomFilterPlaceHolder'),
-            enableRtl: isRtl,
-            actionComplete: function (e) {
-                var isComplex = !isNullOrUndefined(column) && isComplexField(column);
-                e.result = e.result.filter(function (obj, index, arr) {
-                    return arr.map(function (mapObject) {
-                        return isComplex ? _this.performComplexDataOperation(actObj.fields.value, mapObject)
-                            : mapObject[actObj.fields.value];
-                    }).indexOf(isComplex ? _this.performComplexDataOperation(actObj.fields.value, obj) :
-                        obj[_this.actObj.fields.value]) === index;
-                });
-            },
-            value: fValue
-        }, colObj.filter.params));
-        actObj.appendTo(inputValue);
-        this.actObj = actObj;
-    };
-    ExcelFilterBase.prototype.performComplexDataOperation = function (value, mapObject) {
-        var returnObj;
-        var length = value.split('.').length;
-        var splits = value.split('.');
-        var duplicateMap = mapObject;
-        for (var i = 0; i < length; i++) {
-            returnObj = duplicateMap[splits[i]];
-            duplicateMap = returnObj;
-        }
-        return returnObj;
-    };
-    return ExcelFilterBase;
-}(CheckBoxFilterBase));
-
-var __extends$18 = (undefined && undefined.__extends) || (function () {
-    var extendStatics = function (d, b) {
-        extendStatics = Object.setPrototypeOf ||
-            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
-        return extendStatics(d, b);
-    };
-    return function (d, b) {
-        extendStatics(d, b);
-        function __() { this.constructor = d; }
-        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-    };
-})();
-/**
- * @hidden
- * `ExcelFilter` module is used to handle filtering action.
- */
 var ExcelFilter = /** @__PURE__ @class */ (function (_super) {
-    __extends$18(ExcelFilter, _super);
+    __extends$19(ExcelFilter, _super);
     /**
      * Constructor for excelbox filtering module
      * @hidden
@@ -18927,7 +18954,8 @@ var Filter = /** @__PURE__ @class */ (function () {
             hideSearchbox: isNullOrUndefined(col.filter.hideSearchbox) ? false : col.filter.hideSearchbox,
             handler: this.filterHandler.bind(this), localizedStrings: gObj.getLocaleConstants(),
             position: { X: left, Y: top }, column: col, foreignKeyValue: col.foreignKeyValue,
-            actualPredicate: this.actualPredicate, localeObj: this.parent.localeObj
+            actualPredicate: this.actualPredicate, localeObj: this.parent.localeObj,
+            isRemote: this.parent.getDataModule().isRemote(), allowCaseSensitive: this.filterSettings.enableCaseSensitivity
         });
     };
     /**
@@ -24826,7 +24854,7 @@ var NormalEdit = /** @__PURE__ @class */ (function () {
             this.previousData = gObj.getCurrentViewRecords()[this.rowIndex];
         }
         for (var i = 0; i < primaryKeys.length; i++) {
-            primaryKeyValues.push(this.previousData[primaryKeys[i]]);
+            primaryKeyValues.push(getObject(primaryKeys[i], this.previousData));
         }
         this.uid = tr.getAttribute('data-uid');
         var rowObj = gObj.getRowObjectFromUID(this.uid);
@@ -25544,8 +25572,9 @@ var BatchEdit = /** @__PURE__ @class */ (function () {
             return;
         }
         var changes = this.getBatchChanges();
-        if (this.parent.selectionSettings.type === 'Multiple' && changes[deletedRecords].length) {
-            changes[deletedRecords] = changes[deletedRecords].concat(this.removeSelectedData);
+        if (this.parent.selectionSettings.type === 'Multiple' && changes[deletedRecords].length &&
+            this.parent.selectionSettings.persistSelection) {
+            changes[deletedRecords] = this.removeSelectedData;
             this.removeSelectedData = [];
         }
         var original = {
@@ -32771,5 +32800,5 @@ var MaskedTextBoxCellEdit = /** @__PURE__ @class */ (function () {
  * Export Grid components
  */
 
-export { SortDescriptor, SortSettings, Predicate$1 as Predicate, FilterSettings, SelectionSettings, SearchSettings, RowDropSettings, TextWrapSettings, GroupSettings, EditSettings, Grid, CellType, RenderType, ToolbarItem, doesImplementInterface, valueAccessor, getUpdateUsingRaf, updatecloneRow, getCollapsedRowsCount, recursive, iterateArrayOrObject, iterateExtend, templateCompiler, setStyleAndAttributes, extend$1 as extend, setColumnIndex, prepareColumns, setCssInGridPopUp, getActualProperties, parentsUntil, getElementIndex, inArray, getActualPropFromColl, removeElement, getPosition, getUid, appendChildren, parents, calculateAggregate, getScrollBarWidth, getRowHeight, isComplexField, getComplexFieldID, setComplexFieldID, isEditable, isActionPrevent, wrap, setFormatter, addRemoveActiveClasses, distinctStringValues, getFilterMenuPostion, getZIndexCalcualtion, toogleCheckbox, createCboxWithWrap, removeAddCboxClasses, refreshForeignData, getForeignData, getColumnByForeignKeyValue, getDatePredicate, renderMovable, isGroupAdaptive, getObject, getCustomDateFormat, getExpandedState, getPrintGridModel, extendObjWithFn, measureColumnDepth, checkDepth, refreshFilteredColsUid, Global, created, destroyed, load, rowDataBound, queryCellInfo, headerCellInfo, actionBegin, actionComplete, actionFailure, dataBound, rowSelecting, rowSelected, rowDeselecting, rowDeselected, cellSelecting, cellSelected, cellDeselecting, cellDeselected, columnDragStart, columnDrag, columnDrop, rowDragStartHelper, rowDragStart, rowDrag, rowDrop, beforePrint, printComplete, detailDataBound, toolbarClick, batchAdd, batchCancel, batchDelete, beforeBatchAdd, beforeBatchDelete, beforeBatchSave, beginEdit, cellEdit, cellSave, cellSaved, endAdd, endDelete, endEdit, recordDoubleClick, recordClick, beforeDataBound, beforeOpenColumnChooser, resizeStart, onResize, resizeStop, checkBoxChange, beforeCopy, beforePaste, filterChoiceRequest, filterAfterOpen, filterBeforeOpen, filterSearchBegin, commandClick, initialLoad, initialEnd, dataReady, contentReady, uiUpdate, onEmpty, inBoundModelChanged, modelChanged, colGroupRefresh, headerRefreshed, pageBegin, pageComplete, sortBegin, sortComplete, filterBegin, filterComplete, searchBegin, searchComplete, reorderBegin, reorderComplete, rowDragAndDropBegin, rowDragAndDropComplete, groupBegin, groupComplete, ungroupBegin, ungroupComplete, groupAggregates, refreshFooterRenderer, refreshAggregateCell, refreshAggregates, rowSelectionBegin, rowSelectionComplete, columnSelectionBegin, columnSelectionComplete, cellSelectionBegin, cellSelectionComplete, beforeCellFocused, cellFocused, keyPressed, click, destroy, columnVisibilityChanged, scroll, columnWidthChanged, columnPositionChanged, rowDragAndDrop, rowsAdded, rowsRemoved, columnDragStop, headerDrop, dataSourceModified, refreshComplete, refreshVirtualBlock, dblclick, toolbarRefresh, bulkSave, autoCol, tooltipDestroy, updateData, editBegin, editComplete, addBegin, addComplete, saveComplete, deleteBegin, deleteComplete, preventBatch, dialogDestroy, crudAction, addDeleteAction, destroyForm, doubleTap, beforeExcelExport, excelExportComplete, excelQueryCellInfo, excelHeaderQueryCellInfo, exportDetailDataBound, beforePdfExport, pdfExportComplete, pdfQueryCellInfo, pdfHeaderQueryCellInfo, accessPredicate, contextMenuClick, freezeRender, freezeRefresh, contextMenuOpen, columnMenuClick, columnMenuOpen, filterOpen, filterDialogCreated, filterMenuClose, initForeignKeyColumn, getForeignKeyData, generateQuery, showEmptyGrid, foreignKeyData, dataStateChange, dataSourceChanged, rtlUpdated, beforeFragAppend, frozenHeight, textWrapRefresh, recordAdded, cancelBegin, editNextValCell, hierarchyPrint, expandChildGrid, printGridInit, exportRowDataBound, rowPositionChanged, columnChooserOpened, batchForm, beforeStartEdit, beforeBatchCancel, batchEditFormRendered, partialRefresh, beforeCustomFilterOpen, selectVirtualRow, columnsPrepared, cBoxFltrBegin, cBoxFltrComplete, cBoxFltrPrevent, Data, Sort, Page, Selection, Filter, Search, Scroll, resizeClassList, Resize, Reorder, RowDD, Group, getCloneProperties, Print, DetailRow, Toolbar$1 as Toolbar, Aggregate, summaryIterator, VirtualScroll, Edit, BatchEdit, InlineEdit, NormalEdit, DialogEdit, ColumnChooser, ExcelExport, PdfExport, ExportHelper, ExportValueFormatter, Clipboard, CommandColumn, CheckBoxFilter, menuClass, ContextMenu$1 as ContextMenu, Freeze, ColumnMenu, ExcelFilter, ForeignKey, Logger, detailLists, Column, CommandColumnModel, Row, Cell, HeaderRender, ContentRender, RowRenderer, CellRenderer, HeaderCellRenderer, FilterCellRenderer, StackedHeaderCellRenderer, Render, IndentCellRenderer, GroupCaptionCellRenderer, GroupCaptionEmptyCellRenderer, BatchEditRender, DialogEditRender, InlineEditRender, EditRender, BooleanEditCell, DefaultEditCell, DropDownEditCell, NumericEditCell, DatePickerEditCell, CommandColumnRenderer, FreezeContentRender, FreezeRender, StringFilterUI, NumberFilterUI, DateFilterUI, BooleanFilterUI, FlMenuOptrUI, AutoCompleteEditCell, ComboboxEditCell, MultiSelectEditCell, TimePickerEditCell, ToggleEditCell, MaskedTextBoxCellEdit, VirtualContentRenderer, VirtualHeaderRenderer, VirtualElementHandler, CellRendererFactory, ServiceLocator, RowModelGenerator, GroupModelGenerator, FreezeRowModelGenerator, ValueFormatter, VirtualRowModelGenerator, InterSectionObserver, Pager, ExternalMessage, NumericContainer, PagerMessage, PagerDropDown };
+export { CheckBoxFilterBase, ExcelFilterBase, SortDescriptor, SortSettings, Predicate$1 as Predicate, FilterSettings, SelectionSettings, SearchSettings, RowDropSettings, TextWrapSettings, GroupSettings, EditSettings, Grid, CellType, RenderType, ToolbarItem, doesImplementInterface, valueAccessor, getUpdateUsingRaf, updatecloneRow, getCollapsedRowsCount, recursive, iterateArrayOrObject, iterateExtend, templateCompiler, setStyleAndAttributes, extend$1 as extend, setColumnIndex, prepareColumns, setCssInGridPopUp, getActualProperties, parentsUntil, getElementIndex, inArray, getActualPropFromColl, removeElement, getPosition, getUid, appendChildren, parents, calculateAggregate, getScrollBarWidth, getRowHeight, isComplexField, getComplexFieldID, setComplexFieldID, isEditable, isActionPrevent, wrap, setFormatter, addRemoveActiveClasses, distinctStringValues, getFilterMenuPostion, getZIndexCalcualtion, toogleCheckbox, createCboxWithWrap, removeAddCboxClasses, refreshForeignData, getForeignData, getColumnByForeignKeyValue, getDatePredicate, renderMovable, isGroupAdaptive, getObject, getCustomDateFormat, getExpandedState, getPrintGridModel, extendObjWithFn, measureColumnDepth, checkDepth, refreshFilteredColsUid, Global, created, destroyed, load, rowDataBound, queryCellInfo, headerCellInfo, actionBegin, actionComplete, actionFailure, dataBound, rowSelecting, rowSelected, rowDeselecting, rowDeselected, cellSelecting, cellSelected, cellDeselecting, cellDeselected, columnDragStart, columnDrag, columnDrop, rowDragStartHelper, rowDragStart, rowDrag, rowDrop, beforePrint, printComplete, detailDataBound, toolbarClick, batchAdd, batchCancel, batchDelete, beforeBatchAdd, beforeBatchDelete, beforeBatchSave, beginEdit, cellEdit, cellSave, cellSaved, endAdd, endDelete, endEdit, recordDoubleClick, recordClick, beforeDataBound, beforeOpenColumnChooser, resizeStart, onResize, resizeStop, checkBoxChange, beforeCopy, beforePaste, filterChoiceRequest, filterAfterOpen, filterBeforeOpen, filterSearchBegin, commandClick, initialLoad, initialEnd, dataReady, contentReady, uiUpdate, onEmpty, inBoundModelChanged, modelChanged, colGroupRefresh, headerRefreshed, pageBegin, pageComplete, sortBegin, sortComplete, filterBegin, filterComplete, searchBegin, searchComplete, reorderBegin, reorderComplete, rowDragAndDropBegin, rowDragAndDropComplete, groupBegin, groupComplete, ungroupBegin, ungroupComplete, groupAggregates, refreshFooterRenderer, refreshAggregateCell, refreshAggregates, rowSelectionBegin, rowSelectionComplete, columnSelectionBegin, columnSelectionComplete, cellSelectionBegin, cellSelectionComplete, beforeCellFocused, cellFocused, keyPressed, click, destroy, columnVisibilityChanged, scroll, columnWidthChanged, columnPositionChanged, rowDragAndDrop, rowsAdded, rowsRemoved, columnDragStop, headerDrop, dataSourceModified, refreshComplete, refreshVirtualBlock, dblclick, toolbarRefresh, bulkSave, autoCol, tooltipDestroy, updateData, editBegin, editComplete, addBegin, addComplete, saveComplete, deleteBegin, deleteComplete, preventBatch, dialogDestroy, crudAction, addDeleteAction, destroyForm, doubleTap, beforeExcelExport, excelExportComplete, excelQueryCellInfo, excelHeaderQueryCellInfo, exportDetailDataBound, beforePdfExport, pdfExportComplete, pdfQueryCellInfo, pdfHeaderQueryCellInfo, accessPredicate, contextMenuClick, freezeRender, freezeRefresh, contextMenuOpen, columnMenuClick, columnMenuOpen, filterOpen, filterDialogCreated, filterMenuClose, initForeignKeyColumn, getForeignKeyData, generateQuery, showEmptyGrid, foreignKeyData, dataStateChange, dataSourceChanged, rtlUpdated, beforeFragAppend, frozenHeight, textWrapRefresh, recordAdded, cancelBegin, editNextValCell, hierarchyPrint, expandChildGrid, printGridInit, exportRowDataBound, rowPositionChanged, columnChooserOpened, batchForm, beforeStartEdit, beforeBatchCancel, batchEditFormRendered, partialRefresh, beforeCustomFilterOpen, selectVirtualRow, columnsPrepared, cBoxFltrBegin, cBoxFltrComplete, fltrPrevent, Data, Sort, Page, Selection, Filter, Search, Scroll, resizeClassList, Resize, Reorder, RowDD, Group, getCloneProperties, Print, DetailRow, Toolbar$1 as Toolbar, Aggregate, summaryIterator, VirtualScroll, Edit, BatchEdit, InlineEdit, NormalEdit, DialogEdit, ColumnChooser, ExcelExport, PdfExport, ExportHelper, ExportValueFormatter, Clipboard, CommandColumn, CheckBoxFilter, menuClass, ContextMenu$1 as ContextMenu, Freeze, ColumnMenu, ExcelFilter, ForeignKey, Logger, detailLists, Column, CommandColumnModel, Row, Cell, HeaderRender, ContentRender, RowRenderer, CellRenderer, HeaderCellRenderer, FilterCellRenderer, StackedHeaderCellRenderer, Render, IndentCellRenderer, GroupCaptionCellRenderer, GroupCaptionEmptyCellRenderer, BatchEditRender, DialogEditRender, InlineEditRender, EditRender, BooleanEditCell, DefaultEditCell, DropDownEditCell, NumericEditCell, DatePickerEditCell, CommandColumnRenderer, FreezeContentRender, FreezeRender, StringFilterUI, NumberFilterUI, DateFilterUI, BooleanFilterUI, FlMenuOptrUI, AutoCompleteEditCell, ComboboxEditCell, MultiSelectEditCell, TimePickerEditCell, ToggleEditCell, MaskedTextBoxCellEdit, VirtualContentRenderer, VirtualHeaderRenderer, VirtualElementHandler, CellRendererFactory, ServiceLocator, RowModelGenerator, GroupModelGenerator, FreezeRowModelGenerator, ValueFormatter, VirtualRowModelGenerator, InterSectionObserver, Pager, ExternalMessage, NumericContainer, PagerMessage, PagerDropDown };
 //# sourceMappingURL=ej2-grids.es5.js.map

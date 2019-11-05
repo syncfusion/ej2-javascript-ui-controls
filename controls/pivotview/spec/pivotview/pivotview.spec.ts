@@ -918,9 +918,10 @@ describe('PivotView spec', () => {
             });
 
             it('pivotgrid fill all 2 column', (done: Function) => {
-                pivotGridObj.dataSourceSettings.columns.push({ name: 'gender' });
+                pivotGridObj.dataSourceSettings.columns = [{ name: 'isActive' }, { name: 'gender' }];
                 setTimeout(() => {
                     expect((document.querySelectorAll('.e-emptyrow').length) === 0).toBeTruthy();
+                    expect((document.querySelectorAll('th[aria-colindex="7"]')[1] as HTMLElement).style.display === 'none').toBeTruthy();
                     done();
                 }, 2000);
             });
@@ -8932,6 +8933,82 @@ describe('PivotView spec', () => {
                 }, 2000);
             });
         });
+        describe(' -  Initial Rendering with range - PivotChart', () => {
+            let pivotGridObj: PivotView;
+            let ds: IDataSet[] = PivotUtil.getClonedData(pivot_dataset) as IDataSet[];
+            let elem: HTMLElement = createElement('div', { id: 'PivotGrid', styles: 'height:500px; width:100%' });
+            afterAll(() => {
+                if (pivotGridObj) {
+                    pivotGridObj.destroy();
+                }
+                remove(elem);
+            });
+            beforeAll((done: Function) => {
+                if (!document.getElementById(elem.id)) {
+                    document.body.appendChild(elem);
+                }
+                let dataBound: EmitType<Object> = () => { done(); };
+                pivotGridObj = new PivotView({
+                    dataSourceSettings: {
+                        dataSource: ds,
+                        expandAll: false,
+                        formatSettings: [{ name: 'age', format: 'N' }, { name: 'balance', format: 'C' }, { name: 'date', format: 'dd/MM/yyyy-hh:mm a', type: 'date' }],
+                        rows: [{ name: 'date', caption: 'TimeLine' }],
+                        columns: [{ name: 'age' }, { name: 'gender', caption: 'Population' }],
+                        values: [{ name: 'balance', caption: 'Balance' }],
+                        filters: [{ name: 'product', caption: 'Category' }],
+                        groupSettings: [{ name: 'date', type: 'Date', groupInterval: ['Years', 'Quarters', 'Months', 'Days'], startingAt: new Date(1975, 0, 10), endingAt: new Date(2005, 10, 5) },
+                        { name: 'age', type: 'Number', startingAt: 25, endingAt: 35, rangeInterval: 5 }],
+                        alwaysShowValueHeader: true
+                    },
+                    chartSettings: {
+                        chartSeries: { type: 'Column', animation: { enable: false } }
+                    },
+                    displayOption: { view: 'Chart' },
+                    dataBound: dataBound
+                });
+                pivotGridObj.appendTo('#PivotGrid');
+            });
+            beforeEach((done: Function) => {
+                setTimeout(() => { done(); }, 1000);
+            });
+            it('Group settings with chart - Days on values', (done: Function) => {
+                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                pivotGridObj.dataSourceSettings.rows = [{ name: 'date_years'},{ name: 'date_quarters'},{ name: 'date_months'}];
+                pivotGridObj.dataSourceSettings.values = [{ name: 'date_days'}];
+                setTimeout(() => {
+                    expect(document.getElementById('PivotGrid_chart_Series_0_Point_0').getAttribute('aria-label')).toBe('1975:4');
+                    done();
+                }, 2000);
+            });
+            it('Group settings with chart - Days and Months on values', (done: Function) => {
+                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                pivotGridObj.dataSourceSettings.rows = [{ name: 'date_years'},{ name: 'date_quarters'}];
+                pivotGridObj.dataSourceSettings.values = [{ name: 'date_days'}, { name: 'date_months'}];
+                setTimeout(() => {
+                    expect(document.getElementById('PivotGrid_chart_Series_0_Point_0').getAttribute('aria-label')).toBe('1975:4');
+                    done();
+                }, 2000);
+            });
+            it('Group settings with chart - Days, Months and Quarters on values', (done: Function) => {
+                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                pivotGridObj.dataSourceSettings.rows = [{ name: 'date_years'}];
+                pivotGridObj.dataSourceSettings.values = [{ name: 'date_days'}, { name: 'date_months'},{ name: 'date_quarters'}];
+                setTimeout(() => {
+                    expect(document.getElementById('PivotGrid_chart_Series_0_Point_0').getAttribute('aria-label')).toBe('1975:4');
+                    done();
+                }, 2000);
+            });
+            it('Group settings with chart - Days, Months, Quarters and Years on values', (done: Function) => {
+                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                pivotGridObj.dataSourceSettings.rows = [];
+                pivotGridObj.dataSourceSettings.values = [{ name: 'date_days'}, { name: 'date_months'}, { name: 'date_years'},{ name: 'date_quarters'}];
+                setTimeout(() => {
+                    expect(document.getElementById('PivotGrid_chart_Series_0_Point_0').getAttribute('aria-label')).toBe('Grand Total:102');
+                    done();
+                }, 2000);
+            });
+        });
         describe(' -  Initial Rendering with range value as string', () => {
             let pivotGridObj: PivotView;
             let ds: IDataSet[] = PivotUtil.getClonedData(pivot_dataset) as IDataSet[];
@@ -12598,6 +12675,170 @@ describe('PivotView spec', () => {
                 pivotGridObj.destroy();
             }
             remove(elem);
+        });
+    });
+
+    describe('ZoomFactor in chart', () => {
+        let pivotGridObj: PivotView;
+        let elem: HTMLElement = createElement('div', { id: 'PivotGrid', styles: 'height:100%; width:100%' });
+        afterAll(() => {
+            if (pivotGridObj) {
+                pivotGridObj.destroy();
+            }
+            remove(elem);
+        });
+        beforeAll((done: Function) => {
+            if (!document.getElementById(elem.id)) {
+                document.body.appendChild(elem);
+            }
+            let dataBound: EmitType<Object> = () => { done(); };
+            PivotView.Inject(PivotChart, GroupingBar, FieldList);
+            pivotGridObj = new PivotView({
+                dataSourceSettings: {
+                    dataSource: pivot_dataset as IDataSet[],
+                    expandAll: true,
+                    enableSorting: true,
+                    allowLabelFilter: true,
+                    allowValueFilter: true,
+                    rows: [{ name: 'product', caption: 'Items' }, { name: 'eyeColor' }],
+                    columns: [{ name: 'gender', caption: 'Population' }, { name: 'isActive' }],
+                    values: [{ name: 'balance' }, { name: 'quantity' }],
+                    filters: [],
+                },
+                height: '500',
+                width: '25%',
+                dataBound: dataBound,
+                showFieldList: true,
+                showGroupingBar: true,
+                displayOption: { view: 'Chart' },
+                load: function (args) {
+                    args.pivotview.chartSettings.zoomSettings.enableScrollbar = false;
+                }
+            });
+            pivotGridObj.appendTo('#PivotGrid');
+        });
+        beforeEach((done: Function) => {
+            setTimeout(() => { done(); }, 1000);
+        });
+        it('Find zoomfactor value', (done: Function) => {
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+            setTimeout(() => {
+                expect(pivotGridObj.chart.primaryXAxis.zoomFactor === 1).toBeTruthy();
+                done();
+            }, 1000);
+        });
+    });
+
+    describe('Chart in percentage', () => {
+        let pivotGridObj: PivotView;
+        let ele: HTMLElement = createElement('div', { id: 'container', styles: 'height:1000px; width:100%' });
+        let elem: HTMLElement = createElement('div', { id: 'PivotGrid', styles: 'height:100%; width:100%' });
+        ele.appendChild(elem);
+        afterAll(() => {
+            if (pivotGridObj) {
+                pivotGridObj.destroy();
+            }
+            remove(elem);
+        });
+        beforeAll((done: Function) => {
+            if (!document.getElementById(ele.id)) {
+                document.body.appendChild(ele);
+            }
+            let dataBound: EmitType<Object> = () => { done(); };
+            PivotView.Inject(PivotChart, FieldList);
+            pivotGridObj = new PivotView({
+                dataSourceSettings: {
+                    dataSource: pivot_dataset as IDataSet[],
+                    expandAll: true,
+                    enableSorting: true,
+                    allowLabelFilter: true,
+                    allowValueFilter: true,
+                    rows: [{ name: 'product', caption: 'Items' }, { name: 'eyeColor' }],
+                    columns: [{ name: 'gender', caption: 'Population' }, { name: 'isActive' }],
+                    values: [{ name: 'balance' }, { name: 'quantity' }],
+                    filters: [],
+                },
+                height: '50%',
+                width: '100%',
+                dataBound: dataBound,
+                showFieldList: true,
+                displayOption: { view: 'Chart' },
+            });
+            pivotGridObj.appendTo('#PivotGrid');
+        });
+        beforeEach((done: Function) => {
+            setTimeout(() => { done(); }, 2000);
+        });
+        it('find height of chart for percentage', (done: Function) => {
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+            setTimeout(() => {
+                expect(pivotGridObj.chart.height === "500").toBeTruthy();
+                done();
+            }, 1000);
+        });
+    });
+
+    describe('Chart in percentage with toolbar', () => {
+        let pivotGridObj: PivotView;
+        let ele: HTMLElement = createElement('div', { id: 'container', styles: 'height:1000px; width:100%' });
+        let elem: HTMLElement = createElement('div', { id: 'PivotGrid', styles: 'height:100%; width:100%' });
+        ele.appendChild(elem);
+        afterAll(() => {
+            if (pivotGridObj) {
+                pivotGridObj.destroy();
+            }
+            remove(elem);
+        });
+        beforeAll((done: Function) => {
+            if (!document.getElementById(ele.id)) {
+                document.body.appendChild(ele);
+            }
+            let dataBound: EmitType<Object> = () => { done(); };
+            PivotView.Inject(PivotChart, FieldList, Toolbar, CalculatedField, GroupingBar);
+            pivotGridObj = new PivotView({
+                dataSourceSettings: {
+                    dataSource: pivot_dataset as IDataSet[],
+                    expandAll: true,
+                    enableSorting: true,
+                    allowLabelFilter: true,
+                    allowValueFilter: true,
+                    rows: [{ name: 'product', caption: 'Items' }, { name: 'eyeColor' }],
+                    columns: [{ name: 'gender', caption: 'Population' }, { name: 'isActive' }],
+                    values: [{ name: 'balance' }, { name: 'quantity' }],
+                    filters: [],
+                },
+                height: '50%',
+                width: '100%',
+                dataBound: dataBound,
+                showGroupingBar: true,
+                showToolbar: true,
+                saveReport: saveReport.bind(this),
+                fetchReport: fetchReport.bind(this),
+                loadReport: loadReport.bind(this),
+                removeReport: removeReport.bind(this),
+                renameReport: renameReport.bind(this),
+                newReport: newReport.bind(this),
+                toolbarRender: beforeToolbarRender.bind(this),
+                toolbar: ['New', 'Save', 'SaveAs', 'Rename', 'Remove', 'Load', 'ConditionalFormatting',
+                    'Grid', 'Chart', 'Export', 'SubTotal', 'GrandTotal', 'FieldList'],
+                allowExcelExport: true,
+                allowConditionalFormatting: true,
+                allowPdfExport: true,
+                allowCalculatedField: true,
+                showFieldList: true,
+                displayOption: { view: 'Chart' },
+            });
+            pivotGridObj.appendTo('#PivotGrid');
+        });
+        beforeEach((done: Function) => {
+            setTimeout(() => { done(); }, 2000);
+        });
+        it('find height of chart for percentage with tool bar', (done: Function) => {
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+            setTimeout(() => {
+                expect(pivotGridObj.chart.height === "458").toBeTruthy();
+                done();
+            }, 1000);
         });
     });
 

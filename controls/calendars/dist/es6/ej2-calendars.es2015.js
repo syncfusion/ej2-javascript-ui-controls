@@ -261,6 +261,9 @@ let CalendarBase = class CalendarBase extends Component {
         }
         return culShortNames;
     }
+    toCapitalize(text) {
+        return !isNullOrUndefined(text) && text.length ? text[0].toUpperCase() + text.slice(1) : text;
+    }
     createContentHeader() {
         if (this.getModuleName() === 'calendar') {
             if (!isNullOrUndefined(this.element.querySelectorAll('.e-content .e-week-header')[0])) {
@@ -290,7 +293,7 @@ let CalendarBase = class CalendarBase extends Component {
         }
         shortNames = this.shiftArray(((this.getCultureValues().length > 0 && this.getCultureValues())), this.firstDayOfWeek);
         for (let days = 0; days <= daysCount; days++) {
-            html += '<th  class="">' + shortNames[days] + '</th>';
+            html += '<th  class="">' + this.toCapitalize(shortNames[days]) + '</th>';
         }
         html = '<tr>' + html + '</tr>';
         this.tableHeadElement.innerHTML = html;
@@ -753,7 +756,7 @@ let CalendarBase = class CalendarBase extends Component {
             let dayLink = this.createElement('span');
             let localMonth = (value && (value).getMonth() === localDate.getMonth());
             let select$$1 = (value && (value).getFullYear() === yr && localMonth);
-            dayLink.textContent = this.globalize.formatDate(localDate, { type: 'dateTime', skeleton: 'MMM' });
+            dayLink.textContent = this.toCapitalize(this.globalize.formatDate(localDate, { type: 'dateTime', skeleton: 'MMM' }));
             if ((this.min && (curYrs < minYr || (month < minMonth && curYrs === minYr))) || (this.max && (curYrs > maxYr || (month > maxMonth && curYrs >= maxYr)))) {
                 addClass([tdEle], DISABLED);
             }
@@ -1215,7 +1218,7 @@ let CalendarBase = class CalendarBase extends Component {
         }
         switch (view) {
             case 'days':
-                this.headerTitleElement.textContent = dayFormatOptions;
+                this.headerTitleElement.textContent = this.toCapitalize(dayFormatOptions);
                 break;
             case 'months':
                 this.headerTitleElement.textContent = monthFormatOptions;
@@ -1807,6 +1810,9 @@ __decorate([
     Property(null)
 ], CalendarBase.prototype, "keyConfigs", void 0);
 __decorate([
+    Property(null)
+], CalendarBase.prototype, "serverTimezoneOffset", void 0);
+__decorate([
     Event()
 ], CalendarBase.prototype, "created", void 0);
 __decorate([
@@ -1885,8 +1891,23 @@ let Calendar = class Calendar extends CalendarBase {
             if (form) {
                 EventHandler.add(form, 'reset', this.formResetHandler.bind(this));
             }
+            this.setTimeZone(this.serverTimezoneOffset);
         }
         this.renderComplete();
+    }
+    isDayLightSaving() {
+        let secondOffset = new Date(this.value.getFullYear(), 6, 1).getTimezoneOffset();
+        let firstOffset = new Date(this.value.getFullYear(), 0, 1).getTimezoneOffset();
+        return (this.value.getTimezoneOffset() < Math.max(firstOffset, secondOffset));
+    }
+    setTimeZone(offsetValue) {
+        if (this.serverTimezoneOffset && this.value) {
+            let serverTimezoneDiff = offsetValue;
+            let clientTimeZoneDiff = new Date().getTimezoneOffset() / 60;
+            let timeZoneDiff = serverTimezoneDiff + clientTimeZoneDiff;
+            timeZoneDiff = this.isDayLightSaving() ? timeZoneDiff-- : timeZoneDiff;
+            this.value = new Date(this.value.getTime() + (timeZoneDiff * 60 * 60 * 1000));
+        }
     }
     formResetHandler() {
         this.setProperties({ value: null }, true);
@@ -2849,6 +2870,22 @@ let DatePicker = class DatePicker extends Calendar {
         this.initialize();
         this.bindEvents();
         this.renderComplete();
+        this.setTimeZone(this.serverTimezoneOffset);
+    }
+    setTimeZone(offsetValue) {
+        if (this.serverTimezoneOffset && this.value) {
+            let clientTimeZoneDiff = new Date().getTimezoneOffset() / 60;
+            let serverTimezoneDiff = offsetValue;
+            let timeZoneDiff = serverTimezoneDiff + clientTimeZoneDiff;
+            timeZoneDiff = this.isDayLightSaving() ? timeZoneDiff-- : timeZoneDiff;
+            this.value = new Date((this.value).getTime() + (timeZoneDiff * 60 * 60 * 1000));
+            this.updateInput();
+        }
+    }
+    isDayLightSaving() {
+        let firstOffset = new Date(this.value.getFullYear(), 0, 1).getTimezoneOffset();
+        let secondOffset = new Date(this.value.getFullYear(), 6, 1).getTimezoneOffset();
+        return (this.value.getTimezoneOffset() < Math.max(firstOffset, secondOffset));
     }
     setAllowEdit() {
         if (this.allowEdit) {
@@ -4339,6 +4376,9 @@ __decorate$1([
 __decorate$1([
     Property('Never')
 ], DatePicker.prototype, "floatLabelType", void 0);
+__decorate$1([
+    Property(null)
+], DatePicker.prototype, "serverTimezoneOffset", void 0);
 __decorate$1([
     Event()
 ], DatePicker.prototype, "open", void 0);
@@ -12124,6 +12164,9 @@ __decorate$4([
 __decorate$4([
     Property(false)
 ], DateTimePicker.prototype, "strictMode", void 0);
+__decorate$4([
+    Property(null)
+], DateTimePicker.prototype, "serverTimezoneOffset", void 0);
 __decorate$4([
     Event()
 ], DateTimePicker.prototype, "open", void 0);

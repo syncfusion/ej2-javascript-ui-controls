@@ -340,8 +340,9 @@ export class BatchEdit {
             return;
         }
         let changes: Object = this.getBatchChanges();
-        if (this.parent.selectionSettings.type === 'Multiple' && changes[deletedRecords].length) {
-            changes[deletedRecords] = changes[deletedRecords].concat(this.removeSelectedData);
+        if (this.parent.selectionSettings.type === 'Multiple' && changes[deletedRecords].length &&
+            this.parent.selectionSettings.persistSelection) {
+            changes[deletedRecords] = this.removeSelectedData;
             this.removeSelectedData = [];
         }
         let original: Object = {

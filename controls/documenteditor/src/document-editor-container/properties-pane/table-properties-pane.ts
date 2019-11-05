@@ -106,11 +106,13 @@ export class TableProperties {
         }
     }
     private addTablePropertyTab = (): void => {
+        let tableHeader: HTMLElement = createElement('div', { innerHTML: this.localObj.getConstant('Table') });
+        let textHeader: HTMLElement = createElement('div', { innerHTML: this.localObj.getConstant('Text') });
         // tslint:disable-next-line:max-line-length
         this.parentElement = createElement('div', { styles: 'height:100%;overflow:auto;display:none', className: 'e-de-prop-pane' });
         this.element = createElement('div', { id: this.elementId + '_propertyTabDiv', className: 'e-de-property-tab' });
         // tslint:disable-next-line:max-line-length
-        let items: TabItemModel[] = [{ header: { text: this.localObj.getConstant('Table') }, content: this.tableProperties }, { header: { text: this.localObj.getConstant('Text') }, content: this.tableTextProperties.element }] as TabItemModel[];
+        let items: TabItemModel[] = [{ header: { text: tableHeader }, content: this.tableProperties }, { header: { text: textHeader }, content: this.tableTextProperties.element }] as TabItemModel[];
         this.propertiesTab = new Tab({ items: items, animation: { previous: { effect: 'None' }, next: { effect: 'None' } }, selected: this.onTabSelection });
         this.propertiesTab.isStringTemplate = true;
         this.propertiesTab.appendTo(this.element);

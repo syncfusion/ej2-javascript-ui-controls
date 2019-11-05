@@ -1982,7 +1982,11 @@ var Dialog = /** @__PURE__ @class */ (function (_super) {
             else {
                 this.element.style.top = '0px';
                 this.element.style.left = '0px';
-                this.dlgContainer.classList.add('e-dlg-' + this.position.X + '-' + this.position.Y);
+                var positonX = typeof (this.position.X) === 'number' ? this.position.X :
+                    this.position.X.toLocaleLowerCase();
+                var positionY = typeof (this.position.Y) === 'number' ? this.position.Y :
+                    this.position.Y.toLocaleLowerCase();
+                this.dlgContainer.classList.add('e-dlg-' + positonX + '-' + positionY);
             }
         }
         else {
@@ -1992,7 +1996,8 @@ var Dialog = /** @__PURE__ @class */ (function (_super) {
     Dialog.prototype.setPopupPosition = function () {
         this.popupObj.setProperties({
             position: {
-                X: this.position.X, Y: this.position.Y
+                X: typeof (this.position.X) === 'number' ? this.position.X : this.position.X.toLocaleLowerCase(),
+                Y: typeof (this.position.Y) === 'number' ? this.position.Y : this.position.Y.toLocaleLowerCase()
             }
         });
     };

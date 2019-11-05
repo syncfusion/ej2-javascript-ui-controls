@@ -5,6 +5,7 @@ import { SummaryTypes } from '../../base/types';
 import { FieldDroppedEventArgs } from '../base/interface';
 import { OlapEngine, IOlapField } from '../../base/olap/engine';
 import { isBlazor } from '@syncfusion/ej2-base';
+import { PivotButton } from '../actions/pivot-button';
 
 /**
  * `DataSourceUpdate` module is used to update the dataSource.
@@ -17,6 +18,8 @@ export class DataSourceUpdate {
     /** @hidden */
     /* tslint:disable-next-line */
     public control: any;
+    /** @hidden */
+    public pivotButton: PivotButton;
 
     /**
      * Constructor for the dialog action.
@@ -116,6 +119,10 @@ export class DataSourceUpdate {
                                 }
                             }
                             break;
+                    }
+                    if(isBlazor()) { 
+                        this.pivotButton.updateDataSource();
+                        this.pivotButton.axisField.render();
                     }
                 }
             });

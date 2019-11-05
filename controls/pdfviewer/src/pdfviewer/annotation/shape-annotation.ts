@@ -573,6 +573,8 @@ export class ShapeAnnotation {
                             pageAnnotationObject.annotations[z].rectangleDifference = JSON.stringify(pageAnnotationObject.annotations[z].rectangleDifference);
                         }
                         if (pageAnnotationObject.annotations[z].enableShapeLabel === true) {
+                            // tslint:disable-next-line:max-line-length
+                            pageAnnotationObject.annotations[z].labelBounds = JSON.stringify(this.pdfViewer.annotationModule.inputElementModule.calculateLabelBounds(JSON.parse(pageAnnotationObject.annotations[z].bounds)));
                             let labelFillColorString: string = pageAnnotationObject.annotations[z].labelFillColor;
                             pageAnnotationObject.annotations[z].labelFillColor = JSON.stringify(this.getRgbCode(labelFillColorString));
                             let labelBorderColorString: string = pageAnnotationObject.annotations[z].labelBorderColor;

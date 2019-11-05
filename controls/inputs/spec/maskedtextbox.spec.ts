@@ -2924,3 +2924,55 @@ describe('Dynamic CssClass testcase', function (){
         expect(maskBox.inputObj.container.classList.contains('e-ternary')).toBe(true);
     });
 });
+describe('Width value with unit em', () => {
+    let maskBox: any;
+    beforeEach((): void => {
+        let ele: HTMLElement = createElement('input', { id: 'mask1' });     
+        document.body.appendChild(ele);
+    });
+    afterEach((): void => {
+        if (maskBox) {
+            maskBox.destroy();
+        }
+        document.body.innerHTML = '';
+    });
+    it('Set the width to unit em', () => {
+        maskBox = new MaskedTextBox({ mask: "(999) 99-999", width: "30em" });
+        maskBox.appendTo('#mask1');
+        expect(document.getElementById('mask1').parentElement.style.width === '30em').toEqual(true);
+        maskBox.width = "100px";
+        maskBox.dataBind();
+        expect(document.getElementById('mask1').parentElement.style.width === '100px').toEqual(true);
+        maskBox.width = "50em";
+        maskBox.dataBind();
+        expect(document.getElementById('mask1').parentElement.style.width === '50em').toEqual(true);
+        maskBox.width = "60%";
+        maskBox.dataBind();
+        expect(document.getElementById('mask1').parentElement.style.width === '60%').toEqual(true);
+        maskBox.width = "30";
+        maskBox.dataBind();
+        expect(document.getElementById('mask1').parentElement.style.width === '30px').toEqual(true);
+        maskBox.width = 50;
+        maskBox.dataBind();
+        expect(document.getElementById('mask1').parentElement.style.width === '50px').toEqual(true);
+    });
+    it('Set the width to unit px', () => {
+        maskBox = new MaskedTextBox({ mask: "(999) 99-999", width: "100px" });
+        maskBox.appendTo('#mask1');
+        expect(document.getElementById('mask1').parentElement.style.width === '100px').toEqual(true);
+        maskBox.width = "30em";
+        maskBox.dataBind();
+        expect(document.getElementById('mask1').parentElement.style.width === '30em').toEqual(true);
+        maskBox.width = "50px";
+        maskBox.dataBind();
+        expect(document.getElementById('mask1').parentElement.style.width === '50px').toEqual(true);
+    });
+    it('Set the width to unit %', () => {
+        maskBox = new MaskedTextBox({ mask: "(999) 99-999", width: "30%" });
+        maskBox.appendTo('#mask1');
+        expect(document.getElementById('mask1').parentElement.style.width === '30%').toEqual(true);
+        maskBox.width = "30em";
+        maskBox.dataBind();
+        expect(document.getElementById('mask1').parentElement.style.width === '30em').toEqual(true);
+    });
+});

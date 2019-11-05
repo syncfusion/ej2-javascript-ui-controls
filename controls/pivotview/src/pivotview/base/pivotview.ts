@@ -627,6 +627,15 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
     public allowDeferLayoutUpdate: boolean;
 
     /**
+     * If `allowDataCompression` is set to true when virtual scrolling is enabled, 
+     * the performance of drag and drop, add/remove operations can be improved.
+     * Note: It is having limitations in Drill-through, editing and some of the aggregation types.
+     * @default false
+     */
+    @Property(false)
+    public allowDataCompression: boolean;
+
+    /**
      * It allows to set the maximum number of nodes to be displayed in the member editor.
      * @default 1000    
      */
@@ -734,6 +743,14 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
     /** @hidden */
     @Event()
     protected columnDrop: EmitType<ColumnDragEventArgs>;
+
+    /** @hidden */
+    @Event()
+    protected beforePdfExport: EmitType<Object>;
+
+    /** @hidden */
+    @Event()
+    protected beforeExcelExport: EmitType<Object>;
 
     /**
      * @hidden
@@ -1529,6 +1546,8 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
         this.chartAxisLabelRender = this.chartSettings.axisLabelRender ? this.chartSettings.axisLabelRender : undefined;
         this.contextMenuClick = this.gridSettings.contextMenuClick ? this.gridSettings.contextMenuClick : undefined;
         this.contextMenuOpen = this.gridSettings.contextMenuOpen ? this.gridSettings.contextMenuOpen : undefined;
+        this.beforePdfExport = this.gridSettings.beforePdfExport ? this.gridSettings.beforePdfExport.bind(this) : undefined;
+        this.beforeExcelExport = this.gridSettings.beforeExcelExport ? this.gridSettings.beforeExcelExport.bind(this) : undefined;
         if (this.gridSettings.rowHeight === null) {
             this.setProperties({ gridSettings: { rowHeight: this.isAdaptive ? 48 : 36 } }, true);
         }
@@ -1577,7 +1596,8 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
                 rowCurrentPage: isInit ? 1 : this.pageSettings.rowCurrentPage,
                 columnSize: Math.ceil((Math.floor((this.getWidthAsNumber()) /
                     this.gridSettings.columnWidth) - 1) / colValues),
-                rowSize: Math.ceil(Math.floor((heightAsNumber) / this.gridSettings.rowHeight) / rowValues)
+                rowSize: Math.ceil(Math.floor((heightAsNumber) / this.gridSettings.rowHeight) / rowValues),
+                allowDataCompression: this.allowDataCompression
             };
         }
     }
@@ -1673,16 +1693,16 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
         this.dataSourceSettings = pivotData.dataSourceSettings;
     }
 
-    private mergePersistPivotData() {
-        let blazdataSource : IDataSet[] | DataManager;
-        if(isBlazor()){
-            blazdataSource =  this.dataSourceSettings.dataSource;
+    private mergePersistPivotData(): void {
+        let blazdataSource: IDataSet[] | DataManager;
+        if (isBlazor()) {
+            blazdataSource = this.dataSourceSettings.dataSource;
         }
         let data: string = window.localStorage.getItem(this.getModuleName() + this.element.id);
         if (!(isNullOrUndefined(data) || (data === ''))) {
             this.setProperties(JSON.parse(data), true);
         }
-        if(this.dataSourceSettings.dataSource instanceof Object && isBlazor()){
+        if (this.dataSourceSettings.dataSource instanceof Object && isBlazor()) {
             this.setProperties({ dataSourceSettings: { dataSource: blazdataSource } }, true);
         }
     }
@@ -1735,6 +1755,7 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
     //     this.grid.print();
     // }
 
+    /* tslint:disable:max-func-body-length */
     /**
      * Called internally if any of the property value changed.
      * @returns void
@@ -1747,6 +1768,7 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
                 case 'hyperlinkSettings':
                 case 'allowDrillThrough':
                 case 'editSettings':
+                case 'allowDataCompression':
                     if (newProp.dataSourceSettings && Object.keys(newProp.dataSourceSettings).length === 1
                         && newProp.dataSourceSettings.groupSettings) {
                         let groupSettings: IGroupSettings[] =
@@ -1761,9 +1783,9 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
                             this.setProperties({ dataSourceSettings: dataSource }, true);
                         }
                     }
-                    if (Object.keys(newProp.dataSourceSettings).length === 1
-                        && Object.keys(newProp.dataSourceSettings)[0] === "dataSource") {
-                            this.engineModule.fieldList = null;
+                    if (newProp.dataSourceSettings && Object.keys(newProp.dataSourceSettings).length === 1
+                        && Object.keys(newProp.dataSourceSettings)[0] === 'dataSource') {
+                        this.engineModule.fieldList = null;
                     }
                     this.notify(events.initialLoad, {});
                     break;

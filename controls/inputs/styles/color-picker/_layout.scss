@@ -377,6 +377,10 @@
             text-align: center;
           }
         }
+
+        & .e-numeric-hidden {
+          display: none;
+        }
       }
 
       & .e-value-switch-btn {

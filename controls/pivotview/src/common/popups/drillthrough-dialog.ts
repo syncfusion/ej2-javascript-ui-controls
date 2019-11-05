@@ -78,7 +78,9 @@ export class DrillThroughDialog {
                     }
                     count = 0;
                     let items: IDataSet[] = [];
-                    for (let item of this.parent.engineModule.data as IDataSet[]) {
+                    let data: IDataSet[] = (this.parent.allowDataCompression && this.parent.enableVirtualization) ?
+                        this.parent.engineModule.actualData : this.parent.engineModule.data;
+                    for (let item of data as IDataSet[]) {
                         delete item['__index'];
                         if (this.gridIndexObjects[count.toString()] === undefined) {
                             items.push(item);
@@ -190,7 +192,8 @@ export class DrillThroughDialog {
         this.parent.trigger(events.beginDrillThrough, {
             cellInfo: eventArgs,
             gridObj: isBlazor() ? undefined : this.drillThroughGrid,
-            type: 'editing' });
+            type: 'editing'
+        });
         if (this.parent.editSettings.allowEditing) {
             Grid.Inject(Edit, Page);
             this.drillThroughGrid.editSettings = this.parent.editSettings;

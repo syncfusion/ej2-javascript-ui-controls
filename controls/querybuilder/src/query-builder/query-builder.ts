@@ -196,6 +196,7 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
     private selectedColumn: ColumnsModel;
     private actionButton: Element;
     private isInitialLoad: boolean;
+    private timer: number;
     /** 
      * Triggers when the component is created.
      * @event
@@ -307,6 +308,12 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
      */
     @Property(false)
     public matchCase: boolean;
+    /**
+     * If immediateModeDelay is set by particular number, the rule Change event is triggered after that period.
+     * @default 0
+     */
+    @Property(0)
+    public immediateModeDelay: number;
     /**
      * Defines rules in the QueryBuilder.
      * Specifies the initial rule, which is JSON data.
@@ -841,7 +848,7 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
     }
 
     private changeValue(i: number, args: ButtonChangeEventArgs | InputEventArgs | InputChangeEventArgs | CalendarChangeEventArgs): void {
-        let eventsArgs: ChangeEventArgs; let groupID: string; let ruleID: string;
+        let groupID: string; let ruleID: string;
         let element: Element;
         if (args.event) {
             element = args.event.target as Element;
@@ -879,13 +886,24 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
         } else {
             value = (<InputEventArgs | InputChangeEventArgs | CalendarChangeEventArgs>args).value;
         }
-        eventsArgs = { groupID: groupID, ruleID: ruleID, value: value, cancel: false, type: 'value' };
+        if ((args as InputChangeEventArgs).name === 'input' && this.immediateModeDelay) {
+            window.clearInterval(this.timer);
+            this.timer = window.setInterval(
+                () => { this.filterValue(groupID, ruleID, value, i, element); }, this.immediateModeDelay );
+        } else {
+            this.filterValue(groupID, ruleID, value, i, element);
+        }
+    }
+
+    private filterValue(grID: string, rlID: string, value: string | number | Date | boolean | string[], i: number, ele: Element): void {
+        let eventsArgs: ChangeEventArgs = { groupID: grID, ruleID: rlID, value: value, cancel: false, type: 'value' };
+        window.clearInterval(this.timer);
         if (!this.isImportRules) {
             this.trigger('beforeChange', eventsArgs, (observedChangeArgs: ChangeEventArgs) => {
-                this.changeValueSuccessCallBack(observedChangeArgs, element, i, groupID, ruleID);
+                this.changeValueSuccessCallBack(observedChangeArgs, ele, i, grID, rlID);
             });
         } else {
-            this.changeValueSuccessCallBack(eventsArgs, element, i, groupID, ruleID);
+            this.changeValueSuccessCallBack(eventsArgs, ele, i, grID, rlID);
         }
     }
 
@@ -1112,6 +1130,11 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
             }
             detach(divElement[i]);
         }
+        let templateElement: NodeListOf<HTMLElement>;
+        templateElement = target.nextElementSibling.querySelectorAll('.e-template:not(.e-control)') as NodeListOf<HTMLElement>;
+        for (let i: number = 0, len: number = templateElement.length; i < len; i++) {
+            detach(templateElement[i]);
+        }
     }
     private templateDestroy(column: ColumnsModel, elemId: string): void {
         let temp: Function = column.template.destroy as Function;
@@ -1228,18 +1251,25 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
         this.updateRules(element, value, i);
     }
     private processTemplate(target: Element, itemData: ColumnsModel, rule: RuleModel, tempRule: RuleModel): void {
-        let tempElements: NodeListOf<Element> = closest(target, '.e-rule-container').querySelectorAll('.e-template');
+        let container: Element = closest(target, '.e-rule-container');
+        let tempElements: NodeListOf<Element> = container.querySelectorAll('.e-template');
+        let idx: number = (getComponent(container.querySelector('.e-rule-filter .e-filter-input') as HTMLElement, 'dropdownlist') as
+        DropDownList).index;
         if (tempElements.length < 2) {
             if (itemData.template && typeof itemData.template.write === 'string') {
-                getValue(itemData.template.write, window)({ elements: tempElements[0], values: rule.value, operator: tempRule.operator });
+                getValue(itemData.template.write, window)({ elements: tempElements[0], values: rule.value, operator: tempRule.operator,
+                    dataSource: this.columns[idx].values });
             } else if (itemData.template && itemData.template.write) {
-                (itemData.template.write as Function)({ elements: tempElements[0], values: rule.value, operator: tempRule.operator });
+                (itemData.template.write as Function)({ elements: tempElements[0], values: rule.value, operator: tempRule.operator,
+                    dataSource: this.columns[idx].values });
             }
         } else {
             if (itemData.template && typeof itemData.template.write === 'string') {
-                getValue(itemData.template.write, window)({ elements: tempElements, values: rule.value, operator: tempRule.operator });
+                getValue(itemData.template.write, window)({ elements: tempElements, values: rule.value, operator: tempRule.operator,
+                    dataSource: this.columns[idx].values });
             } else if (itemData.template && itemData.template.write) {
-                (itemData.template.write as Function)({ elements: tempElements, values: rule.value, operator: tempRule.operator });
+                (itemData.template.write as Function)({ elements: tempElements, values: rule.value, operator: tempRule.operator,
+                    dataSource: this.columns[idx].values });
             }
         }
     }
@@ -1507,7 +1537,7 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
             if (valElem instanceof Element) {
                 valElem.id = parentId + '_valuekey0';
                 addClass([valElem], 'e-template');
-                addClass([valElem], 'e-' + itemData.field);
+                addClass([valElem], 'e-' + this.columns[filtObj.index].field);
                 target.nextElementSibling.appendChild(valElem);
             } else if (valElem instanceof Array) {
                 addClass(valElem, 'e-template');
@@ -2069,7 +2099,7 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
                 { value: 'isempty', key: this.l10n.getConstant('IsEmpty') },
                 { value: 'isnotempty', key: this.l10n.getConstant('IsNotEmpty') },
                 { value: 'isnull', key: this.l10n.getConstant('IsNull') },
-                { value: 'isnotnull', key: this.l10n.getConstant('IsNotNull') }, ],
+                { value: 'isnotnull', key: this.l10n.getConstant('IsNotNull') } ],
             dateOperator: [
                 { value: 'equal', key: this.l10n.getConstant('Equal') },
                 { value: 'greaterthan', key: this.l10n.getConstant('GreaterThan') },
@@ -2097,7 +2127,8 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
         this.operators = {
             equal: '=', notequal: '!=', greaterthan: '>', greaterthanorequal: '>=', lessthan: '<', in: 'IN', notin: 'NOT IN',
             lessthanorequal: '<=', startswith: 'LIKE', endswith: 'LIKE', between: 'BETWEEN', notbetween: 'NOT BETWEEN', contains: 'LIKE',
-            isnull: 'IS NULL', isnotnull: 'IS NOT NULL', isempty: 'IS EMPTY', isnotempty: 'IS NOT EMPTY'
+            isnull: 'IS NULL', isnotnull: 'IS NOT NULL', isempty: 'IS EMPTY', isnotempty: 'IS NOT EMPTY', notstartswith: 'NOT LIKE',
+            notendswith: 'NOT LIKE', notcontains: 'NOT LIKE'
         };
         this.fields =  { text: 'label', value: 'field' };
     }
@@ -2430,6 +2461,7 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
     public getPredicate(rule: RuleModel): Predicate {
         let ruleColl: RuleModel[] = rule.rules; let pred: Predicate; let pred2: Predicate; let date: Date;
         let ruleValue: string | number | Date; let ignoreCase: boolean = false; let column: ColumnsModel;
+        let ignoreOper: string[] = ['notcontains', 'notstartswith', 'notendswith'];
         if (!ruleColl) {
             return pred;
         }
@@ -2472,39 +2504,42 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
                 }
                 if (i === 0) {
                     if ((oper.indexOf('in') > -1 || oper.indexOf('between') > -1 || oper.indexOf('null') > -1 ||
-                    oper.indexOf('empty') > -1 ) && oper !== 'contains') {
+                    oper.indexOf('empty') > -1 ) && oper.indexOf('contains') < 0) {
                         pred = isDateFilter ? this.datePredicate(ruleColl[i], ruleValue as Date) : this.arrayPredicate(ruleColl[i]);
                     } else {
                         let value: string | number | Date = ruleValue as string | number | Date;
-                        if (value !== '') {
+                        if (value !== '' && ignoreOper.indexOf(oper) < 0) {
                             pred = new Predicate(ruleColl[i].field, ruleColl[i].operator, ruleValue as string | number | Date, ignoreCase);
                         }
                     }
                 } else {
-                        if (isDateFilter || (oper.indexOf('in') > -1 || oper.indexOf('between') > -1 ||
-                        oper.indexOf('null') > -1 || oper.indexOf('empty') > -1 ) && oper !== 'contains') {
-                            pred = isDateFilter ? this.datePredicate(ruleColl[i], ruleValue as Date, pred, rule.condition) :
-                            this.arrayPredicate(ruleColl[i], pred, rule.condition);
+                    if (ignoreOper.indexOf(oper) > -1) {
+                        continue;
+                    }
+                    if (isDateFilter || (oper.indexOf('in') > -1 || oper.indexOf('between') > -1 ||
+                    oper.indexOf('null') > -1 || oper.indexOf('empty') > -1 ) && oper.indexOf('contains') < 0) {
+                        pred = isDateFilter ? this.datePredicate(ruleColl[i], ruleValue as Date, pred, rule.condition) :
+                        this.arrayPredicate(ruleColl[i], pred, rule.condition);
+                    } else {
+                        if (rule.condition === 'and') {
+                            let value: string | number | Date = ruleValue as string | number | Date;
+                            if (pred && value !== '') {
+                                pred
+                                = pred.and(ruleColl[i].field, ruleColl[i].operator, ruleValue as string | number | Date, ignoreCase);
+                            } else if (value !== '') {
+                                pred = new Predicate(
+                                    ruleColl[i].field, ruleColl[i].operator, ruleValue as string | number | Date, ignoreCase);
+                                }
                         } else {
-                            if (rule.condition === 'and') {
-                                let value: string | number | Date = ruleValue as string | number | Date;
-                                if (pred && value !== '') {
-                                    pred
-                                    = pred.and(ruleColl[i].field, ruleColl[i].operator, ruleValue as string | number | Date, ignoreCase);
-                                } else if (value !== '') {
-                                    pred = new Predicate(
-                                        ruleColl[i].field, ruleColl[i].operator, ruleValue as string | number | Date, ignoreCase);
-                                }
-                            } else {
-                                let value: string | number = ruleValue as string | number;
-                                if (pred && value !== '') {
-                                    pred = pred.or(ruleColl[i].field, ruleColl[i].operator, ruleValue as string | number, ignoreCase);
-                                } else if (value !== '') {
-                                    pred = new Predicate(
-                                        ruleColl[i].field, ruleColl[i].operator, ruleValue as string | number | Date, ignoreCase);
-                                }
+                            let value: string | number = ruleValue as string | number;
+                            if (pred && value !== '') {
+                                pred = pred.or(ruleColl[i].field, ruleColl[i].operator, ruleValue as string | number, ignoreCase);
+                            } else if (value !== '') {
+                                pred = new Predicate(
+                                ruleColl[i].field, ruleColl[i].operator, ruleValue as string | number | Date, ignoreCase);
                             }
                         }
+                    }
                 }
             }
         }
@@ -2661,7 +2696,7 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
             this.addRuleElement(parentElem.querySelector('.e-group-container'), rule); //Create group
         }
     }
-    private getSqlString(rules: RuleModel, queryStr?: string): string {
+    private getSqlString(rules: RuleModel, enableEscape?: boolean, queryStr?: string): string {
         let isRoot: boolean = false;
         if (!queryStr) {
             queryStr = '';
@@ -2672,7 +2707,7 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
         let condition: string = rules.condition;
         for (let j: number = 0, jLen: number = rules.rules.length; j < jLen; j++) {
             if (rules.rules[j].rules) {
-                queryStr = this.getSqlString(rules.rules[j], queryStr);
+                queryStr = this.getSqlString(rules.rules[j], enableEscape, queryStr);
             } else {
                 let rule: RuleModel = rules.rules[j];
                 let valueStr: string = '';
@@ -2691,11 +2726,11 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
                         }
                     }
                 } else {
-                    if (rule.operator === 'startswith') {
+                    if (rule.operator.indexOf('startswith') > -1) {
                         valueStr += '("' + rule.value + '%")';
-                    } else if (rule.operator === 'endswith') {
+                    } else if (rule.operator.indexOf('endswith') > -1) {
                         valueStr += '("%' + rule.value + '")';
-                    } else if (rule.operator === 'contains') {
+                    } else if (rule.operator.indexOf('contains') > -1) {
                         valueStr += '("%' + rule.value + '%")';
                     } else {
                         if (rule.type === 'number') {
@@ -2706,9 +2741,15 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
                     }
                 }
                 if (rule.operator.indexOf('null') > -1 || (rule.operator.indexOf('empty') > -1)) {
+                    if (enableEscape) {
+                        rule.field = '`' + rule.field + '`';
+                    }
                     queryStr += rule.field + ' ' + this.operators[rule.operator];
                 } else {
-                    queryStr += rule.field + ' ' + (this.operators[rule.operator] || rule.operator)  + ' ' + valueStr;
+                    if (enableEscape) {
+                        rule.field = '`' + rule.field + '`';
+                    }
+                    queryStr += rule.field + ' ' + this.operators[rule.operator] + ' ' + valueStr;
                 }
             }
             if (j !== jLen - 1) {
@@ -2724,6 +2765,7 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
      * Sets the rules from the sql query.
      */
     public setRulesFromSql(sqlString: string): void {
+        sqlString = sqlString.replace(/`/g, '');
         let ruleModel: RuleModel = this.getRulesFromSql(sqlString);
         this.setRules({ condition: ruleModel.condition, rules: ruleModel.rules });
     }
@@ -2742,9 +2784,9 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
      * Gets the sql query from rules.
      * @returns object.
      */
-    public getSqlFromRules(rule: RuleModel): string {
+    public getSqlFromRules(rule: RuleModel, allowEscape?: boolean): string {
         rule = this.getRuleCollection(rule, false);
-        return this.getSqlString(this.getValidRules(rule)).replace(/"/g, '\'');
+        return this.getSqlString(this.getValidRules(rule), allowEscape).replace(/"/g, '\'');
     }
     private sqlParser(sqlString: string): string[][] {
         let st: number = 0;
@@ -2835,15 +2877,16 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
             '>=': 'greaterthanorequal', 'in': 'in', 'not in': 'notin', 'between': 'between', 'not between': 'notbetween',
             'is empty': 'isempty', 'is null': 'isnull', 'is not null': 'isnotnull', 'is not empty': 'isnotempty'
         };
-        if (value.indexOf('%') === 0 && value.indexOf('%') === value.length - 1) {
-            return 'contains';
+        if (value.indexOf('%') === 0 && value[value.length - 1] === '%') {
+            return (operator === 'not like') ? 'notcontains' : 'contains';
         } else if (value.indexOf('%') === 0 && value.indexOf('%') !== value.length - 1) {
-            return 'startswith';
+            return (operator === 'not like') ? 'notstartswith' : 'startswith';
         } else if (value.indexOf('%') !== 0 && value.indexOf('%') === value.length - 1) {
-            return 'endswith';
+            return (operator === 'not like') ? 'notendswith' : 'endswith';
         }
         return operators[operator];
     }
+
     private getTypeFromColumn(rules: RuleModel): string {
         let columnData: ColumnsModel[] = this.columns;
         for ( let i: number = 0; i < columnData.length; i++ ) {
@@ -2854,6 +2897,7 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
         }
         return rules.type;
     }
+
     private processParser(parser: string[][], rules: RuleModel, levelColl: number[]): RuleModel {
         let rule: RuleModel; let subRules: RuleModel;
         let numVal: number[] = []; let strVal: string[] = [];
@@ -2883,7 +2927,7 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
                             if (operator.indexOf('null') > -1 || operator.indexOf('empty') > -1) {
                                 break;
                             }
-                            if (operator === 'like' && parser[j][0] === 'String') {
+                            if (operator.indexOf('like') > -1 && parser[j][0] === 'String') {
                                 rule.value = parser[j][1].replace(/'/g, '').replace(/%/g, '');
                                 rule.type = 'string';
                             } else if (operator === 'between') {
@@ -2902,7 +2946,7 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
                             }
                         }
                     }
-                    if (operator !== 'like') {
+                    if (operator.indexOf('like') < 0) {
                         if (parser[j - 1][0] === 'Number') {
                             rule.value = numVal;
                             rule.type = 'number';

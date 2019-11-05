@@ -2,11 +2,11 @@ import { IPivotValues, IDataOptions, PivotEngine, IFieldListOptions, IFieldOptio
 import { IDrilledItem, IStringIndex } from '../../base/engine';
 import { Mode, SelectionMode, PdfBorderStyle } from '../base/enum';
 import { L10n } from '@syncfusion/ej2-base';
-import { Grid, ExcelStyle, CellSelectionMode, SelectionType, CheckboxSelectionType } from '@syncfusion/ej2-grids';
-import { Column } from '@syncfusion/ej2-grids';
+import { Grid, ExcelStyle, CellSelectionMode, SelectionType, CheckboxSelectionType, PdfExportProperties } from '@syncfusion/ej2-grids';
+import { Column, ExcelExportProperties } from '@syncfusion/ej2-grids';
 import { CellSelectingEventArgs } from '@syncfusion/ej2-grids';
-import { PdfStandardFont, PdfTrueTypeFont, PdfGridCell } from '@syncfusion/ej2-pdf-export';
-import { SeriesModel } from '@syncfusion/ej2-charts';
+import { PdfStandardFont, PdfTrueTypeFont, PdfGridCell, PdfPageOrientation } from '@syncfusion/ej2-pdf-export';
+import { SeriesModel, ExportType } from '@syncfusion/ej2-charts';
 import { ItemModel } from '@syncfusion/ej2-navigations';
 import { SummaryTypes } from '../../base/types';
 import { PivotView } from '../../pivotview';
@@ -102,6 +102,17 @@ export interface BeforeExportEventArgs {
     allowRepeatHeader?: boolean;
     /** Defines style */
     style?: PdfTheme;
+    pdfExportProperties?: PdfExportProperties;
+    isMultipleExport?: boolean;
+    pdfDoc?: Object;
+    isBlob?: boolean;
+    excelExportProperties?: ExcelExportProperties;
+    /* tslint:disable-next-line */
+    workbook?: any;
+    type?: ExportType;
+    orientation?: PdfPageOrientation;
+    width?: number;
+    height?: number;
 }
 
 export interface PdfCellRenderArgs {

@@ -22,7 +22,7 @@ import { LegendSettings } from '../common/legend/legend';
 import { AccumulationLegend } from './renderer/legend';
 import { LegendSettingsModel } from '../common/legend/legend-model';
 import { ChartLocation, subtractRect, indexFinder, appendChildElement, redrawElement, blazorTemplatesReset } from '../common/utils/helper';
-import { RectOption, showTooltip } from '../common/utils/helper';
+import { RectOption, showTooltip, ImageOption } from '../common/utils/helper';
 import { textElement, createSvg, calculateSize, removeElement, firstToLowerCase, withInBounds } from '../common/utils/helper';
 import { getElement, titlePositionX } from '../common/utils/helper';
 import { Rect, Size, measureText, TextOption, SvgRenderer, CanvasRenderer } from '@syncfusion/ej2-svg-base';
@@ -141,6 +141,13 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
      */
     @Property(null)
     public title: string;
+
+    /**
+     * The background image of the chart that accepts value in string as url link or location of an image.
+     * @default null
+     */
+    @Property(null)
+    public backGroundImageUrl: string;
 
     /**
      * Center of pie
@@ -1183,6 +1190,18 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
             ),
             this.redraw
         );
+        // to draw back ground image for accumulation chart        
+        let backGroundImage: string = this.backGroundImageUrl;
+        if (backGroundImage) {
+            let image: ImageOption = new ImageOption(
+                this.availableSize.height - padding,
+                this.availableSize.width - padding,
+                backGroundImage, 0, 0,
+                this.element.id + '_background',
+                'visible', 'none'
+            );
+            appendChildElement(false, this.svgObject, this.renderer.drawImage(image) as HTMLElement, this.redraw);
+        }
     }
     /**
      * Method to render legend for accumulation chart

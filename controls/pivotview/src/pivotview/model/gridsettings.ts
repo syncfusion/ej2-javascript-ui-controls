@@ -234,6 +234,22 @@ export class GridSettings extends ChildProperty<GridSettings> {
      @Event()
      public beforePrint: EmitType<PrintEventArgs>;
 
+     /**
+      * Triggers before the PDF export starts.
+      * @event
+      * @deprecated
+      */
+     @Event()
+     public beforePdfExport: EmitType<Object>;
+
+     /**
+      * Triggers before the Excel export starts.
+      * @event
+      * @deprecated
+      */
+     @Event()
+     public beforeExcelExport: EmitType<Object>;
+
      /** 
       * Triggers before context menu opens.
       * @event

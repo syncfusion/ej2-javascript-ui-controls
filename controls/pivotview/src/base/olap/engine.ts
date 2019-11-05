@@ -86,6 +86,8 @@ export class OlapEngine {
     /** @hidden */
     public filterMembers: { [key: string]: string[] | IFilter[] } = {};
     /** @hidden */
+    public allowMemberFilter: boolean;
+    /** @hidden */
     public allowLabelFilter: boolean;
     /** @hidden */
     public allowValueFilter: boolean;
@@ -157,6 +159,7 @@ export class OlapEngine {
         this.isEmptyData = false;
         this.mdxQuery = '';
         this.isMeasureAvail = false;
+        this.allowMemberFilter = false;
         this.allowLabelFilter = false;
         this.allowValueFilter = false;
         this.isMondrian = false;
@@ -186,17 +189,18 @@ export class OlapEngine {
         if (dataSourceSettings.url) {
             // this.isMondrian = (dataSourceSettings.providerType === 'mondrian');
             this.dataSourceSettings = dataSourceSettings;
+            this.valueAxis = dataSourceSettings.valueAxis === 'row' ? 'row' : 'column';
             this.getAxisFields();
             this.formats = dataSourceSettings.formatSettings ? dataSourceSettings.formatSettings : [];
             this.enableSort = dataSourceSettings.enableSorting === undefined ? true : dataSourceSettings.enableSorting;
             this.valueSortSettings = dataSourceSettings.valueSortSettings ? dataSourceSettings.valueSortSettings : undefined;
             this.filterSettings = dataSourceSettings.filterSettings ? dataSourceSettings.filterSettings : [];
             this.sortSettings = dataSourceSettings.sortSettings ? dataSourceSettings.sortSettings : [];
+            this.allowMemberFilter = dataSourceSettings.allowMemberFilter ? true : false;
             this.allowLabelFilter = dataSourceSettings.allowLabelFilter ? true : false;
             this.allowValueFilter = dataSourceSettings.allowValueFilter ? true : false;
             this.drilledMembers = dataSourceSettings.drilledMembers ? this.updateDrilledItems(dataSourceSettings.drilledMembers) : [];
             this.calculatedFieldSettings = dataSourceSettings.calculatedFieldSettings ? dataSourceSettings.calculatedFieldSettings : [];
-            this.valueAxis = dataSourceSettings.valueAxis === 'row' ? 'row' : 'column';
             this.emptyCellTextContent = dataSourceSettings.emptyCellsTextContent ? dataSourceSettings.emptyCellsTextContent : '';
             this.pageSettings = customProperties ? (customProperties.pageSettings ? customProperties.pageSettings : this.pageSettings)
                 : undefined;
@@ -1720,7 +1724,7 @@ export class OlapEngine {
                     /* tslint:disable:max-line-length */
                     formattedText = !showTotals ? '' :
                         ((!isNullOrUndefined(valElement) && !isNullOrUndefined(valElement.querySelector('FmtValue'))) ?
-                            valElement.querySelector('FmtValue').textContent : '');
+                            valElement.querySelector('FmtValue').textContent : this.emptyCellTextContent);
                     value = !showTotals ? '0' :
                         ((!isNullOrUndefined(valElement) && !isNullOrUndefined(valElement.querySelector('Value'))) ?
                             valElement.querySelector('Value').textContent : null);
@@ -2225,7 +2229,7 @@ export class OlapEngine {
         let dataFields: IFieldOptions[] = extend([], this.rows, null, true) as IFieldOptions[];
         dataFields = dataFields.concat(this.columns);
         for (let filter of filterItems) {
-            if (filter.type === 'Include') {
+            if (filter.type === 'Include' && this.allowMemberFilter) {
                 let members: IMembers = this.fieldList[filter.name].members;
                 let isMembersAvail: boolean = (members && Object.keys(members).length > 0);
                 this.fieldList[filter.name].actualFilter = [...filter.items];

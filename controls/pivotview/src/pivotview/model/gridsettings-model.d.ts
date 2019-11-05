@@ -202,6 +202,20 @@ export interface GridSettingsModel {
     beforePrint?: EmitType<PrintEventArgs>;
 
     /**
+      * Triggers before the PDF export starts.
+      * @event
+      * @deprecated
+      */
+    beforePdfExport?: EmitType<Object>;
+
+    /**
+      * Triggers before the Excel export starts.
+      * @event
+      * @deprecated
+      */
+    beforeExcelExport?: EmitType<Object>;
+
+    /**
       * Triggers before context menu opens.
       * @event
       * @blazorType Syncfusion.EJ2.Blazor.Navigations.BeforeOpenCloseMenuEventArgs

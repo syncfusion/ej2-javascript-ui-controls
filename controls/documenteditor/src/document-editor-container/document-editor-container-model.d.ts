@@ -49,6 +49,11 @@ export interface DocumentEditorContainerModel extends ComponentModel{
     zIndex?: number;
 
     /**
+     * Enable rendering with strict Content Security policy.
+     */
+    enableCsp?: boolean;
+
+    /**
      * Triggers when the component is created
      * @event
      * @blazorproperty 'Created'
