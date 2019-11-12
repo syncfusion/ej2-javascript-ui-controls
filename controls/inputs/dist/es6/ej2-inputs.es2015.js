@@ -360,6 +360,23 @@ var Input;
     }
     Input.setCssClass = setCssClass;
     /**
+     * Set the width to the wrapper of input element.
+     * ```
+     * E.g : Input.setWidth('200px', container);
+     * ```
+     * @param width - Width value which is need to add.
+     * @param container - The element on which the width is need to add.
+     */
+    function setWidth(width, container) {
+        if (typeof width === 'number') {
+            container.style.width = formatUnit(width);
+        }
+        else if (typeof width === 'string') {
+            container.style.width = (width.match(/px|%|em/)) ? (width) : (formatUnit(width));
+        }
+    }
+    Input.setWidth = setWidth;
+    /**
      * Set the placeholder attribute to the input element.
      * ```
      * E.g : Input.setPlaceholder('Search here', element);
@@ -7857,17 +7874,7 @@ let Uploader = class Uploader extends Component {
     // tslint:disable
     /* istanbul ignore next */
     traverseFileTree(item, event) {
-        if (typeof (item) === 'boolean') {
-            let files = [];
-            for (let i = 0; i < this.filesEntries.length; i++) {
-                this.filesEntries[i].file((fileObj) => {
-                    let path = this.filesEntries[i].fullPath;
-                    files.push({ 'path': path, 'file': fileObj });
-                });
-            }
-            this.renderSelectedFiles(event, files, true);
-        }
-        else if (item.isFile) {
+        if (item.isFile) {
             this.filesEntries.push(item);
         }
         else if (item.isDirectory) {
@@ -7880,8 +7887,21 @@ let Uploader = class Uploader extends Component {
                     // tslint:disable-next-line
                 }
                 
-                this.traverseFileTree(true);
-                this.filesEntries = [];
+                this.pushFilesEntries(event);
+            });
+        }
+    }
+    pushFilesEntries(event) {
+        let files = [];
+        for (let i = 0; i < this.filesEntries.length; i++) {
+            // tslint:disable-next-line
+            this.filesEntries[i].file((fileObj) => {
+                let path = this.filesEntries[i].fullPath;
+                files.push({ 'path': path, 'file': fileObj });
+                if (i === this.filesEntries.length - 1) {
+                    this.filesEntries = [];
+                    this.renderSelectedFiles(event, files, true);
+                }
             });
         }
     }
@@ -10827,7 +10847,7 @@ let ColorPicker = class ColorPicker extends Component {
         this.trigger('change', {
             currentValue: { hex: hex, rgba: this.convertToRgbString(this.rgb) },
             previousValue: { hex: this.value.slice(0, 7), rgba: this.convertToRgbString(this.hexToRgb(this.value)) },
-            value: value
+            value: this.enableOpacity ? value : hex
         });
         if (this.enableOpacity) {
             this.setProperties({ 'value': value }, true);
@@ -11846,6 +11866,9 @@ let TextBox = class TextBox extends Component {
                     Input.setEnabled(this.enabled, this.respectiveElement, this.floatLabelType, this.textboxWrapper.container);
                     this.bindClearEvent();
                     break;
+                case 'width':
+                    Input.setWidth(newProp.width, this.textboxWrapper.container);
+                    break;
                 case 'value':
                     let prevOnChange = this.isProtectedOnChange;
                     this.isProtectedOnChange = true;
@@ -12082,6 +12105,7 @@ let TextBox = class TextBox extends Component {
         }
         this.previousValue = this.value;
         this.inputPreviousValue = this.value;
+        Input.setWidth(this.width, this.textboxWrapper.container);
         this.renderComplete();
     }
     updateHTMLAttrToWrapper() {
@@ -12392,6 +12416,9 @@ __decorate$6([
 __decorate$6([
     Property(false)
 ], TextBox.prototype, "enablePersistence", void 0);
+__decorate$6([
+    Property(null)
+], TextBox.prototype, "width", void 0);
 __decorate$6([
     Event()
 ], TextBox.prototype, "created", void 0);

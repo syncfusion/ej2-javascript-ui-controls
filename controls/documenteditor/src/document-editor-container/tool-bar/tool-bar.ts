@@ -402,6 +402,7 @@ export class Toolbar {
         this.importHandler.onSuccess = this.successHandler.bind(this);
         this.importHandler.onFailure = this.failureHandler.bind(this);
         this.importHandler.onError = this.failureHandler.bind(this);
+        this.importHandler.customHeaders = this.container.headers;
         let formData: FormData = new FormData();
         formData.append('files', file);
         this.importHandler.send(formData);

@@ -690,6 +690,8 @@ var cBoxFltrBegin = 'cbox-filter-begin';
 var cBoxFltrComplete = 'cbox-filter-complete';
 /** @hidden */
 var fltrPrevent = 'filter-Prevent';
+/** @hidden */
+var beforeFltrcMenuOpen = 'before-filter-cmenu-open';
 
 /**
  * Defines types of Cell
@@ -1582,7 +1584,8 @@ var RowRenderer = /** @__PURE__ @class */ (function () {
         if (row.cssClass) {
             tr.classList.add(row.cssClass);
         }
-        if (this.parent.element.scrollHeight > this.parent.height && this.parent.aggregates.length) {
+        var vFTable = this.parent.enableColumnVirtualization && this.parent.frozenColumns !== 0;
+        if (!vFTable && this.parent.element.scrollHeight > this.parent.height && this.parent.aggregates.length) {
             for (var i = 0; i < this.parent.aggregates.length; i++) {
                 var property = 'properties';
                 var column = 'columns';
@@ -2147,6 +2150,7 @@ var ContentRender = /** @__PURE__ @class */ (function () {
         this.movableRows = [];
         this.freezeRowElements = [];
         this.isLoaded = true;
+        this.viewColIndexes = [];
         this.drop = function (e) {
             _this.parent.notify(columnDrop, { target: e.target, droppedElement: e.droppedElement });
             remove(e.droppedElement);
@@ -2154,6 +2158,16 @@ var ContentRender = /** @__PURE__ @class */ (function () {
         this.rafCallback = function (args) {
             var arg = args;
             return function () {
+                if (_this.parent.getFrozenColumns() && _this.parent.enableVirtualization) {
+                    var mContentRows = [].slice.call(_this.parent.getMovableVirtualContent().querySelectorAll('.e-row'));
+                    var fContentRows = [].slice.call(_this.parent.getFrozenVirtualContent().querySelectorAll('.e-row'));
+                    _this.isLoaded = !mContentRows ? false : mContentRows.length === fContentRows.length;
+                    if (_this.parent.enableColumnVirtualization && args.requestType === 'virtualscroll' && _this.isLoaded) {
+                        var mHdr = [].slice.call(_this.parent.getMovableVirtualHeader().querySelectorAll('.e-row'));
+                        var fHdr = [].slice.call(_this.parent.getFrozenVirtualHeader().querySelectorAll('.e-row'));
+                        _this.isLoaded = mHdr.length === fHdr.length;
+                    }
+                }
                 _this.ariaService.setBusy(_this.getPanel().firstChild, false);
                 if (_this.parent.isDestroyed) {
                     return;
@@ -2299,11 +2313,36 @@ var ContentRender = /** @__PURE__ @class */ (function () {
                 gObj.vRows = [];
             }
         }
-        var modelData = this.generator.generateRows(dataSource, args);
+        var modelData;
+        if (this.parent.enableVirtualization && this.parent.getFrozenColumns()) {
+            if (this.parent.enableColumnVirtualization) {
+                if (args.requestType === 'virtualscroll' && args.virtualInfo.sentinelInfo.axis === 'X') {
+                    modelData = this.parent.contentModule.generateRows(dataSource, args);
+                    args.renderMovableContent = true;
+                }
+                else if (mCont.scrollLeft > 0 && !args.renderMovableContent) {
+                    this.viewColIndexes = args.virtualInfo.columnIndexes;
+                    var indexes = [];
+                    for (var i = 0; i < this.parent.getFrozenColumns(); i++) {
+                        indexes.push(i);
+                    }
+                    this.parent.setColumnIndexesInView(indexes);
+                    args.virtualInfo.columnIndexes = indexes;
+                }
+            }
+            modelData = this.parent.contentModule.generateRows(dataSource, args);
+        }
+        else {
+            modelData = this.generator.generateRows(dataSource, args);
+        }
         if (isNullOrUndefined(modelData[0].cells[0])) {
             mCont.querySelector('tbody').innerHTML = '';
         }
         var idx = modelData[0].cells[0].index;
+        if (this.parent.enableColumnVirtualization && this.parent.getFrozenColumns() && args.renderMovableContent
+            && args.requestType === 'virtualscroll' && mCont.scrollLeft > 0 && args.virtualInfo.columnIndexes[0] !== 0) {
+            idx = this.parent.getFrozenColumns();
+        }
         /* tslint:disable:no-any */
         if (this.parent.registeredTemplate && this.parent.registeredTemplate.template && !args.isFrozen) {
             var templatetoclear = [];
@@ -2357,6 +2396,21 @@ var ContentRender = /** @__PURE__ @class */ (function () {
                 }
             }
         }
+        if (gObj.frozenRows && args.requestType === 'virtualscroll' && args.virtualInfo.sentinelInfo.axis === 'X') {
+            var bIndex = args.virtualInfo.blockIndexes;
+            args.virtualInfo.blockIndexes = [1, 2];
+            var mhdrData = this.vgenerator
+                .generateRows(dataSource, args);
+            mhdrData.splice(this.parent.frozenRows);
+            for (var i = 0; i < this.parent.frozenRows; i++) {
+                if (args.virtualInfo.columnIndexes[0] === 0) {
+                    mhdrData[i].cells.splice(0, this.parent.getFrozenColumns());
+                }
+                tr = row.render(mhdrData[i], columns);
+                hdrfrag.appendChild(tr);
+            }
+            args.virtualInfo.blockIndexes = bIndex;
+        }
         for (var i = startIndex, len = modelData.length; i < len; i++) {
             this.rows.push(modelData[i]);
             if (isGroupAdaptive(gObj) && this.rows.length >= (gObj.pageSettings.pageSize) && blockLoad) {
@@ -2364,7 +2418,7 @@ var ContentRender = /** @__PURE__ @class */ (function () {
             }
             if (!gObj.rowTemplate) {
                 tr = row.render(modelData[i], columns);
-                if (gObj.frozenRows && i < gObj.frozenRows) {
+                if (gObj.frozenRows && i < gObj.frozenRows && args.requestType !== 'virtualscroll') {
                     hdrfrag.appendChild(tr);
                 }
                 else {
@@ -2410,7 +2464,8 @@ var ContentRender = /** @__PURE__ @class */ (function () {
             this.ariaService.setOptions(this.getTable(), { colcount: gObj.getColumns().length.toString() });
         }
         this.splitRows(idx);
-        if (gObj.frozenRows) {
+        if ((gObj.frozenRows && args.requestType !== 'virtualscroll') || (args.requestType === 'virtualscroll'
+            && args.virtualInfo.sentinelInfo && args.virtualInfo.sentinelInfo.axis === 'X')) {
             hdrTbody = frzCols ? gObj.getHeaderContent().querySelector(idx === 0 ? '.e-frozenheader'
                 : '.e-movableheader').querySelector('tbody') : gObj.getHeaderTable().querySelector('tbody');
             hdrTbody.innerHTML = '';
@@ -2429,11 +2484,12 @@ var ContentRender = /** @__PURE__ @class */ (function () {
         this.index = idx;
         getUpdateUsingRaf(function () {
             _this.parent.notify(beforeFragAppend, args);
+            var isVFTable = _this.parent.enableVirtualization && _this.parent.getFrozenColumns() !== 0;
             if (!_this.parent.enableVirtualization) {
                 remove(_this.tbody);
                 _this.tbody = _this.parent.createElement('tbody');
             }
-            if (frzCols) {
+            if (frzCols && !isVFTable) {
                 _this.tbody.appendChild(frag);
                 if (_this.index === 0) {
                     _this.isLoaded = false;
@@ -2454,9 +2510,30 @@ var ContentRender = /** @__PURE__ @class */ (function () {
                 if (gObj.rowTemplate) {
                     updateBlazorTemplate(gObj.element.id + 'rowTemplate', 'RowTemplate', gObj);
                 }
-                _this.appendContent(_this.tbody, frag, args);
+                if (isVFTable) {
+                    if (!args.renderMovableContent) {
+                        _this.appendContent(fCont.querySelector('tbody'), frag, args);
+                        if (_this.parent.enableColumnVirtualization && mCont.scrollLeft > 0) {
+                            _this.parent.setColumnIndexesInView(_this.viewColIndexes);
+                            args.virtualInfo.columnIndexes = _this.viewColIndexes;
+                        }
+                    }
+                    else {
+                        _this.appendContent(mCont.querySelector('tbody'), frag, args);
+                        if (args.virtualInfo && args.virtualInfo.direction !== 'right' && args.virtualInfo.direction !== 'left') {
+                            fCont.style.height = ((mCont.offsetHeight) - getScrollBarWidth()) + 'px';
+                        }
+                        args.renderMovableContent = false;
+                    }
+                }
+                else {
+                    _this.appendContent(_this.tbody, frag, args);
+                }
             }
             if (frzCols && idx === 0) {
+                if (isVFTable) {
+                    args.renderMovableContent = true;
+                }
                 _this.refreshContentRows(extend({}, args));
             }
             frag = null;
@@ -2649,8 +2726,14 @@ var ContentRender = /** @__PURE__ @class */ (function () {
     };
     ContentRender.prototype.colGroupRefresh = function () {
         if (this.getColGroup()) {
-            var colGroup = isBlazor() ? this.parent.getHeaderTable().querySelector('colgroup').cloneNode(true) :
-                this.parent.element.querySelector('.e-gridheader').querySelector('colgroup').cloneNode(true);
+            var colGroup = void 0;
+            if (this.parent.enableColumnVirtualization && this.parent.getFrozenColumns()) {
+                colGroup = this.parent.getMovableVirtualHeader().querySelector('colgroup').cloneNode(true);
+            }
+            else {
+                colGroup = isBlazor() ? this.parent.getHeaderTable().querySelector('colgroup').cloneNode(true) :
+                    this.parent.element.querySelector('.e-gridheader').querySelector('colgroup').cloneNode(true);
+            }
             this.getTable().replaceChild(colGroup, this.getColGroup());
             this.setColGroup(colGroup);
         }
@@ -3063,16 +3146,26 @@ var HeaderRender = /** @__PURE__ @class */ (function () {
     HeaderRender.prototype.appendCells = function (cols, rows, index, isFirstObj, isFirstCol, isLastCol, isMovable) {
         var lastCol = isLastCol ? 'e-lastcell' : '';
         var frzCols = this.parent.getFrozenColumns();
+        var left;
+        if (this.parent.enableColumnVirtualization && frzCols) {
+            left = this.parent.getContent().querySelector('.e-movablecontent').scrollLeft;
+        }
         if (!cols.columns) {
-            if (!frzCols && (!this.parent.lockcolPositionCount
-                || (cols.lockColumn && !this.lockColsRendered) || (!cols.lockColumn && this.lockColsRendered))
-                || (frzCols && ((!isMovable && (this.frzIdx + this.notfrzIdx < this.parent.frozenColumns || cols.isFrozen) &&
-                    (!this.parent.lockcolPositionCount || (cols.lockColumn && !this.lockColsRendered) ||
-                        (!cols.lockColumn && this.lockColsRendered)))
-                    || (isMovable && (this.frzIdx + this.notfrzIdx >= this.parent.frozenColumns && !cols.isFrozen) &&
-                        (!this.parent.lockcolPositionCount || (cols.lockColumn && !this.lockColsRendered) ||
-                            (!cols.lockColumn && this.lockColsRendered)))))) {
+            if (left && left > 0 && this.parent.enableColumnVirtualization
+                && this.parent.inViewIndexes[0] !== 0) {
                 rows[index].cells.push(this.generateCell(cols, CellType.Header, this.colDepth - index, (isFirstObj ? '' : (isFirstCol ? 'e-firstcell' : '')) + lastCol, index, this.parent.getColumnIndexByUid(cols.uid)));
+            }
+            else {
+                if (!frzCols && (!this.parent.lockcolPositionCount
+                    || (cols.lockColumn && !this.lockColsRendered) || (!cols.lockColumn && this.lockColsRendered))
+                    || (frzCols && ((!isMovable && (this.frzIdx + this.notfrzIdx < this.parent.frozenColumns || cols.isFrozen) &&
+                        (!this.parent.lockcolPositionCount || (cols.lockColumn && !this.lockColsRendered) ||
+                            (!cols.lockColumn && this.lockColsRendered)))
+                        || (isMovable && (this.frzIdx + this.notfrzIdx >= this.parent.frozenColumns && !cols.isFrozen) &&
+                            (!this.parent.lockcolPositionCount || (cols.lockColumn && !this.lockColsRendered) ||
+                                (!cols.lockColumn && this.lockColsRendered)))))) {
+                    rows[index].cells.push(this.generateCell(cols, CellType.Header, this.colDepth - index, (isFirstObj ? '' : (isFirstCol ? 'e-firstcell' : '')) + lastCol, index, this.parent.getColumnIndexByUid(cols.uid)));
+                }
             }
             if (this.parent.lockcolPositionCount) {
                 if ((this.frzIdx + this.notfrzIdx < this.parent.frozenColumns) &&
@@ -3218,12 +3311,14 @@ var HeaderRender = /** @__PURE__ @class */ (function () {
      * @returns {void}
      */
     HeaderRender.prototype.refreshUI = function () {
+        var frzCols = this.parent.getFrozenColumns();
+        var isVFTable = this.parent.enableColumnVirtualization && frzCols !== 0;
         var headerDiv = this.getPanel();
         this.toggleStackClass(headerDiv);
-        var table = this.getTable();
-        var frzCols = this.parent.getFrozenColumns();
-        if (this.getTable()) {
-            remove(this.getTable());
+        var table = this.parent.enableColumnVirtualization && frzCols
+            ? this.headerPanel.querySelector('.e-movableheader').querySelector('.e-table') : this.getTable();
+        if (table) {
+            remove(table);
             table.removeChild(table.firstChild);
             table.removeChild(table.childNodes[0]);
             var colGroup = this.parent.createElement('colgroup');
@@ -3232,7 +3327,9 @@ var HeaderRender = /** @__PURE__ @class */ (function () {
             table.insertBefore(findHeaderRow.thead, table.firstChild);
             this.updateColGroup(colGroup);
             table.insertBefore(this.setColGroup(colGroup), table.firstChild);
-            this.setTable(table);
+            if (!isVFTable) {
+                this.setTable(table);
+            }
             this.appendContent(table);
             this.parent.notify(colGroupRefresh, {});
             this.widthService.setWidthToColumns();
@@ -4328,6 +4425,9 @@ var Render = /** @__PURE__ @class */ (function () {
         if (gObj.toolbarTemplate) {
             resetBlazorTemplate(gObj.element.id + 'toolbarTemplate', 'ToolbarTemplate');
         }
+        if (gObj.pageSettings.template) {
+            resetBlazorTemplate(gObj.element.id + '_template', 'pageSettings');
+        }
         for (var i = 0; i < gridColumns.length; i++) {
             if (gridColumns[i].template) {
                 blazorTemplates[gObj.element.id + gridColumns[i].uid] = [];
@@ -4550,6 +4650,23 @@ var Render = /** @__PURE__ @class */ (function () {
             _this.parent.isEdit = false;
             _this.parent.notify(tooltipDestroy, {});
             gObj.currentViewData = dataArgs.result;
+            if (isBlazor() && gObj.filterSettings.type === 'FilterBar' && args.requestType === 'filtering' && !dataArgs.result.length) {
+                var gridColumns = gObj.getColumns();
+                for (var i = 0; i < gridColumns.length; i++) {
+                    if (gridColumns[i].filterTemplate) {
+                        var tempID = gObj.element.id + gridColumns[i].uid + 'filterTemplate';
+                        resetBlazorTemplate(tempID, 'FilterTemplate');
+                        var fieldName = gridColumns[i].field;
+                        var filteredColumns = gObj.filterSettings.columns;
+                        for (var k = 0; k < filteredColumns.length; k++) {
+                            if (fieldName === filteredColumns[k].field) {
+                                blazorTemplates[tempID][0][fieldName] = filteredColumns[k].value;
+                            }
+                        }
+                        updateBlazorTemplate(tempID, 'FilterTemplate', gridColumns[i], false);
+                    }
+                }
+            }
             if (!len && dataArgs.count && gObj.allowPaging && args && args.requestType !== 'delete') {
                 gObj.prevPageMoving = true;
                 gObj.pageSettings.totalRecordsCount = dataArgs.count;
@@ -4949,8 +5066,13 @@ var ColumnWidthService = /** @__PURE__ @class */ (function () {
         var headerCol;
         var frzCols = this.parent.getFrozenColumns();
         var mHdr = this.parent.getHeaderContent().querySelector('.e-movableheader');
+        var mCont = this.parent.getContent().querySelector('.e-movablecontent');
         if (frzCols && index >= frzCols && mHdr && mHdr.querySelector('colgroup')) {
             headerCol = mHdr.querySelector('colgroup').children[index - frzCols];
+        }
+        else if (this.parent.enableColumnVirtualization && frzCols && mHdr.scrollLeft > 0) {
+            var colGroup = mHdr.querySelector('colgroup');
+            headerCol = colGroup.children[(colGroup.children.length - 1) - index];
         }
         else {
             headerCol = header.querySelector('colgroup').children[index];
@@ -4966,6 +5088,11 @@ var ColumnWidthService = /** @__PURE__ @class */ (function () {
             contentCol = this.parent.getContent().querySelector('.e-movablecontent')
                 .querySelector('colgroup').children[index - frzCols];
         }
+        else if (this.parent.enableColumnVirtualization && frzCols && mCont.scrollLeft > 0) {
+            var colGroup = this.parent.getContent().querySelector('.e-movablecontent')
+                .querySelector('colgroup');
+            contentCol = colGroup.children[(colGroup.children.length - 1) - index];
+        }
         else {
             contentCol = content.querySelector('colgroup').children[index];
         }
@@ -4978,11 +5105,13 @@ var ColumnWidthService = /** @__PURE__ @class */ (function () {
         var edit = this.parent.element.querySelectorAll('.e-table.e-inline-edit');
         var editTableCol = [];
         for (var i = 0; i < edit.length; i++) {
-            for (var j = 0; j < edit[i].querySelector('colgroup').children.length; j++) {
-                editTableCol.push(edit[i].querySelector('colgroup').children[j]);
+            if (parentsUntil(edit[i], 'e-grid').id === this.parent.element.id) {
+                for (var j = 0; j < edit[i].querySelector('colgroup').children.length; j++) {
+                    editTableCol.push(edit[i].querySelector('colgroup').children[j]);
+                }
             }
         }
-        if (edit.length) {
+        if (edit.length && editTableCol.length) {
             editTableCol[index].style.width = fWidth;
         }
     };
@@ -5659,7 +5788,8 @@ var ContentFocus = /** @__PURE__ @class */ (function () {
             return this.matrix.current;
         }
         var _a = this.indexesByKey(action) || this.matrix.current.concat(navigator), rowIndex = _a[0], cellIndex = _a[1], rN = _a[2], cN = _a[3];
-        var current = this.matrix.get(rowIndex, cellIndex, [rN, cN], action, this.validator());
+        var current = !this.parent.getCurrentViewRecords().length ? this.matrix.get(0, -1, [0, 1], null, this.validator()) :
+            this.matrix.get(rowIndex, cellIndex, [rN, cN], action, this.validator());
         return current;
     };
     ContentFocus.prototype.onClick = function (e, force) {
@@ -8073,7 +8203,8 @@ var Selection = /** @__PURE__ @class */ (function () {
         if (this.parent.isCheckBoxSelection && this.parent.enableVirtualization && !this.parent.getDataModule().isRemote()) {
             if (this.parent.checkAllRows === 'Check') {
                 this.selectedRowIndexes = [];
-                for (var data = 0; data < this.getData().length; data++) {
+                var dataLength = this.getData().length;
+                for (var data = 0; data < dataLength; data++) {
                     this.selectedRowIndexes.push(data);
                 }
             }
@@ -9925,6 +10056,7 @@ var Grid = /** @__PURE__ @class */ (function (_super) {
         _this.pageTemplateChange = false;
         /** @hidden */
         _this.isAutoGen = false;
+        _this.mediaBindInstance = [];
         // enable/disable logger for MVC & Core
         _this.enableLogger = true;
         _this.needsID = true;
@@ -10321,7 +10453,8 @@ var Grid = /** @__PURE__ @class */ (function (_super) {
         this.mediaCol.push(col);
         this.media[col.uid] = window.matchMedia(col.hideAtMedia);
         this.mediaQueryUpdate(index, this.media[col.uid]);
-        this.media[col.uid].addListener(this.mediaQueryUpdate.bind(this, index));
+        this.mediaBindInstance.push(this.mediaQueryUpdate.bind(this, index));
+        this.media[col.uid].addListener(this.mediaBindInstance[index]);
     };
     /**
      * @hidden
@@ -10368,6 +10501,11 @@ var Grid = /** @__PURE__ @class */ (function (_super) {
             this.refreshHeader();
         }
     };
+    Grid.prototype.removeMediaListener = function () {
+        for (var i = 0; i < this.mediaCol.length; i++) {
+            this.media[this.mediaCol[i].uid].removeListener(this.mediaBindInstance[i]);
+        }
+    };
     /**
      * For internal use only - Initialize the event handler
      * @private
@@ -10391,6 +10529,7 @@ var Grid = /** @__PURE__ @class */ (function (_super) {
             this.unwireEvents();
         }
         this.removeListener();
+        this.removeMediaListener();
         this.notify(destroy, {});
         this.destroyDependentModules();
         if (hasGridChild) {
@@ -12329,6 +12468,9 @@ var Grid = /** @__PURE__ @class */ (function (_super) {
     };
     Grid.prototype.blazorTemplate = function () {
         if (isBlazor()) {
+            if (this.pageSettings.template) {
+                updateBlazorTemplate(this.element.id + "_template", 'Template', this.pageSettings);
+            }
             for (var i = 0; i < this.columnModel.length; i++) {
                 if (this.columnModel[i].template) {
                     updateBlazorTemplate(this.element.id + this.columnModel[i].uid, 'Template', this.columnModel[i], false);
@@ -12584,6 +12726,10 @@ var Grid = /** @__PURE__ @class */ (function (_super) {
     Grid.prototype.refreshColumns = function () {
         var fCnt = this.getContent().querySelector('.e-frozencontent');
         if ((this.getFrozenColumns() === 1 && !fCnt) || (this.getFrozenColumns() === 0 && fCnt)) {
+            if (this.enableColumnVirtualization) {
+                this.columnModel = [];
+                this.updateColumnModel(this.columns);
+            }
             this.freezeRefresh();
         }
         else {
@@ -12812,14 +12958,6 @@ var Grid = /** @__PURE__ @class */ (function (_super) {
     /**
      * @hidden
      */
-    Grid.prototype.applyBiggerTheme = function (element) {
-        if (this.element.classList.contains('e-bigger')) {
-            element.classList.add('e-bigger');
-        }
-    };
-    /**
-     * @hidden
-     */
     Grid.prototype.getPreviousRowData = function () {
         var previousRowData = this.getRowsObject()[this.getRows().length - 1].data;
         return previousRowData;
@@ -12910,6 +13048,30 @@ var Grid = /** @__PURE__ @class */ (function (_super) {
                 this.notify(doubleTap, e);
             }
         }
+    };
+    /**
+     * @hidden
+     */
+    Grid.prototype.getMovableVirtualContent = function () {
+        return this.getContent().querySelector('.e-movablecontent');
+    };
+    /**
+     * @hidden
+     */
+    Grid.prototype.getFrozenVirtualContent = function () {
+        return this.getContent().querySelector('.e-frozencontent');
+    };
+    /**
+     * @hidden
+     */
+    Grid.prototype.getMovableVirtualHeader = function () {
+        return this.getHeaderContent().querySelector('.e-movableheader');
+    };
+    /**
+     * @hidden
+     */
+    Grid.prototype.getFrozenVirtualHeader = function () {
+        return this.getHeaderContent().querySelector('.e-frozenheader');
     };
     var Grid_1;
     __decorate$1([
@@ -13954,14 +14116,22 @@ function wrap(elem, action) {
 /** @hidden */
 function setFormatter(serviceLocator, column) {
     var fmtr = serviceLocator.getService('valueFormatter');
+    var format = 'format';
+    var args;
+    if (column.type === 'date' || column.type === 'datetime') {
+        args = { type: column.type, skeleton: column.format };
+        if ((typeof (column.format) === 'string') && column.format !== 'yMd') {
+            args[format] = column.format;
+        }
+    }
     switch (column.type) {
         case 'date':
-            column.setFormatter(fmtr.getFormatFunction({ type: 'date', skeleton: column.format }));
-            column.setParser(fmtr.getParserFunction({ type: 'date', skeleton: column.format }));
+            column.setFormatter(fmtr.getFormatFunction(args));
+            column.setParser(fmtr.getParserFunction(args));
             break;
         case 'datetime':
-            column.setFormatter(fmtr.getFormatFunction({ type: 'dateTime', skeleton: column.format }));
-            column.setParser(fmtr.getParserFunction({ type: 'dateTime', skeleton: column.format }));
+            column.setFormatter(fmtr.getFormatFunction(args));
+            column.setParser(fmtr.getParserFunction(args));
             break;
         case 'number':
             column.setFormatter(fmtr.getFormatFunction({ format: column.format }));
@@ -14361,6 +14531,23 @@ var Global;
 (function (Global) {
     Global.timer = null;
 })(Global || (Global = {}));
+/**
+ * @hidden
+ */
+function getTransformValues(element) {
+    var style = document.defaultView.getComputedStyle(element, null);
+    var transformV = style.getPropertyValue('transform');
+    var replacedTv = transformV.replace(/,/g, '');
+    var translateX = parseFloat((replacedTv).split(' ')[4]);
+    var translateY = parseFloat((replacedTv).split(' ')[5]);
+    return { width: translateX, height: translateY };
+}
+/** @hidden */
+function applyBiggerTheme(rootElement, element) {
+    if (rootElement.classList.contains('e-bigger')) {
+        element.classList.add('e-bigger');
+    }
+}
 
 /* tslint:disable-next-line:max-line-length */
 /**
@@ -14372,7 +14559,7 @@ var CheckBoxFilterBase = /** @__PURE__ @class */ (function () {
      * Constructor for checkbox filtering module
      * @hidden
      */
-    function CheckBoxFilterBase(parent, filterSettings) {
+    function CheckBoxFilterBase(parent) {
         this.existingPredicate = {};
         this.foreignKeyQuery = new Query();
         this.filterState = true;
@@ -14380,7 +14567,6 @@ var CheckBoxFilterBase = /** @__PURE__ @class */ (function () {
         this.renderEmpty = false;
         this.parent = parent;
         this.id = this.parent.element.id;
-        this.filterSettings = filterSettings;
         this.valueFormatter = new ValueFormatter(this.parent.locale);
         this.cBoxTrue = createCheckBox(this.parent.createElement, false, { checked: true, label: ' ' });
         this.cBoxFalse = createCheckBox(this.parent.createElement, false, { checked: false, label: ' ' });
@@ -14442,9 +14628,9 @@ var CheckBoxFilterBase = /** @__PURE__ @class */ (function () {
         });
     };
     CheckBoxFilterBase.prototype.foreignFilter = function (args, value) {
-        var operator = this.parent.getDataModule().isRemote() ?
+        var operator = this.options.isRemote ?
             (this.options.column.type === 'string' ? 'contains' : 'equal') : (this.options.column.type ? 'startswith' : 'contains');
-        var initalPredicate = new Predicate(this.options.column.foreignKeyValue, operator, value, true, this.parent.filterSettings.ignoreAccent);
+        var initalPredicate = new Predicate(this.options.column.foreignKeyValue, operator, value, true, this.options.ignoreAccent);
         this.foreignKeyFilter(args, [args.filterCollection], initalPredicate);
     };
     CheckBoxFilterBase.prototype.searchBoxClick = function (e) {
@@ -14493,11 +14679,12 @@ var CheckBoxFilterBase = /** @__PURE__ @class */ (function () {
         this.options = options;
         this.existingPredicate = options.actualPredicate || {};
         this.options.dataSource = options.dataSource;
+        this.options.dataManager = options.dataManager ? options.dataManager : options.dataSource;
         this.updateDataSource();
         this.options.type = options.type;
         this.options.format = options.format || '';
+        this.options.ignoreAccent = options.ignoreAccent || false;
         this.options.filteredColumns = options.filteredColumns || this.parent.filterSettings.columns;
-        this.options.sortedColumns = options.sortedColumns || this.parent.sortSettings.columns;
         this.options.query = options.query || new Query();
         this.options.allowCaseSensitive = options.allowCaseSensitive || false;
         this.options.uid = options.column.uid;
@@ -14600,7 +14787,7 @@ var CheckBoxFilterBase = /** @__PURE__ @class */ (function () {
     };
     CheckBoxFilterBase.prototype.closeDialog = function () {
         if (this.dialogObj && !this.dialogObj.isDestroyed) {
-            var filterTemplateCol = this.parent.getColumns().filter(function (col) { return col.getFilterItemTemplate(); });
+            var filterTemplateCol = this.options.columns.filter(function (col) { return col.getFilterItemTemplate(); });
             if (filterTemplateCol.length) {
                 this.parent.destroyTemplate(['filterItemTemplate']);
             }
@@ -14645,7 +14832,7 @@ var CheckBoxFilterBase = /** @__PURE__ @class */ (function () {
                     },
                     field: this.options.field
                 };
-                value ? this.options.column.isForeignColumn() ? this.foreignFilter(args, value) :
+                value ? this.isForeignColumn(this.options.column) ? this.foreignFilter(args, value) :
                     this.options.handler(args) : this.closeDialog();
             }
             else {
@@ -14671,7 +14858,7 @@ var CheckBoxFilterBase = /** @__PURE__ @class */ (function () {
         var caseSen = this.options.allowCaseSensitive;
         var defaults = {
             field: this.options.field, predicate: 'or', uid: this.options.uid,
-            operator: optr, type: this.options.type, matchCase: caseSen, ignoreAccent: this.parent.filterSettings.ignoreAccent
+            operator: optr, type: this.options.type, matchCase: caseSen, ignoreAccent: this.options.ignoreAccent
         };
         var isNotEqual = this.itemsCnt !== checked.length && this.itemsCnt - checked.length < checked.length;
         if (isNotEqual && searchInput.value === '') {
@@ -14742,31 +14929,34 @@ var CheckBoxFilterBase = /** @__PURE__ @class */ (function () {
             this.options.handler(args);
         }
     };
+    CheckBoxFilterBase.prototype.isForeignColumn = function (col) {
+        return col.isForeignColumn ? col.isForeignColumn() : false;
+    };
     CheckBoxFilterBase.prototype.refreshCheckboxes = function () {
         var _this = this;
         var val = this.sInput.value;
         var column = this.options.column;
-        var query = column.isForeignColumn() ? this.foreignKeyQuery.clone() : this.options.query.clone();
+        var query = this.isForeignColumn(column) ? this.foreignKeyQuery.clone() : this.options.query.clone();
         var foreignQuery = this.options.query.clone();
         query.queries = [];
         foreignQuery.queries = [];
         var parsed = (this.options.type !== 'string' && parseFloat(val)) ? parseFloat(val) : val;
-        var operator = this.parent.getDataModule().isRemote() ?
+        var operator = this.options.isRemote ?
             (this.options.type === 'string' ? 'contains' : 'equal') : (this.options.type ? 'startswith' : 'contains');
         var matchCase = true;
-        var ignoreAccent = this.parent.filterSettings.ignoreAccent;
-        var field = column.isForeignColumn() ? column.foreignKeyValue : column.field;
+        var ignoreAccent = this.options.ignoreAccent;
+        var field = this.isForeignColumn(column) ? column.foreignKeyValue : column.field;
         parsed = (parsed === '' || parsed === undefined) ? undefined : parsed;
         var predicte;
         if (this.options.type === 'boolean') {
             if (parsed !== undefined &&
                 this.getLocalizedLabel('FilterTrue').toLowerCase().indexOf(parsed.toLowerCase()) !== -1) {
-                parsed = (this.parent.getDataModule().dataManager.adaptor.getModuleName()
+                parsed = (this.options.dataManager.adaptor.getModuleName()
                     === 'ODataAdaptor' || 'ODataV4Adaptor') ? true : 'true';
             }
             else if (parsed !== undefined &&
                 this.getLocalizedLabel('FilterFalse').toLowerCase().indexOf(parsed.toLowerCase()) !== -1) {
-                parsed = (this.parent.getDataModule().dataManager.adaptor.getModuleName()
+                parsed = (this.options.dataManager.adaptor.getModuleName()
                     === 'ODataAdaptor' || 'ODataV4Adaptor') ? false : 'false';
             }
             operator = 'equal';
@@ -14800,7 +14990,7 @@ var CheckBoxFilterBase = /** @__PURE__ @class */ (function () {
         var fPredicate = {};
         showSpinner(this.spinner);
         this.renderEmpty = false;
-        if (column.isForeignColumn() && val.length) {
+        if (this.isForeignColumn(column) && val.length) {
             // tslint:disable-next-line:no-any
             column.dataSource.executeQuery(query).then(function (e) {
                 var columnData = _this.options.column.columnData;
@@ -14917,7 +15107,7 @@ var CheckBoxFilterBase = /** @__PURE__ @class */ (function () {
             this.options.dataSource : new DataManager(this.options.dataSource);
         var allPromise = [];
         var runArray = [];
-        if (this.options.column.isForeignColumn() && isInitial) {
+        if (this.isForeignColumn(this.options.column) && isInitial) {
             allPromise.push(this.options.column.dataSource.executeQuery(this.foreignKeyQuery));
             runArray.push(function (data) { return _this.foreignKeyData = data; });
         }
@@ -14935,7 +15125,7 @@ var CheckBoxFilterBase = /** @__PURE__ @class */ (function () {
         var query = new Query();
         if (this.parent.searchSettings && this.parent.searchSettings.key.length) {
             var sSettings = this.parent.searchSettings;
-            var fields = sSettings.fields.length ? sSettings.fields : this.parent.getColumns().map(function (f) { return f.field; });
+            var fields = sSettings.fields.length ? sSettings.fields : this.options.columns.map(function (f) { return f.field; });
             /* tslint:disable-next-line:max-line-length */
             query.search(sSettings.key, fields, sSettings.operator, sSettings.ignoreCase, sSettings.ignoreAccent);
         }
@@ -15140,7 +15330,7 @@ var CheckBoxFilterBase = /** @__PURE__ @class */ (function () {
         var value;
         var ejValue = 'ejValue';
         var lookup = {};
-        var isForeignKey = column && column.isForeignColumn();
+        var isForeignKey = column && column.isForeignColumn ? column.isForeignColumn() : false;
         while (len--) {
             value = json[len];
             value = getObject(field, value); //local remote diff, check with mdu   
@@ -15249,8 +15439,8 @@ var ExcelFilterBase = /** @__PURE__ @class */ (function (_super) {
      * Constructor for excel filtering module
      * @hidden
      */
-    function ExcelFilterBase(parent, filterSettings, customFltrOperators) {
-        var _this = _super.call(this, parent, filterSettings) || this;
+    function ExcelFilterBase(parent, customFltrOperators) {
+        var _this = _super.call(this, parent) || this;
         _this.customFilterOperators = customFltrOperators;
         _this.isExcel = true;
         return _this;
@@ -15314,6 +15504,7 @@ var ExcelFilterBase = /** @__PURE__ @class */ (function (_super) {
             ul.appendChild(this.createMenuElem(this.getLocalizedLabel(options[type]), 'e-submenu', isCheckIcon && this.ensureTextFilter() ? 'e-icon-check' : icon + ' e-emptyicon', true));
         }
         this.menu.appendChild(ul);
+        this.parent.notify(beforeFltrcMenuOpen, { element: this.menu });
     };
     ExcelFilterBase.prototype.createMenuElem = function (val, className, iconName, isSubMenu) {
         var li = this.parent.createElement('li', { className: className + ' e-menu-item' });
@@ -15394,7 +15585,7 @@ var ExcelFilterBase = /** @__PURE__ @class */ (function (_super) {
                 pos.left = this.getCMenuYPosition(this.dlg, this.menuObj);
             }
             this.menuObj.open(pos.top, pos.left, e.target);
-            this.parent.applyBiggerTheme(this.menuObj.element.parentElement);
+            applyBiggerTheme(this.parent.element, this.menuObj.element.parentElement);
         }
     };
     ExcelFilterBase.prototype.ensureTextFilter = function () {
@@ -15521,7 +15712,7 @@ var ExcelFilterBase = /** @__PURE__ @class */ (function (_super) {
     };
     ExcelFilterBase.prototype.removeDialog = function () {
         if (isBlazor()) {
-            var columns = this.parent.getColumns();
+            var columns = this.options.columns || [];
             for (var i = 0; i < columns.length; i++) {
                 if (columns[i].filterTemplate) {
                     var tempID = this.parent.element.id + columns[i].uid + 'filterTemplate';
@@ -15541,7 +15732,7 @@ var ExcelFilterBase = /** @__PURE__ @class */ (function (_super) {
         }
         this.parent.notify(beforeCustomFilterOpen, { column: column, dialog: this.dialogObj });
         this.dlgObj.show();
-        this.parent.applyBiggerTheme(this.dlgObj.element.parentElement);
+        applyBiggerTheme(this.parent.element, this.dlgObj.element.parentElement);
     };
     ExcelFilterBase.prototype.renderCustomFilter = function (target, column) {
         var dlgConetntEle = this.dlgObj.element.querySelector('.e-xlfl-maindiv');
@@ -15557,11 +15748,11 @@ var ExcelFilterBase = /** @__PURE__ @class */ (function (_super) {
         var isComplex = !isNullOrUndefined(col) && isComplexField(col);
         var complexFieldName = !isNullOrUndefined(col) && getComplexFieldID(col);
         var colValue = isComplex ? complexFieldName : col;
-        var fValue = this.parent.getColumnByField(col).filterTemplate && isBlazor() ?
+        var fValue = this.options.column.filterTemplate && isBlazor() ?
             this.dlgDiv.querySelector('.-xlfl-frstvalue').children[0].querySelector('.e-control').ej2_instances[0]
             : this.dlgDiv.querySelector('#' + colValue + '-xlfl-frstvalue').ej2_instances[0];
         var fOperator = this.dlgDiv.querySelector('#' + colValue + '-xlfl-frstoptr').ej2_instances[0];
-        var sValue = this.parent.getColumnByField(col).filterTemplate && isBlazor() ?
+        var sValue = this.options.column.filterTemplate && isBlazor() ?
             this.dlgDiv.querySelector('.-xlfl-secndvalue').children[0].querySelector('.e-control').ej2_instances[0]
             : this.dlgDiv.querySelector('#' + colValue + '-xlfl-secndvalue').ej2_instances[0];
         var sOperator = this.dlgDiv.querySelector('#' + colValue + '-xlfl-secndoptr').ej2_instances[0];
@@ -15576,7 +15767,7 @@ var ExcelFilterBase = /** @__PURE__ @class */ (function (_super) {
         if (sValue.value === null) {
             predicate = 'or';
         }
-        this.filterByColumn(this.options.field, fOperator.value, fValue.value, predicate, checkBoxValue, this.parent.filterSettings.ignoreAccent, sOperator.value, sValue.value);
+        this.filterByColumn(this.options.field, fOperator.value, fValue.value, predicate, checkBoxValue, this.options.ignoreAccent, sOperator.value, sValue.value);
         this.removeDialog();
     };
     /**
@@ -15593,8 +15784,8 @@ var ExcelFilterBase = /** @__PURE__ @class */ (function (_super) {
      * @param {string | number | Date | boolean} secondValue - Defines the first value which is used to filter records.
      */
     ExcelFilterBase.prototype.filterByColumn = function (fieldName, firstOperator, firstValue, predicate, matchCase, ignoreAccent, secondOperator, secondValue) {
-        var col = this.parent.getColumnByField(fieldName);
-        var field = col.isForeignColumn() ? col.foreignKeyValue : fieldName;
+        var col = this.parent.getColumnByField ? this.parent.getColumnByField(fieldName) : this.options.column;
+        var field = this.isForeignColumn(col) ? col.foreignKeyValue : fieldName;
         var fColl = [];
         var mPredicate;
         fColl.push({
@@ -15633,7 +15824,7 @@ var ExcelFilterBase = /** @__PURE__ @class */ (function (_super) {
             action: 'filtering', filterCollection: fColl, field: this.options.field,
             ejpredicate: mPredicate, actualPredicate: fColl
         };
-        if (col.isForeignColumn()) {
+        if (this.isForeignColumn(col)) {
             this.foreignKeyFilter(args, fColl, mPredicate);
         }
         else {
@@ -15656,7 +15847,7 @@ var ExcelFilterBase = /** @__PURE__ @class */ (function (_super) {
         var optr = this.options.type + 'Operator';
         var dropDatasource = this.customFilterOperators[optr];
         this.optrData = dropDatasource;
-        var selectedValue = this.dropSelectedVal(this.parent.getColumnByField(column), predicates, isFirst);
+        var selectedValue = this.dropSelectedVal(this.options.column, predicates, isFirst);
         //Trailing three dots are sliced.
         var menuText = '';
         if (this.menuItem) {
@@ -15668,7 +15859,7 @@ var ExcelFilterBase = /** @__PURE__ @class */ (function (_super) {
                 selectedValue = this.getLocalizedLabel(isFirst ? 'GreaterThanOrEqual' : 'LessThanOrEqual');
             }
         }
-        var col = this.parent.getColumnByField(column);
+        var col = this.options.column;
         this.dropOptr = new DropDownList(extend$1({
             dataSource: dropDatasource,
             fields: { text: 'text', value: 'value' },
@@ -15693,6 +15884,9 @@ var ExcelFilterBase = /** @__PURE__ @class */ (function (_super) {
             operator = predicates.length === 2 ?
                 (isFirst ? predicates[0].operator : predicates[1].operator) :
                 (isFirst ? predicates[0].operator : undefined);
+        }
+        else if (isFirst && col.type === 'string' && !col.filter.operator) {
+            operator = 'startswith';
         }
         else {
             operator = isFirst ? col.filter.operator || 'equal' : undefined;
@@ -15777,11 +15971,11 @@ var ExcelFilterBase = /** @__PURE__ @class */ (function (_super) {
         var isComplex = !isNullOrUndefined(column) && isComplexField(column);
         var complexFieldName = !isNullOrUndefined(column) && getComplexFieldID(column);
         var valueDiv = this.parent.createElement('div', { className: 'e-xlfl-valuediv' });
-        var isFilteredCol = this.filterSettings.columns.some(function (col) { return column === col.field; });
+        var isFilteredCol = this.options.filteredColumns.some(function (col) { return column === col.field; });
         var fltrPredicates = this.options.filteredColumns.filter(function (col) { return col.field === column; });
         if (this.options.column.filterTemplate) {
             var data = {};
-            var columnObj = this.parent.getColumnByField(column);
+            var columnObj = this.options.column;
             if (isFilteredCol && elementId) {
                 data = this.getExcelFilterData(elementId, data, columnObj, predicates, fltrPredicates);
             }
@@ -15898,8 +16092,8 @@ var ExcelFilterBase = /** @__PURE__ @class */ (function (_super) {
     /* tslint:disable-next-line:max-line-length */
     ExcelFilterBase.prototype.renderAutoComplete = function (options, column, inputValue, fValue, isRtl) {
         var _this = this;
-        var colObj = this.parent.getColumnByField(column);
-        var isForeignColumn = colObj.isForeignColumn();
+        var colObj = this.options.column;
+        var isForeignColumn = this.isForeignColumn(colObj);
         var dataSource = isForeignColumn ? colObj.dataSource : options.dataSource;
         var fields = { value: isForeignColumn ? colObj.foreignKeyValue : column };
         var actObj = new AutoComplete(extend$1({
@@ -16279,12 +16473,11 @@ var Sort = /** @__PURE__ @class */ (function () {
         this.popUpClickHandler(e);
         var target = closest(e.target, '.e-headercell');
         if (target && !e.target.classList.contains('e-grptogglebtn') &&
-            !e.target.classList.contains('e-stackedheadercell') &&
-            !e.target.classList.contains('e-stackedheadercelldiv') &&
             !(target.classList.contains('e-resized')) &&
             !e.target.classList.contains('e-rhandler') &&
             !e.target.classList.contains('e-columnmenu') &&
-            !e.target.classList.contains('e-filtermenudiv')) {
+            !e.target.classList.contains('e-filtermenudiv') &&
+            !parentsUntil(e.target, 'e-stackedheadercell')) {
             var gObj = this.parent;
             var colObj = gObj.getColumnByUid(target.querySelector('.e-headercelldiv').getAttribute('e-mappinguid'));
             var direction = !target.querySelectorAll('.e-ascending').length ? 'Ascending' :
@@ -17057,7 +17250,8 @@ var Pager = /** @__PURE__ @class */ (function (_super) {
             currentPage: this.currentPage, pageSize: this.pageSize, pageCount: this.pageCount,
             totalRecordsCount: this.totalRecordsCount, totalPages: this.totalPages
         };
-        result = this.getPagerTemplate()(data);
+        var tempId = this.element.parentElement.id + '_template';
+        result = this.getPagerTemplate()(data, this, 'template', tempId, this.isStringTemplate);
         appendChildren(this.element, result);
     };
     /** @hidden */
@@ -18345,7 +18539,7 @@ var CheckBoxFilter = /** @__PURE__ @class */ (function () {
      */
     function CheckBoxFilter(parent, filterSettings, serviceLocator) {
         this.parent = parent;
-        this.checkBoxBase = new CheckBoxFilterBase(parent, filterSettings);
+        this.checkBoxBase = new CheckBoxFilterBase(parent);
         this.addEventListener();
     }
     /**
@@ -18429,7 +18623,7 @@ var ExcelFilter = /** @__PURE__ @class */ (function (_super) {
     function ExcelFilter(parent, filterSettings, serviceLocator, customFltrOperators) {
         var _this = _super.call(this, parent, filterSettings, serviceLocator) || this;
         _this.parent = parent;
-        _this.excelFilterBase = new ExcelFilterBase(parent, filterSettings, customFltrOperators);
+        _this.excelFilterBase = new ExcelFilterBase(parent, customFltrOperators);
         return _this;
     }
     /**
@@ -18947,15 +19141,15 @@ var Filter = /** @__PURE__ @class */ (function () {
         var dataSource = col.filter.dataSource || gObj.getDataModule().dataManager;
         this.filterModule.openDialog({
             type: col.type, field: col.field, displayName: col.headerText,
-            dataSource: dataSource, format: col.format, height: 800,
-            filteredColumns: gObj.filterSettings.columns, target: target,
-            sortedColumns: gObj.sortSettings.columns, formatFn: col.getFormatter(),
+            dataSource: dataSource, format: col.format, height: 800, columns: gObj.getColumns(),
+            filteredColumns: gObj.filterSettings.columns, target: target, dataManager: gObj.getDataModule().dataManager,
+            formatFn: col.getFormatter(), ignoreAccent: gObj.filterSettings.ignoreAccent,
             parserFn: col.getParser(), query: gObj.query, template: col.getFilterItemTemplate(),
             hideSearchbox: isNullOrUndefined(col.filter.hideSearchbox) ? false : col.filter.hideSearchbox,
             handler: this.filterHandler.bind(this), localizedStrings: gObj.getLocaleConstants(),
             position: { X: left, Y: top }, column: col, foreignKeyValue: col.foreignKeyValue,
-            actualPredicate: this.actualPredicate, localeObj: this.parent.localeObj,
-            isRemote: this.parent.getDataModule().isRemote(), allowCaseSensitive: this.filterSettings.enableCaseSensitivity
+            actualPredicate: this.actualPredicate, localeObj: gObj.localeObj,
+            isRemote: gObj.getDataModule().isRemote(), allowCaseSensitive: this.filterSettings.enableCaseSensitivity
         });
     };
     /**
@@ -20667,7 +20861,7 @@ var RowDD = /** @__PURE__ @class */ (function () {
             classList(cloneElement, ['e-defaultcur'], ['e-notallowedcur', 'e-movecur']);
             _this.isOverflowBorder = true;
             _this.hoverState = gObj.enableHover;
-            var trElement = closest(e.target, 'tr');
+            var trElement = parentsUntil(target, 'e-grid') ? closest(e.target, 'tr') : null;
             gObj.enableHover = false;
             if (!e.target) {
                 return;
@@ -20800,6 +20994,7 @@ var RowDD = /** @__PURE__ @class */ (function () {
                         changedRecords: []
                     };
                     var toIdx = _this.dragTarget ? _this.dragTarget : args.dropIndex;
+                    toIdx = (toIdx - draggedData.length + 1) >= 0 ? (toIdx - draggedData.length + 1) : toIdx;
                     var dragDropDestinationIndex = 'dragDropDestinationIndex';
                     var query = new Query;
                     query[dragDropDestinationIndex] = toIdx;
@@ -22908,6 +23103,16 @@ var SummaryCellRenderer = /** @__PURE__ @class */ (function (_super) {
         }
         var tempObj = column.getTemplate(cell.cellType);
         var tempID = '';
+        var gColumn = this.parent.getColumnByField(data[column.columnName].field);
+        if (!isNullOrUndefined(gColumn)) {
+            data[column.columnName].headerText = gColumn.headerText;
+            if (gColumn.isForeignColumn()) {
+                var fData = gColumn.columnData.filter(function (e) {
+                    return e[data[column.columnName].field] === data[column.columnName].key;
+                })[0];
+                data[column.columnName].foreignKey = fData[gColumn.foreignKeyValue];
+            }
+        }
         if (isBlazor()) {
             var guid = 'guid';
             tempID = this.parent.element.id + column[guid] + tempObj.property;
@@ -23253,6 +23458,9 @@ var VirtualRowModelGenerator = /** @__PURE__ @class */ (function () {
     VirtualRowModelGenerator.prototype.getColumnIndexes = function (content) {
         var _this = this;
         if (content === void 0) { content = this.parent.getHeaderContent().firstChild; }
+        if (this.parent.getFrozenColumns()) {
+            content = content.querySelector('.e-movableheader');
+        }
         var indexes = [];
         var sLeft = content.scrollLeft | 0;
         var keys = Object.keys(this.cOffsets);
@@ -23373,6 +23581,7 @@ var VirtualContentRenderer = /** @__PURE__ @class */ (function (_super) {
         _this.isFocused = false;
         _this.isSelection = false;
         _this.isBottom = false;
+        _this.rndrCount = 0;
         _this.locator = locator;
         _this.eventListener('on');
         _this.parent.on(columnVisibilityChanged, _this.setVisible, _this);
@@ -23386,10 +23595,13 @@ var VirtualContentRenderer = /** @__PURE__ @class */ (function (_super) {
         this.virtualEle.content = this.content = this.getPanel().firstChild;
         this.virtualEle.renderWrapper(this.parent.height);
         this.virtualEle.renderPlaceHolder();
-        this.virtualEle.wrapper.style.position = 'absolute';
+        if (!this.parent.getFrozenColumns()) {
+            this.virtualEle.wrapper.style.position = 'absolute';
+        }
         var debounceEvent = (this.parent.dataSource instanceof DataManager && !this.parent.dataSource.dataSource.offline);
+        var content = this.parent.getFrozenColumns() ? this.parent.getMovableVirtualContent() : this.content;
         var opt = {
-            container: this.content, pageHeight: this.getBlockHeight() * 2, debounceEvent: debounceEvent,
+            container: content, pageHeight: this.getBlockHeight() * 2, debounceEvent: debounceEvent,
             axes: this.parent.enableColumnVirtualization ? ['X', 'Y'] : ['Y']
         };
         this.observer = new InterSectionObserver(this.virtualEle.wrapper, opt);
@@ -23397,6 +23609,16 @@ var VirtualContentRenderer = /** @__PURE__ @class */ (function (_super) {
     VirtualContentRenderer.prototype.renderEmpty = function (tbody) {
         this.getTable().appendChild(tbody);
         this.virtualEle.adjustTable(0, 0);
+    };
+    VirtualContentRenderer.prototype.refreshMvTbalTransform = function () {
+        var mCont = this.parent.getMovableVirtualContent();
+        var fCont = this.parent.getFrozenVirtualContent();
+        var mContTV = getTransformValues(mCont.firstElementChild);
+        var fContTV = getTransformValues(fCont.firstElementChild);
+        var top = mCont.scrollTop;
+        if (top > 0 && mContTV.height !== fContTV.height) {
+            mCont.firstElementChild.style.transform = "translate(" + mContTV.width + "px, " + fContTV.height + "px)";
+        }
     };
     VirtualContentRenderer.prototype.scrollListener = function (scrollArgs) {
         if (this.parent.enablePersistence) {
@@ -23411,6 +23633,9 @@ var VirtualContentRenderer = /** @__PURE__ @class */ (function (_super) {
         }
         else {
             this.isFocused = this.content === closest(document.activeElement, '.e-content') || this.content === document.activeElement;
+        }
+        if (this.parent.enableColumnVirtualization && this.parent.getFrozenColumns() && scrollArgs.sentinel.axis === 'X') {
+            this.refreshMvTbalTransform();
         }
         var info = scrollArgs.sentinel;
         var viewInfo = this.currentInfo = this.getInfoFromView(scrollArgs.direction, info, scrollArgs.offset);
@@ -23437,6 +23662,21 @@ var VirtualContentRenderer = /** @__PURE__ @class */ (function (_super) {
         }
         this.parent.setColumnIndexesInView(this.parent.enableColumnVirtualization ? viewInfo.columnIndexes : []);
         this.parent.pageSettings.currentPage = viewInfo.loadNext && !viewInfo.loadSelf ? viewInfo.nextInfo.page : viewInfo.page;
+        if (this.parent.getFrozenColumns() && this.parent.enableColumnVirtualization) {
+            var lastPage = Math.ceil(this.getTotalBlocks() / 2);
+            if (this.parent.pageSettings.currentPage === lastPage && scrollArgs.sentinel.axis === 'Y') {
+                this.rndrCount++;
+            }
+            if (scrollArgs.sentinel.axis === 'Y') {
+                if (this.parent.pageSettings.currentPage === lastPage && this.rndrCount > 1) {
+                    this.rndrCount = 0;
+                    return;
+                }
+                else if (this.parent.pageSettings.currentPage !== lastPage && this.parent.pageSettings.currentPage !== lastPage - 1) {
+                    this.rndrCount = 0;
+                }
+            }
+        }
         this.parent.notify(viewInfo.event, { requestType: 'virtualscroll', virtualInfo: viewInfo, focusElement: scrollArgs.focusElement });
     };
     VirtualContentRenderer.prototype.block = function (blk) {
@@ -23469,6 +23709,11 @@ var VirtualContentRenderer = /** @__PURE__ @class */ (function (_super) {
         var old = index;
         var max = Math.max;
         var indexes = info.direction === 'down' ? [max(index, 1), ++index, ++index] : [max(index - 1, 1), index, index + 1];
+        if (this.parent.enableColumnVirtualization && this.parent.getFrozenColumns()) {
+            if (info.sentinelInfo.axis === 'X' || (info.sentinelInfo.axis === 'Y' && (info.page === this.prevInfo.page))) {
+                indexes = this.prevInfo.blockIndexes;
+            }
+        }
         indexes = indexes.filter(function (val, ind) { return indexes.indexOf(val) === ind; });
         if (this.prevInfo.blockIndexes.toString() === indexes.toString()) {
             return indexes;
@@ -23491,6 +23736,26 @@ var VirtualContentRenderer = /** @__PURE__ @class */ (function (_super) {
         }
         return indexes;
     };
+    /**
+     * @hidden
+     */
+    VirtualContentRenderer.prototype.vfTblTransform = function (info, left, top, e, cOffset, translate) {
+        var lastPage = Math.ceil(this.getTotalBlocks() / 2);
+        var isLastPage = lastPage === this.parent.pageSettings.currentPage && this.parent.enableColumnVirtualization;
+        var wrappers = [].slice.call(this.parent.getContent().querySelectorAll('.e-virtualtable'));
+        for (var i = 0; i < wrappers.length; i++) {
+            if (i === 0 && e.requestType === 'virtualscroll' && info.sentinelInfo.axis === 'X') {
+                continue;
+            }
+            if (lastPage !== this.parent.pageSettings.currentPage && this.parent.enableColumnVirtualization
+                && (left > 0 || (top > 0 && left === 0))) {
+                continue;
+            }
+            var cOff = isLastPage && i === 0 ? 0 : cOffset;
+            this.virtualEle.wrapper = wrappers[i];
+            this.virtualEle.adjustTable(cOff, translate);
+        }
+    };
     VirtualContentRenderer.prototype.appendContent = function (target, newChild, e) {
         // currentInfo value will be used if there are multiple dom updates happened due to mousewheel
         var info = e.virtualInfo.sentinelInfo && e.virtualInfo.sentinelInfo.axis === 'Y' && this.currentInfo.page &&
@@ -23508,9 +23773,19 @@ var VirtualContentRenderer = /** @__PURE__ @class */ (function (_super) {
         }
         var vHeight = this.parent.height.toString().indexOf('%') < 0 ? this.content.getBoundingClientRect().height :
             this.parent.element.getBoundingClientRect().height;
-        var translate = this.getTranslateY(this.content.scrollTop, vHeight, info);
-        this.virtualEle.adjustTable(cOffset, translate);
-        if (this.parent.enableColumnVirtualization) {
+        var translate = 0;
+        if (this.parent.getFrozenColumns()) {
+            var mCont = this.parent.getMovableVirtualContent();
+            var left = mCont.scrollLeft;
+            var top_1 = mCont.scrollTop;
+            translate = this.getTranslateY(mCont.scrollTop, vHeight, info);
+            this.vfTblTransform(info, left, top_1, e, cOffset, translate);
+        }
+        else {
+            translate = this.getTranslateY(this.content.scrollTop, vHeight, info);
+            this.virtualEle.adjustTable(cOffset, translate);
+        }
+        if (this.parent.enableColumnVirtualization && !this.parent.getFrozenColumns()) {
             this.header.virtualEle.adjustTable(cOffset, 0);
         }
         if (this.parent.enableColumnVirtualization) {
@@ -23522,14 +23797,38 @@ var VirtualContentRenderer = /** @__PURE__ @class */ (function (_super) {
         if (!isNullOrUndefined(target.parentNode)) {
             remove(target);
         }
-        var tbody = this.parent.element.querySelector('.e-content').querySelector('tbody');
+        var tbody;
+        if (this.parent.getFrozenColumns() && !e.renderMovableContent) {
+            tbody = this.parent.getFrozenVirtualContent().querySelector('tbody');
+        }
+        else if (this.parent.getFrozenColumns() && e.renderMovableContent) {
+            tbody = this.parent.getMovableVirtualContent().querySelector('tbody');
+        }
+        else {
+            tbody = this.parent.element.querySelector('.e-content').querySelector('tbody');
+        }
         if (tbody) {
             remove(tbody);
             target = null;
         }
         target = this.parent.createElement('tbody');
         target.appendChild(newChild);
-        this.getTable().appendChild(target);
+        if (this.parent.frozenRows && e.requestType === 'virtualscroll' && this.parent.pageSettings.currentPage === 1) {
+            for (var i = 0; i < this.parent.frozenRows; i++) {
+                target.children[0].remove();
+            }
+        }
+        if (this.parent.getFrozenColumns()) {
+            if (!e.renderMovableContent) {
+                this.parent.getFrozenVirtualContent().querySelector('.e-table').appendChild(target);
+            }
+            else {
+                this.parent.getMovableVirtualContent().querySelector('.e-table').appendChild(target);
+            }
+        }
+        else {
+            this.getTable().appendChild(target);
+        }
         if (this.parent.groupSettings.columns.length) {
             if (!isGroupAdaptive(this.parent) && info.direction === 'up') {
                 var blk = this.offsets[this.getTotalBlocks()] - this.prevHeight;
@@ -23553,6 +23852,10 @@ var VirtualContentRenderer = /** @__PURE__ @class */ (function (_super) {
             this.isBottom = true;
             this.parent.getContent().firstElementChild.scrollTop = this.offsets[this.offsetKeys.length - 2];
         }
+        if (this.parent.enableColumnVirtualization && this.parent.getFrozenColumns()
+            && e.requestType === 'virtualscroll' && e.virtualInfo.sentinelInfo.axis === 'X') {
+            this.refreshMvTbalTransform();
+        }
     };
     VirtualContentRenderer.prototype.onDataReady = function (e) {
         if (!isNullOrUndefined(e.count)) {
@@ -23564,13 +23867,28 @@ var VirtualContentRenderer = /** @__PURE__ @class */ (function (_super) {
             .some(function (value) { return e.requestType === value; })) {
             this.refreshOffsets();
         }
+        if (this.parent.getFrozenColumns() && this.parent.enableColumnVirtualization) {
+            var hdrTbls = [].slice.call(this.parent.getHeaderContent().querySelectorAll('.e-table'));
+            this.header.virtualEle.table = hdrTbls[1];
+        }
         this.setVirtualHeight();
         this.resetScrollPosition(e.requestType);
     };
     VirtualContentRenderer.prototype.setVirtualHeight = function () {
         var width = this.parent.enableColumnVirtualization ?
             this.getColumnOffset(this.parent.columns.length + this.parent.groupSettings.columns.length - 1) + 'px' : '100%';
-        this.virtualEle.setVirtualHeight(this.offsets[isGroupAdaptive(this.parent) ? this.getGroupedTotalBlocks() : this.getTotalBlocks()], width);
+        if (this.parent.getFrozenColumns()) {
+            var fTblWidth = this.parent.enableColumnVirtualization ? 'auto' : width;
+            this.virtualEle.placeholder = this.parent.getFrozenVirtualContent().querySelector('.e-virtualtrack');
+            // To overcome the white space issue in last page (instead of position absolute)
+            this.virtualEle.setVirtualHeight(this.offsets[this.getTotalBlocks() - 2], fTblWidth);
+            this.virtualEle.placeholder = this.parent.getMovableVirtualContent().querySelector('.e-virtualtrack');
+            // To overcome the white space issue in last page (instead of position absolute)
+            this.virtualEle.setVirtualHeight(this.offsets[this.getTotalBlocks() - 2], width);
+        }
+        else {
+            this.virtualEle.setVirtualHeight(this.offsets[isGroupAdaptive(this.parent) ? this.getGroupedTotalBlocks() : this.getTotalBlocks()], width);
+        }
         if (this.parent.enableColumnVirtualization) {
             this.header.virtualEle.setVirtualHeight(1, width);
         }
@@ -23626,6 +23944,17 @@ var VirtualContentRenderer = /** @__PURE__ @class */ (function (_super) {
             var x = _this.getColumnOffset(xAxis ? _this.vgenerator.getColumnIndexes()[0] - 1 : _this.prevInfo.columnIndexes[0] - 1);
             var y = _this.getTranslateY(e.top, height, xAxis && top === e.top ? _this.prevInfo : undefined, true);
             _this.virtualEle.adjustTable(x, Math.min(y, _this.offsets[_this.maxBlock]));
+            if (_this.parent.getFrozenColumns() && !xAxis) {
+                var left = _this.parent.getMovableVirtualContent().scrollLeft;
+                if (_this.parent.enableColumnVirtualization && left > 0) {
+                    var fvTable = _this.parent.getFrozenVirtualContent().querySelector('.e-virtualtable');
+                    fvTable.style.transform = "translate(" + 0 + "px, " + Math.min(y, _this.offsets[_this.maxBlock]) + "px)";
+                }
+                else {
+                    var fvTable = _this.parent.getFrozenVirtualContent().querySelector('.e-virtualtable');
+                    fvTable.style.transform = "translate(" + x + "px, " + Math.min(y, _this.offsets[_this.maxBlock]) + "px)";
+                }
+            }
             if (_this.parent.enableColumnVirtualization) {
                 _this.header.virtualEle.adjustTable(x, 0);
             }
@@ -23700,9 +24029,21 @@ var VirtualContentRenderer = /** @__PURE__ @class */ (function (_super) {
         if (isGroupAdaptive(this.parent)) {
             return this.parent.getDataRows()[index];
         }
+        return this.getRowCollection(index, false);
+    };
+    VirtualContentRenderer.prototype.getMovableVirtualRowByIndex = function (index) {
+        return this.getRowCollection(index, true);
+    };
+    VirtualContentRenderer.prototype.getRowCollection = function (index, isMovable) {
         var prev = this.prevInfo.blockIndexes;
         var startIdx = (prev[0] - 1) * this.getBlockSize();
-        return this.parent.getDataRows()[index - startIdx];
+        var rowCollection = isMovable ? this.parent.getMovableDataRows() : this.parent.getDataRows();
+        var selectedRow = rowCollection[index - startIdx];
+        if (this.parent.frozenRows && this.parent.pageSettings.currentPage > 1) {
+            selectedRow = index <= this.parent.frozenRows ? rowCollection[index]
+                : rowCollection[(index - startIdx) + this.parent.frozenRows];
+        }
+        return selectedRow;
     };
     VirtualContentRenderer.prototype.getVirtualRowIndex = function (index) {
         var prev = this.prevInfo.blockIndexes;
@@ -23799,7 +24140,9 @@ var VirtualContentRenderer = /** @__PURE__ @class */ (function (_super) {
         var page = Math.ceil((args.selectedIndex + 1) / this.parent.pageSettings.pageSize);
         var blockIndexes = this.vgenerator.getBlockIndexes(page);
         var scrollTop = this.offsets[blockIndexes[0] - 1];
-        this.parent.getContent().firstElementChild.scrollTop = scrollTop;
+        var ele = this.parent.getFrozenColumns() ? this.parent.getMovableVirtualContent()
+            : this.parent.getContent().firstElementChild;
+        ele.scrollTop = scrollTop;
     };
     return VirtualContentRenderer;
 }(ContentRender));
@@ -23830,9 +24173,17 @@ var VirtualHeaderRenderer = /** @__PURE__ @class */ (function (_super) {
         this.virtualEle.wrapper.appendChild(table);
     };
     VirtualHeaderRenderer.prototype.refreshUI = function () {
+        if (this.parent.getFrozenColumns() && this.parent.enableColumnVirtualization) {
+            this.parent.contentModule
+                .setTable(this.parent.getMovableVirtualContent().querySelector('.e-table'));
+        }
         this.gen.refreshColOffsets();
         this.parent.setColumnIndexesInView(this.gen.getColumnIndexes(this.getPanel().firstChild));
         _super.prototype.refreshUI.call(this);
+        if (this.parent.getFrozenColumns() && this.parent.enableColumnVirtualization) {
+            this.parent.contentModule.setTable(this.parent.getFrozenVirtualContent()
+                .querySelector('.e-table'));
+        }
     };
     VirtualHeaderRenderer.prototype.setVisible = function (columns) {
         var gObj = this.parent;
@@ -23921,10 +24272,12 @@ var VirtualScroll = /** @__PURE__ @class */ (function () {
     VirtualScroll.prototype.instantiateRenderer = function () {
         this.parent.log(['limitation', 'virtual_height'], 'virtualization');
         var renderer = this.locator.getService('rendererFactory');
-        if (this.parent.enableColumnVirtualization) {
-            renderer.addRenderer(RenderType.Header, new VirtualHeaderRenderer(this.parent, this.locator));
+        if (!this.parent.getFrozenColumns()) {
+            if (this.parent.enableColumnVirtualization) {
+                renderer.addRenderer(RenderType.Header, new VirtualHeaderRenderer(this.parent, this.locator));
+            }
+            renderer.addRenderer(RenderType.Content, new VirtualContentRenderer(this.parent, this.locator));
         }
-        renderer.addRenderer(RenderType.Content, new VirtualContentRenderer(this.parent, this.locator));
         this.ensurePageSize();
     };
     VirtualScroll.prototype.ensurePageSize = function () {
@@ -23989,6 +24342,7 @@ var InlineEditRender = /** @__PURE__ @class */ (function () {
         }
         this.parent.editSettings.newRowPosition === 'Top' ? tbody.insertBefore(args.row, tbody.firstChild) : tbody.appendChild(args.row);
         args.row.appendChild(this.getEditElement(elements, false, undefined, args, true));
+        this.parent.editModule.checkLastRow(args.row, args);
         if (this.parent.getFrozenColumns()) {
             var mEle = this.renderMovableform(args.row, args);
             if (this.parent.frozenRows && this.parent.editSettings.newRowPosition === 'Top') {
@@ -24057,6 +24411,7 @@ var InlineEditRender = /** @__PURE__ @class */ (function () {
         tdElement = this.updateFreezeEdit(args.row, tdElement);
         args.row.appendChild(this.getEditElement(elements, true, tdElement, args, true));
         args.row.classList.add('e-editedrow');
+        this.parent.editModule.checkLastRow(args.row, args);
         this.refreshFreezeEdit(args.row, args);
     };
     InlineEditRender.prototype.refreshFreezeEdit = function (row, args) {
@@ -24180,7 +24535,9 @@ var InlineEditRender = /** @__PURE__ @class */ (function () {
     };
     InlineEditRender.prototype.appendChildren = function (form, data, isFrozen) {
         var dummyData = extend({}, data, { isAdd: !this.isEdit, isFrozen: isFrozen }, true);
-        appendChildren(form, this.parent.getEditTemplate()(dummyData, this.parent, 'editSettingsTemplate'));
+        var editTemplateID = this.parent.element.id + 'editSettingsTemplate';
+        appendChildren(form, this.parent.getEditTemplate()(dummyData, this.parent, 'editSettingsTemplate', editTemplateID));
+        updateBlazorTemplate(editTemplateID, 'Template', this.parent.editSettings);
     };
     return InlineEditRender;
 }());
@@ -24279,7 +24636,7 @@ var DialogEditRender = /** @__PURE__ @class */ (function () {
         var isStringTemplate = 'isStringTemplate';
         this.dialogObj[isStringTemplate] = true;
         this.dialogObj.appendTo(this.dialog);
-        this.parent.applyBiggerTheme(this.dialogObj.element.parentElement);
+        applyBiggerTheme(this.parent.element, this.dialogObj.element.parentElement);
     };
     DialogEditRender.prototype.btnClick = function (e) {
         if (this.l10n.getConstant('CancelButton').toLowerCase() === e.target.innerText.trim().toLowerCase()) {
@@ -24880,6 +25237,9 @@ var NormalEdit = /** @__PURE__ @class */ (function () {
                         editargs.row.classList.add('e-dlgeditrow');
                     }
                     _this.renderer.update(editargs);
+                    if (isBlazor()) {
+                        editargs.form = null;
+                    }
                     _this.uid = tr.getAttribute('data-uid');
                     gObj.editModule.applyFormValidation();
                     editargs.type = 'actionComplete';
@@ -24941,6 +25301,10 @@ var NormalEdit = /** @__PURE__ @class */ (function () {
             else {
                 editedData = gObj.editModule.getCurrentEditedData(gObj.element.querySelector('.e-movablecontent').querySelector('.e-gridform'), editedData);
             }
+        }
+        if (isBlazor()) {
+            var form = 'form';
+            args[form] = null;
         }
         if (isDlg ? dlgWrapper.querySelectorAll('.e-editedrow').length : gObj.element.querySelectorAll('.e-editedrow').length) {
             args.action = 'edit';
@@ -25006,6 +25370,8 @@ var NormalEdit = /** @__PURE__ @class */ (function () {
         args.type = actionComplete;
         this.parent.isEdit = false;
         this.refreshRow(args.data);
+        this.parent.editModule.checkLastRow(args.row);
+        this.parent.editModule.isLastRow = false;
         this.updateCurrentViewData(args.data);
         this.blazorTemplate();
         this.parent.trigger(actionComplete, args);
@@ -25022,6 +25388,9 @@ var NormalEdit = /** @__PURE__ @class */ (function () {
     };
     NormalEdit.prototype.blazorTemplate = function () {
         var cols = this.parent.getColumns();
+        if (this.parent.editSettings.template && this.parent.editSettings.mode === 'Normal') {
+            updateBlazorTemplate(this.parent.element.id + 'editSettingsTemplate', 'Template', this.parent.editSettings);
+        }
         for (var i = 0; i < cols.length; i++) {
             var col = cols[i];
             if (col.template) {
@@ -25057,6 +25426,7 @@ var NormalEdit = /** @__PURE__ @class */ (function () {
                 rowObj = this.parent.getRowObjectFromUID(uid);
                 rowObj.changes = data;
                 row.refresh(rowObj, this.parent.columns, true);
+                this.parent.editModule.checkLastRow(tr);
             }
         }
     };
@@ -25070,6 +25440,10 @@ var NormalEdit = /** @__PURE__ @class */ (function () {
             requestType: 'cancel', type: actionBegin, data: this.previousData, selectedRow: gObj.selectedRowIndex
         });
         this.blazorTemplate();
+        if (isBlazor()) {
+            var form = 'form';
+            args[form] = null;
+        }
         gObj.trigger(actionBegin, args, function (closeEditArgs) {
             if (_this.parent.editSettings.mode === 'Dialog') {
                 _this.parent.notify(dialogDestroy, {});
@@ -25119,6 +25493,10 @@ var NormalEdit = /** @__PURE__ @class */ (function () {
             requestType: 'add', data: this.previousData, type: actionBegin, index: index,
             rowData: this.previousData, target: undefined
         };
+        if (isBlazor()) {
+            var form = 'form';
+            args[form] = null;
+        }
         gObj.trigger(actionBegin, args, function (addArgs) {
             if (addArgs.cancel) {
                 return;
@@ -26445,6 +26823,7 @@ var Edit = /** @__PURE__ @class */ (function () {
         else if (!tr) {
             tr = gObj.getSelectedRows()[0];
         }
+        this.isLastRow = tr.rowIndex === this.parent.getContent().querySelector('tr:last-child').rowIndex;
         if (tr.style.display === 'none') {
             return;
         }
@@ -26453,6 +26832,19 @@ var Edit = /** @__PURE__ @class */ (function () {
             this.refreshToolbar();
             gObj.element.querySelector('.e-gridpopup').style.display = 'none';
             this.parent.notify('start-edit', {});
+        }
+    };
+    /**
+     * @hidden
+     */
+    Edit.prototype.checkLastRow = function (tr, args) {
+        var checkLastRow = this.isLastRow;
+        if (this.parent.height !== 'auto' && this.parent.editSettings.newRowPosition === 'Bottom' && args &&
+            args.requestType === 'add') {
+            addClass(tr.querySelectorAll('.e-rowcell'), 'e-lastrowadded');
+        }
+        else if (checkLastRow) {
+            addClass(tr.querySelectorAll('.e-rowcell'), 'e-lastrowcell');
         }
     };
     /**
@@ -30747,7 +31139,7 @@ var ContextMenu$1 = /** @__PURE__ @class */ (function () {
                 args.cancel = true;
             }
         }
-        this.parent.applyBiggerTheme(this.contextMenu.element.parentElement);
+        applyBiggerTheme(this.parent.element, this.contextMenu.element.parentElement);
     };
     ContextMenu$$1.prototype.ensureTarget = function (targetElement, selector) {
         var target = targetElement;
@@ -31011,9 +31403,14 @@ var FreezeRowModelGenerator = /** @__PURE__ @class */ (function () {
         this.parent = parent;
         this.rowModelGenerator = new RowModelGenerator(this.parent);
     }
-    FreezeRowModelGenerator.prototype.generateRows = function (data, notifyArgs) {
+    FreezeRowModelGenerator.prototype.generateRows = function (data, notifyArgs, virtualRows) {
         var frzCols = this.parent.getFrozenColumns();
-        var row = this.rowModelGenerator.generateRows(data, notifyArgs);
+        if (this.isFrzLoad % 2 !== 0 && notifyArgs.requestType === 'virtualscroll' && notifyArgs.virtualInfo.sentinelInfo.axis === 'X') {
+            this.isFrzLoad++;
+            return null;
+        }
+        var row = this.parent.enableVirtualization ? virtualRows
+            : this.rowModelGenerator.generateRows(data, notifyArgs);
         for (var i = 0, len = row.length; i < len; i++) {
             if (this.isFrzLoad % 2 === 0) {
                 row[i].cells = row[i].cells.slice(frzCols, row[i].cells.length);
@@ -31338,6 +31735,9 @@ var FreezeRender = /** @__PURE__ @class */ (function (_super) {
     FreezeRender.prototype.getMovableHeader = function () {
         return this.movableHeader;
     };
+    /**
+     * @hidden
+     */
     FreezeRender.prototype.updateColgroup = function () {
         var mTable = this.getMovableHeader().querySelector('table');
         remove(this.getMovableHeader().querySelector('colgroup'));
@@ -31345,6 +31745,151 @@ var FreezeRender = /** @__PURE__ @class */ (function (_super) {
     };
     return FreezeRender;
 }(HeaderRender));
+
+var __extends$27 = (undefined && undefined.__extends) || (function () {
+    var extendStatics = function (d, b) {
+        extendStatics = Object.setPrototypeOf ||
+            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+        return extendStatics(d, b);
+    };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+/**
+ * VirtualFreezeRenderer is used to render the virtual table within the frozen table
+ * @hidden
+ */
+var VirtualFreezeRenderer = /** @__PURE__ @class */ (function (_super) {
+    __extends$27(VirtualFreezeRenderer, _super);
+    function VirtualFreezeRenderer(parent, locator) {
+        var _this = _super.call(this, parent, locator) || this;
+        _this.serviceLoc = locator;
+        return _this;
+    }
+    /**
+     * @hidden
+     */
+    VirtualFreezeRenderer.prototype.renderTable = function () {
+        this.freezeRowGenerator = new FreezeRowModelGenerator(this.parent);
+        this.virtualRenderer = new VirtualContentRenderer(this.parent, this.serviceLoc);
+        this.virtualRenderer.setPanel(this.parent.getContent());
+        this.virtualRenderer.renderTable();
+        var virtualTable = this.parent.getContent().querySelector('.e-virtualtable');
+        var virtualTrack = this.parent.getContent().querySelector('.e-virtualtrack');
+        virtualTrack.style.position = '';
+        this.getFrozenContent().appendChild(virtualTable);
+        this.getFrozenContent().appendChild(virtualTrack);
+        var mTbl = virtualTable.cloneNode(true);
+        var mTblT = virtualTrack.cloneNode(true);
+        this.getMovableContent().appendChild(mTbl);
+        this.getMovableContent().appendChild(mTblT);
+        remove(this.getMovableContent().querySelector('colgroup'));
+        var colGroup = this.parent.getMovableVirtualHeader().querySelector('colgroup')
+            .cloneNode(true);
+        mTbl.firstElementChild.insertBefore(colGroup, mTbl.firstElementChild.querySelector('tbody'));
+        this.setTable(this.parent.element.querySelector('.e-frozencontent').querySelector('.e-table'));
+    };
+    /**
+     * @hidden
+     */
+    VirtualFreezeRenderer.prototype.appendContent = function (target, newChild, e) {
+        this.virtualRenderer.appendContent(target, newChild, e);
+    };
+    /**
+     * @hidden
+     */
+    VirtualFreezeRenderer.prototype.generateRows = function (data, notifyArgs) {
+        var isSplit = false;
+        var virtualRows = this.virtualRenderer.vgenerator.generateRows(data, notifyArgs);
+        var arr = [];
+        arr = virtualRows.map(function (row) { return extend({}, row); });
+        if (this.parent.enableColumnVirtualization && this.parent.getFrozenColumns() && notifyArgs.renderMovableContent) {
+            var left = this.parent.getMovableVirtualContent().scrollLeft;
+            isSplit = notifyArgs.requestType === 'virtualscroll' && left > 0 && notifyArgs.virtualInfo.columnIndexes[0] !== 0;
+        }
+        var rows = this.freezeRowGenerator.generateRows(data, notifyArgs, arr);
+        return isSplit ? virtualRows : rows;
+    };
+    /**
+     * @hidden
+     */
+    VirtualFreezeRenderer.prototype.getRowByIndex = function (index) {
+        return this.virtualRenderer.getRowByIndex(index);
+    };
+    /**
+     * @hidden
+     */
+    VirtualFreezeRenderer.prototype.getMovableRowByIndex = function (index) {
+        return this.virtualRenderer.getMovableVirtualRowByIndex(index);
+    };
+    /**
+     * @hidden
+     */
+    VirtualFreezeRenderer.prototype.getMovableRows = function () {
+        return this.virtualRenderer.vgenerator.getRows();
+    };
+    /**
+     * @hidden
+     */
+    VirtualFreezeRenderer.prototype.getRows = function () {
+        return this.getMovableRows();
+    };
+    /**
+     * @hidden
+     */
+    VirtualFreezeRenderer.prototype.getColGroup = function () {
+        var colGroup = this.parent.getMovableVirtualContent().querySelector('colgroup');
+        return colGroup;
+    };
+    return VirtualFreezeRenderer;
+}(FreezeContentRender));
+var VirtualFreezeHdrRenderer = /** @__PURE__ @class */ (function (_super) {
+    __extends$27(VirtualFreezeHdrRenderer, _super);
+    function VirtualFreezeHdrRenderer(parent, locator) {
+        var _this = _super.call(this, parent, locator) || this;
+        _this.serviceLoc = locator;
+        return _this;
+    }
+    /**
+     * @hidden
+     */
+    VirtualFreezeHdrRenderer.prototype.renderTable = function () {
+        this.virtualHdrRenderer = new VirtualHeaderRenderer(this.parent, this.serviceLoc);
+        this.virtualEle = this.virtualHdrRenderer.virtualEle;
+        this.virtualHdrRenderer.setPanel(this.parent.getHeaderContent());
+        this.virtualHdrRenderer.renderTable();
+        this.rfhMovable();
+        this.updateColgroup();
+        this.initializeHeaderDrag();
+        this.initializeHeaderDrop();
+        this.setTable(this.parent.element.querySelector('.e-frozenheader').querySelector('.e-table'));
+        this.parent.notify(headerRefreshed, { rows: this.rows, args: { isFrozen: false } });
+    };
+    VirtualFreezeHdrRenderer.prototype.rfhMovable = function () {
+        var fvTbl = this.parent.getHeaderContent().querySelector('.e-virtualtable');
+        var fvTck = this.parent.getHeaderContent().querySelector('.e-virtualtrack');
+        this.getFrozenHeader().appendChild(fvTbl);
+        this.getFrozenHeader().appendChild(fvTck);
+        this.virtualHdrRenderer.virtualEle.table = this.createTable();
+        this.virtualHdrRenderer.virtualEle.renderWrapper();
+        this.virtualHdrRenderer.virtualEle.renderPlaceHolder();
+        var mvTbl = [].slice.call(this.parent.getHeaderContent().querySelectorAll('.e-virtualtable'));
+        var mvTck = [].slice.call(this.parent.getHeaderContent().querySelectorAll('.e-virtualtrack'));
+        this.getMovableHeader().appendChild(mvTbl[1]);
+        this.getMovableHeader().appendChild(mvTck[1]);
+    };
+    /**
+     * @hidden
+     */
+    VirtualFreezeHdrRenderer.prototype.getTable = function () {
+        return this.virtualHdrRenderer.getTable();
+    };
+    return VirtualFreezeHdrRenderer;
+}(FreezeRender));
 
 /**
  * `Freeze` module is used to handle Frozen rows and columns.
@@ -31369,8 +31914,12 @@ var Freeze = /** @__PURE__ @class */ (function () {
         this.parent.log('limitation', this.getModuleName());
         var renderer = this.locator.getService('rendererFactory');
         if (this.parent.getFrozenColumns()) {
-            renderer.addRenderer(RenderType.Header, new FreezeRender(this.parent, this.locator));
-            renderer.addRenderer(RenderType.Content, new FreezeContentRender(this.parent, this.locator));
+            this.parent.enableColumnVirtualization ?
+                renderer.addRenderer(RenderType.Header, new VirtualFreezeHdrRenderer(this.parent, this.locator))
+                : renderer.addRenderer(RenderType.Header, new FreezeRender(this.parent, this.locator));
+            this.parent.enableVirtualization ?
+                renderer.addRenderer(RenderType.Content, new VirtualFreezeRenderer(this.parent, this.locator))
+                : renderer.addRenderer(RenderType.Content, new FreezeContentRender(this.parent, this.locator));
         }
     };
     Freeze.prototype.removeEventListener = function () {
@@ -31476,7 +32025,7 @@ var ColumnMenu = /** @__PURE__ @class */ (function () {
         }
         this.columnMenu.open(pos.top, pos.left);
         e.preventDefault();
-        this.parent.applyBiggerTheme(this.columnMenu.element.parentElement);
+        applyBiggerTheme(this.parent.element, this.columnMenu.element.parentElement);
     };
     ColumnMenu.prototype.columnMenuHandlerDown = function (e) {
         this.isOpen = !(this.element.style.display === 'none' || this.element.style.display === '');
@@ -31924,7 +32473,7 @@ var ColumnMenu = /** @__PURE__ @class */ (function () {
     return ColumnMenu;
 }());
 
-var __extends$27 = (undefined && undefined.__extends) || (function () {
+var __extends$28 = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -31941,7 +32490,7 @@ var __extends$27 = (undefined && undefined.__extends) || (function () {
  * `ForeignKey` module is used to handle foreign key column's actions.
  */
 var ForeignKey = /** @__PURE__ @class */ (function (_super) {
-    __extends$27(ForeignKey, _super);
+    __extends$28(ForeignKey, _super);
     function ForeignKey(parent, serviceLocator) {
         var _this = _super.call(this, parent, serviceLocator) || this;
         _this.parent = parent;
@@ -32800,5 +33349,5 @@ var MaskedTextBoxCellEdit = /** @__PURE__ @class */ (function () {
  * Export Grid components
  */
 
-export { CheckBoxFilterBase, ExcelFilterBase, SortDescriptor, SortSettings, Predicate$1 as Predicate, FilterSettings, SelectionSettings, SearchSettings, RowDropSettings, TextWrapSettings, GroupSettings, EditSettings, Grid, CellType, RenderType, ToolbarItem, doesImplementInterface, valueAccessor, getUpdateUsingRaf, updatecloneRow, getCollapsedRowsCount, recursive, iterateArrayOrObject, iterateExtend, templateCompiler, setStyleAndAttributes, extend$1 as extend, setColumnIndex, prepareColumns, setCssInGridPopUp, getActualProperties, parentsUntil, getElementIndex, inArray, getActualPropFromColl, removeElement, getPosition, getUid, appendChildren, parents, calculateAggregate, getScrollBarWidth, getRowHeight, isComplexField, getComplexFieldID, setComplexFieldID, isEditable, isActionPrevent, wrap, setFormatter, addRemoveActiveClasses, distinctStringValues, getFilterMenuPostion, getZIndexCalcualtion, toogleCheckbox, createCboxWithWrap, removeAddCboxClasses, refreshForeignData, getForeignData, getColumnByForeignKeyValue, getDatePredicate, renderMovable, isGroupAdaptive, getObject, getCustomDateFormat, getExpandedState, getPrintGridModel, extendObjWithFn, measureColumnDepth, checkDepth, refreshFilteredColsUid, Global, created, destroyed, load, rowDataBound, queryCellInfo, headerCellInfo, actionBegin, actionComplete, actionFailure, dataBound, rowSelecting, rowSelected, rowDeselecting, rowDeselected, cellSelecting, cellSelected, cellDeselecting, cellDeselected, columnDragStart, columnDrag, columnDrop, rowDragStartHelper, rowDragStart, rowDrag, rowDrop, beforePrint, printComplete, detailDataBound, toolbarClick, batchAdd, batchCancel, batchDelete, beforeBatchAdd, beforeBatchDelete, beforeBatchSave, beginEdit, cellEdit, cellSave, cellSaved, endAdd, endDelete, endEdit, recordDoubleClick, recordClick, beforeDataBound, beforeOpenColumnChooser, resizeStart, onResize, resizeStop, checkBoxChange, beforeCopy, beforePaste, filterChoiceRequest, filterAfterOpen, filterBeforeOpen, filterSearchBegin, commandClick, initialLoad, initialEnd, dataReady, contentReady, uiUpdate, onEmpty, inBoundModelChanged, modelChanged, colGroupRefresh, headerRefreshed, pageBegin, pageComplete, sortBegin, sortComplete, filterBegin, filterComplete, searchBegin, searchComplete, reorderBegin, reorderComplete, rowDragAndDropBegin, rowDragAndDropComplete, groupBegin, groupComplete, ungroupBegin, ungroupComplete, groupAggregates, refreshFooterRenderer, refreshAggregateCell, refreshAggregates, rowSelectionBegin, rowSelectionComplete, columnSelectionBegin, columnSelectionComplete, cellSelectionBegin, cellSelectionComplete, beforeCellFocused, cellFocused, keyPressed, click, destroy, columnVisibilityChanged, scroll, columnWidthChanged, columnPositionChanged, rowDragAndDrop, rowsAdded, rowsRemoved, columnDragStop, headerDrop, dataSourceModified, refreshComplete, refreshVirtualBlock, dblclick, toolbarRefresh, bulkSave, autoCol, tooltipDestroy, updateData, editBegin, editComplete, addBegin, addComplete, saveComplete, deleteBegin, deleteComplete, preventBatch, dialogDestroy, crudAction, addDeleteAction, destroyForm, doubleTap, beforeExcelExport, excelExportComplete, excelQueryCellInfo, excelHeaderQueryCellInfo, exportDetailDataBound, beforePdfExport, pdfExportComplete, pdfQueryCellInfo, pdfHeaderQueryCellInfo, accessPredicate, contextMenuClick, freezeRender, freezeRefresh, contextMenuOpen, columnMenuClick, columnMenuOpen, filterOpen, filterDialogCreated, filterMenuClose, initForeignKeyColumn, getForeignKeyData, generateQuery, showEmptyGrid, foreignKeyData, dataStateChange, dataSourceChanged, rtlUpdated, beforeFragAppend, frozenHeight, textWrapRefresh, recordAdded, cancelBegin, editNextValCell, hierarchyPrint, expandChildGrid, printGridInit, exportRowDataBound, rowPositionChanged, columnChooserOpened, batchForm, beforeStartEdit, beforeBatchCancel, batchEditFormRendered, partialRefresh, beforeCustomFilterOpen, selectVirtualRow, columnsPrepared, cBoxFltrBegin, cBoxFltrComplete, fltrPrevent, Data, Sort, Page, Selection, Filter, Search, Scroll, resizeClassList, Resize, Reorder, RowDD, Group, getCloneProperties, Print, DetailRow, Toolbar$1 as Toolbar, Aggregate, summaryIterator, VirtualScroll, Edit, BatchEdit, InlineEdit, NormalEdit, DialogEdit, ColumnChooser, ExcelExport, PdfExport, ExportHelper, ExportValueFormatter, Clipboard, CommandColumn, CheckBoxFilter, menuClass, ContextMenu$1 as ContextMenu, Freeze, ColumnMenu, ExcelFilter, ForeignKey, Logger, detailLists, Column, CommandColumnModel, Row, Cell, HeaderRender, ContentRender, RowRenderer, CellRenderer, HeaderCellRenderer, FilterCellRenderer, StackedHeaderCellRenderer, Render, IndentCellRenderer, GroupCaptionCellRenderer, GroupCaptionEmptyCellRenderer, BatchEditRender, DialogEditRender, InlineEditRender, EditRender, BooleanEditCell, DefaultEditCell, DropDownEditCell, NumericEditCell, DatePickerEditCell, CommandColumnRenderer, FreezeContentRender, FreezeRender, StringFilterUI, NumberFilterUI, DateFilterUI, BooleanFilterUI, FlMenuOptrUI, AutoCompleteEditCell, ComboboxEditCell, MultiSelectEditCell, TimePickerEditCell, ToggleEditCell, MaskedTextBoxCellEdit, VirtualContentRenderer, VirtualHeaderRenderer, VirtualElementHandler, CellRendererFactory, ServiceLocator, RowModelGenerator, GroupModelGenerator, FreezeRowModelGenerator, ValueFormatter, VirtualRowModelGenerator, InterSectionObserver, Pager, ExternalMessage, NumericContainer, PagerMessage, PagerDropDown };
+export { CheckBoxFilterBase, ExcelFilterBase, SortDescriptor, SortSettings, Predicate$1 as Predicate, FilterSettings, SelectionSettings, SearchSettings, RowDropSettings, TextWrapSettings, GroupSettings, EditSettings, Grid, CellType, RenderType, ToolbarItem, doesImplementInterface, valueAccessor, getUpdateUsingRaf, updatecloneRow, getCollapsedRowsCount, recursive, iterateArrayOrObject, iterateExtend, templateCompiler, setStyleAndAttributes, extend$1 as extend, setColumnIndex, prepareColumns, setCssInGridPopUp, getActualProperties, parentsUntil, getElementIndex, inArray, getActualPropFromColl, removeElement, getPosition, getUid, appendChildren, parents, calculateAggregate, getScrollBarWidth, getRowHeight, isComplexField, getComplexFieldID, setComplexFieldID, isEditable, isActionPrevent, wrap, setFormatter, addRemoveActiveClasses, distinctStringValues, getFilterMenuPostion, getZIndexCalcualtion, toogleCheckbox, createCboxWithWrap, removeAddCboxClasses, refreshForeignData, getForeignData, getColumnByForeignKeyValue, getDatePredicate, renderMovable, isGroupAdaptive, getObject, getCustomDateFormat, getExpandedState, getPrintGridModel, extendObjWithFn, measureColumnDepth, checkDepth, refreshFilteredColsUid, Global, getTransformValues, applyBiggerTheme, created, destroyed, load, rowDataBound, queryCellInfo, headerCellInfo, actionBegin, actionComplete, actionFailure, dataBound, rowSelecting, rowSelected, rowDeselecting, rowDeselected, cellSelecting, cellSelected, cellDeselecting, cellDeselected, columnDragStart, columnDrag, columnDrop, rowDragStartHelper, rowDragStart, rowDrag, rowDrop, beforePrint, printComplete, detailDataBound, toolbarClick, batchAdd, batchCancel, batchDelete, beforeBatchAdd, beforeBatchDelete, beforeBatchSave, beginEdit, cellEdit, cellSave, cellSaved, endAdd, endDelete, endEdit, recordDoubleClick, recordClick, beforeDataBound, beforeOpenColumnChooser, resizeStart, onResize, resizeStop, checkBoxChange, beforeCopy, beforePaste, filterChoiceRequest, filterAfterOpen, filterBeforeOpen, filterSearchBegin, commandClick, initialLoad, initialEnd, dataReady, contentReady, uiUpdate, onEmpty, inBoundModelChanged, modelChanged, colGroupRefresh, headerRefreshed, pageBegin, pageComplete, sortBegin, sortComplete, filterBegin, filterComplete, searchBegin, searchComplete, reorderBegin, reorderComplete, rowDragAndDropBegin, rowDragAndDropComplete, groupBegin, groupComplete, ungroupBegin, ungroupComplete, groupAggregates, refreshFooterRenderer, refreshAggregateCell, refreshAggregates, rowSelectionBegin, rowSelectionComplete, columnSelectionBegin, columnSelectionComplete, cellSelectionBegin, cellSelectionComplete, beforeCellFocused, cellFocused, keyPressed, click, destroy, columnVisibilityChanged, scroll, columnWidthChanged, columnPositionChanged, rowDragAndDrop, rowsAdded, rowsRemoved, columnDragStop, headerDrop, dataSourceModified, refreshComplete, refreshVirtualBlock, dblclick, toolbarRefresh, bulkSave, autoCol, tooltipDestroy, updateData, editBegin, editComplete, addBegin, addComplete, saveComplete, deleteBegin, deleteComplete, preventBatch, dialogDestroy, crudAction, addDeleteAction, destroyForm, doubleTap, beforeExcelExport, excelExportComplete, excelQueryCellInfo, excelHeaderQueryCellInfo, exportDetailDataBound, beforePdfExport, pdfExportComplete, pdfQueryCellInfo, pdfHeaderQueryCellInfo, accessPredicate, contextMenuClick, freezeRender, freezeRefresh, contextMenuOpen, columnMenuClick, columnMenuOpen, filterOpen, filterDialogCreated, filterMenuClose, initForeignKeyColumn, getForeignKeyData, generateQuery, showEmptyGrid, foreignKeyData, dataStateChange, dataSourceChanged, rtlUpdated, beforeFragAppend, frozenHeight, textWrapRefresh, recordAdded, cancelBegin, editNextValCell, hierarchyPrint, expandChildGrid, printGridInit, exportRowDataBound, rowPositionChanged, columnChooserOpened, batchForm, beforeStartEdit, beforeBatchCancel, batchEditFormRendered, partialRefresh, beforeCustomFilterOpen, selectVirtualRow, columnsPrepared, cBoxFltrBegin, cBoxFltrComplete, fltrPrevent, beforeFltrcMenuOpen, Data, Sort, Page, Selection, Filter, Search, Scroll, resizeClassList, Resize, Reorder, RowDD, Group, getCloneProperties, Print, DetailRow, Toolbar$1 as Toolbar, Aggregate, summaryIterator, VirtualScroll, Edit, BatchEdit, InlineEdit, NormalEdit, DialogEdit, ColumnChooser, ExcelExport, PdfExport, ExportHelper, ExportValueFormatter, Clipboard, CommandColumn, CheckBoxFilter, menuClass, ContextMenu$1 as ContextMenu, Freeze, ColumnMenu, ExcelFilter, ForeignKey, Logger, detailLists, Column, CommandColumnModel, Row, Cell, HeaderRender, ContentRender, RowRenderer, CellRenderer, HeaderCellRenderer, FilterCellRenderer, StackedHeaderCellRenderer, Render, IndentCellRenderer, GroupCaptionCellRenderer, GroupCaptionEmptyCellRenderer, BatchEditRender, DialogEditRender, InlineEditRender, EditRender, BooleanEditCell, DefaultEditCell, DropDownEditCell, NumericEditCell, DatePickerEditCell, CommandColumnRenderer, FreezeContentRender, FreezeRender, StringFilterUI, NumberFilterUI, DateFilterUI, BooleanFilterUI, FlMenuOptrUI, AutoCompleteEditCell, ComboboxEditCell, MultiSelectEditCell, TimePickerEditCell, ToggleEditCell, MaskedTextBoxCellEdit, VirtualContentRenderer, VirtualHeaderRenderer, VirtualElementHandler, CellRendererFactory, ServiceLocator, RowModelGenerator, GroupModelGenerator, FreezeRowModelGenerator, ValueFormatter, VirtualRowModelGenerator, InterSectionObserver, Pager, ExternalMessage, NumericContainer, PagerMessage, PagerDropDown };
 //# sourceMappingURL=ej2-grids.es5.js.map

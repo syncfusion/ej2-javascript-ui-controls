@@ -2587,6 +2587,7 @@ client side. Customer easy to edit the contents and get the HTML content for
             }, 100);
         });
     });
+   
     describe('RTE Drag and Drop Image', () => {
         let rteObj: RichTextEditor;
         let rteEle: HTMLElement;
@@ -2690,5 +2691,38 @@ client side. Customer easy to edit the contents and get the HTML content for
          }, 2000);
        
     });
+    });
+    describe('Drag and Drop - Text', function() {
+        let rteObj: RichTextEditor;
+        let ele: HTMLElement;
+        let element: HTMLElement;
+        beforeAll(function(done) {
+            element = createElement('form', {
+                id: "form-element",
+                innerHTML: " <div class=\"form-group\">\n                        <textarea id=\"defaultRTE\" name=\"defaultRTE\" required maxlength=\"100\" minlength=\"20\" data-msg-containerid=\"dateError\">\n                        </textarea>\n                        <div id=\"dateError\"></div>\n                    </div>\n                    "
+            });
+            document.body.appendChild(element);
+            rteObj = new RichTextEditor({
+                value: "<div><p>First p node-0</p></div>",
+            });
+            rteObj.appendTo('#defaultRTE');
+            done();
+        });
+        it("dragStart event", function(done) {
+            var event = { clientX: 40, clientY: 294, target: rteObj.contentModule.getEditPanel(), preventDefault: function() { return; } };
+            let result : any = (rteObj.imageModule as any).dragStart(event);
+            setTimeout(function() {
+                expect(result).toBe(true);
+                done();
+            }, 200);
+        });
+        it("drop event", function(done) {
+            var event = { clientX: 40, clientY: 294, target: rteObj.contentModule.getEditPanel(), dataTransfer: { files: {} }, preventDefault: function() { return; } };
+            let result : any = (rteObj.imageModule as any).dragDrop(event);
+            setTimeout(function() {
+                expect(result).toBe(true);
+                done();
+            }, 200);
+        });
     });
 });

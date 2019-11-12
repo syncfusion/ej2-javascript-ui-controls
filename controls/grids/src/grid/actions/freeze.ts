@@ -4,6 +4,7 @@ import { RendererFactory } from '../services/renderer-factory';
 import * as events from '../base/constant';
 import { RenderType } from '../base/enum';
 import { FreezeRender, FreezeContentRender } from '../renderer/freeze-renderer';
+import { VirtualFreezeRenderer, VirtualFreezeHdrRenderer } from '../renderer/virtual-freeze-renderer';
 
 /**
  * `Freeze` module is used to handle Frozen rows and columns.
@@ -31,8 +32,12 @@ export class Freeze implements IAction {
         this.parent.log('limitation', this.getModuleName());
         let renderer: RendererFactory = this.locator.getService<RendererFactory>('rendererFactory');
         if (this.parent.getFrozenColumns()) {
-            renderer.addRenderer(RenderType.Header, new FreezeRender(this.parent, this.locator));
-            renderer.addRenderer(RenderType.Content, new FreezeContentRender(this.parent, this.locator));
+            this.parent.enableColumnVirtualization ?
+                renderer.addRenderer(RenderType.Header, new VirtualFreezeHdrRenderer(this.parent, this.locator))
+                : renderer.addRenderer(RenderType.Header, new FreezeRender(this.parent, this.locator));
+            this.parent.enableVirtualization ?
+                renderer.addRenderer(RenderType.Content, new VirtualFreezeRenderer(this.parent, this.locator))
+                : renderer.addRenderer(RenderType.Content, new FreezeContentRender(this.parent, this.locator));
         }
     }
 

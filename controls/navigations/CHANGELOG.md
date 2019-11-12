@@ -2,6 +2,20 @@
 
 ## [Unreleased]
 
+## 17.3.27 (2019-11-12)
+
+### Tab
+
+#### Bug Fixes
+
+- `#253216` - An issue with destroying Tab component in IE11 has been fixed.
+
+### TreeView
+
+#### Bug Fixes
+
+- #242926 - Now the drop indicator has been shown correctly while hovering the expand and collapse icon.
+
 ## 17.3.26 (2019-11-05)
 
 ### Menu

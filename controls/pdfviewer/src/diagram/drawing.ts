@@ -17,6 +17,7 @@ import { isLineShapes, setElementStype, findPointsLength, getBaseShapeAttributes
 // tslint:disable-next-line:max-line-length
 import { getConnectorPoints, updateSegmentElement, getSegmentElement, updateDecoratorElement, getDecoratorElement, clipDecorators, initDistanceLabel, initLeaders, initLeader, getPolygonPath, initPerimeterLabel } from './connector-util';
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
+import { AnnotationResizerLocation } from '../pdfviewer/index';
 
 /**
  * Renderer module is used to render basic diagram elements
@@ -496,7 +497,7 @@ export class Drawing {
         }
 
         if ((obj.shapeAnnotationType === 'Line' || obj.shapeAnnotationType === 'LineWidthArrowHead') && obj.measureType === 'Perimeter') {
-            labels = initPerimeterLabel(obj, points);
+            labels = initPerimeterLabel(obj, points, this.pdfViewer.annotation.measureAnnotationModule);
         }
         if (obj.enableShapeLabel === true && !(obj.shapeAnnotationType === 'Distance') && !(obj.measureType === 'Perimeter')) {
             let textele: TextElement;
@@ -735,7 +736,7 @@ export class Drawing {
                                 }
                             }
                             if (node.annotName !== '') {
-                                this.pdfViewer.annotationModule.selectAnnotation(node.annotName, node.pageIndex, node);
+                                this.pdfViewer.annotationModule.annotationSelect(node.annotName, node.pageIndex, node);
                             }
                         }
                     }
@@ -826,7 +827,11 @@ export class Drawing {
             options.stroke = borderColor;
             // tslint:disable-next-line:max-line-length
             options.strokeWidth = isNullOrUndefined(this.pdfViewer.annotationSelectorSettings.selectionBorderThickness) ? 2 : this.pdfViewer.annotationSelectorSettings.selectionBorderThickness;
-            options.dashArray = '6,3';
+            let lineDash: number[] = isNullOrUndefined(this.pdfViewer.annotationSelectorSettings.selectorLineDashArray) || this.pdfViewer.annotationSelectorSettings.selectorLineDashArray.length === 0 ? [6, 3] : this.pdfViewer.annotationSelectorSettings.selectorLineDashArray;
+            if (lineDash.length > 2) {
+                lineDash = [lineDash[0], lineDash[1]];
+            }
+            options.dashArray = lineDash.toString();
             options.class = 'e-pv-diagram-border';
             if (isSwimlane) { options.class += ' e-diagram-lane'; }
             options.id = 'borderRect';
@@ -885,7 +890,7 @@ export class Drawing {
         options.fill = this.pdfViewer.annotationSelectorSettings.resizerFillColor;
         options.centerX = (newPoint.x + t.tx) * t.scale;
         options.centerY = (newPoint.y + t.ty) * t.scale;
-        options.radius = radius;
+        options.radius = this.pdfViewer.annotationSelectorSettings.resizerSize / 2;
         options.angle = 0;
         options.id = id;
         options.visible = visible;
@@ -902,8 +907,13 @@ export class Drawing {
         options.x = (newPoint.x * t.scale) - (options.width / 2);
         options.y = (newPoint.y * t.scale) - (options.height / 2);
         let parentSvg: SVGSVGElement = this.getParentSvg(selector, 'selector') as SVGSVGElement;
-        // tslint:disable-next-line:max-line-length
-        this.svgRenderer.drawRectangle(canvas as SVGElement, options as RectAttributes, id, undefined, true, parentSvg);
+        if (this.pdfViewer.annotationSelectorSettings.resizerShape === 'Square') {
+            // tslint:disable-next-line:max-line-length
+            this.svgRenderer.drawRectangle(canvas as SVGElement, options as RectAttributes, id, undefined, true, parentSvg);
+        } else if (this.pdfViewer.annotationSelectorSettings.resizerShape === 'Circle') {
+            // tslint:disable-next-line:max-line-length
+            this.svgRenderer.drawCircle(canvas as SVGElement, options as CircleAttributes, 1);
+        }
     }
 
     /**
@@ -969,9 +979,17 @@ export class Drawing {
             element, canvas, transform, enableNode, nodeConstraints, true, isSticky);
         let nodeWidth: number = element.actualSize.width * currentZoom;
         let nodeHeight: number = element.actualSize.height * currentZoom;
-
+        let resizerLocation: AnnotationResizerLocation = this.pdfViewer.annotationSelectorSettings.resizerLocation;
+        if (resizerLocation < 1 || resizerLocation > 3) {
+            resizerLocation = 3;
+        }
+        let isNodeShape: boolean = false;
+        // tslint:disable-next-line:max-line-length
+        if (this.pdfViewer.selectedItems.annotations[0] && (this.pdfViewer.selectedItems.annotations[0].shapeAnnotationType === 'Ellipse' || this.pdfViewer.selectedItems.annotations[0].shapeAnnotationType === 'Radius' || this.pdfViewer.selectedItems.annotations[0].shapeAnnotationType === 'Rectangle' || this.pdfViewer.selectedItems.annotations[0].shapeAnnotationType === 'Image')) {
+            isNodeShape = true;
+        }
         if (!nodeConstraints && !isSticky && !isPath) {
-            if ((nodeWidth >= 40 && nodeHeight >= 40) || isStamp) {
+            if (isStamp || (isNodeShape && (nodeWidth >= 40 && nodeHeight >= 40) && (resizerLocation === 1 || resizerLocation === 3))) {
                 //Hide corners when the size is less than 40
                 this.renderCircularHandle(
                     'resizeNorthWest', element, left, top, canvas, true,
@@ -1000,7 +1018,8 @@ export class Drawing {
                     'e-pv-diagram-resize-handle e-southeast');
 
             }
-            if (!isStamp) {
+            // tslint:disable-next-line:max-line-length
+            if ((!isStamp && !isNodeShape) || (isNodeShape && (resizerLocation === 2 || resizerLocation === 3 || (!(nodeWidth >= 40 && nodeHeight >= 40) && resizerLocation === 1)))) {
                 this.renderCircularHandle(
                     'resizeNorth', element, left + width / 2, top, canvas,
                     true, constraints & ThumbsConstraints.ResizeNorth, transform, undefined,

@@ -368,6 +368,7 @@ export class SymbolPalette extends Component<HTMLElement> implements INotifyProp
     private isExpand: boolean = false;
     private isExpandMode: boolean = false;
     private isMethod: boolean = false;
+    private paletteid: number = 88123;
 
     //region - protected methods 
 
@@ -510,6 +511,10 @@ export class SymbolPalette extends Component<HTMLElement> implements INotifyProp
      * Initialize nodes, connectors and renderer
      */
     protected preRender(): void {
+        if (this.element.id === '') {
+            let collection: number = document.getElementsByClassName('e-symbolpalette').length;
+            this.element.id = 'symbolpalette_' + this.paletteid + '_' + collection;
+        }
         this.element.style.overflow = 'auto';
         this.element.style.height = this.height.toString();
         this.element.style.width = this.width.toString();

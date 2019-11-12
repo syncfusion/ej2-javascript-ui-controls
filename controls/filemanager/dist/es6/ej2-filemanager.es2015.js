@@ -6191,6 +6191,9 @@ __decorate$8([
 ], FileManager.prototype, "fileDropped", void 0);
 __decorate$8([
     Event()
+], FileManager.prototype, "fileSelection", void 0);
+__decorate$8([
+    Event()
 ], FileManager.prototype, "fileSelect", void 0);
 __decorate$8([
     Event()
@@ -7499,6 +7502,7 @@ class DetailsView {
             this.gridObj = new Grid({
                 dataSource: items,
                 allowSorting: true,
+                rowSelecting: this.onSelection.bind(this),
                 rowSelected: this.onSelected.bind(this),
                 rowDeselected: this.onDeSelection.bind(this),
                 allowResizing: this.parent.detailsViewSettings.columnResizing,
@@ -8363,6 +8367,12 @@ class DetailsView {
             this.unWireEvents();
             this.gridObj.destroy();
         }
+    }
+    /* istanbul ignore next */
+    onSelection(args) {
+        let eventArgs = { fileDetails: args.data, isInteracted: this.interaction, cancel: false, target: args.target };
+        this.parent.trigger('fileSelection', eventArgs);
+        args.cancel = eventArgs.cancel;
     }
     /* istanbul ignore next */
     onSelected(args) {

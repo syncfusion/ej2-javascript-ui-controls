@@ -461,8 +461,8 @@ export class Zoom {
                     eventArgs = blazorEventArgs;
                 }
                 this.maps.trigger('markerRendering', eventArgs, (MarkerArgs: IMarkerRenderingEventArgs) => {
-                    let long: number = data['longitude'] | data['Longitude'];
-                    let lati: number = data['latitude'] | data['Latitude'];
+                    let long: number = data['longitude'];
+                    let lati: number = data['latitude'];
                     let offset: Point = markerSettings.offset;
                     if (!eventArgs.cancel && markerSettings.visible && !isNullOrUndefined(long) && !isNullOrUndefined(lati)) {
                         let markerID: string = this.maps.element.id + '_LayerIndex_' + layerIndex + '_MarkerIndex_'
@@ -657,8 +657,8 @@ export class Zoom {
         let layer: LayerSettings = <LayerSettings>this.maps.layersCollection[layerIndex];
         let marker: MarkerSettings = <MarkerSettings>layer.markerSettings[markerIndex];
         if (!isNullOrUndefined(marker) && !isNullOrUndefined(marker.dataSource) && !isNullOrUndefined(marker.dataSource[dataIndex])) {
-            let lng: number = marker.dataSource[dataIndex]['longitude'] | marker.dataSource[dataIndex]['Longitude'];
-            let lat: number = marker.dataSource[dataIndex]['latitude'] | marker.dataSource[dataIndex]['Latitude'];
+            let lng: number = marker.dataSource[dataIndex]['longitude'];
+            let lat: number = marker.dataSource[dataIndex]['latitude'];
             let duration: number = this.currentLayer.animationDuration;
             let location: Point = (this.maps.isTileMap) ? convertTileLatLongToPoint(
                 new Point(lng, lat), this.maps.tileZoomLevel, this.maps.tileTranslatePoint, true

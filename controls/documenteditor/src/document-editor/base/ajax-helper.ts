@@ -25,6 +25,11 @@ export class XmlHttpRequestHandler {
 
     private xmlHttpRequest: XMLHttpRequest;
     /**
+     * @private
+     */
+    public customHeaders: Object[];
+
+    /**
      * Send the request to server
      * @param  {object} jsonObject - To send to service
      */
@@ -44,6 +49,7 @@ export class XmlHttpRequestHandler {
         if (this.contentType) {
             this.xmlHttpRequest.setRequestHeader('Content-Type', this.contentType);
         }
+        this.setCustomAjaxHeaders();
         if (this.responseType) {
             this.xmlHttpRequest.responseType = this.responseType;
         }
@@ -131,4 +137,14 @@ export class XmlHttpRequestHandler {
         }
         return response;
     }
+
+    private setCustomAjaxHeaders(): void {
+        for (let i: number = 0; i < this.customHeaders.length; i++) {
+            let header: Object = this.customHeaders[i];
+            for (let key of Object.keys(header)) {
+                this.xmlHttpRequest.setRequestHeader(key, header[key]);
+            }
+        }
+    }
+
 }

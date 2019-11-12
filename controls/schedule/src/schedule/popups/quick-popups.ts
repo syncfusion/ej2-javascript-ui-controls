@@ -299,7 +299,7 @@ export class QuickPopups {
     private showQuickDialog(popupType: PopupType, eventData?: Object | Object[]): void {
         this.quickDialog.dataBind();
         let eventProp: PopupOpenEventArgs = {
-            type: popupType, cancel: false, data: eventData || this.parent.activeEventData, element: this.quickDialog.element
+            type: popupType, cancel: false, data: eventData || this.parent.activeEventData.event, element: this.quickDialog.element
         };
         this.parent.trigger(event.popupOpen, eventProp, (popupArgs: PopupOpenEventArgs) => {
             if (!popupArgs.cancel) {
@@ -965,7 +965,17 @@ export class QuickPopups {
     }
 
     private beforeQuickDialogClose(): void {
-        this.parent.eventBase.focusElement();
+        let args: PopupCloseEventArgs = {
+            type: (isNullOrUndefined(this.parent.activeEventData.event)) ? 'ValidationAlert' :
+                !isNullOrUndefined((<{ [key: string]: Object }>this.parent.activeEventData.event)
+                [this.parent.eventFields.recurrenceRule]) ? 'RecurrenceAlert' : 'DeleteAlert',
+            cancel: false, data: this.parent.activeEventData.event, element: this.quickDialog.element
+        };
+        this.parent.trigger(event.popupClose, args, (popupCloseArgs: PopupCloseEventArgs) => {
+            if (!popupCloseArgs.cancel) {
+                this.parent.eventBase.focusElement();
+            }
+        });
     }
 
     private beforeQuickPopupOpen(target: Element): void {
@@ -1123,6 +1133,9 @@ export class QuickPopups {
     }
 
     public quickPopupHide(hideAnimation?: Boolean): void {
+        if (!this.quickPopup.element.classList.contains(cls.POPUP_OPEN)) {
+            return;
+        }
         let isCellPopup: Element = this.quickPopup.element.querySelector('.' + cls.CELL_POPUP_CLASS);
         let popupData: Object;
         if (isCellPopup) {

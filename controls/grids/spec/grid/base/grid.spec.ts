@@ -1323,3 +1323,39 @@ describe('Grid base module', () => {
             gridObj = null;
         });
     });
+
+    describe('custom date format checking', () => {
+        let gridObj: Grid;
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: data.slice(0,2),
+                    allowSelection: true,
+                    allowPaging: true,
+                    pageSettings: { pageSize: 6},
+                    columns: [
+            
+                           { field: 'OrderID', width: 120, textAlign: 'Right', headerText: 'Order ID' },
+                            {
+                                field: 'OrderDate', width: 120, textAlign: 'Right', headerText: 'Order Date1',
+                                format: 'dd-MM-yyyy', type: 'date'
+                            },
+                            {
+                                field: 'OrderDate', width: 120, textAlign: 'Right', headerText: 'Order Date2',
+                                format: 'dd:MM:yyyy'
+                            },
+                            { field: 'CustomerID', width: 120, headerText: 'Customer ID' },
+                    ],
+                    
+                }, done);
+        });
+    
+        it('date format check', () => {
+            expect(gridObj.getRows()[0].children[1].innerHTML).toBe('03-07-1996');
+            expect(gridObj.getRows()[0].children[2].innerHTML).toBe('03:07:1996');
+        });
+        afterAll(() => {
+            destroy(gridObj);
+            gridObj = null;
+        });
+    });

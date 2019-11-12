@@ -109,10 +109,14 @@ export class LayerPanel {
         }));
         let eventArgs: ILayerRenderingEventArgs = {
             cancel: false, name: layerRendering, index: layerIndex,
-            layer: layer, maps: this.mapObject
+            layer: layer, maps: this.mapObject, visible: layer.visible
         };
+        if (this.mapObject.isBlazor) {
+            const { maps, layer, ...blazorEventArgs }: ILayerRenderingEventArgs = eventArgs;
+            eventArgs = blazorEventArgs;
+        }
         this.mapObject.trigger('layerRendering', eventArgs, (observedArgs: ILayerRenderingEventArgs) => {
-            if (!eventArgs.cancel) {
+            if (!eventArgs.cancel && eventArgs.visible) {
                 if (layer.layerType !== 'Geometry') {
                     if (layer.layerType !== 'Bing' || this.bing) {
                         this.renderTileLayer(this, layer, layerIndex);
@@ -262,15 +266,23 @@ export class LayerPanel {
             let eventArgs: IShapeRenderingEventArgs = {
                 cancel: false, name: shapeRendering, index: i,
                 data: this.currentLayer.dataSource ? this.currentLayer.dataSource[k] : null,
-                maps: !this.mapObject.isBlazor ? this.mapObject : null,
-                shape: shapeSettings, fill: fill, border: { width: shapeSettings.border.width, color: shapeSettings.border.color }
+                maps: this.mapObject,
+                shape: shapeSettings, fill: fill,
+                border: { width: shapeSettings.border.width, color: shapeSettings.border.color }
             };
+            if (this.mapObject.isBlazor) {
+                const { maps, ...blazorEventArgs }: IShapeRenderingEventArgs = eventArgs;
+                eventArgs = blazorEventArgs;
+            }
              // tslint:disable-next-line:max-func-body-length
-            this.mapObject.trigger('shapeRendering', eventArgs, (shapeArgs: IShapeRenderingEventArgs) => {
+            let shapeRenderingSuccess: Function = (eventArgs: IShapeRenderingEventArgs) => {
                 let drawingType: string = !isNullOrUndefined(currentShapeData['_isMultiPolygon'])
                 ? 'MultiPolygon' : isNullOrUndefined(currentShapeData['type']) ? currentShapeData[0]['type'] : currentShapeData['type'];
-
                 drawingType = (drawingType === 'Polygon' || drawingType === 'MultiPolygon') ? 'Polygon' : drawingType;
+                eventArgs.fill = eventArgs.fill === '#A6A6A6' ? eventArgs.shape.fill : eventArgs.fill;
+                eventArgs.border.color = eventArgs.border.color === '#000000' ? eventArgs.shape.border.color : eventArgs.border.color;
+                eventArgs.border.width = eventArgs.border.width === 0 ? eventArgs.shape.border.width : eventArgs.border.width;
+                this.mapObject.layers[layerIndex].shapeSettings.border = eventArgs.border;
                 if (this.groupElements.length < 1) {
                     groupElement = this.mapObject.renderer.createGroup({
                         id: this.mapObject.element.id + '_LayerIndex_' + layerIndex + '_' + drawingType + '_Group', transform: ''
@@ -350,51 +362,57 @@ export class LayerPanel {
                     pathEle.setAttribute('tabindex', (this.mapObject.tabIndex + i + 2).toString());
                     groupElement.appendChild(pathEle);
                 }
-            });
+                if (i === this.currentLayer.layerData.length - 1) {
+                    let bubbleG: Element;
+                    if (this.currentLayer.bubbleSettings.length && this.mapObject.bubbleModule) {
+                        let length: number = this.currentLayer.bubbleSettings.length;
+                        let bubble: BubbleSettingsModel;
+                        for (let j: number = 0; j < length; j++) {
+                            bubble = this.currentLayer.bubbleSettings[j];
+                            bubbleG = this.mapObject.renderer.createGroup({
+                                id: this.mapObject.element.id + '_LayerIndex_' + layerIndex + '_bubble_Group_' + j
+                            });
+                            let range: {
+                                min: number;
+                                max: number;
+                            } = { min: 0, max: 0 };
+                            this.bubbleCalculation(bubble, range);
+                            bubble.dataSource.map((bubbleData: object, i: number) => {
+                                this.renderBubble(
+                                    this.currentLayer, bubbleData, colors[i % colors.length], range, j, i, bubbleG, layerIndex, bubble);
+                            });
+                            this.groupElements.push(bubbleG);
+                        }
+                    }
+                    let group: Element = (this.mapObject.renderer.createGroup({
+                        id: this.mapObject.element.id + '_LayerIndex_' + layerIndex + '_dataLableIndex_Group',
+                        style: 'pointer-events: none;'
+                    }));
+                    if (this.mapObject.dataLabelModule && this.currentLayer.dataLabelSettings.visible) {
+                        let intersect: object[] = [];
+                        renderData.map((currentShapeData: object[], i: number) => {
+                            this.renderLabel(this.currentLayer, layerIndex, currentShapeData, group, i, labelTemplateEle, intersect);
+                        });
+                        this.groupElements.push(group);
+                    }
+                    if (this.mapObject.navigationLineModule) {
+                        this.groupElements.push(
+                            this.mapObject.navigationLineModule.renderNavigation(this.currentLayer, this.currentFactor, layerIndex)
+                            );
+                    }
+                    this.groupElements.map((element: Element) => {
+                        this.layerObject.appendChild(element);
+                    });
+                    if (this.mapObject.markerModule) {
+                        this.mapObject.markerModule.markerRender(this.layerObject, layerIndex, this.currentFactor, null);
+                    }
+                    this.translateLayerElements(this.layerObject, layerIndex);
+                    this.layerGroup.appendChild(this.layerObject);
+                }
+            };
+            shapeRenderingSuccess.bind(this);
+            this.mapObject.trigger('shapeRendering', eventArgs, shapeRenderingSuccess);
         }
-        let bubbleG: Element;
-        if (this.currentLayer.bubbleSettings.length && this.mapObject.bubbleModule) {
-            let length: number = this.currentLayer.bubbleSettings.length;
-            let bubble: BubbleSettingsModel;
-            for (let j: number = 0; j < length; j++) {
-                bubble = this.currentLayer.bubbleSettings[j];
-                bubbleG = this.mapObject.renderer.createGroup({
-                    id: this.mapObject.element.id + '_LayerIndex_' + layerIndex + '_bubble_Group_' + j
-                });
-                let range: {
-                    min: number;
-                    max: number;
-                } = { min: 0, max: 0 };
-                this.bubbleCalculation(bubble, range);
-                bubble.dataSource.map((bubbleData: object, i: number) => {
-                    this.renderBubble(this.currentLayer, bubbleData, colors[i % colors.length], range, j, i, bubbleG, layerIndex, bubble);
-                });
-                this.groupElements.push(bubbleG);
-            }
-        }
-        let group: Element = (this.mapObject.renderer.createGroup({
-            id: this.mapObject.element.id + '_LayerIndex_' + layerIndex + '_dataLableIndex_Group', style: 'pointer-events: none;'
-        }));
-        if (this.mapObject.dataLabelModule && this.currentLayer.dataLabelSettings.visible) {
-            let intersect: object[] = [];
-            renderData.map((currentShapeData: object[], i: number) => {
-                this.renderLabel(this.currentLayer, layerIndex, currentShapeData, group, i, labelTemplateEle, intersect);
-            });
-            this.groupElements.push(group);
-        }
-        if (this.mapObject.navigationLineModule) {
-            this.groupElements.push(
-                this.mapObject.navigationLineModule.renderNavigation(this.currentLayer, this.currentFactor, layerIndex)
-                );
-        }
-        this.groupElements.map((element: Element) => {
-            this.layerObject.appendChild(element);
-        });
-        if (this.mapObject.markerModule) {
-            this.mapObject.markerModule.markerRender(this.layerObject, layerIndex, this.currentFactor, null);
-        }
-        this.translateLayerElements(this.layerObject, layerIndex);
-        this.layerGroup.appendChild(this.layerObject);
     }
 
     /**

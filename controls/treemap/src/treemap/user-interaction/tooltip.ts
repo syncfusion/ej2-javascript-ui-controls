@@ -150,7 +150,8 @@ export class TreeMapTooltip {
 
     public removeTooltip(): void {
         if (document.getElementsByClassName('EJ2-TreeMap-Tooltip').length > 0) {
-            document.getElementsByClassName('EJ2-TreeMap-Tooltip')[0].remove();
+            let tooltipElementId: Element = document.getElementsByClassName('EJ2-TreeMap-Tooltip')[0];
+            tooltipElementId.parentNode.removeChild(tooltipElementId);
         }
     }
 

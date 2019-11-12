@@ -171,6 +171,20 @@ export class LineBase {
     }
 
     /**
+     * To get first and last visible points
+     * @private
+     */
+    public getFirstLastVisiblePoint(points: Points[]): { first: Points, last: Points} {
+        let first: Points = null; let last: Points = null;
+        for (let point of  points) {
+            if (first === null && point.visible) {
+                first = last = point;
+            }
+            last = point.visible ? point : last;
+        }
+        return {first: first, last: last};
+    }
+    /**
      * To do the linear animation. 
      * @return {void}   
      * @private

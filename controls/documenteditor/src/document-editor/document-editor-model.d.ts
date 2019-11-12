@@ -242,6 +242,12 @@ export interface DocumentEditorModel extends ComponentModel{
     serverActionSettings?: ServerActionSettingsModel;
 
     /**
+     * Add custom headers to XMLHttpRequest.
+     * @default []
+     */
+    headers?: object[];
+
+    /**
      * Triggers whenever document changes in the document editor.
      * @event
      * @blazorproperty 'DocumentChanged'

@@ -335,6 +335,7 @@ export class Draggable extends Base<HTMLElement> implements INotifyPropertyChang
     private dragProcessStarted: boolean = false;
     /* tslint:disable no-any */
     private tapHoldTimer: any = 0;
+    public currentStateTarget: any;
     private externalInitialize: boolean = false;
     private diffY: number = 0;
     private pageY: number;
@@ -425,6 +426,7 @@ export class Draggable extends Base<HTMLElement> implements INotifyPropertyChang
         let horizontalScrollParent: HTMLElement = this.getScrollableParent(this.element.parentNode as HTMLElement, 'horizontal');
     }
     private initialize(evt: MouseEvent & TouchEvent, curTarget?: EventTarget): void {
+        this.currentStateTarget = evt.target;
         if (this.isDragStarted()) {
             return;
         } else {

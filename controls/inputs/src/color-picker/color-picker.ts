@@ -1056,7 +1056,7 @@ export class ColorPicker extends Component<HTMLInputElement> implements INotifyP
         this.trigger('change', {
             currentValue: { hex: hex, rgba: this.convertToRgbString(this.rgb) },
             previousValue: { hex: this.value.slice(0, 7), rgba: this.convertToRgbString(this.hexToRgb(this.value)) },
-            value: value
+            value: this.enableOpacity ? value : hex
         });
         if (this.enableOpacity) {
             this.setProperties({ 'value': value }, true);

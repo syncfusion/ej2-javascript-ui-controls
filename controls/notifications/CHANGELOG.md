@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 17.3.27 (2019-11-12)
+
+### Toast
+
+#### New Features
+
+- `252807` - Provided the support to access the 'dynamic toast model properties passed in the show method', as arguments in the `beforeOpen`, `open` and `close` events.
+
 ## 17.2.48-beta (2019-08-28)
 
 ### Toast

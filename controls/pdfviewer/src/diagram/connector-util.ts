@@ -1,7 +1,7 @@
 import { PdfAnnotationBaseModel } from './pdf-annotation-model';
 // tslint:disable-next-line:max-line-length
 import { PointModel, PathElement, Rect, DrawingElement, Point, Size, RotateTransform, TextElement, randomId, Matrix, identityMatrix, rotateMatrix, transformPointByMatrix, DecoratorShapes, Intersection, Segment, intersect3 } from '@syncfusion/ej2-drawings';
-import { setElementStype, findPointsLength, findPerimeterLength } from './drawing-util';
+import { setElementStype, findPointsLength } from './drawing-util';
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
 import { MeasureAnnotation } from '../pdfviewer';
 
@@ -191,11 +191,12 @@ export function updateRadiusLabel(obj: PdfAnnotationBaseModel, measure: MeasureA
 /**
  * @hidden
  */
-export function initPerimeterLabel(obj: PdfAnnotationBaseModel, points: PointModel[]): TextElement[] {
+export function initPerimeterLabel(obj: PdfAnnotationBaseModel, points: PointModel[], measure: MeasureAnnotation): TextElement[] {
     let labels: TextElement[] = [];
     let textele: TextElement;
     let angle: number = Point.findAngle(points[0], points[1]);
     textele = textElement(obj, angle);
+    textele.content = measure.calculatePerimeter(obj);
     if (obj.enableShapeLabel === true) {
         textele.style.strokeColor = obj.labelBorderColor;
         textele.style.fill = obj.labelFillColor;
@@ -216,7 +217,7 @@ export function updatePerimeterLabel(obj: PdfAnnotationBaseModel, points: PointM
     for (let i: number = 0; i < obj.wrapper.children.length; i++) {
         let textElement: TextElement = (obj.wrapper.children[i] as TextElement);
         if (textElement && !isNullOrUndefined(textElement.content)) {
-            perimeter = measure.setConversion(findPerimeterLength(points), obj);
+            perimeter = measure.calculatePerimeter(obj);
             textElement.content = perimeter;
             textElement.childNodes[0].text = textElement.content;
             textElement.refreshTextElement();
@@ -233,6 +234,22 @@ export function removePerimeterLabel(obj: PdfAnnotationBaseModel): void {
         let textElement: TextElement = (obj.wrapper.children[i] as TextElement);
         if (textElement && !isNullOrUndefined(textElement.content)) {
             obj.wrapper.children.splice(i, 1);
+        }
+    }
+}
+
+/**
+ * @hidden
+ */
+export function updateCalibrateLabel(obj: PdfAnnotationBaseModel): void {
+    if (obj.wrapper && obj.wrapper.children) {
+        for (let i: number = 0; i < obj.wrapper.children.length; i++) {
+            let textElement: TextElement = (obj.wrapper.children[i] as TextElement);
+            if (textElement && !isNullOrUndefined(textElement.content)) {
+                textElement.content = obj.notes;
+                textElement.childNodes[0].text = textElement.content;
+                textElement.refreshTextElement();
+            }
         }
     }
 }

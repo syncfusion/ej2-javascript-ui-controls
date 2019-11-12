@@ -11,7 +11,7 @@ import { Magnification } from './index';
 import { Toolbar } from './index';
 import { ToolbarItem } from './index';
 // tslint:disable-next-line:max-line-length
-import { LinkTarget, InteractionMode, AnnotationType, AnnotationToolbarItem, LineHeadStyle, ContextMenuAction, FontStyle, TextAlignment } from './base/types';
+import { LinkTarget, InteractionMode, AnnotationType, AnnotationToolbarItem, LineHeadStyle, ContextMenuAction, FontStyle, TextAlignment, AnnotationResizerShape, AnnotationResizerLocation } from './base/types';
 import { Annotation } from './index';
 import { LinkAnnotation } from './index';
 import { ThumbnailView } from './index';
@@ -1130,6 +1130,24 @@ export class AnnotationSelectorSettings extends ChildProperty<AnnotationSelector
      */
     @Property(1)
     public selectionBorderThickness: number;
+
+    /**
+     * Specifies the shape of the resizer.
+     */
+    @Property('Square')
+    public resizerShape: AnnotationResizerShape;
+
+    /**
+     * Specifies the border dash array of the selection.
+     */
+    @Property('')
+    public selectorLineDashArray: number[];
+
+    /**
+     * Specifies the location of the resizer.
+     */
+    @Property(AnnotationResizerLocation.Corners | AnnotationResizerLocation.Edges)
+    public resizerLocation: AnnotationResizerLocation;
 }
 
 /**
@@ -1245,6 +1263,12 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
     public get zoomPercentage(): number {
         return this.magnificationModule.zoomFactor * 100;
     }
+
+    /**
+     * Get the Loaded document annotation Collections in the PdfViewer control.
+     */
+    // tslint:disable-next-line
+    public annotationCollection: any = [];
 
     /**
      * Gets or sets the document name loaded in the PdfViewer control.
@@ -1634,7 +1658,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
      * Defines the settings of annotation selector.
      */
     // tslint:disable-next-line:max-line-length
-    @Property({selectionBorderColor: '', resizerBorderColor: 'black', resizerFillColor: '#FF4081', resizerSize: 8, selectionBorderThickness: 1 })
+    @Property({selectionBorderColor: '', resizerBorderColor: 'black', resizerFillColor: '#FF4081', resizerSize: 8, selectionBorderThickness: 1, resizerShape: 'Square', selectorLineDashArray: [], resizerLocation: AnnotationResizerLocation.Corners | AnnotationResizerLocation.Edges })
     public annotationSelectorSettings: AnnotationSelectorSettingsModel;
 
     /**
@@ -2618,9 +2642,10 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
     /**
      * @private
      */
-    public fireAnnotationRemove(pageNumber: number, index: string, type: AnnotationType): void {
+    // tslint:disable-next-line
+    public fireAnnotationRemove(pageNumber: number, index: string, type: AnnotationType, bounds: any): void {
         // tslint:disable-next-line:max-line-length
-        let eventArgs: AnnotationRemoveEventArgs = { name: 'annotationRemove', pageIndex: pageNumber, annotationId: index, annotationType: type };
+        let eventArgs: AnnotationRemoveEventArgs = { name: 'annotationRemove', pageIndex: pageNumber, annotationId: index, annotationType: type, annotationBounds: bounds };
         this.trigger('annotationRemove', eventArgs);
     }
 

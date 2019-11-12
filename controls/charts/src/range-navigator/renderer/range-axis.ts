@@ -99,6 +99,7 @@ export class RangeNavigatorAxis extends DateTime {
         this.placeAxisLabels(axis, pointY, '_AxisLabel_', control, firstLevelElement);
         secondaryAxis.intervalType = secondaryAxis.actualIntervalType = (control.groupBy ||
             this.getSecondaryLabelType(axis.actualIntervalType)) as IntervalType;
+        secondaryAxis.labelFormat = '';
         if (control.enableGrouping && control.valueType === 'DateTime' && this.actualIntervalType !== 'Years') {
             secondaryAxis.visibleRange.interval = 1;
             secondaryAxis.visibleLabels = [];
@@ -136,7 +137,8 @@ export class RangeNavigatorAxis extends DateTime {
      */
     private findAxisLabels(axis: Axis): void {
         axis.visibleLabels = [];
-        let start: Date = new Date(axis.visibleRange.min);
+        let offset: number = this.rangeNavigator.isGMT ? (new Date().getTimezoneOffset() * 60 * 1000) : 0;
+        let start: Date = new Date(axis.visibleRange.min + offset );
         let nextInterval: number;
         let text: string;
         let interval: number = this.rangeNavigator.interval ? this.rangeNavigator.interval : 1;
@@ -177,7 +179,7 @@ export class RangeNavigatorAxis extends DateTime {
                 );
                 break;
         }
-        nextInterval = start.getTime();
+        nextInterval = start.getTime() + offset;
         this.rangeNavigator.format = this.rangeNavigator.intl.getDateFormat({
             format: axis.labelFormat, type: firstToLowerCase(axis.skeletonType), skeleton: this.getSkeleton(axis, null, null)
         });

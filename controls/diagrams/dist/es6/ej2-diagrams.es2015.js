@@ -29559,6 +29559,7 @@ class Diagram extends Component {
         /** @private */
         this.deleteVirtualObject = false;
         this.crudDeleteNodes = [];
+        this.diagramid = 88123;
         /** @private */
         this.selectedObject = { helperObject: undefined, actualObject: undefined };
         this.renderTimer = null;
@@ -29885,6 +29886,10 @@ class Diagram extends Component {
         this.element.classList.add('e-diagram');
     }
     initializePrivateVariables() {
+        if (this.element.id === '') {
+            let collection = document.getElementsByClassName('e-diagram').length;
+            this.element.id = 'chart_' + this.diagramid + '_' + collection;
+        }
         this.defaultLocale = {
             Copy: 'Copy',
             Cut: 'Cut',
@@ -48362,6 +48367,7 @@ class SymbolPalette extends Component {
         this.isExpand = false;
         this.isExpandMode = false;
         this.isMethod = false;
+        this.paletteid = 88123;
         /**
          * helper method for draggable
          * @return {void}
@@ -48511,6 +48517,10 @@ class SymbolPalette extends Component {
      * Initialize nodes, connectors and renderer
      */
     preRender() {
+        if (this.element.id === '') {
+            let collection = document.getElementsByClassName('e-symbolpalette').length;
+            this.element.id = 'symbolpalette_' + this.paletteid + '_' + collection;
+        }
         this.element.style.overflow = 'auto';
         this.element.style.height = this.height.toString();
         this.element.style.width = this.width.toString();
@@ -49700,6 +49710,7 @@ class Overview extends Component {
         this.verticalOffset = 0;
         this.model = {};
         this.event = true;
+        this.overviewid = 88123;
         this.model = { width: this.width, height: this.height };
     }
     /**
@@ -49733,6 +49744,10 @@ class Overview extends Component {
      * Initialize nodes, connectors and renderer
      */
     preRender() {
+        if (this.element.id === '') {
+            let collection = document.getElementsByClassName('e-overview').length;
+            this.element.id = 'overview_' + this.overviewid + '_' + collection;
+        }
         this.element.style.background = 'transparent';
         this.unWireEvents();
         this.wireEvents();

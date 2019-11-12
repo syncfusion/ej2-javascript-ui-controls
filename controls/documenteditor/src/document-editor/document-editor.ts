@@ -427,6 +427,14 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
     // tslint:disable-next-line:max-line-length
     @Property({ systemClipboard: 'SystemClipboard', spellCheck: 'SpellCheck', restrictEditing: 'RestrictEditing' })
     public serverActionSettings: ServerActionSettingsModel;
+
+    /**
+     * Add custom headers to XMLHttpRequest.
+     * @default []
+     */
+    @Property([])
+    public headers: object[];
+
     /**
      * Triggers whenever document changes in the document editor.
      * @event

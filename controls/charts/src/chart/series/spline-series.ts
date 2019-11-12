@@ -57,9 +57,10 @@ export class SplineSeries extends SplineBase {
             }
         }
         if (series.chart.chartAreaType === 'PolarRadar' && series.isClosed) {
+            let connectPoints: {first: Points, last: Points} = this.getFirstLastVisiblePoint(points);
             direction = this.getSplineDirection(
-                series.drawPoints[series.drawPoints.length - 1], points[points.length - 1],
-                {xValue: points.length, yValue: points[0].yValue } as Points,
+                series.drawPoints[series.drawPoints.length - 1], connectPoints.last,
+                {xValue: connectPoints.first.xValue, yValue: connectPoints.first.yValue } as Points,
                 xAxis, yAxis, isInverted,
                 series, startPoint,
                 getCoordinate, direction);

@@ -201,6 +201,11 @@ export interface AnnotationRemoveEventArgs extends BaseEventArgs {
      * Defines the type of the annotation removed from the page of the PDF document.
      */
     annotationType: AnnotationType;
+    /**
+     * Defines the bounds of the annotation removed from the page of the PDF document.
+     */
+    // tslint:disable-next-line
+    annotationBounds: any;
 }
 
 /**

@@ -1661,7 +1661,13 @@ export class StickyNotesAnnotation {
                             this.pdfViewer.select([pageCollections[i].id]);
                             this.pdfViewer.annotation.onAnnotationMouseDown();
                         }
-                        if (type !== 'textMarkup') {
+                        if (type === 'textMarkup') {
+                            // tslint:disable-next-line:max-line-length
+                            let scrollValue: number = this.pdfViewerBase.pageSize[pageNumber - 1].top * this.pdfViewerBase.getZoomFactor() + ((pageCollections[i].rect.top) * this.pdfViewerBase.getZoomFactor());
+                            let scroll: string = (scrollValue - 20).toString();
+                            // tslint:disable-next-line:radix
+                            this.pdfViewerBase.viewerContainer.scrollTop = parseInt(scroll);
+                        } else {
                             // tslint:disable-next-line:max-line-length
                             let scrollValue: number = this.pdfViewerBase.pageSize[pageNumber - 1].top * this.pdfViewerBase.getZoomFactor() + ((pageCollections[i].bounds.top) * this.pdfViewerBase.getZoomFactor());
                             let scroll: string = (scrollValue - 20).toString();

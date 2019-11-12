@@ -30708,6 +30708,7 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
         /** @private */
         _this.deleteVirtualObject = false;
         _this.crudDeleteNodes = [];
+        _this.diagramid = 88123;
         /** @private */
         _this.selectedObject = { helperObject: undefined, actualObject: undefined };
         _this.renderTimer = null;
@@ -31042,6 +31043,10 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
         this.element.classList.add('e-diagram');
     };
     Diagram.prototype.initializePrivateVariables = function () {
+        if (this.element.id === '') {
+            var collection = document.getElementsByClassName('e-diagram').length;
+            this.element.id = 'chart_' + this.diagramid + '_' + collection;
+        }
         this.defaultLocale = {
             Copy: 'Copy',
             Cut: 'Cut',
@@ -49681,6 +49686,7 @@ var SymbolPalette = /** @__PURE__ @class */ (function (_super) {
         _this.isExpand = false;
         _this.isExpandMode = false;
         _this.isMethod = false;
+        _this.paletteid = 88123;
         /**
          * helper method for draggable
          * @return {void}
@@ -49834,6 +49840,10 @@ var SymbolPalette = /** @__PURE__ @class */ (function (_super) {
      */
     SymbolPalette.prototype.preRender = function () {
         var _this = this;
+        if (this.element.id === '') {
+            var collection = document.getElementsByClassName('e-symbolpalette').length;
+            this.element.id = 'symbolpalette_' + this.paletteid + '_' + collection;
+        }
         this.element.style.overflow = 'auto';
         this.element.style.height = this.height.toString();
         this.element.style.width = this.width.toString();
@@ -51046,6 +51056,7 @@ var Overview = /** @__PURE__ @class */ (function (_super) {
         _this.verticalOffset = 0;
         _this.model = {};
         _this.event = true;
+        _this.overviewid = 88123;
         _this.model = { width: _this.width, height: _this.height };
         return _this;
     }
@@ -51081,6 +51092,10 @@ var Overview = /** @__PURE__ @class */ (function (_super) {
      * Initialize nodes, connectors and renderer
      */
     Overview.prototype.preRender = function () {
+        if (this.element.id === '') {
+            var collection = document.getElementsByClassName('e-overview').length;
+            this.element.id = 'overview_' + this.overviewid + '_' + collection;
+        }
         this.element.style.background = 'transparent';
         this.unWireEvents();
         this.wireEvents();

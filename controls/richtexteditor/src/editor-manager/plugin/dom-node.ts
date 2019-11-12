@@ -331,6 +331,7 @@ export class DOMNode {
     }
 
     public ensureSelfClosingTag(start: Element, className: string, range: Range): void {
+        let isTable: boolean = false;
         if (start.nodeType === 3) {
             this.replaceWith(start, this.marker(className, this.encode(start.textContent)));
         } else if (start.tagName === 'BR') {
@@ -344,11 +345,32 @@ export class DOMNode {
                 parNode.appendChild(start);
                 start = parNode.children[0];
             }
-            for (let i: number = 0; i < selfClosingTags.length; i++) {
-                start = start.tagName === selfClosingTags[i] ? start.parentNode as Element : start;
+            if (start.tagName === 'TABLE') {
+                isTable = true;
+                if (start.textContent === '') {
+                    start = start.querySelectorAll('td')[start.querySelectorAll('td').length - 1];
+                    start = !isNullOrUndefined(start.childNodes[0]) ? start.childNodes[0] as Element : start;
+                } else {
+                    let lastNode: Node = start.lastChild;
+                    while (lastNode.nodeType !== 3 && lastNode.nodeName !== '#text') {
+                        lastNode = lastNode.lastChild;
+                    }
+                    start = lastNode as Element;
+                }
             }
-            let marker: string = this.marker(className, '');
-            append([this.parseHTMLFragment(marker)], start);
+            for (let i: number = 0; i < selfClosingTags.length; i++) {
+                start = (start.tagName === selfClosingTags[i] && !isTable) ? start.parentNode as Element : start;
+            }
+            if (start.nodeType === 3 && start.nodeName === '#text') {
+                this.replaceWith(start, this.marker(className, this.encode(start.textContent)));
+            } else if (start.nodeName === 'BR') {
+                this.replaceWith(start, this.marker(markerClassName.endSelection, this.encode(start.textContent)));
+                let markerEnd: Element = (range.endContainer as HTMLElement).querySelector('.' + markerClassName.endSelection);
+                markerEnd.appendChild(start);
+            } else {
+                let marker: string = this.marker(className, '');
+                append([this.parseHTMLFragment(marker)], start);
+            }
         }
     }
 
@@ -454,7 +476,7 @@ export class DOMNode {
                 }
                 parentNode = this.blockParentNode(endNode);
                 if (parentNode && this.ignoreTableTag(parentNode) && collectionNodes.indexOf(parentNode) < 0 &&
-                parentNode.previousElementSibling.tagName !== 'IMG') {
+                (!isNullOrUndefined(parentNode.previousElementSibling) && parentNode.previousElementSibling.tagName !== 'IMG')) {
                     collectionNodes.push(parentNode);
                 }
             }

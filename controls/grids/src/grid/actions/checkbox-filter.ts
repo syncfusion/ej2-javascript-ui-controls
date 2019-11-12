@@ -4,6 +4,7 @@ import * as events from '../base/constant';
 import { ServiceLocator } from '../services/service-locator';
 import { isActionPrevent } from '../base/util';
 import { CheckBoxFilterBase } from '../common/checkbox-filter-base';
+import { IXLFilter } from '../common/filter-interface';
 
 /**
  * @hidden
@@ -20,7 +21,7 @@ export class CheckBoxFilter {
      */
     constructor(parent?: IGrid, filterSettings?: FilterSettings, serviceLocator?: ServiceLocator) {
         this.parent = parent;
-        this.checkBoxBase = new CheckBoxFilterBase(parent, filterSettings);
+        this.checkBoxBase = new CheckBoxFilterBase(parent as IXLFilter);
         this.addEventListener();
     }
 

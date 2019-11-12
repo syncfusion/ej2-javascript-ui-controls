@@ -2,6 +2,17 @@
 
 ## [Unreleased]
 
+## 17.3.27 (2019-11-12)
+
+### Schedule
+
+#### Bug Fixes
+
+- `#253534` - An issue with displaying fractional value in Agenda view for DST time-zones has been fixed.
+- `#253652` - An issue with triggering the `popupClose` event on clicking outside the Scheduler has been fixed.
+- An issue with event height whose duration is less than 30 minutes has been fixed.
+- `#253519` - An issue with events overlapping whose start and end time are same has been fixed.
+
 ## 17.3.19 (2019-10-22)
 
 ### Schedule

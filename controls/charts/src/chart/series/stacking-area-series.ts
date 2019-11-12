@@ -73,7 +73,8 @@ export class StackingAreaSeries extends LineBase {
             }
         }
         if (series.chart.chartAreaType === 'PolarRadar' && visiblePoints.length > 1) {
-            point1 = { 'x': series.points[0].xValue, 'y': stackedvalue.endValues[0] };
+            let connectPoints: { first: Points, last: Points} = this.getFirstLastVisiblePoint(series.points);
+            point1 = { 'x': connectPoints.first.xValue, 'y': stackedvalue.endValues[connectPoints.first.index] };
             point2 = getCoordinate(point1.x, point1.y, xAxis, yAxis, isInverted, series);
             lineDirection += ('L' + ' ' + (point2.x) + ' ' + (point2.y) + ' ');
         }

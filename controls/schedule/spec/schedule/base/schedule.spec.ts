@@ -1067,6 +1067,32 @@ describe('Schedule base module', () => {
         });
     });
 
+    describe('Issue EJ2-30234 exposing getEventMaxID as public', () => {
+        let schObj: Schedule;
+        beforeAll((done: Function): void => {
+            let model: ScheduleModel = {
+                height: '560px', width: '100%',
+                views: ['Day'],
+                selectedDate: new Date(2018, 1, 15),
+                eventSettings: {
+                    dataSource: [{
+                        Id: 1,
+                        Subject: 'Meeting',
+                        StartTime: new Date(2018, 1, 15, 10, 0),
+                        EndTime: new Date(2018, 1, 15, 12, 30)
+                    }]
+                }
+            };
+            schObj = util.createSchedule(model, [], done);
+        });
+        afterAll((): void => {
+            util.destroy(schObj);
+        });
+        it('Checking public method getEventMaxID functionality', () => {
+            expect(schObj.getEventMaxID()).toEqual(2);
+        });
+    });
+
     describe('CR Issue EJ2-28683 recurrence appoinments', () => {
         let schObj: Schedule;
         let timeZone: Timezone = new Timezone();

@@ -312,6 +312,8 @@ describe('Formats plugin', () => {
 
             editorObj.nodeSelection.Clear(document);
         });
+
+        
         afterAll(() => {
             detach(elem);
         });
@@ -469,6 +471,32 @@ describe('Formats plugin', () => {
             expect(end.style.fontSize === '').toBe(true);
             expect(end.style.fontWeight === '').toBe(true);
 
+            editorObj.nodeSelection.Clear(document);
+        });
+        afterAll(() => {
+            detach(elem);
+        });
+    });
+
+    describe(' Header 6 Formats testing', () => {
+        let editorObj: EditorManager;
+        let tableContent: string = `<div style="color:red;" id="content-edit" contenteditable="true" class="e-node-deletable e-node-inner"><p id='p1'>Paragraph 1</p><p id='p2'>Paragraph 2</p><p id='p3'>Paragraph 3</p><table><tbody><tr><td>cell 1 1</td><td>cell 1 2</td></tr><tr><td>cell 2 1</td><td id="lastCell">Cell 2 2</td></tr></tbody></table></div>`;
+        let elem: HTMLElement = createElement('div', {
+            id: 'dom-node', innerHTML: tableContent
+        });
+        beforeAll(() => {
+            document.body.appendChild(elem);
+            editorObj = new EditorManager({ document: document, editableElement: document.getElementById("content-edit") });
+        });
+
+        it('select all with last element as table', () => {
+            let elem: HTMLElement = editorObj.editableElement as HTMLElement;
+            let start: HTMLElement = elem.querySelector('#p1');
+            let end: HTMLElement = elem.querySelector('#lastCell');
+            editorObj.nodeSelection.setSelectionText(document, start.childNodes[0], editorObj.editableElement, 0, 4);
+            editorObj.execCommand("Formats", 'h6', null);
+            expect(window.getSelection().focusNode.textContent === 'Cell 2 2').toBe(true);
+            expect(window.getSelection().focusOffset === 8).toBe(true);
             editorObj.nodeSelection.Clear(document);
         });
         afterAll(() => {

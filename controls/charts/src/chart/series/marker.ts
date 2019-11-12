@@ -95,7 +95,7 @@ export class Marker extends MarkerExplode {
         point.color = argsData.fill;
         if (!argsData.cancel) {
             let y: Object;
-            if (series.type === 'RangeArea' || series.type === 'RangeColumn') {
+            if (series.type === 'RangeArea' || series.type === 'RangeColumn' || series.drawType === 'RangeColumn') {
                 y = index ? point.low : point.high;
             } else if (isBoxPlot) {
                 y = point.outliers[index];

@@ -1349,6 +1349,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
     /** @private */
     public previousSelectedObject: (NodeModel | ConnectorModel)[];
     private crudDeleteNodes: Object[] = [];
+    private diagramid: number = 88123;
     /** @private */
     public selectedObject: { helperObject: NodeModel, actualObject: NodeModel } = { helperObject: undefined, actualObject: undefined };
     /**
@@ -1679,6 +1680,11 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
     }
 
     private initializePrivateVariables(): void {
+        if (this.element.id === '') {
+            let collection: number = document.getElementsByClassName('e-diagram').length;
+            this.element.id = 'chart_' + this.diagramid + '_' + collection;
+        }
+
         this.defaultLocale = {
             Copy: 'Copy',
             Cut: 'Cut',

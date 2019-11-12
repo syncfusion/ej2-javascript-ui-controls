@@ -1,6 +1,6 @@
 import { IGrid } from '../base/interface';
 import { Column } from '../models/column';
-import { isNullOrUndefined, addClass, extend, closest } from '@syncfusion/ej2-base';
+import { isNullOrUndefined, addClass, extend, closest, updateBlazorTemplate } from '@syncfusion/ej2-base';
 import * as events from '../base/constant';
 import { appendChildren } from '../base/util';
 
@@ -37,6 +37,7 @@ export class InlineEditRender {
         }
         this.parent.editSettings.newRowPosition === 'Top' ? tbody.insertBefore(args.row, tbody.firstChild) : tbody.appendChild(args.row);
         args.row.appendChild(this.getEditElement(elements, false, undefined, args, true));
+        this.parent.editModule.checkLastRow(args.row, args);
         if (this.parent.getFrozenColumns()) {
             let mEle: Element = this.renderMovableform(args.row, args);
             if (this.parent.frozenRows && this.parent.editSettings.newRowPosition === 'Top') {
@@ -105,6 +106,7 @@ export class InlineEditRender {
         tdElement = this.updateFreezeEdit(args.row, tdElement);
         args.row.appendChild(this.getEditElement(elements, true, tdElement, args, true));
         args.row.classList.add('e-editedrow');
+        this.parent.editModule.checkLastRow(args.row, args);
         this.refreshFreezeEdit(args.row, args);
     }
 
@@ -234,6 +236,8 @@ export class InlineEditRender {
 
     private appendChildren(form: Element, data: Object, isFrozen: boolean): void {
         let dummyData: Object = extend({}, data, {isAdd: !this.isEdit, isFrozen: isFrozen}, true);
-        appendChildren(form, this.parent.getEditTemplate()(dummyData, this.parent, 'editSettingsTemplate'));
+        let editTemplateID: string = this.parent.element.id + 'editSettingsTemplate';
+        appendChildren(form, this.parent.getEditTemplate()(dummyData, this.parent, 'editSettingsTemplate', editTemplateID));
+        updateBlazorTemplate(editTemplateID, 'Template', this.parent.editSettings);
     }
 }

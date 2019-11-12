@@ -203,9 +203,9 @@ export class DataLabel {
                 this.value[index] = { rightWidth: xpositionEnds, leftWidth: xpositionStart, heightTop: start, heightBottom: end };
                 let labelElement: HTMLElement;
                 if (eventargs.template !== '') {
-                    let blazor: string = 'Blazor';
                     templateFn = getTemplateFunction(eventargs.template);
-                    let templateElement: Element = templateFn ? templateFn(!window[blazor] ? this.maps : {}, null, null, this.maps.element.id) : document.createElement('div');
+                    let templateElement: Element = templateFn ? templateFn(!isNullOrUndefined(datasrcObj) ?
+                        datasrcObj : shapeData['properties'], null, null, this.maps.element.id + '_LabelTemplate', false) : document.createElement('div');
                     templateElement.innerHTML =  !templateFn ? eventargs.template : ''; 
                     labelElement = <HTMLElement>convertElementFromLabel(
                         templateElement, labelId, !isNullOrUndefined(datasrcObj) ? datasrcObj : shapeData['properties'], index, this.maps);

@@ -68,11 +68,7 @@ $ddl-bigger-small-list-font-size: 14px !default;
           border-color: $border-fg;
         }
       }.e-bigger & {
-        &.e-ddl-device {
-          .e-input-group {
-            margin: 0 0 0 55px;
-          }
-        }&.e-ddl-device-filter {
+        &.e-ddl-device.e-ddl-device-filter {
           margin-top: 0;
         }& .e-list-item,
         & .e-list-group-item,
@@ -95,7 +91,7 @@ $ddl-bigger-small-list-font-size: 14px !default;
 
         & .e-input-group {
           & input {
-            height: 30px;
+            height: 46px;
           }
         }
         }

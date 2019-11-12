@@ -1,4 +1,5 @@
-import { createElement, attributes, addClass, removeClass, detach, classList, closest, isNullOrUndefined } from '@syncfusion/ej2-base';
+import { createElement, attributes, addClass, removeClass, detach, classList } from '@syncfusion/ej2-base';
+import { closest, formatUnit, isNullOrUndefined } from '@syncfusion/ej2-base';
 const CLASSNAMES: ClassNames = {
     RTL: 'e-rtl',
     DISABLE: 'e-disabled',
@@ -365,6 +366,23 @@ export namespace Input {
             addClass(elements, cssClass.split(' '));
         }
     }
+
+   /**
+    * Set the width to the wrapper of input element.
+    * ```
+    * E.g : Input.setWidth('200px', container);
+    * ```
+    * @param width - Width value which is need to add.
+    * @param container - The element on which the width is need to add.
+    */
+    export function setWidth(width: number | string, container: HTMLElement): void {
+        if (typeof width === 'number') {
+            container.style.width = formatUnit(width);
+        } else if (typeof width === 'string') {
+            container.style.width = (width.match(/px|%|em/)) ? <string>(width) : <string>(formatUnit(width));
+        }
+    }
+
    /**
     * Set the placeholder attribute to the input element.
     * ```

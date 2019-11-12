@@ -1,5 +1,5 @@
 import { L10n, NumberFormatOptions } from '@syncfusion/ej2-base';
-import { remove, resetBlazorTemplate, blazorTemplates, isBlazor } from '@syncfusion/ej2-base';
+import { remove, resetBlazorTemplate, updateBlazorTemplate, blazorTemplates, isBlazor } from '@syncfusion/ej2-base';
 import { isNullOrUndefined, extend, DateFormatOptions } from '@syncfusion/ej2-base';
 import { DataManager, Group, Query, Deferred, Predicate, DataUtil } from '@syncfusion/ej2-data';
 import { IGrid, NotifyArgs, IValueFormatter } from '../base/interface';
@@ -139,6 +139,9 @@ export class Render {
         }
         if (gObj.toolbarTemplate) {
             resetBlazorTemplate(gObj.element.id + 'toolbarTemplate', 'ToolbarTemplate');
+        }
+        if (gObj.pageSettings.template) {
+            resetBlazorTemplate(gObj.element.id + '_template', 'pageSettings');
         }
         for (let i: number = 0; i < gridColumns.length; i++) {
             if (gridColumns[i].template) {
@@ -370,6 +373,23 @@ export class Render {
             this.parent.isEdit = false;
             this.parent.notify(events.tooltipDestroy, {});
             gObj.currentViewData = <Object[]>dataArgs.result;
+            if (isBlazor() && gObj.filterSettings.type === 'FilterBar' && args.requestType === 'filtering' && !dataArgs.result.length) {
+                let gridColumns: Column[] = gObj.getColumns();
+                for (let i: number = 0; i < gridColumns.length; i++) {
+                    if (gridColumns[i].filterTemplate) {
+                        let tempID: string = gObj.element.id + gridColumns[i].uid + 'filterTemplate';
+                        resetBlazorTemplate(tempID, 'FilterTemplate');
+                        let fieldName: string = gridColumns[i].field;
+                        let filteredColumns: PredicateModel[] = gObj.filterSettings.columns;
+                        for (let k: number = 0; k < filteredColumns.length; k++) {
+                            if (fieldName === filteredColumns[k].field) {
+                                blazorTemplates[tempID][0][fieldName] = filteredColumns[k].value;
+                            }
+                        }
+                        updateBlazorTemplate(tempID, 'FilterTemplate', gridColumns[i], false);
+                    }
+                }
+            }
             if (!len && dataArgs.count && gObj.allowPaging && args && args.requestType !== 'delete' as Action) {
                 gObj.prevPageMoving = true;
                 gObj.pageSettings.totalRecordsCount = dataArgs.count;

@@ -17,15 +17,15 @@ import { CellDeselectEventArgs, CellSelectEventArgs, CellSelectingEventArgs, Par
 import { PdfQueryCellInfoEventArgs, ExcelQueryCellInfoEventArgs, ExcelExportProperties, PdfExportProperties } from './interface';
 import { PdfHeaderQueryCellInfoEventArgs, ExcelHeaderQueryCellInfoEventArgs, ExportDetailDataBoundEventArgs } from './interface';
 import { ColumnMenuOpenEventArgs, BatchCancelArgs, RecordDoubleClickEventArgs, DataResult, PendingState } from './interface';
-import { HeaderCellInfoEventArgs, KeyboardEventArgs} from './interface';
+import { HeaderCellInfoEventArgs, KeyboardEventArgs } from './interface';
 import { FailureEventArgs, FilterEventArgs, ColumnDragEventArgs, GroupEventArgs, PrintEventArgs, ICustomOptr } from './interface';
 import { RowDeselectEventArgs, RowSelectEventArgs, RowSelectingEventArgs, PageEventArgs, RowDragEventArgs } from './interface';
 import { BeforeBatchAddArgs, BeforeBatchDeleteArgs, BeforeBatchSaveArgs, ResizeArgs, ColumnMenuItemModel, NotifyArgs } from './interface';
 import { BatchAddArgs, BatchDeleteArgs, BeginEditArgs, CellEditArgs, CellSaveArgs, BeforeDataBoundArgs, RowInfo } from './interface';
 import { DetailDataBoundEventArgs, ColumnChooserEventArgs, AddEventArgs, SaveEventArgs, EditEventArgs, DeleteEventArgs } from './interface';
 import { ExcelExportCompleteArgs, PdfExportCompleteArgs, DataStateChangeEventArgs, DataSourceChangedEventArgs } from './interface';
-import { SearchEventArgs, SortEventArgs, ISelectedCell, EJ2Intance, BeforeCopyEventArgs} from './interface';
-import {BeforePasteEventArgs, CheckBoxChangeEventArgs, CommandClickEventArgs } from './interface';
+import { SearchEventArgs, SortEventArgs, ISelectedCell, EJ2Intance, BeforeCopyEventArgs } from './interface';
+import { BeforePasteEventArgs, CheckBoxChangeEventArgs, CommandClickEventArgs } from './interface';
 import { Render } from '../renderer/render';
 import { Column, ColumnModel, ActionEventArgs } from '../models/column';
 import { Action, SelectionType, GridLine, RenderType, SortDirection, SelectionMode, PrintMode, FilterType, FilterBarMode } from './enum';
@@ -699,7 +699,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     private mediaCol: Column[];
     private getShowHideService: ShowHide;
     private mediaColumn: Column[];
-    private media: {[key: string]: MediaQueryList} = {};
+    private media: { [key: string]: MediaQueryList } = {};
     /** @hidden */
     public invokedFromMedia: boolean;
     private dataBoundFunction: Function;
@@ -767,6 +767,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     public pageTemplateChange: boolean = false;
     /** @hidden */
     public isAutoGen: boolean = false;
+    private mediaBindInstance: Function[] = [];
 
     //Module Declarations
     /**
@@ -2336,7 +2337,8 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
         this.mediaCol.push(col);
         this.media[col.uid] = window.matchMedia(col.hideAtMedia);
         this.mediaQueryUpdate(index, this.media[col.uid]);
-        this.media[col.uid].addListener(this.mediaQueryUpdate.bind(this, index));
+        this.mediaBindInstance.push(this.mediaQueryUpdate.bind(this, index));
+        this.media[col.uid].addListener(this.mediaBindInstance[index] as null);
     }
 
     /**
@@ -2347,7 +2349,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
             let index: number = this.getColumnIndexByUid(col.uid);
             for (let i: number = 0; i < this.mediaCol.length; i++) {
                 if (col.uid === this.mediaCol[i].uid) {
-                    this.mediaCol.splice(i , 1);
+                    this.mediaCol.splice(i, 1);
                     return;
                 }
             }
@@ -2385,6 +2387,12 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
         }
     }
 
+    private removeMediaListener(): void {
+        for (let i: number = 0; i < this.mediaCol.length; i++) {
+            this.media[this.mediaCol[i].uid].removeListener(this.mediaBindInstance[i] as null);
+        }
+    }
+
     /**
      * For internal use only - Initialize the event handler
      * @private
@@ -2405,6 +2413,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
             gridElement.querySelector('.e-gridcontent') ? true : false;
         if (hasGridChild) { this.unwireEvents(); }
         this.removeListener();
+        this.removeMediaListener();
         this.notify(events.destroy, {});
         this.destroyDependentModules();
         if (hasGridChild) { super.destroy(); }
@@ -2668,7 +2677,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
                     this.selectRow(newProp.selectedRowIndex);
                 }
                 this.isSelectedRowIndexUpdating = false; break;
-   
+
         }
     }
 
@@ -2699,7 +2708,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     public updateDefaultCursor(): void {
         let headerCells: Element[] = [].slice.call(this.getHeaderContent().querySelectorAll('.e-headercell:not(.e-stackedheadercell)'));
         let stdHdrCell: Element[] = [].slice.call(this.getHeaderContent().querySelectorAll('.e-stackedheadercell'));
-        let cols: Column[] =  this.getColumns();
+        let cols: Column[] = this.getColumns();
         for (let i: number = 0; i < headerCells.length; i++) {
             let cell: Element = headerCells[i];
             if (this.allowGrouping || this.allowReordering || this.allowSorting) {
@@ -2714,7 +2723,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
             if (this.allowReordering) {
                 stdHdrCell[count].classList.add('e-mousepointer');
             }
-        }   
+        }
     }
 
     private updateColumnModel(columns: Column[]): void {
@@ -3384,7 +3393,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
         if (this.isDetail()) {
             index++;
         }
-        if (this.allowRowDragAndDrop && isNullOrUndefined(this.rowDropSettings.targetID) && this.allowResizing){
+        if (this.allowRowDragAndDrop && isNullOrUndefined(this.rowDropSettings.targetID) && this.allowResizing) {
             index++;
         }
         /**
@@ -4291,7 +4300,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
         if (this.isEllipsisTooltip()) {
             let element: HTMLElement = parentsUntil((e.target as Element), 'e-ellipsistooltip') as HTMLElement;
             if (this.prevElement !== element || e.type === 'mouseout') {
-            this.toolTipObj.close();
+                this.toolTipObj.close();
             }
             let tagName: string = (e.target as Element).tagName;
             let elemNames: string[] = ['A', 'BUTTON', 'INPUT'];
@@ -4395,7 +4404,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
         EventHandler.remove(this.getContent().firstElementChild, 'scroll', this.scrollHandler);
         EventHandler.remove(this.element, 'mousemove', this.mouseMoveHandler);
         EventHandler.remove(this.element, 'mouseout', this.mouseMoveHandler);
-        EventHandler.remove(this.element,'keydown',this.keyPressHandler);
+        EventHandler.remove(this.element, 'keydown', this.keyPressHandler);
         EventHandler.remove(this.getContent(), 'touchstart', this.tapEvent);
     }
     /**
@@ -4426,6 +4435,9 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
 
     private blazorTemplate(): void {
         if (isBlazor()) {
+            if (this.pageSettings.template) {
+                updateBlazorTemplate(this.element.id + "_template", 'Template', this.pageSettings);
+            }
             for (let i: number = 0; i < this.columnModel.length; i++) {
 
                 if (this.columnModel[i].template) {
@@ -4639,7 +4651,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
             e.stopImmediatePropagation();
         }
     }
-     
+
     private keyActionHandler(e: KeyArg): void {
         this.keyPress = e.action !== 'space';
         if (this.isChildGrid(e) ||
@@ -4692,6 +4704,10 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     public refreshColumns(): void {
         let fCnt: Element = this.getContent().querySelector('.e-frozencontent');
         if ((this.getFrozenColumns() === 1 && !fCnt) || (this.getFrozenColumns() === 0 && fCnt)) {
+            if (this.enableColumnVirtualization) {
+                this.columnModel = [];
+                this.updateColumnModel(this.columns as Column[]);
+            }
             this.freezeRefresh();
         } else {
             this.isPreventScrollEvent = true;
@@ -4937,15 +4953,6 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
         this.loggerModule ? this.loggerModule.log(type, args) : (() => 0)();
     }
 
-    /**
-     * @hidden
-     */
-    public applyBiggerTheme(element:Element) :void{
-        if(this.element.classList.contains('e-bigger')) {      
-          element.classList.add('e-bigger');
-        }
-    }
-
     /** 
      * @hidden
      */
@@ -4988,12 +4995,12 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
         }
         return -1;
     };
-     /** 
-     * @hidden
-     */
+    /** 
+    * @hidden
+    */
     // Need to have all columns while filtering with ColumnVirtualization.
     public grabColumnByFieldFromAllCols(field: string): Column {
-        let column : Column;
+        let column: Column;
         this.columnModel = [];
         this.updateColumnModel(this.columns as Column[]);
         this.columnModel.forEach((gCol: Column) => {
@@ -5003,12 +5010,12 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
         });
         return column;
     }
-     /** 
-     * @hidden
-     */
-     // Need to have all columns while filtering with ColumnVirtualization.
+    /** 
+    * @hidden
+    */
+    // Need to have all columns while filtering with ColumnVirtualization.
     public grabColumnByUidFromAllCols(uid: string): Column {
-        let column : Column;
+        let column: Column;
         this.columnModel = [];
         this.updateColumnModel(this.columns as Column[]);
         this.columnModel.forEach((gCol: Column) => {
@@ -5027,8 +5034,8 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     /** 
      * @hidden
      */
-     // Need to have all columns while filtering with ColumnVirtualization.
-     public tapEvent(e: TouchEventArgs){
+    // Need to have all columns while filtering with ColumnVirtualization.
+    public tapEvent(e: TouchEventArgs) {
         if (this.getUserAgent()) {
             if (!Global.timer) {
                 Global.timer = (setTimeout(
@@ -5043,5 +5050,33 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
                 this.notify(events.doubleTap, e);
             }
         }
-     }
+    }
+
+    /** 
+     * @hidden
+     */
+    public getMovableVirtualContent(): Element {
+        return this.getContent().querySelector('.e-movablecontent');
+    }
+
+    /** 
+     * @hidden
+     */
+    public getFrozenVirtualContent(): Element {
+        return this.getContent().querySelector('.e-frozencontent');
+    }
+
+    /** 
+     * @hidden
+     */
+    public getMovableVirtualHeader(): Element {
+        return this.getHeaderContent().querySelector('.e-movableheader');
+    }
+
+    /** 
+     * @hidden
+     */
+    public getFrozenVirtualHeader(): Element {
+        return this.getHeaderContent().querySelector('.e-frozenheader');
+    }
 }

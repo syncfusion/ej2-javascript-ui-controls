@@ -213,7 +213,6 @@ export interface MapsModel extends ComponentModel{
     /**
      * Triggers before the maps layer rendered.
      * @event
-     * @deprecated
      * @blazorProperty 'LayerRendering'
      */
     layerRendering?: EmitType<ILayerRenderingEventArgs>;
@@ -221,7 +220,6 @@ export interface MapsModel extends ComponentModel{
     /**
      * Triggers before the maps shape rendered.
      * @event
-     * @deprecated
      * @blazorProperty 'ShapeRendering'
      */
     shapeRendering?: EmitType<IShapeRenderingEventArgs>;

@@ -108,4 +108,10 @@ export interface DocumentEditorContainerModel extends ComponentModel{
     // tslint:disable-next-line:max-line-length
     serverActionSettings?: ContainerServerActionSettingsModel;
 
+    /**
+     * Add custom headers to XMLHttpRequest.
+     * @default []
+     */
+    headers?: object[];
+
 }

@@ -147,9 +147,10 @@ function getDateCount(startDate: Date, ruleObject: RecRule): Number {
     } else if (ruleObject.until) {
         if (ruleObject.freq === 'DAILY' || ruleObject.freq === 'WEEKLY') {
             count = Math.floor((ruleObject.until.getTime() - startDate.getTime()) / MS_PER_DAY) + 1;
-        } else if ((ruleObject.freq === 'MONTHLY' || ruleObject.freq === 'YEARLY') && ruleObject.day.length === 0) {
+        } else if (ruleObject.freq === 'MONTHLY' || ruleObject.freq === 'YEARLY') {
             count = Math.floor(((ruleObject.until.getMonth() + 12 * ruleObject.until.getFullYear()) -
-                (startDate.getMonth() + 12 * startDate.getFullYear())) / ruleObject.interval) + 1;
+                (startDate.getMonth() + 12 * startDate.getFullYear())) / ruleObject.interval) +
+                (ruleObject.day.length > 1 ? (Math.floor((ruleObject.until.getTime() - startDate.getTime()) / MS_PER_DAY) + 1) : 1);
             if (ruleObject.freq === 'YEARLY') {
                 count = ruleObject.month.length > 1 ? ((count as number) * ruleObject.month.length) : count;
             }

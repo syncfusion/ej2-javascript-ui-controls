@@ -586,8 +586,7 @@ export class ListBox extends DropDownBase {
         let getArgs: Object = this.getDragArgs({ target: args.droppedElement } as DragEventArgs & BlazorDragEventArgs, true);
         let sourceArgs: Object = { previousData: this.dataSource };
         let destArgs: Object = { previousData: listObj.dataSource };
-        let dragArgs: Object = extend({}, getArgs, { target: args.target, source: { previousData: this.dataSource },
-            targetId: listObj.element.id });
+        let dragArgs: Object = extend({}, getArgs, { target: args.target, source: { previousData: this.dataSource } });
         if (listObj !== this) {
         let sourceArgs1: Object = extend( sourceArgs, {currentData: this.listData});
         dragArgs = extend(dragArgs, { source: sourceArgs1, destination: destArgs} );
@@ -1899,7 +1898,6 @@ export interface DragEventArgs {
     target?: Element;
     dragSelected?: boolean;
     previousItem?: object[];
-    targetId?: string;
     source?: SourceDestinationModel;
     destination?: SourceDestinationModel;
 }

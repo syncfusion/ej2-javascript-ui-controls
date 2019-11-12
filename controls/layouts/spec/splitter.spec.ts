@@ -3358,6 +3358,59 @@ describe('Splitter Control', () => {
                 expect(splitterObj.element.querySelectorAll('.e-pane')[2].innerHTML).toEqual('');
             });
         });
+
+
+        describe('PaneSettings content as selectors', () => {
+            let splitterObj: any;
+            beforeAll((): void => {
+            let element: HTMLElement = createElement('div', { id: 'default' });
+            document.body.appendChild(element);
+            let child1: HTMLElement = createElement('div', { id: 'splitterid1', styles: 'display:none' });
+            child1.innerHTML = 'Content from splitter id 1'
+            document.body.appendChild(child1);
+            let child2: HTMLElement = createElement('div', { className: 'splitterClass1', styles: 'display:none' });
+            child2.innerHTML = 'Content from splitter Class 1'
+            document.body.appendChild(child2);
+            let child3: HTMLElement = createElement('div', { id: 'emptyElement', styles: 'display:none' });
+            child3.innerHTML = 'Content from splitter emptyElement'
+            document.body.appendChild(child3);
+            let child4: HTMLElement = createElement('div', { className: 'splitterClassWithMultipleElement', styles: 'display:none' });
+            child4.innerHTML = 'Content from splitter Class With MultipleElement 1'
+            document.body.appendChild(child4);
+            let child5: HTMLElement = createElement('div', { className: 'splitterClassWithMultipleElement', styles: 'display:none' });
+            child5.innerHTML = 'Content from splitter Class With MultipleElement 2'
+            document.body.appendChild(child5);          
+            splitterObj = new Splitter(
+                { height: '400px', width: '400px', 
+                    paneSettings: [
+                        {content: '#splitterid1'},
+                        {content: '.splitterClass1'},
+                        {content: '#splitterIdWitOutElement'},
+                        {content: '.splitterClassWithOutElement'},
+                        {content: '.splitterClassWithMultipleElement'},
+                    ]
+                });
+            splitterObj.appendTo(document.getElementById('default'));
+            });
+            afterAll((): void => {
+                splitterObj.destroy();
+            });
+            it('Selector testing appends element to splitter testing', () => {
+                expect(splitterObj.element.querySelectorAll('.e-pane')[0].innerHTML).toEqual('<div id="splitterid1">Content from splitter id 1</div>');
+                expect(splitterObj.element.querySelectorAll('.e-pane')[1].innerHTML).toEqual('<div class="splitterClass1">Content from splitter Class 1</div>');
+                expect(splitterObj.element.querySelectorAll('.e-pane')[2].innerHTML).toEqual('#splitterIdWitOutElement');
+                expect(splitterObj.element.querySelectorAll('.e-pane')[3].innerHTML).toEqual('.splitterClassWithOutElement');
+                expect(splitterObj.element.querySelectorAll('.e-pane')[4].innerHTML).toEqual('<div class="splitterClassWithMultipleElement">Content from splitter Class With MultipleElement 1</div>');
+            });
+            it('Destory method restores element testing', () => {
+                splitterObj.destroy();
+                expect(document.getElementById('splitterid1').parentElement.tagName === 'BODY').toBe(true);
+                expect(document.querySelector('.splitterClass1').parentElement.tagName === 'BODY').toBe(true);
+                expect(document.querySelector('.splitterClass1').parentElement.tagName === 'BODY').toBe(true);
+                expect(document.querySelectorAll('.splitterClassWithMultipleElement')[1].innerHTML === 'Content from splitter Class With MultipleElement 1').toBe(true);
+            });
+        });
+        
         // destroy method when calling more than once
         describe('Destroy method', () => {
             let splitterObj: any;
@@ -3847,4 +3900,106 @@ describe('Splitter Control', () => {
             expect(splitterObj.allPanes[2].classList.contains('e-pane-hidden')).toBe(true);
         });
     });
+
+    describe('Refresh method', () => {
+        let splitterObj: any;
+        beforeAll((): void => {
+        let element: HTMLElement = createElement('div', { id: 'default'});
+        let child1: HTMLElement = createElement('div');
+        let child2: HTMLElement = createElement('div');
+        element.appendChild(child1);
+        element.appendChild(child2);
+        document.body.appendChild(element);
+        splitterObj = new Splitter({ height: '400px', separatorSize: 10, width: '400px', paneSettings: [{ size: '50%' }, {}]});
+        splitterObj.appendTo(document.getElementById('default'));
+        });
+        afterAll((): void => {
+        document.body.innerHTML = '';
+        });
+        it('test', () => {
+            splitterObj.refresh();
+            expect(splitterObj.element.classList.contains('e-control')).toEqual(true);
+        });
+    });
+
+    describe('Check expand and collapse arrow', () => {
+        let splitterObj: any;
+        beforeAll((): void => {
+        let element: HTMLElement = createElement('div', { id: 'default'});
+        let child1: HTMLElement = createElement('div');
+        let child2: HTMLElement = createElement('div');
+        let child3: HTMLElement = createElement('div');
+        element.appendChild(child1);
+        element.appendChild(child2);
+        element.appendChild(child3);
+        document.body.appendChild(element);
+        splitterObj = new Splitter({ height: '400px', width: '400px', paneSettings: [{ size: '50%', collapsible: true, collapsed: false }, { size: '50%', collapsible: false, collapsed: true }, { collapsible: true, collapsed: false }] });
+        splitterObj.appendTo(document.getElementById('default'));
+        });
+        afterAll((): void => {
+        document.body.innerHTML = '';
+        });
+        it('Check arrow icons in collapsed mode', () => {
+        (document.querySelectorAll('.e-navigate-arrow.e-arrow-left')[1] as HTMLElement).click();
+        (document.querySelectorAll('.e-navigate-arrow.e-arrow-left')[0] as HTMLElement).click();
+        
+        });
+        });
+        describe('Collapse last two panes', () => {
+            let splitterObj: any;
+            beforeAll((): void => {
+            let element: HTMLElement = createElement('div', { id: 'default'});
+            let child1: HTMLElement = createElement('div');
+            let child2: HTMLElement = createElement('div');
+            let child3: HTMLElement = createElement('div');
+            element.appendChild(child1);
+            element.appendChild(child2);
+            element.appendChild(child3);
+            document.body.appendChild(element);
+            splitterObj = new Splitter({ height: '400px', width: '400px', paneSettings: [{ size: '50%', collapsible: true, collapsed: false }, { size: '50%', collapsible: false, collapsed: true }, { collapsible: true, collapsed: false }] });
+            splitterObj.appendTo(document.getElementById('default'));
+            });
+            afterAll((): void => {
+            document.body.innerHTML = '';
+            });
+            it('Check collapsed class on last two pane', function() {
+                expect(splitterObj.allPanes.length).toBe(3);
+                expect(splitterObj.allPanes[0].classList.contains('e-collapsed')).toBe(false);
+                expect(splitterObj.allPanes[0].classList.contains('e-pane-hidden')).toBe(false);
+                expect(splitterObj.allPanes[1].classList.contains('e-collapsed')).toBe(true);
+                expect(splitterObj.allPanes[1].classList.contains('e-pane-hidden')).toBe(true);
+                expect(splitterObj.allPanes[2].classList.contains('e-collapsed')).toBe(false);
+                expect(splitterObj.allPanes[2].classList.contains('e-pane-hidden')).toBe(false);
+                expect(splitterObj.allBars[0].querySelector('.e-arrow-left').classList.contains('e-icon-hidden')).toBe(true);
+                expect(splitterObj.allBars[0].querySelector('.e-arrow-right').classList.contains('e-icon-hidden')).toBe(true);
+                expect(splitterObj.allBars[1].querySelector('.e-arrow-left').classList.contains('e-icon-hidden')).toBe(true);
+                expect(splitterObj.allBars[1].querySelector('.e-arrow-right').classList.contains('e-icon-hidden')).toBe(true);
+            });
+        });
+
+        describe('Expand and Collapse', () => {
+            let splitterObj: any;
+            beforeAll((): void => {
+            let element: HTMLElement = createElement('div', { id: 'default'});
+            let child1: HTMLElement = createElement('div');
+            let child2: HTMLElement = createElement('div');
+            let child3: HTMLElement = createElement('div');
+            element.appendChild(child1);
+            element.appendChild(child2);
+            element.appendChild(child3);
+            document.body.appendChild(element);
+            splitterObj = new Splitter({ height: '400px', width: '400px', paneSettings: [{ size: '50%', collapsed: false }, { size: '50%', collapsed: true }, { collapsed: true }] });
+            splitterObj.appendTo(document.getElementById('default'));
+            });
+            afterAll((): void => {
+            document.body.innerHTML = '';
+            });
+            it('collapsible false for 1st pane', function() {
+                expect(splitterObj.allPanes.length).toBe(3);
+                expect(splitterObj.allPanes[1].classList.contains('e-collapsed')).toBe(true);
+                expect(splitterObj.allPanes[1].classList.contains('e-pane-hidden')).toBe(true);
+                expect(splitterObj.allPanes[2].classList.contains('e-collapsed')).toBe(true);
+                expect(splitterObj.allPanes[2].classList.contains('e-pane-hidden')).toBe(true);
+            });
+        });
  });

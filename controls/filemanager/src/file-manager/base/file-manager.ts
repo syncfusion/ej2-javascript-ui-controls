@@ -19,7 +19,7 @@ import * as events from './constant';
 import * as CLS from './classes';
 import { read, filter, createFolder } from '../common/operations';
 import { FileManagerModel } from './file-manager-model';
-import { ITreeView, IContextMenu, ViewType, SortOrder, FileDragEventArgs, RetryArgs, ReadArgs } from './interface';
+import { ITreeView, IContextMenu, ViewType, SortOrder, FileDragEventArgs, RetryArgs, ReadArgs, FileSelectionEventArgs } from './interface';
 import { BeforeSendEventArgs, SuccessEventArgs, FailureEventArgs, FileLoadEventArgs } from './interface';
 import { FileOpenEventArgs, FileSelectEventArgs, MenuClickEventArgs, MenuOpenEventArgs } from './interface';
 import { ToolbarClickEventArgs, ToolbarCreateEventArgs, UploadListCreateArgs } from './interface';
@@ -414,6 +414,14 @@ export class FileManager extends Component<HTMLElement> implements INotifyProper
      */
     @Event()
     public fileDropped: EmitType<FileDragEventArgs>;
+
+    /**
+     * Triggers before the file/folder is selected.
+     * @event
+     * @blazorproperty 'FileSelection'
+     */
+    @Event()
+    public fileSelection: EmitType<FileSelectionEventArgs>;
 
     /**
      * Triggers when the file/folder is selected/unselected.

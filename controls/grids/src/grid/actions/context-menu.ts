@@ -9,7 +9,7 @@ import * as events from '../base/constant';
 import { SortDescriptorModel } from '../base/grid-model';
 import { Resize } from '../actions/resize';
 import { Page } from '../actions/page';
-import { parentsUntil } from '../base/util';
+import { parentsUntil, applyBiggerTheme } from '../base/util';
 import { Group } from '../actions/group';
 import { Sort } from '../actions/sort';
 import { PdfExport } from '../actions/pdf-export';
@@ -366,7 +366,7 @@ export class ContextMenu implements IAction {
                 args.cancel = true;
             }
         }
-        this.parent.applyBiggerTheme(this.contextMenu.element.parentElement);
+        applyBiggerTheme(this.parent.element, this.contextMenu.element.parentElement);
     }
 
     private ensureTarget(targetElement: HTMLElement, selector: string): boolean {

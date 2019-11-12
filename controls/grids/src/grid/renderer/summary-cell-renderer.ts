@@ -32,6 +32,16 @@ export class SummaryCellRenderer extends CellRenderer implements ICellRenderer<A
         }
         let tempObj: { fn: Function, property: string } = column.getTemplate(cell.cellType);
         let tempID: string = '';
+        let gColumn: Column = this.parent.getColumnByField(data[column.columnName].field);
+        if (!isNullOrUndefined(gColumn)) {
+            data[column.columnName].headerText = gColumn.headerText;
+            if (gColumn.isForeignColumn()) {
+                let fData: object = gColumn.columnData.filter((e: object) => {
+                    return e[data[column.columnName].field] === data[column.columnName].key;
+                })[0];
+                data[column.columnName].foreignKey = fData[gColumn.foreignKeyValue];
+            }
+        }
         if (isBlazor()) {
             let guid: string = 'guid';
             tempID = this.parent.element.id + column[guid] + tempObj.property;

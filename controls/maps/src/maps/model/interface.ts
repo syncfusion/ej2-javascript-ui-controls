@@ -256,8 +256,13 @@ export interface ILayerRenderingEventArgs extends IMapsEventArgs {
     maps?: Maps;
     /**
      * layer options event argument
+     * @deprecated
      */
     layer?: LayerSettingsModel;
+    /**
+     * visibility of layer
+     */
+    visible?: boolean;
 }
 
 /**
@@ -686,4 +691,22 @@ export interface IThemeStyle {
     tooltipTextOpacity?: number;
     legendFontSize?: string;
     labelFontFamily?: string;
+}
+
+/**
+ * It defines values of marker and datalabel datasource
+ */
+export interface IDataTemplate {
+    /** latitude value */
+    latitude?: number;
+    /** longitude value */
+    longitude?: number;
+    /** name of a marker or datalabel */
+    name?: string;
+    /** continent name for datalabel */
+    continent?: string;
+    /** continent name for datalabel */
+    admin?: string;
+    /** Text of any string */
+    text?: string[] | number;
 }

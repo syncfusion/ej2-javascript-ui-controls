@@ -663,10 +663,9 @@ describe('Chips', () => {
                 chips.dataBind();
                 chipCollection = Array.prototype.slice.call(element.querySelectorAll('.e-chip'));
                 activeElement = Array.prototype.slice.call(element.querySelectorAll('.e-active'));
-                expect(activeElement.length).toBe(3);
-                expect(activeElement[0]).toBe(chipCollection[0]);
-                expect(activeElement[1]).toBe(chipCollection[1]);
-                expect(activeElement[2]).toBe(chipCollection[2]);
+                expect(activeElement.length).toBe(2);
+                expect(activeElement[0]).toBe(chipCollection[1]);
+                expect(activeElement[1]).toBe(chipCollection[2]);
             });
         });
     });

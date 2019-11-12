@@ -169,7 +169,8 @@
 
     .e-frozenhdrcont .e-headercontent > .e-table,
     .e-frozenhdrcont .e-frozenheader > .e-table,
-    .e-frozenhdrcont .e-movableheader > .e-table {
+    .e-frozenhdrcont .e-movableheader > .e-table,
+    .e-frozenhdrcont .e-headercontent .e-virtualtable > .e-table {
       border-bottom-color: $frozen-border-color;
     }
 
@@ -178,7 +179,9 @@
     }
 
     .e-frozenheader > .e-table,
-    .e-frozencontent > .e-table  {
+    .e-frozencontent > .e-table,
+    .e-frozencontent .e-virtualtable > .e-table,
+    .e-frozenheader .e-virtualtable > .e-table {
       border-right-color: $frozen-border-color;
   }
 

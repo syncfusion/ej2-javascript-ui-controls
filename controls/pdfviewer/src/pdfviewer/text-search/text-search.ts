@@ -668,13 +668,13 @@ export class TextSearch {
 
     private createRequestForSearch(pageIndex: number): void {
         let proxy: TextSearch = this;
-        let viewportWidth: number = this.pdfViewer.element.clientWidth;
+        let viewportWidth: number = 816;
         let viewportHeight: number = this.pdfViewer.element.clientHeight;
         let pageWidth: number = this.pdfViewerBase.pageSize[pageIndex].width;
         let pageHeight: number = this.pdfViewerBase.pageSize[pageIndex].height;
         let tileCount: number = this.pdfViewerBase.getTileCount(pageWidth);
-        let noTileX: number = viewportWidth > pageWidth ? 1 : tileCount;
-        let noTileY: number = viewportWidth > pageWidth ? 1 : tileCount;
+        let noTileX: number = viewportWidth >= pageWidth ? 1 : tileCount;
+        let noTileY: number = viewportWidth >= pageWidth ? 1 : tileCount;
         for (let x: number = 0; x < noTileX; x++) {
             for (let y: number = 0; y < noTileY; y++) {
         let jsonObject: object;
@@ -704,7 +704,7 @@ export class TextSearch {
                 if (data) {
                     if (data.pageText && data.uniqueId === proxy.pdfViewerBase.documentId) {
                         let pageNumber: number = (data.pageNumber !== undefined) ? data.pageNumber : pageIndex;
-                        if (viewportWidth > pageWidth) {
+                        if (viewportWidth >= pageWidth) {
                             proxy.pdfViewerBase.storeWinData(data, pageNumber);
                         } else {
                             proxy.pdfViewerBase.storeWinData(data, pageNumber, data.tileX, data.tileY);

@@ -6,8 +6,7 @@ import { Button } from '@syncfusion/ej2-buttons';
 import { DataUtil, Query, DataManager, Predicate, UrlAdaptor, Deferred } from '@syncfusion/ej2-data';
 import { createCheckBox } from '@syncfusion/ej2-buttons';
 import { ReturnType } from '../base/type';
-import { FilterSettings } from '../base/grid';
-import { IGrid, IFilterArgs, FilterSearchBeginEventArgs, DataStateChangeEventArgs } from '../base/interface';
+import { IFilterArgs, FilterSearchBeginEventArgs, DataStateChangeEventArgs } from '../base/interface';
 import * as events from '../base/constant';
 import { PredicateModel } from '../base/grid-model';
 import { ValueFormatter } from '../services/value-formatter';
@@ -19,6 +18,7 @@ import { createSpinner, hideSpinner, showSpinner } from '@syncfusion/ej2-popups'
 import { getFilterMenuPostion, toogleCheckbox, createCboxWithWrap, removeAddCboxClasses, getColumnByForeignKeyValue } from '../base/util';
 import { InputArgs } from '@syncfusion/ej2-inputs';
 import { SearchSettingsModel } from '../base/grid-model';
+import { IXLFilter } from '../common/filter-interface';
 /**
  * @hidden
  * `CheckBoxFilterBase` module is used to handle filtering action.
@@ -40,7 +40,6 @@ export class CheckBoxFilterBase {
     protected sInput: HTMLInputElement;
     protected sIcon: Element;
     protected options: IFilterArgs;
-    protected filterSettings: FilterSettings;
     protected existingPredicate: { [key: string]: PredicateModel[] } = {};
     protected foreignKeyData: Object[];
     protected foreignKeyQuery: Query = new Query();
@@ -52,7 +51,7 @@ export class CheckBoxFilterBase {
     private result: Object;
     protected renderEmpty: boolean = false;
     //Module declarations
-    protected parent: IGrid;
+    protected parent: IXLFilter;
     protected localeObj: L10n;
     protected valueFormatter: ValueFormatter;
     private searchHandler: Function;
@@ -60,10 +59,9 @@ export class CheckBoxFilterBase {
      * Constructor for checkbox filtering module
      * @hidden
      */
-    constructor(parent?: IGrid, filterSettings?: FilterSettings) {
+    constructor(parent?: IXLFilter) {
         this.parent = parent;
         this.id = this.parent.element.id;
-        this.filterSettings = filterSettings;
         this.valueFormatter = new ValueFormatter(this.parent.locale);
         this.cBoxTrue = createCheckBox(this.parent.createElement, false, { checked: true, label: ' ' });
         this.cBoxFalse = createCheckBox(this.parent.createElement, false, { checked: false, label: ' ' });
@@ -134,10 +132,10 @@ export class CheckBoxFilterBase {
     }
 
     private foreignFilter(args: { filterCollection?: PredicateModel[] }, value: string): void {
-        let operator: string = this.parent.getDataModule().isRemote() ?
+        let operator: string = this.options.isRemote ?
             (this.options.column.type === 'string' ? 'contains' : 'equal') : (this.options.column.type ? 'startswith' : 'contains');
         let initalPredicate: Predicate =
-            new Predicate(this.options.column.foreignKeyValue, operator, value, true, this.parent.filterSettings.ignoreAccent);
+            new Predicate(this.options.column.foreignKeyValue, operator, value, true, this.options.ignoreAccent);
         this.foreignKeyFilter(args, [args.filterCollection], initalPredicate);
     }
 
@@ -191,11 +189,12 @@ export class CheckBoxFilterBase {
         this.options = options;
         this.existingPredicate = options.actualPredicate || {};
         this.options.dataSource = options.dataSource;
+        this.options.dataManager = options.dataManager ? options.dataManager : options.dataSource as DataManager;
         this.updateDataSource();
         this.options.type = options.type;
         this.options.format = options.format || '';
+        this.options.ignoreAccent = options.ignoreAccent || false;
         this.options.filteredColumns = options.filteredColumns || this.parent.filterSettings.columns;
-        this.options.sortedColumns = options.sortedColumns || this.parent.sortSettings.columns as string[];
         this.options.query = options.query || new Query();
         this.options.allowCaseSensitive = options.allowCaseSensitive || false;
         this.options.uid = options.column.uid;
@@ -311,7 +310,7 @@ export class CheckBoxFilterBase {
 
     public closeDialog(): void {
         if (this.dialogObj && !this.dialogObj.isDestroyed) {
-            let filterTemplateCol: Column[] = this.parent.getColumns().filter((col: Column) => col.getFilterItemTemplate());
+            let filterTemplateCol: Column[] = this.options.columns.filter((col: Column) => col.getFilterItemTemplate());
             if (filterTemplateCol.length) {
                 this.parent.destroyTemplate(['filterItemTemplate']);
             }
@@ -357,7 +356,7 @@ export class CheckBoxFilterBase {
                     },
                     field: this.options.field
                 };
-                value ? this.options.column.isForeignColumn() ? this.foreignFilter(args, value) :
+                value ? this.isForeignColumn(this.options.column) ? this.foreignFilter(args, value) :
                     this.options.handler(args) : this.closeDialog();
             } else {
                 let text: string = (e.target as HTMLElement).firstChild.textContent.toLowerCase();
@@ -384,7 +383,7 @@ export class CheckBoxFilterBase {
             operator?: string, matchCase?: boolean, ignoreAccent?: boolean
         } = {
             field: this.options.field, predicate: 'or', uid: this.options.uid,
-            operator: optr, type: this.options.type, matchCase: caseSen, ignoreAccent: this.parent.filterSettings.ignoreAccent
+            operator: optr, type: this.options.type, matchCase: caseSen, ignoreAccent: this.options.ignoreAccent
         };
         let isNotEqual: boolean = this.itemsCnt !== checked.length && this.itemsCnt - checked.length < checked.length;
         if (isNotEqual && searchInput.value === '') {
@@ -465,29 +464,33 @@ export class CheckBoxFilterBase {
         }
     }
 
+    protected isForeignColumn(col: Column): boolean {
+        return col.isForeignColumn ? col.isForeignColumn() : false;
+    }
+
     private refreshCheckboxes(): void {
         let val: string = this.sInput.value;
         let column: Column = this.options.column;
-        let query: Query = column.isForeignColumn() ? this.foreignKeyQuery.clone() : this.options.query.clone();
+        let query: Query = this.isForeignColumn(column) ? this.foreignKeyQuery.clone() : this.options.query.clone();
         let foreignQuery: Query = this.options.query.clone();
         query.queries = [];
         foreignQuery.queries = [];
         let parsed: string | number | Date | boolean = (this.options.type !== 'string' && parseFloat(val)) ? parseFloat(val) : val;
-        let operator: string = this.parent.getDataModule().isRemote() ?
+        let operator: string = this.options.isRemote ?
             (this.options.type === 'string' ? 'contains' : 'equal') : (this.options.type ? 'startswith' : 'contains');
         let matchCase: boolean = true;
-        let ignoreAccent: boolean = this.parent.filterSettings.ignoreAccent;
-        let field: string = column.isForeignColumn() ? column.foreignKeyValue : column.field;
+        let ignoreAccent: boolean = this.options.ignoreAccent;
+        let field: string = this.isForeignColumn(column) ? column.foreignKeyValue : column.field;
         parsed = (parsed === '' || parsed === undefined) ? undefined : parsed;
         let predicte: Predicate;
         if (this.options.type === 'boolean') {
             if (parsed !== undefined &&
                 this.getLocalizedLabel('FilterTrue').toLowerCase().indexOf((parsed as string).toLowerCase()) !== -1) {
-                parsed = ((<{ getModuleName?: Function }>this.parent.getDataModule().dataManager.adaptor).getModuleName()
+                parsed = ((<{ getModuleName?: Function }>this.options.dataManager.adaptor).getModuleName()
                     === 'ODataAdaptor' || 'ODataV4Adaptor') ? true : 'true';
             } else if (parsed !== undefined &&
                 this.getLocalizedLabel('FilterFalse').toLowerCase().indexOf((parsed as string).toLowerCase()) !== -1) {
-                parsed = ((<{ getModuleName?: Function }>this.parent.getDataModule().dataManager.adaptor).getModuleName()
+                parsed = ((<{ getModuleName?: Function }>this.options.dataManager.adaptor).getModuleName()
                     === 'ODataAdaptor' || 'ODataV4Adaptor') ? false : 'false';
             }
             operator = 'equal';
@@ -521,7 +524,7 @@ export class CheckBoxFilterBase {
         let fPredicate: { predicate?: Predicate } = {};
         showSpinner(this.spinner);
         this.renderEmpty = false;
-        if (column.isForeignColumn() && val.length) {
+        if (this.isForeignColumn(column) && val.length) {
             // tslint:disable-next-line:no-any
             (column.dataSource as DataManager).executeQuery(query).then((e: any) => {
                 let columnData: Object[] = this.options.column.columnData;
@@ -641,7 +644,7 @@ export class CheckBoxFilterBase {
             this.options.dataSource : new DataManager(this.options.dataSource as JSON[]);
         let allPromise: Promise<Object>[] = [];
         let runArray: Function[] = [];
-        if (this.options.column.isForeignColumn() && isInitial) {
+        if (this.isForeignColumn(this.options.column) && isInitial) {
             allPromise.push((<DataManager>this.options.column.dataSource).executeQuery(this.foreignKeyQuery));
             runArray.push((data: Object[]) => this.foreignKeyData = data);
         }
@@ -661,7 +664,7 @@ export class CheckBoxFilterBase {
         let query: Query = new Query();
         if (this.parent.searchSettings && this.parent.searchSettings.key.length) {
             let sSettings: SearchSettingsModel = this.parent.searchSettings;
-            let fields: string[] = sSettings.fields.length ? sSettings.fields : this.parent.getColumns().map((f: Column) => f.field);
+            let fields: string[] = sSettings.fields.length ? sSettings.fields : this.options.columns.map((f: Column) => f.field);
             /* tslint:disable-next-line:max-line-length */
             query.search(sSettings.key, fields, sSettings.operator, sSettings.ignoreCase, sSettings.ignoreAccent);
         }
@@ -873,7 +876,7 @@ export class CheckBoxFilterBase {
         let value: string;
         let ejValue: string = 'ejValue';
         let lookup: Object = {};
-        let isForeignKey: boolean = column && column.isForeignColumn();
+        let isForeignKey: boolean = column && column.isForeignColumn ? column.isForeignColumn() : false;
 
         while (len--) {
             value = json[len] as string;

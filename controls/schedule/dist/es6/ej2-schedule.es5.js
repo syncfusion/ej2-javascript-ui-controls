@@ -185,7 +185,7 @@ function getMaxDays(d) {
 function getDaysCount(startDate, endDate) {
     var strTime = resetTime(new Date(startDate));
     var endTime = resetTime(new Date(endDate));
-    return (endTime.getTime() - strTime.getTime()) / MS_PER_DAY;
+    return Math.floor((endTime.getTime() - strTime.getTime()) / MS_PER_DAY);
 }
 function getDateFromString(date) {
     return date.indexOf('Date') !== -1 ? new Date(parseInt(date.match(/\d+/g).toString(), 10)) :
@@ -2876,9 +2876,10 @@ function getDateCount$1(startDate, ruleObject) {
         if (ruleObject.freq === 'DAILY' || ruleObject.freq === 'WEEKLY') {
             count = Math.floor((ruleObject.until.getTime() - startDate.getTime()) / MS_PER_DAY) + 1;
         }
-        else if ((ruleObject.freq === 'MONTHLY' || ruleObject.freq === 'YEARLY') && ruleObject.day.length === 0) {
+        else if (ruleObject.freq === 'MONTHLY' || ruleObject.freq === 'YEARLY') {
             count = Math.floor(((ruleObject.until.getMonth() + 12 * ruleObject.until.getFullYear()) -
-                (startDate.getMonth() + 12 * startDate.getFullYear())) / ruleObject.interval) + 1;
+                (startDate.getMonth() + 12 * startDate.getFullYear())) / ruleObject.interval) +
+                (ruleObject.day.length > 1 ? (Math.floor((ruleObject.until.getTime() - startDate.getTime()) / MS_PER_DAY) + 1) : 1);
             if (ruleObject.freq === 'YEARLY') {
                 count = ruleObject.month.length > 1 ? (count * ruleObject.month.length) : count;
             }
@@ -5304,7 +5305,7 @@ var QuickPopups = /** @__PURE__ @class */ (function () {
         var _this = this;
         this.quickDialog.dataBind();
         var eventProp = {
-            type: popupType, cancel: false, data: eventData || this.parent.activeEventData, element: this.quickDialog.element
+            type: popupType, cancel: false, data: eventData || this.parent.activeEventData.event, element: this.quickDialog.element
         };
         this.parent.trigger(popupOpen, eventProp, function (popupArgs) {
             if (!popupArgs.cancel) {
@@ -5977,7 +5978,17 @@ var QuickPopups = /** @__PURE__ @class */ (function () {
         return eventObj;
     };
     QuickPopups.prototype.beforeQuickDialogClose = function () {
-        this.parent.eventBase.focusElement();
+        var _this = this;
+        var args = {
+            type: (isNullOrUndefined(this.parent.activeEventData.event)) ? 'ValidationAlert' :
+                !isNullOrUndefined(this.parent.activeEventData.event[this.parent.eventFields.recurrenceRule]) ? 'RecurrenceAlert' : 'DeleteAlert',
+            cancel: false, data: this.parent.activeEventData.event, element: this.quickDialog.element
+        };
+        this.parent.trigger(popupClose, args, function (popupCloseArgs) {
+            if (!popupCloseArgs.cancel) {
+                _this.parent.eventBase.focusElement();
+            }
+        });
     };
     QuickPopups.prototype.beforeQuickPopupOpen = function (target) {
         var _this = this;
@@ -6134,6 +6145,9 @@ var QuickPopups = /** @__PURE__ @class */ (function () {
     };
     QuickPopups.prototype.quickPopupHide = function (hideAnimation) {
         var _this = this;
+        if (!this.quickPopup.element.classList.contains(POPUP_OPEN)) {
+            return;
+        }
         var isCellPopup = this.quickPopup.element.querySelector('.' + CELL_POPUP_CLASS);
         var popupData;
         if (isCellPopup) {
@@ -8239,6 +8253,10 @@ var EventWindow = /** @__PURE__ @class */ (function () {
         this.repeatStartDate = eventObj[this.fields.startTime];
         this.repeatRule = '';
         this.showDetails(eventObj);
+        if (eventObj[this.fields.recurrenceRule] && this.recurrenceEditor) {
+            this.recurrenceEditor.setRecurrenceRule(eventObj[this.fields.recurrenceRule], eventObj[this.fields.startTime]);
+            this.repeatRule = eventObj[this.fields.recurrenceRule];
+        }
         var deleteButton = this.element.querySelector('.' + DELETE_EVENT_CLASS);
         if (deleteButton) {
             addClass([deleteButton], DISABLE_CLASS);
@@ -8246,7 +8264,8 @@ var EventWindow = /** @__PURE__ @class */ (function () {
         if (this.recurrenceEditor) {
             this.recurrenceEditor.setProperties({
                 startDate: eventObj[this.fields.startTime],
-                selectedType: repeatType || 0
+                selectedType: !isNullOrUndefined(repeatType) ? repeatType : !isNullOrUndefined(eventObj[this.fields.recurrenceRule]) ?
+                    this.recurrenceEditor.selectedType : 0
             });
         }
         if (this.parent.isAdaptive && isNullOrUndefined(this.parent.editorTemplate)) {
@@ -8267,6 +8286,9 @@ var EventWindow = /** @__PURE__ @class */ (function () {
         eventObj[this.fields.startTime] = cellsData.startTime;
         eventObj[this.fields.endTime] = cellsData.endTime;
         eventObj[this.fields.isAllDay] = cellsData.isAllDay;
+        if (cellsData.RecurrenceRule) {
+            eventObj[this.fields.recurrenceRule] = cellsData.RecurrenceRule;
+        }
         if (this.parent.resourceCollection.length > 0 || this.parent.activeViewOptions.group.resources.length > 0) {
             this.parent.resourceBase.setResourceValues(eventObj, false);
         }
@@ -12985,6 +13007,14 @@ var Schedule = /** @__PURE__ @class */ (function (_super) {
         this.eventWindow.setRecurrenceEditor(recurrenceEditor);
     };
     /**
+     * Get the maximum id of an event.
+     * @method getEventMaxID
+     * @returns {number | string}
+     */
+    Schedule.prototype.getEventMaxID = function () {
+        return this.eventBase.getEventMaxID();
+    };
+    /**
      * Get deleted occurrences from given recurrence series.
      * @method getDeletedOccurrences
      * @param {{[key: string]: Object}} recurrenceData Accepts the parent event object.
@@ -15204,7 +15234,7 @@ var VerticalEvent = /** @__PURE__ @class */ (function (_super) {
     };
     VerticalEvent.prototype.getHeight = function (start, end) {
         var appHeight = (end.getTime() - start.getTime()) / (60 * 1000) * (this.cellHeight * this.slotCount) / this.interval;
-        appHeight = (appHeight < this.cellHeight) ? this.cellHeight : appHeight;
+        appHeight = (appHeight <= 0) ? this.cellHeight : appHeight;
         return appHeight;
     };
     VerticalEvent.prototype.appendEvent = function (eventObj, appointmentElement, index, appLeft) {
@@ -15640,7 +15670,9 @@ var VerticalEvent = /** @__PURE__ @class */ (function (_super) {
             var appointmentList_1 = !isNullOrUndefined(this.renderedEvents[resource]) ? this.renderedEvents[resource] : [];
             var appointment_1 = [];
             predicate = new Predicate(fieldMapping.endTime, 'greaterthan', record[fieldMapping.startTime]).
-                and(new Predicate(fieldMapping.startTime, 'lessthan', record[fieldMapping.endTime]));
+                and(new Predicate(fieldMapping.startTime, 'lessthan', record[fieldMapping.endTime])).
+                or(new Predicate(fieldMapping.startTime, 'greaterthanorequal', record[fieldMapping.endTime]).
+                and(new Predicate(fieldMapping.endTime, 'lessthanorequal', record[fieldMapping.startTime])));
             this.overlapList = new DataManager({ json: appointmentList_1 }).executeLocal(new Query().where(predicate));
             if (this.parent.activeViewOptions.group.resources.length > 0) {
                 this.overlapList = this.filterEventsByResource(this.resources[resource], this.overlapList);

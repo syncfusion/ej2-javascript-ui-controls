@@ -133,6 +133,9 @@ export class NormalEdit {
                     editargs.row.classList.add('e-dlgeditrow');
                 }
                 this.renderer.update(editargs);
+                if (isBlazor()) {
+                    editargs.form = null;
+                }
                 this.uid = tr.getAttribute('data-uid');
                 gObj.editModule.applyFormValidation();
                 editargs.type = 'actionComplete';
@@ -195,6 +198,10 @@ export class NormalEdit {
                 editedData = gObj.editModule.getCurrentEditedData(
                     gObj.element.querySelector('.e-movablecontent').querySelector('.e-gridform'), editedData);
             }
+        }
+        if (isBlazor()) {
+            let form: string = 'form';
+            args[form] = null;
         }
         if (isDlg ? dlgWrapper.querySelectorAll('.e-editedrow').length : gObj.element.querySelectorAll('.e-editedrow').length) {
             args.action = 'edit';
@@ -264,6 +271,8 @@ export class NormalEdit {
         args.type = events.actionComplete;
         this.parent.isEdit = false;
         this.refreshRow(args.data);
+        this.parent.editModule.checkLastRow(args.row);
+        this.parent.editModule.isLastRow = false;
         this.updateCurrentViewData(args.data);
         this.blazorTemplate();
         this.parent.trigger(events.actionComplete, args);
@@ -281,6 +290,9 @@ export class NormalEdit {
 
     private blazorTemplate(): void {
         let cols: Column[] = this.parent.getColumns();
+        if (this.parent.editSettings.template && this.parent.editSettings.mode === 'Normal') {
+            updateBlazorTemplate(this.parent.element.id + 'editSettingsTemplate', 'Template', this.parent.editSettings);
+        }
         for (let i: number = 0; i < cols.length; i++) {
             let col: Column = cols[i];
             if (col.template) {
@@ -317,6 +329,7 @@ export class NormalEdit {
                 rowObj = this.parent.getRowObjectFromUID(uid);
                 rowObj.changes = data;
                 row.refresh(rowObj, this.parent.columns as Column[], true);
+                this.parent.editModule.checkLastRow(tr);
             }
         }
     }
@@ -328,6 +341,10 @@ export class NormalEdit {
             requestType: 'cancel', type: events.actionBegin, data: this.previousData, selectedRow: gObj.selectedRowIndex
         }) as { data: Object, requestType: string, selectedRow: Number, type: string };
         this.blazorTemplate();
+        if (isBlazor()) {
+            let form: string = 'form';
+            args[form] = null;
+        }
         gObj.trigger(
             events.actionBegin, args,
             (closeEditArgs: { data: Object, requestType: string, selectedRow: Number, type: string }) => {
@@ -379,6 +396,10 @@ export class NormalEdit {
             requestType: 'add', data: this.previousData, type: events.actionBegin, index: index,
             rowData: this.previousData, target: undefined
         };
+        if (isBlazor()) {
+            let form: string = 'form';
+            args[form] = null;
+        }
         gObj.trigger(events.actionBegin, args, (addArgs: AddEventArgs) => {
             if (addArgs.cancel) {
                 return;
@@ -497,4 +518,5 @@ interface EditArgs {
     selectedRow?: Number;
     type?: string;
     promise?: Promise<Object>;
+    row?: Element;
 }

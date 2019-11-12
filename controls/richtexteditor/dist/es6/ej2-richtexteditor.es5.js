@@ -7358,6 +7358,7 @@ var DOMNode = /** @__PURE__ @class */ (function () {
         }
     };
     DOMNode.prototype.ensureSelfClosingTag = function (start, className, range) {
+        var isTable = false;
         if (start.nodeType === 3) {
             this.replaceWith(start, this.marker(className, this.encode(start.textContent)));
         }
@@ -7373,11 +7374,35 @@ var DOMNode = /** @__PURE__ @class */ (function () {
                 parNode.appendChild(start);
                 start = parNode.children[0];
             }
-            for (var i = 0; i < selfClosingTags.length; i++) {
-                start = start.tagName === selfClosingTags[i] ? start.parentNode : start;
+            if (start.tagName === 'TABLE') {
+                isTable = true;
+                if (start.textContent === '') {
+                    start = start.querySelectorAll('td')[start.querySelectorAll('td').length - 1];
+                    start = !isNullOrUndefined(start.childNodes[0]) ? start.childNodes[0] : start;
+                }
+                else {
+                    var lastNode = start.lastChild;
+                    while (lastNode.nodeType !== 3 && lastNode.nodeName !== '#text') {
+                        lastNode = lastNode.lastChild;
+                    }
+                    start = lastNode;
+                }
             }
-            var marker = this.marker(className, '');
-            append([this.parseHTMLFragment(marker)], start);
+            for (var i = 0; i < selfClosingTags.length; i++) {
+                start = (start.tagName === selfClosingTags[i] && !isTable) ? start.parentNode : start;
+            }
+            if (start.nodeType === 3 && start.nodeName === '#text') {
+                this.replaceWith(start, this.marker(className, this.encode(start.textContent)));
+            }
+            else if (start.nodeName === 'BR') {
+                this.replaceWith(start, this.marker(markerClassName.endSelection, this.encode(start.textContent)));
+                var markerEnd = range.endContainer.querySelector('.' + markerClassName.endSelection);
+                markerEnd.appendChild(start);
+            }
+            else {
+                var marker = this.marker(className, '');
+                append([this.parseHTMLFragment(marker)], start);
+            }
         }
     };
     DOMNode.prototype.createTempNode = function (element) {
@@ -7489,7 +7514,7 @@ var DOMNode = /** @__PURE__ @class */ (function () {
                 }
                 parentNode = this.blockParentNode(endNode);
                 if (parentNode && this.ignoreTableTag(parentNode) && collectionNodes.indexOf(parentNode) < 0 &&
-                    parentNode.previousElementSibling.tagName !== 'IMG') {
+                    (!isNullOrUndefined(parentNode.previousElementSibling) && parentNode.previousElementSibling.tagName !== 'IMG')) {
                     collectionNodes.push(parentNode);
                 }
             }
@@ -8075,6 +8100,12 @@ var Formats = /** @__PURE__ @class */ (function () {
     };
     Formats.prototype.applyFormats = function (e) {
         var range = this.parent.nodeSelection.getRange(this.parent.currentDocument);
+        var isSelectAll = false;
+        if (this.parent.editableElement === range.endContainer &&
+            !isNullOrUndefined(this.parent.editableElement.children[range.endOffset - 1]) &&
+            this.parent.editableElement.children[range.endOffset - 1].tagName === 'TABLE') {
+            isSelectAll = true;
+        }
         var save = this.parent.nodeSelection.save(range, this.parent.currentDocument);
         this.parent.domNode.setMarker(save);
         var formatsNodes = this.parent.domNode.blockNodes();
@@ -8099,11 +8130,23 @@ var Formats = /** @__PURE__ @class */ (function () {
             this.parent.domNode.replaceWith(parentNode, replaceTag);
         }
         this.parent.editableElement.focus();
+        var startNode;
+        var endNode;
+        if (!isNullOrUndefined(this.parent.editableElement.querySelector('.' + markerClassName.startSelection)) &&
+            !isNullOrUndefined(this.parent.editableElement.querySelector('.' + markerClassName.endSelection))) {
+            startNode = this.parent.editableElement.querySelector('.' + markerClassName.startSelection).lastChild;
+            endNode = this.parent.editableElement.querySelector('.' + markerClassName.endSelection).lastChild;
+        }
         save = this.parent.domNode.saveMarker(save);
         if (isIDevice$1()) {
             setEditFrameFocus(this.parent.editableElement, e.selector);
         }
-        save.restore();
+        if (isSelectAll) {
+            this.parent.nodeSelection.setSelectionText(this.parent.currentDocument, startNode, endNode, 0, endNode.textContent.length);
+        }
+        else {
+            save.restore();
+        }
         if (e.callBack) {
             e.callBack({
                 requestType: e.subCommand,
@@ -8415,7 +8458,9 @@ var InsertHtml = /** @__PURE__ @class */ (function () {
         }
         if (!isNullOrUndefined(node) && !isNullOrUndefined(node.classList) && node.classList.contains('pasteContent')) {
             var lastNode = node.lastChild;
-            while (!isNullOrUndefined(lastNode) && lastNode.nodeName !== '#text' && lastNode.nodeName !== 'IMG') {
+            lastNode = lastNode.nodeName === 'BR' ? lastNode.previousSibling : lastNode;
+            while (!isNullOrUndefined(lastNode) && lastNode.nodeName !== '#text' && lastNode.nodeName !== 'IMG' &&
+                lastNode.nodeName !== 'BR') {
                 lastNode = lastNode.lastChild;
             }
             lastNode = isNullOrUndefined(lastNode) ? node : lastNode;
@@ -12008,6 +12053,8 @@ var PasteCleanup = /** @__PURE__ @class */ (function () {
             'frameset', 'hr', 'iframe', 'isindex', 'li', 'map', 'menu', 'noframes', 'noscript',
             'object', 'ol', 'pre', 'td', 'tr', 'th', 'tbody', 'tfoot', 'thead', 'table', 'ul',
             'header', 'article', 'nav', 'footer', 'section', 'aside', 'main', 'figure', 'figcaption'];
+        this.isNotFromHtml = false;
+        this.containsHtml = false;
         this.parent = parent;
         this.locator = serviceLocator;
         this.renderFactory = this.locator.getService('rendererFactory');
@@ -12048,7 +12095,12 @@ var PasteCleanup = /** @__PURE__ @class */ (function () {
         }
         if (e.args && value !== null && this.parent.editorMode === 'HTML') {
             if (value.length === 0) {
+                var htmlRegex = new RegExp(/<\/[a-z][\s\S]*>/i);
                 value = e.args.clipboardData.getData('text/plain');
+                this.isNotFromHtml = value !== '' ? true : false;
+                value = value.replace(/</g, '&lt;');
+                value = value.replace(/>/g, '&gt;');
+                this.containsHtml = htmlRegex.test(value);
                 var file = e && e.args.clipboardData &&
                     e.args.clipboardData.items.length > 0 ?
                     e.args.clipboardData.items[0].getAsFile() : null;
@@ -12066,32 +12118,9 @@ var PasteCleanup = /** @__PURE__ @class */ (function () {
                         }
                     }
                 });
-                var htmlRegex = new RegExp(/<\/[a-z][\s\S]*>/i);
                 if (!htmlRegex.test(value)) {
-                    var enterSplitText = value.split('\n');
-                    var contentInnerElem = '';
-                    for (var i = 0; i < enterSplitText.length; i++) {
-                        if (enterSplitText[i].trim() === '') {
-                            contentInnerElem += '<p><br></p>';
-                        }
-                        else {
-                            var contentWithSpace = '';
-                            var spaceBetweenContent = true;
-                            var spaceSplit = enterSplitText[i].split(' ');
-                            for (var j = 0; j < spaceSplit.length; j++) {
-                                if (spaceSplit[j].trim() === '') {
-                                    contentWithSpace += spaceBetweenContent ? '&nbsp;' : ' ';
-                                }
-                                else {
-                                    spaceBetweenContent = false;
-                                    contentWithSpace += spaceSplit[j] + ' ';
-                                }
-                            }
-                            contentInnerElem += '<p>' + contentWithSpace.trim() + '</p>';
-                        }
-                    }
                     var divElement = this.parent.createElement('div');
-                    divElement.innerHTML = contentInnerElem;
+                    divElement.innerHTML = this.splitBreakLine(value);
                     value = divElement.innerHTML;
                 }
             }
@@ -12126,6 +12155,35 @@ var PasteCleanup = /** @__PURE__ @class */ (function () {
                 this.formatting(value, true, args);
             }
         }
+    };
+    PasteCleanup.prototype.splitBreakLine = function (value) {
+        var enterSplitText = value.split('\n');
+        var contentInnerElem = '';
+        for (var i = 0; i < enterSplitText.length; i++) {
+            if (enterSplitText[i].trim() === '') {
+                contentInnerElem += '<p><br></p>';
+            }
+            else {
+                var contentWithSpace = this.makeSpace(enterSplitText[i]);
+                contentInnerElem += '<p>' + contentWithSpace.trim() + '</p>';
+            }
+        }
+        return contentInnerElem;
+    };
+    PasteCleanup.prototype.makeSpace = function (enterSplitText) {
+        var contentWithSpace = '';
+        var spaceBetweenContent = true;
+        var spaceSplit = enterSplitText.split(' ');
+        for (var j = 0; j < spaceSplit.length; j++) {
+            if (spaceSplit[j].trim() === '') {
+                contentWithSpace += spaceBetweenContent ? '&nbsp;' : ' ';
+            }
+            else {
+                spaceBetweenContent = false;
+                contentWithSpace += spaceSplit[j] + ' ';
+            }
+        }
+        return contentWithSpace;
     };
     PasteCleanup.prototype.imgUploading = function (elm) {
         var base64Src = [];
@@ -12386,6 +12444,9 @@ var PasteCleanup = /** @__PURE__ @class */ (function () {
     PasteCleanup.prototype.formatting = function (value, clean, args) {
         var _this = this;
         var clipBoardElem = this.parent.createElement('div', { className: 'pasteContent', styles: 'display:inline;' });
+        if (this.isNotFromHtml && this.containsHtml) {
+            value = this.splitBreakLine(value);
+        }
         clipBoardElem.innerHTML = value;
         if (this.parent.pasteCleanupSettings.deniedTags !== null) {
             clipBoardElem = this.deniedTags(clipBoardElem);
@@ -14630,17 +14691,20 @@ var Image = /** @__PURE__ @class */ (function () {
         return false;
     };
     Image.prototype.dragStart = function (e) {
-        this.parent.trigger(actionBegin, e, function (actionBeginArgs) {
-            if (actionBeginArgs.cancel) {
-                e.preventDefault();
-            }
-            else {
-                if (e.target.nodeName === 'IMG') {
+        if (e.target.nodeName === 'IMG') {
+            this.parent.trigger(actionBegin, e, function (actionBeginArgs) {
+                if (actionBeginArgs.cancel) {
+                    e.preventDefault();
+                }
+                else {
                     e.dataTransfer.effectAllowed = 'copyMove';
                     e.target.classList.add(CLS_RTE_DRAG_IMAGE);
                 }
-            }
-        });
+            });
+        }
+        else {
+            return true;
+        }
     };
     
     Image.prototype.dragEnter = function (e) {
@@ -14660,38 +14724,44 @@ var Image = /** @__PURE__ @class */ (function () {
      */
     Image.prototype.dragDrop = function (e) {
         var _this = this;
-        this.parent.trigger(actionBegin, e, function (actionBeginArgs) {
-            if (actionBeginArgs.cancel) {
-                e.preventDefault();
-            }
-            else {
-                if (closest(e.target, '#' + _this.parent.getID() + '_toolbar')) {
+        var imgElement = this.parent.inputElement.ownerDocument.querySelector('.' + CLS_RTE_DRAG_IMAGE);
+        if ((imgElement && imgElement.tagName === 'IMG') || e.dataTransfer.files.length > 0) {
+            this.parent.trigger(actionBegin, e, function (actionBeginArgs) {
+                if (actionBeginArgs.cancel) {
                     e.preventDefault();
-                    return;
-                }
-                if (_this.parent.element.querySelector('.' + CLS_IMG_RESIZE)) {
-                    detach(_this.imgResizeDiv);
-                }
-                e.preventDefault();
-                var range = void 0;
-                if (_this.contentModule.getDocument().caretRangeFromPoint) { //For chrome
-                    range = _this.contentModule.getDocument().caretRangeFromPoint(e.clientX, e.clientY);
-                }
-                else if ((e.rangeParent)) { //For mozilla firefox
-                    range = _this.contentModule.getDocument().createRange();
-                    range.setStart(e.rangeParent, e.rangeOffset);
                 }
                 else {
-                    range = _this.getDropRange(e.clientX, e.clientY); //For internet explorer
+                    if (closest(e.target, '#' + _this.parent.getID() + '_toolbar')) {
+                        e.preventDefault();
+                        return;
+                    }
+                    if (_this.parent.element.querySelector('.' + CLS_IMG_RESIZE)) {
+                        detach(_this.imgResizeDiv);
+                    }
+                    e.preventDefault();
+                    var range = void 0;
+                    if (_this.contentModule.getDocument().caretRangeFromPoint) { //For chrome
+                        range = _this.contentModule.getDocument().caretRangeFromPoint(e.clientX, e.clientY);
+                    }
+                    else if ((e.rangeParent)) { //For mozilla firefox
+                        range = _this.contentModule.getDocument().createRange();
+                        range.setStart(e.rangeParent, e.rangeOffset);
+                    }
+                    else {
+                        range = _this.getDropRange(e.clientX, e.clientY); //For internet explorer
+                    }
+                    _this.parent.notify(selectRange, { range: range });
+                    var uploadArea = _this.parent.element.querySelector('.' + CLS_DROPAREA);
+                    if (uploadArea) {
+                        return;
+                    }
+                    _this.insertDragImage(e);
                 }
-                _this.parent.notify(selectRange, { range: range });
-                var uploadArea = _this.parent.element.querySelector('.' + CLS_DROPAREA);
-                if (uploadArea) {
-                    return;
-                }
-                _this.insertDragImage(e);
-            }
-        });
+            });
+        }
+        else {
+            return true;
+        }
     };
     /**
      * Used to calculate range on internet explorer

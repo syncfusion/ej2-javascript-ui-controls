@@ -170,6 +170,13 @@ export class TextBox extends Component<HTMLInputElement | HTMLTextAreaElement> i
     public enablePersistence: boolean;
 
     /**
+     * Specifies the width of the Textbox component.
+     * @default null
+     */
+    @Property(null)
+    public width: number | string;
+
+    /**
      * Triggers when the TextBox component is created.
      * @event
      * @blazorProperty 'Created'
@@ -233,6 +240,9 @@ export class TextBox extends Component<HTMLInputElement | HTMLTextAreaElement> i
                 case 'enabled':
                     Input.setEnabled(this.enabled, this.respectiveElement, this.floatLabelType, this.textboxWrapper.container);
                     this.bindClearEvent();
+                    break;
+                case 'width':
+                    Input.setWidth(newProp.width, this.textboxWrapper.container);
                     break;
                 case 'value':
                     let prevOnChange: boolean = this.isProtectedOnChange;
@@ -472,6 +482,7 @@ export class TextBox extends Component<HTMLInputElement | HTMLTextAreaElement> i
         }
         this.previousValue = this.value;
         this.inputPreviousValue = this.value;
+        Input.setWidth(this.width, this.textboxWrapper.container);
         this.renderComplete();
     }
 

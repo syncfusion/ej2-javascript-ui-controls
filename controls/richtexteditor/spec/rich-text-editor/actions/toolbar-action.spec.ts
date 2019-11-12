@@ -290,6 +290,21 @@ describe('HTML - Parent based selection', () => {
                 expect((document.getElementsByClassName('rte-placeholder')[0] as HTMLElement).style.display).toBe('none');
                 expect((rteObj.inputElement.firstChild as HTMLElement).tagName).toBe('OL');
             });
+
+            it("Formats - h4 by selecting all content and table at the last", () => {
+                let tableContent: string = `<div style="color:red;" id="content-edit" contenteditable="true" class="e-node-deletable e-node-inner"><p id='p1'>Paragraph 1</p><p id='p2'>Paragraph 2</p><p id='p3'>Paragraph 3</p><table><tbody><tr><td>cell 1 1</td><td>cell 1 2</td></tr><tr><td>cell 2 1</td><td id="lastCell">Cell 2 2</td></tr></tbody></table></div>`;
+                rteObj.value = tableContent;
+                rteObj.dataBind();
+                rteObj.selectAll();
+                let trgEle: HTMLElement = <HTMLElement>rteEle.querySelectorAll(".e-toolbar-item")[1];
+                (trgEle.childNodes[0] as HTMLElement).click();
+                let popupElement: Element = curDocument.querySelectorAll(".e-rte-dropdown-popup.e-popup-open")[0];
+                mouseEventArgs = {
+                    target: (popupElement.childNodes[0].childNodes[6] as HTMLElement)
+                };
+                (rteObj.toolbarModule as any).dropDownModule.formatDropDown.clickHandler(mouseEventArgs);
+                expect(rteObj.getSelection().trim() === 'Paragraph 1Paragraph 2Paragraph 3cell 1 1cell 1 2cell 2 1Cell 2 2').toBe(true);
+            });
             afterAll(() => {
                 destroy(rteObj);
                 detach(rteEle);

@@ -411,7 +411,8 @@ export class Pager extends Component<HTMLElement> implements INotifyPropertyChan
             currentPage: this.currentPage, pageSize: this.pageSize, pageCount: this.pageCount,
             totalRecordsCount: this.totalRecordsCount, totalPages: this.totalPages
         };
-        result = this.getPagerTemplate()(data) as Element[];
+        let tempId: string = this.element.parentElement.id + '_template';
+        result = this.getPagerTemplate()(data, this, 'template', tempId, this.isStringTemplate) as Element[];
         appendChildren(this.element, result);
     }
 

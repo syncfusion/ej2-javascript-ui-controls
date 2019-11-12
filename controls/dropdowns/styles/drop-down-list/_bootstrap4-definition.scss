@@ -93,7 +93,7 @@ $ddl-bigger-small-list-font-size: 14px !default;
       & .e-input-group input,
       & .e-input-group input.e-input {
         font-size: 16px;
-        height: 30px;
+        height: 36px;
       }
     }
   }
@@ -140,10 +140,6 @@ $ddl-bigger-small-list-font-size: 14px !default;
   .e-ddl#{&}.e-popup .e-filter-parent .e-input-group,
   .e-ddl#{&}.e-popup .e-filter-parent {
     background: $ddl-filter-bg;
-  }
-
-  .e-bigger #{&}.e-popup.e-ddl-device .e-input-group {
-    margin: 0 0 0 55px;
   }
 
   .e-input-group .e-control#{&}.e-dropdownlist~.e-ddl-icon {

@@ -2060,6 +2060,28 @@ describe('ComboBox', () => {
             expect(ddl.popupObj.element.querySelector('.e-list-item').classList.contains('e-item-focus')).toBe(true);
         });
     });
+    describe('EJ2-32775 ', () => {
+        let comboBoxObj: any;
+        let element: any;
+        beforeAll(() => {
+            element = createElement('EJS-COMBOBOX', { id: 'combobox' });
+            document.body.appendChild(element);
+            comboBoxObj = new ComboBox({ dataSource: languageData });
+            comboBoxObj.appendTo(element);
+        });
+        afterAll(() => {
+            comboBoxObj.destroy();
+            element.remove();
+        });
+        it('Empty Popup rendering issue testing ', () => {
+            expect(comboBoxObj.element.tagName).toEqual('EJS-COMBOBOX');
+            comboBoxObj.focusIn();
+            comboBoxObj.focusOut();
+            comboBoxObj.inputWrapper.container.querySelectorAll('.e-ddl-icon')[0].click();
+            comboBoxObj.showPopup();
+            expect(comboBoxObj.list.querySelectorAll('ul li').length > 0).toBe(true);
+        });
+    });
     it('memory leak', () => {     
         profile.sample();
         let average: any = inMB(profile.averageChange)

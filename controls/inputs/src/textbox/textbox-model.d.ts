@@ -91,6 +91,12 @@ export interface TextBoxModel extends ComponentModel{
     enablePersistence?: boolean;
 
     /**
+     * Specifies the width of the Textbox component.
+     * @default null
+     */
+    width?: number | string;
+
+    /**
      * Triggers when the TextBox component is created.
      * @event
      * @blazorProperty 'Created'

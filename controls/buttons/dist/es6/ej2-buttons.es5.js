@@ -2132,6 +2132,7 @@ var ChipList = /** @__PURE__ @class */ (function (_super) {
                     }
                     break;
                 case 'selectedChips':
+                    removeClass(this.element.querySelectorAll('.e-active'), 'e-active');
                     this.select(newProp.selectedChips);
                     break;
                 case 'enableRtl':

@@ -1339,17 +1339,19 @@ export class Image {
         this.dialogObj.element.getElementsByClassName('e-file-select-wrap')[0].querySelector('button').click();
         return false;
     }
-    private dragStart(e: DragEvent): void {
-        this.parent.trigger(events.actionBegin, e, (actionBeginArgs: ActionBeginEventArgs) => {
-            if (actionBeginArgs.cancel) {
-                e.preventDefault();
-            } else {
-                if ((e.target as HTMLElement).nodeName === 'IMG') {
+    private dragStart(e: DragEvent): void | boolean {
+        if ((e.target as HTMLElement).nodeName === 'IMG') {
+            this.parent.trigger(events.actionBegin, e, (actionBeginArgs: ActionBeginEventArgs) => {
+                if (actionBeginArgs.cancel) {
+                    e.preventDefault();
+                } else {
                     e.dataTransfer.effectAllowed = 'copyMove';
                     (e.target as HTMLElement).classList.add(classes.CLS_RTE_DRAG_IMAGE);
                 }
-            }
-        });
+            });
+        } else {
+            return true;
+        }
     };
 
     private dragEnter(e?: DragEvent): void {
@@ -1366,36 +1368,41 @@ export class Image {
     /**
      * USed to set range When drop an image
      */
-    private dragDrop(e: ImageDragEvent): void {
-        this.parent.trigger(events.actionBegin, e, (actionBeginArgs: ActionBeginEventArgs) => {
-            if (actionBeginArgs.cancel) {
-                e.preventDefault();
-            } else {
-                if (closest((e.target as HTMLElement), '#' + this.parent.getID() + '_toolbar')) {
+    private dragDrop(e: ImageDragEvent): void | boolean {
+        let imgElement: HTMLElement = this.parent.inputElement.ownerDocument.querySelector('.' + classes.CLS_RTE_DRAG_IMAGE);
+        if ((imgElement && imgElement.tagName === 'IMG') || e.dataTransfer.files.length > 0) {
+            this.parent.trigger(events.actionBegin, e, (actionBeginArgs: ActionBeginEventArgs) => {
+                if (actionBeginArgs.cancel) {
                     e.preventDefault();
-                    return;
-                }
-                if (this.parent.element.querySelector('.' + classes.CLS_IMG_RESIZE)) {
-                    detach(this.imgResizeDiv);
-                }
-                e.preventDefault();
-                let range: Range;
-                if (this.contentModule.getDocument().caretRangeFromPoint) { //For chrome
-                    range = this.contentModule.getDocument().caretRangeFromPoint(e.clientX, e.clientY);
-                } else if ((e.rangeParent)) { //For mozilla firefox
-                    range = this.contentModule.getDocument().createRange();
-                    range.setStart(e.rangeParent, e.rangeOffset);
                 } else {
-                    range = this.getDropRange(e.clientX, e.clientY); //For internet explorer
+                    if (closest((e.target as HTMLElement), '#' + this.parent.getID() + '_toolbar')) {
+                        e.preventDefault();
+                        return;
+                    }
+                    if (this.parent.element.querySelector('.' + classes.CLS_IMG_RESIZE)) {
+                        detach(this.imgResizeDiv);
+                    }
+                    e.preventDefault();
+                    let range: Range;
+                    if (this.contentModule.getDocument().caretRangeFromPoint) { //For chrome
+                        range = this.contentModule.getDocument().caretRangeFromPoint(e.clientX, e.clientY);
+                    } else if ((e.rangeParent)) { //For mozilla firefox
+                        range = this.contentModule.getDocument().createRange();
+                        range.setStart(e.rangeParent, e.rangeOffset);
+                    } else {
+                        range = this.getDropRange(e.clientX, e.clientY); //For internet explorer
+                    }
+                    this.parent.notify(events.selectRange, { range: range });
+                    let uploadArea: HTMLElement = this.parent.element.querySelector('.' + classes.CLS_DROPAREA) as HTMLElement;
+                    if (uploadArea) {
+                        return;
+                    }
+                    this.insertDragImage(e as DragEvent);
                 }
-                this.parent.notify(events.selectRange, { range: range });
-                let uploadArea: HTMLElement = this.parent.element.querySelector('.' + classes.CLS_DROPAREA) as HTMLElement;
-                if (uploadArea) {
-                    return;
-                }
-                this.insertDragImage(e as DragEvent);
-            }
-        });
+            });
+        } else {
+            return true;
+        }
     }
 
     /**

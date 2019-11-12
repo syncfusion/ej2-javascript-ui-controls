@@ -131,4 +131,12 @@ describe('Spell Checker dialog API', () => {
         (editor.spellCheckDialogModule as any).handleRetrievedSuggestion('eacock', jsonData.Suggestions);
         expect(() => { editor.spellCheckDialogModule.addToDictClicked() }).not.toThrowError();
     });
+
+    it('custom header validation', () => {
+        editor.openBlank();
+        editor.serviceUrl= undefined;
+       editor.headers=[{"syncfusion":"true"}];
+       let httpRequest:XMLHttpRequest=new XMLHttpRequest();
+        expect(() => { (editor.spellChecker as any).setCustomHeaders(httpRequest) }).toThrowError();
+    });
 }); 

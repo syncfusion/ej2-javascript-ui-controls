@@ -19,6 +19,8 @@ let exp: RegExp = new RegExp('\\${([^}]*)}', 'g');
 let ARR_OBJ: RegExp = /^\..*/gm;
 let SINGLE_SLASH: RegExp = /\\/gi;
 let DOUBLE_SLASH: RegExp = /\\\\/gi;
+const WORDFUNC: RegExp = new RegExp('[\\w"\'@#$.\\s+]+', 'g');
+const WINDOWFUNC: RegExp = /\window\./gm;
 
 /**
  * The function to set regular expression for template expression string.
@@ -104,22 +106,7 @@ function evalExp(str: string, nameSpace: string, helper?: Object): string {
                 } else if (IF_STMT.test(cnt)) {
                     //handling if condition
                     cnt = '"; ' + cnt.replace(matches[1], rlStr.replace(WORDIF, (strs: string): string => {
-                        strs = strs.trim();
-                        let funcRegExp: RegExp = /\window./gm;
-                        if (!funcRegExp.test(strs)) {
-                            let regExAt: RegExp = /\@|\$|\#/gm;
-                            if (regExAt.test(strs)) {
-                                strs = NameSpaceForspecialChar(strs, (localKeys.indexOf(strs) === -1), nameSpace, localKeys) + '"]';
-                            }
-                            if (ARR_OBJ.test(strs)) {
-                                // tslint:disable-next-line
-                                return NameSpaceArrObj(strs, !(QUOTES.test(strs)) && (localKeys.indexOf(strs) === -1), nameSpace, localKeys);
-                            } else {
-                                return addNameSpace(strs, !(QUOTES.test(strs)) && (localKeys.indexOf(strs) === -1), nameSpace, localKeys);
-                            }
-                        } else {
-                            return strs;
-                        }
+                        return HandleSpecialCharArrObj(strs, nameSpace, localKeys);
                     })) + '{ \n str = str + "';
                 } else if (FOR_STMT.test(cnt)) {
 
@@ -145,18 +132,31 @@ function evalExp(str: string, nameSpace: string, helper?: Object): string {
                     if (matches[1].length !== 0 && !(/data/).test(ftArray[0]) && !(/window./).test(ftArray[0])) {
                         matches[1] = (fNameSpace === 'global' ? nameSpace + '.' + matches[1] : matches[1]);
                     }
-                    cnt = '" + ' + (fNameSpace === 'global' ? '' : fNameSpace) +
-                        cnt.replace(
-                            rlStr,
-                            addNameSpace(
-                                matches[1].replace(/,( |)data.|,/gi, ',' + nameSpace + '.').replace(/,( |)data.window/gi, ',window'),
-                                (fNameSpace === 'global' ? false : true),
-                                nameSpace,
-                                localKeys
-                            )
-                        ) +
-                        '+"';
+                    // handing helper function with special characters
+                    let splRegexp: RegExp = /\@|\$|\#/gm;
+                    let arrObj: RegExp = /\]\./gm;
+                    if (WINDOWFUNC.test(cnt) && arrObj.test(cnt) || splRegexp.test(cnt)) {
+                        let splArrRegexp: RegExp =  /\@|\$|\#|\]\./gm;
+                        if (splArrRegexp.test(cnt)) {
+                            // tslint:disable-next-line
+                            cnt = '"+ ' + (fNameSpace === 'global' ? '' : fNameSpace) + cnt.replace(matches[1], rlStr.replace(WORDFUNC, (strs: string): string => {
+                                                return HandleSpecialCharArrObj(strs, nameSpace, localKeys);
+                                            })) + '+ "';
+                        }
+                    } else {
+                        cnt = '" + ' + (fNameSpace === 'global' ? '' : fNameSpace) +
+                    cnt.replace(
+                        rlStr,
+                        addNameSpace(
+                            matches[1].replace(/,( |)data.|,/gi, ',' + nameSpace + '.').replace(/,( |)data.window/gi, ',window'),
+                            (fNameSpace === 'global' ? false : true),
+                            nameSpace,
+                            localKeys
+                        )
+                    ) +
+                    '+"';
                 }
+            }
             } else if (ELSE_STMT.test(cnt)) {
                 // handling else condition
                 cnt = '"; ' + cnt.replace(ELSE_STMT, '} else { \n str = str + "');
@@ -215,4 +215,23 @@ function SlashReplace(tempStr: string): any {
         tempStr = tempStr.replace(SINGLE_SLASH, double as string);
     }
     return tempStr;
+}
+
+function HandleSpecialCharArrObj(str: string, nameSpaceNew: string, keys: string[]): string {
+    str = str.trim();
+    let windowFunc: RegExp = /\window\./gm;
+    if (!windowFunc.test(str)) {
+        let quotes: RegExp = /'|"/gm;
+        let splRegexp: RegExp = /\@|\$|\#/gm;
+        if (splRegexp.test(str)) {
+            str = NameSpaceForspecialChar(str, (keys.indexOf(str) === -1), nameSpaceNew, keys) + '"]';
+        }
+        if (ARR_OBJ.test(str)) {
+            return NameSpaceArrObj(str, !(quotes.test(str)) && (keys.indexOf(str) === -1), nameSpaceNew, keys);
+        } else {
+            return addNameSpace(str, !(quotes.test(str)) && (keys.indexOf(str) === -1), nameSpaceNew, keys);
+        }
+    } else {
+        return str;
+    }
 }

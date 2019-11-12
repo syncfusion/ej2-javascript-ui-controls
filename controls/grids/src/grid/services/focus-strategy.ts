@@ -515,7 +515,8 @@ export class ContentFocus implements IFocus {
         if (!isPresent && !this.indexesByKey(action) || (this.matrix.current.length === 0)) { return null; }
         if (!this.shouldFocusChange(e)) { return this.matrix.current; }
         let [rowIndex, cellIndex, rN, cN]: number[] = this.indexesByKey(action) || [...this.matrix.current, ...navigator];
-        let current: number[] = this.matrix.get(rowIndex, cellIndex, [rN, cN], action, this.validator());
+        let current: number[] = !this.parent.getCurrentViewRecords().length ? this.matrix.get(0, -1, [0, 1], null, this.validator()) :
+            this.matrix.get(rowIndex, cellIndex, [rN, cN], action, this.validator());
         return current;
     }
 

@@ -3,3 +3,4 @@
  */
 export * from './excel-filter-base';
 export * from './checkbox-filter-base';
+export * from './filter-interface';

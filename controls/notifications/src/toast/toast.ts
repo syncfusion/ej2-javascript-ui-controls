@@ -46,10 +46,23 @@ export interface ToastBeforeOpenArgs extends BaseEventArgs {
    * @deprecated
    */
   toastObj?: Toast;
+  /** Defines current Toast model properties as options. */
+  options?: ToastModel;
   /** Defines the Toast element. */
   element: HTMLElement;
   /** Defines the prevent action for before opening toast. */
   cancel : boolean;
+}
+
+/**
+ * Toast Collection model
+ * @hidden
+ */
+export interface CollectionToast extends ToastModel {
+  /**
+   * Element of the current toast
+   */
+  element?: HTMLElement[];
 }
 
 /**
@@ -61,6 +74,8 @@ export interface ToastOpenArgs extends BaseEventArgs {
    * @deprecated
    */
   toastObj?: Toast;
+  /** Defines current Toast model properties as options. */
+  options?: ToastModel;
   /** Defines the Toast element. */
   element: HTMLElement;
 }
@@ -71,6 +86,8 @@ export interface ToastOpenArgs extends BaseEventArgs {
 export interface ToastCloseArgs extends BaseEventArgs {
   /** Defines the Toast container element. */
   toastContainer: HTMLElement;
+  /** Defines current Toast model properties as options. */
+  options?: ToastModel;
   /** 
    * Defines the Toast object.
    * @deprecated
@@ -228,6 +245,7 @@ export class Toast extends Component<HTMLElement> implements INotifyPropertyChan
     private customPosition: boolean;
     private isDevice: Boolean;
     private innerEle: Node;
+    private toastCollection: CollectionToast[] = [];
 
     /**
      * Initializes a new instance of the Toast class.
@@ -478,8 +496,10 @@ export class Toast extends Component<HTMLElement> implements INotifyPropertyChan
      * @returns void
      */
     public show (toastObj?: ToastModel) : void {
+      let collectionObj: CollectionToast;
       if (!isNOU(toastObj)) {
         this.templateChanges(toastObj);
+        collectionObj = JSON.parse(JSON.stringify(toastObj));
         extend(this, this, toastObj); }
       if (isNOU(this.toastContainer)) {
         this.toastContainer = this.getContainer();
@@ -502,7 +522,11 @@ export class Toast extends Component<HTMLElement> implements INotifyPropertyChan
       this.setProgress();
       this.setCloseButton();
       this.setAria();
-      this.appendToTarget();
+      this.appendToTarget(toastObj);
+      if (!isNOU(collectionObj)) {
+        extend(collectionObj, {element: [this.toastEle]}, true);
+        this.toastCollection.push(collectionObj);
+      }
     }
 
     private swipeHandler(e: SwipeEventArgs): void {
@@ -682,14 +706,23 @@ export class Toast extends Component<HTMLElement> implements INotifyPropertyChan
       this.toastTemplate = null;
     }
 
-    private destroyToast( toastEle: HTEle): void {
+    private destroyToast(toastEle: HTEle): void {
+      let toastObj: CollectionToast;
+      for (let i: number = 0; i < this.toastCollection.length; i++) {
+        if (this.toastCollection[i].element[0] === toastEle) {
+          toastObj = this.toastCollection[i];
+          this.toastCollection.splice(i, 1);
+        }
+      }
       let hideAnimate: ToastAnimationsModel = this.animation.hide;
       let animate: AnimationModel = {
         duration : hideAnimate.duration, name: hideAnimate.effect, timingFunction: hideAnimate.easing
        };
       let intervalId: number = parseInt(toastEle.id.split('toast_')[1], 10);
       let toastClose: ToastCloseArgs = isBlazor() ? {
+        options: toastObj,
         toastContainer: this.toastContainer } : {
+          options: toastObj,
           toastContainer: this.toastContainer,
           toastObj: this,
         };
@@ -846,10 +879,12 @@ export class Toast extends Component<HTMLElement> implements INotifyPropertyChan
       }
     }
 
-    private appendToTarget(): void {
+    private appendToTarget(toastObj?: ToastModel): void {
       let toastBeforeOpen: ToastBeforeOpenArgs = isBlazor() ? {
+        options: toastObj,
         element: this.toastEle,
         cancel: false } : {
+          options: toastObj,
           toastObj: this,
           element: this.toastEle,
           cancel: false
@@ -863,7 +898,7 @@ export class Toast extends Component<HTMLElement> implements INotifyPropertyChan
             this.toastContainer.appendChild(this.toastEle); }
           EventHandler.add(this.toastEle, 'click', this.clickHandler, this);
           this.toastContainer.style.zIndex = getZindexPartial(this.toastContainer) + '';
-          this.displayToast(this.toastEle);
+          this.displayToast(this.toastEle, toastObj);
         }
       });
     }
@@ -883,13 +918,15 @@ export class Toast extends Component<HTMLElement> implements INotifyPropertyChan
       });
     }
 
-    private displayToast(toastEle: HTEle): void {
+    private displayToast(toastEle: HTEle, toastObj?: ToastModel): void {
       let showAnimate: ToastAnimationsModel = this.animation.show;
       let animate: AnimationModel = {
         duration : showAnimate.duration, name: showAnimate.effect, timingFunction: showAnimate.easing
        };
       let toastOpen: ToastOpenArgs = isBlazor() ? {
+        options: toastObj,
         element: this.toastEle } : {
+          options: toastObj,
           toastObj: this,
           element: this.toastEle,
         };

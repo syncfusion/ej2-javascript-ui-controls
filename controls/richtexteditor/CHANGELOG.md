@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 17.3.27 (2019-11-12)
+
+### RichTextEditor
+
+#### Bug Fixes
+
+- `#253296` - The issue with drag and drop text is not working inside the Rich Text Editor has been fixed.
+
 ## 17.3.19 (2019-10-22)
 
 ### RichTextEditor

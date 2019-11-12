@@ -117,6 +117,8 @@ export class Overview extends Component<HTMLElement> implements INotifyPropertyC
 
     private event: boolean = true;
 
+    private overviewid: number = 88123;
+
     /**   @private  */
     public diagramRenderer: DiagramRenderer;
 
@@ -160,6 +162,10 @@ export class Overview extends Component<HTMLElement> implements INotifyPropertyC
      * Initialize nodes, connectors and renderer
      */
     protected preRender(): void {
+        if (this.element.id === '') {
+            let collection: number = document.getElementsByClassName('e-overview').length;
+            this.element.id = 'overview_' + this.overviewid + '_' + collection;
+        }
         this.element.style.background = 'transparent';
         this.unWireEvents();
         this.wireEvents();

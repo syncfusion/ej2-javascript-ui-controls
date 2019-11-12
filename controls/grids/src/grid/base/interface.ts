@@ -514,7 +514,6 @@ export interface IGrid extends Component<HTMLElement> {
     isContextMenuOpen(): Boolean;
     goToPage(pageNo: number): void;
     getFrozenColumns(): number;
-    applyBiggerTheme(args: Element): void;
     getVisibleFrozenColumns(): number;
     print(): void;
     /* tslint:disable-next-line:no-any */
@@ -553,7 +552,10 @@ export interface IGrid extends Component<HTMLElement> {
     hideScroll?(): void;
     grabColumnByFieldFromAllCols(field: string): Column;
     grabColumnByUidFromAllCols(uid: string): Column;
-
+    getMovableVirtualContent?(): Element;
+    getFrozenVirtualContent?(): Element;
+    getMovableVirtualHeader?(): Element;
+    getFrozenVirtualHeader?(): Element;
     // public Events
     dataStateChange?: EmitType<DataStateChangeEventArgs>;
 }
@@ -748,6 +750,7 @@ export interface NotifyArgs {
     oldProperties?: string[];
     focusElement?: HTMLElement;
     rowObject?: Row<Column>;
+    renderMovableContent?: boolean;
 }
 
 /**
@@ -1933,13 +1936,14 @@ export interface IFilter {
 export interface IFilterArgs {
     type?: string;
     height: number;
+    columns?: Column[];
     field?: string;
     displayName?: string;
     query?: Query;
-    dataSource?: Object[] | DataManager;
+    dataSource?: Object[] | DataManager; // for column datasource or grid datasource
+    dataManager?: DataManager;  // grid data manager
     format?: string;
     filteredColumns?: Object[];
-    sortedColumns?: string[];
     localizedStrings?: Object;
     localeObj?: L10n;
     position?: { X: number, Y: number };
@@ -1955,6 +1959,7 @@ export interface IFilterArgs {
     actualPredicate?: { [key: string]: PredicateModel[] };
     uid?: string;
     isForeignKey?: boolean;
+    ignoreAccent?: boolean;
     isRemote?: boolean;
 }
 
@@ -2181,6 +2186,14 @@ export interface AggregateTemplateContext {
     falseCount: string;
     /** Gets custom aggregate value */
     custom: string;
+    /** Gets the current group field name */
+    field?: string;
+    /** Gets header text of the grouped column */
+    headerText?: string;
+    /** Gets grouped data key value */
+    key?: string;
+    /** Gets corresponding grouped foreign key value */
+    foreignKey?: string;
 }
 
 export interface CaptionTemplateContext {

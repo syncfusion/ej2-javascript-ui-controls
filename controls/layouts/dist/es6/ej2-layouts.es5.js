@@ -123,6 +123,7 @@ var Splitter = /** @__PURE__ @class */ (function (_super) {
         _this.validDataAttributes = ['data-size', 'data-min', 'data-max', 'data-collapsible', 'data-resizable', 'data-content', 'data-collapsed'];
         _this.validElementAttributes = ['data-orientation', 'data-width', 'data-height'];
         _this.iconsDelay = 300;
+        _this.templateElement = [];
         return _this;
     }
     /**
@@ -305,6 +306,7 @@ var Splitter = /** @__PURE__ @class */ (function (_super) {
     };
     Splitter.prototype.destroyPaneSettings = function () {
         [].slice.call(this.element.children).forEach(function (el) { detach(el); });
+        this.restoreElem();
     };
     Splitter.prototype.setPaneSettings = function () {
         var childCount = this.allPanes.length;
@@ -743,7 +745,7 @@ var Splitter = /** @__PURE__ @class */ (function (_super) {
                 }
                 else {
                     (_this.currentBarIndex !== 0) ?
-                        _this.previousPane.previousElementSibling.style.flexGrow = '' : _this.nextPane.style.flexGrow = '';
+                        _this.previousPane.style.flexGrow = '' : _this.nextPane.style.flexGrow = '';
                     removeClass([_this.previousPane], collapseClass);
                     removeClass([_this.nextPane], EXPAND_PANE);
                 }
@@ -763,15 +765,30 @@ var Splitter = /** @__PURE__ @class */ (function (_super) {
     };
     Splitter.prototype.updateIconsOnCollapse = function (e) {
         this.splitterProperty();
-        if (this.splitInstance.prevPaneCollapsed && this.splitInstance.nextPaneExpanded) {
+        if (this.previousPane.classList.contains(COLLAPSE_PANE) && !this.nextPane.classList.contains(COLLAPSE_PANE)) {
             addClass([e.target], HIDE_ICON);
-            this.showCurrentBarIcon();
+            if (this.paneSettings[this.prevPaneIndex].collapsible) {
+                this.showCurrentBarIcon();
+            }
             this.resizableModel(this.currentBarIndex, false);
+            if (this.previousPane.classList.contains(COLLAPSE_PANE) && !this.nextPane.classList.contains(COLLAPSE_PANE) &&
+                !this.paneSettings[this.prevPaneIndex].collapsible) {
+                this.hideTargetBarIcon(this.prevBar, this.rightArrow);
+            }
+            if (this.previousPane.previousElementSibling && !this.previousPane.previousElementSibling.classList.contains(COLLAPSE_PANE)) {
+                if (this.previousPane.classList.contains(COLLAPSE_PANE) && this.paneSettings[this.prevPaneIndex].collapsible) {
+                    this.showTargetBarIcon(this.prevBar, this.leftArrow);
+                }
+                else if (!this.paneSettings[this.prevPaneIndex].collapsible) {
+                    this.hideTargetBarIcon(this.prevBar, this.leftArrow);
+                }
+            }
             if (!isNullOrUndefined(this.prevBar)) {
                 this.resizableModel(this.currentBarIndex - 1, false);
                 this.hideTargetBarIcon(this.prevBar, this.arrow);
-                // first pane collapsible false
-                this.showTargetBarIcon(this.prevBar, this.leftArrow);
+            }
+            if (!this.paneSettings[this.prevPaneIndex].collapsible) {
+                this.hideTargetBarIcon(this.currentSeparator, this.rightArrow);
             }
         }
         else if (!this.splitInstance.prevPaneCollapsed && !this.splitInstance.nextPaneExpanded) {
@@ -779,19 +796,34 @@ var Splitter = /** @__PURE__ @class */ (function (_super) {
             if (!this.splitInstance.nextPaneNextEle.classList.contains('e-collapsed')) {
                 this.resizableModel(this.currentBarIndex + 1, true);
             }
-            this.showCurrentBarIcon();
             if (!this.paneSettings[this.currentBarIndex].collapsible) {
                 addClass([e.target], HIDE_ICON);
             }
+            if (this.previousPane && this.prevPaneIndex === 0 && (this.paneSettings[this.prevPaneIndex].collapsible)) {
+                this.showTargetBarIcon(this.currentSeparator, this.leftArrow);
+            }
+            if (this.nextPane && this.nextPaneIndex === this.allPanes.length - 1 && (this.paneSettings[this.nextPaneIndex].collapsible)) {
+                this.showTargetBarIcon(this.getPrevBar(this.nextPaneIndex), this.rightArrow);
+            }
+            if (!(this.previousPane.classList.contains(COLLAPSE_PANE)) && this.paneSettings[this.nextPaneIndex].collapsible) {
+                this.showTargetBarIcon(this.currentSeparator, this.rightArrow);
+            }
             if (!isNullOrUndefined(this.nextBar)) {
-                this.showTargetBarIcon(this.nextBar, this.leftArrow);
-                if (!this.paneSettings[this.currentBarIndex].collapsible && this.paneSettings[this.currentBarIndex + 1].collapsible) {
-                    this.hideTargetBarIcon(this.nextBar, this.arrow);
+                if (this.nextPane.nextElementSibling && (this.nextPane.nextElementSibling.classList.contains('e-collapsed') &&
+                    this.paneSettings[this.nextPaneIndex + 1].collapsible) ||
+                    (!this.nextPane.nextElementSibling.classList.contains('e-collapsed') &&
+                        this.paneSettings[this.nextPaneIndex].collapsible)) {
+                    this.showTargetBarIcon(this.nextBar, this.leftArrow);
                 }
                 else if (!this.paneSettings[this.splitInstance.nextPaneIndex + 1].collapsible &&
                     this.paneSettings[this.currentBarIndex]) {
                     this.hideTargetBarIcon(this.nextBar, this.arrow);
                 }
+            }
+            if (!(this.nextPaneIndex === this.allPanes.length - 1) && this.nextPane.nextElementSibling &&
+                !this.nextPane.classList.contains(COLLAPSE_PANE) && !this.nextPane.nextElementSibling.classList.contains(COLLAPSE_PANE)
+                && !this.paneSettings[this.nextPaneIndex + 1].collapsible) {
+                this.hideTargetBarIcon(this.nextBar, this.rightArrow);
             }
         }
     };
@@ -861,12 +893,19 @@ var Splitter = /** @__PURE__ @class */ (function (_super) {
         this.splitterProperty();
         addClass([e.target], HIDE_ICON);
         if (!this.splitInstance.prevPaneExpanded && !this.splitInstance.nextPaneCollapsed) {
-            this.showCurrentBarIcon();
-            removeClass([e.target], HIDE_ICON);
+            if (this.paneSettings[this.prevPaneIndex].collapsible) {
+                this.showCurrentBarIcon();
+            }
+            if (this.paneSettings[this.nextPaneIndex].collapsible) {
+                removeClass([e.target], HIDE_ICON);
+            }
             this.resizableModel(this.currentBarIndex, true);
-            if (!isNullOrUndefined(this.prevBar) && !this.splitInstance.prevPanePreEle.classList.contains(COLLAPSE_PANE)) {
+            if (!isNullOrUndefined(this.prevBar) &&
+                !this.splitInstance.prevPanePreEle.classList.contains(COLLAPSE_PANE)) {
                 this.resizableModel(this.currentBarIndex - 1, true);
-                this.showTargetBarIcon(this.prevBar, this.rightArrow);
+                if (this.paneSettings[this.prevPaneIndex].collapsible) {
+                    this.showTargetBarIcon(this.prevBar, this.rightArrow);
+                }
                 if (!this.paneSettings[this.currentBarIndex - 1].collapsible) {
                     this.hideTargetBarIcon(this.prevBar, this.arrow);
                     if (this.paneSettings[this.currentBarIndex].collapsible &&
@@ -880,21 +919,33 @@ var Splitter = /** @__PURE__ @class */ (function (_super) {
                 }
             }
             else {
-                if (this.paneSettings[this.currentBarIndex].collapsible && !this.paneSettings[this.currentBarIndex + 1].collapsible) {
-                    this.hideTargetBarIcon(this.currentSeparator, this.rightArrow);
-                }
-                else {
+                if (this.previousPane.previousElementSibling && this.paneSettings[this.prevPaneIndex].collapsible &&
+                    (this.previousPane.previousElementSibling.classList.contains(COLLAPSE_PANE) &&
+                        this.paneSettings[this.prevPaneIndex - 1].collapsible)) {
                     this.showTargetBarIcon(this.prevBar, this.rightArrow);
+                }
+                if (!this.paneSettings[this.currentBarIndex + 1].collapsible) {
+                    this.hideTargetBarIcon(this.currentSeparator, this.rightArrow);
                 }
             }
         }
         else if (this.splitInstance.prevPaneExpanded && this.splitInstance.nextPaneCollapsed) {
             this.resizableModel(this.currentBarIndex, false);
             this.resizableModel(this.currentBarIndex + 1, false);
-            this.showCurrentBarIcon();
+            if (this.paneSettings[this.nextPaneIndex].collapsible) {
+                this.showCurrentBarIcon();
+            }
             if (!isNullOrUndefined(this.nextBar)) {
                 this.hideTargetBarIcon(this.nextBar, this.arrow);
-                // only when middle pane collapsible to true
+            }
+            if (this.nextPane && this.nextPaneIndex === this.allPanes.length - 1 && (!this.paneSettings[this.nextPaneIndex].collapsible &&
+                this.splitInstance.nextPaneCollapsed)) {
+                this.hideTargetBarIcon(this.currentSeparator, this.arrow);
+            }
+            if (!(this.nextPaneIndex === this.allPanes.length - 1) && this.nextPane.nextElementSibling &&
+                this.nextPane.classList.contains(COLLAPSE_PANE) &&
+                !this.nextPane.nextElementSibling.classList.contains(COLLAPSE_PANE)
+                && this.paneSettings[this.nextPaneIndex].collapsible) {
                 this.showTargetBarIcon(this.nextBar, this.rightArrow);
             }
         }
@@ -1429,7 +1480,24 @@ var Splitter = /** @__PURE__ @class */ (function (_super) {
     Splitter.prototype.compileElement = function (ele, val, prop) {
         var blazorContain = Object.keys(window);
         if (typeof (val) === 'string') {
-            val = (val).trim();
+            if (val[0] === '.' || val[0] === '#') {
+                var eleVal = document.querySelector(val);
+                if (!isNullOrUndefined(eleVal)) {
+                    this.templateElement.push(eleVal);
+                    eleVal.style.display = '';
+                    if (eleVal.getAttribute('style') === '') {
+                        eleVal.removeAttribute('style');
+                    }
+                    val = eleVal.outerHTML.trim();
+                    detach(eleVal);
+                }
+                else {
+                    val = val.trim();
+                }
+            }
+            else {
+                val = val.trim();
+            }
         }
         var templateFn;
         if (!isNullOrUndefined(val.outerHTML)) {
@@ -1516,9 +1584,27 @@ var Splitter = /** @__PURE__ @class */ (function (_super) {
         if (!this.isDestroyed) {
             _super.prototype.destroy.call(this);
             EventHandler.remove(document, 'touchstart click', this.onDocumentClick);
-            detach(this.element);
-            this.element = this.wrapper;
-            this.wrapperParent.appendChild(this.wrapper);
+            while (this.element.attributes.length > 0) {
+                this.element.removeAttribute(this.element.attributes[0].name);
+            }
+            this.element.innerHTML = this.wrapper.innerHTML;
+            for (var i = 0; i < this.wrapper.attributes.length; i++) {
+                this.element.setAttribute(this.wrapper.attributes[i].name, this.wrapper.attributes[i].value);
+            }
+            if (this.refreshing) {
+                addClass([this.element], ['e-control', 'e-lib', ROOT]);
+                this.allBars = [];
+                this.allPanes = [];
+            }
+            this.restoreElem();
+        }
+    };
+    Splitter.prototype.restoreElem = function () {
+        if (this.templateElement.length > 0) {
+            for (var i = 0; i < this.templateElement.length; i++) {
+                this.templateElement[i].style.display = 'none';
+                document.body.appendChild(this.templateElement[i]);
+            }
         }
     };
     Splitter.prototype.addPaneClass = function (pane) {

@@ -18,7 +18,7 @@ function copyObject(source: any, destiation: any): Object {
     return destiation;
 }
 
-function getEventObject(eventType: string, eventName: string, currentTarget?: Element, target?: Element, x?: number, y?: number, offset?: number): Object {
+function getEventObject(eventType: string, eventName: string, currentTarget?: Element, target?: Element, x?: number, y?: number, offsetY?: number,offsetX?: number): Object {
     let tempEvent: any = document.createEvent(eventType);
     tempEvent.initEvent(eventName, true, true);
     let returnObject: any = copyObject(tempEvent, {});
@@ -37,10 +37,13 @@ function getEventObject(eventType: string, eventName: string, currentTarget?: El
     }
     if (!isNullOrUndefined(target)) {
         returnObject.target = returnObject.srcElement = returnObject.toElement = target;
-        if (!isNullOrUndefined(offset)) {
-            returnObject.offsetY = offset;
+        if (!isNullOrUndefined(offsetY)) {
+            returnObject.offsetY = offsetY;
         } else {
             returnObject.offsetY = 7;
+        }
+        if (!isNullOrUndefined(offsetX)) {
+            returnObject.offsetX = offsetX;
         }
     }
 
@@ -3699,19 +3702,49 @@ describe('TreeView control', () => {
             });
             it('testing with target as expand icon', () => {
                 let li: Element[] = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('li');
-                let mousedown: any = getEventObject('MouseEvents', 'mousedown', treeObj.element, li[3].querySelector('.e-icons'), 15, 10);
+                let mousedown: any = getEventObject('MouseEvents', 'mousedown', treeObj.element, li[3].querySelector('.e-icons'),15, 10, 19, 9);
                 EventHandler.trigger(treeObj.element, 'mousedown', mousedown);
-                let mousemove: any = getEventObject('MouseEvents', 'mousemove', treeObj.element, li[3].querySelector('.e-icons'), 15, 70);
+                let mousemove: any = getEventObject('MouseEvents', 'mousemove', treeObj.element, li[3].querySelector('.e-icons'), 15, 70, 19, 9);
                 EventHandler.trigger(<any>(document), 'mousemove', mousemove);
                 mousemove.srcElement = mousemove.target = mousemove.toElement = li[0].querySelector('.e-icons');
                 mousemove = setMouseCordinates(mousemove, 15, 75);
                 EventHandler.trigger(<any>(document), 'mousemove', mousemove);
-                let mouseup: any = getEventObject('MouseEvents', 'mouseup', treeObj.element, li[0].querySelector('.e-icons'));
+                let mouseup: any = getEventObject('MouseEvents', 'mouseup', treeObj.element, li[0].querySelector('.e-icons'), undefined, undefined, 19, 9);
                 mouseup.type = 'mouseup';
                 EventHandler.trigger(<any>(document), 'mouseup', mouseup);
                 expect(li[0].childElementCount).toBe(2);
                 expect(li[0].children[1].childElementCount).toBe(2);
                 expect(treeObj.getTreeData('01')[0]['nodeChild'][1]['nodeText']).toBe('Documents');
+            });
+            it('testing with target as collapse icon', () => {
+                let li: Element[] = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('li');
+                let mousedown: any = getEventObject('MouseEvents', 'mousedown', treeObj.element, li[3].querySelector('.e-icons'),15, 10, 4, 9);
+                EventHandler.trigger(treeObj.element, 'mousedown', mousedown);
+                let mousemove: any = getEventObject('MouseEvents', 'mousemove', treeObj.element, li[3].querySelector('.e-icons'), 15, 70, 4, 9);
+                EventHandler.trigger(<any>(document), 'mousemove', mousemove);
+                mousemove.srcElement = mousemove.target = mousemove.toElement = li[5].querySelector('.e-icons');
+                mousemove = setMouseCordinates(mousemove, 15, 75);
+                EventHandler.trigger(<any>(document), 'mousemove', mousemove);
+                let mouseup: any = getEventObject('MouseEvents', 'mouseup', treeObj.element, li[5].querySelector('.e-icons'), undefined, undefined, 4, 9);
+                mouseup.type = 'mouseup';
+                EventHandler.trigger(<any>(document), 'mouseup', mouseup);
+                expect(li[5].childElementCount).toBe(2);
+                expect(li[5].children[1].childElementCount).toBe(5);
+                expect(treeObj.getTreeData('05')[0]['nodeChild'][4]['nodeText']).toBe('Documents');
+            });
+            it('testing with target as expand icon and dropping as previous sibling', () => {
+                let li: Element[] = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('li');
+                let mousedown: any = getEventObject('MouseEvents', 'mousedown', treeObj.element, li[2].querySelector('.e-icons'),15, 10, 4);
+                EventHandler.trigger(treeObj.element, 'mousedown', mousedown);
+                let mousemove: any = getEventObject('MouseEvents', 'mousemove', treeObj.element, li[2].querySelector('.e-icons'), 15, 70, 4);
+                EventHandler.trigger(<any>(document), 'mousemove', mousemove);
+                mousemove.srcElement = mousemove.target = mousemove.toElement = li[4].querySelector('.e-icons');
+                mousemove = setMouseCordinates(mousemove, 15, 75);
+                EventHandler.trigger(<any>(document), 'mousemove', mousemove);
+                let mouseup: any = getEventObject('MouseEvents', 'mouseup', treeObj.element, li[4].querySelector('.e-icons'), undefined, undefined, 2);
+                mouseup.type = 'mouseup';
+                EventHandler.trigger(<any>(document), 'mouseup', mouseup);
+                expect(li[4].getAttribute("data-uid")).toBe("04");
             });
             it('testing with target as custom icon', () => {
                 let li: Element[] = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('li');
@@ -7356,14 +7389,14 @@ describe('TreeView control', () => {
             });
             it('testing with target as expand icon', () => {
                 let li: Element[] = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('li');
-                let mousedown: any = getEventObject('MouseEvents', 'mousedown', treeObj.element, li[3].querySelector('.e-icons'), 15, 10);
+                let mousedown: any = getEventObject('MouseEvents', 'mousedown', treeObj.element, li[3].querySelector('.e-icons'), 15, 10, 19, 9);
                 EventHandler.trigger(treeObj.element, 'mousedown', mousedown);
-                let mousemove: any = getEventObject('MouseEvents', 'mousemove', treeObj.element, li[3].querySelector('.e-icons'), 15, 70);
+                let mousemove: any = getEventObject('MouseEvents', 'mousemove', treeObj.element, li[3].querySelector('.e-icons'), 15, 70, 19, 9);
                 EventHandler.trigger(<any>(document), 'mousemove', mousemove);
                 mousemove.srcElement = mousemove.target = mousemove.toElement = li[0].querySelector('.e-icons');
                 mousemove = setMouseCordinates(mousemove, 15, 75);
                 EventHandler.trigger(<any>(document), 'mousemove', mousemove);
-                let mouseup: any = getEventObject('MouseEvents', 'mouseup', treeObj.element, li[0].querySelector('.e-icons'));
+                let mouseup: any = getEventObject('MouseEvents', 'mouseup', treeObj.element, li[0].querySelector('.e-icons'), undefined, undefined, 19, 9);
                 mouseup.type = 'mouseup';
                 EventHandler.trigger(<any>(document), 'mouseup', mouseup);
                 expect(li[0].childElementCount).toBe(2);
@@ -9853,14 +9886,14 @@ describe('TreeView control', () => {
             });
             it('testing with target as expand icon', () => {
                 let li: Element[] = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('li');
-                let mousedown: any = getEventObject('MouseEvents', 'mousedown', treeObj.element, li[2].querySelector('.e-list-text'), 15, 10);
+                let mousedown: any = getEventObject('MouseEvents', 'mousedown', treeObj.element, li[2].querySelector('.e-list-text'), 15, 10, 19, 9);
                 EventHandler.trigger(treeObj.element, 'mousedown', mousedown);
-                let mousemove: any = getEventObject('MouseEvents', 'mousemove', treeObj.element, li[2].querySelector('.e-list-text'), 15, 70);
+                let mousemove: any = getEventObject('MouseEvents', 'mousemove', treeObj.element, li[2].querySelector('.e-list-text'), 15, 70, 19, 9);
                 EventHandler.trigger(<any>(document), 'mousemove', mousemove);
                 mousemove.srcElement = mousemove.target = mousemove.toElement = li[0].querySelector('.e-icons');
                 mousemove = setMouseCordinates(mousemove, 15, 75);
                 EventHandler.trigger(<any>(document), 'mousemove', mousemove);
-                let mouseup: any = getEventObject('MouseEvents', 'mouseup', treeObj.element, li[0].querySelector('.e-icons'));
+                let mouseup: any = getEventObject('MouseEvents', 'mouseup', treeObj.element, li[0].querySelector('.e-icons'), undefined, undefined, 19, 9);
                 mouseup.type = 'mouseup';
                 EventHandler.trigger(<any>(document), 'mouseup', mouseup);
                 expect(li[0].childElementCount).toBe(2);
@@ -9868,14 +9901,14 @@ describe('TreeView control', () => {
             });
             it('testing with target as custom icon', () => {
                 let li: Element[] = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('li');
-                let mousedown: any = getEventObject('MouseEvents', 'mousedown', treeObj.element, li[1].querySelector('.e-list-icon'), 15, 10);
+                let mousedown: any = getEventObject('MouseEvents', 'mousedown', treeObj.element, li[1].querySelector('.e-list-icon'), 15, 10, undefined, 9);
                 EventHandler.trigger(treeObj.element, 'mousedown', mousedown);
-                let mousemove: any = getEventObject('MouseEvents', 'mousemove', treeObj.element, li[1].querySelector('.e-list-icon'), 15, 70);
+                let mousemove: any = getEventObject('MouseEvents', 'mousemove', treeObj.element, li[1].querySelector('.e-list-icon'), 15, 70, undefined, 9);
                 EventHandler.trigger(<any>(document), 'mousemove', mousemove);
                 mousemove.srcElement = mousemove.target = mousemove.toElement = li[3].querySelector('.e-list-icon');
                 mousemove = setMouseCordinates(mousemove, 15, 75);
                 EventHandler.trigger(<any>(document), 'mousemove', mousemove);
-                let mouseup: any = getEventObject('MouseEvents', 'mouseup', treeObj.element, li[3].querySelector('.e-list-icon'));
+                let mouseup: any = getEventObject('MouseEvents', 'mouseup', treeObj.element, li[3].querySelector('.e-list-icon'), undefined, undefined, undefined, 9);
                 mouseup.type = 'mouseup';
                 EventHandler.trigger(<any>(document), 'mouseup', mouseup);
                 expect(li[0].childElementCount).toBe(2);
@@ -9884,15 +9917,15 @@ describe('TreeView control', () => {
             });
             it('testing with target as text wrapper with child', () => {
                 let li: Element[] = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('li');
-                let mousedown: any = getEventObject('MouseEvents', 'mousedown', treeObj.element, li[3].querySelector('.e-text-content'), 15, 10);
+                let mousedown: any = getEventObject('MouseEvents', 'mousedown', treeObj.element, li[3].querySelector('.e-text-content'), 15, 10, 19, 9);
                 EventHandler.trigger(treeObj.element, 'mousedown', mousedown);
-                let mousemove: any = getEventObject('MouseEvents', 'mousemove', treeObj.element, li[3].querySelector('.e-text-content'), 15, 70);
+                let mousemove: any = getEventObject('MouseEvents', 'mousemove', treeObj.element, li[3].querySelector('.e-text-content'), 15, 70, 19, 9);
                 EventHandler.trigger(<any>(document), 'mousemove', mousemove);
                 mousemove.srcElement = mousemove.target = mousemove.toElement = li[0].querySelector('.e-text-content');
                 mousemove = setMouseCordinates(mousemove, 15, 75);
                 EventHandler.trigger(<any>(document), 'mousemove', mousemove);
                 expect(document.querySelector('.e-drop-in')).not.toBe(null);
-                let mouseup: any = getEventObject('MouseEvents', 'mouseup', treeObj.element, li[0].querySelector('.e-text-content'));
+                let mouseup: any = getEventObject('MouseEvents', 'mouseup', treeObj.element, li[0].querySelector('.e-text-content'), undefined, undefined, 19 ,9);
                 mouseup.type = 'mouseup';
                 EventHandler.trigger(<any>(document), 'mouseup', mouseup);
                 expect(li[0].childElementCount).toBe(2);

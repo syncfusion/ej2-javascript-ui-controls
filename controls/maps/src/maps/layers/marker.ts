@@ -63,8 +63,20 @@ export class Marker {
                     eventArgs = blazorEventArgs;
                 }
                 this.maps.trigger('markerRendering', eventArgs, (MarkerArgs: IMarkerRenderingEventArgs) => {
-                    let lng: number = data['longitude'] | data['Longitude'];
-                    let lat: number = data['latitude'] | data['Latitude'];
+                    let lng: number = data['longitude'];
+                    let lat: number = data['latitude'];
+                    let data1: Object = {};
+                    let text: string[] = [];
+                    let j: number = 0;
+                    for (let i: number = 0; i < Object.keys(data).length; i++) {
+                        if(Object.keys(data)[i].toLowerCase() !== 'latitude' && Object.keys(data)[i].toLowerCase() !== 'longitude' 
+                            && Object.keys(data)[i].toLowerCase() !== 'name') {
+                                text[j] = data[Object.keys(data)[i].toLowerCase()];
+                                data1['text'] = text;
+                                j++;
+                        }
+                    }
+                    data['text'] = data1['text'];
                     let offset: Point = markerSettings.offset;
                     if (!eventArgs.cancel && markerSettings.visible && !isNullOrUndefined(lng) && !isNullOrUndefined(lat)) {
                         let markerID: string = this.maps.element.id + '_LayerIndex_' + layerIndex + '_MarkerIndex_'

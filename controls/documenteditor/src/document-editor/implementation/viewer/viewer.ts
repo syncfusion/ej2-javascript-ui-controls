@@ -148,6 +148,9 @@ export abstract class LayoutViewer {
      * @private
      */
     public isMouseDown: boolean = false;
+    private isMouseEntered: boolean = false;
+    // tslint:disable-next-line
+    private scrollMoveTimer: any = 0;
     /**
      * @private
      */
@@ -816,6 +819,8 @@ export abstract class LayoutViewer {
         this.viewerContainer.addEventListener('mousedown', this.onMouseDownInternal);
         this.viewerContainer.addEventListener('keydown', this.onKeyDownInternal);
         this.viewerContainer.addEventListener('mousemove', this.onMouseMoveInternal);
+        this.viewerContainer.addEventListener('mouseleave', this.onMouseLeaveInternal);
+        this.viewerContainer.addEventListener('mouseenter', this.onMouseEnterInternal);
         this.viewerContainer.addEventListener('contextmenu', this.onContextMenu);
         this.viewerContainer.addEventListener('dblclick', this.onDoubleTap);
         this.viewerContainer.addEventListener('mouseup', this.onMouseUpInternal);
@@ -1345,6 +1350,45 @@ export abstract class LayoutViewer {
             }
         }
     }
+    /**
+     * @private
+     */
+    public onMouseLeaveInternal = (event: MouseEvent): void => {
+        event.preventDefault();
+        if (this.isMouseDown) {
+            let viewerTop: number = this.viewerContainer.scrollTop;
+            if (event.offsetY + viewerTop > viewerTop) {
+                this.scrollMoveTimer = setInterval((): void => { this.scrollForwardOnSelection(); }, 500);
+            } else {
+                this.scrollMoveTimer = setInterval((): void => { this.scrollBackwardOnSelection(); }, 500);
+            }
+            if (this.isMouseEntered) {
+                this.isMouseEntered = false;
+            }
+        }
+
+    }
+    private scrollForwardOnSelection(): void {
+        this.viewerContainer.scrollTop = this.viewerContainer.scrollTop + 200;
+    }
+
+    private scrollBackwardOnSelection(): void {
+        this.viewerContainer.scrollTop = this.viewerContainer.scrollTop - 200;
+    }
+    /**
+     * @private
+     */
+    public onMouseEnterInternal = (): void => {
+        if (!this.isMouseEntered) {
+            this.updateScrollBars();
+        }
+        this.isMouseEntered = true;
+        if (this.scrollMoveTimer) {
+            clearInterval(this.scrollMoveTimer);
+        }
+    }
+
+
 
     /**
      * Fired on double tap.
@@ -2584,6 +2628,8 @@ export abstract class LayoutViewer {
         this.viewerContainer.removeEventListener('scroll', this.scrollHandler);
         this.viewerContainer.removeEventListener('mousedown', this.onMouseDownInternal);
         this.viewerContainer.removeEventListener('mousemove', this.onMouseMoveInternal);
+        this.viewerContainer.removeEventListener('mouseleave', this.onMouseLeaveInternal);
+        this.viewerContainer.removeEventListener('mouseenter', this.onMouseEnterInternal);
         if (!Browser.isDevice) {
             this.editableDiv.removeEventListener('keypress', this.onKeyPressInternal);
             if (Browser.info.name === 'chrome') {
@@ -3161,7 +3207,7 @@ export class PageLayoutViewer extends LayoutViewer {
         }
         this.visiblePages.push(page);
         // tslint:disable-next-line:max-line-length
-        if (this.owner.enableSpellCheck && this.owner.spellChecker.enableOptimizedSpellCheck && (this.triggerElementsOnLoading || this.isScrollHandler) && this.cachedPages.indexOf(page.index) < 0 ) {
+        if (this.owner.enableSpellCheck && this.owner.spellChecker.enableOptimizedSpellCheck && (this.triggerElementsOnLoading || this.isScrollHandler) && this.cachedPages.indexOf(page.index) < 0) {
             page.allowNextPageRendering = false;
             this.cachedPages.push(page.index);
             let content: string = this.owner.spellChecker.getPageContent(page);

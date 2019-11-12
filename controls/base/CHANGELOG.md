@@ -2,6 +2,15 @@
 
 ## [Unreleased]
 
+## 17.3.27 (2019-11-12)
+
+### Common
+
+#### Bug Fixes
+
+- Resolved Template support for Special characters(@) in helper function
+- Resolved Template support for Short string/numeric string in IF condition with Special characters(@)
+
 ## 17.3.16 (2019-10-09)
 
 ### Common

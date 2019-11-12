@@ -388,18 +388,29 @@ export class HeaderRender implements IRenderer {
         isFirstCol: boolean, isLastCol: boolean, isMovable: Element): Row<Column>[] {
         let lastCol: string = isLastCol ? 'e-lastcell' : '';
         let frzCols: number = this.parent.getFrozenColumns();
+        let left: number;
+        if (this.parent.enableColumnVirtualization && frzCols) {
+            left = this.parent.getContent().querySelector('.e-movablecontent').scrollLeft;
+        }
         if (!cols.columns) {
-            if (!frzCols && (!this.parent.lockcolPositionCount
-                || (cols.lockColumn && !this.lockColsRendered) || (!cols.lockColumn && this.lockColsRendered))
-                || (frzCols && ((!isMovable && (this.frzIdx + this.notfrzIdx < this.parent.frozenColumns || cols.isFrozen) &&
-                    (!this.parent.lockcolPositionCount || (cols.lockColumn && !this.lockColsRendered) ||
-                        (!cols.lockColumn && this.lockColsRendered)))
-                    || (isMovable && (this.frzIdx + this.notfrzIdx >= this.parent.frozenColumns && !cols.isFrozen) &&
-                        (!this.parent.lockcolPositionCount || (cols.lockColumn && !this.lockColsRendered) ||
-                            (!cols.lockColumn && this.lockColsRendered)))))) {
+            if (left && left > 0 && this.parent.enableColumnVirtualization
+                && (<{ inViewIndexes?: number[] }>this.parent).inViewIndexes[0] !== 0) {
                 rows[index].cells.push(this.generateCell(
                     cols, CellType.Header, this.colDepth - index,
                     (isFirstObj ? '' : (isFirstCol ? 'e-firstcell' : '')) + lastCol, index, this.parent.getColumnIndexByUid(cols.uid)));
+            } else {
+                if (!frzCols && (!this.parent.lockcolPositionCount
+                    || (cols.lockColumn && !this.lockColsRendered) || (!cols.lockColumn && this.lockColsRendered))
+                    || (frzCols && ((!isMovable && (this.frzIdx + this.notfrzIdx < this.parent.frozenColumns || cols.isFrozen) &&
+                        (!this.parent.lockcolPositionCount || (cols.lockColumn && !this.lockColsRendered) ||
+                            (!cols.lockColumn && this.lockColsRendered)))
+                        || (isMovable && (this.frzIdx + this.notfrzIdx >= this.parent.frozenColumns && !cols.isFrozen) &&
+                            (!this.parent.lockcolPositionCount || (cols.lockColumn && !this.lockColsRendered) ||
+                                (!cols.lockColumn && this.lockColsRendered)))))) {
+                    rows[index].cells.push(this.generateCell(
+                        cols, CellType.Header, this.colDepth - index,
+                        (isFirstObj ? '' : (isFirstCol ? 'e-firstcell' : '')) + lastCol, index, this.parent.getColumnIndexByUid(cols.uid)));
+                }
             }
             if (this.parent.lockcolPositionCount) {
                 if ((this.frzIdx + this.notfrzIdx < this.parent.frozenColumns) &&
@@ -558,12 +569,14 @@ export class HeaderRender implements IRenderer {
      * @returns {void} 
      */
     public refreshUI(): void {
+        let frzCols: number = this.parent.getFrozenColumns();
+        let isVFTable: boolean = this.parent.enableColumnVirtualization && frzCols !== 0;
         let headerDiv: Element = this.getPanel();
         this.toggleStackClass(headerDiv);
-        let table: Element = this.getTable();
-        let frzCols: number = this.parent.getFrozenColumns();
-        if (this.getTable()) {
-            remove(this.getTable());
+        let table: Element = this.parent.enableColumnVirtualization && frzCols
+            ? this.headerPanel.querySelector('.e-movableheader').querySelector('.e-table') : this.getTable();
+        if (table) {
+            remove(table);
             table.removeChild(table.firstChild);
             table.removeChild(table.childNodes[0]);
             let colGroup: Element = this.parent.createElement('colgroup');
@@ -572,7 +585,9 @@ export class HeaderRender implements IRenderer {
             table.insertBefore(findHeaderRow.thead, table.firstChild);
             this.updateColGroup(colGroup);
             table.insertBefore(this.setColGroup(colGroup), table.firstChild);
-            this.setTable(table);
+            if (!isVFTable) {
+                this.setTable(table);
+            }
             this.appendContent(table);
             this.parent.notify(events.colGroupRefresh, {});
             this.widthService.setWidthToColumns();

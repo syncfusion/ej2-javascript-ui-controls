@@ -7268,6 +7268,7 @@ class DOMNode {
         }
     }
     ensureSelfClosingTag(start, className, range) {
+        let isTable = false;
         if (start.nodeType === 3) {
             this.replaceWith(start, this.marker(className, this.encode(start.textContent)));
         }
@@ -7283,11 +7284,35 @@ class DOMNode {
                 parNode.appendChild(start);
                 start = parNode.children[0];
             }
-            for (let i = 0; i < selfClosingTags.length; i++) {
-                start = start.tagName === selfClosingTags[i] ? start.parentNode : start;
+            if (start.tagName === 'TABLE') {
+                isTable = true;
+                if (start.textContent === '') {
+                    start = start.querySelectorAll('td')[start.querySelectorAll('td').length - 1];
+                    start = !isNullOrUndefined(start.childNodes[0]) ? start.childNodes[0] : start;
+                }
+                else {
+                    let lastNode = start.lastChild;
+                    while (lastNode.nodeType !== 3 && lastNode.nodeName !== '#text') {
+                        lastNode = lastNode.lastChild;
+                    }
+                    start = lastNode;
+                }
             }
-            let marker = this.marker(className, '');
-            append([this.parseHTMLFragment(marker)], start);
+            for (let i = 0; i < selfClosingTags.length; i++) {
+                start = (start.tagName === selfClosingTags[i] && !isTable) ? start.parentNode : start;
+            }
+            if (start.nodeType === 3 && start.nodeName === '#text') {
+                this.replaceWith(start, this.marker(className, this.encode(start.textContent)));
+            }
+            else if (start.nodeName === 'BR') {
+                this.replaceWith(start, this.marker(markerClassName.endSelection, this.encode(start.textContent)));
+                let markerEnd = range.endContainer.querySelector('.' + markerClassName.endSelection);
+                markerEnd.appendChild(start);
+            }
+            else {
+                let marker = this.marker(className, '');
+                append([this.parseHTMLFragment(marker)], start);
+            }
         }
     }
     createTempNode(element) {
@@ -7399,7 +7424,7 @@ class DOMNode {
                 }
                 parentNode = this.blockParentNode(endNode);
                 if (parentNode && this.ignoreTableTag(parentNode) && collectionNodes.indexOf(parentNode) < 0 &&
-                    parentNode.previousElementSibling.tagName !== 'IMG') {
+                    (!isNullOrUndefined(parentNode.previousElementSibling) && parentNode.previousElementSibling.tagName !== 'IMG')) {
                     collectionNodes.push(parentNode);
                 }
             }
@@ -7983,6 +8008,12 @@ class Formats {
     }
     applyFormats(e) {
         let range = this.parent.nodeSelection.getRange(this.parent.currentDocument);
+        let isSelectAll = false;
+        if (this.parent.editableElement === range.endContainer &&
+            !isNullOrUndefined(this.parent.editableElement.children[range.endOffset - 1]) &&
+            this.parent.editableElement.children[range.endOffset - 1].tagName === 'TABLE') {
+            isSelectAll = true;
+        }
         let save = this.parent.nodeSelection.save(range, this.parent.currentDocument);
         this.parent.domNode.setMarker(save);
         let formatsNodes = this.parent.domNode.blockNodes();
@@ -8007,11 +8038,23 @@ class Formats {
             this.parent.domNode.replaceWith(parentNode, replaceTag);
         }
         this.parent.editableElement.focus();
+        let startNode;
+        let endNode;
+        if (!isNullOrUndefined(this.parent.editableElement.querySelector('.' + markerClassName.startSelection)) &&
+            !isNullOrUndefined(this.parent.editableElement.querySelector('.' + markerClassName.endSelection))) {
+            startNode = this.parent.editableElement.querySelector('.' + markerClassName.startSelection).lastChild;
+            endNode = this.parent.editableElement.querySelector('.' + markerClassName.endSelection).lastChild;
+        }
         save = this.parent.domNode.saveMarker(save);
         if (isIDevice$1()) {
             setEditFrameFocus(this.parent.editableElement, e.selector);
         }
-        save.restore();
+        if (isSelectAll) {
+            this.parent.nodeSelection.setSelectionText(this.parent.currentDocument, startNode, endNode, 0, endNode.textContent.length);
+        }
+        else {
+            save.restore();
+        }
         if (e.callBack) {
             e.callBack({
                 requestType: e.subCommand,
@@ -8316,7 +8359,9 @@ class InsertHtml {
         }
         if (!isNullOrUndefined(node) && !isNullOrUndefined(node.classList) && node.classList.contains('pasteContent')) {
             let lastNode = node.lastChild;
-            while (!isNullOrUndefined(lastNode) && lastNode.nodeName !== '#text' && lastNode.nodeName !== 'IMG') {
+            lastNode = lastNode.nodeName === 'BR' ? lastNode.previousSibling : lastNode;
+            while (!isNullOrUndefined(lastNode) && lastNode.nodeName !== '#text' && lastNode.nodeName !== 'IMG' &&
+                lastNode.nodeName !== 'BR') {
                 lastNode = lastNode.lastChild;
             }
             lastNode = isNullOrUndefined(lastNode) ? node : lastNode;
@@ -11916,6 +11961,8 @@ class PasteCleanup {
             'frameset', 'hr', 'iframe', 'isindex', 'li', 'map', 'menu', 'noframes', 'noscript',
             'object', 'ol', 'pre', 'td', 'tr', 'th', 'tbody', 'tfoot', 'thead', 'table', 'ul',
             'header', 'article', 'nav', 'footer', 'section', 'aside', 'main', 'figure', 'figcaption'];
+        this.isNotFromHtml = false;
+        this.containsHtml = false;
         this.parent = parent;
         this.locator = serviceLocator;
         this.renderFactory = this.locator.getService('rendererFactory');
@@ -11955,7 +12002,12 @@ class PasteCleanup {
         }
         if (e.args && value !== null && this.parent.editorMode === 'HTML') {
             if (value.length === 0) {
+                let htmlRegex = new RegExp(/<\/[a-z][\s\S]*>/i);
                 value = e.args.clipboardData.getData('text/plain');
+                this.isNotFromHtml = value !== '' ? true : false;
+                value = value.replace(/</g, '&lt;');
+                value = value.replace(/>/g, '&gt;');
+                this.containsHtml = htmlRegex.test(value);
                 let file = e && e.args.clipboardData &&
                     e.args.clipboardData.items.length > 0 ?
                     e.args.clipboardData.items[0].getAsFile() : null;
@@ -11973,32 +12025,9 @@ class PasteCleanup {
                         }
                     }
                 });
-                let htmlRegex = new RegExp(/<\/[a-z][\s\S]*>/i);
                 if (!htmlRegex.test(value)) {
-                    let enterSplitText = value.split('\n');
-                    let contentInnerElem = '';
-                    for (let i = 0; i < enterSplitText.length; i++) {
-                        if (enterSplitText[i].trim() === '') {
-                            contentInnerElem += '<p><br></p>';
-                        }
-                        else {
-                            let contentWithSpace = '';
-                            let spaceBetweenContent = true;
-                            let spaceSplit = enterSplitText[i].split(' ');
-                            for (let j = 0; j < spaceSplit.length; j++) {
-                                if (spaceSplit[j].trim() === '') {
-                                    contentWithSpace += spaceBetweenContent ? '&nbsp;' : ' ';
-                                }
-                                else {
-                                    spaceBetweenContent = false;
-                                    contentWithSpace += spaceSplit[j] + ' ';
-                                }
-                            }
-                            contentInnerElem += '<p>' + contentWithSpace.trim() + '</p>';
-                        }
-                    }
                     let divElement = this.parent.createElement('div');
-                    divElement.innerHTML = contentInnerElem;
+                    divElement.innerHTML = this.splitBreakLine(value);
                     value = divElement.innerHTML;
                 }
             }
@@ -12033,6 +12062,35 @@ class PasteCleanup {
                 this.formatting(value, true, args);
             }
         }
+    }
+    splitBreakLine(value) {
+        let enterSplitText = value.split('\n');
+        let contentInnerElem = '';
+        for (let i = 0; i < enterSplitText.length; i++) {
+            if (enterSplitText[i].trim() === '') {
+                contentInnerElem += '<p><br></p>';
+            }
+            else {
+                let contentWithSpace = this.makeSpace(enterSplitText[i]);
+                contentInnerElem += '<p>' + contentWithSpace.trim() + '</p>';
+            }
+        }
+        return contentInnerElem;
+    }
+    makeSpace(enterSplitText) {
+        let contentWithSpace = '';
+        let spaceBetweenContent = true;
+        let spaceSplit = enterSplitText.split(' ');
+        for (let j = 0; j < spaceSplit.length; j++) {
+            if (spaceSplit[j].trim() === '') {
+                contentWithSpace += spaceBetweenContent ? '&nbsp;' : ' ';
+            }
+            else {
+                spaceBetweenContent = false;
+                contentWithSpace += spaceSplit[j] + ' ';
+            }
+        }
+        return contentWithSpace;
     }
     imgUploading(elm) {
         let base64Src = [];
@@ -12289,6 +12347,9 @@ class PasteCleanup {
     }
     formatting(value, clean, args) {
         let clipBoardElem = this.parent.createElement('div', { className: 'pasteContent', styles: 'display:inline;' });
+        if (this.isNotFromHtml && this.containsHtml) {
+            value = this.splitBreakLine(value);
+        }
         clipBoardElem.innerHTML = value;
         if (this.parent.pasteCleanupSettings.deniedTags !== null) {
             clipBoardElem = this.deniedTags(clipBoardElem);
@@ -14519,17 +14580,20 @@ class Image {
         return false;
     }
     dragStart(e) {
-        this.parent.trigger(actionBegin, e, (actionBeginArgs) => {
-            if (actionBeginArgs.cancel) {
-                e.preventDefault();
-            }
-            else {
-                if (e.target.nodeName === 'IMG') {
+        if (e.target.nodeName === 'IMG') {
+            this.parent.trigger(actionBegin, e, (actionBeginArgs) => {
+                if (actionBeginArgs.cancel) {
+                    e.preventDefault();
+                }
+                else {
                     e.dataTransfer.effectAllowed = 'copyMove';
                     e.target.classList.add(CLS_RTE_DRAG_IMAGE);
                 }
-            }
-        });
+            });
+        }
+        else {
+            return true;
+        }
     }
     ;
     dragEnter(e) {
@@ -14548,38 +14612,44 @@ class Image {
      * USed to set range When drop an image
      */
     dragDrop(e) {
-        this.parent.trigger(actionBegin, e, (actionBeginArgs) => {
-            if (actionBeginArgs.cancel) {
-                e.preventDefault();
-            }
-            else {
-                if (closest(e.target, '#' + this.parent.getID() + '_toolbar')) {
+        let imgElement = this.parent.inputElement.ownerDocument.querySelector('.' + CLS_RTE_DRAG_IMAGE);
+        if ((imgElement && imgElement.tagName === 'IMG') || e.dataTransfer.files.length > 0) {
+            this.parent.trigger(actionBegin, e, (actionBeginArgs) => {
+                if (actionBeginArgs.cancel) {
                     e.preventDefault();
-                    return;
-                }
-                if (this.parent.element.querySelector('.' + CLS_IMG_RESIZE)) {
-                    detach(this.imgResizeDiv);
-                }
-                e.preventDefault();
-                let range;
-                if (this.contentModule.getDocument().caretRangeFromPoint) { //For chrome
-                    range = this.contentModule.getDocument().caretRangeFromPoint(e.clientX, e.clientY);
-                }
-                else if ((e.rangeParent)) { //For mozilla firefox
-                    range = this.contentModule.getDocument().createRange();
-                    range.setStart(e.rangeParent, e.rangeOffset);
                 }
                 else {
-                    range = this.getDropRange(e.clientX, e.clientY); //For internet explorer
+                    if (closest(e.target, '#' + this.parent.getID() + '_toolbar')) {
+                        e.preventDefault();
+                        return;
+                    }
+                    if (this.parent.element.querySelector('.' + CLS_IMG_RESIZE)) {
+                        detach(this.imgResizeDiv);
+                    }
+                    e.preventDefault();
+                    let range;
+                    if (this.contentModule.getDocument().caretRangeFromPoint) { //For chrome
+                        range = this.contentModule.getDocument().caretRangeFromPoint(e.clientX, e.clientY);
+                    }
+                    else if ((e.rangeParent)) { //For mozilla firefox
+                        range = this.contentModule.getDocument().createRange();
+                        range.setStart(e.rangeParent, e.rangeOffset);
+                    }
+                    else {
+                        range = this.getDropRange(e.clientX, e.clientY); //For internet explorer
+                    }
+                    this.parent.notify(selectRange, { range: range });
+                    let uploadArea = this.parent.element.querySelector('.' + CLS_DROPAREA);
+                    if (uploadArea) {
+                        return;
+                    }
+                    this.insertDragImage(e);
                 }
-                this.parent.notify(selectRange, { range: range });
-                let uploadArea = this.parent.element.querySelector('.' + CLS_DROPAREA);
-                if (uploadArea) {
-                    return;
-                }
-                this.insertDragImage(e);
-            }
-        });
+            });
+        }
+        else {
+            return true;
+        }
     }
     /**
      * Used to calculate range on internet explorer

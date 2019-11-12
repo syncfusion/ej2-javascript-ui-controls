@@ -1062,6 +1062,7 @@ var XmlHttpRequestHandler = /** @__PURE__ @class */ (function () {
         if (this.contentType) {
             this.xmlHttpRequest.setRequestHeader('Content-Type', this.contentType);
         }
+        this.setCustomAjaxHeaders();
         if (this.responseType) {
             this.xmlHttpRequest.responseType = this.responseType;
         }
@@ -1126,6 +1127,15 @@ var XmlHttpRequestHandler = /** @__PURE__ @class */ (function () {
             this.onError(response);
         }
         return response;
+    };
+    XmlHttpRequestHandler.prototype.setCustomAjaxHeaders = function () {
+        for (var i = 0; i < this.customHeaders.length; i++) {
+            var header = this.customHeaders[i];
+            for (var _i = 0, _a = Object.keys(header); _i < _a.length; _i++) {
+                var key = _a[_i];
+                this.xmlHttpRequest.setRequestHeader(key, header[key]);
+            }
+        }
     };
     return XmlHttpRequestHandler;
 }());
@@ -12931,6 +12941,7 @@ var SpellChecker = /** @__PURE__ @class */ (function () {
                 service = (isByPage) ? service + 'ByPage' : service;
                 httpRequest_1.open('POST', service, true);
                 httpRequest_1.setRequestHeader('Content-Type', 'application/json');
+                _this.setCustomHeaders(httpRequest_1);
                 // tslint:disable-next-line:max-line-length
                 /* tslint:disable:no-any */
                 var spellCheckData = { LanguageID: languageID, TexttoCheck: word, CheckSpelling: checkSpelling, CheckSuggestion: checkSuggestion, AddWord: addWord };
@@ -12947,6 +12958,15 @@ var SpellChecker = /** @__PURE__ @class */ (function () {
                 };
             }
         });
+    };
+    SpellChecker.prototype.setCustomHeaders = function (httpRequest) {
+        for (var i = 0; i < this.viewer.owner.headers.length; i++) {
+            var header = this.viewer.owner.headers[i];
+            for (var _i = 0, _a = Object.keys(header); _i < _a.length; _i++) {
+                var key = _a[_i];
+                httpRequest.setRequestHeader(key, header[key]);
+            }
+        }
     };
     /**
      * Method to check for next error
@@ -15113,6 +15133,9 @@ var DocumentEditor = /** @__PURE__ @class */ (function (_super) {
         Property({ systemClipboard: 'SystemClipboard', spellCheck: 'SpellCheck', restrictEditing: 'RestrictEditing' })
     ], DocumentEditor.prototype, "serverActionSettings", void 0);
     __decorate([
+        Property([])
+    ], DocumentEditor.prototype, "headers", void 0);
+    __decorate([
         Event()
     ], DocumentEditor.prototype, "documentChange", void 0);
     __decorate([
@@ -16787,6 +16810,10 @@ var Layout = /** @__PURE__ @class */ (function () {
         }
         if (element instanceof ListTextElementBox || this.isFieldCode || element instanceof BookmarkElementBox ||
             element instanceof EditRangeEndElementBox || element instanceof EditRangeStartElementBox) {
+            if (element instanceof BookmarkElementBox && element.bookmarkType === 0 &&
+                !this.viewer.bookmarks.containsKey(element.name)) {
+                this.viewer.bookmarks.add(element.name, element);
+            }
             if (isNullOrUndefined(element.nextElement) && this.viewer.clientActiveArea.width > 0 && !element.line.isLastLine()) {
                 this.moveElementFromNextLine(line);
             }
@@ -20338,7 +20365,7 @@ var Layout = /** @__PURE__ @class */ (function () {
      * @private
      */
     // tslint:disable-next-line:max-line-length
-    Layout.prototype.layoutBodyWidgetCollection = function (blockIndex, bodyWidget, block, shiftNextWidget) {
+    Layout.prototype.layoutBodyWidgetCollection = function (blockIndex, bodyWidget, block, shiftNextWidget, isSkipShifting) {
         if (!isNullOrUndefined(this.viewer.owner)
             && this.viewer.owner.isLayoutEnabled) {
             if (bodyWidget instanceof BlockContainer) {
@@ -20360,7 +20387,7 @@ var Layout = /** @__PURE__ @class */ (function () {
                     if (!(prevWidget instanceof ParagraphWidget) ||
                         (prevWidget instanceof ParagraphWidget) && !prevWidget.isEndsWithPageBreak) {
                         this.viewer.cutFromTop(prevWidget.y + prevWidget.height);
-                        if (curretBlock.containerWidget !== prevWidget.containerWidget) {
+                        if (isNullOrUndefined(isSkipShifting) && curretBlock.containerWidget !== prevWidget.containerWidget) {
                             // tslint:disable-next-line:max-line-length
                             this.updateContainerWidget(curretBlock, prevWidget.containerWidget, prevWidget.indexInOwner + 1, false);
                         }
@@ -23782,6 +23809,9 @@ var LayoutViewer = /** @__PURE__ @class */ (function () {
          * @private
          */
         this.isMouseDown = false;
+        this.isMouseEntered = false;
+        // tslint:disable-next-line
+        this.scrollMoveTimer = 0;
         /**
          * @private
          */
@@ -24272,6 +24302,36 @@ var LayoutViewer = /** @__PURE__ @class */ (function () {
                 if (_this.isRowOrCellResizing) {
                     _this.selection.hideCaret();
                 }
+            }
+        };
+        /**
+         * @private
+         */
+        this.onMouseLeaveInternal = function (event) {
+            event.preventDefault();
+            if (_this.isMouseDown) {
+                var viewerTop = _this.viewerContainer.scrollTop;
+                if (event.offsetY + viewerTop > viewerTop) {
+                    _this.scrollMoveTimer = setInterval(function () { _this.scrollForwardOnSelection(); }, 500);
+                }
+                else {
+                    _this.scrollMoveTimer = setInterval(function () { _this.scrollBackwardOnSelection(); }, 500);
+                }
+                if (_this.isMouseEntered) {
+                    _this.isMouseEntered = false;
+                }
+            }
+        };
+        /**
+         * @private
+         */
+        this.onMouseEnterInternal = function () {
+            if (!_this.isMouseEntered) {
+                _this.updateScrollBars();
+            }
+            _this.isMouseEntered = true;
+            if (_this.scrollMoveTimer) {
+                clearInterval(_this.scrollMoveTimer);
             }
         };
         /**
@@ -25121,6 +25181,8 @@ var LayoutViewer = /** @__PURE__ @class */ (function () {
         this.viewerContainer.addEventListener('mousedown', this.onMouseDownInternal);
         this.viewerContainer.addEventListener('keydown', this.onKeyDownInternal);
         this.viewerContainer.addEventListener('mousemove', this.onMouseMoveInternal);
+        this.viewerContainer.addEventListener('mouseleave', this.onMouseLeaveInternal);
+        this.viewerContainer.addEventListener('mouseenter', this.onMouseEnterInternal);
         this.viewerContainer.addEventListener('contextmenu', this.onContextMenu);
         this.viewerContainer.addEventListener('dblclick', this.onDoubleTap);
         this.viewerContainer.addEventListener('mouseup', this.onMouseUpInternal);
@@ -25315,6 +25377,12 @@ var LayoutViewer = /** @__PURE__ @class */ (function () {
                 this.selection.updateCaretPosition();
             }
         }
+    };
+    LayoutViewer.prototype.scrollForwardOnSelection = function () {
+        this.viewerContainer.scrollTop = this.viewerContainer.scrollTop + 200;
+    };
+    LayoutViewer.prototype.scrollBackwardOnSelection = function () {
+        this.viewerContainer.scrollTop = this.viewerContainer.scrollTop - 200;
     };
     LayoutViewer.prototype.isSelectionInListText = function (cursorPoint) {
         var widget = this.getLineWidget(cursorPoint);
@@ -26184,6 +26252,8 @@ var LayoutViewer = /** @__PURE__ @class */ (function () {
         this.viewerContainer.removeEventListener('scroll', this.scrollHandler);
         this.viewerContainer.removeEventListener('mousedown', this.onMouseDownInternal);
         this.viewerContainer.removeEventListener('mousemove', this.onMouseMoveInternal);
+        this.viewerContainer.removeEventListener('mouseleave', this.onMouseLeaveInternal);
+        this.viewerContainer.removeEventListener('mouseenter', this.onMouseEnterInternal);
         if (!Browser.isDevice) {
             this.editableDiv.removeEventListener('keypress', this.onKeyPressInternal);
             if (Browser.info.name === 'chrome') {
@@ -45444,6 +45514,7 @@ var Editor = /** @__PURE__ @class */ (function () {
         enforceProtectionHandler.onSuccess = this.enforceProtectionInternal.bind(this);
         enforceProtectionHandler.onFailure = this.protectionFailureHandler.bind(this);
         enforceProtectionHandler.onError = this.protectionFailureHandler.bind(this);
+        enforceProtectionHandler.customHeaders = this.owner.headers;
         enforceProtectionHandler.send(formObject);
     };
     /* tslint:disable:no-any */
@@ -45488,6 +45559,7 @@ var Editor = /** @__PURE__ @class */ (function () {
             };
             unProtectDocumentHandler.url = this.owner.serviceUrl + this.owner.serverActionSettings.restrictEditing;
             unProtectDocumentHandler.contentType = 'application/json;charset=UTF-8';
+            unProtectDocumentHandler.customHeaders = this.owner.headers;
             unProtectDocumentHandler.onSuccess = this.onUnProtectionSuccess.bind(this);
             unProtectDocumentHandler.onFailure = this.protectionFailureHandler.bind(this);
             unProtectDocumentHandler.onError = this.protectionFailureHandler.bind(this);
@@ -47303,6 +47375,7 @@ var Editor = /** @__PURE__ @class */ (function () {
         this.pasteRequestHandler.url = proxy.owner.serviceUrl + this.owner.serverActionSettings.systemClipboard;
         this.pasteRequestHandler.responseType = 'json';
         this.pasteRequestHandler.contentType = 'application/json;charset=UTF-8';
+        this.pasteRequestHandler.customHeaders = proxy.owner.headers;
         this.pasteRequestHandler.send(formObject);
         showSpinner(this.owner.element);
         this.pasteRequestHandler.onSuccess = this.pasteFormattedContent.bind(this);
@@ -47746,7 +47819,7 @@ var Editor = /** @__PURE__ @class */ (function () {
             }
         }
         var owner = table.containerWidget;
-        this.removeBlock(table);
+        this.removeBlock(table, true);
         //Inserts table in the current table position.        
         var blockAdvCollection = owner.childWidgets;
         blockAdvCollection.splice(insertIndex, 0, newTable);
@@ -49205,30 +49278,33 @@ var Editor = /** @__PURE__ @class */ (function () {
     /**
      * @private
      */
-    Editor.prototype.removeFieldInWidget = function (widget) {
+    Editor.prototype.removeFieldInWidget = function (widget, isBookmark) {
+        if (isNullOrUndefined(isBookmark)) {
+            isBookmark = false;
+        }
         for (var i = 0; i < widget.childWidgets.length; i++) {
-            this.removeFieldInBlock(widget.childWidgets[i]);
+            this.removeFieldInBlock(widget.childWidgets[i], isBookmark);
         }
     };
     /**
      * @private
      */
-    Editor.prototype.removeFieldInBlock = function (block) {
+    Editor.prototype.removeFieldInBlock = function (block, isBookmark) {
         if (block instanceof TableWidget) {
-            this.removeFieldTable(block);
+            this.removeFieldTable(block, isBookmark);
         }
         else {
-            this.removeField(block);
+            this.removeField(block, isBookmark);
         }
     };
     /**
      * @private
      */
-    Editor.prototype.removeFieldTable = function (table) {
+    Editor.prototype.removeFieldTable = function (table, isBookmark) {
         for (var i = 0; i < table.childWidgets.length; i++) {
             var row = table.childWidgets[i];
             for (var j = 0; j < row.childWidgets.length; j++) {
-                this.removeFieldInWidget(row.childWidgets[j]);
+                this.removeFieldInWidget(row.childWidgets[j], isBookmark);
             }
         }
     };
@@ -52246,11 +52322,12 @@ var Editor = /** @__PURE__ @class */ (function () {
     /**
      * @private
      */
-    Editor.prototype.removeBlock = function (block) {
+    Editor.prototype.removeBlock = function (block, isSkipShifting) {
         var index;
         var blockCollection;
         var containerWidget;
         this.removeFieldInBlock(block);
+        this.removeFieldInBlock(block, true);
         if (block.isInsideTable) {
             containerWidget = block.associatedCell;
             index = block.associatedCell.childWidgets.indexOf(block);
@@ -52268,14 +52345,24 @@ var Editor = /** @__PURE__ @class */ (function () {
             containerWidget.childWidgets.splice(index, 1);
             block.containerWidget = undefined;
             containerWidget.height -= block.height;
-            this.viewer.layout.layoutBodyWidgetCollection(block.index, containerWidget, block, false);
+            this.viewer.layout.layoutBodyWidgetCollection(block.index, containerWidget, block, false, isSkipShifting);
         }
     };
-    Editor.prototype.removeField = function (block) {
-        for (var i = 0; i < this.viewer.fields.length; i++) {
-            var field = this.viewer.fields[i];
-            if (field.line.paragraph === block) {
-                this.viewer.fields.splice(i, 1);
+    Editor.prototype.removeField = function (block, isBookmark) {
+        var collection = this.viewer.fields;
+        if (isBookmark) {
+            collection = this.viewer.bookmarks.keys;
+        }
+        for (var i = 0; i < collection.length; i++) {
+            var element = isBookmark ?
+                this.viewer.bookmarks.get(collection[i]) : collection[i];
+            if (element.line.paragraph === block) {
+                if (isBookmark) {
+                    this.viewer.bookmarks.remove(collection[i]);
+                }
+                else {
+                    this.viewer.fields.splice(i, 1);
+                }
                 i--;
             }
         }
@@ -52721,6 +52808,11 @@ var Editor = /** @__PURE__ @class */ (function () {
                         this.removedBookmarkElements.push(inline);
                     }
                 }
+                if (inline instanceof BookmarkElementBox) {
+                    if (this.viewer.bookmarks.containsKey(inline.name)) {
+                        this.viewer.bookmarks.remove(inline.name);
+                    }
+                }
                 // if (editAction < 4) {
                 this.unLinkFieldCharacter(inline);
                 this.addRemovedNodes(lineWidget.children[i]);
@@ -52903,11 +52995,44 @@ var Editor = /** @__PURE__ @class */ (function () {
                 list = this.viewer.getListById(currentParagraph.paragraphFormat.listFormat.listId);
                 isUpdate = true;
             }
+            if (!isUpdate) {
+                while (!isNullOrUndefined(currentParagraph.nextWidget) && currentParagraph.nextWidget instanceof ParagraphWidget
+                    && currentParagraph.nextWidget.isEmpty() && currentParagraph.nextWidget.paragraphFormat.listFormat.listId === -1) {
+                    currentParagraph = currentParagraph.nextWidget;
+                }
+                if (currentParagraph.nextWidget && currentParagraph.nextWidget instanceof ParagraphWidget
+                    && currentParagraph.nextWidget.paragraphFormat.listFormat.listId !== -1) {
+                    currentParagraph = currentParagraph.nextWidget;
+                    list = this.viewer.getListById(currentParagraph.paragraphFormat.listFormat.listId);
+                    isUpdate = true;
+                }
+            }
         }
         var startListLevel = undefined;
+        var levelNumber = -1;
         if (!isNullOrUndefined(list)) {
+            levelNumber = currentParagraph.paragraphFormat.listFormat.listLevelNumber;
             var tempList = this.viewer.getListById(currentParagraph.paragraphFormat.listFormat.listId);
-            startListLevel = this.viewer.layout.getListLevel(tempList, currentParagraph.paragraphFormat.listFormat.listLevelNumber);
+            startListLevel = this.viewer.layout.getListLevel(tempList, levelNumber);
+            var abstractList = tempList.abstractList;
+            if (!abstractList) {
+                abstractList = this.viewer.getAbstractListById(list.abstractListId);
+            }
+            if (abstractList.levels.length === 0) {
+                startListLevel = this.viewer.layout.getListLevel(tempList, currentParagraph.paragraphFormat.listFormat.listLevelNumber);
+            }
+            if (isUpdate) {
+                if (listLevelPattern !== 'Bullet' && startListLevel.listLevelPattern === listLevelPattern
+                    && (startListLevel.numberFormat === format || startListLevel.numberFormat.indexOf(format) !== -1)) {
+                    selection.paragraphFormat.listId = list.listId;
+                    selection.paragraphFormat.listLevelNumber = levelNumber;
+                    selection.paragraphFormat.setList(list);
+                    return;
+                }
+                else {
+                    startListLevel = abstractList.levels[0];
+                }
+            }
         }
         if (isNullOrUndefined(list) || (!isNullOrUndefined(list) && ((startListLevel.listLevelPattern !== listLevelPattern) ||
             startListLevel.numberFormat !== format || (startListLevel.characterFormat.fontFamily !== fontFamily
@@ -53252,6 +53377,9 @@ var Editor = /** @__PURE__ @class */ (function () {
         for (var i = 0; i < this.removedBookmarkElements.length; i++) {
             var bookMark = this.removedBookmarkElements[i];
             if (bookMark.bookmarkType === 0) {
+                if (!this.viewer.bookmarks.containsKey(bookMark.name)) {
+                    this.viewer.bookmarks.add(bookMark.name, bookMark);
+                }
                 var bookMarkStart = bookMark;
                 if (bookMarkStart && bookMarkStart.reference && this.removedBookmarkElements.indexOf(bookMarkStart.reference) !== -1) {
                     var endIndex = this.removedBookmarkElements.indexOf(bookMarkStart.reference);
@@ -53692,6 +53820,11 @@ var Editor = /** @__PURE__ @class */ (function () {
             if (!isRedoing) {
                 this.initHistory('Delete');
             }
+            if (paragraph.isEndsWithPageBreak) {
+                var lastLine = paragraph.lastChild;
+                var lastChild = lastLine.children[lastLine.children.length - 1];
+                this.selection.start.setPositionForSelection(lastLine, lastChild, 0, this.selection.start.location);
+            }
             var blockInfo = this.selection.getParagraphInfo(selection.start);
             selection.editPosition = this.selection.getHierarchicalIndex(blockInfo.paragraph, blockInfo.offset.toString());
             if (this.checkInsertPosition(selection)) {
@@ -53786,7 +53919,7 @@ var Editor = /** @__PURE__ @class */ (function () {
                 // let nextSection: BodyWidget = table.containerWidget instanceof BodyWidget ? table.containerWidget : undefined;
                 // if (section !== nextSection) {
                 //     this.combineSection(section, selection, nextSection);
-                // }
+                // }                
                 var offset = 0;
                 this.removeBlock(paragraph);
                 this.viewer.layout.clearListElementBox(nextParagraph);
@@ -74306,6 +74439,7 @@ var Toolbar$1 = /** @__PURE__ @class */ (function () {
         this.importHandler.onSuccess = this.successHandler.bind(this);
         this.importHandler.onFailure = this.failureHandler.bind(this);
         this.importHandler.onError = this.failureHandler.bind(this);
+        this.importHandler.customHeaders = this.container.headers;
         var formData = new FormData();
         formData.append('files', file);
         this.importHandler.send(formData);
@@ -77867,6 +78001,10 @@ var DocumentEditorContainer = /** @__PURE__ @class */ (function (_super) {
                         this.documentEditor.zIndex = newModel.zIndex;
                     }
                     break;
+                case 'headers':
+                    if (this.documentEditor) {
+                        this.documentEditor.headers = newModel.headers;
+                    }
             }
         }
     };
@@ -77924,6 +78062,9 @@ var DocumentEditorContainer = /** @__PURE__ @class */ (function (_super) {
         }
         if (this.serverActionSettings.systemClipboard) {
             this.documentEditor.serverActionSettings.systemClipboard = this.serverActionSettings.systemClipboard;
+        }
+        if (this.headers) {
+            this.documentEditor.headers = this.headers;
         }
     };
     /**
@@ -78296,6 +78437,9 @@ var DocumentEditorContainer = /** @__PURE__ @class */ (function (_super) {
     __decorate$1([
         Property({ import: 'Import', systemClipboard: 'SystemClipboard', spellCheck: 'SpellCheck', restrictEditing: 'RestrictEditing' })
     ], DocumentEditorContainer.prototype, "serverActionSettings", void 0);
+    __decorate$1([
+        Property([])
+    ], DocumentEditorContainer.prototype, "headers", void 0);
     DocumentEditorContainer = __decorate$1([
         NotifyPropertyChanges
     ], DocumentEditorContainer);

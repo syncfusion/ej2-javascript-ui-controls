@@ -313,7 +313,6 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
     /**
      * Triggers before the maps layer rendered.
      * @event
-     * @deprecated
      * @blazorProperty 'LayerRendering'
      */
     @Event()
@@ -322,7 +321,6 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
     /**
      * Triggers before the maps shape rendered.
      * @event
-     * @deprecated
      * @blazorProperty 'ShapeRendering'
      */
     @Event()
@@ -702,7 +700,6 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
             this.dataLabelShape = [];
         }
 
-
         this.mapLayerPanel.measureLayerPanel();
 
         this.element.appendChild(this.svgObject);
@@ -741,8 +738,14 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
      * To append blazor templates
      */
     private blazorTemplates(): void {
-        // updateBlazorTemplate(this.element.id + '_LabelTemplate', 'LabelTemplate', this.layers[0].dataLabelSettings);
-        updateBlazorTemplate(this.element.id + '_MarkerTemplate', 'MarkerTemplate', this.layers[0].markerSettings[0]);
+        if (this.layers[this.layers.length - 1].dataLabelSettings || this.layers[this.layers.length - 1].markerSettings) {
+            updateBlazorTemplate(this.element.id + '_LabelTemplate', 'LabelTemplate', this.layers[0].dataLabelSettings);
+            for (let i: number = 0; i < this.layers.length; i++) {
+                for (let j: number = 0; j < this.layers[i].markerSettings.length; j++) {
+                    updateBlazorTemplate(this.element.id + '_MarkerTemplate', 'MarkerTemplate', this.layers[i].markerSettings[j]);
+                }
+            }
+        }
     }
 
     /**
@@ -986,13 +989,12 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
      * To create svg element for maps
      */
     private createSVG(): void {
-
+        resetBlazorTemplate(this.element.id + '_LabelTemplate', 'LabelTemplate');
         resetBlazorTemplate(this.element.id + '_MarkerTemplate', 'MarkerTemplate');
-
         this.removeSvg();
-
         createSvg(this);
     }
+
     /**
      * To Remove the SVG
      */

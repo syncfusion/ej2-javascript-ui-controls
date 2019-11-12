@@ -2087,4 +2087,91 @@ describe('Inline Editing module', () => {
             gridObj = actionComplete = null;
         });
     });
+
+    describe('EJ2-32089 - Border issue ', () => {
+        let gridObj: Grid;
+        let actionComplete: () => void;
+        let actionBegin: () => void;
+    
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: data.slice(0,5),
+                    allowPaging: true,
+                    height: 500,
+                    pageSettings: {pageSize: 5, currentPage: 3},
+                    editSettings: { allowEditing: true, allowAdding: true, allowDeleting: true, mode: 'Normal', newRowPosition: 'Bottom' },
+                    toolbar: ['Add', 'Edit', 'Delete', 'Update', 'Cancel'],
+                    columns: [
+                        { headerText: 'OrderID', field: 'OrderID' },
+                        { headerText: 'CustomerID', field: 'CustomerID' },
+                        { headerText: 'EmployeeID', field: 'EmployeeID' },
+                        { headerText: 'ShipCountry', field: 'ShipCountry' },
+                        { headerText: 'ShipCity', field: 'ShipCity' },
+                        { headerText: 'OrderDate', field: 'OrderDate', format: 'long', type: 'datetime' },
+                    ],
+                    actionComplete: actionComplete,
+                    actionBegin: actionBegin
+                }, done);
+        });
+
+        it('Edit last row', (done: Function) => {
+            actionComplete = (args?: any): void => {
+                if (args.requestType === 'beginEdit') {
+                    let td: any= args.row.children;
+                    for(let i:number = 0; i < td.length; i++ ) {
+                        expect(td[i].querySelector('.e-rowcell').classList.contains('e-lastrowcell')).toBeTruthy();
+                    }
+                    gridObj.actionComplete = null;
+                    (<any>gridObj.toolbarModule).toolbarClickHandler({ item: { id: gridObj.element.id + '_cancel' } });
+                    done();
+                }
+            };
+            gridObj.actionComplete = actionComplete;
+            gridObj.selectRow(4, true);
+            (<any>gridObj.toolbarModule).toolbarClickHandler({ item: { id: gridObj.element.id + '_edit' } });
+        });
+
+        it('Edit complete', (done: Function) => {
+            actionComplete = (args?: any): void => {
+                if (args.requestType === 'save') {
+                    let td: any= args.row.children;
+                    for(let i:number = 0; i < td.length; i++ ) {
+                        expect(td[i].classList.contains('e-lastrowcell')).toBeTruthy();
+                    }
+                    expect(gridObj.getContent().querySelectorAll('.e-lastrowcell').length).toBe(gridObj.getColumns().length);
+                    gridObj.actionComplete = null;
+                    (<any>gridObj.toolbarModule).toolbarClickHandler({ item: { id: gridObj.element.id + '_save' } });
+                    done();
+                }
+            };
+            gridObj.actionComplete = actionComplete;
+            gridObj.selectRow(4, true);
+            (<any>gridObj.toolbarModule).toolbarClickHandler({ item: { id: gridObj.element.id + '_edit' } });
+            (gridObj.element.querySelector('#' + gridObj.element.id + 'CustomerID') as any).value = 'updated';
+            (<any>gridObj.toolbarModule).toolbarClickHandler({ item: { id: gridObj.element.id + '_update' } });
+        });
+
+    
+        it('Add new row and check bottom border', (done: Function) => {
+            actionComplete = (args?: any): void => {
+                if (args.requestType === 'add') {
+                    expect(args.row.querySelector('.e-rowcell').classList.contains('e-lastrowadded')).toBeTruthy();
+                    gridObj.actionComplete = null;
+                    (<any>gridObj.toolbarModule).toolbarClickHandler({ item: { id: gridObj.element.id + '_cancel' } });
+                    done();
+                }
+            };
+            gridObj.actionComplete = actionComplete;
+            (<any>gridObj.toolbarModule).toolbarClickHandler({ item: { id: gridObj.element.id + '_add' } });
+        });
+    
+        afterAll(() => {
+            gridObj.notify('tooltip-destroy', {});
+            destroy(gridObj);
+            gridObj = actionComplete = null;
+        });
+    });
+
+
 });

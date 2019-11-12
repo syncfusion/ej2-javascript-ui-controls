@@ -86,7 +86,7 @@ $ddl-bigger-small-list-font-size: 14px !default;
 
       & .e-input-group input,
       & .e-input-group input.e-input {
-        height: 30px;
+        height: 38px;
       }
     }
   }
@@ -123,10 +123,6 @@ $ddl-bigger-small-list-font-size: 14px !default;
 
   .e-ddl#{&}.e-popup .e-filter-parent {
     border-bottom: 1px solid $grey-88;
-  }
-
-  .e-bigger #{&}.e-popup.e-ddl-device .e-input-group {
-    margin: 0 0 0 55px;
   }
 
   .e-bigger.e-small .e-ddl#{&}.e-popup {

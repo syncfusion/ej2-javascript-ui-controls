@@ -15,6 +15,7 @@ import { BooleanFilterUI } from './boolean-filter-ui';
 import { DateFilterUI } from './date-filter-ui';
 import { getFilterMenuPostion, parentsUntil, appendChildren } from '../base/util';
 import * as events from '../base/constant';
+import { IXLFilter } from '../common/filter-interface';
 
 /**
  * `filter menu` render boolean column.
@@ -123,7 +124,7 @@ export class FilterMenuRenderer {
 
     private dialogCreated(target: Element, column: Column): void {
         if (!Browser.isDevice) {
-            getFilterMenuPostion(target, this.dlgObj, this.parent);
+            getFilterMenuPostion(target, this.dlgObj, this.parent as IXLFilter);
         }
         this.renderFilterUI(target, column);
         this.parent.notify(events.filterDialogCreated, {});
@@ -147,7 +148,7 @@ export class FilterMenuRenderer {
     private renderFilterUI(target: Element, col: Column): void {
 
         let dlgConetntEle: Element = this.dlgObj.element.querySelector('.e-flmenu-maindiv');
-        this.parent.log('column_type_missing', {column: col});
+        this.parent.log('column_type_missing', { column: col });
         this.renderOperatorUI(dlgConetntEle, target, col);
         this.renderFlValueUI(dlgConetntEle, target, col);
     }

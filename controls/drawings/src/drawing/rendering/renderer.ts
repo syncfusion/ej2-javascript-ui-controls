@@ -65,7 +65,7 @@ export class DrawingRenderer {
         void {
         let options: BaseAttributes = this.getBaseAttributes(element, transform);
         (options as RectAttributes).cornerRadius = 0;
-        this.renderer.drawRectangle(canvas as HTMLCanvasElement, options as RectAttributes);
+        // this.renderer.drawRectangle(canvas as HTMLCanvasElement, options as RectAttributes);
         // let sx: number; let sy: number;
         let imageWidth: number; let imageHeight: number;
         let sourceWidth: number; let sourceHeight: number;

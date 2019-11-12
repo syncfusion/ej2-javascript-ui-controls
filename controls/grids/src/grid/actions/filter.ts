@@ -542,15 +542,15 @@ export class Filter implements IAction {
         let dataSource: Object = col.filter.dataSource || gObj.getDataModule().dataManager;
         this.filterModule.openDialog({
             type: col.type, field: col.field, displayName: col.headerText,
-            dataSource: dataSource, format: col.format, height: 800,
-            filteredColumns: gObj.filterSettings.columns, target: target,
-            sortedColumns: gObj.sortSettings.columns, formatFn: col.getFormatter(),
+            dataSource: dataSource, format: col.format, height: 800, columns: gObj.getColumns(),
+            filteredColumns: gObj.filterSettings.columns, target: target, dataManager: gObj.getDataModule().dataManager,
+            formatFn: col.getFormatter(), ignoreAccent: gObj.filterSettings.ignoreAccent,
             parserFn: col.getParser(), query: gObj.query, template: col.getFilterItemTemplate(),
             hideSearchbox: isNullOrUndefined(col.filter.hideSearchbox) ? false : col.filter.hideSearchbox,
             handler: this.filterHandler.bind(this), localizedStrings: gObj.getLocaleConstants(),
             position: { X: left, Y: top }, column: col, foreignKeyValue: col.foreignKeyValue,
-            actualPredicate: this.actualPredicate, localeObj: this.parent.localeObj,
-            isRemote: this.parent.getDataModule().isRemote(), allowCaseSensitive: this.filterSettings.enableCaseSensitivity
+            actualPredicate: this.actualPredicate, localeObj: gObj.localeObj,
+            isRemote: gObj.getDataModule().isRemote(), allowCaseSensitive: this.filterSettings.enableCaseSensitivity
         });
     }
 

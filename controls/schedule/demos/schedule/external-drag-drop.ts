@@ -1,4 +1,4 @@
-import { enableRipple, closest } from '@syncfusion/ej2-base';
+import { enableRipple, closest, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { Schedule, TimelineViews, TimelineMonth, Resize, DragAndDrop, ResourceDetails, Day, Week, WorkWeek, Month } from '../../src/schedule/index';
 import '../../node_modules/es6-promise/dist/es6-promise';
 import { TreeView, DragAndDropEventArgs } from '@syncfusion/ej2-navigations';
@@ -189,7 +189,7 @@ export let waitinglist: { [key: string]: Object }[] = [
         EndTime: new Date(2018, 8, 3, 9, 30),
         Description: "Consulting",
         IsAllDay: false,
-        Recurrence: false,
+        RecurrenceRule: 'FREQ=DAILY;INTERVAL=2;COUNT=5',
         DeptName: "GENERAL"
     },
     {
@@ -363,6 +363,9 @@ function onTreeDragStop(event: DragAndDropEventArgs): void {
         }
         detail["Name"] = filteredData[0].Name;
         detail["Description"] = filteredData[0].Description;
+        if (!isNullOrUndefined(filteredData[0].RecurrenceRule)) {
+            detail["RecurrenceRule"] = filteredData[0].RecurrenceRule;
+        }
         scheduleObj.openEditor(detail, 'Add');
     }
 }

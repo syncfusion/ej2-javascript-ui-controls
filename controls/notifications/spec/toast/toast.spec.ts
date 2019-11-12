@@ -1,4 +1,4 @@
-import { Toast, ToastClickEventArgs, ToastOpenArgs, ToastBeforeOpenArgs } from "../../src/index";
+import { Toast, ToastClickEventArgs, ToastOpenArgs, ToastBeforeOpenArgs, ToastCloseArgs } from "../../src/index";
 import { isNullOrUndefined as isNOU, MouseEventArgs } from "@syncfusion/ej2-base";
 import { isVisible, classList, TouchEventArgs, SwipeEventArgs, Browser } from "@syncfusion/ej2-base";
 import { profile, inMB, getMemoryProfile } from './common.spec';
@@ -1230,9 +1230,6 @@ describe("Toast Testing", () => {
         });
     });
 
-
-
-
     describe("Toast public method testing", () => {
         let toast: Toast;
         let testcaseFlowCount: number = 0;
@@ -1666,4 +1663,40 @@ describe("Toast Testing", () => {
         //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
         expect(memory).toBeLessThan(profile.samples[0] + 0.25);
     })
+});
+
+describe("Toast beforeOpen and Open and close event to find duplicate toast", () => {
+    let toast: Toast;
+    function beforeEvent(e: ToastBeforeOpenArgs):void {
+        expect(e.options.content === 'Content 1').toBe(true);
+        expect(e.options.title === 'title 1').toBe(true);
+    }
+    function openEvent(e: ToastOpenArgs): void {
+        expect(e.options.content === 'Content 1').toBe(true);
+        expect(e.options.title === 'title 1').toBe(true);
+    }
+    function closeEvent(e: ToastCloseArgs): void {
+        expect(e.options.content === 'Content 1').toBe(true);
+        expect(e.options.title === 'title 1').toBe(true);
+    }
+    beforeEach((done: Function): void => {
+        let ele: HTMLElement = document.createElement("div");
+        ele.id = "toast";
+        document.body.appendChild(ele);
+        toast = new Toast(
+            { 
+                beforeOpen: beforeEvent,
+                open: openEvent,
+                close: closeEvent
+            }, ele);
+        toast.show( {content: "Content 1", title: 'title 1'});
+        setTimeout(() => { done(); }, TIME_DELAY);
+    });
+    it("Toast beforeOpen and Open and close event testing with arguments testing to find duplicate",  (done: Function) => {
+        toast.hide(toast.element.children[1]);
+        setTimeout(() => { done(); }, TIME_DELAY);
+    });
+    afterAll(() => {
+       toast.destroy();
+    });
 });

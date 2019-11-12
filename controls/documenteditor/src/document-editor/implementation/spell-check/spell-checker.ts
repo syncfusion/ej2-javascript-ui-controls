@@ -409,7 +409,7 @@ export class SpellChecker {
      * @private
      */
     /* tslint:disable:no-any */
-    public  handleSuggestions(allsuggestions: any): string[] {
+    public handleSuggestions(allsuggestions: any): string[] {
         this.spellCheckSuggestion = [];
         if (allsuggestions.length === 0) {
             this.spellCheckSuggestion.push('Add To Dictionary');
@@ -758,7 +758,7 @@ export class SpellChecker {
         return isCombined;
     }
 
-     // tslint:disable-next-line:max-line-length
+    // tslint:disable-next-line:max-line-length
     private lookThroughPreviousLine(currentText: string, prevText: string, currentElement: TextElementBox, underlineY: number, beforeIndex: number): boolean {
         // tslint:disable-next-line:max-line-length
         if (!isNullOrUndefined(currentElement) && currentElement.indexInOwner === 0 && !isNullOrUndefined(currentElement.line.previousLine)) {
@@ -776,9 +776,9 @@ export class SpellChecker {
 
         return false;
     }
-     // tslint:disable-next-line:max-line-length
+    // tslint:disable-next-line:max-line-length
     private lookThroughNextLine(currentText: string, prevText: string, elementBox: TextElementBox, underlineY: number, beforeIndex: number): boolean {
-         // tslint:disable-next-line:max-line-length
+        // tslint:disable-next-line:max-line-length
         if (!isNullOrUndefined(elementBox) && elementBox.indexInOwner === elementBox.line.children.length - 1 && !isNullOrUndefined(elementBox.line.nextLine)) {
             let nextLine: LineWidget = elementBox.line.nextLine;
             if (!isNullOrUndefined(nextLine.children[0]) && nextLine.children[0] instanceof TextElementBox) {
@@ -805,7 +805,7 @@ export class SpellChecker {
     public handleCombinedElements(elementBox: TextElementBox, currentText: string, underlineY: number, beforeIndex: number): void {
         elementBox.istextCombined = true;
         let splittedText: any[] = currentText.split(/[\s]+/);
-         // tslint:disable-next-line:max-line-length
+        // tslint:disable-next-line:max-line-length
         if (this.ignoreAllItems.indexOf(currentText) === -1 && elementBox instanceof TextElementBox && elementBox.ignoreOnceItems.indexOf(currentText) === -1) {
             if (splittedText.length > 1) {
                 for (let i: number = 0; i < splittedText.length; i++) {
@@ -910,6 +910,7 @@ export class SpellChecker {
                 service = (isByPage) ? service + 'ByPage' : service;
                 httpRequest.open('POST', service, true);
                 httpRequest.setRequestHeader('Content-Type', 'application/json');
+                this.setCustomHeaders(httpRequest);
                 // tslint:disable-next-line:max-line-length
                 /* tslint:disable:no-any */
                 let spellCheckData: any = { LanguageID: languageID, TexttoCheck: word, CheckSpelling: checkSpelling, CheckSuggestion: checkSuggestion, AddWord: addWord };
@@ -926,6 +927,15 @@ export class SpellChecker {
             }
         }
         );
+    }
+
+    private setCustomHeaders(httpRequest: XMLHttpRequest): void {
+        for (let i: number = 0; i < this.viewer.owner.headers.length; i++) {
+            let header: Object = this.viewer.owner.headers[i];
+            for (let key of Object.keys(header)) {
+                httpRequest.setRequestHeader(key, header[key]);
+            }
+        }
     }
     /**
      * Method to check for next error
@@ -1146,7 +1156,7 @@ export class SpellChecker {
         if (!isNullOrUndefined(localStorage.getItem(this.uniqueKey))) {
             this.uniqueSpelledWords = JSON.parse(localStorage.getItem(this.uniqueKey));
         }
-        let totalCount : number = spelledWords.length + this.uniqueSpelledWords.length;
+        let totalCount: number = spelledWords.length + this.uniqueSpelledWords.length;
         if (totalCount <= this.uniqueWordsCount) {
             for (let i: number = 0; i < spelledWords.length; i++) {
                 this.checkForUniqueWords(spelledWords[i]);
@@ -1180,7 +1190,7 @@ export class SpellChecker {
      */
     private createGuid(): string {
         let dateTime: number = new Date().getTime();
-        let uuid: string = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (char: string): string =>  {
+        let uuid: string = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (char: string): string => {
             let randNo: number = (dateTime + Math.random() * 16) % 16 | 0;
             dateTime = Math.floor(dateTime / 16);
             return (char === 'x' ? randNo : (randNo & 0x3 | 0x8)).toString(16);

@@ -94,7 +94,7 @@ export class VerticalEvent extends EventBase {
 
     public getHeight(start: Date, end: Date): number {
         let appHeight: number = (end.getTime() - start.getTime()) / (60 * 1000) * (this.cellHeight * this.slotCount) / this.interval;
-        appHeight = (appHeight < this.cellHeight) ? this.cellHeight : appHeight;
+        appHeight = (appHeight <= 0) ? this.cellHeight : appHeight;
         return appHeight;
     }
 
@@ -522,7 +522,9 @@ export class VerticalEvent extends EventBase {
             let appointmentList: Object[] = !isNullOrUndefined(this.renderedEvents[resource]) ? this.renderedEvents[resource] : [];
             let appointment: Object[] = [];
             predicate = new Predicate(fieldMapping.endTime, 'greaterthan', <Date>record[fieldMapping.startTime]).
-                and(new Predicate(fieldMapping.startTime, 'lessthan', <Date>record[fieldMapping.endTime]));
+                and(new Predicate(fieldMapping.startTime, 'lessthan', <Date>record[fieldMapping.endTime])).
+                or(new Predicate(fieldMapping.startTime, 'greaterthanorequal', <Date>record[fieldMapping.endTime]).
+                    and(new Predicate(fieldMapping.endTime, 'lessthanorequal', <Date>record[fieldMapping.startTime])));
             this.overlapList = new DataManager({ json: appointmentList }).executeLocal(new Query().where(predicate));
             if (this.parent.activeViewOptions.group.resources.length > 0) {
                 this.overlapList = this.filterEventsByResource(this.resources[resource], this.overlapList);

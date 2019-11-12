@@ -35,14 +35,6 @@
     content: '';
   }
 
-  .e-bigger .e-ddl-device .e-input-group {
-    margin-left: 52px;
-  }
-
-  .e-bigger .e-ddl-device .e-input-group .e-clear-icon {
-    margin-right: $ddl-clear-icon-margin-right;
-  }
-
   .e-ddl-device-filter .e-filter-parent {
     background-color: $ddl-filter-background-color;
   }
@@ -92,9 +84,7 @@
       }
 
       & .e-filter-parent .e-back-icon {
-        margin: $ddl-back-icon-margin;
         padding: $ddl-back-icon-padding;
-        position: absolute;
       }
 
       &.e-rtl .e-filter-parent .e-input-group.e-control-wrapper .e-input-filter,
@@ -112,10 +102,6 @@
         cursor: default;
       }
     }
-  }
-
-  .e-bigger #{&}.e-popup .e-clear-icon {
-    display: none;
   }
 
   .e-ddl.e-input-group .e-ddl-hidden {

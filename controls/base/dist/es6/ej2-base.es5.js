@@ -5761,6 +5761,7 @@ var Draggable = /** @__PURE__ @class */ (function (_super) {
         var horizontalScrollParent = this.getScrollableParent(this.element.parentNode, 'horizontal');
     };
     Draggable.prototype.initialize = function (evt, curTarget) {
+        this.currentStateTarget = evt.target;
         if (this.isDragStarted()) {
             return;
         }
@@ -7037,6 +7038,8 @@ var exp = new RegExp('\\${([^}]*)}', 'g');
 var ARR_OBJ = /^\..*/gm;
 var SINGLE_SLASH = /\\/gi;
 var DOUBLE_SLASH = /\\\\/gi;
+var WORDFUNC = new RegExp('[\\w"\'@#$.\\s+]+', 'g');
+var WINDOWFUNC = /\window\./gm;
 /**
  * The function to set regular expression for template expression string.
  * @param  {RegExp} value - Value expression.
@@ -7104,24 +7107,7 @@ function evalExp(str, nameSpace, helper) {
             else if (IF_STMT.test(cnt)) {
                 //handling if condition
                 cnt = '"; ' + cnt.replace(matches[1], rlStr.replace(WORDIF, function (strs) {
-                    strs = strs.trim();
-                    var funcRegExp = /\window./gm;
-                    if (!funcRegExp.test(strs)) {
-                        var regExAt = /\@|\$|\#/gm;
-                        if (regExAt.test(strs)) {
-                            strs = NameSpaceForspecialChar(strs, (localKeys.indexOf(strs) === -1), nameSpace, localKeys) + '"]';
-                        }
-                        if (ARR_OBJ.test(strs)) {
-                            // tslint:disable-next-line
-                            return NameSpaceArrObj(strs, !(QUOTES.test(strs)) && (localKeys.indexOf(strs) === -1), nameSpace, localKeys);
-                        }
-                        else {
-                            return addNameSpace(strs, !(QUOTES.test(strs)) && (localKeys.indexOf(strs) === -1), nameSpace, localKeys);
-                        }
-                    }
-                    else {
-                        return strs;
-                    }
+                    return HandleSpecialCharArrObj(strs, nameSpace, localKeys);
                 })) + '{ \n str = str + "';
             }
             else if (FOR_STMT.test(cnt)) {
@@ -7146,9 +7132,23 @@ function evalExp(str, nameSpace, helper) {
                 if (matches[1].length !== 0 && !(/data/).test(ftArray[0]) && !(/window./).test(ftArray[0])) {
                     matches[1] = (fNameSpace === 'global' ? nameSpace + '.' + matches[1] : matches[1]);
                 }
-                cnt = '" + ' + (fNameSpace === 'global' ? '' : fNameSpace) +
-                    cnt.replace(rlStr, addNameSpace(matches[1].replace(/,( |)data.|,/gi, ',' + nameSpace + '.').replace(/,( |)data.window/gi, ',window'), (fNameSpace === 'global' ? false : true), nameSpace, localKeys)) +
-                    '+"';
+                // handing helper function with special characters
+                var splRegexp = /\@|\$|\#/gm;
+                var arrObj = /\]\./gm;
+                if (WINDOWFUNC.test(cnt) && arrObj.test(cnt) || splRegexp.test(cnt)) {
+                    var splArrRegexp = /\@|\$|\#|\]\./gm;
+                    if (splArrRegexp.test(cnt)) {
+                        // tslint:disable-next-line
+                        cnt = '"+ ' + (fNameSpace === 'global' ? '' : fNameSpace) + cnt.replace(matches[1], rlStr.replace(WORDFUNC, function (strs) {
+                            return HandleSpecialCharArrObj(strs, nameSpace, localKeys);
+                        })) + '+ "';
+                    }
+                }
+                else {
+                    cnt = '" + ' + (fNameSpace === 'global' ? '' : fNameSpace) +
+                        cnt.replace(rlStr, addNameSpace(matches[1].replace(/,( |)data.|,/gi, ',' + nameSpace + '.').replace(/,( |)data.window/gi, ',window'), (fNameSpace === 'global' ? false : true), nameSpace, localKeys)) +
+                        '+"';
+                }
             }
         }
         else if (ELSE_STMT.test(cnt)) {
@@ -7206,6 +7206,26 @@ function SlashReplace(tempStr) {
         tempStr = tempStr.replace(SINGLE_SLASH, double);
     }
     return tempStr;
+}
+function HandleSpecialCharArrObj(str, nameSpaceNew, keys) {
+    str = str.trim();
+    var windowFunc = /\window\./gm;
+    if (!windowFunc.test(str)) {
+        var quotes = /'|"/gm;
+        var splRegexp = /\@|\$|\#/gm;
+        if (splRegexp.test(str)) {
+            str = NameSpaceForspecialChar(str, (keys.indexOf(str) === -1), nameSpaceNew, keys) + '"]';
+        }
+        if (ARR_OBJ.test(str)) {
+            return NameSpaceArrObj(str, !(quotes.test(str)) && (keys.indexOf(str) === -1), nameSpaceNew, keys);
+        }
+        else {
+            return addNameSpace(str, !(quotes.test(str)) && (keys.indexOf(str) === -1), nameSpaceNew, keys);
+        }
+    }
+    else {
+        return str;
+    }
 }
 
 /**

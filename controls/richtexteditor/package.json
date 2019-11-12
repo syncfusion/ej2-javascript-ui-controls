@@ -1,6 +1,6 @@
 {
 	"name": "@syncfusion/ej2-richtexteditor",
-	"version": "17.3.19",
+	"version": "17.3.26",
 	"description": "Essential JS 2 RichTextEditor component",
 	"author": "Syncfusion Inc.",
 	"license": "SEE LICENSE IN license",
@@ -11,7 +11,9 @@
 		"@syncfusion/ej2-base": "*",
 		"@syncfusion/ej2-navigations": "*",
 		"@syncfusion/ej2-popups": "*",
-		"@syncfusion/ej2-splitbuttons": "*"
+		"@syncfusion/ej2-splitbuttons": "*",
+		"@syncfusion/ej2-inputs": "*",
+		"@syncfusion/ej2-buttons": "*"
 	},
 	"devDependencies": {
 		"@types/chai": "^3.4.28",

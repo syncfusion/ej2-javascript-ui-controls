@@ -82,3 +82,16 @@ export enum FontStyle {
  * Enum unit for text alignment
  */
 export type TextAlignment = 'Left' | 'Right' | 'Center' | 'Justify';
+
+/**
+ * Enum for annotation selector shapes
+ */
+export type AnnotationResizerShape = 'Square' | 'Circle';
+
+/**
+ * Enum for annotation resizer location
+ */
+export enum AnnotationResizerLocation {
+    Corners = 1,
+    Edges = 2
+}

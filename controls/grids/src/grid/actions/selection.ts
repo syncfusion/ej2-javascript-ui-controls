@@ -2167,7 +2167,8 @@ export class Selection implements IAction {
         if (this.parent.isCheckBoxSelection && this.parent.enableVirtualization && !this.parent.getDataModule().isRemote()) {
             if (this.parent.checkAllRows === 'Check') {
                 this.selectedRowIndexes = [];
-                for (let data: number = 0; data < this.getData().length; data++) {
+                let dataLength: number = this.getData().length;
+                for (let data: number = 0; data < dataLength; data++) {
                     this.selectedRowIndexes.push(data);
                 }
             } else if (this.parent.checkAllRows === 'Uncheck') {

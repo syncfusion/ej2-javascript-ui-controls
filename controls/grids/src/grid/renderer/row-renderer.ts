@@ -155,7 +155,8 @@ export class RowRenderer<T> implements IRowRenderer<T> {
         if (row.cssClass) {
             tr.classList.add(row.cssClass);
         }
-        if (this.parent.element.scrollHeight > this.parent.height && this.parent.aggregates.length) {
+        let vFTable: boolean = this.parent.enableColumnVirtualization && this.parent.frozenColumns !== 0;
+        if (!vFTable && this.parent.element.scrollHeight > this.parent.height && this.parent.aggregates.length) {
             for (let i: number = 0; i < this.parent.aggregates.length; i++) {
                 let property: string = 'properties';
                 let column: string = 'columns';

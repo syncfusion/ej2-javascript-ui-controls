@@ -452,6 +452,8 @@ export class RangeNavigator extends Component<HTMLElement> {
     private chartid: number = 57725;
     /** @private */
     public stockChart: StockChart;
+    /** @private */
+    public isGMT: boolean = false;
     /**
      * Constructor for creating the widget
      * @hidden

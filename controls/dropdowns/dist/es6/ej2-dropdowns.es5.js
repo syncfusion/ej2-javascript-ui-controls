@@ -1413,6 +1413,13 @@ var DropDownList = /** @__PURE__ @class */ (function (_super) {
             else {
                 if (this.allowFiltering && this.getModuleName() !== 'autocomplete'
                     && !isNullOrUndefined(this.actionCompleteData.ulElement) && !isNullOrUndefined(this.actionCompleteData.list)) {
+                    var actionList = this.actionCompleteData.ulElement.querySelector('li');
+                    var ulElement = this.ulElement && this.ulElement.querySelector('li');
+                    if (this.element.tagName === 'EJS-COMBOBOX' && actionList && ulElement &&
+                        actionList.childElementCount > 0 && ulElement.childElementCount > 0 &&
+                        actionList.textContent !== ulElement.textContent && this.itemTemplate) {
+                        this.cloneElements();
+                    }
                     this.onActionComplete(this.actionCompleteData.ulElement.cloneNode(true), this.actionCompleteData.list);
                 }
                 this.resetFocusElement();
@@ -9203,8 +9210,7 @@ var ListBox = /** @__PURE__ @class */ (function (_super) {
         var getArgs = this.getDragArgs({ target: args.droppedElement }, true);
         var sourceArgs = { previousData: this.dataSource };
         var destArgs = { previousData: listObj.dataSource };
-        var dragArgs = extend({}, getArgs, { target: args.target, source: { previousData: this.dataSource },
-            targetId: listObj.element.id });
+        var dragArgs = extend({}, getArgs, { target: args.target, source: { previousData: this.dataSource } });
         if (listObj !== this) {
             var sourceArgs1 = extend(sourceArgs, { currentData: this.listData });
             dragArgs = extend(dragArgs, { source: sourceArgs1, destination: destArgs });

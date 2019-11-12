@@ -331,8 +331,10 @@ export class FreezeRender extends HeaderRender implements IRenderer {
     public getMovableHeader(): Element {
         return this.movableHeader;
     }
-
-    private updateColgroup(): void {
+    /**
+     * @hidden
+     */
+    public updateColgroup(): void {
         let mTable: Element = this.getMovableHeader().querySelector('table');
         remove(this.getMovableHeader().querySelector('colgroup'));
         mTable.insertBefore(

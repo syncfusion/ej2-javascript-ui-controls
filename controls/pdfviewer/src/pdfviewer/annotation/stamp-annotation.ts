@@ -864,6 +864,7 @@ export class StampAnnotation {
         let storeObject: any = window.sessionStorage.getItem(this.pdfViewerBase.documentId + '_annotations_stamp');
         let index: number = 0;
         if (!storeObject) {
+            this.pdfViewer.annotationModule.storeAnnotationCollections(annotation);
             let shapeAnnotation: IPageAnnotations = { pageIndex: pageNumber, annotations: [] };
             shapeAnnotation.annotations.push(annotation);
             index = shapeAnnotation.annotations.indexOf(annotation);
@@ -872,6 +873,7 @@ export class StampAnnotation {
             let annotationStringified: string = JSON.stringify(annotationCollection);
             window.sessionStorage.setItem(this.pdfViewerBase.documentId + '_annotations_stamp', annotationStringified);
         } else {
+            this.pdfViewer.annotationModule.storeAnnotationCollections(annotation);
             let annotObject: IPageAnnotations[] = JSON.parse(storeObject);
             window.sessionStorage.removeItem(this.pdfViewerBase.documentId + '_annotations_stamp');
             let pageIndex: number = this.pdfViewer.annotationModule.getPageCollection(annotObject, pageNumber);

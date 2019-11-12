@@ -100,7 +100,9 @@ export class InsertHtml {
         }
         if (!isNOU(node) && !isNOU((node as HTMLElement).classList) && (node as HTMLElement).classList.contains('pasteContent')) {
             let lastNode: Node = node.lastChild;
-            while (!isNOU(lastNode) && lastNode.nodeName !== '#text' && lastNode.nodeName !== 'IMG') {
+            lastNode = lastNode.nodeName === 'BR' ? lastNode.previousSibling : lastNode;
+            while (!isNOU(lastNode) && lastNode.nodeName !== '#text' && lastNode.nodeName !== 'IMG' &&
+            lastNode.nodeName !== 'BR') {
                 lastNode = lastNode.lastChild;
             }
             lastNode = isNOU(lastNode) ? node : lastNode;

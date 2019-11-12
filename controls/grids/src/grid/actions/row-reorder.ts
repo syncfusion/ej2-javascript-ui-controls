@@ -130,7 +130,7 @@ export class RowDD {
 
         this.isOverflowBorder = true;
         this.hoverState = gObj.enableHover;
-        let trElement: HTMLTableRowElement = closestElement(e.target, 'tr') as HTMLTableRowElement;
+        let trElement: HTMLTableRowElement = parentsUntil(target, 'e-grid') ? closestElement(e.target, 'tr') as HTMLTableRowElement : null;
         gObj.enableHover = false;
         if (!e.target) { return; }
 
@@ -256,6 +256,7 @@ export class RowDD {
                     changedRecords: []
                 };
                 let toIdx: number = this.dragTarget ? this.dragTarget : args.dropIndex;
+                toIdx = (toIdx - draggedData.length + 1) >= 0 ? (toIdx - draggedData.length + 1) : toIdx;
                 let dragDropDestinationIndex: string = 'dragDropDestinationIndex';
                 let query: Query = new Query;
                 query[dragDropDestinationIndex] = toIdx;

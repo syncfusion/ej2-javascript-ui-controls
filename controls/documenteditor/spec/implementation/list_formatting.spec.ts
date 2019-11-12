@@ -1465,3 +1465,52 @@ function createListDocument(): BodyWidget {
     paragraph.childWidgets.push(line);
     return section;
 }
+
+
+describe('Numbering list apply validation', () => {
+    let editor: DocumentEditor = undefined;
+    let viewer: LayoutViewer;
+    beforeAll(() => {
+        let ele: HTMLElement = createElement('div', { id: 'container' });
+        document.body.appendChild(ele);
+        DocumentEditor.Inject(Selection, SfdtExport, Editor, EditorHistory);
+        editor = new DocumentEditor({ enableEditor: true, isReadOnly: false, enableSelection: true, enableEditorHistory: true });
+        editor.enableLocalPaste = true;
+        viewer = editor.viewer as PageLayoutViewer;
+        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        editor.appendTo('#container');
+        viewer = editor.viewer as PageLayoutViewer;
+    });
+    afterAll((done) => {
+        editor.destroy();
+        document.body.removeChild(document.getElementById('container'));
+        document.body.innerHTML = "";
+        editor = undefined;
+        setTimeout(function () {
+            done();
+        }, 1000);
+    });
+    it('Arabic numbering validation', () => {
+        editor.editor.applyNumbering('%1.','Arabic');
+        editor.editor.insertText('Arabic');
+        editor.editor.onEnter();
+        editor.editor.onEnter();
+        editor.editor.insertText('Arabic');
+        editor.editor.onEnter();
+        editor.editor.applyNumbering('%1.','Arabic');
+        expect(editor.viewer.lists.length).toBe(2);
+    });
+    it('Uproman numbering validation', () => {
+        editor.editor.applyNumbering('%1.','UpRoman');
+        editor.editor.insertText('Arabic');
+        editor.editor.onEnter();
+        editor.editor.onEnter();
+        editor.editor.insertText('Arabic');
+        editor.editor.onEnter();
+        editor.editor.applyNumbering('%1.','Arabic');
+        expect(editor.viewer.lists.length).toBe(4);
+    });
+});

@@ -25,10 +25,12 @@ export class VirtualScroll implements IAction {
     private instantiateRenderer(): void {
         this.parent.log(['limitation', 'virtual_height'], 'virtualization');
         let renderer: RendererFactory = this.locator.getService<RendererFactory>('rendererFactory');
-        if (this.parent.enableColumnVirtualization) {
-            renderer.addRenderer(RenderType.Header, new VirtualHeaderRenderer(this.parent, this.locator));
+        if (!this.parent.getFrozenColumns()) {
+            if (this.parent.enableColumnVirtualization) {
+                renderer.addRenderer(RenderType.Header, new VirtualHeaderRenderer(this.parent, this.locator));
+            }
+            renderer.addRenderer(RenderType.Content, new VirtualContentRenderer(this.parent, this.locator));
         }
-        renderer.addRenderer(RenderType.Content, new VirtualContentRenderer(this.parent, this.locator));
         this.ensurePageSize();
     }
 

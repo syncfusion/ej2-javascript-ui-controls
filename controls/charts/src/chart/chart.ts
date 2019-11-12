@@ -2135,12 +2135,6 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
             this.markerRender.removeEventListener();
             this.markerRender = null;
         }
-        this.unWireEvents();
-        super.destroy();
-        if (!this.enableCanvas) {
-            this.removeSvg();
-            this.svgObject = null;
-        }
         this.horizontalAxes = [];
         this.verticalAxes = [];
         this.visibleSeries = [];
@@ -2150,6 +2144,17 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
         this.dataLabelCollections = null;
         this.dataLabelElements = null;
         this.yAxisElements = null;
+        /**
+         * To fix react timeout destroy issue.
+         */
+        if (this.element) {
+            this.unWireEvents();
+            super.destroy();
+            if (!this.enableCanvas) {
+                this.removeSvg();
+                this.svgObject = null;
+            }
+        }
     }
 
     /**
@@ -2183,13 +2188,6 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
      */
 
     private unWireEvents(): void {
-        /**
-         * To fix react timeout destroy issue.
-         */
-        /*! Find the Events type */
-        if (!this.element) {
-            return;
-        }
         let startEvent: string = Browser.touchStartEvent;
         let moveEvent: string = Browser.touchMoveEvent;
         let stopEvent: string = Browser.touchEndEvent;

@@ -1899,16 +1899,7 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
     // tslint:disable
     /* istanbul ignore next */
     public traverseFileTree(item: any, event?: MouseEvent | TouchEvent | DragEvent | ClipboardEvent): void {
-        if (typeof (item) === 'boolean') {
-            let files: { [key: string]: Object }[] = [];
-            for (let i: number = 0; i < this.filesEntries.length; i++) {
-                this.filesEntries[i].file( (fileObj: any) => {
-                    let path: string = this.filesEntries[i].fullPath;
-                    files.push({'path': path, 'file': fileObj});
-                });
-            }
-            this.renderSelectedFiles(event, files, true);
-        } else if (item.isFile) {
+        if (item.isFile) {
             this.filesEntries.push(item);
         } else if (item.isDirectory) {
             // tslint:disable-next-line
@@ -1919,8 +1910,22 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
                     this.traverseFileTree(entries[i]);
                     // tslint:disable-next-line
                 };
-                this.traverseFileTree(true);
-                this.filesEntries = [];
+                this.pushFilesEntries(event);
+            });
+        }
+    }
+
+    private pushFilesEntries(event?: MouseEvent | TouchEvent | DragEvent | ClipboardEvent): void {
+        let files: { [key: string]: Object }[] = [];
+        for (let i: number = 0; i < this.filesEntries.length; i++) {
+            // tslint:disable-next-line
+            this.filesEntries[i].file( (fileObj: any) => {
+                let path: string = this.filesEntries[i].fullPath;
+                files.push({'path': path, 'file': fileObj});
+                if (i === this.filesEntries.length - 1) {
+                    this.filesEntries = [];
+                    this.renderSelectedFiles(event, files, true);
+                }
             });
         }
     }

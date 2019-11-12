@@ -169,7 +169,7 @@ export const ungroupBegin: string = 'ungrouping-begin';
 /** @hidden */
 export const ungroupComplete: string = 'ungrouping-complete';
 /** @hidden */
-export const groupAggregates : string = 'group-aggregates';
+export const groupAggregates: string = 'group-aggregates';
 /** @hidden */
 export const refreshFooterRenderer: string = 'refresh-footer-rendered';
 /** @hidden */
@@ -360,3 +360,5 @@ export const cBoxFltrBegin: string = 'cbox-filter-begin';
 export const cBoxFltrComplete: string = 'cbox-filter-complete';
 /** @hidden */
 export const fltrPrevent: string = 'filter-Prevent';
+/** @hidden */
+export const beforeFltrcMenuOpen: string = 'before-filter-cmenu-open';

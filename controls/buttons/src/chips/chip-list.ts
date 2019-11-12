@@ -687,6 +687,7 @@ export class ChipList extends Component<HTMLElement> implements INotifyPropertyC
                     }
                     break;
                 case 'selectedChips':
+                    removeClass(this.element.querySelectorAll('.e-active'), 'e-active');
                     this.select(newProp.selectedChips);
                     break;
                 case 'enableRtl':

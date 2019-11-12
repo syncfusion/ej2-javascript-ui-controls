@@ -234,7 +234,24 @@ export interface FileSelectEventArgs {
      */
     isInteracted?: boolean;
 }
-
+export interface FileSelectionEventArgs {
+     /**
+      * Defines the cancel selected file or folder. 
+      */
+    cancel?: boolean;
+    /**
+     * Return the currently selected item as JSON object.
+     */
+    fileDetails?: Object;
+    /**
+     * Defines whether event is triggered by interaction or not.
+     */
+    isInteracted?: boolean;
+    /**
+     * Specifies the actual target.
+     */
+    target?: Element;
+}
 export interface ToolbarCreateEventArgs {
     /**
      * Return an array of items that is used to configure toolbar content.

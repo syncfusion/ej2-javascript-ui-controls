@@ -1,7 +1,7 @@
 import { DocumentEditor } from '../src/document-editor/document-editor';
 import {
     Margin, Page, TableWidget, ImageElementBox, TableRowWidget,
-    TableCellWidget, BodyWidget, ParagraphWidget, LineWidget, ElementBox, TextElementBox
+    TableCellWidget, BodyWidget, ParagraphWidget, LineWidget, ElementBox, TextElementBox, XmlHttpRequestHandler
 } from '../src/index';
 import { createElement, Browser } from '@syncfusion/ej2-base';
 import { Layout } from '../src/document-editor/implementation/viewer/layout';
@@ -1467,4 +1467,34 @@ describe("Initilize document editor", function () {
     it('In Device testing', function () {
         expect(() => { editor.appendTo("#container"); }).not.toThrowError();
     });
+});
+
+describe('Header Ajax value checking', () => {
+    let editor: DocumentEditor;
+    let pagecontainer: Element;
+    beforeAll((): void => {
+        let ele: HTMLElement = createElement('div', { id: 'container' });
+        document.body.appendChild(ele);
+        editor = new DocumentEditor({});
+        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        editor.appendTo("#container");
+    });
+    afterAll((done) => {
+        editor.destroy();
+        document.body.removeChild(document.getElementById('container'));
+        editor = undefined;
+        setTimeout(function () {
+            done();
+        }, 1000);
+    });
+    it('header value checking', () => {
+        editor.headers = [{ "syncfusion": "true" }];
+        var httpRequest = new XmlHttpRequestHandler();
+        httpRequest.customHeaders = editor.headers;
+        var formObject = {};
+        expect(() => { httpRequest.send(formObject); }).not.toThrowError();
+    })
 });

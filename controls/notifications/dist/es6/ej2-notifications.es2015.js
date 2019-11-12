@@ -84,6 +84,7 @@ let Toast = class Toast extends Component {
      */
     constructor(options, element) {
         super(options, element);
+        this.toastCollection = [];
     }
     /**
      * Gets the Component module name.
@@ -144,8 +145,10 @@ let Toast = class Toast extends Component {
      * @returns void
      */
     show(toastObj) {
+        let collectionObj;
         if (!isNullOrUndefined(toastObj)) {
             this.templateChanges(toastObj);
+            collectionObj = JSON.parse(JSON.stringify(toastObj));
             extend(this, this, toastObj);
         }
         if (isNullOrUndefined(this.toastContainer)) {
@@ -171,7 +174,11 @@ let Toast = class Toast extends Component {
         this.setProgress();
         this.setCloseButton();
         this.setAria();
-        this.appendToTarget();
+        this.appendToTarget(toastObj);
+        if (!isNullOrUndefined(collectionObj)) {
+            extend(collectionObj, { element: [this.toastEle] }, true);
+            this.toastCollection.push(collectionObj);
+        }
     }
     swipeHandler(e) {
         let toastEle = closest(e.originalEvent.target, '.' + ROOT + ':not(.' + CONTAINER + ')');
@@ -364,14 +371,23 @@ let Toast = class Toast extends Component {
         this.toastTemplate = null;
     }
     destroyToast(toastEle) {
+        let toastObj;
+        for (let i = 0; i < this.toastCollection.length; i++) {
+            if (this.toastCollection[i].element[0] === toastEle) {
+                toastObj = this.toastCollection[i];
+                this.toastCollection.splice(i, 1);
+            }
+        }
         let hideAnimate = this.animation.hide;
         let animate = {
             duration: hideAnimate.duration, name: hideAnimate.effect, timingFunction: hideAnimate.easing
         };
         let intervalId = parseInt(toastEle.id.split('toast_')[1], 10);
         let toastClose = isBlazor() ? {
+            options: toastObj,
             toastContainer: this.toastContainer
         } : {
+            options: toastObj,
             toastContainer: this.toastContainer,
             toastObj: this,
         };
@@ -539,11 +555,13 @@ let Toast = class Toast extends Component {
             this.appendMessageContainer(actionBtnContainer);
         }
     }
-    appendToTarget() {
+    appendToTarget(toastObj) {
         let toastBeforeOpen = isBlazor() ? {
+            options: toastObj,
             element: this.toastEle,
             cancel: false
         } : {
+            options: toastObj,
             toastObj: this,
             element: this.toastEle,
             cancel: false
@@ -559,7 +577,7 @@ let Toast = class Toast extends Component {
                 }
                 EventHandler.add(this.toastEle, 'click', this.clickHandler, this);
                 this.toastContainer.style.zIndex = getZindexPartial(this.toastContainer) + '';
-                this.displayToast(this.toastEle);
+                this.displayToast(this.toastEle, toastObj);
             }
         });
     }
@@ -581,14 +599,16 @@ let Toast = class Toast extends Component {
             }
         });
     }
-    displayToast(toastEle) {
+    displayToast(toastEle, toastObj) {
         let showAnimate = this.animation.show;
         let animate = {
             duration: showAnimate.duration, name: showAnimate.effect, timingFunction: showAnimate.easing
         };
         let toastOpen = isBlazor() ? {
+            options: toastObj,
             element: this.toastEle
         } : {
+            options: toastObj,
             toastObj: this,
             element: this.toastEle,
         };

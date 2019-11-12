@@ -443,7 +443,8 @@ export function measureElement(element: HTMLElement, parentElement: HTMLElement)
     parentElement.appendChild(element);
     size.height = element.offsetHeight;
     size.width = element.offsetWidth;
-    document.getElementById(element.id).remove();
+    let measureElementId: HTMLElement = document.getElementById(element.id);
+    measureElementId.parentNode.removeChild(measureElementId);
     return size;
 }
 

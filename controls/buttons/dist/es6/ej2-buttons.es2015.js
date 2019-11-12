@@ -2040,6 +2040,7 @@ let ChipList = class ChipList extends Component {
                     }
                     break;
                 case 'selectedChips':
+                    removeClass(this.element.querySelectorAll('.e-active'), 'e-active');
                     this.select(newProp.selectedChips);
                     break;
                 case 'enableRtl':

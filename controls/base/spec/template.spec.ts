@@ -50,6 +50,15 @@ window.getName = function () {
     return "TestName";
 }
 
+window.check = function (args: number) {
+    if(args % 2 === 0) {
+        return true;
+    }
+    else {
+        return false;
+    }
+}
+
 let outDOM: Function = (tempFunction: Function, data: Object[]) => {
     let output: any[] = [];
     for (let item of data) {
@@ -345,15 +354,45 @@ describe('Template', () => {
         expect(output).toEqual("<div>ASTONHIMARTIN</div>");
     });
     it('JSON Array Input with IF Condition which has window function', () => {
-        window.check = function (args: number) {
-            if(args % 2 == 0) {
-                return true;
-            }
-            else {
-                return false;
-            }
-        }
         let templateStr: string = '${if(window.check(IDPRATICA))}<div>true</div>${else}<div>false</div>${/if}';
+        let result: Element[] = [];
+        result.push(createElement('div', { innerHTML: 'true' }));
+        expect(outDOM(template.compile(templateStr), arrayOfObj)).toEqual(result);
+    });
+    it('JSON Array Input With IF Condition with window function which has special character', () => {
+        let templateStr: string = '${if(window.check(@DRNT))}<div>true</div>${else}<div>false</div>${/if}';
+        let result: Element[] = [];
+        result.push(createElement('div', { innerHTML: 'true' }));
+        expect(outDOM(template.compile(templateStr), arrayOfObj)).toEqual(result);
+    });
+    it('JSON Array Input With IF Condition with window function which has array of value within object', () => {
+        let templateStr: string = '${if(window.check(Giorni[0].IDSTATO))}<div>true</div>${else}<div>false</div>${/if}';
+        let result: Element[] = [];
+        result.push(createElement('div', { innerHTML: 'false' }));
+        expect(outDOM(template.compile(templateStr), arrayOfObj)).toEqual(result);
+    });
+
+    it('JSON Array Input With IF Condition with window function which has special character with array of value within object', () => {
+        let templateStr: string = '${if(window.check(@Prior[0].IDTAG))}<div>true</div>${else}<div>false</div>${/if}';
+        let result: Element[] = [];
+        result.push(createElement('div', { innerHTML: 'true' }));
+        expect(outDOM(template.compile(templateStr), arrayOfObj)).toEqual(result);
+    });
+	
+	it('JSON Array Input with window function which has special character', () => {
+        let templateStr: string = '<div>${window.check(@DRNT)}</div>';
+        let result: Element[] = [];
+        result.push(createElement('div', { innerHTML: 'true' }));
+        expect(outDOM(template.compile(templateStr), arrayOfObj)).toEqual(result);
+    });
+    it('JSON Array Input With window function which has array of value within object', () => {
+        let templateStr: string = '<div>${window.check(Giorni[0].IDSTATO)}</div>';
+        let result: Element[] = [];
+        result.push(createElement('div', { innerHTML: 'false' }));
+        expect(outDOM(template.compile(templateStr), arrayOfObj)).toEqual(result);
+    });
+    it('JSON Array Input With window function which has special character with array of value within object', () => {
+        let templateStr: string = '<div>${window.check(@Prior[0].IDTAG)}</div>';
         let result: Element[] = [];
         result.push(createElement('div', { innerHTML: 'true' }));
         expect(outDOM(template.compile(templateStr), arrayOfObj)).toEqual(result);

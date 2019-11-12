@@ -1,4 +1,4 @@
-import { KeyboardEventArgs, L10n, closest } from '@syncfusion/ej2-base';
+import { KeyboardEventArgs, L10n, closest, addClass } from '@syncfusion/ej2-base';
 import { extend, getValue, resetBlazorTemplate, isBlazor } from '@syncfusion/ej2-base';
 import { remove } from '@syncfusion/ej2-base';
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
@@ -54,6 +54,8 @@ export class Edit implements IAction {
         handler: Function, arg1?: Object, arg2?: Object, arg3?: Object, arg4?: Object, arg5?: Object, arg6?: Object, arg7?: Object,
         arg8?: Object
     };
+    /* @hidden */
+    public isLastRow?: boolean;
 
     /**
      * Constructor for the Grid editing module
@@ -150,6 +152,7 @@ export class Edit implements IAction {
         } else if (!tr) {
             tr = gObj.getSelectedRows()[0] as HTMLTableRowElement;
         }
+        this.isLastRow = tr.rowIndex === (this.parent.getContent().querySelector('tr:last-child') as HTMLTableRowElement).rowIndex;
         if (tr.style.display === 'none') {
             return;
         }
@@ -158,6 +161,19 @@ export class Edit implements IAction {
             this.refreshToolbar();
             (gObj.element.querySelector('.e-gridpopup') as HTMLElement).style.display = 'none';
             this.parent.notify('start-edit', {});
+        }
+    }
+
+    /**
+     * @hidden
+     */
+    public checkLastRow(tr: Element, args?: { row?: Element, requestType?: string }): void {
+        let checkLastRow: boolean = this.isLastRow;
+        if (this.parent.height !== 'auto' && this.parent.editSettings.newRowPosition === 'Bottom' && args &&
+            args.requestType === 'add') {
+            addClass(tr.querySelectorAll('.e-rowcell'), 'e-lastrowadded');
+        } else if (checkLastRow) {
+            addClass(tr.querySelectorAll('.e-rowcell'), 'e-lastrowcell');
         }
     }
 

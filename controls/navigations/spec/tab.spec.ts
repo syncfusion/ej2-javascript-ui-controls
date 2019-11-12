@@ -213,7 +213,7 @@ describe('Tab Control', () => {
             expect(tab.showCloseButton).toEqual(false);
             expect(tab.heightAdjustMode).toEqual('Content');
             expect(tab.enableRtl).toEqual(false);
-            expect(tab.items).toEqual([]);
+            expect(tab.items.length).toEqual(0);
             expect(tab.headerPlacement).toEqual('Top');
             expect(tab.enablePersistence).toEqual(false);
             expect(tab.overflowMode).toEqual('Scrollable');
@@ -7739,7 +7739,7 @@ describe('Tab Control', () => {
             expect(element.classList.contains('e-template')).toEqual(true);
         });
         it('Ensuring items property value exist or not class testing', () => {
-            expect(tab.items).toEqual([]);
+            expect(tab.items.length).toEqual(0);
             let element: HTMLElement = document.getElementById('ej2Tab');
             expect(element.children.length).not.toEqual(0);
         });

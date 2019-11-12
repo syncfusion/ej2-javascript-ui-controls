@@ -12,6 +12,7 @@ import { AggregateType, HierarchyGridPrintMode } from './enum';
 import { Dialog, calculateRelativeBasedPosition, Popup, calculatePosition } from '@syncfusion/ej2-popups';
 import { PredicateModel } from './grid-model';
 import { Print } from '../actions/print';
+import { IXLFilter } from '../common/filter-interface';
 
 
 //https://typescript.codeplex.com/discussions/401501
@@ -208,7 +209,7 @@ export function extend(copied: Object, first: Object, second?: Object, exclude?:
 }
 
 /** @hidden */
-export function setColumnIndex (columnModel: Column[] , ind: number = 0 ): number {
+export function setColumnIndex(columnModel: Column[], ind: number = 0): number {
     for (let i: number = 0, len: number = columnModel.length; i < len; i++) {
         if ((columnModel[i] as Column).columns) {
             (columnModel[i] as Column).index = isNullOrUndefined((columnModel[i] as Column).index) ? ind : (columnModel[i] as Column).index;
@@ -221,7 +222,7 @@ export function setColumnIndex (columnModel: Column[] , ind: number = 0 ): numbe
         }
     }
     return ind;
- }
+}
 
 /** @hidden */
 export function prepareColumns(columns: Column[] | string[] | ColumnModel[], autoWidth?: boolean): Column[] {
@@ -492,18 +493,26 @@ export function wrap(elem: any, action: boolean): void {
 /** @hidden */
 export function setFormatter(serviceLocator?: ServiceLocator, column?: Column): void {
     let fmtr: IValueFormatter = serviceLocator.getService<IValueFormatter>('valueFormatter');
+    let format: string = 'format';
+    let args: object;
+    if (column.type === 'date' || column.type === 'datetime') {
+        args = { type: column.type, skeleton: column.format };
+        if ((typeof (column.format) === 'string') && column.format !== 'yMd') {
+            args[format] = column.format;
+        }
+    }
     switch (column.type) {
         case 'date':
             column.setFormatter(
-                fmtr.getFormatFunction({ type: 'date', skeleton: column.format } as DateFormatOptions));
+                fmtr.getFormatFunction(args as DateFormatOptions));
             column.setParser(
-                fmtr.getParserFunction({ type: 'date', skeleton: column.format } as DateFormatOptions));
+                fmtr.getParserFunction(args as DateFormatOptions));
             break;
         case 'datetime':
             column.setFormatter(
-                fmtr.getFormatFunction({ type: 'dateTime', skeleton: column.format } as DateFormatOptions));
+                fmtr.getFormatFunction(args as DateFormatOptions));
             column.setParser(
-                fmtr.getParserFunction({ type: 'dateTime', skeleton: column.format } as DateFormatOptions));
+                fmtr.getParserFunction(args as DateFormatOptions));
             break;
         case 'number':
             column.setFormatter(
@@ -542,7 +551,7 @@ export function distinctStringValues(result: string[]): string[] {
 
 /** @hidden */
 
-export function getFilterMenuPostion(target: Element, dialogObj: Dialog, grid: IGrid): void {
+export function getFilterMenuPostion(target: Element, dialogObj: Dialog, grid: IXLFilter): void {
     let elementVisible: string = dialogObj.element.style.display;
     dialogObj.element.style.display = 'block';
     let dlgWidth: number = dialogObj.width as number;
@@ -666,7 +675,7 @@ export function getDatePredicate(filterObject: PredicateModel, type?: string): P
     let nextDate: Date;
     let prevObj: PredicateModel = baseExtend({}, getActualProperties(filterObject)) as PredicateModel;
     let nextObj: PredicateModel = baseExtend({}, getActualProperties(filterObject)) as PredicateModel;
-    if (filterObject.value ===  null) {
+    if (filterObject.value === null) {
         datePredicate = new Predicate(prevObj.field, prevObj.operator, prevObj.value, false);
         return datePredicate;
     }
@@ -765,17 +774,17 @@ export function getCustomDateFormat(format: string | Object, colType: string): s
 /**
  * @hidden
  */
-export function getExpandedState(gObj: IGrid, hierarchyPrintMode: HierarchyGridPrintMode): {[index: number]: IExpandedRow} {
+export function getExpandedState(gObj: IGrid, hierarchyPrintMode: HierarchyGridPrintMode): { [index: number]: IExpandedRow } {
     let rows: Row<Column>[] = gObj.getRowsObject();
-    let obj: {[index: number]: IExpandedRow} = {};
+    let obj: { [index: number]: IExpandedRow } = {};
     for (const row of rows) {
         if (row.isExpand && !row.isDetailRow) {
-            let index: number = gObj.allowPaging && gObj.printMode === 'AllPages'  ? row.index +
-            (gObj.pageSettings.currentPage * gObj.pageSettings.pageSize) - gObj.pageSettings.pageSize : row.index;
+            let index: number = gObj.allowPaging && gObj.printMode === 'AllPages' ? row.index +
+                (gObj.pageSettings.currentPage * gObj.pageSettings.pageSize) - gObj.pageSettings.pageSize : row.index;
             obj[index] = {};
             obj[index].isExpand = true;
             obj[index].gridModel = getPrintGridModel(row.childGrid, hierarchyPrintMode);
-            (<{query: Query}>obj[index].gridModel).query = gObj.childGrid.query;
+            (<{ query: Query }>obj[index].gridModel).query = gObj.childGrid.query;
         }
     }
     return obj;
@@ -817,7 +826,7 @@ export function extendObjWithFn(copied: Object, first: Object, second?: Object, 
         }
         let obj1: { [key: string]: Object } = arguments[i];
         let keys: string[] = Object.keys(Object.getPrototypeOf(obj1)).length ?
-        Object.keys(obj1).concat(getPrototypesOfObj(obj1)) : Object.keys(obj1);
+            Object.keys(obj1).concat(getPrototypesOfObj(obj1)) : Object.keys(obj1);
         keys.forEach((key: string) => {
             let source: Object = res[key];
             let cpy: Object = obj1[key];
@@ -895,4 +904,22 @@ export function refreshFilteredColsUid(gObj: IGrid, filteredCols: PredicateModel
 /** @hidden */
 export namespace Global {
     export let timer: Object = null;
+}
+/**
+ * @hidden
+ */
+export function getTransformValues(element: Element): { width: number, height: number } {
+    let style: Object = document.defaultView.getComputedStyle(element, null);
+    let transformV: string = (<{ getPropertyValue?: Function }>style).getPropertyValue('transform');
+    let replacedTv: string = transformV.replace(/,/g, '');
+    let translateX: number = parseFloat((replacedTv).split(' ')[4]);
+    let translateY: number = parseFloat((replacedTv).split(' ')[5]);
+    return { width: translateX, height: translateY };
+}
+
+/** @hidden */
+export function applyBiggerTheme(rootElement: Element, element: Element): void {
+    if (rootElement.classList.contains('e-bigger')) {
+        element.classList.add('e-bigger');
+    }
 }

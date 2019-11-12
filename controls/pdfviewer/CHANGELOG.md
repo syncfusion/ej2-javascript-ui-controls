@@ -2,6 +2,22 @@
 
 ## [Unreleased]
 
+## 17.3.27 (2019-11-12)
+
+### PDF Viewer
+
+#### New Features
+
+- `#251151`, `#254032` – Provided the support for annotation selection in code behind.
+- `#249245` – Provided the support for UI customization of annotation selector border and resizer.
+- Improved the PDF viewer mobile view performance.
+
+#### Bug Fixes
+
+- `#253317` – The measured annotation value is updated properly in the label when you disable the default toolbar.
+- `#253888` – The Script error will no longer be thrown if we load the PDF documents using ASP.NET MVC web service.
+- `#253317` – The measured value is now update properly for the measured annotation.
+
 ## 17.3.26 (2019-11-05)
 
 ### PDF Viewer

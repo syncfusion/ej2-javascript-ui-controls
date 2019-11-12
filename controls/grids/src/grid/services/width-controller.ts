@@ -3,6 +3,7 @@ import { IGrid } from '../base/interface';
 import { formatUnit } from '@syncfusion/ej2-base';
 import { columnWidthChanged } from '../base/constant';
 import { Column } from '../models/column';
+import { parentsUntil } from '../base/util';
 
 /**
  * ColumnWidthService
@@ -111,8 +112,12 @@ export class ColumnWidthService {
         let headerCol: HTMLTableColElement;
         let frzCols: number = this.parent.getFrozenColumns();
         let mHdr: Element = this.parent.getHeaderContent().querySelector('.e-movableheader');
+        let mCont: HTMLElement = <HTMLTableColElement>this.parent.getContent().querySelector('.e-movablecontent');
         if (frzCols && index >= frzCols && mHdr && mHdr.querySelector('colgroup')) {
             headerCol = (<HTMLTableColElement>mHdr.querySelector('colgroup').children[index - frzCols]);
+        } else if (this.parent.enableColumnVirtualization && frzCols && mHdr.scrollLeft > 0) {
+            let colGroup: HTMLElement = mHdr.querySelector('colgroup');
+            headerCol = (<HTMLTableColElement>colGroup.children[(colGroup.children.length - 1) - index]);
         } else {
             headerCol = (<HTMLTableColElement>header.querySelector('colgroup').children[index]);
         }
@@ -125,6 +130,10 @@ export class ColumnWidthService {
         if (frzCols && index >= frzCols) {
             contentCol = (<HTMLTableColElement>this.parent.getContent().querySelector('.e-movablecontent')
                 .querySelector('colgroup').children[index - frzCols]);
+        } else if (this.parent.enableColumnVirtualization && frzCols && mCont.scrollLeft > 0) {
+            let colGroup: HTMLElement = this.parent.getContent().querySelector('.e-movablecontent')
+                .querySelector('colgroup');
+            contentCol = (<HTMLTableColElement>colGroup.children[(colGroup.children.length - 1) - index]);
         } else {
             contentCol = (<HTMLTableColElement>content.querySelector('colgroup').children[index]);
         }
@@ -136,11 +145,13 @@ export class ColumnWidthService {
         let edit: NodeListOf<Element> = this.parent.element.querySelectorAll('.e-table.e-inline-edit');
         let editTableCol: HTMLTableColElement[] = [];
         for (let i: number = 0; i < edit.length; i++) {
-            for (let j: number = 0; j < edit[i].querySelector('colgroup').children.length; j++) {
-                editTableCol.push((<HTMLTableColElement>edit[i].querySelector('colgroup').children[j]));
+            if (parentsUntil(edit[i], 'e-grid').id === this.parent.element.id) {
+                for (let j: number = 0; j < edit[i].querySelector('colgroup').children.length; j++) {
+                    editTableCol.push((<HTMLTableColElement>edit[i].querySelector('colgroup').children[j]));
+                }
             }
         }
-        if (edit.length) {
+        if (edit.length && editTableCol.length) {
             editTableCol[index].style.width = fWidth;
         }
     }

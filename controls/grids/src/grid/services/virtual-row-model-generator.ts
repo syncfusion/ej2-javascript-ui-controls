@@ -121,6 +121,9 @@ export class VirtualRowModelGenerator implements IModelGenerator<Column> {
     }
 
     public getColumnIndexes(content: HTMLElement = (<HTMLElement>this.parent.getHeaderContent().firstChild)): number[] {
+        if (this.parent.getFrozenColumns()) {
+            content = content.querySelector('.e-movableheader');
+        }
         let indexes: number[] = []; let sLeft: number = content.scrollLeft | 0;
         let keys: string[] = Object.keys(this.cOffsets); let cWidth: number = content.getBoundingClientRect().width;
         sLeft = Math.min(this.cOffsets[keys.length - 1] - cWidth, sLeft); let calWidth: number = Browser.isDevice ? 2 * cWidth : cWidth / 2;

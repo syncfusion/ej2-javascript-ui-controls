@@ -486,6 +486,13 @@ export class DropDownList extends DropDownBase implements IInput {
             } else {
                 if (this.allowFiltering && this.getModuleName() !== 'autocomplete'
                     && !isNullOrUndefined(this.actionCompleteData.ulElement) && !isNullOrUndefined(this.actionCompleteData.list)) {
+                    let actionList: HTMLElement = this.actionCompleteData.ulElement.querySelector('li');
+                    let ulElement: HTMLElement = this.ulElement && this.ulElement.querySelector('li');
+                    if (this.element.tagName === 'EJS-COMBOBOX' && actionList && ulElement &&
+                        actionList.childElementCount > 0 && ulElement.childElementCount > 0 &&
+                        actionList.textContent !== ulElement.textContent && this.itemTemplate) {
+                        this.cloneElements();
+                    }
                     this.onActionComplete(this.actionCompleteData.ulElement.cloneNode(true) as HTMLElement, this.actionCompleteData.list);
                 }
                 this.resetFocusElement();

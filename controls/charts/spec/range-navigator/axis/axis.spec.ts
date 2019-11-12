@@ -6,7 +6,7 @@ import  {profile , inMB, getMemoryProfile} from '../../common.spec';
 RangeNavigator.Inject(AreaSeries);
 
 /**
- * Spec for range navigator
+ * Spec for range navigator 
  */
 let value: number = 0;
 let point: object;

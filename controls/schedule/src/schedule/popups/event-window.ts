@@ -812,6 +812,10 @@ export class EventWindow {
         this.repeatStartDate = <Date>eventObj[this.fields.startTime];
         this.repeatRule = '';
         this.showDetails(eventObj);
+        if (eventObj[this.fields.recurrenceRule] && this.recurrenceEditor) {
+            this.recurrenceEditor.setRecurrenceRule(<string>eventObj[this.fields.recurrenceRule], <Date>eventObj[this.fields.startTime]);
+            this.repeatRule = <string>eventObj[this.fields.recurrenceRule];
+        }
         let deleteButton: Element = this.element.querySelector('.' + cls.DELETE_EVENT_CLASS);
         if (deleteButton) {
             addClass([deleteButton], cls.DISABLE_CLASS);
@@ -819,7 +823,8 @@ export class EventWindow {
         if (this.recurrenceEditor) {
             this.recurrenceEditor.setProperties({
                 startDate: <Date>eventObj[this.fields.startTime],
-                selectedType: repeatType || 0
+                selectedType: !isNullOrUndefined(repeatType) ? repeatType : !isNullOrUndefined(eventObj[this.fields.recurrenceRule]) ?
+                    this.recurrenceEditor.selectedType : 0
             });
         }
         if (this.parent.isAdaptive && isNullOrUndefined(this.parent.editorTemplate)) {
@@ -840,6 +845,9 @@ export class EventWindow {
         eventObj[this.fields.startTime] = cellsData.startTime;
         eventObj[this.fields.endTime] = cellsData.endTime;
         eventObj[this.fields.isAllDay] = cellsData.isAllDay;
+        if (cellsData.RecurrenceRule) {
+            eventObj[this.fields.recurrenceRule] = cellsData.RecurrenceRule;
+        }
         if (this.parent.resourceCollection.length > 0 || this.parent.activeViewOptions.group.resources.length > 0) {
             this.parent.resourceBase.setResourceValues(eventObj, false);
         }

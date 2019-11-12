@@ -3,6 +3,8 @@ import { IGrid, IFilterArgs } from '../base/interface';
 import { ServiceLocator } from '../services/service-locator';
 import { ExcelFilterBase } from '../common/excel-filter-base';
 import { CheckBoxFilter } from './checkbox-filter';
+import { IXLFilter } from '../common/filter-interface';
+
 /**
  * @hidden
  * `ExcelFilter` module is used to handle filtering action.
@@ -19,7 +21,7 @@ export class ExcelFilter extends CheckBoxFilter {
     constructor(parent?: IGrid, filterSettings?: FilterSettings, serviceLocator?: ServiceLocator, customFltrOperators?: Object) {
         super(parent, filterSettings, serviceLocator);
         this.parent = parent;
-        this.excelFilterBase = new ExcelFilterBase(parent, filterSettings, customFltrOperators);
+        this.excelFilterBase = new ExcelFilterBase(parent as IXLFilter, customFltrOperators);
     }
 
     /** 

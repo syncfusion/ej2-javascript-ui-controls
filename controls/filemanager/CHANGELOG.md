@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 17.3.27 (2019-11-12)
+
+### File Manager
+
+#### Bug Fixes
+
+- #F148827 New event `fileSelection` have been included to restrict the file selection in file manager.
+
 ## 17.3.26 (2019-11-05)
 
 ### File Manager

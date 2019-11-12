@@ -304,18 +304,21 @@ export class ContextMenu {
                 if (this.pdfViewer.annotation && this.pdfViewer.annotation.textMarkupAnnotationModule) {
                     this.pdfViewer.annotation.textMarkupAnnotationModule.drawTextMarkupAnnotations('Highlight');
                     this.pdfViewer.annotation.textMarkupAnnotationModule.isTextMarkupAnnotationMode = false;
+                    this.pdfViewer.annotation.textMarkupAnnotationModule.currentTextMarkupAddMode = '';
                 }
                 break;
             case this.pdfViewer.localeObj.getConstant('Underline context'):
                 if (this.pdfViewer.annotation && this.pdfViewer.annotation.textMarkupAnnotationModule) {
                     this.pdfViewer.annotation.textMarkupAnnotationModule.drawTextMarkupAnnotations('Underline');
                     this.pdfViewer.annotation.textMarkupAnnotationModule.isTextMarkupAnnotationMode = false;
+                    this.pdfViewer.annotation.textMarkupAnnotationModule.currentTextMarkupAddMode = '';
                 }
                 break;
             case this.pdfViewer.localeObj.getConstant('Strikethrough context'):
                 if (this.pdfViewer.annotation && this.pdfViewer.annotation.textMarkupAnnotationModule) {
                     this.pdfViewer.annotation.textMarkupAnnotationModule.drawTextMarkupAnnotations('Strikethrough');
                     this.pdfViewer.annotation.textMarkupAnnotationModule.isTextMarkupAnnotationMode = false;
+                    this.pdfViewer.annotation.textMarkupAnnotationModule.currentTextMarkupAddMode = '';
                 }
                 break;
             case this.pdfViewer.localeObj.getConstant('Properties'):

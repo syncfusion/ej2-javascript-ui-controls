@@ -842,7 +842,8 @@ function measureElement(element, parentElement) {
     parentElement.appendChild(element);
     size.height = element.offsetHeight;
     size.width = element.offsetWidth;
-    document.getElementById(element.id).remove();
+    let measureElementId = document.getElementById(element.id);
+    measureElementId.parentNode.removeChild(measureElementId);
     return size;
 }
 function getArea(rect) {
@@ -2393,7 +2394,7 @@ let TreeMap = class TreeMap extends Component {
     createSecondaryElement() {
         let secondaryEle = document.getElementById(this.element.id + '_Secondary_Element');
         if (secondaryEle && secondaryEle.childElementCount > 0) {
-            secondaryEle.remove();
+            secondaryEle.parentNode.removeChild(secondaryEle);
         }
         if (isNullOrUndefined(document.getElementById(this.element.id + '_Secondary_Element'))) {
             let secondaryElement = createElement('div', {
@@ -3004,7 +3005,8 @@ let TreeMap = class TreeMap extends Component {
                         (!isNullOrUndefined(drillLevel) && this.enableBreadcrumb && item['isDrilled']) ? drillLevel : null;
                     if (!observedArgs.cancel) {
                         if (document.getElementById(layoutID)) {
-                            document.getElementById(layoutID).remove();
+                            let layerElementId = document.getElementById(layoutID);
+                            layerElementId.parentNode.removeChild(layerElementId);
                         }
                         totalRect = extend({}, this.areaRect, totalRect, true);
                         if (this.legendSettings.visible && !isNullOrUndefined(this.treeMapLegendModule)) {
@@ -3027,7 +3029,8 @@ let TreeMap = class TreeMap extends Component {
                             totalRect = !isNullOrUndefined(this.totalRect) ? this.totalRect : totalRect;
                         }
                         if (document.getElementById(templateID)) {
-                            document.getElementById(templateID).remove();
+                            let drillElementId = document.getElementById(templateID);
+                            drillElementId.parentNode.removeChild(drillElementId);
                         }
                         if (!isNullOrUndefined(observedArgs.childItems) && !observedArgs.cancel) {
                             this.layout.onDemandProcess(observedArgs.childItems);
@@ -4177,7 +4180,8 @@ class TreeMapLegend {
      */
     removeInteractivePointer() {
         if (document.getElementById(this.treemap.element.id + '_Interactive_Legend')) {
-            document.getElementById(this.treemap.element.id + '_Interactive_Legend').remove();
+            let legendElementId = document.getElementById(this.treemap.element.id + '_Interactive_Legend');
+            legendElementId.parentNode.removeChild(legendElementId);
         }
     }
     /**
@@ -4795,7 +4799,8 @@ class TreeMapTooltip {
     }
     removeTooltip() {
         if (document.getElementsByClassName('EJ2-TreeMap-Tooltip').length > 0) {
-            document.getElementsByClassName('EJ2-TreeMap-Tooltip')[0].remove();
+            let tooltipElementId = document.getElementsByClassName('EJ2-TreeMap-Tooltip')[0];
+            tooltipElementId.parentNode.removeChild(tooltipElementId);
         }
     }
     /**

@@ -1492,4 +1492,44 @@ describe('Safari Paste Event Validation', () => {
     });
 });
 
+describe('Mouse enter and leave validation', () => {
+    let editor: DocumentEditor;
+    let viewer: LayoutViewer;
+    beforeAll(() => {
+        document.body.innerHTML = '';
+        let ele: HTMLElement = createElement('div', { id: 'container', styles: 'width:1200px;height:100%' });
+        document.body.appendChild(ele);
+        DocumentEditor.Inject(Editor, Selection);
+        editor = new DocumentEditor({ enableEditor: true, isReadOnly: false, enableSelection: true });
+        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        editor.appendTo('#container');
+        viewer = editor.viewer
+    });
+    afterAll((done) => {
+        editor.destroy();
+        editor = undefined;
+        document.body.removeChild(document.getElementById('container'));
+        setTimeout(() => {
+            done();
+        }, 1000);
+    });
+    it('Mouse Leave Internal', () => {
+        let event: any = {
+            offsetX: 100, offsetY: 100, preventDefault: function () { return true; }
+        };
+       
+        expect(()=>{editor.viewer.onMouseLeaveInternal(event)}).not.toThrowError();
+    });
+    it('Mouse Enter internal', () => {
+        let event: any = {
+            offsetX: 100, offsetY: 100, preventDefault: function () { return true; }
+        };
+       
+        expect(()=>{editor.viewer.onMouseEnterInternal()}).not.toThrowError();
+    });
+  
+});
 //#endregion

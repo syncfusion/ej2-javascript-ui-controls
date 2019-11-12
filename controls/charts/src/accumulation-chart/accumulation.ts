@@ -676,6 +676,12 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
      * Method to bind events for the accumulation chart
      */
     private wireEvents(): void {
+        /**
+         * To fix react timeout destroy issue.
+         */
+        if (!this.element) {
+            return;
+        }
         /*! Find the Events type */
 
         let isIE11Pointer: Boolean = Browser.isPointer;
@@ -1333,9 +1339,14 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
      * @private
      */
     public destroy(): void {
-        this.unWireEvents();
-        super.destroy();
-        this.element.classList.remove('e-accumulationchart');
+        /**
+         * To fix react timeout destroy issue.
+         */
+        if (this.element) {
+            this.unWireEvents();
+            super.destroy();
+            this.element.classList.remove('e-accumulationchart');
+        }
     }
     /**
      * To provide the array of modules needed for control rendering

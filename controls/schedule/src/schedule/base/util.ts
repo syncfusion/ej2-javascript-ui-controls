@@ -105,7 +105,7 @@ export function getMaxDays(d: Date): number {
 export function getDaysCount(startDate: number, endDate: number): number {
     let strTime: Date = resetTime(new Date(startDate));
     let endTime: Date = resetTime(new Date(endDate));
-    return (endTime.getTime() - strTime.getTime()) / MS_PER_DAY;
+    return Math.floor((endTime.getTime() - strTime.getTime()) / MS_PER_DAY);
 }
 export function getDateFromString(date: string): Date {
     return date.indexOf('Date') !== -1 ? new Date(parseInt(date.match(/\d+/g).toString(), 10)) :

@@ -2,6 +2,26 @@
 
 ## [Unreleased]
 
+## 17.3.27 (2019-11-12)
+
+### TextBox
+
+#### New Features
+
+- `#233835`, `#236707` - Now, you can adjust the width of textbox component using `width` property.
+
+### Uploader
+
+#### Bug Fixes
+
+- `#252841` - Now, you can `drag and drop` the folders in `directory upload`.
+
+### ColorPicker
+
+#### Breaking Changes
+
+- Opacity value is removed from `value` when `enableOpacity` property is set as false.
+
 ## 17.3.26 (2019-11-05)
 
 ### ColorPicker
@@ -9,10 +29,6 @@
 #### Bug Fixes
 
 - `F147566` - In Palette mode, Empty string color value shows the default color(green) instead of no color has been fixed.
-
-#### Breaking Changes
-
-- Opacity value is removed from `value` when `enableOpacity` property is set a false.
 
 ### Uploader
 

@@ -5,7 +5,7 @@ import { remove, extend, updateBlazorTemplate, isBlazor } from '@syncfusion/ej2-
 import { L10n } from '@syncfusion/ej2-base';
 import { ServiceLocator } from '../services/service-locator';
 import * as events from '../base/constant';
-import { appendChildren } from '../base/util';
+import { appendChildren, applyBiggerTheme } from '../base/util';
 
 
 /**
@@ -47,8 +47,10 @@ export class DialogEditRender {
         this.createDialog(elements, args);
     }
 
-    private createDialog(elements: Element[], args: { primaryKeyValue?: string[], rowData?: Object,
-        dialog?: DialogModel, target?: HTMLElement }): void {
+    private createDialog(elements: Element[], args: {
+        primaryKeyValue?: string[], rowData?: Object,
+        dialog?: DialogModel, target?: HTMLElement
+    }): void {
         let gObj: IGrid = this.parent;
         this.dialog = this.parent.createElement('div', { id: gObj.element.id + '_dialogEdit_wrapper', styles: 'width: auto' });
         gObj.element.appendChild(this.dialog);
@@ -80,7 +82,7 @@ export class DialogEditRender {
         let isStringTemplate: string = 'isStringTemplate';
         this.dialogObj[isStringTemplate] = true;
         this.dialogObj.appendTo(this.dialog);
-        this.parent.applyBiggerTheme(this.dialogObj.element.parentElement);
+        applyBiggerTheme(this.parent.element, this.dialogObj.element.parentElement);
     }
 
     private btnClick(e: MouseEvent): void {
@@ -108,11 +110,11 @@ export class DialogEditRender {
         }
     }
 
-    private getEditElement(elements: Object, args: {rowData?: Object, form?: Element}): Element {
+    private getEditElement(elements: Object, args: { rowData?: Object, form?: Element }): Element {
         let gObj: IGrid = this.parent;
         let div: Element = this.parent.createElement('div', { className: this.isEdit ? 'e-editedrow' : 'e-insertedrow' });
         let form: HTMLFormElement = args.form =
-        this.parent.createElement('form', { id: gObj.element.id + 'EditForm', className: 'e-gridform' }) as HTMLFormElement;
+            this.parent.createElement('form', { id: gObj.element.id + 'EditForm', className: 'e-gridform' }) as HTMLFormElement;
         if (this.parent.editSettings.template) {
             let editTemplateID: string = this.parent.element.id + 'editSettingsTemplate';
             let dummyData: Object = extend({}, args.rowData, { isAdd: !this.isEdit }, true);

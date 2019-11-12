@@ -117,7 +117,9 @@ var Toast = /** @__PURE__ @class */ (function (_super) {
      * @param element  - Specifies the element that is rendered as a Toast.
      */
     function Toast(options, element) {
-        return _super.call(this, options, element) || this;
+        var _this = _super.call(this, options, element) || this;
+        _this.toastCollection = [];
+        return _this;
     }
     /**
      * Gets the Component module name.
@@ -178,8 +180,10 @@ var Toast = /** @__PURE__ @class */ (function (_super) {
      * @returns void
      */
     Toast.prototype.show = function (toastObj) {
+        var collectionObj;
         if (!isNullOrUndefined(toastObj)) {
             this.templateChanges(toastObj);
+            collectionObj = JSON.parse(JSON.stringify(toastObj));
             extend(this, this, toastObj);
         }
         if (isNullOrUndefined(this.toastContainer)) {
@@ -205,7 +209,11 @@ var Toast = /** @__PURE__ @class */ (function (_super) {
         this.setProgress();
         this.setCloseButton();
         this.setAria();
-        this.appendToTarget();
+        this.appendToTarget(toastObj);
+        if (!isNullOrUndefined(collectionObj)) {
+            extend(collectionObj, { element: [this.toastEle] }, true);
+            this.toastCollection.push(collectionObj);
+        }
     };
     Toast.prototype.swipeHandler = function (e) {
         var toastEle = closest(e.originalEvent.target, '.' + ROOT + ':not(.' + CONTAINER + ')');
@@ -400,14 +408,23 @@ var Toast = /** @__PURE__ @class */ (function (_super) {
     };
     Toast.prototype.destroyToast = function (toastEle) {
         var _this = this;
+        var toastObj;
+        for (var i = 0; i < this.toastCollection.length; i++) {
+            if (this.toastCollection[i].element[0] === toastEle) {
+                toastObj = this.toastCollection[i];
+                this.toastCollection.splice(i, 1);
+            }
+        }
         var hideAnimate = this.animation.hide;
         var animate = {
             duration: hideAnimate.duration, name: hideAnimate.effect, timingFunction: hideAnimate.easing
         };
         var intervalId = parseInt(toastEle.id.split('toast_')[1], 10);
         var toastClose = isBlazor() ? {
+            options: toastObj,
             toastContainer: this.toastContainer
         } : {
+            options: toastObj,
             toastContainer: this.toastContainer,
             toastObj: this,
         };
@@ -576,12 +593,14 @@ var Toast = /** @__PURE__ @class */ (function (_super) {
             this.appendMessageContainer(actionBtnContainer);
         }
     };
-    Toast.prototype.appendToTarget = function () {
+    Toast.prototype.appendToTarget = function (toastObj) {
         var _this = this;
         var toastBeforeOpen = isBlazor() ? {
+            options: toastObj,
             element: this.toastEle,
             cancel: false
         } : {
+            options: toastObj,
             toastObj: this,
             element: this.toastEle,
             cancel: false
@@ -597,7 +616,7 @@ var Toast = /** @__PURE__ @class */ (function (_super) {
                 }
                 EventHandler.add(_this.toastEle, 'click', _this.clickHandler, _this);
                 _this.toastContainer.style.zIndex = getZindexPartial(_this.toastContainer) + '';
-                _this.displayToast(_this.toastEle);
+                _this.displayToast(_this.toastEle, toastObj);
             }
         });
     };
@@ -620,15 +639,17 @@ var Toast = /** @__PURE__ @class */ (function (_super) {
             }
         });
     };
-    Toast.prototype.displayToast = function (toastEle) {
+    Toast.prototype.displayToast = function (toastEle, toastObj) {
         var _this = this;
         var showAnimate = this.animation.show;
         var animate = {
             duration: showAnimate.duration, name: showAnimate.effect, timingFunction: showAnimate.easing
         };
         var toastOpen = isBlazor() ? {
+            options: toastObj,
             element: this.toastEle
         } : {
+            options: toastObj,
             toastObj: this,
             element: this.toastEle,
         };

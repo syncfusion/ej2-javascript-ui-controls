@@ -41,6 +41,8 @@ export class PasteCleanup {
     'frameset', 'hr', 'iframe', 'isindex', 'li', 'map', 'menu', 'noframes', 'noscript',
     'object', 'ol', 'pre', 'td', 'tr', 'th', 'tbody', 'tfoot', 'thead', 'table', 'ul',
     'header', 'article', 'nav', 'footer', 'section', 'aside', 'main', 'figure', 'figcaption'];
+  private isNotFromHtml: boolean = false;
+  private containsHtml: boolean = false;
   constructor(parent?: IRichTextEditor, serviceLocator?: ServiceLocator) {
     this.parent = parent;
     this.locator = serviceLocator;
@@ -80,7 +82,12 @@ export class PasteCleanup {
     }
     if (e.args && value !== null && this.parent.editorMode === 'HTML') {
       if (value.length === 0) {
+        let htmlRegex: RegExp = new RegExp(/<\/[a-z][\s\S]*>/i);
         value = (e.args as ClipboardEvent).clipboardData.getData('text/plain');
+        this.isNotFromHtml = value !== '' ? true : false;
+        value = value.replace(/</g, '&lt;');
+        value = value.replace(/>/g, '&gt;');
+        this.containsHtml = htmlRegex.test(value);
         let file: File = e && (e.args as ClipboardEvent).clipboardData &&
           (e.args as ClipboardEvent).clipboardData.items.length > 0 ?
           (e.args as ClipboardEvent).clipboardData.items[0].getAsFile() : null;
@@ -104,30 +111,9 @@ export class PasteCleanup {
             }
           }
         });
-        let htmlRegex: RegExp = new RegExp(/<\/[a-z][\s\S]*>/i);
         if (!htmlRegex.test(value)) {
-          let enterSplitText: string[] = value.split('\n');
-          let contentInnerElem: string = '';
-          for (let i: number = 0; i < enterSplitText.length; i++) {
-              if (enterSplitText[i].trim() === '') {
-                contentInnerElem += '<p><br></p>';
-              } else {
-                let contentWithSpace: string = '';
-                let spaceBetweenContent: boolean = true;
-                let spaceSplit: string[] = enterSplitText[i].split(' ');
-                for (let j: number = 0; j < spaceSplit.length; j++) {
-                  if (spaceSplit[j].trim() === '') {
-                    contentWithSpace += spaceBetweenContent ? '&nbsp;' : ' ';
-                  } else {
-                    spaceBetweenContent = false;
-                    contentWithSpace += spaceSplit[j] + ' ';
-                  }
-                }
-                contentInnerElem += '<p>' + contentWithSpace.trim() + '</p>';
-              }
-          }
           let divElement: HTMLElement = this.parent.createElement('div');
-          divElement.innerHTML = contentInnerElem;
+          divElement.innerHTML = this.splitBreakLine(value);
           value = divElement.innerHTML;
         }
       } else if (value.length > 0) {
@@ -158,6 +144,33 @@ export class PasteCleanup {
         this.formatting(value, true, args);
       }
     }
+  }
+  private splitBreakLine(value: string): string {
+    let enterSplitText: string[] = value.split('\n');
+    let contentInnerElem: string = '';
+    for (let i: number = 0; i < enterSplitText.length; i++) {
+        if (enterSplitText[i].trim() === '') {
+          contentInnerElem += '<p><br></p>';
+        } else {
+          let contentWithSpace: string = this.makeSpace(enterSplitText[i]);
+          contentInnerElem += '<p>' + contentWithSpace.trim() + '</p>';
+        }
+    }
+    return contentInnerElem;
+  }
+  private makeSpace(enterSplitText: string): string {
+    let contentWithSpace: string = '';
+    let spaceBetweenContent: boolean = true;
+    let spaceSplit: string[] = enterSplitText.split(' ');
+    for (let j: number = 0; j < spaceSplit.length; j++) {
+      if (spaceSplit[j].trim() === '') {
+        contentWithSpace += spaceBetweenContent ? '&nbsp;' : ' ';
+      } else {
+        spaceBetweenContent = false;
+        contentWithSpace += spaceSplit[j] + ' ';
+      }
+    }
+    return contentWithSpace;
   }
 
   private imgUploading(elm: HTMLElement): void {
@@ -417,6 +430,9 @@ export class PasteCleanup {
   private formatting(value: string, clean: boolean, args: Object): void {
     let clipBoardElem: HTMLElement = this.parent.createElement(
       'div', { className: 'pasteContent', styles: 'display:inline;'}) as HTMLElement;
+    if (this.isNotFromHtml && this.containsHtml) {
+      value = this.splitBreakLine(value);
+    }
     clipBoardElem.innerHTML = value;
     if (this.parent.pasteCleanupSettings.deniedTags !== null) {
       clipBoardElem = this.deniedTags(clipBoardElem);

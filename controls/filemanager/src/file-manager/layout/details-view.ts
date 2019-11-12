@@ -8,7 +8,7 @@ import { hideSpinner, showSpinner } from '@syncfusion/ej2-popups';
 import * as events from '../base/constant';
 import * as CLS from '../base/classes';
 import { ReadArgs, SearchArgs, FileDetails, NotifyArgs } from '../base/interface';
-import { FileSelectEventArgs, FileLoadEventArgs } from '../base/interface';
+import { FileSelectEventArgs, FileLoadEventArgs, FileSelectionEventArgs } from '../base/interface';
 import { FileOpenEventArgs } from '../base/interface';
 import { createDialog, createImageDialog } from '../pop-up/dialog';
 import { removeBlur, openAction, getImageUrl, fileType, getSortedData, getLocaleText, updateLayout } from '../common/utility';
@@ -18,7 +18,7 @@ import { cutFiles, addBlur, openSearchFolder, copyFiles, removeActive, pasteHand
 import { hasReadAccess, hasEditAccess, hasDownloadAccess, doRename, getAccessClass, createDeniedDialog, rename } from '../common/index';
 import { createVirtualDragElement, dragStopHandler, dragStartHandler, draggingHandler, getModule, getFullPath } from '../common/index';
 import { getDirectoryPath, updateRenamingData, getItemName, doDeleteFiles, doDownloadFiles } from '../common/index';
-import { RecordDoubleClickEventArgs, RowDataBoundEventArgs, SortEventArgs, HeaderCellInfoEventArgs } from '@syncfusion/ej2-grids';
+import { RecordDoubleClickEventArgs, RowDataBoundEventArgs, SortEventArgs, HeaderCellInfoEventArgs, RowSelectingEventArgs } from '@syncfusion/ej2-grids';
 import { BeforeDataBoundArgs, ColumnModel, SortDescriptorModel, BeforeCopyEventArgs } from '@syncfusion/ej2-grids';
 
 /**
@@ -119,6 +119,7 @@ export class DetailsView {
             this.gridObj = new Grid({
                 dataSource: items,
                 allowSorting: true,
+                rowSelecting: this.onSelection.bind(this),
                 rowSelected: this.onSelected.bind(this),
                 rowDeselected: this.onDeSelection.bind(this),
                 allowResizing: this.parent.detailsViewSettings.columnResizing,
@@ -988,6 +989,13 @@ export class DetailsView {
             this.unWireEvents();
             this.gridObj.destroy();
         }
+    }
+
+    /* istanbul ignore next */
+    private onSelection(args: RowSelectingEventArgs): void {
+        let eventArgs: FileSelectionEventArgs = { fileDetails: args.data, isInteracted: this.interaction, cancel : false, target: args.target };
+        this.parent.trigger('fileSelection', eventArgs);
+        args.cancel = eventArgs.cancel;
     }
 
     /* istanbul ignore next */

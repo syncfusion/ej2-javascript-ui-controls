@@ -2,7 +2,7 @@ import { L10n, EventHandler, closest, Browser, isNullOrUndefined } from '@syncfu
 import { remove } from '@syncfusion/ej2-base';
 import { ContextMenu as Menu, MenuEventArgs, OpenCloseMenuEventArgs } from '@syncfusion/ej2-navigations';
 import { IGrid, IAction, ColumnMenuItemModel, NotifyArgs, ColumnMenuOpenEventArgs, ColumnMenuClickEventArgs } from '../base/interface';
-import { parentsUntil } from '../base/util';
+import { parentsUntil, applyBiggerTheme } from '../base/util';
 import { Column } from '../models/column';
 import { ServiceLocator } from '../services/service-locator';
 import * as events from '../base/constant';
@@ -81,7 +81,7 @@ export class ColumnMenu implements IAction {
 
     public columnMenuHandlerClick(e: Event): void {
         if ((e.target as HTMLElement).classList.contains('e-columnmenu')) {
-            this.columnMenu.items =  this.getItems();
+            this.columnMenu.items = this.getItems();
             this.columnMenu.dataBind();
             if ((this.isOpen && this.headerCell !== this.getHeaderCell(e)) || document.querySelector('.e-grid-menu .e-menu-parent.e-ul')) {
                 this.columnMenu.close();
@@ -113,7 +113,7 @@ export class ColumnMenu implements IAction {
         }
         this.columnMenu.open(pos.top, pos.left);
         e.preventDefault();
-        this.parent.applyBiggerTheme(this.columnMenu.element.parentElement);
+        applyBiggerTheme(this.parent.element, this.columnMenu.element.parentElement);
     }
 
     private columnMenuHandlerDown(e: Event): void {
@@ -127,7 +127,7 @@ export class ColumnMenu implements IAction {
     /**
      * @hidden
      */
-    public addEventListener() : void {
+    public addEventListener(): void {
         if (this.parent.isDestroyed) { return; }
         this.parent.on(events.headerRefreshed, this.wireEvents, this);
         this.parent.on(events.uiUpdate, this.enableAfterRenderMenu, this);
@@ -141,7 +141,7 @@ export class ColumnMenu implements IAction {
     /**
      * @hidden
      */
-    public removeEventListener() : void {
+    public removeEventListener(): void {
         if (this.parent.isDestroyed) { return; }
         this.parent.off(events.headerRefreshed, this.unwireEvents);
         this.parent.off(events.uiUpdate, this.enableAfterRenderMenu);
@@ -198,7 +198,7 @@ export class ColumnMenu implements IAction {
     private beforeMenuItemRender(args: MenuEventArgs): void {
         if (this.isChooserItem(args.item)) {
             let field: string = this.getKeyFromId(args.item.id, this.CHOOSER);
-            let column: Column[] = (<{columnModel?: Column[]}>this.parent).columnModel.filter((col: Column) => col.field === field);
+            let column: Column[] = (<{ columnModel?: Column[] }>this.parent).columnModel.filter((col: Column) => col.field === field);
             let check: Element = createCheckBox(this.parent.createElement, false, {
                 label: args.item.text,
                 checked: column[0].visible
@@ -222,7 +222,7 @@ export class ColumnMenu implements IAction {
             args.cancel = true;
         } else if (args.event && (closest(args.event.target as Element, '.' + this.POP)
             || (args.event.currentTarget && (args.event.currentTarget as Document).activeElement &&
-            parentsUntil((args.event.currentTarget as Document).activeElement as Element, 'e-filter-popup'))
+                parentsUntil((args.event.currentTarget as Document).activeElement as Element, 'e-filter-popup'))
             || parentsUntil(args.event.target as Element, 'e-popup') ||
             (parentsUntil(args.event.target as Element, 'e-popup-wrapper'))) && !Browser.isDevice) {
             args.cancel = true;
@@ -258,7 +258,7 @@ export class ColumnMenu implements IAction {
             if (args.element.offsetHeight > window.innerHeight) {
                 args.element.style.maxHeight = (window.innerHeight) * 0.8 + 'px';
                 args.element.style.overflowY = 'auto';
-            }  else if (this.parent.element.offsetHeight > window.innerHeight) {
+            } else if (this.parent.element.offsetHeight > window.innerHeight) {
                 args.element.style.maxHeight = (window.innerHeight) * 0.8 + 'px';
                 args.element.style.overflowY = 'auto';
             }
@@ -296,16 +296,16 @@ export class ColumnMenu implements IAction {
                         }
                     });
                 } else if (!this.parent.allowSorting || !this.parent.ensureModuleInjected(Sort) ||
-                this.parent.allowSorting && this.targetColumn && !this.targetColumn.allowSorting) {
+                    this.parent.allowSorting && this.targetColumn && !this.targetColumn.allowSorting) {
                     status = true;
                 }
                 break;
             case 'Filter':
                 if (this.parent.allowFiltering && (this.parent.filterSettings.type !== 'FilterBar')
-                && this.parent.ensureModuleInjected(Filter) && this.targetColumn && this.targetColumn.allowFiltering) {
+                    && this.parent.ensureModuleInjected(Filter) && this.targetColumn && this.targetColumn.allowFiltering) {
                     status = false;
                 } else if (this.parent.ensureModuleInjected(Filter) && this.parent.allowFiltering
-                && this.targetColumn && (!this.targetColumn.allowFiltering || this.parent.filterSettings.type === 'FilterBar')) {
+                    && this.targetColumn && (!this.targetColumn.allowFiltering || this.parent.filterSettings.type === 'FilterBar')) {
                     status = true;
                 }
         }
@@ -560,7 +560,7 @@ export class ColumnMenu implements IAction {
     }
 
     private getFilterPop(): HTMLElement {
-        if (Browser.isDevice  && this.targetColumn !== null) {
+        if (Browser.isDevice && this.targetColumn !== null) {
             return document.getElementById(this.targetColumn.uid + '-flmdlg');
         }
         return this.parent.element.querySelector('.' + this.POP) as HTMLElement;

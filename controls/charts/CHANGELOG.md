@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 17.3.27 (2019-11-12)
+
+### Chart
+
+#### Bug Fixes
+
+- #250481 - Radar and Polar Chart isClosed not connecting to the first point when the minimum value set for the y axis issue has been fixed.
+
 ## 17.3.26 (2019-11-05)
 
 ### Chart

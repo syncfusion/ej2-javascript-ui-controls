@@ -4,6 +4,7 @@ import { IHtmlSubCommands } from './../base/interface';
 import * as EVENTS from './../../common/constant';
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
 import { isIDevice, setEditFrameFocus } from '../../common/util';
+import { markerClassName } from './dom-node';
 /**
  * Formats internal component
  * @hidden
@@ -31,6 +32,12 @@ export class Formats {
 
     private applyFormats(e: IHtmlSubCommands): void {
         let range: Range = this.parent.nodeSelection.getRange(this.parent.currentDocument);
+        let isSelectAll: boolean = false;
+        if (this.parent.editableElement === range.endContainer &&
+        !isNullOrUndefined(this.parent.editableElement.children[range.endOffset - 1]) &&
+        this.parent.editableElement.children[range.endOffset - 1].tagName === 'TABLE') {
+            isSelectAll = true;
+        }
         let save: NodeSelection = this.parent.nodeSelection.save(range, this.parent.currentDocument);
         this.parent.domNode.setMarker(save);
         let formatsNodes: Node[] = this.parent.domNode.blockNodes();
@@ -55,9 +62,20 @@ export class Formats {
             this.parent.domNode.replaceWith(parentNode, replaceTag);
         }
         (this.parent.editableElement as HTMLElement).focus();
+        let startNode: Node;
+        let endNode: Node;
+        if (!isNullOrUndefined(this.parent.editableElement.querySelector('.' + markerClassName.startSelection)) &&
+        !isNullOrUndefined(this.parent.editableElement.querySelector('.' + markerClassName.endSelection))) {
+            startNode = this.parent.editableElement.querySelector('.' + markerClassName.startSelection).lastChild;
+            endNode = this.parent.editableElement.querySelector('.' + markerClassName.endSelection).lastChild;
+        }
         save = this.parent.domNode.saveMarker(save);
         if (isIDevice()) { setEditFrameFocus(this.parent.editableElement, e.selector); }
-        save.restore();
+        if (isSelectAll) {
+            this.parent.nodeSelection.setSelectionText(this.parent.currentDocument, startNode, endNode, 0, endNode.textContent.length);
+        } else {
+            save.restore();
+        }
         if (e.callBack) {
             e.callBack({
                 requestType: e.subCommand,

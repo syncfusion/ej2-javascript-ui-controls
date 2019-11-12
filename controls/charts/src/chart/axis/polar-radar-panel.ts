@@ -310,6 +310,17 @@ export class PolarRadarPanel extends LineBase {
                         true, 'r', 'r', new ChartLocation(+previousValue, +previousValue), null, true
                     );
                 }
+                if (radius !== chart.radius) {
+                    options = new CircleOption(
+                        chart.element.id + '_MajorGridLine_' + index + '_' + axis.visibleLabels.length + 1, 'transparent', border,
+                        axis.majorGridLines.width, this.centerX, this.centerY, chart.radius
+                    );
+                    appendChildElement(
+                        chart.enableCanvas,
+                        this.element, chart.renderer.drawCircle(options), chart.redraw,
+                        true, 'r', 'r', new ChartLocation(+previousValue, +previousValue), null, true
+                    );
+                }
             } else {
                 for (let j: number = 0; j < axis.visibleLabels.length; j++) {
                     radius = chart.radius * valueToCoefficient(axis.visibleLabels[j].value, axis);

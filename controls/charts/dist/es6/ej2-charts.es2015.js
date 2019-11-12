@@ -2144,7 +2144,8 @@ function valueToPolarCoefficient(value, axis) {
     }
     else {
         // To split an interval equally based on visible labels count
-        delta = axis.visibleLabels[axis.visibleLabels.length - 1].value - axis.visibleLabels[0].value;
+        delta = axis.visibleLabels.length === 1 ? 1 :
+            (axis.visibleLabels[axis.visibleLabels.length - 1].value - axis.visibleLabels[0].value);
         length = axis.visibleLabels.length;
     }
     return axis.isInversed ? ((value - range.min) / delta) * (1 - 1 / (length)) :
@@ -5212,7 +5213,7 @@ class SeriesBase extends ChildProperty {
         }
         if (this instanceof Series) {
             if (this.type.indexOf('Spline') > -1 || (this.drawType.indexOf('Spline') > -1 && this.chart.chartAreaType === 'PolarRadar')) {
-                let isArea = (this.type.indexOf('Area') > -1 || this.drawType === 'Area');
+                let isArea = (this.type.indexOf('Area') > -1 || this.drawType.indexOf('Area') > -1);
                 this.chart['spline' + (isArea ? 'Area' : '') + 'SeriesModule'].findSplinePoint(this);
             }
         }
@@ -6254,7 +6255,7 @@ class Marker extends MarkerExplode {
         point.color = argsData.fill;
         if (!argsData.cancel) {
             let y;
-            if (series.type === 'RangeArea' || series.type === 'RangeColumn') {
+            if (series.type === 'RangeArea' || series.type === 'RangeColumn' || series.drawType === 'RangeColumn') {
                 y = index ? point.low : point.high;
             }
             else if (isBoxPlot) {
@@ -8107,12 +8108,6 @@ let Chart = class Chart extends Component {
             this.markerRender.removeEventListener();
             this.markerRender = null;
         }
-        this.unWireEvents();
-        super.destroy();
-        if (!this.enableCanvas) {
-            this.removeSvg();
-            this.svgObject = null;
-        }
         this.horizontalAxes = [];
         this.verticalAxes = [];
         this.visibleSeries = [];
@@ -8122,6 +8117,17 @@ let Chart = class Chart extends Component {
         this.dataLabelCollections = null;
         this.dataLabelElements = null;
         this.yAxisElements = null;
+        /**
+         * To fix react timeout destroy issue.
+         */
+        if (this.element) {
+            this.unWireEvents();
+            super.destroy();
+            if (!this.enableCanvas) {
+                this.removeSvg();
+                this.svgObject = null;
+            }
+        }
     }
     /**
      * Get component name
@@ -8148,13 +8154,6 @@ let Chart = class Chart extends Component {
      * Method to bind events for chart
      */
     unWireEvents() {
-        /**
-         * To fix react timeout destroy issue.
-         */
-        /*! Find the Events type */
-        if (!this.element) {
-            return;
-        }
         let startEvent = Browser.touchStartEvent;
         let moveEvent = Browser.touchMoveEvent;
         let stopEvent = Browser.touchEndEvent;
@@ -10654,6 +10653,21 @@ class LineBase {
         return point.yValue >= yAxis.visibleRange.min && point.yValue <= yAxis.visibleRange.max;
     }
     /**
+     * To get first and last visible points
+     * @private
+     */
+    getFirstLastVisiblePoint(points) {
+        let first = null;
+        let last = null;
+        for (let point of points) {
+            if (first === null && point.visible) {
+                first = last = point;
+            }
+            last = point.visible ? point : last;
+        }
+        return { first: first, last: last };
+    }
+    /**
      * To do the linear animation.
      * @return {void}
      * @private
@@ -10734,8 +10748,9 @@ class LineSeries extends LineBase {
         }
         if (isPolar) {
             if (series.isClosed) {
-                point2 = getCoordinate(visiblePoints[visiblePoints.length - 1].xValue, visiblePoints[visiblePoints.length - 1].yValue, xAxis, yAxis, isInverted, series);
-                point1 = getCoordinate(visiblePoints[0].xValue, visiblePoints[0].yValue, xAxis, yAxis, isInverted, series);
+                let points = this.getFirstLastVisiblePoint(visiblePoints);
+                point2 = getCoordinate(points.last.xValue, points.last.yValue, xAxis, yAxis, isInverted, series);
+                point1 = getCoordinate(points.first.xValue, points.first.yValue, xAxis, yAxis, isInverted, series);
                 direction = direction.concat(startPoint + ' ' + point2.x + ' ' + point2.y + ' ' + 'L' + ' ' + point1.x + ' ' + point1.y);
             }
         }
@@ -11345,10 +11360,13 @@ class AreaSeries extends MultiColoredSeries {
     render(series, xAxis, yAxis, isInverted) {
         let startPoint = null;
         let direction = '';
-        let origin = series.chart.chartAreaType === 'PolarRadar' ? series.points[0].yValue :
-            Math.max(series.yAxis.visibleRange.min, 0);
-        let currentXValue;
         let isPolar = (series.chart && series.chart.chartAreaType === 'PolarRadar');
+        let origin = Math.max(series.yAxis.visibleRange.min, 0);
+        if (isPolar) {
+            let connectPoints = this.getFirstLastVisiblePoint(series.points);
+            origin = connectPoints.first.yValue;
+        }
+        let currentXValue;
         let isDropMode = (series.emptyPointSettings && series.emptyPointSettings.mode === 'Drop');
         let borderWidth = series.border ? series.border.width : 0;
         let borderColor = series.border ? series.border.color : 'transparent';
@@ -11702,6 +11720,10 @@ class PolarRadarPanel extends LineBase {
                     previousValue = element ? element.getAttribute('r') : null;
                     radius = chart.radius * valueToCoefficient(axis.visibleLabels[j].value, axis);
                     options = new CircleOption(chart.element.id + '_MajorGridLine_' + index + '_' + j, 'transparent', border, axis.majorGridLines.width, this.centerX, this.centerY, radius);
+                    appendChildElement(chart.enableCanvas, this.element, chart.renderer.drawCircle(options), chart.redraw, true, 'r', 'r', new ChartLocation(+previousValue, +previousValue), null, true);
+                }
+                if (radius !== chart.radius) {
+                    options = new CircleOption(chart.element.id + '_MajorGridLine_' + index + '_' + axis.visibleLabels.length + 1, 'transparent', border, axis.majorGridLines.width, this.centerX, this.centerY, chart.radius);
                     appendChildElement(chart.enableCanvas, this.element, chart.renderer.drawCircle(options), chart.redraw, true, 'r', 'r', new ChartLocation(+previousValue, +previousValue), null, true);
                 }
             }
@@ -12792,7 +12814,8 @@ class StackingAreaSeries extends LineBase {
             }
         }
         if (series.chart.chartAreaType === 'PolarRadar' && visiblePoints.length > 1) {
-            point1 = { 'x': series.points[0].xValue, 'y': stackedvalue.endValues[0] };
+            let connectPoints = this.getFirstLastVisiblePoint(series.points);
+            point1 = { 'x': connectPoints.first.xValue, 'y': stackedvalue.endValues[connectPoints.first.index] };
             point2 = getCoordinate(point1.x, point1.y, xAxis, yAxis, isInverted, series);
             lineDirection += ('L' + ' ' + (point2.x) + ' ' + (point2.y) + ' ');
         }
@@ -13770,10 +13793,10 @@ class SplineBase extends LineBase {
                     }
                 }
             }
-            if (series.chart.chartAreaType === 'PolarRadar' && series.isClosed) {
-                value = this.getControlPoints({ xValue: points[points.length - 1].xValue, yValue: points[points.length - 1].yValue }, { xValue: points.length, yValue: points[0].yValue }, this.splinePoints[0], this.splinePoints[points[points.length - 1].index], series);
-                series.drawPoints.push(value);
-            }
+        }
+        if (series.chart.chartAreaType === 'PolarRadar' && series.isClosed) {
+            value = this.getControlPoints({ xValue: points[points.length - 1].xValue, yValue: points[points.length - 1].yValue }, { xValue: points[points.length - 1].xValue + 1, yValue: points[0].yValue }, this.splinePoints[0], this.splinePoints[points[points.length - 1].index], series);
+            series.drawPoints.push(value);
         }
     }
     getPreviousIndex(points, i, series) {
@@ -14046,7 +14069,8 @@ class SplineSeries extends SplineBase {
             }
         }
         if (series.chart.chartAreaType === 'PolarRadar' && series.isClosed) {
-            direction = this.getSplineDirection(series.drawPoints[series.drawPoints.length - 1], points[points.length - 1], { xValue: points.length, yValue: points[0].yValue }, xAxis, yAxis, isInverted, series, startPoint, getCoordinate, direction);
+            let connectPoints = this.getFirstLastVisiblePoint(points);
+            direction = this.getSplineDirection(series.drawPoints[series.drawPoints.length - 1], connectPoints.last, { xValue: connectPoints.first.xValue, yValue: connectPoints.first.yValue }, xAxis, yAxis, isInverted, series, startPoint, getCoordinate, direction);
             startPoint = 'L';
         }
         let name = series.category === 'TrendLine' ? series.chart.element.id + '_Series_' + series.sourceIndex + '_TrendLine_' + series.index :
@@ -24343,6 +24367,12 @@ let AccumulationChart = class AccumulationChart extends Component {
      * Method to bind events for the accumulation chart
      */
     wireEvents() {
+        /**
+         * To fix react timeout destroy issue.
+         */
+        if (!this.element) {
+            return;
+        }
         /*! Find the Events type */
         let isIE11Pointer = Browser.isPointer;
         let start = Browser.touchStartEvent;
@@ -24907,9 +24937,14 @@ let AccumulationChart = class AccumulationChart extends Component {
      * @private
      */
     destroy() {
-        this.unWireEvents();
-        super.destroy();
-        this.element.classList.remove('e-accumulationchart');
+        /**
+         * To fix react timeout destroy issue.
+         */
+        if (this.element) {
+            this.unWireEvents();
+            super.destroy();
+            this.element.classList.remove('e-accumulationchart');
+        }
     }
     /**
      * To provide the array of modules needed for control rendering
@@ -27164,13 +27199,21 @@ class RangeSeries extends NiceInterval {
         if (control.series.length) {
             control.series.map((series) => {
                 dataSource = series.dataSource || control.dataSource;
+                this.findGMT(control, dataSource, series.xName);
                 query = series.query || control.query;
                 series.points = [];
                 this.processDataSource(dataSource, query, control, series);
             });
         }
         else {
+            this.findGMT(control, control.dataSource, control.xName);
             this.processDataSource(control.dataSource, control.query, control);
+        }
+    }
+    findGMT(control, data, xName) {
+        if (!control.isGMT) {
+            control.isGMT = !((data[0][xName]).toString().indexOf('GMT+') > -1 ||
+                (data[0][xName]).toString().indexOf('GMT-') > -1);
         }
     }
     processDataSource(dataSource, query, control, series) {
@@ -27250,7 +27293,7 @@ class RangeSeries extends NiceInterval {
         axisModule.min = this.xMin;
         axisModule.max = this.xMax;
         axisModule.getActualRange(this.xAxis, control.bounds);
-        if (this.xAxis.valueType !== 'Logarithmic') {
+        if (this.xAxis.valueType === 'Double' || this.xAxis.valueType === 'DateTime') {
             axisModule.updateActualRange(this.xAxis, this.xAxis.actualRange.min, this.xAxis.actualRange.max, this.xAxis.actualRange.interval);
         }
         this.xAxis.actualRange.delta = this.xAxis.actualRange.max - this.xAxis.actualRange.min;
@@ -27436,6 +27479,7 @@ class RangeNavigatorAxis extends DateTime {
         this.placeAxisLabels(axis, pointY, '_AxisLabel_', control, firstLevelElement);
         secondaryAxis.intervalType = secondaryAxis.actualIntervalType = (control.groupBy ||
             this.getSecondaryLabelType(axis.actualIntervalType));
+        secondaryAxis.labelFormat = '';
         if (control.enableGrouping && control.valueType === 'DateTime' && this.actualIntervalType !== 'Years') {
             secondaryAxis.visibleRange.interval = 1;
             secondaryAxis.visibleLabels = [];
@@ -27467,7 +27511,8 @@ class RangeNavigatorAxis extends DateTime {
      */
     findAxisLabels(axis) {
         axis.visibleLabels = [];
-        let start = new Date(axis.visibleRange.min);
+        let offset = this.rangeNavigator.isGMT ? (new Date().getTimezoneOffset() * 60 * 1000) : 0;
+        let start = new Date(axis.visibleRange.min + offset);
         let nextInterval;
         let text;
         let interval = this.rangeNavigator.interval ? this.rangeNavigator.interval : 1;
@@ -27508,7 +27553,7 @@ class RangeNavigatorAxis extends DateTime {
                 start = new Date(start.getFullYear(), start.getMonth(), start.getDate(), start.getHours(), start.getMinutes(), start.getSeconds());
                 break;
         }
-        nextInterval = start.getTime();
+        nextInterval = start.getTime() + offset;
         this.rangeNavigator.format = this.rangeNavigator.intl.getDateFormat({
             format: axis.labelFormat, type: firstToLowerCase(axis.skeletonType), skeleton: this.getSkeleton(axis, null, null)
         });
@@ -28449,6 +28494,8 @@ let RangeNavigator = class RangeNavigator extends Component {
         /** @private */
         this.animateSeries = true;
         this.chartid = 57725;
+        /** @private */
+        this.isGMT = false;
     }
     /**
      * Starting point of the control initialization
@@ -29566,7 +29613,7 @@ class RangeTooltip {
                 format: format || 'MM/dd/yyyy',
                 type: firstToLowerCase(control.skeletonType),
                 skeleton: control.dateTimeModule.getSkeleton(xAxis, null, null)
-            }))(new Date(value));
+            }))(new Date(value + (control.isGMT ? new Date().getTimezoneOffset() * 60 * 1000 : 0)));
         }
         else {
             xAxis.format = control.intl.getNumberFormat({

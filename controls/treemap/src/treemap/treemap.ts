@@ -547,7 +547,7 @@ export class TreeMap extends Component<HTMLElement> implements INotifyPropertyCh
     private createSecondaryElement(): void {
         let secondaryEle: Element = document.getElementById(this.element.id + '_Secondary_Element');
         if (secondaryEle && secondaryEle.childElementCount > 0) {
-            secondaryEle.remove();
+            secondaryEle.parentNode.removeChild(secondaryEle);
         }
         if (isNullOrUndefined(document.getElementById(this.element.id + '_Secondary_Element'))) {
             let secondaryElement: Element = createElement('div', {
@@ -1158,7 +1158,8 @@ export class TreeMap extends Component<HTMLElement> implements INotifyPropertyCh
                         (!isNullOrUndefined(drillLevel) && this.enableBreadcrumb && item['isDrilled']) ? drillLevel : null;
                     if (!observedArgs.cancel) {
                         if (document.getElementById(layoutID)) {
-                            document.getElementById(layoutID).remove();
+                            let layerElementId: HTMLElement = document.getElementById(layoutID);
+                            layerElementId.parentNode.removeChild(layerElementId);
                         }
                         totalRect = extend({}, this.areaRect, totalRect, true) as Rect;
                         if (this.legendSettings.visible && !isNullOrUndefined(this.treeMapLegendModule)) {
@@ -1178,7 +1179,8 @@ export class TreeMap extends Component<HTMLElement> implements INotifyPropertyCh
                             totalRect = !isNullOrUndefined(this.totalRect) ? this.totalRect : totalRect;
                         }
                         if (document.getElementById(templateID)) {
-                            document.getElementById(templateID).remove();
+                            let drillElementId: HTMLElement = document.getElementById(templateID);
+                            drillElementId.parentNode.removeChild(drillElementId);
                         }
                         if (!isNullOrUndefined(observedArgs.childItems) && !observedArgs.cancel) {
                             this.layout.onDemandProcess(observedArgs.childItems);

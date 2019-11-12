@@ -5,7 +5,7 @@ import { SortSettings } from '../base/grid';
 import { Column } from '../models/column';
 import { IGrid, IAction, NotifyArgs } from '../base/interface';
 import { SortDirection } from '../base/enum';
-import { setCssInGridPopUp, getActualPropFromColl, isActionPrevent, iterateExtend } from '../base/util';
+import { setCssInGridPopUp, getActualPropFromColl, isActionPrevent, iterateExtend, parentsUntil } from '../base/util';
 import * as events from '../base/constant';
 import { SortDescriptorModel } from '../base/grid-model';
 import { AriaService } from '../services/aria-service';
@@ -350,12 +350,11 @@ export class Sort implements IAction {
         this.popUpClickHandler(e);
         let target: Element = closest(e.target as Element, '.e-headercell');
         if (target && !(e.target as Element).classList.contains('e-grptogglebtn') &&
-            !(e.target as Element).classList.contains('e-stackedheadercell') &&
-            !(e.target as Element).classList.contains('e-stackedheadercelldiv') &&
             !(target.classList.contains('e-resized')) &&
             !(e.target as Element).classList.contains('e-rhandler') &&
             !(e.target as Element).classList.contains('e-columnmenu') &&
-            !(e.target as Element).classList.contains('e-filtermenudiv')) {
+            !(e.target as Element).classList.contains('e-filtermenudiv') &&
+            !parentsUntil(e.target as Element, 'e-stackedheadercell')) {
             let gObj: IGrid = this.parent;
             let colObj: Column = gObj.getColumnByUid(target.querySelector('.e-headercelldiv').getAttribute('e-mappinguid')) as Column;
             let direction: SortDirection = !target.querySelectorAll('.e-ascending').length ? 'Ascending' :

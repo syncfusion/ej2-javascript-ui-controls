@@ -527,6 +527,11 @@ export class Layout {
         }
         if (element instanceof ListTextElementBox || this.isFieldCode || element instanceof BookmarkElementBox ||
             element instanceof EditRangeEndElementBox || element instanceof EditRangeStartElementBox) {
+            if (element instanceof BookmarkElementBox && element.bookmarkType === 0 &&
+                !this.viewer.bookmarks.containsKey(element.name)) {
+                this.viewer.bookmarks.add(element.name, element);
+            }
+
             if (isNullOrUndefined(element.nextElement) && this.viewer.clientActiveArea.width > 0 && !element.line.isLastLine()) {
                 this.moveElementFromNextLine(line);
             }
@@ -3970,7 +3975,7 @@ export class Layout {
      * @private
      */
     // tslint:disable-next-line:max-line-length
-    public layoutBodyWidgetCollection(blockIndex: number, bodyWidget: Widget, block: BlockWidget, shiftNextWidget: boolean): void {
+    public layoutBodyWidgetCollection(blockIndex: number, bodyWidget: Widget, block: BlockWidget, shiftNextWidget: boolean, isSkipShifting?: boolean): void {
         if (!isNullOrUndefined(this.viewer.owner)
             && this.viewer.owner.isLayoutEnabled) {
             if (bodyWidget instanceof BlockContainer) {
@@ -3991,7 +3996,7 @@ export class Layout {
                     if (!(prevWidget instanceof ParagraphWidget) ||
                         (prevWidget instanceof ParagraphWidget) && !prevWidget.isEndsWithPageBreak) {
                         this.viewer.cutFromTop(prevWidget.y + prevWidget.height);
-                        if (curretBlock.containerWidget !== prevWidget.containerWidget) {
+                        if (isNullOrUndefined(isSkipShifting) && curretBlock.containerWidget !== prevWidget.containerWidget) {
                             // tslint:disable-next-line:max-line-length
                             this.updateContainerWidget(curretBlock as Widget, prevWidget.containerWidget as BodyWidget, prevWidget.indexInOwner + 1, false);
                         }

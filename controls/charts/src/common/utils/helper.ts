@@ -277,7 +277,8 @@ export function valueToPolarCoefficient(value: number, axis: Axis): number {
         delta = delta === 0 ? 1 : delta;
     } else {
         // To split an interval equally based on visible labels count
-        delta = axis.visibleLabels[axis.visibleLabels.length - 1].value - axis.visibleLabels[0].value;
+        delta = axis.visibleLabels.length === 1 ? 1 :
+            (axis.visibleLabels[axis.visibleLabels.length - 1].value - axis.visibleLabels[0].value);
         length = axis.visibleLabels.length;
     }
     return axis.isInversed ? ((value - <number>range.min) / delta) * (1 - 1 / (length)) :

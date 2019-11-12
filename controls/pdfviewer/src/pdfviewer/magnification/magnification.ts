@@ -249,6 +249,14 @@ export class Magnification {
         }
         this.isPinchZoomed = true;
         this.onZoomChanged(temporaryZoomFactor * 100);
+        this.isTapToFitZoom = true;
+        if (Browser.isDevice && (this.zoomFactor * 100) === 50) {
+            let zoomValue: number = this.calculateFitZoomFactor('fitToWidth');
+            this.fitType = null;
+            if (zoomValue <= 50) {
+                this.fitToWidth();
+            }
+        }
     }
 
     /**
@@ -263,6 +271,7 @@ export class Magnification {
         if (temporaryZoomFactor > 4) {
             temporaryZoomFactor = 4;
         }
+        this.isTapToFitZoom = true;
         this.isPinchZoomed = true;
         this.onZoomChanged(temporaryZoomFactor * 100);
     }
@@ -519,7 +528,7 @@ export class Magnification {
             this.pdfViewerBase.renderedPagesList = [];
             this.pdfViewerBase.pinchZoomStorage = [];
             let pageDivs: NodeList = document.querySelectorAll('canvas[id*="' + this.pdfViewer.element.id + '_pageCanvas_"]');
-            let viewportWidth: number = this.pdfViewer.element.clientWidth;
+            let viewportWidth: number = 816;
             for (let i: number = 0; i < pageDivs.length; i++) {
                 // tslint:disable-next-line:radix
                 let pageNumber: number = parseInt((pageDivs[i] as HTMLElement).id.split('_pageCanvas_')[1]);
@@ -876,7 +885,7 @@ export class Magnification {
                 this.fitToWidth();
             }
         } else {
-            this.zoomTo(this.previousZoomFactor * 100);
+            this.fitToWidth();
         }
         this.calculateScrollValues(scrollValue);
         this.isTapToFitZoom = !this.isTapToFitZoom;

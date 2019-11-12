@@ -19,10 +19,13 @@ export class AreaSeries extends MultiColoredSeries {
     public render(series: Series, xAxis: Axis, yAxis: Axis, isInverted: boolean): void {
         let startPoint: ChartLocation = null;
         let direction: string = '';
-        let origin: number = series.chart.chartAreaType === 'PolarRadar' ? series.points[0].yValue :
-            Math.max(<number>series.yAxis.visibleRange.min, 0);
-        let currentXValue: number;
         let isPolar: boolean = (series.chart && series.chart.chartAreaType === 'PolarRadar');
+        let origin: number = Math.max(<number>series.yAxis.visibleRange.min, 0);
+        if (isPolar) {
+            let connectPoints: { first: Points, last: Points} = this.getFirstLastVisiblePoint(series.points);
+            origin = connectPoints.first.yValue;
+        }
+        let currentXValue: number;
         let isDropMode: boolean = (series.emptyPointSettings && series.emptyPointSettings.mode === 'Drop');
         let borderWidth: number = series.border ? series.border.width : 0;
         let borderColor: string = series.border ? series.border.color : 'transparent';

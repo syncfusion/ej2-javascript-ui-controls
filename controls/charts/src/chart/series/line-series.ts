@@ -44,11 +44,12 @@ export class LineSeries extends LineBase {
         }
         if (isPolar) {
             if (series.isClosed) {
+                let points: {first: Points, last: Points} = this.getFirstLastVisiblePoint(visiblePoints);
                 point2 = getCoordinate(
-                    visiblePoints[visiblePoints.length - 1].xValue, visiblePoints[visiblePoints.length - 1].yValue,
+                    points.last.xValue, points.last.yValue,
                     xAxis, yAxis, isInverted, series
                 );
-                point1 = getCoordinate(visiblePoints[0].xValue, visiblePoints[0].yValue, xAxis, yAxis, isInverted, series);
+                point1 = getCoordinate(points.first.xValue, points.first.yValue, xAxis, yAxis, isInverted, series);
                 direction = direction.concat(startPoint + ' ' + point2.x + ' ' + point2.y + ' ' + 'L' + ' ' + point1.x + ' ' + point1.y);
             }
         }

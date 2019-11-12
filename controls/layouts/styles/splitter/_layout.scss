@@ -423,4 +423,10 @@
   .e-splitter.e-ie .e-split-bar-horizontal .e-resize-handler {
     flex-direction: column;
   }
+
+  .e-splitter.e-ie .e-split-bar.e-split-bar-horizontal .e-resize-handler::before {
+    background: $resize-icon-bg-color;
+    padding: 2px 0;
+  }
+
 }

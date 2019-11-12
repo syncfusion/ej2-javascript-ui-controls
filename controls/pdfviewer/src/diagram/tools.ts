@@ -1094,6 +1094,11 @@ export class PolygonDrawingTool extends ToolBase {
                                     drawingObject.notes = this.commandHandler.annotation.measureAnnotationModule.calculateVolume(drawingObject.vertexPoints);
                                     this.commandHandler.annotation.stickyNotesAnnotationModule.addTextToComments(drawingObject.annotName, drawingObject.notes);
                                 }
+                                if (drawingObject.enableShapeLabel) {
+                                    drawingObject.labelContent = drawingObject.notes;
+                                    // tslint:disable-next-line:max-line-length
+                                    this.commandHandler.nodePropertyChange(drawingObject, { vertexPoints: drawingObject.vertexPoints, notes: drawingObject.notes });
+                                }
                                 // tslint:disable-next-line:max-line-length
                                 this.commandHandler.annotation.measureAnnotationModule.renderMeasureShapeAnnotations(drawingObject, drawingObject.pageIndex);
                             }
@@ -1125,6 +1130,12 @@ export class PolygonDrawingTool extends ToolBase {
                                 this.commandHandler.renderDrawing(null, this.drawingObject.pageIndex);
                                 // tslint:disable-next-line:max-line-length
                                 this.drawingObject.notes = this.commandHandler.annotation.measureAnnotationModule.calculatePerimeter(this.drawingObject);
+                                if (this.drawingObject.enableShapeLabel) {
+                                    this.drawingObject.labelContent = this.drawingObject.notes;
+                                    // tslint:disable-next-line:max-line-length
+                                    this.commandHandler.nodePropertyChange(this.drawingObject, { vertexPoints: this.drawingObject.vertexPoints, notes: this.drawingObject.notes });
+                                }
+                                // tslint:disable-next-line:max-line-length
                                 this.commandHandler.annotation.stickyNotesAnnotationModule.addTextToComments(this.drawingObject.annotName, this.drawingObject.notes);
                                 // tslint:disable-next-line:max-line-length
                                 this.commandHandler.annotation.measureAnnotationModule.renderMeasureShapeAnnotations(this.drawingObject, this.drawingObject.pageIndex);

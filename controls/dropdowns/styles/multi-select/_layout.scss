@@ -567,12 +567,13 @@
 .e-ddl.e-popup.e-multi-select-list-wrapper .e-filter-parent .e-clear-icon,
 .e-bigger .e-ddl.e-popup.e-multi-select-list-wrapper .e-filter-parent .e-clear-icon {
   padding-left: 8px;
+  @if $ddl-multiselect-skin-name == 'material' {
+    padding-right: 8px;
+  }
 }
 
 .e-ddl.e-popup.e-multi-select-list-wrapper .e-filter-parent .e-back-icon {
-  margin: $ddl-back-icon-margin;
   padding: $ddl-back-icon-padding;
-  position: absolute;
 }
 
 .e-bigger .e-checkbox .e-multi-select-wrapper .e-delim-values {

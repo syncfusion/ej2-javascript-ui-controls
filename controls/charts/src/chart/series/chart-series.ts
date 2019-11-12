@@ -954,7 +954,7 @@ export class SeriesBase extends ChildProperty<SeriesBase> {
         }
         if (this instanceof Series) {
             if (this.type.indexOf('Spline') > -1 || (this.drawType.indexOf('Spline') > -1 && this.chart.chartAreaType === 'PolarRadar')) {
-                let isArea: boolean = (this.type.indexOf('Area') > -1 || this.drawType === 'Area');
+                let isArea: boolean = (this.type.indexOf('Area') > -1 || this.drawType.indexOf('Area') > -1);
                 this.chart[
                     'spline' + (isArea ? 'Area' : '') + 'SeriesModule'
                 ].findSplinePoint(this);

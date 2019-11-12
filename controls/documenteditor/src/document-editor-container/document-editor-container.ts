@@ -201,6 +201,14 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
     // tslint:disable-next-line:max-line-length
     @Property({ import: 'Import', systemClipboard: 'SystemClipboard', spellCheck: 'SpellCheck', restrictEditing: 'RestrictEditing' })
     public serverActionSettings: ContainerServerActionSettingsModel;
+
+    /**
+     * Add custom headers to XMLHttpRequest.
+     * @default []
+     */
+    @Property([])
+    public headers: object[];
+
     /**
      * Gets DocumentEditor instance.
      * @aspType DocumentEditor
@@ -407,6 +415,10 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
                         this.documentEditor.zIndex = newModel.zIndex;
                     }
                     break;
+                case 'headers':
+                    if (this.documentEditor) {
+                        this.documentEditor.headers = newModel.headers;
+                    }
             }
         }
     }
@@ -431,8 +443,7 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
             this.element.style.height = '320px';
         }
         this.element.style.minHeight = '320px';
-        this.initializeDocumentEditor();
-        this.textProperties = new TextProperties(this, this.element.id, false, this.enableRtl);
+        this.initializeDocumentEditor(); this.textProperties = new TextProperties(this, this.element.id, false, this.enableRtl);
         this.headerFooterProperties = new HeaderFooterProperties(this, this.enableRtl);
         this.imageProperties = new ImageProperties(this, this.enableRtl);
         this.tocProperties = new TocProperties(this, this.enableRtl);
@@ -468,6 +479,9 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
         }
         if (this.serverActionSettings.systemClipboard) {
             this.documentEditor.serverActionSettings.systemClipboard = this.serverActionSettings.systemClipboard;
+        }
+        if (this.headers) {
+            this.documentEditor.headers = this.headers;
         }
     }
     /**

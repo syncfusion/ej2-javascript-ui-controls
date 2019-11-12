@@ -856,7 +856,8 @@ export class TreeMapLegend {
      */
     public removeInteractivePointer(): void {
         if (document.getElementById(this.treemap.element.id + '_Interactive_Legend')) {
-            document.getElementById(this.treemap.element.id + '_Interactive_Legend').remove();
+            let legendElementId: HTMLElement = document.getElementById(this.treemap.element.id + '_Interactive_Legend');
+            legendElementId.parentNode.removeChild(legendElementId);
         }
     }
     /**

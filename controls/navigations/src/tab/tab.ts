@@ -3,7 +3,7 @@ import { INotifyPropertyChanged, NotifyPropertyChanges, ChildProperty, Animation
 import { KeyboardEvents, KeyboardEventArgs, MouseEventArgs, Effect, Browser, formatUnit, DomElements, L10n } from '@syncfusion/ej2-base';
 import { setStyleAttribute as setStyle, isNullOrUndefined as isNOU, selectAll, addClass, removeClass, remove } from '@syncfusion/ej2-base';
 import { EventHandler, rippleEffect, Touch, SwipeEventArgs, compile, Animation, AnimationModel, BaseEventArgs } from '@syncfusion/ej2-base';
-import { updateBlazorTemplate, isBlazor } from '@syncfusion/ej2-base';
+import { updateBlazorTemplate, resetBlazorTemplate, isBlazor } from '@syncfusion/ej2-base';
 import { Popup, PopupModel } from '@syncfusion/ej2-popups';
 import { Toolbar, OverflowMode, ClickEventArgs } from '../toolbar/toolbar';
 import { TabModel, TabItemModel, HeaderModel, TabActionSettingsModel, TabAnimationSettingsModel } from './tab-model';
@@ -698,7 +698,7 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
         let tabHeader: HTMLElement = this.getTabHeader();
         if (tabHeader) {
             let tabItems: HTMLElement[] = selectAll('.' + CLS_TB_ITEM + '.' + CLS_ACTIVE, tabHeader);
-            tabItems.forEach((node: HTMLElement) => node.classList.remove(CLS_ACTIVE));
+            [].slice.call(tabItems).forEach((node: HTMLElement) => node.classList.remove(CLS_ACTIVE));
         }
     }
     private checkPopupOverflow(ele: HTEle): boolean {
@@ -1390,6 +1390,10 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
             if (isNOU(this.tbObj)) {
                 this.reRenderItems();
             } else {
+                let items: TabItemModel[] = newProp.items;
+                for (let i: number = 0; i < items.length; i++) {
+                    this.resetBlazorTemplates(items[i], i);
+                }
                 this.setItems(<TabItemModel[]>newProp.items);
                 if (this.templateEle.length > 0) { this.expTemplateContent(); }
                 this.templateEle = [];
@@ -1401,6 +1405,19 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
             }
         }
     }
+
+    private resetBlazorTemplates(item: TabItemModel, index: number): void {
+        if (!isBlazor()) {
+            return;
+        }
+        if (item.headerTemplate && !this.isStringTemplate && (item.headerTemplate).indexOf('<div>Blazor') === 0) {
+            resetBlazorTemplate(this.element.id + index + '_' + 'headerTemplate', 'HeaderTemplate');
+        }
+        if (item.content && !this.isStringTemplate && (<string>item.content).indexOf('<div>Blazor') === 0) {
+            resetBlazorTemplate(this.element.id + index + '_' + 'content', 'ContentTemplate');
+        }
+    }
+
     /**
      * Enables or disables the specified Tab item. On passing value as `false`, the item will be disabled.
      * @param  {number} index - Index value of target Tab item.
@@ -1495,6 +1512,7 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
         let removeArgs: RemoveEventArgs = { removedItem: trg, removedIndex: index, cancel: false };
         this.trigger('removing', removeArgs, (tabRemovingArgs: RemoveEventArgs) => {
             if (!tabRemovingArgs.cancel) {
+                this.resetBlazorTemplates(this.items[index], index);
                 this.tbObj.removeItems(index);
                 this.items.splice(index, 1);
                 this.itemIndexArray.splice(index, 1);

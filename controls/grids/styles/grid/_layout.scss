@@ -2038,6 +2038,11 @@
       padding-top: $grid-edit-cell-padding;
     }
 
+    .e-gridcontent .e-normaledit .e-rowcell.e-lastrowadded {
+      border-bottom: $grid-border-size $grid-border-type $grid-cell-border-color;
+      border-top: 0 none $grid-cell-border-color;
+    }
+
     .e-normaledit {
       border-top: 0;
       padding: 0;
@@ -2221,12 +2226,15 @@
 
     .e-frozenhdrcont .e-headercontent > .e-table,
     .e-frozenhdrcont .e-frozenheader > .e-table,
-    .e-frozenhdrcont .e-movableheader > .e-table {
+    .e-frozenhdrcont .e-movableheader > .e-table,
+    .e-frozenhdrcont .e-headercontent .e-virtualtable > .e-table {
       border-bottom: $frozen-border;
     }
 
     .e-frozenheader > .e-table,
-    .e-frozencontent > .e-table {
+    .e-frozencontent > .e-table,
+    .e-frozenheader .e-virtualtable > .e-table,
+    .e-frozencontent .e-virtualtable > .e-table {
       border-left: 0;
       border-right: $frozen-border;
     }

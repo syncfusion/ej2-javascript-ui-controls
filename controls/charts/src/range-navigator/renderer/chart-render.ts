@@ -48,12 +48,21 @@ export class RangeSeries extends NiceInterval {
         if (control.series.length) {
             control.series.map((series: RangeNavigatorSeries) => {
                 dataSource = series.dataSource || control.dataSource;
+                this.findGMT(control, <object[]>dataSource, series.xName);
                 query = series.query || control.query;
                 series.points = [];
                 this.processDataSource(dataSource, query, control, series);
             });
         } else {
+            this.findGMT(control, <object[]>control.dataSource, control.xName);
             this.processDataSource(control.dataSource, control.query, control);
+        }
+    }
+
+    private findGMT(control: RangeNavigator, data: Object[], xName: string): void  {
+        if (!control.isGMT) {
+            control.isGMT = !((data[0][xName]).toString().indexOf('GMT+') > -1  ||
+                              (data[0][xName]).toString().indexOf('GMT-') > -1);
         }
     }
 
@@ -133,7 +142,7 @@ export class RangeSeries extends NiceInterval {
         axisModule.min = this.xMin;
         axisModule.max = this.xMax;
         axisModule.getActualRange(this.xAxis, control.bounds);
-        if (this.xAxis.valueType !== 'Logarithmic') {
+        if (this.xAxis.valueType === 'Double' || this.xAxis.valueType === 'DateTime') {
             axisModule.updateActualRange(
                 this.xAxis, this.xAxis.actualRange.min, this.xAxis.actualRange.max, this.xAxis.actualRange.interval
             );

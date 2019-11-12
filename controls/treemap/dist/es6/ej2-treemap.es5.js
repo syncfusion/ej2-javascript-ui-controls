@@ -933,7 +933,8 @@ function measureElement(element, parentElement) {
     parentElement.appendChild(element);
     size.height = element.offsetHeight;
     size.width = element.offsetWidth;
-    document.getElementById(element.id).remove();
+    var measureElementId = document.getElementById(element.id);
+    measureElementId.parentNode.removeChild(measureElementId);
     return size;
 }
 function getArea(rect) {
@@ -2513,7 +2514,7 @@ var TreeMap = /** @__PURE__ @class */ (function (_super) {
     TreeMap.prototype.createSecondaryElement = function () {
         var secondaryEle = document.getElementById(this.element.id + '_Secondary_Element');
         if (secondaryEle && secondaryEle.childElementCount > 0) {
-            secondaryEle.remove();
+            secondaryEle.parentNode.removeChild(secondaryEle);
         }
         if (isNullOrUndefined(document.getElementById(this.element.id + '_Secondary_Element'))) {
             var secondaryElement = createElement('div', {
@@ -3135,7 +3136,8 @@ var TreeMap = /** @__PURE__ @class */ (function (_super) {
                         (!isNullOrUndefined(drillLevel) && _this.enableBreadcrumb && item['isDrilled']) ? drillLevel : null;
                     if (!observedArgs.cancel) {
                         if (document.getElementById(layoutID)) {
-                            document.getElementById(layoutID).remove();
+                            var layerElementId = document.getElementById(layoutID);
+                            layerElementId.parentNode.removeChild(layerElementId);
                         }
                         totalRect = extend({}, _this.areaRect, totalRect, true);
                         if (_this.legendSettings.visible && !isNullOrUndefined(_this.treeMapLegendModule)) {
@@ -3158,7 +3160,8 @@ var TreeMap = /** @__PURE__ @class */ (function (_super) {
                             totalRect = !isNullOrUndefined(_this.totalRect) ? _this.totalRect : totalRect;
                         }
                         if (document.getElementById(templateID)) {
-                            document.getElementById(templateID).remove();
+                            var drillElementId = document.getElementById(templateID);
+                            drillElementId.parentNode.removeChild(drillElementId);
                         }
                         if (!isNullOrUndefined(observedArgs.childItems) && !observedArgs.cancel) {
                             _this.layout.onDemandProcess(observedArgs.childItems);
@@ -4321,7 +4324,8 @@ var TreeMapLegend = /** @__PURE__ @class */ (function () {
      */
     TreeMapLegend.prototype.removeInteractivePointer = function () {
         if (document.getElementById(this.treemap.element.id + '_Interactive_Legend')) {
-            document.getElementById(this.treemap.element.id + '_Interactive_Legend').remove();
+            var legendElementId = document.getElementById(this.treemap.element.id + '_Interactive_Legend');
+            legendElementId.parentNode.removeChild(legendElementId);
         }
     };
     /**
@@ -4943,7 +4947,8 @@ var TreeMapTooltip = /** @__PURE__ @class */ (function () {
     };
     TreeMapTooltip.prototype.removeTooltip = function () {
         if (document.getElementsByClassName('EJ2-TreeMap-Tooltip').length > 0) {
-            document.getElementsByClassName('EJ2-TreeMap-Tooltip')[0].remove();
+            var tooltipElementId = document.getElementsByClassName('EJ2-TreeMap-Tooltip')[0];
+            tooltipElementId.parentNode.removeChild(tooltipElementId);
         }
     };
     /**

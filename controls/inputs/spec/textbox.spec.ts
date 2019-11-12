@@ -234,6 +234,50 @@ describe('TextBox ', () => {
             expect(inputObj.element.hasAttribute('type')).toBe(false);
         });
     });
+    describe('Checking the width property - ', () => {
+        let inputObj: any;
+        beforeEach((): void => {
+            let element: HTMLElement = createElement('input', {id: 'textbox'});
+            document.body.appendChild(element);
+        })
+        afterEach((): void => {
+            document.body.innerHTML = '';
+        });
+        it('Initial rendering with width as number', () => {
+            inputObj = new TextBox({value: "Syncfusion", width: 500});
+            inputObj.appendTo('#textbox');
+            expect(inputObj.textboxWrapper.container.style.width).toBe('500px');
+        });
+        it('Initial rendering with width as string ', () => {
+            inputObj = new TextBox({value: "Syncfusion", width: '200px'});
+            inputObj.appendTo('#textbox');
+            expect(inputObj.textboxWrapper.container.style.width).toBe('200px');
+        });
+        it('Initial rendering with width as % ', () => {
+            inputObj = new TextBox({value: "Syncfusion", width: '20%'});
+            inputObj.appendTo('#textbox');
+            expect(inputObj.textboxWrapper.container.style.width).toBe('20%');
+        });
+        it('Initial rendering with width as em ', () => {
+            inputObj = new TextBox({value: "Syncfusion", width: '20em'});
+            inputObj.appendTo('#textbox');
+            expect(inputObj.textboxWrapper.container.style.width).toBe('20em');
+        });
+        it('Initial rendering with dynamic width', () => {
+            inputObj = new TextBox({value: "Syncfusion"});
+            inputObj.appendTo('#textbox');
+            expect(inputObj.textboxWrapper.container.style.width).toBe('');
+            inputObj.width = 500;
+            inputObj.dataBind();
+            expect(inputObj.textboxWrapper.container.style.width).toBe('500px');
+            inputObj.width = '200px';
+            inputObj.dataBind();
+            expect(inputObj.textboxWrapper.container.style.width).toBe('200px');
+            inputObj.width = '20%';
+            inputObj.dataBind();
+            expect(inputObj.textboxWrapper.container.style.width).toBe('20%');
+        });
+    });
     describe('MultiLine structure testing with textarea element- ', () => {
         let inputObj: any;
         beforeEach((): void => {

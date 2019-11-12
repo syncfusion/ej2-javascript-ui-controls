@@ -2102,6 +2102,15 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
     }
 
     /**
+     * Get the maximum id of an event.
+     * @method getEventMaxID
+     * @returns {number | string}
+     */
+    public getEventMaxID(): number | string {
+        return this.eventBase.getEventMaxID();
+    }
+
+    /**
      * Get deleted occurrences from given recurrence series.
      * @method getDeletedOccurrences
      * @param {{[key: string]: Object}} recurrenceData Accepts the parent event object.

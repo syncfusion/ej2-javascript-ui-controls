@@ -6742,7 +6742,7 @@ let Tab = class Tab extends Component {
         let tabHeader = this.getTabHeader();
         if (tabHeader) {
             let tabItems = selectAll('.' + CLS_TB_ITEM + '.' + CLS_ACTIVE$1, tabHeader);
-            tabItems.forEach((node) => node.classList.remove(CLS_ACTIVE$1));
+            [].slice.call(tabItems).forEach((node) => node.classList.remove(CLS_ACTIVE$1));
         }
     }
     checkPopupOverflow(ele) {
@@ -7543,6 +7543,10 @@ let Tab = class Tab extends Component {
                 this.reRenderItems();
             }
             else {
+                let items = newProp.items;
+                for (let i = 0; i < items.length; i++) {
+                    this.resetBlazorTemplates(items[i], i);
+                }
                 this.setItems(newProp.items);
                 if (this.templateEle.length > 0) {
                     this.expTemplateContent();
@@ -7554,6 +7558,17 @@ let Tab = class Tab extends Component {
                 }
                 this.select(this.selectedItem);
             }
+        }
+    }
+    resetBlazorTemplates(item, index) {
+        if (!isBlazor()) {
+            return;
+        }
+        if (item.headerTemplate && !this.isStringTemplate && (item.headerTemplate).indexOf('<div>Blazor') === 0) {
+            resetBlazorTemplate(this.element.id + index + '_' + 'headerTemplate', 'HeaderTemplate');
+        }
+        if (item.content && !this.isStringTemplate && item.content.indexOf('<div>Blazor') === 0) {
+            resetBlazorTemplate(this.element.id + index + '_' + 'content', 'ContentTemplate');
         }
     }
     /**
@@ -7676,6 +7691,7 @@ let Tab = class Tab extends Component {
         let removeArgs = { removedItem: trg, removedIndex: index, cancel: false };
         this.trigger('removing', removeArgs, (tabRemovingArgs) => {
             if (!tabRemovingArgs.cancel) {
+                this.resetBlazorTemplates(this.items[index], index);
                 this.tbObj.removeItems(index);
                 this.items.splice(index, 1);
                 this.itemIndexArray.splice(index, 1);
@@ -10811,15 +10827,17 @@ let TreeView = TreeView_1 = class TreeView extends Component {
         if (dropRoot) {
             let dropLi = closest(e.target, '.' + LISTITEM);
             let checkWrapper = closest(e.target, '.' + CHECKBOXWRAP);
+            let collapse = closest(e.target, '.' + COLLAPSIBLE);
+            let expand = closest(e.target, '.' + EXPANDABLE);
             if (!dropRoot.classList.contains(ROOT) || (dropWrap &&
                 (!dropLi.isSameNode(this.dragLi) && !this.isDescendant(this.dragLi, dropLi)))) {
-                if (dropLi && e && (e.event.offsetY < 7) && !checkWrapper) {
+                if ((dropLi && e && (!expand && !collapse) && (e.event.offsetY < 7) && !checkWrapper) || (((expand && e.event.offsetY < 5) || (collapse && e.event.offsetX < 3)))) {
                     addClass([icon], DROPNEXT);
                     let virEle = this.createElement('div', { className: SIBLING });
                     let index = this.fullRowSelect ? (1) : (0);
                     dropLi.insertBefore(virEle, dropLi.children[index]);
                 }
-                else if (dropLi && e && (e.target.offsetHeight > 0 && e.event.offsetY > (e.target.offsetHeight - 10)) && !checkWrapper) {
+                else if ((dropLi && e && (!expand && !collapse) && (e.target.offsetHeight > 0 && e.event.offsetY > (e.target.offsetHeight - 10)) && !checkWrapper) || (((expand && e.event.offsetY > 19) || (collapse && e.event.offsetX > 19)))) {
                     addClass([icon], DROPNEXT);
                     let virEle = this.createElement('div', { className: SIBLING });
                     let index = this.fullRowSelect ? (2) : (1);
@@ -10919,7 +10937,9 @@ let TreeView = TreeView_1 = class TreeView extends Component {
     }
     appendNode(dropTarget, dragLi, dropLi, e, dragObj, offsetY) {
         let checkWrapper = closest(dropTarget, '.' + CHECKBOXWRAP);
-        if (!dragLi.classList.contains('e-disable') && !dropLi.classList.contains('e-disable') && !checkWrapper) {
+        let collapse = closest(e.target, '.' + COLLAPSIBLE);
+        let expand = closest(e.target, '.' + EXPANDABLE);
+        if (!dragLi.classList.contains('e-disable') && !checkWrapper && ((expand && e.event.offsetY < 5) || (collapse && e.event.offsetX < 3) || (expand && e.event.offsetY > 19) || (collapse && e.event.offsetX > 19) || (!expand && !collapse))) {
             if (dropTarget.nodeName === 'LI') {
                 this.dropAsSiblingNode(dragLi, dropLi, e, dragObj);
             }
@@ -10928,11 +10948,14 @@ let TreeView = TreeView_1 = class TreeView extends Component {
                     this.dropAsSiblingNode(dragLi, dropLi, e, dragObj);
                 }
             }
+            else if ((dropTarget.classList.contains('e-icon-collapsible')) || (dropTarget.classList.contains('e-icon-expandable'))) {
+                this.dropAsSiblingNode(dragLi, dropLi, e, dragObj);
+            }
             else {
                 this.dropAsChildNode(dragLi, dropLi, dragObj, null, e, offsetY);
             }
         }
-        else if (checkWrapper) {
+        else {
             this.dropAsChildNode(dragLi, dropLi, dragObj, null, e, offsetY, true);
         }
     }
@@ -10947,7 +10970,21 @@ let TreeView = TreeView_1 = class TreeView extends Component {
         else if (e.event.offsetY < 2) {
             pre = true;
         }
-        dropUl.insertBefore(dragLi, pre ? e.target : e.target.nextElementSibling);
+        else if (e.target.classList.contains('e-icon-expandable') || (e.target.classList.contains('e-icon-collapsible'))) {
+            if ((e.event.offsetY < 5) || (e.event.offsetX < 3)) {
+                pre = true;
+            }
+            else if ((e.event.offsetY > 15) || (e.event.offsetX > 17)) {
+                pre = false;
+            }
+        }
+        if ((e.target.classList.contains('e-icon-expandable')) || (e.target.classList.contains('e-icon-collapsible'))) {
+            var target = e.target.closest('li');
+            dropUl.insertBefore(dragLi, pre ? target : target.nextElementSibling);
+        }
+        else {
+            dropUl.insertBefore(dragLi, pre ? e.target : e.target.nextElementSibling);
+        }
         this.moveData(dragLi, dropLi, dropUl, pre, dragObj);
         this.updateElement(dragParentUl, dragParentLi);
         this.updateAriaLevel(dragLi);

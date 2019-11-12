@@ -880,7 +880,7 @@ export class Legend {
                 let imageSrc: string = null;
                 let showLegend: boolean = isNullOrUndefined(data[this.maps.legendSettings.showLegendPath]) ? true :
                     data[this.maps.legendSettings.showLegendPath];
-                if (marker.visible && showLegend && (!isNullOrUndefined(data['latitude'] | data['Latitude'])) && (!isNullOrUndefined(data['longitude'] | data['Longitude']))) {
+                if (marker.visible && showLegend && (!isNullOrUndefined(data['latitude'])) && (!isNullOrUndefined(data['longitude']))) {
                     if (marker.template) {
                         templateFn = getTemplateFunction(marker.template);
                         let templateElement: Element = templateFn(this.maps);

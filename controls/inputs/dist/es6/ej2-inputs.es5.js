@@ -361,6 +361,23 @@ var Input;
     }
     Input.setCssClass = setCssClass;
     /**
+     * Set the width to the wrapper of input element.
+     * ```
+     * E.g : Input.setWidth('200px', container);
+     * ```
+     * @param width - Width value which is need to add.
+     * @param container - The element on which the width is need to add.
+     */
+    function setWidth(width, container) {
+        if (typeof width === 'number') {
+            container.style.width = formatUnit(width);
+        }
+        else if (typeof width === 'string') {
+            container.style.width = (width.match(/px|%|em/)) ? (width) : (formatUnit(width));
+        }
+    }
+    Input.setWidth = setWidth;
+    /**
      * Set the placeholder attribute to the input element.
      * ```
      * E.g : Input.setPlaceholder('Search here', element);
@@ -8040,21 +8057,7 @@ var Uploader = /** @__PURE__ @class */ (function (_super) {
     /* istanbul ignore next */
     Uploader.prototype.traverseFileTree = function (item, event) {
         var _this = this;
-        if (typeof (item) === 'boolean') {
-            var files_3 = [];
-            var _loop_4 = function (i) {
-                this_2.filesEntries[i].file(function (fileObj) {
-                    var path = _this.filesEntries[i].fullPath;
-                    files_3.push({ 'path': path, 'file': fileObj });
-                });
-            };
-            var this_2 = this;
-            for (var i = 0; i < this.filesEntries.length; i++) {
-                _loop_4(i);
-            }
-            this.renderSelectedFiles(event, files_3, true);
-        }
-        else if (item.isFile) {
+        if (item.isFile) {
             this.filesEntries.push(item);
         }
         else if (item.isDirectory) {
@@ -8067,9 +8070,27 @@ var Uploader = /** @__PURE__ @class */ (function (_super) {
                     // tslint:disable-next-line
                 }
                 
-                _this.traverseFileTree(true);
-                _this.filesEntries = [];
+                _this.pushFilesEntries(event);
             });
+        }
+    };
+    Uploader.prototype.pushFilesEntries = function (event) {
+        var _this = this;
+        var files = [];
+        var _loop_4 = function (i) {
+            // tslint:disable-next-line
+            this_2.filesEntries[i].file(function (fileObj) {
+                var path = _this.filesEntries[i].fullPath;
+                files.push({ 'path': path, 'file': fileObj });
+                if (i === _this.filesEntries.length - 1) {
+                    _this.filesEntries = [];
+                    _this.renderSelectedFiles(event, files, true);
+                }
+            });
+        };
+        var this_2 = this;
+        for (var i = 0; i < this.filesEntries.length; i++) {
+            _loop_4(i);
         }
     };
     // tslint:enable
@@ -11076,7 +11097,7 @@ var ColorPicker = /** @__PURE__ @class */ (function (_super) {
         this.trigger('change', {
             currentValue: { hex: hex, rgba: this.convertToRgbString(this.rgb) },
             previousValue: { hex: this.value.slice(0, 7), rgba: this.convertToRgbString(this.hexToRgb(this.value)) },
-            value: value
+            value: this.enableOpacity ? value : hex
         });
         if (this.enableOpacity) {
             this.setProperties({ 'value': value }, true);
@@ -12121,6 +12142,9 @@ var TextBox = /** @__PURE__ @class */ (function (_super) {
                     Input.setEnabled(this.enabled, this.respectiveElement, this.floatLabelType, this.textboxWrapper.container);
                     this.bindClearEvent();
                     break;
+                case 'width':
+                    Input.setWidth(newProp.width, this.textboxWrapper.container);
+                    break;
                 case 'value':
                     var prevOnChange = this.isProtectedOnChange;
                     this.isProtectedOnChange = true;
@@ -12358,6 +12382,7 @@ var TextBox = /** @__PURE__ @class */ (function (_super) {
         }
         this.previousValue = this.value;
         this.inputPreviousValue = this.value;
+        Input.setWidth(this.width, this.textboxWrapper.container);
         this.renderComplete();
     };
     TextBox.prototype.updateHTMLAttrToWrapper = function () {
@@ -12671,6 +12696,9 @@ var TextBox = /** @__PURE__ @class */ (function (_super) {
     __decorate$6([
         Property(false)
     ], TextBox.prototype, "enablePersistence", void 0);
+    __decorate$6([
+        Property(null)
+    ], TextBox.prototype, "width", void 0);
     __decorate$6([
         Event()
     ], TextBox.prototype, "created", void 0);

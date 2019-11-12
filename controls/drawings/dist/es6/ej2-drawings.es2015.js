@@ -3610,7 +3610,7 @@ class DrawingRenderer {
     renderImageElement(element, canvas, transform, parentSvg, fromPalette) {
         let options = this.getBaseAttributes(element, transform);
         options.cornerRadius = 0;
-        this.renderer.drawRectangle(canvas, options);
+        // this.renderer.drawRectangle(canvas as HTMLCanvasElement, options as RectAttributes);
         // let sx: number; let sy: number;
         let imageWidth;
         let imageHeight;

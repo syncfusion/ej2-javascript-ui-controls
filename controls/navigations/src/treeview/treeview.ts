@@ -3547,14 +3547,16 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
         if (dropRoot) {
             let dropLi: Element = closest(e.target, '.' + LISTITEM);
             let checkWrapper: HTMLElement = closest(e.target, '.' + CHECKBOXWRAP) as HTMLElement;
+            let collapse: Element = closest(e.target, '.' + COLLAPSIBLE);
+            let expand: Element = closest(e.target, '.' + EXPANDABLE);
             if (!dropRoot.classList.contains(ROOT) || (dropWrap &&
                 (!dropLi.isSameNode(this.dragLi) && !this.isDescendant(this.dragLi, dropLi)))) {
-                    if (dropLi && e && (e.event.offsetY < 7) && !checkWrapper) {
+                    if ((dropLi && e && (!expand && !collapse) && (e.event.offsetY < 7) && !checkWrapper) || (((expand && e.event.offsetY < 5) || (collapse && e.event.offsetX <3)))) {
                         addClass([icon], DROPNEXT);
                         let virEle: Element = this.createElement('div', { className: SIBLING });
                         let index: number = this.fullRowSelect ? (1) : (0);
                         dropLi.insertBefore(virEle, dropLi.children[index]);
-                    } else if (dropLi && e && (e.target.offsetHeight > 0 && e.event.offsetY > (e.target.offsetHeight - 10)) && !checkWrapper) {
+                    } else if ((dropLi && e && (!expand && !collapse) && (e.target.offsetHeight > 0 && e.event.offsetY > (e.target.offsetHeight - 10)) && !checkWrapper) || (((expand && e.event.offsetY > 19) || (collapse && e.event.offsetX > 19) ))) {
                         addClass([icon], DROPNEXT);
                         let virEle: Element = this.createElement('div', { className: SIBLING });
                         let index: number = this.fullRowSelect ? (2) : (1);
@@ -3650,17 +3652,25 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
 
     private appendNode(dropTarget: Element, dragLi: Element, dropLi: Element, e: DropEventArgs, dragObj: TreeView, offsetY: number): void {
         let checkWrapper: HTMLElement = closest(dropTarget, '.' + CHECKBOXWRAP) as HTMLElement;
-        if (!dragLi.classList.contains('e-disable') && !dropLi.classList.contains('e-disable') && !checkWrapper) {
-            if (dropTarget.nodeName === 'LI') {
-                this.dropAsSiblingNode(dragLi, dropLi, e, dragObj);
-            } else if (dropTarget.firstElementChild && dropTarget.classList.contains(ROOT)) {
-                if (dropTarget.firstElementChild.nodeName === 'UL') {
+        let collapse = closest(e.target, '.' + COLLAPSIBLE);
+        let expand = closest(e.target, '.' + EXPANDABLE);
+        if (!dragLi.classList.contains('e-disable') && !checkWrapper && ((expand && e.event.offsetY  < 5) || (collapse && e.event.offsetX < 3) || (expand && e.event.offsetY > 19) || (collapse && e.event.offsetX > 19) || (!expand && !collapse))) {
+                if (dropTarget.nodeName === 'LI') {
                     this.dropAsSiblingNode(dragLi, dropLi, e, dragObj);
                 }
-            } else {
+                else if (dropTarget.firstElementChild && dropTarget.classList.contains(ROOT)) {
+                    if (dropTarget.firstElementChild.nodeName === 'UL') {
+                        this.dropAsSiblingNode(dragLi, dropLi, e, dragObj);
+                    } 
+                }
+                else if ((dropTarget.classList.contains('e-icon-collapsible')) || (dropTarget.classList.contains('e-icon-expandable'))){
+                    this.dropAsSiblingNode(dragLi, dropLi, e, dragObj);
+                }
+            else {
                 this.dropAsChildNode(dragLi, dropLi, dragObj, null, e, offsetY);
             }
-        } else if(checkWrapper) {
+        }
+        else {
             this.dropAsChildNode(dragLi, dropLi, dragObj, null, e, offsetY, true);
         }
     }
@@ -3674,8 +3684,20 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
             pre = false;
         } else if (e.event.offsetY < 2) {
             pre = true;
+        } else if (e.target.classList.contains('e-icon-expandable') || (e.target.classList.contains('e-icon-collapsible'))) {
+            if ((e.event.offsetY < 5) || (e.event.offsetX < 3)) {
+                pre = true;
+            } else if ((e.event.offsetY > 15) || (e.event.offsetX > 17)) {
+                pre = false;
+            }
         }
-        dropUl.insertBefore(dragLi, pre ? e.target : e.target.nextElementSibling);
+        if ((e.target.classList.contains('e-icon-expandable')) || (e.target.classList.contains('e-icon-collapsible'))) {
+            var target = e.target.closest('li');
+            dropUl.insertBefore(dragLi, pre ? target : target.nextElementSibling);
+        }
+        else {
+            dropUl.insertBefore(dragLi, pre ? e.target : e.target.nextElementSibling);
+        }
         this.moveData(dragLi, dropLi, dropUl, pre, dragObj);
         this.updateElement(dragParentUl, dragParentLi);
         this.updateAriaLevel(dragLi);

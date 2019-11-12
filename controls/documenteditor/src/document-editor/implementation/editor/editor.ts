@@ -276,6 +276,7 @@ export class Editor {
         enforceProtectionHandler.onSuccess = this.enforceProtectionInternal.bind(this);
         enforceProtectionHandler.onFailure = this.protectionFailureHandler.bind(this);
         enforceProtectionHandler.onError = this.protectionFailureHandler.bind(this);
+        enforceProtectionHandler.customHeaders = this.owner.headers;
         enforceProtectionHandler.send(formObject);
     }
     /* tslint:disable:no-any */
@@ -319,6 +320,7 @@ export class Editor {
             };
             unProtectDocumentHandler.url = this.owner.serviceUrl + this.owner.serverActionSettings.restrictEditing;
             unProtectDocumentHandler.contentType = 'application/json;charset=UTF-8';
+            unProtectDocumentHandler.customHeaders = this.owner.headers;
             unProtectDocumentHandler.onSuccess = this.onUnProtectionSuccess.bind(this);
             unProtectDocumentHandler.onFailure = this.protectionFailureHandler.bind(this);
             unProtectDocumentHandler.onError = this.protectionFailureHandler.bind(this);
@@ -2202,6 +2204,7 @@ export class Editor {
         this.pasteRequestHandler.url = proxy.owner.serviceUrl + this.owner.serverActionSettings.systemClipboard;
         this.pasteRequestHandler.responseType = 'json';
         this.pasteRequestHandler.contentType = 'application/json;charset=UTF-8';
+        this.pasteRequestHandler.customHeaders = proxy.owner.headers;
         this.pasteRequestHandler.send(formObject);
         showSpinner(this.owner.element);
         this.pasteRequestHandler.onSuccess = this.pasteFormattedContent.bind(this);
@@ -2632,7 +2635,7 @@ export class Editor {
             }
         }
         let owner: Widget = table.containerWidget;
-        this.removeBlock(table);
+        this.removeBlock(table, true);
         //Inserts table in the current table position.        
         let blockAdvCollection: IWidget[] = owner.childWidgets;
         blockAdvCollection.splice(insertIndex, 0, newTable);
@@ -4059,29 +4062,32 @@ export class Editor {
     /**
      * @private
      */
-    public removeFieldInWidget(widget: Widget): void {
+    public removeFieldInWidget(widget: Widget, isBookmark?: boolean): void {
+        if (isNullOrUndefined(isBookmark)) {
+            isBookmark = false;
+        }
         for (let i: number = 0; i < widget.childWidgets.length; i++) {
-            this.removeFieldInBlock(widget.childWidgets[i] as BlockWidget);
+            this.removeFieldInBlock(widget.childWidgets[i] as BlockWidget, isBookmark);
         }
     }
     /**
      * @private
      */
-    public removeFieldInBlock(block: BlockWidget): void {
+    public removeFieldInBlock(block: BlockWidget, isBookmark?: boolean): void {
         if (block instanceof TableWidget) {
-            this.removeFieldTable(block);
+            this.removeFieldTable(block, isBookmark);
         } else {
-            this.removeField(block as ParagraphWidget);
+            this.removeField(block as ParagraphWidget, isBookmark);
         }
     }
     /**
      * @private
      */
-    public removeFieldTable(table: TableWidget): void {
+    public removeFieldTable(table: TableWidget, isBookmark?: boolean): void {
         for (let i: number = 0; i < table.childWidgets.length; i++) {
             let row: TableRowWidget = table.childWidgets[i] as TableRowWidget;
             for (let j: number = 0; j < row.childWidgets.length; j++) {
-                this.removeFieldInWidget(row.childWidgets[j] as Widget);
+                this.removeFieldInWidget(row.childWidgets[j] as Widget, isBookmark);
             }
         }
     }
@@ -6996,11 +7002,12 @@ export class Editor {
     /**
      * @private
      */
-    public removeBlock(block: BlockWidget): void {
+    public removeBlock(block: BlockWidget, isSkipShifting?: boolean): void {
         let index: number;
         let blockCollection: IWidget[];
         let containerWidget: Widget;
         this.removeFieldInBlock(block);
+        this.removeFieldInBlock(block, true);
         if (block.isInsideTable) {
             containerWidget = block.associatedCell;
             index = block.associatedCell.childWidgets.indexOf(block);
@@ -7017,17 +7024,28 @@ export class Editor {
             containerWidget.childWidgets.splice(index, 1);
             block.containerWidget = undefined;
             containerWidget.height -= block.height;
-            this.viewer.layout.layoutBodyWidgetCollection(block.index, containerWidget, block, false);
+            this.viewer.layout.layoutBodyWidgetCollection(block.index, containerWidget, block, false, isSkipShifting);
         }
     }
-    private removeField(block: BlockWidget): void {
-        for (let i: number = 0; i < this.viewer.fields.length; i++) {
-            let field: FieldElementBox = this.viewer.fields[i];
-            if (field.line.paragraph === block) {
-                this.viewer.fields.splice(i, 1);
+    private removeField(block: BlockWidget, isBookmark?: boolean): void {
+        let collection: FieldElementBox[] | string[] = this.viewer.fields;
+        if (isBookmark) {
+            collection = this.viewer.bookmarks.keys;
+        }
+
+        for (let i: number = 0; i < collection.length; i++) {
+            let element: FieldElementBox | BookmarkElementBox = isBookmark ?
+                this.viewer.bookmarks.get(collection[i] as string) : collection[i] as FieldElementBox;
+            if (element.line.paragraph === block) {
+                if (isBookmark) {
+                    this.viewer.bookmarks.remove(collection[i] as string);
+                } else {
+                    this.viewer.fields.splice(i, 1);
+                }
                 i--;
             }
         }
+
     }
     private addRemovedNodes(node: IWidget): void {
         if (node instanceof FieldElementBox && node.fieldType === 0) {
@@ -7457,6 +7475,11 @@ export class Editor {
                         this.removedBookmarkElements.push(inline);
                     }
                 }
+                if (inline instanceof BookmarkElementBox) {
+                    if (this.viewer.bookmarks.containsKey(inline.name)) {
+                        this.viewer.bookmarks.remove(inline.name);
+                    }
+                }
                 // if (editAction < 4) {
                 this.unLinkFieldCharacter(inline);
                 this.addRemovedNodes(lineWidget.children[i]);
@@ -7636,14 +7659,45 @@ export class Editor {
                 list = this.viewer.getListById(currentParagraph.paragraphFormat.listFormat.listId);
                 isUpdate = true;
             }
+            if (!isUpdate) {
+                while (!isNullOrUndefined(currentParagraph.nextWidget) && currentParagraph.nextWidget instanceof ParagraphWidget
+                    && currentParagraph.nextWidget.isEmpty() && currentParagraph.nextWidget.paragraphFormat.listFormat.listId === -1) {
+                    currentParagraph = currentParagraph.nextWidget;
+                }
+                if (currentParagraph.nextWidget && currentParagraph.nextWidget instanceof ParagraphWidget
+                    && currentParagraph.nextWidget.paragraphFormat.listFormat.listId !== -1) {
+                    currentParagraph = currentParagraph.nextWidget;
+                    list = this.viewer.getListById(currentParagraph.paragraphFormat.listFormat.listId);
+                    isUpdate = true;
+                }
+            }
         }
 
         let startListLevel: WListLevel = undefined;
+        let levelNumber: number = -1;
         if (!isNullOrUndefined(list)) {
+            levelNumber = currentParagraph.paragraphFormat.listFormat.listLevelNumber;
             let tempList: WList = this.viewer.getListById(currentParagraph.paragraphFormat.listFormat.listId);
-            startListLevel = this.viewer.layout.getListLevel(tempList, currentParagraph.paragraphFormat.listFormat.listLevelNumber);
+            startListLevel = this.viewer.layout.getListLevel(tempList, levelNumber);
+            let abstractList: WAbstractList = tempList.abstractList;
+            if (!abstractList) {
+                abstractList = this.viewer.getAbstractListById(list.abstractListId);
+            }
+            if (abstractList.levels.length === 0) {
+                startListLevel = this.viewer.layout.getListLevel(tempList, currentParagraph.paragraphFormat.listFormat.listLevelNumber);
+            }
+            if (isUpdate) {
+                if (listLevelPattern !== 'Bullet' && startListLevel.listLevelPattern === listLevelPattern
+                    && (startListLevel.numberFormat === format || startListLevel.numberFormat.indexOf(format) !== -1)) {
+                    selection.paragraphFormat.listId = list.listId;
+                    selection.paragraphFormat.listLevelNumber = levelNumber;
+                    selection.paragraphFormat.setList(list);
+                    return;
+                } else {
+                    startListLevel = abstractList.levels[0];
+                }
+            }
         }
-
         if (isNullOrUndefined(list) || (!isNullOrUndefined(list) && ((startListLevel.listLevelPattern !== listLevelPattern) ||
             startListLevel.numberFormat !== format || (startListLevel.characterFormat.fontFamily !== fontFamily
                 && startListLevel.listLevelPattern === 'Bullet')))) {
@@ -7967,7 +8021,11 @@ export class Editor {
         let isHandledComplexHistory: boolean = false;
         for (let i: number = 0; i < this.removedBookmarkElements.length; i++) {
             let bookMark: BookmarkElementBox = this.removedBookmarkElements[i];
+
             if (bookMark.bookmarkType === 0) {
+                if (!this.viewer.bookmarks.containsKey(bookMark.name)) {
+                    this.viewer.bookmarks.add(bookMark.name, bookMark);
+                }
                 let bookMarkStart: BookmarkElementBox = bookMark;
                 if (bookMarkStart && bookMarkStart.reference && this.removedBookmarkElements.indexOf(bookMarkStart.reference) !== -1) {
                     let endIndex: number = this.removedBookmarkElements.indexOf(bookMarkStart.reference);
@@ -8391,6 +8449,11 @@ export class Editor {
             if (!isRedoing) {
                 this.initHistory('Delete');
             }
+            if (paragraph.isEndsWithPageBreak) {
+                let lastLine: LineWidget = paragraph.lastChild as LineWidget;
+                let lastChild: ElementBox = lastLine.children[lastLine.children.length - 1] as ElementBox;
+                this.selection.start.setPositionForSelection(lastLine, lastChild, 0, this.selection.start.location);
+            }
             let blockInfo: ParagraphInfo = this.selection.getParagraphInfo(selection.start);
             selection.editPosition = this.selection.getHierarchicalIndex(blockInfo.paragraph, blockInfo.offset.toString());
             if (this.checkInsertPosition(selection)) {
@@ -8480,7 +8543,7 @@ export class Editor {
                 // let nextSection: BodyWidget = table.containerWidget instanceof BodyWidget ? table.containerWidget : undefined;
                 // if (section !== nextSection) {
                 //     this.combineSection(section, selection, nextSection);
-                // }
+                // }                
                 let offset: number = 0;
                 this.removeBlock(paragraph);
                 this.viewer.layout.clearListElementBox(nextParagraph);
