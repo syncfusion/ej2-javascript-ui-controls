@@ -482,13 +482,24 @@ export class DragAndDrop extends ActionBase {
         if (this.parent.activeViewOptions.timeScale.enable && !this.isAllDayDrag) {
             this.appendCloneElement(this.getEventWrapper(colIndex));
             let spanHours: number = -(((this.actionObj.slotInterval / this.actionObj.cellHeight) * diffInMinutes) * (util.MS_PER_MINUTE));
-            if (this.actionObj.clone.querySelector('.' + cls.EVENT_ICON_UP_CLASS)) {
-                let startTime: Date = new Date(eventStart.getTime());
-                spanHours = util.addDays(util.resetTime(new Date(startTime.getTime())), 1).getTime() - startTime.getTime();
-            }
             dragStart = new Date(parseInt(td.getAttribute('data-date'), 10));
-            dragStart.setMinutes(dragStart.getMinutes() + (diffInMinutes * this.heightPerMinute));
-            dragStart.setMilliseconds(-spanHours);
+            if (this.actionObj.slotInterval === this.actionObj.interval) {
+                if (this.actionObj.clone.querySelector('.' + cls.EVENT_ICON_UP_CLASS)) {
+                    let startTime: Date = new Date(eventStart.getTime());
+                    spanHours = util.addDays(util.resetTime(new Date(startTime.getTime())), 1).getTime() - startTime.getTime();
+                }
+                dragStart.setMinutes(dragStart.getMinutes() + (diffInMinutes * this.heightPerMinute));
+                dragStart.setMilliseconds(-spanHours);
+            } else {
+                let hightDiff: number = this.getHeightDiff(tr, index);
+                if (hightDiff !== 0) {
+                    let timeDiff: number = Math.round(hightDiff / this.heightPerMinute);
+                    dragStart.setMinutes(dragStart.getMinutes() + (timeDiff * this.actionObj.interval));
+                    dragStart.setMinutes(dragStart.getMinutes() - this.minDiff);
+                } else {
+                    dragStart = this.actionObj.start;
+                }
+            }
             dragStart = this.calculateIntervalTime(dragStart);
             dragEnd = new Date(dragStart.getTime());
             if (this.actionObj.element.classList.contains(cls.ALLDAY_APPOINTMENT_CLASS)) {
@@ -737,6 +748,20 @@ export class DragAndDrop extends ActionBase {
         }
         return offsetLeft;
     }
+
+    private getHeightDiff(tr: HTMLElement, index: number): number {
+        let pages: ClientRect | DOMRect = this.scrollArgs.element.getBoundingClientRect();
+        if (pages.top <= this.actionObj.pageY && pages.bottom >= this.actionObj.pageY) {
+            let targetTop: number = (<HTMLElement>tr.childNodes.item(index)).offsetTop;
+            let pageY: number = this.actionObj.pageY - pages.top;
+            if (this.parent.enableRtl) {
+                return (targetTop + this.actionObj.cellHeight) - (this.scrollArgs.element.scrollTop + pageY);
+            } else {
+                return (this.scrollArgs.element.scrollTop + pageY) - targetTop;
+            }
+        }
+        return 0;
+    };
 
     private getWidthDiff(tr: HTMLTableRowElement, index: number): number {
         let pages: ClientRect | DOMRect = this.scrollArgs.element.getBoundingClientRect();

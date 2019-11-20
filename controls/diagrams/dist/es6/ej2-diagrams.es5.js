@@ -10696,7 +10696,8 @@ function headerDefine(grid, diagram, object) {
     }
     var node = {
         annotations: [{
-                content: shape.header.annotation.content
+                content: shape.header.annotation.content,
+                style: shape.header.annotation.style ? shape.header.annotation.style : undefined,
             }],
         style: shape.header.style ? shape.header.style : undefined,
         offsetX: object.offsetX, offsetY: object.offsetY,
@@ -16253,7 +16254,7 @@ var Header = /** @__PURE__ @class */ (function (_super) {
         Property('')
     ], Header.prototype, "id", void 0);
     __decorate$2([
-        Complex({ style: { fill: '#111111' } }, Annotation)
+        Complex({ style: { fill: 'transparent' } }, Annotation)
     ], Header.prototype, "annotation", void 0);
     __decorate$2([
         Complex({ fill: '#E7F4FF', strokeColor: '#CCCCCC' }, ShapeStyle)
@@ -22343,7 +22344,7 @@ var TextDrawingTool = /** @__PURE__ @class */ (function (_super) {
         this.commandHandler.clearSelection();
         var node = {
             shape: { type: 'Text' },
-            offsetX: this.currentPosition.x, width: 50, height: 20,
+            offsetX: this.currentPosition.x,
             offsetY: this.currentPosition.y
         };
         if (!args.source) {
@@ -24190,6 +24191,10 @@ var DiagramEventHandler = /** @__PURE__ @class */ (function () {
                     }
                     else {
                         this.tool.mouseUp(this.eventArgs);
+                        if (this.diagram.checkMenu && (window.navigator.userAgent.indexOf('Linux') !== -1 || window.navigator.userAgent.indexOf('X11') !== -1)) {
+                            this.diagram.contextMenuModule.contextMenu.open(evt.pageY, evt.pageX, this.diagram.element);
+                            this.diagram.checkMenu = false;
+                        }
                     }
                     if (history_1.hasStack) {
                         this.diagram.endGroupAction();
@@ -26697,6 +26702,12 @@ var CommandHandler = /** @__PURE__ @class */ (function () {
     CommandHandler.prototype.drawObject = function (obj) {
         var newObj;
         var cloneObject$$1;
+        if (obj && obj.shape) {
+            if (obj.shape.type === 'Text') {
+                obj.width = this.diagram.drawingObject.width ? this.diagram.drawingObject.width : 50;
+                obj.height = this.diagram.drawingObject.height ? this.diagram.drawingObject.height : 20;
+            }
+        }
         cloneObject$$1 = cloneObject(this.diagram.drawingObject);
         for (var _i = 0, _a = Object.keys(obj); _i < _a.length; _i++) {
             var prop = _a[_i];
@@ -26799,28 +26810,30 @@ var CommandHandler = /** @__PURE__ @class */ (function () {
         if (!arg.cancel) {
             for (var i = 0; i < obj.length; i++) {
                 var newObj = obj[i];
-                select = true;
-                if (!hasSelection(this.diagram)) {
-                    this.select(newObj, i > 0 || multipleSelection, true);
-                }
-                else {
-                    if ((i > 0 || multipleSelection) && newObj.children && !newObj.parentId) {
-                        for (var i_1 = 0; i_1 < this.diagram.selectedItems.nodes.length; i_1++) {
-                            var parentNode = this.diagram.nameTable[this.diagram.selectedItems.nodes[i_1].parentId];
-                            if (parentNode) {
-                                parentNode = this.findParent(parentNode);
+                if (newObj) {
+                    select = true;
+                    if (!hasSelection(this.diagram)) {
+                        this.select(newObj, i > 0 || multipleSelection, true);
+                    }
+                    else {
+                        if ((i > 0 || multipleSelection) && newObj.children && !newObj.parentId) {
+                            for (var i_1 = 0; i_1 < this.diagram.selectedItems.nodes.length; i_1++) {
+                                var parentNode = this.diagram.nameTable[this.diagram.selectedItems.nodes[i_1].parentId];
                                 if (parentNode) {
-                                    if (newObj.id === parentNode.id) {
-                                        this.selectGroup(newObj);
+                                    parentNode = this.findParent(parentNode);
+                                    if (parentNode) {
+                                        if (newObj.id === parentNode.id) {
+                                            this.selectGroup(newObj);
+                                        }
                                     }
                                 }
                             }
                         }
-                    }
-                    this.selectProcesses(newObj);
-                    select = this.selectBpmnSubProcesses(newObj);
-                    if (select) {
-                        this.select(newObj, i > 0 || multipleSelection, true);
+                        this.selectProcesses(newObj);
+                        select = this.selectBpmnSubProcesses(newObj);
+                        if (select) {
+                            this.select(newObj, i > 0 || multipleSelection, true);
+                        }
                     }
                 }
             }
@@ -30690,6 +30703,8 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
         /** @private */
         _this.version = 17.1;
         /** @private */
+        _this.checkMenu = false;
+        /** @private */
         _this.connectorTable = {};
         /** @private */
         _this.groupTable = {};
@@ -32114,7 +32129,9 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
         if (this.nameTable[swimLane]) {
             var swimlaneNode = this.nameTable[swimLane];
             this.protectPropertyChange(true);
-            this.historyManager.startGroupAction();
+            if (this.undoRedoModule) {
+                this.historyManager.startGroupAction();
+            }
             if (!this.nameTable[node.id]) {
                 node.offsetX = swimlaneNode.wrapper.bounds.width + swimlaneNode.wrapper.bounds.x;
                 node.offsetY = swimlaneNode.wrapper.bounds.height + swimlaneNode.wrapper.bounds.y;
@@ -32158,7 +32175,9 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
                     }
                 }
             }
-            this.historyManager.endGroupAction();
+            if (this.undoRedoModule) {
+                this.historyManager.endGroupAction();
+            }
             this.protectPropertyChange(false);
         }
         this.updateDiagramElementQuad();
@@ -32205,6 +32224,18 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
     Diagram.prototype.addConnector = function (obj) {
         return this.add(obj);
     };
+    Diagram.prototype.removeNodeEdges = function (elementId, id, isOutEdges) {
+        var node = this.nameTable[elementId];
+        var edges = isOutEdges ? node.outEdges : node.inEdges;
+        if (edges.length > 0) {
+            for (var i = 0; i < edges.length; i++) {
+                if (edges[i] === id) {
+                    edges.splice(i, 1);
+                }
+            }
+        }
+    };
+    /* tslint:disable */
     /**
      * Adds the given object to diagram control
      * @param obj Defines the object that has to be added to diagram
@@ -32224,6 +32255,18 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
             }
             if (obj.id !== 'helper' && !(this.diagramActions & DiagramAction.PreventCollectionChangeOnDragOver)) {
                 this.triggerEvent(DiagramEvent.collectionChange, args);
+            }
+            if (args.cancel && this.drawingObject) {
+                this.removeElements(args.element);
+                this.tooltipObject.close();
+                if (getObjectType(args.element) === Connector) {
+                    if (args.element.sourceID) {
+                        this.removeNodeEdges(args.element.sourceID, args.element.id, true);
+                    }
+                    if (args.element.targetID) {
+                        this.removeNodeEdges(args.element.targetID, args.element.id, false);
+                    }
+                }
             }
             this.diagramActions = this.diagramActions | DiagramAction.PublicMethod;
             obj.id = obj.id || randomId();
@@ -32309,6 +32352,7 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
                 }
                 if (this.mode === 'SVG') {
                     this.updateSvgNodes(newObj);
+                    this.updateTextElementValue(newObj);
                     this.updateDiagramObject(newObj);
                     if (newObj.shape.activity && newObj.shape.activity.subProcess.processes &&
                         newObj.shape.activity.subProcess.processes.length) {
@@ -32332,6 +32376,7 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
         }
         return newObj;
     };
+    /* tslint:enable */
     Diagram.prototype.updateBlazorCollectionChange = function (newObject, isAdding) {
         var ejsInterop = 'ejsInterop';
         if (window && window[ejsInterop]) {
@@ -32477,27 +32522,29 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
         this.refreshCanvasLayers();
         var children = currentObj.wrapper.children;
         var element;
-        for (var i = 0; i < children.length; i++) {
-            if (children[i] instanceof DiagramNativeElement || ((children[i].id) && (children[i].id).indexOf('icon_content') > 0)) {
-                if ((children[i].id).indexOf('icon_content') > 0 && this.mode === 'SVG') {
-                    element = getDiagramElement(children[i].id + '_shape_groupElement', this.element.id);
-                    element.parentNode.removeChild(element);
-                    element = getDiagramElement(children[i].id + '_rect_groupElement', this.element.id);
-                    element.parentNode.removeChild(element);
+        if (children) {
+            for (var i = 0; i < children.length; i++) {
+                if (children[i] instanceof DiagramNativeElement || ((children[i].id) && (children[i].id).indexOf('icon_content') > 0)) {
+                    if ((children[i].id).indexOf('icon_content') > 0 && this.mode === 'SVG') {
+                        element = getDiagramElement(children[i].id + '_shape_groupElement', this.element.id);
+                        element.parentNode.removeChild(element);
+                        element = getDiagramElement(children[i].id + '_rect_groupElement', this.element.id);
+                        element.parentNode.removeChild(element);
+                    }
+                    for (var _i = 0, _a = this.views; _i < _a.length; _i++) {
+                        var elementId = _a[_i];
+                        removeElement(children[i].id + '_groupElement', elementId);
+                    }
                 }
-                for (var _i = 0, _a = this.views; _i < _a.length; _i++) {
-                    var elementId = _a[_i];
-                    removeElement(children[i].id + '_groupElement', elementId);
+                else if (children[i] instanceof DiagramHtmlElement) {
+                    for (var _b = 0, _c = this.views; _b < _c.length; _b++) {
+                        var elementId = _c[_b];
+                        removeElement(currentObj.id + '_html_element', elementId);
+                        removeElement(children[i].id + '_html_element', elementId);
+                    }
                 }
+                removeGradient(children[i].id);
             }
-            else if (children[i] instanceof DiagramHtmlElement) {
-                for (var _b = 0, _c = this.views; _b < _c.length; _b++) {
-                    var elementId = _c[_b];
-                    removeElement(currentObj.id + '_html_element', elementId);
-                    removeElement(children[i].id + '_html_element', elementId);
-                }
-            }
-            removeGradient(children[i].id);
         }
     };
     Diagram.prototype.removeCommand = function () {
@@ -35632,11 +35679,13 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
                             if (lane.width && !orientation_1) {
                                 laneIndex = (actualShape.phases && actualShape.phaseSize) ? indexValue + 1 : indexValue;
                                 grid.updateColumnWidth(laneIndex, newLane.width, true, padding);
+                                this.updateDiagramElementQuad();
                             }
                             if (lane.height && orientation_1) {
                                 laneIndex = (actualShape.header && actualShape.hasHeader) ? indexValue + 1 : indexValue;
                                 laneIndex += (actualShape.phases && actualShape.phaseSize) ? 1 : 0;
                                 grid.updateRowHeight(laneIndex, newLane.height, true, padding);
+                                this.updateDiagramElementQuad();
                             }
                         }
                     }
@@ -35932,6 +35981,9 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
         if (update) {
             if (this.bpmnModule !== undefined) {
                 this.bpmnModule.updateTextAnnotationProp(actualObject, { offsetX: (oldObject.offsetX || actualObject.offsetX), offsetY: (oldObject.offsetY || actualObject.offsetY) }, this);
+            }
+            if (this.checkSelectedItem(actualObject) && actualObject.wrapper.children[0] instanceof TextElement) {
+                actualObject.wrapper.children[0].refreshTextElement();
             }
             actualObject.wrapper.measure(new Size(actualObject.wrapper.bounds.width, actualObject.wrapper.bounds.height), actualObject.id, this.onLoadImageSize.bind(this));
             actualObject.wrapper.arrange(actualObject.wrapper.desiredSize);
@@ -38897,13 +38949,20 @@ var DiagramContextMenu = /** @__PURE__ @class */ (function () {
         var key = this.getKeyFromId(item.id);
         var dItem = this.defaultItems[key];
         if (this.getDefaultItems().indexOf(key) !== -1) {
-            if (item.target && event &&
+            if (item.target && (event || this.parent.checkMenu) &&
                 !this.ensureTarget(item)) {
                 this.hiddenItems.push(item.id);
             }
         }
     };
     DiagramContextMenu.prototype.contextMenuBeforeOpen = function (args) {
+        if (!this.parent.checkMenu &&
+            (window.navigator.userAgent.indexOf('Linux') !== -1 || window.navigator.userAgent.indexOf('X11') !== -1)) {
+            this.parent.checkMenu = args.cancel = true;
+        }
+        if (this.parent.checkMenu) {
+            this.hiddenItems = [];
+        }
         var diagramArgs = args;
         diagramArgs.hiddenItems = [];
         for (var _i = 0, _a = args.items; _i < _a.length; _i++) {

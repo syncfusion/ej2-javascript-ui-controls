@@ -5875,6 +5875,7 @@ var Draggable = /** @__PURE__ @class */ (function (_super) {
                 top: (pos.top - this.diffY) + 'px',
                 left: (pos.left - this.diffX) + 'px'
             });
+            this.dragElePosition = { top: pos.top, left: pos.left };
             setStyleAttribute(dragTargetElement, this.getDragPosition({ position: 'absolute', left: posValue.left, top: posValue.top }));
             EventHandler.remove(document, Browser.touchMoveEvent, this.intDragStart);
             EventHandler.remove(document, Browser.touchEndEvent, this.intDestroy);
@@ -6009,7 +6010,17 @@ var Draggable = /** @__PURE__ @class */ (function (_super) {
                 left = this.prevLeft;
             }
         }
-        var dragValue = this.getProcessedPositionValue({ top: (top - iTop) + 'px', left: (left - iLeft) + 'px' });
+        var draEleTop;
+        var draEleLeft;
+        if (this.dragArea) {
+            draEleTop = (top - iTop) < 0 ? this.dragLimit.top : (top - iTop);
+            draEleLeft = (left - iLeft) < 0 ? this.dragElePosition.left : (left - iLeft);
+        }
+        else {
+            draEleTop = top - iTop;
+            draEleLeft = left - iLeft;
+        }
+        var dragValue = this.getProcessedPositionValue({ top: draEleTop + 'px', left: draEleLeft + 'px' });
         setStyleAttribute(helperElement, this.getDragPosition(dragValue));
         if (!this.elementInViewport(helperElement) && this.enableAutoScroll) {
             this.helperElement.scrollIntoView();

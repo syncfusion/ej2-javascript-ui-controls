@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 17.3.28 (2019-11-19)
+
+### MultiSelect
+
+#### Bug Fixes
+
+- `#F148867` , `#254713` - The issue with "rendering the `itemTemplate` when value is bound to the control" has been resolved.
+
 ## 17.3.21 (2019-10-30)
 
 ### ComboBox

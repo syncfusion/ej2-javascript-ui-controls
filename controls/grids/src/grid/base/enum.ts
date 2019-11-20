@@ -52,7 +52,9 @@ export type Action =
     /** Defines current Action as filterChoiceRequest */
     'filterChoiceRequest' |
     /** Defines current Action as filterAfterOpen */
-    'filterAfterOpen';
+    'filterAfterOpen' |
+    /** represents the column state */
+    'columnstate';
 
 
 

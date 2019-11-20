@@ -326,7 +326,8 @@ export class DataLabel {
                     dataLabel.position, series, textSize, labelIndex, point
                 );
             if (this.isRectSeries(series) && this.chart.chartAreaType === 'PolarRadar') {
-                location = this.calculatePolarRectPosition(location, dataLabel.position, series, point, textSize, labelIndex);
+                location = this.calculatePolarRectPosition(
+                    location, dataLabel.position, series, point, textSize, labelIndex, dataLabel.alignment, alignmentValue);
             }
         } else {
             this.locationY = location.y;
@@ -340,12 +341,14 @@ export class DataLabel {
         }
         rect = calculateRect(location, textSize, this.margin);
         // Checking the condition whether data Label has been exist the clip rect
-        if (!((rect.y > clipRect.height) || (rect.x > clipRect.width) ||
+        if (!((rect.y > (clipRect.y + clipRect.height)) || (rect.x > (clipRect.x + clipRect.width)) ||
             (rect.x + rect.width < 0) || (rect.y + rect.height < 0))) {
             rect.x = rect.x < 0 ? padding : rect.x;
             rect.y = rect.y < 0 ? padding : rect.y;
-            rect.x -= (rect.x + rect.width) > clipRect.width ? (rect.x + rect.width) - clipRect.width + padding : 0;
-            rect.y -= (rect.y + rect.height) > clipRect.height ? (rect.y + rect.height) - clipRect.height + padding : 0;
+            rect.x -= (rect.x + rect.width) > (clipRect.x + clipRect.width) ? (rect.x + rect.width)
+            - (clipRect.x + clipRect.width) + padding : 0;
+            rect.y -= (rect.y + rect.height) > (clipRect.y + clipRect.height) ? (rect.y + rect.height)
+            - (clipRect.y + clipRect.height) + padding : 0;
             this.fontBackground = this.fontBackground === 'transparent' ? this.chartBackground : this.fontBackground;
         }
 
@@ -355,10 +358,12 @@ export class DataLabel {
     // Calculation label location for polar column draw types
     private calculatePolarRectPosition(
         location: ChartLocation, position: LabelPosition, series: Series,
-        point: Points, size: Size, labelIndex: number
+        point: Points, size: Size, labelIndex: number, alignment: Alignment, alignmentValue: number
     ): ChartLocation {
         let padding: number = 5;
         let columnRadius: number;
+        let chartWidth: number = this.chart.availableSize.width;
+        let alignmentSign: number = (alignment === 'Center') ? 0 : (alignment === 'Far' ? 1 : -1);
         let angle: number = (point.regionData.startAngle - 0.5 * Math.PI) + (point.regionData.endAngle - point.regionData.startAngle) / 2;
         if (labelIndex === 0) {
             columnRadius = point.regionData.radius < point.regionData.innerRadius ? point.regionData.innerRadius
@@ -378,11 +383,16 @@ export class DataLabel {
                 columnRadius - 2 * padding - this.markerHeight;
         } else if (position === 'Middle') {
             columnRadius = columnRadius / 2 + padding;
+            if (series.drawType === 'StackingColumn') {
+                columnRadius = point.regionData.innerRadius + ((point.regionData.radius - point.regionData.innerRadius) / 2)
+                + padding - (size.height / 2);
+            }
         } else if (position === 'Top') {
             columnRadius = labelIndex === 0 ? columnRadius - 2 * padding - this.markerHeight :
                 columnRadius + 2 * padding + this.markerHeight;
         } else if (position === 'Bottom') {
-            columnRadius = padding;
+            columnRadius = 2 * padding;
+            columnRadius += (series.drawType === 'StackingColumn') ? (point.regionData.innerRadius + this.markerHeight) : 0;
         } else {
             if (labelIndex === 0) {
                 columnRadius = columnRadius >= series.chart.radius ? columnRadius - padding :
@@ -391,7 +401,16 @@ export class DataLabel {
                 columnRadius = columnRadius >= series.chart.radius ? columnRadius + padding : columnRadius - 2 * padding;
             }
         }
+        columnRadius += (alignmentValue * alignmentSign);
         location.x = series.clipRect.width / 2 + series.clipRect.x + columnRadius * Math.cos(angle);
+        // To change x location based on text anchor for column and stackingcolumn chart
+        if (series.drawType === 'StackingColumn') {
+            location.x = location.x < chartWidth / 2 ? location.x + size.width / 2 :
+                (location.x > chartWidth / 2 ? location.x - size.width / 2 : location.x);
+        } else if (series.drawType === 'Column') {
+            location.x = location.x < chartWidth / 2 ? location.x - size.width / 2 :
+                (location.x > chartWidth / 2 ? location.x + size.width / 2 : location.x);
+        }
         location.y = series.clipRect.height / 2 + series.clipRect.y + columnRadius * Math.sin(angle);
         return location;
     }

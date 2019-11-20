@@ -11,7 +11,7 @@ import { Magnification } from './index';
 import { Toolbar } from './index';
 import { ToolbarItem } from './index';
 // tslint:disable-next-line:max-line-length
-import { LinkTarget, InteractionMode, AnnotationType, AnnotationToolbarItem, LineHeadStyle, ContextMenuAction, FontStyle, TextAlignment, AnnotationResizerShape, AnnotationResizerLocation } from './base/types';
+import { LinkTarget, InteractionMode, AnnotationType, AnnotationToolbarItem, LineHeadStyle, ContextMenuAction, FontStyle, TextAlignment, AnnotationResizerShape, AnnotationResizerLocation, ZoomMode } from './base/types';
 import { Annotation } from './index';
 import { LinkAnnotation } from './index';
 import { ThumbnailView } from './index';
@@ -21,7 +21,7 @@ import { TextSearch } from './index';
 import { FormFields } from './index';
 import { Print, CalibrationUnit } from './index';
 // tslint:disable-next-line:max-line-length
-import { UnloadEventArgs, LoadEventArgs, LoadFailedEventArgs, AjaxRequestFailureEventArgs, PageChangeEventArgs, PageClickEventArgs, ZoomChangeEventArgs, HyperlinkClickEventArgs, HyperlinkMouseOverArgs, ImportStartEventArgs, ImportSuccessEventArgs, ImportFailureEventArgs, ExportStartEventArgs, ExportSuccessEventArgs, ExportFailureEventArgs } from './index';
+import { UnloadEventArgs, LoadEventArgs, LoadFailedEventArgs, AjaxRequestFailureEventArgs, PageChangeEventArgs, PageClickEventArgs, ZoomChangeEventArgs, HyperlinkClickEventArgs, HyperlinkMouseOverArgs, ImportStartEventArgs, ImportSuccessEventArgs, ImportFailureEventArgs, ExportStartEventArgs, ExportSuccessEventArgs, ExportFailureEventArgs, AjaxRequestInitiateEventArgs } from './index';
 import { AnnotationAddEventArgs, AnnotationRemoveEventArgs, AnnotationPropertiesChangeEventArgs, AnnotationResizeEventArgs, AnnotationSelectEventArgs } from './index';
 import { TextSelectionStartEventArgs, TextSelectionEndEventArgs } from './index';
 import { PdfAnnotationBase, ZOrderPageTable } from '../diagram/pdf-annotation';
@@ -538,6 +538,11 @@ export class ShapeLabelSettings extends ChildProperty<ShapeLabelSettings> {
      */
     @Property('Helvetica')
     public fontFamily: string;
+    /**
+     * specifies the default content of the label.
+     */
+    @Property('Label')
+    public labelContent: string;
 }
 
 /**
@@ -1492,6 +1497,13 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
     public interactionMode: InteractionMode;
 
     /**
+     * Specifies the rendering mode in the PDF Viewer.
+     * @default Default
+     */
+    @Property('Default')
+    public zoomMode: ZoomMode;
+
+    /**
      * Defines the settings of the PdfViewer toolbar.
      */
     // tslint:disable-next-line:max-line-length
@@ -1570,7 +1582,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
      * Defines the settings of shape label.
      */
     // tslint:disable-next-line:max-line-length
-    @Property({ opacity: 1, fillColor: '#ffffff00', borderColor: '#ff0000', fontColor: '#000', fontSize: 16, labelHeight: 24.6, labelMaxWidth: 151 })
+    @Property({ opacity: 1, fillColor: '#ffffff00', borderColor: '#ff0000', fontColor: '#000', fontSize: 16, labelHeight: 24.6, labelMaxWidth: 151, labelContent: 'Label' })
     public shapeLabelSettings: ShapeLabelSettingsModel;
 
     /**
@@ -2021,11 +2033,13 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
     public textSelectionEnd: EmitType<TextSelectionEndEventArgs>;
 
     /**
-     * @private
-     */
-    /**
-     * Triggers when the property of the annotation is changed in the page of the PDF document.
+     * Triggers before the data send in to the server.
      * @event
+     */
+    @Event()
+    public ajaxRequestInitiate : EmitType<AjaxRequestInitiateEventArgs>;
+
+    /**
      * @private
      */
     @Collection<PdfAnnotationBaseModel>([], PdfAnnotationBase)
@@ -2034,19 +2048,9 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
     /**
      * @private
      */
-    /**
-     * tool denots the current tool
-     * @event
-     * @private
-     */
-    @Property('')
     public tool: string;
+
     /**
-     * @private
-     */
-    /**
-     * the objects for drawing tool
-     * @event
      * @private
      */
     @Property()
@@ -2083,6 +2087,10 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
      */
     public getLocaleConstants(): Object {
         return this.defaultLocale;
+    }
+    // tslint:disable-next-line
+    public setJsonData(jsonData: any): any {
+        this.viewerBase.ajaxData = jsonData;
     }
 
     public onPropertyChanged(newProp: PdfViewerModel, oldProp: PdfViewerModel): void {
@@ -2545,6 +2553,15 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
         if (this.annotationModule) {
             this.viewerBase.deleteAnnotations();
         }
+    }
+
+    /**
+     * @private
+     */
+    // tslint:disable-next-line
+    public fireAjaxRequestInitiate(JsonData: any): void {
+        let eventArgs: AjaxRequestInitiateEventArgs = { name: 'ajaxRequestInitiate', JsonData: JsonData };
+        this.trigger('ajaxRequestInitiate', eventArgs);
     }
 
     /**

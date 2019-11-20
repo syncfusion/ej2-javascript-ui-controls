@@ -2409,7 +2409,7 @@ export class Header extends ChildProperty<Shape> {
      * Sets the content of the header
      * @default ''
      */
-    @Complex<AnnotationModel>({ style: { fill: '#111111' } }, Annotation)
+    @Complex<AnnotationModel>({ style: { fill: 'transparent' } }, Annotation)
     public annotation: Annotation;
 
     /**

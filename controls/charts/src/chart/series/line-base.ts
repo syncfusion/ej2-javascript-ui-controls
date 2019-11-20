@@ -182,7 +182,7 @@ export class LineBase {
             }
             last = point.visible ? point : last;
         }
-        return {first: first, last: last};
+        return { first: first ? first : points[0], last: last ? last : points[points.length - 1] };
     }
     /**
      * To do the linear animation. 

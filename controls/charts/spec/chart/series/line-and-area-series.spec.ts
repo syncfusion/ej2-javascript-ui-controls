@@ -1077,7 +1077,7 @@ describe('Chart Control Series', () => {
                 let marker: HTMLElement = document.getElementById('container_Series_0_Point_5_Text_0');
                 let location: number = (+marker.getAttribute('x')) + (+marker.getAttribute('width'));
                 let clipRectWidth: number = 757.5;
-                expect(location < clipRectWidth).toBe(true);
+                expect(location <= clipRectWidth).toBe(true);
                 marker = document.getElementById('container_Series_0_Point_0_Text_0');
                 expect(+marker.getAttribute('x') > 0).toBe(true); done();
             };

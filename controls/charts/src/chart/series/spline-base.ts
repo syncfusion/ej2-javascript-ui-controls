@@ -45,13 +45,13 @@ export class SplineBase extends LineBase {
                     }
                 }
             }
-        }
-        if (series.chart.chartAreaType === 'PolarRadar' && series.isClosed) {
-            value = this.getControlPoints(
-                { xValue: points[points.length - 1].xValue, yValue: points[points.length - 1].yValue } as Points,
-                { xValue: points[points.length - 1].xValue + 1, yValue: points[0].yValue } as Points,
-                this.splinePoints[0], this.splinePoints[points[points.length - 1].index], series);
-            series.drawPoints.push(value);
+            if (series.chart.chartAreaType === 'PolarRadar' && series.isClosed) {
+                value = this.getControlPoints(
+                    { xValue: points[points.length - 1].xValue, yValue: points[points.length - 1].yValue } as Points,
+                    { xValue: points[points.length - 1].xValue + 1, yValue: points[0].yValue } as Points,
+                    this.splinePoints[0], this.splinePoints[points[points.length - 1].index], series);
+                series.drawPoints.push(value);
+            }
         }
     }
     protected getPreviousIndex(points: Points[], i: number, series: Series): number {

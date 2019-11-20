@@ -1886,4 +1886,59 @@ describe('Input Groups - Enable/Disable', () => {
             element.remove();
         });
     });
+
+    describe('prepend icons', () => {
+        let inputObj: InputObject;
+        let element: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'inputpopup', attrs: { type: 'text' } });
+        beforeAll(() => {
+            document.body.appendChild(element);
+            inputObj = Input.createInput({
+                element: element,
+            });
+        });
+        it('class name of added button', () => {
+            let button: HTMLElement = Input.prependSpan('e-icon-spin', inputObj.container, element);
+            expect(button.classList.contains('e-icon-spin')).toBe(true);
+        });
+        it('Dom size', () => {
+            expect((inputObj.container.querySelectorAll('*').length === 3)).toBe(true);
+        });
+        it('Inner wrap test', () => {
+            expect((inputObj.container.querySelectorAll('.e-input-in-wrap').length === 1)).toBe(true);
+            expect((element.parentElement.classList.contains('e-input-in-wrap'))).toBe(true);
+            let wrapper: HTMLElement = inputObj.container.querySelector('.e-input-in-wrap');
+            expect((wrapper.querySelectorAll('*').length === 1)).toBe(true);
+        });
+        it("dynamically adding floating label", () => {
+            Input.addFloating(element, "Auto", "Enter Value");
+            expect((inputObj.container.querySelectorAll('.e-input-in-wrap').length === 1)).toBe(true);
+            expect((inputObj.container.querySelectorAll('*').length === 5)).toBe(true);
+            let wrapper: HTMLElement = inputObj.container.querySelector('.e-input-in-wrap');
+            expect((wrapper.querySelectorAll('*').length === 3)).toBe(true);
+        });
+        it("dynamically remove floating label", () => {
+            Input.removeFloating(inputObj);
+            expect((inputObj.container.querySelectorAll('.e-input-in-wrap').length === 1)).toBe(true);
+            expect((inputObj.container.querySelectorAll('*').length === 3)).toBe(true);
+            let wrapper: HTMLElement = inputObj.container.querySelector('.e-input-in-wrap');
+            expect((wrapper.querySelectorAll('*').length === 1)).toBe(true);
+        });
+
+        it("test add icons method", () => {
+            Input.addIcon("append", 'e-down-icon', inputObj.container, element);
+            expect((inputObj.container.querySelectorAll('.e-input-in-wrap').length === 1)).toBe(true);
+            expect((inputObj.container.querySelectorAll('*').length === 4)).toBe(true);
+            let wrapper: HTMLElement = inputObj.container.querySelector('.e-input-in-wrap');
+            expect((wrapper.querySelectorAll('*').length === 2)).toBe(true);
+            expect((wrapper.querySelectorAll('.e-down-icon').length === 1)).toBe(true);
+
+            Input.addIcon("prepend", 'e-plus-icon', inputObj.container, element);
+            expect((inputObj.container.querySelectorAll('*').length === 5)).toBe(true);
+            let wrapper1: HTMLElement = inputObj.container.querySelector('.e-input-in-wrap');
+            expect((wrapper1.querySelectorAll('*').length === 2)).toBe(true);
+        });
+        afterAll(() => {
+            element.remove();
+        });
+    });
 });

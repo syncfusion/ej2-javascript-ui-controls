@@ -748,7 +748,15 @@ export class Edit implements IAction {
                 this.validationComplete(args);
             },
             customPlacement: (inputElement: HTMLElement, error: HTMLElement) => {
+                let uid: string = inputElement.getAttribute('e-mappinguid');
+                let args: Object = {
+                    column: this.parent.getColumnByUid(uid),
+                    error: error,
+                    inputElement: inputElement,
+                    value: (inputElement as HTMLInputElement).value,
+                };
                 this.valErrorPlacement(inputElement, error);
+                this.parent.notify(events.valCustomPlacement, args);
             }
         });
     }

@@ -355,7 +355,6 @@ export class BreadCrumbBar {
     private keyActionHandler(e: KeyboardEventArgs): void {
         switch (e.action) {
             case 'enter':
-                e.preventDefault();
                 this.addressPathClickHandler(e);
                 break;
         }

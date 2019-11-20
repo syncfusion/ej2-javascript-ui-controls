@@ -337,7 +337,15 @@ export class Selection {
     get isCleared(): boolean {
         return isNullOrUndefined(this.end);
     }
-
+    /**
+     * Returns true if selection is in field 
+     */
+    public get isInField(): boolean {
+        if (!isNullOrUndefined(this.getHyperlinkField(true))) {
+            return true;
+        }
+        return false;
+    }
     /**
      * @private
      */
@@ -518,6 +526,24 @@ export class Selection {
         let startPosition: TextPosition = this.getTextPosBasedOnLogicalIndex(start);
         let endPosition: TextPosition = this.getTextPosBasedOnLogicalIndex(end);
         this.selectPosition(startPosition, endPosition);
+    }
+    /**
+     * Select the current field if selection is in field
+     */
+    public selectField(): void {
+        if (this.isInField) {
+            let fieldStart: FieldElementBox = this.getHyperlinkField(true);
+            let fieldEnd: FieldElementBox = fieldStart.fieldEnd;
+            let offset: number = fieldStart.line.getOffset(fieldStart, 0);
+            let startPosition: TextPosition = new TextPosition(this.viewer.owner);
+            startPosition.setPositionParagraph(fieldStart.line, offset);
+
+            let endoffset: number = fieldEnd.line.getOffset(fieldEnd, 1);
+            let endPosition: TextPosition = new TextPosition(this.viewer.owner);
+            endPosition.setPositionParagraph(fieldEnd.line, endoffset);
+            //selects the field range
+            this.viewer.selection.selectRange(startPosition, endPosition);
+        }
     }
     /**
      * Toggles the bold property of selected contents.
@@ -6799,7 +6825,7 @@ export class Selection {
      * Return field if paragraph contain hyperlink field
      * @private
      */
-    public getHyperlinkField(): FieldElementBox {
+    public getHyperlinkField(isRetrieve?: boolean): FieldElementBox {
         if (isNullOrUndefined(this.end)) {
             return undefined;
         }
@@ -6810,10 +6836,10 @@ export class Selection {
         let checkedFields: FieldElementBox[] = [];
         let field: FieldElementBox = undefined;
         if (isNullOrUndefined(inline)) {
-            field = this.getHyperLinkFields(this.end.paragraph as ParagraphWidget, checkedFields);
+            field = this.getHyperLinkFields(this.end.paragraph as ParagraphWidget, checkedFields, isRetrieve);
         } else {
             let paragraph: ParagraphWidget = inline.line.paragraph;
-            field = this.getHyperLinkFieldInternal(paragraph, inline, checkedFields);
+            field = this.getHyperLinkFieldInternal(paragraph, inline, checkedFields, isRetrieve);
         }
         checkedFields = [];
         return field;
@@ -6821,7 +6847,7 @@ export class Selection {
     /**
      * @private
      */
-    public getHyperLinkFields(paragraph: ParagraphWidget, checkedFields: FieldElementBox[]): FieldElementBox {
+    public getHyperLinkFields(paragraph: ParagraphWidget, checkedFields: FieldElementBox[], isRetrieve?: boolean): FieldElementBox {
         for (let i: number = 0; i < this.viewer.fields.length; i++) {
             if (checkedFields.indexOf(this.viewer.fields[i]) !== -1 || isNullOrUndefined(this.viewer.fields[i].fieldSeparator)) {
                 continue;
@@ -6830,7 +6856,8 @@ export class Selection {
             }
             let field: string = this.getFieldCode(this.viewer.fields[i]);
             field = field.trim().toLowerCase();
-            if (field.match('hyperlink ') && this.paragraphIsInFieldResult(this.viewer.fields[i], paragraph as ParagraphWidget)) {
+            let isParagraph: boolean = this.paragraphIsInFieldResult(this.viewer.fields[i], paragraph as ParagraphWidget);
+            if ((isRetrieve || (!isRetrieve && field.match('hyperlink '))) && isParagraph) {
                 return this.viewer.fields[i];
             }
         }
@@ -6843,7 +6870,8 @@ export class Selection {
     /**
      * @private
      */
-    public getHyperLinkFieldInternal(paragraph: Widget, inline: ElementBox, fields: FieldElementBox[]): FieldElementBox {
+    // tslint:disable-next-line:max-line-length
+    public getHyperLinkFieldInternal(paragraph: Widget, inline: ElementBox, fields: FieldElementBox[], isRetrieve?: boolean): FieldElementBox {
         for (let i: number = 0; i < this.viewer.fields.length; i++) {
             if (fields.indexOf(this.viewer.fields[i]) !== -1 || isNullOrUndefined(this.viewer.fields[i].fieldSeparator)) {
                 continue;
@@ -6852,12 +6880,13 @@ export class Selection {
             }
             let fieldCode: string = this.getFieldCode(this.viewer.fields[i]);
             fieldCode = fieldCode.trim().toLowerCase();
-            if (fieldCode.match('hyperlink ') && (this.inlineIsInFieldResult(this.viewer.fields[i], inline) || this.isImageField())) {
+            let isInline: boolean = (this.inlineIsInFieldResult(this.viewer.fields[i], inline) || this.isImageField());
+            if ((isRetrieve || (!isRetrieve && fieldCode.match('hyperlink '))) && isInline) {
                 return this.viewer.fields[i];
             }
         }
         if (paragraph.containerWidget instanceof BodyWidget && !(paragraph instanceof HeaderFooterWidget)) {
-            return this.getHyperLinkFieldInternal(paragraph.containerWidget, inline, fields);
+            return this.getHyperLinkFieldInternal(paragraph.containerWidget, inline, fields, isRetrieve);
         }
         return undefined;
     }

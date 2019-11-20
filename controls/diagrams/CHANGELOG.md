@@ -2,6 +2,36 @@
 
 ## [Unreleased]
 
+## 17.3.28 (2019-11-19)
+
+### Diagram
+
+#### Bug Fixes
+
+- `F149060` - Unable to remove the connector that are drawn at the run time issue has been fixed.
+
+## 17.3.28 (2019-11-19)
+
+### Diagram
+
+#### Bug Fixes
+
+- `#254194` - The issue "when resizing the text node, text content does not wraps with respect to node size" has been fixed.
+
+- `#253742` - The issue "children in the swimlane cannot be selected when resizing the lane, which is outside the view ports" has been fixed.
+
+- `F148797`,`F148792` - The issue with the Swimlane Header annotation styles that are unable to change has been fixed.
+
+## 17.3.27 (2019-11-12)
+
+### Diagram
+
+#### Bug Fixes
+
+- `#246889` - The issue "Context menu event will be triggered in ubuntu before the mouse up event, while context menu event will be fired in windows after mouse up" has been fixed.
+- `#253855` - The exception that thrown in addNodeToLane method because Undo/Redo Module is not injected has been fixed.
+- `#253804` - The issue with the Swimlane Header annotation styles that are unable to change has been fixed.
+
 ## 17.3.21 (2019-10-30)
 
 ### Diagram

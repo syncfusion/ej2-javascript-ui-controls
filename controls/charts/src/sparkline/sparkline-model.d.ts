@@ -188,7 +188,6 @@ export interface SparklineModel extends ComponentModel{
     /**
      * Triggers before sparkline tooltip render.
      * @event
-     * @deprecated
      * @blazorProperty 'OnTooltipInitialize'
      */
     tooltipInitialize?: EmitType<ITooltipRenderingEventArgs>;
@@ -203,7 +202,6 @@ export interface SparklineModel extends ComponentModel{
     /**
      * Triggers before sparkline axis render.
      * @event
-     * @deprecated
      * @blazorProperty 'AxisRendering'
      */
     axisRendering?: EmitType<IAxisRenderingEventArgs>;
@@ -211,7 +209,6 @@ export interface SparklineModel extends ComponentModel{
     /**
      * Triggers before sparkline points render.
      * @event
-     * @deprecated
      * @blazorProperty 'PointRendering'
      */
     pointRendering?: EmitType<ISparklinePointEventArgs>;
@@ -247,7 +244,6 @@ export interface SparklineModel extends ComponentModel{
     /**
      * Triggers before the sparkline datalabel render.
      * @event
-     * @deprecated
      * @blazorProperty 'DataLabelRendering'
      */
     dataLabelRendering?: EmitType<IDataLabelRenderingEventArgs>;
@@ -255,7 +251,6 @@ export interface SparklineModel extends ComponentModel{
     /**
      * Triggers before the sparkline marker render.
      * @event
-     * @deprecated
      * @blazorProperty 'MarkerRendering'
      */
     markerRendering?: EmitType<IMarkerRenderingEventArgs>;

@@ -10135,7 +10135,8 @@ function headerDefine(grid, diagram, object) {
     }
     let node = {
         annotations: [{
-                content: shape.header.annotation.content
+                content: shape.header.annotation.content,
+                style: shape.header.annotation.style ? shape.header.annotation.style : undefined,
             }],
         style: shape.header.style ? shape.header.style : undefined,
         offsetX: object.offsetX, offsetY: object.offsetY,
@@ -15502,7 +15503,7 @@ __decorate$2([
     Property('')
 ], Header.prototype, "id", void 0);
 __decorate$2([
-    Complex({ style: { fill: '#111111' } }, Annotation)
+    Complex({ style: { fill: 'transparent' } }, Annotation)
 ], Header.prototype, "annotation", void 0);
 __decorate$2([
     Complex({ fill: '#E7F4FF', strokeColor: '#CCCCCC' }, ShapeStyle)
@@ -21373,7 +21374,7 @@ class TextDrawingTool extends ToolBase {
         this.commandHandler.clearSelection();
         let node = {
             shape: { type: 'Text' },
-            offsetX: this.currentPosition.x, width: 50, height: 20,
+            offsetX: this.currentPosition.x,
             offsetY: this.currentPosition.y
         };
         if (!args.source) {
@@ -23175,6 +23176,10 @@ class DiagramEventHandler {
                     }
                     else {
                         this.tool.mouseUp(this.eventArgs);
+                        if (this.diagram.checkMenu && (window.navigator.userAgent.indexOf('Linux') !== -1 || window.navigator.userAgent.indexOf('X11') !== -1)) {
+                            this.diagram.contextMenuModule.contextMenu.open(evt.pageY, evt.pageX, this.diagram.element);
+                            this.diagram.checkMenu = false;
+                        }
                     }
                     if (history.hasStack) {
                         this.diagram.endGroupAction();
@@ -25637,6 +25642,12 @@ class CommandHandler {
     drawObject(obj) {
         let newObj;
         let cloneObject$$1;
+        if (obj && obj.shape) {
+            if (obj.shape.type === 'Text') {
+                obj.width = this.diagram.drawingObject.width ? this.diagram.drawingObject.width : 50;
+                obj.height = this.diagram.drawingObject.height ? this.diagram.drawingObject.height : 20;
+            }
+        }
         cloneObject$$1 = cloneObject(this.diagram.drawingObject);
         for (let prop of Object.keys(obj)) {
             cloneObject$$1[prop] = obj[prop];
@@ -25738,28 +25749,30 @@ class CommandHandler {
         if (!arg.cancel) {
             for (let i = 0; i < obj.length; i++) {
                 let newObj = obj[i];
-                select = true;
-                if (!hasSelection(this.diagram)) {
-                    this.select(newObj, i > 0 || multipleSelection, true);
-                }
-                else {
-                    if ((i > 0 || multipleSelection) && newObj.children && !newObj.parentId) {
-                        for (let i = 0; i < this.diagram.selectedItems.nodes.length; i++) {
-                            let parentNode = this.diagram.nameTable[this.diagram.selectedItems.nodes[i].parentId];
-                            if (parentNode) {
-                                parentNode = this.findParent(parentNode);
+                if (newObj) {
+                    select = true;
+                    if (!hasSelection(this.diagram)) {
+                        this.select(newObj, i > 0 || multipleSelection, true);
+                    }
+                    else {
+                        if ((i > 0 || multipleSelection) && newObj.children && !newObj.parentId) {
+                            for (let i = 0; i < this.diagram.selectedItems.nodes.length; i++) {
+                                let parentNode = this.diagram.nameTable[this.diagram.selectedItems.nodes[i].parentId];
                                 if (parentNode) {
-                                    if (newObj.id === parentNode.id) {
-                                        this.selectGroup(newObj);
+                                    parentNode = this.findParent(parentNode);
+                                    if (parentNode) {
+                                        if (newObj.id === parentNode.id) {
+                                            this.selectGroup(newObj);
+                                        }
                                     }
                                 }
                             }
                         }
-                    }
-                    this.selectProcesses(newObj);
-                    select = this.selectBpmnSubProcesses(newObj);
-                    if (select) {
-                        this.select(newObj, i > 0 || multipleSelection, true);
+                        this.selectProcesses(newObj);
+                        select = this.selectBpmnSubProcesses(newObj);
+                        if (select) {
+                            this.select(newObj, i > 0 || multipleSelection, true);
+                        }
                     }
                 }
             }
@@ -29541,6 +29554,8 @@ class Diagram extends Component {
         /** @private */
         this.version = 17.1;
         /** @private */
+        this.checkMenu = false;
+        /** @private */
         this.connectorTable = {};
         /** @private */
         this.groupTable = {};
@@ -30952,7 +30967,9 @@ class Diagram extends Component {
         if (this.nameTable[swimLane]) {
             let swimlaneNode = this.nameTable[swimLane];
             this.protectPropertyChange(true);
-            this.historyManager.startGroupAction();
+            if (this.undoRedoModule) {
+                this.historyManager.startGroupAction();
+            }
             if (!this.nameTable[node.id]) {
                 node.offsetX = swimlaneNode.wrapper.bounds.width + swimlaneNode.wrapper.bounds.x;
                 node.offsetY = swimlaneNode.wrapper.bounds.height + swimlaneNode.wrapper.bounds.y;
@@ -30996,7 +31013,9 @@ class Diagram extends Component {
                     }
                 }
             }
-            this.historyManager.endGroupAction();
+            if (this.undoRedoModule) {
+                this.historyManager.endGroupAction();
+            }
             this.protectPropertyChange(false);
         }
         this.updateDiagramElementQuad();
@@ -31043,6 +31062,18 @@ class Diagram extends Component {
     addConnector(obj) {
         return this.add(obj);
     }
+    removeNodeEdges(elementId, id, isOutEdges) {
+        let node = this.nameTable[elementId];
+        let edges = isOutEdges ? node.outEdges : node.inEdges;
+        if (edges.length > 0) {
+            for (let i = 0; i < edges.length; i++) {
+                if (edges[i] === id) {
+                    edges.splice(i, 1);
+                }
+            }
+        }
+    }
+    /* tslint:disable */
     /**
      * Adds the given object to diagram control
      * @param obj Defines the object that has to be added to diagram
@@ -31062,6 +31093,18 @@ class Diagram extends Component {
             }
             if (obj.id !== 'helper' && !(this.diagramActions & DiagramAction.PreventCollectionChangeOnDragOver)) {
                 this.triggerEvent(DiagramEvent.collectionChange, args);
+            }
+            if (args.cancel && this.drawingObject) {
+                this.removeElements(args.element);
+                this.tooltipObject.close();
+                if (getObjectType(args.element) === Connector) {
+                    if (args.element.sourceID) {
+                        this.removeNodeEdges(args.element.sourceID, args.element.id, true);
+                    }
+                    if (args.element.targetID) {
+                        this.removeNodeEdges(args.element.targetID, args.element.id, false);
+                    }
+                }
             }
             this.diagramActions = this.diagramActions | DiagramAction.PublicMethod;
             obj.id = obj.id || randomId();
@@ -31146,6 +31189,7 @@ class Diagram extends Component {
                 }
                 if (this.mode === 'SVG') {
                     this.updateSvgNodes(newObj);
+                    this.updateTextElementValue(newObj);
                     this.updateDiagramObject(newObj);
                     if (newObj.shape.activity && newObj.shape.activity.subProcess.processes &&
                         newObj.shape.activity.subProcess.processes.length) {
@@ -31168,6 +31212,7 @@ class Diagram extends Component {
         }
         return newObj;
     }
+    /* tslint:enable */
     updateBlazorCollectionChange(newObject, isAdding) {
         let ejsInterop = 'ejsInterop';
         if (window && window[ejsInterop]) {
@@ -31310,25 +31355,27 @@ class Diagram extends Component {
         this.refreshCanvasLayers();
         let children = currentObj.wrapper.children;
         let element;
-        for (let i = 0; i < children.length; i++) {
-            if (children[i] instanceof DiagramNativeElement || ((children[i].id) && (children[i].id).indexOf('icon_content') > 0)) {
-                if ((children[i].id).indexOf('icon_content') > 0 && this.mode === 'SVG') {
-                    element = getDiagramElement(children[i].id + '_shape_groupElement', this.element.id);
-                    element.parentNode.removeChild(element);
-                    element = getDiagramElement(children[i].id + '_rect_groupElement', this.element.id);
-                    element.parentNode.removeChild(element);
+        if (children) {
+            for (let i = 0; i < children.length; i++) {
+                if (children[i] instanceof DiagramNativeElement || ((children[i].id) && (children[i].id).indexOf('icon_content') > 0)) {
+                    if ((children[i].id).indexOf('icon_content') > 0 && this.mode === 'SVG') {
+                        element = getDiagramElement(children[i].id + '_shape_groupElement', this.element.id);
+                        element.parentNode.removeChild(element);
+                        element = getDiagramElement(children[i].id + '_rect_groupElement', this.element.id);
+                        element.parentNode.removeChild(element);
+                    }
+                    for (let elementId of this.views) {
+                        removeElement(children[i].id + '_groupElement', elementId);
+                    }
                 }
-                for (let elementId of this.views) {
-                    removeElement(children[i].id + '_groupElement', elementId);
+                else if (children[i] instanceof DiagramHtmlElement) {
+                    for (let elementId of this.views) {
+                        removeElement(currentObj.id + '_html_element', elementId);
+                        removeElement(children[i].id + '_html_element', elementId);
+                    }
                 }
+                removeGradient(children[i].id);
             }
-            else if (children[i] instanceof DiagramHtmlElement) {
-                for (let elementId of this.views) {
-                    removeElement(currentObj.id + '_html_element', elementId);
-                    removeElement(children[i].id + '_html_element', elementId);
-                }
-            }
-            removeGradient(children[i].id);
         }
     }
     removeCommand() {
@@ -34425,11 +34472,13 @@ class Diagram extends Component {
                             if (lane.width && !orientation) {
                                 laneIndex = (actualShape.phases && actualShape.phaseSize) ? indexValue + 1 : indexValue;
                                 grid.updateColumnWidth(laneIndex, newLane.width, true, padding);
+                                this.updateDiagramElementQuad();
                             }
                             if (lane.height && orientation) {
                                 laneIndex = (actualShape.header && actualShape.hasHeader) ? indexValue + 1 : indexValue;
                                 laneIndex += (actualShape.phases && actualShape.phaseSize) ? 1 : 0;
                                 grid.updateRowHeight(laneIndex, newLane.height, true, padding);
+                                this.updateDiagramElementQuad();
                             }
                         }
                     }
@@ -34721,6 +34770,9 @@ class Diagram extends Component {
         if (update) {
             if (this.bpmnModule !== undefined) {
                 this.bpmnModule.updateTextAnnotationProp(actualObject, { offsetX: (oldObject.offsetX || actualObject.offsetX), offsetY: (oldObject.offsetY || actualObject.offsetY) }, this);
+            }
+            if (this.checkSelectedItem(actualObject) && actualObject.wrapper.children[0] instanceof TextElement) {
+                actualObject.wrapper.children[0].refreshTextElement();
             }
             actualObject.wrapper.measure(new Size(actualObject.wrapper.bounds.width, actualObject.wrapper.bounds.height), actualObject.id, this.onLoadImageSize.bind(this));
             actualObject.wrapper.arrange(actualObject.wrapper.desiredSize);
@@ -37660,13 +37712,20 @@ class DiagramContextMenu {
         let key = this.getKeyFromId(item.id);
         let dItem = this.defaultItems[key];
         if (this.getDefaultItems().indexOf(key) !== -1) {
-            if (item.target && event &&
+            if (item.target && (event || this.parent.checkMenu) &&
                 !this.ensureTarget(item)) {
                 this.hiddenItems.push(item.id);
             }
         }
     }
     contextMenuBeforeOpen(args) {
+        if (!this.parent.checkMenu &&
+            (window.navigator.userAgent.indexOf('Linux') !== -1 || window.navigator.userAgent.indexOf('X11') !== -1)) {
+            this.parent.checkMenu = args.cancel = true;
+        }
+        if (this.parent.checkMenu) {
+            this.hiddenItems = [];
+        }
         let diagramArgs = args;
         diagramArgs.hiddenItems = [];
         for (let item of args.items) {

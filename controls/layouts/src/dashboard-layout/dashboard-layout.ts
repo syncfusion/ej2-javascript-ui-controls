@@ -728,11 +728,12 @@ export class DashboardLayout extends Component<HTMLElement> implements INotifyPr
     }
     private resizeEvents(): void {
         if (this.allowResizing) {
-            for (let i: number = 0; i < this.element.querySelectorAll('.e-panel .e-panel-container .e-resize').length; i++) {
+            let panelElements: NodeList = this.element.querySelectorAll('.e-panel .e-panel-container .e-resize');
+            for (let i: number = 0; i < panelElements.length; i++) {
                 let eventName: string = (Browser.info.name === 'msie') ? 'mousedown pointerdown' : 'mousedown';
-                EventHandler.add(document.querySelectorAll('.e-resize')[i], eventName, this.downResizeHandler, this);
+                EventHandler.add((<HTMLElement>panelElements[i]), eventName, this.downResizeHandler, this);
                 if (Browser.info.name !== 'mise') {
-                    EventHandler.add(document.querySelectorAll('.e-resize')[i], 'touchstart', this.touchDownResizeHandler, this);
+                    EventHandler.add((<HTMLElement>panelElements[i]), 'touchstart', this.touchDownResizeHandler, this);
                 }
             }
         }
@@ -2837,9 +2838,10 @@ export class DashboardLayout extends Component<HTMLElement> implements INotifyPr
                         this.setClasses(this.panelCollection);
                         this.resizeEvents();
                     } else {
-                        for (let i: number = 0; i < document.querySelectorAll('.e-resize').length; i++) {
+                        let panelElements: NodeList = this.element.querySelectorAll('.e-panel .e-panel-container .e-resize');
+                        for (let i: number = 0; i < panelElements.length; i++) {
                             let eventName: string = (Browser.info.name === 'msie') ? 'mousedown pointerdown' : 'mousedown';
-                            let element: HTMLElement = <HTMLElement>document.querySelectorAll('.e-resize')[i];
+                            let element: HTMLElement = <HTMLElement>panelElements[i];
                             EventHandler.remove(element, eventName, this.downResizeHandler);
                             if (Browser.info.name !== 'mise') {
                                 EventHandler.remove(element, 'touchstart', this.touchDownResizeHandler);

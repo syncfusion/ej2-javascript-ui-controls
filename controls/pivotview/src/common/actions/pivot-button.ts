@@ -5,7 +5,7 @@ import { PivotView } from '../../pivotview/base/pivotview';
 import { PivotFieldList } from '../../pivotfieldlist/base/field-list';
 import * as cls from '../../common/base/css-constant';
 import * as events from '../../common/base/constant';
-import { IAction, PivotButtonArgs } from '../../common/base/interface';
+import { IAction, PivotButtonArgs, MemberFilteringEventArgs } from '../../common/base/interface';
 import { IFieldOptions, IFilter, IField, IDataOptions, PivotEngine, IMembers } from '../../base/engine';
 import { Button } from '@syncfusion/ej2-buttons';
 import { DragAndDropEventArgs, TreeView, NodeCheckEventArgs, SelectEventArgs } from '@syncfusion/ej2-navigations';
@@ -768,27 +768,39 @@ export class PivotButton implements IAction {
             focusElement.focus();
             return;
         }
-        if (filterObject) {
-            // this.removeDataSourceSettings(fieldName);
-            filterObject = (<{ [key: string]: Object }>filterObject).properties ?
-                (<{ [key: string]: Object }>filterObject).properties : filterObject;
-            filterObject.type = type;
-            filterObject.measure = measure;
-            filterObject.condition = operator as Operators;
-            filterObject.value1 = filterType === 'date' ? new Date(operand1) : operand1 as string;
-            filterObject.value2 = filterType === 'date' ? new Date(operand2) : operand2 as string;
-            if (this.parent.dataType === 'olap') {
-                filterObject.selectedField = levelName;
+        let filter: MemberFilteringEventArgs = {
+            cancel: false,
+            filterSettings: filterItem,
+            dataSourceSettings: this.parent.dataSourceSettings
+        };
+        (this.parent as PivotFieldList).pivotGridModule ?
+            (this.parent as PivotFieldList).pivotGridModule.trigger(events.memberFiltering, filter) :
+            this.parent.trigger(events.memberFiltering, filter);
+        if (!filter.cancel) {
+            if (filterObject) {
+                // this.removeDataSourceSettings(fieldName);
+                filterObject = (<{ [key: string]: Object }>filterObject).properties ?
+                    (<{ [key: string]: Object }>filterObject).properties : filterObject;
+                filterObject.type = type;
+                filterObject.measure = measure;
+                filterObject.condition = operator as Operators;
+                filterObject.value1 = filterType === 'date' ? new Date(operand1) : operand1 as string;
+                filterObject.value2 = filterType === 'date' ? new Date(operand2) : operand2 as string;
+                if (this.parent.dataType === 'olap') {
+                    filterObject.selectedField = levelName;
+                }
+            } else {
+                this.parent.dataSourceSettings.filterSettings.push(filterItem);
             }
-        } else {
-            this.parent.dataSourceSettings.filterSettings.push(filterItem);
         }
         if (type !== 'Value') {
             this.parent.lastFilterInfo = this.parent.pivotCommon.eventBase.getFilterItemByName(fieldName);
         }
         this.dialogPopUp.close();
-        this.refreshPivotButtonState(fieldName, true);
-        this.updateDataSource(true);
+        if (!filter.cancel) {
+            this.refreshPivotButtonState(fieldName, true);
+            this.updateDataSource(true);
+        }
     }
     private ClearFilter(e: Event): void {
         let dialogElement: HTMLElement = this.dialogPopUp.element;
@@ -965,29 +977,41 @@ export class PivotButton implements IAction {
         if (this.parent.dataType === 'olap') {
             this.removeDataSourceSettings(fieldName);
         }
-        let filterObject: IFilter = this.parent.pivotCommon.eventBase.getFilterItemByName(fieldName);
-        if (filterObject) {
-            for (let i: number = 0; i < this.parent.dataSourceSettings.filterSettings.length; i++) {
-                if (this.parent.dataSourceSettings.filterSettings[i].name === fieldName) {
-                    this.parent.dataSourceSettings.filterSettings.splice(i, 1);
-                    break;
+        let filter: MemberFilteringEventArgs = {
+            filterSettings: filterItem,
+            dataSourceSettings: this.parent.dataSourceSettings,
+            cancel: false
+        };
+        (this.parent as PivotFieldList).pivotGridModule ?
+            (this.parent as PivotFieldList).pivotGridModule.trigger(events.memberFiltering, filter) :
+            this.parent.trigger(events.memberFiltering, filter);
+        if (!filter.cancel) {
+            let filterObject: IFilter = this.parent.pivotCommon.eventBase.getFilterItemByName(fieldName);
+            if (filterObject) {
+                for (let i: number = 0; i < this.parent.dataSourceSettings.filterSettings.length; i++) {
+                    if (this.parent.dataSourceSettings.filterSettings[i].name === fieldName) {
+                        this.parent.dataSourceSettings.filterSettings.splice(i, 1);
+                        break;
+                    }
                 }
+                this.parent.dataSourceSettings.filterSettings.push(filterItem);
+            } else if (!filter.cancel) {
+                this.parent.dataSourceSettings.filterSettings.push(filterItem);
             }
-            this.parent.dataSourceSettings.filterSettings.push(filterItem);
-        } else {
-            this.parent.dataSourceSettings.filterSettings.push(filterItem);
         }
         this.dialogPopUp.close();
-        this.refreshPivotButtonState(fieldName, isNodeUnChecked);
-        if (!isNodeUnChecked) {
-            this.removeDataSourceSettings(fieldName);
-        }
-        this.parent.lastFilterInfo = filterItem;
-        this.updateDataSource(true);
-        let thisObj: PivotButton = this;
-        //setTimeout(() => {
-        if (thisObj.parent instanceof PivotFieldList) {
-            thisObj.axisField.render();
+        if (!filter.cancel) {
+            this.refreshPivotButtonState(fieldName, isNodeUnChecked);
+            if (!isNodeUnChecked) {
+                this.removeDataSourceSettings(fieldName);
+            }
+            this.parent.lastFilterInfo = filterItem;
+            this.updateDataSource(true);
+            let thisObj: PivotButton = this;
+            //setTimeout(() => {
+            if (thisObj.parent instanceof PivotFieldList) {
+                thisObj.axisField.render();
+            }
         }
         //});
     }

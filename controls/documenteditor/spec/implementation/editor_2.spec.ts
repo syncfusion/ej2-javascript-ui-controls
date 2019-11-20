@@ -194,13 +194,13 @@ describe('Delete with history preservation -1 ', () => {
     });
     it('single delete at empty line widget', () => {
         editor.openBlank();
-        editor.editorModule.onDelete();
+        editor.editorModule.delete();
         expect(() => { editor.editorHistory.undo(); }).not.toThrowError();
         expect(() => { editor.editorHistory.redo(); }).not.toThrowError();
     });
     it('single delete at inline start', () => {
         editor.viewer.onDocumentChanged([createDocument()]);
-        editor.editorModule.onDelete();
+        editor.editorModule.delete();
         expect(() => { editor.editorHistory.undo(); }).not.toThrowError();
         expect(() => { editor.editorHistory.redo(); }).not.toThrowError();
     });
@@ -230,7 +230,7 @@ describe('Delete with history preservation-2', () => {
         editor.viewer.onDocumentChanged([createDocument()]);
         editor.selection.moveToLineEnd();
         let start = editor.selection.getText(true);
-        editor.editorModule.onDelete();
+        editor.editorModule.delete();
         let end = editor.selection.getText(true);
         expect(() => { editor.editorHistory.undo(); }).not.toThrowError();
         expect(() => { editor.editorHistory.redo(); }).not.toThrowError();
@@ -242,8 +242,8 @@ describe('Delete with history preservation-2', () => {
         editor.editorModule.insertText(' ');
         editor.selection.handleHomeKey();
         let start = editor.selection.start.location;
-        editor.editorModule.onDelete();
-        editor.editorModule.onDelete();
+        editor.editorModule.delete();
+        editor.editorModule.delete();
         let end = editor.selection.start.location;
         expect(() => { editor.editorHistory.undo(); }).not.toThrowError();
         expect(() => { editor.editorHistory.redo(); }).not.toThrowError();
@@ -253,7 +253,7 @@ describe('Delete with history preservation-2', () => {
         editor.viewer.onDocumentChanged([createDocument()]);
         editor.selection.selectAll();
         let start = editor.selection.getText(true);
-        editor.editorModule.onDelete();
+        editor.editorModule.delete();
         let end = editor.selection.getText(true);
         editor.editorHistory.undo();
         expect(start !== end).toBe(true);
@@ -288,7 +288,7 @@ describe('Delete with history preservation-3', () => {
         editor.editor.insertTable(2, 3);
         editor.editorModule.insertText(' ');
         editor.selection.selectAll();
-        expect(() => { editor.editorModule.onDelete(); }).not.toThrowError();
+        expect(() => { editor.editorModule.delete(); }).not.toThrowError();
     });
     it('delete at paragraph end', () => {
         editor.openBlank();
@@ -298,10 +298,10 @@ describe('Delete with history preservation-3', () => {
         editor.selection.handleUpKey();
         editor.selection.handleEndKey();
         editor.selection.handleLeftKey();
-        editor.editorModule.onDelete();
+        editor.editorModule.delete();
         editor.selection.handleEndKey();
         editor.selection.handleLeftKey();
-        expect(() => { editor.editorModule.onDelete(); }).not.toThrowError();
+        expect(() => { editor.editorModule.delete(); }).not.toThrowError();
     });
     it('delete at paragraph end', () => {
         editor.openBlank();
@@ -309,7 +309,7 @@ describe('Delete with history preservation-3', () => {
         editor.editorModule.insertText('Adventure Work Cycles');
         editor.selection.handleHomeKey();
         editor.selection.handleShiftEndKey();
-        expect(() => { editor.editorModule.onDelete(); }).not.toThrowError();
+        expect(() => { editor.editorModule.delete(); }).not.toThrowError();
     });
 });
 describe('Delete with history preservation-4', () => {
@@ -338,7 +338,7 @@ describe('Delete with history preservation-4', () => {
         editor.editorModule.onEnter();
         editor.editorModule.onEnter();
         editor.editorModule.onEnter();
-        expect(() => { editor.editorModule.onDelete(); }).not.toThrowError();
+        expect(() => { editor.editorModule.delete(); }).not.toThrowError();
     });
     it('delete at empty paragraph and previous inline table', () => {
         editor.openBlank();
@@ -347,8 +347,8 @@ describe('Delete with history preservation-4', () => {
         editor.selection.handleDownKey();
         editor.editorModule.onEnter();
         editor.editorModule.onEnter();
-        expect(() => { editor.editorModule.onDelete(); }).not.toThrowError();
-        expect(() => { editor.editorModule.onDelete(); }).not.toThrowError();
+        expect(() => { editor.editorModule.delete(); }).not.toThrowError();
+        expect(() => { editor.editorModule.delete(); }).not.toThrowError();
     });
     it('delete with different inline ', () => {
         editor.openBlank();
@@ -358,7 +358,7 @@ describe('Delete with history preservation-4', () => {
         editor.selection.handleControlShiftLeftKey();
         editor.selection.toggleBold();
         editor.selection.handleLeftKey();
-        expect(() => { editor.editorModule.onDelete(); }).not.toThrowError();
+        expect(() => { editor.editorModule.delete(); }).not.toThrowError();
     });
 });
 describe('Delete and paste with history preservation', () => {
@@ -573,12 +573,12 @@ describe('Delete Validation ', () => {
         editor.editor.insertTable(2, 2);
         editor.selection.handleDownKey();
         editor.selection.handleDownKey();
-        editor.editorModule.onDelete();
+        editor.editorModule.delete();
         editor.editorModule.insertText('Sample');
         editor.editorModule.onEnter();
         editor.editorModule.insertText('Sample');
         editor.selection.moveUp();
-        expect(() => { editor.editorModule.onDelete(); }).not.toThrowError();
+        expect(() => { editor.editorModule.delete(); }).not.toThrowError();
         editor.editorHistory.undo();
     });
     it('Tab in justify alignment validation', () => {
@@ -811,7 +811,7 @@ describe('backspace with history preservation-3', () => {
         editor.editorModule.onBackSpace();
         event = { keyCode: 65, preventDefault: function () { }, ctrlKey: true, shiftKey: false, which: 0 };
         editor.viewer.onKeyDownInternal(event);
-        editor.editorModule.onDelete();
+        editor.editorModule.delete();
         expect(() => { editor.editorHistory.undo(); }).not.toThrowError();
         expect(() => { editor.editorHistory.redo(); }).not.toThrowError();
     });
@@ -2538,6 +2538,6 @@ describe('Selected content replace tesing-1', () => {
 //         wordDocument.sections.push(section2);
 //         editor.viewer.document = wordDocument;
 //         editor.selection.selectAll();
-//         expect(() => { editor.editorModule.onDelete(); }).not.toThrowError();
+//         expect(() => { editor.editorModule.delete(); }).not.toThrowError();
 //     });
 // });

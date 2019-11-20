@@ -574,7 +574,7 @@ describe('Delete table at specfic row valdiation', () => {
         editor.selection.handleDownKey();
         editor.selection.handleDownKey();
         editor.selection.handleControlShiftEndKey();
-        editor.editorModule.onDelete();
+        editor.editorModule.delete();
         editor.editorHistory.undo();
         editor.editorHistory.redo();
     });
@@ -591,7 +591,7 @@ describe('Delete table at specfic row valdiation', () => {
         editor.openBlank();
         editor.editor.insertTable(2, 2);
         editor.selection.handleShiftRightKey();
-        expect(() => { editor.editorModule.onDelete(); }).not.toThrowError();
+        expect(() => { editor.editorModule.delete(); }).not.toThrowError();
     });
     it('insertText method else part validation', () => {
         expect(() => { editor.editorModule.insertTextInline(undefined, undefined, undefined, 12) }).not.toThrowError();
@@ -927,7 +927,7 @@ describe('Paste and replace else part validation ', () => {
         editor.selection.handleUpKey();
         editor.selection.handleEndKey();
         editor.selection.handleShiftEndKey();
-        editor.editorModule.onDelete();
+        editor.editorModule.delete();
         editor.editorHistory.undo();
         editor.editorHistory.redo()
     });
@@ -999,7 +999,7 @@ describe('section combine validation ', () => {
         editor.editorModule.insertText('www.google.com');
         editor.editorModule.insertText(' ');
         editor.selection.handleLeftKey();
-        editor.editorModule.onDelete();
+        editor.editorModule.delete();
         expect(() => { editor.editorModule.insertText(' '); }).not.toThrowError();
     });
     it('edit hyperlink in multiple paragraph validation', () => {
@@ -1061,7 +1061,7 @@ describe('Single backspace and delete at empty line widget validation', () => {
         editor.openBlank()
         editor.editorModule.onEnter();
         editor.selection.handleUpKey();
-        editor.editorModule.onDelete();
+        editor.editorModule.delete();
         expect(viewer.pages.length).toBe(1);
     });
     it('Delete with selection containing table and paragraph ', () => {
@@ -1080,7 +1080,7 @@ describe('Single backspace and delete at empty line widget validation', () => {
         editor.selection.handleShiftDownKey();
         editor.selection.handleShiftDownKey();
         editor.selection.handleShiftEndKey();
-        expect(() => { editor.editorModule.onDelete(); }).not.toThrowError();
+        expect(() => { editor.editorModule.delete(); }).not.toThrowError();
     });
     it('single delete in multiple hyperlink validation ', () => {
         editor.openBlank()
@@ -1092,8 +1092,8 @@ describe('Single backspace and delete at empty line widget validation', () => {
         editor.editorModule.insertText(' ');
         editor.selection.handleUpKey();
         editor.selection.handleShiftEndKey();
-        editor.editorModule.onDelete();
-        expect(() => { editor.editorModule.onDelete(); }).not.toThrowError();
+        editor.editorModule.delete();
+        expect(() => { editor.editorModule.delete(); }).not.toThrowError();
     });
 });
 

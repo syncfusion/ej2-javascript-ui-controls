@@ -241,7 +241,7 @@ export class DiagramContextMenu {
         let key: string = this.getKeyFromId(item.id);
         let dItem: ContextMenuItemModel = this.defaultItems[key];
         if (this.getDefaultItems().indexOf(key) !== -1) {
-            if ((item as ContextMenuItemModel).target && event &&
+            if ((item as ContextMenuItemModel).target && (event || this.parent.checkMenu) &&
                 !this.ensureTarget(item)) {
                 this.hiddenItems.push(item.id);
             }
@@ -249,6 +249,11 @@ export class DiagramContextMenu {
     }
 
     private contextMenuBeforeOpen(args: BeforeOpenCloseMenuEventArgs): void {
+        if ( !this.parent.checkMenu &&
+            ( window.navigator.userAgent.indexOf('Linux') !== -1 || window.navigator.userAgent.indexOf('X11') !== -1 )) {
+            this.parent.checkMenu = args.cancel = true;
+        }
+        if ( this.parent.checkMenu) { this.hiddenItems = []; }
         let diagramArgs: DiagramBeforeMenuOpenEventArgs = args as DiagramBeforeMenuOpenEventArgs;
         diagramArgs.hiddenItems = [];
         for (let item of args.items) {

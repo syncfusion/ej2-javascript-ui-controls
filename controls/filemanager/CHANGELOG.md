@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 17.3.28 (2019-11-19)
+
+### File Manager
+
+#### Bug Fixes
+
+- #I252873 The issue with ` file search on pressing the enter key` has been fixed.
+
 ## 17.3.27 (2019-11-12)
 
 ### File Manager

@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 17.3.28 (2019-11-19)
+
+### Dashboard Layout
+
+#### Bug Fixes
+
+- `#F149164` - Resolved the issue with panel resizing when more than one Dashboard Layout component is used in a page.
+
 ## 17.3.27 (2019-11-12)
 
 ### Splitter

@@ -167,6 +167,12 @@ export interface DrillThroughEventArgs {
     value: string;
 }
 
+export interface MemberFilteringEventArgs {
+    filterSettings?: Object;
+    dataSourceSettings?: Object;
+    cancel?: boolean;
+}
+
 export interface CellSelectedObject {
     currentCell: IAxisSet;
     value: number | string;

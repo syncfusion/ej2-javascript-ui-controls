@@ -1,4 +1,4 @@
-import { EventHandler, detach, formatUnit, Browser, closest, classList } from '@syncfusion/ej2-base';
+import { EventHandler, detach, formatUnit, Browser, closest, classList, isBlazor } from '@syncfusion/ej2-base';
 import { Column } from '../models/column';
 import { IGrid, IAction, ResizeArgs } from '../base/interface';
 import { ColumnWidthService } from '../services/width-controller';
@@ -366,17 +366,18 @@ export class Resize implements IAction {
                 EventHandler.add(this.helper, Browser.touchStartEvent, this.resizeStart, this);
             } else {
                 let args: ResizeArgs = {
-                    e: e,
+                    e: isBlazor() && !this.parent.isJsComponent ? null : e,
                     column: this.column
                 };
-                this.parent.trigger(events.resizeStart, args);
-                if (args.cancel || this.parent.isEdit) {
-                    this.cancelResizeAction();
-                    return;
-                }
-                EventHandler.add(document, Browser.touchEndEvent, this.resizeEnd, this);
-                EventHandler.add(this.parent.element, Browser.touchMoveEvent, this.resizing, this);
-                this.updateCursor('add');
+                this.parent.trigger(events.resizeStart, args, (args: ResizeArgs) => {
+                    if (args.cancel || this.parent.isEdit) {
+                        this.cancelResizeAction();
+                        return;
+                    }
+                    EventHandler.add(document, Browser.touchEndEvent, this.resizeEnd, this);
+                    EventHandler.add(this.parent.element, Browser.touchMoveEvent, this.resizing, this);
+                    this.updateCursor('add');
+                });
             }
         }
     }
@@ -511,7 +512,7 @@ export class Resize implements IAction {
         this.updateCursor('remove');
         detach(this.helper);
         let args: ResizeArgs = {
-            e: e,
+            e: isBlazor() && !this.parent.isJsComponent ? null : e,
             column: this.column
         };
         let content: HTMLElement = this.parent.getContent().querySelector('.e-content');

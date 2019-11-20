@@ -452,14 +452,23 @@ export class BaseLegend {
      * To render legend symbols for chart and accumulation chart
      */
     protected renderSymbol(legendOption: LegendOptions, group: Element, i: number): void {
+        let borderColor: string;
         let symbolColor: string = legendOption.visible ? legendOption.fill : '#D3D3D3';
         let shape: string = (legendOption.shape === 'SeriesType') ? legendOption.type : legendOption.shape;
         shape = shape === 'Scatter' ? legendOption.markerShape : shape;
         let isStrokeWidth: boolean = (this.chart.getModuleName() === 'chart' && (legendOption.shape === 'SeriesType') &&
         (legendOption.type.toLowerCase().indexOf('line') > -1) && (legendOption.type.toLowerCase().indexOf('area') === -1));
         let strokewidth: number  =  isStrokeWidth ? (this.chart as Chart).visibleSeries[i].width : 1;
+        let isCustomBorder: boolean = this.chart.getModuleName() === 'chart' &&
+            (legendOption.type === 'Scatter' || legendOption.type === 'Bubble');
+        if (isCustomBorder && i < (this.chart as Chart).visibleSeries.length) {
+            let seriesBorder: BorderModel = (this.chart as Chart).visibleSeries[i].border;
+            borderColor = seriesBorder.color ? seriesBorder.color : symbolColor;
+            strokewidth = seriesBorder.width ? seriesBorder.width : 1;
+        }
         let symbolOption: PathOption = new PathOption(
-            this.legendID + this.generateId(legendOption, '_shape_', i), symbolColor, strokewidth, symbolColor, 1, '', '');
+            this.legendID + this.generateId(legendOption, '_shape_', i), symbolColor, strokewidth,
+            (isCustomBorder ? borderColor : symbolColor), 1, '', '');
         let regionPadding: number;
         let isCanvas: boolean = (this.chart as Chart).enableCanvas;
         if (!isCanvas) {

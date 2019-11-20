@@ -19,6 +19,8 @@ export class DrillThroughDialog {
     public dialogPopUp: Dialog;
     /** @hidden */
     public drillThroughGrid: Grid;
+    /** @hidden */
+    public indexString: string[] = [];
     private isUpdated: boolean = false;
     private gridIndexObjects: INumberIndex = {};
     private engine: PivotEngine | OlapEngine;
@@ -52,7 +54,8 @@ export class DrillThroughDialog {
                 /* tslint:disable:align */
                 this.drillThroughGrid.setProperties({
                     dataSource: this.parent.editSettings.allowEditing ?
-                        this.dataWithPrimarykey(eventArgs) : this.gridData, height: 300
+                        this.dataWithPrimarykey(eventArgs) : this.gridData,
+                    height: !this.parent.editSettings.allowEditing ? 300 : 220
                 }, true);
                 /* tslint:enable:align */
                 this.drillThroughGrid.enableVirtualization = !this.parent.editSettings.allowEditing;
@@ -302,7 +305,7 @@ export class DrillThroughDialog {
     }
 
     private dataWithPrimarykey(eventArgs: DrillThroughEventArgs): IDataSet[] {
-        let indexString: string[] = Object.keys(eventArgs.currentCell.indexObject);
+        let indexString: string[] = this.indexString.length > 0 ? this.indexString : Object.keys(eventArgs.currentCell.indexObject);
         let rawData: IDataSet[] = this.gridData;
         let count: number = 0;
         for (let item of rawData) {

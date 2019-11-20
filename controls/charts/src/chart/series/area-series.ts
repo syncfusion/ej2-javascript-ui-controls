@@ -56,7 +56,7 @@ export class AreaSeries extends MultiColoredSeries {
                 this.storePointLocation(point, series, isInverted, getCoordinate);
             }
         });
-        if (isPolar) {
+        if (isPolar && direction !== '') {
             direction = direction.concat(direction + ' ' + 'Z');
         }
         this.appendLinePath(

@@ -524,7 +524,7 @@ export class Paragraph {
         }
         let text: string = args.item.text;
         switch (text) {
-            case 'Single':
+            case this.localObj.getConstant('Single'):
                 this.documentEditor.selection.paragraphFormat.lineSpacing = 1;
                 break;
             case '1.15':
@@ -533,7 +533,7 @@ export class Paragraph {
             case '1.5':
                 this.documentEditor.selection.paragraphFormat.lineSpacing = 1.5;
                 break;
-            case 'Double':
+            case this.localObj.getConstant('Double'):
                 this.documentEditor.selection.paragraphFormat.lineSpacing = 2;
                 break;
         }
@@ -542,13 +542,13 @@ export class Paragraph {
     private setLineSpacing(): void {
         let lineSpacing: number = this.documentEditor.selection.paragraphFormat.lineSpacing;
         if (lineSpacing === 1) {
-            this.appliedLineSpacing = 'Single';
+            this.appliedLineSpacing = this.localObj.getConstant('Single');
         } else if (lineSpacing === 1.15) {
             this.appliedLineSpacing = '1.15';
         } else if (lineSpacing === 1.5) {
             this.appliedLineSpacing = '1.5';
         } else if (lineSpacing === 2) {
-            this.appliedLineSpacing = 'Double';
+            this.appliedLineSpacing = this.localObj.getConstant('Double');
         } else {
             this.appliedLineSpacing = '';
         }

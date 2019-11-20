@@ -72,7 +72,8 @@ export class TimelineViews extends VerticalView {
             data.colSpan = timeSlotData.length;
             let tempTimeSlots: TdData[] = <TdData[]>extend([], timeSlotData, null, true);
             for (let slot of tempTimeSlots) {
-                slot.date = new Date(+util.resetTime(data.date) + util.getDateInMs(slot.date));
+                let cellDate: Date = util.resetTime(new Date('' + data.date));
+                slot.date = util.setTime(cellDate, util.getDateInMs(slot.date));
                 slots.push(slot);
             }
         }

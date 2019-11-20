@@ -100,6 +100,7 @@ var PivotUtil = /** @__PURE__ @class */ (function () {
             rows: extend([], dataSourceSettings.rows, null, true),
             columns: extend([], dataSourceSettings.columns, null, true),
             filters: extend([], dataSourceSettings.filters, null, true),
+            values: extend([], dataSourceSettings.values, null, true),
             filterSettings: extend([], dataSourceSettings.filterSettings, null, true),
             sortSettings: extend([], dataSourceSettings.sortSettings, null, true),
             drilledMembers: extend([], dataSourceSettings.drilledMembers, null, true),
@@ -139,6 +140,7 @@ var PivotUtil = /** @__PURE__ @class */ (function () {
                     rows: dataSourceSettings.rows,
                     columns: dataSourceSettings.columns,
                     filters: dataSourceSettings.filters,
+                    values: dataSourceSettings.values,
                     filterSettings: dataSourceSettings.filterSettings,
                     sortSettings: dataSourceSettings.sortSettings,
                     drilledMembers: dataSourceSettings.drilledMembers,
@@ -225,6 +227,8 @@ var PivotEngine = /** @__PURE__ @class */ (function () {
         this.data = [];
         /** @hidden */
         this.actualData = [];
+        /** @hidden */
+        this.groupRawIndex = {};
         this.allowDataCompression = false;
         this.dataSourceSettings = {};
         this.frameHeaderObjectsCollection = false;
@@ -293,6 +297,7 @@ var PivotEngine = /** @__PURE__ @class */ (function () {
         this.allowValueFilter = dataSource.allowValueFilter;
         this.isValueFilterEnabled = false;
         this.enableValueSorting = customProperties ? customProperties.enableValueSorting : false;
+        this.isDrillThrough = customProperties ? (customProperties.isDrillThrough ? customProperties.isDrillThrough : false) : false;
         this.valueContent = [];
         this.dataSourceSettings = dataSource;
         if (!(dataSource.dataSource instanceof DataManager)) {
@@ -347,7 +352,6 @@ var PivotEngine = /** @__PURE__ @class */ (function () {
                 : undefined;
             this.allowDataCompression = this.pageSettings && this.pageSettings.allowDataCompression;
             this.savedFieldList = customProperties ? customProperties.savedFieldList : undefined;
-            this.isDrillThrough = customProperties ? (customProperties.isDrillThrough ? customProperties.isDrillThrough : false) : false;
             this.getFieldList(fields, this.enableSort, dataSource.allowValueFilter);
             this.fillFieldMembers(this.data, this.indexMatrix);
             this.updateSortSettings(dataSource.sortSettings, this.enableSort);
@@ -379,6 +383,9 @@ var PivotEngine = /** @__PURE__ @class */ (function () {
         });
         var groupRawData = {};
         var finalData = [];
+        this.groupRawIndex = {};
+        var groupKeys = {};
+        var indexLength = 0;
         for (var i = 0; i < realData.length; i++) {
             var currData = realData[i];
             var members = [];
@@ -431,10 +438,18 @@ var PivotEngine = /** @__PURE__ @class */ (function () {
                         }
                     }
                 }
+                if (this.isDrillThrough) {
+                    this.groupRawIndex[groupKeys[memberJoin]].push(i);
+                }
             }
             else {
                 groupRawData[memberJoin] = currData;
                 finalData.push(currData);
+                if (this.isDrillThrough) {
+                    this.groupRawIndex[indexLength] = [i];
+                    groupKeys[memberJoin] = indexLength;
+                    indexLength++;
+                }
             }
         }
         return finalData;
@@ -4119,6 +4134,8 @@ var conditionalFormatting = 'conditionalFormatting';
 var beforePdfExport = 'beforePdfExport';
 /** @hidden */
 var beforeExcelExport = 'beforeExcelExport';
+/** @hidden */
+var memberFiltering = 'memberFiltering';
 /**
  * Specifies pivot internal events
  */
@@ -8512,6 +8529,8 @@ var DrillThroughDialog = /** @__PURE__ @class */ (function () {
      * @hidden
      */
     function DrillThroughDialog(parent) {
+        /** @hidden */
+        this.indexString = [];
         this.isUpdated = false;
         this.gridIndexObjects = {};
         this.gridData = [];
@@ -8538,7 +8557,8 @@ var DrillThroughDialog = /** @__PURE__ @class */ (function () {
                 /* tslint:disable:align */
                 _this.drillThroughGrid.setProperties({
                     dataSource: _this.parent.editSettings.allowEditing ?
-                        _this.dataWithPrimarykey(eventArgs) : _this.gridData, height: 300
+                        _this.dataWithPrimarykey(eventArgs) : _this.gridData,
+                    height: !_this.parent.editSettings.allowEditing ? 300 : 220
                 }, true);
                 /* tslint:enable:align */
                 _this.drillThroughGrid.enableVirtualization = !_this.parent.editSettings.allowEditing;
@@ -8795,7 +8815,7 @@ var DrillThroughDialog = /** @__PURE__ @class */ (function () {
         }
     };
     DrillThroughDialog.prototype.dataWithPrimarykey = function (eventArgs) {
-        var indexString = Object.keys(eventArgs.currentCell.indexObject);
+        var indexString = this.indexString.length > 0 ? this.indexString : Object.keys(eventArgs.currentCell.indexObject);
         var rawData = this.gridData;
         var count = 0;
         for (var _i = 0, rawData_1 = rawData; _i < rawData_1.length; _i++) {
@@ -8898,10 +8918,24 @@ var DrillThrough = /** @__PURE__ @class */ (function () {
                 valueCaption = engine.fieldList[pivotValue.actualText.toString()] ?
                     engine.fieldList[pivotValue.actualText.toString()].caption : pivotValue.actualText.toString();
                 aggType = engine.fieldList[pivotValue.actualText] ? engine.fieldList[pivotValue.actualText].aggregateType : '';
-                var indexArray = Object.keys(pivotValue.indexObject);
-                for (var _i = 0, indexArray_1 = indexArray; _i < indexArray_1.length; _i++) {
-                    var index = indexArray_1[_i];
-                    rawData.push(this.parent.engineModule.data[Number(index)]);
+                if (this.parent.enableVirtualization && this.parent.allowDataCompression) {
+                    var indexArray = Object.keys(pivotValue.indexObject);
+                    this.drillThroughDialog.indexString = [];
+                    for (var _i = 0, indexArray_1 = indexArray; _i < indexArray_1.length; _i++) {
+                        var cIndex = indexArray_1[_i];
+                        for (var _a = 0, _b = this.parent.engineModule.groupRawIndex[Number(cIndex)]; _a < _b.length; _a++) {
+                            var aIndex = _b[_a];
+                            rawData.push(this.parent.engineModule.actualData[aIndex]);
+                            this.drillThroughDialog.indexString.push(aIndex.toString());
+                        }
+                    }
+                }
+                else {
+                    var indexArray = Object.keys(pivotValue.indexObject);
+                    for (var _c = 0, indexArray_2 = indexArray; _c < indexArray_2.length; _c++) {
+                        var index = indexArray_2[_c];
+                        rawData.push(this.parent.engineModule.data[Number(index)]);
+                    }
                 }
             }
             var valuetText = aggType === 'CalculatedField' ? valueCaption.toString() :
@@ -8914,8 +8948,10 @@ var DrillThrough = /** @__PURE__ @class */ (function () {
                 columnHeaders: pivotValue.columnHeaders === '' ? '' : pivotValue.columnHeaders.toString().split('.').join(' - '),
                 value: valuetText + '(' + pivotValue.formattedText + ')'
             };
-            this.parent.trigger(drillThrough, eventArgs);
-            this.drillThroughDialog.showDrillThroughDialog(eventArgs);
+            var drillThrough_1 = this;
+            this.parent.trigger(drillThrough, eventArgs, function (observedArgs) {
+                drillThrough_1.drillThroughDialog.showDrillThroughDialog(observedArgs);
+            });
         }
     };
     return DrillThrough;
@@ -9146,16 +9182,18 @@ var PivotChart = /** @__PURE__ @class */ (function () {
             this.chartSeries = this.chartSeries.concat(currentSeries);
         }
         var seriesEvent = { series: this.chartSeries, cancel: false };
-        this.parent.trigger(chartSeriesCreated, seriesEvent);
-        if (!seriesEvent.cancel) {
-            this.bindChart();
-        }
-        else {
-            if (this.element) {
-                remove(this.element);
+        var pivotChart = this;
+        this.parent.trigger(chartSeriesCreated, seriesEvent, function (observedArgs) {
+            if (!observedArgs.cancel) {
+                pivotChart.bindChart();
             }
-            this.parent.notify(contentReady, {});
-        }
+            else {
+                if (pivotChart.element) {
+                    remove(pivotChart.element);
+                }
+                pivotChart.parent.notify(contentReady, {});
+            }
+        });
     };
     PivotChart.prototype.frameObjectWithKeys = function (series) {
         var keys = Object.keys(series);
@@ -15296,6 +15334,8 @@ var PivotView = /** @__PURE__ @class */ (function (_super) {
      */
     PivotView.prototype.getPersistData = function () {
         var keyEntity = ['dataSourceSettings', 'pivotValues', 'gridSettings', 'chartSettings', 'displayOption'];
+        // tslint:disable-next-line
+        this.chartSettings['tooltipRender'] = undefined;
         return this.addOnPersist(keyEntity);
     };
     /**
@@ -15827,27 +15867,29 @@ var PivotView = /** @__PURE__ @class */ (function (_super) {
                 }
             }
             showSpinner(this.element);
-            var pivot = this;
+            var pivot_1 = this;
             //setTimeout(() => {
-            var drilledItem = {
+            var drilledItem_1 = {
                 fieldName: fieldName, memberName: memberName, delimiter: delimiter,
                 axis: axis,
                 action: action,
                 currentCell: currentCell
             };
-            pivot.trigger(drill, {
-                drillInfo: drilledItem,
-                pivotview: isBlazor() ? undefined : pivot
+            var drillArgs = {
+                drillInfo: drilledItem_1,
+                pivotview: isBlazor() ? undefined : pivot_1
+            };
+            pivot_1.trigger(drill, drillArgs, function (observedArgs) {
+                if (pivot_1.enableVirtualization) {
+                    pivot_1.engineModule.drilledMembers = pivot_1.dataSourceSettings.drilledMembers;
+                    pivot_1.engineModule.onDrill(drilledItem_1);
+                }
+                else {
+                    pivot_1.engineModule.generateGridData(pivot_1.dataSourceSettings);
+                }
+                pivot_1.setProperties({ pivotValues: pivot_1.engineModule.pivotValues }, true);
+                pivot_1.renderPivotGrid();
             });
-            if (pivot.enableVirtualization) {
-                pivot.engineModule.drilledMembers = pivot.dataSourceSettings.drilledMembers;
-                pivot.engineModule.onDrill(drilledItem);
-            }
-            else {
-                pivot.engineModule.generateGridData(pivot.dataSourceSettings);
-            }
-            pivot.setProperties({ pivotValues: pivot.engineModule.pivotValues }, true);
-            pivot.renderPivotGrid();
             //});
         }
         else {
@@ -17351,6 +17393,9 @@ var PivotView = /** @__PURE__ @class */ (function (_super) {
     ], PivotView.prototype, "conditionalFormatting", void 0);
     __decorate([
         Event()
+    ], PivotView.prototype, "memberFiltering", void 0);
+    __decorate([
+        Event()
     ], PivotView.prototype, "cellClick", void 0);
     __decorate([
         Event()
@@ -18309,8 +18354,8 @@ var DataSourceUpdate = /** @__PURE__ @class */ (function () {
                             break;
                     }
                     if (isBlazor()) {
-                        _this.pivotButton.updateDataSource();
-                        _this.pivotButton.axisField.render();
+                        dataSourceUpdate_1.parent.control.pivotButtonModule.updateDataSource();
+                        dataSourceUpdate_1.parent.control.axisFieldModule.render();
                     }
                 }
             });
@@ -21638,28 +21683,40 @@ var PivotButton = /** @__PURE__ @class */ (function () {
             focusElement.focus();
             return;
         }
-        if (filterObject) {
-            // this.removeDataSourceSettings(fieldName);
-            filterObject = filterObject.properties ?
-                filterObject.properties : filterObject;
-            filterObject.type = type;
-            filterObject.measure = measure;
-            filterObject.condition = operator;
-            filterObject.value1 = filterType === 'date' ? new Date(operand1) : operand1;
-            filterObject.value2 = filterType === 'date' ? new Date(operand2) : operand2;
-            if (this.parent.dataType === 'olap') {
-                filterObject.selectedField = levelName;
+        var filter = {
+            cancel: false,
+            filterSettings: filterItem,
+            dataSourceSettings: this.parent.dataSourceSettings
+        };
+        this.parent.pivotGridModule ?
+            this.parent.pivotGridModule.trigger(memberFiltering, filter) :
+            this.parent.trigger(memberFiltering, filter);
+        if (!filter.cancel) {
+            if (filterObject) {
+                // this.removeDataSourceSettings(fieldName);
+                filterObject = filterObject.properties ?
+                    filterObject.properties : filterObject;
+                filterObject.type = type;
+                filterObject.measure = measure;
+                filterObject.condition = operator;
+                filterObject.value1 = filterType === 'date' ? new Date(operand1) : operand1;
+                filterObject.value2 = filterType === 'date' ? new Date(operand2) : operand2;
+                if (this.parent.dataType === 'olap') {
+                    filterObject.selectedField = levelName;
+                }
             }
-        }
-        else {
-            this.parent.dataSourceSettings.filterSettings.push(filterItem);
+            else {
+                this.parent.dataSourceSettings.filterSettings.push(filterItem);
+            }
         }
         if (type !== 'Value') {
             this.parent.lastFilterInfo = this.parent.pivotCommon.eventBase.getFilterItemByName(fieldName);
         }
         this.dialogPopUp.close();
-        this.refreshPivotButtonState(fieldName, true);
-        this.updateDataSource(true);
+        if (!filter.cancel) {
+            this.refreshPivotButtonState(fieldName, true);
+            this.updateDataSource(true);
+        }
     };
     PivotButton.prototype.ClearFilter = function (e) {
         var dialogElement = this.dialogPopUp.element;
@@ -21852,30 +21909,42 @@ var PivotButton = /** @__PURE__ @class */ (function () {
         if (this.parent.dataType === 'olap') {
             this.removeDataSourceSettings(fieldName);
         }
-        var filterObject = this.parent.pivotCommon.eventBase.getFilterItemByName(fieldName);
-        if (filterObject) {
-            for (var i = 0; i < this.parent.dataSourceSettings.filterSettings.length; i++) {
-                if (this.parent.dataSourceSettings.filterSettings[i].name === fieldName) {
-                    this.parent.dataSourceSettings.filterSettings.splice(i, 1);
-                    break;
+        var filter = {
+            filterSettings: filterItem,
+            dataSourceSettings: this.parent.dataSourceSettings,
+            cancel: false
+        };
+        this.parent.pivotGridModule ?
+            this.parent.pivotGridModule.trigger(memberFiltering, filter) :
+            this.parent.trigger(memberFiltering, filter);
+        if (!filter.cancel) {
+            var filterObject = this.parent.pivotCommon.eventBase.getFilterItemByName(fieldName);
+            if (filterObject) {
+                for (var i = 0; i < this.parent.dataSourceSettings.filterSettings.length; i++) {
+                    if (this.parent.dataSourceSettings.filterSettings[i].name === fieldName) {
+                        this.parent.dataSourceSettings.filterSettings.splice(i, 1);
+                        break;
+                    }
                 }
+                this.parent.dataSourceSettings.filterSettings.push(filterItem);
             }
-            this.parent.dataSourceSettings.filterSettings.push(filterItem);
-        }
-        else {
-            this.parent.dataSourceSettings.filterSettings.push(filterItem);
+            else if (!filter.cancel) {
+                this.parent.dataSourceSettings.filterSettings.push(filterItem);
+            }
         }
         this.dialogPopUp.close();
-        this.refreshPivotButtonState(fieldName, isNodeUnChecked);
-        if (!isNodeUnChecked) {
-            this.removeDataSourceSettings(fieldName);
-        }
-        this.parent.lastFilterInfo = filterItem;
-        this.updateDataSource(true);
-        var thisObj = this;
-        //setTimeout(() => {
-        if (thisObj.parent instanceof PivotFieldList) {
-            thisObj.axisField.render();
+        if (!filter.cancel) {
+            this.refreshPivotButtonState(fieldName, isNodeUnChecked);
+            if (!isNodeUnChecked) {
+                this.removeDataSourceSettings(fieldName);
+            }
+            this.parent.lastFilterInfo = filterItem;
+            this.updateDataSource(true);
+            var thisObj = this;
+            //setTimeout(() => {
+            if (thisObj.parent instanceof PivotFieldList) {
+                thisObj.axisField.render();
+            }
         }
         //});
     };
@@ -22891,6 +22960,9 @@ var PivotFieldList = /** @__PURE__ @class */ (function (_super) {
     __decorate$4([
         Event()
     ], PivotFieldList.prototype, "enginePopulating", void 0);
+    __decorate$4([
+        Event()
+    ], PivotFieldList.prototype, "memberFiltering", void 0);
     __decorate$4([
         Event()
     ], PivotFieldList.prototype, "enginePopulated", void 0);
@@ -25234,10 +25306,12 @@ var ConditionalFormatting = /** @__PURE__ @class */ (function () {
                 fontSize: '12px'
             }
         };
-        this.parent.trigger(conditionalFormatting, format);
-        this.refreshConditionValues();
-        this.newFormat.push(format);
-        this.addFormat();
+        var conditionalFormating = this;
+        this.parent.trigger(conditionalFormatting, format, function (observedArgs) {
+            conditionalFormating.refreshConditionValues();
+            conditionalFormating.newFormat.push(observedArgs);
+            conditionalFormating.addFormat();
+        });
     };
     ConditionalFormatting.prototype.applyButtonClick = function () {
         if (this.refreshConditionValues()) {
@@ -27106,5 +27180,5 @@ var NumberFormatting = /** @__PURE__ @class */ (function () {
  * Export PivotGrid components
  */
 
-export { GroupingBarSettings, CellEditSettings, ConditionalSettings, HyperlinkSettings, DisplayOption, PivotView, Render, ExcelExport$1 as ExcelExport, PDFExport, KeyboardInteraction, VirtualScroll$1 as VirtualScroll, DrillThrough, PivotChart, PivotFieldList, TreeViewRenderer, AxisFieldRenderer, AxisTableRenderer, DialogRenderer, EventBase, NodeStateModified, DataSourceUpdate, FieldList, CommonKeyboardInteraction, GroupingBar, CalculatedField, ConditionalFormatting, PivotCommon, load, enginePopulating, enginePopulated, onFieldDropped, beforePivotTableRender, afterPivotTableRender, beforeExport, excelHeaderQueryCellInfo, pdfHeaderQueryCellInfo, excelQueryCellInfo, pdfQueryCellInfo, onPdfCellRender, dataBound, queryCellInfo, headerCellInfo, hyperlinkCellClick, resizing, resizeStop, cellClick, drillThrough, beforeColumnsRender, selected, cellSelecting, drill, cellSelected, cellDeselected, rowSelected, rowDeselected, beginDrillThrough, saveReport, fetchReport, loadReport, renameReport, removeReport, newReport, toolbarRender, toolbarClick, chartTooltipRender, chartLoaded, chartLoad, chartResized, chartAxisLabelRender, chartSeriesCreated, aggregateCellInfo, contextMenuClick, contextMenuOpen, fieldListRefreshed, conditionalFormatting, beforePdfExport, beforeExcelExport, initialLoad, uiUpdate, scroll, contentReady, dataReady, initSubComponent, treeViewUpdate, pivotButtonUpdate, initCalculatedField, click, initToolbar, initFormatting, ErrorDialog, FilterDialog, PivotContextMenu, AggregateMenu, Toolbar$2 as Toolbar, NumberFormatting, PivotEngine, PivotUtil, OlapEngine, MDXQuery };
+export { GroupingBarSettings, CellEditSettings, ConditionalSettings, HyperlinkSettings, DisplayOption, PivotView, Render, ExcelExport$1 as ExcelExport, PDFExport, KeyboardInteraction, VirtualScroll$1 as VirtualScroll, DrillThrough, PivotChart, PivotFieldList, TreeViewRenderer, AxisFieldRenderer, AxisTableRenderer, DialogRenderer, EventBase, NodeStateModified, DataSourceUpdate, FieldList, CommonKeyboardInteraction, GroupingBar, CalculatedField, ConditionalFormatting, PivotCommon, load, enginePopulating, enginePopulated, onFieldDropped, beforePivotTableRender, afterPivotTableRender, beforeExport, excelHeaderQueryCellInfo, pdfHeaderQueryCellInfo, excelQueryCellInfo, pdfQueryCellInfo, onPdfCellRender, dataBound, queryCellInfo, headerCellInfo, hyperlinkCellClick, resizing, resizeStop, cellClick, drillThrough, beforeColumnsRender, selected, cellSelecting, drill, cellSelected, cellDeselected, rowSelected, rowDeselected, beginDrillThrough, saveReport, fetchReport, loadReport, renameReport, removeReport, newReport, toolbarRender, toolbarClick, chartTooltipRender, chartLoaded, chartLoad, chartResized, chartAxisLabelRender, chartSeriesCreated, aggregateCellInfo, contextMenuClick, contextMenuOpen, fieldListRefreshed, conditionalFormatting, beforePdfExport, beforeExcelExport, memberFiltering, initialLoad, uiUpdate, scroll, contentReady, dataReady, initSubComponent, treeViewUpdate, pivotButtonUpdate, initCalculatedField, click, initToolbar, initFormatting, ErrorDialog, FilterDialog, PivotContextMenu, AggregateMenu, Toolbar$2 as Toolbar, NumberFormatting, PivotEngine, PivotUtil, OlapEngine, MDXQuery };
 //# sourceMappingURL=ej2-pivotview.es5.js.map

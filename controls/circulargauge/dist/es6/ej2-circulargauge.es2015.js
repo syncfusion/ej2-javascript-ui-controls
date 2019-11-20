@@ -2338,6 +2338,15 @@ class PointerRenderer {
     }
 }
 
+var __rest$1 = (undefined && undefined.__rest) || function (s, e) {
+    var t = {};
+    for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p) && e.indexOf(p) < 0)
+        t[p] = s[p];
+    if (s != null && typeof Object.getOwnPropertySymbols === "function")
+        for (var i = 0, p = Object.getOwnPropertySymbols(s); i < p.length; i++) if (e.indexOf(p[i]) < 0)
+            t[p[i]] = s[p[i]];
+    return t;
+};
 /**
  * Specifies the CircularGauge Axis Layout
  */
@@ -2564,7 +2573,9 @@ class AxisLayoutPanel {
         let argsData;
         axis.visibleLabels = [];
         let roundValue;
-        for (let i = axis.visibleRange.min, interval = axis.visibleRange.interval, max = axis.visibleRange.max; (i <= max && interval); i += interval) {
+        let interval = axis.visibleRange.interval;
+        let max = axis.visibleRange.max;
+        for (let i = axis.visibleRange.min; (i <= max && interval); i += interval) {
             roundValue = axis.roundingPlaces ? parseFloat(i.toFixed(axis.roundingPlaces)) : i;
             argsData = {
                 cancel: false, name: axisLabelRender, axis: axis,
@@ -2573,15 +2584,16 @@ class AxisLayoutPanel {
                 value: roundValue
             };
             if (this.gauge.isBlazor) {
-                argsData = this.getBlazorAxisLabelEventArgs(argsData);
+                const { axis } = argsData, blazorArgsData = __rest$1(argsData, ["axis"]);
+                argsData = blazorArgsData;
             }
-            this.gauge.trigger('axisLabelRender', argsData);
-            if (!argsData.cancel) {
-                const labelAvailable = axis.visibleLabels.filter((label) => label.text === argsData.text);
-                if (!labelAvailable.length) {
+            let axisLabelRenderSuccess = (argsData) => {
+                if (!argsData.cancel) {
                     axis.visibleLabels.push(new VisibleLabels(argsData.text, i));
                 }
-            }
+            };
+            axisLabelRenderSuccess.bind(this);
+            this.gauge.trigger('axisLabelRender', argsData, axisLabelRenderSuccess);
         }
         let lastLabel = axis.visibleLabels.length ? axis.visibleLabels[axis.visibleLabels.length - 1].value : null;
         let maxVal = axis.visibleRange.max;
@@ -2593,27 +2605,18 @@ class AxisLayoutPanel {
                 value: maxVal
             };
             if (this.gauge.isBlazor) {
-                argsData = this.getBlazorAxisLabelEventArgs(argsData);
+                const { axis } = argsData, blazorArgsData = __rest$1(argsData, ["axis"]);
+                argsData = blazorArgsData;
             }
-            this.gauge.trigger('axisLabelRender', argsData);
-            if (!argsData.cancel) {
-                const labelExist = axis.visibleLabels.filter((label) => label.text === argsData.text);
-                if (!labelExist.length) {
+            let axisLabelRenderSuccess = (argsData) => {
+                if (!argsData.cancel) {
                     axis.visibleLabels.push(new VisibleLabels(argsData.text, maxVal));
                 }
-            }
+            };
+            axisLabelRenderSuccess.bind(this);
+            this.gauge.trigger('axisLabelRender', argsData, axisLabelRenderSuccess);
         }
         this.getMaxLabelWidth(this.gauge, axis);
-    }
-    /**
-     * To get axis label event arguments for Blazor
-     * @return {IAxisLabelRenderEventArgs}
-     * @private
-     */
-    getBlazorAxisLabelEventArgs(args) {
-        const { cancel, name, text, value } = args;
-        args = { cancel, name, text, value };
-        return args;
     }
     /**
      * Measure the axes available size.

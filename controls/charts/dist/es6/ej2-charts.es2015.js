@@ -374,7 +374,7 @@ __decorate$1([
 ], ChartArea.prototype, "opacity", void 0);
 __decorate$1([
     Property(null)
-], ChartArea.prototype, "backGroundImageUrl", void 0);
+], ChartArea.prototype, "backgroundImage", void 0);
 /**
  * Configures the chart margins.
  */
@@ -1968,7 +1968,7 @@ function showTooltip(text, x, y, areaWidth, id, element, isTouch) {
         fontFamily: 'Segoe UI', size: '12px',
         fontStyle: 'Normal', fontWeight: 'Regular'
     }).width + 5;
-    x = (x + width > areaWidth) ? x - width : x;
+    x = (x + width > areaWidth) ? x - (width + 15) : x;
     if (!tooltip) {
         tooltip = createElement('div', {
             innerHTML: text,
@@ -1979,6 +1979,10 @@ function showTooltip(text, x, y, areaWidth, id, element, isTouch) {
                 'padding-bottom : 2px; padding-top : 2px; font-size:12px; font-family: "Segoe UI"'
         });
         element.appendChild(tooltip);
+        let left = parseInt(tooltip.style.left.replace('px', ''), 10);
+        if (left < 0) {
+            tooltip.style.left = '0px';
+        }
     }
     else {
         tooltip.innerHTML = text;
@@ -6678,13 +6682,21 @@ class BaseLegend {
      * To render legend symbols for chart and accumulation chart
      */
     renderSymbol(legendOption, group, i) {
+        let borderColor;
         let symbolColor = legendOption.visible ? legendOption.fill : '#D3D3D3';
         let shape = (legendOption.shape === 'SeriesType') ? legendOption.type : legendOption.shape;
         shape = shape === 'Scatter' ? legendOption.markerShape : shape;
         let isStrokeWidth = (this.chart.getModuleName() === 'chart' && (legendOption.shape === 'SeriesType') &&
             (legendOption.type.toLowerCase().indexOf('line') > -1) && (legendOption.type.toLowerCase().indexOf('area') === -1));
         let strokewidth = isStrokeWidth ? this.chart.visibleSeries[i].width : 1;
-        let symbolOption = new PathOption(this.legendID + this.generateId(legendOption, '_shape_', i), symbolColor, strokewidth, symbolColor, 1, '', '');
+        let isCustomBorder = this.chart.getModuleName() === 'chart' &&
+            (legendOption.type === 'Scatter' || legendOption.type === 'Bubble');
+        if (isCustomBorder && i < this.chart.visibleSeries.length) {
+            let seriesBorder = this.chart.visibleSeries[i].border;
+            borderColor = seriesBorder.color ? seriesBorder.color : symbolColor;
+            strokewidth = seriesBorder.width ? seriesBorder.width : 1;
+        }
+        let symbolOption = new PathOption(this.legendID + this.generateId(legendOption, '_shape_', i), symbolColor, strokewidth, (isCustomBorder ? borderColor : symbolColor), 1, '', '');
         let regionPadding;
         let isCanvas = this.chart.enableCanvas;
         if (!isCanvas) {
@@ -8034,7 +8046,7 @@ let Chart = class Chart extends Component {
     }
     renderBorder() {
         let width = this.border.width;
-        let backGroundImage = this.backGroundImageUrl;
+        let backGroundImage = this.backgroundImage;
         let fillColor = backGroundImage ? 'transparent' : (this.background || this.themeStyle.background);
         let rect = new RectOption(this.element.id + '_ChartBorder', fillColor, this.border, 1, new Rect(width * 0.5, width * 0.5, this.availableSize.width - width, this.availableSize.height - width));
         this.htmlObject = redrawElement(this.redraw, this.element.id + '_ChartBorder', rect, this.renderer)
@@ -8065,7 +8077,7 @@ let Chart = class Chart extends Component {
             this.htmlObject = null;
         }
         // to draw back ground image for chart area    
-        let backGroundImage = this.chartArea.backGroundImageUrl;
+        let backGroundImage = this.chartArea.backgroundImage;
         if (backGroundImage) {
             let width = this.chartArea.border.width;
             let image = new ImageOption(this.initialClipRect.height - width, this.initialClipRect.width - width, backGroundImage, this.initialClipRect.x, this.initialClipRect.y, this.element.id + '_ChartAreaBackground', 'visible', 'none');
@@ -8345,6 +8357,7 @@ let Chart = class Chart extends Component {
         let element = e.target;
         let cancelEvent = Browser.isPointer ? 'pointerleave' : 'mouseleave';
         this.trigger(chartMouseLeave, { target: element.id, x: this.mouseX, y: this.mouseY });
+        removeElement$1(this.element.id + '_EJ2_AxisLabel_Tooltip');
         this.isChartDrag = this.isPointMouseDown = false;
         this.notify(cancelEvent, e);
         return false;
@@ -9192,7 +9205,7 @@ __decorate([
 ], Chart.prototype, "enableCanvas", void 0);
 __decorate([
     Property(null)
-], Chart.prototype, "backGroundImageUrl", void 0);
+], Chart.prototype, "backgroundImage", void 0);
 __decorate([
     Collection([], TechnicalIndicator)
 ], Chart.prototype, "indicators", void 0);
@@ -10665,7 +10678,7 @@ class LineBase {
             }
             last = point.visible ? point : last;
         }
-        return { first: first, last: last };
+        return { first: first ? first : points[0], last: last ? last : points[points.length - 1] };
     }
     /**
      * To do the linear animation.
@@ -11388,7 +11401,7 @@ class AreaSeries extends MultiColoredSeries {
                 this.storePointLocation(point, series, isInverted, getCoordinate);
             }
         });
-        if (isPolar) {
+        if (isPolar && direction !== '') {
             direction = direction.concat(direction + ' ' + 'Z');
         }
         this.appendLinePath(new PathOption(series.chart.element.id + '_Series_' + series.index, series.interior, borderWidth, borderColor, series.opacity, series.dashArray, ((series.points.length > 1 && direction !== '') ? (direction + this.getAreaPathDirection(series.points[series.points.length - 1].xValue, series.chart.chartAreaType === 'PolarRadar' ?
@@ -11480,6 +11493,11 @@ class BarSeries extends ColumnBase {
 }
 
 class PolarRadarPanel extends LineBase {
+    constructor() {
+        super(...arguments);
+        /** @private */
+        this.visibleAxisLabelRect = [];
+    }
     /**
      * Measure the polar radar axis size.
      * @return {void}
@@ -11630,7 +11648,15 @@ class PolarRadarPanel extends LineBase {
             'stroke-width': axis.lineStyle.width,
             'stroke': axis.lineStyle.color || chart.themeStyle.axisLine
         };
-        chart.yAxisElements.appendChild(chart.renderer.drawPath(optionsLine));
+        /**
+         * I252450
+         * When we click the center of the marker which is plotted in the axis line, selection did not work is fixed
+         * Cause: Instead of marker id, axis  line id is obtained while clicking
+         * Fix: Pointer events set to none for axis lines
+         */
+        let element = chart.renderer.drawPath(optionsLine);
+        this.setPointerEventNone(element);
+        chart.yAxisElements.appendChild(element);
     }
     drawYAxisLabels(axis, index) {
         let chart = this.chart;
@@ -11700,7 +11726,6 @@ class PolarRadarPanel extends LineBase {
         let majorTick = '';
         let majorGrid = '';
         let vector;
-        let vector2;
         let angle = this.startAngle < 0 ? this.startAngle + 360 : this.startAngle;
         let rect = axis.rect;
         let x1;
@@ -11730,24 +11755,17 @@ class PolarRadarPanel extends LineBase {
             else {
                 for (let j = 0; j < axis.visibleLabels.length; j++) {
                     radius = chart.radius * valueToCoefficient(axis.visibleLabels[j].value, axis);
-                    majorGrid = '';
-                    for (let i = 0, len = chart.primaryXAxis.visibleLabels.length; i < len; i++) {
-                        vector = CoefficientToVector(valueToPolarCoefficient(chart.primaryXAxis.visibleLabels[i].value, chart.primaryXAxis), this.startAngle);
-                        if (i + 1 < len) {
-                            vector2 = CoefficientToVector(valueToPolarCoefficient(chart.primaryXAxis.visibleLabels[i + 1].value, chart.primaryXAxis), this.startAngle);
-                        }
-                        else {
-                            vector2 = CoefficientToVector(valueToPolarCoefficient(chart.primaryXAxis.visibleLabels[0].value, chart.primaryXAxis), this.startAngle);
-                        }
-                        x1 = this.centerX + radius * vector.x;
-                        y1 = this.centerY + radius * vector.y;
-                        x2 = this.centerX + radius * vector2.x;
-                        y2 = this.centerY + radius * vector2.y;
-                        majorGrid = majorGrid.concat((i ? 'L ' : 'M ') + ' ' + x1 + ' ' + y1 + ' ' + 'L ' + ' ' + x2 + ' ' + y2 + ' ');
-                    }
+                    majorGrid = this.renderRadarGrid(radius, '', chart);
                     element = getElement(chart.element.id + '_MajorGridLine_' + index + '_' + j);
                     previousValue = element ? element.getAttribute('d') : null;
                     options = new PathOption(chart.element.id + '_MajorGridLine_' + index + '_' + j, 'transparent', axis.majorGridLines.width, axis.majorGridLines.color || chart.themeStyle.majorGridLine, null, null, majorGrid);
+                    appendChildElement(chart.enableCanvas, this.element, chart.renderer.drawPath(options), chart.redraw, true, 'x', 'y', null, previousValue, true);
+                }
+                if (radius !== chart.radius) {
+                    majorGrid = this.renderRadarGrid(chart.radius, '', chart);
+                    element = getElement(chart.element.id + '_MajorGridLine_' + index + '_' + axis.visibleLabels.length);
+                    previousValue = element ? element.getAttribute('d') : null;
+                    options = new PathOption(chart.element.id + '_MajorGridLine_' + index + '_' + axis.visibleLabels.length, 'transparent', axis.majorGridLines.width, axis.majorGridLines.color || chart.themeStyle.majorGridLine, null, null, majorGrid);
                     appendChildElement(chart.enableCanvas, this.element, chart.renderer.drawPath(options), chart.redraw, true, 'x', 'y', null, previousValue, true);
                 }
             }
@@ -11764,6 +11782,29 @@ class PolarRadarPanel extends LineBase {
                 this.renderTickLine(axis, index, majorTick, '', i);
             }
         }
+    }
+    renderRadarGrid(radius, majorGrid, chart) {
+        let vector;
+        let vector2;
+        let x1;
+        let y1;
+        let x2;
+        let y2;
+        for (let i = 0, len = chart.primaryXAxis.visibleLabels.length; i < len; i++) {
+            vector = CoefficientToVector(valueToPolarCoefficient(chart.primaryXAxis.visibleLabels[i].value, chart.primaryXAxis), this.startAngle);
+            if (i + 1 < len) {
+                vector2 = CoefficientToVector(valueToPolarCoefficient(chart.primaryXAxis.visibleLabels[i + 1].value, chart.primaryXAxis), this.startAngle);
+            }
+            else {
+                vector2 = CoefficientToVector(valueToPolarCoefficient(chart.primaryXAxis.visibleLabels[0].value, chart.primaryXAxis), this.startAngle);
+            }
+            x1 = this.centerX + radius * vector.x;
+            y1 = this.centerY + radius * vector.y;
+            x2 = this.centerX + radius * vector2.x;
+            y2 = this.centerY + radius * vector2.y;
+            majorGrid = majorGrid.concat((i ? 'L ' : 'M ') + ' ' + x1 + ' ' + y1 + ' ' + 'L ' + ' ' + x2 + ' ' + y2 + ' ');
+        }
+        return majorGrid;
     }
     drawXAxisGridLine(axis, index) {
         let chart = this.chart;
@@ -11877,9 +11918,10 @@ class PolarRadarPanel extends LineBase {
                 for (let i = textLength - 1; i >= 0; --i) {
                     trimText = originalText.substring(0, i) + '...';
                     size = measureText(trimText, axis.labelStyle).width;
-                    if ((labelPosition === 'Outside' && ((pointX > chartWidth / 2 && pointX + size <= chartWidth) ||
-                        (pointX < chartWidth / 2 && pointX - size >= 0))) || (labelPosition === 'Inside' &&
-                        (pointX + size < chartWidth / 2 || pointX - size > chartWidth / 2))) {
+                    if (pointX === chartWidth / 2 ? (pointX - size / 2 >= 0 && pointX + size / 2 <= chartWidth) :
+                        ((labelPosition === 'Outside' && ((pointX >= chartWidth / 2 && pointX + size <= chartWidth) ||
+                            (pointX <= chartWidth / 2 && pointX - size >= 0))) || (labelPosition === 'Inside' &&
+                            (pointX + size <= chartWidth / 2 || pointX - size >= chartWidth / 2)))) {
                         labelText = i === textLength - 1 ? originalText : trimText;
                         label.size.width = measureText(labelText, axis.labelStyle).width;
                         label.text = labelText;
@@ -11949,13 +11991,29 @@ class PolarRadarPanel extends LineBase {
             element = getElement(chart.element.id + '_MajorTickLine_' + index + '_' + gridIndex);
             direction = element ? element.getAttribute('d') : null;
             tickOptions = new PathOption(chart.element.id + '_MajorTickLine_' + index + '_' + gridIndex, 'transparent', axis.majorTickLines.width, axis.majorTickLines.color || chart.themeStyle.majorTickLine, null, null, majorTickLine);
-            appendChildElement(chart.enableCanvas, chart.yAxisElements, chart.renderer.drawPath(tickOptions), chart.redraw, true, 'x', 'y', null, direction);
+            /**
+             * I252450
+             * When we click the center of the marker which is plotted in the axis, selection did not work is fixed
+             * Cause: Instead of marker id, axis Tick line id is obtained while clicking
+             * Fix: Pointer events set to none for tick lines
+             */
+            element = chart.renderer.drawPath(tickOptions);
+            this.setPointerEventNone(element);
+            appendChildElement(chart.enableCanvas, chart.yAxisElements, element, chart.redraw, true, 'x', 'y', null, direction);
         }
         if (axis.minorTickLines.width > 0) {
             element = getElement(chart.element.id + '_MinorTickLine_' + index + '_' + gridIndex);
             direction = element ? element.getAttribute('d') : null;
             tickOptions = new PathOption(chart.element.id + '_MinorTickLine_' + index + '_' + gridIndex, 'transparent', axis.minorTickLines.width, axis.minorTickLines.color || chart.themeStyle.minorTickLine, null, null, minorTickLine);
-            appendChildElement(chart.enableCanvas, chart.yAxisElements, chart.renderer.drawPath(tickOptions), chart.redraw, true, 'x', 'y', null, direction);
+            /**
+             * I252450
+             * When we click the center of the marker which is plotted in the axis, selection did not work is fixed
+             * Cause: Instead of marker id, axis Tick line id is obtained while clicking
+             * Fix: Pointer events set to none for tick lines
+             */
+            element = chart.renderer.drawPath(tickOptions);
+            this.setPointerEventNone(element);
+            appendChildElement(chart.enableCanvas, chart.yAxisElements, element, chart.redraw, true, 'x', 'y', null, direction);
         }
     }
     renderGridLine(axis, index, majorGrid, minorGird, gridIndex) {
@@ -11974,6 +12032,11 @@ class PolarRadarPanel extends LineBase {
             direction = element ? element.getAttribute('d') : null;
             gridOptions = new PathOption(chart.element.id + '_MinorGridLine_' + index + '_' + gridIndex, 'transparent', axis.minorGridLines.width, axis.minorGridLines.color || chart.themeStyle.minorGridLine, null, axis.minorGridLines.dashArray, minorGird);
             appendChildElement(chart.enableCanvas, this.element, chart.renderer.drawPath(gridOptions), chart.redraw, true, 'x', 'y', null, direction);
+        }
+    }
+    setPointerEventNone(element) {
+        if (element) {
+            element.setAttribute('style', 'pointer-events:none');
         }
     }
 }
@@ -13793,10 +13856,10 @@ class SplineBase extends LineBase {
                     }
                 }
             }
-        }
-        if (series.chart.chartAreaType === 'PolarRadar' && series.isClosed) {
-            value = this.getControlPoints({ xValue: points[points.length - 1].xValue, yValue: points[points.length - 1].yValue }, { xValue: points[points.length - 1].xValue + 1, yValue: points[0].yValue }, this.splinePoints[0], this.splinePoints[points[points.length - 1].index], series);
-            series.drawPoints.push(value);
+            if (series.chart.chartAreaType === 'PolarRadar' && series.isClosed) {
+                value = this.getControlPoints({ xValue: points[points.length - 1].xValue, yValue: points[points.length - 1].yValue }, { xValue: points[points.length - 1].xValue + 1, yValue: points[0].yValue }, this.splinePoints[0], this.splinePoints[points[points.length - 1].index], series);
+                series.drawPoints.push(value);
+            }
         }
     }
     getPreviousIndex(points, i, series) {
@@ -14068,7 +14131,7 @@ class SplineSeries extends SplineBase {
                 point.symbolLocations = [];
             }
         }
-        if (series.chart.chartAreaType === 'PolarRadar' && series.isClosed) {
+        if ((points.length > 0 && series.drawPoints.length > 0) && series.chart.chartAreaType === 'PolarRadar' && series.isClosed) {
             let connectPoints = this.getFirstLastVisiblePoint(points);
             direction = this.getSplineDirection(series.drawPoints[series.drawPoints.length - 1], connectPoints.last, { xValue: connectPoints.first.xValue, yValue: connectPoints.first.yValue }, xAxis, yAxis, isInverted, series, startPoint, getCoordinate, direction);
             startPoint = 'L';
@@ -18412,15 +18475,19 @@ class Selection extends BaseSelection {
      * @private
      */
     calculateSelectedElements(event) {
-        if (this.chart.selectionMode === 'None' || event.target.id.indexOf(this.chart.element.id + '_') === -1) {
+        let targetElement = event.target;
+        if (this.chart.selectionMode === 'None' || targetElement.id.indexOf(this.chart.element.id + '_') === -1) {
             return;
         }
-        if (event.target.id.indexOf('_Series_') > -1) {
+        if (targetElement.id.indexOf('_Series_') > -1) {
             let element;
-            if (event.target.id.indexOf('_Trackball_') > -1) {
-                element = getElement(event.target.id.split('_Trackball_')[0] + '_Symbol');
+            if (targetElement.id.indexOf('_Trackball_1') > -1) {
+                element = getElement(targetElement.id.split('_Trackball_')[0] + '_Symbol');
             }
-            this.performSelection(this.indexFinder(event.target.id), this.chart, element || event.target);
+            else if (targetElement.id.indexOf('_Trackball_0') > -1) {
+                return null;
+            }
+            this.performSelection(this.indexFinder(targetElement.id), this.chart, element || targetElement);
         }
     }
     performSelection(index, chart, element) {
@@ -19757,7 +19824,7 @@ class DataLabel {
                 this.calculatePathPosition(location.y, dataLabel.position, series, point, textSize, labelIndex) :
                 this.calculateRectPosition(location.y, labelRegion, point.yValue < 0 !== this.yAxisInversed, dataLabel.position, series, textSize, labelIndex, point);
             if (this.isRectSeries(series) && this.chart.chartAreaType === 'PolarRadar') {
-                location = this.calculatePolarRectPosition(location, dataLabel.position, series, point, textSize, labelIndex);
+                location = this.calculatePolarRectPosition(location, dataLabel.position, series, point, textSize, labelIndex, dataLabel.alignment, alignmentValue);
             }
         }
         else {
@@ -19769,20 +19836,24 @@ class DataLabel {
         }
         rect = calculateRect(location, textSize, this.margin);
         // Checking the condition whether data Label has been exist the clip rect
-        if (!((rect.y > clipRect.height) || (rect.x > clipRect.width) ||
+        if (!((rect.y > (clipRect.y + clipRect.height)) || (rect.x > (clipRect.x + clipRect.width)) ||
             (rect.x + rect.width < 0) || (rect.y + rect.height < 0))) {
             rect.x = rect.x < 0 ? padding : rect.x;
             rect.y = rect.y < 0 ? padding : rect.y;
-            rect.x -= (rect.x + rect.width) > clipRect.width ? (rect.x + rect.width) - clipRect.width + padding : 0;
-            rect.y -= (rect.y + rect.height) > clipRect.height ? (rect.y + rect.height) - clipRect.height + padding : 0;
+            rect.x -= (rect.x + rect.width) > (clipRect.x + clipRect.width) ? (rect.x + rect.width)
+                - (clipRect.x + clipRect.width) + padding : 0;
+            rect.y -= (rect.y + rect.height) > (clipRect.y + clipRect.height) ? (rect.y + rect.height)
+                - (clipRect.y + clipRect.height) + padding : 0;
             this.fontBackground = this.fontBackground === 'transparent' ? this.chartBackground : this.fontBackground;
         }
         return rect;
     }
     // Calculation label location for polar column draw types
-    calculatePolarRectPosition(location, position, series, point, size, labelIndex) {
+    calculatePolarRectPosition(location, position, series, point, size, labelIndex, alignment, alignmentValue) {
         let padding = 5;
         let columnRadius;
+        let chartWidth = this.chart.availableSize.width;
+        let alignmentSign = (alignment === 'Center') ? 0 : (alignment === 'Far' ? 1 : -1);
         let angle = (point.regionData.startAngle - 0.5 * Math.PI) + (point.regionData.endAngle - point.regionData.startAngle) / 2;
         if (labelIndex === 0) {
             columnRadius = point.regionData.radius < point.regionData.innerRadius ? point.regionData.innerRadius
@@ -19805,13 +19876,18 @@ class DataLabel {
         }
         else if (position === 'Middle') {
             columnRadius = columnRadius / 2 + padding;
+            if (series.drawType === 'StackingColumn') {
+                columnRadius = point.regionData.innerRadius + ((point.regionData.radius - point.regionData.innerRadius) / 2)
+                    + padding - (size.height / 2);
+            }
         }
         else if (position === 'Top') {
             columnRadius = labelIndex === 0 ? columnRadius - 2 * padding - this.markerHeight :
                 columnRadius + 2 * padding + this.markerHeight;
         }
         else if (position === 'Bottom') {
-            columnRadius = padding;
+            columnRadius = 2 * padding;
+            columnRadius += (series.drawType === 'StackingColumn') ? (point.regionData.innerRadius + this.markerHeight) : 0;
         }
         else {
             if (labelIndex === 0) {
@@ -19822,7 +19898,17 @@ class DataLabel {
                 columnRadius = columnRadius >= series.chart.radius ? columnRadius + padding : columnRadius - 2 * padding;
             }
         }
+        columnRadius += (alignmentValue * alignmentSign);
         location.x = series.clipRect.width / 2 + series.clipRect.x + columnRadius * Math.cos(angle);
+        // To change x location based on text anchor for column and stackingcolumn chart
+        if (series.drawType === 'StackingColumn') {
+            location.x = location.x < chartWidth / 2 ? location.x + size.width / 2 :
+                (location.x > chartWidth / 2 ? location.x - size.width / 2 : location.x);
+        }
+        else if (series.drawType === 'Column') {
+            location.x = location.x < chartWidth / 2 ? location.x - size.width / 2 :
+                (location.x > chartWidth / 2 ? location.x + size.width / 2 : location.x);
+        }
         location.y = series.clipRect.height / 2 + series.clipRect.y + columnRadius * Math.sin(angle);
         return location;
     }
@@ -20639,6 +20725,7 @@ class Legend extends BaseLegend {
         let chart = this.chart;
         let series = chart.visibleSeries[seriesIndex];
         let legend = this.legendCollections[seriesIndex];
+        let changeDetection = 'isProtectedOnChange';
         let legendClickArgs = { legendText: legend.text, legendShape: legend.shape,
             chart: chart, series: series, name: legendClick, cancel: false
         };
@@ -20661,12 +20748,8 @@ class Legend extends BaseLegend {
                 }
             }
             else {
-                if (!series.visible) {
-                    series.visible = true;
-                }
-                else {
-                    series.visible = false;
-                }
+                series.chart[changeDetection] = true;
+                this.changeSeriesVisiblity(series, series.visible);
             }
             legend.visible = series.category === 'TrendLine' ? chart.series[series.sourceIndex].trendlines[series.index].visible :
                 (series.visible);
@@ -20696,6 +20779,19 @@ class Legend extends BaseLegend {
         else if (chart.selectionModule) {
             chart.selectionModule.legendSelection(chart, seriesIndex);
         }
+        series.chart[changeDetection] = false;
+    }
+    changeSeriesVisiblity(series, visibility) {
+        series.visible = !visibility;
+        if (this.isSecondaryAxis(series.xAxis)) {
+            series.xAxis.visible = series.xAxis.series.some((value) => (value.visible));
+        }
+        if (this.isSecondaryAxis(series.yAxis)) {
+            series.yAxis.visible = series.yAxis.series.some((value) => (value.visible));
+        }
+    }
+    isSecondaryAxis(axis) {
+        return (this.chart.axes.indexOf(axis) > -1);
     }
     redrawSeriesElements(series, chart) {
         if (!chart.redraw) {
@@ -24826,7 +24922,7 @@ let AccumulationChart = class AccumulationChart extends Component {
         let padding = this.border.width;
         appendChildElement(false, this.svgObject, this.renderer.drawRectangle(new RectOption(this.element.id + '_border', this.background || this.themeStyle.background, this.border, 1, new Rect(padding / 2, padding / 2, this.availableSize.width - padding, this.availableSize.height - padding))), this.redraw);
         // to draw back ground image for accumulation chart        
-        let backGroundImage = this.backGroundImageUrl;
+        let backGroundImage = this.backgroundImage;
         if (backGroundImage) {
             let image = new ImageOption(this.availableSize.height - padding, this.availableSize.width - padding, backGroundImage, 0, 0, this.element.id + '_background', 'visible', 'none');
             appendChildElement(false, this.svgObject, this.renderer.drawImage(image), this.redraw);
@@ -25143,7 +25239,7 @@ __decorate$7([
 ], AccumulationChart.prototype, "title", void 0);
 __decorate$7([
     Property(null)
-], AccumulationChart.prototype, "backGroundImageUrl", void 0);
+], AccumulationChart.prototype, "backgroundImage", void 0);
 __decorate$7([
     Complex({}, PieCenter)
 ], AccumulationChart.prototype, "center", void 0);
@@ -27199,19 +27295,17 @@ class RangeSeries extends NiceInterval {
         if (control.series.length) {
             control.series.map((series) => {
                 dataSource = series.dataSource || control.dataSource;
-                this.findGMT(control, dataSource, series.xName);
                 query = series.query || control.query;
                 series.points = [];
                 this.processDataSource(dataSource, query, control, series);
             });
         }
         else {
-            this.findGMT(control, control.dataSource, control.xName);
             this.processDataSource(control.dataSource, control.query, control);
         }
     }
     findGMT(control, data, xName) {
-        if (!control.isGMT) {
+        if (!control.isGMT && data) {
             control.isGMT = !((data[0][xName]).toString().indexOf('GMT+') > -1 ||
                 (data[0][xName]).toString().indexOf('GMT-') > -1);
         }
@@ -27231,6 +27325,9 @@ class RangeSeries extends NiceInterval {
      */
     dataManagerSuccess(e, control, series) {
         let viewData = e.count ? e.result : [];
+        if (e.count) {
+            this.findGMT(control, viewData, (series ? series.xName : null) || control.xName);
+        }
         this.processJsonData(viewData, control, Object.keys(viewData).length, series);
         this.seriesLength += series ? 1 : this.seriesLength;
         if (!series || this.seriesLength === control.series.length) {
@@ -36473,6 +36570,15 @@ function withInBounds$1(x, y, bounds) {
     return (x >= bounds.x && x <= bounds.x + bounds.width && y >= bounds.y && y <= bounds.y + bounds.height);
 }
 
+var __rest = (undefined && undefined.__rest) || function (s, e) {
+    var t = {};
+    for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p) && e.indexOf(p) < 0)
+        t[p] = s[p];
+    if (s != null && typeof Object.getOwnPropertySymbols === "function")
+        for (var i = 0, p = Object.getOwnPropertySymbols(s); i < p.length; i++) if (e.indexOf(p[i]) < 0)
+            t[p[i]] = s[p[i]];
+    return t;
+};
 /**
  * Sparkline rendering calculation file
  */
@@ -36808,14 +36914,30 @@ class SparklineRenderer {
             temp.location.y = (temp.markerPosition <= this.axisHeight) ? temp.y : (temp.y + temp.height);
             temp.location.x = temp.x + (temp.width / 2);
             rectOptions.stroke = args.border.color ? (args.border.color) : rectOptions.fill;
-            let pointArgs = this.triggerPointRender('pointRendering', i, rectOptions.fill, { color: rectOptions.stroke, width: args.border.width });
-            rectOptions.fill = pointArgs.fill;
-            rectOptions.stroke = pointArgs.border.color;
-            rectOptions['stroke-width'] = pointArgs.border.width;
-            if (!pointArgs.cancel) {
-                let element = drawRectangle(spark, rectOptions, group);
-                element.setAttribute('aria-label', spark.dataSource[i][spark.xName] + ' : ' + points[i].yVal);
+            let pointArgs = {
+                name: 'pointRendering', cancel: false, pointIndex: i, fill: rectOptions.fill,
+                border: { color: rectOptions.stroke, width: args.border.width }
+            };
+            if (this.sparkline.isBlazor) {
+                const blazorpointArgs = __rest(pointArgs, []);
+                pointArgs = blazorpointArgs;
             }
+            this.sparkline.trigger('pointRendering', pointArgs, (eventArgs) => {
+                temp = points[i];
+                rectOptions.id = id + i;
+                rectOptions.rect = new Rect$1(temp.x, temp.y, temp.width, temp.height);
+                this.getSpecialPoint(true, temp, spark, rectOptions, i, highPos, lowPos, len);
+                rectOptions.fill = pointArgs.fill;
+                rectOptions.stroke = pointArgs.border.color;
+                temp.location.y = (temp.markerPosition <= this.axisHeight) ? temp.y : (temp.y + temp.height);
+                rectOptions['stroke-width'] = pointArgs.border.width;
+                temp.location.x = temp.x + (temp.width / 2);
+                if (!pointArgs.cancel) {
+                    let element = drawRectangle(spark, rectOptions, group);
+                    element.setAttribute('aria-label', spark.dataSource[i][spark.xName] + ' : ' + points[i].yVal);
+                    group.appendChild(element);
+                }
+            });
         }
         this.sparkline.svgObject.appendChild(group);
     }
@@ -36893,15 +37015,24 @@ class SparklineRenderer {
                 sparkline: !this.sparkline.isBlazor ? this.sparkline : null,
                 x: option.cx, y: option.cy, size: marker.size
             };
-            this.sparkline.trigger(markerArgs.name, markerArgs);
-            if (render && !markerArgs.cancel) {
-                option.fill = markerArgs.fill;
-                option.stroke = markerArgs.border.color;
-                option['stroke-width'] = markerArgs.border.width;
-                option.r = markerArgs.size / 2;
-                let element = drawCircle(spark, option, group);
-                element.setAttribute('aria-label', spark.dataSource[i][spark.xName] + ' : ' + points[i].yVal);
+            if (this.sparkline.isBlazor) {
+                const blazormarkerArgs = __rest(markerArgs, []);
+                markerArgs = blazormarkerArgs;
             }
+            this.sparkline.trigger('markerRendering', markerArgs, (args) => {
+                if (render && !markerArgs.cancel) {
+                    option.id = id + i;
+                    option.cx = markerArgs.x;
+                    option.cy = markerArgs.y;
+                    option.fill = markerArgs.fill;
+                    option.stroke = markerArgs.border.color;
+                    option['stroke-width'] = markerArgs.border.width;
+                    option.r = markerArgs.size / 2;
+                    let element = drawCircle(spark, option, group);
+                    element.setAttribute('aria-label', spark.dataSource[i][spark.xName] + ' : ' + points[i].yVal);
+                    group.appendChild(element);
+                }
+            });
         }
         this.sparkline.svgObject.appendChild(group);
     }
@@ -36981,25 +37112,30 @@ class SparklineRenderer {
                 sparkline: !this.sparkline.isBlazor ? this.sparkline : null,
                 x: option.x, y: option.y, text: option.text, color: color
             };
-            this.sparkline.trigger(labelArgs.name, labelArgs);
-            size = measureText$2(labelArgs.text, labelStyle);
-            option.text = labelArgs.text;
-            let render = (dataLabel.visible.join().toLowerCase().indexOf('all') > -1);
-            render = this.getLabelVisible(render, temp, i, dataLabel, length, highPos, lowPos);
-            edgeLabelOption = this.arrangeLabelPosition(dataLabel.edgeLabelMode, render, labelArgs.x, i, length, size, padding);
-            if (render && !labelArgs.cancel && edgeLabelOption.render) {
-                rectOptions.id = rectId + i;
-                rectOptions.fill = labelArgs.fill;
-                rectOptions.stroke = labelArgs.border.color;
-                rectOptions['stroke-width'] = labelArgs.border.width;
-                option.x = edgeLabelOption.x;
-                option.y = labelArgs.y;
-                rectOptions.rect = new Rect$1(option.x - ((size.width / 2) + padding), (option.y - padding - (size.height / 1.75)), size.width + (padding * 2), size.height + (padding * 2));
-                g = this.sparkline.renderer.createGroup({ id: id + 'g' + i });
-                drawRectangle(spark, rectOptions, g);
-                renderTextElement$1(option, labelStyle, labelArgs.color, g);
-                group.appendChild(g);
+            if (this.sparkline.isBlazor) {
+                const blazordataLabelArgs = __rest(labelArgs, []);
+                labelArgs = blazordataLabelArgs;
             }
+            this.sparkline.trigger('dataLabelRendering', labelArgs, (args) => {
+                size = measureText$2(labelArgs.text, labelStyle);
+                option.text = labelArgs.text;
+                let renderLabel = (dataLabel.visible.join().toLowerCase().indexOf('all') > -1);
+                renderLabel = this.getLabelVisible(renderLabel, temp, i, dataLabel, length, highPos, lowPos);
+                edgeLabelOption = this.arrangeLabelPosition(dataLabel.edgeLabelMode, renderLabel, labelArgs.x, i, length, size, padding);
+                if (renderLabel && !labelArgs.cancel && edgeLabelOption.render) {
+                    rectOptions.id = rectId + i;
+                    rectOptions.fill = labelArgs.fill;
+                    rectOptions.stroke = labelArgs.border.color;
+                    rectOptions['stroke-width'] = labelArgs.border.width;
+                    option.y = labelArgs.y;
+                    option.x = edgeLabelOption.x;
+                    rectOptions.rect = new Rect$1(option.x - ((size.width / 2) + padding), (option.y - padding - (size.height / 1.75)), size.width + (padding * 2), size.height + (padding * 2));
+                    g = this.sparkline.renderer.createGroup({ id: id + 'g' + i });
+                    drawRectangle(spark, rectOptions, g);
+                    renderTextElement$1(option, labelStyle, labelArgs.color, g);
+                    group.appendChild(g);
+                }
+            });
         }
         this.sparkline.svgObject.appendChild(group);
     }
@@ -37173,33 +37309,51 @@ class SparklineRenderer {
                 maxX: maxX, minX: minX, maxY: max, minY: min, value: axis.value,
                 lineColor: color, lineWidth: axis.lineSettings.width
             };
-            model.trigger('axisRendering', eventArgs);
-            if (eventArgs.cancel) {
-                this.visiblePoints = [];
-                return;
+            if (this.sparkline.isBlazor) {
+                const blazoraxisArgs = __rest(eventArgs, []);
+                eventArgs = blazoraxisArgs;
             }
-            maxX = eventArgs.maxX;
-            minX = eventArgs.minX;
-            max = eventArgs.maxY;
-            min = eventArgs.minY;
-            value = this.axisValue = eventArgs.value;
-            this.axisColor = eventArgs.lineColor;
-            this.axisWidth = eventArgs.lineWidth;
-            let unitX = maxX - minX;
-            let unitY = max - min;
-            unitX = (unitX === 0) ? 1 : unitX;
-            unitY = (unitY === 0) ? 1 : unitY;
-            this.unitX = unitX;
-            this.unitY = unitY;
-            this.min = min;
-            x1 = 0;
-            y1 = height - ((height / unitY) * (-min));
-            y1 = (min < 0 && max <= 0) ? 0 : (min < 0 && max > 0) ? y1 : height;
-            if (value >= min && value <= max) {
-                y1 = height - Math.round(height * ((value - min) / this.unitY));
-            }
-            this.axisHeight = y1 + padding.top;
+            model.trigger('axisRendering', eventArgs, (args) => {
+                if (eventArgs.cancel) {
+                    this.visiblePoints = [];
+                    return;
+                }
+                maxX = eventArgs.maxX;
+                minX = eventArgs.minX;
+                max = eventArgs.maxY;
+                min = eventArgs.minY;
+                value = this.axisValue = eventArgs.value;
+                this.axisColor = eventArgs.lineColor;
+                this.axisWidth = eventArgs.lineWidth;
+                if (this.sparkline.isBlazor) {
+                    let xAxis = {
+                        'id': this.sparkline.element.id + '_Sparkline_XAxis',
+                        'x1': this.sparkline.padding.left, 'y1': height,
+                        'x2': this.sparkline.availableSize.width - this.sparkline.padding.right, 'y2': height,
+                        'stroke': this.axisColor,
+                        'opacity': this.sparkline.axisSettings.lineSettings.opacity,
+                        'stroke-dasharray': this.sparkline.axisSettings.lineSettings.dashArray,
+                        'stroke-width': this.axisWidth,
+                        'clip-path': 'url(#' + this.clipId + ')'
+                    };
+                    this.sparkline.svgObject.appendChild(this.sparkline.renderer.drawLine(xAxis));
+                }
+            });
         }
+        let unitX = maxX - minX;
+        let unitY = max - min;
+        unitX = (unitX === 0) ? 1 : unitX;
+        unitY = (unitY === 0) ? 1 : unitY;
+        this.unitX = unitX;
+        this.unitY = unitY;
+        this.min = min;
+        x1 = 0;
+        y1 = height - ((height / unitY) * (-min));
+        y1 = (min < 0 && max <= 0) ? 0 : (min < 0 && max > 0) ? y1 : height;
+        if (value >= min && value <= max) {
+            y1 = height - Math.round(height * ((value - min) / this.unitY));
+        }
+        this.axisHeight = y1 + padding.top;
         let percent;
         let x;
         let y;
@@ -37833,6 +37987,15 @@ Sparkline = __decorate$19([
     NotifyPropertyChanges
 ], Sparkline);
 
+var __rest$1 = (undefined && undefined.__rest) || function (s, e) {
+    var t = {};
+    for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p) && e.indexOf(p) < 0)
+        t[p] = s[p];
+    if (s != null && typeof Object.getOwnPropertySymbols === "function")
+        for (var i = 0, p = Object.getOwnPropertySymbols(s); i < p.length; i++) if (e.indexOf(p[i]) < 0)
+            t[p[i]] = s[p[i]];
+    return t;
+};
 /**
  * Sparkline Tooltip Module
  */
@@ -37947,6 +38110,7 @@ class SparklineTooltip {
     /**
      * To render line series
      */
+    //ts-lint: disable
     renderTooltip(points) {
         let spark = this.sparkline;
         let tooltip = spark.tooltipSettings;
@@ -37986,17 +38150,36 @@ class SparklineTooltip {
                 color: textColor
             }
         };
-        spark.trigger(tooltipEvent.name, tooltipEvent);
+        if (spark.isBlazor) {
+            const blazorTooltipArgs = __rest$1(tooltipEvent, []);
+            tooltipEvent = blazorTooltipArgs;
+        }
+        spark.trigger('tooltipInitialize', tooltipEvent, (eventArgs) => {
+            this.addTooltip(tooltipEvent, spark, backgroundColor, tooltip, location, div);
+        });
+    }
+    addTooltip(tooltipEvent, spark, backgroundColor, tooltip, location, div, eventArgs) {
+        let cancel;
+        let tootipArgs;
+        if (!isNullOrUndefined(tooltipEvent)) {
+            let { cancel: c } = tooltipEvent, otherArgs = __rest$1(tooltipEvent, ["cancel"]);
+            cancel = c;
+            tootipArgs = tooltipEvent;
+        }
+        else {
+            cancel = eventArgs.cancel;
+            tootipArgs = eventArgs;
+        }
         if (tooltipEvent.cancel) {
             return;
         }
         let element = new Tooltip({
-            content: tooltipEvent.text,
+            content: tootipArgs.text,
             border: tooltip.border,
             template: tooltip.template,
             data: spark.dataSource[this.pointIndex],
             fill: backgroundColor,
-            textStyle: tooltipEvent.textStyle,
+            textStyle: tootipArgs.textStyle,
             enableAnimation: false,
             location: { x: location.x, y: location.y },
             shared: false,

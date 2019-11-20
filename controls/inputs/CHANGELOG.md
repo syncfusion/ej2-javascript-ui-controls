@@ -2,6 +2,24 @@
 
 ## [Unreleased]
 
+## 17.3.28 (2019-11-19)
+
+### TextBox
+
+#### New Features
+
+- `#226069`, `#247330` - Now, you can add icons to textbox component using `addIcon` method.
+
+#### Bug Fixes
+
+- `#254393` - Issue with "while calling the `focusIn` method, focus is not removed in the textbox even press the tab key or mouse action" has been resolved.
+
+### NumericTextBox
+
+#### Bug Fixes
+
+- `#254252` - Issue with "value not updated properly when set decimal value more than 7" has been resolved.
+
 ## 17.3.27 (2019-11-12)
 
 ### TextBox

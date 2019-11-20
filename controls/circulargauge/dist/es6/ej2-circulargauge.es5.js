@@ -2484,6 +2484,15 @@ var PointerRenderer = /** @__PURE__ @class */ (function () {
     return PointerRenderer;
 }());
 
+var __rest$1 = (undefined && undefined.__rest) || function (s, e) {
+    var t = {};
+    for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p) && e.indexOf(p) < 0)
+        t[p] = s[p];
+    if (s != null && typeof Object.getOwnPropertySymbols === "function")
+        for (var i = 0, p = Object.getOwnPropertySymbols(s); i < p.length; i++) if (e.indexOf(p[i]) < 0)
+            t[p[i]] = s[p[i]];
+    return t;
+};
 /**
  * Specifies the CircularGauge Axis Layout
  */
@@ -2719,7 +2728,9 @@ var AxisLayoutPanel = /** @__PURE__ @class */ (function () {
         var argsData;
         axis.visibleLabels = [];
         var roundValue;
-        for (var i = axis.visibleRange.min, interval = axis.visibleRange.interval, max = axis.visibleRange.max; (i <= max && interval); i += interval) {
+        var interval = axis.visibleRange.interval;
+        var max = axis.visibleRange.max;
+        var _loop_2 = function (i) {
             roundValue = axis.roundingPlaces ? parseFloat(i.toFixed(axis.roundingPlaces)) : i;
             argsData = {
                 cancel: false, name: axisLabelRender, axis: axis,
@@ -2727,16 +2738,21 @@ var AxisLayoutPanel = /** @__PURE__ @class */ (function () {
                     format(roundValue),
                 value: roundValue
             };
-            if (this.gauge.isBlazor) {
-                argsData = this.getBlazorAxisLabelEventArgs(argsData);
+            if (this_2.gauge.isBlazor) {
+                var axis_1 = argsData.axis, blazorArgsData = __rest$1(argsData, ["axis"]);
+                argsData = blazorArgsData;
             }
-            this.gauge.trigger('axisLabelRender', argsData);
-            if (!argsData.cancel) {
-                var labelAvailable = axis.visibleLabels.filter(function (label) { return label.text === argsData.text; });
-                if (!labelAvailable.length) {
+            var axisLabelRenderSuccess = function (argsData) {
+                if (!argsData.cancel) {
                     axis.visibleLabels.push(new VisibleLabels(argsData.text, i));
                 }
-            }
+            };
+            axisLabelRenderSuccess.bind(this_2);
+            this_2.gauge.trigger('axisLabelRender', argsData, axisLabelRenderSuccess);
+        };
+        var this_2 = this;
+        for (var i = axis.visibleRange.min; (i <= max && interval); i += interval) {
+            _loop_2(i);
         }
         var lastLabel = axis.visibleLabels.length ? axis.visibleLabels[axis.visibleLabels.length - 1].value : null;
         var maxVal = axis.visibleRange.max;
@@ -2748,27 +2764,18 @@ var AxisLayoutPanel = /** @__PURE__ @class */ (function () {
                 value: maxVal
             };
             if (this.gauge.isBlazor) {
-                argsData = this.getBlazorAxisLabelEventArgs(argsData);
+                var axis_2 = argsData.axis, blazorArgsData = __rest$1(argsData, ["axis"]);
+                argsData = blazorArgsData;
             }
-            this.gauge.trigger('axisLabelRender', argsData);
-            if (!argsData.cancel) {
-                var labelExist = axis.visibleLabels.filter(function (label) { return label.text === argsData.text; });
-                if (!labelExist.length) {
+            var axisLabelRenderSuccess = function (argsData) {
+                if (!argsData.cancel) {
                     axis.visibleLabels.push(new VisibleLabels(argsData.text, maxVal));
                 }
-            }
+            };
+            axisLabelRenderSuccess.bind(this);
+            this.gauge.trigger('axisLabelRender', argsData, axisLabelRenderSuccess);
         }
         this.getMaxLabelWidth(this.gauge, axis);
-    };
-    /**
-     * To get axis label event arguments for Blazor
-     * @return {IAxisLabelRenderEventArgs}
-     * @private
-     */
-    AxisLayoutPanel.prototype.getBlazorAxisLabelEventArgs = function (args) {
-        var cancel = args.cancel, name = args.name, text = args.text, value = args.value;
-        args = { cancel: cancel, name: name, text: text, value: value };
-        return args;
     };
     /**
      * Measure the axes available size.

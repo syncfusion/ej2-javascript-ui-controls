@@ -2,6 +2,7 @@
  * Range navigator rendering
  */
 import { RangeNavigator, DateTime, RangeTooltip, StepLineSeries, StepAreaSeries, AreaSeries } from '../../src/index';
+import { DataManager, Query } from '@syncfusion/ej2-data';
 RangeNavigator.Inject(DateTime, RangeTooltip, StepLineSeries, StepAreaSeries, AreaSeries);
 
 export function GetNumericData(start: number, end: number, min?: number, max?: number): object[] {
@@ -66,8 +67,9 @@ range1.appendTo('#range1');
 
 data = GetDateTimeData(new Date('2018-01-01'), new Date('2018-02-01'));
 let range2: RangeNavigator = new RangeNavigator({
+    dataSource: data, 
     series: [{
-        dataSource: data, xName: 'x', yName: 'y', type: 'StepLine'
+        xName: 'x', yName: 'y', type: 'StepLine'
     }],
     value: [new Date('2018-01-13'), new Date('2018-01-25')]
    , valueType: 'DateTime', enableGrouping: true,
@@ -117,3 +119,27 @@ let range6: RangeNavigator = new RangeNavigator({
     majorGridLines: { width: 2, color: 'blue'}
 });
 range6.appendTo('#range6');
+
+let range7: RangeNavigator = new RangeNavigator();
+range7.appendTo('#lightweight');
+
+let range8: RangeNavigator = new RangeNavigator({ valueType: 'DateTime'});
+range8.appendTo('#lightweightDT');
+
+let range9: RangeNavigator = new RangeNavigator({
+    valueType: 'DateTime',
+    series: [
+        {
+            dataSource: new DataManager(data),
+            xName: 'x',  yName: 'y'
+        }
+    ]
+});
+range9.appendTo('#dataManager');
+
+let range10: RangeNavigator = new RangeNavigator({
+    valueType: 'DateTime',
+    dataSource: new DataManager(data),
+    xName: 'x',  yName: 'y'
+});
+range10.appendTo('#dataMangerDirect');

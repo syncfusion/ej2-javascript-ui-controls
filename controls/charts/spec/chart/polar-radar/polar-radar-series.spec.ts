@@ -987,7 +987,8 @@ describe('Chart Control', () => {
             loaded = (args: Object): void => {
                 ele = document.getElementById('chartContainer_Series_0_Point_1_Text_0');
                 expect(ele.getAttribute('x') === '452.8484644601701' || ele.getAttribute('x') === '575.34846446017' 
-                || ele.getAttribute('x') === '696.9949110695768' || ele.getAttribute('x') === '458.70201785076335').toBe(true);
+                || ele.getAttribute('x') === '696.9949110695768' || ele.getAttribute('x') === '458.70201785076335'
+                || ele.getAttribute('x') === '711.84846446017' || ele.getAttribute('x') === '464.20201785076335').toBe(true);
                 expect(ele.getAttribute('y') === '155.02653553982995' || ele.getAttribute('y') ==='155.02653553982995' 
                 || ele.getAttribute('y') === '155.3800889304232' || ele.getAttribute('y') === '153.92298214923667').toBe(true);
                 done();
@@ -1735,7 +1736,7 @@ describe('Chart Control', () => {
         it('Polar Chart: datalabel count check with X axis label outside', (done: Function) => {
             chartObj.loaded = (args: Arg): void => {
                 let datalabel: Element = getElement("containerTextGroup0");
-                expect(datalabel.childElementCount === 30 || datalabel.childElementCount === 31 ).toBe(true);
+                expect(datalabel.childElementCount === 30 || datalabel.childElementCount === 31 || datalabel.childElementCount === 32 ).toBe(true);
                 done();
             };
             chartObj.refresh();
@@ -1752,7 +1753,7 @@ describe('Chart Control', () => {
         it('Polar Chart: datalabel count check with Y axis label inside', (done: Function) => {
             chartObj.loaded = (args: Arg): void => {
                 let datalabel: Element = getElement("containerTextGroup0");
-                expect(datalabel.childElementCount === 15 || datalabel.childElementCount === 16).toBe(true);
+                expect(datalabel.childElementCount === 15 || datalabel.childElementCount === 16 || datalabel.childElementCount === 17).toBe(true);
                 done();
             };
             chartObj.primaryYAxis.labelPosition = 'Inside';
@@ -1761,7 +1762,7 @@ describe('Chart Control', () => {
         it('Radar Chart: datalabel count check with X axis label outside', (done: Function) => {
             chartObj.loaded = (args: Arg): void => {
                 let datalabel: Element = getElement("containerTextGroup0");
-                expect(datalabel.childElementCount === 30 || datalabel.childElementCount === 31).toBe(true);
+                expect(datalabel.childElementCount === 30 || datalabel.childElementCount === 31 || datalabel.childElementCount === 32).toBe(true);
                 done();
             };
             chartObj.series[0].type = 'Radar';
@@ -1780,7 +1781,7 @@ describe('Chart Control', () => {
         it('Radar Chart: datalabel count check with Y axis label inside', (done: Function) => {
             chartObj.loaded = (args: Arg): void => {
                 let datalabel: Element = getElement("containerTextGroup0");
-                expect(datalabel.childElementCount === 15 || datalabel.childElementCount === 16).toBe(true);
+                expect(datalabel.childElementCount === 15 || datalabel.childElementCount === 16 || datalabel.childElementCount === 17).toBe(true);
                 done();
             };
             chartObj.primaryYAxis.labelPosition = 'Inside';

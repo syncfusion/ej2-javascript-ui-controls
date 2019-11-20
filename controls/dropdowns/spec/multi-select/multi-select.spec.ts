@@ -3524,6 +3524,74 @@ describe('MultiSelect', () => {
             listObj.destroy();
         });
     });
+    describe('Add item using addItem method in existing group item', () => {
+        let ele: HTMLElement = document.createElement('input');
+        ele.id = 'newlist';
+        let multiObj: any;
+        let data: { [key: string]: Object }[] = [
+        { "Vegetable": "Cabbage", "Category": "Leafy and Salad", "Id": "item1" },
+        { "Vegetable": "Chickpea", "Category": "Beans", "Id": "item2" },
+        { "Vegetable": "Garlic", "Category": "Bulb and Stem", "Id": "item3" },
+        { "Vegetable": "Green bean", "Category": "Beans", "Id": "item4" },
+        { "Vegetable": "Horse gram", "Category": "Beans", "Id": "item5" },
+        { "Vegetable": "Nopal", "Category": "Bulb and Stem", "Id": "item6" }];
+        let item: { [key: string]: Object }[] = [
+        { "Vegetable": "brinjal", "Category": "Leafy and Salad", "Id": "item7" },
+        { "Vegetable": "green gram", "Category": "Beans", "Id": "item8" }];
+        beforeAll(() => {
+            document.body.appendChild(ele);
+        });
+        afterAll(() => {
+            if (ele) {
+                ele.remove();
+            }
+        })
+        it('Adding item in the existing group', () => {
+            multiObj = new MultiSelect({
+                dataSource: data, fields: { groupBy: 'Category', text: 'Vegetable', value: 'Id' },
+                popupHeight: '100px',
+            });
+            multiObj.appendTo('#newlist');
+            multiObj.showPopup();
+            expect(multiObj.ulElement.querySelectorAll('li').length === 9).toBe(true);
+            multiObj.addItem(item);
+            expect(multiObj.ulElement.querySelectorAll('li').length === 11).toBe(true);
+        });
+    });
+    describe('Add item using addItem method in new group item', () => {
+        let ele: HTMLElement = document.createElement('input');
+        ele.id = 'newlist';
+        let multiObj: any;
+        let data: { [key: string]: Object }[] = [
+        { "Vegetable": "Cabbage", "Category": "Leafy and Salad", "Id": "item1" },
+        { "Vegetable": "Chickpea", "Category": "Beans", "Id": "item2" },
+        { "Vegetable": "Garlic", "Category": "Bulb and Stem", "Id": "item3" },
+        { "Vegetable": "Green bean", "Category": "Beans", "Id": "item4" },
+        { "Vegetable": "Horse gram", "Category": "Beans", "Id": "item5" },
+        { "Vegetable": "Nopal", "Category": "Bulb and Stem", "Id": "item6" }];
+        let item: { [key: string]: Object }[] = [
+        { "Vegetable": "brinjal", "Category": "Leafy and Salad", "Id": "item7" },
+        { "Vegetable": "green gram", "Category": "Potato", "Id": "item8" }];
+        beforeAll(() => {
+            document.body.appendChild(ele);
+        });
+        afterAll(() => {
+            if (ele) {
+                ele.remove();
+            }
+        })
+        it('filtering basic coverage', () => {
+            multiObj = new MultiSelect({
+                dataSource: data, fields: { groupBy: 'Category', text: 'Vegetable', value: 'Id' },
+                popupHeight: '100px',
+            });
+            multiObj.appendTo('#newlist');
+            multiObj.showPopup();
+            expect(multiObj.ulElement.querySelectorAll('li').length === 9).toBe(true);
+            multiObj.addItem(item);
+            expect(multiObj.ulElement.querySelectorAll('li').length === 12).toBe(true);
+        });
+    });
 
     describe('mulitselect enable and refresh method', () => {
         let ele: HTMLElement = document.createElement('input');
@@ -6404,6 +6472,52 @@ describe('MultiSelect', () => {
             listObj.width = '40em';
             listObj.dataBind();
             expect(listObj.overAllWrapper.style.width).toEqual('40em');
+        });
+    });
+
+    describe('BLAZ-1156 - Unable to use value binding and template at the same time.', () => {
+        let listObj: MultiSelect;
+        let popupObj: any;
+        let element: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'multiselect', attrs: { 'type': 'text' } });
+        let empList: { [key: string]: Object }[] = [
+            { text: 'Mona Sak', eimg: '1', status: 'Available', country: 'USA' },
+            { text: 'Kapil Sharma', eimg: '2', status: 'Available', country: 'USA' },
+            { text: 'Erik Linden', eimg: '3', status: 'Available', country: 'England' },
+            { text: 'Kavi Tam', eimg: '4', status: 'Available', country: 'England' },
+            { text: "Harish Sree", eimg: "5", status: "Available", country: 'USA' },
+        ];
+        beforeAll(() => {
+            document.body.innerHTML = '';
+            document.body.appendChild(element);
+        });
+        afterAll(() => {
+            if (element) {
+                listObj.destroy();
+                element.remove();
+            }
+        });
+
+        it('Checking the itemTemplate', (done) => {
+            (window as any).ejsInterop={ renderComplete:()=> {return true;}};
+            (window as any).Blazor = null;
+            let listObj: MultiSelect = new MultiSelect({
+                dataSource: empList,
+                fields: { text: 'text', groupBy: 'country' },
+                value: ['Erik Linden'],
+                itemTemplate: '<div><img class="eimg" src="../Employees/${eimg}.png" alt="employee"/>' +
+                '<div class="ename"> ${text} </div><div class="temp"> ${country} </div></div>',
+                valueTemplate: '<span><img class="tempImg" src="../Employees/${eimg}.png" height="20px" width="20px" alt="employee"/>' +
+                '<span class="tempName"> ${text} </span></span>',
+            });
+            listObj.appendTo(element);
+            (<any>listObj).showPopup();
+            setTimeout(() => {
+                expect((<any>listObj).ulElement.firstElementChild.innerText).not.toBe("");
+                listObj.destroy();
+                delete (window as any).Blazor;
+                delete (window as any).ejsInterop;
+                done();
+            }, 100);
         });
     });
 });

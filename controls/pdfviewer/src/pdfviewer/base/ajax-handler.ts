@@ -65,6 +65,7 @@ export class AjaxHandler {
     private sendRequest(jsonObj: object): void {
         this.httpRequest.open(this.type, this.url, this.mode);
         this.httpRequest.setRequestHeader('Content-Type', this.contentType);
+        jsonObj = this.addExtraData(jsonObj);
         this.setCustomAjaxHeaders();
         if (this.responseType !== null) {
             this.httpRequest.responseType = this.responseType;
@@ -72,6 +73,14 @@ export class AjaxHandler {
         this.httpRequest.send(JSON.stringify(jsonObj)); // jshint ignore:line
     }
 
+    private addExtraData(jsonObject: object): object {
+        this.pdfViewer.viewerBase.ajaxData = '';
+        this.pdfViewer.fireAjaxRequestInitiate(jsonObject);
+        if (this.pdfViewer.viewerBase.ajaxData && this.pdfViewer.viewerBase.ajaxData !== '') {
+            jsonObject = this.pdfViewer.viewerBase.ajaxData;
+        }
+        return jsonObject;
+    }
     private stateChange(proxy: AjaxHandler): void {
         let status: number = proxy.httpRequest.status;
         let statusString: string = status.toString().split('')[0];

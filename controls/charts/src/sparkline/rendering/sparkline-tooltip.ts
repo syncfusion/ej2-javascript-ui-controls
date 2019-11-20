@@ -3,6 +3,7 @@ import { SparkValues, PathOption, drawPath, getIdElement, Rect, withInBounds } f
 import { Browser, extend, isNullOrUndefined, remove, createElement } from '@syncfusion/ej2-base';
 import { TrackLineSettingsModel, SparklineTooltipSettingsModel } from '../model/base-model';
 import { Tooltip } from '@syncfusion/ej2-svg-base';
+
 /**
  * Sparkline Tooltip Module
  */
@@ -131,6 +132,7 @@ export class SparklineTooltip {
     /**
      * To render line series
      */
+    //ts-lint: disable
     private renderTooltip(points: SparkValues): void {
         let spark: Sparkline = this.sparkline;
         let tooltip: SparklineTooltipSettingsModel = spark.tooltipSettings;
@@ -170,17 +172,40 @@ export class SparklineTooltip {
                 color: textColor
             }
         };
-        spark.trigger(tooltipEvent.name, tooltipEvent);
+        if (spark.isBlazor) {
+            const  { ...blazorTooltipArgs}: ITooltipRenderingEventArgs =  tooltipEvent;
+            tooltipEvent = blazorTooltipArgs;
+        }
+        spark.trigger('tooltipInitialize', tooltipEvent, (eventArgs?: ITooltipRenderingEventArgs) => {
+            this.addTooltip(tooltipEvent, spark, backgroundColor, tooltip, location, div);
+        });
+    }
+
+    private addTooltip(tooltipEvent: ITooltipRenderingEventArgs, spark: Sparkline, backgroundColor: string,
+                       tooltip: SparklineTooltipSettingsModel, location: { x: number, y: number }, div: Element,
+                       eventArgs?: ITooltipRenderingEventArgs): void {
+        let cancel : boolean;
+        let arg : object;
+        let tootipArgs: ITooltipRenderingEventArgs;
+        if (!isNullOrUndefined(tooltipEvent)) {
+            let {cancel : c, ...otherArgs} : ITooltipRenderingEventArgs = tooltipEvent;
+            cancel = c;
+            tootipArgs = tooltipEvent;
+        } else {
+            cancel = eventArgs.cancel;
+            arg = eventArgs as object;
+            tootipArgs = eventArgs;
+        }
         if (tooltipEvent.cancel) {
             return;
         }
         let element: Tooltip = new Tooltip({
-            content: tooltipEvent.text,
+            content: tootipArgs.text,
             border: tooltip.border,
             template: tooltip.template,
             data: spark.dataSource[this.pointIndex],
             fill: backgroundColor,
-            textStyle: tooltipEvent.textStyle,
+            textStyle: tootipArgs.textStyle,
             enableAnimation: false,
             location: { x: location.x, y: location.y },
             shared: false,

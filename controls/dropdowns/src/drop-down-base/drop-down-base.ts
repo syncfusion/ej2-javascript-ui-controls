@@ -617,7 +617,7 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
         value?: boolean, header?: boolean, footer?: boolean, isEmpty?: boolean): void {
         if (!this.isStringTemplate) {
             if (this.itemTemplate && item) {
-                updateBlazorTemplate(this.itemTemplateId, ITEMTEMPLATE_PROPERTY, this);
+                updateBlazorTemplate(this.itemTemplateId, ITEMTEMPLATE_PROPERTY, this, isEmpty);
             }
             if (this.groupTemplate && group) {
                 updateBlazorTemplate(this.groupTemplateId, GROUPTEMPLATE_PROPERTY, this);
@@ -1029,7 +1029,7 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
                 <{ [key: string]: Object }[]>new DataManager(dataSource as DataOptions | JSON[]).executeLocal(new Query().take(100))
                 : dataSource;
             ulElement = this.templateListItem((this.getModuleName() === 'autocomplete') ? spliceData : dataSource, fields);
-            this.DropDownBaseupdateBlazorTemplates(true, false, false, false);
+            this.DropDownBaseupdateBlazorTemplates(true, false, false, false, false, false, false, false);
         } else {
             ulElement = this.createListItems(listData, fields);
         }
@@ -1125,7 +1125,7 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
     }
 
     protected updateSelectElementData(isFiltering: boolean): void {
-        if (isFiltering && isNullOrUndefined(this.selectData) && this.listData.length > 0) {
+        if (isFiltering && isNullOrUndefined(this.selectData) && this.listData && this.listData.length > 0) {
             this.selectData = this.listData;
         }
     }
@@ -1299,16 +1299,34 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
             this.list.appendChild(this.ulElement);
             append(liCollections, this.ulElement);
         } else {
+            let attr: string[] = [];
             for (let i: number = 0; i < items.length; i++) {
-                if (this.liCollections[index]) {
-                    this.liCollections[index].parentNode.insertBefore(liCollections[i], this.liCollections[index]);
+                let listGroupItem: NodeList = this.ulElement.querySelectorAll('.e-list-group-item');
+                for (let j: number = 0; j < listGroupItem.length; j++) {
+                    attr[j] = (listGroupItem[j] as HTMLElement).innerText;
+                }
+                if (attr.indexOf(liCollections[i].innerText) > -1 && fields.groupBy) {
+                    for (let j: number = 0; j < listGroupItem.length; j++) {
+                        if (attr[j] === liCollections[i].innerText ) {
+                            this.ulElement.insertBefore(liCollections[i + 1], listGroupItem[j + 1]);
+                            i = i + 1;
+                            break;
+                        }
+                    }
                 } else {
-                    this.ulElement.appendChild(liCollections[i]);
+                    if (this.liCollections[index]) {
+                        this.liCollections[index].parentNode.insertBefore(liCollections[i], this.liCollections[index]);
+                    } else {
+                        this.ulElement.appendChild(liCollections[i]);
+                    }
                 }
                 let tempLi: HTMLElement[] = [].slice.call(this.liCollections);
                 tempLi.splice(index, 0, liCollections[i]);
                 this.liCollections = tempLi;
                 index += 1;
+                if (this.getModuleName() === 'multiselect') {
+                    this.updateDataList();
+                }
             }
         }
         if (selectedItemValue || itemIndex === 0) {
@@ -1334,6 +1352,9 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
 
     protected updateActionCompleteData(li: HTMLElement, item: { [key: string]: Object }): void {
         // this is for ComboBox custom value
+    }
+    protected updateDataList(): void {
+        // this is for multiselect update list items
     }
     /**
      * Gets the data Object that matches the given value. 

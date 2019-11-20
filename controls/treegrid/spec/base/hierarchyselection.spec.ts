@@ -836,4 +836,35 @@ describe('TreeGrid Hierarchy Selection', () => {
       destroy(gridObj);
     });
   });
+
+  describe('EJ2-33060 - Header checkbox gets removed when using hideColumns and showColumns method', () => {
+    let gridObj: TreeGrid;
+    beforeAll((done: Function) => {
+      gridObj = createGrid(
+        {
+          dataSource: sampleData,
+          childMapping: 'subtasks',
+          treeColumnIndex: 1,
+          allowPaging: true,
+          columns: [
+            { field: 'taskID', headerText: 'Task ID', isPrimaryKey: true, width: 120 },
+            { field: 'taskName', headerText: 'CheckBox Column', width: 160, showCheckbox: true },
+            { field: 'duration', headerText: 'Duration', type: "number", width: 150 },
+            { field: 'progress', headerText: 'Progress', width: 150 },
+            { field: 'startDate', headerText: 'Start Date', type: "date", format: 'yMd', width: 150 }
+          ],
+        },
+        done
+      );
+    });
+    it('Hide and Show the Checkbox Column', () => {
+      gridObj.selectCheckboxes([0,4]);
+      gridObj.hideColumns("CheckBox Column", "headerText");
+      gridObj.showColumns("CheckBox Column", "headerText");
+      expect(gridObj.element.querySelectorAll(".e-treeselectall").length).toBe(1);
+    });
+    afterAll(() => {
+      destroy(gridObj);
+    });
+  });
 });

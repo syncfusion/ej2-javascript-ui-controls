@@ -46,7 +46,8 @@ export class Filter implements IAction {
     private nextFlMenuOpen: string = '';
     private type: Object = { 'Menu': FilterMenuRenderer, 'CheckBox': CheckBoxFilter, 'Excel': ExcelFilter };
     private filterModule: { openDialog: Function, closeDialog: Function, destroy: Function };
-    private filterOperators: IFilterOperator = {
+    /** @hidden */
+    public filterOperators: IFilterOperator = {
         contains: 'contains', endsWith: 'endswith', equal: 'equal', greaterThan: 'greaterthan', greaterThanOrEqual: 'greaterthanorequal',
         lessThan: 'lessthan', lessThanOrEqual: 'lessthanorequal', notEqual: 'notequal', startsWith: 'startswith'
     };

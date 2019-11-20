@@ -926,11 +926,7 @@ export class NumericTextBox extends Component<HTMLInputElement> implements INoti
             this.setProperties({ value: value }, true);
         } else {
             let numberOfDecimals: number;
-            let decimalPart: string = value.toString().split('.')[1];
-            numberOfDecimals = !decimalPart || !decimalPart.length ? 0 : decimalPart.length;
-            if (this.decimals !== null) {
-                numberOfDecimals = numberOfDecimals < this.decimals ? numberOfDecimals : this.decimals;
-            }
+            numberOfDecimals = this.getNumberOfDecimals(value);
             this.setProperties({ value: this.roundNumber(value, numberOfDecimals) }, true);
         }
         this.modifyText();
@@ -962,14 +958,27 @@ export class NumericTextBox extends Component<HTMLInputElement> implements INoti
         this.checkErrorClass();
     }
 
-    private formatNumber(): string {
+    private getNumberOfDecimals(value: number): number {
         let numberOfDecimals: number;
-        let currentValue: number = this.value;
-        let decimalPart: string = currentValue.toString().split('.')[1];
+        let EXPREGEXP: RegExp = new RegExp('[eE][\-+]?([0-9]+)');
+        let valueString: string = value.toString();
+        if (EXPREGEXP.test(valueString)) {
+            let result: RegExpExecArray = EXPREGEXP.exec(valueString);
+            if (!isNullOrUndefined(result)) {
+                valueString = value.toFixed(Math.min(parseInt(result[1], 10), 20));
+            }
+        }
+        let decimalPart: string = valueString.split('.')[1];
         numberOfDecimals = !decimalPart || !decimalPart.length ? 0 : decimalPart.length;
         if (this.decimals !== null) {
             numberOfDecimals = numberOfDecimals < this.decimals ? numberOfDecimals : this.decimals;
         }
+        return numberOfDecimals;
+    }
+
+    private formatNumber(): string {
+        let numberOfDecimals: number;
+        numberOfDecimals = this.getNumberOfDecimals(this.value);
         return this.instance.getNumberFormat({
             maximumFractionDigits: numberOfDecimals,
             minimumFractionDigits: numberOfDecimals, useGrouping: false

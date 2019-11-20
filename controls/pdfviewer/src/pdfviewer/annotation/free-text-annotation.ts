@@ -272,7 +272,7 @@ export class FreeTextAnnotation {
                                 x: annotation.Bounds.X, y: annotation.Bounds.Y, left: annotation.Bounds.X, top: annotation.Bounds.Y,
                                 width: annotation.Bounds.Width, height: annotation.Bounds.Height, right: annotation.Bounds.Right,
                                 bottom: annotation.Bounds.Bottom
-                            }, annotName: annotation.Name, shapeAnnotationType: 'FreeText',
+                            }, annotName: annotation.AnnotName, shapeAnnotationType: 'FreeText',
                             // tslint:disable-next-line
                             pageIndex: pageNumber, opacity: annotation.Opacity, fontColor: annotation.FontColor, fontSize: annotation.FontSize,
                             fontFamily: annotation.FontFamily, notes: annotation.MarkupText,
@@ -283,7 +283,7 @@ export class FreeTextAnnotation {
                             font: { isBold: annotation.Font.Bold, isItalic: annotation.Font.Italic, isStrikeout: annotation.Font.Strikeout, isUnderline: annotation.Font.Underline }
                         };
                         if (isImportAction) {
-                            annot.id = annotation.Name;
+                            annot.id = annotation.AnnotName;
                         }
                         let addedAnnot: PdfAnnotationBaseModel = this.pdfViewer.add(annot as PdfAnnotationBase);
                         this.pdfViewer.annotationModule.storeAnnotations(pageNumber, annot, '_annotations_freetext');
@@ -829,7 +829,7 @@ export class FreeTextAnnotation {
                     x: annotation.Bounds.X, y: annotation.Bounds.Y, left: annotation.Bounds.X, top: annotation.Bounds.Y,
                     width: annotation.Bounds.Width, height: annotation.Bounds.Height, right: annotation.Bounds.Right,
                     bottom: annotation.Bounds.Bottom
-                }, annotName: annotation.Name, shapeAnnotationType: 'FreeText',
+                }, annotName: annotation.AnnotName, shapeAnnotationType: 'FreeText',
                 // tslint:disable-next-line
                 pageIndex: pageNumber, opacity: annotation.Opacity, fontColor: annotation.FontColor, fontSize: annotation.FontSize,
                 fontFamily: annotation.FontFamily, notes: annotation.MarkupText,
@@ -838,6 +838,44 @@ export class FreeTextAnnotation {
                 font: { isBold: annotation.Font.Bold, isItalic: annotation.Font.Italic, isStrikeout: annotation.Font.Strikeout, isUnderline: annotation.Font.Underline }
             };
             this.pdfViewer.annotationModule.storeAnnotations(pageNumber, annot, '_annotations_freetext');
+        }
+    }
+
+    /**
+     * @private
+     */
+    // tslint:disable-next-line
+    public updateFreeTextAnnotationCollections(shapeAnnotations: any, pageNumber: number): void {
+        // tslint:disable-next-line
+        let annotation: any = shapeAnnotations;
+        if (annotation.AnnotType) {
+            let vertexPoints: IPoint[] = null;
+            if (annotation.VertexPoints) {
+                vertexPoints = [];
+                for (let j: number = 0; j < annotation.VertexPoints.length; j++) {
+                    let point: IPoint = { x: annotation.VertexPoints[j].X, y: annotation.VertexPoints[j].Y };
+                    vertexPoints.push(point);
+                }
+            }
+            // tslint:disable-next-line
+            let annot: any;
+            annot = {
+                author: annotation.Author, modifiedDate: annotation.ModifiedDate, subject: annotation.Subject, id: 'freetext',
+                rotateAngle: annotation.Rotate, dynamicText: annotation.MarkupText, strokeColor: annotation.StrokeColor,
+                thickness: annotation.Thickness, fillColor: annotation.FillColor,
+                bounds: {
+                    x: annotation.Bounds.X, y: annotation.Bounds.Y, left: annotation.Bounds.X, top: annotation.Bounds.Y,
+                    width: annotation.Bounds.Width, height: annotation.Bounds.Height, right: annotation.Bounds.Right,
+                    bottom: annotation.Bounds.Bottom
+                }, annotationId: annotation.AnnotName, shapeAnnotationType: 'FreeText',
+                // tslint:disable-next-line
+                pageIndex: pageNumber, opacity: annotation.Opacity, fontColor: annotation.FontColor, fontSize: annotation.FontSize,
+                fontFamily: annotation.FontFamily, notes: annotation.MarkupText,
+                // tslint:disable-next-line
+                comments: this.pdfViewer.annotationModule.getAnnotationComments(annotation.Comments, annotation, annotation.Author), review: { state: annotation.State, stateModel: annotation.StateModel, modifiedDate: annotation.ModifiedDate, author: annotation.Author },
+                font: { isBold: annotation.Font.Bold, isItalic: annotation.Font.Italic, isStrikeout: annotation.Font.Strikeout, isUnderline: annotation.Font.Underline }, pageNumber: pageNumber
+            };
+            return annot;
         }
     }
 }

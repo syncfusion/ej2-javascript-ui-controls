@@ -105,6 +105,7 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
   private isCollapseAll: boolean;
   private isExpandRefresh: boolean;
   private gridSettings: GridModel;
+  private isEditCollapse: boolean;
   /** @hidden */
   public initialRender: boolean;
   /** @hidden */
@@ -1317,7 +1318,7 @@ public pdfExportComplete: EmitType<PdfExportCompleteArgs>;
    * @hidden
    */
   public wireEvents(): void {
-    EventHandler.add(this.element, 'click', this.mouseClickHandler, this);
+    EventHandler.add(this.grid.element, 'click', this.mouseClickHandler, this);
     EventHandler.add(this.element, 'touchend', this.mouseClickHandler, this);
     this.keyboardModule = new KeyboardEvents(
       this.element,
@@ -1450,7 +1451,7 @@ public pdfExportComplete: EmitType<PdfExportCompleteArgs>;
      * @hidden
      */
     public unwireEvents(): void {
-        EventHandler.remove(this.element, 'click', this.mouseClickHandler);
+        EventHandler.remove(this.grid.element, 'click', this.mouseClickHandler);
     }
 
   /**
@@ -2310,11 +2311,12 @@ private getGridEditSettings(): GridEditModel {
     }
     let target: HTMLElement = <HTMLElement>e.target;
     if (
-      target.classList.contains('e-treegridexpand') ||
-      target.classList.contains('e-treegridcollapse')
+      (target.classList.contains('e-treegridexpand') ||
+      target.classList.contains('e-treegridcollapse') ) && (!this.isEditCollapse && !this.grid.isEdit)
     ) {
       this.expandCollapseRequest(target);
     }
+    this.isEditCollapse = false;
     this.notify('checkboxSelection', {target: target});
   }
 

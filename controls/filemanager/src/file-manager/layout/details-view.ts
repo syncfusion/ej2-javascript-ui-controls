@@ -119,7 +119,8 @@ export class DetailsView {
             this.gridObj = new Grid({
                 dataSource: items,
                 allowSorting: true,
-                rowSelecting: this.onSelection.bind(this),
+                rowSelecting: this.onSelection.bind(this, 'select'),
+                rowDeselecting: this.onSelection.bind(this, 'unselect'),
                 rowSelected: this.onSelected.bind(this),
                 rowDeselected: this.onDeSelection.bind(this),
                 allowResizing: this.parent.detailsViewSettings.columnResizing,
@@ -992,8 +993,8 @@ export class DetailsView {
     }
 
     /* istanbul ignore next */
-    private onSelection(args: RowSelectingEventArgs): void {
-        let eventArgs: FileSelectionEventArgs = { fileDetails: args.data, isInteracted: this.interaction, cancel : false, target: args.target };
+    private onSelection(action: string, args: RowSelectingEventArgs | RowDeselectEventArgs): void {
+        let eventArgs: FileSelectionEventArgs = { action: action, fileDetails: args.data, isInteracted: this.interaction, cancel: false, target: args.target };
         this.parent.trigger('fileSelection', eventArgs);
         args.cancel = eventArgs.cancel;
     }

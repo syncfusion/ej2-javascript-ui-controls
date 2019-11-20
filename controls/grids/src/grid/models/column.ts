@@ -776,6 +776,13 @@ export interface ColumnModel {
      */
     allowEditing?: boolean;
 
+    /**
+     * @hidden
+     * Gets the current view foreign key data.
+     * @default [] 
+     */
+    columnData?: Object[];
+
     /**   
      * The CSS styles and attributes of the content cells of a particular column can be customized.   
      * 
@@ -1145,6 +1152,8 @@ export interface ActionEventArgs {
     primaryKeyValue?: Object[];
     /** Defines the edited rowIndex */
     rowIndex?: number;
+    /** Defines take number of data while Filtering */
+    filterChoiceCount: number;
 }
 
 /**

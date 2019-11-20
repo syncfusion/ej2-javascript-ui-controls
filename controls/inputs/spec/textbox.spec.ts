@@ -2722,4 +2722,31 @@ describe('TextBox ', () => {
             expect(inputObj.element.getAttribute('autocomplete')).toBe('off');
         });
     });
+
+    describe('addIcon public method testing', () => {
+        let inputObj: any;
+        beforeEach((): void => {
+            inputObj = undefined;
+            let ele: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'textbox' });
+            document.body.appendChild(ele);
+        });
+        afterEach((): void => {
+            if (inputObj) {
+                inputObj.destroy();
+            }
+            document.body.innerHTML = '';
+        });
+        it('Ensure the DOM changes after adding icons', () => {
+            inputObj = new TextBox({floatLabelType: 'Auto', placeholder:'Enter the value'});
+            inputObj.appendTo('#textbox');
+            inputObj.addIcon('append', 'e-down-icon');
+            inputObj.addIcon('prepend', ['e-plus-icon','e-minus-icon']);
+            expect(inputObj.textboxWrapper.container.querySelectorAll("*").length === 7 ).toBe(true);
+
+            let wrapper: HTMLElement = inputObj.textboxWrapper.container.querySelector('.e-input-in-wrap');
+            expect((wrapper.querySelectorAll('*').length === 4)).toBe(true);
+            expect((wrapper.querySelectorAll('.e-down-icon').length === 1)).toBe(true);
+           
+        });
+    });
 })

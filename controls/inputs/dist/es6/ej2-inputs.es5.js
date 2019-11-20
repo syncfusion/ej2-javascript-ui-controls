@@ -156,9 +156,17 @@ var Input;
         if (!floatLabelElement.innerHTML) {
             inputObject.container.classList.add(CLASSNAMES.NOFLOATLABEL);
         }
-        inputObject.container.appendChild(args.element);
-        inputObject.container.appendChild(floatLinelement);
-        inputObject.container.appendChild(floatLabelElement);
+        if (inputObject.container.classList.contains('e-float-icon-left')) {
+            var inputWrap = inputObject.container.querySelector('.e-input-in-wrap');
+            inputWrap.appendChild(args.element);
+            inputWrap.appendChild(floatLinelement);
+            inputWrap.appendChild(floatLabelElement);
+        }
+        else {
+            inputObject.container.appendChild(args.element);
+            inputObject.container.appendChild(floatLinelement);
+            inputObject.container.appendChild(floatLabelElement);
+        }
         updateLabelState(args.element.value, floatLabelElement);
         if (args.floatLabelType === 'Always') {
             if (floatLabelElement.classList.contains(CLASSNAMES.LABELBOTTOM)) {
@@ -233,6 +241,9 @@ var Input;
     }
     function getParentNode(element) {
         var parentNode = element.parentNode;
+        if (parentNode.classList.contains('e-input-in-wrap')) {
+            parentNode = parentNode.parentNode;
+        }
         return parentNode;
     }
     /**
@@ -586,18 +597,31 @@ var Input;
             var inputObj = { container: container };
             input.classList.remove(CLASSNAMES.INPUT);
             createFloatingInput(args, inputObj, makeElement);
+            var isPrependIcon = container.classList.contains('e-float-icon-left');
             if (isNullOrUndefined(iconEle)) {
-                iconEle = container.querySelector('.e-input-group-icon');
+                if (isPrependIcon) {
+                    var inputWrap = container.querySelector('.e-input-in-wrap');
+                    iconEle = inputWrap.querySelector('.e-input-group-icon');
+                }
+                else {
+                    iconEle = container.querySelector('.e-input-group-icon');
+                }
             }
             if (isNullOrUndefined(iconEle)) {
-                container.classList.remove(CLASSNAMES.INPUTGROUP);
+                if (isPrependIcon) {
+                    iconEle = container.querySelector('.e-input-group-icon');
+                }
+                if (isNullOrUndefined(iconEle)) {
+                    container.classList.remove(CLASSNAMES.INPUTGROUP);
+                }
             }
             else {
                 var floatLine = container.querySelector('.' + CLASSNAMES.FLOATLINE);
                 var floatText = container.querySelector('.' + CLASSNAMES.FLOATTEXT);
-                container.insertBefore(input, iconEle);
-                container.insertBefore(floatLine, iconEle);
-                container.insertBefore(floatText, iconEle);
+                var wrapper = isPrependIcon ? container.querySelector('.e-input-in-wrap') : container;
+                wrapper.insertBefore(input, iconEle);
+                wrapper.insertBefore(floatLine, iconEle);
+                wrapper.insertBefore(floatText, iconEle);
             }
         }
         checkFloatLabelType(type, input.parentElement);
@@ -654,6 +678,75 @@ var Input;
         var ele = this;
         setTimeout(function () { ele.classList.remove('e-input-btn-ripple'); }, 500);
     }
+    function createIconEle(iconClass, makeElement) {
+        var button = makeElement('span', { className: iconClass });
+        button.classList.add('e-input-group-icon');
+        return button;
+    }
+    /**
+     * Creates a new span element with the given icons added and append it in container element.
+     * ```
+     * E.g : Input.addIcon('append', 'e-icon-spin', inputObj.container, inputElement);
+     * ```
+     * @param position - Specify the icon placement on the input.Possible values are append and prepend.
+     * @param iconClass - Icon classes which are need to add to the span element which is going to created.
+     * Span element acts as icon or button element for input.
+     * @param container - The container on which created span element is going to append.
+     * @param inputElement - The inputElement on which created span element is going to prepend.
+     */
+    // tslint:disable
+    function addIcon(position, icons, container, input, internalCreate) {
+        // tslint:enable
+        var result = typeof (icons) === 'string' ? icons.split(',')
+            : icons;
+        if (position.toLowerCase() === 'append') {
+            for (var _i = 0, result_1 = result; _i < result_1.length; _i++) {
+                var icon = result_1[_i];
+                appendSpan(icon, container, internalCreate);
+            }
+        }
+        else {
+            for (var _a = 0, result_2 = result; _a < result_2.length; _a++) {
+                var icon = result_2[_a];
+                prependSpan(icon, container, input, internalCreate);
+            }
+        }
+    }
+    Input.addIcon = addIcon;
+    /**
+     * Creates a new span element with the given icons added and prepend it in input element.
+     * ```
+     * E.g : Input.prependSpan('e-icon-spin', inputObj.container, inputElement);
+     * ```
+     * @param iconClass - Icon classes which are need to add to the span element which is going to created.
+     * Span element acts as icon or button element for input.
+     * @param container - The container on which created span element is going to append.
+     * @param inputElement - The inputElement on which created span element is going to prepend.
+     */
+    // tslint:disable
+    function prependSpan(iconClass, container, inputElement, internalCreateElement) {
+        // tslint:enable
+        var makeElement = !isNullOrUndefined(internalCreateElement) ? internalCreateElement : createElement;
+        var button = createIconEle(iconClass, makeElement);
+        container.classList.add('e-float-icon-left');
+        var innerWrapper = container.querySelector('.e-input-in-wrap');
+        if (isNullOrUndefined(innerWrapper)) {
+            innerWrapper = makeElement('span', { className: 'e-input-in-wrap' });
+            inputElement.parentNode.insertBefore(innerWrapper, inputElement);
+            var result = container.querySelectorAll(inputElement.tagName + ' ~ *');
+            innerWrapper.appendChild(inputElement);
+            for (var i = 0; i < result.length; i++) {
+                innerWrapper.appendChild(result[i]);
+            }
+        }
+        innerWrapper.parentNode.insertBefore(button, innerWrapper);
+        if (!container.classList.contains(CLASSNAMES.INPUTGROUP)) {
+            container.classList.add(CLASSNAMES.INPUTGROUP);
+        }
+        _internalRipple(true, container, button);
+        return button;
+    }
+    Input.prependSpan = prependSpan;
     /**
      * Creates a new span element with the given icons added and append it in container element.
      * ```
@@ -665,12 +758,13 @@ var Input;
      */
     function appendSpan(iconClass, container, internalCreateElement) {
         var makeElement = !isNullOrUndefined(internalCreateElement) ? internalCreateElement : createElement;
-        var button = makeElement('span', { className: iconClass });
-        button.classList.add('e-input-group-icon');
-        container.appendChild(button);
+        var button = createIconEle(iconClass, makeElement);
         if (!container.classList.contains(CLASSNAMES.INPUTGROUP)) {
             container.classList.add(CLASSNAMES.INPUTGROUP);
         }
+        var wrap = (container.classList.contains('e-float-icon-left')) ? container.querySelector('.e-input-in-wrap') :
+            container;
+        wrap.appendChild(button);
         _internalRipple(true, container, button);
         return button;
     }
@@ -1349,11 +1443,7 @@ var NumericTextBox = /** @__PURE__ @class */ (function (_super) {
         }
         else {
             var numberOfDecimals = void 0;
-            var decimalPart = value.toString().split('.')[1];
-            numberOfDecimals = !decimalPart || !decimalPart.length ? 0 : decimalPart.length;
-            if (this.decimals !== null) {
-                numberOfDecimals = numberOfDecimals < this.decimals ? numberOfDecimals : this.decimals;
-            }
+            numberOfDecimals = this.getNumberOfDecimals(value);
             this.setProperties({ value: this.roundNumber(value, numberOfDecimals) }, true);
         }
         this.modifyText();
@@ -1387,14 +1477,26 @@ var NumericTextBox = /** @__PURE__ @class */ (function (_super) {
         }
         this.checkErrorClass();
     };
-    NumericTextBox.prototype.formatNumber = function () {
+    NumericTextBox.prototype.getNumberOfDecimals = function (value) {
         var numberOfDecimals;
-        var currentValue = this.value;
-        var decimalPart = currentValue.toString().split('.')[1];
+        var EXPREGEXP = new RegExp('[eE][\-+]?([0-9]+)');
+        var valueString = value.toString();
+        if (EXPREGEXP.test(valueString)) {
+            var result = EXPREGEXP.exec(valueString);
+            if (!isNullOrUndefined(result)) {
+                valueString = value.toFixed(Math.min(parseInt(result[1], 10), 20));
+            }
+        }
+        var decimalPart = valueString.split('.')[1];
         numberOfDecimals = !decimalPart || !decimalPart.length ? 0 : decimalPart.length;
         if (this.decimals !== null) {
             numberOfDecimals = numberOfDecimals < this.decimals ? numberOfDecimals : this.decimals;
         }
+        return numberOfDecimals;
+    };
+    NumericTextBox.prototype.formatNumber = function () {
+        var numberOfDecimals;
+        numberOfDecimals = this.getNumberOfDecimals(this.value);
         return this.instance.getNumberFormat({
             maximumFractionDigits: numberOfDecimals,
             minimumFractionDigits: numberOfDecimals, useGrouping: false
@@ -12577,6 +12679,16 @@ var TextBox = /** @__PURE__ @class */ (function (_super) {
         _super.prototype.destroy.call(this);
     };
     /**
+     * Adding the icons to the TextBox component.
+     * @param { string } position - Specify the icon placement on the TextBox. Possible values are append and prepend.
+     * @param { string | string[] } iconClass - Icon classes which are need to add to the span element which is going to created.
+     * Span element acts as icon or button element for TextBox.
+     * @return {void}
+     */
+    TextBox.prototype.addIcon = function (position, icons) {
+        Input.addIcon(position, icons, this.textboxWrapper.container, this.respectiveElement, this.createElement);
+    };
+    /**
      * Gets the properties to be maintained in the persisted state.
      * @return {string}
      */
@@ -12647,7 +12759,11 @@ var TextBox = /** @__PURE__ @class */ (function (_super) {
     TextBox.prototype.focusIn = function () {
         if (document.activeElement !== this.respectiveElement && this.enabled) {
             this.respectiveElement.focus();
-            addClass([this.textboxWrapper.container], [TEXTBOX_FOCUS]);
+            if (this.textboxWrapper.container.classList.contains('e-input-group')
+                || this.textboxWrapper.container.classList.contains('e-outline')
+                || this.textboxWrapper.container.classList.contains('e-filled')) {
+                addClass([this.textboxWrapper.container], [TEXTBOX_FOCUS]);
+            }
         }
     };
     /**
@@ -12657,7 +12773,11 @@ var TextBox = /** @__PURE__ @class */ (function (_super) {
     TextBox.prototype.focusOut = function () {
         if (document.activeElement === this.respectiveElement && this.enabled) {
             this.respectiveElement.blur();
-            removeClass([this.textboxWrapper.container], [TEXTBOX_FOCUS]);
+            if (this.textboxWrapper.container.classList.contains('e-input-group')
+                || this.textboxWrapper.container.classList.contains('e-outline')
+                || this.textboxWrapper.container.classList.contains('e-filled')) {
+                removeClass([this.textboxWrapper.container], [TEXTBOX_FOCUS]);
+            }
         }
     };
     __decorate$6([

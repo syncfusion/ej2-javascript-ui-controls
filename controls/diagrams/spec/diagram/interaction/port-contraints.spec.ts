@@ -106,6 +106,32 @@ describe('Diagram Control', () => {
             expect((diagram.tool & DiagramTools.SingleSelect) != 0).toBe(true);
             done();
         })
+        it('CR -issue-fix for removing the connectors in collection change', (done: Function) => {
+            diagram.collectionChange = (arg: any) => {
+                if (arg.type === "Addition" && arg.state === "Changing") {
+                    if (!(arg.element.sourcePortID && arg.element.targetPortID)) {
+                        arg.cancel = true;
+                    }
+                }
+            }
+            let mouseEvents: MouseEvents = new MouseEvents();
+            let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+            mouseEvents.mouseMoveEvent(diagramCanvas, 358, 68, true);
+            let node: NodeModel = diagram.nodes[1];
+            node.ports[0].constraints = PortConstraints.Draw;
+            mouseEvents.clickEvent(diagramCanvas, 200, 102.5);
+            mouseEvents.mouseDownEvent(diagramCanvas, 402.5, 102.5);
+            mouseEvents.mouseMoveEvent(diagramCanvas, 402.5, 104.5);
+            mouseEvents.mouseMoveEvent(diagramCanvas, 402.5, 250);
+            mouseEvents.mouseUpEvent(diagramCanvas, 402.5, 250);
+            mouseEvents.clickEvent(diagramCanvas, 200, 102.5);
+            mouseEvents.mouseDownEvent(diagramCanvas, 402.5, 102.5);
+            mouseEvents.mouseMoveEvent(diagramCanvas, 402.5, 104.5);
+            mouseEvents.mouseMoveEvent(diagramCanvas, 402.5, 230);
+            mouseEvents.mouseUpEvent(diagramCanvas, 402.5, 230);
+            expect(diagram.connectors.length == 3).toBe(true);
+            done();
+        })
     })
 
     describe('Ports with constraints undo redo ', () => {

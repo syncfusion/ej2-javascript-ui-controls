@@ -708,3 +708,24 @@ describe('DropDownBase', () => {
         expect(memory).toBeLessThan(profile.samples[0] + 0.25);
     })
 });
+//Dummy spec updateDataList method
+describe('Spec for empty method ', () => {
+    let listObj: any;
+    let element: HTMLElement
+    beforeEach(() => {
+        element = createElement('div', { id: 'dropdownbase' });
+        document.body.appendChild(element);
+    });
+    afterEach(() => {
+        if (element) {
+            let parent: HTMLElement = element.parentElement as HTMLElement;
+            parent.remove();
+        };
+        document.body.innerHTML = '';
+    });
+    it('addItem method', () => {
+        listObj = new DropDownBase({ dataSource: datasource });
+        listObj.appendTo(element);
+        listObj.updateDataList();
+    });
+});

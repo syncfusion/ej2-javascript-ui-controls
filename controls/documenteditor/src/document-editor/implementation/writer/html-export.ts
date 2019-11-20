@@ -12,6 +12,8 @@ export class HtmlExport {
     private document: any = undefined;
     private characterFormat: WCharacterFormat;
     private paragraphFormat: WParagraphFormat;
+    private prevListLevel: any = undefined;
+    private isOrdered: boolean = undefined;
     /* tslint:disable:no-any */
 
     /**
@@ -41,9 +43,13 @@ export class HtmlExport {
             if (block.hasOwnProperty('inlines')) {
                 string += this.serializeParagraph(block);
             } else {
+                string += this.closeList();
                 string += this.serializeTable(block);
             }
         }
+        string += this.closeList();
+        this.prevListLevel = undefined;
+        this.isOrdered = undefined;
         return string;
     }
 
@@ -55,18 +61,148 @@ export class HtmlExport {
         let blockStyle: string = '';
         let startString: string = undefined;
         let isList: boolean = false;
+        let isPreviousList: boolean = false;
+
+        if (!isNullOrUndefined(this.prevListLevel)) {
+            isPreviousList = true;
+        }
         let tagAttributes: string[] = [];
+        let listLevel: any = undefined;
+        if (!isNullOrUndefined(paragraph.paragraphFormat.listFormat)) {
+            listLevel = this.getListLevel(paragraph);
+            if (!isPreviousList) {
+                this.prevListLevel = listLevel;
+            }
+            if (this.prevListLevel !== listLevel) {
+                isPreviousList = false;
+            }
+            this.prevListLevel = listLevel;
+        }
+        if (!isPreviousList) {
+            blockStyle += this.closeList();
+        }
+
+        if (!isNullOrUndefined(listLevel)) {
+            isList = true;
+        }
+        if (isList && !isPreviousList) {
+            blockStyle += this.getHtmlList(listLevel, paragraph.paragraphFormat.listFormat.listLevelNumber);
+        }
         tagAttributes.push('style="' + this.serializeParagraphStyle(paragraph, '', isList) + '"');
-        blockStyle += this.createAttributesTag('p', tagAttributes);
+        if (isList) {
+            blockStyle += this.createAttributesTag('li', tagAttributes);
+        } else {
+            this.prevListLevel = undefined;
+            this.isOrdered = undefined;
+            blockStyle += this.createAttributesTag('p', tagAttributes);
+        }
         if (paragraph.inlines.length === 0) {
             //Handled to preserve non breaking space for empty paragraphs similar to MS Word behavior.
-            blockStyle += ' ';
+            blockStyle += '&nbsp';
         } else {
             blockStyle = this.serializeInlines(paragraph, blockStyle);
         }
-        blockStyle += this.endTag('p');
+        if (isList) {
+            blockStyle += this.endTag('li');
+            if (blockStyle.indexOf('<ul') > -1) {
+                this.isOrdered = false;
+            } else if (blockStyle.indexOf('<ol') > -1) {
+                this.isOrdered = true;
+            }
+        } else {
+            blockStyle += this.endTag('p');
+        }
+
         return blockStyle;
     }
+    private closeList(): string {
+        let blockStyle: string = '';
+        if (!isNullOrUndefined(this.isOrdered)) {
+            if (this.isOrdered) {
+                blockStyle = this.endTag('ol');
+            } else {
+                blockStyle = this.endTag('ul');
+            }
+            this.isOrdered = undefined;
+        }
+        return blockStyle;
+    }
+    private getListLevel(paragraph: any): any {
+        let listLevel: any = undefined;
+        let list: any = undefined;
+        for (let i: number = 0; i < this.document.lists.length; i++) {
+            if (this.document.lists[i].listId === paragraph.paragraphFormat.listFormat.listId) {
+                list = this.document.lists[i];
+                break;
+            }
+        }
+        if (list) {
+            for (let j: number = 0; j < this.document.abstractLists.length; j++) {
+                if (this.document.abstractLists[j].abstractListId === list.abstractListId) {
+                    listLevel = this.document.abstractLists[j].levels[paragraph.paragraphFormat.listFormat.listLevelNumber];
+                    break;
+                }
+            }
+        }
+        return listLevel;
+
+    }
+    private getHtmlList(listLevel: any, levelNumer: number): string {
+        //if (start == null || (start != null && start.Paragraph != this)) {
+        //    let block: BlockAdv = this.GetPreviousBlock();
+        //    if (block instanceof ParagraphAdv) {
+        //        let previousListLevel: ListLevelAdv = (block as ParagraphAdv).ParagraphFormat.ListFormat.ListLevel;
+        //        if (previousListLevel == listLevel)
+        //            return "";
+        //    }
+        //}
+        let html: string = '';
+        if (listLevel.listLevelPattern === 'Bullet') {
+            html += '<ul type=\"';
+            switch (levelNumer) {
+                case 0:
+                    html += 'disc';
+                    listLevel.characterFormat.fontFamily = 'Symbol';
+                    break;
+                case 1:
+                    html += 'circle';
+                    listLevel.characterFormat.fontFamily = 'Symbol';
+                    break;
+                case 2:
+                    html += 'square';
+                    listLevel.characterFormat.fontFamily = 'Wingdings';
+                    break;
+                default:
+                    html += 'disc';
+                    listLevel.characterFormat.fontFamily = 'Symbol';
+                    break;
+            }
+            html += '\">';
+        } else {
+            html += '<ol type=\"';
+            switch (listLevel.listLevelPattern) {
+
+                case 'LowLetter':
+                    html += 'a';
+                    break;
+                case 'UpLetter':
+                    html += 'A';
+                    break;
+                case 'LowRoman':
+                    html += 'i';
+                    break;
+                case 'UpRoman':
+                    html += 'I';
+                    break;
+                default:
+                    html += '1';
+                    break;
+            }
+            html += '\" start=\"' + listLevel.startAt.toString() + '\">';
+        }
+        return html;
+    }
+
 
     //SerializeInlines
     /**
@@ -159,6 +295,9 @@ export class HtmlExport {
         //         && (inline as WSpan).text[(inline as WSpan).text.length - 1] === ' ';
         // }
         let text: string = this.decodeHtmlNames(spanText.toString());
+        if (text.length === 0) {
+            text = '&nbsp';
+        }
         spanClass += text;
         spanClass += this.endTag('span');
         return spanClass.toString();
@@ -527,22 +666,24 @@ export class HtmlExport {
         }
         propertyValue = paragraphFormat.leftIndent;
         if (isList) {
-            if (isNullOrUndefined(propertyValue)) {
-                propertyValue = -48;
-            } else {
-                propertyValue -= 48;
-            }
+            // if (isNullOrUndefined(propertyValue)) {
+            //     propertyValue = -36;
+            // } else {
+            //     propertyValue -= 36;
+            // }
+            propertyValue = 0;
         }
         if (!isNullOrUndefined(propertyValue)) {
             paraStyle += 'margin-left:' + propertyValue.toString() + 'pt; ';
         }
         propertyValue = paragraphFormat.firstLineIndent;
         if (isList) {
-            if (isNullOrUndefined(propertyValue)) {
-                propertyValue = 24;
-            } else {
-                propertyValue += 24;
-            }
+            // if (isNullOrUndefined(propertyValue)) {
+            //     propertyValue = 18;
+            // } else {
+            //     propertyValue += 18;
+            // }
+            propertyValue = 0;
         }
         if (!isNullOrUndefined(propertyValue) && propertyValue !== 0) {
             paraStyle += 'text-indent:' + propertyValue.toString() + 'pt;';

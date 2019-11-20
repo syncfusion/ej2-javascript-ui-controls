@@ -2,7 +2,16 @@
 
 ## [Unreleased]
 
-## 17.3.27 (2019-11-12)
+## 17.3.28 (2019-11-19)
+
+### TreeGrid
+
+#### Bug Fixes
+
+- `#F148459` - Header Checkbox display properly when we hide and show the columns using hideColumns and showColumns method.
+- `#I247045` - Row Drag and Drop works fine when text wrap is enabled.
+
+## 17.3.26 (2019-11-05)
 
 ### TreeGrid
 

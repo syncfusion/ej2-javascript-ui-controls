@@ -11,7 +11,7 @@ import * as events from '../base/constant';
 import { PredicateModel } from '../base/grid-model';
 import { ValueFormatter } from '../services/value-formatter';
 import { getForeignData } from '../base/util';
-import { Column } from '../models/column';
+import { Column, ColumnModel } from '../models/column';
 import { Dialog, DialogModel } from '@syncfusion/ej2-popups';
 import { Input } from '@syncfusion/ej2-inputs';
 import { createSpinner, hideSpinner, showSpinner } from '@syncfusion/ej2-popups';
@@ -310,7 +310,7 @@ export class CheckBoxFilterBase {
 
     public closeDialog(): void {
         if (this.dialogObj && !this.dialogObj.isDestroyed) {
-            let filterTemplateCol: Column[] = this.options.columns.filter((col: Column) => col.getFilterItemTemplate());
+            let filterTemplateCol: Column[] = (this.options.columns as Column[]).filter((col: Column) => col.getFilterItemTemplate());
             if (filterTemplateCol.length) {
                 this.parent.destroyTemplate(['filterItemTemplate']);
             }
@@ -356,7 +356,7 @@ export class CheckBoxFilterBase {
                     },
                     field: this.options.field
                 };
-                value ? this.isForeignColumn(this.options.column) ? this.foreignFilter(args, value) :
+                value ? this.isForeignColumn(this.options.column as Column) ? this.foreignFilter(args, value) :
                     this.options.handler(args) : this.closeDialog();
             } else {
                 let text: string = (e.target as HTMLElement).firstChild.textContent.toLowerCase();
@@ -470,7 +470,7 @@ export class CheckBoxFilterBase {
 
     private refreshCheckboxes(): void {
         let val: string = this.sInput.value;
-        let column: Column = this.options.column;
+        let column: Column = this.options.column as Column;
         let query: Query = this.isForeignColumn(column) ? this.foreignKeyQuery.clone() : this.options.query.clone();
         let foreignQuery: Query = this.options.query.clone();
         query.queries = [];
@@ -584,24 +584,22 @@ export class CheckBoxFilterBase {
         let query: Query = this.getQuery();
         query.requiresCount(); //consider take query
         this.addDistinct(query);
-        let args: {
-            dataSource?: Object[], requestType?: string,
-            filterModel?: CheckBoxFilterBase, query: Query, filterChoiceCount: number
-        } = {
+        let args: FilterSearchBeginEventArgs = {
             requestType: events.filterChoiceRequest, query: query, filterChoiceCount: null
         };
         if (!isBlazor() || this.parent.isJsComponent) {
             let filterModel: string = 'filterModel';
             args[filterModel] = this;
         }
-        this.parent.notify(events.cBoxFltrBegin, args);
-        args.filterChoiceCount = !isNullOrUndefined(args.filterChoiceCount) ? args.filterChoiceCount : 1000;
-        query.take(args.filterChoiceCount);
-        if (this.parent.dataSource && 'result' in this.parent.dataSource) {
-            this.filterEvent(args, query);
-        } else {
-            this.processDataOperation(query, true);
-        }
+        this.parent.trigger(events.actionBegin, args, (args: FilterSearchBeginEventArgs) => {
+            args.filterChoiceCount = !isNullOrUndefined(args.filterChoiceCount) ? args.filterChoiceCount : 1000;
+            query.take(args.filterChoiceCount);
+            if (this.parent.dataSource && 'result' in this.parent.dataSource) {
+                this.filterEvent(args, query);
+            } else {
+                this.processDataOperation(query, true);
+            }
+        });
     }
 
     private addDistinct(query: Query): Query {
@@ -644,7 +642,7 @@ export class CheckBoxFilterBase {
             this.options.dataSource : new DataManager(this.options.dataSource as JSON[]);
         let allPromise: Promise<Object>[] = [];
         let runArray: Function[] = [];
-        if (this.isForeignColumn(this.options.column) && isInitial) {
+        if (this.isForeignColumn(this.options.column as Column) && isInitial) {
             allPromise.push((<DataManager>this.options.column.dataSource).executeQuery(this.foreignKeyQuery));
             runArray.push((data: Object[]) => this.foreignKeyData = data);
         }
@@ -690,7 +688,7 @@ export class CheckBoxFilterBase {
         }
         // query.select(this.options.field);
         let result: Object[] = new DataManager(this.fullData as JSON[]).executeLocal(query);
-        let col: Column = this.options.column;
+        let col: Column = this.options.column as Column;
         this.filteredData = (CheckBoxFilterBase.
             getDistinct(result, this.options.field, col, this.foreignKeyData) as { records: Object[] }).records || [];
         this.processDataSource(null, true, this.filteredData);
@@ -772,9 +770,10 @@ export class CheckBoxFilterBase {
         label.innerHTML = !isNullOrUndefined(value) && value.toString().length ? value :
             this.getLocalizedLabel('Blanks');
         addClass([label], ['e-checkboxfiltertext']);
-        if (this.options.template) {
+        if (this.options.template && data[this.options.column.field] !== this.getLocalizedLabel('SelectAll')) {
             label.innerHTML = '';
-            appendChildren(label, this.options.template(data, this.parent, 'filterItemTemplate'));
+            appendChildren(label, this.options.template({ column: this.options.column, rowData: data, parent: this.parent },
+                                                        this.parent, 'filterItemTemplate'));
         }
         return elem;
     }
@@ -827,15 +826,19 @@ export class CheckBoxFilterBase {
             for (let i: number = 0; i < data.length; i++) {
                 let uid: string = getUid('cbox');
                 this.values[uid] = getValue('ejValue', data[i]);
-                let value: string = this.valueFormatter.toView(getValue(this.options.field, data[i]), this.options.formatFn) as string;
+                let value: string | number = getValue(this.options.field, data[i]);
+                let args: { value: string | number, column: ColumnModel } = { value: value, column: this.options.column };
+                this.parent.notify(events.filterCboxValue, args);
+                if (value === args.value && this.options.formatFn) {
+                    value = this.valueFormatter.toView(value as number, this.options.formatFn) as string;
+                }
                 if ((value === '' || isNullOrUndefined(value))) {
-                    if (isRndere) {
-                        continue;
-                    }
+                    if (isRndere) { continue; }
                     isRndere = true;
                 }
                 let checkbox: Element =
-                    this.createCheckbox(value, this.getCheckedState(isColFiltered, this.values[uid]), getValue('dataObj', data[i]));
+                    this.createCheckbox(
+                        value as string, this.getCheckedState(isColFiltered, this.values[uid]), getValue('dataObj', data[i]));
                 cBoxes.appendChild(createCboxWithWrap(uid, checkbox, 'e-ftrchk'));
             }
             this.cBox.innerHTML = '';

@@ -1,6 +1,6 @@
 import { Component, Property, Event, EmitType, EventHandler, L10n, setValue, getValue, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { NotifyPropertyChanges, INotifyPropertyChanged, detach, Internationalization, getUniqueID, closest } from '@syncfusion/ej2-base';
-import { addClass, removeClass } from '@syncfusion/ej2-base';
+import { addClass, removeClass, createElement } from '@syncfusion/ej2-base';
 import { FloatLabelType, Input, InputObject } from '../input/input';
 import { TextBoxModel} from './textbox-model';
 
@@ -684,6 +684,16 @@ export class TextBox extends Component<HTMLInputElement | HTMLTextAreaElement> i
         super.destroy();
     }
 
+    /**
+     * Adding the icons to the TextBox component.
+     * @param { string } position - Specify the icon placement on the TextBox. Possible values are append and prepend.
+     * @param { string | string[] } iconClass - Icon classes which are need to add to the span element which is going to created.
+     * Span element acts as icon or button element for TextBox.
+     * @return {void}
+     */
+    public addIcon(position: string, icons: string | string[]): void {
+        Input.addIcon(position, icons, this.textboxWrapper.container, this.respectiveElement, this.createElement);
+    }
 
     /**
      * Gets the properties to be maintained in the persisted state.
@@ -747,7 +757,11 @@ export class TextBox extends Component<HTMLInputElement | HTMLTextAreaElement> i
     public focusIn(): void {
         if (document.activeElement !== this.respectiveElement && this.enabled) {
             this.respectiveElement.focus();
-            addClass([this.textboxWrapper.container], [TEXTBOX_FOCUS]);
+            if (this.textboxWrapper.container.classList.contains('e-input-group')
+             || this.textboxWrapper.container.classList.contains('e-outline')
+             || this.textboxWrapper.container.classList.contains('e-filled')) {
+                addClass([this.textboxWrapper.container], [TEXTBOX_FOCUS]);
+            }
         }
     }
 
@@ -758,7 +772,11 @@ export class TextBox extends Component<HTMLInputElement | HTMLTextAreaElement> i
     public focusOut(): void {
         if (document.activeElement === this.respectiveElement && this.enabled) {
             this.respectiveElement.blur();
-            removeClass([this.textboxWrapper.container], [TEXTBOX_FOCUS]);
+            if (this.textboxWrapper.container.classList.contains('e-input-group')
+             || this.textboxWrapper.container.classList.contains('e-outline')
+             || this.textboxWrapper.container.classList.contains('e-filled')) {
+                removeClass([this.textboxWrapper.container], [TEXTBOX_FOCUS]);
+            }
         }
     }
 }

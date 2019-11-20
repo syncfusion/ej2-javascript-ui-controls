@@ -319,7 +319,7 @@ export class ExcelFilterBase extends CheckBoxFilterBase {
     }
     private removeDialog(): void {
         if (isBlazor()) {
-            let columns: Column[] = this.options.columns || [];
+            let columns: Column[] = this.options.columns as Column[] || [];
             for (let i: number = 0; i < columns.length; i++) {
                 if (columns[i].filterTemplate) {
                     let tempID: string = this.parent.element.id + columns[i].uid + 'filterTemplate';
@@ -470,7 +470,7 @@ export class ExcelFilterBase extends CheckBoxFilterBase {
         let optr: string = this.options.type + 'Operator';
         let dropDatasource: { [key: string]: Object }[] = this.customFilterOperators[optr];
         this.optrData = dropDatasource;
-        let selectedValue: string = this.dropSelectedVal(this.options.column, predicates, isFirst);
+        let selectedValue: string = this.dropSelectedVal(this.options.column as Column, predicates, isFirst);
 
         //Trailing three dots are sliced.
         let menuText: string = '';
@@ -483,7 +483,7 @@ export class ExcelFilterBase extends CheckBoxFilterBase {
                 selectedValue = this.getLocalizedLabel(isFirst ? 'GreaterThanOrEqual' : 'LessThanOrEqual');
             }
         }
-        let col: Column = this.options.column;
+        let col: Column = this.options.column as Column;
         this.dropOptr = new DropDownList(extend(
             {
                 dataSource: dropDatasource,
@@ -620,12 +620,12 @@ export class ExcelFilterBase extends CheckBoxFilterBase {
         let fltrPredicates: Object[] = this.options.filteredColumns.filter((col: Column) => col.field === column);
         if (this.options.column.filterTemplate) {
             let data: Object = {};
-            let columnObj: Column = this.options.column;
+            let columnObj: Column = this.options.column as Column;
             if (isFilteredCol && elementId) {
                 data = this.getExcelFilterData(elementId, data, columnObj, predicates, fltrPredicates);
             }
             let tempID: string = this.parent.element.id + columnObj.uid + 'filterTemplate';
-            let element: Element[] = this.options.column.getFilterTemplate()(data, this.parent, 'filterTemplate', tempID);
+            let element: Element[] = (this.options.column as Column).getFilterTemplate()(data, this.parent, 'filterTemplate', tempID);
             appendChildren(valueDiv, element);
             if (isBlazor()) {
                 valueDiv.children[0].classList.add(elementId);
@@ -762,7 +762,7 @@ export class ExcelFilterBase extends CheckBoxFilterBase {
 
     /* tslint:disable-next-line:max-line-length */
     private renderAutoComplete(options: IFilterArgs, column: string, inputValue: HTMLElement, fValue: string | number | Date | boolean, isRtl: boolean): void {
-        let colObj: Column = this.options.column;
+        let colObj: Column = this.options.column as Column;
         let isForeignColumn: boolean = this.isForeignColumn(colObj);
         let dataSource: Object = isForeignColumn ? colObj.dataSource : options.dataSource;
         let fields: Object = { value: isForeignColumn ? colObj.foreignKeyValue : column };

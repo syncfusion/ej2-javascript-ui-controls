@@ -54,11 +54,14 @@ export function setTime(date: Date, time: number): Date {
     return date;
 }
 export function resetTime(date: Date): Date {
-    date.setHours(0, 0, 0, 0);
-    return date;
+    return new Date(date.getFullYear(), date.getMonth(), date.getDate());
 }
 export function getDateInMs(date: Date): number {
-    return date.getTime() - new Date(date.getFullYear(), date.getMonth(), date.getDate(), 0, 0, 0).getTime();
+    let sysDateOffset: number = new Date(date.getFullYear(), date.getMonth(), date.getDate(), 0, 0, 0).getTimezoneOffset();
+    let dateOffset: number = date.getTimezoneOffset();
+    let tzOffsetDiff: number = dateOffset - sysDateOffset;
+    return ((date.getTime() - new Date(date.getFullYear(), date.getMonth(), date.getDate(), 0, 0, 0).getTime())
+        - (tzOffsetDiff * 60 * 1000));
 }
 export function getDateCount(startDate: Date, endDate: Date): number {
     return (endDate.getTime() - startDate.getTime()) / MS_PER_DAY;
@@ -105,7 +108,7 @@ export function getMaxDays(d: Date): number {
 export function getDaysCount(startDate: number, endDate: number): number {
     let strTime: Date = resetTime(new Date(startDate));
     let endTime: Date = resetTime(new Date(endDate));
-    return Math.floor((endTime.getTime() - strTime.getTime()) / MS_PER_DAY);
+    return Math.round((endTime.getTime() - strTime.getTime()) / MS_PER_DAY);
 }
 export function getDateFromString(date: string): Date {
     return date.indexOf('Date') !== -1 ? new Date(parseInt(date.match(/\d+/g).toString(), 10)) :

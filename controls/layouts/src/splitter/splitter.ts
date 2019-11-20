@@ -1696,12 +1696,14 @@ export class Splitter extends Component<HTMLElement> {
                 let eleVal: HTMLElement = <HTMLElement> document.querySelector(<string>val);
                 if (!isNullOrUndefined(eleVal)) {
                     this.templateElement.push(eleVal);
-                    eleVal.style.display = '';
+                    if (eleVal.style.display === 'none') {
+                        eleVal.style.removeProperty('display');
+                    }
                     if (eleVal.getAttribute('style') === '') {
                         eleVal.removeAttribute('style');
                     }
-                    val = eleVal.outerHTML.trim();
-                    detach(eleVal);
+                    ele.appendChild(eleVal);
+                    return;
                 } else {
                     val = (val as string).trim();
                 }

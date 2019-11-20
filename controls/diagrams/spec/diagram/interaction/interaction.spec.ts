@@ -2235,6 +2235,32 @@ describe('Diagram Control', () => {
             expect(diagram.nodes.length == 4).toBe(true);
             done();
         });
+        it('checking Text wraps while resizing', (done: Function) => {
+            diagram.tool = DiagramTools.DrawOnce
+            expect(diagram.nodes.length == 4).toBe(true);
+            let nodes: NodeModel = {
+                id: 'node5', width: 100, height: 100,
+                shape: { type: 'Text'},
+            };
+            diagram.drawingObject = nodes;
+            let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+            mouseEvents.dragAndDropEvent(diagramCanvas, 100, 100, 150, 150);
+            (document.getElementById(diagram.element.id + '_editBox') as HTMLTextAreaElement).value = '[fg1 fg2 fg3 fg4 fg5 fg6 fg7 fg8 fg9 fg10 fg11 fg12';
+            mouseEvents.keyDownEvent(diagramCanvas, 'Escape');
+            expect(diagram.nodes.length == 5).toBe(true);
+
+            //reducing size
+            let topLeft1: PointModel = (diagram.nodes[4] as NodeModel).wrapper.bounds.bottomRight;
+
+            mouseEvents.clickEvent(diagramCanvas, 142, 150);
+
+            mouseEvents.dragAndDropEvent(diagramCanvas, topLeft1.x, topLeft1.y, topLeft1.x - 10, topLeft1.y - 10);
+
+            expect(diagram.nodes[4].offsetX == 112 && diagram.nodes[4].offsetY == 120 &&
+                Math.round(diagram.nodes[4].width) == 40 && Math.round(diagram.nodes[4].height) == 40
+            ).toBe(true);
+            done();
+        });
     });
 
     describe('Nudge testing and Shapes on the BPMN connector', () => {

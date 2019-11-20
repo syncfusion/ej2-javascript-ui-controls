@@ -97,6 +97,7 @@ class PivotUtil {
             rows: extend([], dataSourceSettings.rows, null, true),
             columns: extend([], dataSourceSettings.columns, null, true),
             filters: extend([], dataSourceSettings.filters, null, true),
+            values: extend([], dataSourceSettings.values, null, true),
             filterSettings: extend([], dataSourceSettings.filterSettings, null, true),
             sortSettings: extend([], dataSourceSettings.sortSettings, null, true),
             drilledMembers: extend([], dataSourceSettings.drilledMembers, null, true),
@@ -136,6 +137,7 @@ class PivotUtil {
                     rows: dataSourceSettings.rows,
                     columns: dataSourceSettings.columns,
                     filters: dataSourceSettings.filters,
+                    values: dataSourceSettings.values,
                     filterSettings: dataSourceSettings.filterSettings,
                     sortSettings: dataSourceSettings.sortSettings,
                     drilledMembers: dataSourceSettings.drilledMembers,
@@ -221,6 +223,8 @@ class PivotEngine {
         this.data = [];
         /** @hidden */
         this.actualData = [];
+        /** @hidden */
+        this.groupRawIndex = {};
         this.allowDataCompression = false;
         this.dataSourceSettings = {};
         this.frameHeaderObjectsCollection = false;
@@ -289,6 +293,7 @@ class PivotEngine {
         this.allowValueFilter = dataSource.allowValueFilter;
         this.isValueFilterEnabled = false;
         this.enableValueSorting = customProperties ? customProperties.enableValueSorting : false;
+        this.isDrillThrough = customProperties ? (customProperties.isDrillThrough ? customProperties.isDrillThrough : false) : false;
         this.valueContent = [];
         this.dataSourceSettings = dataSource;
         if (!(dataSource.dataSource instanceof DataManager)) {
@@ -343,7 +348,6 @@ class PivotEngine {
                 : undefined;
             this.allowDataCompression = this.pageSettings && this.pageSettings.allowDataCompression;
             this.savedFieldList = customProperties ? customProperties.savedFieldList : undefined;
-            this.isDrillThrough = customProperties ? (customProperties.isDrillThrough ? customProperties.isDrillThrough : false) : false;
             this.getFieldList(fields, this.enableSort, dataSource.allowValueFilter);
             this.fillFieldMembers(this.data, this.indexMatrix);
             this.updateSortSettings(dataSource.sortSettings, this.enableSort);
@@ -374,6 +378,9 @@ class PivotEngine {
         });
         let groupRawData = {};
         let finalData = [];
+        this.groupRawIndex = {};
+        let groupKeys = {};
+        let indexLength = 0;
         for (let i = 0; i < realData.length; i++) {
             let currData = realData[i];
             let members = [];
@@ -426,10 +433,18 @@ class PivotEngine {
                         }
                     }
                 }
+                if (this.isDrillThrough) {
+                    this.groupRawIndex[groupKeys[memberJoin]].push(i);
+                }
             }
             else {
                 groupRawData[memberJoin] = currData;
                 finalData.push(currData);
+                if (this.isDrillThrough) {
+                    this.groupRawIndex[indexLength] = [i];
+                    groupKeys[memberJoin] = indexLength;
+                    indexLength++;
+                }
             }
         }
         return finalData;
@@ -4034,6 +4049,8 @@ const conditionalFormatting = 'conditionalFormatting';
 const beforePdfExport = 'beforePdfExport';
 /** @hidden */
 const beforeExcelExport = 'beforeExcelExport';
+/** @hidden */
+const memberFiltering = 'memberFiltering';
 /**
  * Specifies pivot internal events
  */
@@ -8309,6 +8326,8 @@ class DrillThroughDialog {
      * @hidden
      */
     constructor(parent) {
+        /** @hidden */
+        this.indexString = [];
         this.isUpdated = false;
         this.gridIndexObjects = {};
         this.gridData = [];
@@ -8334,7 +8353,8 @@ class DrillThroughDialog {
                 /* tslint:disable:align */
                 this.drillThroughGrid.setProperties({
                     dataSource: this.parent.editSettings.allowEditing ?
-                        this.dataWithPrimarykey(eventArgs) : this.gridData, height: 300
+                        this.dataWithPrimarykey(eventArgs) : this.gridData,
+                    height: !this.parent.editSettings.allowEditing ? 300 : 220
                 }, true);
                 /* tslint:enable:align */
                 this.drillThroughGrid.enableVirtualization = !this.parent.editSettings.allowEditing;
@@ -8586,7 +8606,7 @@ class DrillThroughDialog {
         }
     }
     dataWithPrimarykey(eventArgs) {
-        let indexString = Object.keys(eventArgs.currentCell.indexObject);
+        let indexString = this.indexString.length > 0 ? this.indexString : Object.keys(eventArgs.currentCell.indexObject);
         let rawData = this.gridData;
         let count = 0;
         for (let item of rawData) {
@@ -8687,9 +8707,21 @@ class DrillThrough {
                 valueCaption = engine.fieldList[pivotValue.actualText.toString()] ?
                     engine.fieldList[pivotValue.actualText.toString()].caption : pivotValue.actualText.toString();
                 aggType = engine.fieldList[pivotValue.actualText] ? engine.fieldList[pivotValue.actualText].aggregateType : '';
-                let indexArray = Object.keys(pivotValue.indexObject);
-                for (let index of indexArray) {
-                    rawData.push(this.parent.engineModule.data[Number(index)]);
+                if (this.parent.enableVirtualization && this.parent.allowDataCompression) {
+                    let indexArray = Object.keys(pivotValue.indexObject);
+                    this.drillThroughDialog.indexString = [];
+                    for (let cIndex of indexArray) {
+                        for (let aIndex of this.parent.engineModule.groupRawIndex[Number(cIndex)]) {
+                            rawData.push(this.parent.engineModule.actualData[aIndex]);
+                            this.drillThroughDialog.indexString.push(aIndex.toString());
+                        }
+                    }
+                }
+                else {
+                    let indexArray = Object.keys(pivotValue.indexObject);
+                    for (let index of indexArray) {
+                        rawData.push(this.parent.engineModule.data[Number(index)]);
+                    }
                 }
             }
             let valuetText = aggType === 'CalculatedField' ? valueCaption.toString() :
@@ -8702,8 +8734,10 @@ class DrillThrough {
                 columnHeaders: pivotValue.columnHeaders === '' ? '' : pivotValue.columnHeaders.toString().split('.').join(' - '),
                 value: valuetText + '(' + pivotValue.formattedText + ')'
             };
-            this.parent.trigger(drillThrough, eventArgs);
-            this.drillThroughDialog.showDrillThroughDialog(eventArgs);
+            let drillThrough$$1 = this;
+            this.parent.trigger(drillThrough, eventArgs, (observedArgs) => {
+                drillThrough$$1.drillThroughDialog.showDrillThroughDialog(observedArgs);
+            });
         }
     }
 }
@@ -8929,16 +8963,18 @@ class PivotChart {
             this.chartSeries = this.chartSeries.concat(currentSeries);
         }
         let seriesEvent = { series: this.chartSeries, cancel: false };
-        this.parent.trigger(chartSeriesCreated, seriesEvent);
-        if (!seriesEvent.cancel) {
-            this.bindChart();
-        }
-        else {
-            if (this.element) {
-                remove(this.element);
+        let pivotChart = this;
+        this.parent.trigger(chartSeriesCreated, seriesEvent, (observedArgs) => {
+            if (!observedArgs.cancel) {
+                pivotChart.bindChart();
             }
-            this.parent.notify(contentReady, {});
-        }
+            else {
+                if (pivotChart.element) {
+                    remove(pivotChart.element);
+                }
+                pivotChart.parent.notify(contentReady, {});
+            }
+        });
     }
     frameObjectWithKeys(series) {
         let keys = Object.keys(series);
@@ -14864,6 +14900,8 @@ let PivotView = PivotView_1 = class PivotView extends Component {
      */
     getPersistData() {
         let keyEntity = ['dataSourceSettings', 'pivotValues', 'gridSettings', 'chartSettings', 'displayOption'];
+        // tslint:disable-next-line
+        this.chartSettings['tooltipRender'] = undefined;
         return this.addOnPersist(keyEntity);
     }
     /**
@@ -15402,19 +15440,21 @@ let PivotView = PivotView_1 = class PivotView extends Component {
                 action: action,
                 currentCell: currentCell
             };
-            pivot.trigger(drill, {
+            let drillArgs = {
                 drillInfo: drilledItem,
                 pivotview: isBlazor() ? undefined : pivot
+            };
+            pivot.trigger(drill, drillArgs, (observedArgs) => {
+                if (pivot.enableVirtualization) {
+                    pivot.engineModule.drilledMembers = pivot.dataSourceSettings.drilledMembers;
+                    pivot.engineModule.onDrill(drilledItem);
+                }
+                else {
+                    pivot.engineModule.generateGridData(pivot.dataSourceSettings);
+                }
+                pivot.setProperties({ pivotValues: pivot.engineModule.pivotValues }, true);
+                pivot.renderPivotGrid();
             });
-            if (pivot.enableVirtualization) {
-                pivot.engineModule.drilledMembers = pivot.dataSourceSettings.drilledMembers;
-                pivot.engineModule.onDrill(drilledItem);
-            }
-            else {
-                pivot.engineModule.generateGridData(pivot.dataSourceSettings);
-            }
-            pivot.setProperties({ pivotValues: pivot.engineModule.pivotValues }, true);
-            pivot.renderPivotGrid();
             //});
         }
         else {
@@ -16905,6 +16945,9 @@ __decorate([
 ], PivotView.prototype, "conditionalFormatting", void 0);
 __decorate([
     Event()
+], PivotView.prototype, "memberFiltering", void 0);
+__decorate([
+    Event()
 ], PivotView.prototype, "cellClick", void 0);
 __decorate([
     Event()
@@ -17839,8 +17882,8 @@ class DataSourceUpdate {
                             break;
                     }
                     if (isBlazor()) {
-                        this.pivotButton.updateDataSource();
-                        this.pivotButton.axisField.render();
+                        dataSourceUpdate.parent.control.pivotButtonModule.updateDataSource();
+                        dataSourceUpdate.parent.control.axisFieldModule.render();
                     }
                 }
             });
@@ -21123,28 +21166,40 @@ class PivotButton {
             focusElement.focus();
             return;
         }
-        if (filterObject) {
-            // this.removeDataSourceSettings(fieldName);
-            filterObject = filterObject.properties ?
-                filterObject.properties : filterObject;
-            filterObject.type = type;
-            filterObject.measure = measure;
-            filterObject.condition = operator;
-            filterObject.value1 = filterType === 'date' ? new Date(operand1) : operand1;
-            filterObject.value2 = filterType === 'date' ? new Date(operand2) : operand2;
-            if (this.parent.dataType === 'olap') {
-                filterObject.selectedField = levelName;
+        let filter = {
+            cancel: false,
+            filterSettings: filterItem,
+            dataSourceSettings: this.parent.dataSourceSettings
+        };
+        this.parent.pivotGridModule ?
+            this.parent.pivotGridModule.trigger(memberFiltering, filter) :
+            this.parent.trigger(memberFiltering, filter);
+        if (!filter.cancel) {
+            if (filterObject) {
+                // this.removeDataSourceSettings(fieldName);
+                filterObject = filterObject.properties ?
+                    filterObject.properties : filterObject;
+                filterObject.type = type;
+                filterObject.measure = measure;
+                filterObject.condition = operator;
+                filterObject.value1 = filterType === 'date' ? new Date(operand1) : operand1;
+                filterObject.value2 = filterType === 'date' ? new Date(operand2) : operand2;
+                if (this.parent.dataType === 'olap') {
+                    filterObject.selectedField = levelName;
+                }
             }
-        }
-        else {
-            this.parent.dataSourceSettings.filterSettings.push(filterItem);
+            else {
+                this.parent.dataSourceSettings.filterSettings.push(filterItem);
+            }
         }
         if (type !== 'Value') {
             this.parent.lastFilterInfo = this.parent.pivotCommon.eventBase.getFilterItemByName(fieldName);
         }
         this.dialogPopUp.close();
-        this.refreshPivotButtonState(fieldName, true);
-        this.updateDataSource(true);
+        if (!filter.cancel) {
+            this.refreshPivotButtonState(fieldName, true);
+            this.updateDataSource(true);
+        }
     }
     ClearFilter(e) {
         let dialogElement = this.dialogPopUp.element;
@@ -21329,30 +21384,42 @@ class PivotButton {
         if (this.parent.dataType === 'olap') {
             this.removeDataSourceSettings(fieldName);
         }
-        let filterObject = this.parent.pivotCommon.eventBase.getFilterItemByName(fieldName);
-        if (filterObject) {
-            for (let i = 0; i < this.parent.dataSourceSettings.filterSettings.length; i++) {
-                if (this.parent.dataSourceSettings.filterSettings[i].name === fieldName) {
-                    this.parent.dataSourceSettings.filterSettings.splice(i, 1);
-                    break;
+        let filter = {
+            filterSettings: filterItem,
+            dataSourceSettings: this.parent.dataSourceSettings,
+            cancel: false
+        };
+        this.parent.pivotGridModule ?
+            this.parent.pivotGridModule.trigger(memberFiltering, filter) :
+            this.parent.trigger(memberFiltering, filter);
+        if (!filter.cancel) {
+            let filterObject = this.parent.pivotCommon.eventBase.getFilterItemByName(fieldName);
+            if (filterObject) {
+                for (let i = 0; i < this.parent.dataSourceSettings.filterSettings.length; i++) {
+                    if (this.parent.dataSourceSettings.filterSettings[i].name === fieldName) {
+                        this.parent.dataSourceSettings.filterSettings.splice(i, 1);
+                        break;
+                    }
                 }
+                this.parent.dataSourceSettings.filterSettings.push(filterItem);
             }
-            this.parent.dataSourceSettings.filterSettings.push(filterItem);
-        }
-        else {
-            this.parent.dataSourceSettings.filterSettings.push(filterItem);
+            else if (!filter.cancel) {
+                this.parent.dataSourceSettings.filterSettings.push(filterItem);
+            }
         }
         this.dialogPopUp.close();
-        this.refreshPivotButtonState(fieldName, isNodeUnChecked);
-        if (!isNodeUnChecked) {
-            this.removeDataSourceSettings(fieldName);
-        }
-        this.parent.lastFilterInfo = filterItem;
-        this.updateDataSource(true);
-        let thisObj = this;
-        //setTimeout(() => {
-        if (thisObj.parent instanceof PivotFieldList) {
-            thisObj.axisField.render();
+        if (!filter.cancel) {
+            this.refreshPivotButtonState(fieldName, isNodeUnChecked);
+            if (!isNodeUnChecked) {
+                this.removeDataSourceSettings(fieldName);
+            }
+            this.parent.lastFilterInfo = filterItem;
+            this.updateDataSource(true);
+            let thisObj = this;
+            //setTimeout(() => {
+            if (thisObj.parent instanceof PivotFieldList) {
+                thisObj.axisField.render();
+            }
         }
         //});
     }
@@ -22345,6 +22412,9 @@ __decorate$4([
 __decorate$4([
     Event()
 ], PivotFieldList.prototype, "enginePopulating", void 0);
+__decorate$4([
+    Event()
+], PivotFieldList.prototype, "memberFiltering", void 0);
 __decorate$4([
     Event()
 ], PivotFieldList.prototype, "enginePopulated", void 0);
@@ -24660,10 +24730,12 @@ class ConditionalFormatting {
                 fontSize: '12px'
             }
         };
-        this.parent.trigger(conditionalFormatting, format);
-        this.refreshConditionValues();
-        this.newFormat.push(format);
-        this.addFormat();
+        let conditionalFormating = this;
+        this.parent.trigger(conditionalFormatting, format, (observedArgs) => {
+            conditionalFormating.refreshConditionValues();
+            conditionalFormating.newFormat.push(observedArgs);
+            conditionalFormating.addFormat();
+        });
     }
     applyButtonClick() {
         if (this.refreshConditionValues()) {
@@ -26525,5 +26597,5 @@ class NumberFormatting {
  * Export PivotGrid components
  */
 
-export { GroupingBarSettings, CellEditSettings, ConditionalSettings, HyperlinkSettings, DisplayOption, PivotView, Render, ExcelExport$1 as ExcelExport, PDFExport, KeyboardInteraction, VirtualScroll$1 as VirtualScroll, DrillThrough, PivotChart, PivotFieldList, TreeViewRenderer, AxisFieldRenderer, AxisTableRenderer, DialogRenderer, EventBase, NodeStateModified, DataSourceUpdate, FieldList, CommonKeyboardInteraction, GroupingBar, CalculatedField, ConditionalFormatting, PivotCommon, load, enginePopulating, enginePopulated, onFieldDropped, beforePivotTableRender, afterPivotTableRender, beforeExport, excelHeaderQueryCellInfo, pdfHeaderQueryCellInfo, excelQueryCellInfo, pdfQueryCellInfo, onPdfCellRender, dataBound, queryCellInfo, headerCellInfo, hyperlinkCellClick, resizing, resizeStop, cellClick, drillThrough, beforeColumnsRender, selected, cellSelecting, drill, cellSelected, cellDeselected, rowSelected, rowDeselected, beginDrillThrough, saveReport, fetchReport, loadReport, renameReport, removeReport, newReport, toolbarRender, toolbarClick, chartTooltipRender, chartLoaded, chartLoad, chartResized, chartAxisLabelRender, chartSeriesCreated, aggregateCellInfo, contextMenuClick, contextMenuOpen, fieldListRefreshed, conditionalFormatting, beforePdfExport, beforeExcelExport, initialLoad, uiUpdate, scroll, contentReady, dataReady, initSubComponent, treeViewUpdate, pivotButtonUpdate, initCalculatedField, click, initToolbar, initFormatting, ErrorDialog, FilterDialog, PivotContextMenu, AggregateMenu, Toolbar$2 as Toolbar, NumberFormatting, PivotEngine, PivotUtil, OlapEngine, MDXQuery };
+export { GroupingBarSettings, CellEditSettings, ConditionalSettings, HyperlinkSettings, DisplayOption, PivotView, Render, ExcelExport$1 as ExcelExport, PDFExport, KeyboardInteraction, VirtualScroll$1 as VirtualScroll, DrillThrough, PivotChart, PivotFieldList, TreeViewRenderer, AxisFieldRenderer, AxisTableRenderer, DialogRenderer, EventBase, NodeStateModified, DataSourceUpdate, FieldList, CommonKeyboardInteraction, GroupingBar, CalculatedField, ConditionalFormatting, PivotCommon, load, enginePopulating, enginePopulated, onFieldDropped, beforePivotTableRender, afterPivotTableRender, beforeExport, excelHeaderQueryCellInfo, pdfHeaderQueryCellInfo, excelQueryCellInfo, pdfQueryCellInfo, onPdfCellRender, dataBound, queryCellInfo, headerCellInfo, hyperlinkCellClick, resizing, resizeStop, cellClick, drillThrough, beforeColumnsRender, selected, cellSelecting, drill, cellSelected, cellDeselected, rowSelected, rowDeselected, beginDrillThrough, saveReport, fetchReport, loadReport, renameReport, removeReport, newReport, toolbarRender, toolbarClick, chartTooltipRender, chartLoaded, chartLoad, chartResized, chartAxisLabelRender, chartSeriesCreated, aggregateCellInfo, contextMenuClick, contextMenuOpen, fieldListRefreshed, conditionalFormatting, beforePdfExport, beforeExcelExport, memberFiltering, initialLoad, uiUpdate, scroll, contentReady, dataReady, initSubComponent, treeViewUpdate, pivotButtonUpdate, initCalculatedField, click, initToolbar, initFormatting, ErrorDialog, FilterDialog, PivotContextMenu, AggregateMenu, Toolbar$2 as Toolbar, NumberFormatting, PivotEngine, PivotUtil, OlapEngine, MDXQuery };
 //# sourceMappingURL=ej2-pivotview.es2015.js.map

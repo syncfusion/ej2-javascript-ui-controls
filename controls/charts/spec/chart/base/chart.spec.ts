@@ -364,7 +364,7 @@ describe('Chart Control', () => {
                 expect(background.getAttribute('href') != null).toBe(true);
                 done();
             }, 500);
-            chart.chartArea.backGroundImageUrl = 
+            chart.chartArea.backgroundImage = 
             'https://cdn.syncfusion.com/content/images/freetrials/essential-studio.png?v=03102019101652';
             chart.refresh();
         });
@@ -374,7 +374,7 @@ describe('Chart Control', () => {
                 expect(background.getAttribute('href') != null).toBe(true);
                 done();
             }, 500);
-            chart.backGroundImageUrl = 'https://cdn.syncfusion.com/content/images/freetrials/essential-studio.png?v=03102019101652';
+            chart.backgroundImage = 'https://cdn.syncfusion.com/content/images/freetrials/essential-studio.png?v=03102019101652';
             chart.refresh();
         });
     });

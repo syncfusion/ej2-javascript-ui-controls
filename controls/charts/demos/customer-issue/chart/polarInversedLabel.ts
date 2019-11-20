@@ -4,9 +4,9 @@
  */
 
 import {
-    Chart, Tooltip, Legend, PolarSeries, RadarSeries, Category, AreaSeries
+    Chart, Tooltip, Legend, PolarSeries, RadarSeries, Category, AreaSeries, LineSeries, Selection, IPointEventArgs
 } from '../../../src/index';
-Chart.Inject(Tooltip, Legend, PolarSeries, Category, AreaSeries, RadarSeries);
+Chart.Inject(Tooltip, Legend, PolarSeries, Category, AreaSeries, RadarSeries, LineSeries, Selection);
 
 let polar: Chart = new Chart({
  
@@ -80,3 +80,50 @@ radarYEle.onclick = () => {
     radar.dataBind();
 }
 
+
+/**
+ * Polar Chart Selection and marker for Line Series
+ */
+
+export let data1: object[] = [
+    { x: 'Jan', y: -7.1 },
+    { x: 'Feb', y: -3.7 },
+    { x: 'Mar', y: 0.8 },
+    { x: 'Apr', y: 6.3 },
+    { x: 'May', y: 13.3 },
+    { x: 'Jun', y: 18.0 },
+    { x: 'Jul', y: 19.8 },
+    { x: 'Aug', y: 18.1 },
+    { x: 'Sep', y: 13.1 },
+    { x: 'Oct', y: 4.1 },
+    { x: 'Nov', y: -3.8 },
+    { x: 'Dec', y: -6.8 },
+];
+export let data2: object[] = [
+    { x: 'Jan', y: -17.4 },
+    { x: 'Feb', y: -15.6 },
+    { x: 'Mar', y: -12.3 },
+    { x: 'Apr', y: -5.3 },
+    { x: 'May', y: 1.0 },
+    { x: 'Jun', y: 6.9 },
+    { x: 'Jul', y: 9.4 },
+    { x: 'Aug', y: 7.6 },
+    { x: 'Sep', y: 2.6 },
+    { x: 'Oct', y: -4.9 },
+    { x: 'Nov', y: -13.4 },
+    { x: 'Dec', y: -16.4 },
+];
+let polarSelectionChart: Chart = new Chart({
+    primaryXAxis: { valueType: 'Category'},
+    series: [
+        { dataSource: [{x:"Algeria",y:0.0},{x:"Argentina",y:3.0},{x:"Armenia",y:1.0},{x:"Australia",y:8.0},{x:"Austria",y:0.0}], xName: 'x', yName: 'y', marker: { visible: true }, name: 'TempC', type: 'Polar' },
+        //{ dataSource: data2, xName: 'x', yName: 'y', marker: { visible: true }, name: 'TempF', type: 'Polar' },
+    ],
+    legendSettings: { visible: true },
+    selectionMode: 'Point',
+    title: 'Marker click on YAxis line issue',
+    pointClick: (value: IPointEventArgs) => {
+        //console.log(value.point.x + ':' + value.point.y);
+    }
+});
+polarSelectionChart.appendTo('#polarMarker');

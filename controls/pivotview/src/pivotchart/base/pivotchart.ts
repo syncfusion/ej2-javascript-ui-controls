@@ -254,15 +254,18 @@ export class PivotChart {
             this.chartSeries = this.chartSeries.concat(currentSeries);
         }
         let seriesEvent: ChartSeriesCreatedEventArgs = { series: this.chartSeries, cancel: false };
-        this.parent.trigger(events.chartSeriesCreated, seriesEvent);
-        if (!seriesEvent.cancel) {
-            this.bindChart();
-        } else {
-            if (this.element) {
-                remove(this.element);
+        let pivotChart : PivotChart = this;
+        this.parent.trigger(events.chartSeriesCreated, seriesEvent, (observedArgs: ChartSeriesCreatedEventArgs) => {
+            if (!observedArgs.cancel) {
+                pivotChart.bindChart();
+            } else {
+                if (pivotChart.element) {
+                    remove(pivotChart.element);
+                }
+                pivotChart.parent.notify(events.contentReady, {});
             }
-            this.parent.notify(events.contentReady, {});
-        }
+        });
+        
     }
 
     private frameObjectWithKeys(series: any): SeriesModel | AxisModel {

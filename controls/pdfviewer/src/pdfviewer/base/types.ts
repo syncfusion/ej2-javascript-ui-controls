@@ -95,3 +95,8 @@ export enum AnnotationResizerLocation {
     Corners = 1,
     Edges = 2
 }
+
+/**
+ * set the ZoomMode on rendering
+ */
+export type ZoomMode = 'Default' | 'FitToWidth' | 'FitToPage';

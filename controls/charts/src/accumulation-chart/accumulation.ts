@@ -147,7 +147,7 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
      * @default null
      */
     @Property(null)
-    public backGroundImageUrl: string;
+    public backgroundImage: string;
 
     /**
      * Center of pie
@@ -1197,7 +1197,7 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
             this.redraw
         );
         // to draw back ground image for accumulation chart        
-        let backGroundImage: string = this.backGroundImageUrl;
+        let backGroundImage: string = this.backgroundImage;
         if (backGroundImage) {
             let image: ImageOption = new ImageOption(
                 this.availableSize.height - padding,

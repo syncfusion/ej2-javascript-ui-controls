@@ -15543,9 +15543,17 @@ class Layout {
         }
         if (element instanceof ListTextElementBox || this.isFieldCode || element instanceof BookmarkElementBox ||
             element instanceof EditRangeEndElementBox || element instanceof EditRangeStartElementBox) {
-            if (element instanceof BookmarkElementBox && element.bookmarkType === 0 &&
-                !this.viewer.bookmarks.containsKey(element.name)) {
-                this.viewer.bookmarks.add(element.name, element);
+            if (element instanceof BookmarkElementBox) {
+                if (element.bookmarkType === 0 && !this.viewer.bookmarks.containsKey(element.name)) {
+                    this.viewer.bookmarks.add(element.name, element);
+                }
+                else if (element.bookmarkType === 1 && this.viewer.bookmarks.containsKey(element.name)) {
+                    let bookmrkElement = this.viewer.bookmarks.get(element.name);
+                    if (isNullOrUndefined(bookmrkElement.reference)) {
+                        bookmrkElement.reference = element;
+                        element.reference = bookmrkElement;
+                    }
+                }
             }
             if (isNullOrUndefined(element.nextElement) && this.viewer.clientActiveArea.width > 0 && !element.line.isLastLine()) {
                 this.moveElementFromNextLine(line);
@@ -17519,7 +17527,7 @@ class Layout {
             let cellWidget = row.childWidgets[i];
             // tslint:disable-next-line:max-line-length
             rowSpan = (isNullOrUndefined(cellWidget) || isNullOrUndefined(cellWidget.cellFormat)) ? rowSpan : cellWidget.cellFormat.rowSpan;
-            this.updateSpannedRowCollection(rowSpan, row);
+            this.updateSpannedRowCollection(rowSpan, row, cellWidget);
         }
         if (!isNullOrUndefined(row.ownerTable)) {
             for (let i = 0; i < row.ownerTable.spannedRowCollection.length; i++) {
@@ -17549,7 +17557,7 @@ class Layout {
             // tslint:disable-next-line:max-line-length
             rowSpan = (isNullOrUndefined(cellWidget) || isNullOrUndefined(cellWidget.cellFormat)) ? rowSpan : cellWidget.cellFormat.rowSpan;
             //To update Row height- if row has row span value greater than 1, need to add it in spannedRowCollection            
-            this.updateSpannedRowCollection(rowSpan, row);
+            this.updateSpannedRowCollection(rowSpan, row, cellWidget);
             if (rowIndex - cellWidget.rowIndex === rowSpan - 1) {
                 let mergedCellHeight = cellWidget.y + cellWidget.height + cellWidget.margin.bottom - row.y;
                 if (row.height < mergedCellHeight) {
@@ -17559,7 +17567,7 @@ class Layout {
         }
     }
     //if row has row span value greater than 1, need to add it in spannedRowCollection
-    updateSpannedRowCollection(rowSpan, row) {
+    updateSpannedRowCollection(rowSpan, row, cellWidget) {
         if (rowSpan > 1 && !isNullOrUndefined(row.ownerTable)) {
             //Checks the rowspan is already exist in the list
             if (!row.ownerTable.spannedRowCollection.containsKey(row.index + rowSpan - 1)) {
@@ -17721,6 +17729,10 @@ class Layout {
         while (count < rowWidgets.length) {
             count = rowWidgets.length;
             if (row.ownerTable.isInsideTable || (viewer.splittedCellWidgets.length === 0 && tableRowWidget.y + tableRowWidget.height + cellSpacing <= viewer.clientArea.bottom)) {
+                if (this.isVerticalMergedCellContinue(row) && (tableRowWidget.y === viewer.clientArea.y
+                    || tableRowWidget.y === this.viewer.clientArea.y + tableRowWidget.ownerTable.headerHeight)) {
+                    this.insertSplittedCellWidgets(viewer, tableWidgets, tableRowWidget, tableRowWidget.index - 1);
+                }
                 this.addWidgetToTable(viewer, tableWidgets, rowWidgets, tableRowWidget, undefined, isInitialLayout);
                 if (viewer.splittedCellWidgets.length > 0 && isNullOrUndefined(rowWidgets[rowWidgets.length - 1].nextRow)) {
                     count--;
@@ -18241,7 +18253,7 @@ class Layout {
                 if (splittedCell.y !== rowWidget.y + splittedCell.margin.top + cellSpacing) {
                     this.updateChildLocationForRow(rowWidget.y, rowWidget);
                 }
-                viewer.splittedCellWidgets = [];
+                viewer.splittedCellWidgets.splice(i, 1);
                 return true;
             }
         }
@@ -18256,6 +18268,21 @@ class Layout {
     // tslint:disable-next-line:max-line-length
     insertEmptySplittedCellWidget(currentRow, tableCollection, left, index, previousRowIndex) {
         let tableWidget = tableCollection[tableCollection.length - 1];
+        let previousRow;
+        for (let j = tableCollection.length - 1; j >= 0; j--) {
+            let table = tableCollection[j];
+            for (let z = table.childWidgets.length - 1; z >= 0; z--) {
+                let row = table.childWidgets[z];
+                if (row.index === previousRowIndex) {
+                    previousRow = row;
+                    break;
+                }
+            }
+        }
+        if (previousRow) {
+            tableWidget = previousRow.ownerTable;
+            previousRowIndex = previousRow.indexInOwner;
+        }
         for (let i = previousRowIndex; i >= 0; i--) {
             let rowWidget = tableWidget.childWidgets[i];
             let previousLeft = rowWidget.x;
@@ -18269,8 +18296,9 @@ class Layout {
                         let emptyCellWidget = this.createCellWidget(cellWidget);
                         currentRow.childWidgets.splice(index, 0, emptyCellWidget);
                         emptyCellWidget.containerWidget = currentRow;
+                        this.updateChildLocationForRow(currentRow.y, currentRow);
+                        return;
                     }
-                    return;
                 }
                 previousLeft += cellWidget.margin.left + cellWidget.width + cellWidget.margin.right;
             }
@@ -19259,7 +19287,9 @@ class Layout {
         let viewer = this.viewer;
         let tableWidget = tables[tables.length - 1];
         if (!table.isInsideTable) {
-            this.updateHeightForTableWidget(tables, rows, tableWidget, endRowWidget);
+            for (let i = 0; i < tables.length; i++) {
+                this.updateHeightForTableWidget(tables, rows, tables[i], endRowWidget);
+            }
             if (tableWidget.childWidgets.length > 0 && tableWidget.y !== tableWidget.childWidgets[0].y) {
                 tableWidget.y = tableWidget.childWidgets[0].y;
             }
@@ -21355,7 +21385,7 @@ class Renderer {
         }
         if (tableCell.ownerTable.tableFormat.cellSpacing > 0 || tableCell.ownerRow.rowIndex === tableCell.ownerTable.childWidgets.length - 1
             || (tableCell.cellFormat.rowSpan > 1
-                && tableCell.ownerRow.rowIndex + tableCell.cellFormat.rowSpan === tableCell.ownerTable.childWidgets.length) ||
+                && tableCell.ownerRow.rowIndex + tableCell.cellFormat.rowSpan >= tableCell.ownerTable.childWidgets.length) ||
             !nextRowIsInCurrentTableWidget) {
             // tslint:disable-next-line:max-line-length
             border = (tableCell.cellFormat.rowSpan > 1 && tableCell.ownerRow.rowIndex + tableCell.cellFormat.rowSpan === tableCell.ownerTable.childWidgets.length) ?
@@ -28902,6 +28932,8 @@ class HtmlExport {
     constructor() {
         /* tslint:disable:no-any */
         this.document = undefined;
+        this.prevListLevel = undefined;
+        this.isOrdered = undefined;
         /* tslint:disable:no-any */
         /**
          * @private
@@ -28932,9 +28964,13 @@ class HtmlExport {
                 string += this.serializeParagraph(block);
             }
             else {
+                string += this.closeList();
                 string += this.serializeTable(block);
             }
         }
+        string += this.closeList();
+        this.prevListLevel = undefined;
+        this.isOrdered = undefined;
         return string;
     }
     // Serialize Paragraph 
@@ -28944,18 +28980,147 @@ class HtmlExport {
     serializeParagraph(paragraph) {
         let blockStyle = '';
         let isList = false;
+        let isPreviousList = false;
+        if (!isNullOrUndefined(this.prevListLevel)) {
+            isPreviousList = true;
+        }
         let tagAttributes = [];
+        let listLevel = undefined;
+        if (!isNullOrUndefined(paragraph.paragraphFormat.listFormat)) {
+            listLevel = this.getListLevel(paragraph);
+            if (!isPreviousList) {
+                this.prevListLevel = listLevel;
+            }
+            if (this.prevListLevel !== listLevel) {
+                isPreviousList = false;
+            }
+            this.prevListLevel = listLevel;
+        }
+        if (!isPreviousList) {
+            blockStyle += this.closeList();
+        }
+        if (!isNullOrUndefined(listLevel)) {
+            isList = true;
+        }
+        if (isList && !isPreviousList) {
+            blockStyle += this.getHtmlList(listLevel, paragraph.paragraphFormat.listFormat.listLevelNumber);
+        }
         tagAttributes.push('style="' + this.serializeParagraphStyle(paragraph, '', isList) + '"');
-        blockStyle += this.createAttributesTag('p', tagAttributes);
+        if (isList) {
+            blockStyle += this.createAttributesTag('li', tagAttributes);
+        }
+        else {
+            this.prevListLevel = undefined;
+            this.isOrdered = undefined;
+            blockStyle += this.createAttributesTag('p', tagAttributes);
+        }
         if (paragraph.inlines.length === 0) {
             //Handled to preserve non breaking space for empty paragraphs similar to MS Word behavior.
-            blockStyle += ' ';
+            blockStyle += '&nbsp';
         }
         else {
             blockStyle = this.serializeInlines(paragraph, blockStyle);
         }
-        blockStyle += this.endTag('p');
+        if (isList) {
+            blockStyle += this.endTag('li');
+            if (blockStyle.indexOf('<ul') > -1) {
+                this.isOrdered = false;
+            }
+            else if (blockStyle.indexOf('<ol') > -1) {
+                this.isOrdered = true;
+            }
+        }
+        else {
+            blockStyle += this.endTag('p');
+        }
         return blockStyle;
+    }
+    closeList() {
+        let blockStyle = '';
+        if (!isNullOrUndefined(this.isOrdered)) {
+            if (this.isOrdered) {
+                blockStyle = this.endTag('ol');
+            }
+            else {
+                blockStyle = this.endTag('ul');
+            }
+            this.isOrdered = undefined;
+        }
+        return blockStyle;
+    }
+    getListLevel(paragraph) {
+        let listLevel = undefined;
+        let list = undefined;
+        for (let i = 0; i < this.document.lists.length; i++) {
+            if (this.document.lists[i].listId === paragraph.paragraphFormat.listFormat.listId) {
+                list = this.document.lists[i];
+                break;
+            }
+        }
+        if (list) {
+            for (let j = 0; j < this.document.abstractLists.length; j++) {
+                if (this.document.abstractLists[j].abstractListId === list.abstractListId) {
+                    listLevel = this.document.abstractLists[j].levels[paragraph.paragraphFormat.listFormat.listLevelNumber];
+                    break;
+                }
+            }
+        }
+        return listLevel;
+    }
+    getHtmlList(listLevel, levelNumer) {
+        //if (start == null || (start != null && start.Paragraph != this)) {
+        //    let block: BlockAdv = this.GetPreviousBlock();
+        //    if (block instanceof ParagraphAdv) {
+        //        let previousListLevel: ListLevelAdv = (block as ParagraphAdv).ParagraphFormat.ListFormat.ListLevel;
+        //        if (previousListLevel == listLevel)
+        //            return "";
+        //    }
+        //}
+        let html = '';
+        if (listLevel.listLevelPattern === 'Bullet') {
+            html += '<ul type=\"';
+            switch (levelNumer) {
+                case 0:
+                    html += 'disc';
+                    listLevel.characterFormat.fontFamily = 'Symbol';
+                    break;
+                case 1:
+                    html += 'circle';
+                    listLevel.characterFormat.fontFamily = 'Symbol';
+                    break;
+                case 2:
+                    html += 'square';
+                    listLevel.characterFormat.fontFamily = 'Wingdings';
+                    break;
+                default:
+                    html += 'disc';
+                    listLevel.characterFormat.fontFamily = 'Symbol';
+                    break;
+            }
+            html += '\">';
+        }
+        else {
+            html += '<ol type=\"';
+            switch (listLevel.listLevelPattern) {
+                case 'LowLetter':
+                    html += 'a';
+                    break;
+                case 'UpLetter':
+                    html += 'A';
+                    break;
+                case 'LowRoman':
+                    html += 'i';
+                    break;
+                case 'UpRoman':
+                    html += 'I';
+                    break;
+                default:
+                    html += '1';
+                    break;
+            }
+            html += '\" start=\"' + listLevel.startAt.toString() + '\">';
+        }
+        return html;
     }
     //SerializeInlines
     /**
@@ -29035,6 +29200,9 @@ class HtmlExport {
         tagAttributes.push('style="' + this.serializeInlineStyle(characterFormat, '') + '"');
         spanClass += this.createAttributesTag('span', tagAttributes);
         let text = this.decodeHtmlNames(spanText.toString());
+        if (text.length === 0) {
+            text = '&nbsp';
+        }
         spanClass += text;
         spanClass += this.endTag('span');
         return spanClass.toString();
@@ -29392,24 +29560,24 @@ class HtmlExport {
         }
         propertyValue = paragraphFormat.leftIndent;
         if (isList) {
-            if (isNullOrUndefined(propertyValue)) {
-                propertyValue = -48;
-            }
-            else {
-                propertyValue -= 48;
-            }
+            // if (isNullOrUndefined(propertyValue)) {
+            //     propertyValue = -36;
+            // } else {
+            //     propertyValue -= 36;
+            // }
+            propertyValue = 0;
         }
         if (!isNullOrUndefined(propertyValue)) {
             paraStyle += 'margin-left:' + propertyValue.toString() + 'pt; ';
         }
         propertyValue = paragraphFormat.firstLineIndent;
         if (isList) {
-            if (isNullOrUndefined(propertyValue)) {
-                propertyValue = 24;
-            }
-            else {
-                propertyValue += 24;
-            }
+            // if (isNullOrUndefined(propertyValue)) {
+            //     propertyValue = 18;
+            // } else {
+            //     propertyValue += 18;
+            // }
+            propertyValue = 0;
         }
         if (!isNullOrUndefined(propertyValue) && propertyValue !== 0) {
             paraStyle += 'text-indent:' + propertyValue.toString() + 'pt;';
@@ -32117,6 +32285,15 @@ class Selection {
     get isCleared() {
         return isNullOrUndefined(this.end);
     }
+    /**
+     * Returns true if selection is in field
+     */
+    get isInField() {
+        if (!isNullOrUndefined(this.getHyperlinkField(true))) {
+            return true;
+        }
+        return false;
+    }
     getSelBookmarks() {
         let bookmarkCln = [];
         let bookmarks = this.viewer.bookmarks;
@@ -32271,6 +32448,23 @@ class Selection {
         let startPosition = this.getTextPosBasedOnLogicalIndex(start);
         let endPosition = this.getTextPosBasedOnLogicalIndex(end);
         this.selectPosition(startPosition, endPosition);
+    }
+    /**
+     * Select the current field if selection is in field
+     */
+    selectField() {
+        if (this.isInField) {
+            let fieldStart = this.getHyperlinkField(true);
+            let fieldEnd = fieldStart.fieldEnd;
+            let offset = fieldStart.line.getOffset(fieldStart, 0);
+            let startPosition = new TextPosition(this.viewer.owner);
+            startPosition.setPositionParagraph(fieldStart.line, offset);
+            let endoffset = fieldEnd.line.getOffset(fieldEnd, 1);
+            let endPosition = new TextPosition(this.viewer.owner);
+            endPosition.setPositionParagraph(fieldEnd.line, endoffset);
+            //selects the field range
+            this.viewer.selection.selectRange(startPosition, endPosition);
+        }
     }
     /**
      * Toggles the bold property of selected contents.
@@ -38752,7 +38946,7 @@ class Selection {
      * Return field if paragraph contain hyperlink field
      * @private
      */
-    getHyperlinkField() {
+    getHyperlinkField(isRetrieve) {
         if (isNullOrUndefined(this.end)) {
             return undefined;
         }
@@ -38763,11 +38957,11 @@ class Selection {
         let checkedFields = [];
         let field = undefined;
         if (isNullOrUndefined(inline)) {
-            field = this.getHyperLinkFields(this.end.paragraph, checkedFields);
+            field = this.getHyperLinkFields(this.end.paragraph, checkedFields, isRetrieve);
         }
         else {
             let paragraph = inline.line.paragraph;
-            field = this.getHyperLinkFieldInternal(paragraph, inline, checkedFields);
+            field = this.getHyperLinkFieldInternal(paragraph, inline, checkedFields, isRetrieve);
         }
         checkedFields = [];
         return field;
@@ -38775,7 +38969,7 @@ class Selection {
     /**
      * @private
      */
-    getHyperLinkFields(paragraph, checkedFields) {
+    getHyperLinkFields(paragraph, checkedFields, isRetrieve) {
         for (let i = 0; i < this.viewer.fields.length; i++) {
             if (checkedFields.indexOf(this.viewer.fields[i]) !== -1 || isNullOrUndefined(this.viewer.fields[i].fieldSeparator)) {
                 continue;
@@ -38785,7 +38979,8 @@ class Selection {
             }
             let field = this.getFieldCode(this.viewer.fields[i]);
             field = field.trim().toLowerCase();
-            if (field.match('hyperlink ') && this.paragraphIsInFieldResult(this.viewer.fields[i], paragraph)) {
+            let isParagraph = this.paragraphIsInFieldResult(this.viewer.fields[i], paragraph);
+            if ((isRetrieve || (!isRetrieve && field.match('hyperlink '))) && isParagraph) {
                 return this.viewer.fields[i];
             }
         }
@@ -38797,7 +38992,8 @@ class Selection {
     /**
      * @private
      */
-    getHyperLinkFieldInternal(paragraph, inline, fields) {
+    // tslint:disable-next-line:max-line-length
+    getHyperLinkFieldInternal(paragraph, inline, fields, isRetrieve) {
         for (let i = 0; i < this.viewer.fields.length; i++) {
             if (fields.indexOf(this.viewer.fields[i]) !== -1 || isNullOrUndefined(this.viewer.fields[i].fieldSeparator)) {
                 continue;
@@ -38807,12 +39003,13 @@ class Selection {
             }
             let fieldCode = this.getFieldCode(this.viewer.fields[i]);
             fieldCode = fieldCode.trim().toLowerCase();
-            if (fieldCode.match('hyperlink ') && (this.inlineIsInFieldResult(this.viewer.fields[i], inline) || this.isImageField())) {
+            let isInline = (this.inlineIsInFieldResult(this.viewer.fields[i], inline) || this.isImageField());
+            if ((isRetrieve || (!isRetrieve && fieldCode.match('hyperlink '))) && isInline) {
                 return this.viewer.fields[i];
             }
         }
         if (paragraph.containerWidget instanceof BodyWidget && !(paragraph instanceof HeaderFooterWidget)) {
-            return this.getHyperLinkFieldInternal(paragraph.containerWidget, inline, fields);
+            return this.getHyperLinkFieldInternal(paragraph.containerWidget, inline, fields, isRetrieve);
         }
         return undefined;
     }
@@ -44194,7 +44391,7 @@ class Editor {
      */
     handleDelete() {
         if (!this.owner.isReadOnlyMode) {
-            this.owner.editorModule.onDelete();
+            this.owner.editorModule.delete();
         }
         this.selection.checkForCursorVisibility();
     }
@@ -45435,7 +45632,7 @@ class Editor {
         this.initComplexHistory('RemoveHyperlink');
         selection.start.setPositionParagraph(fieldEnd.line, (fieldEnd.line).getOffset(fieldEnd, 0));
         selection.end.setPositionInternal(selection.start);
-        this.onDelete();
+        this.delete();
         selection.start.setPositionInternal(fieldSeparatorPosition);
         this.initHistory('Underline');
         this.updateCharacterFormatWithUpdate(selection, 'underline', 'None', false);
@@ -51807,9 +52004,9 @@ class Editor {
         }
     }
     /**
-     * @private
+     * Remove the current selected content or one character right of cursor.
      */
-    onDelete() {
+    delete() {
         this.removeEditRange = true;
         let selection = this.viewer.selection;
         if (selection.isEmpty) {
@@ -53827,7 +54024,7 @@ class Editor {
         if (tocField instanceof FieldElementBox) {
             this.selection.start.setPositionForSelection(tocField.line, tocField, 0, this.selection.start.location);
             this.selection.end.setPositionForSelection(tocField.fieldEnd.line, tocField.fieldEnd, 2, this.selection.end.location);
-            this.onDelete();
+            this.delete();
         }
         // Build TOC field code based on parameter
         code = this.constructTocFieldCode(tableOfContentsSettings);
@@ -73181,7 +73378,7 @@ class Paragraph {
             }
             let text = args.item.text;
             switch (text) {
-                case 'Single':
+                case this.localObj.getConstant('Single'):
                     this.documentEditor.selection.paragraphFormat.lineSpacing = 1;
                     break;
                 case '1.15':
@@ -73190,7 +73387,7 @@ class Paragraph {
                 case '1.5':
                     this.documentEditor.selection.paragraphFormat.lineSpacing = 1.5;
                     break;
-                case 'Double':
+                case this.localObj.getConstant('Double'):
                     this.documentEditor.selection.paragraphFormat.lineSpacing = 2;
                     break;
             }
@@ -73734,7 +73931,7 @@ class Paragraph {
     setLineSpacing() {
         let lineSpacing = this.documentEditor.selection.paragraphFormat.lineSpacing;
         if (lineSpacing === 1) {
-            this.appliedLineSpacing = 'Single';
+            this.appliedLineSpacing = this.localObj.getConstant('Single');
         }
         else if (lineSpacing === 1.15) {
             this.appliedLineSpacing = '1.15';
@@ -73743,7 +73940,7 @@ class Paragraph {
             this.appliedLineSpacing = '1.5';
         }
         else if (lineSpacing === 2) {
-            this.appliedLineSpacing = 'Double';
+            this.appliedLineSpacing = this.localObj.getConstant('Double');
         }
         else {
             this.appliedLineSpacing = '';

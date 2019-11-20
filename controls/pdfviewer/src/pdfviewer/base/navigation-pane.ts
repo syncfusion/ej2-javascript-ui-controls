@@ -346,7 +346,11 @@ export class NavigationPane {
                             let importFile: string =  e.currentTarget.result.split(',')[1];
                             // tslint:disable-next-line
                             let annotationData: any =  atob(importFile);
-                            this.pdfViewerBase.importAnnotations(JSON.parse(annotationData));
+                            if (annotationData) {
+                                // tslint:disable-next-line
+                                let jsonData: any = JSON.parse(annotationData);
+                                this.pdfViewerBase.importAnnotations(jsonData);
+                            }
                         }
                     };
                 } else {

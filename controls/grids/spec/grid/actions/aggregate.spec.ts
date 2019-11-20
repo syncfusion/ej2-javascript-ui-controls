@@ -1352,4 +1352,51 @@ describe('Aggregates Functionality testing', () => {
             grid = null;
         });
     });    
+
+    describe('Frozen columns with aggregates', () => {
+        let grid: Grid;
+        beforeAll((done: Function) => {
+            grid = createGrid(
+                {
+                    dataSource: data.slice(0,4),
+                    editSettings: { allowEditing: true, allowAdding: true, allowDeleting: true, mode: 'Batch'},
+                    toolbar: ['Add','Edit', 'Delete', 'Update', 'Cancel'],
+                    allowPaging: true,
+                    frozenColumns: 2,
+                    frozenRows: 1,
+                    columns: [
+                        { field: 'OrderID', headerText: 'Order ID', isPrimaryKey: true },
+                        { field: 'Verified', displayAsCheckBox: true, type: 'boolean' },
+                        { field: 'Freight', format: 'C1' },
+                        { field: 'OrderDate', format: 'yMd' },
+                        { field: 'EmployeeID', headerText: 'Employee ID', textAlign: 'Right' },
+                        { field: 'ShipName', headerText: 'Ship Name',},
+                        { field: 'ShipCountry', headerText: 'Ship Country' },
+                    ],
+                    aggregates: [{
+                        columns: [{
+                            type: 'Sum',
+                            field: 'Freight',
+                            footerTemplate: 'Sum: ${Sum}'
+                        },
+                        ]
+                    }]
+                },
+                done
+            );
+        });
+
+        it('Edit cell value', () => {
+            expect((grid.aggregateModule as any).footerRenderer.aggregates.aggregates["Freight - sum"].toFixed(2)).toBe('151.16');
+            grid.editModule.editCell(3, 'Freight');
+            (grid.getContent().querySelector('.e-editedbatchcell').querySelector('.e-input')as any).value = 44.34;
+            grid.editModule.batchSave();
+            expect((grid.aggregateModule as any).footerRenderer.aggregates.aggregates["Freight - sum"].toFixed(2)).toBe('154.16');
+        });
+
+        afterAll(() => {
+            destroy(grid);
+            grid = null;
+        });
+    });
 });

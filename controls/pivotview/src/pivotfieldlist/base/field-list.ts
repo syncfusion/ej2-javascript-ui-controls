@@ -11,7 +11,7 @@ import { LoadEventArgs, EnginePopulatingEventArgs, EnginePopulatedEventArgs, Agg
 import { FieldDroppedEventArgs, FieldListRefreshedEventArgs } from '../../common/base/interface';
 import { Mode } from '../../common/base/enum';
 import { PivotCommon } from '../../common/base/pivot-common';
-import { CommonArgs } from '../../common/base/interface';
+import { CommonArgs, MemberFilteringEventArgs } from '../../common/base/interface';
 import { Render } from '../renderer/renderer';
 import { DialogRenderer } from '../renderer/dialog-renderer';
 import { TreeViewRenderer } from '../renderer/tree-renderer';
@@ -194,6 +194,13 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
      */
     @Event()
     public enginePopulating: EmitType<EnginePopulatingEventArgs>;
+
+    /**
+     * This event triggers before apply filtering.
+     * @event
+     */
+    @Event()
+    public memberFiltering: EmitType<MemberFilteringEventArgs>;
 
     /**
      * This allows any customization of Pivot Field List properties before pivotengine populate.

@@ -113,7 +113,8 @@ export function headerDefine(grid: GridPanel, diagram: Diagram, object: NodeMode
     }
     let node: NodeModel = {
         annotations: [{
-            content: shape.header.annotation.content
+            content: shape.header.annotation.content,
+            style: shape.header.annotation.style ? shape.header.annotation.style : undefined,
         }],
         style: shape.header.style ? shape.header.style : undefined,
         offsetX: object.offsetX, offsetY: object.offsetY,

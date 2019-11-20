@@ -904,7 +904,7 @@ export class Editor {
      */
     public handleDelete(): void {
         if (!this.owner.isReadOnlyMode) {
-            this.owner.editorModule.onDelete();
+            this.owner.editorModule.delete();
         }
         this.selection.checkForCursorVisibility();
     }
@@ -2114,7 +2114,7 @@ export class Editor {
         this.initComplexHistory('RemoveHyperlink');
         selection.start.setPositionParagraph(fieldEnd.line, (fieldEnd.line).getOffset(fieldEnd, 0));
         selection.end.setPositionInternal(selection.start);
-        this.onDelete();
+        this.delete();
 
         selection.start.setPositionInternal(fieldSeparatorPosition);
         this.initHistory('Underline');
@@ -8304,9 +8304,9 @@ export class Editor {
         }
     }
     /**
-     * @private
+     * Remove the current selected content or one character right of cursor.
      */
-    public onDelete(): void {
+    public delete(): void {
         this.removeEditRange = true;
         let selection: Selection = this.viewer.selection;
         if (selection.isEmpty) {
@@ -10256,7 +10256,7 @@ export class Editor {
         if (tocField instanceof FieldElementBox) {
             this.selection.start.setPositionForSelection(tocField.line, tocField, 0, this.selection.start.location);
             this.selection.end.setPositionForSelection(tocField.fieldEnd.line, tocField.fieldEnd, 2, this.selection.end.location);
-            this.onDelete();
+            this.delete();
         }
         // Build TOC field code based on parameter
         code = this.constructTocFieldCode(tableOfContentsSettings);

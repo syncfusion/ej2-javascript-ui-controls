@@ -370,9 +370,6 @@ export class BatchEdit {
         let mRows: Row<Column>[] = this.parent.getMovableRowsObject() as Row<Column>[];
         let frzCols: number = this.parent.getFrozenColumns();
         for (let row of rows) {
-            if (frzCols) {
-                this.mergeBatchChanges(row, mRows[row.index], frzCols);
-            }
             if (row.isDirty) {
                 switch (row.edit) {
                     case 'add':
@@ -387,24 +384,6 @@ export class BatchEdit {
             }
         }
         return changes;
-    }
-
-    private mergeBatchChanges(row: Row<Column>, mRow: Row<Column>, frzCols: number): void {
-        if (row.isDirty) {
-            if (mRow.isDirty) {
-                let i: number = 0;
-                Object.keys(row.changes).forEach((key: string) => {
-                    if (i >= frzCols) {
-                        row.changes[key] = mRow.changes[key];
-                    }
-                    i++;
-                });
-
-            }
-        } else if (mRow.isDirty) {
-            row.changes = mRow.changes;
-            row.isDirty = mRow.isDirty;
-        }
     }
 
     /**
@@ -801,6 +780,12 @@ export class BatchEdit {
     }
 
     private setChanges(rowObj: Row<Column>, field: string, value: string | number | boolean | Date): void {
+        let currentCol: Column = this.parent.getColumnByField(field);
+        let currentRowObj: Row<Column> ;
+        if (this.parent.getFrozenColumns() || currentCol.isFrozen) {
+            currentRowObj = rowObj.isFreezeRow ? this.parent.getMovableRowsObject()[rowObj.index] :
+                this.parent.getRowsObject()[rowObj.index];
+        }
         if (!rowObj.changes) {
             rowObj.changes = extend({}, {}, rowObj.data, true);
         }
@@ -809,6 +794,13 @@ export class BatchEdit {
         }
         if (rowObj.data[field] !== value) {
             rowObj.isDirty = true;
+        }
+        if (currentRowObj) {
+            currentRowObj.changes = extend({}, {}, rowObj.data, true);
+            if (!isNullOrUndefined(field)) {
+                DataUtil.setValue(field, value, currentRowObj.changes);
+            }
+            currentRowObj.isDirty = true;
         }
     }
 

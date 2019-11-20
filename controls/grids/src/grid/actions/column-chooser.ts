@@ -2,7 +2,7 @@ import { classList, addClass, removeClass, isNullOrUndefined, Browser } from '@s
 import { Query, DataManager } from '@syncfusion/ej2-data';
 import { Column } from '../models/column';
 import { Button } from '@syncfusion/ej2-buttons';
-import { EventHandler, L10n, closest } from '@syncfusion/ej2-base';
+import { EventHandler, L10n, closest, isBlazor } from '@syncfusion/ej2-base';
 import { CheckBox } from '@syncfusion/ej2-buttons';
 import { ServiceLocator } from '../services/service-locator';
 import { IGrid, IAction, NotifyArgs, EJ2Intance } from '../base/interface';
@@ -362,9 +362,13 @@ export class ColumnChooser implements IAction {
                 }
                 let params: { requestType: string, element?: Element, position?: Object, columns?: Column[], dialogInstance: Dialog } = {
                     requestType: 'columnstate', element: this.parent.element,
-                    columns: this.stateChangeColumns as Column[], dialogInstance: this.dlgObj
+                    columns: this.stateChangeColumns as Column[],
+                    dialogInstance: isBlazor() && !this.parent.isJsComponent ? null : this.dlgObj
                 };
                 this.parent.trigger(events.actionComplete, params);
+                if (isBlazor()) {
+                    params.dialogInstance = this.dlgObj;
+                }
                 this.getShowHideService.setVisible(this.stateChangeColumns);
                 this.clearActions();
                 this.parent.notify(events.tooltipDestroy, { module: 'edit' });

@@ -1583,6 +1583,21 @@ export class TextMarkupAnnotation {
     /**
      * @private
      */
+    // tslint:disable-next-line
+    public updateTextMarkupAnnotationCollections(annotation: any, pageNumber: number): any {
+        // tslint:disable-next-line
+        let annotationObject: any = null;
+        annotationObject = {
+            // tslint:disable-next-line:max-line-length
+            textMarkupAnnotationType: annotation.TextMarkupAnnotationType, color: annotation.Color, opacity: annotation.Opacity, bounds: annotation.Bounds, author: annotation.Author, subject: annotation.Subject, modifiedDate: annotation.ModifiedDate, note: annotation.Note, rect: annotation.Rect,
+            annotationId: annotation.AnnotName, comments: this.pdfViewer.annotationModule.getAnnotationComments(annotation.Comments, annotation, annotation.Author), review: { state: annotation.State, stateModel: annotation.StateModel, modifiedDate: annotation.ModifiedDate, author: annotation.Author }, shapeAnnotationType: 'textMarkup', pageNumber: pageNumber
+        };
+        return annotationObject;
+    }
+
+    /**
+     * @private
+     */
     public clear(): void {
         this.selectTextMarkupCurrentPage = null;
         this.currentTextMarkupAnnotation = null;

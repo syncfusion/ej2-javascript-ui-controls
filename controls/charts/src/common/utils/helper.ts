@@ -101,7 +101,7 @@ export function showTooltip(
         fontFamily: 'Segoe UI', size: '12px',
         fontStyle: 'Normal', fontWeight: 'Regular'
     }).width + 5;
-    x = (x + width > areaWidth) ? x - width : x;
+    x = (x + width > areaWidth) ? x - (width + 15) : x;
     if (!tooltip) {
         tooltip = createElement('div', {
             innerHTML: text,
@@ -112,6 +112,10 @@ export function showTooltip(
             'padding-bottom : 2px; padding-top : 2px; font-size:12px; font-family: "Segoe UI"'
         });
         element.appendChild(tooltip);
+        let left: number = parseInt(tooltip.style.left.replace('px', ''), 10);
+        if (left < 0) {
+            tooltip.style.left = '0px';
+        }
     } else {
         tooltip.innerHTML = text;
         tooltip.style.top = (y + 15).toString() + 'px';

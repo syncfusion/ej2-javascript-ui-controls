@@ -58,7 +58,6 @@ export interface ISparklineLoadEventArgs extends ISparklineEventArgs {
 }
 /**
  * Specifies the axis rendering Event arguments.
- * @deprecated
  */
 export interface IAxisRenderingEventArgs extends ISparklineEventArgs {
     /** Defines the current sparkline instance */
@@ -126,33 +125,31 @@ export interface IPointRegionEventArgs extends ISparklineEventArgs {
 }
 /**
  * Specifies the sparkline datalabel rendering Event arguments.
- * @deprecated
  */
 export interface IDataLabelRenderingEventArgs extends ISparklineEventArgs {
     /** Defines the current sparkline instance */
-    sparkline: Sparkline;
+    sparkline?: Sparkline;
     /** Defines the current sparkline label text */
-    text: string;
+    text?: string;
     /** Defines the current sparkline label text location x */
-    x: number;
+    x?: number;
     /** Defines the current sparkline label text location y */
-    y: number;
+    y?: number;
     /** Defines the current sparkline label text color */
     color: string;
     /** Defines the current sparkline label rect fill color */
     fill: string;
     /** Defines the current sparkline label rect border */
-    border: SparklineBorderModel;
+    border?: SparklineBorderModel;
     /** Defines the current sparkline label point index */
     pointIndex: number;
 }
 /**
  * Specifies the sparkline marker rendering Event arguments.
- * @deprecated
  */
 export interface IMarkerRenderingEventArgs extends ISparklineEventArgs {
     /** Defines the current sparkline instance */
-    sparkline: Sparkline;
+    sparkline?: Sparkline;
     /** Defines the current sparkline marker location x */
     x: number;
     /** Defines the current sparkline marker location y */
@@ -162,7 +159,7 @@ export interface IMarkerRenderingEventArgs extends ISparklineEventArgs {
     /** Defines the current sparkline marker fill color */
     fill: string;
     /** Defines the current sparkline marker border */
-    border: SparklineBorderModel;
+    border?: SparklineBorderModel;
     /** Defines the current sparkline label point index */
     pointIndex: number;
 }
@@ -182,7 +179,6 @@ export interface ISparklineResizeEventArgs {
 }
 /**
  * Sparkline tooltip event args.
- * @deprecated
  */
 export interface ITooltipRenderingEventArgs extends ISparklineEventArgs {
     /** Defines tooltip text */

@@ -159,7 +159,7 @@ describe('Font dialog validation bold,italic,underLine', () => {
         dialog.onCharacterFormat(editor.selection, format);
         editor.selection.handleLeftKey();
         editor.selection.handleControlShiftRightKey();
-        editor.editorModule.onDelete();
+        editor.editorModule.delete();
         editor.editorHistory.undo();
         expect(() => { editor.editorHistory.undo(); }).not.toThrowError();
     });

@@ -3,7 +3,7 @@ import { isNullOrUndefined, setValue, getValue, isBlazor, blazorTemplates } from
 import { addClass, removeClass, append, remove, updateBlazorTemplate, classList, setStyleAttribute } from '@syncfusion/ej2-base';
 import { Property, Collection, Complex, Event, NotifyPropertyChanges, INotifyPropertyChanged, L10n } from '@syncfusion/ej2-base';
 import { EventHandler, KeyboardEvents, KeyboardEventArgs as KeyArg, EmitType } from '@syncfusion/ej2-base';
-import { Query, DataManager, DataUtil } from '@syncfusion/ej2-data';
+import { Query, DataManager, DataUtil, DataOptions } from '@syncfusion/ej2-data';
 import { ItemModel, ClickEventArgs } from '@syncfusion/ej2-navigations';
 import { createSpinner, hideSpinner, showSpinner, Tooltip } from '@syncfusion/ej2-popups';
 import { GridModel } from './grid-model';
@@ -703,7 +703,8 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     /** @hidden */
     public invokedFromMedia: boolean;
     private dataBoundFunction: Function;
-    private freezeRefresh: Function = Component.prototype.refresh;
+    /** @hidden */
+    public freezeRefresh: Function = Component.prototype.refresh;
     /** @hidden */
     public recordsCount: number;
     /** @hidden */
@@ -1815,7 +1816,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     /** 
      * Triggers when column resize starts.
      * @event
-     * @deprecated
+     * @blazorProperty 'OnResizeStart'
      */
     @Event()
     public resizeStart: EmitType<ResizeArgs>;
@@ -1831,7 +1832,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     /** 
      * Triggers when column resize ends.
      * @event
-     * @deprecated
+     * @blazorProperty 'ResizeStopped'
      */
     @Event()
     public resizeStop: EmitType<ResizeArgs>;
@@ -2667,7 +2668,9 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
                     if (!requireGridRefresh) {
                         this.renderModule.refresh();
                     }
-                } break;
+                }
+                this.scrollRefresh();
+                break;
             case 'enableHover':
                 let action: Function = newProp.enableHover ? addClass : removeClass;
                 (<Function>action)([this.element], 'e-gridhover');
@@ -3107,8 +3110,14 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
         let rowObjects: Object = this.contentModule.getRows();
         let movableRowObjects: Object = this.contentModule.getMovableRows();
         fieldIdx = this.getColumnIndexByField(field);
-        if (this.groupSettings.columns.length > 0 || this.childGrid || this.detailTemplate) {
-            fieldIdx = fieldIdx + 1;
+        if (this.groupSettings.columns.length) {
+            fieldIdx = fieldIdx + this.groupSettings.columns.length;
+        }
+        if (this.childGrid || this.detailTemplate) {
+            fieldIdx++;
+        }
+        if (this.allowRowDragAndDrop) {
+            fieldIdx++;
         }
         col = this.getColumnByField(field);
         selectedRow = (<Row<{}>[]>rowObjects).filter((r: Row<{}>) =>
@@ -4714,6 +4723,13 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
             this.updateColumnObject();
             this.checkLockColumns(this.getColumns());
             this.refresh();
+            if (this.getFrozenColumns()) {
+                let mTbl: Element = this.contentModule.getMovableContent().querySelector('.e-table');
+                remove(mTbl.querySelector('colgroup'));
+                let colGroup: Element = ((this.getHeaderContent()
+                    .querySelector('.e-movableheader').querySelector('colgroup')).cloneNode(true)) as Element;
+                mTbl.insertBefore(colGroup, mTbl.querySelector('tbody'));
+            }
         }
     }
     /**
@@ -4835,6 +4851,14 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
         if (this.columnChooserModule) {
             this.columnChooserModule.openColumnChooser(x, y);
         }
+    }
+
+    private scrollRefresh(): void {
+        let refresh: Function = () => {
+            this.scrollModule.refresh();
+            this.off(events.contentReady, refresh);
+        }
+        this.on(events.contentReady, refresh, this);
     }
 
     /** 
@@ -5024,6 +5048,26 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
             }
         });
         return column;
+    }
+
+    /** 
+     * Get all filtered records from the Grid and it returns array of objects for the local dataSource, returns a promise object if the Grid has remote data.
+     * @return {Object[] | Promise<Object>} 
+     */
+    public getFilteredRecords(): Object[] | Promise<Object> {
+        if (this.allowFiltering && this.filterSettings.columns.length) {
+            let query: Query = this.renderModule.data.generateQuery(true);
+            if (this.dataSource && this.renderModule.data.isRemote() && this.dataSource instanceof DataManager) {
+                return this.renderModule.data.getData(this.dataSource as DataOptions, query);
+            } else {
+                if (this.dataSource instanceof DataManager) {
+                    return (this.dataSource as DataManager).executeLocal(query);
+                } else {
+                    return new DataManager(this.dataSource as object[], query).executeLocal(query);
+                }
+            }
+        }
+        return [];
     }
 
     private getUserAgent(): boolean {

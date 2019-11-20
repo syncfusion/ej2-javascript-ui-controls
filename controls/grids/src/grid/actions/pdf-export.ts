@@ -195,8 +195,11 @@ export class PdfExport {
     }
 
     private processGridExport(gObj: IGrid, returnType: ReturnType, pdfExportProperties: PdfExportProperties): PdfGrid {
+        let allowHorizontalOverflow: boolean = true;
         if (!isNullOrUndefined(pdfExportProperties)) {
             this.gridTheme = pdfExportProperties.theme;
+            allowHorizontalOverflow = isNullOrUndefined(pdfExportProperties.allowHorizontalOverflow) ?
+            true : pdfExportProperties.allowHorizontalOverflow;
         }
         let helper: ExportHelper = new ExportHelper(gObj);
         let dataSource: Object[] | Group = this.processExportProperties(pdfExportProperties, returnType.result);
@@ -226,10 +229,10 @@ export class PdfExport {
 
         // process grid header content
         pdfGrid = this.processGridHeaders(gObj.groupSettings.columns.length, pdfGrid, returnValue.rows,
-                                          gridColumns, border, headerFont, headerBrush, gObj);
+                                          gridColumns, border, headerFont, headerBrush, gObj, allowHorizontalOverflow);
 
         // set alignment, width and type of the values of the column
-        this.setColumnProperties(gridColumns, pdfGrid, helper, gObj);
+        this.setColumnProperties(gridColumns, pdfGrid, helper, gObj, allowHorizontalOverflow);
 
         let captionThemeStyle: IThemeStyles = this.getSummaryCaptionThemeStyle();
 
@@ -367,7 +370,8 @@ export class PdfExport {
         }
     }
     private processGridHeaders(childLevels: number, pdfGrid: PdfGrid, rows: Row<Column>[], gridColumn: Column[],
-                               border: PdfBorders, headerFont: PdfFont, headerBrush: PdfSolidBrush, grid: IGrid): PdfGrid {
+                               border: PdfBorders, headerFont: PdfFont, headerBrush: PdfSolidBrush, grid: IGrid,
+                               allowHorizontalOverflow: boolean): PdfGrid {
         let columnCount: number = gridColumn.length + childLevels;
         // add columns
         pdfGrid.columns.add(columnCount);
@@ -423,7 +427,7 @@ export class PdfExport {
                 }
             }
         }
-        if (pdfGrid.columns.count >= 6) {
+        if (pdfGrid.columns.count >= 6 && allowHorizontalOverflow) {
             pdfGrid.style.allowHorizontalOverflow = true;
         }
         return pdfGrid;
@@ -773,7 +777,8 @@ export class PdfExport {
     /**
      * Set alignment, width and type of the values of the column 
      */
-    private setColumnProperties(gridColumns: Column[], pdfGrid: PdfGrid, helper: ExportHelper, gObj: IGrid): void {
+    private setColumnProperties(gridColumns: Column[], pdfGrid: PdfGrid, helper: ExportHelper, gObj: IGrid,
+                                allowHorizontalOverflow: boolean): void {
         let startIndex: number = gObj.groupSettings.columns.length;
         for (let i: number = 0; i < startIndex; i++) {
             pdfGrid.columns.getColumn(i).width = 20;
@@ -783,7 +788,7 @@ export class PdfExport {
                 pdfGrid.columns.getColumn(i + startIndex).format = this.getHorizontalAlignment(gridColumns[i].textAlign);
             }
             // Need to add width consideration with % value
-            if (pdfGrid.style.allowHorizontalOverflow && !isNullOrUndefined(gridColumns[i].width)) {
+            if (pdfGrid.style.allowHorizontalOverflow && !isNullOrUndefined(gridColumns[i].width) && allowHorizontalOverflow) {
                 pdfGrid.columns.getColumn(i + startIndex).width = typeof gridColumns[i].width === 'number' ?
                 gridColumns[i].width as number * 0.75 : helper.getConvertedWidth(gridColumns[i].width as string) * 0.75;
             }

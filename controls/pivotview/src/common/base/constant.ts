@@ -103,7 +103,8 @@ export const conditionalFormatting: string = 'conditionalFormatting';
 export const beforePdfExport: string = 'beforePdfExport';
 /** @hidden */
 export const beforeExcelExport: string = 'beforeExcelExport';
-
+/** @hidden */
+export const memberFiltering: string = 'memberFiltering';
 /** 
  * Specifies pivot internal events
  */

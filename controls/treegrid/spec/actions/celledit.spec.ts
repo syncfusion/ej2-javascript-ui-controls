@@ -625,6 +625,57 @@ describe('Cell Edit module', () => {
     });
   });
 
+
+
+
+  describe('EJ2-32869 - Clicking on Expand icon while in edit state', () => {
+    let gridObj: TreeGrid;
+    let cellEdit: () => void;
+    let actionComplete: () => void;
+    beforeAll((done: Function) => {
+      gridObj = createGrid(
+        {
+          dataSource: sampleData,
+          childMapping: 'subtasks',
+          editSettings: { allowEditing: true, allowDeleting: true, allowAdding: true, mode: "Cell", newRowPosition: 'Below' },
+          treeColumnIndex: 1,
+          toolbar: ['Add', 'Update', 'Delete', 'Cancel'],
+          columns: [{ field: 'taskID', headerText: 'Task ID', isPrimaryKey: true },
+          { field: 'taskName', headerText: 'Task Name' },
+          { field: 'progress', headerText: 'Progress' },
+          { field: 'startDate', headerText: 'Start Date' }
+          ]
+        },
+        done
+      );
+    });
+    it('Clicking on expand icon in edit state', () => {
+      let event: MouseEvent = new MouseEvent('dblclick', {
+        'view': window,
+        'bubbles': true,
+        'cancelable': true
+      });      
+      gridObj.getCellFromIndex(0, 2).dispatchEvent(event);
+      debugger;
+      (gridObj.editModule as any).doubleClickTarget.getElementsByTagName("input")[0].value = "20";
+      (gridObj.getRows()[0].getElementsByClassName('e-treegridexpand')[0] as HTMLElement).click();
+      let cells: NodeListOf<Element> = gridObj.grid.getRows()[0].querySelectorAll('.e-rowcell');
+      expect(cells[2].textContent === '20' ).toBeTruthy();
+    });
+    afterAll(() => {
+      destroy(gridObj);
+    });
+  });
+
+
+
+
+
+
+
+
+
+
   it('memory leak', () => {
     profile.sample();
     let average: any = inMB(profile.averageChange)

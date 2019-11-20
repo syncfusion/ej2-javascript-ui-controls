@@ -456,9 +456,16 @@ export class Magnification {
     }
 
     private rerenderMagnifiedPages(): void {
-        if (this.pdfViewerBase.isInitialLoaded || this.pdfViewerBase.isDocumentLoaded) {
+        if ((this.pdfViewerBase.isInitialLoaded || this.pdfViewerBase.isDocumentLoaded) && !this.pdfViewerBase.isInitialPageMode) {
             this.renderInSeparateThread(this.reRenderPageNumber);
             this.isPagesZoomed = false;
+        } else if (this.pdfViewerBase.isInitialPageMode) {
+            this.pageRerenderCount = 0;
+            this.pdfViewerBase.renderedPagesList = [];
+            this.pdfViewerBase.pinchZoomStorage = [];
+            this.isMagnified = false;
+            this.pdfViewerBase.pageViewScrollChanged(this.reRenderPageNumber);
+            this.pdfViewerBase.isInitialPageMode = false;
         }
     }
 

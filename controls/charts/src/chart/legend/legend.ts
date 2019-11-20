@@ -13,6 +13,7 @@ import { Size, measureText, Rect, CanvasRenderer } from '@syncfusion/ej2-svg-bas
 import { ILegendRegions } from '../../common/model/interface';
 import { ILegendRenderEventArgs, ILegendClickEventArgs } from '../../chart/model/chart-interface';
 import { legendRender, legendClick } from '../../common/model/constants';
+import { Axis } from '../axis/axis';
 /**
  * `Legend` module is used to render legend for the chart.
  */
@@ -163,6 +164,7 @@ export class Legend extends BaseLegend {
         let chart: Chart = <Chart>this.chart;
         let series: Series = chart.visibleSeries[seriesIndex];
         let legend: LegendOptions = this.legendCollections[seriesIndex];
+        let changeDetection: string = 'isProtectedOnChange';
         let legendClickArgs: ILegendClickEventArgs =  { legendText: legend.text, legendShape: legend.shape,
             chart: chart, series: series, name: legendClick, cancel: false
                 };
@@ -183,11 +185,8 @@ export class Legend extends BaseLegend {
                     chart.series[series.sourceIndex].trendlines[series.index].visible = false;
                 }
             } else {
-                if (!series.visible) {
-                    series.visible = true;
-                } else {
-                    series.visible = false;
-                }
+                series.chart[changeDetection] = true;
+                this.changeSeriesVisiblity(series, series.visible);
             }
             legend.visible = series.category === 'TrendLine' ? chart.series[series.sourceIndex].trendlines[series.index].visible :
                              (series.visible);
@@ -218,6 +217,20 @@ export class Legend extends BaseLegend {
         } else if (chart.selectionModule) {
             chart.selectionModule.legendSelection(chart, seriesIndex);
         }
+        series.chart[changeDetection] = false;
+    }
+
+    private changeSeriesVisiblity(series: Series, visibility: boolean): void {
+        series.visible = !visibility;
+        if (this.isSecondaryAxis(series.xAxis)) {
+            series.xAxis.visible = series.xAxis.series.some((value: Series) => (value.visible));
+        }
+        if (this.isSecondaryAxis(series.yAxis)) {
+            series.yAxis.visible = series.yAxis.series.some((value: Series) => (value.visible));
+        }
+    }
+    private isSecondaryAxis(axis: Axis): boolean {
+        return((this.chart as Chart).axes.indexOf(axis) > -1);
     }
     private redrawSeriesElements(series: Series, chart: Chart): void {
         if (!chart.redraw) {

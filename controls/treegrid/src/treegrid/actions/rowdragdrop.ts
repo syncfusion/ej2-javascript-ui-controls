@@ -259,11 +259,7 @@ export class RowDD {
             rowPositionHeight = (rowEle as HTMLElement).offsetTop - scrollTop;
         }
         // let scrollTop = (tObj.grid.scrollModule as any).content.scrollTop;
-        if (tObj.allowTextWrap) {
-            rowTop = (row[0] as HTMLElement).offsetHeight;
-        } else {
-            rowTop = rowPositionHeight + contentHeight + roundOff;
-        }
+        rowTop = rowPositionHeight + contentHeight + roundOff;
         let rowBottom: number = rowTop + (row[0] as HTMLElement).offsetHeight;
         let difference: number = rowBottom - rowTop;
         let divide: number = difference / 3;

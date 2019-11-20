@@ -1,4 +1,4 @@
-import { isNullOrUndefined, remove, extend } from '@syncfusion/ej2-base';
+import { isNullOrUndefined, remove } from '@syncfusion/ej2-base';
 import { formatUnit } from '@syncfusion/ej2-base';
 import { IRenderer, IGrid } from '../base/interface';
 import { Browser } from '@syncfusion/ej2-base';
@@ -10,8 +10,9 @@ import { ContentRender } from './content-renderer';
 import { RowRenderer } from './row-renderer';
 import { ServiceLocator } from '../services/service-locator';
 import { SummaryModelGenerator } from '../services/summary-model-generator';
-import { renderMovable, calculateAggregate } from '../base/util';
+import { renderMovable, calculateAggregate, iterateExtend } from '../base/util';
 import { AggregateColumn, AggregateRow } from '../models/aggregate';
+import { DataUtil } from '@syncfusion/ej2-data';
 
 /**
  * Footer module is used to render grid content
@@ -213,7 +214,7 @@ export class FooterRenderer extends ContentRender implements IRenderer {
 
     public onAggregates(editedData: Object[]): Object {
         editedData = editedData instanceof Array ? editedData : [];
-        let mergeds: Object[] = [];
+        let field: string = this.parent.getPrimaryKeyFieldNames()[0];
         let dataSource: object[] = [];
         let isModified: boolean = false;
         let batchChanges: Object = {};
@@ -247,9 +248,19 @@ export class FooterRenderer extends ContentRender implements IRenderer {
             }
         } else {
             if (editedData.length) {
-                mergeds.push(editedData[0]);
+                let data: Object[] = iterateExtend(currentViewData);
+                dataSource = data.map((item: Object) => {
+                    let idVal: Object = DataUtil.getObject(field, item);
+                    let value: Object;
+                    let hasVal: boolean = editedData.some((cItem: Object) => {
+                        value = cItem;
+                        return idVal === DataUtil.getObject(field, cItem);
+                    });
+                    return hasVal ? value : item;
+                });
+            } else {
+                dataSource = currentViewData;
             }
-            dataSource = editedData ? (extend(currentViewData, mergeds) as Object[]) : currentViewData;
         }
         let eData: Object = editedData;
         if (((<{ type: string }>eData).type && (<{ type: string }>eData).type === 'cancel')) {

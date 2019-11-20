@@ -124,7 +124,9 @@ export class AgendaBase {
         let allDayStr: string = this.parent.localeObj.getConstant('allDay');
         let timeStr: string = this.parent.getTimeString(strDate) + ' - ' + this.parent.getTimeString(endDate);
         if (!isNullOrUndefined(event.data)) {
-            let eventString: string = (endDate.getTime() - strDate.getTime()) / util.MS_PER_DAY >= 1 ? allDayStr : timeStr;
+            let milliSeconds: number = (endDate.getTimezoneOffset() !== strDate.getTimezoneOffset()) ?
+                (endDate.getTime() - strDate.getTime() + 3600000) : (endDate.getTime() - strDate.getTime());
+            let eventString: string = (milliSeconds / util.MS_PER_DAY) >= 1 ? allDayStr : timeStr;
             allDayStr = eventString + ' (' + this.parent.localeObj.getConstant('day') + ' '
                 + (event.data as { [key: string]: Object }).index + '/' + (event.data as { [key: string]: Object }).count + ')';
         }

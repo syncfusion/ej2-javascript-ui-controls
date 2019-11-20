@@ -448,4 +448,38 @@ describe('Diagram Control', () => {
         })
 
     });
+    describe('Virtualization in SVG mode', () => {
+        let diagram: Diagram;
+        let ele: HTMLElement;
+        beforeAll(() => {
+            ele = createElement('div', { id: 'diagram' });
+            document.body.appendChild(ele);
+            let shape: BasicShapeModel = { type: 'Basic', shape: 'Rectangle', cornerRadius: 10 };
+            let node1: NodeModel = { id: 'node', offsetX: 100, offsetY: 100, width: 50, height: 50, shape: shape, borderColor: "red" };
+            diagram = new Diagram({
+                width: 500, height: 500,
+                mode: 'SVG',
+                constraints: DiagramConstraints.Default | DiagramConstraints.Virtualization,
+                nodes: [node1]
+            });
+            diagram.appendTo('#diagram');
+        });
+        afterAll(() => {
+            diagram.destroy();
+            ele.remove();
+        });
+        it('addnode  at runtime', (done: Function) => {
+            let node: NodeModel = {
+                id: 'node11virtual', width: 100, height: 100, offsetX: 100, offsetY: 200,
+                style: { fill: 'green' },
+                shape: {
+                    type: 'Basic', shape: 'Rectangle',
+                }, annotations: [{ content: 'text' }]
+            };
+            diagram.add(node);
+            diagram.dataBind();
+            expect(diagram.nodes.length === 2).toBe(true)
+            done();
+        });
+    });
 });

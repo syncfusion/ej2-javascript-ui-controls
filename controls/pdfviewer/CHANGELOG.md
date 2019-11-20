@@ -2,6 +2,21 @@
 
 ## [Unreleased]
 
+## 17.3.28 (2019-11-19)
+
+### PDF Viewer
+
+#### New Features
+
+- `#251151`, `#254032` – Improved the annotation selection behavior in code behind.
+- `#254776`, `#255304` – Provided the support to set the custom JSON data for AJAX request.
+- `#253341` – Provided the support to customize the label content during initial rendering of annotations.
+- `#252421` – Provided the support to set the zoom mode value during initial loading.
+
+#### Bug Fixes
+
+- `#253926` – Resolved the memory leak while rendering the PDF documents.
+
 ## 17.3.27 (2019-11-12)
 
 ### PDF Viewer

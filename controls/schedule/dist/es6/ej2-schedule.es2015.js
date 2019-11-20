@@ -133,11 +133,14 @@ function setTime(date, time) {
     return date;
 }
 function resetTime(date) {
-    date.setHours(0, 0, 0, 0);
-    return date;
+    return new Date(date.getFullYear(), date.getMonth(), date.getDate());
 }
 function getDateInMs(date) {
-    return date.getTime() - new Date(date.getFullYear(), date.getMonth(), date.getDate(), 0, 0, 0).getTime();
+    let sysDateOffset = new Date(date.getFullYear(), date.getMonth(), date.getDate(), 0, 0, 0).getTimezoneOffset();
+    let dateOffset = date.getTimezoneOffset();
+    let tzOffsetDiff = dateOffset - sysDateOffset;
+    return ((date.getTime() - new Date(date.getFullYear(), date.getMonth(), date.getDate(), 0, 0, 0).getTime())
+        - (tzOffsetDiff * 60 * 1000));
 }
 function getDateCount(startDate, endDate) {
     return (endDate.getTime() - startDate.getTime()) / MS_PER_DAY;
@@ -185,7 +188,7 @@ function getMaxDays(d) {
 function getDaysCount(startDate, endDate) {
     let strTime = resetTime(new Date(startDate));
     let endTime = resetTime(new Date(endDate));
-    return Math.floor((endTime.getTime() - strTime.getTime()) / MS_PER_DAY);
+    return Math.round((endTime.getTime() - strTime.getTime()) / MS_PER_DAY);
 }
 function getDateFromString(date) {
     return date.indexOf('Date') !== -1 ? new Date(parseInt(date.match(/\d+/g).toString(), 10)) :
@@ -15735,13 +15738,26 @@ class DragAndDrop extends ActionBase {
         if (this.parent.activeViewOptions.timeScale.enable && !this.isAllDayDrag) {
             this.appendCloneElement(this.getEventWrapper(colIndex));
             let spanHours = -(((this.actionObj.slotInterval / this.actionObj.cellHeight) * diffInMinutes) * (MS_PER_MINUTE));
-            if (this.actionObj.clone.querySelector('.' + EVENT_ICON_UP_CLASS)) {
-                let startTime = new Date(eventStart.getTime());
-                spanHours = addDays(resetTime(new Date(startTime.getTime())), 1).getTime() - startTime.getTime();
-            }
             dragStart$$1 = new Date(parseInt(td.getAttribute('data-date'), 10));
-            dragStart$$1.setMinutes(dragStart$$1.getMinutes() + (diffInMinutes * this.heightPerMinute));
-            dragStart$$1.setMilliseconds(-spanHours);
+            if (this.actionObj.slotInterval === this.actionObj.interval) {
+                if (this.actionObj.clone.querySelector('.' + EVENT_ICON_UP_CLASS)) {
+                    let startTime = new Date(eventStart.getTime());
+                    spanHours = addDays(resetTime(new Date(startTime.getTime())), 1).getTime() - startTime.getTime();
+                }
+                dragStart$$1.setMinutes(dragStart$$1.getMinutes() + (diffInMinutes * this.heightPerMinute));
+                dragStart$$1.setMilliseconds(-spanHours);
+            }
+            else {
+                let hightDiff = this.getHeightDiff(tr, index);
+                if (hightDiff !== 0) {
+                    let timeDiff = Math.round(hightDiff / this.heightPerMinute);
+                    dragStart$$1.setMinutes(dragStart$$1.getMinutes() + (timeDiff * this.actionObj.interval));
+                    dragStart$$1.setMinutes(dragStart$$1.getMinutes() - this.minDiff);
+                }
+                else {
+                    dragStart$$1 = this.actionObj.start;
+                }
+            }
             dragStart$$1 = this.calculateIntervalTime(dragStart$$1);
             dragEnd = new Date(dragStart$$1.getTime());
             if (this.actionObj.element.classList.contains(ALLDAY_APPOINTMENT_CLASS)) {
@@ -15990,6 +16006,21 @@ class DragAndDrop extends ActionBase {
         }
         return offsetLeft;
     }
+    getHeightDiff(tr, index) {
+        let pages = this.scrollArgs.element.getBoundingClientRect();
+        if (pages.top <= this.actionObj.pageY && pages.bottom >= this.actionObj.pageY) {
+            let targetTop = tr.childNodes.item(index).offsetTop;
+            let pageY = this.actionObj.pageY - pages.top;
+            if (this.parent.enableRtl) {
+                return (targetTop + this.actionObj.cellHeight) - (this.scrollArgs.element.scrollTop + pageY);
+            }
+            else {
+                return (this.scrollArgs.element.scrollTop + pageY) - targetTop;
+            }
+        }
+        return 0;
+    }
+    ;
     getWidthDiff(tr, index) {
         let pages = this.scrollArgs.element.getBoundingClientRect();
         if (pages.left <= this.actionObj.pageX && pages.right >= this.actionObj.pageX) {
@@ -17199,7 +17230,9 @@ class VerticalView extends ViewBase {
         let msStartHour = startHour.getTime();
         let msEndHour = endHour.getTime();
         if (msStartHour !== msEndHour) {
-            length = Math.round((msEndHour - msStartHour) / msInterval);
+            let milliSeconds = (startHour.getTimezoneOffset() !== endHour.getTimezoneOffset()) ?
+                (msEndHour - msStartHour) - 3600000 : (msEndHour - msStartHour);
+            length = Math.round(milliSeconds / msInterval);
         }
         if (!this.parent.activeViewOptions.timeScale.enable) {
             length = 1;
@@ -17963,7 +17996,9 @@ class AgendaBase {
         let allDayStr = this.parent.localeObj.getConstant('allDay');
         let timeStr = this.parent.getTimeString(strDate) + ' - ' + this.parent.getTimeString(endDate);
         if (!isNullOrUndefined(event.data)) {
-            let eventString = (endDate.getTime() - strDate.getTime()) / MS_PER_DAY >= 1 ? allDayStr : timeStr;
+            let milliSeconds = (endDate.getTimezoneOffset() !== strDate.getTimezoneOffset()) ?
+                (endDate.getTime() - strDate.getTime() + 3600000) : (endDate.getTime() - strDate.getTime());
+            let eventString = (milliSeconds / MS_PER_DAY) >= 1 ? allDayStr : timeStr;
             allDayStr = eventString + ' (' + this.parent.localeObj.getConstant('day') + ' '
                 + event.data.index + '/' + event.data.count + ')';
         }
@@ -18952,7 +18987,8 @@ class TimelineViews extends VerticalView {
             data.colSpan = timeSlotData.length;
             let tempTimeSlots = extend([], timeSlotData, null, true);
             for (let slot of tempTimeSlots) {
-                slot.date = new Date(+resetTime(data.date) + getDateInMs(slot.date));
+                let cellDate = resetTime(new Date('' + data.date));
+                slot.date = setTime(cellDate, getDateInMs(slot.date));
                 slots.push(slot);
             }
         }

@@ -1459,12 +1459,14 @@ let Splitter = class Splitter extends Component {
                 let eleVal = document.querySelector(val);
                 if (!isNullOrUndefined(eleVal)) {
                     this.templateElement.push(eleVal);
-                    eleVal.style.display = '';
+                    if (eleVal.style.display === 'none') {
+                        eleVal.style.removeProperty('display');
+                    }
                     if (eleVal.getAttribute('style') === '') {
                         eleVal.removeAttribute('style');
                     }
-                    val = eleVal.outerHTML.trim();
-                    detach(eleVal);
+                    ele.appendChild(eleVal);
+                    return;
                 }
                 else {
                     val = val.trim();
@@ -2107,11 +2109,12 @@ let DashboardLayout = class DashboardLayout extends Component {
     }
     resizeEvents() {
         if (this.allowResizing) {
-            for (let i = 0; i < this.element.querySelectorAll('.e-panel .e-panel-container .e-resize').length; i++) {
+            let panelElements = this.element.querySelectorAll('.e-panel .e-panel-container .e-resize');
+            for (let i = 0; i < panelElements.length; i++) {
                 let eventName = (Browser.info.name === 'msie') ? 'mousedown pointerdown' : 'mousedown';
-                EventHandler.add(document.querySelectorAll('.e-resize')[i], eventName, this.downResizeHandler, this);
+                EventHandler.add(panelElements[i], eventName, this.downResizeHandler, this);
                 if (Browser.info.name !== 'mise') {
-                    EventHandler.add(document.querySelectorAll('.e-resize')[i], 'touchstart', this.touchDownResizeHandler, this);
+                    EventHandler.add(panelElements[i], 'touchstart', this.touchDownResizeHandler, this);
                 }
             }
         }
@@ -4202,9 +4205,10 @@ let DashboardLayout = class DashboardLayout extends Component {
                         this.resizeEvents();
                     }
                     else {
-                        for (let i = 0; i < document.querySelectorAll('.e-resize').length; i++) {
+                        let panelElements = this.element.querySelectorAll('.e-panel .e-panel-container .e-resize');
+                        for (let i = 0; i < panelElements.length; i++) {
                             let eventName = (Browser.info.name === 'msie') ? 'mousedown pointerdown' : 'mousedown';
-                            let element = document.querySelectorAll('.e-resize')[i];
+                            let element = panelElements[i];
                             EventHandler.remove(element, eventName, this.downResizeHandler);
                             if (Browser.info.name !== 'mise') {
                                 EventHandler.remove(element, 'touchstart', this.touchDownResizeHandler);

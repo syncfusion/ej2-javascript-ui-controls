@@ -5063,4 +5063,26 @@ describe('DDList', () => {
             expect(listObj.queryString).toBe('j');
         });
     });
+    describe('EJ2-33258', () => {
+        let listObj: any;
+        let element: HTMLInputElement;
+        beforeAll(() => {
+            element = <HTMLInputElement>createElement('input', { id: 'dropdownlist.list' });
+            document.body.appendChild(element);
+            listObj = new DropDownList({
+                dataSource: datasource,
+                fields: { text: "text", value: "id" },
+                popupHeight: "200px",
+            });
+            listObj.appendTo(element);
+            listObj.showPopup();
+        });
+        it('Invalid id testing', () => {
+            expect(listObj.value === null).toBe(true);
+            listObj.inputWrapper.container.click();
+            listObj.showPopup();
+            listObj.popupObj.element.querySelectorAll('ul li')[0].click();
+            expect(listObj.value === 'list1').toBe(true)
+        });
+    });
 });

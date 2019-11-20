@@ -19,6 +19,7 @@ import '../../../node_modules/es6-promise/dist/es6-promise';
 import { ColumnMenu } from '../../../src/grid/actions/column-menu';
 import * as events from '../../../src/grid/base/constant';
 import  {profile , inMB, getMemoryProfile} from '../base/common.spec';
+import { DataManager, ODataV4Adaptor } from "@syncfusion/ej2-data";
 
 Grid.Inject(Filter, Page, Selection, Group, Freeze, Reorder, ColumnMenu, ForeignKey,VirtualScroll);
 
@@ -1916,5 +1917,84 @@ describe('Check for case sensitive ', ()=>{
             destroy(gridObj);
             gridObj = actionComplete = null;
         });
-    });    
+    });
+    
+    describe('Check for getFiltered records', () => {
+        let gridObj: Grid;
+        let actionComplete: (args: any) => void;
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: filterData.slice(0, 30),
+                    allowPaging: true,
+                    pageSettings:{pageSize:6},
+                    allowFiltering: true,
+                    columns: [
+                        { field: 'OrderID', headerText: 'Order ID', width: 120 },
+                        { field: 'CustomerID', headerText: 'Customer ID', width: 120 },
+                        { field: 'Freight', headerText: 'Freight', width: 120 },
+                        { field: 'ShipCountry', headerText: 'Ship Country', width: 120 }
+                    ],
+                }, done);
+        });
+        it('filterbyColumn Method checking with getFiltered records', (done: Function) => {
+            actionComplete = () => {
+                expect(gridObj.element.querySelectorAll('.e-row').length).toBe(6);
+                expect((gridObj.element.querySelectorAll('.e-row')[0] as any).cells[3].innerHTML).toBe('Switzerland');
+                expect((gridObj.getFilteredRecords() as any).length).toBe(9);
+                done();
+            };
+            gridObj.filterModule.filterByColumn('ShipCountry', 'contains', 'S');
+            gridObj.actionComplete = actionComplete;
+        });
+        afterAll(() => {
+            destroy(gridObj);
+            gridObj = actionComplete = null;
+        });
+    }); 
+
+    describe('Check for getFiltered records remote data', () => {
+        let gridObj: Grid;
+        let remoteData: DataManager = new DataManager({
+            url: 'https://services.odata.org/V4/Northwind/Northwind.svc/Orders',
+            adaptor: new ODataV4Adaptor
+        });
+        let promise: Promise<Object>;
+        let actionComplete: (args: any) => void;
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: remoteData,
+                    allowPaging: true,
+                    pageSettings:{pageSize:6},
+                    allowFiltering: true,
+                    columns: [
+                        { field: 'OrderID', headerText: 'Order ID', width: 120 },
+                        { field: 'CustomerID', headerText: 'Customer ID', width: 120 },
+                        { field: 'Freight', headerText: 'Freight', width: 120 },
+                        { field: 'ShipCountry', headerText: 'Ship Country', width: 120 }
+                    ],
+                }, done);
+        });
+        it('filterbyColumn Method checking with getFiltered records', (done: Function) => {
+            actionComplete = () => {
+                expect(gridObj.element.querySelectorAll('.e-row').length).toBe(6);
+                expect((gridObj.element.querySelectorAll('.e-row')[0] as any).cells[3].innerHTML).toBe('Switzerland');
+               (promise  as any) = gridObj.getFilteredRecords();
+                done();
+            };
+            gridObj.filterModule.filterByColumn('ShipCountry', 'startsWith', 'S');
+            gridObj.actionComplete = actionComplete;
+        });
+        it('filterbyColumn Method checking with getFiltered records', (done: Function) => {
+           promise.then((e)=>{
+            expect((e as any).result.length).toBe(78);
+            done();
+        });           
+        });
+        afterAll(() => {
+            destroy(gridObj);
+            gridObj = actionComplete = null;
+        });
+    });  
 });

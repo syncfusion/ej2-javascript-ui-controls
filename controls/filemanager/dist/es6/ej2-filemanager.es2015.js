@@ -4397,7 +4397,6 @@ class BreadCrumbBar {
     keyActionHandler(e) {
         switch (e.action) {
             case 'enter':
-                e.preventDefault();
                 this.addressPathClickHandler(e);
                 break;
         }
@@ -7502,7 +7501,8 @@ class DetailsView {
             this.gridObj = new Grid({
                 dataSource: items,
                 allowSorting: true,
-                rowSelecting: this.onSelection.bind(this),
+                rowSelecting: this.onSelection.bind(this, 'select'),
+                rowDeselecting: this.onSelection.bind(this, 'unselect'),
                 rowSelected: this.onSelected.bind(this),
                 rowDeselected: this.onDeSelection.bind(this),
                 allowResizing: this.parent.detailsViewSettings.columnResizing,
@@ -8369,8 +8369,8 @@ class DetailsView {
         }
     }
     /* istanbul ignore next */
-    onSelection(args) {
-        let eventArgs = { fileDetails: args.data, isInteracted: this.interaction, cancel: false, target: args.target };
+    onSelection(action, args) {
+        let eventArgs = { action: action, fileDetails: args.data, isInteracted: this.interaction, cancel: false, target: args.target };
         this.parent.trigger('fileSelection', eventArgs);
         args.cancel = eventArgs.cancel;
     }

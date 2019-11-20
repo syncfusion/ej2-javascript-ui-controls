@@ -1,25 +1,20 @@
-import { Dictionary } from '../../base/dictionary';
-import { HeightType, LineSpacingType, TextAlignment, ListLevelPattern, HeaderFooterType } from '../../base/types';
-import { WList } from '../list/list';
-import { WAbstractList } from '../list/abstract-list';
-import { WListLevel } from '../list/list-level';
-import { WLevelOverride } from '../list/level-override';
-import { WCharacterFormat, WListFormat, WParagraphFormat, WTabStop } from '../format/index';
-import { WBorder, WBorders } from '../format/index';
-import { LayoutViewer, PageLayoutViewer } from './viewer';
-import {
-    Page, LineWidget, Rect, Widget, Margin, ParagraphWidget, BodyWidget,
-    TextElementBox, ElementBox, ListTextElementBox, IWidget, TableCellWidget,
-    TableRowWidget, TableWidget, FieldElementBox, BlockWidget, HeaderFooterWidget, BlockContainer,
-    BookmarkElementBox, FieldTextElementBox, TabElementBox, ImageElementBox,
-    EditRangeEndElementBox, EditRangeStartElementBox, ErrorTextElementBox
-} from './page';
-import {
-    SubWidthInfo, LineElementInfo, HelperMethods,
-    BodyWidgetInfo
-} from '../editor/editor-helper';
-import { TextSizeInfo } from './text-helper';
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
+import { Dictionary } from '../../base/dictionary';
+import { HeaderFooterType, HeightType, LineSpacingType, ListLevelPattern, TextAlignment } from '../../base/types';
+import { BodyWidgetInfo, HelperMethods, LineElementInfo, SubWidthInfo } from '../editor/editor-helper';
+import { WBorder, WBorders, WCharacterFormat, WListFormat, WParagraphFormat, WTabStop } from '../format/index';
+import { WAbstractList } from '../list/abstract-list';
+import { WLevelOverride } from '../list/level-override';
+import { WList } from '../list/list';
+import { WListLevel } from '../list/list-level';
+import {
+    BlockContainer, BlockWidget, BodyWidget, BookmarkElementBox, EditRangeEndElementBox, EditRangeStartElementBox,
+    ElementBox, ErrorTextElementBox, FieldElementBox, FieldTextElementBox, HeaderFooterWidget, ImageElementBox, IWidget,
+    LineWidget, ListTextElementBox, Margin, Page, ParagraphWidget, Rect, TabElementBox, TableCellWidget,
+    TableRowWidget, TableWidget, TextElementBox, Widget
+} from './page';
+import { TextSizeInfo } from './text-helper';
+import { LayoutViewer, PageLayoutViewer } from './viewer';
 
 /** 
  * @private
@@ -41,6 +36,7 @@ export class Layout {
     private maxTextBaseline: number = 0;
     private isFieldCode: boolean = false;
     private isRTLLayout: boolean = false;
+
     /**
      * @private
      */
@@ -527,9 +523,16 @@ export class Layout {
         }
         if (element instanceof ListTextElementBox || this.isFieldCode || element instanceof BookmarkElementBox ||
             element instanceof EditRangeEndElementBox || element instanceof EditRangeStartElementBox) {
-            if (element instanceof BookmarkElementBox && element.bookmarkType === 0 &&
-                !this.viewer.bookmarks.containsKey(element.name)) {
-                this.viewer.bookmarks.add(element.name, element);
+            if (element instanceof BookmarkElementBox) {
+                if (element.bookmarkType === 0 && !this.viewer.bookmarks.containsKey(element.name)) {
+                    this.viewer.bookmarks.add(element.name, element);
+                } else if (element.bookmarkType === 1 && this.viewer.bookmarks.containsKey(element.name)) {
+                    let bookmrkElement: BookmarkElementBox = this.viewer.bookmarks.get(element.name);
+                    if (isNullOrUndefined(bookmrkElement.reference)) {
+                        bookmrkElement.reference = element;
+                        element.reference = bookmrkElement;
+                    }
+                }
             }
 
             if (isNullOrUndefined(element.nextElement) && this.viewer.clientActiveArea.width > 0 && !element.line.isLastLine()) {
@@ -2434,7 +2437,7 @@ export class Layout {
             let cellWidget: TableCellWidget = row.childWidgets[i] as TableCellWidget;
             // tslint:disable-next-line:max-line-length
             rowSpan = (isNullOrUndefined(cellWidget) || isNullOrUndefined(cellWidget.cellFormat)) ? rowSpan : cellWidget.cellFormat.rowSpan;
-            this.updateSpannedRowCollection(rowSpan, row);
+            this.updateSpannedRowCollection(rowSpan, row, cellWidget);
         }
         if (!isNullOrUndefined(row.ownerTable)) {
             for (let i: number = 0; i < row.ownerTable.spannedRowCollection.length; i++) {
@@ -2464,7 +2467,7 @@ export class Layout {
             // tslint:disable-next-line:max-line-length
             rowSpan = (isNullOrUndefined(cellWidget) || isNullOrUndefined(cellWidget.cellFormat)) ? rowSpan : cellWidget.cellFormat.rowSpan;
             //To update Row height- if row has row span value greater than 1, need to add it in spannedRowCollection            
-            this.updateSpannedRowCollection(rowSpan, row);
+            this.updateSpannedRowCollection(rowSpan, row, cellWidget);
             if (rowIndex - cellWidget.rowIndex === rowSpan - 1) {
                 let mergedCellHeight: number = cellWidget.y + cellWidget.height + cellWidget.margin.bottom - row.y;
                 if (row.height < mergedCellHeight) {
@@ -2474,7 +2477,7 @@ export class Layout {
         }
     }
     //if row has row span value greater than 1, need to add it in spannedRowCollection
-    private updateSpannedRowCollection(rowSpan: number, row: TableRowWidget): void {
+    private updateSpannedRowCollection(rowSpan: number, row: TableRowWidget, cellWidget: TableCellWidget): void {
         if (rowSpan > 1 && !isNullOrUndefined(row.ownerTable)) {
             //Checks the rowspan is already exist in the list
             if (!row.ownerTable.spannedRowCollection.containsKey(row.index + rowSpan - 1)) {
@@ -2606,9 +2609,11 @@ export class Layout {
                 splittedWidget.childWidgets.push(splittedCell);
                 splittedCell.containerWidget = splittedWidget;
             }
+
         }
         return splittedWidget;
     }
+
     /**
      * Updates widget to table.
      * @param row 
@@ -2635,6 +2640,10 @@ export class Layout {
         while (count < rowWidgets.length) {
             count = rowWidgets.length;
             if (row.ownerTable.isInsideTable || (viewer.splittedCellWidgets.length === 0 && tableRowWidget.y + tableRowWidget.height + cellSpacing <= viewer.clientArea.bottom)) {
+                if (this.isVerticalMergedCellContinue(row) && (tableRowWidget.y === viewer.clientArea.y
+                    || tableRowWidget.y === this.viewer.clientArea.y + tableRowWidget.ownerTable.headerHeight)) {
+                    this.insertSplittedCellWidgets(viewer, tableWidgets, tableRowWidget, tableRowWidget.index - 1);
+                }
                 this.addWidgetToTable(viewer, tableWidgets, rowWidgets, tableRowWidget, undefined, isInitialLayout);
                 if (viewer.splittedCellWidgets.length > 0 && isNullOrUndefined(rowWidgets[rowWidgets.length - 1].nextRow)) {
                     count--;
@@ -3138,7 +3147,7 @@ export class Layout {
                 if (splittedCell.y !== rowWidget.y + splittedCell.margin.top + cellSpacing) {
                     this.updateChildLocationForRow(rowWidget.y, rowWidget);
                 }
-                viewer.splittedCellWidgets = [];
+                viewer.splittedCellWidgets.splice(i, 1);
                 return true;
             }
         }
@@ -3152,7 +3161,22 @@ export class Layout {
      */
     // tslint:disable-next-line:max-line-length
     private insertEmptySplittedCellWidget(currentRow: TableRowWidget, tableCollection: TableWidget[], left: number, index: number, previousRowIndex: number): void {
-        let tableWidget: TableWidget = tableCollection[tableCollection.length - 1] as TableWidget;
+        let tableWidget: TableWidget = tableCollection[tableCollection.length - 1];
+        let previousRow: TableRowWidget;
+        for (let j: number = tableCollection.length - 1; j >= 0; j--) {
+            let table: TableWidget = tableCollection[j];
+            for (let z: number = table.childWidgets.length - 1; z >= 0; z--) {
+                let row: TableRowWidget = table.childWidgets[z] as TableRowWidget;
+                if (row.index === previousRowIndex) {
+                    previousRow = row;
+                    break;
+                }
+            }
+        }
+        if (previousRow) {
+            tableWidget = previousRow.ownerTable;
+            previousRowIndex = previousRow.indexInOwner;
+        }
         for (let i: number = previousRowIndex; i >= 0; i--) {
             let rowWidget: TableRowWidget = tableWidget.childWidgets[i] as TableRowWidget;
             let previousLeft: number = rowWidget.x;
@@ -3166,8 +3190,9 @@ export class Layout {
                         let emptyCellWidget: TableCellWidget = this.createCellWidget(cellWidget);
                         currentRow.childWidgets.splice(index, 0, emptyCellWidget);
                         emptyCellWidget.containerWidget = currentRow;
+                        this.updateChildLocationForRow(currentRow.y, currentRow);
+                        return;
                     }
-                    return;
                 }
                 previousLeft += cellWidget.margin.left + cellWidget.width + cellWidget.margin.right;
             }
@@ -4132,7 +4157,9 @@ export class Layout {
         let viewer: LayoutViewer = this.viewer;
         let tableWidget: TableWidget = tables[tables.length - 1] as TableWidget;
         if (!table.isInsideTable) {
-            this.updateHeightForTableWidget(tables, rows, tableWidget, endRowWidget);
+            for (let i: number = 0; i < tables.length; i++) {
+                this.updateHeightForTableWidget(tables, rows, tables[i], endRowWidget);
+            }
             if (tableWidget.childWidgets.length > 0 && tableWidget.y !== (tableWidget.childWidgets[0] as Widget).y) {
                 tableWidget.y = (tableWidget.childWidgets[0] as Widget).y;
             }

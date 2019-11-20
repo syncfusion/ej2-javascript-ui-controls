@@ -395,7 +395,7 @@ describe('DeleteSelected content on delete at bookmark start', () => {
         editor.selection.handleShiftRightKey();
         editor.selection.handleShiftRightKey();
         editor.selection.handleShiftRightKey();
-        editor.editorModule.onDelete();
+        editor.editorModule.delete();
         expect((((viewer.pages[0].bodyWidgets[0].childWidgets[0] as ParagraphWidget).childWidgets[0] as LineWidget).children[1] as BookmarkElementBox).bookmarkType).toBe(0);
     });
     it('undo validation', () => {
@@ -471,7 +471,7 @@ describe('DeleteSelected content on onDelete at bookmar end', () => {
         editor.selection.handleShiftLeftKey();
         editor.selection.handleShiftLeftKey();
         editor.selection.handleShiftLeftKey();
-        editor.editorModule.onDelete();
+        editor.editorModule.delete();
         expect((((viewer.pages[0].bodyWidgets[0].childWidgets[0] as ParagraphWidget).childWidgets[0] as LineWidget).children[2] as BookmarkElementBox).bookmarkType).toBe(1);
     });
     it('undo validation', () => {

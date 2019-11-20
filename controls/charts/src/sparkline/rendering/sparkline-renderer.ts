@@ -1,6 +1,6 @@
 import { Sparkline, IAxisRenderingEventArgs, ISeriesRenderingEventArgs, SparklineValueType } from '../index';
 import { ISparklinePointEventArgs, IMarkerRenderingEventArgs, IDataLabelRenderingEventArgs } from '../index';
-import { extend, isNullOrUndefined } from '@syncfusion/ej2-base';
+import { extend, isNullOrUndefined, isBlazor } from '@syncfusion/ej2-base';
 import { PathOption, SparkValues, drawPath, drawRectangle, RectOption, Rect, CircleOption, drawCircle } from '../utils/helper';
 import { measureText, renderTextElement, TextOption, Size } from '../utils/helper';
 import { PaddingModel, AxisSettingsModel, SparklineMarkerSettingsModel, SparklineFontModel } from '../model/base-model';
@@ -387,14 +387,30 @@ export class SparklineRenderer {
             temp.location.y = (temp.markerPosition <= this.axisHeight) ? temp.y : (temp.y + temp.height);
             temp.location.x = temp.x + (temp.width / 2);
             rectOptions.stroke = args.border.color ? (args.border.color) : rectOptions.fill;
-            let pointArgs: ISparklinePointEventArgs = this.triggerPointRender(
-                'pointRendering', i, rectOptions.fill, { color: rectOptions.stroke, width: args.border.width });
-            rectOptions.fill = pointArgs.fill; rectOptions.stroke = pointArgs.border.color;
-            rectOptions['stroke-width'] = pointArgs.border.width;
-            if (!pointArgs.cancel) {
-                let element: Element = drawRectangle(spark, rectOptions, group);
-                element.setAttribute('aria-label', spark.dataSource[i][spark.xName] + ' : ' + points[i].yVal);
+            let pointArgs: ISparklinePointEventArgs = {
+                name: 'pointRendering', cancel: false, pointIndex: i, fill: rectOptions.fill,
+                border: { color: rectOptions.stroke, width: args.border.width }
+            };
+            if (this.sparkline.isBlazor) {
+                const { ...blazorpointArgs }: ISparklinePointEventArgs = pointArgs;
+                pointArgs = blazorpointArgs;
             }
+            this.sparkline.trigger('pointRendering', pointArgs, (eventArgs: ISparklinePointEventArgs) => {
+                temp = points[i];
+                rectOptions.id = id + i;
+                rectOptions.rect = new Rect(temp.x, temp.y, temp.width, temp.height);
+                this.getSpecialPoint(true, temp, spark, rectOptions, i, highPos, lowPos, len);
+                rectOptions.fill = pointArgs.fill;
+                rectOptions.stroke = pointArgs.border.color;
+                temp.location.y = (temp.markerPosition <= this.axisHeight) ? temp.y : (temp.y + temp.height);
+                rectOptions['stroke-width'] = pointArgs.border.width;
+                temp.location.x = temp.x + (temp.width / 2);
+                if (!pointArgs.cancel) {
+                    let element: Element = drawRectangle(spark, rectOptions, group);
+                    element.setAttribute('aria-label', spark.dataSource[i][spark.xName] + ' : ' + points[i].yVal);
+                    group.appendChild(element);
+                }
+            });
         }
         this.sparkline.svgObject.appendChild(group);
     }
@@ -433,6 +449,7 @@ export class SparklineRenderer {
         }
         this.sparkline.svgObject.appendChild(group);
     }
+
     private renderMarker(points: SparkValues[]): void {
         let spark: Sparkline = this.sparkline;
         let marker: SparklineMarkerSettingsModel = spark.markerSettings;
@@ -444,6 +461,7 @@ export class SparklineRenderer {
             id: spark.element.id + '_sparkline_marker_g',
             'clip-path': 'url(#' + this.clipId + ')'
         });
+        let g: Element;
         let temp: SparkValues;
         let id: string = spark.element.id + '_sparkline_marker_';
         let option: CircleOption = new CircleOption('', marker.fill, marker.border, marker.opacity, 0, 0, marker.size / 2, '');
@@ -472,14 +490,23 @@ export class SparklineRenderer {
                 sparkline: !this.sparkline.isBlazor ? this.sparkline : null,
                 x: option.cx, y: option.cy, size: marker.size
             };
-            this.sparkline.trigger(markerArgs.name, markerArgs);
-            if (render && !markerArgs.cancel) {
-                option.fill = markerArgs.fill; option.stroke = markerArgs.border.color;
-                option['stroke-width'] = markerArgs.border.width;
-                option.r = markerArgs.size / 2;
-                let element: Element = drawCircle(spark, option, group);
-                element.setAttribute('aria-label', spark.dataSource[i][spark.xName] + ' : ' + points[i].yVal);
+            if (this.sparkline.isBlazor) {
+                const { ...blazormarkerArgs }: IMarkerRenderingEventArgs = markerArgs;
+                markerArgs = blazormarkerArgs;
             }
+            this.sparkline.trigger('markerRendering', markerArgs, (args: IMarkerRenderingEventArgs) => {
+                if (render && !markerArgs.cancel) {
+                    option.id = id + i;
+                    option.cx = markerArgs.x;
+                    option.cy = markerArgs.y;
+                    option.fill = markerArgs.fill; option.stroke = markerArgs.border.color;
+                    option['stroke-width'] = markerArgs.border.width;
+                    option.r = markerArgs.size / 2;
+                    let element: Element = drawCircle(spark, option, group);
+                    element.setAttribute('aria-label', spark.dataSource[i][spark.xName] + ' : ' + points[i].yVal);
+                    group.appendChild(element);
+                }
+            });
         }
         this.sparkline.svgObject.appendChild(group);
     }
@@ -560,25 +587,32 @@ export class SparklineRenderer {
                 sparkline: !this.sparkline.isBlazor ? this.sparkline : null,
                 x: option.x, y: option.y, text: option.text, color: color
             };
-            this.sparkline.trigger(labelArgs.name, labelArgs);
-            size = measureText(labelArgs.text, labelStyle);
-            option.text = labelArgs.text;
-            let render: boolean = (dataLabel.visible.join().toLowerCase().indexOf('all') > -1);
-            render = this.getLabelVisible(render, temp, i, dataLabel, length, highPos, lowPos);
-            edgeLabelOption = this.arrangeLabelPosition(dataLabel.edgeLabelMode, render, labelArgs.x, i, length, size, padding);
-            if (render && !labelArgs.cancel && edgeLabelOption.render) {
-                rectOptions.id = rectId + i;
-                rectOptions.fill = labelArgs.fill; rectOptions.stroke = labelArgs.border.color;
-                rectOptions['stroke-width'] = labelArgs.border.width;
-                option.x = edgeLabelOption.x; option.y = labelArgs.y;
-                rectOptions.rect = new Rect(
-                    option.x - ((size.width / 2) + padding), (option.y - padding - (size.height / 1.75)), size.width + (padding * 2),
-                    size.height + (padding * 2));
-                g = this.sparkline.renderer.createGroup({ id: id + 'g' + i });
-                drawRectangle(spark, rectOptions, g);
-                renderTextElement(option, labelStyle, labelArgs.color, g);
-                group.appendChild(g);
+            if (this.sparkline.isBlazor) {
+                const {...blazordataLabelArgs}: IDataLabelRenderingEventArgs = labelArgs;
+                labelArgs = blazordataLabelArgs;
             }
+            this.sparkline.trigger('dataLabelRendering', labelArgs, (args: IDataLabelRenderingEventArgs) => {
+                size = measureText(labelArgs.text, labelStyle);
+                option.text = labelArgs.text;
+                let renderLabel: boolean = (dataLabel.visible.join().toLowerCase().indexOf('all') > -1);
+                renderLabel = this.getLabelVisible(renderLabel, temp, i, dataLabel, length, highPos, lowPos);
+                edgeLabelOption = this.arrangeLabelPosition(dataLabel.edgeLabelMode, renderLabel, labelArgs.x, i, length, size, padding);
+                if (renderLabel && !labelArgs.cancel && edgeLabelOption.render) {
+                    rectOptions.id = rectId + i;
+                    rectOptions.fill = labelArgs.fill;
+                    rectOptions.stroke = labelArgs.border.color;
+                    rectOptions['stroke-width'] = labelArgs.border.width;
+                    option.y = labelArgs.y;
+                    option.x = edgeLabelOption.x;
+                    rectOptions.rect = new Rect(
+                        option.x - ((size.width / 2) + padding), (option.y - padding - (size.height / 1.75)), size.width + (padding * 2),
+                        size.height + (padding * 2));
+                    g = this.sparkline.renderer.createGroup({ id: id + 'g' + i });
+                    drawRectangle(spark, rectOptions, g);
+                    renderTextElement(option, labelStyle, labelArgs.color, g);
+                    group.appendChild(g);
+                }
+            });
         }
         this.sparkline.svgObject.appendChild(group);
     }
@@ -737,25 +771,45 @@ export class SparklineRenderer {
                 maxX: maxX, minX: minX, maxY: max, minY: min, value: axis.value,
                 lineColor: color, lineWidth: axis.lineSettings.width
             };
-            model.trigger('axisRendering', eventArgs);
-            if (eventArgs.cancel) {
-                this.visiblePoints = [];
-                return;
+            if (this.sparkline.isBlazor) {
+                const { ...blazoraxisArgs}: IAxisRenderingEventArgs = eventArgs;
+                eventArgs = blazoraxisArgs;
             }
-            maxX = eventArgs.maxX; minX = eventArgs.minX;
-            max = eventArgs.maxY; min = eventArgs.minY;
-            value = this.axisValue = eventArgs.value; this.axisColor = eventArgs.lineColor; this.axisWidth = eventArgs.lineWidth;
-            let unitX: number = maxX - minX;
-            let unitY: number = max - min;
-            unitX = (unitX === 0) ? 1 : unitX;
-            unitY = (unitY === 0) ? 1 : unitY;
-            this.unitX = unitX; this.unitY = unitY; this.min = min;
-            x1 = 0;
-            y1 = height - ((height / unitY) * (-min));
-            y1 = (min < 0 && max <= 0) ? 0 : (min < 0 && max > 0) ? y1 : height;
-            if (value >= min && value <= max) { y1 = height - Math.round(height * ((value - min) / this.unitY)); }
-            this.axisHeight = y1 + padding.top;
+            model.trigger('axisRendering', eventArgs, (args: IAxisRenderingEventArgs) => {
+                if (eventArgs.cancel) {
+                    this.visiblePoints = [];
+                    return;
+                }
+                maxX = eventArgs.maxX; minX = eventArgs.minX;
+                max = eventArgs.maxY; min = eventArgs.minY;
+                value = this.axisValue = eventArgs.value;
+                this.axisColor = eventArgs.lineColor;
+                this.axisWidth = eventArgs.lineWidth;
+                if (this.sparkline.isBlazor) {
+                    let xAxis: object = {
+                        'id': this.sparkline.element.id + '_Sparkline_XAxis',
+                        'x1': this.sparkline.padding.left, 'y1': height,
+                        'x2': this.sparkline.availableSize.width - this.sparkline.padding.right, 'y2': height,
+                        'stroke': this.axisColor,
+                        'opacity': this.sparkline.axisSettings.lineSettings.opacity,
+                        'stroke-dasharray': this.sparkline.axisSettings.lineSettings.dashArray,
+                        'stroke-width': this.axisWidth,
+                        'clip-path': 'url(#' + this.clipId + ')'
+                    };
+                    this.sparkline.svgObject.appendChild(this.sparkline.renderer.drawLine(xAxis));
+                }
+            });
         }
+        let unitX: number = maxX - minX;
+        let unitY: number = max - min;
+        unitX = (unitX === 0) ? 1 : unitX;
+        unitY = (unitY === 0) ? 1 : unitY;
+        this.unitX = unitX; this.unitY = unitY; this.min = min;
+        x1 = 0;
+        y1 = height - ((height / unitY) * (-min));
+        y1 = (min < 0 && max <= 0) ? 0 : (min < 0 && max > 0) ? y1 : height;
+        if (value >= min && value <= max) { y1 = height - Math.round(height * ((value - min) / this.unitY)); }
+        this.axisHeight = y1 + padding.top;
         let percent: number; let x: number; let y: number;
         let visiblePoints: SparkValues[] = [];
         let interval: number = this.getInterval(data, model.xName, model.valueType);

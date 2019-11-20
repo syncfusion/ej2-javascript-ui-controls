@@ -103,9 +103,20 @@ export class DrillThrough {
                 valueCaption = engine.fieldList[pivotValue.actualText.toString()] ?
                     engine.fieldList[pivotValue.actualText.toString()].caption : pivotValue.actualText.toString();
                 aggType = engine.fieldList[pivotValue.actualText] ? engine.fieldList[pivotValue.actualText].aggregateType : '';
-                let indexArray: string[] = Object.keys(pivotValue.indexObject);
-                for (let index of indexArray) {
-                    rawData.push((this.parent.engineModule.data as IDataSet[])[Number(index)]);
+                if (this.parent.enableVirtualization && this.parent.allowDataCompression) {
+                    let indexArray: string[] = Object.keys(pivotValue.indexObject);
+                    this.drillThroughDialog.indexString = [];
+                    for (let cIndex of indexArray) {
+                        for (let aIndex of this.parent.engineModule.groupRawIndex[Number(cIndex)]) {
+                            rawData.push((this.parent.engineModule.actualData as IDataSet[])[aIndex]);
+                            this.drillThroughDialog.indexString.push(aIndex.toString());
+                        }
+                    }
+                } else {
+                    let indexArray: string[] = Object.keys(pivotValue.indexObject);
+                    for (let index of indexArray) {
+                        rawData.push((this.parent.engineModule.data as IDataSet[])[Number(index)]);
+                    }
                 }
             }
             let valuetText: string = aggType === 'CalculatedField' ? valueCaption.toString() :
@@ -118,8 +129,11 @@ export class DrillThrough {
                 columnHeaders: pivotValue.columnHeaders === '' ? '' : pivotValue.columnHeaders.toString().split('.').join(' - '),
                 value: valuetText + '(' + pivotValue.formattedText + ')'
             };
-            this.parent.trigger(events.drillThrough, eventArgs);
-            this.drillThroughDialog.showDrillThroughDialog(eventArgs);
+            let drillThrough : DrillThrough = this;
+            this.parent.trigger(events.drillThrough, eventArgs, (observedArgs: DrillThroughEventArgs) => {
+                drillThrough.drillThroughDialog.showDrillThroughDialog(observedArgs);
+            });
+            
         }
     }
 }

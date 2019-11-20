@@ -383,7 +383,7 @@ export interface ChartModel extends ComponentModel{
      * The background image of the chart that accepts value in string as url link or location of an image.
      * @default null
      */
-    backGroundImageUrl?: string;
+    backgroundImage?: string;
 
     /**
      * Defines the collection of technical indicators, that are used in financial markets

@@ -152,7 +152,7 @@ describe('Test page break delete', () => {
         editor.editor.insertPageBreak();
         editor.editor.insertTable(2, 2);
         editor.selection.moveUp();
-        editor.editor.onDelete();
+        editor.editor.delete();
         expect(editor.viewer.pages.length).toBe(1);
     });
     it('undo after page break delete', () => {
@@ -195,7 +195,7 @@ describe('Bookmark collection checking on delete', () => {
         editor.editor.insertBookmark('sample');
         expect(editor.viewer.bookmarks.length).toBe(1);
         editor.selection.selectAll();
-        editor.editor.onDelete();
+        editor.editor.delete();
         expect(editor.viewer.bookmarks.length).toBe(0);
     });
     it('undo after bookmark delete in inline', () => {

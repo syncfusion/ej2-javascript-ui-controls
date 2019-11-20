@@ -39,6 +39,7 @@ export class Selection {
       this.parent.on('dataBoundArg', this.headerCheckbox, this);
       this.parent.on('columnCheckbox', this.columnCheckbox, this);
       this.parent.on('updateGridActions', this.updateGridActions, this);
+      this.parent.grid.on('colgroup-refresh', this.headerCheckbox, this);
       this.parent.on('checkboxSelection', this.checkboxSelection, this);
 
     }
@@ -47,6 +48,7 @@ export class Selection {
       if (this.parent.isDestroyed) { return; }
       this.parent.off('dataBoundArg', this.headerCheckbox);
       this.parent.off('columnCheckbox', this.columnCheckbox);
+      this.parent.grid.off('colgroup-refresh', this.headerCheckbox);
       this.parent.off('checkboxSelection', this.checkboxSelection);
       this.parent.off('updateGridActions', this.updateGridActions);
     }
@@ -120,7 +122,9 @@ export class Selection {
         if (!isNullOrUndefined(headerElement)) {
           headerElement.insertBefore(checkWrap, headerElement.firstChild);
         }
-        this.headerSelection();
+        if (this.parent.autoCheckHierarchy) {
+          this.headerSelection();
+        }
       }
     }
 

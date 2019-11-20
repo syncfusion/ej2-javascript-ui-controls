@@ -2092,6 +2092,7 @@ describe('Edit module', () => {
   describe('EJ2-31713-While add after expand through script error in platform', () => {
     let gridObj: TreeGrid;
     let rows: HTMLTableRowElement[];
+    let actionComplete: () => void;
     beforeAll((done: Function) => {
       gridObj = createGrid(
         {
@@ -2109,11 +2110,23 @@ describe('Edit module', () => {
         done
       );
     });
-    it('While add after expand through script error in platform', () => {
+    it('While add after expand through script error in platform', (done: Function) => {
       (<any>gridObj.grid.toolbarModule).toolbarClickHandler({ item: { id: gridObj.grid.element.id + '_add' } });
-      rows = gridObj.getRows();
-      (rows[0].getElementsByClassName('e-treegridexpand')[0] as HTMLElement).click();
-      expect((rows[1] as HTMLTableRowElement).style.display).toBe('none');
+      actionComplete = (args?: any): void => {
+        debugger;
+        let cells: NodeListOf<Element> = gridObj.grid.getRows()[0].querySelectorAll('.e-rowcell');
+        expect(cells[0].textContent === '121' ).toBeTruthy();
+        expect(cells[1].textContent === 'first').toBeTruthy();
+        done()
+      };
+      gridObj.actionComplete = actionComplete;
+      var formEle = gridObj.grid.editModule.formObj.element;
+      debugger;
+      (formEle.querySelector('#' + gridObj.grid.element.id + 'taskID') as any).value = '121';
+      (formEle.querySelector('#' + gridObj.grid.element.id + 'taskName')as any).value = 'first';
+      (formEle.querySelector('#' + gridObj.grid.element.id + 'progress') as any).value = '23';
+      rows = gridObj.getRows();      
+      (rows[0].getElementsByClassName('e-treegridexpand')[0] as HTMLElement).click();      
     });
     afterAll(() => {
       destroy(gridObj);

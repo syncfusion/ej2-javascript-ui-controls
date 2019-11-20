@@ -1333,7 +1333,7 @@ export class TextDrawingTool extends ToolBase {
         this.commandHandler.clearSelection();
         let node: NodeModel = {
             shape: { type: 'Text' },
-            offsetX: this.currentPosition.x, width: 50, height: 20,
+            offsetX: this.currentPosition.x,
             offsetY: this.currentPosition.y
         };
         if (!args.source) {

@@ -482,6 +482,7 @@ var Selection = /** @__PURE__ @class */ (function () {
         this.parent.on('dataBoundArg', this.headerCheckbox, this);
         this.parent.on('columnCheckbox', this.columnCheckbox, this);
         this.parent.on('updateGridActions', this.updateGridActions, this);
+        this.parent.grid.on('colgroup-refresh', this.headerCheckbox, this);
         this.parent.on('checkboxSelection', this.checkboxSelection, this);
     };
     Selection.prototype.removeEventListener = function () {
@@ -490,6 +491,7 @@ var Selection = /** @__PURE__ @class */ (function () {
         }
         this.parent.off('dataBoundArg', this.headerCheckbox);
         this.parent.off('columnCheckbox', this.columnCheckbox);
+        this.parent.grid.off('colgroup-refresh', this.headerCheckbox);
         this.parent.off('checkboxSelection', this.checkboxSelection);
         this.parent.off('updateGridActions', this.updateGridActions);
     };
@@ -560,7 +562,9 @@ var Selection = /** @__PURE__ @class */ (function () {
             if (!isNullOrUndefined(headerElement)) {
                 headerElement.insertBefore(checkWrap, headerElement.firstChild);
             }
-            this.headerSelection();
+            if (this.parent.autoCheckHierarchy) {
+                this.headerSelection();
+            }
         }
     };
     Selection.prototype.renderColumnCheckbox = function (args) {
@@ -2283,7 +2287,7 @@ var TreeGrid = /** @__PURE__ @class */ (function (_super) {
      * @hidden
      */
     TreeGrid.prototype.wireEvents = function () {
-        EventHandler.add(this.element, 'click', this.mouseClickHandler, this);
+        EventHandler.add(this.grid.element, 'click', this.mouseClickHandler, this);
         EventHandler.add(this.element, 'touchend', this.mouseClickHandler, this);
         this.keyboardModule = new KeyboardEvents(this.element, {
             keyAction: this.treeGridkeyActionHandler.bind(this),
@@ -2416,7 +2420,7 @@ var TreeGrid = /** @__PURE__ @class */ (function (_super) {
      * @hidden
      */
     TreeGrid.prototype.unwireEvents = function () {
-        EventHandler.remove(this.element, 'click', this.mouseClickHandler);
+        EventHandler.remove(this.grid.element, 'click', this.mouseClickHandler);
     };
     /**
      * For internal use only - To Initialize the component rendering.
@@ -3327,10 +3331,11 @@ var TreeGrid = /** @__PURE__ @class */ (function (_super) {
             return;
         }
         var target = e.target;
-        if (target.classList.contains('e-treegridexpand') ||
-            target.classList.contains('e-treegridcollapse')) {
+        if ((target.classList.contains('e-treegridexpand') ||
+            target.classList.contains('e-treegridcollapse')) && (!this.isEditCollapse && !this.grid.isEdit)) {
             this.expandCollapseRequest(target);
         }
+        this.isEditCollapse = false;
         this.notify('checkboxSelection', { target: target });
     };
     /**
@@ -5273,12 +5278,7 @@ var RowDD$1 = /** @__PURE__ @class */ (function () {
             rowPositionHeight = rowEle.offsetTop - scrollTop;
         }
         // let scrollTop = (tObj.grid.scrollModule as any).content.scrollTop;
-        if (tObj.allowTextWrap) {
-            rowTop = row[0].offsetHeight;
-        }
-        else {
-            rowTop = rowPositionHeight + contentHeight + roundOff;
-        }
+        rowTop = rowPositionHeight + contentHeight + roundOff;
         var rowBottom = rowTop + row[0].offsetHeight;
         var difference = rowBottom - rowTop;
         var divide = difference / 3;
@@ -7299,7 +7299,6 @@ var Edit$1 = /** @__PURE__ @class */ (function () {
         this.parent.on('actionComplete', this.editActionEvents, this);
         this.parent.grid.on(doubleTap, this.recordDoubleClick, this);
         this.parent.grid.on('dblclick', this.gridDblClick, this);
-        this.parent.grid.on('click', this.gridSingleClick, this);
         this.parent.on('savePreviousRowPosition', this.savePreviousRowPosition, this);
         // this.parent.on(events.beforeDataBound, this.beforeDataBound, this);
         // this.parent.on(events.cellSaved, this.cellSaved, this);
@@ -7314,14 +7313,6 @@ var Edit$1 = /** @__PURE__ @class */ (function () {
     };
     Edit$$1.prototype.gridDblClick = function (e) {
         this.doubleClickTarget = e.target;
-    };
-    Edit$$1.prototype.gridSingleClick = function (e) {
-        var targetElement = e.target;
-        if (targetElement && this.parent.grid.isEdit && (targetElement.classList.contains('e-treegridexpand') ||
-            targetElement.classList.contains('e-treegridcollapse'))) {
-            this.parent.grid.closeEdit();
-            return;
-        }
     };
     Edit$$1.prototype.beforeStartEdit = function (args) {
         this.parent.trigger(actionBegin, args);
@@ -7355,7 +7346,7 @@ var Edit$1 = /** @__PURE__ @class */ (function () {
         this.parent.grid.off(beforeStartEdit, this.beforeStartEdit);
         this.parent.grid.off(beforeBatchCancel, this.beforeBatchCancel);
         this.parent.grid.off('dblclick', this.gridDblClick);
-        this.parent.grid.off('click', this.gridSingleClick);
+        //this.parent.grid.off('click', this.gridSingleClick);
         //this.parent.grid.off(events.batchEditFormRendered, this.batchEditFormRendered);
     };
     /**
@@ -7377,14 +7368,15 @@ var Edit$1 = /** @__PURE__ @class */ (function () {
         var eventName = getObject('name', eventArgs);
         var treeObj = this.parent;
         var adaptor = treeObj.dataSource.adaptor;
-        if ((isRemoteData(treeObj) || adaptor instanceof RemoteSaveAdaptor) && treeObj.getSelectedRowIndexes().length &&
+        if ((isRemoteData(treeObj) || adaptor instanceof RemoteSaveAdaptor) &&
             (eventArgs.requestType === 'save' && eventArgs.action === 'add') &&
             (treeObj.editSettings.newRowPosition === 'Child' || treeObj.editSettings.newRowPosition === 'Below'
                 || treeObj.editSettings.newRowPosition === 'Above')) {
             if (eventName === 'actionBegin') {
                 var rowIndex = isNullOrUndefined(eventArgs.row) ? treeObj.getSelectedRowIndexes()[0] :
                     eventArgs.row.rowIndex - 1;
-                var keyData = treeObj.getCurrentViewRecords()[rowIndex][treeObj.getPrimaryKeyFieldNames()[0]];
+                var keyData = (!isNullOrUndefined(rowIndex) && rowIndex !== -1) ?
+                    treeObj.getCurrentViewRecords()[rowIndex][treeObj.getPrimaryKeyFieldNames()[0]] : -1;
                 treeObj.grid.query.addParams('relationalKey', keyData);
             }
             else if (eventName === 'actionComplete') {
@@ -7510,6 +7502,7 @@ var Edit$1 = /** @__PURE__ @class */ (function () {
         if (this.parent.editSettings.mode === 'Cell' && this.parent.element.querySelector('form')) {
             args.cancel = true;
             setValue('isEdit', false, this.parent.grid);
+            setValue('isEditCollapse', true, this.parent);
             args.rowData[args.columnName] = args.value;
             var row = args.cell.parentNode;
             var rowIndex_1;

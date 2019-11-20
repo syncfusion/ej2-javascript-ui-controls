@@ -224,7 +224,6 @@ export class Sparkline extends Component<HTMLElement> implements INotifyProperty
     /**
      * Triggers before sparkline tooltip render.
      * @event
-     * @deprecated
      * @blazorProperty 'OnTooltipInitialize'
      */
     @Event()
@@ -241,7 +240,6 @@ export class Sparkline extends Component<HTMLElement> implements INotifyProperty
     /**
      * Triggers before sparkline axis render.
      * @event
-     * @deprecated
      * @blazorProperty 'AxisRendering'
      */
     @Event()
@@ -250,7 +248,6 @@ export class Sparkline extends Component<HTMLElement> implements INotifyProperty
     /**
      * Triggers before sparkline points render.
      * @event
-     * @deprecated
      * @blazorProperty 'PointRendering'
      */
     @Event()
@@ -291,7 +288,6 @@ export class Sparkline extends Component<HTMLElement> implements INotifyProperty
     /**
      * Triggers before the sparkline datalabel render.
      * @event
-     * @deprecated
      * @blazorProperty 'DataLabelRendering'
      */
     @Event()
@@ -300,7 +296,6 @@ export class Sparkline extends Component<HTMLElement> implements INotifyProperty
     /**
      * Triggers before the sparkline marker render.
      * @event
-     * @deprecated
      * @blazorProperty 'MarkerRendering'
      */
     @Event()

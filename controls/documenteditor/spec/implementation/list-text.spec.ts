@@ -160,7 +160,7 @@ describe('Delete validation of selection context type is List Text with undo and
         editor.editorModule.insertText('Sample');
         editor.viewer.selectionLineWidget = editor.selection.start.currentWidget;
         editor.selection.selectListText();
-        editor.editor.onDelete();
+        editor.editor.delete();
         expect(editor.selection.paragraphFormat.getList()).toBe(undefined);
     });
     it('undo after Delete at list text', () => {

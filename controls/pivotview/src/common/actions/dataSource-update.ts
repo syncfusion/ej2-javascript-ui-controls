@@ -121,8 +121,8 @@ export class DataSourceUpdate {
                             break;
                     }
                     if(isBlazor()) { 
-                        this.pivotButton.updateDataSource();
-                        this.pivotButton.axisField.render();
+                        dataSourceUpdate.parent.control.pivotButtonModule.updateDataSource();
+                        dataSourceUpdate.parent.control.axisFieldModule.render();
                     }
                 }
             });

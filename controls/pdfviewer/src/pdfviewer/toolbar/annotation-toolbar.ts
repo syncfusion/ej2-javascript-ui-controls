@@ -1539,8 +1539,10 @@ export class AnnotationToolbar {
         if (this.pdfViewer.annotationModule && this.pdfViewer.annotationModule.freeTextAnnotationModule) {
             this.pdfViewer.annotation.freeTextAnnotationModule.isNewFreeTextAnnot = false;
             this.pdfViewer.annotation.freeTextAnnotationModule.isNewAddedAnnot = false;
-            this.primaryToolbar.deSelectItem(this.freeTextEditItem);
-            this.enableFreeTextAnnotationPropertiesTools(false);
+            if (this.freeTextEditItem) {
+                this.primaryToolbar.deSelectItem(this.freeTextEditItem);
+                this.enableFreeTextAnnotationPropertiesTools(false);
+            }
         }
     }
 

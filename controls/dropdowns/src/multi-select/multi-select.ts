@@ -2146,7 +2146,7 @@ export class MultiSelect extends DropDownBase implements IInput {
         let chipContent: HTMLElement = this.createElement('span', { className: CHIP_CONTENT });
         let chipClose: HTMLElement = this.createElement('span', { className: CHIP_CLOSE });
         if (this.mainData) {
-            itemData = this.getDataByValue(value);
+            itemData = isBlazor() ? JSON.parse(JSON.stringify(this.getDataByValue(value))) : this.getDataByValue(value);
         }
         if (this.valueTemplate && !isNullOrUndefined(itemData)) {
             let compiledString: Function = compile(this.valueTemplate);
@@ -2531,6 +2531,7 @@ export class MultiSelect extends DropDownBase implements IInput {
     }
     protected renderList(isEmptyData?: boolean): void {
         super.render(isEmptyData);
+        this.unwireListEvents();
         this.wireListEvents();
     }
     private initialValueUpdate(): void {
@@ -2595,6 +2596,11 @@ export class MultiSelect extends DropDownBase implements IInput {
         if (this.value && (this.value as string[]).indexOf(li.getAttribute('data-value')) > -1) {
             this.mainList = this.ulElement;
             addClass([li], HIDE_LIST);
+        }
+    }
+    protected updateDataList(): void {
+        if (this.mainList && this.ulElement && this.mainList.childElementCount < this.ulElement.childElementCount) {
+            this.mainList = this.ulElement.cloneNode ? <HTMLElement>this.ulElement.cloneNode(true) : this.ulElement;
         }
     }
     protected isValidLI(li: Element | HTMLElement): boolean {
@@ -3511,6 +3517,10 @@ export class MultiSelect extends DropDownBase implements IInput {
     public showPopup(): void {
         if (!this.enabled) {
             return;
+        }
+        if (isBlazor() && this.itemTemplate) {
+            this.DropDownBaseupdateBlazorTemplates(true, false, false, false, false, false, false, false);
+            this.refreshSelection();
         }
         if (!this.ulElement) {
             this.beforePopupOpen = true;

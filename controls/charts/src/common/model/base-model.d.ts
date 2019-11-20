@@ -157,7 +157,7 @@ export interface ChartAreaModel {
      * The background image of the chart area that accepts value in string as url link or location of an image.
      * @default null
      */
-    backGroundImageUrl?: string;
+    backgroundImage?: string;
 
 }
 

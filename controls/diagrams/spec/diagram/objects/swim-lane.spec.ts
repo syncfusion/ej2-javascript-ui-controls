@@ -909,7 +909,8 @@ describe('Diagram Control', () => {
                         type: 'SwimLane',
                         //initialize swimlane header
                         header: {
-                            annotation: { content: 'ONLINE PURCHASE STATUS' },
+                            annotation: { content: 'ONLINE PURCHASE STATUS',
+                            style: { fill: 'black', color: 'white' } },
                             height: 50, style: { fill: darkColor, fontSize: 11 },
                         },
                         lanes: [
@@ -1016,6 +1017,10 @@ describe('Diagram Control', () => {
                 expect((diagram.nodes[0].shape as SwimLaneModel).header.annotation.content == "newAnnotation").toBe(true);
                 done();
             }, 1000);
+        });
+        it('Header text style ', (done: Function) => {
+            expect((diagram.nodes[0].shape as SwimLaneModel).header.annotation.style.fill == "black").toBe(true);
+            done();
         });
         it('Change lane header text ', (done: Function) => {
 
@@ -5518,6 +5523,40 @@ describe('Diagram Control', () => {
                 phase = document.getElementById('swimlanestackCanvas10').getAttribute('width');
                 expect(phase === '200').toBe(true);
                 done();
+            });
+            
+            it('Moving nodes out of view - negative', (done: Function) => {
+                let diagramCanvas: HTMLElement;
+                diagramCanvas = document.getElementById(diagram.element.id + 'content');
+                (diagram.nodes[0].shape as SwimLaneModel).lanes[0].height = 1200;
+                diagram.dataBind();
+                let lane1 = document.getElementById('swimlanestackCanvas10').getAttribute('height');
+                expect(lane1 === '1200').toBe(true);
+                setTimeout(function () {
+                    let mouseEvents: MouseEvents = new MouseEvents();
+                    let node = document.getElementById('Order');
+                    let bounds1 = node.getBoundingClientRect();
+                    let x1 = bounds1.left + bounds1.width / 2;
+                    let y1 = bounds1.top + bounds1.height / 2;
+    
+                    let id = (diagram.nodes[0].wrapper.children[0] as GridPanel).rows[0].cells[0].children[0].id
+                    let target = document.getElementById(id);
+                    let bounds = target.getBoundingClientRect();
+    
+                    let x = bounds.left + bounds.width / 2;
+                    let y = bounds.top + bounds.height / 2;
+    
+                    mouseEvents.clickEvent(diagramCanvas, x1 + diagram.element.offsetLeft, y1 + diagram.element.offsetTop);
+                    mouseEvents.mouseDownEvent(diagramCanvas, x1 + diagram.element.offsetLeft + 10, y1 + diagram.element.offsetTop);
+                    mouseEvents.mouseMoveEvent(diagramCanvas, x1 + diagram.element.offsetLeft + 20, y1 + diagram.element.offsetTop + 20);
+                    mouseEvents.mouseMoveEvent(diagramCanvas, x + diagram.element.offsetLeft + 30, y + diagram.element.offsetTop + 20);
+                    mouseEvents.mouseMoveEvent(diagramCanvas, x + diagram.element.offsetLeft, y + diagram.element.offsetTop);
+                    mouseEvents.mouseUpEvent(diagramCanvas, x + diagram.element.offsetLeft, y + diagram.element.offsetTop);
+                    node = document.getElementById('Order');
+                    bounds = node.getBoundingClientRect();
+                    expect(diagram.nodes[0].wrapper.bounds.y == -510).toBe(true);
+                    done();
+                }, 1000);
             });
         });
         describe('Vertical Orientation', () => {

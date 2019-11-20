@@ -335,6 +335,7 @@ export class Draggable extends Base<HTMLElement> implements INotifyPropertyChang
     private dragProcessStarted: boolean = false;
     /* tslint:disable no-any */
     private tapHoldTimer: any = 0;
+    private dragElePosition: any;
     public currentStateTarget: any;
     private externalInitialize: boolean = false;
     private diffY: number = 0;
@@ -533,6 +534,7 @@ export class Draggable extends Base<HTMLElement> implements INotifyPropertyChang
                 top: (pos.top - this.diffY) + 'px',
                 left: (pos.left - this.diffX) + 'px'
             });
+            this.dragElePosition = { top: pos.top, left: pos.left };
             setStyleAttribute(dragTargetElement, this.getDragPosition({ position: 'absolute', left: posValue.left, top: posValue.top }));
             EventHandler.remove(document, Browser.touchMoveEvent, this.intDragStart);
             EventHandler.remove(document, Browser.touchEndEvent, this.intDestroy);
@@ -668,7 +670,17 @@ export class Draggable extends Base<HTMLElement> implements INotifyPropertyChang
                 left = this.prevLeft;
             }
         }
-        let dragValue: DragPosition = this.getProcessedPositionValue({ top: (top - iTop) + 'px', left: (left - iLeft) + 'px' });
+        let draEleTop: number;
+        let draEleLeft: number;
+        if (this.dragArea) {
+            draEleTop = (top - iTop) < 0 ? this.dragLimit.top : (top - iTop);
+            draEleLeft = (left - iLeft) < 0 ? this.dragElePosition.left : (left - iLeft);
+        } else {
+            draEleTop = top - iTop;
+            draEleLeft = left - iLeft;
+        }
+
+        let dragValue: DragPosition = this.getProcessedPositionValue({ top: draEleTop + 'px', left: draEleLeft + 'px' });
         setStyleAttribute(helperElement, this.getDragPosition(dragValue));
         if (!this.elementInViewport(helperElement) && this.enableAutoScroll) {
             this.helperElement.scrollIntoView();

@@ -74,7 +74,6 @@ export class Edit {
         this.parent.on('actionComplete', this.editActionEvents, this);
         this.parent.grid.on(events.doubleTap, this.recordDoubleClick, this);
         this.parent.grid.on('dblclick', this.gridDblClick, this);
-        this.parent.grid.on('click', this.gridSingleClick, this);
         this.parent.on('savePreviousRowPosition', this.savePreviousRowPosition, this);
         // this.parent.on(events.beforeDataBound, this.beforeDataBound, this);
         // this.parent.on(events.cellSaved, this.cellSaved, this);
@@ -89,14 +88,6 @@ export class Edit {
       }
       private gridDblClick(e: MouseEvent): void {
         this.doubleClickTarget = e.target as HTMLElement;
-      }
-      private gridSingleClick(e: MouseEvent): void {
-        let targetElement: Element = e.target as HTMLElement;
-        if (targetElement && this.parent.grid.isEdit && (targetElement.classList.contains('e-treegridexpand') ||
-          targetElement.classList.contains('e-treegridcollapse'))) {
-          this.parent.grid.closeEdit();
-          return;
-        }
       }
       private beforeStartEdit(args: Object) : void {
         this.parent.trigger(events.actionBegin, args);
@@ -128,7 +119,7 @@ export class Edit {
         this.parent.grid.off(events.beforeStartEdit, this.beforeStartEdit);
         this.parent.grid.off(events.beforeBatchCancel, this.beforeBatchCancel);
         this.parent.grid.off('dblclick', this.gridDblClick);
-        this.parent.grid.off('click', this.gridSingleClick);
+        //this.parent.grid.off('click', this.gridSingleClick);
         //this.parent.grid.off(events.batchEditFormRendered, this.batchEditFormRendered);
       }
       /**
@@ -151,14 +142,15 @@ export class Edit {
       let eventName: string = getObject('name', eventArgs);
       let treeObj: TreeGrid = this.parent;
       let adaptor: AdaptorOptions = (treeObj.dataSource as DataManager).adaptor;
-      if ((isRemoteData(treeObj) || adaptor instanceof RemoteSaveAdaptor) && treeObj.getSelectedRowIndexes().length &&
+      if ((isRemoteData(treeObj) || adaptor instanceof RemoteSaveAdaptor) &&
           (eventArgs.requestType === 'save' && eventArgs.action === 'add') &&
           (treeObj.editSettings.newRowPosition === 'Child' || treeObj.editSettings.newRowPosition === 'Below'
           || treeObj.editSettings.newRowPosition === 'Above')) {
         if (eventName === 'actionBegin') {
           let rowIndex: number = isNullOrUndefined(eventArgs.row) ? treeObj.getSelectedRowIndexes()[0] :
                 (<HTMLTableRowElement>eventArgs.row).rowIndex - 1;
-          let keyData: string = treeObj.getCurrentViewRecords()[rowIndex][treeObj.getPrimaryKeyFieldNames()[0]];
+          let keyData: string = (!isNullOrUndefined(rowIndex) && rowIndex !== -1) ?
+                treeObj.getCurrentViewRecords()[rowIndex][treeObj.getPrimaryKeyFieldNames()[0]] : -1;
           treeObj.grid.query.addParams('relationalKey', keyData);
         } else if (eventName === 'actionComplete') {
           let paramsLength: number = treeObj.grid.query.params.length;
@@ -283,6 +275,7 @@ export class Edit {
       if (this.parent.editSettings.mode === 'Cell' && this.parent.element.querySelector('form')) {
           args.cancel = true;
           setValue('isEdit', false, this.parent.grid);
+          setValue('isEditCollapse', true, this.parent);
           args.rowData[args.columnName] = args.value;
           let row: HTMLTableRowElement = <HTMLTableRowElement>args.cell.parentNode;
           let rowIndex: number;

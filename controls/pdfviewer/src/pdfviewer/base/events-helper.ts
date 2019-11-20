@@ -425,3 +425,14 @@ export interface ExportFailureEventArgs extends BaseEventArgs {
      */
     errorDetails: string;
 }
+
+/** 
+ * This event arguments provides the necessary information about data.
+ */
+export interface AjaxRequestInitiateEventArgs extends BaseEventArgs {
+    /**
+     * Specified the data to be sent in to server.
+     */
+    // tslint:disable-next-line
+    JsonData: any;
+}

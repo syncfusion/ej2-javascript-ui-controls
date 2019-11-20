@@ -450,6 +450,14 @@ describe('Numerictextbox Control', () => {
             expect(numerictextbox.value).toEqual(10.889);
         });
 
+        it('Set the decimals value as 7 in numeric', () => {
+            numerictextbox = new NumericTextBox({ format: 'n7', value: 0.0000008, decimals: 7 }, '#tsNumeric');
+            expect((<HTMLInputElement>document.getElementById('tsNumeric')).value).toEqual('0.0000008');
+            numerictextbox.focusHandler();
+            expect((<HTMLInputElement>document.getElementById('tsNumeric')).value).toEqual('0.0000008');
+            expect(numerictextbox.value).toEqual(0.0000008);
+        });
+
         it('Set the decimals value as null in numeric', () => {
             numerictextbox = new NumericTextBox({ format: 'n4', value: 10.88888, decimals: null }, '#tsNumeric');
             expect((<HTMLInputElement>document.getElementById('tsNumeric')).value).toEqual('10.8889');

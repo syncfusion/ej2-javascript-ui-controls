@@ -1134,14 +1134,16 @@ export class Drawing {
         let selectorModel: SelectorModel = this.pdfViewer.selectedItems;
         for (let i: number = 0; i < objArray.length; i++) {
             // tslint:disable-next-line
-            let obj: any = (this.pdfViewer.nameTable as any)[objArray[i]]
-            if (!(obj instanceof Selector) && obj.wrapper.visible) {
-                selectorModel.annotations.push(obj);
-                this.initSelectorWrapper();
-                selectorModel.wrapper.rotateAngle = selectorModel.rotateAngle = 0;
-                selectorModel.wrapper.children.push(obj.wrapper);
-                if (!preventUpdate) {
-                    this.renderSelector(obj.pageIndex);
+            let obj: any = (this.pdfViewer.nameTable as any)[objArray[i]];
+            if (obj) {
+                if (!(obj instanceof Selector) && obj.wrapper.visible) {
+                    selectorModel.annotations.push(obj);
+                    this.initSelectorWrapper();
+                    selectorModel.wrapper.rotateAngle = selectorModel.rotateAngle = 0;
+                    selectorModel.wrapper.children.push(obj.wrapper);
+                    if (!preventUpdate) {
+                        this.renderSelector(obj.pageIndex);
+                    }
                 }
             }
         }

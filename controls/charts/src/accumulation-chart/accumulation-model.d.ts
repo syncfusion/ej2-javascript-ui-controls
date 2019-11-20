@@ -32,7 +32,7 @@ export interface AccumulationChartModel extends ComponentModel{
      * The background image of the chart that accepts value in string as url link or location of an image.
      * @default null
      */
-    backGroundImageUrl?: string;
+    backgroundImage?: string;
 
     /**
      * Center of pie

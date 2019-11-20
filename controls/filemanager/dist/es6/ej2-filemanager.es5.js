@@ -4550,7 +4550,6 @@ var BreadCrumbBar = /** @__PURE__ @class */ (function () {
     BreadCrumbBar.prototype.keyActionHandler = function (e) {
         switch (e.action) {
             case 'enter':
-                e.preventDefault();
                 this.addressPathClickHandler(e);
                 break;
         }
@@ -7689,7 +7688,8 @@ var DetailsView = /** @__PURE__ @class */ (function () {
             this.gridObj = new Grid({
                 dataSource: items,
                 allowSorting: true,
-                rowSelecting: this.onSelection.bind(this),
+                rowSelecting: this.onSelection.bind(this, 'select'),
+                rowDeselecting: this.onSelection.bind(this, 'unselect'),
                 rowSelected: this.onSelected.bind(this),
                 rowDeselected: this.onDeSelection.bind(this),
                 allowResizing: this.parent.detailsViewSettings.columnResizing,
@@ -8559,8 +8559,8 @@ var DetailsView = /** @__PURE__ @class */ (function () {
         }
     };
     /* istanbul ignore next */
-    DetailsView.prototype.onSelection = function (args) {
-        var eventArgs = { fileDetails: args.data, isInteracted: this.interaction, cancel: false, target: args.target };
+    DetailsView.prototype.onSelection = function (action, args) {
+        var eventArgs = { action: action, fileDetails: args.data, isInteracted: this.interaction, cancel: false, target: args.target };
         this.parent.trigger('fileSelection', eventArgs);
         args.cancel = eventArgs.cancel;
     };

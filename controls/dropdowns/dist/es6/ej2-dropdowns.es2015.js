@@ -392,7 +392,7 @@ let DropDownBase = class DropDownBase extends Component {
     DropDownBaseupdateBlazorTemplates(item, group, noRecord, action, value, header, footer, isEmpty) {
         if (!this.isStringTemplate) {
             if (this.itemTemplate && item) {
-                updateBlazorTemplate(this.itemTemplateId, ITEMTEMPLATE_PROPERTY, this);
+                updateBlazorTemplate(this.itemTemplateId, ITEMTEMPLATE_PROPERTY, this, isEmpty);
             }
             if (this.groupTemplate && group) {
                 updateBlazorTemplate(this.groupTemplateId, GROUPTEMPLATE_PROPERTY, this);
@@ -770,7 +770,7 @@ let DropDownBase = class DropDownBase extends Component {
                 new DataManager(dataSource).executeLocal(new Query().take(100))
                 : dataSource;
             ulElement = this.templateListItem((this.getModuleName() === 'autocomplete') ? spliceData : dataSource, fields);
-            this.DropDownBaseupdateBlazorTemplates(true, false, false, false);
+            this.DropDownBaseupdateBlazorTemplates(true, false, false, false, false, false, false, false);
         }
         else {
             ulElement = this.createListItems(listData, fields);
@@ -863,7 +863,7 @@ let DropDownBase = class DropDownBase extends Component {
         }
     }
     updateSelectElementData(isFiltering) {
-        if (isFiltering && isNullOrUndefined(this.selectData) && this.listData.length > 0) {
+        if (isFiltering && isNullOrUndefined(this.selectData) && this.listData && this.listData.length > 0) {
             this.selectData = this.listData;
         }
     }
@@ -1039,17 +1039,36 @@ let DropDownBase = class DropDownBase extends Component {
             append(liCollections, this.ulElement);
         }
         else {
+            let attr = [];
             for (let i = 0; i < items.length; i++) {
-                if (this.liCollections[index]) {
-                    this.liCollections[index].parentNode.insertBefore(liCollections[i], this.liCollections[index]);
+                let listGroupItem = this.ulElement.querySelectorAll('.e-list-group-item');
+                for (let j = 0; j < listGroupItem.length; j++) {
+                    attr[j] = listGroupItem[j].innerText;
+                }
+                if (attr.indexOf(liCollections[i].innerText) > -1 && fields.groupBy) {
+                    for (let j = 0; j < listGroupItem.length; j++) {
+                        if (attr[j] === liCollections[i].innerText) {
+                            this.ulElement.insertBefore(liCollections[i + 1], listGroupItem[j + 1]);
+                            i = i + 1;
+                            break;
+                        }
+                    }
                 }
                 else {
-                    this.ulElement.appendChild(liCollections[i]);
+                    if (this.liCollections[index]) {
+                        this.liCollections[index].parentNode.insertBefore(liCollections[i], this.liCollections[index]);
+                    }
+                    else {
+                        this.ulElement.appendChild(liCollections[i]);
+                    }
                 }
                 let tempLi = [].slice.call(this.liCollections);
                 tempLi.splice(index, 0, liCollections[i]);
                 this.liCollections = tempLi;
                 index += 1;
+                if (this.getModuleName() === 'multiselect') {
+                    this.updateDataList();
+                }
             }
         }
         if (selectedItemValue || itemIndex === 0) {
@@ -1075,6 +1094,9 @@ let DropDownBase = class DropDownBase extends Component {
     }
     updateActionCompleteData(li, item) {
         // this is for ComboBox custom value
+    }
+    updateDataList() {
+        // this is for multiselect update list items
     }
     /**
      * Gets the data Object that matches the given value.
@@ -1920,9 +1942,12 @@ let DropDownList = class DropDownList extends DropDownBase {
         EventHandler.remove(this.list, 'mouseout', this.onMouseLeave);
     }
     ;
+    checkSelector(id) {
+        return '#' + id.replace(/(:|\.|\[|\]|,|=|@|\\|\/|#)/g, '\\$1');
+    }
     onDocumentClick(e) {
         let target = e.target;
-        if (!(!isNullOrUndefined(this.popupObj) && closest(target, '#' + this.popupObj.element.id)) &&
+        if (!(!isNullOrUndefined(this.popupObj) && closest(target, this.checkSelector(this.popupObj.element.id))) &&
             !this.inputWrapper.container.contains(e.target)) {
             if (this.inputWrapper.container.classList.contains(dropDownListClasses.inputFocus) || this.isPopupOpen) {
                 this.isDocumentClick = true;
@@ -3333,6 +3358,9 @@ let DropDownList = class DropDownList extends DropDownBase {
     showPopup() {
         if (!this.enabled) {
             return;
+        }
+        if (isBlazor() && this.itemTemplate) {
+            this.DropDownBaseupdateBlazorTemplates(true, false, false, false);
         }
         if (this.beforePopupOpen) {
             this.refreshPopup();
@@ -6446,7 +6474,7 @@ let MultiSelect = class MultiSelect extends DropDownBase {
         let chipContent = this.createElement('span', { className: CHIP_CONTENT });
         let chipClose = this.createElement('span', { className: CHIP_CLOSE });
         if (this.mainData) {
-            itemData = this.getDataByValue(value);
+            itemData = isBlazor() ? JSON.parse(JSON.stringify(this.getDataByValue(value))) : this.getDataByValue(value);
         }
         if (this.valueTemplate && !isNullOrUndefined(itemData)) {
             let compiledString = compile(this.valueTemplate);
@@ -6851,6 +6879,7 @@ let MultiSelect = class MultiSelect extends DropDownBase {
     }
     renderList(isEmptyData) {
         super.render(isEmptyData);
+        this.unwireListEvents();
         this.wireListEvents();
     }
     initialValueUpdate() {
@@ -6918,6 +6947,11 @@ let MultiSelect = class MultiSelect extends DropDownBase {
         if (this.value && this.value.indexOf(li.getAttribute('data-value')) > -1) {
             this.mainList = this.ulElement;
             addClass([li], HIDE_LIST);
+        }
+    }
+    updateDataList() {
+        if (this.mainList && this.ulElement && this.mainList.childElementCount < this.ulElement.childElementCount) {
+            this.mainList = this.ulElement.cloneNode ? this.ulElement.cloneNode(true) : this.ulElement;
         }
     }
     isValidLI(li) {
@@ -7867,6 +7901,10 @@ let MultiSelect = class MultiSelect extends DropDownBase {
     showPopup() {
         if (!this.enabled) {
             return;
+        }
+        if (isBlazor() && this.itemTemplate) {
+            this.DropDownBaseupdateBlazorTemplates(true, false, false, false, false, false, false, false);
+            this.refreshSelection();
         }
         if (!this.ulElement) {
             this.beforePopupOpen = true;
@@ -9400,7 +9438,13 @@ let ListBox = class ListBox extends DropDownBase {
     }
     ;
     checkSelectAll() {
-        let searchCount = this.list.querySelectorAll('li.' + dropDownBaseClasses.li).length;
+        let searchCount = 0;
+        let liItems = this.list.querySelectorAll('li.' + dropDownBaseClasses.li);
+        for (let i = 0; i < liItems.length; i++) {
+            if (!liItems[i].classList.contains('e-disabled')) {
+                searchCount++;
+            }
+        }
         let len = this.getSelectedItems().length;
         if (this.showSelectAll && searchCount) {
             this.notify('checkSelectAll', { module: 'CheckBoxSelection', value: (searchCount === len) ? 'check' : 'uncheck' });

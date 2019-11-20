@@ -181,7 +181,7 @@ export class ChartArea extends ChildProperty<ChartArea> {
      * @default null
      */
     @Property(null)
-    public backGroundImageUrl: string;
+    public backgroundImage: string;
 
 }
 /**

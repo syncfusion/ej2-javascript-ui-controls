@@ -362,3 +362,7 @@ export const cBoxFltrComplete: string = 'cbox-filter-complete';
 export const fltrPrevent: string = 'filter-Prevent';
 /** @hidden */
 export const beforeFltrcMenuOpen: string = 'before-filter-cmenu-open';
+/** @hidden */
+export const valCustomPlacement: string = 'validation-custom-placement';
+/** @hidden */
+export const filterCboxValue: string = 'filter-cbox-value';

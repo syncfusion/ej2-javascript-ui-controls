@@ -556,6 +556,7 @@ export interface IGrid extends Component<HTMLElement> {
     getFrozenVirtualContent?(): Element;
     getMovableVirtualHeader?(): Element;
     getFrozenVirtualHeader?(): Element;
+    getFilteredRecords(): Object[] | Promise<Object>;
     // public Events
     dataStateChange?: EmitType<DataStateChangeEventArgs>;
 }
@@ -798,6 +799,8 @@ export interface IRow<T> {
     tIndex?: number;
     collapseRows?: Object[];
     isSelected?: boolean;
+
+    isFreezeRow? : boolean;
 
     isReadOnly?: boolean;
 
@@ -1147,7 +1150,8 @@ export interface FilterSearchBeginEventArgs {
     query: Query;
     /** Defines take number of data  */
     filterChoiceCount: number;
-
+    /** Defines the datasource for filter request */
+    dataSource?: Object[];
 }
 
 export interface MultipleExport {
@@ -1443,11 +1447,11 @@ export interface BeforeBatchSaveArgs extends ICancel {
     batchChanges?: Object;
 }
 
-/**
- * @hidden
- */
+
 export interface ResizeArgs extends ICancel {
-    /** Event argument of point or touch action. */
+    /** Event argument of point or touch action.
+     * @hidden
+     */
     e?: MouseEvent | TouchEvent;
     /** Defines the resizing column details */
     column?: Column;
@@ -1936,7 +1940,7 @@ export interface IFilter {
 export interface IFilterArgs {
     type?: string;
     height: number;
-    columns?: Column[];
+    columns?: ColumnModel[];
     field?: string;
     displayName?: string;
     query?: Query;
@@ -1955,7 +1959,7 @@ export interface IFilterArgs {
     template?: Function;
     target?: Element;
     foreignKeyValue?: string;
-    column?: Column;
+    column?: ColumnModel;
     actualPredicate?: { [key: string]: PredicateModel[] };
     uid?: string;
     isForeignKey?: boolean;
@@ -1984,6 +1988,8 @@ export interface PdfExportProperties {
     fileName?: string;
     /** Defines the hierarchy export mode for the pdf grid */
     hierarchyExportMode?: 'Expanded' | 'All' | 'None';
+    /** Defines the overflow of columns for the pdf grid */
+    allowHorizontalOverflow?: boolean;
 }
 
 export interface PdfTheme {

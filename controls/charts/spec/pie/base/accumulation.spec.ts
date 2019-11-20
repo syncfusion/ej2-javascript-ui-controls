@@ -341,7 +341,7 @@ describe('accumulation and Doughnut Control Checking', () => {
             expect(background.getAttribute('href') != null).toBe(true);
             done();
         }, 500);
-        accumulation.backGroundImageUrl = 'https://cdn.syncfusion.com/content/images/freetrials/essential-studio.png?v=03102019101652';
+        accumulation.backgroundImage = 'https://cdn.syncfusion.com/content/images/freetrials/essential-studio.png?v=03102019101652';
         accumulation.refresh();
     });
    /* it('center aligned div checking tooltip', (done: Function) => {

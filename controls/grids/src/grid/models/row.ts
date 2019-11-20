@@ -26,6 +26,8 @@ export class Row<T> {
 
     public isSelected: boolean;
 
+    public isFreezeRow: boolean;
+
     public isReadOnly: boolean;
 
     public isAltRow: boolean;

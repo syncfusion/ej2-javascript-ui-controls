@@ -40,7 +40,7 @@ describe('Select list text and delete validation', () => {
         expect(editor.selection.contextType).toBe('List');
     });
     it(' Delete after List Text', () => {
-        editor.editor.onDelete();
+        editor.editor.delete();
         expect(editor.selection.paragraphFormat.getList()).toBe(undefined);
     });
     it('undo after delete list Text', () => {

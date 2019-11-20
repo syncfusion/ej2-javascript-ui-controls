@@ -182,29 +182,31 @@ export class StampAnnotation {
                     this.renderStamp(currentLocation.left, currentLocation.top, currentLocation.width, currentLocation.height, pageIndex, opacity, rotation, canvass, annotation);
                     this.isExistingStamp = false;
                 } else {
-                    for (let j: number = 0; j < Apperance.length; j++) {
-                        // tslint:disable-next-line
-                        let stampShapes: any = Apperance[j];
-                        // tslint:disable-next-line
-                        let imageData: any = stampShapes['imagedata'];
-                        // tslint:disable-next-line
-                        let matrix: any = stampShapes['matrix'];
-                        // tslint:disable-next-line
-                        let currentDate: any = stampShapes['CreationDate'];
-                        // tslint:disable-next-line
-                        let modifiedDate: any = stampShapes['ModifiedDate'];
-                        // tslint:disable-next-line
-                        let rotationAngle: any = stampShapes['RotateAngle'];
-                        if (imageData) {
-                            let image: HTMLImageElement = new Image();
+                    if (Apperance) {
+                        for (let j: number = 0; j < Apperance.length; j++) {
                             // tslint:disable-next-line
-                            let proxy: any = this;
-                            image.onload = (): void => {
-                                let currentLocation: IRectCollection = proxy.calculateImagePosition(position);
-                                // tslint:disable-next-line:max-line-length
-                                proxy.renderCustomImage(currentLocation, pageIndex, image, currentDate, modifiedDate, rotationAngle, opacity, canvass, true, annotation);
-                            };
-                            image.src = imageData;
+                            let stampShapes: any = Apperance[j];
+                            // tslint:disable-next-line
+                            let imageData: any = stampShapes['imagedata'];
+                            // tslint:disable-next-line
+                            let matrix: any = stampShapes['matrix'];
+                            // tslint:disable-next-line
+                            let currentDate: any = stampShapes['CreationDate'];
+                            // tslint:disable-next-line
+                            let modifiedDate: any = stampShapes['ModifiedDate'];
+                            // tslint:disable-next-line
+                            let rotationAngle: any = stampShapes['RotateAngle'];
+                            if (imageData) {
+                                let image: HTMLImageElement = new Image();
+                                // tslint:disable-next-line
+                                let proxy: any = this;
+                                image.onload = (): void => {
+                                    let currentLocation: IRectCollection = proxy.calculateImagePosition(position);
+                                    // tslint:disable-next-line:max-line-length
+                                    proxy.renderCustomImage(currentLocation, pageIndex, image, currentDate, modifiedDate, rotationAngle, opacity, canvass, true, annotation);
+                                };
+                                image.src = imageData;
+                            }
                         }
                     }
                 }
@@ -647,6 +649,9 @@ export class StampAnnotation {
         }
         stampCollection.modifiedDate = new Date().toLocaleString();
         this.currentStampAnnotation = stampCollection;
+        if (stampCollection) {
+            return stampCollection;
+        }
     }
     /**
      * @private
@@ -864,7 +869,7 @@ export class StampAnnotation {
         let storeObject: any = window.sessionStorage.getItem(this.pdfViewerBase.documentId + '_annotations_stamp');
         let index: number = 0;
         if (!storeObject) {
-            this.pdfViewer.annotationModule.storeAnnotationCollections(annotation);
+            this.pdfViewer.annotationModule.storeAnnotationCollections(annotation, pageNumber);
             let shapeAnnotation: IPageAnnotations = { pageIndex: pageNumber, annotations: [] };
             shapeAnnotation.annotations.push(annotation);
             index = shapeAnnotation.annotations.indexOf(annotation);
@@ -873,7 +878,7 @@ export class StampAnnotation {
             let annotationStringified: string = JSON.stringify(annotationCollection);
             window.sessionStorage.setItem(this.pdfViewerBase.documentId + '_annotations_stamp', annotationStringified);
         } else {
-            this.pdfViewer.annotationModule.storeAnnotationCollections(annotation);
+            this.pdfViewer.annotationModule.storeAnnotationCollections(annotation, pageNumber);
             let annotObject: IPageAnnotations[] = JSON.parse(storeObject);
             window.sessionStorage.removeItem(this.pdfViewerBase.documentId + '_annotations_stamp');
             let pageIndex: number = this.pdfViewer.annotationModule.getPageCollection(annotObject, pageNumber);
@@ -958,13 +963,52 @@ export class StampAnnotation {
         if (stampAnnotation) {
             annotationObject = {
                 // tslint:disable-next-line:max-line-length
-                stampAnnotationType: annotation.StampAnnotationType, author: annotation.Author, modifiedDate: annotation.ModifiedDate, subject: annotation.Subject,
-                note: annotation.Note, strokeColor: annotation.StrokeColor, fillColor: annotation.FillColor, opacity: annotation.Opacity, stampFillcolor: annotation.StampFillColor,
+                stampAnnotationType: 'path', author: annotation.Author, modifiedDate: annotation.ModifiedDate, subject: annotation.Subject,
+                note: annotation.Note, strokeColor: annotation.StrokeColor, fillColor: annotation.FillColor, opacity: annotation.Opacity, stampFillcolor: stampAnnotation.stampFillColor,
                 // tslint:disable-next-line:max-line-length
-                rotateAngle: annotation.RotateAngle, creationDate: annotation.creationDate, pageNumber: pageNumber, icon: annotation.iconName, stampAnnotationPath: stampAnnotation.pathdata, randomId: 'stamp', isDynamicStamp: this.pdfViewerBase.isDynamicStamp, dynamicText: this.dynamicText,
+                rotateAngle: annotation.RotateAngle, creationDate: annotation.ModifiedDate, pageNumber: pageNumber, icon: stampAnnotation.iconName, stampAnnotationPath: stampAnnotation.pathdata, randomId: 'stamp', isDynamicStamp: this.pdfViewerBase.isDynamicStamp, dynamicText: this.dynamicText,
                 bounds: { left: annotation.Rect.X, top: annotation.Rect.Y, width: annotation.Rect.Width, height: annotation.Rect.Height, }, annotName: annotation.AnnotName, comments: this.pdfViewer.annotationModule.getAnnotationComments(annotation.Comments, annotation, annotation.Author), review: { state: annotation.State, stateModel: annotation.StateModel, author: annotation.Author, modifiedDate: annotation.ModifiedDate }, shapeAnnotationType: 'stamp'
             };
             this.pdfViewer.annotationModule.storeAnnotations(pageNumber, annotationObject, '_annotations_stamp');
+        }
+    }
+
+    /**
+     * @private
+     */
+    // tslint:disable-next-line
+    public updateStampAnnotationCollections(annotation: any, pageNumber: number): any {
+        // tslint:disable-next-line
+        let annotationObject: any = null;
+        // tslint:disable-next-line
+        let stampAnnotation: any;
+        // tslint:disable-next-line
+        let stampName: any = annotation['IsDynamic'];
+        if (annotation.Subject && stampName) {
+            stampAnnotation = this.retrieveDynamicStampAnnotation(annotation.Subject);
+        } else if (annotation.Subject) {
+            stampAnnotation = this.retrievestampAnnotation(annotation.Subject);
+        } else {
+            annotationObject = {
+                // tslint:disable-next-line:max-line-length
+                stampAnnotationType: 'image', author: annotation.Author, modifiedDate: annotation.ModifiedDate,
+                note: annotation.Note, strokeColor: annotation.StrokeColor, fillColor: annotation.FillColor, opacity: annotation.Opacity, stampFillcolor: annotation.StampFillColor,
+                // tslint:disable-next-line:max-line-length
+                rotateAngle: annotation.RotateAngle, pageNumber: pageNumber, randomId: 'stamp', isDynamicStamp: this.pdfViewerBase.isDynamicStamp, dynamicText: this.dynamicText,
+                annotationId: annotation.AnnotName, comments: this.pdfViewer.annotationModule.getAnnotationComments(annotation.Comments, annotation, annotation.Author), review: { state: annotation.State, stateModel: annotation.StateModel, author: annotation.Author, modifiedDate: annotation.ModifiedDate }, shapeAnnotationType: 'stamp'
+            };
+            return annotationObject;
+        }
+        if (stampAnnotation) {
+            annotationObject = {
+                // tslint:disable-next-line:max-line-length
+                stampAnnotationType: 'path', author: annotation.Author, modifiedDate: annotation.ModifiedDate, subject: annotation.Subject,
+                note: annotation.Note, strokeColor: annotation.StrokeColor, fillColor: annotation.FillColor, opacity: annotation.Opacity, stampFillcolor: annotation.StampFillColor,
+                // tslint:disable-next-line:max-line-length
+                rotateAngle: annotation.RotateAngle, creationDate: stampAnnotation.creationDate, pageNumber: pageNumber, icon: stampAnnotation.iconName, stampAnnotationPath: stampAnnotation.pathdata, randomId: 'stamp', isDynamicStamp: this.pdfViewerBase.isDynamicStamp, dynamicText: this.dynamicText,
+                bounds: { left: annotation.Rect.X, top: annotation.Rect.Y, width: annotation.Rect.Width, height: annotation.Rect.Height }, annotationId: annotation.AnnotName, comments: this.pdfViewer.annotationModule.getAnnotationComments(annotation.Comments, annotation, annotation.Author), review: { state: annotation.State, stateModel: annotation.StateModel, author: annotation.Author, modifiedDate: annotation.ModifiedDate }, shapeAnnotationType: 'stamp'
+            };
+            return annotationObject;
         }
     }
 }

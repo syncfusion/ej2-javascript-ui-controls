@@ -172,15 +172,18 @@ export class Selection extends BaseSelection {
      * @private
      */
     public calculateSelectedElements(event: Event): void {
-        if (this.chart.selectionMode === 'None' || (<HTMLElement>event.target).id.indexOf(this.chart.element.id + '_') === -1) {
+        let targetElement: HTMLElement = <HTMLElement>event.target;
+        if (this.chart.selectionMode === 'None' || targetElement.id.indexOf(this.chart.element.id + '_') === -1) {
             return;
         }
-        if ((<HTMLElement>event.target).id.indexOf('_Series_') > -1) {
+        if (targetElement.id.indexOf('_Series_') > -1) {
             let element: Element;
-            if ((<HTMLElement>event.target).id.indexOf('_Trackball_') > -1) {
-                element = getElement((<HTMLElement>event.target).id.split('_Trackball_')[0] + '_Symbol');
+            if (targetElement.id.indexOf('_Trackball_1') > -1) {
+                element = getElement(targetElement.id.split('_Trackball_')[0] + '_Symbol');
+            } else  if (targetElement.id.indexOf('_Trackball_0') > -1) {
+                return null;
             }
-            this.performSelection(this.indexFinder((<HTMLElement>event.target).id), this.chart, element || <Element>event.target);
+            this.performSelection(this.indexFinder(targetElement.id), this.chart, element || <Element>targetElement);
         }
     }
     private performSelection(index: Index, chart: Chart, element?: Element): void {

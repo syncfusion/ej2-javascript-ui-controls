@@ -1042,9 +1042,12 @@ export class DropDownList extends DropDownBase implements IInput {
         EventHandler.remove(this.list, 'mouseout', this.onMouseLeave);
     };
 
+    protected checkSelector(id: string): string {
+        return '#' + id.replace(/(:|\.|\[|\]|,|=|@|\\|\/|#)/g, '\\$1');
+    }
     protected onDocumentClick(e: MouseEvent): void {
         let target: HTMLElement = <HTMLElement>e.target;
-        if (!(!isNullOrUndefined(this.popupObj) && closest(target, '#' + this.popupObj.element.id)) &&
+        if (!(!isNullOrUndefined(this.popupObj) && closest(target, this.checkSelector(this.popupObj.element.id))) &&
             !this.inputWrapper.container.contains(e.target as Node)) {
             if (this.inputWrapper.container.classList.contains(dropDownListClasses.inputFocus) || this.isPopupOpen) {
                 this.isDocumentClick = true;
@@ -2415,6 +2418,9 @@ export class DropDownList extends DropDownBase implements IInput {
     public showPopup(): void {
         if (!this.enabled) {
             return;
+        }
+        if (isBlazor() && this.itemTemplate) {
+            this.DropDownBaseupdateBlazorTemplates(true, false, false, false);
         }
         if (this.beforePopupOpen) {
             this.refreshPopup();

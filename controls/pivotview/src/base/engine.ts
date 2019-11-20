@@ -142,6 +142,8 @@ export class PivotEngine {
     public data: IDataSet[] = [];
     /** @hidden */
     public actualData: IDataSet[] = [];
+    /** @hidden */
+    public groupRawIndex: { [key: number]: number[] } = {};
     private allowDataCompression: boolean = false;
     private dataSourceSettings: IDataOptions = {};
     private frameHeaderObjectsCollection: boolean = false;
@@ -210,6 +212,7 @@ export class PivotEngine {
         this.allowValueFilter = dataSource.allowValueFilter;
         this.isValueFilterEnabled = false;
         this.enableValueSorting = customProperties ? customProperties.enableValueSorting : false;
+        this.isDrillThrough = customProperties ? (customProperties.isDrillThrough ? customProperties.isDrillThrough : false) : false;
         this.valueContent = [];
         this.dataSourceSettings = dataSource;
         if (!(dataSource.dataSource instanceof DataManager)) {
@@ -264,7 +267,6 @@ export class PivotEngine {
                 : undefined;
             this.allowDataCompression = this.pageSettings && this.pageSettings.allowDataCompression;
             this.savedFieldList = customProperties ? customProperties.savedFieldList : undefined;
-            this.isDrillThrough = customProperties ? (customProperties.isDrillThrough ? customProperties.isDrillThrough : false) : false;
             this.getFieldList(fields, this.enableSort, dataSource.allowValueFilter);
             this.fillFieldMembers(this.data as IDataSet[], this.indexMatrix);
             this.updateSortSettings(dataSource.sortSettings, this.enableSort);
@@ -297,6 +299,9 @@ export class PivotEngine {
             });
         let groupRawData: { [key: string]: IDataSet } = {};
         let finalData: IDataSet[] = [];
+        this.groupRawIndex = {};
+        let groupKeys: { [key: string]: number } = {};
+        let indexLength: number = 0;
         for (let i: number = 0; i < realData.length; i++) {
             let currData: IDataSet = realData[i];
             let members: string[] = [];
@@ -344,9 +349,17 @@ export class PivotEngine {
                         }
                     }
                 }
+                if (this.isDrillThrough) {
+                    this.groupRawIndex[groupKeys[memberJoin]].push(i);
+                }
             } else {
                 groupRawData[memberJoin] = currData;
                 finalData.push(currData);
+                if (this.isDrillThrough) {
+                    this.groupRawIndex[indexLength] = [i];
+                    groupKeys[memberJoin] = indexLength;
+                    indexLength++;
+                }
             }
         }
         return finalData;

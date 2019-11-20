@@ -711,7 +711,12 @@ export class DiagramEventHandler {
                             }
                         }
                         this.tool.mouseUp(this.eventArgs, history.isPreventHistory);
-                    } else { this.tool.mouseUp(this.eventArgs); }
+                    } else { this.tool.mouseUp(this.eventArgs);
+                        if (this.diagram.checkMenu && (window.navigator.userAgent.indexOf('Linux') !== -1 || window.navigator.userAgent.indexOf('X11') !== -1)) {
+                            this.diagram.contextMenuModule.contextMenu.open(evt.pageY, evt.pageX, this.diagram.element );
+                            this.diagram.checkMenu = false;
+                        }
+                    }
                     if (history.hasStack) { this.diagram.endGroupAction(); }
                 }
                 if (isGroupAction) { this.diagram.endGroupAction(); }

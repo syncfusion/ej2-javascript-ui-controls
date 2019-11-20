@@ -30,6 +30,7 @@ export class FreezeRowModelGenerator implements IModelGenerator<Column> {
             if (this.isFrzLoad % 2 === 0) {
                 row[i].cells = row[i].cells.slice(frzCols, row[i].cells.length);
             } else {
+                row[i].isFreezeRow = true;
                 row[i].cells = row[i].cells.slice(0, frzCols);
             }
         }

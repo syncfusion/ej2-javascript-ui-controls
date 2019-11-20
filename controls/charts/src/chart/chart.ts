@@ -772,7 +772,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
      * @default null
      */
     @Property(null)
-    public backGroundImageUrl: string;
+    public backgroundImage: string;
 
     /**
      * Defines the collection of technical indicators, that are used in financial markets
@@ -2027,7 +2027,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
     }
     private renderBorder(): void {
         let width: number = this.border.width;
-        let backGroundImage: string = this.backGroundImageUrl;
+        let backGroundImage: string = this.backgroundImage;
         let fillColor: string = backGroundImage ? 'transparent' : (this.background || this.themeStyle.background);
         let rect: RectOption = new RectOption(
             this.element.id + '_ChartBorder', fillColor, this.border, 1,
@@ -2077,7 +2077,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
             this.htmlObject = null;
         }
         // to draw back ground image for chart area    
-        let backGroundImage: string = this.chartArea.backGroundImageUrl;
+        let backGroundImage: string = this.chartArea.backgroundImage;
         if (backGroundImage) {
             let width: number = this.chartArea.border.width;
             let image: ImageOption = new ImageOption(
@@ -2406,6 +2406,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
         let element: Element = <Element>e.target;
         let cancelEvent: string = Browser.isPointer ? 'pointerleave' : 'mouseleave';
         this.trigger(chartMouseLeave, { target: element.id, x: this.mouseX, y: this.mouseY });
+        removeElement(this.element.id + '_EJ2_AxisLabel_Tooltip');
         this.isChartDrag = this.isPointMouseDown = false;
         this.notify(cancelEvent, e);
         return false;

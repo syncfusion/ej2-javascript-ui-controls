@@ -382,7 +382,7 @@ export class Selection implements IAction {
         args = {
             rowIndexes: rowIndexes, row: selectedRow, rowIndex: rowIndex, target: this.actualTarget,
             prevRow: gObj.getRows()[this.prevRowIndex], previousRowIndex: this.prevRowIndex,
-            data: this.getSelectedRecords(), isInteracted: this.isInteracted
+            data: isBlazor() ? selectedData : this.getSelectedRecords(), isInteracted: this.isInteracted
         };
         args = this.addMovableArgs(args, selectedMovableRow);
         this.onActionComplete(args, events.rowSelected);
@@ -711,7 +711,7 @@ export class Selection implements IAction {
             let cancl: string = 'cancel';
             let rowDeselectObj: Object = {
                 rowIndex: rowIndex, data: data, foreignKeyData: foreignKeyData,
-                cancel: false, target: target, isInteracted: this.isInteracted
+                cancel: false, target: this.actualTarget, isInteracted: this.isInteracted
             };
             if (!isBlazor() || this.parent.isJsComponent) {
                 let rowInString: string = 'row';

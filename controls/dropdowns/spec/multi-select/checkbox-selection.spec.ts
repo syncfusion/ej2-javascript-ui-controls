@@ -395,6 +395,187 @@ describe('MultiSelect', () => {
             listObj.destroy();
         });
     });
+    describe('Add item using addItem method in existing group item', () => {
+        let listObj: any;
+        let checkObj: any;
+        let element: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'multiselect', attrs: { type: "text" } });
+        let data: { [key: string]: Object }[] = [
+        { "Vegetable": "Cabbage", "Category": "Leafy and Salad", "Id": "item1" },
+        { "Vegetable": "Chickpea", "Category": "Beans", "Id": "item2" },
+        { "Vegetable": "Garlic", "Category": "Bulb and Stem", "Id": "item3" },
+        { "Vegetable": "Green bean", "Category": "Beans", "Id": "item4" },
+        { "Vegetable": "Horse gram", "Category": "Beans", "Id": "item5" },
+        { "Vegetable": "Nopal", "Category": "Bulb and Stem", "Id": "item6" }];
+        let item: { [key: string]: Object }[] = [
+        { "Vegetable": "brinjal", "Category": "Leafy and Salad", "Id": "item7" },
+        { "Vegetable": "green gram", "Category": "Beans", "Id": "item8" }];
+        beforeAll(() => {
+            document.body.appendChild(element);
+        });
+        afterAll(() => {
+            if (element) {
+                listObj.destroy();
+                element.remove();
+            }
+            checkObj = new CheckBoxSelection();
+            Browser.userAgent = navigator.userAgent;
+            checkObj.destroy();
+        });
+        it('Adding item in the existing group', () => {
+            listObj = new MultiSelect({
+                dataSource: data,
+                mode: 'CheckBox',
+                fields: { groupBy: 'Category', text: 'Vegetable', value: 'Id' },
+            });
+            listObj.appendTo('#multiselect');
+            listObj.showPopup();
+            expect(listObj.ulElement.querySelectorAll('li').length === 9).toBe(true);
+            listObj.addItem(item);
+            expect(listObj.ulElement.querySelectorAll('li').length === 11).toBe(true);
+        });
+    });
+    describe('Add item using addItem method in new group item', () => {
+        let listObj: any;
+        let checkObj: any;
+        let element: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'multiselect', attrs: { type: "text" } });
+        let data: { [key: string]: Object }[] = [
+        { "Vegetable": "Cabbage", "Category": "Leafy and Salad", "Id": "item1" },
+        { "Vegetable": "Chickpea", "Category": "Beans", "Id": "item2" },
+        { "Vegetable": "Garlic", "Category": "Bulb and Stem", "Id": "item3" },
+        { "Vegetable": "Green bean", "Category": "Beans", "Id": "item4" },
+        { "Vegetable": "Horse gram", "Category": "Beans", "Id": "item5" },
+        { "Vegetable": "Nopal", "Category": "Bulb and Stem", "Id": "item6" }];
+        let item: { [key: string]: Object }[] = [
+        { "Vegetable": "brinjal", "Category": "Leafy and Salad", "Id": "item7" },
+        { "Vegetable": "green gram", "Category": "Potato", "Id": "item8" }];
+        beforeAll(() => {
+            document.body.appendChild(element);
+        });
+        afterAll(() => {
+            if (element) {
+                listObj.destroy();
+                element.remove();
+            }
+            checkObj = new CheckBoxSelection();
+            Browser.userAgent = navigator.userAgent;
+            checkObj.destroy();
+        });
+        it('filtering basic coverage', () => {
+            listObj = new MultiSelect({
+                dataSource: data,
+                mode: 'CheckBox',
+                fields: { groupBy: 'Category', text: 'Vegetable', value: 'Id' },
+            });
+            listObj.appendTo('#multiselect');
+            listObj.showPopup();
+            expect(listObj.ulElement.querySelectorAll('li').length === 9).toBe(true);
+            listObj.addItem(item);
+            expect(listObj.ulElement.querySelectorAll('li').length === 12).toBe(true);
+        });
+    });
+    describe('Add item using addItem method with show select all', () => {
+        let listObj: any;
+        let checkObj: any;
+        let element: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'multiselect', attrs: { type: "text" } });
+        let data: { [key: string]: Object }[] = [
+        { "Vegetable": "Cabbage", "Category": "Leafy and Salad", "Id": "item1" },
+        { "Vegetable": "Chickpea", "Category": "Beans", "Id": "item2" },
+        { "Vegetable": "Garlic", "Category": "Bulb and Stem", "Id": "item3" },
+        { "Vegetable": "Green bean", "Category": "Beans", "Id": "item4" },
+        { "Vegetable": "Horse gram", "Category": "Beans", "Id": "item5" },
+        { "Vegetable": "Nopal", "Category": "Bulb and Stem", "Id": "item6" }];
+        let item: { [key: string]: Object }[] = [
+        { "Vegetable": "brinjal", "Category": "Leafy and Salad", "Id": "item7" },
+        { "Vegetable": "green gram", "Category": "Potato", "Id": "item8" }];
+        beforeAll(() => {
+            document.body.appendChild(element);
+        });
+        afterAll(() => {
+            if (element) {
+                listObj.destroy();
+                element.remove();
+            }
+            checkObj = new CheckBoxSelection();
+            Browser.userAgent = navigator.userAgent;
+            checkObj.destroy();
+        });
+        it('Select all item', (done) => {
+            listObj = new MultiSelect({
+                dataSource: data,
+                mode: 'CheckBox',
+                showSelectAll: true,
+                fields: { groupBy: 'Category', text: 'Vegetable', value: 'Id' },
+            });
+            listObj.appendTo('#multiselect');
+            listObj.showPopup();
+            setTimeout(() => {
+                expect(listObj.checkBoxSelectionModule.checkAllParent.classList.contains('e-selectall-parent')).toBe(true);
+                expect(listObj.checkBoxSelectionModule.checkAllParent.classList.contains('e-selectall-parent')).toBe(true);
+                expect(listObj.checkBoxSelectionModule.checkAllParent.innerText === "Select All").toBe(true);
+                expect(listObj.checkBoxSelectionModule.checkAllParent.lastElementChild.classList.contains('e-all-text')).toBe(true);
+                expect(listObj.ulElement.querySelectorAll('li').length === 9).toBe(true);
+                listObj.dispatchEvent(listObj.checkBoxSelectionModule.checkAllParent, "mousedown");
+                expect(listObj.popupObj.element.getElementsByClassName('e-check').length - 1 === data.length).toBe(true);
+                listObj.addItem(item);
+                expect(listObj.ulElement.querySelectorAll('li').length === 12).toBe(true);
+                expect(listObj.popupObj.element.getElementsByClassName('e-check').length - 1 === data.length).toBe(true);
+                listObj.destroy();
+                done();
+            }, 450);
+        });
+    });
+    describe('Select all item with enable group checkbox mode', () => {
+        let listObj: any;
+        let checkObj: any;
+        let element: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'multiselect', attrs: { type: "text" } });
+        let data: { [key: string]: Object }[] = [
+        { "Vegetable": "Cabbage", "Category": "Leafy and Salad", "Id": "item1" },
+        { "Vegetable": "Chickpea", "Category": "Beans", "Id": "item2" },
+        { "Vegetable": "Garlic", "Category": "Bulb and Stem", "Id": "item3" },
+        { "Vegetable": "Green bean", "Category": "Beans", "Id": "item4" },
+        { "Vegetable": "Horse gram", "Category": "Beans", "Id": "item5" },
+        { "Vegetable": "Nopal", "Category": "Bulb and Stem", "Id": "item6" }];
+        let item: { [key: string]: Object }[] = [
+        { "Vegetable": "brinjal", "Category": "Leafy and Salad", "Id": "item7" },
+        { "Vegetable": "green gram", "Category": "Beans", "Id": "item8" }];
+        beforeAll(() => {
+            document.body.appendChild(element);
+        });
+        afterAll(() => {
+            if (element) {
+                listObj.destroy();
+                element.remove();
+            }
+            checkObj = new CheckBoxSelection();
+            Browser.userAgent = navigator.userAgent;
+            checkObj.destroy();
+        });
+        it('Select all item with enable group checkbox mode', (done) => {
+            listObj = new MultiSelect({
+                dataSource: data,
+                mode: 'CheckBox',
+                enableGroupCheckBox: true,
+                showSelectAll: true,
+                fields: { groupBy: 'Category', text: 'Vegetable', value: 'Id' },
+            });
+            listObj.appendTo('#multiselect');
+            listObj.showPopup();
+            setTimeout(() => {
+                expect(listObj.checkBoxSelectionModule.checkAllParent.classList.contains('e-selectall-parent')).toBe(true);
+                expect(listObj.checkBoxSelectionModule.checkAllParent.classList.contains('e-selectall-parent')).toBe(true);
+                expect(listObj.checkBoxSelectionModule.checkAllParent.innerText === "Select All").toBe(true);
+                expect(listObj.checkBoxSelectionModule.checkAllParent.lastElementChild.classList.contains('e-all-text')).toBe(true);
+                expect(listObj.ulElement.querySelectorAll('li').length === 9).toBe(true);
+                listObj.dispatchEvent(listObj.checkBoxSelectionModule.checkAllParent, "mousedown");
+                expect(listObj.popupObj.element.getElementsByClassName('e-check').length - 1 === data.concat(item).length + 1).toBe(true);
+                listObj.addItem(item);
+                expect(listObj.ulElement.querySelectorAll('li').length === 11).toBe(true);
+                expect(listObj.popupObj.element.getElementsByClassName('e-check').length - 1 === data.concat(item).length + 1).toBe(true);
+                listObj.destroy();
+                done();
+            }, 450);
+        });
+    });
     describe('Allowfiltering support in mobile', () => {
         let ele: HTMLElement = document.createElement('input');
         ele.id = 'newlist';

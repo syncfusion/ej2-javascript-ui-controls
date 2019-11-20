@@ -944,7 +944,13 @@ export class ListBox extends DropDownBase {
     };
 
     private checkSelectAll(): void {
-        let searchCount: number = this.list.querySelectorAll('li.' + dropDownBaseClasses.li).length;
+        let searchCount: number = 0;
+        let liItems: NodeListOf<Element> = this.list.querySelectorAll('li.' + dropDownBaseClasses.li);
+        for (let i: number = 0; i < liItems.length; i++) {
+            if (!liItems[i].classList.contains('e-disabled')) {
+                searchCount++;
+            }
+        }
         let len: number = this.getSelectedItems().length;
         if (this.showSelectAll && searchCount) {
             this.notify('checkSelectAll', { module: 'CheckBoxSelection', value: (searchCount === len) ? 'check' : 'uncheck' });

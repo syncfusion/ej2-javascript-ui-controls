@@ -18,7 +18,7 @@ import { PdfCellRenderArgs, NewReportArgs, ChartSeriesCreatedEventArgs, Aggregat
 import { ResizeInfo, ScrollInfo, ColumnRenderEventArgs, PivotCellSelectedEventArgs, SaveReportArgs } from '../../common/base/interface';
 import { CellClickEventArgs, FieldDroppedEventArgs, HyperCellClickEventArgs, CellTemplateArgs } from '../../common/base/interface';
 import { BeforeExportEventArgs, EnginePopulatedEventArgs, BeginDrillThroughEventArgs, DrillArgs } from '../../common/base/interface';
-import { FieldListRefreshedEventArgs } from '../../common/base/interface';
+import { FieldListRefreshedEventArgs, MemberFilteringEventArgs } from '../../common/base/interface';
 import { Render } from '../renderer/render';
 import { PivotCommon } from '../../common/base/pivot-common';
 import { Common } from '../../common/actions/common';
@@ -974,6 +974,13 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
     @Event()
     public conditionalFormatting: EmitType<IConditionalFormatSettings>;
 
+    /**
+     * This event triggers before apply filtering
+     * @event
+     */
+    @Event()
+    public memberFiltering: EmitType<MemberFilteringEventArgs>;
+
     /** 
      * Triggers when cell is clicked in the Pivot widget.
      * @event
@@ -1666,6 +1673,8 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
      */
     public getPersistData(): string {
         let keyEntity: string[] = ['dataSourceSettings', 'pivotValues', 'gridSettings', 'chartSettings', 'displayOption'];
+        // tslint:disable-next-line
+        this.chartSettings['tooltipRender'] = undefined;
         return this.addOnPersist(keyEntity);
     }
 
@@ -2212,18 +2221,21 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
                 action: action,
                 currentCell: currentCell
             };
-            pivot.trigger(events.drill, {
+            let drillArgs: DrillArgs = {
                 drillInfo: drilledItem,
                 pivotview: isBlazor() ? undefined : pivot
-            });
-            if (pivot.enableVirtualization) {
-                pivot.engineModule.drilledMembers = pivot.dataSourceSettings.drilledMembers;
-                pivot.engineModule.onDrill(drilledItem);
-            } else {
-                pivot.engineModule.generateGridData(pivot.dataSourceSettings as IDataOptions);
             }
-            pivot.setProperties({ pivotValues: pivot.engineModule.pivotValues }, true);
-            pivot.renderPivotGrid();
+            pivot.trigger(events.drill, drillArgs, (observedArgs: DrillArgs) => {
+                if (pivot.enableVirtualization) {
+                    pivot.engineModule.drilledMembers = pivot.dataSourceSettings.drilledMembers;
+                    pivot.engineModule.onDrill(drilledItem);
+                } else {
+                    pivot.engineModule.generateGridData(pivot.dataSourceSettings as IDataOptions);
+                }
+                pivot.setProperties({ pivotValues: pivot.engineModule.pivotValues }, true);
+                pivot.renderPivotGrid();
+            });
+            
             //});
         } else {
             this.onOlapDrill(fieldName, axis, action, delimiter, target, chartDrillInfo);

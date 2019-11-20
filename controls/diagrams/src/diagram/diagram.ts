@@ -1269,7 +1269,8 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
     //private variables
     /** @private */
     public preventUpdate: boolean;
-
+    /** @private */
+    public checkMenu: boolean = false;
     /** @hidden */
     /** @private */
     public localeObj: L10n;
@@ -2851,7 +2852,9 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
         if (this.nameTable[swimLane]) {
             let swimlaneNode: NodeModel = this.nameTable[swimLane];
             this.protectPropertyChange(true);
-            this.historyManager.startGroupAction();
+            if (this.undoRedoModule) {
+                this.historyManager.startGroupAction();
+            }
             if (!this.nameTable[node.id]) {
                 node.offsetX = swimlaneNode.wrapper.bounds.width + swimlaneNode.wrapper.bounds.x;
                 node.offsetY = swimlaneNode.wrapper.bounds.height + swimlaneNode.wrapper.bounds.y;
@@ -2893,8 +2896,9 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                     }
                 }
             }
-
-            this.historyManager.endGroupAction();
+            if (this.undoRedoModule) {
+                this.historyManager.endGroupAction();
+            }
             this.protectPropertyChange(false);
         }
         this.updateDiagramElementQuad();
@@ -2947,6 +2951,20 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
         return this.add(obj) as Connector;
     }
 
+    private removeNodeEdges(elementId: string, id: string, isOutEdges: boolean): void {
+        let node: Node = this.nameTable[elementId];
+        let edges: string[] = isOutEdges ? node.outEdges : node.inEdges;
+        if (edges.length > 0) {
+            for (let i: number = 0; i < edges.length; i++) {
+                if (edges[i] === id) {
+                    edges.splice(i, 1);
+                }
+            }
+        }
+    }
+
+/* tslint:disable */
+
     /**
      * Adds the given object to diagram control
      * @param obj Defines the object that has to be added to diagram
@@ -2963,6 +2981,18 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
             }
             if (obj.id !== 'helper' && !(this.diagramActions & DiagramAction.PreventCollectionChangeOnDragOver)) {
                 this.triggerEvent(DiagramEvent.collectionChange, args);
+            }
+            if (args.cancel && this.drawingObject) {
+                this.removeElements(args.element as NodeModel | ConnectorModel);
+                this.tooltipObject.close();
+                if (getObjectType(args.element) === Connector) {
+                    if ((args.element as Connector).sourceID) {
+                        this.removeNodeEdges((args.element as Connector).sourceID, (args.element as Connector).id, true);
+                    }
+                    if ((args.element as Connector).targetID) {
+                        this.removeNodeEdges((args.element as Connector).targetID, (args.element as Connector).id, false);
+                    }
+                }
             }
             this.diagramActions = this.diagramActions | DiagramAction.PublicMethod;
             obj.id = obj.id || randomId(); let layers: LayerModel = this.activeLayer;
@@ -3034,7 +3064,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                     this.addHistoryEntry(entry);
                 }
                 if (this.mode === 'SVG') {
-                    this.updateSvgNodes(newObj as Node); this.updateDiagramObject(newObj);
+                    this.updateSvgNodes(newObj as Node); this.updateTextElementValue(newObj); this.updateDiagramObject(newObj);
                     if ((newObj.shape as BpmnShape).activity && (newObj.shape as BpmnShape).activity.subProcess.processes &&
                         (newObj.shape as BpmnShape).activity.subProcess.processes.length) {
                         this.updateProcesses(newObj);
@@ -3052,6 +3082,8 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
         }
         return newObj;
     }
+
+    /* tslint:enable */
     private updateBlazorCollectionChange(newObject: Node | Connector, isAdding: boolean): void {
         let ejsInterop: string = 'ejsInterop';
         if (window && window[ejsInterop]) {
@@ -3199,24 +3231,26 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
         let children: DiagramElement[] = currentObj.wrapper.children;
         let element: HTMLElement;
         let view: View;
-        for (let i: number = 0; i < children.length; i++) {
-            if (children[i] instanceof DiagramNativeElement || ((children[i].id) && (children[i].id).indexOf('icon_content') > 0)) {
-                if ((children[i].id).indexOf('icon_content') > 0 && this.mode === 'SVG') {
-                    element = getDiagramElement(children[i].id + '_shape_groupElement', this.element.id);
-                    element.parentNode.removeChild(element);
-                    element = getDiagramElement(children[i].id + '_rect_groupElement', this.element.id);
-                    element.parentNode.removeChild(element);
+        if (children) {
+            for (let i: number = 0; i < children.length; i++) {
+                if (children[i] instanceof DiagramNativeElement || ((children[i].id) && (children[i].id).indexOf('icon_content') > 0)) {
+                    if ((children[i].id).indexOf('icon_content') > 0 && this.mode === 'SVG') {
+                        element = getDiagramElement(children[i].id + '_shape_groupElement', this.element.id);
+                        element.parentNode.removeChild(element);
+                        element = getDiagramElement(children[i].id + '_rect_groupElement', this.element.id);
+                        element.parentNode.removeChild(element);
+                    }
+                    for (let elementId of this.views) {
+                        removeElement(children[i].id + '_groupElement', elementId);
+                    }
+                } else if (children[i] instanceof DiagramHtmlElement) {
+                    for (let elementId of this.views) {
+                        removeElement(currentObj.id + '_html_element', elementId);
+                        removeElement(children[i].id + '_html_element', elementId);
+                    }
                 }
-                for (let elementId of this.views) {
-                    removeElement(children[i].id + '_groupElement', elementId);
-                }
-            } else if (children[i] instanceof DiagramHtmlElement) {
-                for (let elementId of this.views) {
-                    removeElement(currentObj.id + '_html_element', elementId);
-                    removeElement(children[i].id + '_html_element', elementId);
-                }
+                removeGradient(children[i].id);
             }
-            removeGradient(children[i].id);
         }
     }
 
@@ -6406,11 +6440,13 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                             if (lane.width && !orientation) {
                                 laneIndex = (actualShape.phases && actualShape.phaseSize) ? indexValue + 1 : indexValue;
                                 grid.updateColumnWidth(laneIndex, newLane.width, true, padding);
+                                this.updateDiagramElementQuad();
                             }
                             if (lane.height && orientation) {
                                 laneIndex = (actualShape.header && (actualShape as SwimLane).hasHeader) ? indexValue + 1 : indexValue;
                                 laneIndex += (actualShape.phases && actualShape.phaseSize) ? 1 : 0;
                                 grid.updateRowHeight(laneIndex, newLane.height, true, padding);
+                                this.updateDiagramElementQuad();
                             }
                         }
                     }
@@ -6653,6 +6689,9 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
         if (update) {
             if (this.bpmnModule !== undefined) {
                 this.bpmnModule.updateTextAnnotationProp(actualObject, { offsetX: (oldObject.offsetX || actualObject.offsetX), offsetY: (oldObject.offsetY || actualObject.offsetY) } as Node, this);
+            }
+            if (this.checkSelectedItem(actualObject) && actualObject.wrapper.children[0] instanceof TextElement) {
+                (actualObject.wrapper.children[0] as TextElement).refreshTextElement();
             }
             actualObject.wrapper.measure(new Size(actualObject.wrapper.bounds.width, actualObject.wrapper.bounds.height), actualObject.id,
                 this.onLoadImageSize.bind(this));

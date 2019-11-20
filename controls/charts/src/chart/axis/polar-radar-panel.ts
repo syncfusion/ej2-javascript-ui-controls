@@ -23,7 +23,7 @@ export class PolarRadarPanel extends LineBase {
     private centerY: number;
     private startAngle: number;
     /** @private */
-    public visibleAxisLabelRect: Rect[];
+    public visibleAxisLabelRect: Rect[] = [];
     /** @private */
     public seriesClipRect: Rect;
     /**
@@ -206,7 +206,15 @@ export class PolarRadarPanel extends LineBase {
             'stroke-width': axis.lineStyle.width,
             'stroke': axis.lineStyle.color || chart.themeStyle.axisLine
         };
-        chart.yAxisElements.appendChild(chart.renderer.drawPath(optionsLine));
+        /**
+         * I252450
+         * When we click the center of the marker which is plotted in the axis line, selection did not work is fixed
+         * Cause: Instead of marker id, axis  line id is obtained while clicking
+         * Fix: Pointer events set to none for axis lines
+         */
+        let element: Element = chart.renderer.drawPath(optionsLine);
+        this.setPointerEventNone(element);
+        chart.yAxisElements.appendChild(element);
     }
 
     public drawYAxisLabels(axis: Axis, index: number): void {
@@ -324,31 +332,25 @@ export class PolarRadarPanel extends LineBase {
             } else {
                 for (let j: number = 0; j < axis.visibleLabels.length; j++) {
                     radius = chart.radius * valueToCoefficient(axis.visibleLabels[j].value, axis);
-                    majorGrid = '';
-                    for (let i: number = 0, len : number = (<Axis>chart.primaryXAxis).visibleLabels.length; i < len; i++) {
-                        vector = CoefficientToVector(valueToPolarCoefficient((<Axis>chart.primaryXAxis).visibleLabels[i].value,
-                                                                             (<Axis>chart.primaryXAxis)),
-                                                     this.startAngle);
-                        if (i + 1 < len) {
-                            vector2 = CoefficientToVector(valueToPolarCoefficient((<Axis>chart.primaryXAxis).visibleLabels[i + 1].value,
-                                                                                  (<Axis>chart.primaryXAxis)),
-                                                          this.startAngle);
-                        } else {
-                            vector2 = CoefficientToVector(valueToPolarCoefficient((<Axis>chart.primaryXAxis).visibleLabels[0].value,
-                                                                                  (<Axis>chart.primaryXAxis)),
-                                                          this.startAngle);
-                        }
-                        x1 = this.centerX + radius * vector.x;
-                        y1 = this.centerY + radius * vector.y;
-                        x2 = this.centerX + radius * vector2.x;
-                        y2 = this.centerY + radius * vector2.y;
-                        majorGrid = majorGrid.concat((i ? 'L ' : 'M ') + ' ' + x1 + ' ' + y1 + ' ' + 'L ' + ' ' + x2 + ' ' + y2 + ' ');
-                    }
+                    majorGrid = this.renderRadarGrid(radius, '', chart);
                     element = getElement(chart.element.id + '_MajorGridLine_' + index + '_' + j);
                     previousValue = element ? element.getAttribute('d') : null;
                     options = new PathOption(
                         chart.element.id + '_MajorGridLine_' + index + '_' + j, 'transparent', axis.majorGridLines.width,
                         axis.majorGridLines.color || chart.themeStyle.majorGridLine, null, null, majorGrid
+                    );
+                    appendChildElement(
+                        chart.enableCanvas,
+                        this.element, chart.renderer.drawPath(options), chart.redraw, true, 'x', 'y', null, previousValue, true
+                    );
+                }
+                if (radius !== chart.radius) {
+                    majorGrid = this.renderRadarGrid(chart.radius, '', chart);
+                    element = getElement(chart.element.id + '_MajorGridLine_' + index + '_' + axis.visibleLabels.length);
+                    previousValue = element ? element.getAttribute('d') : null;
+                    options = new PathOption(
+                        chart.element.id + '_MajorGridLine_' + index + '_' + axis.visibleLabels.length, 'transparent',
+                        axis.majorGridLines.width, axis.majorGridLines.color || chart.themeStyle.majorGridLine, null, null, majorGrid
                     );
                     appendChildElement(
                         chart.enableCanvas,
@@ -369,6 +371,33 @@ export class PolarRadarPanel extends LineBase {
                 this.renderTickLine(axis, index, majorTick, '', i);
             }
         }
+    }
+
+    private renderRadarGrid(radius : number, majorGrid : string, chart : Chart ) : string {
+        let vector: ChartLocation;
+        let vector2: ChartLocation;
+        let x1 : number; let y1 : number;
+        let x2 : number; let y2 : number;
+        for (let i: number = 0, len : number = (<Axis>chart.primaryXAxis).visibleLabels.length; i < len; i++) {
+            vector = CoefficientToVector(valueToPolarCoefficient((<Axis>chart.primaryXAxis).visibleLabels[i].value,
+                                                                 (<Axis>chart.primaryXAxis)),
+                                         this.startAngle);
+            if (i + 1 < len) {
+                vector2 = CoefficientToVector(valueToPolarCoefficient((<Axis>chart.primaryXAxis).visibleLabels[i + 1].value,
+                                                                      (<Axis>chart.primaryXAxis)),
+                                              this.startAngle);
+            } else {
+                vector2 = CoefficientToVector(valueToPolarCoefficient((<Axis>chart.primaryXAxis).visibleLabels[0].value,
+                                                                      (<Axis>chart.primaryXAxis)),
+                                              this.startAngle);
+            }
+            x1 = this.centerX + radius * vector.x;
+            y1 = this.centerY + radius * vector.y;
+            x2 = this.centerX + radius * vector2.x;
+            y2 = this.centerY + radius * vector2.y;
+            majorGrid = majorGrid.concat((i ? 'L ' : 'M ') + ' ' + x1 + ' ' + y1 + ' ' + 'L ' + ' ' + x2 + ' ' + y2 + ' ');
+        }
+        return majorGrid;
     }
 
     private drawXAxisGridLine(axis: Axis, index: number): void {
@@ -485,9 +514,10 @@ export class PolarRadarPanel extends LineBase {
                 for (let i: number = textLength - 1; i >= 0; --i) {
                     trimText = originalText.substring(0, i) + '...';
                     size = measureText(trimText, axis.labelStyle).width;
-                    if ((labelPosition === 'Outside' && ((pointX > chartWidth / 2 && pointX + size <= chartWidth) ||
-                        (pointX < chartWidth / 2 && pointX - size >= 0))) || (labelPosition === 'Inside' &&
-                        (pointX + size < chartWidth / 2 || pointX - size > chartWidth / 2))) {
+                    if (pointX === chartWidth / 2 ? (pointX - size / 2 >= 0 && pointX + size / 2 <= chartWidth) :
+                       ((labelPosition === 'Outside' && ((pointX >= chartWidth / 2 && pointX + size <= chartWidth) ||
+                        (pointX <= chartWidth / 2 && pointX - size >= 0))) || (labelPosition === 'Inside' &&
+                        (pointX + size <= chartWidth / 2 || pointX - size >= chartWidth / 2)))) {
                             labelText = i === textLength - 1 ? originalText : trimText;
                             label.size.width = measureText(labelText, axis.labelStyle).width;
                             label.text = labelText;
@@ -566,11 +596,18 @@ export class PolarRadarPanel extends LineBase {
                 chart.element.id + '_MajorTickLine_' + index + '_' + gridIndex, 'transparent', axis.majorTickLines.width,
                 axis.majorTickLines.color || chart.themeStyle.majorTickLine, null, null, majorTickLine
             );
+            /**
+             * I252450
+             * When we click the center of the marker which is plotted in the axis, selection did not work is fixed
+             * Cause: Instead of marker id, axis Tick line id is obtained while clicking
+             * Fix: Pointer events set to none for tick lines
+             */
+            element = chart.renderer.drawPath(tickOptions);
+            this.setPointerEventNone(element);
             appendChildElement(
-                chart.enableCanvas, chart.yAxisElements, chart.renderer.drawPath(tickOptions),
+                chart.enableCanvas, chart.yAxisElements, element,
                 chart.redraw, true, 'x', 'y', null, direction
             );
-
         }
         if (axis.minorTickLines.width > 0) {
             element = getElement(chart.element.id + '_MinorTickLine_' + index + '_' + gridIndex);
@@ -579,8 +616,16 @@ export class PolarRadarPanel extends LineBase {
                 chart.element.id + '_MinorTickLine_' + index + '_' + gridIndex, 'transparent', axis.minorTickLines.width,
                 axis.minorTickLines.color || chart.themeStyle.minorTickLine, null, null, minorTickLine
             );
+            /**
+             * I252450
+             * When we click the center of the marker which is plotted in the axis, selection did not work is fixed
+             * Cause: Instead of marker id, axis Tick line id is obtained while clicking
+             * Fix: Pointer events set to none for tick lines
+             */
+            element = chart.renderer.drawPath(tickOptions);
+            this.setPointerEventNone(element);
             appendChildElement(
-                chart.enableCanvas, chart.yAxisElements, chart.renderer.drawPath(tickOptions),
+                chart.enableCanvas, chart.yAxisElements, element,
                 chart.redraw, true, 'x', 'y', null, direction
             );
         }
@@ -612,6 +657,12 @@ export class PolarRadarPanel extends LineBase {
             appendChildElement(
                 chart.enableCanvas, this.element, chart.renderer.drawPath(gridOptions), chart.redraw, true, 'x', 'y', null, direction
             );
+        }
+    }
+
+    private setPointerEventNone(element: Element): void {
+        if (element) {
+            element.setAttribute('style', 'pointer-events:none');
         }
     }
 }

@@ -235,9 +235,13 @@ export interface FileSelectEventArgs {
     isInteracted?: boolean;
 }
 export interface FileSelectionEventArgs {
-     /**
-      * Defines the cancel selected file or folder. 
-      */
+    /**
+     * Return the name of action like select or unselect.
+     */
+    action?: string;
+    /**
+     * Defines the cancel selected file or folder. 
+     */
     cancel?: boolean;
     /**
      * Return the currently selected item as JSON object.

@@ -124,10 +124,12 @@ export class ConditionalFormatting {
                 fontSize: '12px'
             }
         };
-        this.parent.trigger(events.conditionalFormatting, format);
-        this.refreshConditionValues();
-        this.newFormat.push(format);
-        this.addFormat();
+        let conditionalFormating : ConditionalFormatting = this;
+        this.parent.trigger(events.conditionalFormatting, format, (observedArgs: ConditionalFormatSettingsModel) => {
+            conditionalFormating.refreshConditionValues();
+            conditionalFormating.newFormat.push(observedArgs);
+            conditionalFormating.addFormat();
+        });
     }
 
     private applyButtonClick(): void {

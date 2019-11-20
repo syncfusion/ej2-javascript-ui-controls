@@ -8,7 +8,7 @@ import { data } from '../base/datasource.spec';
 import { Freeze } from '../../../src/grid/actions/freeze';
 import { Aggregate } from '../../../src/grid/actions/aggregate';
 import { createGrid, destroy } from '../base/specutil.spec';
-import  {profile , inMB, getMemoryProfile} from '../base/common.spec';
+import { profile, inMB, getMemoryProfile } from '../base/common.spec';
 
 Grid.Inject(Freeze, Aggregate);
 
@@ -289,7 +289,7 @@ describe('Freeze render module', () => {
             gridObj.copy(true);
             expect((<any>gridObj.clipboardModule).copyContent).toBe('CustomerID	OrderID	EmployeeID	ShipCountry	ShipCity\nHANAR	10250	4	Brazil	Rio de Janeiro');
         });
-        it('memory leak', () => {     
+        it('memory leak', () => {
             profile.sample();
             let average: any = inMB(profile.averageChange)
             //Check average change in memory samples to not be over 10MB
@@ -297,29 +297,41 @@ describe('Freeze render module', () => {
             let memory: any = inMB(getMemoryProfile())
             //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
             expect(memory).toBeLessThan(profile.samples[0] + 0.25);
-        });   
+        });
 
         it('Ensure the grid table while dynamically disable isFrozen in the Grid column', (done: Function) => {
             (gridObj.columns[1] as Column).isFrozen = false;
             let dataBound = (args: Object) => {
-                 expect(gridObj.getContent().querySelector('.e-frozencontent')).toBeNull();
-                 done();
-             };
+                expect(gridObj.getContent().querySelector('.e-frozencontent')).toBeNull();
+                done();
+            };
             gridObj.dataBound = dataBound;
             gridObj.refreshColumns();
-         });
+        });
 
-         it('Ensure the grid table while dynamically enable isFrozen in the Grid column', (done: Function) => {
+        it('Ensure the grid table while dynamically enable isFrozen in the Grid column', (done: Function) => {
             (gridObj.columns[1] as Column).isFrozen = true;
             let dataBound = (args: Object) => {
-                 expect(gridObj.getContent().querySelector('.e-frozencontent')).not.toBeUndefined();
-                 expect(gridObj.getContent().querySelector('.e-frozencontent')).not.toBeNull();
-                 done();
-             };
+                expect(gridObj.getContent().querySelector('.e-frozencontent')).not.toBeUndefined();
+                expect(gridObj.getContent().querySelector('.e-frozencontent')).not.toBeNull();
+                done();
+            };
             gridObj.dataBound = dataBound;
             gridObj.refreshColumns();
-         });
-         
+        });
+
+        it('Ensure the movable content colgroup count while dynamically enable isFrozen in the Grid column', (done: Function) => {
+            (gridObj.columns[2] as Column).isFrozen = true;
+            let dataBound = (args: Object) => {
+                let mTblColgr: Element = gridObj.contentModule.getMovableContent().querySelector('colgroup');
+                let mHdrColgr: Element = gridObj.getHeaderContent().querySelector('.e-movableheader').querySelector('colgroup');
+                expect(mTblColgr.children.length).toBe(mHdrColgr.children.length);
+                done();
+            };
+            gridObj.dataBound = dataBound;
+            gridObj.refreshColumns();
+        });
+
         afterAll(() => {
             gridObj['freezeModule'].destroy();
             destroy(gridObj);

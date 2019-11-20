@@ -440,6 +440,7 @@ class Selection {
         this.parent.on('dataBoundArg', this.headerCheckbox, this);
         this.parent.on('columnCheckbox', this.columnCheckbox, this);
         this.parent.on('updateGridActions', this.updateGridActions, this);
+        this.parent.grid.on('colgroup-refresh', this.headerCheckbox, this);
         this.parent.on('checkboxSelection', this.checkboxSelection, this);
     }
     removeEventListener() {
@@ -448,6 +449,7 @@ class Selection {
         }
         this.parent.off('dataBoundArg', this.headerCheckbox);
         this.parent.off('columnCheckbox', this.columnCheckbox);
+        this.parent.grid.off('colgroup-refresh', this.headerCheckbox);
         this.parent.off('checkboxSelection', this.checkboxSelection);
         this.parent.off('updateGridActions', this.updateGridActions);
     }
@@ -518,7 +520,9 @@ class Selection {
             if (!isNullOrUndefined(headerElement)) {
                 headerElement.insertBefore(checkWrap, headerElement.firstChild);
             }
-            this.headerSelection();
+            if (this.parent.autoCheckHierarchy) {
+                this.headerSelection();
+            }
         }
     }
     renderColumnCheckbox(args) {
@@ -2095,7 +2099,7 @@ let TreeGrid = TreeGrid_1 = class TreeGrid extends Component {
      * @hidden
      */
     wireEvents() {
-        EventHandler.add(this.element, 'click', this.mouseClickHandler, this);
+        EventHandler.add(this.grid.element, 'click', this.mouseClickHandler, this);
         EventHandler.add(this.element, 'touchend', this.mouseClickHandler, this);
         this.keyboardModule = new KeyboardEvents(this.element, {
             keyAction: this.treeGridkeyActionHandler.bind(this),
@@ -2227,7 +2231,7 @@ let TreeGrid = TreeGrid_1 = class TreeGrid extends Component {
      * @hidden
      */
     unwireEvents() {
-        EventHandler.remove(this.element, 'click', this.mouseClickHandler);
+        EventHandler.remove(this.grid.element, 'click', this.mouseClickHandler);
     }
     /**
      * For internal use only - To Initialize the component rendering.
@@ -3127,10 +3131,11 @@ let TreeGrid = TreeGrid_1 = class TreeGrid extends Component {
             return;
         }
         let target = e.target;
-        if (target.classList.contains('e-treegridexpand') ||
-            target.classList.contains('e-treegridcollapse')) {
+        if ((target.classList.contains('e-treegridexpand') ||
+            target.classList.contains('e-treegridcollapse')) && (!this.isEditCollapse && !this.grid.isEdit)) {
             this.expandCollapseRequest(target);
         }
+        this.isEditCollapse = false;
         this.notify('checkboxSelection', { target: target });
     }
     /**
@@ -5049,12 +5054,7 @@ class RowDD$1 {
             rowPositionHeight = rowEle.offsetTop - scrollTop;
         }
         // let scrollTop = (tObj.grid.scrollModule as any).content.scrollTop;
-        if (tObj.allowTextWrap) {
-            rowTop = row[0].offsetHeight;
-        }
-        else {
-            rowTop = rowPositionHeight + contentHeight + roundOff;
-        }
+        rowTop = rowPositionHeight + contentHeight + roundOff;
         let rowBottom = rowTop + row[0].offsetHeight;
         let difference = rowBottom - rowTop;
         let divide = difference / 3;
@@ -7018,7 +7018,6 @@ class Edit$1 {
         this.parent.on('actionComplete', this.editActionEvents, this);
         this.parent.grid.on(doubleTap, this.recordDoubleClick, this);
         this.parent.grid.on('dblclick', this.gridDblClick, this);
-        this.parent.grid.on('click', this.gridSingleClick, this);
         this.parent.on('savePreviousRowPosition', this.savePreviousRowPosition, this);
         // this.parent.on(events.beforeDataBound, this.beforeDataBound, this);
         // this.parent.on(events.cellSaved, this.cellSaved, this);
@@ -7033,14 +7032,6 @@ class Edit$1 {
     }
     gridDblClick(e) {
         this.doubleClickTarget = e.target;
-    }
-    gridSingleClick(e) {
-        let targetElement = e.target;
-        if (targetElement && this.parent.grid.isEdit && (targetElement.classList.contains('e-treegridexpand') ||
-            targetElement.classList.contains('e-treegridcollapse'))) {
-            this.parent.grid.closeEdit();
-            return;
-        }
     }
     beforeStartEdit(args) {
         this.parent.trigger(actionBegin, args);
@@ -7074,7 +7065,7 @@ class Edit$1 {
         this.parent.grid.off(beforeStartEdit, this.beforeStartEdit);
         this.parent.grid.off(beforeBatchCancel, this.beforeBatchCancel);
         this.parent.grid.off('dblclick', this.gridDblClick);
-        this.parent.grid.off('click', this.gridSingleClick);
+        //this.parent.grid.off('click', this.gridSingleClick);
         //this.parent.grid.off(events.batchEditFormRendered, this.batchEditFormRendered);
     }
     /**
@@ -7096,14 +7087,15 @@ class Edit$1 {
         let eventName = getObject('name', eventArgs);
         let treeObj = this.parent;
         let adaptor = treeObj.dataSource.adaptor;
-        if ((isRemoteData(treeObj) || adaptor instanceof RemoteSaveAdaptor) && treeObj.getSelectedRowIndexes().length &&
+        if ((isRemoteData(treeObj) || adaptor instanceof RemoteSaveAdaptor) &&
             (eventArgs.requestType === 'save' && eventArgs.action === 'add') &&
             (treeObj.editSettings.newRowPosition === 'Child' || treeObj.editSettings.newRowPosition === 'Below'
                 || treeObj.editSettings.newRowPosition === 'Above')) {
             if (eventName === 'actionBegin') {
                 let rowIndex = isNullOrUndefined(eventArgs.row) ? treeObj.getSelectedRowIndexes()[0] :
                     eventArgs.row.rowIndex - 1;
-                let keyData = treeObj.getCurrentViewRecords()[rowIndex][treeObj.getPrimaryKeyFieldNames()[0]];
+                let keyData = (!isNullOrUndefined(rowIndex) && rowIndex !== -1) ?
+                    treeObj.getCurrentViewRecords()[rowIndex][treeObj.getPrimaryKeyFieldNames()[0]] : -1;
                 treeObj.grid.query.addParams('relationalKey', keyData);
             }
             else if (eventName === 'actionComplete') {
@@ -7228,6 +7220,7 @@ class Edit$1 {
         if (this.parent.editSettings.mode === 'Cell' && this.parent.element.querySelector('form')) {
             args.cancel = true;
             setValue('isEdit', false, this.parent.grid);
+            setValue('isEditCollapse', true, this.parent);
             args.rowData[args.columnName] = args.value;
             let row = args.cell.parentNode;
             let rowIndex;

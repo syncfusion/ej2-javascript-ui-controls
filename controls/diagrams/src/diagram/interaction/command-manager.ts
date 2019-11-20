@@ -1133,6 +1133,12 @@ export class CommandHandler {
     public drawObject(obj: Node | Connector): Node | Connector {
         let newObj: Node | Connector;
         let cloneObject: Node | Connector;
+        if (obj && obj.shape) {
+            if (obj.shape.type === 'Text') {
+                (obj as Node).width =  (this.diagram.drawingObject as Node).width ? (this.diagram.drawingObject as Node).width : 50;
+                (obj as Node).height =  (this.diagram.drawingObject as Node).height ? (this.diagram.drawingObject as Node).height : 20;
+            }
+        }
         cloneObject = clone(this.diagram.drawingObject) as Node | Connector;
         for (let prop of Object.keys(obj)) {
             cloneObject[prop] = obj[prop];
@@ -1242,28 +1248,30 @@ export class CommandHandler {
         if (!arg.cancel) {
             for (let i: number = 0; i < obj.length; i++) {
                 let newObj: NodeModel | ConnectorModel = obj[i];
-                select = true;
-                if (!hasSelection(this.diagram)) {
-                    this.select(newObj, i > 0 || multipleSelection, true);
-                } else {
-                    if ((i > 0 || multipleSelection) && (newObj as Node).children && !(newObj as Node).parentId) {
-                        for (let i: number = 0; i < this.diagram.selectedItems.nodes.length; i++) {
-                            let parentNode: NodeModel = this.diagram.nameTable[(this.diagram.selectedItems.nodes[i] as Node).parentId];
-                            if (parentNode) {
-                                parentNode = this.findParent((parentNode as Node));
+                if (newObj) {
+                    select = true;
+                    if (!hasSelection(this.diagram)) {
+                        this.select(newObj, i > 0 || multipleSelection, true);
+                    } else {
+                        if ((i > 0 || multipleSelection) && (newObj as Node).children && !(newObj as Node).parentId) {
+                            for (let i: number = 0; i < this.diagram.selectedItems.nodes.length; i++) {
+                                let parentNode: NodeModel = this.diagram.nameTable[(this.diagram.selectedItems.nodes[i] as Node).parentId];
                                 if (parentNode) {
-                                    if (newObj.id === parentNode.id) {
-                                        this.selectGroup(newObj as Node);
+                                    parentNode = this.findParent((parentNode as Node));
+                                    if (parentNode) {
+                                        if (newObj.id === parentNode.id) {
+                                            this.selectGroup(newObj as Node);
+                                        }
                                     }
                                 }
                             }
                         }
-                    }
-                    this.selectProcesses(newObj as Node);
+                        this.selectProcesses(newObj as Node);
 
-                    select = this.selectBpmnSubProcesses(newObj as Node);
-                    if (select) {
-                        this.select(newObj, i > 0 || multipleSelection, true);
+                        select = this.selectBpmnSubProcesses(newObj as Node);
+                        if (select) {
+                            this.select(newObj, i > 0 || multipleSelection, true);
+                        }
                     }
                 }
             }

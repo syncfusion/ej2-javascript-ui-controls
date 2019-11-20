@@ -161,9 +161,16 @@ export namespace Input {
         if (!floatLabelElement.innerHTML) {
             inputObject.container.classList.add(CLASSNAMES.NOFLOATLABEL);
         }
-        inputObject.container.appendChild(args.element);
-        inputObject.container.appendChild(floatLinelement);
-        inputObject.container.appendChild(floatLabelElement);
+        if (inputObject.container.classList.contains('e-float-icon-left')) {
+            let inputWrap: HTMLElement = inputObject.container.querySelector('.e-input-in-wrap') as HTMLElement;
+            inputWrap.appendChild(args.element);
+            inputWrap.appendChild(floatLinelement);
+            inputWrap.appendChild(floatLabelElement);
+        } else {
+            inputObject.container.appendChild(args.element);
+            inputObject.container.appendChild(floatLinelement);
+            inputObject.container.appendChild(floatLabelElement);
+        }
         updateLabelState(args.element.value, floatLabelElement);
         if (args.floatLabelType === 'Always') {
             if (floatLabelElement.classList.contains(CLASSNAMES.LABELBOTTOM)) {
@@ -236,6 +243,9 @@ export namespace Input {
 
     function getParentNode(element: HTMLInputElement | HTMLElement): HTMLElement {
       let parentNode: HTMLElement = <HTMLElement>element.parentNode;
+      if (parentNode.classList.contains('e-input-in-wrap')) {
+        parentNode = <HTMLElement>parentNode.parentNode;
+      }
       return parentNode;
     }
 
@@ -575,16 +585,29 @@ export namespace Input {
       let inputObj: InputObject = { container: container};
       input.classList.remove(CLASSNAMES.INPUT);
       createFloatingInput(args, inputObj, makeElement);
+      let isPrependIcon: boolean = container.classList.contains('e-float-icon-left');
       if (isNullOrUndefined(iconEle)) {
-         iconEle = container.querySelector('.e-input-group-icon') as HTMLElement; }
-      if (isNullOrUndefined(iconEle)) {
-          container.classList.remove(CLASSNAMES.INPUTGROUP);
+        if (isPrependIcon) {
+          let inputWrap: HTMLElement = container.querySelector('.e-input-in-wrap')as HTMLElement;
+          iconEle = inputWrap.querySelector('.e-input-group-icon') as HTMLElement;
         } else {
-         let floatLine: HTMLElement = <HTMLElement>container.querySelector('.' + CLASSNAMES.FLOATLINE);
-         let floatText: HTMLElement = <HTMLElement>container.querySelector('.' + CLASSNAMES.FLOATTEXT);
-         container.insertBefore(input, iconEle);
-         container.insertBefore(floatLine, iconEle);
-         container.insertBefore(floatText, iconEle);
+          iconEle = container.querySelector('.e-input-group-icon') as HTMLElement;
+        }
+      }
+      if (isNullOrUndefined(iconEle)) {
+          if (isPrependIcon) {
+            iconEle = container.querySelector('.e-input-group-icon') as HTMLElement;
+          }
+          if (isNullOrUndefined(iconEle)) {
+            container.classList.remove(CLASSNAMES.INPUTGROUP);
+          }
+        } else {
+          let floatLine: HTMLElement = <HTMLElement>container.querySelector('.' + CLASSNAMES.FLOATLINE);
+          let floatText: HTMLElement = <HTMLElement>container.querySelector('.' + CLASSNAMES.FLOATTEXT);
+          let wrapper: HTMLElement = isPrependIcon ? container.querySelector('.e-input-in-wrap') as HTMLElement : container;
+          wrapper.insertBefore(input, iconEle);
+          wrapper.insertBefore(floatLine, iconEle);
+          wrapper.insertBefore(floatText, iconEle);
         }
       }
       checkFloatLabelType(type, input.parentElement);
@@ -645,6 +668,74 @@ export namespace Input {
          () => { ele.classList.remove('e-input-btn-ripple'); },
          500);
     }
+    function createIconEle(iconClass: string, makeElement: createElementParams): HTMLElement {
+        let button: HTMLElement = <HTMLElement>makeElement('span', { className: iconClass });
+        button.classList.add('e-input-group-icon');
+        return button;
+    }
+
+   /**
+    * Creates a new span element with the given icons added and append it in container element.
+    * ```
+    * E.g : Input.addIcon('append', 'e-icon-spin', inputObj.container, inputElement);
+    * ```
+    * @param position - Specify the icon placement on the input.Possible values are append and prepend.
+    * @param iconClass - Icon classes which are need to add to the span element which is going to created.
+    * Span element acts as icon or button element for input.
+    * @param container - The container on which created span element is going to append.
+    * @param inputElement - The inputElement on which created span element is going to prepend.
+    */
+   // tslint:disable
+    export function addIcon(position: string, icons: string | string[], container: HTMLElement,
+        input: HTMLElement, internalCreate?: createElementParams): void {
+  // tslint:enable
+        let result: string[] = typeof(icons) === 'string' ? icons.split(',')
+        : icons;
+        if (position.toLowerCase() === 'append') {
+            for (let icon of result) {
+                appendSpan(icon, container, internalCreate);
+            }
+        } else {
+            for (let icon of result) {
+                prependSpan(icon, container, input, internalCreate);
+            }
+        }
+    }
+
+   /**
+    * Creates a new span element with the given icons added and prepend it in input element.
+    * ```
+    * E.g : Input.prependSpan('e-icon-spin', inputObj.container, inputElement);
+    * ```
+    * @param iconClass - Icon classes which are need to add to the span element which is going to created.
+    * Span element acts as icon or button element for input.
+    * @param container - The container on which created span element is going to append.
+    * @param inputElement - The inputElement on which created span element is going to prepend.
+    */
+   // tslint:disable
+    export function prependSpan(iconClass: string, container: HTMLElement,
+        inputElement: HTMLElement, internalCreateElement?: createElementParams): HTMLElement {
+  // tslint:enable
+        let makeElement: createElementParams = !isNullOrUndefined(internalCreateElement) ? internalCreateElement : createElement;
+        let button: HTMLElement = createIconEle(iconClass, makeElement);
+        container.classList.add('e-float-icon-left');
+        let innerWrapper: HTMLElement = container.querySelector('.e-input-in-wrap');
+        if (isNullOrUndefined(innerWrapper)) {
+            innerWrapper = <HTMLElement>makeElement('span', { className: 'e-input-in-wrap' });
+            inputElement.parentNode.insertBefore(innerWrapper, inputElement);
+            let result: NodeListOf<Element> = container.querySelectorAll(inputElement.tagName + ' ~ *');
+            innerWrapper.appendChild(inputElement);
+            for (let i: number = 0; i < result.length; i++) {
+                innerWrapper.appendChild(result[i]);
+            }
+        }
+        innerWrapper.parentNode.insertBefore(button, innerWrapper);
+        if (!container.classList.contains(CLASSNAMES.INPUTGROUP)) {
+            container.classList.add(CLASSNAMES.INPUTGROUP);
+        }
+        _internalRipple(true, container, button);
+        return button;
+    }
 
    /**
     * Creates a new span element with the given icons added and append it in container element.
@@ -657,12 +748,13 @@ export namespace Input {
     */
     export function appendSpan(iconClass: string, container: HTMLElement, internalCreateElement ?: createElementParams): HTMLElement {
         let makeElement: createElementParams = !isNullOrUndefined(internalCreateElement) ? internalCreateElement : createElement;
-        let button: HTMLElement = <HTMLElement>makeElement('span', { className: iconClass });
-        button.classList.add('e-input-group-icon');
-        container.appendChild(button);
+        let button: HTMLElement = createIconEle(iconClass, makeElement);
         if (!container.classList.contains(CLASSNAMES.INPUTGROUP)) {
           container.classList.add(CLASSNAMES.INPUTGROUP);
         }
+        let wrap: HTMLElement = (container.classList.contains('e-float-icon-left')) ? container.querySelector('.e-input-in-wrap') :
+        container;
+        wrap.appendChild(button);
         _internalRipple(true, container, button);
         return button;
     }
