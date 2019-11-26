@@ -550,7 +550,7 @@ export class Render {
         let curDm: DataManager = new DataManager(e.result as JSON[]);
         let curFilter: Object[] = <Object[]>curDm.executeLocal(query);
         let newQuery: Query = this.data.generateQuery(true); let rPredicate: Predicate[] = [];
-        if (this.data.isRemote()) {
+        if (this.data.isRemote() || isBlazor()) {
             [group0, groupN].forEach((group: Group) =>
                 rPredicate.push(this.getPredicate(group.field, 'equal', group.key)));
             newQuery.where(Predicate.or(rPredicate));

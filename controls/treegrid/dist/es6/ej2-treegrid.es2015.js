@@ -5269,9 +5269,9 @@ class RowDD$1 {
     rowDropped(args) {
         let tObj = this.parent;
         if (!tObj.rowDropSettings.targetID) {
+            tObj.trigger(rowDrop, args);
             if (parentsUntil(args.target, 'e-content')) {
                 setValue('dropPosition', this.dropPosition, args);
-                tObj.trigger(rowDrop, args);
                 if (!args.cancel) {
                     this.dropRows(args);
                     tObj.refresh();
@@ -5965,6 +5965,9 @@ class Filter$1 {
             }
             if (!isNullOrUndefined(ischild) && ischild.length) {
                 isExist = this.checkChildExsist(childRec[count]);
+            }
+            if ((hierarchyMode === 'Child' || hierarchyMode === 'Both') && childRec.length) {
+                isExist = true;
             }
         }
         return isExist;

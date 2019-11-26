@@ -797,6 +797,7 @@ export class AnnotationToolbar {
                 let redoClonedObject: PdfAnnotationBaseModel = cloneObject(currentAnnotations);
                 redoClonedObject.opacity = args.value / 100;
                 this.pdfViewer.nodePropertyChange(currentAnnotations, { opacity: args.value / 100 });
+                this.pdfViewer.annotation.triggerAnnotationPropChange(currentAnnotations, false, false, false, true);
                 // tslint:disable-next-line:max-line-length
                 this.pdfViewer.annotation.addAction(this.pdfViewer.selectedItems.annotations[0].pageIndex, null, this.pdfViewer.selectedItems.annotations[0], 'stampOpacity', '', clonedObject, redoClonedObject);
                 // tslint:disable-next-line:max-line-length

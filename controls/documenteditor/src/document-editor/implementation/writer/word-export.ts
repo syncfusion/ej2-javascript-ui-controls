@@ -3778,16 +3778,18 @@ export class WordExport {
 
 
         //TODO:ISSUEFIX((paragraphFormat.lineSpacing) * this.twentiethOfPoint).toString());
-        if (!isNullOrUndefined(paragraphFormat.lineSpacingType)) {
+        if (!isNullOrUndefined(paragraphFormat.lineSpacing)) {
             // tslint:disable-next-line:max-line-length
             let lineSpacingValue: number = (paragraphFormat.lineSpacingType === 'AtLeast' || paragraphFormat.lineSpacingType === 'Exactly') ? this.roundToTwoDecimal(paragraphFormat.lineSpacing * this.twentiethOfPoint) : this.roundToTwoDecimal(paragraphFormat.lineSpacing * 240);
+            writer.writeAttributeString(undefined, 'line', this.wNamespace, lineSpacingValue.toString());
+        }
+        if (!isNullOrUndefined(paragraphFormat.lineSpacingType)) {
             let lineSpacingType: string = 'auto';
             if (paragraphFormat.lineSpacingType === 'AtLeast') {
                 lineSpacingType = 'atLeast';
             } else if (paragraphFormat.lineSpacingType === 'Exactly') {
                 lineSpacingType = 'exact';
             }
-            writer.writeAttributeString(undefined, 'line', this.wNamespace, lineSpacingValue.toString());
             writer.writeAttributeString(undefined, 'lineRule', this.wNamespace, lineSpacingType);
         }
         writer.writeEndElement();

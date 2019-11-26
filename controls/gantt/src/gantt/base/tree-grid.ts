@@ -27,6 +27,7 @@ export class GanttTreeGrid {
         this.parent = parent;
         this.parent.treeGrid = new TreeGrid();
         this.parent.treeGrid.allowSelection = false;
+        this.parent.treeGrid.allowKeyboard = this.parent.allowKeyboard;
         this.treeGridColumns = [];
         this.validateGanttColumns();
         this.addEventListener();

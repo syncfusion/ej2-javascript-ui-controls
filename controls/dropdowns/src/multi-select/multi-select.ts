@@ -2381,7 +2381,7 @@ export class MultiSelect extends DropDownBase implements IInput {
     }
     private clearAllCallback(e: MouseEvent, isClearAll?: boolean): void {
         let tempValues: string[] | number[] = this.value ? <string[]>this.value.slice() : <string[]>[];
-        if (this.mainList && this.listData && this.allowFiltering) {
+        if (this.mainList && this.listData && (this.allowFiltering || this.allowCustomValue)) {
             let list: HTMLElement = this.mainList.cloneNode ? <HTMLElement>this.mainList.cloneNode(true) : this.mainList;
             this.onActionComplete(list, this.mainData);
         }
@@ -3520,7 +3520,9 @@ export class MultiSelect extends DropDownBase implements IInput {
         }
         if (isBlazor() && this.itemTemplate) {
             this.DropDownBaseupdateBlazorTemplates(true, false, false, false, false, false, false, false);
-            this.refreshSelection();
+            if (this.mode !== 'CheckBox' && this.list) {
+                this.refreshSelection();
+            }
         }
         if (!this.ulElement) {
             this.beforePopupOpen = true;

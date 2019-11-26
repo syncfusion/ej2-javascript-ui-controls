@@ -198,3 +198,5 @@ export const CLS_RTE_RES_CNT: string = 'e-rte-resize';
 export const CLS_CUSTOM_TILE: string = 'e-custom-tile';
 /** @hidden */
 export const CLS_NOCOLOR_ITEM: string = 'e-nocolor-item';
+/** @hidden */
+export const CLS_TABLE_BORDER: string = 'e-rte-table-border';

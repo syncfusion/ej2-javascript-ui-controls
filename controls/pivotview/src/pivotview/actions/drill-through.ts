@@ -119,8 +119,9 @@ export class DrillThrough {
                     }
                 }
             }
-            let valuetText: string = aggType === 'CalculatedField' ? valueCaption.toString() :
-                aggType !== '' ? (aggType + ' ' + this.parent.localeObj.getConstant('of') + ' ' + valueCaption) : valueCaption;
+            let valuetText: string = aggType === 'CalculatedField' ? valueCaption.toString() : aggType !== '' ?
+                (this.parent.localeObj.getConstant(aggType) + ' ' + this.parent.localeObj.getConstant('of') + ' ' + valueCaption) :
+                valueCaption;
             let eventArgs: DrillThroughEventArgs = {
                 currentTarget: ele,
                 currentCell: pivotValue,
@@ -129,11 +130,10 @@ export class DrillThrough {
                 columnHeaders: pivotValue.columnHeaders === '' ? '' : pivotValue.columnHeaders.toString().split('.').join(' - '),
                 value: valuetText + '(' + pivotValue.formattedText + ')'
             };
-            let drillThrough : DrillThrough = this;
+            let drillThrough: DrillThrough = this;
             this.parent.trigger(events.drillThrough, eventArgs, (observedArgs: DrillThroughEventArgs) => {
                 drillThrough.drillThroughDialog.showDrillThroughDialog(observedArgs);
             });
-            
         }
     }
 }

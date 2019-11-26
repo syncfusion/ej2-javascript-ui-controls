@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 17.3.29 (2019-11-26)
+
+### TreeGrid
+
+#### Bug Fixes
+
+- `#254018` - RowDrop event triggers properly when we drop the row outside of the TreeGrid.
+
 ## 17.3.28 (2019-11-19)
 
 ### TreeGrid

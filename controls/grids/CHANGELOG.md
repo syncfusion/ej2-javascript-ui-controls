@@ -2,6 +2,18 @@
 
 ## [Unreleased]
 
+## 17.3.29 (2019-11-26)
+
+### Grid
+
+#### Bug Fixes
+
+- `#252476`, `#254801` - Script error throws while clicking the empty row with first column as visible false has been fixed.
+- `#253639` - `totalRecordsCount` and `totalPages` values are not refreshed in Grid `pagerTemplate` has been fixed.
+- `#254057` - DataSource modified when `aggregateModule` is refreshed in Grid has been fixed.
+- `#250278` - Provided event support for customizing Group Caption text.
+- `#255431` - Script error throws, while updating the row in edited state has been fixed.
+
 ## 17.3.28 (2019-11-19)
 
 ### Grid

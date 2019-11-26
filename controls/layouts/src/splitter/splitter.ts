@@ -801,7 +801,18 @@ export class Splitter extends Component<HTMLElement> {
                     addClass([select('.' + RESIZE_BAR, separator)], HIDE_HANDLER);
                 }
             } else {
+                if (separator) {
+                    addClass([separator], LAST_BAR);
+                }
                 this.updateResizablePanes(i);
+            }
+        }
+        if (Browser.info.name === 'msie') {
+            let allBar: NodeListOf<Element> = this.element.querySelectorAll('.e-splitter .e-resize-handler');
+            for (let i: number = 0; i < allBar.length; i++) {
+                let sepSize: number = isNullOrUndefined(this.separatorSize) ? 1 : this.separatorSize;
+                (allBar[i] as HTMLElement).style.paddingLeft = sepSize / 2 + 'px';
+                (allBar[i] as HTMLElement).style.paddingRight = sepSize / 2 + 'px';
             }
         }
     }
@@ -813,7 +824,7 @@ export class Splitter extends Component<HTMLElement> {
         !isNullOrUndefined(this.paneSettings[this.getNextPaneIndex()]) &&
         this.paneSettings[this.getNextPaneIndex()].resizable) ||
         isNullOrUndefined(this.paneSettings[this.getNextPaneIndex()])) {
-            resizable = true;
+        resizable = true;
         }
 
         return resizable;
@@ -1483,6 +1494,35 @@ export class Splitter extends Component<HTMLElement> {
         this.addStaticPaneClass();
         this.previousPane.style.flexBasis = this.prevPaneCurrentWidth;
         this.nextPane.style.flexBasis = this.nextPaneCurrentWidth;
+        let lastBar: HTMLElement = this.element.querySelector('.e-last-bar');
+
+        let sepSize: number = parseInt(isNullOrUndefined(this.separatorSize) ? '1' : this.separatorSize.toString() , 10);
+        if (this.orientation === 'Horizontal') {
+            if ((lastBar.offsetLeft + sepSize + this.element.offsetLeft) > (this.element.offsetWidth + this.element.offsetLeft)) {
+                this.validatelastBar(lastBar, sepSize);
+            }
+        } else {
+            if ((lastBar.offsetTop + sepSize + this.element.offsetTop) > (this.element.offsetHeight + this.element.offsetTop)) {
+                this.validatelastBar(lastBar, sepSize);
+            }
+        }
+    }
+
+    private validatelastBar(lastBar: HTMLElement, sepSize: number) : void {
+        let lastbarIndex: number = this.getSeparatorIndex(lastBar);
+        if (this.allPanes[lastbarIndex + 1].style.flexBasis.indexOf('%') > -1) {
+            this.allPanes[lastbarIndex + 1].style.flexBasis = this.convertPixelToPercentage(sepSize) + '%';
+        } else {
+            this.allPanes[lastbarIndex + 1].style.flexBasis = parseFloat(this.allPanes[lastbarIndex + 1].style.flexBasis)
+             + sepSize + 'px';
+        }
+        if (this.allPanes[lastbarIndex].style.flexBasis.indexOf('%') > -1) {
+            this.allPanes[lastbarIndex].style.flexBasis = (parseFloat(this.allPanes[lastbarIndex].style.flexBasis)
+             - this.convertPixelToPercentage(this.separatorSize)) + '%';
+        } else {
+            this.allPanes[lastbarIndex].style.flexBasis = parseFloat(this.allPanes[lastbarIndex].style.flexBasis)
+             - sepSize + 'px';
+        }
     }
 
     private validateMinRange(paneIndex: number, paneCurrentWidth: number, pane: HTMLElement): number {

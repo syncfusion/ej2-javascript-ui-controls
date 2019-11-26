@@ -876,14 +876,16 @@ export enum NodeConstraints {
     Resize = 1 << 12 | 1 << 13 | 1 << 14 | 1 << 15 | 1 << 16 | 1 << 17 | 1 << 18 | 1 << 19,
     /** Enables the Aspect ratio fo the node */
     AspectRatio = 1 << 20,
-    /** hide all resize support for node */
-    HideThumbs = 1 << 24,
     /** Enables or disables tool tip for the Nodes */
     Tooltip = 1 << 21,
     /** Enables or disables tool tip for the Nodes */
     InheritTooltip = 1 << 22,
     /** Enables the  ReadOnly support for Annotation */
     ReadOnly = 1 << 23,
+    /** hide all resize support for node */
+    HideThumbs = 1 << 24,
+    /** Enables or disables child in parent for the swimLane node */
+    AllowMovingOutsideLane = 1 << 25,
     /** Enables all constraints */
     Default = 1 << 1 | 1 << 2 | 1 << 3 | 1 << 6 | 1 << 7 | 1 << 8 |
     1 << 9 | 1 << 10 | 1 << 5 | 1 << 12 | 1 << 13 |
@@ -2277,9 +2279,9 @@ export type IconShapes =
  */
 export type SubTreeOrientation =
     /** Horizontal - Aligns the child nodes in horizontal manner */
-    'Horizontal'|
+    'Horizontal' |
     /** Vertical - Aligns the child nodes in vertical manner */
-    'Vertical' ;
+    'Vertical';
 /**
  * Defines the collection of sub tree alignments in an organizational chart
  * Left - Aligns the child nodes at the left of the parent in a horizontal/vertical sub tree

@@ -95,42 +95,50 @@ export class Print {
             }
             if (printImage && printImage.uniqueId === proxy.pdfViewerBase.documentId) {
                 let annotationSource: string = '';
-                if (printImage.textMarkupAnnotation && proxy.pdfViewerBase.isTextMarkupAnnotationModule()) {
+                // tslint:disable-next-line
+                let annotationCollections: any = proxy.pdfViewerBase.documentAnnotationCollections;
+                if (annotationCollections && annotationCollections[printImage.pageNumber] && proxy.pdfViewerBase.isTextMarkupAnnotationModule()) {
                     // tslint:disable-next-line
-                    let stampData: any = printImage['stampAnnotations'];
+                    let printCollection: any = annotationCollections[printImage.pageNumber];
                     if (proxy.pdfViewerBase.isImportAction) {
                         let importAnnotationList: number[] = proxy.pdfViewerBase.importedAnnotation;
                         // tslint:disable-next-line
                         let importAnnotation: any = importAnnotationList[printImage.pageNumber];
-                        let textMarkupAnnotation: number[] = printImage.textMarkupAnnotation;
-                        let shapeAnnotation: number[] = printImage.shapeAnnotation;
-                        let measureShapeAnnotation: number[] = printImage.measureShapeAnnotation;
-                        let stampAnnotation: number[] = stampData;
+                        let textMarkupAnnotation: number[] = printCollection.textMarkupAnnotation;
+                        let shapeAnnotation: number[] = printCollection.shapeAnnotation;
+                        let measureShapeAnnotation: number[] = printCollection.measureShapeAnnotation;
+                        let stampAnnotation: number[] = printCollection.stampAnnotations;
                         // tslint:disable-next-line
-                        let stickyNoteAnnotation: any = printImage.stickyNotesAnnotation;
+                        let stickyNoteAnnotation: any = printCollection.stickyNotesAnnotation;
                         if (importAnnotation) {
                             if (importAnnotation.textMarkupAnnotation.length !== 0) {
-                                textMarkupAnnotation = printImage.textMarkupAnnotation.concat(importAnnotation.textMarkupAnnotation);
+                                textMarkupAnnotation = printCollection.textMarkupAnnotation.concat(importAnnotation.textMarkupAnnotation);
                             }
                             if (importAnnotation.shapeAnnotation.length !== 0) {
-                                shapeAnnotation = printImage.shapeAnnotation.concat(importAnnotation.shapeAnnotation);
+                                shapeAnnotation = printCollection.shapeAnnotation.concat(importAnnotation.shapeAnnotation);
                             }
                             if (importAnnotation.measureShapeAnnotation.length !== 0) {
-                                measureShapeAnnotation = printImage.measureShapeAnnotation.concat(importAnnotation.measureShapeAnnotation);
+                                // tslint:disable-next-line:max-line-length
+                                measureShapeAnnotation = printCollection.measureShapeAnnotation.concat(importAnnotation.measureShapeAnnotation);
                             }
                             if (importAnnotation.stampAnnotations.length !== 0) {
-                                stampAnnotation = stampData.concat(importAnnotation.stampAnnotations);
+                                stampAnnotation = printCollection.stampAnnotations.concat(importAnnotation.stampAnnotations);
                             }
                             if (importAnnotation.stickyNotesAnnotation.length !== 0) {
-                                stickyNoteAnnotation = printImage.stickyNotesAnnotation.concat(importAnnotation.stickyNotesAnnotation);
+                                // tslint:disable-next-line:max-line-length
+                                stickyNoteAnnotation = printCollection.stickyNotesAnnotation.concat(importAnnotation.stickyNotesAnnotation);
                             }
                         }
                         // tslint:disable-next-line:max-line-length
                         annotationSource = proxy.pdfViewer.annotationModule.textMarkupAnnotationModule.printTextMarkupAnnotations(textMarkupAnnotation, pageIndex, stampAnnotation, shapeAnnotation, measureShapeAnnotation, stickyNoteAnnotation);
                     } else {
                         // tslint:disable-next-line:max-line-length
-                        annotationSource = proxy.pdfViewer.annotationModule.textMarkupAnnotationModule.printTextMarkupAnnotations(printImage.textMarkupAnnotation, pageIndex, stampData, printImage.shapeAnnotation, printImage.measureShapeAnnotation, printImage.stickyNoteAnnotation);
+                        annotationSource = proxy.pdfViewer.annotationModule.textMarkupAnnotationModule.printTextMarkupAnnotations(printCollection.textMarkupAnnotation, pageIndex, printCollection.stampAnnotations, printCollection.shapeAnnotation, printCollection.measureShapeAnnotation, printCollection.stickyNoteAnnotation);
                     }
+                }
+                if (proxy.pdfViewerBase.isAnnotationCollectionRemoved) {
+                    // tslint:disable-next-line:max-line-length
+                    annotationSource = proxy.pdfViewer.annotationModule.textMarkupAnnotationModule.printTextMarkupAnnotations(null, pageIndex, null, null, null, null);
                 }
                 let currentPageNumber: number = printImage.pageNumber;
                 // tslint:disable-next-line:max-line-length
@@ -185,7 +193,7 @@ export class Print {
     // tslint:disable-next-line
     private renderFieldsForPrint(pageIndex: number, heightRatio: number, widthRatio: number): any {
         // tslint:disable-next-line
-        let data: any = window.sessionStorage.getItem('formfields');
+        let data: any = window.sessionStorage.getItem(this.pdfViewerBase.documentId + '_formfields');
         // tslint:disable-next-line
         let formFieldsData: any = JSON.parse(data);
         for (let i: number = 0; i < formFieldsData.length; i++) {

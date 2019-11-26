@@ -38,5 +38,6 @@ export let modulesList: { [key: string]: string } = {
  */
 export let localeConstant: { [key: string]: object } = {
     'Click': { 'editAreaClick': 'Click to edit' },
-    'DblClick': { 'editAreaDoubleClick': 'Double click to edit' }
+    'DblClick': { 'editAreaDoubleClick': 'Double click to edit' },
+    'EditIconClick': { 'editAreaClick': 'Click to edit' },
 };

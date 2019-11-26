@@ -425,7 +425,8 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
             fieldTitle: 'Field Name',
             QuarterYear: 'Quarter Year',
             caption: 'Field Caption',
-            copy: 'Copy'
+            copy: 'Copy',
+            of: 'of'
         };
         this.localeObj = new L10n(this.getModuleName(), this.defaultLocale, this.locale);
         this.isDragging = false;

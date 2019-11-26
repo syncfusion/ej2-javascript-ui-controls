@@ -43,7 +43,7 @@ export class FocusStrategy {
     protected onFocus(): void {
         if (this.parent.isDestroyed || Browser.isDevice || this.parent.enableVirtualization) { return; }
         this.setActive(this.parent.frozenRows === 0, this.parent.frozenColumns !== 0);
-        if (!this.parent.getCurrentViewRecords().length) {
+        if (!this.parent.getCurrentViewRecords().length && this.parent.isEdit) {
             this.getContent().matrix.
                 generate(this.rowModelGen.generateRows({rows: [new Row<Column>({ isDataRow: true})] }), this.getContent().selector, false);
         }

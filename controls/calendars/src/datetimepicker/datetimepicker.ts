@@ -6,7 +6,7 @@ import { KeyboardEvents, KeyboardEventArgs, isNullOrUndefined, formatUnit, getVa
 import { ModuleDeclaration, extend } from '@syncfusion/ej2-base';
 import { Popup } from '@syncfusion/ej2-popups';
 import { Input } from '@syncfusion/ej2-inputs';
-import { BlurEventArgs } from '../calendar/calendar';
+import { BlurEventArgs, ClearedEventArgs } from '../calendar/calendar';
 import { DatePicker, PopupObjectArgs } from '../datepicker/datepicker';
 import { TimePickerBase } from '../timepicker/timepicker';
 import { DateTimePickerModel } from './datetimepicker-model';
@@ -338,6 +338,12 @@ export class DateTimePicker extends DatePicker {
      */
     @Event()
     public close: EmitType<Object>;
+    /**
+     * Triggers when datetimepicker value is cleared using clear button.
+     * @event
+     */
+    @Event()
+    public cleared: EmitType<ClearedEventArgs>;
     /** 
      * Triggers when input loses the focus.
      * @event

@@ -151,7 +151,8 @@ var modulesList = {
  */
 var localeConstant = {
     'Click': { 'editAreaClick': 'Click to edit' },
-    'DblClick': { 'editAreaDoubleClick': 'Double click to edit' }
+    'DblClick': { 'editAreaDoubleClick': 'Double click to edit' },
+    'EditIconClick': { 'editAreaClick': 'Click to edit' },
 };
 
 /**
@@ -341,6 +342,9 @@ var InPlaceEditor = /** @__PURE__ @class */ (function (_super) {
     InPlaceEditor.prototype.renderEditor = function () {
         var tipOptions = undefined;
         var target = select('.' + VALUE_WRAPPER, this.element);
+        if (this.editableOn !== 'EditIconClick') {
+            target.parentElement.removeAttribute('title');
+        }
         if (this.valueWrap.classList.contains(OPEN)) {
             return;
         }
@@ -706,6 +710,10 @@ var InPlaceEditor = /** @__PURE__ @class */ (function (_super) {
         this.containerEle = undefined;
         removeClass([this.valueWrap], [OPEN, HIDE]);
         this.setProperties({ enableEditMode: false }, true);
+        if (this.editableOn !== 'EditIconClick') {
+            var titleConstant = (this.editableOn === 'DblClick') ? 'editAreaDoubleClick' : 'editAreaClick';
+            this.valueWrap.parentElement.setAttribute('title', this.getLocale(localeConstant[this.editableOn], titleConstant));
+        }
     };
     InPlaceEditor.prototype.destroyComponents = function () {
         if (this.showButtons) {

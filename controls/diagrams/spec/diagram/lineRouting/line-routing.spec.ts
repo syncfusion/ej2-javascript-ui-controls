@@ -5588,6 +5588,481 @@ describe('Diagram Control', () => {
             });
 
         });
+        describe('Enable and Disable Line Routing Constraints', () => {
+
+            beforeAll((): void => {
+                ele = createElement('div', { id: 'diagramLineRouting79' });
+                document.body.appendChild(ele);
+                nodes = [
+                    {
+                        id: 'node0',
+                        offsetX: 100,
+                        offsetY: 100,
+                        width: 30,
+                        height: 30,
+                        annotations: [{
+                            content: 'Start',
+                            margin: { bottom: -30 }
+                        }],
+                        shape: {
+                            type: 'Bpmn',
+                            shape: 'Event',
+                            event: {
+                                event: 'Start',
+                                trigger: 'None'
+                            }
+                        },
+                        style: {
+                            strokeColor: '#62A716',
+                            strokeWidth: 1
+                        }
+                    },
+                    {
+                        id: 'node1',
+                        offsetX: 250,
+                        offsetY: 250,
+                        width: 90,
+                        height: 60,
+                        annotations: [
+                            {
+                                width: 72,
+                                height: 48,
+                                content: 'Activity1',
+                                style: {
+                                    textOverflow: 'Clip',
+                                    textWrapping: 'Wrap',
+                                    whiteSpace: 'PreserveAll'
+                                }
+                            }
+                        ],
+                        borderWidth: 4,
+                        shape: {
+                            type: 'Bpmn',
+                            shape: 'Activity',
+                            activity: {
+                                activity: 'Task',
+                                task: {
+                                    type: 'Service'
+                                }
+                            }
+                        },
+                        style: {
+                            fill: '#d8ecdc',
+                            strokeColor: '#78BE83',
+                            strokeWidth: 3,
+                            gradient: {
+                                x1: 0,
+                                y1: 0,
+                                x2: 1,
+                                y2: 1,
+                                stops: [
+                                    {
+                                        color: 'white',
+                                        offset: 30,
+                                        opacity: 0.1
+                                    },
+                                    {
+                                        color: '#d8ecdc',
+                                        offset: 100,
+                                        opacity: 0.1
+                                    }
+                                ],
+                                type: 'Linear'
+                            }
+                        }
+                    },
+                    {
+                        id: 'node2',
+                        offsetX: 250,
+                        offsetY: 500,
+                        width: 90,
+                        height: 60,
+                        borderWidth: 4,
+                        shape: {
+                            type: 'Flow',
+                            shape: 'Annotation',
+                        },
+                        annotations: [
+                            {
+                                content: "Sample Text",
+                                style: {
+                                    textOverflow: 'Ellipsis',
+                                    textWrapping: 'NoWrap',
+                                    whiteSpace: 'CollapseAll'
+                                },
+                                height: 50,
+                                width: 80,
+                                margin: { left: 0, top: 0, right: 0, bottom: 0 }
+                            }
+                        ],
+                        style: {
+                            strokeColor: '#778899',
+                            strokeWidth: 3
+                        }
+                    },
+                    {
+                        id: 'node3',
+                        offsetX: 480,
+                        offsetY: 218,
+                        width: 90,
+                        height: 60,
+                        annotations: [
+                            {
+                                width: 72,
+                                height: 48,
+                                content: 'Activity3',
+                                style: {
+                                    textOverflow: 'Clip',
+                                    textWrapping: 'Wrap',
+                                    whiteSpace: 'PreserveAll'
+                                }
+                            }
+                        ],
+                        borderWidth: 4,
+                        shape: {
+                            type: 'Bpmn',
+                            shape: 'Activity',
+                            activity: {
+                                activity: 'Task',
+                                task: {
+                                    type: 'Service'
+                                }
+                            }
+                        },
+                        style: {
+                            fill: '#d8ecdc',
+                            strokeColor: '#78BE83',
+                            strokeWidth: 3,
+                            gradient: {
+                                x1: 0,
+                                y1: 0,
+                                x2: 1,
+                                y2: 1,
+                                stops: [
+                                    {
+                                        color: 'white',
+                                        offset: 30,
+                                        opacity: 0.1
+                                    },
+                                    {
+                                        color: '#d8ecdc',
+                                        offset: 100,
+                                        opacity: 0.1
+                                    }
+                                ],
+                                type: 'Linear'
+                            }
+                        }
+                    },
+                    {
+                        id: 'node4',
+                        offsetX: 700,
+                        offsetY: 195,
+                        width: 90,
+                        height: 60,
+                        annotations: [
+                            {
+                                width: 72,
+                                height: 48,
+                                content: 'Activity4',
+                                style: {
+                                    textOverflow: 'Clip',
+                                    textWrapping: 'Wrap',
+                                    whiteSpace: 'PreserveAll'
+                                }
+                            }
+                        ],
+                        borderWidth: 4,
+                        shape: {
+                            type: 'Bpmn',
+                            shape: 'Activity',
+                            activity: {
+                                activity: 'Task',
+                                task: {
+                                    type: 'Service'
+                                }
+                            }
+                        },
+                        style: {
+                            fill: '#d8ecdc',
+                            strokeColor: '#78BE83',
+                            strokeWidth: 3,
+                            gradient: {
+                                x1: 0,
+                                y1: 0,
+                                x2: 1,
+                                y2: 1,
+                                stops: [
+                                    {
+                                        color: 'white',
+                                        offset: 30,
+                                        opacity: 0.1
+                                    },
+                                    {
+                                        color: '#d8ecdc',
+                                        offset: 100,
+                                        opacity: 0.1
+                                    }
+                                ],
+                                type: 'Linear'
+                            }
+                        }
+                    },
+                    {
+                        id: 'node5',
+                        offsetX: 678,
+                        offsetY: 502,
+                        width: 90,
+                        height: 60,
+                        annotations: [
+                            {
+                                width: 72,
+                                height: 48,
+                                content: 'Activity4',
+                                style: {
+                                    textOverflow: 'Clip',
+                                    textWrapping: 'Wrap',
+                                    whiteSpace: 'PreserveAll'
+                                }
+                            }
+                        ],
+                        borderWidth: 4,
+                        shape: {
+                            type: 'Bpmn',
+                            shape: 'Activity',
+                            activity: {
+                                activity: 'Task',
+                                task: {
+                                    type: 'Service'
+                                }
+                            }
+                        },
+                        style: {
+                            fill: '#d8ecdc',
+                            strokeColor: '#78BE83',
+                            strokeWidth: 3,
+                            gradient: {
+                                x1: 0,
+                                y1: 0,
+                                x2: 1,
+                                y2: 1,
+                                stops: [
+                                    {
+                                        color: 'white',
+                                        offset: 30,
+                                        opacity: 0.1
+                                    },
+                                    {
+                                        color: '#d8ecdc',
+                                        offset: 100,
+                                        opacity: 0.1
+                                    }
+                                ],
+                                type: 'Linear'
+                            }
+                        }
+                    },
+                    {
+                        id: 'node6',
+                        offsetX: 480,
+                        offsetY: 62,
+                        width: 90,
+                        height: 60,
+                        annotations: [
+                            {
+                                width: 72,
+                                height: 48,
+                                content: 'Activity3',
+                                style: {
+                                    textOverflow: 'Clip',
+                                    textWrapping: 'Wrap',
+                                    whiteSpace: 'PreserveAll'
+                                }
+                            }
+                        ],
+                        borderWidth: 4,
+                        shape: {
+                            type: 'Bpmn',
+                            shape: 'Activity',
+                            activity: {
+                                activity: 'Task',
+                                task: {
+                                    type: 'Service'
+                                }
+                            }
+                        },
+                        style: {
+                            fill: '#d8ecdc',
+                            strokeColor: '#78BE83',
+                            strokeWidth: 3,
+                            gradient: {
+                                x1: 0,
+                                y1: 0,
+                                x2: 1,
+                                y2: 1,
+                                stops: [
+                                    {
+                                        color: 'white',
+                                        offset: 30,
+                                        opacity: 0.1
+                                    },
+                                    {
+                                        color: '#d8ecdc',
+                                        offset: 100,
+                                        opacity: 0.1
+                                    }
+                                ],
+                                type: 'Linear'
+                            }
+                        }
+                    },
+                ];
+
+                connectors = [
+                    {
+                        id: 'Connector1',
+                        sourceID: 'node0',
+                        targetID: 'node1',
+                        style: {
+                            strokeColor: '#888888',
+                            fill: '#555555',
+                            strokeWidth: 1
+                        },
+                        targetDecorator: {
+                            style: {
+                                fill: '#555555',
+                                strokeColor: '#888888'
+                            }
+                        },
+                        type: 'Orthogonal',
+                        cornerRadius: 10
+                    },
+                    {
+                        id: 'Connector2',
+                        sourceID: 'node1',
+                        targetID: 'node2',
+                        style: {
+                            strokeDashArray: '2,2'
+                        },
+                        targetDecorator: {
+                            shape: 'None'
+                        },
+                        type: 'Orthogonal',
+                        cornerRadius: 10
+                    },
+                    {
+                        id: 'Connector3',
+                        sourceID: 'node1',
+                        targetID: 'node3',
+                        style: {
+                            strokeColor: '#888888',
+                            fill: '#555555',
+                            strokeWidth: 1
+                        },
+                        targetDecorator: {
+                            style: {
+                                fill: '#555555',
+                                strokeColor: '#888888'
+                            }
+                        },
+                        type: 'Orthogonal',
+                        cornerRadius: 10
+                    },
+                    {
+                        id: 'Connector4',
+                        sourceID: 'node3',
+                        targetID: 'node4',
+                        style: {
+                            strokeColor: '#888888',
+                            fill: '#555555',
+                            strokeWidth: 1
+                        },
+                        targetDecorator: {
+                            style: {
+                                fill: '#555555',
+                                strokeColor: '#888888'
+                            }
+                        },
+                        type: 'Orthogonal',
+                        cornerRadius: 10
+                    },
+                    {
+                        id: 'Connector5',
+                        sourceID: 'node4',
+                        targetID: 'node5',
+                        style: {
+                            strokeColor: '#888888',
+                            fill: '#555555',
+                            strokeWidth: 1
+                        },
+                        targetDecorator: {
+                            style: {
+                                fill: '#555555',
+                                strokeColor: '#888888'
+                            }
+                        },
+                        type: 'Orthogonal',
+                        cornerRadius: 10
+                    },
+                    {
+                        id: 'Connector6',
+                        sourceID: 'node5',
+                        targetID: 'node6',
+                        style: {
+                            strokeColor: '#888888',
+                            fill: '#555555',
+                            strokeWidth: 1
+                        },
+                        targetDecorator: {
+                            style: {
+                                fill: '#555555',
+                                strokeColor: '#888888'
+                            }
+                        },
+                        type: 'Orthogonal',
+                        cornerRadius: 10
+                    },
+                ];
+
+                diagram = new Diagram({
+                    width: 1000, height: 600,
+                    connectors: connectors, nodes: nodes,
+                    constraints: DiagramConstraints.Default | DiagramConstraints.LineRouting,
+                    getConnectorDefaults: function (connector: ConnectorModel) { connector.type = 'Orthogonal'; }
+                });
+                diagram.appendTo('#diagramLineRouting79');
+            });
+
+            afterAll((): void => {
+                diagram.destroy();
+                ele.remove();
+            });
+
+            it('Disable Line Routing Constraints', (done: Function) => {
+                diagram.constraints = DiagramConstraints.Default & ~DiagramConstraints.LineRouting;
+                diagram.dataBind();
+                diagram.resetSegments();
+                expect((diagram.connectors[0] as Connector).intermediatePoints[0].x == 100 && (diagram.connectors[0] as Connector).intermediatePoints[0].y == 115 && (diagram.connectors[0] as Connector).intermediatePoints[1].x == 100 && (diagram.connectors[0] as Connector).intermediatePoints[1].y == 135 && (diagram.connectors[0] as Connector).intermediatePoints[2].x == 250 && (diagram.connectors[0] as Connector).intermediatePoints[2].y == 135 && (diagram.connectors[0] as Connector).intermediatePoints[3].x == 250 && (diagram.connectors[0] as Connector).intermediatePoints[3].y == 220).toBe(true);
+                expect((diagram.connectors[1] as Connector).intermediatePoints[0].x == 250 && (diagram.connectors[1] as Connector).intermediatePoints[0].y == 280 && (diagram.connectors[1] as Connector).intermediatePoints[1].x == 250 && (diagram.connectors[1] as Connector).intermediatePoints[1].y == 470).toBe(true);
+                expect((diagram.connectors[2] as Connector).intermediatePoints[0].x == 295 && (diagram.connectors[2] as Connector).intermediatePoints[0].y == 250 && (diagram.connectors[2] as Connector).intermediatePoints[1].x == 315 && (diagram.connectors[2] as Connector).intermediatePoints[1].y == 250 && (diagram.connectors[2] as Connector).intermediatePoints[2].x == 315 && (diagram.connectors[2] as Connector).intermediatePoints[2].y == 218 && (diagram.connectors[2] as Connector).intermediatePoints[3].x == 435 && (diagram.connectors[2] as Connector).intermediatePoints[3].y == 218).toBe(true);
+                expect((diagram.connectors[3] as Connector).intermediatePoints[0].x == 525 && (diagram.connectors[3] as Connector).intermediatePoints[0].y == 218 && (diagram.connectors[3] as Connector).intermediatePoints[1].x == 545 && (diagram.connectors[3] as Connector).intermediatePoints[1].y == 218 && (diagram.connectors[3] as Connector).intermediatePoints[2].x == 545 && (diagram.connectors[3] as Connector).intermediatePoints[2].y == 195 && (diagram.connectors[3] as Connector).intermediatePoints[3].x == 655 && (diagram.connectors[3] as Connector).intermediatePoints[3].y == 195).toBe(true);
+                expect((diagram.connectors[4] as Connector).intermediatePoints[0].x == 700 && (diagram.connectors[4] as Connector).intermediatePoints[0].y == 225 && (diagram.connectors[4] as Connector).intermediatePoints[1].x == 700 && (diagram.connectors[4] as Connector).intermediatePoints[1].y == 245 && (diagram.connectors[4] as Connector).intermediatePoints[2].x == 678 && (diagram.connectors[4] as Connector).intermediatePoints[2].y == 245 && (diagram.connectors[4] as Connector).intermediatePoints[3].x == 678 && (diagram.connectors[4] as Connector).intermediatePoints[3].y == 472).toBe(true);
+                expect((diagram.connectors[5] as Connector).intermediatePoints[0].x == 678 && (diagram.connectors[5] as Connector).intermediatePoints[0].y == 472 && (diagram.connectors[5] as Connector).intermediatePoints[1].x == 678 && (diagram.connectors[5] as Connector).intermediatePoints[1].y == 452 && (diagram.connectors[5] as Connector).intermediatePoints[2].x == 480 && (diagram.connectors[5] as Connector).intermediatePoints[2].y == 452 && (diagram.connectors[5] as Connector).intermediatePoints[3].x == 480 && (diagram.connectors[5] as Connector).intermediatePoints[3].y == 92).toBe(true);
+                done();
+            });
+            it('Enable Line Routing Constraints', (done: Function) => {
+                diagram.constraints = DiagramConstraints.Default | DiagramConstraints.LineRouting;
+                diagram.dataBind();
+                diagram.resetSegments();
+                expect((diagram.connectors[0] as Connector).intermediatePoints[0].x == 100 && (diagram.connectors[0] as Connector).intermediatePoints[0].y == 115 && (diagram.connectors[0] as Connector).intermediatePoints[1].x == 100 && (diagram.connectors[0] as Connector).intermediatePoints[1].y == 250 && (diagram.connectors[0] as Connector).intermediatePoints[2].x == 205 && (diagram.connectors[0] as Connector).intermediatePoints[2].y == 250).toBe(true);
+                expect((diagram.connectors[1] as Connector).intermediatePoints[0].x == 250 && (diagram.connectors[1] as Connector).intermediatePoints[0].y == 280 && (diagram.connectors[1] as Connector).intermediatePoints[1].x == 250 && (diagram.connectors[1] as Connector).intermediatePoints[1].y == 470).toBe(true);
+                expect((diagram.connectors[2] as Connector).intermediatePoints[0].x == 295 && (diagram.connectors[2] as Connector).intermediatePoints[0].y == 250 && (diagram.connectors[2] as Connector).intermediatePoints[1].x == 310 && (diagram.connectors[2] as Connector).intermediatePoints[1].y == 250 && (diagram.connectors[2] as Connector).intermediatePoints[2].x == 310 && (diagram.connectors[2] as Connector).intermediatePoints[2].y == 218 && (diagram.connectors[2] as Connector).intermediatePoints[3].x == 435 && (diagram.connectors[2] as Connector).intermediatePoints[3].y == 218).toBe(true);
+                expect((diagram.connectors[3] as Connector).intermediatePoints[0].x == 525 && (diagram.connectors[3] as Connector).intermediatePoints[0].y == 218 && (diagram.connectors[3] as Connector).intermediatePoints[1].x == 550 && (diagram.connectors[3] as Connector).intermediatePoints[1].y == 218 && (diagram.connectors[3] as Connector).intermediatePoints[2].x == 550 && (diagram.connectors[3] as Connector).intermediatePoints[2].y == 195 && (diagram.connectors[3] as Connector).intermediatePoints[3].x == 655 && (diagram.connectors[3] as Connector).intermediatePoints[3].y == 195).toBe(true);
+                expect((diagram.connectors[4] as Connector).intermediatePoints[0].x == 700 && (diagram.connectors[4] as Connector).intermediatePoints[0].y == 225 && (diagram.connectors[4] as Connector).intermediatePoints[1].x == 700 && (diagram.connectors[4] as Connector).intermediatePoints[1].y == 450 && (diagram.connectors[4] as Connector).intermediatePoints[2].x == 678 && (diagram.connectors[4] as Connector).intermediatePoints[2].y == 450 && (diagram.connectors[4] as Connector).intermediatePoints[3].x == 678 && (diagram.connectors[4] as Connector).intermediatePoints[3].y == 472).toBe(true);
+                expect((diagram.connectors[5] as Connector).intermediatePoints[0].x == 633 && (diagram.connectors[5] as Connector).intermediatePoints[0].y == 502 && (diagram.connectors[5] as Connector).intermediatePoints[1].x == 610 && (diagram.connectors[5] as Connector).intermediatePoints[1].y == 502 && (diagram.connectors[5] as Connector).intermediatePoints[2].x == 610 && (diagram.connectors[5] as Connector).intermediatePoints[2].y == 62 && (diagram.connectors[5] as Connector).intermediatePoints[3].x == 525 && (diagram.connectors[5] as Connector).intermediatePoints[3].y == 62).toBe(true);
+                done();
+            });
+        });
     });
     describe('Interaction', () => {
         describe('Drag and drop', () => {

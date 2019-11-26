@@ -175,18 +175,34 @@ var WorkerHelper = /** @__PURE__ @class */ (function () {
         var workerCode = '';
         var i;
         var keys;
+        var workerFunction = '';
+        var isHaveFunction = false;
         if (typeof this.workerTask === 'function') {
-            workerCode += ('self.workerTask = function ' + this.workerTask.toString() + '; \n');
+            if (this.workerTask.toString().indexOf('function') < 0) {
+                workerFunction = 'function ' + this.workerTask.toString();
+            }
+            else {
+                workerFunction = this.workerTask.toString();
+                isHaveFunction = true;
+            }
+            workerCode += ('self.workerTask = ' + workerFunction + '; \n');
         }
         else {
             if (typeof this.workerTask === 'object') {
                 keys = Object.keys(this.workerTask);
                 for (i = 0; i < keys.length; i++) {
-                    workerCode += ((i === 0 ? 'self.workerTask' : keys[i]) + '= function ' + this.workerTask[keys[i]].toString() + '; \n');
+                    if (this.workerTask[keys[i]].toString().indexOf('function') < 0) {
+                        workerFunction = 'function ' + this.workerTask[keys[i]].toString();
+                    }
+                    else {
+                        workerFunction = this.workerTask[keys[i]].toString();
+                        isHaveFunction = true;
+                    }
+                    workerCode += ((i === 0 ? 'self.workerTask' : keys[i]) + '= ' + workerFunction + '; \n');
                 }
             }
         }
-        workerCode += 'self.onmessage = function ' +
+        workerCode += 'self.onmessage = ' + (isHaveFunction ? '' : ' function ') +
             (this.preventCallback ? this.getMessageFn.toString() : this.getCallbackMessageFn.toString()) + '; \n';
         return workerCode;
     };

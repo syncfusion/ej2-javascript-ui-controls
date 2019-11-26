@@ -2833,6 +2833,21 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
             { x: 0, y: 0 });
     }
 
+    public resetSegments(): void {
+        if (this.constraints & DiagramConstraints.LineRouting && this.lineRoutingModule) {
+            this.lineRoutingModule.lineRouting(this);
+        } else {
+            this.protectPropertyChange(true);
+            let connector: Connector;
+            for (let i: number = 0; i < this.connectors.length; i++) {
+                connector = this.connectors[i] as Connector;
+                connector.segments = [];
+                this.connectorPropertyChange(connector, {} as Connector, { segments: connector.segments } as Connector);
+            }
+            this.protectPropertyChange(false);
+        }
+    }
+
     /** @private */
     public triggerEvent(eventName: DiagramEvent, args: Object): void {
         if (args) {
@@ -2963,7 +2978,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
         }
     }
 
-/* tslint:disable */
+    /* tslint:disable */
 
     /**
      * Adds the given object to diagram control

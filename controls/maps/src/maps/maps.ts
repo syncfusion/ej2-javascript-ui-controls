@@ -328,7 +328,6 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
 
     /**
      * Triggers before the maps marker rendered.
-     * @deprecated
      * @event
      * @blazorProperty 'MarkerRendering'
      */
@@ -336,7 +335,6 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
     public markerRendering: EmitType<IMarkerRenderingEventArgs>;
     /**
      * Triggers before the maps marker cluster rendered.
-     * @deprecated
      * @event
      */
     @Event()
@@ -1096,7 +1094,7 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
                 }
                 if (targetEle.id.indexOf('shapeIndex') > -1 || targetEle.id.indexOf('Tile') > -1) {
                     if (this.markerModule && this.markerModule.sameMarkerData.length > 0 &&
-                        (this.zoomModule ? this.zoomModule.flag : true)) {
+                        (this.zoomModule ? this.zoomModule.isSingleClick : true)) {
                         mergeSeparateCluster(this.markerModule.sameMarkerData, this, getElement(this.element.id + '_Markers_Group'));
                         this.markerModule.sameMarkerData = [];
                     }
@@ -1412,7 +1410,11 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
         if (render) {
             if (newProp.layers && newProp.layers[newLayerLength - 1].markerSettings) {
                 removeElement(this.element.id + '_Markers_Group');
-                this.markerModule.markerRender(layerEle, (newLayerLength - 1), this.mapLayerPanel['currentFactor'], 'AddMarker');
+                if (this.isTileMap) {
+                    this.mapLayerPanel.renderTileLayer(this.mapLayerPanel, this.layers['currentFactor'], (newLayerLength - 1));
+                } else {
+                    this.markerModule.markerRender(layerEle, (newLayerLength - 1), this.mapLayerPanel['currentFactor'], 'AddMarker');
+                }
             } else {
                 this.createSVG();
                 this.render();

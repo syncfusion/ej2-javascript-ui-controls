@@ -1407,7 +1407,7 @@ var TaskProcessor = /** @__PURE__ @class */ (function (_super) {
                 dataManager.dataSource.json && dataManager.dataSource.offline)) {
                 if (taskSettings.parentID) {
                     var id = data[taskSettings.id];
-                    var index = this.taskIds.indexOf(id);
+                    var index = this.taskIds.indexOf(id.toString());
                     var tempData = (index > -1) ? this.dataArray[index] : {};
                     this.parent.setRecordValue('taskData', tempData, ganttData);
                 }
@@ -2011,6 +2011,7 @@ var TaskProcessor = /** @__PURE__ @class */ (function (_super) {
      */
     TaskProcessor.prototype.updateParentItems = function (cloneParent) {
         var parentData = this.parent.getParentTask(cloneParent);
+        var deleteUpdate = false;
         if (parentData.childRecords.length > 0) {
             var previousStartDate = parentData.ganttProperties.startDate;
             var previousEndDate = parentData.ganttProperties.endDate;
@@ -2025,6 +2026,9 @@ var TaskProcessor = /** @__PURE__ @class */ (function (_super) {
             for (var count = 0; count < childLength; count++) {
                 var childData = childRecords[count];
                 if (this.parent.isOnDelete && childData.isDelete) {
+                    if (childLength === 1) {
+                        deleteUpdate = true;
+                    }
                     continue;
                 }
                 var startDate = this.getValidStartDate(childData.ganttProperties);
@@ -2050,30 +2054,32 @@ var TaskProcessor = /** @__PURE__ @class */ (function (_super) {
                     milestoneCount++;
                 }
             }
-            if (this.compareDates(previousStartDate, minStartDate) !== 0) {
-                this.parent.setRecordValue('startDate', minStartDate, parentData.ganttProperties, true);
+            if (!deleteUpdate) {
+                if (this.compareDates(previousStartDate, minStartDate) !== 0) {
+                    this.parent.setRecordValue('startDate', minStartDate, parentData.ganttProperties, true);
+                }
+                if (this.compareDates(previousEndDate, maxEndDate) !== 0) {
+                    this.parent.setRecordValue('endDate', maxEndDate, parentData.ganttProperties, true);
+                }
+                var taskCount = void 0;
+                if (this.parent.isOnDelete) {
+                    taskCount = childLength - milestoneCount - 1;
+                }
+                else {
+                    taskCount = childLength - milestoneCount;
+                }
+                var parentProgress = (taskCount > 0 && totalDuration > 0) ? (totalProgress / totalDuration) : 0;
+                this.calculateDuration(parentData);
+                var parentProp = parentData.ganttProperties;
+                this.parent.setRecordValue('progress', Math.floor(parentProgress), parentProp, true);
+                this.parent.setRecordValue('totalProgress', totalProgress, parentProp, true);
+                this.parent.setRecordValue('totalDuration', totalDuration, parentProp, true);
+                this.updateWidthLeft(parentData);
+                this.updateTaskData(parentData);
             }
-            if (this.compareDates(previousEndDate, maxEndDate) !== 0) {
-                this.parent.setRecordValue('endDate', maxEndDate, parentData.ganttProperties, true);
-            }
-            var taskCount = void 0;
-            if (this.parent.isOnDelete) {
-                taskCount = childLength - milestoneCount - 1;
-            }
-            else {
-                taskCount = childLength - milestoneCount;
-            }
-            var parentProgress = (taskCount > 0 && totalDuration > 0) ? (totalProgress / totalDuration) : 0;
-            this.calculateDuration(parentData);
-            var parentProp = parentData.ganttProperties;
-            this.parent.setRecordValue('progress', Math.floor(parentProgress), parentProp, true);
-            this.parent.setRecordValue('totalProgress', totalProgress, parentProp, true);
-            this.parent.setRecordValue('totalDuration', totalDuration, parentProp, true);
-            this.updateWidthLeft(parentData);
-            this.updateTaskData(parentData);
         }
-        if (parentData.childRecords.length === 1 && parentData.ganttProperties.duration === 0) {
-            this.parent.setRecordValue('isMilestone', false, parentData.ganttProperties, true);
+        if (deleteUpdate && parentData.childRecords.length === 1 && parentData.ganttProperties.duration === 0) {
+            this.parent.setRecordValue('isMilestone', true, parentData.ganttProperties, true);
             this.updateWidthLeft(parentData);
             this.updateTaskData(parentData);
         }
@@ -2081,6 +2087,7 @@ var TaskProcessor = /** @__PURE__ @class */ (function (_super) {
         if (parentItem && parentItem.ganttProperties.isAutoSchedule) {
             this.updateParentItems(parentItem);
         }
+        deleteUpdate = false;
     };
     return TaskProcessor;
 }(DateProcessor));
@@ -4120,6 +4127,7 @@ var GanttTreeGrid = /** @__PURE__ @class */ (function () {
         this.parent = parent;
         this.parent.treeGrid = new TreeGrid();
         this.parent.treeGrid.allowSelection = false;
+        this.parent.treeGrid.allowKeyboard = this.parent.allowKeyboard;
         this.treeGridColumns = [];
         this.validateGanttColumns();
         this.addEventListener();
@@ -5608,6 +5616,23 @@ var ChartRows = /** @__PURE__ @class */ (function () {
         return rightLabelNode;
     };
     /**
+     * To check presence of single milestone child.
+     * @return {boolean}
+     */
+    ChartRows.prototype.checkChildMileStone = function (record) {
+        var boolValue = false;
+        if (record.hasChildRecords && record.childRecords.length === 1) {
+            var childRecords = record.childRecords;
+            if (childRecords[0].hasChildRecords) {
+                boolValue = this.checkChildMileStone(childRecords[0]);
+            }
+            else if (childRecords[0].ganttProperties.isMilestone) {
+                boolValue = true;
+            }
+        }
+        return boolValue;
+    };
+    /**
      * To get parent taskbar node.
      * @return {NodeList}
      * @private
@@ -5632,7 +5657,8 @@ var ChartRows = /** @__PURE__ @class */ (function () {
             }
             var template = '<div class="' + parentTaskBarInnerDiv + ' ' +
                 this.getExpandClass(data) + ' ' + traceParentTaskBar + '"' +
-                ' style="width:' + data.ganttProperties.width + 'px;height:' + this.taskBarHeight + 'px;">' +
+                ' style="width:' + ((!this.checkChildMileStone(data)) ? (data.ganttProperties.width) :
+                (this.milestoneHeight)) + 'px;height:' + this.taskBarHeight + 'px;">' +
                 '<div class="' + parentProgressBarInnerDiv + ' ' + this.getExpandClass(data) + ' ' + traceParentProgressBar + '"' +
                 ' style="border-style:' + (data.ganttProperties.progressWidth ? 'solid;' : 'none;') +
                 'width:' + data.ganttProperties.progressWidth + 'px;' +
@@ -5789,8 +5815,9 @@ var ChartRows = /** @__PURE__ @class */ (function () {
             ' style="' + ((data.ganttProperties.isMilestone) ? ('width:' + this.milestoneHeight + 'px;height:' +
             this.milestoneHeight + 'px;margin-top:' + this.milestoneMarginTop + 'px;left:' + (data.ganttProperties.left -
             (this.milestoneHeight / 2)) + 'px;') : ('width:' + data.ganttProperties.width + 'px;margin-top:' +
-            this.taskBarMarginTop + 'px;left:' + data.ganttProperties.left + 'px;height:' + this.taskBarHeight + 'px;')) +
-            '"></div>';
+            this.taskBarMarginTop + 'px;left:' + (!this.checkChildMileStone(data) ? (data.ganttProperties.left) :
+            (data.ganttProperties.left - (this.milestoneHeight / 2))) + 'px;height:' +
+            this.taskBarHeight + 'px;')) + '"></div>';
         return this.createDivElement(template);
     };
     ChartRows.prototype.rightLabelContainer = function () {

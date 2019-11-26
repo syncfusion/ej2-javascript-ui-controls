@@ -2035,23 +2035,29 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
     /**
      * Triggers before the data send in to the server.
      * @event
+     * @deprecated
      */
     @Event()
     public ajaxRequestInitiate : EmitType<AjaxRequestInitiateEventArgs>;
 
     /**
+     * PDF document annotation collection.
      * @private
+     * @deprecated
      */
     @Collection<PdfAnnotationBaseModel>([], PdfAnnotationBase)
     public annotations: PdfAnnotationBaseModel[];
 
     /**
      * @private
+     * @deprecated
      */
     public tool: string;
 
     /**
+     * store the drawing objects.
      * @private
+     * @deprecated
      */
     @Property()
     public drawingObject: PdfAnnotationBaseModel;
@@ -2088,8 +2094,14 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
     public getLocaleConstants(): Object {
         return this.defaultLocale;
     }
+
+    /**
+     * To modify the Json Data in ajax request.
+     * @returns void
+     * @deprecated
+     */
     // tslint:disable-next-line
-    public setJsonData(jsonData: any): any {
+    public setJsonData(jsonData: any): void {
         this.viewerBase.ajaxData = jsonData;
     }
 
@@ -2660,9 +2672,14 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
      * @private
      */
     // tslint:disable-next-line
-    public fireAnnotationRemove(pageNumber: number, index: string, type: AnnotationType, bounds: any): void {
+    public fireAnnotationRemove(pageNumber: number, index: string, type: AnnotationType, bounds: any, textMarkupContent?: string, tmStartIndex?: number, tmEndIndex?: number): void {
         // tslint:disable-next-line:max-line-length
         let eventArgs: AnnotationRemoveEventArgs = { name: 'annotationRemove', pageIndex: pageNumber, annotationId: index, annotationType: type, annotationBounds: bounds };
+        if (textMarkupContent) {
+            eventArgs.textMarkupContent = textMarkupContent;
+            eventArgs.textMarkupStartIndex = tmStartIndex;
+            eventArgs.textMarkupEndIndex = tmEndIndex;
+        }
         this.trigger('annotationRemove', eventArgs);
     }
 
@@ -2670,8 +2687,13 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
      * @private
      */
     // tslint:disable-next-line:max-line-length
-    public fireAnnotationPropertiesChange(pageNumber: number, index: string, type: AnnotationType, isColorChanged: boolean, isOpacityChanged: boolean, isTextChanged: boolean, isCommentsChanged: boolean): void {
+    public fireAnnotationPropertiesChange(pageNumber: number, index: string, type: AnnotationType, isColorChanged: boolean, isOpacityChanged: boolean, isTextChanged: boolean, isCommentsChanged: boolean, textMarkupContent?: string, tmStartIndex?: number, tmEndIndex?: number): void {
         let eventArgs: AnnotationPropertiesChangeEventArgs = { name: 'annotationPropertiesChange', pageIndex: pageNumber, annotationId: index, annotationType: type, isColorChanged: isColorChanged, isOpacityChanged: isOpacityChanged, isTextChanged: isTextChanged, isCommentsChanged: isCommentsChanged };
+        if (textMarkupContent) {
+            eventArgs.textMarkupContent = textMarkupContent;
+            eventArgs.textMarkupStartIndex = tmStartIndex;
+            eventArgs.textMarkupEndIndex = tmEndIndex;
+        }
         this.trigger('annotationPropertiesChange', eventArgs);
     }
 
@@ -2716,8 +2738,13 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
      * @private
      */
     // tslint:disable-next-line
-    public fireAnnotationResize(pageNumber: number, index: string, type: AnnotationType, bounds: any, settings: any): void {
+    public fireAnnotationResize(pageNumber: number, index: string, type: AnnotationType, bounds: any, settings: any, textMarkupContent?: string, tmStartIndex?: number, tmEndIndex?: number): void {
         let eventArgs: AnnotationResizeEventArgs = { name: 'annotationResize', pageIndex: pageNumber, annotationId: index, annotationType: type, annotationBound: bounds, annotationSettings: settings };
+        if (textMarkupContent) {
+            eventArgs.textMarkupContent = textMarkupContent;
+            eventArgs.textMarkupStartIndex = tmStartIndex;
+            eventArgs.textMarkupEndIndex = tmEndIndex;
+        }
         this.trigger('annotationResize', eventArgs);
     }
     /**

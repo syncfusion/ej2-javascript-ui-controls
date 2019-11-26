@@ -1,4 +1,4 @@
-import { Component, INotifyPropertyChanged, NotifyPropertyChanges, getComponent, MouseEventArgs, Browser } from '@syncfusion/ej2-base';import { Property, ChildProperty, Complex, L10n, closest, extend, isNullOrUndefined, Collection } from '@syncfusion/ej2-base';import { getInstance, addClass, removeClass, rippleEffect, detach, classList, isBlazor } from '@syncfusion/ej2-base';import { Internationalization, DateFormatOptions } from '@syncfusion/ej2-base';import { Button, RadioButton, ChangeEventArgs as ButtonChangeEventArgs } from '@syncfusion/ej2-buttons';import { DropDownList, ChangeEventArgs as DropDownChangeEventArgs, FieldSettingsModel, CheckBoxSelection } from '@syncfusion/ej2-dropdowns';import { MultiSelect, MultiSelectChangeEventArgs, PopupEventArgs  } from '@syncfusion/ej2-dropdowns';import { EmitType, Event, EventHandler, getValue, Animation, BaseEventArgs } from '@syncfusion/ej2-base';import { Query, Predicate, DataManager, Deferred, UrlAdaptor } from '@syncfusion/ej2-data';import { TextBox, NumericTextBox, InputEventArgs, ChangeEventArgs as InputChangeEventArgs } from '@syncfusion/ej2-inputs';import { DatePicker, ChangeEventArgs as CalendarChangeEventArgs } from '@syncfusion/ej2-calendars';import { DropDownButton, ItemModel, MenuEventArgs } from '@syncfusion/ej2-splitbuttons';import { Tooltip, createSpinner, showSpinner, hideSpinner } from '@syncfusion/ej2-popups';
+import { Component, INotifyPropertyChanged, NotifyPropertyChanges, getComponent, MouseEventArgs, Browser } from '@syncfusion/ej2-base';import { Property, ChildProperty, Complex, L10n, closest, extend, isNullOrUndefined, Collection } from '@syncfusion/ej2-base';import { getInstance, addClass, removeClass, rippleEffect, detach, classList, isBlazor } from '@syncfusion/ej2-base';import { Internationalization, DateFormatOptions } from '@syncfusion/ej2-base';import { Button, RadioButton, ChangeEventArgs as ButtonChangeEventArgs, CheckBox } from '@syncfusion/ej2-buttons';import { DropDownList, ChangeEventArgs as DropDownChangeEventArgs, FieldSettingsModel, CheckBoxSelection } from '@syncfusion/ej2-dropdowns';import { MultiSelect, MultiSelectChangeEventArgs, PopupEventArgs  } from '@syncfusion/ej2-dropdowns';import { EmitType, Event, EventHandler, getValue, Animation, BaseEventArgs } from '@syncfusion/ej2-base';import { Query, Predicate, DataManager, Deferred, UrlAdaptor } from '@syncfusion/ej2-data';import { TextBox, NumericTextBox, InputEventArgs, ChangeEventArgs as InputChangeEventArgs } from '@syncfusion/ej2-inputs';import { DatePicker, ChangeEventArgs as CalendarChangeEventArgs } from '@syncfusion/ej2-calendars';import { DropDownButton, ItemModel, MenuEventArgs } from '@syncfusion/ej2-splitbuttons';import { Tooltip, createSpinner, showSpinner, hideSpinner } from '@syncfusion/ej2-popups';
 import {TemplateColumn,Validation,ChangeEventArgs,RuleChangeEventArgs,DisplayMode,SortDirection} from "./query-builder";
 import {ComponentModel} from '@syncfusion/ej2-base';
 
@@ -121,6 +121,12 @@ export interface RuleModel {
      * @default null
      */
     value?: string[] | number[] | string | number | boolean;
+
+    /**
+     * Specifies whether not condition is true/false.
+     * @default false
+     */
+    not?: boolean;
 
 }
 
@@ -270,6 +276,12 @@ export interface QueryBuilderModel extends ComponentModel{
      * @default 0
      */
     immediateModeDelay?: number;
+
+    /**
+     * Enables/Disables the not group condition in query builder.
+     * @default false
+     */
+    enableNotCondition?: boolean;
 
     /**
      * Defines rules in the QueryBuilder.

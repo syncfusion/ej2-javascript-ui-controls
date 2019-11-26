@@ -1388,7 +1388,7 @@ class TaskProcessor extends DateProcessor {
                 dataManager.dataSource.json && dataManager.dataSource.offline)) {
                 if (taskSettings.parentID) {
                     let id = data[taskSettings.id];
-                    let index = this.taskIds.indexOf(id);
+                    let index = this.taskIds.indexOf(id.toString());
                     let tempData = (index > -1) ? this.dataArray[index] : {};
                     this.parent.setRecordValue('taskData', tempData, ganttData);
                 }
@@ -1989,6 +1989,7 @@ class TaskProcessor extends DateProcessor {
      */
     updateParentItems(cloneParent) {
         let parentData = this.parent.getParentTask(cloneParent);
+        let deleteUpdate = false;
         if (parentData.childRecords.length > 0) {
             let previousStartDate = parentData.ganttProperties.startDate;
             let previousEndDate = parentData.ganttProperties.endDate;
@@ -2003,6 +2004,9 @@ class TaskProcessor extends DateProcessor {
             for (let count = 0; count < childLength; count++) {
                 let childData = childRecords[count];
                 if (this.parent.isOnDelete && childData.isDelete) {
+                    if (childLength === 1) {
+                        deleteUpdate = true;
+                    }
                     continue;
                 }
                 let startDate = this.getValidStartDate(childData.ganttProperties);
@@ -2028,30 +2032,32 @@ class TaskProcessor extends DateProcessor {
                     milestoneCount++;
                 }
             }
-            if (this.compareDates(previousStartDate, minStartDate) !== 0) {
-                this.parent.setRecordValue('startDate', minStartDate, parentData.ganttProperties, true);
+            if (!deleteUpdate) {
+                if (this.compareDates(previousStartDate, minStartDate) !== 0) {
+                    this.parent.setRecordValue('startDate', minStartDate, parentData.ganttProperties, true);
+                }
+                if (this.compareDates(previousEndDate, maxEndDate) !== 0) {
+                    this.parent.setRecordValue('endDate', maxEndDate, parentData.ganttProperties, true);
+                }
+                let taskCount;
+                if (this.parent.isOnDelete) {
+                    taskCount = childLength - milestoneCount - 1;
+                }
+                else {
+                    taskCount = childLength - milestoneCount;
+                }
+                let parentProgress = (taskCount > 0 && totalDuration > 0) ? (totalProgress / totalDuration) : 0;
+                this.calculateDuration(parentData);
+                let parentProp = parentData.ganttProperties;
+                this.parent.setRecordValue('progress', Math.floor(parentProgress), parentProp, true);
+                this.parent.setRecordValue('totalProgress', totalProgress, parentProp, true);
+                this.parent.setRecordValue('totalDuration', totalDuration, parentProp, true);
+                this.updateWidthLeft(parentData);
+                this.updateTaskData(parentData);
             }
-            if (this.compareDates(previousEndDate, maxEndDate) !== 0) {
-                this.parent.setRecordValue('endDate', maxEndDate, parentData.ganttProperties, true);
-            }
-            let taskCount;
-            if (this.parent.isOnDelete) {
-                taskCount = childLength - milestoneCount - 1;
-            }
-            else {
-                taskCount = childLength - milestoneCount;
-            }
-            let parentProgress = (taskCount > 0 && totalDuration > 0) ? (totalProgress / totalDuration) : 0;
-            this.calculateDuration(parentData);
-            let parentProp = parentData.ganttProperties;
-            this.parent.setRecordValue('progress', Math.floor(parentProgress), parentProp, true);
-            this.parent.setRecordValue('totalProgress', totalProgress, parentProp, true);
-            this.parent.setRecordValue('totalDuration', totalDuration, parentProp, true);
-            this.updateWidthLeft(parentData);
-            this.updateTaskData(parentData);
         }
-        if (parentData.childRecords.length === 1 && parentData.ganttProperties.duration === 0) {
-            this.parent.setRecordValue('isMilestone', false, parentData.ganttProperties, true);
+        if (deleteUpdate && parentData.childRecords.length === 1 && parentData.ganttProperties.duration === 0) {
+            this.parent.setRecordValue('isMilestone', true, parentData.ganttProperties, true);
             this.updateWidthLeft(parentData);
             this.updateTaskData(parentData);
         }
@@ -2059,6 +2065,7 @@ class TaskProcessor extends DateProcessor {
         if (parentItem && parentItem.ganttProperties.isAutoSchedule) {
             this.updateParentItems(parentItem);
         }
+        deleteUpdate = false;
     }
 }
 
@@ -4071,6 +4078,7 @@ class GanttTreeGrid {
         this.parent = parent;
         this.parent.treeGrid = new TreeGrid();
         this.parent.treeGrid.allowSelection = false;
+        this.parent.treeGrid.allowKeyboard = this.parent.allowKeyboard;
         this.treeGridColumns = [];
         this.validateGanttColumns();
         this.addEventListener();
@@ -5271,6 +5279,23 @@ class ChartRows {
         return rightLabelNode;
     }
     /**
+     * To check presence of single milestone child.
+     * @return {boolean}
+     */
+    checkChildMileStone(record) {
+        let boolValue = false;
+        if (record.hasChildRecords && record.childRecords.length === 1) {
+            let childRecords = record.childRecords;
+            if (childRecords[0].hasChildRecords) {
+                boolValue = this.checkChildMileStone(childRecords[0]);
+            }
+            else if (childRecords[0].ganttProperties.isMilestone) {
+                boolValue = true;
+            }
+        }
+        return boolValue;
+    }
+    /**
      * To get parent taskbar node.
      * @return {NodeList}
      * @private
@@ -5295,7 +5320,8 @@ class ChartRows {
             }
             let template = '<div class="' + parentTaskBarInnerDiv + ' ' +
                 this.getExpandClass(data) + ' ' + traceParentTaskBar + '"' +
-                ' style="width:' + data.ganttProperties.width + 'px;height:' + this.taskBarHeight + 'px;">' +
+                ' style="width:' + ((!this.checkChildMileStone(data)) ? (data.ganttProperties.width) :
+                (this.milestoneHeight)) + 'px;height:' + this.taskBarHeight + 'px;">' +
                 '<div class="' + parentProgressBarInnerDiv + ' ' + this.getExpandClass(data) + ' ' + traceParentProgressBar + '"' +
                 ' style="border-style:' + (data.ganttProperties.progressWidth ? 'solid;' : 'none;') +
                 'width:' + data.ganttProperties.progressWidth + 'px;' +
@@ -5452,8 +5478,9 @@ class ChartRows {
             ' style="' + ((data.ganttProperties.isMilestone) ? ('width:' + this.milestoneHeight + 'px;height:' +
             this.milestoneHeight + 'px;margin-top:' + this.milestoneMarginTop + 'px;left:' + (data.ganttProperties.left -
             (this.milestoneHeight / 2)) + 'px;') : ('width:' + data.ganttProperties.width + 'px;margin-top:' +
-            this.taskBarMarginTop + 'px;left:' + data.ganttProperties.left + 'px;height:' + this.taskBarHeight + 'px;')) +
-            '"></div>';
+            this.taskBarMarginTop + 'px;left:' + (!this.checkChildMileStone(data) ? (data.ganttProperties.left) :
+            (data.ganttProperties.left - (this.milestoneHeight / 2))) + 'px;height:' +
+            this.taskBarHeight + 'px;')) + '"></div>';
         return this.createDivElement(template);
     }
     rightLabelContainer() {

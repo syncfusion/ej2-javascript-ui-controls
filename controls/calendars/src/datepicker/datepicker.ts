@@ -5,7 +5,7 @@ import { createElement, detach, addClass, removeClass, closest, classList, attri
 import { isNullOrUndefined, setValue, getUniqueID, ModuleDeclaration } from '@syncfusion/ej2-base';
 import { Popup } from '@syncfusion/ej2-popups';
 import { Input, InputObject, IInput, FloatLabelType } from '@syncfusion/ej2-inputs';
-import { ChangedEventArgs, CalendarView, Calendar, BlurEventArgs, FocusEventArgs } from '../calendar/calendar';
+import { ChangedEventArgs, CalendarView, Calendar, BlurEventArgs, FocusEventArgs, ClearedEventArgs } from '../calendar/calendar';
 import { DatePickerModel } from './datepicker-model';
 
 
@@ -31,6 +31,7 @@ const OPENDURATION: number = 300;
 const CLOSEDURATION: number = 200;
 const OFFSETVALUE: number = 4;
 const SELECTED: string = 'e-selected';
+const FOCUSEDDATE: string = 'e-focused-date';
 const NONEDIT: string = 'e-non-edit';
 const containerAttr: string[] = ['title', 'class', 'style'];
 export interface FormatObject {
@@ -349,6 +350,14 @@ export class DatePicker extends Calendar implements IInput {
      */
     @Event()
     public open: EmitType<PreventableEventArgs | PopupObjectArgs>;
+
+    /**
+     * Triggers when datepicker value is cleared using clear button.
+     * @event
+     */
+    @Event()
+    public cleared: EmitType<ClearedEventArgs>;
+
     /** 
      * Triggers when the popup is closed.
      * @event
@@ -724,6 +733,10 @@ export class DatePicker extends Calendar implements IInput {
     private clear(event: MouseEvent): void {
         this.setProperties({ value: null }, true);
         Input.setValue('', this.inputElement, this.floatLabelType, this.showClearButton);
+        let clearedArgs: ClearedEventArgs = {
+            event: event
+        };
+        this.trigger('cleared', clearedArgs);
         this.invalidValueString = '';
         this.updateInput();
         this.popupUpdate();
@@ -1269,6 +1282,12 @@ export class DatePicker extends Calendar implements IInput {
                 } else {
                     this.popupObj.destroy();
                     this.popupWrapper = this.popupObj = null;
+                }
+                if (!isNullOrUndefined(this.inputElement) && this.inputElement.value === '') {
+                    if (!isNullOrUndefined(this.tableBodyElement) && this.tableBodyElement.querySelectorAll('td.e-selected').length > 0) {
+                        addClass([this.tableBodyElement.querySelector('td.e-selected')], FOCUSEDDATE);
+                        removeClass(this.tableBodyElement.querySelectorAll('td.e-selected'), SELECTED);
+                    }
                 }
                 EventHandler.add(document, 'mousedown touchstart', this.documentHandler, this);
             });

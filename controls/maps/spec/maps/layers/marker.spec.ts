@@ -814,6 +814,7 @@ describe('Map marker properties tesing', () => {
                expect(element['style'].visibility === '' || element['style'].visibility === 'hidden').toBe(true);
                element = document.getElementById(map.element.id + '_LayerIndex_0_MarkerIndex_0_dataIndex_6');
                expect(element['style'].visibility === 'visible').toBe(true);
+			   map.loaded = null;
            };
            map.layers[0].markerSettings = [
                {
@@ -838,6 +839,7 @@ describe('Map marker properties tesing', () => {
                    { Name: "India Data14", latitude: 21.0000, longitude: 78.0000 },
                    { Name: "India Data15", latitude: 21.0000, longitude: 78.0000 },
                    { latitude: 48.8773406, longitude: 2.3299627, Name: 'Paris' },
+				   { latitude: 48.0003406, longitude: 2.3299627, Name: 'Paris 1' },
                    { latitude: 52.4643089, longitude: 13.4107368, Name: 'Berlin' },
                    { Name: "China", latitude: 35.0000, longitude: 103.0000 },
                    { Name: "Indonesia", latitude: -6.1750, longitude: 106.8283 }]
@@ -882,6 +884,15 @@ describe('Map marker properties tesing', () => {
            expect(element['style'].visibility === 'hidden' || element['style'].visibility === '').toBe(true);
            element = document.getElementById(map.element.id + '_LayerIndex_0_MarkerIndex_0_dataIndex_2');
            expect(element['style'].visibility === 'visible').toBe(true);
+
+           // when click on maps, expanded marker will be merged.
+           element = document.getElementById(map.element.id + '_LayerIndex_0_shapeIndex_64_dataIndex_undefined');
+           map.zoomModule.isSingleClick = true;
+           triger.clickEvent(element);
+           element = document.getElementById(map.element.id + '_LayerIndex_0_MarkerIndex_0_dataIndex_0_cluster_0');
+           expect(element['style'].visibility === 'visible' || element['style'].visibility === '').toBe(true);
+           element = document.getElementById(map.element.id + '_LayerIndex_0_MarkerIndex_0_dataIndex_2');
+           expect(element['style'].visibility === 'hidden').toBe(true);
        });
        it('Show Tooltip for marker on click and checking in zoom panning', () => {
            map.loaded = (args: ILoadedEventArgs) => {
@@ -935,6 +946,59 @@ describe('Map marker properties tesing', () => {
         map.layers[0].layerType = 'OSM';
         map.refresh();
     });
+        it('Checking marker template with zooming', () => {
+            map.loaded = (args: ILoadedEventArgs) => {
+                let element: Element = document.getElementById(map.element.id + '_Zooming_ToolBar_ZoomIn_Rect');
+                let eventObj: Object = {
+                    target: element,
+                    type: 'touchstart',
+                    stopImmediatePropagation: prevent,
+                    pageX: element.getBoundingClientRect().left,
+                    pageY: element.getBoundingClientRect().top
+                };
+                map.zoomModule.performToolBarAction(<PointerEvent>eventObj);
+                element = document.getElementById(map.element.id + '_Markers_Group');
+                expect(element.childElementCount === 0).toBe(true);
+            };
+            map.layers[0].markerSettings = [
+                {
+                    visible: true, height: 20, width: 20,
+                    dataSource: [{ Name: "USA", latitude: 38.8833, longitude: -77.0167 },
+                    { Name: "Indonesia", latitude: -6.1750, longitude: 106.8283 }],
+                    template: '<div>{{:Name}}</div>'
+                }
+            ];
+            map.layers[0].markerClusterSettings.allowClustering = true;
+            map.refresh();
+        });
+        it('Checking single click zooming', () => {
+            map.loaded = (args: ILoadedEventArgs) => {
+                let element: Element = document.getElementById(map.element.id + '_Zooming_ToolBar_Reset_Rect');
+                let eventObj: Object = {
+                    target: element,
+                    type: 'touchstart',
+                    stopImmediatePropagation: prevent,
+                    pageX: element.getBoundingClientRect().left,
+                    pageY: element.getBoundingClientRect().top
+                };
+                map.zoomModule.performToolBarAction(<PointerEvent>eventObj);
+                element = document.getElementById(map.element.id + '_LayerIndex_0_shapeIndex_134_dataIndex_undefined');
+                map.zoomModule.isSingleClick = true;
+                eventObj = {
+                    target: element,
+                    type: 'touchstart',
+                    stopImmediatePropagation: prevent,
+                    pageX: element.getBoundingClientRect().left,
+                    pageY: element.getBoundingClientRect().top
+                };
+                expect(map.scale === 1).toBe(true);
+                map.zoomModule.click(<PointerEvent>eventObj);
+                expect(map.scale === 2).toBe(true);
+            };
+            map.zoomSettings.zoomOnClick = true;
+            map.layers[0].layerType = 'Geometry';
+            map.refresh();
+        });
     });
     it('memory leak', () => {
         profile.sample();

@@ -15580,6 +15580,7 @@ class Layout {
         }
         else if (element instanceof TextElementBox) {
             this.checkAndSplitTabOrLineBreakCharacter(element.text, element);
+            this.splitBySpecialCharacters(element);
             text = element.text;
         }
         // Here field code width and height update need to skipped based on the hidden property.
@@ -15721,6 +15722,46 @@ class Layout {
             if ((character === '\t' && text !== '\t') || (character === '\v' && text !== '\v')
                 || (character === '\f' && text !== '\f')) {
                 this.splitByLineBreakOrTab(this.viewer, element, index, character);
+            }
+        }
+    }
+    splitBySpecialCharacters(span) {
+        if (this.viewer.textHelper.isRTLText(span.text) && this.viewer.textHelper.containsSpecialChar(span.text)) {
+            let inlineIndex = span.line.children.indexOf(span);
+            let text = span.text;
+            let specialChars = '*|.\:[]{}`\;()@&$#%!~';
+            let textToReplace = '';
+            let spanTextUpdated = false;
+            for (let i = 0; i < text.length; i++) {
+                if (specialChars.indexOf(text.charAt(i)) !== -1) {
+                    if (spanTextUpdated && textToReplace !== '') {
+                        let newSpan1 = new TextElementBox();
+                        newSpan1.line = span.line;
+                        newSpan1.characterFormat.copyFormat(span.characterFormat);
+                        span.line.children.splice(inlineIndex = inlineIndex + 1, 0, newSpan1);
+                        newSpan1.text = textToReplace;
+                    }
+                    let newSpan = new TextElementBox();
+                    newSpan.line = span.line;
+                    newSpan.characterFormat.copyFormat(span.characterFormat);
+                    span.line.children.splice(inlineIndex = inlineIndex + 1, 0, newSpan);
+                    newSpan.text = text.charAt(i);
+                    if (!spanTextUpdated) {
+                        span.text = textToReplace;
+                        spanTextUpdated = true;
+                    }
+                    textToReplace = '';
+                }
+                else {
+                    textToReplace += text.charAt(i);
+                }
+            }
+            if (spanTextUpdated && textToReplace !== '') {
+                let newSpan2 = new TextElementBox();
+                newSpan2.line = span.line;
+                newSpan2.characterFormat.copyFormat(span.characterFormat);
+                span.line.children.splice(inlineIndex = inlineIndex + 1, 0, newSpan2);
+                newSpan2.text = textToReplace;
             }
         }
     }
@@ -20151,6 +20192,7 @@ class Layout {
         if (line.children.length === 0) {
             return;
         }
+        let isFieldCode = false;
         let lastAddedElementIsRtl = false;
         let lastAddedRtlElementIndex = -1;
         let tempElements = [];
@@ -20162,7 +20204,7 @@ class Layout {
             }
             let isRtl = false;
             let text = '';
-            //let containsSpecchrs: boolean = false;
+            let containsSpecchrs = false;
             if (element instanceof BookmarkElementBox) {
                 if (isParaBidi) {
                     if (lastAddedElementIsRtl || element.bookmarkType === 0 && element.nextElement
@@ -20184,6 +20226,13 @@ class Layout {
             }
             if (element instanceof TextElementBox) {
                 text = element.text;
+                containsSpecchrs = this.viewer.textHelper.containsSpecialCharAlone(text);
+                if (containsSpecchrs) {
+                    if (text.length > 1 && elementCharacterFormat.bidi) {
+                        text = HelperMethods.ReverseString(text);
+                        element.text = text;
+                    }
+                }
             }
             // The list element box shold be added in the last position in line widget for the RTL paragraph 
             // and first in the line widget for LTR paragrph.
@@ -20194,8 +20243,17 @@ class Layout {
                 isRtl = this.viewer.textHelper.isRTLText(text) || elementCharacterFormat.bidi
                     || elementCharacterFormat.bdo === 'RTL';
             }
+            if (element instanceof FieldElementBox || isFieldCode) {
+                if (element.fieldType === 0) {
+                    isFieldCode = true;
+                }
+                else if (element.fieldType === 1) {
+                    isFieldCode = false;
+                }
+                isRtl = false;
+            }
             // If the text element box contains only whitespaces, then need to check the previous and next elements.
-            if (!isRtl && !isNullOrUndefined(text) && text !== '' && text.trim() === '') {
+            if (!isRtl && !isNullOrUndefined(text) && text !== '' && ((text !== '' && text.trim() === '') || containsSpecchrs)) {
                 let elements = line.children;
                 //Checks whether the langugae is RTL.
                 if (elementCharacterFormat.bidi) {
@@ -21711,6 +21769,32 @@ class TextHelper {
         let textHelper = this.getHeight(format);
         elementBox.height = textHelper.Height;
         elementBox.baselineOffset = textHelper.BaselineOffset;
+    }
+    /**
+     * @private
+     * @param text
+     */
+    containsSpecialCharAlone(text) {
+        let specialChars = '*|.\:[]{}`\;()@&$#%!~';
+        for (let i = 0; i < text.length; i++) {
+            if (specialChars.indexOf(text.charAt(i)) === -1) {
+                return false;
+            }
+        }
+        return true;
+    }
+    /**
+     * @private
+     * @param text
+     */
+    containsSpecialChar(text) {
+        let specialChars = '*|.\:[]{}`\;()@&$#%!~';
+        for (let i = 0; i < text.length; i++) {
+            if (specialChars.indexOf(text.charAt(i)) !== -1) {
+                return true;
+            }
+        }
+        return false;
     }
     /**
      * @private
@@ -23378,7 +23462,7 @@ class LayoutViewer {
          * @private
          */
         this.onKeyUpInternal = (event) => {
-            if (Browser.isDevice) {
+            if (Browser.isDevice && event.target.id === this.editableDiv.id) {
                 if (window.getSelection().anchorOffset !== this.prefix.length) {
                     this.selection.setEditableDivCaretPosition(this.editableDiv.innerText.length);
                 }
@@ -27317,6 +27401,12 @@ class SelectionParagraphFormat {
         this.contextualSpacingIn = value;
         this.notifyPropertyChanged('contextualSpacing');
     }
+    validateLineSpacing() {
+        if (this.lineSpacingType !== 'Multiple' && this.lineSpacingIn < 12) {
+            return true;
+        }
+        return false;
+    }
     /**
      * Gets the list text for selected paragraphs.
      * @aspType string
@@ -27385,6 +27475,25 @@ class SelectionParagraphFormat {
         }
         if (!isNullOrUndefined(this.selection) && !isNullOrUndefined(this.selection.start) && !this.selection.isRetrieveFormatting) {
             let editorModule = this.selection.owner.editorModule;
+            if (propertyName === 'lineSpacing' || propertyName === 'lineSpacingType') {
+                let editorHistory = this.selection.owner.editorHistory;
+                if (!(editorHistory && (editorHistory.isUndoing || editorHistory.isRedoing)) && this.validateLineSpacing()) {
+                    this.selection.owner.editorHistory.initComplexHistory(this.selection, 'LineSpacing');
+                    if (propertyName === 'lineSpacing') {
+                        this.lineSpacingTypeIn = 'Multiple';
+                        let value = this.getPropertyValue('lineSpacingType');
+                        editorModule.onApplyParagraphFormat('lineSpacingType', value, false, false);
+                        editorModule.onApplyParagraphFormat(propertyName, this.getPropertyValue(propertyName), false, false);
+                    }
+                    else {
+                        editorModule.onApplyParagraphFormat(propertyName, this.getPropertyValue(propertyName), false, false);
+                        this.lineSpacingIn = 12;
+                        editorModule.onApplyParagraphFormat('lineSpacing', this.getPropertyValue('lineSpacing'), false, false);
+                    }
+                    this.selection.owner.editorHistory.updateComplexHistory();
+                    return;
+                }
+            }
             let value = this.getPropertyValue(propertyName);
             if ((propertyName === 'leftIndent' || propertyName === 'rightIndent' || propertyName === 'firstLineIndent')
                 && !(value >= -1056 && value < 1056)) {
@@ -42784,15 +42893,16 @@ class TableResizer {
     }
     resizeTableRow(dragValue) {
         let table = this.currentResizingTable;
-        if (isNullOrUndefined(table) || dragValue === 0) {
+        if (isNullOrUndefined(table) || dragValue === 0 || this.resizerPosition === -1) {
             return;
         }
         let selection = this.owner.selection;
         if (table.isInsideTable) {
             this.owner.isLayoutEnabled = false; //Layouting is disabled to skip the child table layouting. 
         }
+        let row = undefined;
         if (this.resizerPosition > -1) {
-            let row = table.childWidgets[this.resizerPosition];
+            row = table.childWidgets[this.resizerPosition];
             this.updateRowHeight(row, dragValue);
             selection.selectPosition(selection.start, selection.end);
         }
@@ -42804,6 +42914,7 @@ class TableResizer {
         this.startingPoint.y += HelperMethods.convertPointToPixel(dragValue);
         this.owner.viewer.layout.reLayoutTable(table);
         this.owner.editorModule.reLayout(this.owner.selection);
+        this.currentResizingTable = row.ownerTable;
     }
     /**
      * Gets the table widget from given cursor point
@@ -44571,6 +44682,10 @@ class Editor {
                     let insertIndex = inline.indexInOwner;
                     if (indexInInline === inline.length) {
                         let isParaBidi = inline.line.paragraph.bidi;
+                        if (isParaBidi && inline instanceof FieldElementBox && inline.fieldType === 1) {
+                            inline = inline.fieldBegin;
+                            insertIndex = inline.indexInOwner;
+                        }
                         inline.line.children.splice(isParaBidi ? insertIndex : insertIndex + 1, 0, tempSpan);
                     }
                     else if (indexInInline === 0) {
@@ -46292,7 +46407,8 @@ class Editor {
         }
         else {
             let indexInInline = 0;
-            let inlineObj = selection.start.currentWidget.getInline(selection.start.offset, indexInInline);
+            let bidi = selection.start.paragraph.paragraphFormat.bidi;
+            let inlineObj = selection.start.currentWidget.getInline(selection.start.offset, indexInInline, bidi);
             let curInline = inlineObj.element;
             indexInInline = inlineObj.index;
             paragraph = curInline.line.paragraph;
@@ -61641,9 +61757,12 @@ class WordExport {
         //     }
         // }
         //TODO:ISSUEFIX((paragraphFormat.lineSpacing) * this.twentiethOfPoint).toString());
-        if (!isNullOrUndefined(paragraphFormat.lineSpacingType)) {
+        if (!isNullOrUndefined(paragraphFormat.lineSpacing)) {
             // tslint:disable-next-line:max-line-length
             let lineSpacingValue = (paragraphFormat.lineSpacingType === 'AtLeast' || paragraphFormat.lineSpacingType === 'Exactly') ? this.roundToTwoDecimal(paragraphFormat.lineSpacing * this.twentiethOfPoint) : this.roundToTwoDecimal(paragraphFormat.lineSpacing * 240);
+            writer.writeAttributeString(undefined, 'line', this.wNamespace, lineSpacingValue.toString());
+        }
+        if (!isNullOrUndefined(paragraphFormat.lineSpacingType)) {
             let lineSpacingType = 'auto';
             if (paragraphFormat.lineSpacingType === 'AtLeast') {
                 lineSpacingType = 'atLeast';
@@ -61651,7 +61770,6 @@ class WordExport {
             else if (paragraphFormat.lineSpacingType === 'Exactly') {
                 lineSpacingType = 'exact';
             }
-            writer.writeAttributeString(undefined, 'line', this.wNamespace, lineSpacingValue.toString());
             writer.writeAttributeString(undefined, 'lineRule', this.wNamespace, lineSpacingType);
         }
         writer.writeEndElement();
@@ -65327,6 +65445,7 @@ class PageSetupDialog {
             else {
                 this.portrait.checked = true;
             }
+            this.setPageSize(this.portrait.checked, sectionFormat.pageWidth, sectionFormat.pageHeight);
         };
         /**
          * @private
@@ -65850,6 +65969,51 @@ class PageSetupDialog {
             }];
         this.owner.dialog.dataBind();
         this.owner.dialog.show();
+    }
+    setPageSize(isPortrait, width, height) {
+        if ((isPortrait && width === 612 && height === 792)
+            || (!isPortrait && width === 792 && height === 612)) {
+            this.paperSize.value = 'letter';
+        }
+        else if ((isPortrait && width === 792 && height === 1224)
+            || (!isPortrait && width === 1224 && height === 792)) {
+            this.paperSize.value = 'tabloid';
+        }
+        else if ((isPortrait && width === 612 && height === 1008)
+            || (!isPortrait && width === 1008 && height === 612)) {
+            this.paperSize.value = 'legal';
+        }
+        else if ((isPortrait && width === 392 && height === 612)
+            || (!isPortrait && width === 392 && height === 612)) {
+            this.paperSize.value = 'statement';
+        }
+        else if ((isPortrait && width === 522 && height === 756)
+            || (!isPortrait && width === 756 && height === 522)) {
+            this.paperSize.value = 'executive';
+        }
+        else if ((isPortrait && width === 841.9 && height === 1190.55)
+            || (!isPortrait && width === 1190.5 && height === 841.9)) {
+            this.paperSize.value = 'a3';
+        }
+        else if ((isPortrait && width === 595.3 && height === 841.9)
+            || (!isPortrait && width === 841.9 && height === 595.3)) {
+            this.paperSize.value = 'a4';
+        }
+        else if ((isPortrait && width === 419.55 && height === 595.3)
+            || (!isPortrait && width === 595.3 && height === 419.55)) {
+            this.paperSize.value = 'a5';
+        }
+        else if ((isPortrait && width === 728.5 && height === 1031.8)
+            || (!isPortrait && width === 1031.8 && height === 728.5)) {
+            this.paperSize.value = 'b4';
+        }
+        else if ((isPortrait && width === 515.9 && height === 728.5)
+            || (!isPortrait && width === 728.5 && height === 515.9)) {
+            this.paperSize.value = 'letter';
+        }
+        else {
+            this.paperSize.value = 'customsize';
+        }
     }
     /**
      * @private
@@ -66711,7 +66875,9 @@ class ListDialog {
             this.viewModel.listLevel.paragraphFormat.leftIndent = args.value;
         };
         this.onStartValueChanged = (args) => {
-            this.viewModel.listLevel.startAt = args.value;
+            if (!isNullOrUndefined(this.viewModel) && !isNullOrUndefined(this.viewModel.listLevel)) {
+                this.viewModel.listLevel.startAt = args.value;
+            }
         };
         this.onListLevelValueChanged = (args) => {
             this.viewModel.levelNumber = parseInt(args.value.slice(args.value.length - 1), 10) - 1;
@@ -67044,14 +67210,16 @@ class ListDialog {
     updateDialogValues() {
         // tslint:disable-next-line:max-line-length
         let restartByTextBox = document.getElementById(this.owner.owner.containerId + '_restartBy');
-        this.startAt.value = this.viewModel.listLevel.startAt;
-        this.textIndent.value = this.viewModel.listLevel.paragraphFormat.leftIndent;
-        this.alignedAt.value = this.viewModel.listLevel.paragraphFormat.firstLineIndent;
-        this.followNumberWith.index = this.followCharacterConverter(this.viewModel.followCharacter);
-        this.numberFormat.value = this.viewModel.listLevel.numberFormat;
-        this.numberStyle.index = this.listPatternConverter(this.viewModel.listLevelPattern);
-        this.listLevelElement.index = this.viewModel.levelNumber;
-        this.viewModel.levelNumber = this.viewModel.levelNumber;
+        if (!isNullOrUndefined(this.viewModel) && !isNullOrUndefined(this.viewModel.listLevel)) {
+            this.startAt.value = this.viewModel.listLevel.startAt;
+            this.textIndent.value = this.viewModel.listLevel.paragraphFormat.leftIndent;
+            this.alignedAt.value = this.viewModel.listLevel.paragraphFormat.firstLineIndent;
+            this.followNumberWith.index = this.followCharacterConverter(this.viewModel.followCharacter);
+            this.numberFormat.value = this.viewModel.listLevel.numberFormat;
+            this.numberStyle.index = this.listPatternConverter(this.viewModel.listLevelPattern);
+            this.listLevelElement.index = this.viewModel.levelNumber;
+            this.viewModel.levelNumber = this.viewModel.levelNumber;
+        }
     }
     disposeBindingForListUI() {
         this.followNumberWith.index = -1;

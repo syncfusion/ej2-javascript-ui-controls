@@ -158,7 +158,8 @@ export class NormalEdit {
         let gObj: IGrid = this.parent;
         let args: SaveEventArgs = {
             requestType: 'save', type: events.actionBegin, data: data, cancel: false,
-            previousData: gObj.getCurrentViewRecords()[index]
+            previousData: gObj.getCurrentViewRecords()[index],
+            row: gObj.getRowByIndex(index)
         };
         gObj.showSpinner();
         gObj.notify(events.updateData, args);

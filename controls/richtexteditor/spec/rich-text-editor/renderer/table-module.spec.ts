@@ -246,6 +246,12 @@ describe('Table creation', () => {
                 };
                 mouseEventArgs.target.click();
                 expect(closest(tar, 'table').classList.contains('e-alternate-border')).toBe(true);
+                
+                tar = rteObj.contentModule.getEditPanel().querySelector('table') as HTMLElement;
+                (rteObj as any).inputElement.dispatchEvent(clickEvent);
+                eventsArg = { pageX: 50, pageY: 300, target: tar };
+                (<any>rteObj).tableModule.editAreaClickHandler({ args: eventsArg });
+                
                 ((<HTMLElement>tableTBItems.item(9)).childNodes[0] as HTMLElement).click();
                 expect(document.body.querySelector('.e-rte-edit-table.e-dialog')).not.toBe(null);
                 expect(document.body.querySelector('.e-cell-padding')).not.toBe(null);
@@ -253,6 +259,12 @@ describe('Table creation', () => {
                 expect(document.body.querySelector('.e-size-update')).not.toBe(null);
                 clickEvent.initEvent('click', false, true);
                 document.body.querySelector('.e-size-update').dispatchEvent(clickEvent);
+
+                tar = rteObj.contentModule.getEditPanel().querySelector('table') as HTMLElement;
+                (rteObj as any).inputElement.dispatchEvent(clickEvent);
+                eventsArg = { pageX: 50, pageY: 300, target: tar };
+                (<any>rteObj).tableModule.editAreaClickHandler({ args: eventsArg });
+
                 selObj.setSelectionText(rteObj.contentModule.getDocument(), tar, tar, 0, 0);
                 let backgroundColorPickerItem: HTMLElement = <HTMLElement>document.querySelectorAll(".e-primary.e-apply")[0];
                 let msEventArgs: any = {
@@ -260,11 +272,88 @@ describe('Table creation', () => {
                 };
                 clickEvent.initEvent('click', false, true);
                 tableTBItems.item(3).childNodes[0].querySelector('.e-background-color').click();
+
+                tar = rteObj.contentModule.getEditPanel().querySelector('td') as HTMLElement;
+                (rteObj as any).inputElement.dispatchEvent(clickEvent);
+                eventsArg = { pageX: 50, pageY: 300, target: tar };
+                (<any>rteObj).tableModule.editAreaClickHandler({ args: eventsArg });
+
                 selObj.setSelectionText(rteObj.contentModule.getDocument(), tar, tar, 0, 0);
                 tableTBItems.item(5).childNodes[0].click();
                 expect(rteObj.contentModule.getEditPanel().querySelector('table')).toBe(null);
                 let eventArgs: any = { args: { target: document, preventDefault: function () { } } };
                 (<any>rteObj).tableModule.docClick(eventArgs);
+                done();
+            }, 500);
+            (rteObj.contentModule.getEditPanel() as HTMLElement).focus();
+        });
+    });
+
+    describe('Table properties quicktoolbar ', () => {
+        let rteEle: HTMLElement;
+        let rteObj: RichTextEditor;
+        beforeAll(() => {
+            rteObj = renderRTE({
+                height: 400,
+                toolbarSettings: {
+                    items: ['Bold', 'CreateTable']
+                },
+                quickToolbarSettings: {
+                    table: ['TableEditProperties']
+                }
+            });
+            rteEle = rteObj.element;
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+        it('Cellpadding and cellSpacing style in table', (done: Function) => {
+            (rteObj.contentModule.getEditPanel() as HTMLElement).focus();
+            expect(rteObj.element.querySelectorAll('.e-rte-content').length).toBe(1);
+            (<HTMLElement>rteEle.querySelectorAll(".e-toolbar-item")[1] as HTMLElement).click();
+            expect(rteObj.tableModule.popupObj.element.querySelectorAll('.e-rte-table-row').length === 3).toBe(true);
+            expect(rteObj.tableModule.popupObj.element.querySelectorAll('.e-rte-tablecell').length === 30).toBe(true);
+            let event: any = {
+                target: (rteObj as any).tableModule.popupObj.element.querySelectorAll('.e-rte-table-row')[1].querySelectorAll('.e-rte-tablecell')[3],
+                preventDefault: function () { }
+            };
+            (rteObj as any).tableModule.tableCellSelect(event);
+            (rteObj as any).tableModule.tableCellLeave(event);
+            let clickEvent: any = document.createEvent("MouseEvents");
+
+            clickEvent.initEvent("mouseup", false, true);
+            event.target.dispatchEvent(clickEvent);
+            let tar: HTMLElement = rteObj.contentModule.getEditPanel().querySelector('table') as HTMLElement;
+            expect(tar).not.toBe(null);
+            expect(tar.querySelectorAll('tr').length === 2).toBe(true);
+            expect(tar.querySelectorAll('td').length === 8).toBe(true);
+            clickEvent = document.createEvent("MouseEvents");
+            clickEvent.initEvent('mousedown', false, true);
+            (rteObj as any).inputElement.dispatchEvent(clickEvent);
+            let eventsArg: any = { pageX: 50, pageY: 300, target: tar };
+            (<any>rteObj).tableModule.editAreaClickHandler({ args: eventsArg });
+            setTimeout(() => {
+                let tablePop: any = <HTMLElement>document.querySelectorAll('.e-rte-quick-popup')[0];
+                expect(tablePop.classList.contains('e-rte-quick-popup')).toBe(true);
+                let tableTBItems: any = tablePop.querySelectorAll('.e-toolbar-item');
+                let tar: HTMLElement = rteObj.contentModule.getEditPanel().querySelector('td') as HTMLElement;
+                (rteObj as any).inputElement.dispatchEvent(clickEvent);
+                let eventsArg: any = { pageX: 50, pageY: 300, target: tar };
+                (<any>rteObj).tableModule.editAreaClickHandler({ args: eventsArg });
+                ((<HTMLElement>tableTBItems.item(0)).childNodes[0] as HTMLElement).click();
+                let cellPadElem = document.getElementById('cellPadding');
+                let cellSpcElem = document.getElementById('cellSpacing');
+                (cellPadElem as any).value = 20;
+                (cellSpcElem as any).value = 25;
+                clickEvent.initEvent('click', false, true);
+                document.body.querySelector('.e-size-update').dispatchEvent(clickEvent);
+                let tableElm = document.querySelector('table');
+                expect(tableElm.getAttribute('cellspacing') === '25').toBe(true);
+                expect(tableElm.classList.contains('e-rte-table-border')).toBe(true);
+                let tdElem = tableElm.querySelectorAll('td');
+                for (let i: number = 0; i < tdElem.length; i++) {
+                    expect(tdElem[i].style.padding === '20px').toBe(true);
+                }
                 done();
             }, 500);
             (rteObj.contentModule.getEditPanel() as HTMLElement).focus();

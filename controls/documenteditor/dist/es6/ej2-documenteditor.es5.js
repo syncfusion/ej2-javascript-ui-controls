@@ -16847,6 +16847,7 @@ var Layout = /** @__PURE__ @class */ (function () {
         }
         else if (element instanceof TextElementBox) {
             this.checkAndSplitTabOrLineBreakCharacter(element.text, element);
+            this.splitBySpecialCharacters(element);
             text = element.text;
         }
         // Here field code width and height update need to skipped based on the hidden property.
@@ -16988,6 +16989,46 @@ var Layout = /** @__PURE__ @class */ (function () {
             if ((character === '\t' && text !== '\t') || (character === '\v' && text !== '\v')
                 || (character === '\f' && text !== '\f')) {
                 this.splitByLineBreakOrTab(this.viewer, element, index, character);
+            }
+        }
+    };
+    Layout.prototype.splitBySpecialCharacters = function (span) {
+        if (this.viewer.textHelper.isRTLText(span.text) && this.viewer.textHelper.containsSpecialChar(span.text)) {
+            var inlineIndex = span.line.children.indexOf(span);
+            var text = span.text;
+            var specialChars = '*|.\:[]{}`\;()@&$#%!~';
+            var textToReplace = '';
+            var spanTextUpdated = false;
+            for (var i = 0; i < text.length; i++) {
+                if (specialChars.indexOf(text.charAt(i)) !== -1) {
+                    if (spanTextUpdated && textToReplace !== '') {
+                        var newSpan1 = new TextElementBox();
+                        newSpan1.line = span.line;
+                        newSpan1.characterFormat.copyFormat(span.characterFormat);
+                        span.line.children.splice(inlineIndex = inlineIndex + 1, 0, newSpan1);
+                        newSpan1.text = textToReplace;
+                    }
+                    var newSpan = new TextElementBox();
+                    newSpan.line = span.line;
+                    newSpan.characterFormat.copyFormat(span.characterFormat);
+                    span.line.children.splice(inlineIndex = inlineIndex + 1, 0, newSpan);
+                    newSpan.text = text.charAt(i);
+                    if (!spanTextUpdated) {
+                        span.text = textToReplace;
+                        spanTextUpdated = true;
+                    }
+                    textToReplace = '';
+                }
+                else {
+                    textToReplace += text.charAt(i);
+                }
+            }
+            if (spanTextUpdated && textToReplace !== '') {
+                var newSpan2 = new TextElementBox();
+                newSpan2.line = span.line;
+                newSpan2.characterFormat.copyFormat(span.characterFormat);
+                span.line.children.splice(inlineIndex = inlineIndex + 1, 0, newSpan2);
+                newSpan2.text = textToReplace;
             }
         }
     };
@@ -21418,6 +21459,7 @@ var Layout = /** @__PURE__ @class */ (function () {
         if (line.children.length === 0) {
             return;
         }
+        var isFieldCode = false;
         var lastAddedElementIsRtl = false;
         var lastAddedRtlElementIndex = -1;
         var tempElements = [];
@@ -21429,7 +21471,7 @@ var Layout = /** @__PURE__ @class */ (function () {
             }
             var isRtl = false;
             var text = '';
-            //let containsSpecchrs: boolean = false;
+            var containsSpecchrs = false;
             if (element instanceof BookmarkElementBox) {
                 if (isParaBidi) {
                     if (lastAddedElementIsRtl || element.bookmarkType === 0 && element.nextElement
@@ -21451,6 +21493,13 @@ var Layout = /** @__PURE__ @class */ (function () {
             }
             if (element instanceof TextElementBox) {
                 text = element.text;
+                containsSpecchrs = this.viewer.textHelper.containsSpecialCharAlone(text);
+                if (containsSpecchrs) {
+                    if (text.length > 1 && elementCharacterFormat.bidi) {
+                        text = HelperMethods.ReverseString(text);
+                        element.text = text;
+                    }
+                }
             }
             // The list element box shold be added in the last position in line widget for the RTL paragraph 
             // and first in the line widget for LTR paragrph.
@@ -21461,8 +21510,17 @@ var Layout = /** @__PURE__ @class */ (function () {
                 isRtl = this.viewer.textHelper.isRTLText(text) || elementCharacterFormat.bidi
                     || elementCharacterFormat.bdo === 'RTL';
             }
+            if (element instanceof FieldElementBox || isFieldCode) {
+                if (element.fieldType === 0) {
+                    isFieldCode = true;
+                }
+                else if (element.fieldType === 1) {
+                    isFieldCode = false;
+                }
+                isRtl = false;
+            }
             // If the text element box contains only whitespaces, then need to check the previous and next elements.
-            if (!isRtl && !isNullOrUndefined(text) && text !== '' && text.trim() === '') {
+            if (!isRtl && !isNullOrUndefined(text) && text !== '' && ((text !== '' && text.trim() === '') || containsSpecchrs)) {
                 var elements = line.children;
                 //Checks whether the langugae is RTL.
                 if (elementCharacterFormat.bidi) {
@@ -23010,6 +23068,32 @@ var TextHelper = /** @__PURE__ @class */ (function () {
         var textHelper = this.getHeight(format);
         elementBox.height = textHelper.Height;
         elementBox.baselineOffset = textHelper.BaselineOffset;
+    };
+    /**
+     * @private
+     * @param text
+     */
+    TextHelper.prototype.containsSpecialCharAlone = function (text) {
+        var specialChars = '*|.\:[]{}`\;()@&$#%!~';
+        for (var i = 0; i < text.length; i++) {
+            if (specialChars.indexOf(text.charAt(i)) === -1) {
+                return false;
+            }
+        }
+        return true;
+    };
+    /**
+     * @private
+     * @param text
+     */
+    TextHelper.prototype.containsSpecialChar = function (text) {
+        var specialChars = '*|.\:[]{}`\;()@&$#%!~';
+        for (var i = 0; i < text.length; i++) {
+            if (specialChars.indexOf(text.charAt(i)) !== -1) {
+                return true;
+            }
+        }
+        return false;
     };
     /**
      * @private
@@ -24702,7 +24786,7 @@ var LayoutViewer = /** @__PURE__ @class */ (function () {
          * @private
          */
         this.onKeyUpInternal = function (event) {
-            if (Browser.isDevice) {
+            if (Browser.isDevice && event.target.id === _this.editableDiv.id) {
                 if (window.getSelection().anchorOffset !== _this.prefix.length) {
                     _this.selection.setEditableDivCaretPosition(_this.editableDiv.innerText.length);
                 }
@@ -28788,6 +28872,12 @@ var SelectionParagraphFormat = /** @__PURE__ @class */ (function () {
         enumerable: true,
         configurable: true
     });
+    SelectionParagraphFormat.prototype.validateLineSpacing = function () {
+        if (this.lineSpacingType !== 'Multiple' && this.lineSpacingIn < 12) {
+            return true;
+        }
+        return false;
+    };
     Object.defineProperty(SelectionParagraphFormat.prototype, "listText", {
         /**
          * Gets the list text for selected paragraphs.
@@ -28860,6 +28950,25 @@ var SelectionParagraphFormat = /** @__PURE__ @class */ (function () {
         }
         if (!isNullOrUndefined(this.selection) && !isNullOrUndefined(this.selection.start) && !this.selection.isRetrieveFormatting) {
             var editorModule = this.selection.owner.editorModule;
+            if (propertyName === 'lineSpacing' || propertyName === 'lineSpacingType') {
+                var editorHistory = this.selection.owner.editorHistory;
+                if (!(editorHistory && (editorHistory.isUndoing || editorHistory.isRedoing)) && this.validateLineSpacing()) {
+                    this.selection.owner.editorHistory.initComplexHistory(this.selection, 'LineSpacing');
+                    if (propertyName === 'lineSpacing') {
+                        this.lineSpacingTypeIn = 'Multiple';
+                        var value_1 = this.getPropertyValue('lineSpacingType');
+                        editorModule.onApplyParagraphFormat('lineSpacingType', value_1, false, false);
+                        editorModule.onApplyParagraphFormat(propertyName, this.getPropertyValue(propertyName), false, false);
+                    }
+                    else {
+                        editorModule.onApplyParagraphFormat(propertyName, this.getPropertyValue(propertyName), false, false);
+                        this.lineSpacingIn = 12;
+                        editorModule.onApplyParagraphFormat('lineSpacing', this.getPropertyValue('lineSpacing'), false, false);
+                    }
+                    this.selection.owner.editorHistory.updateComplexHistory();
+                    return;
+                }
+            }
             var value = this.getPropertyValue(propertyName);
             if ((propertyName === 'leftIndent' || propertyName === 'rightIndent' || propertyName === 'firstLineIndent')
                 && !(value >= -1056 && value < 1056)) {
@@ -44615,15 +44724,16 @@ var TableResizer = /** @__PURE__ @class */ (function () {
     };
     TableResizer.prototype.resizeTableRow = function (dragValue) {
         var table = this.currentResizingTable;
-        if (isNullOrUndefined(table) || dragValue === 0) {
+        if (isNullOrUndefined(table) || dragValue === 0 || this.resizerPosition === -1) {
             return;
         }
         var selection = this.owner.selection;
         if (table.isInsideTable) {
             this.owner.isLayoutEnabled = false; //Layouting is disabled to skip the child table layouting. 
         }
+        var row = undefined;
         if (this.resizerPosition > -1) {
-            var row = table.childWidgets[this.resizerPosition];
+            row = table.childWidgets[this.resizerPosition];
             this.updateRowHeight(row, dragValue);
             selection.selectPosition(selection.start, selection.end);
         }
@@ -44635,6 +44745,7 @@ var TableResizer = /** @__PURE__ @class */ (function () {
         this.startingPoint.y += HelperMethods.convertPointToPixel(dragValue);
         this.owner.viewer.layout.reLayoutTable(table);
         this.owner.editorModule.reLayout(this.owner.selection);
+        this.currentResizingTable = row.ownerTable;
     };
     /**
      * Gets the table widget from given cursor point
@@ -46425,6 +46536,10 @@ var Editor = /** @__PURE__ @class */ (function () {
                     var insertIndex = inline.indexInOwner;
                     if (indexInInline === inline.length) {
                         var isParaBidi = inline.line.paragraph.bidi;
+                        if (isParaBidi && inline instanceof FieldElementBox && inline.fieldType === 1) {
+                            inline = inline.fieldBegin;
+                            insertIndex = inline.indexInOwner;
+                        }
                         inline.line.children.splice(isParaBidi ? insertIndex : insertIndex + 1, 0, tempSpan);
                     }
                     else if (indexInInline === 0) {
@@ -48154,7 +48269,8 @@ var Editor = /** @__PURE__ @class */ (function () {
         }
         else {
             var indexInInline = 0;
-            var inlineObj = selection.start.currentWidget.getInline(selection.start.offset, indexInInline);
+            var bidi = selection.start.paragraph.paragraphFormat.bidi;
+            var inlineObj = selection.start.currentWidget.getInline(selection.start.offset, indexInInline, bidi);
             var curInline = inlineObj.element;
             indexInInline = inlineObj.index;
             paragraph = curInline.line.paragraph;
@@ -63656,9 +63772,12 @@ var WordExport = /** @__PURE__ @class */ (function () {
         //     }
         // }
         //TODO:ISSUEFIX((paragraphFormat.lineSpacing) * this.twentiethOfPoint).toString());
-        if (!isNullOrUndefined(paragraphFormat.lineSpacingType)) {
+        if (!isNullOrUndefined(paragraphFormat.lineSpacing)) {
             // tslint:disable-next-line:max-line-length
             var lineSpacingValue = (paragraphFormat.lineSpacingType === 'AtLeast' || paragraphFormat.lineSpacingType === 'Exactly') ? this.roundToTwoDecimal(paragraphFormat.lineSpacing * this.twentiethOfPoint) : this.roundToTwoDecimal(paragraphFormat.lineSpacing * 240);
+            writer.writeAttributeString(undefined, 'line', this.wNamespace, lineSpacingValue.toString());
+        }
+        if (!isNullOrUndefined(paragraphFormat.lineSpacingType)) {
             var lineSpacingType = 'auto';
             if (paragraphFormat.lineSpacingType === 'AtLeast') {
                 lineSpacingType = 'atLeast';
@@ -63666,7 +63785,6 @@ var WordExport = /** @__PURE__ @class */ (function () {
             else if (paragraphFormat.lineSpacingType === 'Exactly') {
                 lineSpacingType = 'exact';
             }
-            writer.writeAttributeString(undefined, 'line', this.wNamespace, lineSpacingValue.toString());
             writer.writeAttributeString(undefined, 'lineRule', this.wNamespace, lineSpacingType);
         }
         writer.writeEndElement();
@@ -67354,6 +67472,7 @@ var PageSetupDialog = /** @__PURE__ @class */ (function () {
             else {
                 _this.portrait.checked = true;
             }
+            _this.setPageSize(_this.portrait.checked, sectionFormat.pageWidth, sectionFormat.pageHeight);
         };
         /**
          * @private
@@ -67877,6 +67996,51 @@ var PageSetupDialog = /** @__PURE__ @class */ (function () {
             }];
         this.owner.dialog.dataBind();
         this.owner.dialog.show();
+    };
+    PageSetupDialog.prototype.setPageSize = function (isPortrait, width, height) {
+        if ((isPortrait && width === 612 && height === 792)
+            || (!isPortrait && width === 792 && height === 612)) {
+            this.paperSize.value = 'letter';
+        }
+        else if ((isPortrait && width === 792 && height === 1224)
+            || (!isPortrait && width === 1224 && height === 792)) {
+            this.paperSize.value = 'tabloid';
+        }
+        else if ((isPortrait && width === 612 && height === 1008)
+            || (!isPortrait && width === 1008 && height === 612)) {
+            this.paperSize.value = 'legal';
+        }
+        else if ((isPortrait && width === 392 && height === 612)
+            || (!isPortrait && width === 392 && height === 612)) {
+            this.paperSize.value = 'statement';
+        }
+        else if ((isPortrait && width === 522 && height === 756)
+            || (!isPortrait && width === 756 && height === 522)) {
+            this.paperSize.value = 'executive';
+        }
+        else if ((isPortrait && width === 841.9 && height === 1190.55)
+            || (!isPortrait && width === 1190.5 && height === 841.9)) {
+            this.paperSize.value = 'a3';
+        }
+        else if ((isPortrait && width === 595.3 && height === 841.9)
+            || (!isPortrait && width === 841.9 && height === 595.3)) {
+            this.paperSize.value = 'a4';
+        }
+        else if ((isPortrait && width === 419.55 && height === 595.3)
+            || (!isPortrait && width === 595.3 && height === 419.55)) {
+            this.paperSize.value = 'a5';
+        }
+        else if ((isPortrait && width === 728.5 && height === 1031.8)
+            || (!isPortrait && width === 1031.8 && height === 728.5)) {
+            this.paperSize.value = 'b4';
+        }
+        else if ((isPortrait && width === 515.9 && height === 728.5)
+            || (!isPortrait && width === 728.5 && height === 515.9)) {
+            this.paperSize.value = 'letter';
+        }
+        else {
+            this.paperSize.value = 'customsize';
+        }
     };
     /**
      * @private
@@ -68763,7 +68927,9 @@ var ListDialog = /** @__PURE__ @class */ (function () {
             _this.viewModel.listLevel.paragraphFormat.leftIndent = args.value;
         };
         this.onStartValueChanged = function (args) {
-            _this.viewModel.listLevel.startAt = args.value;
+            if (!isNullOrUndefined(_this.viewModel) && !isNullOrUndefined(_this.viewModel.listLevel)) {
+                _this.viewModel.listLevel.startAt = args.value;
+            }
         };
         this.onListLevelValueChanged = function (args) {
             _this.viewModel.levelNumber = parseInt(args.value.slice(args.value.length - 1), 10) - 1;
@@ -69108,14 +69274,16 @@ var ListDialog = /** @__PURE__ @class */ (function () {
     ListDialog.prototype.updateDialogValues = function () {
         // tslint:disable-next-line:max-line-length
         var restartByTextBox = document.getElementById(this.owner.owner.containerId + '_restartBy');
-        this.startAt.value = this.viewModel.listLevel.startAt;
-        this.textIndent.value = this.viewModel.listLevel.paragraphFormat.leftIndent;
-        this.alignedAt.value = this.viewModel.listLevel.paragraphFormat.firstLineIndent;
-        this.followNumberWith.index = this.followCharacterConverter(this.viewModel.followCharacter);
-        this.numberFormat.value = this.viewModel.listLevel.numberFormat;
-        this.numberStyle.index = this.listPatternConverter(this.viewModel.listLevelPattern);
-        this.listLevelElement.index = this.viewModel.levelNumber;
-        this.viewModel.levelNumber = this.viewModel.levelNumber;
+        if (!isNullOrUndefined(this.viewModel) && !isNullOrUndefined(this.viewModel.listLevel)) {
+            this.startAt.value = this.viewModel.listLevel.startAt;
+            this.textIndent.value = this.viewModel.listLevel.paragraphFormat.leftIndent;
+            this.alignedAt.value = this.viewModel.listLevel.paragraphFormat.firstLineIndent;
+            this.followNumberWith.index = this.followCharacterConverter(this.viewModel.followCharacter);
+            this.numberFormat.value = this.viewModel.listLevel.numberFormat;
+            this.numberStyle.index = this.listPatternConverter(this.viewModel.listLevelPattern);
+            this.listLevelElement.index = this.viewModel.levelNumber;
+            this.viewModel.levelNumber = this.viewModel.levelNumber;
+        }
     };
     ListDialog.prototype.disposeBindingForListUI = function () {
         this.followNumberWith.index = -1;

@@ -802,7 +802,7 @@ export class DropDownList extends DropDownBase implements IInput {
                 this.renderList();
             }
             this.searchKeyEvent = e;
-            if (!this.isRequested && !isNullOrUndefined(this.list.querySelector('li')) && this.enabled) {
+            if (!this.isRequested && !isNullOrUndefined(this.list.querySelector('li')) && this.enabled && !this.readonly) {
                 this.incrementalSearch(e);
             }
         }

@@ -1700,7 +1700,7 @@ let DropDownList = class DropDownList extends DropDownBase {
                 this.renderList();
             }
             this.searchKeyEvent = e;
-            if (!this.isRequested && !isNullOrUndefined(this.list.querySelector('li')) && this.enabled) {
+            if (!this.isRequested && !isNullOrUndefined(this.list.querySelector('li')) && this.enabled && !this.readonly) {
                 this.incrementalSearch(e);
             }
         }
@@ -6721,7 +6721,7 @@ let MultiSelect = class MultiSelect extends DropDownBase {
     }
     clearAllCallback(e, isClearAll) {
         let tempValues = this.value ? this.value.slice() : [];
-        if (this.mainList && this.listData && this.allowFiltering) {
+        if (this.mainList && this.listData && (this.allowFiltering || this.allowCustomValue)) {
             let list = this.mainList.cloneNode ? this.mainList.cloneNode(true) : this.mainList;
             this.onActionComplete(list, this.mainData);
         }
@@ -7904,7 +7904,9 @@ let MultiSelect = class MultiSelect extends DropDownBase {
         }
         if (isBlazor() && this.itemTemplate) {
             this.DropDownBaseupdateBlazorTemplates(true, false, false, false, false, false, false, false);
-            this.refreshSelection();
+            if (this.mode !== 'CheckBox' && this.list) {
+                this.refreshSelection();
+            }
         }
         if (!this.ulElement) {
             this.beforePopupOpen = true;
@@ -9317,6 +9319,18 @@ let ListBox = class ListBox extends DropDownBase {
             this.ulElement.removeChild(liCollections[i]);
         }
     }
+    /**
+     * Gets the array of data Object that matches the given array of values.
+     * @param  { string[] | number[] | boolean[] } value - Specifies the array value of the list item.
+     * @returns object[].
+     */
+    getDataByValues(value) {
+        let data = [];
+        for (let i = 0; i < value.length; i++) {
+            data.push(this.getDataByValue(value[i]));
+        }
+        return data;
+    }
     updateLiCollection(index) {
         let tempLi = [].slice.call(this.liCollections);
         tempLi.splice(index, 1);
@@ -10006,13 +10020,27 @@ let ListBox = class ListBox extends DropDownBase {
     }
     updateSelectedOptions() {
         let selectedOptions = [];
+        let values = this.value;
         this.getSelectedItems().forEach((ele) => {
             if (!ele.classList.contains('e-grabbed')) {
                 selectedOptions.push(this.getFormattedValue(ele.getAttribute('data-value')));
             }
         });
         if (this.mainList.childElementCount === this.ulElement.childElementCount) {
-            this.setProperties({ value: selectedOptions }, true);
+            if (this.allowFiltering) {
+                for (let i = 0; i < selectedOptions.length; i++) {
+                    if (values.indexOf(selectedOptions[i]) > -1) {
+                        continue;
+                    }
+                    else {
+                        values.push(selectedOptions[i]);
+                    }
+                }
+                this.setProperties({ value: values }, true);
+            }
+            else {
+                this.setProperties({ value: selectedOptions }, true);
+            }
         }
         this.updateSelectTag();
         this.updateToolBarState();

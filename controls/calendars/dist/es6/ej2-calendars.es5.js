@@ -2847,6 +2847,7 @@ var ICONS = 'e-icons';
 var OPENDURATION = 300;
 var OFFSETVALUE = 4;
 var SELECTED$2 = 'e-selected';
+var FOCUSEDDATE$2 = 'e-focused-date';
 var NONEDIT = 'e-non-edit';
 var containerAttr = ['title', 'class', 'style'];
 /**
@@ -3254,6 +3255,10 @@ var DatePicker = /** @__PURE__ @class */ (function (_super) {
     DatePicker.prototype.clear = function (event) {
         this.setProperties({ value: null }, true);
         Input.setValue('', this.inputElement, this.floatLabelType, this.showClearButton);
+        var clearedArgs = {
+            event: event
+        };
+        this.trigger('cleared', clearedArgs);
         this.invalidValueString = '';
         this.updateInput();
         this.popupUpdate();
@@ -3826,6 +3831,12 @@ var DatePicker = /** @__PURE__ @class */ (function (_super) {
                 else {
                     _this.popupObj.destroy();
                     _this.popupWrapper = _this.popupObj = null;
+                }
+                if (!isNullOrUndefined(_this.inputElement) && _this.inputElement.value === '') {
+                    if (!isNullOrUndefined(_this.tableBodyElement) && _this.tableBodyElement.querySelectorAll('td.e-selected').length > 0) {
+                        addClass([_this.tableBodyElement.querySelector('td.e-selected')], FOCUSEDDATE$2);
+                        removeClass(_this.tableBodyElement.querySelectorAll('td.e-selected'), SELECTED$2);
+                    }
                 }
                 EventHandler.add(document, 'mousedown touchstart', _this.documentHandler, _this);
             });
@@ -4429,6 +4440,9 @@ var DatePicker = /** @__PURE__ @class */ (function (_super) {
     ], DatePicker.prototype, "open", void 0);
     __decorate$1([
         Event()
+    ], DatePicker.prototype, "cleared", void 0);
+    __decorate$1([
+        Event()
     ], DatePicker.prototype, "close", void 0);
     __decorate$1([
         Event()
@@ -4977,6 +4991,12 @@ var DateRangePicker = /** @__PURE__ @class */ (function (_super) {
         this.valueType = this.value;
         e.preventDefault();
         this.clear();
+        var clearedArgs = {
+            event: e
+        };
+        this.setProperties({ endDate: this.checkDateValue(this.endValue) }, true);
+        this.setProperties({ startDate: this.checkDateValue(this.startValue) }, true);
+        this.trigger('cleared', clearedArgs);
         this.changeTrigger(e);
         this.clearRange();
         this.hide(e);
@@ -7643,8 +7663,8 @@ var DateRangePicker = /** @__PURE__ @class */ (function (_super) {
         var target = e.target;
         if (!this.inputWrapper.container.contains(target) ||
             (!isNullOrUndefined(this.popupObj) && !closest(target, this.popupWrapper.id))) {
-            if (e.type !== 'touchstart' && (e.type === 'mousedown') ||
-                this.closeEventArgs && !this.closeEventArgs.cancel) {
+            if (e.type !== 'touchstart' && ((e.type === 'mousedown') ||
+                this.closeEventArgs && !this.closeEventArgs.cancel)) {
                 e.preventDefault();
             }
         }
@@ -8632,6 +8652,9 @@ var DateRangePicker = /** @__PURE__ @class */ (function (_super) {
     __decorate$2([
         Event()
     ], DateRangePicker.prototype, "change", void 0);
+    __decorate$2([
+        Event()
+    ], DateRangePicker.prototype, "cleared", void 0);
     __decorate$2([
         Event()
     ], DateRangePicker.prototype, "navigated", void 0);
@@ -9867,10 +9890,20 @@ var TimePicker = /** @__PURE__ @class */ (function (_super) {
             EventHandler.add(this.inputWrapper.clearButton, 'mousedown', this.clearHandler, this);
         }
     };
+    TimePicker.prototype.raiseClearedEvent = function (e) {
+        var clearedArgs = {
+            event: e
+        };
+        this.trigger('cleared', clearedArgs);
+    };
     TimePicker.prototype.clearHandler = function (e) {
         e.preventDefault();
         if (!isNullOrUndefined(this.value)) {
             this.clear(e);
+        }
+        else {
+            this.resetState();
+            this.raiseClearedEvent(e);
         }
         if (this.popupWrapper) {
             this.popupWrapper.scrollTop = 0;
@@ -9880,6 +9913,7 @@ var TimePicker = /** @__PURE__ @class */ (function (_super) {
         this.setProperties({ value: null }, true);
         this.initValue = null;
         this.resetState();
+        this.raiseClearedEvent(event);
         this.changeEvent(event);
     };
     TimePicker.prototype.setZIndex = function () {
@@ -10880,6 +10914,9 @@ var TimePicker = /** @__PURE__ @class */ (function (_super) {
     __decorate$3([
         Event()
     ], TimePicker.prototype, "close", void 0);
+    __decorate$3([
+        Event()
+    ], TimePicker.prototype, "cleared", void 0);
     __decorate$3([
         Event()
     ], TimePicker.prototype, "blur", void 0);
@@ -12309,6 +12346,9 @@ var DateTimePicker = /** @__PURE__ @class */ (function (_super) {
     __decorate$4([
         Event()
     ], DateTimePicker.prototype, "close", void 0);
+    __decorate$4([
+        Event()
+    ], DateTimePicker.prototype, "cleared", void 0);
     __decorate$4([
         Event()
     ], DateTimePicker.prototype, "blur", void 0);

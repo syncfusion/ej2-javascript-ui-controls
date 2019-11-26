@@ -233,7 +233,9 @@ export class ListDialog {
     }
 
     private onStartValueChanged = (args: ChangeEventArgs): void => {
-        this.viewModel.listLevel.startAt = args.value as number;
+        if (!isNullOrUndefined(this.viewModel) && !isNullOrUndefined(this.viewModel.listLevel)) {
+            this.viewModel.listLevel.startAt = args.value as number;
+        }
     }
     private onListLevelValueChanged = (args: ChangeEventArgs): void => {
         this.viewModel.levelNumber = parseInt((args.value as string).slice((args.value as string).length - 1), 10) - 1;
@@ -361,14 +363,16 @@ export class ListDialog {
     private updateDialogValues(): void {
         // tslint:disable-next-line:max-line-length
         let restartByTextBox: HTMLSelectElement = document.getElementById(this.owner.owner.containerId + '_restartBy') as HTMLSelectElement;
-        this.startAt.value = this.viewModel.listLevel.startAt;
-        this.textIndent.value = this.viewModel.listLevel.paragraphFormat.leftIndent;
-        this.alignedAt.value = this.viewModel.listLevel.paragraphFormat.firstLineIndent;
-        this.followNumberWith.index = this.followCharacterConverter(this.viewModel.followCharacter);
-        this.numberFormat.value = this.viewModel.listLevel.numberFormat;
-        this.numberStyle.index = this.listPatternConverter(this.viewModel.listLevelPattern);
-        this.listLevelElement.index = this.viewModel.levelNumber;
-        this.viewModel.levelNumber = this.viewModel.levelNumber;
+        if (!isNullOrUndefined(this.viewModel) && !isNullOrUndefined(this.viewModel.listLevel)) {
+            this.startAt.value = this.viewModel.listLevel.startAt;
+            this.textIndent.value = this.viewModel.listLevel.paragraphFormat.leftIndent;
+            this.alignedAt.value = this.viewModel.listLevel.paragraphFormat.firstLineIndent;
+            this.followNumberWith.index = this.followCharacterConverter(this.viewModel.followCharacter);
+            this.numberFormat.value = this.viewModel.listLevel.numberFormat;
+            this.numberStyle.index = this.listPatternConverter(this.viewModel.listLevelPattern);
+            this.listLevelElement.index = this.viewModel.levelNumber;
+            this.viewModel.levelNumber = this.viewModel.levelNumber;
+        }
     }
     private showFontDialog = (): void => {
         this.owner.owner.fontDialogModule.showFontDialog(this.listLevel.characterFormat);

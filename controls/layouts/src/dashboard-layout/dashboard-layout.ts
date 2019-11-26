@@ -963,6 +963,7 @@ export class DashboardLayout extends Component<HTMLElement> implements INotifyPr
             this.setPanelPosition(el, panelModel.row, panelModel.col);
             this.setHeightAndWidth(el, panelModel);
         }
+        removeClass([el], [dragging]);
         this.trigger('resizeStop', args);
         this.resizeCalled = false;
         this.lastMouseX = this.lastMouseY = undefined;

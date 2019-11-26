@@ -406,6 +406,8 @@ const CLS_RTE_RES_CNT = 'e-rte-resize';
 const CLS_CUSTOM_TILE = 'e-custom-tile';
 /** @hidden */
 const CLS_NOCOLOR_ITEM = 'e-nocolor-item';
+/** @hidden */
+const CLS_TABLE_BORDER = 'e-rte-table-border';
 
 /**
  * Defines types of Render
@@ -13875,6 +13877,11 @@ class Image {
         let args = e.args;
         let showOnRightClick = this.parent.quickToolbarSettings.showOnRightClick;
         if (args.which === 2 || (showOnRightClick && args.which === 1) || (!showOnRightClick && args.which === 3)) {
+            if ((showOnRightClick && args.which === 1) && !isNullOrUndefined(args.target) &&
+                args.target.tagName === 'IMG') {
+                this.parent.formatter.editorManager.nodeSelection.Clear(this.contentModule.getDocument());
+                this.parent.formatter.editorManager.nodeSelection.setSelectionContents(this.contentModule.getDocument(), args.target);
+            }
             return;
         }
         if (this.parent.editorMode === 'HTML' && this.parent.quickToolbarModule && this.parent.quickToolbarModule.imageQTBar) {
@@ -14603,7 +14610,8 @@ class Image {
     ;
     dragOver(e) {
         e.dataTransfer.dropEffect = 'copy';
-        if (Browser.info.name === 'edge' || Browser.isIE) {
+        if ((Browser.info.name === 'edge' && e.dataTransfer.items[0].type.split('/')[0].indexOf('image') > -1) ||
+            (Browser.isIE && e.dataTransfer.types[0] === 'Files')) {
             e.preventDefault();
         }
     }
@@ -15602,9 +15610,11 @@ class Table {
                     'data-row': (i).toString(), 'unselectable': 'on', 'contenteditable': 'false'
                 }
             });
+            let rowPosLeft = !isNullOrUndefined(table.getAttribute('cellspacing')) || table.getAttribute('cellspacing') !== '' ?
+                0 : this.calcPos(rows[i]).left;
             rowReEle.style.cssText = 'width: ' + width + 'px; height: 4px; top: ' +
                 (this.calcPos(rows[i]).top + pos.top + rows[i].offsetHeight - 2) +
-                'px; left:' + (this.calcPos(rows[i]).left + pos.left) + 'px;';
+                'px; left:' + (rowPosLeft + pos.left) + 'px;';
             this.contentModule.getEditPanel().appendChild(rowReEle);
         }
         let tableReBox = this.parent.createElement('span', {
@@ -16015,6 +16025,7 @@ class Table {
         });
         this.editdlgObj.element.style.maxHeight = 'none';
         this.editdlgObj.content.querySelector('input').focus();
+        this.hideTableQuickToolbar();
     }
     insertTableDialog(args) {
         let proxy = (this.self) ? this.self : this;
@@ -16131,8 +16142,28 @@ class Table {
         let dialogEle = this.editdlgObj.element;
         let table = closest(args.selectNode[0], 'table');
         table.style.width = dialogEle.querySelector('.e-table-width').value + 'px';
-        table.cellPadding = dialogEle.querySelector('.e-cell-padding').value;
+        if (dialogEle.querySelector('.e-cell-padding').value !== '') {
+            let tdElm = table.querySelectorAll('td');
+            for (let i = 0; i < tdElm.length; i++) {
+                let padVal = '';
+                if (tdElm[i].style.padding === '') {
+                    padVal = tdElm[i].getAttribute('style') + ' padding:' +
+                        dialogEle.querySelector('.e-cell-padding').value + 'px;';
+                }
+                else {
+                    tdElm[i].style.padding = dialogEle.querySelector('.e-cell-padding').value + 'px';
+                    padVal = tdElm[i].getAttribute('style');
+                }
+                tdElm[i].setAttribute('style', padVal);
+            }
+        }
         table.cellSpacing = dialogEle.querySelector('.e-cell-spacing').value;
+        if (!isNullOrUndefined(table.cellSpacing) || table.cellSpacing !== '0') {
+            addClass([table], CLS_TABLE_BORDER);
+        }
+        else {
+            removeClass([table], CLS_TABLE_BORDER);
+        }
         this.parent.formatter.saveData();
         this.editdlgObj.hide({ returnValue: true });
     }
@@ -16143,6 +16174,8 @@ class Table {
         let cellSpacing = this.l10n.getConstant('cellspacing');
         let tableWrap = this.parent.createElement('div', { className: 'e-table-sizewrap' });
         let widthVal = closest(selectNode, 'table').getClientRects()[0].width;
+        let padVal = closest(selectNode, 'td').style.padding;
+        let brdSpcVal = closest(selectNode, 'table').getAttribute('cellspacing');
         let content = '<div class="e-rte-field"><input type="text" data-role ="none" id="tableWidth" class="e-table-width" '
             + ' /></div>' + '<div class="e-rte-field"><input type="text" data-role ="none" id="cellPadding" class="e-cell-padding" />'
             + ' </div><div class="e-rte-field"><input type="text" data-role ="none" id="cellSpacing" class="e-cell-spacing" /></div>';
@@ -16161,7 +16194,7 @@ class Table {
         let padding = new NumericTextBox({
             format: 'n0',
             min: 0,
-            value: 0,
+            value: padVal !== '' ? parseInt(padVal, null) : 0,
             placeholder: cellPadding,
             floatLabelType: 'Auto',
             enableRtl: this.parent.enableRtl, locale: this.parent.locale
@@ -16171,7 +16204,7 @@ class Table {
         let spacing = new NumericTextBox({
             format: 'n0',
             min: 0,
-            value: 0,
+            value: brdSpcVal !== '' && !isNullOrUndefined(brdSpcVal) ? parseInt(brdSpcVal, null) : 0,
             placeholder: cellSpacing,
             floatLabelType: 'Auto',
             enableRtl: this.parent.enableRtl, locale: this.parent.locale
@@ -18105,10 +18138,8 @@ let RichTextEditor = class RichTextEditor extends Component {
                 if (!isNullOrUndefined(this.getToolbarElement())) {
                     this.getToolbarElement().setAttribute('tabindex', '-1');
                     let items = this.getToolbarElement().querySelectorAll('[tabindex="0"]');
-                    if (items.length !== 0) {
-                        items.forEach((element) => {
-                            element.setAttribute('tabindex', '-1');
-                        });
+                    for (let i = 0; i < items.length; i++) {
+                        items[i].setAttribute('tabindex', '-1');
                     }
                 }
             }
@@ -18121,11 +18152,12 @@ let RichTextEditor = class RichTextEditor extends Component {
         }
         if (!isNullOrUndefined(this.getToolbarElement())) {
             let toolbarItem = this.getToolbarElement().querySelectorAll('input,select,button,a,[tabindex]');
-            toolbarItem.forEach((item) => {
-                if (!item.hasAttribute('tabindex') || item.getAttribute('tabindex') !== '-1') {
-                    item.setAttribute('tabindex', '-1');
+            for (let i = 0; i < toolbarItem.length; i++) {
+                if (!toolbarItem[i].hasAttribute('tabindex') ||
+                    toolbarItem[i].getAttribute('tabindex') !== '-1') {
+                    toolbarItem[i].setAttribute('tabindex', '-1');
                 }
-            });
+            }
         }
     }
     getUpdatedValue() {

@@ -2,6 +2,22 @@
 
 ## [Unreleased]
 
+## 17.3.29 (2019-11-26)
+
+### Dashboard Layout
+
+#### Bug Fixes
+
+- `#256123` - Issue with removing `e-dragging` class after panel resize has been resolved.
+
+### Splitter
+
+#### Bug Fixes
+
+- `#I255141` -Resolved the issue with separator's visible state when collapsible the last pane .
+
+- `#252195` - The alignment issue with expand and collapse icons in the internet explorer browser has been resolved.
+
 ## 17.3.28 (2019-11-19)
 
 ### Dashboard Layout
@@ -9,6 +25,12 @@
 #### Bug Fixes
 
 - `#F149164` - Resolved the issue with panel resizing when more than one Dashboard Layout component is used in a page.
+
+### Splitter
+
+#### New Features
+
+- `#251791` - Provided the support to use DOM element as pane content by configuring the selector to the content of `paneSettings` property.
 
 ## 17.3.27 (2019-11-12)
 
@@ -23,12 +45,6 @@
 - `#252410` - Issue with `Expand` public method not working in the splitter has been resolved.
 
 - `#252410` - Resolved the interaction issue with expand and collapse pane.
-
-- `#252195` - The alignment issue with expand and collapse icons in the internet explorer browser has been resolved.
-
-#### New Features
-
-- `#251791` - Provided the support to use DOM element as pane content by configuring the selector to the content of `paneSettings` property.
 
 ## 17.2.48-beta (2019-08-28)
 

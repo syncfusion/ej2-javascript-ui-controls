@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 17.3.29 (2019-11-26)
+
+### In-place Editor
+
+#### Bug Fixes
+
+- `#253385` - The issue with displaying tooltip in the edit mode in the In-place Editor has been resolved.
+
 ## 17.3.16 (2019-10-09)
 
 ### In-place Editor

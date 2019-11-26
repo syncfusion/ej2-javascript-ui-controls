@@ -39667,7 +39667,6 @@ var SparklineRenderer = /** @__PURE__ @class */ (function () {
      */
     // tslint:disable-next-line:max-func-body-length
     SparklineRenderer.prototype.findRanges = function (data) {
-        var _this = this;
         var model = this.sparkline;
         var max;
         var min;
@@ -39739,41 +39738,23 @@ var SparklineRenderer = /** @__PURE__ @class */ (function () {
             max = isNullOrUndefined(axis.maxY) ? max : axis.maxY;
             min = isNullOrUndefined(axis.minY) ? min : axis.minY;
             var color = axis.lineSettings.color || this.sparkline.sparkTheme.axisLineColor;
-            var eventArgs_1 = {
+            var eventArgs = {
                 name: 'axisRendering', cancel: false, sparkline: !this.sparkline.isBlazor ? model : null,
                 maxX: maxX, minX: minX, maxY: max, minY: min, value: axis.value,
                 lineColor: color, lineWidth: axis.lineSettings.width
             };
-            if (this.sparkline.isBlazor) {
-                var blazoraxisArgs = __rest(eventArgs_1, []);
-                eventArgs_1 = blazoraxisArgs;
+            model.trigger('axisRendering', eventArgs);
+            if (eventArgs.cancel) {
+                this.visiblePoints = [];
+                return;
             }
-            model.trigger('axisRendering', eventArgs_1, function (args) {
-                if (eventArgs_1.cancel) {
-                    _this.visiblePoints = [];
-                    return;
-                }
-                maxX = eventArgs_1.maxX;
-                minX = eventArgs_1.minX;
-                max = eventArgs_1.maxY;
-                min = eventArgs_1.minY;
-                value = _this.axisValue = eventArgs_1.value;
-                _this.axisColor = eventArgs_1.lineColor;
-                _this.axisWidth = eventArgs_1.lineWidth;
-                if (_this.sparkline.isBlazor) {
-                    var xAxis = {
-                        'id': _this.sparkline.element.id + '_Sparkline_XAxis',
-                        'x1': _this.sparkline.padding.left, 'y1': height,
-                        'x2': _this.sparkline.availableSize.width - _this.sparkline.padding.right, 'y2': height,
-                        'stroke': _this.axisColor,
-                        'opacity': _this.sparkline.axisSettings.lineSettings.opacity,
-                        'stroke-dasharray': _this.sparkline.axisSettings.lineSettings.dashArray,
-                        'stroke-width': _this.axisWidth,
-                        'clip-path': 'url(#' + _this.clipId + ')'
-                    };
-                    _this.sparkline.svgObject.appendChild(_this.sparkline.renderer.drawLine(xAxis));
-                }
-            });
+            maxX = eventArgs.maxX;
+            minX = eventArgs.minX;
+            max = eventArgs.maxY;
+            min = eventArgs.minY;
+            value = this.axisValue = eventArgs.value;
+            this.axisColor = eventArgs.lineColor;
+            this.axisWidth = eventArgs.lineWidth;
         }
         var unitX = maxX - minX;
         var unitY = max - min;

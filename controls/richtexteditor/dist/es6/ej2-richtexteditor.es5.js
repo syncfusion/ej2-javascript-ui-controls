@@ -406,6 +406,8 @@ var CLS_RTE_RES_CNT = 'e-rte-resize';
 var CLS_CUSTOM_TILE = 'e-custom-tile';
 /** @hidden */
 var CLS_NOCOLOR_ITEM = 'e-nocolor-item';
+/** @hidden */
+var CLS_TABLE_BORDER = 'e-rte-table-border';
 
 /**
  * Defines types of Render
@@ -13981,6 +13983,11 @@ var Image = /** @__PURE__ @class */ (function () {
         var args = e.args;
         var showOnRightClick = this.parent.quickToolbarSettings.showOnRightClick;
         if (args.which === 2 || (showOnRightClick && args.which === 1) || (!showOnRightClick && args.which === 3)) {
+            if ((showOnRightClick && args.which === 1) && !isNullOrUndefined(args.target) &&
+                args.target.tagName === 'IMG') {
+                this.parent.formatter.editorManager.nodeSelection.Clear(this.contentModule.getDocument());
+                this.parent.formatter.editorManager.nodeSelection.setSelectionContents(this.contentModule.getDocument(), args.target);
+            }
             return;
         }
         if (this.parent.editorMode === 'HTML' && this.parent.quickToolbarModule && this.parent.quickToolbarModule.imageQTBar) {
@@ -14714,7 +14721,8 @@ var Image = /** @__PURE__ @class */ (function () {
     
     Image.prototype.dragOver = function (e) {
         e.dataTransfer.dropEffect = 'copy';
-        if (Browser.info.name === 'edge' || Browser.isIE) {
+        if ((Browser.info.name === 'edge' && e.dataTransfer.items[0].type.split('/')[0].indexOf('image') > -1) ||
+            (Browser.isIE && e.dataTransfer.types[0] === 'Files')) {
             e.preventDefault();
         }
     };
@@ -15720,9 +15728,11 @@ var Table = /** @__PURE__ @class */ (function () {
                     'data-row': (i).toString(), 'unselectable': 'on', 'contenteditable': 'false'
                 }
             });
+            var rowPosLeft = !isNullOrUndefined(table.getAttribute('cellspacing')) || table.getAttribute('cellspacing') !== '' ?
+                0 : this.calcPos(rows[i]).left;
             rowReEle.style.cssText = 'width: ' + width + 'px; height: 4px; top: ' +
                 (this.calcPos(rows[i]).top + pos.top + rows[i].offsetHeight - 2) +
-                'px; left:' + (this.calcPos(rows[i]).left + pos.left) + 'px;';
+                'px; left:' + (rowPosLeft + pos.left) + 'px;';
             this.contentModule.getEditPanel().appendChild(rowReEle);
         }
         var tableReBox = this.parent.createElement('span', {
@@ -16137,6 +16147,7 @@ var Table = /** @__PURE__ @class */ (function () {
         });
         this.editdlgObj.element.style.maxHeight = 'none';
         this.editdlgObj.content.querySelector('input').focus();
+        this.hideTableQuickToolbar();
     };
     Table.prototype.insertTableDialog = function (args) {
         var proxy = (this.self) ? this.self : this;
@@ -16254,8 +16265,28 @@ var Table = /** @__PURE__ @class */ (function () {
         var dialogEle = this.editdlgObj.element;
         var table = closest(args.selectNode[0], 'table');
         table.style.width = dialogEle.querySelector('.e-table-width').value + 'px';
-        table.cellPadding = dialogEle.querySelector('.e-cell-padding').value;
+        if (dialogEle.querySelector('.e-cell-padding').value !== '') {
+            var tdElm = table.querySelectorAll('td');
+            for (var i = 0; i < tdElm.length; i++) {
+                var padVal = '';
+                if (tdElm[i].style.padding === '') {
+                    padVal = tdElm[i].getAttribute('style') + ' padding:' +
+                        dialogEle.querySelector('.e-cell-padding').value + 'px;';
+                }
+                else {
+                    tdElm[i].style.padding = dialogEle.querySelector('.e-cell-padding').value + 'px';
+                    padVal = tdElm[i].getAttribute('style');
+                }
+                tdElm[i].setAttribute('style', padVal);
+            }
+        }
         table.cellSpacing = dialogEle.querySelector('.e-cell-spacing').value;
+        if (!isNullOrUndefined(table.cellSpacing) || table.cellSpacing !== '0') {
+            addClass([table], CLS_TABLE_BORDER);
+        }
+        else {
+            removeClass([table], CLS_TABLE_BORDER);
+        }
         this.parent.formatter.saveData();
         this.editdlgObj.hide({ returnValue: true });
     };
@@ -16266,6 +16297,8 @@ var Table = /** @__PURE__ @class */ (function () {
         var cellSpacing = this.l10n.getConstant('cellspacing');
         var tableWrap = this.parent.createElement('div', { className: 'e-table-sizewrap' });
         var widthVal = closest(selectNode, 'table').getClientRects()[0].width;
+        var padVal = closest(selectNode, 'td').style.padding;
+        var brdSpcVal = closest(selectNode, 'table').getAttribute('cellspacing');
         var content = '<div class="e-rte-field"><input type="text" data-role ="none" id="tableWidth" class="e-table-width" '
             + ' /></div>' + '<div class="e-rte-field"><input type="text" data-role ="none" id="cellPadding" class="e-cell-padding" />'
             + ' </div><div class="e-rte-field"><input type="text" data-role ="none" id="cellSpacing" class="e-cell-spacing" /></div>';
@@ -16284,7 +16317,7 @@ var Table = /** @__PURE__ @class */ (function () {
         var padding = new NumericTextBox({
             format: 'n0',
             min: 0,
-            value: 0,
+            value: padVal !== '' ? parseInt(padVal, null) : 0,
             placeholder: cellPadding,
             floatLabelType: 'Auto',
             enableRtl: this.parent.enableRtl, locale: this.parent.locale
@@ -16294,7 +16327,7 @@ var Table = /** @__PURE__ @class */ (function () {
         var spacing = new NumericTextBox({
             format: 'n0',
             min: 0,
-            value: 0,
+            value: brdSpcVal !== '' && !isNullOrUndefined(brdSpcVal) ? parseInt(brdSpcVal, null) : 0,
             placeholder: cellSpacing,
             floatLabelType: 'Auto',
             enableRtl: this.parent.enableRtl, locale: this.parent.locale
@@ -18365,10 +18398,8 @@ var RichTextEditor = /** @__PURE__ @class */ (function (_super) {
                 if (!isNullOrUndefined(this.getToolbarElement())) {
                     this.getToolbarElement().setAttribute('tabindex', '-1');
                     var items = this.getToolbarElement().querySelectorAll('[tabindex="0"]');
-                    if (items.length !== 0) {
-                        items.forEach(function (element) {
-                            element.setAttribute('tabindex', '-1');
-                        });
+                    for (var i = 0; i < items.length; i++) {
+                        items[i].setAttribute('tabindex', '-1');
                     }
                 }
             }
@@ -18381,11 +18412,12 @@ var RichTextEditor = /** @__PURE__ @class */ (function (_super) {
         }
         if (!isNullOrUndefined(this.getToolbarElement())) {
             var toolbarItem = this.getToolbarElement().querySelectorAll('input,select,button,a,[tabindex]');
-            toolbarItem.forEach(function (item) {
-                if (!item.hasAttribute('tabindex') || item.getAttribute('tabindex') !== '-1') {
-                    item.setAttribute('tabindex', '-1');
+            for (var i = 0; i < toolbarItem.length; i++) {
+                if (!toolbarItem[i].hasAttribute('tabindex') ||
+                    toolbarItem[i].getAttribute('tabindex') !== '-1') {
+                    toolbarItem[i].setAttribute('tabindex', '-1');
                 }
-            });
+            }
         }
     };
     RichTextEditor.prototype.getUpdatedValue = function () {

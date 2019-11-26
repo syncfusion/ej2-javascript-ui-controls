@@ -890,4 +890,38 @@ describe('context menu module', () => {
         });
     });
 
+    describe('context menu with column template', () => {
+        let gridObj: Grid;
+        beforeAll((done: Function) => {
+            gridObj = createGrid({
+                dataSource: data.slice(0,5),
+                selectionSettings: {type: 'Multiple'},
+                contextMenuItems: ['AutoFit', 'Copy'],
+                columns: [
+                    { field: 'OrderID', headerText: 'Order ID', textAlign: 'Left', width: 125, isPrimaryKey: true,
+                        template: '	<span>{{OrderID}} </span>' },
+                    { field: 'CustomerID', headerText: 'Customer ID', width: 150, visible: false, textAlign: 'Right' }
+                ]
+            }, done);
+        });
+
+        it('select multiple rows', () => {
+            gridObj.selectRowsByRange(0,2);
+            expect(gridObj.getContent().querySelectorAll('tr[aria-selected=true]').length).toBe(3);
+            let eventArgs = { target: gridObj.getContent().querySelector('tr').querySelector('span') };
+            let e = {
+                event: eventArgs,
+                items: gridObj.contextMenuModule.contextMenu.items
+            };
+            (gridObj.contextMenuModule as any).contextMenuBeforeOpen(e);
+            expect(gridObj.getContent().querySelectorAll('tr[aria-selected=true]').length).toBe(3);
+            (gridObj.contextMenuModule as any).contextMenuOpen();
+            (gridObj.contextMenuModule as any).contextMenuOnClose(e);
+        });
+
+        afterAll(() => {
+            destroy(gridObj);
+            gridObj = null;
+        });
+    });
 });

@@ -925,6 +925,7 @@ describe('GridLayout', () => {
             expect((<any>gridLayOut).getCellInstance('3').col == 3).toBe(true);
             expect((<any>gridLayOut).getCellInstance('4').row == 0).toBe(true);
             expect((<any>gridLayOut).getCellInstance('4').col == 4).toBe(true);
+            expect(resizingElement.classList.contains("e-dragging")).toBe(false);
         });
 
         it('Resizing test case in east direction alone after refresh', () => {
@@ -978,6 +979,7 @@ describe('GridLayout', () => {
             expect((<any>gridLayOut).getCellInstance('3').col == 3).toBe(true);
             expect((<any>gridLayOut).getCellInstance('4').row == 0).toBe(true);
             expect((<any>gridLayOut).getCellInstance('4').col == 4).toBe(true);
+            expect(resizingElement.classList.contains("e-dragging")).toBe(false);
         });
 
         it('Resizing test case with more rows(browser scroller enabled) south east', () => {
@@ -1051,6 +1053,7 @@ describe('GridLayout', () => {
             expect((<any>gridLayOut).getCellInstance('eleven').col == 0).toBe(true);
             expect((<any>gridLayOut).getCellInstance('twelve').row == 23).toBe(true);
             expect((<any>gridLayOut).getCellInstance('twelve').col == 0).toBe(true);
+            expect(resizingElement.classList.contains("e-dragging")).toBe(false);
         });
         it('Resizing test case in east direction alone touch', () => {
             gridLayOut = new DashboardLayout({
@@ -1101,6 +1104,7 @@ describe('GridLayout', () => {
             expect((<any>gridLayOut).getCellInstance('3').col == 3).toBe(true);
             expect((<any>gridLayOut).getCellInstance('4').row == 0).toBe(true);
             expect((<any>gridLayOut).getCellInstance('4').col == 4).toBe(true);
+            expect(resizingElement.classList.contains("e-dragging")).toBe(false);
         });
 
 
@@ -1154,6 +1158,7 @@ describe('GridLayout', () => {
             expect((<any>gridLayOut).getCellInstance('3').col == 3).toBe(true);
             expect((<any>gridLayOut).getCellInstance('4').row == 0).toBe(true);
             expect((<any>gridLayOut).getCellInstance('4').col == 4).toBe(true);
+            expect(resizingElement.classList.contains("e-dragging")).toBe(false);
         });
 
         it('intial mediaQuery true case', () => {
@@ -1227,6 +1232,7 @@ describe('GridLayout', () => {
             expect((<any>gridLayOut).getCellInstance('4').col == 4).toBe(true);
             expect((<any>gridLayOut).getCellInstance('5').row == 1).toBe(true);
             expect((<any>gridLayOut).getCellInstance('5').col == 4).toBe(true);
+            expect(resizingElement.classList.contains("e-dragging")).toBe(false);
         });
 
         it('Resizing test case in southEast expand direction alone touch after refresh', () => {
@@ -1279,6 +1285,7 @@ describe('GridLayout', () => {
             expect((<any>gridLayOut).getCellInstance('4').col == 4).toBe(true);
             expect((<any>gridLayOut).getCellInstance('5').row == 1).toBe(true);
             expect((<any>gridLayOut).getCellInstance('5').col == 4).toBe(true);
+            expect(resizingElement.classList.contains("e-dragging")).toBe(false);
         });
 
         it('Resizing test case in east direction alone exceeding max case', () => {
@@ -1331,6 +1338,7 @@ describe('GridLayout', () => {
             expect((<any>gridLayOut).getCellInstance('3').col == 3).toBe(true);
             expect((<any>gridLayOut).getCellInstance('4').row == 0).toBe(true);
             expect((<any>gridLayOut).getCellInstance('4').col == 4).toBe(true);
+            expect(resizingElement.classList.contains("e-dragging")).toBe(false);
         });
 
 
@@ -1383,6 +1391,7 @@ describe('GridLayout', () => {
             expect((<any>gridLayOut).getCellInstance('3').col == 3).toBe(true);
             expect((<any>gridLayOut).getCellInstance('4').row == 0).toBe(true);
             expect((<any>gridLayOut).getCellInstance('4').col == 4).toBe(true);
+            expect(resizingElement.classList.contains("e-dragging")).toBe(false);
         });
 
         it('Resizing test case in west direction alone touch', () => {
@@ -1431,6 +1440,7 @@ describe('GridLayout', () => {
             expect((<any>gridLayOut).getCellInstance('3').col == 3).toBe(true);
             expect((<any>gridLayOut).getCellInstance('layout_0').row == 0).toBe(true);
             expect((<any>gridLayOut).getCellInstance('layout_0').col == 4).toBe(true);
+            expect(resizingElement.classList.contains("e-dragging")).toBe(false);
             gridLayOut.allowResizing = false;
             gridLayOut.dataBind();
             expect((<any>gridLayOut).allowResizing).toBe(false);
@@ -1483,6 +1493,7 @@ describe('GridLayout', () => {
             expect((<any>gridLayOut).getCellInstance('3').col == 3).toBe(true);
             expect((<any>gridLayOut).getCellInstance('layout_0').row == 0).toBe(true);
             expect((<any>gridLayOut).getCellInstance('layout_0').col == 4).toBe(true);
+            expect(resizingElement.classList.contains("e-dragging")).toBe(false);
             gridLayOut.allowResizing = false;
             gridLayOut.dataBind();
             expect((<any>gridLayOut).allowResizing).toBe(false);
@@ -1538,6 +1549,7 @@ describe('GridLayout', () => {
             expect((<any>gridLayOut).getCellInstance('3').col == 3).toBe(true);
             expect((<any>gridLayOut).getCellInstance('layout_0').row == 0).toBe(true);
             expect((<any>gridLayOut).getCellInstance('layout_0').col == 4).toBe(true);
+            expect(resizingElement.classList.contains("e-dragging")).toBe(false);
             gridLayOut.allowResizing = false;
             gridLayOut.dataBind();
             expect((<any>gridLayOut).allowResizing).toBe(false);
@@ -1592,6 +1604,7 @@ describe('GridLayout', () => {
             expect((<any>gridLayOut).getCellInstance('3').col == 3).toBe(true);
             expect((<any>gridLayOut).getCellInstance('layout_0').row == 0).toBe(true);
             expect((<any>gridLayOut).getCellInstance('layout_0').col == 4).toBe(true);
+            expect(resizingElement.classList.contains("e-dragging")).toBe(false);
             gridLayOut.allowResizing = false;
             gridLayOut.dataBind();
             expect((<any>gridLayOut).allowResizing).toBe(false);
@@ -1643,6 +1656,7 @@ describe('GridLayout', () => {
             expect((<any>gridLayOut).getCellInstance('3').col == 3).toBe(true);
             expect((<any>gridLayOut).getCellInstance('layout_0').row == 0).toBe(true);
             expect((<any>gridLayOut).getCellInstance('layout_0').col == 4).toBe(true);
+            expect(resizingElement.classList.contains("e-dragging")).toBe(false);
             gridLayOut.allowResizing = false;
             gridLayOut.dataBind();
             expect((<any>gridLayOut).allowResizing).toBe(false);
@@ -1694,6 +1708,7 @@ describe('GridLayout', () => {
             expect((<any>gridLayOut).getCellInstance('3').col == 3).toBe(true);
             expect((<any>gridLayOut).getCellInstance('layout_0').row == 0).toBe(true);
             expect((<any>gridLayOut).getCellInstance('layout_0').col == 4).toBe(true);
+            expect(resizingElement.classList.contains("e-dragging")).toBe(false);
             gridLayOut.allowResizing = false;
             gridLayOut.dataBind();
             expect((<any>gridLayOut).allowResizing).toBe(false);
@@ -1747,6 +1762,7 @@ describe('GridLayout', () => {
             expect((<any>gridLayOut).getCellInstance('3').col == 3).toBe(true);
             expect((<any>gridLayOut).getCellInstance('4').row == 0).toBe(true);
             expect((<any>gridLayOut).getCellInstance('4').col == 4).toBe(true);
+            expect(resizingElement.classList.contains("e-dragging")).toBe(false);
         });
 
         it('Resizing test case in south direction alone after refreshing', () => {
@@ -1795,6 +1811,7 @@ describe('GridLayout', () => {
             expect((<any>gridLayOut).getCellInstance('3').col == 3).toBe(true);
             expect((<any>gridLayOut).getCellInstance('4').row == 0).toBe(true);
             expect((<any>gridLayOut).getCellInstance('4').col == 4).toBe(true);
+            expect(resizingElement.classList.contains("e-dragging")).toBe(false);
         });
 
         it('Resizing events test case', () => {
@@ -1857,6 +1874,7 @@ describe('GridLayout', () => {
             expect((<any>gridLayOut).getCellInstance('3').col == 3).toBe(true);
             expect((<any>gridLayOut).getCellInstance('4').row == 0).toBe(true);
             expect((<any>gridLayOut).getCellInstance('4').col == 4).toBe(true);
+            expect(resizingElement.classList.contains("e-dragging")).toBe(false);
         });
 
         it('Resizing test case in south direction alone touch', () => {
@@ -1905,6 +1923,7 @@ describe('GridLayout', () => {
             expect((<any>gridLayOut).getCellInstance('3').col == 3).toBe(true);
             expect((<any>gridLayOut).getCellInstance('4').row == 0).toBe(true);
             expect((<any>gridLayOut).getCellInstance('4').col == 4).toBe(true);
+            expect(resizingElement.classList.contains("e-dragging")).toBe(false);
         });
 
         it('Resizing test case in north direction alone exceeding max range', () => {
@@ -1957,6 +1976,7 @@ describe('GridLayout', () => {
             expect((<any>gridLayOut).getCellInstance('5').row == 0).toBe(true);
             expect((<any>gridLayOut).getCellInstance('5').col == 0).toBe(true);
             expect((<any>gridLayOut).getCellInstance('5').sizeY == 2).toBe(true);
+            expect(resizingElement.classList.contains("e-dragging")).toBe(false);
         });
 
         it('Resizing test case in north direction alone', () => {
@@ -2007,6 +2027,7 @@ describe('GridLayout', () => {
             expect((<any>gridLayOut).getCellInstance('5').row == 0).toBe(true);
             expect((<any>gridLayOut).getCellInstance('5').col == 0).toBe(true);
             expect((<any>gridLayOut).getCellInstance('5').sizeY == 2).toBe(true);
+            expect(resizingElement.classList.contains("e-dragging")).toBe(false);
         });
 
         it('Resizing test case in north direction alone touch', () => {
@@ -2057,6 +2078,7 @@ describe('GridLayout', () => {
             expect((<any>gridLayOut).getCellInstance('5').row == 0).toBe(true);
             expect((<any>gridLayOut).getCellInstance('5').col == 0).toBe(true);
             expect((<any>gridLayOut).getCellInstance('5').sizeY == 2).toBe(true);
+            expect(resizingElement.classList.contains("e-dragging")).toBe(false);
         });
 
         // it('Resizing test case in northEast expand direction alone', () => {
@@ -2206,6 +2228,7 @@ describe('GridLayout', () => {
             expect((<any>gridLayOut).getCellInstance('4').col == 4).toBe(true);
             expect((<any>gridLayOut).getCellInstance('5').row == 1).toBe(true);
             expect((<any>gridLayOut).getCellInstance('5').col == 4).toBe(true);
+            expect(resizingElement.classList.contains("e-dragging")).toBe(false);
         });
 
         it('Resizing test case in southWest expand direction exceeding max', () => {
@@ -2255,6 +2278,7 @@ describe('GridLayout', () => {
             expect((<any>gridLayOut).getCellInstance('4').col == 4).toBe(true);
             expect((<any>gridLayOut).getCellInstance('5').row == 1).toBe(true);
             expect((<any>gridLayOut).getCellInstance('5').col == 4).toBe(true);
+            expect(resizingElement.classList.contains("e-dragging")).toBe(false);
         });
 
         it('Resizing test case in southWest expand direction less than min', () => {
@@ -2304,6 +2328,7 @@ describe('GridLayout', () => {
             expect((<any>gridLayOut).getCellInstance('4').col == 4).toBe(true);
             expect((<any>gridLayOut).getCellInstance('5').row == 1).toBe(true);
             expect((<any>gridLayOut).getCellInstance('5').col == 4).toBe(true);
+            expect(resizingElement.classList.contains("e-dragging")).toBe(false);
         });
 
 
@@ -2353,6 +2378,7 @@ describe('GridLayout', () => {
             expect((<any>gridLayOut).getCellInstance('4').col == 4).toBe(true);
             expect((<any>gridLayOut).getCellInstance('5').row == 1).toBe(true);
             expect((<any>gridLayOut).getCellInstance('5').col == 4).toBe(true);
+            expect(resizingElement.classList.contains("e-dragging")).toBe(false);
         });
 
         it('Resizing test case to check resize stop is triggered correctly', () => {
@@ -2403,6 +2429,7 @@ describe('GridLayout', () => {
             expect((<any>gridLayOut).getCellInstance('4').col == 4).toBe(true);
             expect((<any>gridLayOut).getCellInstance('5').row == 1).toBe(true);
             expect((<any>gridLayOut).getCellInstance('5').col == 4).toBe(true);
+            expect(resizingElement.classList.contains("e-dragging")).toBe(false);
         });
 
         it('Resizing test case in southEast expand direction exceeding max range', () => {
@@ -2455,6 +2482,7 @@ describe('GridLayout', () => {
             expect((<any>gridLayOut).getCellInstance('4').col == 4).toBe(true);
             expect((<any>gridLayOut).getCellInstance('5').row == 1).toBe(true);
             expect((<any>gridLayOut).getCellInstance('5').col == 4).toBe(true);
+            expect(resizingElement.classList.contains("e-dragging")).toBe(false);
         });
 
         it('Resizing test case in southEast shrink direction alone', () => {
@@ -2497,6 +2525,7 @@ describe('GridLayout', () => {
             expect((<any>gridLayOut).getCellInstance('1').sizeY == 1).toBe(true);
             expect((<any>gridLayOut).getCellInstance('2').row == 1).toBe(true);
             expect((<any>gridLayOut).getCellInstance('2').col == 2).toBe(true);
+            expect(resizingElement.classList.contains("e-dragging")).toBe(false);
         });
 
         it('Resizing test case in southEast shrink direction less than min case', () => {
@@ -2539,6 +2568,7 @@ describe('GridLayout', () => {
             expect((<any>gridLayOut).getCellInstance('1').sizeY == 2).toBe(true);
             expect((<any>gridLayOut).getCellInstance('2').row == 3).toBe(true);
             expect((<any>gridLayOut).getCellInstance('2').col == 2).toBe(true);
+            expect(resizingElement.classList.contains("e-dragging")).toBe(false);
         });
 
         // it('Resizing test case in northEast shrink direction alone', () => {
@@ -2663,6 +2693,7 @@ describe('GridLayout', () => {
             expect((<any>gridLayOut).getCellInstance('1').sizeY == 1).toBe(true);
             expect((<any>gridLayOut).getCellInstance('2').row == 2).toBe(true);
             expect((<any>gridLayOut).getCellInstance('2').col == 2).toBe(true);
+            expect(resizingElement.classList.contains("e-dragging")).toBe(false);
         });
 
         it('cellsize test case', () => {

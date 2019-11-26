@@ -2,6 +2,18 @@
 
 ## [Unreleased]
 
+## 17.3.29 (2019-11-26)
+
+### Dialog
+
+#### New Features
+
+- `#253239` - Provided the `minHeight` property to set minimum height for the dialog without considering the target's height.
+
+#### Bug Fixes
+
+- `#253239` - The issue with content overflow in IE browser has been resolved in Dialog.
+
 ## 17.3.19 (2019-10-22)
 
 ### Dialog

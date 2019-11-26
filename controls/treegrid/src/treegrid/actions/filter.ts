@@ -182,6 +182,9 @@ export class Filter {
             if (!isNullOrUndefined(ischild) && ischild.length) {
                 isExist = this.checkChildExsist(childRec[count]);
             }
+            if ((hierarchyMode === 'Child' || hierarchyMode === 'Both') && childRec.length) {
+                isExist = true;
+            }
         }
         return isExist;
     }

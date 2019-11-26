@@ -676,6 +676,7 @@ export class DiagramRenderer {
                 (options as ImageAttributes).alignment = element.imageAlign;
                 (options as ImageAttributes).source = obj.source;
                 (options as ImageAttributes).scale = element.imageScale;
+                (options as ImageAttributes).visible = obj.visible;
                 (options as ImageAttributes).description = obj.name || 'User handle';
                 (options as ImageAttributes).id = obj.name + '_';
                 this.renderer.drawImage(canvas, options as ImageAttributes, this.adornerSvgLayer, false);

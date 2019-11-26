@@ -2,6 +2,24 @@
 
 ## [Unreleased]
 
+## 17.3.29 (2019-11-26)
+
+### Gantt
+
+#### Bug Fixes
+
+- `F149069` - Parent taskbar alignment issue while rendering with single milestone child record has been fixed.
+- `F149070` - Key navigation disable issue on Tree Grid section has been fixed.
+- `#255266` - ParentID field not available in taskData field has been fixed.
+
+## 17.3.28 (2019-11-19)
+
+### Gantt
+
+#### Bug Fixes
+
+- `#253912` - Parent taskbar disappearance issue while deleting all its child records has been fixed.
+
 ## 17.3.19 (2019-10-22)
 
 ### Gantt

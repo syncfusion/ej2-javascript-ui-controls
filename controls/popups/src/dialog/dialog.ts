@@ -393,6 +393,13 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
     @Property('auto')
     public height: string | number;
     /**
+     * Specify the min-height of the dialog component.
+     * @default ''
+     * @blazorType string
+     */
+    @Property('')
+    public minHeight: string | number;
+    /**
      * Specifies the width of the dialog. 
      * @default '100%'
      * @blazorType string
@@ -596,6 +603,9 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
         this.wireEvents();
         if (this.width === '100%') {
             this.element.style.width = '';
+        }
+        if (this.minHeight !== '') {
+            this.element.style.minHeight = this.minHeight.toString();
         }
         if (this.enableResize) {
             this.setResize();
@@ -1068,6 +1078,10 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
         this.element.style.maxHeight = (!isNullOrUndefined(this.target)) && (this.targetEle.offsetHeight < window.innerHeight) ?
             (this.targetEle.offsetHeight - 20) + 'px' : (window.innerHeight - 20) + 'px';
         this.element.style.display = display;
+        if (Browser.isIE && this.contentEle && this.height === 'auto' && (this.element.offsetHeight <
+            this.contentEle.offsetHeight)) {
+            this.element.style.height = '100%';
+        }
     }
 
     private setEnableRTL(): void {
@@ -1417,7 +1431,7 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
                 this.dlgContainer.parentNode.insertBefore(this.element, this.dlgContainer);
                 detach(this.dlgContainer);
             }
-            this.element.innerHTML = '';
+            this.element.innerHTML = this.clonedEle.innerHTML;
             while (this.element.attributes.length > 0) {
                 this.element.removeAttribute(this.element.attributes[0].name);
             }

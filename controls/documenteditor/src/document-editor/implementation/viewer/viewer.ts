@@ -2414,7 +2414,7 @@ export abstract class LayoutViewer {
      * @private
      */
     public onKeyUpInternal = (event: KeyboardEvent): void => {
-        if (Browser.isDevice) {
+        if (Browser.isDevice && (event.target as HTMLElement).id === this.editableDiv.id) {
             if (window.getSelection().anchorOffset !== this.prefix.length) {
                 this.selection.setEditableDivCaretPosition(this.editableDiv.innerText.length);
             }

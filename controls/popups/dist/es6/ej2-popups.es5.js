@@ -1660,6 +1660,9 @@ var Dialog = /** @__PURE__ @class */ (function (_super) {
         if (this.width === '100%') {
             this.element.style.width = '';
         }
+        if (this.minHeight !== '') {
+            this.element.style.minHeight = this.minHeight.toString();
+        }
         if (this.enableResize) {
             this.setResize();
             if (this.animationSettings.effect === 'None') {
@@ -2141,6 +2144,10 @@ var Dialog = /** @__PURE__ @class */ (function (_super) {
         this.element.style.maxHeight = (!isNullOrUndefined(this.target)) && (this.targetEle.offsetHeight < window.innerHeight) ?
             (this.targetEle.offsetHeight - 20) + 'px' : (window.innerHeight - 20) + 'px';
         this.element.style.display = display;
+        if (Browser.isIE && this.contentEle && this.height === 'auto' && (this.element.offsetHeight <
+            this.contentEle.offsetHeight)) {
+            this.element.style.height = '100%';
+        }
     };
     Dialog.prototype.setEnableRTL = function () {
         this.enableRtl ? addClass([this.element], RTL) : removeClass([this.element], RTL);
@@ -2517,7 +2524,7 @@ var Dialog = /** @__PURE__ @class */ (function (_super) {
                 this.dlgContainer.parentNode.insertBefore(this.element, this.dlgContainer);
                 detach(this.dlgContainer);
             }
-            this.element.innerHTML = '';
+            this.element.innerHTML = this.clonedEle.innerHTML;
             while (this.element.attributes.length > 0) {
                 this.element.removeAttribute(this.element.attributes[0].name);
             }
@@ -2752,6 +2759,9 @@ var Dialog = /** @__PURE__ @class */ (function (_super) {
     __decorate$1([
         Property('auto')
     ], Dialog.prototype, "height", void 0);
+    __decorate$1([
+        Property('')
+    ], Dialog.prototype, "minHeight", void 0);
     __decorate$1([
         Property('100%')
     ], Dialog.prototype, "width", void 0);

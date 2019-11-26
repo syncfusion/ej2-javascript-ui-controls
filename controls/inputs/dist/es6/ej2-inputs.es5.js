@@ -6565,6 +6565,15 @@ var FormValidator = /** @__PURE__ @class */ (function (_super) {
         this.locale = args.locale;
         this.localeFunc();
     };
+    /**
+     * Allows you to refresh the form validator base events to the elements inside the form.
+     * @return {void}
+     */
+    FormValidator.prototype.refresh = function () {
+        this.unwireEvents();
+        this.inputElements = selectAll(this.selectQuery, this.element);
+        this.wireEvents();
+    };
     FormValidator.prototype.clearForm = function () {
         this.errorRules = [];
         this.validated = [];

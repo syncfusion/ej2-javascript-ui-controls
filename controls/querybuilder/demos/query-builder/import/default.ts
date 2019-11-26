@@ -9,7 +9,7 @@ MultiSelect.Inject(CheckBoxSelection);
 let columnData: ColumnsModel [] = [
     { field: 'EmployeeID', label: 'Employee ID', type: 'number' },
     { field: 'FirstName', label: 'FirstName', type: 'string'},
-    { field: 'Title Of Courtesy', label: 'Title Of Courtesy', type: 'boolean', values: ['Mr.', 'Mrs.'] },
+    { field: 'TitleOfCourtesy', label: 'Title Of Courtesy', type: 'boolean', values: ['Mr.', 'Mrs.'] },
     { field: 'Title', label: 'Title', type: 'string'},
     { field: 'HireDate', label: 'HireDate', type: 'date', format: 'dd/MM/yyyy' },
     { field: 'Country', label: 'Country', type: 'string' },
@@ -35,7 +35,7 @@ let importRules: RuleModel = {
                     },
                     {
                         'label': 'Title Of Courtesy',
-                        'field': 'Title Of Courtesy',
+                        'field': 'TitleOfCourtesy',
                         'type': 'boolean',
                         'operator': 'equal',
                         'value': ['Mr.']

@@ -45,6 +45,7 @@ export interface DocumentEditorContainerModel extends ComponentModel{
     /**
      * Specifies the z-order for rendering that determines whether the dialog is displayed in front or behind of another component.
      * @default 2000
+     * @aspType int
      */
     zIndex?: number;
 

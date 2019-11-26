@@ -616,18 +616,20 @@ export function laneInterChanged(diagram: Diagram, obj: NodeModel, target: NodeM
             index = ((shape.header && (shape as SwimLane).hasHeader) ? 1 : 0) + (shape.phases.length && shape.phaseSize ? 1 : 0);
             sourceLaneIndex = obj.rowIndex - index;
             targetLaneIndex = (target as Node).rowIndex - index;
-            if (sourceLaneIndex < targetLaneIndex) {
-                if (position && target.wrapper.offsetY > position.y) {
-                    targetIndex += (targetLaneIndex > 0) ? -1 : 1;
-                    targetLaneIndex += (targetLaneIndex > 0) ? -1 : 1;
+            if (lanes[sourceLaneIndex].canMove) {
+                if (sourceLaneIndex < targetLaneIndex) {
+                    if (position && target.wrapper.offsetY > position.y) {
+                        targetIndex += (targetLaneIndex > 0) ? -1 : 1;
+                        targetLaneIndex += (targetLaneIndex > 0) ? -1 : 1;
+                    }
+                } else {
+                    if (position && target.wrapper.offsetY < position.y) {
+                        targetIndex += 1; targetLaneIndex += 1;
+                    }
                 }
-            } else {
-                if (position && target.wrapper.offsetY < position.y) {
-                    targetIndex += 1; targetLaneIndex += 1;
+                if (sourceIndex !== targetIndex) {
+                    grid.updateRowIndex(sourceIndex, targetIndex);
                 }
-            }
-            if (sourceIndex !== targetIndex) {
-                grid.updateRowIndex(sourceIndex, targetIndex);
             }
 
         } else {
@@ -637,50 +639,54 @@ export function laneInterChanged(diagram: Diagram, obj: NodeModel, target: NodeM
             sourceLaneIndex = obj.columnIndex - index;
             targetLaneIndex = (target as Node).columnIndex - index;
             rowIndex = (shape.header && (shape as SwimLane).hasHeader) ? 1 : 0;
-
-            if (sourceLaneIndex < targetLaneIndex) {
-                if (position && target.wrapper.offsetX > position.x) {
-                    targetIndex += (targetLaneIndex > 0) ? -1 : 1;
-                    targetLaneIndex += (targetLaneIndex > 0) ? -1 : 1;
-                }
-            } else {
-                if (position && target.wrapper.offsetX < position.x) {
-                    targetIndex += 1; targetLaneIndex += 1;
-                }
-            }
-            if (sourceIndex !== targetIndex) {
-                if (shape.phaseSize === 0 && targetIndex === 0) {
-                    if (shape.header && (shape as SwimLane).hasHeader) {
-                        grid.rows[0].cells[sourceIndex].children = grid.rows[0].cells[0].children;
-                        grid.rows[0].cells[sourceIndex].columnSpan = grid.rows[0].cells[0].columnSpan;
-                        grid.rows[0].cells[0].children = [];
+            if (lanes[sourceLaneIndex].canMove) {
+                if (sourceLaneIndex < targetLaneIndex) {
+                    if (position && target.wrapper.offsetX > position.x) {
+                        targetIndex += (targetLaneIndex > 0) ? -1 : 1;
+                        targetLaneIndex += (targetLaneIndex > 0) ? -1 : 1;
+                    }
+                } else {
+                    if (position && target.wrapper.offsetX < position.x) {
+                        targetIndex += 1; targetLaneIndex += 1;
                     }
                 }
-                grid.updateColumnIndex(0, sourceIndex, targetIndex);
+                if (sourceIndex !== targetIndex) {
+                    if (shape.phaseSize === 0 && targetIndex === 0) {
+                        if (shape.header && (shape as SwimLane).hasHeader) {
+                            grid.rows[0].cells[sourceIndex].children = grid.rows[0].cells[0].children;
+                            grid.rows[0].cells[sourceIndex].columnSpan = grid.rows[0].cells[0].columnSpan;
+                            grid.rows[0].cells[0].children = [];
+                        }
+                    }
+                    grid.updateColumnIndex(0, sourceIndex, targetIndex);
+                }
             }
         }
         if (sourceIndex !== targetIndex) {
-            undoElement = {
-                target: cloneObject(target), source: cloneObject(obj)
-            };
             temp = lanes[sourceLaneIndex];
-            lanes.splice(sourceLaneIndex, 1);
-            lanes.splice(targetLaneIndex, 0, temp);
-            redoElement = {
-                target: cloneObject(undoElement.source), source: cloneObject(undoElement.target)
-            };
-            entry = {
-                type: 'LanePositionChanged', redoObject: redoElement as NodeModel,
-                undoObject: undoElement as NodeModel, category: 'Internal'
-            };
-            if (!(diagram.diagramActions & DiagramAction.UndoRedo)) {
-                diagram.commandHandler.addHistoryEntry(entry);
+            if (temp.canMove) {
+                undoElement = {
+                    target: cloneObject(target), source: cloneObject(obj)
+                };
+                lanes.splice(sourceLaneIndex, 1);
+                lanes.splice(targetLaneIndex, 0, temp);
+                redoElement = {
+                    target: cloneObject(undoElement.source), source: cloneObject(undoElement.target)
+                };
+                entry = {
+                    type: 'LanePositionChanged', redoObject: redoElement as NodeModel,
+                    undoObject: undoElement as NodeModel, category: 'Internal'
+                };
+                if (!(diagram.diagramActions & DiagramAction.UndoRedo)) {
+                    diagram.commandHandler.addHistoryEntry(entry);
+                }
+                ChangeLaneIndex(diagram, swimLane, 0);
+                updateConnectorsProperties(connectors, diagram);
+                updateSwimLaneChildPosition(lanes as Lane[], diagram);
+                swimLane.wrapper.measure(new Size(swimLane.width, swimLane.height));
+                swimLane.wrapper.arrange(swimLane.wrapper.desiredSize);
+                diagram.updateDiagramObject(swimLane);
             }
-            ChangeLaneIndex(diagram, swimLane, 0);
-            updateConnectorsProperties(connectors, diagram);
-            swimLane.wrapper.measure(new Size(swimLane.width, swimLane.height));
-            swimLane.wrapper.arrange(swimLane.wrapper.desiredSize);
-            diagram.updateDiagramObject(swimLane);
         }
     }
     diagram.updateDiagramElementQuad();
@@ -1711,6 +1717,38 @@ export function checkLaneChildrenOffset(swimLane: NodeModel): void {
                 child.offsetX = child.wrapper.offsetX;
                 child.offsetY = child.wrapper.offsetY;
             }
+        }
+    }
+}
+export function findLane(laneNode: Node, diagram: Diagram): LaneModel {
+    let lane: LaneModel;
+    if (laneNode.isLane) {
+        let swimLane: NodeModel = diagram.getObject(laneNode.parentId);
+        if (swimLane && swimLane.shape.type === 'SwimLane' && (laneNode as Node).isLane) {
+            let laneIndex: number = findLaneIndex(swimLane, laneNode as NodeModel);
+            lane = (swimLane.shape as SwimLane).lanes[laneIndex];
+        }
+    }
+    return lane;
+}
+
+export function canLaneInterchange(laneNode: Node, diagram: Diagram): boolean {
+    if (laneNode.isLane) {
+        let lane: LaneModel = findLane(laneNode, diagram);
+        if (lane.canMove) {
+            return true;
+        }
+    }
+    return false;
+}
+export function updateSwimLaneChildPosition(lanes: Lane[], diagram: Diagram): void {
+    let lane: Lane; let node: NodeModel;
+    for (let i: number = 0; i < lanes.length; i++) {
+        lane = lanes[i];
+        for (let j: number = 0; j < lane.children.length; j++) {
+            node = diagram.nameTable[lane.children[j].id];
+            node.offsetX = node.wrapper.offsetX;
+            node.offsetY = node.wrapper.offsetY;
         }
     }
 }

@@ -1,4 +1,4 @@
-import { EventHandler, Internationalization, Property, NotifyPropertyChanges, Browser, RippleOptions } from '@syncfusion/ej2-base';import { Animation, EmitType, Event, AnimationModel, cldrData, getDefaultDateObject, detach } from '@syncfusion/ej2-base';import { createElement, remove, addClass, L10n, removeClass, closest, classList, append, attributes } from '@syncfusion/ej2-base';import { KeyboardEvents, KeyboardEventArgs, isNullOrUndefined, formatUnit, getValue, rippleEffect } from '@syncfusion/ej2-base';import { ModuleDeclaration, extend } from '@syncfusion/ej2-base';import { Popup } from '@syncfusion/ej2-popups';import { Input } from '@syncfusion/ej2-inputs';import { BlurEventArgs } from '../calendar/calendar';import { DatePicker, PopupObjectArgs } from '../datepicker/datepicker';import { TimePickerBase } from '../timepicker/timepicker';import { cssClass as ListBaseClasses } from '@syncfusion/ej2-lists';
+import { EventHandler, Internationalization, Property, NotifyPropertyChanges, Browser, RippleOptions } from '@syncfusion/ej2-base';import { Animation, EmitType, Event, AnimationModel, cldrData, getDefaultDateObject, detach } from '@syncfusion/ej2-base';import { createElement, remove, addClass, L10n, removeClass, closest, classList, append, attributes } from '@syncfusion/ej2-base';import { KeyboardEvents, KeyboardEventArgs, isNullOrUndefined, formatUnit, getValue, rippleEffect } from '@syncfusion/ej2-base';import { ModuleDeclaration, extend } from '@syncfusion/ej2-base';import { Popup } from '@syncfusion/ej2-popups';import { Input } from '@syncfusion/ej2-inputs';import { BlurEventArgs, ClearedEventArgs } from '../calendar/calendar';import { DatePicker, PopupObjectArgs } from '../datepicker/datepicker';import { TimePickerBase } from '../timepicker/timepicker';import { cssClass as ListBaseClasses } from '@syncfusion/ej2-lists';
 import {DatePickerModel} from "../datepicker/datepicker-model";
 
 /**
@@ -256,6 +256,12 @@ export interface DateTimePickerModel extends DatePickerModel{
      * @blazorType PopupObjectArgs
      */
     close?: EmitType<Object>;
+
+    /**
+     * Triggers when datetimepicker value is cleared using clear button.
+     * @event
+     */
+    cleared?: EmitType<ClearedEventArgs>;
 
     /**
      * Triggers when input loses the focus.

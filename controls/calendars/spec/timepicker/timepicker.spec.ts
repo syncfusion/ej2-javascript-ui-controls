@@ -3688,5 +3688,31 @@ describe('TimePicker', () => {
             timepicker.popupObj.trigger('targetExitViewport');
         });
     });
+
+    describe('Cleared event test case', function () {
+        let timepicker:any;
+        beforeEach(function () {
+            let ele: HTMLElement = createElement('input', { id: 'date' });
+                document.body.appendChild(ele);
+        });
+        afterEach(function () {
+            if (timepicker) {
+                timepicker.destroy();
+            }
+            document.body.innerHTML = '';
+        });
+        it('check value after button click', function () {
+            timepicker = new TimePicker({
+                value: new Date('4/5/2017 1:00 AM'),
+                cleared: function(args: any) {
+                    expect(args.name).toBe("cleared");
+                    expect(timepicker.value).toBe(null);
+                }
+            });
+            timepicker.appendTo('#date');
+            timepicker.element.parentElement.querySelectorAll('.e-clear-icon')[0].click();
+            expect(timepicker.inputElement.value === "").toBe(true);
+        });
+    });
 });
 

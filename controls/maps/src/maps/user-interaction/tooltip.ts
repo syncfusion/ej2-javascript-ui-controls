@@ -245,6 +245,7 @@ export class MapsTooltip {
         } else {
             this.maps.on(Browser.touchMoveEvent, this.renderTooltip, this);
         }
+        this.maps.on(Browser.touchCancelEvent, this.removeTooltip, this);
     }
     public removeEventListener(): void {
         if (this.maps.isDestroyed) {
@@ -257,6 +258,7 @@ export class MapsTooltip {
         } else {
             this.maps.off(Browser.touchMoveEvent, this.renderTooltip);
         }
+        this.maps.off(Browser.touchCancelEvent, this.removeTooltip);
     }
     /**
      * Get module name.

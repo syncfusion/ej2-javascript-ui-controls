@@ -1615,6 +1615,12 @@ export interface LaneModel {
      */
     header?: HeaderModel;
 
+    /**
+     * Defines when the lane to be interchanged or not
+     * @default true 
+     */
+    canMove?: boolean;
+
 }
 
 /**

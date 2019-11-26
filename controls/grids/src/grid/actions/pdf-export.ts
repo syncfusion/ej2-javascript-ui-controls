@@ -336,37 +336,40 @@ export class PdfExport {
             };
             /* tslint:disable-next-line:max-line-length */
             let value: string = this.parent.getColumnByField(dataSourceItems.field).headerText + ': ' + (!col.enableGroupByFormat ? this.exportValueFormatter.formatCellValue(args) : dataSourceItems.key) + ' - ' + dataSourceItems.count + (dataSource.count > 1 ? ' items' : ' item');
-            row.cells.getCell(groupIndex).value = value;
-            row.cells.getCell(groupIndex + 1).style.stringFormat = new PdfStringFormat(PdfTextAlignment.Left);
-            row.style.setBorder(border);
-            row.style.setFont(font);
-            row.style.setTextBrush(brush);
-            row.style.setBackgroundBrush(backgroundBrush);
-            let sRows: Row<AggregateColumnModel>[];
-            let captionSummaryModel: CaptionSummaryModelGenerator = new CaptionSummaryModelGenerator(gObj);
-            if (!isNullOrUndefined(dataSourceItems.items.records)) {
-                sRows = captionSummaryModel.generateRows(dataSourceItems.items.records, dataSourceItems);
-            } else {
-                sRows = captionSummaryModel.generateRows(dataSourceItems.items, dataSourceItems);
-            }
-            if (!isNullOrUndefined(sRows) && sRows.length === 0) {
-                row.cells.getCell(groupIndex + 1).columnSpan = pdfGrid.columns.count - (groupIndex + 1);
-            }
-            if (!isNullOrUndefined(dataSource.childLevels) && dataSource.childLevels > 0) {
-                this.processAggregates(sRows, pdfGrid, border, font, brush, backgroundBrush, true, row, groupIndex);
-                this.processGroupedRecords(pdfGrid, dataSourceItems.items, gridColumns, gObj, border, (groupIndex + 1), font, brush,
-                                           backgroundBrush, returnType, pdfExportProperties, helper, index);
-                let groupSummaryModel: GroupSummaryModelGenerator = new GroupSummaryModelGenerator(gObj);
-                sRows = groupSummaryModel.generateRows(dataSourceItems.items.records, dataSourceItems);
-                this.processAggregates(sRows, pdfGrid, border, font, brush, backgroundBrush, false);
-            } else {
-                this.processAggregates(sRows, pdfGrid, border, font, brush, backgroundBrush, true, row, groupIndex);
-                index = this.processRecord(border, gridColumns, gObj, dataSourceItems.items,
-                                           pdfGrid, (groupIndex + 1), pdfExportProperties, helper, index);
-                let groupSummaryModel: GroupSummaryModelGenerator = new GroupSummaryModelGenerator(gObj);
-                sRows = groupSummaryModel.generateRows(dataSourceItems.items, dataSourceItems);
-                this.processAggregates(sRows, pdfGrid, border, font, brush, backgroundBrush, false);
-            }
+            let cArgs: { captionText: string } = { captionText: value };
+            this.parent.trigger(events.exportGroupCaption, cArgs, (cArgs: { captionText: string }) => {
+                row.cells.getCell(groupIndex).value = cArgs.captionText;
+                row.cells.getCell(groupIndex + 1).style.stringFormat = new PdfStringFormat(PdfTextAlignment.Left);
+                row.style.setBorder(border);
+                row.style.setFont(font);
+                row.style.setTextBrush(brush);
+                row.style.setBackgroundBrush(backgroundBrush);
+                let sRows: Row<AggregateColumnModel>[];
+                let captionSummaryModel: CaptionSummaryModelGenerator = new CaptionSummaryModelGenerator(gObj);
+                if (!isNullOrUndefined(dataSourceItems.items.records)) {
+                    sRows = captionSummaryModel.generateRows(dataSourceItems.items.records, dataSourceItems);
+                } else {
+                    sRows = captionSummaryModel.generateRows(dataSourceItems.items, dataSourceItems);
+                }
+                if (!isNullOrUndefined(sRows) && sRows.length === 0) {
+                    row.cells.getCell(groupIndex + 1).columnSpan = pdfGrid.columns.count - (groupIndex + 1);
+                }
+                if (!isNullOrUndefined(dataSource.childLevels) && dataSource.childLevels > 0) {
+                    this.processAggregates(sRows, pdfGrid, border, font, brush, backgroundBrush, true, row, groupIndex);
+                    this.processGroupedRecords(pdfGrid, dataSourceItems.items, gridColumns, gObj, border, (groupIndex + 1), font, brush,
+                                               backgroundBrush, returnType, pdfExportProperties, helper, index);
+                    let groupSummaryModel: GroupSummaryModelGenerator = new GroupSummaryModelGenerator(gObj);
+                    sRows = groupSummaryModel.generateRows(dataSourceItems.items.records, dataSourceItems);
+                    this.processAggregates(sRows, pdfGrid, border, font, brush, backgroundBrush, false);
+                } else {
+                    this.processAggregates(sRows, pdfGrid, border, font, brush, backgroundBrush, true, row, groupIndex);
+                    index = this.processRecord(border, gridColumns, gObj, dataSourceItems.items,
+                                               pdfGrid, (groupIndex + 1), pdfExportProperties, helper, index);
+                    let groupSummaryModel: GroupSummaryModelGenerator = new GroupSummaryModelGenerator(gObj);
+                    sRows = groupSummaryModel.generateRows(dataSourceItems.items, dataSourceItems);
+                    this.processAggregates(sRows, pdfGrid, border, font, brush, backgroundBrush, false);
+                }
+            });
         }
     }
     private processGridHeaders(childLevels: number, pdfGrid: PdfGrid, rows: Row<Column>[], gridColumn: Column[],

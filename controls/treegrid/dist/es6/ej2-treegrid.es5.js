@@ -5493,9 +5493,9 @@ var RowDD$1 = /** @__PURE__ @class */ (function () {
     RowDD$$1.prototype.rowDropped = function (args) {
         var tObj = this.parent;
         if (!tObj.rowDropSettings.targetID) {
+            tObj.trigger(rowDrop, args);
             if (parentsUntil(args.target, 'e-content')) {
                 setValue('dropPosition', this.dropPosition, args);
-                tObj.trigger(rowDrop, args);
                 if (!args.cancel) {
                     this.dropRows(args);
                     tObj.refresh();
@@ -6224,6 +6224,9 @@ var Filter$1 = /** @__PURE__ @class */ (function () {
             }
             if (!isNullOrUndefined(ischild) && ischild.length) {
                 isExist = this.checkChildExsist(childRec[count]);
+            }
+            if ((hierarchyMode === 'Child' || hierarchyMode === 'Both') && childRec.length) {
+                isExist = true;
             }
         }
         return isExist;

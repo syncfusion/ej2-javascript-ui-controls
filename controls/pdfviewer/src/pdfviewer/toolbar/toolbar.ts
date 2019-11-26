@@ -17,7 +17,7 @@ export class Toolbar {
     private currentPageBox: NumericTextBox;
     private zoomDropDown: ComboBox;
     private currentPageBoxElement: HTMLElement;
-    /** 
+    /**
      * @private
      */
     public uploadedDocumentName: string;
@@ -46,11 +46,11 @@ export class Toolbar {
      */
     public annotationItem: HTMLElement;
     private moreOptionItem: HTMLElement;
-    /** 
+    /**
      * @private
      */
     public annotationToolbarModule: AnnotationToolbar;
-    /** 
+    /**
      * @private
      */
     public moreDropDown: DropDownButton;
@@ -86,7 +86,7 @@ export class Toolbar {
         this.pdfViewer = viewer;
         this.pdfViewerBase = viewerBase;
     }
-    /** 
+    /**
      * @private
      */
     public intializeToolbar(width: string): HTMLElement {
@@ -277,10 +277,13 @@ export class Toolbar {
         this.isScrollingBtnVisible = enableScrollingTool;
         this.applyHideToToolbar(enableScrollingTool, 14, 14);
     }
-
     private showDownloadOption(enableDownloadOption: boolean): void {
         this.isDownloadBtnVisible = enableDownloadOption;
+        if (!Browser.isDevice) {
         this.applyHideToToolbar(enableDownloadOption, 23, 23);
+        }else {
+            this.applyHideToToolbar(enableDownloadOption, 5, 5);
+        }
     }
 
     private showPrintOption(enablePrintOption: boolean): void {
@@ -290,12 +293,20 @@ export class Toolbar {
 
     private showSearchOption(enableSearchOption: boolean): void {
         this.isSearchBtnVisible = enableSearchOption;
-        this.applyHideToToolbar(enableSearchOption, 20, 20);
+        if (!Browser.isDevice) {
+            this.applyHideToToolbar(enableSearchOption, 20, 20);
+            }else {
+            this.applyHideToToolbar(enableSearchOption, 4, 4);
+            }
     }
 
     private showUndoRedoTool(isEnable: boolean): void {
-        this.isUndoRedoBtnsVisible = isEnable;
-        this.applyHideToToolbar(isEnable, 16, 17);
+    this.isUndoRedoBtnsVisible = isEnable;
+    if (!Browser.isDevice) {
+            this.applyHideToToolbar(isEnable, 16, 17);
+        }else {
+            this.applyHideToToolbar(isEnable, 2, 3);
+        }
     }
 
     private showCommentOption(isEnable: boolean): void {
@@ -366,7 +377,7 @@ export class Toolbar {
         }
     }
 
-    /** 
+    /**
      * @private
      */
     public resetToolbar(): void {
@@ -380,7 +391,7 @@ export class Toolbar {
             }
         }
     }
-    /** 
+    /**
      * @private
      */
     public updateToolbarItems(): void {
@@ -446,7 +457,7 @@ export class Toolbar {
             }
         }
     }
-    /** 
+    /**
      * @private
      */
     public updateNavigationButtons(): void {
@@ -480,7 +491,7 @@ export class Toolbar {
             this.currentPageBox.readonly = true;
         }
     }
-    /** 
+    /**
      * @private
      */
     public updateZoomButtons(): void {
@@ -497,7 +508,7 @@ export class Toolbar {
             }
         }
     }
-    /** 
+    /**
      * @private
      */
     public updateUndoRedoButtons(): void {
@@ -527,7 +538,7 @@ export class Toolbar {
         this.toolbar.enableItems(this.redoItem.parentElement, false);
     }
 
-    /** 
+    /**
      * @private
      */
     public destroy(): void {
@@ -541,7 +552,7 @@ export class Toolbar {
         this.toolbar.destroy();
         this.toolbarElement.remove();
     }
-    /** 
+    /**
      * @private
      */
     public updateCurrentPage(pageIndex: number): void {
@@ -556,7 +567,7 @@ export class Toolbar {
         }
         this.pdfViewerBase.currentPageNumber = pageIndex;
     }
-    /** 
+    /**
      * @private
      */
     public updateTotalPage(): void {
@@ -594,6 +605,7 @@ export class Toolbar {
                 this.toolbar.enableRtl = true;
             }
             this.toolbar.appendTo(this.toolbarElement);
+            this.applyToolbarSettings();
             this.afterToolbarCreation();
             this.updateTotalPage();
             this.toolbarElement.addEventListener('keydown', this.onToolbarKeydown);
@@ -601,8 +613,11 @@ export class Toolbar {
             this.createToolbarItemsForMobile();
             if (this.pdfViewer.enableRtl) {
                 this.toolbar.enableRtl = true;
+
             }
+            this.applyToolbarSettings();
             this.disableUndoRedoButtons();
+
         }
         return this.toolbarElement;
     }
@@ -936,7 +951,7 @@ export class Toolbar {
             this.zoomDropDown.element.removeEventListener('click', this.onZoomDropDownInputClick);
         }
     }
-    /** 
+    /**
      * @private
      */
     public onToolbarResize(viewerWidth: number): void {
@@ -1206,7 +1221,7 @@ export class Toolbar {
             this.zoomDropDown.focusOut();
         }
     }
-    /** 
+    /**
      * @private
      */
     public updateZoomPercentage(zoomFactor: number): void {
@@ -1244,7 +1259,7 @@ export class Toolbar {
             this.pdfViewerBase.initiatePanning();
         }
     }
-    /** 
+    /**
      * @private
      */
     public textSearchButtonHandler(): void {
@@ -1363,6 +1378,7 @@ export class Toolbar {
         }
     }
 
+
     private applyToolbarSettings(): void {
         let toolbarSettingsItems: ToolbarItem[] = this.pdfViewer.toolbarSettings.toolbarItems;
         if (toolbarSettingsItems) {
@@ -1433,7 +1449,7 @@ export class Toolbar {
         }
     }
 
-    /** 
+    /**
      * @private
      */
     public getModuleName(): string {

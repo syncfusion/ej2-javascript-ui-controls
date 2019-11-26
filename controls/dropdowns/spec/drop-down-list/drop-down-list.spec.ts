@@ -5085,4 +5085,32 @@ describe('DDList', () => {
             expect(listObj.value === 'list1').toBe(true)
         });
     });
+    describe('EJ2-33656', () => {
+        let listObj: any;
+        let element: HTMLInputElement;
+        let keyEventArgs: any = { preventDefault: (): void => { /** NO Code */ }, key: 'j', code: 'KeyJ', charCode: 106 };
+        beforeAll(() => {
+            element = <HTMLInputElement>createElement('input', { id: 'dropdownlist.list' });
+            document.body.appendChild(element);
+            listObj = new DropDownList({
+                dataSource: datasource,
+                fields: { text: "text", value: "id" },
+            });
+            listObj.appendTo(element);
+            listObj.showPopup();
+        });
+        it('Readonly mode testing', () => {
+            expect(listObj.value === null).toBe(true);
+            listObj.inputWrapper.container.click();
+            listObj.onSearch(keyEventArgs);
+            expect(listObj.value === 'list1').toBe(true);
+            listObj.readonly = true;
+            listObj.inputWrapper.container.click();
+            keyEventArgs.key = 'c';
+            keyEventArgs.code = 'keyC';
+            keyEventArgs.charCode = 99;
+            listObj.onSearch(keyEventArgs);
+            expect(listObj.value === 'list1').toBe(true);
+        });
+    });
 });

@@ -304,6 +304,22 @@ export class ChartRows {
         }
         return rightLabelNode;
     }
+     /**
+      * To check presence of single milestone child.
+      * @return {boolean}
+      */
+    private checkChildMileStone(record: IGanttData): boolean {
+        let boolValue: boolean = false;
+        if (record.hasChildRecords && record.childRecords.length === 1) {
+            let childRecords: IGanttData[] = record.childRecords;
+            if (childRecords[0].hasChildRecords) {
+                boolValue = this.checkChildMileStone(childRecords[0]);
+            } else if (childRecords[0].ganttProperties.isMilestone) {
+                boolValue = true;
+            }
+        }
+        return boolValue;
+    }
 
     /**
      * To get parent taskbar node.
@@ -332,7 +348,8 @@ export class ChartRows {
             }
             let template: string = '<div class="' + cls.parentTaskBarInnerDiv + ' ' +
                 this.getExpandClass(data) + ' ' + cls.traceParentTaskBar + '"' +
-                ' style="width:' + data.ganttProperties.width + 'px;height:' + this.taskBarHeight + 'px;">' +
+                ' style="width:' + ((!this.checkChildMileStone(data)) ? (data.ganttProperties.width) :
+                    (this.milestoneHeight)) + 'px;height:' + this.taskBarHeight + 'px;">' +
                 '<div class="' + cls.parentProgressBarInnerDiv + ' ' + this.getExpandClass(data) + ' ' + cls.traceParentProgressBar + '"' +
                 ' style="border-style:' + (data.ganttProperties.progressWidth ? 'solid;' : 'none;') +
                 'width:' + data.ganttProperties.progressWidth + 'px;' +
@@ -490,8 +507,9 @@ export class ChartRows {
             ' style="' + ((data.ganttProperties.isMilestone) ? ('width:' + this.milestoneHeight + 'px;height:' +
                 this.milestoneHeight + 'px;margin-top:' + this.milestoneMarginTop + 'px;left:' + (data.ganttProperties.left -
                     (this.milestoneHeight / 2)) + 'px;') : ('width:' + data.ganttProperties.width + 'px;margin-top:' +
-                        this.taskBarMarginTop + 'px;left:' + data.ganttProperties.left + 'px;height:' + this.taskBarHeight + 'px;')) +
-            '"></div>';
+                        this.taskBarMarginTop + 'px;left:' + (!this.checkChildMileStone(data) ? (data.ganttProperties.left) :
+                            (data.ganttProperties.left - (this.milestoneHeight / 2))) + 'px;height:' +
+                        this.taskBarHeight + 'px;')) + '"></div>';
         return this.createDivElement(template);
     }
 

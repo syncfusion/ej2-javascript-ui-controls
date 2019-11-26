@@ -1746,7 +1746,7 @@ var DropDownList = /** @__PURE__ @class */ (function (_super) {
                 this.renderList();
             }
             this.searchKeyEvent = e;
-            if (!this.isRequested && !isNullOrUndefined(this.list.querySelector('li')) && this.enabled) {
+            if (!this.isRequested && !isNullOrUndefined(this.list.querySelector('li')) && this.enabled && !this.readonly) {
                 this.incrementalSearch(e);
             }
         }
@@ -6842,7 +6842,7 @@ var MultiSelect = /** @__PURE__ @class */ (function (_super) {
     };
     MultiSelect.prototype.clearAllCallback = function (e, isClearAll) {
         var tempValues = this.value ? this.value.slice() : [];
-        if (this.mainList && this.listData && this.allowFiltering) {
+        if (this.mainList && this.listData && (this.allowFiltering || this.allowCustomValue)) {
             var list = this.mainList.cloneNode ? this.mainList.cloneNode(true) : this.mainList;
             this.onActionComplete(list, this.mainData);
         }
@@ -8030,7 +8030,9 @@ var MultiSelect = /** @__PURE__ @class */ (function (_super) {
         }
         if (isBlazor() && this.itemTemplate) {
             this.DropDownBaseupdateBlazorTemplates(true, false, false, false, false, false, false, false);
-            this.refreshSelection();
+            if (this.mode !== 'CheckBox' && this.list) {
+                this.refreshSelection();
+            }
         }
         if (!this.ulElement) {
             this.beforePopupOpen = true;
@@ -9481,6 +9483,18 @@ var ListBox = /** @__PURE__ @class */ (function (_super) {
             this.ulElement.removeChild(liCollections[i]);
         }
     };
+    /**
+     * Gets the array of data Object that matches the given array of values.
+     * @param  { string[] | number[] | boolean[] } value - Specifies the array value of the list item.
+     * @returns object[].
+     */
+    ListBox.prototype.getDataByValues = function (value) {
+        var data = [];
+        for (var i = 0; i < value.length; i++) {
+            data.push(this.getDataByValue(value[i]));
+        }
+        return data;
+    };
     ListBox.prototype.updateLiCollection = function (index) {
         var tempLi = [].slice.call(this.liCollections);
         tempLi.splice(index, 1);
@@ -10190,13 +10204,27 @@ var ListBox = /** @__PURE__ @class */ (function (_super) {
     ListBox.prototype.updateSelectedOptions = function () {
         var _this = this;
         var selectedOptions = [];
+        var values = this.value;
         this.getSelectedItems().forEach(function (ele) {
             if (!ele.classList.contains('e-grabbed')) {
                 selectedOptions.push(_this.getFormattedValue(ele.getAttribute('data-value')));
             }
         });
         if (this.mainList.childElementCount === this.ulElement.childElementCount) {
-            this.setProperties({ value: selectedOptions }, true);
+            if (this.allowFiltering) {
+                for (var i = 0; i < selectedOptions.length; i++) {
+                    if (values.indexOf(selectedOptions[i]) > -1) {
+                        continue;
+                    }
+                    else {
+                        values.push(selectedOptions[i]);
+                    }
+                }
+                this.setProperties({ value: values }, true);
+            }
+            else {
+                this.setProperties({ value: selectedOptions }, true);
+            }
         }
         this.updateSelectTag();
         this.updateToolBarState();

@@ -488,3 +488,13 @@ let diagram: Diagram = new Diagram({
 });
 
 diagram.appendTo('#diagram');
+document.getElementById('lineRouting').onclick = function(){
+    diagram.constraints = DiagramConstraints.Default | DiagramConstraints.LineRouting;
+    diagram.dataBind();
+    diagram.resetSegments();
+}
+document.getElementById('DisablelineRouting').onclick = function(){
+    diagram.constraints = DiagramConstraints.Default & ~DiagramConstraints.LineRouting;
+    diagram.dataBind();
+    diagram.resetSegments();
+}

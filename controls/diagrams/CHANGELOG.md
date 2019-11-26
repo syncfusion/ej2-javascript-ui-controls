@@ -2,13 +2,20 @@
 
 ## [Unreleased]
 
-## 17.3.28 (2019-11-19)
+## 17.3.29 (2019-11-26)
 
 ### Diagram
 
+#### New Features
+
+- `#248460`,`#253930` - The support has been provided to restrict the movement of lane children beyond their boundaries.
+- `#254732` - The support has been provided to rearrange lanes within the swimlane.
+- `#255299` - Visibility issue while using image as content for user handle is now fixed.
+
 #### Bug Fixes
 
-- `F149060` - Unable to remove the connector that are drawn at the run time issue has been fixed.
+- `F149060` - The issue "unable to remove the connector drawn at the run time" has been fixed.
+- `#227953` - The issue with updating line routing dynamically has been fixed.
 
 ## 17.3.28 (2019-11-19)
 

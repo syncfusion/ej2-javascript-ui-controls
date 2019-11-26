@@ -2549,3 +2549,11 @@ export interface FocusEventArgs {
 export interface BlurEventArgs {
     model?: Object;
 }
+
+export interface ClearedEventArgs {
+    /**
+     * Specifies the original event arguments.
+     */
+    event?: MouseEvent | Event;
+
+}

@@ -11,7 +11,7 @@ import { iterateArrayOrObject, prepareColumns, parentsUntil, wrap, templateCompi
 import { getRowHeight, setColumnIndex, Global } from './util';
 import * as events from '../base/constant';
 import { ReturnType } from '../base/type';
-import { IDialogUI, ScrollPositionType } from './interface';
+import { IDialogUI, ScrollPositionType, ExportGroupCaptionEventArgs } from './interface';
 import { IRenderer, IValueFormatter, IFilterOperator, IIndex, RowDataBoundEventArgs, QueryCellInfoEventArgs } from './interface';
 import { CellDeselectEventArgs, CellSelectEventArgs, CellSelectingEventArgs, ParentDetails, ContextMenuItemModel } from './interface';
 import { PdfQueryCellInfoEventArgs, ExcelQueryCellInfoEventArgs, ExcelExportProperties, PdfExportProperties } from './interface';
@@ -1930,6 +1930,14 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     public dataSourceChanged: EmitType<DataSourceChangedEventArgs>;
 
     /**
+     * Triggers before exporting each caption row to PDF document. You can also customize the export caption row values.
+     * @event
+     * @deprecated 
+     */
+    @Event()
+    public exportGroupCaption: EmitType<ExportGroupCaptionEventArgs>;
+
+    /**
      * Constructor for creating the component
      * @hidden
      */
@@ -2479,6 +2487,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
                 case 'pageSettings':
                     if (this.pageTemplateChange) {
                         this.pageTemplateChange = false;
+                        this.notify(events.inBoundModelChanged, { module: 'pager', properties: newProp.pageSettings });
                         break;
                     }
                     this.notify(events.inBoundModelChanged, { module: 'pager', properties: newProp.pageSettings });

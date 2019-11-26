@@ -77,7 +77,7 @@ export class TextSelection {
     /**
      * @private
      */
-    public textSelectionOnMouseMove(target: EventTarget, x: number, y: number): void {
+    public textSelectionOnMouseMove(target: EventTarget, x: number, y: number, isExtended?: boolean): void {
         let targetElement: HTMLElement = target as HTMLElement;
         this.isTextSearched = true;
         if (targetElement.nodeType === targetElement.TEXT_NODE) {
@@ -101,9 +101,14 @@ export class TextSelection {
                 range.setStart(targetElement, currentPosition);
                 range.setEnd(targetElement, currentPosition + 1);
                 let rangeBounds: ClientRect = range.getBoundingClientRect();
+                let rightBounds: number = rangeBounds.right;
+                if (isExtended) {
+                    // tslint:disable-next-line
+                    rightBounds = parseInt(rangeBounds.right.toString());
+                }
                 // tslint:disable-next-line:max-line-length
                 // tslint:disable-next-line
-                if (rangeBounds.left <= x && rangeBounds.right >= x && parseInt(rangeBounds.top.toString()) <= y && rangeBounds.bottom >= y) {
+                if (rangeBounds.left <= x && rightBounds >= x && parseInt(rangeBounds.top.toString()) <= y && rangeBounds.bottom >= y) {
                     if (selection.anchorNode !== null && (selection.anchorNode.parentNode as HTMLElement).classList.contains('e-pv-text')) {
                         range.setStart(selection.anchorNode, selection.anchorOffset);
                     }
@@ -117,6 +122,8 @@ export class TextSelection {
                     let isIE: boolean = !!(document as any).documentMode;
                     if (!isIE) {
                         if (this.isBackwardPropagatedSelection) {
+                            selection.extend(targetElement, currentPosition);
+                        } else if (isExtended) {
                             selection.extend(targetElement, currentPosition);
                         } else {
                             selection.extend(targetElement, currentPosition + 1);
@@ -149,7 +156,7 @@ export class TextSelection {
                     // tslint:disable-next-line
                     if (rangeBounds.left <= x && rangeBounds.right >= x && parseInt(rangeBounds.top.toString()) <= y && rangeBounds.bottom >= y) {
                         range.detach();
-                        this.textSelectionOnMouseMove(targetElement.childNodes[i], x, y);
+                        this.textSelectionOnMouseMove(targetElement.childNodes[i], x, y, isExtended);
                     } else {
                         range.detach();
                     }

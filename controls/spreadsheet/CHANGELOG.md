@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 17.3.29 (2019-11-26)
+
+### Spreadsheet
+
+#### Bug Fixes
+
+`#F149335` - Excel export issue has been fixed.
+
 ## 17.3.16 (2019-10-09)
 
 ### Spreadsheet

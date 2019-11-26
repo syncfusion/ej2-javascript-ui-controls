@@ -1960,14 +1960,16 @@ var NodeConstraints;
     NodeConstraints[NodeConstraints["Resize"] = 1044480] = "Resize";
     /** Enables the Aspect ratio fo the node */
     NodeConstraints[NodeConstraints["AspectRatio"] = 1048576] = "AspectRatio";
-    /** hide all resize support for node */
-    NodeConstraints[NodeConstraints["HideThumbs"] = 16777216] = "HideThumbs";
     /** Enables or disables tool tip for the Nodes */
     NodeConstraints[NodeConstraints["Tooltip"] = 2097152] = "Tooltip";
     /** Enables or disables tool tip for the Nodes */
     NodeConstraints[NodeConstraints["InheritTooltip"] = 4194304] = "InheritTooltip";
     /** Enables the  ReadOnly support for Annotation */
     NodeConstraints[NodeConstraints["ReadOnly"] = 8388608] = "ReadOnly";
+    /** hide all resize support for node */
+    NodeConstraints[NodeConstraints["HideThumbs"] = 16777216] = "HideThumbs";
+    /** Enables or disables child in parent for the swimLane node */
+    NodeConstraints[NodeConstraints["AllowMovingOutsideLane"] = 33554432] = "AllowMovingOutsideLane";
     /** Enables all constraints */
     NodeConstraints[NodeConstraints["Default"] = 5240814] = "Default";
 })(NodeConstraints || (NodeConstraints = {}));
@@ -10301,18 +10303,20 @@ function removeChildInContainer(diagram, obj, position, isBoundsUpdate) {
         if (container && container.container.type === 'Canvas') {
             if ((!isBoundsUpdate && (!(wrapper.bounds.x <= position.x && wrapper.bounds.right >= position.x &&
                 (wrapper.bounds.y <= position.y && wrapper.bounds.bottom >= position.y))))) {
-                var undoObj = cloneObject(obj);
-                diagram.clearSelection();
-                removeChildrenInLane(diagram, obj);
-                obj.parentId = '';
-                var entry = {
-                    type: 'ChildCollectionChanged', category: 'Internal',
-                    undoObject: undoObj, redoObject: cloneObject(obj)
-                };
-                diagram.addHistoryEntry(entry);
-                if (diagram.commandHandler.isContainer) {
-                    diagram.commandHandler.isContainer = false;
-                    diagram.endGroupAction();
+                if (!(obj.constraints & NodeConstraints.AllowMovingOutsideLane)) {
+                    var undoObj = cloneObject(obj);
+                    diagram.clearSelection();
+                    removeChildrenInLane(diagram, obj);
+                    obj.parentId = '';
+                    var entry = {
+                        type: 'ChildCollectionChanged', category: 'Internal',
+                        undoObject: undoObj, redoObject: cloneObject(obj)
+                    };
+                    diagram.addHistoryEntry(entry);
+                    if (diagram.commandHandler.isContainer) {
+                        diagram.commandHandler.isContainer = false;
+                        diagram.endGroupAction();
+                    }
                 }
             }
         }
@@ -10363,7 +10367,9 @@ function renderContainerHelper(diagram, obj) {
             container = diagram.selectedItems.wrapper;
         }
         diagram.selectedObject.actualObject = object;
-        if ((!diagram.currentSymbol) && (checkParentAsContainer(diagram, object) ||
+        if ((!diagram.currentSymbol) && (((object.isLane && canLaneInterchange(object, diagram) &&
+            checkParentAsContainer(diagram, object))
+            || ((!object.isLane) && checkParentAsContainer(diagram, object))) ||
             ((diagram.constraints & DiagramConstraints.LineRouting) && diagram.selectedItems.nodes.length > 0))) {
             var node = {
                 id: 'helper',
@@ -11257,20 +11263,22 @@ function laneInterChanged(diagram, obj, target, position) {
             index = ((shape.header && shape.hasHeader) ? 1 : 0) + (shape.phases.length && shape.phaseSize ? 1 : 0);
             sourceLaneIndex = obj.rowIndex - index;
             targetLaneIndex = target.rowIndex - index;
-            if (sourceLaneIndex < targetLaneIndex) {
-                if (position && target.wrapper.offsetY > position.y) {
-                    targetIndex += (targetLaneIndex > 0) ? -1 : 1;
-                    targetLaneIndex += (targetLaneIndex > 0) ? -1 : 1;
+            if (lanes[sourceLaneIndex].canMove) {
+                if (sourceLaneIndex < targetLaneIndex) {
+                    if (position && target.wrapper.offsetY > position.y) {
+                        targetIndex += (targetLaneIndex > 0) ? -1 : 1;
+                        targetLaneIndex += (targetLaneIndex > 0) ? -1 : 1;
+                    }
                 }
-            }
-            else {
-                if (position && target.wrapper.offsetY < position.y) {
-                    targetIndex += 1;
-                    targetLaneIndex += 1;
+                else {
+                    if (position && target.wrapper.offsetY < position.y) {
+                        targetIndex += 1;
+                        targetLaneIndex += 1;
+                    }
                 }
-            }
-            if (sourceIndex !== targetIndex) {
-                grid.updateRowIndex(sourceIndex, targetIndex);
+                if (sourceIndex !== targetIndex) {
+                    grid.updateRowIndex(sourceIndex, targetIndex);
+                }
             }
         }
         else {
@@ -11280,51 +11288,56 @@ function laneInterChanged(diagram, obj, target, position) {
             sourceLaneIndex = obj.columnIndex - index;
             targetLaneIndex = target.columnIndex - index;
             rowIndex = (shape.header && shape.hasHeader) ? 1 : 0;
-            if (sourceLaneIndex < targetLaneIndex) {
-                if (position && target.wrapper.offsetX > position.x) {
-                    targetIndex += (targetLaneIndex > 0) ? -1 : 1;
-                    targetLaneIndex += (targetLaneIndex > 0) ? -1 : 1;
-                }
-            }
-            else {
-                if (position && target.wrapper.offsetX < position.x) {
-                    targetIndex += 1;
-                    targetLaneIndex += 1;
-                }
-            }
-            if (sourceIndex !== targetIndex) {
-                if (shape.phaseSize === 0 && targetIndex === 0) {
-                    if (shape.header && shape.hasHeader) {
-                        grid.rows[0].cells[sourceIndex].children = grid.rows[0].cells[0].children;
-                        grid.rows[0].cells[sourceIndex].columnSpan = grid.rows[0].cells[0].columnSpan;
-                        grid.rows[0].cells[0].children = [];
+            if (lanes[sourceLaneIndex].canMove) {
+                if (sourceLaneIndex < targetLaneIndex) {
+                    if (position && target.wrapper.offsetX > position.x) {
+                        targetIndex += (targetLaneIndex > 0) ? -1 : 1;
+                        targetLaneIndex += (targetLaneIndex > 0) ? -1 : 1;
                     }
                 }
-                grid.updateColumnIndex(0, sourceIndex, targetIndex);
+                else {
+                    if (position && target.wrapper.offsetX < position.x) {
+                        targetIndex += 1;
+                        targetLaneIndex += 1;
+                    }
+                }
+                if (sourceIndex !== targetIndex) {
+                    if (shape.phaseSize === 0 && targetIndex === 0) {
+                        if (shape.header && shape.hasHeader) {
+                            grid.rows[0].cells[sourceIndex].children = grid.rows[0].cells[0].children;
+                            grid.rows[0].cells[sourceIndex].columnSpan = grid.rows[0].cells[0].columnSpan;
+                            grid.rows[0].cells[0].children = [];
+                        }
+                    }
+                    grid.updateColumnIndex(0, sourceIndex, targetIndex);
+                }
             }
         }
         if (sourceIndex !== targetIndex) {
-            undoElement = {
-                target: cloneObject(target), source: cloneObject(obj)
-            };
             temp = lanes[sourceLaneIndex];
-            lanes.splice(sourceLaneIndex, 1);
-            lanes.splice(targetLaneIndex, 0, temp);
-            redoElement = {
-                target: cloneObject(undoElement.source), source: cloneObject(undoElement.target)
-            };
-            entry = {
-                type: 'LanePositionChanged', redoObject: redoElement,
-                undoObject: undoElement, category: 'Internal'
-            };
-            if (!(diagram.diagramActions & DiagramAction.UndoRedo)) {
-                diagram.commandHandler.addHistoryEntry(entry);
+            if (temp.canMove) {
+                undoElement = {
+                    target: cloneObject(target), source: cloneObject(obj)
+                };
+                lanes.splice(sourceLaneIndex, 1);
+                lanes.splice(targetLaneIndex, 0, temp);
+                redoElement = {
+                    target: cloneObject(undoElement.source), source: cloneObject(undoElement.target)
+                };
+                entry = {
+                    type: 'LanePositionChanged', redoObject: redoElement,
+                    undoObject: undoElement, category: 'Internal'
+                };
+                if (!(diagram.diagramActions & DiagramAction.UndoRedo)) {
+                    diagram.commandHandler.addHistoryEntry(entry);
+                }
+                ChangeLaneIndex(diagram, swimLane, 0);
+                updateConnectorsProperties(connectors, diagram);
+                updateSwimLaneChildPosition(lanes, diagram);
+                swimLane.wrapper.measure(new Size(swimLane.width, swimLane.height));
+                swimLane.wrapper.arrange(swimLane.wrapper.desiredSize);
+                diagram.updateDiagramObject(swimLane);
             }
-            ChangeLaneIndex(diagram, swimLane, 0);
-            updateConnectorsProperties(connectors, diagram);
-            swimLane.wrapper.measure(new Size(swimLane.width, swimLane.height));
-            swimLane.wrapper.arrange(swimLane.wrapper.desiredSize);
-            diagram.updateDiagramObject(swimLane);
         }
     }
     diagram.updateDiagramElementQuad();
@@ -12428,6 +12441,38 @@ function checkLaneChildrenOffset(swimLane) {
                 child.offsetX = child.wrapper.offsetX;
                 child.offsetY = child.wrapper.offsetY;
             }
+        }
+    }
+}
+function findLane(laneNode, diagram) {
+    var lane;
+    if (laneNode.isLane) {
+        var swimLane = diagram.getObject(laneNode.parentId);
+        if (swimLane && swimLane.shape.type === 'SwimLane' && laneNode.isLane) {
+            var laneIndex = findLaneIndex(swimLane, laneNode);
+            lane = swimLane.shape.lanes[laneIndex];
+        }
+    }
+    return lane;
+}
+function canLaneInterchange(laneNode, diagram) {
+    if (laneNode.isLane) {
+        var lane = findLane(laneNode, diagram);
+        if (lane.canMove) {
+            return true;
+        }
+    }
+    return false;
+}
+function updateSwimLaneChildPosition(lanes, diagram) {
+    var lane;
+    var node;
+    for (var i = 0; i < lanes.length; i++) {
+        lane = lanes[i];
+        for (var j = 0; j < lane.children.length; j++) {
+            node = diagram.nameTable[lane.children[j].id];
+            node.offsetX = node.wrapper.offsetX;
+            node.offsetY = node.wrapper.offsetY;
         }
     }
 }
@@ -16300,6 +16345,9 @@ var Lane = /** @__PURE__ @class */ (function (_super) {
     __decorate$2([
         Complex({ style: { fill: '#E7F4FF', strokeColor: '#CCCCCC' }, annotation: { content: 'Function' } }, Header)
     ], Lane.prototype, "header", void 0);
+    __decorate$2([
+        Property(true)
+    ], Lane.prototype, "canMove", void 0);
     return Lane;
 }(ChildProperty));
 /**
@@ -19434,6 +19482,7 @@ var DiagramRenderer = /** @__PURE__ @class */ (function () {
                 options.alignment = element_1.imageAlign;
                 options.source = obj.source;
                 options.scale = element_1.imageScale;
+                options.visible = obj.visible;
                 options.description = obj.name || 'User handle';
                 options.id = obj.name + '_';
                 this.renderer.drawImage(canvas, options, this.adornerSvgLayer, false);
@@ -25022,6 +25071,7 @@ var DiagramEventHandler = /** @__PURE__ @class */ (function () {
         }
         return isGroupAction;
     };
+    // tslint:disable-next-line:max-func-body-length
     DiagramEventHandler.prototype.updateContainerProperties = function () {
         var helperObject;
         var isChangeProperties = false;
@@ -25056,13 +25106,32 @@ var DiagramEventHandler = /** @__PURE__ @class */ (function () {
                 else {
                     var parentNode = this.diagram.nameTable[obj.parentId];
                     if (!parentNode || (parentNode && parentNode.shape.type !== 'SwimLane')) {
-                        obj.offsetX = helperObject.offsetX;
-                        obj.offsetY = helperObject.offsetY;
-                        if (obj && obj.shape && obj.shape.type !== 'UmlClassifier') {
-                            obj.width = helperObject.width;
-                            obj.height = helperObject.height;
+                        if (parentNode && parentNode.isLane && (obj.constraints & NodeConstraints.AllowMovingOutsideLane)) {
+                            var swimlane = this.diagram.getObject(parentNode.parentId);
+                            var laneId = swimlane.id + swimlane.shape.lanes[0].id + '0';
+                            var firstlane = this.diagram.getObject(laneId);
+                            var x = firstlane.wrapper.bounds.x;
+                            var y = firstlane.wrapper.bounds.y;
+                            var width = swimlane.wrapper.bounds.bottomRight.x - x;
+                            var height = swimlane.wrapper.bounds.bottomRight.y - y;
+                            var swimlaneBounds = new Rect(x, y, width, height);
+                            if (swimlaneBounds.containsPoint(this.currentPosition)) {
+                                obj.offsetX = helperObject.offsetX;
+                                obj.offsetY = helperObject.offsetY;
+                                obj.width = helperObject.width;
+                                obj.height = helperObject.height;
+                                obj.rotateAngle = helperObject.rotateAngle;
+                            }
                         }
-                        obj.rotateAngle = helperObject.rotateAngle;
+                        else {
+                            obj.offsetX = helperObject.offsetX;
+                            obj.offsetY = helperObject.offsetY;
+                            if (obj && obj.shape && obj.shape.type !== 'UmlClassifier') {
+                                obj.width = helperObject.width;
+                                obj.height = helperObject.height;
+                            }
+                            obj.rotateAngle = helperObject.rotateAngle;
+                        }
                     }
                     var undoElement = void 0;
                     if (parentNode && parentNode.container && parentNode.container.type === 'Stack') {
@@ -26269,8 +26338,8 @@ var CommandHandler = /** @__PURE__ @class */ (function () {
                 if (node && node.isLane) {
                     var childTable = this.clipboardData.childTable;
                     var swimlane = this.diagram.getObject(node.parentId);
-                    var laneIndex = findLaneIndex(swimlane, node);
-                    childTable[node.id] = cloneObject(swimlane.shape.lanes[laneIndex]);
+                    var lane = findLane(node, this.diagram);
+                    childTable[node.id] = cloneObject(lane);
                     childTable[node.id].width = swimlane.wrapper.actualSize.width;
                 }
             }
@@ -27531,7 +27600,9 @@ var CommandHandler = /** @__PURE__ @class */ (function () {
                     || (this.diagram.currentSymbol &&
                         this.diagram.currentSymbol.shape.orientation === node.container.orientation))) {
                 selectorModel = this.diagram.selectedItems;
-                canvas = gridSelection(this.diagram, selectorModel, target.id, symbolDrag);
+                if ((source.isLane && canLaneInterchange(source, this.diagram)) || !source.isLane) {
+                    canvas = gridSelection(this.diagram, selectorModel, target.id, symbolDrag);
+                }
             }
             var wrapper = node.container.type === 'Stack' ? target.wrapper : canvas;
             if (wrapper) {
@@ -28842,7 +28913,11 @@ var CommandHandler = /** @__PURE__ @class */ (function () {
         obj = renderContainerHelper(this.diagram, obj) || obj;
         if (this.checkBoundaryConstraints(tx, ty)) {
             this.diagram.diagramActions = this.diagram.diagramActions | DiagramAction.PreventZIndexOnDragging;
-            this.diagram.drag(obj, tx, ty);
+            var actualObject = this.diagram.selectedObject.actualObject;
+            if ((actualObject && actualObject instanceof Node && actualObject.isLane &&
+                canLaneInterchange(actualObject, this.diagram)) || (!actualObject || !actualObject.isLane)) {
+                this.diagram.drag(obj, tx, ty);
+            }
             this.diagram.diagramActions = this.diagram.diagramActions & ~DiagramAction.PreventZIndexOnDragging;
             this.diagram.refreshCanvasLayers();
             return true;
@@ -32111,6 +32186,21 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
      */
     Diagram.prototype.reset = function () {
         this.scroller.zoom(1 / this.scroller.currentZoom, -this.scroller.horizontalOffset, -this.scroller.verticalOffset, { x: 0, y: 0 });
+    };
+    Diagram.prototype.resetSegments = function () {
+        if (this.constraints & DiagramConstraints.LineRouting && this.lineRoutingModule) {
+            this.lineRoutingModule.lineRouting(this);
+        }
+        else {
+            this.protectPropertyChange(true);
+            var connector = void 0;
+            for (var i = 0; i < this.connectors.length; i++) {
+                connector = this.connectors[i];
+                connector.segments = [];
+                this.connectorPropertyChange(connector, {}, { segments: connector.segments });
+            }
+            this.protectPropertyChange(false);
+        }
     };
     /** @private */
     Diagram.prototype.triggerEvent = function (eventName, args) {

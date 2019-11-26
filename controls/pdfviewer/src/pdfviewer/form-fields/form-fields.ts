@@ -39,7 +39,7 @@ export class FormFields {
         this.maxTabIndex = 0;
         this.minTabIndex = -1;
         // tslint:disable-next-line
-        let data: any = window.sessionStorage.getItem('formfields');
+        let data: any = window.sessionStorage.getItem(this.pdfViewerBase.documentId + '_formfields');
         if (data !== null) {
             // tslint:disable-next-line
             let formFieldsData: any = JSON.parse(data);
@@ -75,8 +75,8 @@ export class FormFields {
                         }
                     }
                 }
-                window.sessionStorage.removeItem('formfields');
-                window.sessionStorage.setItem('formfields', JSON.stringify(formFieldsData));
+                window.sessionStorage.removeItem(this.pdfViewerBase.documentId + '_formfields');
+                window.sessionStorage.setItem(this.pdfViewerBase.documentId + '_formfields', JSON.stringify(formFieldsData));
             }
         }
     }
@@ -86,7 +86,7 @@ export class FormFields {
     // tslint:disable-next-line
     public downloadFormFieldsData(): any {
         // tslint:disable-next-line
-        let data: any = window.sessionStorage.getItem('formfields');
+        let data: any = window.sessionStorage.getItem(this.pdfViewerBase.documentId + '_formfields');
         // tslint:disable-next-line
         let formFieldsData: any = JSON.parse(data);
         // tslint:disable-next-line
@@ -267,7 +267,7 @@ export class FormFields {
     public updateDataInSession(target: any, signaturePath?: any): void {
         this.pdfViewerBase.isDocumentEdited = true;
         // tslint:disable-next-line
-        let data: any = window.sessionStorage.getItem('formfields');
+        let data: any = window.sessionStorage.getItem(this.pdfViewerBase.documentId + '_formfields');
         // tslint:disable-next-line
         let FormFieldsData: any = JSON.parse(data);
         for (let m: number = 0; m < FormFieldsData.length; m++) {
@@ -326,8 +326,8 @@ export class FormFields {
                 currentData.SelectedValue = target.value;
             }
         }
-        window.sessionStorage.removeItem('formfields');
-        window.sessionStorage.setItem('formfields', JSON.stringify(FormFieldsData));
+        window.sessionStorage.removeItem(this.pdfViewerBase.documentId + '_formfields');
+        window.sessionStorage.setItem(this.pdfViewerBase.documentId + '_formfields', JSON.stringify(FormFieldsData));
     }
     // tslint:disable-next-line
     private applyCommonProperties(inputdiv: any, pageIndex: number, index: number, currentData: any): void {
@@ -610,7 +610,7 @@ export class FormFields {
     private addSignaturePath(signData: any): boolean {
         this.isSignatureField = false;
         // tslint:disable-next-line
-        let data: any = window.sessionStorage.getItem('formfields');
+        let data: any = window.sessionStorage.getItem(this.pdfViewerBase.documentId + '_formfields');
         // tslint:disable-next-line
         let formFieldsData: any = JSON.parse(data);
         for (let m: number = 0; m < formFieldsData.length; m++) {
@@ -702,7 +702,7 @@ export class FormFields {
      * @private
      */
     public destroy(): void {
-        window.sessionStorage.removeItem('formfields');
+        window.sessionStorage.removeItem(this.pdfViewerBase.documentId + '_formfields');
     }
 
     /**

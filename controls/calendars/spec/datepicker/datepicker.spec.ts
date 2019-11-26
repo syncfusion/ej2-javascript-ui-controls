@@ -1908,6 +1908,48 @@ describe('Datepicker', () => {
         });
     });
 
+    describe('Remove selected date while cleared using backspace key', () => {
+        let datePicker: any;
+        beforeEach(() => {
+            let ele: HTMLElement = createElement('input', { id: 'date' });
+            document.body.appendChild(ele);
+        });
+        afterEach(() => {
+            if (datePicker) {
+                datePicker.destroy();
+            }
+            document.body.innerHTML = '';
+        });
+        it('Remove selected date', function () {
+            datePicker = new DatePicker({
+                value: new Date('2/2/2017'),
+            });
+            datePicker.appendTo('#date');
+            datePicker.element.value = "";
+            datePicker.show();
+            expect((getIdValue(datePicker.tableBodyElement.querySelector('tr td.e-focused-date')))).toBe(new Date('2/2/2017').valueOf());
+            expect(datePicker.tableBodyElement.querySelector('td.e-focused-date').classList.contains('e-selected-date')).toBe(false);
+        });
+        it('Check Start and Depth as Year', function () {
+            datePicker = new DatePicker({
+                start: 'Year',
+                depth: 'Year'
+            });
+            datePicker.appendTo('#date');
+            let e ={
+                preventDefault : () => {},
+                target: document.getElementById('date')
+            }
+            document.getElementsByClassName(' e-input-group-icon e-date-icon e-icons')[0].dispatchEvent(clickEvent);
+            expect(datePicker.popupObj != null).toBe(true);
+            document.getElementsByClassName('e-day')[3].dispatchEvent(clickEvent)
+            expect(datePicker.inputWrapper.container.classList.contains('e-input-focus')).toBe(true);
+            document.getElementsByTagName('body')[0].dispatchEvent(clickEvent)
+            e.target = document.getElementsByTagName('body')[0];
+            datePicker.documentHandler(e);
+            expect(datePicker.inputWrapper.container.classList.contains('e-input-focus')).toBe(false);
+        });
+    });
     describe('close prevented events', () => {
         let datePicker: any;
         let keyEventArgs: any = {
@@ -3759,6 +3801,31 @@ describe('Datepicker', () => {
                 serverTimezoneOffset: +4.5
             });
             datePicker.appendTo('#datepicker');
+        });
+    });
+    describe('Cleared event test case', function () {
+        let datePicker:any;        
+        beforeEach(function () {
+            let ele: HTMLElement = createElement('input', { id: 'date' });
+                document.body.appendChild(ele);
+        });
+        afterEach(function () {
+            if (datePicker) {
+                datePicker.destroy();
+            }
+            document.body.innerHTML = '';
+        });
+        it('check value after button click', function () {
+            datePicker = new DatePicker({
+                value: new Date(),
+                cleared: function(args: any) {
+                    expect(args.name).toBe("cleared");
+                    expect(datePicker.value).toBe(null);
+                }
+            });
+            datePicker.appendTo('#date');
+            datePicker.element.parentElement.querySelectorAll('.e-clear-icon')[0].click();
+            expect(datePicker.inputElement.value === "").toBe(true);
         });
     });
 });

@@ -1,6 +1,6 @@
 import { TreeGrid, Filter as TreeGridFilter, FilterSettingsModel as TreeFilterSettingsModel  } from '@syncfusion/ej2-treegrid';
 import { FilterEventArgs, filterAfterOpen, GroupEventArgs, getFilterMenuPostion, ColumnMenuOpenEventArgs } from '@syncfusion/ej2-grids';
-import { getActualProperties, IFilterMUI, Filter as GridFilter } from '@syncfusion/ej2-grids';
+import { getActualProperties, IFilterMUI, Filter as GridFilter, IXLFilter } from '@syncfusion/ej2-grids';
 import { Gantt } from '../base/gantt';
 import { FilterSettingsModel, ColumnModel, TaskFieldsModel } from '../models/models';
 import { getValue, isNullOrUndefined, remove, createElement } from '@syncfusion/ej2-base';
@@ -244,7 +244,7 @@ export class Filter {
             this.setPosition(targetElement, getValue('filterModel.dlgObj.element', args));
         } else {
             targetElement = this.parent.treeGrid.grid.getColumnHeaderByField(args.columnName).querySelector('.e-filtermenudiv');
-            getFilterMenuPostion(targetElement, getValue('filterModel.dlgObj', args), this.parent.treeGrid.grid);
+            getFilterMenuPostion(targetElement, getValue('filterModel.dlgObj', args), this.parent.treeGrid.grid as IXLFilter);
         }
     }
     private removeEventListener(): void {

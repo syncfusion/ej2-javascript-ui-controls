@@ -1,5 +1,5 @@
 import { merge, isNullOrUndefined, extend, Property } from '@syncfusion/ej2-base';
-import { NumberFormatOptions, DateFormatOptions } from '@syncfusion/ej2-base';
+import { NumberFormatOptions, DateFormatOptions, isBlazor } from '@syncfusion/ej2-base';
 import { DataManager, Query, DataUtil } from '@syncfusion/ej2-data';
 import { ICellFormatter, IFilterUI, IEditCell, CommandModel, IFilter, CommandButtonOptions } from '../base/interface';
 import { TextAlign, ClipMode, Action, SortDirection, EditType, ColumnType, CommandButtonType } from '../base/enum';
@@ -433,7 +433,7 @@ export class Column {
         }
         this.toJSON = () => {
             let col: object = {};
-            let skip: string[] = ['filter', 'dataSource', 'headerText', 'template', 'headerTemplate', 'edit',
+            let skip: string[] = ['filter', 'dataSource', isBlazor() ? ' ' : 'headerText', 'template', 'headerTemplate', 'edit',
                 'editTemplate', 'filterTemplate', 'commandsTemplate'];
             let keys : string[] = Object.keys(this);
             for (let i: number = 0; i < keys.length; i++) {

@@ -1,7 +1,7 @@
 /**
  * Worker task.
  */
-export function executeTaskAsync (
+export function executeTaskAsync(
     context: Object, taskFn: Function | { [key: string]: Function | string[] }, callbackFn: Function,
     data?: Object[], preventCallback?: boolean): WorkerHelper {
     return new WorkerHelper(context, taskFn, callbackFn, data, preventCallback);
@@ -17,14 +17,14 @@ class WorkerHelper {
     private workerTask: Function | { [key: string]: Function | string[] };
     private defaultListener: Function;
     private workerData: Object[];
-    private preventCallback: boolean =  false;
+    private preventCallback: boolean = false;
     private workerUrl: string;
 
     /**
      * Constructor for WorkerHelper module in Workbook library.
      * @private
      */
-    constructor (
+    constructor(
         context: Object, task: Function | { [key: string]: Function | string[] }, defaultListener: Function,
         taskData?: Object[], preventCallback?: boolean) {
         this.context = context;
@@ -83,18 +83,32 @@ class WorkerHelper {
         let workerCode: string = '';
         let i: number;
         let keys: string[];
+        let workerFunction: string = '';
+        let isHaveFunction: boolean = false;
         if (typeof this.workerTask === 'function') {
-            workerCode += ('self.workerTask = function ' + this.workerTask.toString() + '; \n');
+            if (this.workerTask.toString().indexOf('function') < 0) {
+                workerFunction = 'function ' + this.workerTask.toString();
+            } else {
+                workerFunction = this.workerTask.toString();
+                isHaveFunction = true;
+            }
+            workerCode += ('self.workerTask = ' + workerFunction + '; \n');
         } else {
             if (typeof this.workerTask === 'object') {
                 keys = Object.keys(this.workerTask);
                 for (i = 0; i < keys.length; i++) {
-                    workerCode += ((i === 0 ? 'self.workerTask' : keys[i]) + '= function ' + this.workerTask[keys[i]].toString() + '; \n');
+                    if (this.workerTask[keys[i]].toString().indexOf('function') < 0) {
+                        workerFunction = 'function ' + this.workerTask[keys[i]].toString();
+                    } else {
+                        workerFunction = this.workerTask[keys[i]].toString();
+                        isHaveFunction = true;
+                    }
+                    workerCode += ((i === 0 ? 'self.workerTask' : keys[i]) + '= ' + workerFunction + '; \n');
                 }
             }
         }
-        workerCode += 'self.onmessage = function ' +
-        (this.preventCallback ? this.getMessageFn.toString() : this.getCallbackMessageFn.toString()) + '; \n';
+        workerCode += 'self.onmessage = ' + (isHaveFunction ? '' : ' function ') +
+            (this.preventCallback ? this.getMessageFn.toString() : this.getCallbackMessageFn.toString()) + '; \n';
         return workerCode;
     }
 

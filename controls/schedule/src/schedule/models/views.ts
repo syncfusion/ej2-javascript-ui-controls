@@ -151,6 +151,7 @@ export class Views extends ChildProperty<Views> {
      *  defines its own first day of week values. If needed, the user can set it manually on his own by defining the value through
      *  this property. It usually accepts the integer values, whereby 0 is always denoted as Sunday, 1 as Monday and so on.
      * @default 0
+     * @blazorType double?
      */
     @Property(0)
     public firstDayOfWeek: number;

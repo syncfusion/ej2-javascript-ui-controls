@@ -230,7 +230,7 @@ export interface ConnectorLineSettingsModel {
 
     /**
      * Set the color for connector line
-     * @default 'black'
+     * @default '#000000'
      */
     color?: string;
 
@@ -329,9 +329,9 @@ export interface MarkerClusterSettingsModel {
 }
 
 /**
- * Interface for a class SameMarkerClusterData
+ * Interface for a class MarkerClusterData
  */
-export interface SameMarkerClusterDataModel {
+export interface MarkerClusterDataModel {
 
 }
 

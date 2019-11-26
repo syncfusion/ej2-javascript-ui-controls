@@ -206,6 +206,18 @@ export interface AnnotationRemoveEventArgs extends BaseEventArgs {
      */
     // tslint:disable-next-line
     annotationBounds: any;
+    /**
+     * Defines the selected text content in the text markup annotation.
+     */
+    textMarkupContent?: string;
+    /**
+     * Starting index of text markup annotation in the page text content.
+     */
+    textMarkupStartIndex?: number;
+    /**
+     * End index of text markup annotation in the page text content.
+     */
+    textMarkupEndIndex?: number;
 }
 
 /**
@@ -260,6 +272,18 @@ export interface AnnotationPropertiesChangeEventArgs extends BaseEventArgs {
      * Specifies that the comments of the annotation is changed.
      */
     isCommentsChanged?: boolean;
+    /**
+     * Defines the selected text content in the text markup annotation.
+     */
+    textMarkupContent?: string;
+    /**
+     * Starting index of text markup annotation in the page text content.
+     */
+    textMarkupStartIndex?: number;
+    /**
+     * End index of text markup annotation in the page text content.
+     */
+    textMarkupEndIndex?: number;
 }
 
 /**
@@ -288,6 +312,18 @@ export interface AnnotationResizeEventArgs extends BaseEventArgs {
      * Defines the type of the annotation resized in the page of the PDF document.
      */
     annotationType: AnnotationType;
+    /**
+     * Defines the selected text content in the text markup annotation.
+     */
+    textMarkupContent?: string;
+    /**
+     * Starting index of text markup annotation in the page text content.
+     */
+    textMarkupStartIndex?: number;
+    /**
+     * End index of text markup annotation in the page text content.
+     */
+    textMarkupEndIndex?: number;
 }
 
 /**

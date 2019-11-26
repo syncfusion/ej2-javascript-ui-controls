@@ -2103,8 +2103,8 @@ export class Node extends NodeBase implements IElement {
             }
         }
         if ((this.shape.type !== 'Bpmn' || (this.shape as BpmnShape).shape === 'Message' ||
-        (this.shape as BpmnShape).shape === 'DataSource') && (
-            (this.shape.type !== 'UmlActivity' || (this.shape as UmlActivityShape).shape !== 'FinalNode'
+            (this.shape as BpmnShape).shape === 'DataSource') && (
+                (this.shape.type !== 'UmlActivity' || (this.shape as UmlActivityShape).shape !== 'FinalNode'
                 ))) {
             if (this.shape.type !== 'Text') {
                 content.style = this.style;
@@ -2481,6 +2481,13 @@ export class Lane extends ChildProperty<Shape> {
      */
     @Complex<HeaderModel>({ style: { fill: '#E7F4FF', strokeColor: '#CCCCCC' }, annotation: { content: 'Function' } as Annotation }, Header)
     public header: HeaderModel;
+
+    /**
+     * Defines when the lane to be interchanged or not
+     * @default true 
+     */
+    @Property(true)
+    public canMove: boolean;
 
     /**
      * @private

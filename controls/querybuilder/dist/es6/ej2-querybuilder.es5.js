@@ -1,5 +1,5 @@
 import { Animation, Browser, ChildProperty, Collection, Complex, Component, Event, EventHandler, Internationalization, L10n, NotifyPropertyChanges, Property, addClass, classList, closest, detach, extend, getComponent, getInstance, getValue, isBlazor, isNullOrUndefined, removeClass, rippleEffect } from '@syncfusion/ej2-base';
-import { Button, RadioButton } from '@syncfusion/ej2-buttons';
+import { Button, CheckBox, RadioButton } from '@syncfusion/ej2-buttons';
 import { CheckBoxSelection, DropDownList, MultiSelect } from '@syncfusion/ej2-dropdowns';
 import { DataManager, Deferred, Predicate, Query, UrlAdaptor } from '@syncfusion/ej2-data';
 import { NumericTextBox, TextBox } from '@syncfusion/ej2-inputs';
@@ -131,6 +131,9 @@ var Rule = /** @__PURE__ @class */ (function (_super) {
     __decorate([
         Property(null)
     ], Rule.prototype, "value", void 0);
+    __decorate([
+        Property(false)
+    ], Rule.prototype, "not", void 0);
     return Rule;
 }(ChildProperty));
 var ShowButtons = /** @__PURE__ @class */ (function (_super) {
@@ -166,9 +169,12 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
         var bodeElem = this.element.querySelector('.e-group-body');
         bodeElem.innerHTML = '';
         this.element.querySelector('.e-btngroup-and').checked = true;
+        if (this.enableNotCondition) {
+            getInstance(this.element.querySelector('.e-checkbox'), CheckBox).checked = false;
+        }
         bodeElem.appendChild(this.createElement('div', { attrs: { class: 'e-rule-list' } }));
         this.levelColl[this.element.id + '_group0'] = [0];
-        this.rule = { condition: 'and', rules: [] };
+        this.rule = { condition: 'and', not: false, rules: [] };
     };
     QueryBuilder.prototype.getWrapper = function () {
         return this.element;
@@ -300,12 +306,30 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
                 }
             }
         }
-        else if (target.tagName === 'LABEL' && target.parentElement.className.indexOf('e-btn-group') > -1) {
+        else if (target.tagName === 'LABEL' && target.parentElement.className.indexOf('e-btn-group') > -1 ||
+            target.parentElement.className.indexOf('e-checkbox-wrapper') > -1) {
             var element = closest(target, '.e-group-container');
             var forIdValue = target.getAttribute('for');
             var targetValue = document.getElementById(forIdValue).getAttribute('value');
             groupID = element.id.replace(this.element.id + '_', '');
+            var ariaChecked = void 0;
+            if (this.enableNotCondition) {
+                ariaChecked = element.getElementsByClassName('e-checkbox-wrapper')[0].getAttribute('aria-checked');
+                if (target.parentElement.className.indexOf('e-checkbox-wrapper') > -1) {
+                    if (ariaChecked === 'true') {
+                        ariaChecked = 'false';
+                    }
+                    else {
+                        ariaChecked = 'true';
+                    }
+                    targetValue = this.rule.condition;
+                }
+            }
             args = { groupID: groupID, cancel: false, type: 'condition', value: targetValue.toLowerCase() };
+            if (this.enableNotCondition) {
+                args = { groupID: groupID, cancel: false, type: 'condition', value: targetValue.toLowerCase(),
+                    'not': JSON.parse(ariaChecked) };
+            }
             if (!this.isImportRules) {
                 this.trigger('beforeChange', args, function (observedChangeArgs) {
                     _this.beforeSuccessCallBack(observedChangeArgs, target);
@@ -323,6 +347,9 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
             var beforeRules = this.getValidRules(this.rule);
             var rule = this.getParentGroup(element);
             rule.condition = args.value;
+            if (this.enableNotCondition) {
+                rule.not = args.not;
+            }
             if (!this.isImportRules) {
                 this.trigger('change', { groupID: groupID, type: 'condition', value: rule.condition });
             }
@@ -580,6 +607,8 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
         groupElem.appendChild(grpBodyElem);
         // create button group in OR and AND process
         glueElem = this.createElement('div', { attrs: { class: 'e-btn-group' } });
+        inputElem = this.createElement('input', { attrs: { type: 'checkbox', class: 'e-checkbox' } });
+        glueElem.appendChild(inputElem);
         inputElem = this.createElement('input', { attrs: { type: 'radio', class: 'e-btngroup-and', value: 'AND' } });
         inputElem.setAttribute('checked', 'true');
         glueElem.appendChild(inputElem);
@@ -652,6 +681,7 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
             var orInpElem = groupElem.querySelector('.e-btngroup-or');
             var andLblElem = groupElem.querySelector('.e-btngroup-and-lbl');
             var orLblElem = groupElem.querySelector('.e-btngroup-or-lbl');
+            var notElem = groupElem.querySelector('.e-checkbox');
             andInpElem.setAttribute('id', this.element.id + '_and' + this.btnGroupId);
             orInpElem.setAttribute('id', this.element.id + '_or' + this.btnGroupId);
             andInpElem.setAttribute('name', this.element.id + '_and' + this.btnGroupId);
@@ -691,6 +721,11 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
                 target.appendChild(groupElem);
                 this.levelColl[groupElem.id] = [0];
             }
+            if (this.enableNotCondition) {
+                var checkbox = new CheckBox({ label: this.l10n.getConstant('NOT'), cssClass: 'e-btn e-small' });
+                checkbox.appendTo(notElem);
+                groupElem.querySelector('.e-btngroup-and-lbl').classList.add('e-not');
+            }
             groupElem.querySelector('.e-btngroup-and').setAttribute('checked', 'true');
             if (condition === 'or') {
                 groupElem.querySelector('.e-btngroup-or').setAttribute('checked', 'true');
@@ -711,11 +746,49 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
     };
     QueryBuilder.prototype.notifyChange = function (value, element) {
         var tempColl = closest(element, '.e-rule-value').querySelectorAll('.e-template');
+        var filterElem = closest(element, '.e-rule-container').querySelector('.e-filter-input');
+        var dropDownObj = getComponent(filterElem, 'dropdownlist');
+        var column = dropDownObj.getDataByValue(dropDownObj.value);
+        var format;
+        if (column.format && column.format.indexOf('/') > -1) {
+            format = { type: 'dateTime', format: column.format };
+        }
+        else {
+            format = { type: 'dateTime', skeleton: column.format || 'yMd' };
+        }
         var valueColl = [];
         for (var i = 0, iLen = tempColl.length; i < iLen; i++) {
             if (tempColl[i].nextElementSibling) {
                 if (tempColl[i].nextElementSibling.className.indexOf('e-check') > -1) {
                     valueColl.push(tempColl[i].textContent);
+                }
+                else {
+                    if (column.type === 'date' && value[i] instanceof Date) {
+                        valueColl.push(this.intl.formatDate(value[i], format));
+                    }
+                    else {
+                        valueColl.push(value[i]);
+                    }
+                }
+            }
+            else {
+                if (column.type === 'date' && value[i] instanceof Date) {
+                    valueColl.push(this.intl.formatDate(value[i], format));
+                }
+                else {
+                    valueColl.push(value[i]);
+                }
+            }
+        }
+        if (column.type === 'date') {
+            if (value instanceof Date) {
+                value = this.intl.formatDate(value, format);
+            }
+            else if (value instanceof Array) {
+                for (var i = 0; i < value.length; i++) {
+                    if (value[i] instanceof Date) {
+                        value[i] = this.intl.formatDate(value[i], format);
+                    }
                 }
             }
         }
@@ -1459,6 +1532,7 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
             var filtObj = getComponent(filtElem, 'dropdownlist');
             itemData.template = this.columns[filtObj.index].template;
             if (itemData.template) {
+                addClass([target.nextElementSibling], 'e-template-value');
                 itemData.template = this.columns[filtObj.index].template;
                 var valElem = void 0;
                 if (itemData.template && typeof itemData.template.create === 'string') {
@@ -1489,6 +1563,7 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
                 }
             }
             else {
+                removeClass([target.nextElementSibling], 'e-template-value');
                 var inputLen = 1;
                 if (tempRule.type === 'boolean') {
                     inputLen = this.selectedColumn.values ? this.selectedColumn.values.length : 2;
@@ -1528,6 +1603,9 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
                 break;
             case 'numerictextbox':
                 if (rule.operator.indexOf('between') > -1) {
+                    if (typeof rule.value === 'string') {
+                        rule.value = [];
+                    }
                     rule.value[i] = getComponent(element, controlName).value;
                 }
                 else {
@@ -1604,6 +1682,10 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
                     elementCln[i_1] = ruleElement.nextElementSibling.nextElementSibling.querySelector('.e-template');
                 }
                 eventsArgs = { groupID: groupID, ruleID: ruleID, value: rule.rules[index].field, type: 'field' };
+                if (rule.rules[index].operator.indexOf('null') > -1 || rule.rules[index].operator.indexOf('empty') > -1) {
+                    rule.rules[index].value = null;
+                    continue;
+                }
                 this.updateValues(elementCln[i_1], rule.rules[index]);
             }
             if (!this.isImportRules) {
@@ -1628,6 +1710,10 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
                 rule.rules[index].value = [];
             }
             for (var i_2 = 0; i_2 < inputElem.length; i_2++) {
+                if (rule.rules[index].operator.indexOf('null') > -1 || rule.rules[index].operator.indexOf('empty') > -1) {
+                    rule.rules[index].value = null;
+                    continue;
+                }
                 this.updateValues(inputElem[i_2], rule.rules[index]);
             }
             if (!this.isImportRules) {
@@ -1641,8 +1727,8 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
         }
     };
     QueryBuilder.prototype.filterRules = function (beforeRule, afterRule, type) {
-        var beforeRuleStr = JSON.stringify({ condition: beforeRule.condition, rule: beforeRule.rules });
-        var afetrRuleStr = JSON.stringify({ condition: afterRule.condition, rule: afterRule.rules });
+        var beforeRuleStr = JSON.stringify({ condition: beforeRule.condition, not: beforeRule.not, rule: beforeRule.rules });
+        var afetrRuleStr = JSON.stringify({ condition: afterRule.condition, not: afterRule.not, rule: afterRule.rules });
         if (beforeRuleStr !== afetrRuleStr) {
             if (!this.isImportRules) {
                 this.trigger('ruleChange', { previousRule: beforeRule, rule: afterRule, type: type });
@@ -1826,7 +1912,12 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
             }
         }
         else {
-            rule.rules.push({ 'condition': 'and', rules: [] });
+            if (this.enableNotCondition) {
+                rule.rules.push({ 'condition': 'and', 'not': false, rules: [] });
+            }
+            else {
+                rule.rules.push({ 'condition': 'and', rules: [] });
+            }
         }
     };
     QueryBuilder.prototype.initWrapper = function () {
@@ -1878,6 +1969,7 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
             else if (this.columns.length) {
                 this.addRuleElement(this.element.querySelector('.e-group-container'), {});
             }
+            this.notGroupRtl();
             var buttons = document.querySelectorAll('label.e-btn');
             var button = void 0;
             for (var i = 0; i < buttons.length; i++) {
@@ -1919,6 +2011,44 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
         else if (this.sortDirection.toLowerCase() === 'ascending') {
             this.columns = new DataManager(this.columns).executeLocal(new Query().sortBy('field'));
         }
+    };
+    QueryBuilder.prototype.onChangeNotGroup = function () {
+        this.element.innerHTML = '';
+        this.groupIdCounter = 0;
+        this.rule = this.checkNotGroup(this.rule);
+        this.initWrapper();
+    };
+    QueryBuilder.prototype.notGroupRtl = function () {
+        if (this.enableRtl) {
+            this.element.querySelectorAll('.e-checkbox-wrapper').forEach(function (el) {
+                el.classList.add('e-rtl');
+            });
+        }
+        else {
+            this.element.querySelectorAll('.e-checkbox-wrapper').forEach(function (el) {
+                el.classList.remove('e-rtl');
+            });
+        }
+    };
+    QueryBuilder.prototype.checkNotGroup = function (rule) {
+        var orgRule;
+        if (rule.rules) {
+            for (var i = 0; i < rule.rules.length; i++) {
+                orgRule = rule.rules[i];
+                orgRule = this.checkNotGroup(orgRule);
+                rule.rules[i] = orgRule;
+            }
+        }
+        if (!isNullOrUndefined(rule.not)) {
+            if (this.enableNotCondition) {
+                rule.not = false;
+            }
+            delete rule.not;
+        }
+        else if (this.enableNotCondition && !isNullOrUndefined(rule.condition)) {
+            rule.not = false;
+        }
+        return rule;
     };
     QueryBuilder.prototype.onPropertyChanged = function (newProp, oldProp) {
         var properties = Object.keys(newProp);
@@ -1982,9 +2112,11 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
                 case 'enableRtl':
                     if (newProp.enableRtl) {
                         addClass([this.element], 'e-rtl');
+                        this.notGroupRtl();
                     }
                     else {
                         removeClass([this.element], 'e-rtl');
+                        this.notGroupRtl();
                     }
                     break;
                 case 'enablePersistence':
@@ -2020,6 +2152,9 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
                     this.locale = newProp.locale;
                     this.intl = new Internationalization(this.locale);
                     break;
+                case 'enableNotCondition':
+                    this.onChangeNotGroup();
+                    break;
             }
         }
     };
@@ -2051,6 +2186,7 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
             OtherFields: 'Other Fields',
             AND: 'AND',
             OR: 'OR',
+            NOT: 'NOT',
             SelectValue: 'Enter Value',
             IsEmpty: 'Is Empty',
             IsNotEmpty: 'Is Not Empty',
@@ -2307,8 +2443,9 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
      */
     QueryBuilder.prototype.getValidRules = function (currentRule) {
         var ruleCondtion = currentRule.condition;
+        var notCondition = currentRule.not;
         var ruleColl = extend([], currentRule.rules, [], true);
-        var rule = this.getRuleCollection({ condition: ruleCondtion, rules: ruleColl }, true);
+        var rule = this.getRuleCollection({ condition: ruleCondtion, rules: ruleColl, not: notCondition }, true);
         return rule;
     };
     QueryBuilder.prototype.getRuleCollection = function (rule, isValidRule) {
@@ -2342,7 +2479,12 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
             }
         }
         else {
-            rule = { 'condition': rule.condition, 'rules': rule.rules };
+            if (this.enableNotCondition) {
+                rule = { 'condition': rule.condition, 'rules': rule.rules, 'not': rule.not };
+            }
+            else {
+                rule = { 'condition': rule.condition, 'rules': rule.rules };
+            }
         }
         return rule;
     };
@@ -2359,7 +2501,12 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
      * @returns object.
      */
     QueryBuilder.prototype.getRules = function () {
-        return { condition: this.rule.condition, rules: this.rule.rules };
+        if (this.enableNotCondition) {
+            return { condition: this.rule.condition, rules: this.rule.rules, not: this.rule.not };
+        }
+        else {
+            return { condition: this.rule.condition, rules: this.rule.rules };
+        }
     };
     /**
      * Gets the rule.
@@ -2505,8 +2652,14 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
                     ignoreCase = true;
                 }
                 column = this.getColumn(ruleColl[i].field);
-                if (ruleColl[i].type === 'date') {
-                    var format = { type: 'dateTime', format: column.format || 'MM/dd/yyyy' };
+                if (ruleColl[i].type === 'date' && !(ruleColl[i].value instanceof Array)) {
+                    var format = void 0;
+                    if (column.format && column.format.indexOf('/') > 1) {
+                        format = { type: 'dateTime', format: column.format };
+                    }
+                    else {
+                        format = { type: 'dateTime', skeleton: column.format || 'yMd' };
+                    }
                     ruleValue = this.intl.parseDate(ruleColl[i].value, format);
                     if (dateOperColl.indexOf(oper) > -1) {
                         isDateFilter = true;
@@ -2613,7 +2766,15 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
     QueryBuilder.prototype.arrayPredicate = function (ruleColl, predicate, condition) {
         var value = ruleColl.value;
         var nullValue = ruleColl.value;
+        var format;
         var pred;
+        var column = this.getColumn(ruleColl.field);
+        if (column.format && column.format.indexOf('/') > 1) {
+            format = { type: 'dateTime', format: column.format };
+        }
+        else {
+            format = { type: 'dateTime', skeleton: column.format || 'yMd' };
+        }
         if (ruleColl.operator.indexOf('null') > -1 || ruleColl.operator.indexOf('empty') > -1) {
             switch (ruleColl.operator) {
                 case 'isnull':
@@ -2636,10 +2797,20 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
                     if (j === 0) {
                         switch (ruleColl.operator) {
                             case 'between':
-                                pred = new Predicate(ruleColl.field, 'greaterthan', value[j]);
+                                if (column.type === 'date') {
+                                    pred = new Predicate(ruleColl.field, 'greaterthan', this.intl.parseDate(value[j], format));
+                                }
+                                else {
+                                    pred = new Predicate(ruleColl.field, 'greaterthan', value[j]);
+                                }
                                 break;
                             case 'notbetween':
-                                pred = new Predicate(ruleColl.field, 'lessthan', value[j]);
+                                if (column.type === 'date') {
+                                    pred = new Predicate(ruleColl.field, 'lessthan', this.intl.parseDate(value[j], format));
+                                }
+                                else {
+                                    pred = new Predicate(ruleColl.field, 'lessthan', value[j]);
+                                }
                                 break;
                             case 'in':
                                 pred = new Predicate(ruleColl.field, 'equal', value[j]);
@@ -2652,10 +2823,20 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
                     else {
                         switch (ruleColl.operator) {
                             case 'between':
-                                pred = pred.and(ruleColl.field, 'lessthan', value[j]);
+                                if (column.type === 'date') {
+                                    pred = pred.and(ruleColl.field, 'lessthan', this.intl.parseDate(value[j], format));
+                                }
+                                else {
+                                    pred = pred.and(ruleColl.field, 'lessthan', value[j]);
+                                }
                                 break;
                             case 'notbetween':
-                                pred = pred.or(ruleColl.field, 'greaterthan', value[j]);
+                                if (column.type === 'date') {
+                                    pred = pred.or(ruleColl.field, 'greaterthan', this.intl.parseDate(value[j], format));
+                                }
+                                else {
+                                    pred = pred.or(ruleColl.field, 'greaterthan', value[j]);
+                                }
                                 break;
                             case 'in':
                                 pred = pred.or(ruleColl.field, 'equal', value[j]);
@@ -2694,6 +2875,15 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
             else {
                 parentElem.querySelector('.e-btngroup-and').checked = true;
             }
+            if (this.enableNotCondition) {
+                var check = getInstance(parentElem.querySelector('.e-checkbox'), CheckBox);
+                if (rule.not) {
+                    check.checked = true;
+                }
+                else {
+                    check.checked = false;
+                }
+            }
         }
         var ruleColl = rule.rules;
         if (!isNullOrUndefined(ruleColl)) {
@@ -2729,7 +2919,7 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
     };
     QueryBuilder.prototype.getSqlString = function (rules, enableEscape, queryStr) {
         var isRoot = false;
-        if (!queryStr) {
+        if (!queryStr && queryStr !== '') {
             queryStr = '';
             isRoot = true;
         }
@@ -2737,6 +2927,14 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
             queryStr += '(';
         }
         var condition = rules.condition;
+        if (rules.not) {
+            if (isRoot) {
+                queryStr += 'not (';
+            }
+            else {
+                queryStr += ' not (';
+            }
+        }
         for (var j = 0, jLen = rules.rules.length; j < jLen; j++) {
             if (rules.rules[j].rules) {
                 queryStr = this.getSqlString(rules.rules[j], enableEscape, queryStr);
@@ -2746,7 +2944,12 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
                 var valueStr = '';
                 if (rule.value instanceof Array) {
                     if (rule.operator.indexOf('between') > -1) {
-                        valueStr += rule.value[0] + ' AND ' + rule.value[1];
+                        if (rule.type === 'date') {
+                            valueStr += '"' + rule.value[0] + '" AND "' + rule.value[1] + '"';
+                        }
+                        else {
+                            valueStr += rule.value[0] + ' AND ' + rule.value[1];
+                        }
                     }
                     else {
                         if (typeof rule.value[0] === 'string') {
@@ -2800,6 +3003,9 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
         if (!isRoot) {
             queryStr += ')';
         }
+        if (rules.not) {
+            queryStr += ')';
+        }
         return queryStr;
     };
     /**
@@ -2808,7 +3014,7 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
     QueryBuilder.prototype.setRulesFromSql = function (sqlString) {
         sqlString = sqlString.replace(/`/g, '');
         var ruleModel = this.getRulesFromSql(sqlString);
-        this.setRules({ condition: ruleModel.condition, rules: ruleModel.rules });
+        this.setRules({ condition: ruleModel.condition, not: ruleModel.not, rules: ruleModel.rules });
     };
     /**
      * Get the rules from SQL query.
@@ -2817,9 +3023,14 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
     QueryBuilder.prototype.getRulesFromSql = function (sqlString) {
         this.parser = [];
         this.sqlParser(sqlString);
-        this.rule = { condition: '', rules: [] };
+        this.rule = { condition: 'and', not: false, rules: [] };
         var rule = this.processParser(this.parser, this.rule, [0]);
-        return { condition: rule.condition, rules: rule.rules };
+        if (this.enableNotCondition) {
+            return { condition: rule.condition, not: rule.not, rules: rule.rules };
+        }
+        else {
+            return { condition: rule.condition, rules: rule.rules };
+        }
     };
     /**
      * Gets the sql query from rules.
@@ -2840,7 +3051,7 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
     };
     QueryBuilder.prototype.parseSqlStrings = function (sqlString) {
         var operators = ['=', '!=', '<=', '>=', '<', '>'];
-        var conditions = ['and', 'or'];
+        var conditions = ['and', 'or', 'not'];
         var subOp = ['IN', 'NOT IN', 'LIKE', 'NOT LIKE', 'BETWEEN', 'NOT BETWEEN', 'IS NULL', 'IS NOT NULL',
             'IS EMPTY', 'IS NOT EMPTY'];
         var regexStr;
@@ -2988,6 +3199,9 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
                                 if (parser[j][0] === 'Number') {
                                     numVal.push(Number(parser[j][1]));
                                 }
+                                else if (parser[j][0] === 'String') {
+                                    strVal.push(parser[j][1].replace(/'/g, ''));
+                                }
                             }
                             else {
                                 if (parser[j][0] === 'Number') {
@@ -2997,6 +3211,7 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
                                     strVal.push(parser[j][1].replace(/'/g, ''));
                                 }
                             }
+                            rule.type = this.getTypeFromColumn(rule);
                         }
                     }
                     if (operator.indexOf('like') < 0) {
@@ -3012,6 +3227,7 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
                             rule.value = numVal;
                             rule.type = 'number';
                         }
+                        rule.type = this.getTypeFromColumn(rule);
                     }
                 }
                 else if (parser[i + 1][0] === 'Operators') {
@@ -3024,12 +3240,21 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
                         rule.type = 'string';
                         rule.value = parser[i + 2][1].replace(/'/g, '');
                     }
+                    rule.type = this.getTypeFromColumn(rule);
                 }
                 rules.rules.push(rule);
             }
             else if (parser[i][0] === 'Left') {
+                if (!(parser[0][0] === 'Left') && parser[i - 1][1] === 'not') {
+                    continue;
+                }
                 this.parser = parser.splice(i + 1, iLen - (i + 1));
-                subRules = { condition: '', rules: [] };
+                if (this.enableNotCondition) {
+                    subRules = { condition: 'and', rules: [], not: false };
+                }
+                else {
+                    subRules = { condition: 'and', rules: [] };
+                }
                 grpCount = 0;
                 kLen = rules.rules.length;
                 for (k = 0; k < kLen; k++) { //To get the group position
@@ -3043,12 +3268,16 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
                 return rules;
             }
             else if (parser[i][0] === 'Conditions') {
-                rules.condition = parser[i][1];
+                if (parser[i][1] === 'not') {
+                    rules.not = true;
+                }
+                else {
+                    rules.condition = parser[i][1];
+                }
             }
             else if (parser[i][0] === 'Right') {
                 this.parser = parser.splice(i + 1, iLen - (i + 1));
-                //To get the parent Group
-                levelColl.pop();
+                levelColl.pop(); //To get the parent Group
                 rules = this.rule;
                 lLen = levelColl.length;
                 for (l = 0; l < lLen; l++) {
@@ -3116,6 +3345,9 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
     __decorate([
         Property(0)
     ], QueryBuilder.prototype, "immediateModeDelay", void 0);
+    __decorate([
+        Property(false)
+    ], QueryBuilder.prototype, "enableNotCondition", void 0);
     __decorate([
         Complex({ condition: 'and', rules: [] }, Rule)
     ], QueryBuilder.prototype, "rule", void 0);

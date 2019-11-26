@@ -819,6 +819,18 @@ export class ListBox extends DropDownBase {
             this.ulElement.removeChild(liCollections[i]);
         }
     }
+    /**
+     * Gets the array of data Object that matches the given array of values. 
+     * @param  { string[] | number[] | boolean[] } value - Specifies the array value of the list item.
+     * @returns object[].
+     */
+    public getDataByValues(value: string[] | number[] | boolean[] ): { [key: string]: Object }[] {
+        let data: string | number | boolean | { [key: string]: Object }[] = [];
+        for (let i: number = 0; i < value.length; i++) {
+            data.push(this.getDataByValue(value[i]) as { [key: string]: Object });
+        }
+        return data;
+    }
     private updateLiCollection(index: number): void {
         let tempLi: HTMLElement[] = [].slice.call(this.liCollections);
         tempLi.splice(index, 1);
@@ -1542,13 +1554,25 @@ export class ListBox extends DropDownBase {
 
     private updateSelectedOptions(): void {
         let selectedOptions: string[] = [];
+        let values: string[] = this.value as string[];
         this.getSelectedItems().forEach((ele: Element) => {
             if (!ele.classList.contains('e-grabbed')) {
                 selectedOptions.push(this.getFormattedValue(ele.getAttribute('data-value')) as string);
             }
         });
         if (this.mainList.childElementCount === this.ulElement.childElementCount) {
-            this.setProperties({ value: selectedOptions }, true);
+            if (this.allowFiltering) {
+                for (let i: number = 0; i < selectedOptions.length; i++) {
+                    if (values.indexOf(selectedOptions[i]) > -1) {
+                        continue;
+                    } else {
+                        values.push(selectedOptions[i]);
+                    }
+                }
+                this.setProperties({ value: values }, true);
+            } else {
+                this.setProperties({ value: selectedOptions }, true);
+            }
         }
         this.updateSelectTag();
         this.updateToolBarState();

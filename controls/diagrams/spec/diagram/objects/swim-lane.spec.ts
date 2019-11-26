@@ -17,7 +17,7 @@ import { ConnectorModel } from '../../../src/diagram/objects/connector-model';
 import { PhaseModel, LaneModel } from '../../../src/diagram/objects/node-model';
 import { SymbolPalette, SymbolInfo, PaletteModel, } from '../../../src/symbol-palette/index';
 import { EJ2Instance } from '@syncfusion/ej2-navigations';
-import { IElement, PointModel } from '../../../src/diagram/index';
+import { IElement, PointModel, NodeConstraints } from '../../../src/diagram/index';
 import { UndoRedo } from '../../../src/diagram/objects/undo-redo';
 import { profile, inMB, getMemoryProfile } from '../../../spec/common.spec';
 Diagram.Inject(UndoRedo);
@@ -5927,8 +5927,6 @@ describe('Diagram Control', () => {
         });
 
     });
-
-
     describe('checking Swimlane , No width Given', () => {
         let diagram: Diagram;
         let ele: HTMLElement;
@@ -5966,5 +5964,669 @@ describe('Diagram Control', () => {
             done();
         });
 
+    });
+    describe('Swimlane - Lane interchange', () => {
+        describe('Horizontal swimlane', () => {
+            let diagram: Diagram; let undoOffsetX: number; let undoOffsetY: number;
+            let ele: HTMLElement; let redoOffsetX: number; let redoOffsetY: number;
+            let mouseEvents = new MouseEvents();
+            let diagramCanvas: HTMLElement;
+            beforeAll((): void => {
+                ele = createElement('div', { styles: 'width:100%;height:500px;' });
+                ele.appendChild(createElement('div', { id: 'SwimlaneDiagram5', styles: 'width:74%;height:500px;float:left;' }));
+                document.body.appendChild(ele);
+    
+                let pathData = 'M 120 24.9999 C 120 38.8072 109.642 50 96.8653 50 L 23.135' +
+                    ' 50 C 10.3578 50 0 38.8072 0 24.9999 L 0 24.9999 C' +
+                    '0 11.1928 10.3578 0 23.135 0 L 96.8653 0 C 109.642 0 120 11.1928 120 24.9999 Z';
+                let darkColor = '#C7D4DF';
+                let lightColor = '#f5f5f5';
+    
+                function getConnectorDefaults(connector: ConnectorModel): ConnectorModel {
+                    connector.type = 'Orthogonal'
+                    return connector;
+                }
+                let nodes: NodeModel[] = [
+                    {
+                        id: 'swimlane',
+                        shape: {
+                            type: 'SwimLane',
+                            header: {
+                                annotation: { content: 'ONLINE PURCHASE STATUS' },
+                                height: 50, style: { fill: darkColor, fontSize: 11 },
+                                orientation: 'Horizontal',
+                            },
+                            lanes: [
+                                {
+                                    id: 'stackCanvas1', canMove: false,
+                                    header: {
+                                        annotation: { content: 'CUSTOMER' }, width: 50,
+                                        style: { fill: darkColor, fontSize: 11 }
+                                    },
+                                    style: { fill: lightColor },
+                                    height: 100,
+                                    children: [
+                                        {
+                                            id: 'Order',
+                                            shape: { type: 'Path', data: pathData },
+                                            annotations: [
+                                                {
+                                                    content: 'ORDER',
+                                                    style: { fontSize: 11 }
+                                                }
+                                            ],
+                                            margin: { left: 60, top: 20 },
+                                            height: 40, width: 100
+                                        }
+                                    ],
+                                },
+                                {
+                                    id: 'stackCanvas2',
+                                    header: {
+                                        annotation: { content: 'ONLINE' }, width: 50,
+                                        style: { fill: darkColor, fontSize: 11 }
+                                    },
+                                    style: { fill: lightColor }, height: 100,
+                                    children: [
+                                        {
+                                            id: 'selectItemaddcart',
+                                            annotations: [{ content: 'Select item\nAdd cart' }],
+                                            margin: { left: 190, top: 20 },
+                                            height: 40, width: 100
+                                        },
+                                        {
+                                            id: 'paymentondebitcreditcard',
+                                            annotations: [{ content: 'Payment on\nDebit/Credit Card' }],
+                                            margin: { left: 350, top: 20 },
+                                            height: 40, width: 100
+                                        }
+                                    ],
+                                },
+                                {
+                                    id: 'stackCanvas3', canMove: false,
+                                    header: {
+                                        annotation: { content: 'SHOP' }, width: 50,
+                                        style: { fill: darkColor, fontSize: 11 }
+                                    },
+                                    style: { fill: lightColor },
+                                    height: 100,
+                                    children: [
+                                        {
+                                            id: 'getmaildetailaboutorder',
+                                            annotations: [{ content: 'Get mail detail\nabout order' }],
+                                            margin: { left: 190, top: 20 },
+                                            height: 40, width: 100
+                                        },
+                                        {
+                                            id: 'pakingitem',
+                                            annotations: [{ content: 'Paking item' }],
+                                            margin: { left: 350, top: 20 },
+                                            height: 40, width: 100
+                                        }
+                                    ],
+                                },
+                                {
+                                    id: 'stackCanvas4',
+                                    header: {
+                                        annotation: { content: 'DELIVERY' }, width: 50,
+                                        style: { fill: darkColor, fontSize: 11 }
+                                    },
+                                    style: { fill: lightColor },
+                                    height: 100,
+                                    children: [
+                                        {
+                                            id: 'sendcourieraboutaddress',
+                                            annotations: [{ content: 'Send Courier\n about Address' }],
+                                            margin: { left: 190, top: 20 },
+                                            height: 40, width: 100
+                                        },
+                                        {
+                                            id: 'deliveryonthataddress',
+                                            annotations: [{ content: 'Delivery on that\n Address' }],
+                                            margin: { left: 350, top: 20 },
+                                            height: 40, width: 100
+                                        },
+                                        {
+                                            id: 'getitItem',
+                                            shape: { type: 'Path', data: pathData },
+                                            annotations: [{ content: 'GET IT ITEM', style: { fontSize: 11 } }],
+                                            margin: { left: 500, top: 20 },
+                                            height: 40, width: 100
+                                        }
+                                    ],
+                                },
+                            ],
+                            phases: [
+                                {
+                                    id: 'phase1', offset: 170,
+                                    style: { strokeWidth: 1, strokeDashArray: '3,3', strokeColor: '#606060' },
+                                    header: { content: { content: 'Phase' } }
+                                },
+                                {
+                                    id: 'phase2', offset: 450,
+                                    style: { strokeWidth: 1, strokeDashArray: '3,3', strokeColor: '#606060' },
+                                    header: { content: { content: 'Phase' } }
+                                },
+                            ],
+                            phaseSize: 20,
+                        },
+                        offsetX: 420, offsetY: 270,
+                        height: 100,
+                        width: 650
+                    },
+                ];
+                diagram = new Diagram({
+                    width: '70%',
+                    height: '800px',
+                    nodes: nodes,
+                    getConnectorDefaults: getConnectorDefaults,
+                });
+                diagram.appendTo('#SwimlaneDiagram5');
+    
+                diagramCanvas = document.getElementById(diagram.element.id + 'content');
+                mouseEvents.clickEvent(diagramCanvas, 10, 10);
+            });
+            afterAll((): void => {
+                diagram.destroy();
+                ele.remove();
+            });
+    
+    
+            it('Change delivery lane to second lane', function (done) {
+                setTimeout(function () {
+                    debugger
+                    let node = diagram.nameTable["swimlanestackCanvas40"];
+                    let target = diagram.nameTable["swimlanestackCanvas10"];
+    
+                    expect(diagram.nameTable["swimlanestackCanvas10"].rowIndex == 2 && diagram.nameTable["swimlanestackCanvas20"].rowIndex == 3 && diagram.nameTable["swimlanestackCanvas30"].rowIndex == 4 && diagram.nameTable["swimlanestackCanvas40"].rowIndex == 5 && diagram.nameTable["swimlanestackCanvas10"].columnIndex == 0 && diagram.nameTable["swimlanestackCanvas20"].columnIndex == 0 && diagram.nameTable["swimlanestackCanvas30"].columnIndex == 0 && diagram.nameTable["swimlanestackCanvas40"].columnIndex == 0).toBe(true);
+                    mouseEvents.clickEvent(diagramCanvas, node.wrapper.offsetX + diagram.element.offsetLeft, node.wrapper.offsetY + diagram.element.offsetTop);
+                    mouseEvents.mouseDownEvent(diagramCanvas, node.wrapper.offsetX + diagram.element.offsetLeft, node.wrapper.offsetY + diagram.element.offsetTop);
+                    mouseEvents.mouseMoveEvent(diagramCanvas, node.wrapper.offsetX + diagram.element.offsetLeft, node.wrapper.offsetY + diagram.element.offsetTop - 40);
+                    mouseEvents.mouseMoveEvent(diagramCanvas, target.wrapper.offsetX + diagram.element.offsetLeft, target.wrapper.offsetY + diagram.element.offsetTop);
+                    mouseEvents.mouseMoveEvent(diagramCanvas, target.wrapper.offsetX + diagram.element.offsetLeft, target.wrapper.offsetY + diagram.element.offsetTop - 5);
+                    mouseEvents.mouseUpEvent(diagramCanvas, target.wrapper.offsetX + diagram.element.offsetLeft, target.wrapper.offsetY + diagram.element.offsetTop - 5);
+                    expect(diagram.nameTable["swimlanestackCanvas10"].rowIndex == 2 && diagram.nameTable["swimlanestackCanvas20"].rowIndex == 4 && diagram.nameTable["swimlanestackCanvas30"].rowIndex == 5 && diagram.nameTable["swimlanestackCanvas40"].rowIndex == 3 && diagram.nameTable["swimlanestackCanvas10"].columnIndex == 0 && diagram.nameTable["swimlanestackCanvas20"].columnIndex == 0 && diagram.nameTable["swimlanestackCanvas30"].columnIndex == 0 && diagram.nameTable["swimlanestackCanvas40"].columnIndex == 0).toBe(true);
+    
+                    done();
+                }, 300);
+            });
+            it('Change shop lane to second Lane (canMove-true)', function (done) {
+                setTimeout(function () {
+    
+                    let node = diagram.nameTable["swimlanestackCanvas30"];
+                    let target = diagram.nameTable["swimlanestackCanvas40"];
+    
+                    expect(diagram.nameTable["swimlanestackCanvas10"].rowIndex == 2 && diagram.nameTable["swimlanestackCanvas20"].rowIndex == 4 && diagram.nameTable["swimlanestackCanvas30"].rowIndex == 5 && diagram.nameTable["swimlanestackCanvas40"].rowIndex == 3 && diagram.nameTable["swimlanestackCanvas10"].columnIndex == 0 && diagram.nameTable["swimlanestackCanvas20"].columnIndex == 0 && diagram.nameTable["swimlanestackCanvas30"].columnIndex == 0 && diagram.nameTable["swimlanestackCanvas40"].columnIndex == 0).toBe(true);
+                    mouseEvents.clickEvent(diagramCanvas, node.wrapper.offsetX + diagram.element.offsetLeft, node.wrapper.offsetY + diagram.element.offsetTop);
+                    mouseEvents.mouseDownEvent(diagramCanvas, node.wrapper.offsetX + diagram.element.offsetLeft, node.wrapper.offsetY + diagram.element.offsetTop);
+                    mouseEvents.mouseMoveEvent(diagramCanvas, node.wrapper.offsetX + diagram.element.offsetLeft, node.wrapper.offsetY + diagram.element.offsetTop - 40);
+                    mouseEvents.mouseMoveEvent(diagramCanvas, target.wrapper.offsetX + diagram.element.offsetLeft, target.wrapper.offsetY + diagram.element.offsetTop);
+                    mouseEvents.mouseMoveEvent(diagramCanvas, target.wrapper.offsetX + diagram.element.offsetLeft, target.wrapper.offsetY + diagram.element.offsetTop - 5);
+                    mouseEvents.mouseUpEvent(diagramCanvas, target.wrapper.offsetX + diagram.element.offsetLeft, target.wrapper.offsetY + diagram.element.offsetTop - 5);
+                    expect(diagram.nameTable["swimlanestackCanvas10"].rowIndex == 2 && diagram.nameTable["swimlanestackCanvas20"].rowIndex == 4 && diagram.nameTable["swimlanestackCanvas30"].rowIndex == 5 && diagram.nameTable["swimlanestackCanvas40"].rowIndex == 3 && diagram.nameTable["swimlanestackCanvas10"].columnIndex == 0 && diagram.nameTable["swimlanestackCanvas20"].columnIndex == 0 && diagram.nameTable["swimlanestackCanvas30"].columnIndex == 0 && diagram.nameTable["swimlanestackCanvas40"].columnIndex == 0).toBe(true);
+                    done();
+                }, 300);
+            });
+            it('Change online Lane to last lane', function (done) {
+                setTimeout(function () {
+    
+                    let node = diagram.nameTable["swimlanestackCanvas20"];
+                    let target = diagram.nameTable["swimlanestackCanvas30"];
+                    mouseEvents.clickEvent(diagramCanvas, node.wrapper.offsetX + diagram.element.offsetLeft, node.wrapper.offsetY + diagram.element.offsetTop);
+                    mouseEvents.mouseDownEvent(diagramCanvas, node.wrapper.offsetX + diagram.element.offsetLeft, node.wrapper.offsetY + diagram.element.offsetTop);
+                    mouseEvents.mouseMoveEvent(diagramCanvas, node.wrapper.offsetX + diagram.element.offsetLeft, node.wrapper.offsetY + diagram.element.offsetTop - 40);
+                    mouseEvents.mouseMoveEvent(diagramCanvas, target.wrapper.offsetX + diagram.element.offsetLeft, target.wrapper.offsetY + diagram.element.offsetTop);
+                    mouseEvents.mouseMoveEvent(diagramCanvas, target.wrapper.offsetX + diagram.element.offsetLeft, target.wrapper.offsetY + diagram.element.offsetTop - 5);
+                    mouseEvents.mouseUpEvent(diagramCanvas, target.wrapper.offsetX + diagram.element.offsetLeft, target.wrapper.offsetY + diagram.element.offsetTop - 5);
+                    expect(diagram.nameTable["swimlanestackCanvas10"].rowIndex == 2 && diagram.nameTable["swimlanestackCanvas20"].rowIndex == 5 && diagram.nameTable["swimlanestackCanvas30"].rowIndex == 4 && diagram.nameTable["swimlanestackCanvas40"].rowIndex == 3 && diagram.nameTable["swimlanestackCanvas10"].columnIndex == 0 && diagram.nameTable["swimlanestackCanvas20"].columnIndex == 0 && diagram.nameTable["swimlanestackCanvas30"].columnIndex == 0 && diagram.nameTable["swimlanestackCanvas40"].columnIndex == 0).toBe(true);
+                    done();
+                }, 300);
+            });
+        });
+        describe('Vertical swimlane', () => {
+            let diagram: Diagram; let undoOffsetX: number; let undoOffsetY: number;
+            let ele: HTMLElement; let redoOffsetX: number; let redoOffsetY: number;
+            let mouseEvents = new MouseEvents();
+            let diagramCanvas: HTMLElement;
+            beforeAll((): void => {
+                const isDef = (o: any) => o !== undefined && o !== null;
+                if (!isDef(window.performance)) {
+                    console.log("Unsupported environment, window.performance.memory is unavailable");
+                    this.skip(); //Skips test (in Chai)
+                    return;
+                }
+                ele = createElement('div', { styles: 'width:100%;height:500px;' });
+                ele.appendChild(createElement('div', { id: 'SwimlaneDiagram5', styles: 'width:74%;height:500px;float:left;' }));
+                document.body.appendChild(ele);
+    
+                let pathData = 'M 120 24.9999 C 120 38.8072 109.642 50 96.8653 50 L 23.135' +
+                    ' 50 C 10.3578 50 0 38.8072 0 24.9999 L 0 24.9999 C' +
+                    '0 11.1928 10.3578 0 23.135 0 L 96.8653 0 C 109.642 0 120 11.1928 120 24.9999 Z';
+                let darkColor = '#C7D4DF';
+                let lightColor = '#f5f5f5';
+    
+                function getConnectorDefaults(connector: ConnectorModel): ConnectorModel {
+                    connector.type = 'Orthogonal'
+                    return connector;
+                }
+                let nodes: NodeModel[] = [
+                    {
+                        id: 'swimlane',
+                        shape: {
+                            orientation: 'Vertical',
+                            type: 'SwimLane',
+                            header: {
+                                annotation: { content: 'ONLI' },
+                                height: 50, style: { fill: darkColor, fontSize: 11 },
+                            },
+                            lanes: [
+                                {
+                                    id: 'stackCanvas1',
+                                    header: {
+                                        annotation: { content: 'CUSTOMER' }, height: 50,
+                                        style: { fill: darkColor, fontSize: 11 }
+                                    },
+                                    style: { fill: lightColor },
+                                    width: 140,
+                                },
+                                {
+                                    id: 'stackCanvas2', canMove: false,
+                                    header: {
+                                        annotation: { content: 'ONLINE' }, height: 50,
+                                        style: { fill: darkColor, fontSize: 11 }
+                                    },
+                                    style: { fill: lightColor }, width: 170,
+                                },
+                                {
+                                    id: 'stackCanvas3',
+                                    header: {
+                                        annotation: { content: 'SHOP' }, height: 50,
+                                        style: { fill: darkColor, fontSize: 11 }
+                                    },
+                                    style: { fill: lightColor }, width: 120,
+    
+                                },
+                                {
+                                    id: 'stackCanvas4', canMove: false,
+                                    header: {
+                                        annotation: { content: 'DELIVERY' }, height: 50,
+                                        style: { fill: darkColor, fontSize: 11 }
+                                    },
+                                    style: { fill: lightColor }, width: 200,
+    
+                                },
+                            ],
+                            phases: [
+                                {
+                                    id: 'phase1', offset: 200,
+                                    style: { strokeWidth: 1, strokeDashArray: '3,3', strokeColor: '#606060' },
+                                    header: { content: { content: 'Phase' } }
+                                },
+                                {
+                                    id: 'phase2', offset: 400,
+                                    style: { strokeWidth: 1, strokeDashArray: '3,3', strokeColor: '#606060' },
+                                    header: { content: { content: 'Phase' } }
+                                },
+                            ],
+                            phaseSize: 20,
+                        },
+                        offsetX: 350, offsetY: 290,
+                        height: 360,
+                    },
+                ];
+                diagram = new Diagram({
+                    width: '70%',
+                    height: '800px',
+                    nodes: nodes,
+                    getConnectorDefaults: getConnectorDefaults,
+                });
+                diagram.appendTo('#SwimlaneDiagram5');
+    
+                diagramCanvas = document.getElementById(diagram.element.id + 'content');
+                mouseEvents.clickEvent(diagramCanvas, 10, 10);
+            });
+            afterAll((): void => {
+                diagram.destroy();
+                ele.remove();
+            });
+    
+    
+            it('Change delivery lane to first lane(canMove - true)', function (done) {
+                setTimeout(function () {
+                    let node = diagram.nameTable["swimlanestackCanvas40"];
+                    let target = diagram.nameTable["swimlanestackCanvas10"];
+                    mouseEvents.clickEvent(diagramCanvas, node.wrapper.offsetX + diagram.element.offsetLeft, node.wrapper.offsetY + diagram.element.offsetTop);
+                    mouseEvents.mouseDownEvent(diagramCanvas, node.wrapper.offsetX + diagram.element.offsetLeft, node.wrapper.offsetY + diagram.element.offsetTop);
+                    mouseEvents.mouseMoveEvent(diagramCanvas, node.wrapper.offsetX + diagram.element.offsetLeft - 40, node.wrapper.offsetY + diagram.element.offsetTop);
+                    mouseEvents.mouseMoveEvent(diagramCanvas, target.wrapper.offsetX + diagram.element.offsetLeft, target.wrapper.offsetY + diagram.element.offsetTop);
+                    mouseEvents.mouseMoveEvent(diagramCanvas, target.wrapper.offsetX + diagram.element.offsetLeft - 15, target.wrapper.offsetY + diagram.element.offsetTop);
+                    mouseEvents.mouseUpEvent(diagramCanvas, target.wrapper.offsetX + diagram.element.offsetLeft - 15, target.wrapper.offsetY + diagram.element.offsetTop);
+                    expect(diagram.nameTable["swimlanestackCanvas10"].columnIndex == 1 && diagram.nameTable["swimlanestackCanvas20"].columnIndex == 2 && diagram.nameTable["swimlanestackCanvas30"].columnIndex == 3 && diagram.nameTable["swimlanestackCanvas40"].columnIndex == 4).toBe(true);
+                    done();
+                }, 300);
+            });
+            it('Change shop lane to third Lane' , function (done) {
+                setTimeout(function () {
+    
+                    let node = diagram.nameTable["swimlanestackCanvas30"];
+                    let target = diagram.nameTable["swimlanestackCanvas40"];
+                    mouseEvents.clickEvent(diagramCanvas, node.wrapper.offsetX + diagram.element.offsetLeft, node.wrapper.offsetY + diagram.element.offsetTop);
+                    mouseEvents.mouseDownEvent(diagramCanvas, node.wrapper.offsetX + diagram.element.offsetLeft, node.wrapper.offsetY + diagram.element.offsetTop);
+                    mouseEvents.mouseMoveEvent(diagramCanvas, node.wrapper.offsetX + diagram.element.offsetLeft - 40, node.wrapper.offsetY + diagram.element.offsetTop);
+                    mouseEvents.mouseMoveEvent(diagramCanvas, target.wrapper.offsetX + diagram.element.offsetLeft, target.wrapper.offsetY + diagram.element.offsetTop);
+                    mouseEvents.mouseMoveEvent(diagramCanvas, target.wrapper.offsetX + diagram.element.offsetLeft - 15, target.wrapper.offsetY + diagram.element.offsetTop);
+                    mouseEvents.mouseUpEvent(diagramCanvas, target.wrapper.offsetX + diagram.element.offsetLeft - 15, target.wrapper.offsetY + diagram.element.offsetTop);
+                    expect(diagram.nameTable["swimlanestackCanvas10"].columnIndex == 1 && diagram.nameTable["swimlanestackCanvas20"].columnIndex == 2 && diagram.nameTable["swimlanestackCanvas30"].columnIndex == 3 && diagram.nameTable["swimlanestackCanvas40"].columnIndex == 4).toBe(true);
+    
+                    done();
+                }, 300);
+            });
+            it('Change online lane(canMove - true)', function (done) {
+                setTimeout(function () {
+    
+                    let node = diagram.nameTable["swimlanestackCanvas20"];
+                    let target = diagram.nameTable["swimlanestackCanvas30"];
+                    mouseEvents.clickEvent(diagramCanvas, node.wrapper.offsetX + diagram.element.offsetLeft, node.wrapper.offsetY + diagram.element.offsetTop);
+                    mouseEvents.mouseDownEvent(diagramCanvas, node.wrapper.offsetX + diagram.element.offsetLeft, node.wrapper.offsetY + diagram.element.offsetTop);
+                    mouseEvents.mouseMoveEvent(diagramCanvas, node.wrapper.offsetX + diagram.element.offsetLeft - 40, node.wrapper.offsetY + diagram.element.offsetTop);
+                    mouseEvents.mouseMoveEvent(diagramCanvas, target.wrapper.offsetX + diagram.element.offsetLeft, target.wrapper.offsetY + diagram.element.offsetTop);
+                    mouseEvents.mouseMoveEvent(diagramCanvas, target.wrapper.offsetX + diagram.element.offsetLeft - 10, target.wrapper.offsetY + diagram.element.offsetTop);
+                    mouseEvents.mouseUpEvent(diagramCanvas, target.wrapper.offsetX + diagram.element.offsetLeft - 10, target.wrapper.offsetY + diagram.element.offsetTop);
+                    expect(diagram.nameTable["swimlanestackCanvas10"].columnIndex == 1 && diagram.nameTable["swimlanestackCanvas20"].columnIndex == 2 && diagram.nameTable["swimlanestackCanvas30"].columnIndex == 3 && diagram.nameTable["swimlanestackCanvas40"].columnIndex == 4).toBe(true);
+                    done();
+                }, 300);
+            });
+            it('Change customer lane to last lane(delivery lane: canMove - true)', function (done) {
+                setTimeout(function () {
+    
+                    let node = diagram.nameTable["swimlanestackCanvas11"];
+                    let target = diagram.nameTable["swimlanestackCanvas41"];
+                    mouseEvents.clickEvent(diagramCanvas, node.wrapper.offsetX + diagram.element.offsetLeft, node.wrapper.offsetY + diagram.element.offsetTop);
+                    mouseEvents.mouseDownEvent(diagramCanvas, node.wrapper.offsetX + diagram.element.offsetLeft, node.wrapper.offsetY + diagram.element.offsetTop);
+                    mouseEvents.mouseMoveEvent(diagramCanvas, node.wrapper.offsetX + diagram.element.offsetLeft + 40, node.wrapper.offsetY + diagram.element.offsetTop);
+                    mouseEvents.mouseMoveEvent(diagramCanvas, target.wrapper.offsetX + diagram.element.offsetLeft, target.wrapper.offsetY + diagram.element.offsetTop);
+                    mouseEvents.mouseMoveEvent(diagramCanvas, target.wrapper.offsetX + diagram.element.offsetLeft + 5, target.wrapper.offsetY + diagram.element.offsetTop);
+                    mouseEvents.mouseUpEvent(diagramCanvas, target.wrapper.offsetX + diagram.element.offsetLeft + 5, target.wrapper.offsetY + diagram.element.offsetTop);
+                    expect(diagram.nameTable["swimlanestackCanvas10"].columnIndex == 4 && diagram.nameTable["swimlanestackCanvas20"].columnIndex == 1 && diagram.nameTable["swimlanestackCanvas30"].columnIndex == 2 && diagram.nameTable["swimlanestackCanvas40"].columnIndex == 3).toBe(true);
+                    done();
+                }, 300);
+            });
+            it('Change online lane(canMove - true) to last lane', function (done) {
+                setTimeout(function () {
+    
+                    let node = diagram.nameTable["swimlanestackCanvas20"];
+                    let target = diagram.nameTable["swimlanestackCanvas10"];
+                    mouseEvents.clickEvent(diagramCanvas, node.wrapper.offsetX + diagram.element.offsetLeft, node.wrapper.offsetY + diagram.element.offsetTop);
+                    mouseEvents.mouseDownEvent(diagramCanvas, node.wrapper.offsetX + diagram.element.offsetLeft, node.wrapper.offsetY + diagram.element.offsetTop);
+                    mouseEvents.mouseMoveEvent(diagramCanvas, node.wrapper.offsetX + diagram.element.offsetLeft + 40, node.wrapper.offsetY + diagram.element.offsetTop);
+                    mouseEvents.mouseMoveEvent(diagramCanvas, target.wrapper.offsetX + diagram.element.offsetLeft, target.wrapper.offsetY + diagram.element.offsetTop);
+                    mouseEvents.mouseMoveEvent(diagramCanvas, target.wrapper.offsetX + diagram.element.offsetLeft + 15, target.wrapper.offsetY + diagram.element.offsetTop);
+                    mouseEvents.mouseUpEvent(diagramCanvas, target.wrapper.offsetX + diagram.element.offsetLeft + 15, target.wrapper.offsetY + diagram.element.offsetTop);
+                    expect(diagram.nameTable["swimlanestackCanvas10"].columnIndex == 4 && diagram.nameTable["swimlanestackCanvas20"].columnIndex == 1 && diagram.nameTable["swimlanestackCanvas30"].columnIndex == 2 && diagram.nameTable["swimlanestackCanvas40"].columnIndex == 3).toBe(true);
+                    done();
+                }, 300);
+            });
+            it('Change shop lane to second lane', function (done) {
+                setTimeout(function () {
+    
+                    let node = diagram.nameTable["swimlanestackCanvas30"];
+                    let target = diagram.nameTable["swimlanestackCanvas20"];
+                    mouseEvents.clickEvent(diagramCanvas, node.wrapper.offsetX + diagram.element.offsetLeft, node.wrapper.offsetY + diagram.element.offsetTop);
+                    mouseEvents.mouseDownEvent(diagramCanvas, node.wrapper.offsetX + diagram.element.offsetLeft, node.wrapper.offsetY + diagram.element.offsetTop);
+                    mouseEvents.mouseMoveEvent(diagramCanvas, node.wrapper.offsetX + diagram.element.offsetLeft + 40, node.wrapper.offsetY + diagram.element.offsetTop);
+                    mouseEvents.mouseMoveEvent(diagramCanvas, target.wrapper.offsetX + diagram.element.offsetLeft, target.wrapper.offsetY + diagram.element.offsetTop);
+                    mouseEvents.mouseMoveEvent(diagramCanvas, target.wrapper.offsetX + diagram.element.offsetLeft + 15, target.wrapper.offsetY + diagram.element.offsetTop);
+                    mouseEvents.mouseUpEvent(diagramCanvas, target.wrapper.offsetX + diagram.element.offsetLeft + 15, target.wrapper.offsetY + diagram.element.offsetTop);
+                    expect(diagram.nameTable["swimlanestackCanvas10"].columnIndex == 4 && diagram.nameTable["swimlanestackCanvas20"].columnIndex == 1 && diagram.nameTable["swimlanestackCanvas30"].columnIndex == 2 && diagram.nameTable["swimlanestackCanvas40"].columnIndex == 3).toBe(true);
+                    done();
+                }, 300);
+            });
+            it('Change delivery lane(canMove - true) to third lane', function (done) {
+                setTimeout(function () {
+    
+                    let node = diagram.nameTable["swimlanestackCanvas40"];
+                    let target = diagram.nameTable["swimlanestackCanvas30"];
+                    mouseEvents.clickEvent(diagramCanvas, node.wrapper.offsetX + diagram.element.offsetLeft, node.wrapper.offsetY + diagram.element.offsetTop);
+                    mouseEvents.mouseDownEvent(diagramCanvas, node.wrapper.offsetX + diagram.element.offsetLeft, node.wrapper.offsetY + diagram.element.offsetTop);
+                    mouseEvents.mouseMoveEvent(diagramCanvas, node.wrapper.offsetX + diagram.element.offsetLeft + 40, node.wrapper.offsetY + diagram.element.offsetTop);
+                    mouseEvents.mouseMoveEvent(diagramCanvas, target.wrapper.offsetX + diagram.element.offsetLeft, target.wrapper.offsetY + diagram.element.offsetTop);
+                    mouseEvents.mouseMoveEvent(diagramCanvas, target.wrapper.offsetX + diagram.element.offsetLeft + 15, target.wrapper.offsetY + diagram.element.offsetTop);
+                    mouseEvents.mouseUpEvent(diagramCanvas, target.wrapper.offsetX + diagram.element.offsetLeft + 15, target.wrapper.offsetY + diagram.element.offsetTop);
+                    expect(diagram.nameTable["swimlanestackCanvas10"].columnIndex == 4 && diagram.nameTable["swimlanestackCanvas20"].columnIndex == 1 && diagram.nameTable["swimlanestackCanvas30"].columnIndex == 2 && diagram.nameTable["swimlanestackCanvas40"].columnIndex == 3).toBe(true);
+                    done();
+                }, 300);
+            });
+            it('Check Undo, redo action - after interchange the lane', function (done) {
+                diagram.undo();
+                expect(diagram.nameTable["swimlanestackCanvas10"].columnIndex == 1 && diagram.nameTable["swimlanestackCanvas20"].columnIndex == 2 && diagram.nameTable["swimlanestackCanvas30"].columnIndex == 3 && diagram.nameTable["swimlanestackCanvas40"].columnIndex == 4).toBe(true);
+                diagram.redo();
+                expect(diagram.nameTable["swimlanestackCanvas10"].columnIndex == 4 && diagram.nameTable["swimlanestackCanvas20"].columnIndex == 1 && diagram.nameTable["swimlanestackCanvas30"].columnIndex == 2 && diagram.nameTable["swimlanestackCanvas40"].columnIndex == 3).toBe(true);
+                done();
+            });
+            it('memory leak', () => {
+                profile.sample();
+                let average: any = inMB(profile.averageChange)
+                //Check average change in memory samples to not be over 10MB
+                expect(average).toBeLessThan(10);
+                let memory: any = inMB(getMemoryProfile())
+                //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
+                expect(memory).toBeLessThan(profile.samples[0] + 0.25);
+            });
+        });
+    });
+    describe('Swimlane - Support to restrict the movement of lane children beyond their boundaries', () => {
+        describe('Horizontal swimlane', () => {
+            let diagram: Diagram; let undoOffsetX: number; let undoOffsetY: number;
+            let ele: HTMLElement; let redoOffsetX: number; let redoOffsetY: number;
+            let mouseEvents = new MouseEvents();
+            let diagramCanvas: HTMLElement;
+            beforeAll((): void => {
+                ele = createElement('div', { styles: 'width:100%;height:500px;' });
+                ele.appendChild(createElement('div', { id: 'SwimlaneDiagram5', styles: 'width:74%;height:500px;float:left;' }));
+                document.body.appendChild(ele);
+
+                let pathData = 'M 120 24.9999 C 120 38.8072 109.642 50 96.8653 50 L 23.135' +
+                    ' 50 C 10.3578 50 0 38.8072 0 24.9999 L 0 24.9999 C' +
+                    '0 11.1928 10.3578 0 23.135 0 L 96.8653 0 C 109.642 0 120 11.1928 120 24.9999 Z';
+                let darkColor = '#C7D4DF';
+                let lightColor = '#f5f5f5';
+
+                function getConnectorDefaults(connector: ConnectorModel): ConnectorModel {
+                    connector.type = 'Orthogonal'
+                    return connector;
+                }
+                let nodes: NodeModel[] = [
+                    {
+                        id: 'swimlane',
+                        shape: {
+                            type: 'SwimLane',
+                            header: {
+                                annotation: { content: 'ONLINE PURCHASE STATUS' },
+                                height: 50, style: { fill: darkColor, fontSize: 11 },
+                                orientation: 'Horizontal',
+                            },
+                            lanes: [
+                                {
+                                    id: 'stackCanvas1',
+                                    header: {
+                                        annotation: { content: 'CUSTOMER' }, width: 50,
+                                        style: { fill: darkColor, fontSize: 11 }
+                                    },
+                                    style: { fill: lightColor },
+                                    height: 100,
+                                    children: [
+                                        {
+                                            id: 'Order',
+                                            shape: { type: 'Path', data: pathData },
+                                            annotations: [
+                                                {
+                                                    content: 'ORDER',
+                                                    style: { fontSize: 11 }
+                                                }
+                                            ],
+                                            margin: { left: 60, top: 20 },
+                                            height: 40, width: 100,
+                                            constraints: NodeConstraints.Default | NodeConstraints.AllowMovingOutsideLane
+                                        }
+                                    ],
+                                },
+                                {
+                                    id: 'stackCanvas2',
+                                    header: {
+                                        annotation: { content: 'ONLINE' }, width: 50,
+                                        style: { fill: darkColor, fontSize: 11 }
+                                    },
+                                    style: { fill: lightColor }, height: 100,
+                                    children: [
+                                        {
+                                            id: 'selectItemaddcart',
+                                            annotations: [{ content: 'Select item\nAdd cart' }],
+                                            margin: { left: 190, top: 20 },
+                                            height: 40, width: 100
+                                        },
+                                        {
+                                            id: 'paymentondebitcreditcard',
+                                            annotations: [{ content: 'Payment on\nDebit/Credit Card' }],
+                                            margin: { left: 350, top: 20 },
+                                            height: 40, width: 100
+                                        }
+                                    ],
+                                },
+                                {
+                                    id: 'stackCanvas3',
+                                    header: {
+                                        annotation: { content: 'SHOP' }, width: 50,
+                                        style: { fill: darkColor, fontSize: 11 }
+                                    },
+                                    style: { fill: lightColor },
+                                    height: 100,
+                                    children: [
+                                        {
+                                            id: 'getmaildetailaboutorder',
+                                            annotations: [{ content: 'Get mail detail\nabout order' }],
+                                            margin: { left: 190, top: 20 },
+                                            height: 40, width: 100
+                                        },
+                                        {
+                                            id: 'pakingitem',
+                                            annotations: [{ content: 'Paking item' }],
+                                            margin: { left: 350, top: 20 },
+                                            height: 40, width: 100
+                                        }
+                                    ],
+                                },
+                                {
+                                    id: 'stackCanvas4',
+                                    header: {
+                                        annotation: { content: 'DELIVERY' }, width: 50,
+                                        style: { fill: darkColor, fontSize: 11 }
+                                    },
+                                    style: { fill: lightColor },
+                                    height: 100,
+                                    children: [
+                                        {
+                                            id: 'sendcourieraboutaddress',
+                                            annotations: [{ content: 'Send Courier\n about Address' }],
+                                            margin: { left: 190, top: 20 },
+                                            height: 40, width: 100
+                                        },
+                                        {
+                                            id: 'deliveryonthataddress',
+                                            annotations: [{ content: 'Delivery on that\n Address' }],
+                                            margin: { left: 350, top: 20 },
+                                            height: 40, width: 100
+                                        },
+                                        {
+                                            id: 'getitItem',
+                                            shape: { type: 'Path', data: pathData },
+                                            annotations: [{ content: 'GET IT ITEM', style: { fontSize: 11 } }],
+                                            margin: { left: 500, top: 20 },
+                                            height: 40, width: 100
+                                        }
+                                    ],
+                                },
+                            ],
+                            phases: [
+                                {
+                                    id: 'phase1', offset: 170,
+                                    style: { strokeWidth: 1, strokeDashArray: '3,3', strokeColor: '#606060' },
+                                    header: { content: { content: 'Phase' } }
+                                },
+                                {
+                                    id: 'phase2', offset: 450,
+                                    style: { strokeWidth: 1, strokeDashArray: '3,3', strokeColor: '#606060' },
+                                    header: { content: { content: 'Phase' } }
+                                },
+                            ],
+                            phaseSize: 20,
+                        },
+                        offsetX: 420, offsetY: 270,
+                        height: 100,
+                        width: 650
+                    },
+                ];
+                diagram = new Diagram({
+                    width: '70%',
+                    height: '800px',
+                    nodes: nodes,
+                    getConnectorDefaults: getConnectorDefaults,
+                });
+                diagram.appendTo('#SwimlaneDiagram5');
+
+                diagramCanvas = document.getElementById(diagram.element.id + 'content');
+                mouseEvents.clickEvent(diagramCanvas, 10, 10);
+            });
+            afterAll((): void => {
+                diagram.destroy();
+                ele.remove();
+            });
+
+            it('DropBeyondSwimlane  - Order Node', function (done) {
+                setTimeout(function () {
+                    debugger;
+                    var node = diagram.nameTable["Order"];
+                    var target = diagram.nameTable["swimlane"];
+                    mouseEvents.clickEvent(diagramCanvas, node.wrapper.offsetX + diagram.element.offsetLeft, node.wrapper.offsetY + diagram.element.offsetTop);
+                    mouseEvents.mouseDownEvent(diagramCanvas, node.wrapper.offsetX + diagram.element.offsetLeft, node.wrapper.offsetY + diagram.element.offsetTop);
+                    mouseEvents.mouseMoveEvent(diagramCanvas, node.wrapper.offsetX + diagram.element.offsetLeft, node.wrapper.offsetY + diagram.element.offsetTop - 40);
+                    mouseEvents.mouseMoveEvent(diagramCanvas, target.wrapper.bounds.middleRight.x + diagram.element.offsetLeft, target.wrapper.offsetY + diagram.element.offsetTop);
+                    mouseEvents.mouseMoveEvent(diagramCanvas, target.wrapper.bounds.middleRight.x + diagram.element.offsetLeft + 20, target.wrapper.offsetY + diagram.element.offsetTop);
+                    mouseEvents.mouseUpEvent(diagramCanvas, target.wrapper.bounds.middleRight.x + diagram.element.offsetLeft + 30, target.wrapper.offsetY + diagram.element.offsetTop);
+                    expect(diagram.nameTable["Order"].parentId == 'swimlanestackCanvas10').toBe(true);
+                    done();
+                }, 300);
+            });
+            it('Lane Interchange', function (done) {
+                setTimeout(function () {
+                    debugger;
+                    var node = diagram.nameTable["swimlanestackCanvas40"];
+                    var target = diagram.nameTable["swimlanestackCanvas10"];
+                    mouseEvents.clickEvent(diagramCanvas, node.wrapper.offsetX + diagram.element.offsetLeft, node.wrapper.offsetY + diagram.element.offsetTop);
+                    mouseEvents.mouseDownEvent(diagramCanvas, node.wrapper.offsetX + diagram.element.offsetLeft, node.wrapper.offsetY + diagram.element.offsetTop);
+                    mouseEvents.mouseMoveEvent(diagramCanvas, node.wrapper.offsetX + diagram.element.offsetLeft, node.wrapper.offsetY + diagram.element.offsetTop - 40);
+                    mouseEvents.mouseMoveEvent(diagramCanvas, target.wrapper.offsetX + diagram.element.offsetLeft, target.wrapper.offsetY + diagram.element.offsetTop);
+                    mouseEvents.mouseMoveEvent(diagramCanvas, target.wrapper.offsetX + diagram.element.offsetLeft, target.wrapper.offsetY + diagram.element.offsetTop - 25);
+                    mouseEvents.mouseUpEvent(diagramCanvas, target.wrapper.offsetX + diagram.element.offsetLeft, target.wrapper.offsetY + diagram.element.offsetTop - 25);
+                    expect(diagram.nameTable["swimlanestackCanvas10"].rowIndex == 3 && diagram.nameTable["swimlanestackCanvas20"].rowIndex == 4 &&
+                        diagram.nameTable["swimlanestackCanvas30"].rowIndex == 5 && diagram.nameTable["swimlanestackCanvas40"].rowIndex == 2).toBe(true);
+                    done();
+                }, 300);
+            });
+            it('DropBeyondSwimlane  - Order Node', function (done) {
+                setTimeout(function () {
+                    debugger;
+                    var node = diagram.nameTable["Order"];
+                    var target = diagram.nameTable["swimlane"];
+                    mouseEvents.clickEvent(diagramCanvas, node.wrapper.offsetX + diagram.element.offsetLeft, node.wrapper.offsetY + diagram.element.offsetTop);
+                    mouseEvents.mouseDownEvent(diagramCanvas, node.wrapper.offsetX + diagram.element.offsetLeft, node.wrapper.offsetY + diagram.element.offsetTop);
+                    mouseEvents.mouseMoveEvent(diagramCanvas, node.wrapper.offsetX + diagram.element.offsetLeft, node.wrapper.offsetY + diagram.element.offsetTop - 40);
+                    mouseEvents.mouseMoveEvent(diagramCanvas, target.wrapper.bounds.middleRight.x + diagram.element.offsetLeft, target.wrapper.offsetY + diagram.element.offsetTop);
+                    mouseEvents.mouseMoveEvent(diagramCanvas, target.wrapper.bounds.middleRight.x + diagram.element.offsetLeft + 20, target.wrapper.offsetY + diagram.element.offsetTop);
+                    mouseEvents.mouseUpEvent(diagramCanvas, target.wrapper.bounds.middleRight.x + diagram.element.offsetLeft + 30, target.wrapper.offsetY + diagram.element.offsetTop);
+                    expect(diagram.nameTable["Order"].parentId == 'swimlanestackCanvas10').toBe(true);
+                    done();
+                }, 300);
+            });
+        });
     });
 });

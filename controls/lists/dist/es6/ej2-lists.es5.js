@@ -3727,7 +3727,7 @@ var Sortable = /** @__PURE__ @class */ (function (_super) {
                 remove(dropInst.placeHolderElement);
             }
             dropInst = _this.getSortableInstance(e.target);
-            if (dropInst.element === e.target && !dropInst.element.childElementCount) {
+            if (dropInst.element === e.target) {
                 prevIdx = _this.getIndex(_this.target);
                 _this.updateItemClass(dropInst);
                 dropInst.element.appendChild(_this.target);

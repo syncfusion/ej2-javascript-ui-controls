@@ -243,7 +243,7 @@ export class Sortable extends Base<HTMLElement>  implements INotifyPropertyChang
             remove(dropInst.placeHolderElement);
         }
         dropInst = this.getSortableInstance(e.target);
-        if (dropInst.element === e.target && !dropInst.element.childElementCount) {
+        if (dropInst.element === e.target) {
             prevIdx = this.getIndex(this.target); this.updateItemClass(dropInst);
             dropInst.element.appendChild(this.target);
             this.trigger('drop', { event: e.event, element: dropInst.element, previousIndex: prevIdx, currentIndex: 0,

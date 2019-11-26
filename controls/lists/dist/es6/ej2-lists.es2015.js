@@ -3656,7 +3656,7 @@ let Sortable = Sortable_1 = class Sortable extends Base {
                 remove(dropInst.placeHolderElement);
             }
             dropInst = this.getSortableInstance(e.target);
-            if (dropInst.element === e.target && !dropInst.element.childElementCount) {
+            if (dropInst.element === e.target) {
                 prevIdx = this.getIndex(this.target);
                 this.updateItemClass(dropInst);
                 dropInst.element.appendChild(this.target);

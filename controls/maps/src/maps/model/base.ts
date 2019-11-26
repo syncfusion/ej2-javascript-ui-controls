@@ -253,9 +253,9 @@ export class Margin extends ChildProperty<Margin> {
 export class ConnectorLineSettings extends ChildProperty<ConnectorLineSettings> {
     /**
      * Set the color for connector line
-     * @default 'black'
+     * @default '#000000'
      */
-    @Property('black')
+    @Property('#000000')
     public color: string;
 
     /**
@@ -356,7 +356,7 @@ export class MarkerClusterSettings extends ChildProperty<MarkerClusterSettings> 
 /**
  * To configure cluster separate collections.
  */
-export class SameMarkerClusterData extends ChildProperty<SameMarkerClusterData> {
+export class MarkerClusterData extends ChildProperty<MarkerClusterData> {
     /**
      * @private
      */

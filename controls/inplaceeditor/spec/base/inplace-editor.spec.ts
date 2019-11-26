@@ -964,6 +964,78 @@ describe('InPlace-Editor Control', () => {
             Browser.userAgent = currentUA;
         });
     });
+
+    describe('Tooltip testing', () => {
+        let ele: HTMLElement;
+        let editorObj: any;
+        let valueWrapper: HTMLElement;
+        let valueEle: HTMLElement;
+        afterEach((): void => {
+            destroy(editorObj);
+        });
+        it('editableOn as "EditIconClick" with testing', () => {
+            editorObj = renderEditor({
+                mode: 'Inline'
+            });
+            ele = editorObj.element;
+            expect(ele.getAttribute('title')).toEqual('Click to edit');
+            valueWrapper = <HTMLElement>select('.' + classes.VALUE_WRAPPER, ele);
+            valueEle = <HTMLElement>select('.' + classes.VALUE, valueWrapper);
+            valueEle.click();
+            expect(ele.getAttribute('title')).toEqual(null);
+
+            editorObj.editableOn = 'DblClick';
+            editorObj.dataBind();
+            expect(ele.getAttribute('title')).toEqual('Double click to edit');
+            valueWrapper = <HTMLElement>select('.' + classes.VALUE_WRAPPER, ele);
+            valueEle = <HTMLElement>select('.' + classes.VALUE, valueWrapper);
+            valueWrapper.dispatchEvent(new MouseEvent("dblclick"));
+            expect(valueWrapper.classList.contains(classes.OPEN)).toEqual(true);
+            expect(editorObj.enableEditMode).toEqual(true);
+            expect(ele.getAttribute('title')).toEqual(null);
+            
+            editorObj.editableOn = 'EditIconClick';
+            editorObj.dataBind();
+            let editIconEle: HTMLElement = <HTMLElement>select('.' + classes.OVERLAY_ICON, ele);
+            expect(editIconEle.getAttribute('title')).toEqual('Click to edit');
+            expect(ele.getAttribute('title')).toEqual(null);
+            valueWrapper = <HTMLElement>select('.' + classes.VALUE_WRAPPER, ele);
+            valueEle = <HTMLElement>select('.' + classes.VALUE, valueWrapper);
+            editIconEle.click();
+            expect(ele.getAttribute('title')).toEqual(null);
+        });
+        it('editableOn as "EditIconClick" with testing', () => {
+            editorObj = renderEditor({
+                mode: 'Popup'
+            });
+            ele = editorObj.element;
+            expect(ele.getAttribute('title')).toEqual('Click to edit');
+            valueWrapper = <HTMLElement>select('.' + classes.VALUE_WRAPPER, ele);
+            valueEle = <HTMLElement>select('.' + classes.VALUE, valueWrapper);
+            valueEle.click();
+            expect(ele.getAttribute('title')).toEqual(null);
+
+            editorObj.editableOn = 'DblClick';
+            editorObj.dataBind();
+            expect(ele.getAttribute('title')).toEqual('Double click to edit');
+            valueWrapper = <HTMLElement>select('.' + classes.VALUE_WRAPPER, ele);
+            valueEle = <HTMLElement>select('.' + classes.VALUE, valueWrapper);
+            valueWrapper.dispatchEvent(new MouseEvent("dblclick"));
+            expect(valueWrapper.classList.contains(classes.OPEN)).toEqual(true);
+            expect(editorObj.enableEditMode).toEqual(true);
+            expect(ele.getAttribute('title')).toEqual(null);
+            
+            editorObj.editableOn = 'EditIconClick';
+            editorObj.dataBind();
+            let editIconEle: HTMLElement = <HTMLElement>select('.' + classes.OVERLAY_ICON, ele);
+            expect(editIconEle.getAttribute('title')).toEqual('Click to edit');
+            expect(ele.getAttribute('title')).toEqual(null);
+            valueWrapper = <HTMLElement>select('.' + classes.VALUE_WRAPPER, ele);
+            valueEle = <HTMLElement>select('.' + classes.VALUE, valueWrapper);
+            editIconEle.click();
+            expect(ele.getAttribute('title')).toEqual(null);
+        });
+    });
     describe('actionOnBlur with document click testing', () => {
         let editorObj: any;
         let ele: HTMLElement;

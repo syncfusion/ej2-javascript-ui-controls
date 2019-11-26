@@ -2712,3 +2712,25 @@ describe('Skip the error element to append in DOM using custom placement', () =>
         formObj.destroy();
     });
 });
+
+describe('EJ2-33345', () => {
+    beforeAll(() => {
+        formObj = new FormValidator(formElement, { rules: { 'input1': { required: true } } });
+    });
+
+    it('Dynamically appending element in to form', () => {
+        let element: Element = document.createElement('input',{});
+        element.setAttribute('type','text');
+        element.setAttribute('name','custom2');
+        element.setAttribute('id','dropdown');
+        formObj.addRules('custom2', { required: true });
+        formObj.element.appendChild(element);
+        formObj.refresh();
+        formObj.validate();
+        expect(element.classList.contains('e-error')).toBe(true);
+    });
+
+    afterAll(function () {
+        formObj.destroy();
+    });
+});

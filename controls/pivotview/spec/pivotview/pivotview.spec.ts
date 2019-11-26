@@ -2187,6 +2187,7 @@ describe('PivotView spec', () => {
                                     }
                                 ]
                             },
+                            height: 400,
                             allowConditionalFormatting: true
                         });
                     pivotGridObj.appendTo('#PivotGrid');
@@ -2357,6 +2358,29 @@ describe('PivotView spec', () => {
                 });
                 it('With Default Sorting', () => {
                     expect(document.querySelectorAll('td[aria-colindex="3"]')[4].classList.contains('formatPivotGrid0')).toBeTruthy();
+                    pivotGridObj.dataSourceSettings = {
+                        dataSource: pivot_dataset as IDataSet[],
+                        expandAll: true,
+                        rows: [{ name: 'company'}],
+                        columns: [{ name: 'gender', caption: 'Population' }],
+                        values: [{ name: 'balance' }, { name: 'quantity' }],
+                        conditionalFormatSettings: [
+                            {
+                                value1: 2000,
+                                measure: 'balance',
+                                conditions: 'LessThan',
+                                style: {
+                                    backgroundColor: 'violet',
+                                    color: 'yellow',
+                                    fontFamily: 'Verdana',
+                                    fontSize: '13px'
+                                },
+                            }
+                        ]
+                    };
+                });
+                it('Check empty cell', () => {
+                    expect(document.querySelectorAll('td[aria-colindex="3"]')[4].classList.contains('formatPivotGrid0')).toBeFalsy();
                 });
                 afterAll(() => {
                     if (pivotGridObj) {

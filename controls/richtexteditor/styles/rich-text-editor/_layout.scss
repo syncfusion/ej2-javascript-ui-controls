@@ -1292,4 +1292,9 @@
     min-height: 190px;
   }
 
+  .e-richtexteditor .e-rte-content .e-content table.e-rte-table-border {
+    border: 1px solid $rte-table-border-color;
+    border-collapse: separate;
+  }
+
 }

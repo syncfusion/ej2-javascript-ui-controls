@@ -407,6 +407,42 @@ export class PageSetupDialog {
         } else {
             this.portrait.checked = true;
         }
+        this.setPageSize(this.portrait.checked, sectionFormat.pageWidth, sectionFormat.pageHeight);
+    }
+    private setPageSize(isPortrait: boolean, width: number, height: number): void {
+        if ((isPortrait && width === 612 && height === 792)
+            || (!isPortrait && width === 792 && height === 612)) {
+            this.paperSize.value = 'letter';
+        } else if ((isPortrait && width === 792 && height === 1224)
+            || (!isPortrait && width === 1224 && height === 792)) {
+            this.paperSize.value = 'tabloid';
+        } else if ((isPortrait && width === 612 && height === 1008)
+            || (!isPortrait && width === 1008 && height === 612)) {
+            this.paperSize.value = 'legal';
+        } else if ((isPortrait && width === 392 && height === 612)
+            || (!isPortrait && width === 392 && height === 612)) {
+            this.paperSize.value = 'statement';
+        } else if ((isPortrait && width === 522 && height === 756)
+            || (!isPortrait && width === 756 && height === 522)) {
+            this.paperSize.value = 'executive';
+        } else if ((isPortrait && width === 841.9 && height === 1190.55)
+            || (!isPortrait && width === 1190.5 && height === 841.9)) {
+            this.paperSize.value = 'a3';
+        } else if ((isPortrait && width === 595.3 && height === 841.9)
+            || (!isPortrait && width === 841.9 && height === 595.3)) {
+            this.paperSize.value = 'a4';
+        } else if ((isPortrait && width === 419.55 && height === 595.3)
+            || (!isPortrait && width === 595.3 && height === 419.55)) {
+            this.paperSize.value = 'a5';
+        } else if ((isPortrait && width === 728.5 && height === 1031.8)
+            || (!isPortrait && width === 1031.8 && height === 728.5)) {
+            this.paperSize.value = 'b4';
+        } else if ((isPortrait && width === 515.9 && height === 728.5)
+            || (!isPortrait && width === 728.5 && height === 515.9)) {
+            this.paperSize.value = 'letter';
+        } else {
+            this.paperSize.value = 'customsize';
+        }
     }
     /**
      * @private

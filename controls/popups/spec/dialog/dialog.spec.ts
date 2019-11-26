@@ -1425,6 +1425,34 @@ describe('Dialog focus testing', () => {
     });            
 });
 
+describe('Dialog min height testing', () => {
+    let dialog: Dialog;
+    beforeEach((): void => {
+        dialog = undefined;
+        let ele: HTMLElement = createElement('div', { id: 'dialog' });
+        document.body.appendChild(ele);
+    });
+    afterEach((): void => {
+        if (dialog) {
+            dialog.destroy();
+        }
+        document.body.innerHTML = '';
+    });
+    it('Min - height testing', () => {
+        let dlgcontent: HTMLElement = createElement("div");
+        let dialog = new Dialog({
+            content: dlgcontent,
+            minHeight: '200px',
+            buttons: [{
+                buttonModel: { isPrimary: true, content: 'Confirm' } }, 
+                { buttonModel: { content: 'Close' } }
+            ]
+        }, '#dialog');
+        dialog.show();
+        expect(document.getElementById("dialog").style.minHeight === '200px').toBe(true);
+    });          
+});
+
 describe('Isprimary Button Action while focus on form element', () => {
     describe('Application side ', () => {
         let events: any;
@@ -2720,5 +2748,24 @@ describe('Testing resizing option', () => {
         });
     });
     
-    
+    describe('EJ2-33264 - Contents are overflowed outside of Dialog element in IE browser', () => {
+        let dialog: Dialog;
+        beforeEach((): void => {
+            dialog = undefined;
+            let ele: HTMLElement = createElement('div', { id: 'dialog' });
+            document.body.appendChild(ele);
+        });
+        afterEach((): void => {
+            if (dialog) {
+                dialog.destroy();
+            }
+            document.body.innerHTML = '';
+        });
+        it('IE Height issue coverage', () => {
+            (window as any).browserDetails['isIE'] = true;
+            dialog = new Dialog({ header: "Dialog", width: "250px" }, '#dialog');
+            expect(document.getElementById("dialog").style.width).toEqual("250px");
+            (window as any).browserDetails['isIE'] = false;
+        });
+    });
 });

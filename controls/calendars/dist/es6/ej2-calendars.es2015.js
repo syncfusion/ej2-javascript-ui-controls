@@ -2810,6 +2810,7 @@ const ICONS = 'e-icons';
 const OPENDURATION = 300;
 const OFFSETVALUE = 4;
 const SELECTED$2 = 'e-selected';
+const FOCUSEDDATE$2 = 'e-focused-date';
 const NONEDIT = 'e-non-edit';
 const containerAttr = ['title', 'class', 'style'];
 /**
@@ -3215,6 +3216,10 @@ let DatePicker = class DatePicker extends Calendar {
     clear(event) {
         this.setProperties({ value: null }, true);
         Input.setValue('', this.inputElement, this.floatLabelType, this.showClearButton);
+        let clearedArgs = {
+            event: event
+        };
+        this.trigger('cleared', clearedArgs);
         this.invalidValueString = '';
         this.updateInput();
         this.popupUpdate();
@@ -3783,6 +3788,12 @@ let DatePicker = class DatePicker extends Calendar {
                 else {
                     this.popupObj.destroy();
                     this.popupWrapper = this.popupObj = null;
+                }
+                if (!isNullOrUndefined(this.inputElement) && this.inputElement.value === '') {
+                    if (!isNullOrUndefined(this.tableBodyElement) && this.tableBodyElement.querySelectorAll('td.e-selected').length > 0) {
+                        addClass([this.tableBodyElement.querySelector('td.e-selected')], FOCUSEDDATE$2);
+                        removeClass(this.tableBodyElement.querySelectorAll('td.e-selected'), SELECTED$2);
+                    }
                 }
                 EventHandler.add(document, 'mousedown touchstart', this.documentHandler, this);
             });
@@ -4384,6 +4395,9 @@ __decorate$1([
 ], DatePicker.prototype, "open", void 0);
 __decorate$1([
     Event()
+], DatePicker.prototype, "cleared", void 0);
+__decorate$1([
+    Event()
 ], DatePicker.prototype, "close", void 0);
 __decorate$1([
     Event()
@@ -4906,6 +4920,12 @@ let DateRangePicker = class DateRangePicker extends CalendarBase {
         this.valueType = this.value;
         e.preventDefault();
         this.clear();
+        let clearedArgs = {
+            event: e
+        };
+        this.setProperties({ endDate: this.checkDateValue(this.endValue) }, true);
+        this.setProperties({ startDate: this.checkDateValue(this.startValue) }, true);
+        this.trigger('cleared', clearedArgs);
         this.changeTrigger(e);
         this.clearRange();
         this.hide(e);
@@ -7556,8 +7576,8 @@ let DateRangePicker = class DateRangePicker extends CalendarBase {
         let target = e.target;
         if (!this.inputWrapper.container.contains(target) ||
             (!isNullOrUndefined(this.popupObj) && !closest(target, this.popupWrapper.id))) {
-            if (e.type !== 'touchstart' && (e.type === 'mousedown') ||
-                this.closeEventArgs && !this.closeEventArgs.cancel) {
+            if (e.type !== 'touchstart' && ((e.type === 'mousedown') ||
+                this.closeEventArgs && !this.closeEventArgs.cancel)) {
                 e.preventDefault();
             }
         }
@@ -8543,6 +8563,9 @@ __decorate$2([
 __decorate$2([
     Event()
 ], DateRangePicker.prototype, "change", void 0);
+__decorate$2([
+    Event()
+], DateRangePicker.prototype, "cleared", void 0);
 __decorate$2([
     Event()
 ], DateRangePicker.prototype, "navigated", void 0);
@@ -9757,10 +9780,20 @@ let TimePicker = class TimePicker extends Component {
             EventHandler.add(this.inputWrapper.clearButton, 'mousedown', this.clearHandler, this);
         }
     }
+    raiseClearedEvent(e) {
+        let clearedArgs = {
+            event: e
+        };
+        this.trigger('cleared', clearedArgs);
+    }
     clearHandler(e) {
         e.preventDefault();
         if (!isNullOrUndefined(this.value)) {
             this.clear(e);
+        }
+        else {
+            this.resetState();
+            this.raiseClearedEvent(e);
         }
         if (this.popupWrapper) {
             this.popupWrapper.scrollTop = 0;
@@ -9770,6 +9803,7 @@ let TimePicker = class TimePicker extends Component {
         this.setProperties({ value: null }, true);
         this.initValue = null;
         this.resetState();
+        this.raiseClearedEvent(event);
         this.changeEvent(event);
     }
     setZIndex() {
@@ -10767,6 +10801,9 @@ __decorate$3([
 __decorate$3([
     Event()
 ], TimePicker.prototype, "close", void 0);
+__decorate$3([
+    Event()
+], TimePicker.prototype, "cleared", void 0);
 __decorate$3([
     Event()
 ], TimePicker.prototype, "blur", void 0);
@@ -12175,6 +12212,9 @@ __decorate$4([
 __decorate$4([
     Event()
 ], DateTimePicker.prototype, "close", void 0);
+__decorate$4([
+    Event()
+], DateTimePicker.prototype, "cleared", void 0);
 __decorate$4([
     Event()
 ], DateTimePicker.prototype, "blur", void 0);

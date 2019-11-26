@@ -1081,6 +1081,10 @@ export class Editor {
                     let insertIndex: number = inline.indexInOwner;
                     if (indexInInline === inline.length) {
                         let isParaBidi: boolean = inline.line.paragraph.bidi;
+                        if (isParaBidi && inline instanceof FieldElementBox && inline.fieldType === 1) {
+                            inline = inline.fieldBegin;
+                            insertIndex = inline.indexInOwner;
+                        }
                         inline.line.children.splice(isParaBidi ? insertIndex : insertIndex + 1, 0, tempSpan);
                     } else if (indexInInline === 0) {
                         if (isRtl && !isBidi) {
@@ -2769,7 +2773,8 @@ export class Editor {
             lineIndex = 0;
         } else {
             let indexInInline: number = 0;
-            let inlineObj: ElementInfo = selection.start.currentWidget.getInline(selection.start.offset, indexInInline);
+            let bidi: boolean = selection.start.paragraph.paragraphFormat.bidi;
+            let inlineObj: ElementInfo = selection.start.currentWidget.getInline(selection.start.offset, indexInInline, bidi);
             let curInline: ElementBox = inlineObj.element;
             indexInInline = inlineObj.index;
             paragraph = curInline.line.paragraph;

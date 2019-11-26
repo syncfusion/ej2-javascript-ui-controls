@@ -6,7 +6,7 @@ import { isNullOrUndefined, isUndefined, formatUnit, setValue, rippleEffect, mer
 import { CalendarView, CalendarBase, NavigatedEventArgs, RenderDayCellEventArgs, CalendarType } from '../calendar/calendar';
 import { Popup } from '@syncfusion/ej2-popups';
 import { Button } from '@syncfusion/ej2-buttons';
-import { BlurEventArgs, FocusEventArgs } from '../calendar/calendar';
+import { BlurEventArgs, FocusEventArgs, ClearedEventArgs } from '../calendar/calendar';
 import { Input, InputObject, FloatLabelType } from '@syncfusion/ej2-inputs';
 import { ListBase, cssClass as ListBaseClasses } from '@syncfusion/ej2-lists';
 import { PresetsModel, DateRangePickerModel } from './daterangepicker-model';
@@ -332,6 +332,13 @@ export class DateRangePicker extends CalendarBase {
      */
     @Event()
     public change: EmitType<RangeEventArgs>;
+
+    /**
+     * Triggers when daterangepicker value is cleared using clear button.
+     * @event
+     */
+    @Event()
+    public cleared: EmitType<ClearedEventArgs>;
     /**
      * Triggers when the Calendar is navigated to another view or within the same level of view.
      * @event
@@ -344,6 +351,7 @@ export class DateRangePicker extends CalendarBase {
      * @event
      * @blazorProperty 'OnRenderDayCell'
      */
+
     @Event()
     public renderDayCell: EmitType<RenderDayCellEventArgs>;
     /**
@@ -1036,6 +1044,12 @@ export class DateRangePicker extends CalendarBase {
         this.valueType = this.value;
         e.preventDefault();
         this.clear();
+        let clearedArgs: ClearedEventArgs = {
+            event: e
+        };
+        this.setProperties({ endDate: this.checkDateValue(this.endValue) }, true);
+        this.setProperties({ startDate: this.checkDateValue(this.startValue) }, true);
+        this.trigger('cleared', clearedArgs);
         this.changeTrigger(e);
         this.clearRange();
         this.hide(e);
@@ -3591,8 +3605,8 @@ export class DateRangePicker extends CalendarBase {
         let target: HTMLElement = <HTMLElement>e.target;
         if (!this.inputWrapper.container.contains(target as Node) ||
             (!isNullOrUndefined(this.popupObj) && !closest(target, this.popupWrapper.id))) {
-            if (e.type !== 'touchstart' && (e.type === 'mousedown') ||
-                this.closeEventArgs && !this.closeEventArgs.cancel) { e.preventDefault(); }
+            if (e.type !== 'touchstart' && ((e.type === 'mousedown') ||
+                this.closeEventArgs && !this.closeEventArgs.cancel)) { e.preventDefault(); }
         }
         if ((isNullOrUndefined(this.targetElement) ||
             (!isNullOrUndefined(this.targetElement) && !(target === this.targetElement))) &&

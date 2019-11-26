@@ -637,7 +637,15 @@ export class Image {
     private editAreaClickHandler(e: IImageNotifyArgs): void {
         let args: MouseEvent = e.args as MouseEvent;
         let showOnRightClick: boolean = this.parent.quickToolbarSettings.showOnRightClick;
-        if (args.which === 2 || (showOnRightClick && args.which === 1) || (!showOnRightClick && args.which === 3)) { return; }
+        if (args.which === 2 || (showOnRightClick && args.which === 1) || (!showOnRightClick && args.which === 3)) {
+            if ((showOnRightClick && args.which === 1) && !isNullOrUndefined((args.target as HTMLElement)) &&
+            (args.target as HTMLElement).tagName === 'IMG') {
+                this.parent.formatter.editorManager.nodeSelection.Clear(this.contentModule.getDocument());
+                this.parent.formatter.editorManager.nodeSelection.setSelectionContents(
+                this.contentModule.getDocument(), args.target as Node);
+            }
+            return;
+        }
         if (this.parent.editorMode === 'HTML' && this.parent.quickToolbarModule && this.parent.quickToolbarModule.imageQTBar) {
             this.quickToolObj = this.parent.quickToolbarModule;
             let target: HTMLElement = args.target as HTMLElement;
@@ -1360,7 +1368,8 @@ export class Image {
     };
     private dragOver(e?: DragEvent): void {
         e.dataTransfer.dropEffect = 'copy';
-        if (Browser.info.name === 'edge' || Browser.isIE) {
+        if ((Browser.info.name === 'edge' && e.dataTransfer.items[0].type.split('/')[0].indexOf('image') > -1) ||
+         (Browser.isIE && e.dataTransfer.types[0] === 'Files')) {
             e.preventDefault();
         }
     };

@@ -493,9 +493,11 @@ export class Table {
                     'data-row': (i).toString(), 'unselectable': 'on', 'contenteditable': 'false'
                 }
             });
+            let rowPosLeft: number = !isNOU(table.getAttribute('cellspacing')) || table.getAttribute('cellspacing') !== '' ?
+            0 : this.calcPos(rows[i] as HTMLElement).left;
             rowReEle.style.cssText = 'width: ' + width + 'px; height: 4px; top: ' +
                 (this.calcPos(rows[i] as HTMLElement).top + pos.top + (rows[i] as HTMLElement).offsetHeight - 2) +
-                'px; left:' + (this.calcPos(rows[i] as HTMLElement).left + pos.left) + 'px;';
+                'px; left:' + (rowPosLeft + pos.left) + 'px;';
             this.contentModule.getEditPanel().appendChild(rowReEle);
         }
         let tableReBox: HTMLElement = this.parent.createElement('span', {
@@ -894,6 +896,7 @@ export class Table {
         });
         this.editdlgObj.element.style.maxHeight = 'none';
         (this.editdlgObj.content as HTMLElement).querySelector('input').focus();
+        this.hideTableQuickToolbar();
     }
 
     private insertTableDialog(args: MouseEvent | NotifyArgs): void {
@@ -1014,8 +1017,26 @@ export class Table {
         let dialogEle: Element = this.editdlgObj.element;
         let table: HTMLTableElement = closest((args as ITableNotifyArgs).selectNode[0] as HTMLElement, 'table') as HTMLTableElement;
         table.style.width = (dialogEle.querySelector('.e-table-width') as HTMLInputElement).value + 'px';
-        table.cellPadding = (dialogEle.querySelector('.e-cell-padding') as HTMLInputElement).value;
+        if ((dialogEle.querySelector('.e-cell-padding') as HTMLInputElement).value !== '') {
+            let tdElm: NodeListOf<HTMLElement> = table.querySelectorAll('td');
+            for (let i: number = 0; i < tdElm.length; i++) {
+                let padVal: string = '';
+                if (tdElm[i].style.padding === '') {
+                    padVal = tdElm[i].getAttribute('style') + ' padding:' +
+                    (dialogEle.querySelector('.e-cell-padding') as HTMLInputElement).value + 'px;';
+                } else {
+                    tdElm[i].style.padding = (dialogEle.querySelector('.e-cell-padding') as HTMLInputElement).value + 'px';
+                    padVal = tdElm[i].getAttribute('style');
+                }
+                tdElm[i].setAttribute('style', padVal);
+            }
+        }
         table.cellSpacing = (dialogEle.querySelector('.e-cell-spacing') as HTMLInputElement).value;
+        if (!isNOU(table.cellSpacing) || table.cellSpacing !== '0')  {
+            addClass([table], classes.CLS_TABLE_BORDER);
+        } else {
+            removeClass([table], classes.CLS_TABLE_BORDER);
+        }
         this.parent.formatter.saveData();
         this.editdlgObj.hide({ returnValue: true } as Event);
     }
@@ -1026,6 +1047,8 @@ export class Table {
         let cellSpacing: string = this.l10n.getConstant('cellspacing');
         let tableWrap: HTMLElement = this.parent.createElement('div', { className: 'e-table-sizewrap' });
         let widthVal: string | number = closest(selectNode, 'table').getClientRects()[0].width;
+        let padVal: string | number = (closest(selectNode, 'td') as HTMLElement).style.padding;
+        let brdSpcVal: string | number = (closest(selectNode, 'table') as HTMLElement).getAttribute('cellspacing');
         let content: string = '<div class="e-rte-field"><input type="text" data-role ="none" id="tableWidth" class="e-table-width" '
             + ' /></div>' + '<div class="e-rte-field"><input type="text" data-role ="none" id="cellPadding" class="e-cell-padding" />'
             + ' </div><div class="e-rte-field"><input type="text" data-role ="none" id="cellSpacing" class="e-cell-spacing" /></div>';
@@ -1044,7 +1067,7 @@ export class Table {
         let padding: NumericTextBox = new NumericTextBox({
             format: 'n0',
             min: 0,
-            value: 0,
+            value: padVal !== '' ? parseInt(padVal, null) : 0,
             placeholder: cellPadding,
             floatLabelType: 'Auto',
             enableRtl: this.parent.enableRtl, locale: this.parent.locale
@@ -1054,7 +1077,7 @@ export class Table {
         let spacing: NumericTextBox = new NumericTextBox({
             format: 'n0',
             min: 0,
-            value: 0,
+            value:  brdSpcVal !== '' && !isNOU(brdSpcVal) ? parseInt(brdSpcVal, null) : 0,
             placeholder: cellSpacing,
             floatLabelType: 'Auto',
             enableRtl: this.parent.enableRtl, locale: this.parent.locale

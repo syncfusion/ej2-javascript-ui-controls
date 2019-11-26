@@ -60,6 +60,7 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
     /**
      * Specifies the z-order for rendering that determines whether the dialog is displayed in front or behind of another component.
      * @default 2000
+     * @aspType int
      */
     @Property(2000)
     public zIndex: number;

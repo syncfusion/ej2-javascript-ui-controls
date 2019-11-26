@@ -8768,6 +8768,32 @@ describe('DateRangePicker', () => {
             daterangepicker.popupObj.trigger('targetExitViewport');
         });
     });
+
+    describe('Cleared event test case', function () {
+        let dateRangePicker:any;
+        beforeEach(function () {
+            let ele: HTMLElement = createElement('input', { id: 'date' });
+                document.body.appendChild(ele);
+        });
+        afterEach(function () {
+            if (dateRangePicker) {
+                dateRangePicker.destroy();
+            }
+            document.body.innerHTML = '';
+        });
+        it('check value after button click', function () {
+            dateRangePicker = new DateRangePicker({
+                value: [new Date('02/11/2017'), new Date('03/11/2017')],
+                cleared: function(args: any) {
+                    expect(args.name).toBe("cleared");
+                    expect(dateRangePicker.value).toBe(null);
+                }
+            });
+            dateRangePicker.appendTo('#date');
+            dateRangePicker.element.parentElement.querySelectorAll('.e-clear-icon')[0].click();
+            expect(dateRangePicker.inputElement.value === "").toBe(true);
+        });
+    });
 });
 interface CalendarElement {
     leftCalTitle: HTMLElement;

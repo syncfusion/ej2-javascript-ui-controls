@@ -232,7 +232,7 @@ describe('Bookmark collection checking on replace action', () => {
             done();
         }, 1000);
     });
-     it('Bookmark delete in inline', () => {
+    it('Bookmark delete in inline', () => {
         editor.editor.insertText('Hello World');
         editor.selection.handleHomeKey();
         editor.selection.selectCurrentWord();

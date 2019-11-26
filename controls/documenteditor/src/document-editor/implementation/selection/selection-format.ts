@@ -693,6 +693,13 @@ export class SelectionParagraphFormat {
         this.contextualSpacingIn = value;
         this.notifyPropertyChanged('contextualSpacing');
     }
+    private validateLineSpacing(): boolean {
+        if (this.lineSpacingType !== 'Multiple' && this.lineSpacingIn < 12) {
+            return true;
+        }
+        return false;
+    }
+
     /**
      * Gets the list text for selected paragraphs.
      * @aspType string
@@ -767,6 +774,24 @@ export class SelectionParagraphFormat {
         }
         if (!isNullOrUndefined(this.selection) && !isNullOrUndefined(this.selection.start) && !this.selection.isRetrieveFormatting) {
             let editorModule: Editor = this.selection.owner.editorModule;
+            if (propertyName === 'lineSpacing' || propertyName === 'lineSpacingType') {
+                let editorHistory: EditorHistory = this.selection.owner.editorHistory;
+                if (!(editorHistory && (editorHistory.isUndoing || editorHistory.isRedoing)) && this.validateLineSpacing()) {
+                    this.selection.owner.editorHistory.initComplexHistory(this.selection, 'LineSpacing');
+                    if (propertyName === 'lineSpacing') {
+                        this.lineSpacingTypeIn = 'Multiple';
+                        let value: Object = this.getPropertyValue('lineSpacingType');
+                        editorModule.onApplyParagraphFormat('lineSpacingType', value, false, false);
+                        editorModule.onApplyParagraphFormat(propertyName, this.getPropertyValue(propertyName), false, false);
+                    } else {
+                        editorModule.onApplyParagraphFormat(propertyName, this.getPropertyValue(propertyName), false, false);
+                        this.lineSpacingIn = 12;
+                        editorModule.onApplyParagraphFormat('lineSpacing', this.getPropertyValue('lineSpacing'), false, false);
+                    }
+                    this.selection.owner.editorHistory.updateComplexHistory();
+                    return;
+                }
+            }
             let value: Object = this.getPropertyValue(propertyName);
             if ((propertyName === 'leftIndent' || propertyName === 'rightIndent' || propertyName === 'firstLineIndent')
                 && !(value >= -1056 && value < 1056)) {

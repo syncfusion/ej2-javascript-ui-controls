@@ -37,6 +37,7 @@ const EXPAND_PANE = 'e-expanded';
 const COLLAPSE_PANE = 'e-collapsed';
 const PANE_HIDDEN = 'e-pane-hidden';
 const RESIZABLE_PANE = 'e-resizable';
+const LAST_BAR = 'e-last-bar';
 /**
  * Interface to configure pane properties such as its content, size, min, max, resizable, collapsed and collapsible.
  */
@@ -582,7 +583,18 @@ let Splitter = class Splitter extends Component {
                 }
             }
             else {
+                if (separator) {
+                    addClass([separator], LAST_BAR);
+                }
                 this.updateResizablePanes(i);
+            }
+        }
+        if (Browser.info.name === 'msie') {
+            let allBar = this.element.querySelectorAll('.e-splitter .e-resize-handler');
+            for (let i = 0; i < allBar.length; i++) {
+                let sepSize = isNullOrUndefined(this.separatorSize) ? 1 : this.separatorSize;
+                allBar[i].style.paddingLeft = sepSize / 2 + 'px';
+                allBar[i].style.paddingRight = sepSize / 2 + 'px';
             }
         }
     }
@@ -1251,6 +1263,36 @@ let Splitter = class Splitter extends Component {
         this.addStaticPaneClass();
         this.previousPane.style.flexBasis = this.prevPaneCurrentWidth;
         this.nextPane.style.flexBasis = this.nextPaneCurrentWidth;
+        let lastBar = this.element.querySelector('.e-last-bar');
+        let sepSize = parseInt(isNullOrUndefined(this.separatorSize) ? '1' : this.separatorSize.toString(), 10);
+        if (this.orientation === 'Horizontal') {
+            if ((lastBar.offsetLeft + sepSize + this.element.offsetLeft) > (this.element.offsetWidth + this.element.offsetLeft)) {
+                this.validatelastBar(lastBar, sepSize);
+            }
+        }
+        else {
+            if ((lastBar.offsetTop + sepSize + this.element.offsetTop) > (this.element.offsetHeight + this.element.offsetTop)) {
+                this.validatelastBar(lastBar, sepSize);
+            }
+        }
+    }
+    validatelastBar(lastBar, sepSize) {
+        let lastbarIndex = this.getSeparatorIndex(lastBar);
+        if (this.allPanes[lastbarIndex + 1].style.flexBasis.indexOf('%') > -1) {
+            this.allPanes[lastbarIndex + 1].style.flexBasis = this.convertPixelToPercentage(sepSize) + '%';
+        }
+        else {
+            this.allPanes[lastbarIndex + 1].style.flexBasis = parseFloat(this.allPanes[lastbarIndex + 1].style.flexBasis)
+                + sepSize + 'px';
+        }
+        if (this.allPanes[lastbarIndex].style.flexBasis.indexOf('%') > -1) {
+            this.allPanes[lastbarIndex].style.flexBasis = (parseFloat(this.allPanes[lastbarIndex].style.flexBasis)
+                - this.convertPixelToPercentage(this.separatorSize)) + '%';
+        }
+        else {
+            this.allPanes[lastbarIndex].style.flexBasis = parseFloat(this.allPanes[lastbarIndex].style.flexBasis)
+                - sepSize + 'px';
+        }
     }
     validateMinRange(paneIndex, paneCurrentWidth, pane) {
         let paneMinRange = null;
@@ -2344,6 +2386,7 @@ let DashboardLayout = class DashboardLayout extends Component {
             this.setPanelPosition(el, panelModel.row, panelModel.col);
             this.setHeightAndWidth(el, panelModel);
         }
+        removeClass([el], [dragging]);
         this.trigger('resizeStop', args);
         this.resizeCalled = false;
         this.lastMouseX = this.lastMouseY = undefined;

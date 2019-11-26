@@ -4974,7 +4974,8 @@ class AggregateMenu {
                 let field = buttonElement.getAttribute('data-uid');
                 let valuefields = this.parent.dataSourceSettings.values;
                 let contentElement = buttonElement.querySelector('.e-content');
-                let captionName = menu.item.text + ' ' + 'of' + ' ' + this.parent.engineModule.fieldList[field].caption;
+                let captionName = menu.item.text + ' ' + this.parent.localeObj.getConstant('of') + ' ' +
+                    this.parent.engineModule.fieldList[field].caption;
                 contentElement.innerHTML = captionName;
                 contentElement.setAttribute('title', captionName);
                 buttonElement.setAttribute('data-type', type);
@@ -5026,7 +5027,8 @@ class AggregateMenu {
         }
         if (buttonElement) {
             let contentElement = buttonElement.querySelector('.e-content');
-            let captionName = this.parent.localeObj.getConstant(summaryInstance.value) + ' ' + 'of' + ' ' + captionInstance.value;
+            let captionName = this.parent.localeObj.getConstant(summaryInstance.value) + ' ' +
+                this.parent.localeObj.getConstant('of') + ' ' + captionInstance.value;
             contentElement.innerHTML = captionName;
             contentElement.setAttribute('title', captionName);
             buttonElement.setAttribute('data-type', summaryInstance.value);
@@ -8724,8 +8726,9 @@ class DrillThrough {
                     }
                 }
             }
-            let valuetText = aggType === 'CalculatedField' ? valueCaption.toString() :
-                aggType !== '' ? (aggType + ' ' + this.parent.localeObj.getConstant('of') + ' ' + valueCaption) : valueCaption;
+            let valuetText = aggType === 'CalculatedField' ? valueCaption.toString() : aggType !== '' ?
+                (this.parent.localeObj.getConstant(aggType) + ' ' + this.parent.localeObj.getConstant('of') + ' ' + valueCaption) :
+                valueCaption;
             let eventArgs = {
                 currentTarget: ele,
                 currentCell: pivotValue,
@@ -14900,8 +14903,31 @@ let PivotView = PivotView_1 = class PivotView extends Component {
      */
     getPersistData() {
         let keyEntity = ['dataSourceSettings', 'pivotValues', 'gridSettings', 'chartSettings', 'displayOption'];
-        // tslint:disable-next-line
+        /* tslint:disable */
         this.chartSettings['tooltipRender'] = undefined;
+        this.chartSettings['resized'] = undefined;
+        this.chartSettings['loaded'] = undefined;
+        this.chartSettings['beforePrint'] = undefined;
+        this.chartSettings['animationComplete'] = undefined;
+        this.chartSettings['load'] = undefined;
+        this.chartSettings['textRender'] = undefined;
+        this.chartSettings['legendRender'] = undefined;
+        this.chartSettings['seriesRender'] = undefined;
+        this.chartSettings['pointRender'] = undefined;
+        this.chartSettings['axisLabelRender'] = undefined;
+        this.chartSettings['chartMouseClick'] = undefined;
+        this.chartSettings['chartMouseMove'] = undefined;
+        this.chartSettings['pointMove'] = undefined;
+        this.chartSettings['pointClick'] = undefined;
+        this.chartSettings['chartMouseDown'] = undefined;
+        this.chartSettings['chartMouseLeave'] = undefined;
+        this.chartSettings['dragComplete'] = undefined;
+        this.chartSettings['chartMouseUp'] = undefined;
+        this.chartSettings['scrollStart'] = undefined;
+        this.chartSettings['zoomComplete'] = undefined;
+        this.chartSettings['scrollChanged'] = undefined;
+        this.chartSettings['scrollEnd'] = undefined;
+        /* tslint:enable */
         return this.addOnPersist(keyEntity);
     }
     /**
@@ -15014,8 +15040,11 @@ let PivotView = PivotView_1 = class PivotView extends Component {
                     if (newProp.dataSourceSettings && Object.keys(newProp.dataSourceSettings).length === 1
                         && Object.keys(newProp.dataSourceSettings)[0] === 'dataSource') {
                         this.engineModule.fieldList = null;
+                        this.refreshData();
                     }
-                    this.notify(initialLoad, {});
+                    else {
+                        this.notify(initialLoad, {});
+                    }
                     break;
                 case 'pivotValues':
                 case 'displayOption':
@@ -16432,10 +16461,11 @@ let PivotView = PivotView_1 = class PivotView extends Component {
         if (this.displayOption.view !== 'Chart') {
             this.renderEmptyGrid();
         }
+        this.refreshData();
+    }
+    refreshData() {
         showSpinner(this.element);
         let pivot = this;
-        //setTimeout(() => {
-        /* tslint:disable */
         if (isBlazor()) {
             if (pivot.dataType === 'olap') {
                 if (pivot.dataSourceSettings.dataSource instanceof DataManager) {
@@ -16450,6 +16480,7 @@ let PivotView = PivotView_1 = class PivotView extends Component {
             else if ((this.dataSourceSettings.url !== '' && this.dataType === 'olap') ||
                 pivot.dataSourceSettings.dataSource.length > 0) {
                 if (pivot.dataType === 'pivot') {
+                    hideSpinner(pivot.element);
                     pivot.engineModule.data = pivot.dataSourceSettings.dataSource;
                 }
                 pivot.initEngine();
@@ -16461,8 +16492,6 @@ let PivotView = PivotView_1 = class PivotView extends Component {
         else {
             hideSpinner(pivot.element);
         }
-        /* tslint:enable */
-        //});
     }
     getValueCellInfo(aggregateObj) {
         let args = aggregateObj;
@@ -16501,7 +16530,7 @@ let PivotView = PivotView_1 = class PivotView extends Component {
             }
             for (let i = 0; i < pivotValues.length; i++) {
                 for (let j = 1; (pivotValues[i] && j < pivotValues[i].length); j++) {
-                    if (pivotValues[i][j].axis === 'value') {
+                    if (pivotValues[i][j].axis === 'value' && pivotValues[i][j].formattedText !== '') {
                         pivotValues[i][j].style = undefined;
                         pivotValues[i][j].cssClass = undefined;
                         let format = this.dataSourceSettings.conditionalFormatSettings;
@@ -20608,7 +20637,7 @@ class PivotButton {
                 title: axis === 'filters' ? (this.parent.dataType === 'olap' && engineModule.fieldList[field[i].name].type === 'CalculatedField') ?
                     text : (text + ' (' + filterMem + ')') : (this.parent.dataType === 'olap' ?
                     text : (((!this.parent.dataSourceSettings.showAggregationOnValueField || axis !== 'values' || aggregation === 'CalculatedField') ?
-                    text : this.parent.localeObj.getConstant(aggregation) + ' ' + 'of' + ' ' + text))),
+                    text : this.parent.localeObj.getConstant(aggregation) + ' ' + this.parent.localeObj.getConstant('of') + ' ' + text))),
                 'tabindex': '-1', 'aria-disabled': 'false', 'oncontextmenu': 'return false;',
                 'data-type': valuePos === i ? '' : aggregation
             },
@@ -20617,7 +20646,7 @@ class PivotButton {
             innerHTML: axis === 'filters' ? (this.parent.dataType === 'olap' && engineModule.fieldList[field[i].name].type === 'CalculatedField') ?
                 text : (text + ' (' + filterMem + ')') : (this.parent.dataType === 'olap' ?
                 text : (!this.parent.dataSourceSettings.showAggregationOnValueField || axis !== 'values' || aggregation === 'CalculatedField' ?
-                text : this.parent.localeObj.getConstant(aggregation) + ' ' + 'of' + ' ' + text))
+                text : this.parent.localeObj.getConstant(aggregation) + ' ' + this.parent.localeObj.getConstant('of') + ' ' + text))
         });
         return buttonText;
     }
@@ -21821,7 +21850,8 @@ let PivotFieldList = class PivotFieldList extends Component {
             fieldTitle: 'Field Name',
             QuarterYear: 'Quarter Year',
             caption: 'Field Caption',
-            copy: 'Copy'
+            copy: 'Copy',
+            of: 'of'
         };
         this.localeObj = new L10n(this.getModuleName(), this.defaultLocale, this.locale);
         this.isDragging = false;

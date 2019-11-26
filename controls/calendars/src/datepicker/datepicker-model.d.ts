@@ -1,4 +1,4 @@
-import { EventHandler, Property, Internationalization, NotifyPropertyChanges, DateFormatOptions } from '@syncfusion/ej2-base';import { KeyboardEvents, KeyboardEventArgs, Animation, EmitType, Event, extend, L10n, Browser, formatUnit } from '@syncfusion/ej2-base';import { createElement, detach, addClass, removeClass, closest, classList, attributes } from '@syncfusion/ej2-base';import { isNullOrUndefined, setValue, getUniqueID, ModuleDeclaration } from '@syncfusion/ej2-base';import { Popup } from '@syncfusion/ej2-popups';import { Input, InputObject, IInput, FloatLabelType } from '@syncfusion/ej2-inputs';import { ChangedEventArgs, CalendarView, Calendar, BlurEventArgs, FocusEventArgs } from '../calendar/calendar';
+import { EventHandler, Property, Internationalization, NotifyPropertyChanges, DateFormatOptions } from '@syncfusion/ej2-base';import { KeyboardEvents, KeyboardEventArgs, Animation, EmitType, Event, extend, L10n, Browser, formatUnit } from '@syncfusion/ej2-base';import { createElement, detach, addClass, removeClass, closest, classList, attributes } from '@syncfusion/ej2-base';import { isNullOrUndefined, setValue, getUniqueID, ModuleDeclaration } from '@syncfusion/ej2-base';import { Popup } from '@syncfusion/ej2-popups';import { Input, InputObject, IInput, FloatLabelType } from '@syncfusion/ej2-inputs';import { ChangedEventArgs, CalendarView, Calendar, BlurEventArgs, FocusEventArgs, ClearedEventArgs } from '../calendar/calendar';
 import {FormatObject,PopupObjectArgs,PreventableEventArgs} from "./datepicker";
 import {CalendarModel} from "../calendar/calendar-model";
 
@@ -249,6 +249,12 @@ export interface DatePickerModel extends CalendarModel{
      * @blazorType PopupObjectArgs
      */
     open?: EmitType<PreventableEventArgs | PopupObjectArgs>;
+
+    /**
+     * Triggers when datepicker value is cleared using clear button.
+     * @event
+     */
+    cleared?: EmitType<ClearedEventArgs>;
 
     /**
      * Triggers when the popup is closed.

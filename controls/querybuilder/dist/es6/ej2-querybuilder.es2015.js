@@ -1,5 +1,5 @@
 import { Animation, Browser, ChildProperty, Collection, Complex, Component, Event, EventHandler, Internationalization, L10n, NotifyPropertyChanges, Property, addClass, classList, closest, detach, extend, getComponent, getInstance, getValue, isBlazor, isNullOrUndefined, removeClass, rippleEffect } from '@syncfusion/ej2-base';
-import { Button, RadioButton } from '@syncfusion/ej2-buttons';
+import { Button, CheckBox, RadioButton } from '@syncfusion/ej2-buttons';
 import { CheckBoxSelection, DropDownList, MultiSelect } from '@syncfusion/ej2-dropdowns';
 import { DataManager, Deferred, Predicate, Query, UrlAdaptor } from '@syncfusion/ej2-data';
 import { NumericTextBox, TextBox } from '@syncfusion/ej2-inputs';
@@ -83,6 +83,9 @@ __decorate([
 __decorate([
     Property(null)
 ], Rule.prototype, "value", void 0);
+__decorate([
+    Property(false)
+], Rule.prototype, "not", void 0);
 class ShowButtons extends ChildProperty {
 }
 __decorate([
@@ -110,9 +113,12 @@ let QueryBuilder = class QueryBuilder extends Component {
         let bodeElem = this.element.querySelector('.e-group-body');
         bodeElem.innerHTML = '';
         this.element.querySelector('.e-btngroup-and').checked = true;
+        if (this.enableNotCondition) {
+            getInstance(this.element.querySelector('.e-checkbox'), CheckBox).checked = false;
+        }
         bodeElem.appendChild(this.createElement('div', { attrs: { class: 'e-rule-list' } }));
         this.levelColl[this.element.id + '_group0'] = [0];
-        this.rule = { condition: 'and', rules: [] };
+        this.rule = { condition: 'and', not: false, rules: [] };
     }
     getWrapper() {
         return this.element;
@@ -243,12 +249,30 @@ let QueryBuilder = class QueryBuilder extends Component {
                 }
             }
         }
-        else if (target.tagName === 'LABEL' && target.parentElement.className.indexOf('e-btn-group') > -1) {
+        else if (target.tagName === 'LABEL' && target.parentElement.className.indexOf('e-btn-group') > -1 ||
+            target.parentElement.className.indexOf('e-checkbox-wrapper') > -1) {
             let element = closest(target, '.e-group-container');
             let forIdValue = target.getAttribute('for');
             let targetValue = document.getElementById(forIdValue).getAttribute('value');
             groupID = element.id.replace(this.element.id + '_', '');
+            let ariaChecked;
+            if (this.enableNotCondition) {
+                ariaChecked = element.getElementsByClassName('e-checkbox-wrapper')[0].getAttribute('aria-checked');
+                if (target.parentElement.className.indexOf('e-checkbox-wrapper') > -1) {
+                    if (ariaChecked === 'true') {
+                        ariaChecked = 'false';
+                    }
+                    else {
+                        ariaChecked = 'true';
+                    }
+                    targetValue = this.rule.condition;
+                }
+            }
             args = { groupID: groupID, cancel: false, type: 'condition', value: targetValue.toLowerCase() };
+            if (this.enableNotCondition) {
+                args = { groupID: groupID, cancel: false, type: 'condition', value: targetValue.toLowerCase(),
+                    'not': JSON.parse(ariaChecked) };
+            }
             if (!this.isImportRules) {
                 this.trigger('beforeChange', args, (observedChangeArgs) => {
                     this.beforeSuccessCallBack(observedChangeArgs, target);
@@ -266,6 +290,9 @@ let QueryBuilder = class QueryBuilder extends Component {
             let beforeRules = this.getValidRules(this.rule);
             let rule = this.getParentGroup(element);
             rule.condition = args.value;
+            if (this.enableNotCondition) {
+                rule.not = args.not;
+            }
             if (!this.isImportRules) {
                 this.trigger('change', { groupID: groupID, type: 'condition', value: rule.condition });
             }
@@ -522,6 +549,8 @@ let QueryBuilder = class QueryBuilder extends Component {
         groupElem.appendChild(grpBodyElem);
         // create button group in OR and AND process
         glueElem = this.createElement('div', { attrs: { class: 'e-btn-group' } });
+        inputElem = this.createElement('input', { attrs: { type: 'checkbox', class: 'e-checkbox' } });
+        glueElem.appendChild(inputElem);
         inputElem = this.createElement('input', { attrs: { type: 'radio', class: 'e-btngroup-and', value: 'AND' } });
         inputElem.setAttribute('checked', 'true');
         glueElem.appendChild(inputElem);
@@ -593,6 +622,7 @@ let QueryBuilder = class QueryBuilder extends Component {
             let orInpElem = groupElem.querySelector('.e-btngroup-or');
             let andLblElem = groupElem.querySelector('.e-btngroup-and-lbl');
             let orLblElem = groupElem.querySelector('.e-btngroup-or-lbl');
+            let notElem = groupElem.querySelector('.e-checkbox');
             andInpElem.setAttribute('id', this.element.id + '_and' + this.btnGroupId);
             orInpElem.setAttribute('id', this.element.id + '_or' + this.btnGroupId);
             andInpElem.setAttribute('name', this.element.id + '_and' + this.btnGroupId);
@@ -632,6 +662,11 @@ let QueryBuilder = class QueryBuilder extends Component {
                 target.appendChild(groupElem);
                 this.levelColl[groupElem.id] = [0];
             }
+            if (this.enableNotCondition) {
+                let checkbox = new CheckBox({ label: this.l10n.getConstant('NOT'), cssClass: 'e-btn e-small' });
+                checkbox.appendTo(notElem);
+                groupElem.querySelector('.e-btngroup-and-lbl').classList.add('e-not');
+            }
             groupElem.querySelector('.e-btngroup-and').setAttribute('checked', 'true');
             if (condition === 'or') {
                 groupElem.querySelector('.e-btngroup-or').setAttribute('checked', 'true');
@@ -652,11 +687,49 @@ let QueryBuilder = class QueryBuilder extends Component {
     }
     notifyChange(value, element) {
         let tempColl = closest(element, '.e-rule-value').querySelectorAll('.e-template');
+        let filterElem = closest(element, '.e-rule-container').querySelector('.e-filter-input');
+        let dropDownObj = getComponent(filterElem, 'dropdownlist');
+        let column = dropDownObj.getDataByValue(dropDownObj.value);
+        let format;
+        if (column.format && column.format.indexOf('/') > -1) {
+            format = { type: 'dateTime', format: column.format };
+        }
+        else {
+            format = { type: 'dateTime', skeleton: column.format || 'yMd' };
+        }
         let valueColl = [];
         for (let i = 0, iLen = tempColl.length; i < iLen; i++) {
             if (tempColl[i].nextElementSibling) {
                 if (tempColl[i].nextElementSibling.className.indexOf('e-check') > -1) {
                     valueColl.push(tempColl[i].textContent);
+                }
+                else {
+                    if (column.type === 'date' && value[i] instanceof Date) {
+                        valueColl.push(this.intl.formatDate(value[i], format));
+                    }
+                    else {
+                        valueColl.push(value[i]);
+                    }
+                }
+            }
+            else {
+                if (column.type === 'date' && value[i] instanceof Date) {
+                    valueColl.push(this.intl.formatDate(value[i], format));
+                }
+                else {
+                    valueColl.push(value[i]);
+                }
+            }
+        }
+        if (column.type === 'date') {
+            if (value instanceof Date) {
+                value = this.intl.formatDate(value, format);
+            }
+            else if (value instanceof Array) {
+                for (let i = 0; i < value.length; i++) {
+                    if (value[i] instanceof Date) {
+                        value[i] = this.intl.formatDate(value[i], format);
+                    }
                 }
             }
         }
@@ -1389,6 +1462,7 @@ let QueryBuilder = class QueryBuilder extends Component {
             let filtObj = getComponent(filtElem, 'dropdownlist');
             itemData.template = this.columns[filtObj.index].template;
             if (itemData.template) {
+                addClass([target.nextElementSibling], 'e-template-value');
                 itemData.template = this.columns[filtObj.index].template;
                 let valElem;
                 if (itemData.template && typeof itemData.template.create === 'string') {
@@ -1419,6 +1493,7 @@ let QueryBuilder = class QueryBuilder extends Component {
                 }
             }
             else {
+                removeClass([target.nextElementSibling], 'e-template-value');
                 let inputLen = 1;
                 if (tempRule.type === 'boolean') {
                     inputLen = this.selectedColumn.values ? this.selectedColumn.values.length : 2;
@@ -1458,6 +1533,9 @@ let QueryBuilder = class QueryBuilder extends Component {
                 break;
             case 'numerictextbox':
                 if (rule.operator.indexOf('between') > -1) {
+                    if (typeof rule.value === 'string') {
+                        rule.value = [];
+                    }
                     rule.value[i] = getComponent(element, controlName).value;
                 }
                 else {
@@ -1534,6 +1612,10 @@ let QueryBuilder = class QueryBuilder extends Component {
                     elementCln[i] = ruleElement.nextElementSibling.nextElementSibling.querySelector('.e-template');
                 }
                 eventsArgs = { groupID: groupID, ruleID: ruleID, value: rule.rules[index].field, type: 'field' };
+                if (rule.rules[index].operator.indexOf('null') > -1 || rule.rules[index].operator.indexOf('empty') > -1) {
+                    rule.rules[index].value = null;
+                    continue;
+                }
                 this.updateValues(elementCln[i], rule.rules[index]);
             }
             if (!this.isImportRules) {
@@ -1558,6 +1640,10 @@ let QueryBuilder = class QueryBuilder extends Component {
                 rule.rules[index].value = [];
             }
             for (let i = 0; i < inputElem.length; i++) {
+                if (rule.rules[index].operator.indexOf('null') > -1 || rule.rules[index].operator.indexOf('empty') > -1) {
+                    rule.rules[index].value = null;
+                    continue;
+                }
                 this.updateValues(inputElem[i], rule.rules[index]);
             }
             if (!this.isImportRules) {
@@ -1571,8 +1657,8 @@ let QueryBuilder = class QueryBuilder extends Component {
         }
     }
     filterRules(beforeRule, afterRule, type) {
-        let beforeRuleStr = JSON.stringify({ condition: beforeRule.condition, rule: beforeRule.rules });
-        let afetrRuleStr = JSON.stringify({ condition: afterRule.condition, rule: afterRule.rules });
+        let beforeRuleStr = JSON.stringify({ condition: beforeRule.condition, not: beforeRule.not, rule: beforeRule.rules });
+        let afetrRuleStr = JSON.stringify({ condition: afterRule.condition, not: afterRule.not, rule: afterRule.rules });
         if (beforeRuleStr !== afetrRuleStr) {
             if (!this.isImportRules) {
                 this.trigger('ruleChange', { previousRule: beforeRule, rule: afterRule, type: type });
@@ -1756,7 +1842,12 @@ let QueryBuilder = class QueryBuilder extends Component {
             }
         }
         else {
-            rule.rules.push({ 'condition': 'and', rules: [] });
+            if (this.enableNotCondition) {
+                rule.rules.push({ 'condition': 'and', 'not': false, rules: [] });
+            }
+            else {
+                rule.rules.push({ 'condition': 'and', rules: [] });
+            }
         }
     }
     initWrapper() {
@@ -1808,6 +1899,7 @@ let QueryBuilder = class QueryBuilder extends Component {
             else if (this.columns.length) {
                 this.addRuleElement(this.element.querySelector('.e-group-container'), {});
             }
+            this.notGroupRtl();
             let buttons = document.querySelectorAll('label.e-btn');
             let button;
             for (let i = 0; i < buttons.length; i++) {
@@ -1849,6 +1941,44 @@ let QueryBuilder = class QueryBuilder extends Component {
         else if (this.sortDirection.toLowerCase() === 'ascending') {
             this.columns = new DataManager(this.columns).executeLocal(new Query().sortBy('field'));
         }
+    }
+    onChangeNotGroup() {
+        this.element.innerHTML = '';
+        this.groupIdCounter = 0;
+        this.rule = this.checkNotGroup(this.rule);
+        this.initWrapper();
+    }
+    notGroupRtl() {
+        if (this.enableRtl) {
+            this.element.querySelectorAll('.e-checkbox-wrapper').forEach((el) => {
+                el.classList.add('e-rtl');
+            });
+        }
+        else {
+            this.element.querySelectorAll('.e-checkbox-wrapper').forEach((el) => {
+                el.classList.remove('e-rtl');
+            });
+        }
+    }
+    checkNotGroup(rule) {
+        let orgRule;
+        if (rule.rules) {
+            for (let i = 0; i < rule.rules.length; i++) {
+                orgRule = rule.rules[i];
+                orgRule = this.checkNotGroup(orgRule);
+                rule.rules[i] = orgRule;
+            }
+        }
+        if (!isNullOrUndefined(rule.not)) {
+            if (this.enableNotCondition) {
+                rule.not = false;
+            }
+            delete rule.not;
+        }
+        else if (this.enableNotCondition && !isNullOrUndefined(rule.condition)) {
+            rule.not = false;
+        }
+        return rule;
     }
     onPropertyChanged(newProp, oldProp) {
         let properties = Object.keys(newProp);
@@ -1911,9 +2041,11 @@ let QueryBuilder = class QueryBuilder extends Component {
                 case 'enableRtl':
                     if (newProp.enableRtl) {
                         addClass([this.element], 'e-rtl');
+                        this.notGroupRtl();
                     }
                     else {
                         removeClass([this.element], 'e-rtl');
+                        this.notGroupRtl();
                     }
                     break;
                 case 'enablePersistence':
@@ -1949,6 +2081,9 @@ let QueryBuilder = class QueryBuilder extends Component {
                     this.locale = newProp.locale;
                     this.intl = new Internationalization(this.locale);
                     break;
+                case 'enableNotCondition':
+                    this.onChangeNotGroup();
+                    break;
             }
         }
     }
@@ -1980,6 +2115,7 @@ let QueryBuilder = class QueryBuilder extends Component {
             OtherFields: 'Other Fields',
             AND: 'AND',
             OR: 'OR',
+            NOT: 'NOT',
             SelectValue: 'Enter Value',
             IsEmpty: 'Is Empty',
             IsNotEmpty: 'Is Not Empty',
@@ -2233,8 +2369,9 @@ let QueryBuilder = class QueryBuilder extends Component {
      */
     getValidRules(currentRule) {
         let ruleCondtion = currentRule.condition;
+        let notCondition = currentRule.not;
         let ruleColl = extend([], currentRule.rules, [], true);
-        let rule = this.getRuleCollection({ condition: ruleCondtion, rules: ruleColl }, true);
+        let rule = this.getRuleCollection({ condition: ruleCondtion, rules: ruleColl, not: notCondition }, true);
         return rule;
     }
     getRuleCollection(rule, isValidRule) {
@@ -2268,7 +2405,12 @@ let QueryBuilder = class QueryBuilder extends Component {
             }
         }
         else {
-            rule = { 'condition': rule.condition, 'rules': rule.rules };
+            if (this.enableNotCondition) {
+                rule = { 'condition': rule.condition, 'rules': rule.rules, 'not': rule.not };
+            }
+            else {
+                rule = { 'condition': rule.condition, 'rules': rule.rules };
+            }
         }
         return rule;
     }
@@ -2285,7 +2427,12 @@ let QueryBuilder = class QueryBuilder extends Component {
      * @returns object.
      */
     getRules() {
-        return { condition: this.rule.condition, rules: this.rule.rules };
+        if (this.enableNotCondition) {
+            return { condition: this.rule.condition, rules: this.rule.rules, not: this.rule.not };
+        }
+        else {
+            return { condition: this.rule.condition, rules: this.rule.rules };
+        }
     }
     /**
      * Gets the rule.
@@ -2431,8 +2578,14 @@ let QueryBuilder = class QueryBuilder extends Component {
                     ignoreCase = true;
                 }
                 column = this.getColumn(ruleColl[i].field);
-                if (ruleColl[i].type === 'date') {
-                    let format = { type: 'dateTime', format: column.format || 'MM/dd/yyyy' };
+                if (ruleColl[i].type === 'date' && !(ruleColl[i].value instanceof Array)) {
+                    let format;
+                    if (column.format && column.format.indexOf('/') > 1) {
+                        format = { type: 'dateTime', format: column.format };
+                    }
+                    else {
+                        format = { type: 'dateTime', skeleton: column.format || 'yMd' };
+                    }
                     ruleValue = this.intl.parseDate(ruleColl[i].value, format);
                     if (dateOperColl.indexOf(oper) > -1) {
                         isDateFilter = true;
@@ -2539,7 +2692,15 @@ let QueryBuilder = class QueryBuilder extends Component {
     arrayPredicate(ruleColl, predicate, condition) {
         let value = ruleColl.value;
         let nullValue = ruleColl.value;
+        let format;
         let pred;
+        let column = this.getColumn(ruleColl.field);
+        if (column.format && column.format.indexOf('/') > 1) {
+            format = { type: 'dateTime', format: column.format };
+        }
+        else {
+            format = { type: 'dateTime', skeleton: column.format || 'yMd' };
+        }
         if (ruleColl.operator.indexOf('null') > -1 || ruleColl.operator.indexOf('empty') > -1) {
             switch (ruleColl.operator) {
                 case 'isnull':
@@ -2562,10 +2723,20 @@ let QueryBuilder = class QueryBuilder extends Component {
                     if (j === 0) {
                         switch (ruleColl.operator) {
                             case 'between':
-                                pred = new Predicate(ruleColl.field, 'greaterthan', value[j]);
+                                if (column.type === 'date') {
+                                    pred = new Predicate(ruleColl.field, 'greaterthan', this.intl.parseDate(value[j], format));
+                                }
+                                else {
+                                    pred = new Predicate(ruleColl.field, 'greaterthan', value[j]);
+                                }
                                 break;
                             case 'notbetween':
-                                pred = new Predicate(ruleColl.field, 'lessthan', value[j]);
+                                if (column.type === 'date') {
+                                    pred = new Predicate(ruleColl.field, 'lessthan', this.intl.parseDate(value[j], format));
+                                }
+                                else {
+                                    pred = new Predicate(ruleColl.field, 'lessthan', value[j]);
+                                }
                                 break;
                             case 'in':
                                 pred = new Predicate(ruleColl.field, 'equal', value[j]);
@@ -2578,10 +2749,20 @@ let QueryBuilder = class QueryBuilder extends Component {
                     else {
                         switch (ruleColl.operator) {
                             case 'between':
-                                pred = pred.and(ruleColl.field, 'lessthan', value[j]);
+                                if (column.type === 'date') {
+                                    pred = pred.and(ruleColl.field, 'lessthan', this.intl.parseDate(value[j], format));
+                                }
+                                else {
+                                    pred = pred.and(ruleColl.field, 'lessthan', value[j]);
+                                }
                                 break;
                             case 'notbetween':
-                                pred = pred.or(ruleColl.field, 'greaterthan', value[j]);
+                                if (column.type === 'date') {
+                                    pred = pred.or(ruleColl.field, 'greaterthan', this.intl.parseDate(value[j], format));
+                                }
+                                else {
+                                    pred = pred.or(ruleColl.field, 'greaterthan', value[j]);
+                                }
                                 break;
                             case 'in':
                                 pred = pred.or(ruleColl.field, 'equal', value[j]);
@@ -2620,6 +2801,15 @@ let QueryBuilder = class QueryBuilder extends Component {
             else {
                 parentElem.querySelector('.e-btngroup-and').checked = true;
             }
+            if (this.enableNotCondition) {
+                let check = getInstance(parentElem.querySelector('.e-checkbox'), CheckBox);
+                if (rule.not) {
+                    check.checked = true;
+                }
+                else {
+                    check.checked = false;
+                }
+            }
         }
         let ruleColl = rule.rules;
         if (!isNullOrUndefined(ruleColl)) {
@@ -2655,7 +2845,7 @@ let QueryBuilder = class QueryBuilder extends Component {
     }
     getSqlString(rules, enableEscape, queryStr) {
         let isRoot = false;
-        if (!queryStr) {
+        if (!queryStr && queryStr !== '') {
             queryStr = '';
             isRoot = true;
         }
@@ -2663,6 +2853,14 @@ let QueryBuilder = class QueryBuilder extends Component {
             queryStr += '(';
         }
         let condition = rules.condition;
+        if (rules.not) {
+            if (isRoot) {
+                queryStr += 'not (';
+            }
+            else {
+                queryStr += ' not (';
+            }
+        }
         for (let j = 0, jLen = rules.rules.length; j < jLen; j++) {
             if (rules.rules[j].rules) {
                 queryStr = this.getSqlString(rules.rules[j], enableEscape, queryStr);
@@ -2672,7 +2870,12 @@ let QueryBuilder = class QueryBuilder extends Component {
                 let valueStr = '';
                 if (rule.value instanceof Array) {
                     if (rule.operator.indexOf('between') > -1) {
-                        valueStr += rule.value[0] + ' AND ' + rule.value[1];
+                        if (rule.type === 'date') {
+                            valueStr += '"' + rule.value[0] + '" AND "' + rule.value[1] + '"';
+                        }
+                        else {
+                            valueStr += rule.value[0] + ' AND ' + rule.value[1];
+                        }
                     }
                     else {
                         if (typeof rule.value[0] === 'string') {
@@ -2726,6 +2929,9 @@ let QueryBuilder = class QueryBuilder extends Component {
         if (!isRoot) {
             queryStr += ')';
         }
+        if (rules.not) {
+            queryStr += ')';
+        }
         return queryStr;
     }
     /**
@@ -2734,7 +2940,7 @@ let QueryBuilder = class QueryBuilder extends Component {
     setRulesFromSql(sqlString) {
         sqlString = sqlString.replace(/`/g, '');
         let ruleModel = this.getRulesFromSql(sqlString);
-        this.setRules({ condition: ruleModel.condition, rules: ruleModel.rules });
+        this.setRules({ condition: ruleModel.condition, not: ruleModel.not, rules: ruleModel.rules });
     }
     /**
      * Get the rules from SQL query.
@@ -2743,9 +2949,14 @@ let QueryBuilder = class QueryBuilder extends Component {
     getRulesFromSql(sqlString) {
         this.parser = [];
         this.sqlParser(sqlString);
-        this.rule = { condition: '', rules: [] };
+        this.rule = { condition: 'and', not: false, rules: [] };
         let rule = this.processParser(this.parser, this.rule, [0]);
-        return { condition: rule.condition, rules: rule.rules };
+        if (this.enableNotCondition) {
+            return { condition: rule.condition, not: rule.not, rules: rule.rules };
+        }
+        else {
+            return { condition: rule.condition, rules: rule.rules };
+        }
     }
     /**
      * Gets the sql query from rules.
@@ -2766,7 +2977,7 @@ let QueryBuilder = class QueryBuilder extends Component {
     }
     parseSqlStrings(sqlString) {
         let operators = ['=', '!=', '<=', '>=', '<', '>'];
-        let conditions = ['and', 'or'];
+        let conditions = ['and', 'or', 'not'];
         let subOp = ['IN', 'NOT IN', 'LIKE', 'NOT LIKE', 'BETWEEN', 'NOT BETWEEN', 'IS NULL', 'IS NOT NULL',
             'IS EMPTY', 'IS NOT EMPTY'];
         let regexStr;
@@ -2914,6 +3125,9 @@ let QueryBuilder = class QueryBuilder extends Component {
                                 if (parser[j][0] === 'Number') {
                                     numVal.push(Number(parser[j][1]));
                                 }
+                                else if (parser[j][0] === 'String') {
+                                    strVal.push(parser[j][1].replace(/'/g, ''));
+                                }
                             }
                             else {
                                 if (parser[j][0] === 'Number') {
@@ -2923,6 +3137,7 @@ let QueryBuilder = class QueryBuilder extends Component {
                                     strVal.push(parser[j][1].replace(/'/g, ''));
                                 }
                             }
+                            rule.type = this.getTypeFromColumn(rule);
                         }
                     }
                     if (operator.indexOf('like') < 0) {
@@ -2938,6 +3153,7 @@ let QueryBuilder = class QueryBuilder extends Component {
                             rule.value = numVal;
                             rule.type = 'number';
                         }
+                        rule.type = this.getTypeFromColumn(rule);
                     }
                 }
                 else if (parser[i + 1][0] === 'Operators') {
@@ -2950,12 +3166,21 @@ let QueryBuilder = class QueryBuilder extends Component {
                         rule.type = 'string';
                         rule.value = parser[i + 2][1].replace(/'/g, '');
                     }
+                    rule.type = this.getTypeFromColumn(rule);
                 }
                 rules.rules.push(rule);
             }
             else if (parser[i][0] === 'Left') {
+                if (!(parser[0][0] === 'Left') && parser[i - 1][1] === 'not') {
+                    continue;
+                }
                 this.parser = parser.splice(i + 1, iLen - (i + 1));
-                subRules = { condition: '', rules: [] };
+                if (this.enableNotCondition) {
+                    subRules = { condition: 'and', rules: [], not: false };
+                }
+                else {
+                    subRules = { condition: 'and', rules: [] };
+                }
                 grpCount = 0;
                 kLen = rules.rules.length;
                 for (k = 0; k < kLen; k++) { //To get the group position
@@ -2969,12 +3194,16 @@ let QueryBuilder = class QueryBuilder extends Component {
                 return rules;
             }
             else if (parser[i][0] === 'Conditions') {
-                rules.condition = parser[i][1];
+                if (parser[i][1] === 'not') {
+                    rules.not = true;
+                }
+                else {
+                    rules.condition = parser[i][1];
+                }
             }
             else if (parser[i][0] === 'Right') {
                 this.parser = parser.splice(i + 1, iLen - (i + 1));
-                //To get the parent Group
-                levelColl.pop();
+                levelColl.pop(); //To get the parent Group
                 rules = this.rule;
                 lLen = levelColl.length;
                 for (l = 0; l < lLen; l++) {
@@ -3043,6 +3272,9 @@ __decorate([
 __decorate([
     Property(0)
 ], QueryBuilder.prototype, "immediateModeDelay", void 0);
+__decorate([
+    Property(false)
+], QueryBuilder.prototype, "enableNotCondition", void 0);
 __decorate([
     Complex({ condition: 'and', rules: [] }, Rule)
 ], QueryBuilder.prototype, "rule", void 0);

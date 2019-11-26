@@ -484,9 +484,9 @@ export class RowDD {
     private rowDropped(args: RowDropEventArgs): void {
         let tObj: TreeGrid = this.parent;
         if (!tObj.rowDropSettings.targetID) {
+            tObj.trigger(events.rowDrop, args);
             if (parentsUntil(args.target, 'e-content')) {
             setValue('dropPosition', this.dropPosition, args);
-            tObj.trigger(events.rowDrop, args);
             if (!args.cancel) {
                 this.dropRows(args);
                 tObj.refresh();

@@ -278,7 +278,7 @@ export class FreeTextAnnotation {
                             fontFamily: annotation.FontFamily, notes: annotation.MarkupText,
                             // tslint:disable-next-line
                             comments: this.pdfViewer.annotationModule.getAnnotationComments(annotation.Comments, annotation, annotation.Author),
-                            review: { state: annotation.State, stateModel: annotation.StateModel, modifiedDate: annotation.ModifiedDate, author: annotation.Author},
+                            review: { state: annotation.State, stateModel: annotation.StateModel, modifiedDate: annotation.ModifiedDate, author: annotation.Author },
                             // tslint:disable-next-line:max-line-length
                             font: { isBold: annotation.Font.Bold, isItalic: annotation.Font.Italic, isStrikeout: annotation.Font.Strikeout, isUnderline: annotation.Font.Underline }
                         };
@@ -411,6 +411,9 @@ export class FreeTextAnnotation {
     public saveFreeTextAnnotations(): string {
         // tslint:disable-next-line
         let storeObject: any = window.sessionStorage.getItem(this.pdfViewerBase.documentId + '_annotations_freetext');
+        if (this.pdfViewerBase.isStorageExceed) {
+            storeObject = this.pdfViewerBase.annotationStorage[this.pdfViewerBase.documentId + '_annotations_freetext'];
+        }
         // tslint:disable-next-line
         let annotations: Array<any> = new Array();
         let colorpick: ColorPicker = new ColorPicker();
@@ -450,15 +453,24 @@ export class FreeTextAnnotation {
     private manageAnnotations(pageAnnotations: IFreeTextAnnotation[], pageNumber: number): void {
         // tslint:disable-next-line
         let storeObject: any = window.sessionStorage.getItem(this.pdfViewerBase.documentId + '_annotations_freetext');
+        if (this.pdfViewerBase.isStorageExceed) {
+            storeObject = this.pdfViewerBase.annotationStorage[this.pdfViewerBase.documentId + '_annotations_freetext'];
+        }
         if (storeObject) {
             let annotObject: IPageAnnotations[] = JSON.parse(storeObject);
-            window.sessionStorage.removeItem(this.pdfViewerBase.documentId + '_annotations_freetext');
+            if (!this.pdfViewerBase.isStorageExceed) {
+                window.sessionStorage.removeItem(this.pdfViewerBase.documentId + '_annotations_freetext');
+            }
             let index: number = this.pdfViewer.annotationModule.getPageCollection(annotObject, pageNumber);
             if (annotObject[index]) {
                 annotObject[index].annotations = pageAnnotations;
             }
             let annotationStringified: string = JSON.stringify(annotObject);
-            window.sessionStorage.setItem(this.pdfViewerBase.documentId + '_annotations_freetext', annotationStringified);
+            if (this.pdfViewerBase.isStorageExceed) {
+                this.pdfViewerBase.annotationStorage[this.pdfViewerBase.documentId + '_annotations_freetext'] = annotationStringified;
+            } else {
+                window.sessionStorage.setItem(this.pdfViewerBase.documentId + '_annotations_freetext', annotationStringified);
+            }
         }
     }
 
@@ -468,6 +480,9 @@ export class FreeTextAnnotation {
         let annotationCollection: any[];
         // tslint:disable-next-line
         let storeObject: any = window.sessionStorage.getItem(this.pdfViewerBase.documentId + '_annotations_freetext');
+        if (this.pdfViewerBase.isStorageExceed) {
+            storeObject = this.pdfViewerBase.annotationStorage[this.pdfViewerBase.documentId + '_annotations_freetext'];
+        }
         if (storeObject) {
             let annotObject: IPageAnnotations[] = JSON.parse(storeObject);
             let index: number = this.pdfViewer.annotationModule.getPageCollection(annotObject, pageIndex);
@@ -538,6 +553,16 @@ export class FreeTextAnnotation {
                     review: { state: 'Unmarked', stateModel: 'None', modifiedDate: currentDateString, author: this.author }
                 };
                 let annotation: PdfAnnotationBaseModel = this.pdfViewer.add(annot as PdfAnnotationBase);
+                // tslint:disable-next-line
+                let bounds: any = { left: annot.bounds.x, top: annot.bounds.y, width: annot.bounds.width, height: annot.bounds.height };
+                this.pdfViewerBase.isDocumentEdited = true;
+                // tslint:disable-next-line
+                let settings: any = {
+                    opacity: annot.opacity, borderColor: annot.strokeColor, borderWidth: annot.thickness, author: annotation.author, subject: annotation.subject, modifiedDate: annotation.modifiedDate,
+                    // tslint:disable-next-line
+                    fillColor: annot.fillColor, fontSize: annot.fontSize, width: annot.bounds.width, height: annot.bounds.height, fontColor: annot.fontColor, fontFamily: annot.fontFamily, defaultText: annot.dynamicText, fontStyle: annot.font, textAlignment: annot.textAlign
+                };
+                this.pdfViewer.fireAnnotationAdd(annot.pageIndex, annot.annotName, 'FreeText', bounds, settings);
                 // tslint:disable-next-line
                 this.pdfViewer.annotation.addAction(pageIndex, null, annot as PdfAnnotationBase, 'Addition', '', annot as PdfAnnotationBase, annot);
                 this.pdfViewer.annotation.storeAnnotations(pageIndex, annot, '_annotations_freetext');

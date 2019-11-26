@@ -559,6 +559,7 @@ export interface IGrid extends Component<HTMLElement> {
     getFilteredRecords(): Object[] | Promise<Object>;
     // public Events
     dataStateChange?: EmitType<DataStateChangeEventArgs>;
+    exportGroupCaption?: EmitType<ExportGroupCaptionEventArgs>;
 }
 
 /** @hidden */
@@ -1046,6 +1047,11 @@ export interface HeaderCellInfoEventArgs {
     cell?: Cell<Column>;
     /** Defines the cell element. */
     node?: Element;
+}
+
+export interface ExportGroupCaptionEventArgs {
+    /** Defines the group caption text. */
+    captionText?: string;
 }
 
 export interface QueryCellInfoEventArgs {

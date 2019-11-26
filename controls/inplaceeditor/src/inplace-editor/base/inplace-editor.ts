@@ -413,6 +413,9 @@ export class InPlaceEditor extends Component<HTMLElement> implements INotifyProp
     private renderEditor(): void {
         let tipOptions: Object = undefined;
         let target: HTMLElement = <HTMLElement>select('.' + classes.VALUE_WRAPPER, this.element);
+        if (this.editableOn !== 'EditIconClick') {
+            target.parentElement.removeAttribute('title');
+        }
         if (this.valueWrap.classList.contains(classes.OPEN)) { return; }
         if (this.mode === 'Inline') {
             this.loaderWidth = this.valueWrap.offsetWidth;
@@ -743,6 +746,10 @@ export class InPlaceEditor extends Component<HTMLElement> implements INotifyProp
         this.containerEle = undefined;
         removeClass([this.valueWrap], [classes.OPEN, classes.HIDE]);
         this.setProperties({ enableEditMode: false }, true);
+        if (this.editableOn !== 'EditIconClick') {
+            let titleConstant: string = (this.editableOn === 'DblClick') ? 'editAreaDoubleClick' : 'editAreaClick';
+            this.valueWrap.parentElement.setAttribute('title', this.getLocale(localeConstant[this.editableOn], titleConstant));
+        }
     }
     private destroyComponents(): void {
         if (this.showButtons) {

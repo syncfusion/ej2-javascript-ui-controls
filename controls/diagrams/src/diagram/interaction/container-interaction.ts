@@ -19,10 +19,10 @@ import { StackEntryObject } from '../objects/interface/IElement';
 import { Actions } from './actions';
 import { Container } from '../core/containers/container';
 import { LaneModel } from '../objects/node-model';
-import { swimLaneMeasureAndArrange, checkLaneSize, checkPhaseOffset } from '../utility/swim-lane-util';
+import { swimLaneMeasureAndArrange, checkLaneSize, checkPhaseOffset, canLaneInterchange } from '../utility/swim-lane-util';
 import { updatePhaseMaxWidth, updateHeaderMaxWidth, updateConnectorsProperties } from '../utility/swim-lane-util';
 import { considerSwimLanePadding } from '../utility/swim-lane-util';
-import { DiagramAction, DiagramConstraints } from '../enum/enum';
+import { DiagramAction, DiagramConstraints, NodeConstraints } from '../enum/enum';
 
 /**
  * Interaction for Container
@@ -101,18 +101,20 @@ export function removeChildInContainer(
         if (container && container.container.type === 'Canvas') {
             if ((!isBoundsUpdate && (!(wrapper.bounds.x <= position.x && wrapper.bounds.right >= position.x &&
                 (wrapper.bounds.y <= position.y && wrapper.bounds.bottom >= position.y))))) {
-                let undoObj: NodeModel = cloneObject(obj);
-                diagram.clearSelection();
-                removeChildrenInLane(diagram, obj as Node);
-                (obj as Node).parentId = '';
-                let entry: HistoryEntry = {
-                    type: 'ChildCollectionChanged', category: 'Internal',
-                    undoObject: undoObj, redoObject: cloneObject(obj)
-                };
-                diagram.addHistoryEntry(entry);
-                if (diagram.commandHandler.isContainer) {
-                    diagram.commandHandler.isContainer = false;
-                    diagram.endGroupAction();
+                if (!(obj.constraints & NodeConstraints.AllowMovingOutsideLane)) {
+                    let undoObj: NodeModel = cloneObject(obj);
+                    diagram.clearSelection();
+                    removeChildrenInLane(diagram, obj as Node);
+                    (obj as Node).parentId = '';
+                    let entry: HistoryEntry = {
+                        type: 'ChildCollectionChanged', category: 'Internal',
+                        undoObject: undoObj, redoObject: cloneObject(obj)
+                    };
+                    diagram.addHistoryEntry(entry);
+                    if (diagram.commandHandler.isContainer) {
+                        diagram.commandHandler.isContainer = false;
+                        diagram.endGroupAction();
+                    }
                 }
             }
         }
@@ -163,7 +165,9 @@ export function renderContainerHelper(diagram: Diagram, obj: SelectorModel | Nod
             container = diagram.selectedItems.wrapper as Canvas;
         }
         diagram.selectedObject.actualObject = object as NodeModel;
-        if ((!diagram.currentSymbol) && (checkParentAsContainer(diagram, object) ||
+        if ((!diagram.currentSymbol) && ((((object as Node).isLane && canLaneInterchange(object as Node, diagram) &&
+            checkParentAsContainer(diagram, object))
+            || ((!(object as Node).isLane) && checkParentAsContainer(diagram, object))) ||
             ((diagram.constraints & DiagramConstraints.LineRouting) && diagram.selectedItems.nodes.length > 0))) {
             let node: NodeModel = {
                 id: 'helper',

@@ -141,10 +141,37 @@
         margin-left: $group-action-margin;
       }
 
+      & .e-checkbox-wrapper label {
+        margin-left: $qrybldr-cb-margin-left;
+      }
+
+      & .e-checkbox-wrapper.e-btn.e-small {
+        border-bottom-right-radius: 0;
+        border-radius: $qrybldr-btngrp-brdr-radius;
+        border-top-right-radius: 0;
+      }
+
       & .e-btn-group {
         border: $qrybldr-btngrp-brdr;
         box-shadow: $qrybldr-btngrp-shadow;
         display: $qrybldr-btngroup-display;
+      }
+
+      & .e-btn.e-btngroup-and-lbl.e-small.e-not {
+        border-bottom-left-radius: 0;
+        border-top-left-radius: 0;
+      }
+
+      & .e-small.e-checkbox-wrapper .e-label {
+        font-size: $qrybldr-cb-font-size;
+        font-weight: $qrybldr-cb-font-weight;
+        position: relative;
+        top: $qrybldr-cb-font-top;
+      }
+
+      & .e-small.e-checkbox-wrapper .e-icons {
+        position: relative;
+        top: $qrybldr-cb-icon-top;
       }
 
       & .e-group-action {
@@ -437,6 +464,10 @@
     & .e-rule-list {
       padding: $qrybldr-bigger-rulelist;
       padding-bottom: 0;
+    }
+
+    & .e-small.e-checkbox-wrapper .e-label {
+      font-size: $qrybldr-cb-bigger-font-size;
     }
 
     & .e-rule-list .e-group-container {

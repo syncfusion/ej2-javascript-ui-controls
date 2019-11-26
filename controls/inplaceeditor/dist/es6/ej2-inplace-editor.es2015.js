@@ -133,7 +133,8 @@ let modulesList = {
  */
 let localeConstant = {
     'Click': { 'editAreaClick': 'Click to edit' },
-    'DblClick': { 'editAreaDoubleClick': 'Double click to edit' }
+    'DblClick': { 'editAreaDoubleClick': 'Double click to edit' },
+    'EditIconClick': { 'editAreaClick': 'Click to edit' },
 };
 
 /**
@@ -308,6 +309,9 @@ let InPlaceEditor = class InPlaceEditor extends Component {
     renderEditor() {
         let tipOptions = undefined;
         let target = select('.' + VALUE_WRAPPER, this.element);
+        if (this.editableOn !== 'EditIconClick') {
+            target.parentElement.removeAttribute('title');
+        }
         if (this.valueWrap.classList.contains(OPEN)) {
             return;
         }
@@ -672,6 +676,10 @@ let InPlaceEditor = class InPlaceEditor extends Component {
         this.containerEle = undefined;
         removeClass([this.valueWrap], [OPEN, HIDE]);
         this.setProperties({ enableEditMode: false }, true);
+        if (this.editableOn !== 'EditIconClick') {
+            let titleConstant = (this.editableOn === 'DblClick') ? 'editAreaDoubleClick' : 'editAreaClick';
+            this.valueWrap.parentElement.setAttribute('title', this.getLocale(localeConstant[this.editableOn], titleConstant));
+        }
     }
     destroyComponents() {
         if (this.showButtons) {

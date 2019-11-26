@@ -1225,8 +1225,8 @@ describe('QueryBuilder', () => {
             expect(selectAll('.e-group-container', queryBuilder.element).length).toBe(1);
             expect(selectAll('.e-rule-container', queryBuilder.element).length).toBe(0);
             queryBuilder.setRulesFromSql("EmployeeID BETWEEN 0 AND 0 and Title IN ('Sales Manager') and City LIKE ('u%')");
-            queryBuilder.getRulesFromSql("Category = ('Clothing') and (Description LIKE ('%s') or PaymentMode = 'Debit Card') and Amount > 84");
-            expect(JSON.stringify(queryBuilder.getRulesFromSql("Category = ('Clothing') and (Description LIKE ('%s') or PaymentMode = 'Debit Card') and Amount > 84").rules)).toEqual('[{"label":"Category","field":"Category","operator":"equal","type":"string","value":"("},{"condition":"","rules":[]},{"condition":"or","rules":[{"label":"Description","field":"Description","operator":"startswith","value":"s","type":"string"},{"label":"PaymentMode","field":"PaymentMode","operator":"equal","type":"string","value":"Debit Card"}]},{"label":"Amount","field":"Amount","operator":"greaterthan","type":"number","value":84}]');
+            queryBuilder.getRulesFromSql("Category = 'Clothing' and (Description LIKE ('%s') or PaymentMode = 'Debit Card') and Amount > 84");
+            expect(JSON.stringify(queryBuilder.getRulesFromSql("Category = 'Clothing' and (Description LIKE ('%s') or PaymentMode = 'Debit Card') and Amount > 84").rules)).toEqual('[{"label":"Category","field":"Category","operator":"equal","type":"string","value":"Clothing"},{"condition":"or","rules":[{"label":"Description","field":"Description","operator":"startswith","type":"string","value":"s"},{"label":"PaymentMode","field":"PaymentMode","operator":"equal","type":"string","value":"Debit Card"}]},{"label":"Amount","field":"Amount","operator":"greaterthan","type":"number","value":84}]');
         });
         it(' Multiple value in textbox  Checking', () => {
             let valRule: RuleModel = {'condition': 'and',

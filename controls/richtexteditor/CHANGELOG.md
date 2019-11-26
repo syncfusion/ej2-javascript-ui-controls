@@ -2,13 +2,23 @@
 
 ## [Unreleased]
 
+## 17.3.29 (2019-11-26)
+
+### RichTextEditor
+
+#### Bug Fixes
+
+- `#F149001` - The issue with customization of table cell padding and cell spacing in the Rich Text Editor has been resolved.
+
+- `#253296` - The issue with drag and drop text is not working inside the Rich Text Editor has been fixed.
+
 ## 17.3.28 (2019-11-19)
 
 ### RichTextEditor
 
 #### Bug Fixes
 
-- `#253296` - The issue with drag and drop text is not working inside the Rich Text Editor has been fixed.
+- `#254865` - Resolved the issue with an image that is not removed when pressing the delete key by enabling the `showOnRightClick` property.
 
 ## 17.3.19 (2019-10-22)
 

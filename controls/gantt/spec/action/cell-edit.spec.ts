@@ -204,7 +204,7 @@ describe('Gantt Edit module', () => {
             triggerMouseEvent(taskName, 'dblclick');
             let element: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(1) > td:nth-child(1) > div > span') as HTMLElement;
             triggerMouseEvent(element, 'click');
-            expect(ganttObj.currentViewData[0].expanded).toBe(false);
+            expect(ganttObj.currentViewData[0].expanded).toBe(true);
         });
         it('Editing parent task name with enter key', () => {
             ganttObj.dataBind();

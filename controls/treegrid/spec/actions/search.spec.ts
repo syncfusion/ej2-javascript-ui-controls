@@ -604,3 +604,31 @@ describe('Hierarchy Search Mode Testing - deep child', () => {
     destroy(gridObj);
   });
 });
+describe('Hierarchy Search Mode Testing for expand icon - Child', () => {
+    let gridObj: TreeGrid;
+    let actionComplete: () => void;
+    beforeAll((done: Function) => {
+      gridObj = createGrid(
+        {
+          dataSource: sampleData,
+          childMapping: 'subtasks',
+          treeColumnIndex: 1,
+          toolbar: ['Search'],
+          searchSettings:{hierarchyMode:"Child"},
+          columns: ['taskID', 'taskName', 'duration', 'progress'],
+        },
+        done
+      );
+    });
+    it('Check the search records for parent mode', (done: Function) => {
+        actionComplete = (args?: Object): void => {
+         expect(gridObj.getRows()[2].cells[1].querySelector(".e-treegridexpand")).not.toBe(null);
+         done();
+        }
+        gridObj.grid.actionComplete = actionComplete;
+        gridObj.search("Implementation");
+    });
+    afterAll(() => {
+      destroy(gridObj);
+    });
+  });

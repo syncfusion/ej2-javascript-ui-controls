@@ -547,6 +547,9 @@ export class ShapeAnnotation {
     public saveShapeAnnotations(): string {
         // tslint:disable-next-line
         let storeObject: any = window.sessionStorage.getItem(this.pdfViewerBase.documentId + '_annotations_shape');
+        if (this.pdfViewerBase.isStorageExceed) {
+            storeObject = this.pdfViewerBase.annotationStorage[this.pdfViewerBase.documentId + '_annotations_shape'];
+        }
         // tslint:disable-next-line
         let annotations: Array<any> = new Array();
         let colorpick: ColorPicker = new ColorPicker();
@@ -594,15 +597,24 @@ export class ShapeAnnotation {
     private manageAnnotations(pageAnnotations: IShapeAnnotation[], pageNumber: number): void {
         // tslint:disable-next-line
         let storeObject: any = window.sessionStorage.getItem(this.pdfViewerBase.documentId + '_annotations_shape');
+        if (this.pdfViewerBase.isStorageExceed) {
+            storeObject = this.pdfViewerBase.annotationStorage[this.pdfViewerBase.documentId + '_annotations_shape'];
+        }
         if (storeObject) {
             let annotObject: IPageAnnotations[] = JSON.parse(storeObject);
-            window.sessionStorage.removeItem(this.pdfViewerBase.documentId + '_annotations_shape');
+            if (!this.pdfViewerBase.isStorageExceed) {
+                window.sessionStorage.removeItem(this.pdfViewerBase.documentId + '_annotations_shape');
+            }
             let index: number = this.pdfViewer.annotationModule.getPageCollection(annotObject, pageNumber);
             if (annotObject[index]) {
                 annotObject[index].annotations = pageAnnotations;
             }
             let annotationStringified: string = JSON.stringify(annotObject);
-            window.sessionStorage.setItem(this.pdfViewerBase.documentId + '_annotations_shape', annotationStringified);
+            if (this.pdfViewerBase.isStorageExceed) {
+                this.pdfViewerBase.annotationStorage[this.pdfViewerBase.documentId + '_annotations_shape'] = annotationStringified;
+            } else {
+                window.sessionStorage.setItem(this.pdfViewerBase.documentId + '_annotations_shape', annotationStringified);
+            }
         }
     }
 
@@ -660,6 +672,9 @@ export class ShapeAnnotation {
         let annotationCollection: any[];
         // tslint:disable-next-line
         let storeObject: any = window.sessionStorage.getItem(this.pdfViewerBase.documentId + '_annotations_shape');
+        if (this.pdfViewerBase.isStorageExceed) {
+            storeObject = this.pdfViewerBase.annotationStorage[this.pdfViewerBase.documentId + '_annotations_shape'];
+        }
         if (storeObject) {
             let annotObject: IPageAnnotations[] = JSON.parse(storeObject);
             let index: number = this.pdfViewer.annotationModule.getPageCollection(annotObject, pageIndex);

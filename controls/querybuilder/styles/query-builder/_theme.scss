@@ -46,6 +46,12 @@
         }
     }
 
+    & .e-group-header .e-btn-group .e-checkbox-wrapper:last-of-type {
+      @if $skin-name == 'highcontrast' {
+        border-left: 1px solid;
+      }
+    }
+
     & .e-removerule.e-btn.e-round {
       background-color: $groupfill-color;
       @if $skin-name == 'bootstrap4' {

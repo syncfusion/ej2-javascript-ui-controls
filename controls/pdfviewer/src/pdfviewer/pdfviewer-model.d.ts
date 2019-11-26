@@ -1576,16 +1576,21 @@ export interface PdfViewerModel extends ComponentModel{
     /**
      * Triggers before the data send in to the server.
      * @event
+     * @deprecated
      */
     ajaxRequestInitiate?: EmitType<AjaxRequestInitiateEventArgs>;
 
     /**
+     * PDF document annotation collection.
      * @private
+     * @deprecated
      */
     annotations?: PdfAnnotationBaseModel[];
 
     /**
+     * store the drawing objects.
      * @private
+     * @deprecated
      */
     drawingObject?: PdfAnnotationBaseModel;
 

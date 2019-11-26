@@ -2,14 +2,14 @@
  * Helper functions for maps control
  */
 import { createElement, isNullOrUndefined, remove, compile as templateComplier, merge } from '@syncfusion/ej2-base';
-import { AnimationOptions, Animation } from '@syncfusion/ej2-base';
+import { AnimationOptions, Animation, isBlazor } from '@syncfusion/ej2-base';
 import { SvgRenderer } from '@syncfusion/ej2-svg-base';
 import { Maps, FontModel, BorderModel, LayerSettings, ProjectionType } from '../../index';
 import { animationComplete, IAnimationCompleteEventArgs, Alignment, LayerSettingsModel } from '../index';
 import { MarkerType, IShapeSelectedEventArgs, ITouches, IShapes, SelectionSettingsModel, HighlightSettingsModel,
     MarkerClusterSettingsModel, IMarkerRenderingEventArgs, MarkerSettings, markerClusterRendering,
-IMarkerClusterRenderingEventArgs, SameMarkerClusterData} from '../index';
-import { CenterPositionModel } from '../model/base-model';
+IMarkerClusterRenderingEventArgs, MarkerClusterData} from '../index';
+import { CenterPositionModel, ConnectorLineSettingsModel, MarkerSettingsModel } from '../model/base-model';
 
 /**
  * Maps internal use of `Size` type
@@ -663,7 +663,8 @@ export function drawSymbols(shape: MarkerType, imageUrl: string, location: Point
     return markerEle;
 }
 //tslint:disable
-export function clusterTemplate(currentLayer: LayerSettings, markerTemplate: HTMLElement | Element, maps:Maps, layerIndex: number, markerCollection:Element): HTMLElement | Element {
+export function clusterTemplate(currentLayer: LayerSettings, markerTemplates: HTMLElement | Element, maps:Maps, layerIndex: number, markerCollection:Element,
+    layerElement: Element, check: boolean) {
     let bounds: DOMRect[] = []
     let colloideBounds: DOMRect[] = []
     let tempX: number = 0;
@@ -674,11 +675,22 @@ export function clusterTemplate(currentLayer: LayerSettings, markerTemplate: HTM
     let textElement: Element;
     let postionY: number = (15 / 4);
     let m: number = 0;
-    let g: Element = maps.renderer.createGroup({ id: maps.element.id +'_LayerIndex_'+ layerIndex + '_markerCluster' });
-    for (let n: number = 0; n < markerTemplate.childElementCount; n++) {
-        let tempElement: Element = markerTemplate.childNodes[n] as Element;
+    let clusters: MarkerClusterSettingsModel = currentLayer.markerClusterSettings;
+    let clusterGroup: Element = maps.renderer.createGroup({ id: maps.element.id +'_LayerIndex_'+ layerIndex + '_markerCluster' });
+    for (let n: number = 0; n < markerTemplates.childElementCount; n++) {
+        let tempElement: Element = markerTemplates.childNodes[n] as Element;
         bounds.push(tempElement.getBoundingClientRect() as DOMRect);
     }
+    let eventArg: IMarkerClusterRenderingEventArgs = {
+        cancel: false, name: markerClusterRendering, fill: clusters.fill, height: clusters.height,
+        width: clusters.width, imageUrl: clusters.imageUrl, shape: clusters.shape,
+        data: data, maps: (isBlazor()) ? null : maps, cluster: clusters, border: clusters.border
+    }
+    if (isBlazor()) {
+        const {...blazorEventArgs}: IMarkerClusterRenderingEventArgs = eventArg;
+        eventArg = blazorEventArgs;
+    }
+    maps.trigger('markerClusterRendering', eventArg, (clusterargs: IMarkerClusterRenderingEventArgs) => {
     for (let o:number = 0; o < bounds.length; o++) {
         if(!isNullOrUndefined(bounds[o])) {
             for(let p: number = o+1; p < bounds.length; p++) {
@@ -691,18 +703,18 @@ export function clusterTemplate(currentLayer: LayerSettings, markerTemplate: HTM
                     }
             }
         }
-            tempX = bounds[o].left
-            tempY = bounds[o].top
+            tempX = bounds[o].left + bounds[o].width / 2;
+            tempY = bounds[o].top + bounds[o].height;
             for (let q: number = 0; q < colloideBounds.length; q++) {
                 for (let k: number =0; k< bounds.length; k++) {
                     if (!isNullOrUndefined(bounds[k])) {
                         if(colloideBounds[q]['left'] === bounds[k]['left']) {
                             delete bounds[k]
-                            for(let r: number = 0;r < markerTemplate.childElementCount; r++) {
-                                let tempElement: Element = markerTemplate.childNodes[r] as Element;
+                            for(let r: number = 0;r < markerTemplates.childElementCount; r++) {
+                                let tempElement: Element = markerTemplates.childNodes[r] as Element;
                                 if (colloideBounds[q]['left'] === tempElement.getBoundingClientRect()['left']) {
-                                    markerTemplate.childNodes[r]['style']['visibility'] ="hidden"
-                                    markerTemplate.childNodes[o]['style']['visibility'] ="hidden"
+                                    markerTemplates.childNodes[r]['style']['visibility'] ="hidden"
+                                    markerTemplates.childNodes[o]['style']['visibility'] ="hidden"
                                 }
                             }
                         }
@@ -711,15 +723,14 @@ export function clusterTemplate(currentLayer: LayerSettings, markerTemplate: HTM
             }
 
         if (colloideBounds.length > 0) {
-            let padding: number = 10;
             let container: ClientRect = maps.element.getBoundingClientRect();
-            tempX = Math.abs(container['left'] - tempX) + padding;
-            tempY = Math.abs(container['top'] - tempY) + padding;
+            tempX = Math.abs(container['left'] - tempX);
+            tempY = Math.abs(container['top'] - tempY);
             let translate: Object = (maps.isTileMap) ? new Object() : getTranslate(maps, currentLayer, false);
             let transPoint: Point = (maps.isTileMap) ? {x:0, y:0} :(maps.translatePoint.x !== 0) ?
             maps.translatePoint : translate['location'];
-            let dataIndex: number = parseInt( markerTemplate.childNodes[o]['id'].split('_dataIndex_')[1].split('_')[0], 10);
-            let markerIndex: number = parseInt(markerTemplate.childNodes[o]['id'].split('_MarkerIndex_')[1].split('_')[0], 10);
+            let dataIndex: number = parseInt( markerTemplates.childNodes[o]['id'].split('_dataIndex_')[1].split('_')[0], 10);
+            let markerIndex: number = parseInt(markerTemplates.childNodes[o]['id'].split('_MarkerIndex_')[1].split('_')[0], 10);
             let clusters: MarkerClusterSettingsModel = currentLayer.markerClusterSettings;
             let shapeCustom: Object = {
                 size: new Size(clusters.width, clusters.height),
@@ -727,15 +738,6 @@ export function clusterTemplate(currentLayer: LayerSettings, markerTemplate: HTM
                 borderWidth: clusters.border.width, opacity: clusters.opacity,
                 dashArray: clusters.dashArray
             };
-            let eventArg: IMarkerClusterRenderingEventArgs = {
-                cancel: false, name: markerClusterRendering, fill: clusters.fill, height: clusters.height,
-                width: clusters.width, imageUrl: clusters.imageUrl, shape: clusters.shape,
-                data: data, maps: maps, cluster: clusters, border: clusters.border
-            }
-            if (maps.isBlazor) {
-                const {data, maps, cluster, ...blazorEventArgs}: IMarkerClusterRenderingEventArgs = eventArg;
-                eventArg = blazorEventArgs;
-            }
             shapeCustom['fill'] = eventArg.fill;
             shapeCustom['size']['width'] = eventArg.width
             shapeCustom['size']['height'] = eventArg.height
@@ -743,72 +745,89 @@ export function clusterTemplate(currentLayer: LayerSettings, markerTemplate: HTM
             shapeCustom['shape'] = eventArg.shape;
             shapeCustom['borderColor']  = eventArg.border.color;
             shapeCustom['borderWidth']  = eventArg.border.width;
-            maps.trigger('markerClusterRendering', eventArg, (clusterargs: IMarkerClusterRenderingEventArgs) => {
-                tempX = (maps.isTileMap) ? tempX :(markerTemplate.id.indexOf('_Markers_Group') > -1) ? tempX : ((tempX + transPoint.x) * maps.mapScaleValue)
-                tempY = (maps.isTileMap) ? tempY : (markerTemplate.id.indexOf('_Markers_Group') > -1) ? tempY: ((tempY + transPoint.y) * maps.mapScaleValue)
-                let clusterID: string = maps.element.id + '_LayerIndex_'+ layerIndex + '_MarkerIndex_'+ markerIndex + '_dataIndex_'+ dataIndex + '_cluster_' + (m);
-                let labelID: string = maps.element.id + '_LayerIndex_'+ layerIndex + '_MarkerIndex_'+ markerIndex + '_dataIndex_'+ dataIndex + '_cluster_' + (m) +'_datalabel_'+ m;
-                m++;
-                let ele: Element = drawSymbols(eventArg.shape, eventArg.imageUrl, { x: 0, y: 0 }, clusterID, shapeCustom, markerCollection, maps);
-                ele.setAttribute('transform', 'translate( ' + tempX + ' ' + tempY + ' )');
-                options = new TextOption(labelID, (0), postionY, 'middle',(colloideBounds.length + 1).toString() , '', '');
-                textElement = renderTextElement(options, style, style.color, markerCollection)
-                textElement.setAttribute('transform', 'translate( ' + tempX + ' ' + tempY + ' )');
-                g.appendChild(textElement);
-                g.appendChild(ele);
-            });
+            tempX = (maps.isTileMap) ? tempX :(markerTemplates.id.indexOf('_Markers_Group') > -1) ? tempX : ((tempX + transPoint.x) * maps.mapScaleValue)
+            tempY = (maps.isTileMap) ? tempY : (markerTemplates.id.indexOf('_Markers_Group') > -1) ? tempY: ((tempY + transPoint.y) * maps.mapScaleValue)
+            let clusterID: string = maps.element.id + '_LayerIndex_'+ layerIndex + '_MarkerIndex_'+ markerIndex + '_dataIndex_'+ dataIndex + '_cluster_' + (m);
+            let labelID: string = maps.element.id + '_LayerIndex_'+ layerIndex + '_MarkerIndex_'+ markerIndex + '_dataIndex_'+ dataIndex + '_cluster_' + (m) +'_datalabel_'+ m;
+            m++;
+            let imageShapeY: number = eventArg.shape === 'Image' ? eventArg.height/2 : 0;
+            let ele: Element = drawSymbols(
+                eventArg.shape, eventArg.imageUrl, { x: 0, y: imageShapeY },
+                clusterID, shapeCustom, markerCollection, maps
+            );
+            ele.setAttribute('transform', 'translate( ' + tempX + ' ' + tempY + ' )');
+            options = new TextOption(labelID, (0), postionY, 'middle',(colloideBounds.length + 1).toString() , '', '');
+            textElement = renderTextElement(options, style, style.color, markerCollection)
+            textElement.setAttribute('transform', 'translate( ' + tempX + ' ' + tempY + ' )');
+            clusterGroup.appendChild(textElement);
+            clusterGroup.appendChild(ele);
         }
     }
     colloideBounds =[];
 }
-while (0 < g.childNodes.length) {
-    markerCollection.insertBefore(g.childNodes[0], markerCollection.firstChild);
+while (0 < clusterGroup.childNodes.length) {
+    markerCollection.insertBefore(clusterGroup.childNodes[0], markerCollection.firstChild);
 }
-return markerTemplate as HTMLElement | Element
+if (check) {
+    layerElement.appendChild(markerCollection);
+} else {
+    getElementByID(maps.element.id + '_Secondary_Element').appendChild(markerCollection)
+    layerElement.appendChild(markerCollection);
 }
-export function mergeSeparateCluster(sameMarkerData: SameMarkerClusterData[], maps: Maps, markerElement: Element | HTMLElement) {
-    let markerId = maps.element.id + '_LayerIndex_' + sameMarkerData[0].layerIndex + '_MarkerIndex_' + sameMarkerData[0].markerIndex;
-    let clusterId: string = markerId + '_dataIndex_' + sameMarkerData[0].data[0]['index'] + '_cluster_' + sameMarkerData[0].targetClusterIndex;
+})
+}
+export function mergeSeparateCluster(sameMarkerData: MarkerClusterData[], maps: Maps, markerElement: Element | HTMLElement) {
+    let layerIndex: number = sameMarkerData[0].layerIndex;
+    let clusterIndex: number = sameMarkerData[0].targetClusterIndex;
+    let markerIndex: number = sameMarkerData[0].markerIndex;
+    let markerId = maps.element.id + '_LayerIndex_' + layerIndex + '_MarkerIndex_' + markerIndex;
+    let clusterId: string = markerId + '_dataIndex_' + sameMarkerData[0].data[0]['index'] + '_cluster_' + clusterIndex;
     let clusterEle: Element = getElement(clusterId);
-    let clusterEleLabel: Element = getElement(clusterId + '_datalabel_' + sameMarkerData[0].targetClusterIndex);
+    let clusterEleLabel: Element = getElement(clusterId + '_datalabel_' + clusterIndex);
     clusterEle.setAttribute('visibility', 'visible');
     clusterEleLabel.setAttribute('visibility', 'visible');
     let markerEle: Element;
-    for (let i: number = 0; i < sameMarkerData[0].data.length; i++) {
+    let markerDataLength: number = sameMarkerData[0].data.length;
+    for (let i: number = 0; i < markerDataLength; i++) {
         markerEle = getElement(markerId + '_dataIndex_' + sameMarkerData[0].data[i]['index']);
         markerEle['style']['visibility'] = "hidden";
     }
-    removeElement(maps.element.id + '_LayerIndex_' + sameMarkerData[0].layerIndex + '_MarkerIndex_' + sameMarkerData[0].markerIndex + '_markerClusterConnectorLine');
+    removeElement(maps.element.id + '_LayerIndex_' + layerIndex + '_MarkerIndex_' + markerIndex + '_markerClusterConnectorLine');
 }
-export function clusterSeparate(sameMarkerData: SameMarkerClusterData[], maps: Maps, markerElement: Element | HTMLElement, isDom?: boolean) {
+export function clusterSeparate(sameMarkerData: MarkerClusterData[], maps: Maps, markerElement: Element | HTMLElement, isDom?: boolean) {
+    let layerIndex: number = sameMarkerData[0].layerIndex;
+    let markerIndex: number = sameMarkerData[0].markerIndex;
+    let clusterIndex: number = sameMarkerData[0].targetClusterIndex;
+    let dataIndex: number = sameMarkerData[0].data[0]['index'];
     let getElementFunction: Function = isDom ? getElement : markerElement.querySelector.bind(markerElement);
     let getQueryConnect: string = isDom ? '' : '#';
-    let markerId = maps.element.id + '_LayerIndex_' + sameMarkerData[0].layerIndex + '_MarkerIndex_' + sameMarkerData[0].markerIndex;
-    let clusterId: string = markerId + '_dataIndex_' + sameMarkerData[0].data[0]['index'] + '_cluster_' + sameMarkerData[0].targetClusterIndex;
+    let markerId = maps.element.id + '_LayerIndex_' + layerIndex + '_MarkerIndex_' + markerIndex;
+    let clusterId: string = markerId + '_dataIndex_' + dataIndex + '_cluster_' + clusterIndex;
     let clusterEle: Element = getElementFunction(getQueryConnect + '' + clusterId);
-    let clusterEleLabel: Element = getElementFunction(getQueryConnect + '' + clusterId + '_datalabel_' + sameMarkerData[0].targetClusterIndex);
+    let clusterEleLabel: Element = getElementFunction(getQueryConnect + '' + clusterId + '_datalabel_' + clusterIndex);
     clusterEle.setAttribute('visibility', 'hidden');
     clusterEleLabel.setAttribute('visibility', 'hidden');
-
-    let markerEle: Element = getElementFunction(getQueryConnect + '' + markerId + '_dataIndex_' + sameMarkerData[0].data[0]['index']);
-    let height: number = maps.layers[sameMarkerData[0].layerIndex].markerSettings[sameMarkerData[0].markerIndex].height;
-    let width: number = maps.layers[sameMarkerData[0].layerIndex].markerSettings[sameMarkerData[0].markerIndex].width;
+    let marker: MarkerSettingsModel = maps.layers[layerIndex].markerSettings[markerIndex];
+    let markerEle: Element = getElementFunction(getQueryConnect + '' + markerId + '_dataIndex_' + dataIndex);
+    let height: number = marker.height;
+    let width: number = marker.width;
     let centerX: number = +clusterEle.getAttribute('transform').split('translate(')[1].trim().split(' ')[0];
-    let centerY: number = +clusterEle.getAttribute('transform').split('translate(')[1].trim().split(' ')[1].split(')')[0].trim() + height / 2;
+    let centerY: number = +clusterEle.getAttribute('transform').split('translate(')[1].trim().split(' ')[1].split(')')[0].trim();
 
     let radius = width + 5;
     let area = 2 * 3.14 * radius;
     let totalMarker = 0;
     let numberOfMarker = Math.round(area / width);
     totalMarker += numberOfMarker;
+    let markerDataLength: number = sameMarkerData[0].data.length;
     let percent = Math.round((height / area) * 100);
-    percent = sameMarkerData[0].data.length < numberOfMarker ? 100 / sameMarkerData[0].data.length : percent;
+    percent = markerDataLength < numberOfMarker ? 100 / markerDataLength : percent;
     let angle = (percent / 100) * 360;
-    let newAngle = sameMarkerData[0].data.length < numberOfMarker ? 45 : 0;
+    let newAngle = markerDataLength < numberOfMarker ? 45 : 0;
     let count = 1;
     let start = 'M ' + centerX + ' ' + centerY + ' ';
     let path = '';
-    for (let i: number = 0; i < sameMarkerData[0].data.length; i++) {
+    for (let i: number = 0; i < markerDataLength; i++) {
         if (totalMarker === i || Math.round(newAngle) >= 360) {
             count++;
             radius = (width + 5) * count;
@@ -824,22 +843,20 @@ export function clusterSeparate(sameMarkerData: SameMarkerClusterData[], maps: M
         }
         let x1 = centerX + radius * Math.sin((Math.PI * 2 * newAngle) / 360);
         let y1 = centerY + radius * Math.cos((Math.PI * 2 * newAngle) / 360);
-        path += start + 'L ' + (x1 + 2) + ' ' + y1 + ' ';
+        path += start + 'L ' + (x1) + ' ' + y1 + ' ';
         markerEle = getElementFunction(getQueryConnect + '' + markerId + '_dataIndex_' + sameMarkerData[0].data[i]['index']);
         markerEle.setAttribute('transform', 'translate( ' + x1 + ' ' + y1 + ')');
         markerEle['style']['visibility'] = "visible";
         newAngle += angle;
     }
     let options: PathOption;
+    let connectorLine: ConnectorLineSettingsModel = maps.layers[layerIndex].markerClusterSettings.connectorLineSettings;
     options = {
-        d: path,
-        id: maps.element.id + '_markerClusterConnectorLine',
-        stroke: maps.layers[sameMarkerData[0].layerIndex].markerClusterSettings.connectorLineSettings.color,
-        opacity: maps.layers[sameMarkerData[0].layerIndex].markerClusterSettings.connectorLineSettings.opacity,
-        'stroke-width': maps.layers[sameMarkerData[0].layerIndex].markerClusterSettings.connectorLineSettings.width
+        d: path, id: maps.element.id + '_markerClusterConnectorLine', stroke: connectorLine.color,
+        opacity: connectorLine.opacity, 'stroke-width': connectorLine.width
     } as PathOption;
     markerElement = isDom ? getElementFunction(maps.element.id + '_Markers_Group') : markerElement;
-    let groupEle: Element = maps.renderer.createGroup({ id: maps.element.id + '_LayerIndex_' + sameMarkerData[0].layerIndex + '_MarkerIndex_' + sameMarkerData[0].markerIndex + '_markerClusterConnectorLine' })
+    let groupEle: Element = maps.renderer.createGroup({ id: maps.element.id + '_LayerIndex_' + layerIndex + '_MarkerIndex_' + markerIndex + '_markerClusterConnectorLine' })
     groupEle.appendChild(maps.renderer.drawPath(options));
     markerElement.insertBefore(groupEle, markerElement.querySelector('#' + markerId + '_dataIndex_0'));
 }
@@ -1042,13 +1059,12 @@ export function drawStar(maps: Maps, options: PathOption, size: Size, location: 
 export function drawBalloon(maps: Maps, options: PathOption, size: Size, location: MapLocation, element?: Element): Element {
     let width: number = size.width;
     let height: number = size.height;
-    let padding: number = 5;
     location.x -= width / 2;
     location.y -= height;
     options.d = 'M15,0C8.8,0,3.8,5,3.8,11.2C3.8,17.5,9.4,24.4,15,30c5.6-5.6,11.2-12.5,11.2-18.8C26.2,5,21.2,0,15,0z M15,16' +
         'c-2.8,0-5-2.2-5-5s2.2-5,5-5s5,2.2,5,5S17.8,16,15,16z';
     let balloon: Element = maps.renderer.drawPath(options);
-    let x: number = size.width / 22.5;
+    let x: number = size.width / 30;
     let y: number = size.height / 30;
     balloon.setAttribute('transform', 'translate(' + location.x + ', ' + location.y + ') scale(' + x + ', ' + y + ')');
     let g: Element = maps.renderer.createGroup({ id: options.id });

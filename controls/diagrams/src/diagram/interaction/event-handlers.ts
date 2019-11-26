@@ -711,9 +711,10 @@ export class DiagramEventHandler {
                             }
                         }
                         this.tool.mouseUp(this.eventArgs, history.isPreventHistory);
-                    } else { this.tool.mouseUp(this.eventArgs);
+                    } else {
+                        this.tool.mouseUp(this.eventArgs);
                         if (this.diagram.checkMenu && (window.navigator.userAgent.indexOf('Linux') !== -1 || window.navigator.userAgent.indexOf('X11') !== -1)) {
-                            this.diagram.contextMenuModule.contextMenu.open(evt.pageY, evt.pageX, this.diagram.element );
+                            this.diagram.contextMenuModule.contextMenu.open(evt.pageY, evt.pageX, this.diagram.element);
                             this.diagram.checkMenu = false;
                         }
                     }
@@ -1527,7 +1528,7 @@ export class DiagramEventHandler {
         return isGroupAction;
     }
 
-
+    // tslint:disable-next-line:max-func-body-length
     private updateContainerProperties(): HistoryLog {
         let helperObject: NodeModel; let isChangeProperties: boolean = false;
         let hasStack: boolean; let connectors: string[]; let hasGroup: boolean = false; let obj: NodeModel;
@@ -1556,11 +1557,26 @@ export class DiagramEventHandler {
                 } else {
                     let parentNode: Node = this.diagram.nameTable[(obj as Node).parentId];
                     if (!parentNode || (parentNode && parentNode.shape.type !== 'SwimLane')) {
-                        (obj as Node).offsetX = helperObject.offsetX; (obj as Node).offsetY = helperObject.offsetY;
-                        if (obj && obj.shape && obj.shape.type !== 'UmlClassifier') {
-                            (obj as Node).width = helperObject.width; (obj as Node).height = helperObject.height;
+                        if (parentNode && parentNode.isLane && (obj.constraints & NodeConstraints.AllowMovingOutsideLane)) {
+                            let swimlane: Node = this.diagram.getObject(parentNode.parentId) as Node;
+                            let laneId: string = swimlane.id + (swimlane.shape as SwimLaneModel).lanes[0].id + '0';
+                            let firstlane: NodeModel = this.diagram.getObject(laneId) as Node;
+                            let x: number = firstlane.wrapper.bounds.x; let y: number = firstlane.wrapper.bounds.y;
+                            let width: number = swimlane.wrapper.bounds.bottomRight.x - x;
+                            let height: number = swimlane.wrapper.bounds.bottomRight.y - y;
+                            let swimlaneBounds: Rect = new Rect(x, y, width, height);
+                            if (swimlaneBounds.containsPoint(this.currentPosition)) {
+                                (obj as Node).offsetX = helperObject.offsetX; (obj as Node).offsetY = helperObject.offsetY;
+                                (obj as Node).width = helperObject.width; (obj as Node).height = helperObject.height;
+                                (obj as Node).rotateAngle = helperObject.rotateAngle;
+                            }
+                        } else {
+                            (obj as Node).offsetX = helperObject.offsetX; (obj as Node).offsetY = helperObject.offsetY;
+                            if (obj && obj.shape && obj.shape.type !== 'UmlClassifier') {
+                                (obj as Node).width = helperObject.width; (obj as Node).height = helperObject.height;
+                            }
+                            (obj as Node).rotateAngle = helperObject.rotateAngle;
                         }
-                        (obj as Node).rotateAngle = helperObject.rotateAngle;
                     }
                     let undoElement: StackEntryObject;
                     if (parentNode && parentNode.container && parentNode.container.type === 'Stack') {

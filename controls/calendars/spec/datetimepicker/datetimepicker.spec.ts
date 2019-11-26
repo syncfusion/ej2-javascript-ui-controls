@@ -3110,4 +3110,29 @@ describe('invalid String', () => {
             datetimepicker.appendTo('#datetimepicker');
         });
     });
+    describe('Cleared event test case', function () {
+        let datetimepicker:any;
+        beforeEach(function () {
+            let ele: HTMLElement = createElement('input', { id: 'date' });
+                document.body.appendChild(ele);
+        });
+        afterEach(function () {
+            if (datetimepicker) {
+                datetimepicker.destroy();
+            }
+            document.body.innerHTML = '';
+        });
+        it('check value after button click', function () {
+            datetimepicker = new DateTimePicker({
+                value: <any>'2/2/2017',
+                cleared: function(args: any) {
+                    expect(args.name).toBe("cleared");
+                    expect(datetimepicker.value).toBe(null);
+                }
+            });
+            datetimepicker.appendTo('#date');
+            datetimepicker.element.parentElement.querySelectorAll('.e-clear-icon')[0].click();
+            expect(datetimepicker.inputElement.value === "").toBe(true);
+        });
+    });
 });

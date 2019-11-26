@@ -290,7 +290,8 @@ export class AggregateMenu {
                 let field: string = buttonElement.getAttribute('data-uid');
                 let valuefields: IFieldOptions[] = this.parent.dataSourceSettings.values;
                 let contentElement: HTMLElement = buttonElement.querySelector('.e-content') as HTMLElement;
-                let captionName: string = menu.item.text + ' ' + 'of' + ' ' + this.parent.engineModule.fieldList[field].caption;
+                let captionName: string = menu.item.text + ' ' + this.parent.localeObj.getConstant('of') + ' ' +
+                    this.parent.engineModule.fieldList[field].caption;
                 contentElement.innerHTML = captionName;
                 contentElement.setAttribute('title', captionName);
                 buttonElement.setAttribute('data-type', type as string);
@@ -340,8 +341,8 @@ export class AggregateMenu {
         }
         if (buttonElement) {
             let contentElement: HTMLElement = buttonElement.querySelector('.e-content') as HTMLElement;
-            let captionName: string =
-                this.parent.localeObj.getConstant(summaryInstance.value as string) + ' ' + 'of' + ' ' + captionInstance.value;
+            let captionName: string = this.parent.localeObj.getConstant(summaryInstance.value as string) + ' ' +
+                this.parent.localeObj.getConstant('of') + ' ' + captionInstance.value;
             contentElement.innerHTML = captionName;
             contentElement.setAttribute('title', captionName);
             buttonElement.setAttribute('data-type', summaryInstance.value as string);

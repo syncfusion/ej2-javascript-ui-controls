@@ -6435,6 +6435,15 @@ let FormValidator = FormValidator_1 = class FormValidator extends Base {
         this.locale = args.locale;
         this.localeFunc();
     }
+    /**
+     * Allows you to refresh the form validator base events to the elements inside the form.
+     * @return {void}
+     */
+    refresh() {
+        this.unwireEvents();
+        this.inputElements = selectAll(this.selectQuery, this.element);
+        this.wireEvents();
+    }
     clearForm() {
         this.errorRules = [];
         this.validated = [];

@@ -682,3 +682,63 @@ describe('PageSetup Dialog Test Case Validation - 8', function () {
         expect((dialog as any).portrait.checked).toBeTruthy();
     });
 });
+
+describe('PageSetup Dialog Test Case Validation - 9', function () {
+    let selectionSectionFormat: SelectionSectionFormat;
+    let editor: DocumentEditor;
+    let dialog: PageSetupDialog;
+    beforeAll((): void => {
+        let ele: HTMLElement = createElement('div', { id: 'container' });
+        document.body.appendChild(ele);
+        DocumentEditor.Inject(PageSetupDialog, Selection, Editor, EditorHistory);
+        editor = new DocumentEditor({ enableEditorHistory: true, enableEditor: true, enableSelection: true, isReadOnly: false });
+        editor.enablePageSetupDialog = true;
+        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        editor.appendTo('#container');
+        dialog = editor.pageSetupDialogModule
+        dialog.show();
+    });
+    afterAll((done): void => {
+        editor.destroy();
+        editor = undefined;
+        dialog = undefined;
+        selectionSectionFormat = undefined;
+        document.body.removeChild(document.getElementById('container'));
+        setTimeout(function () {
+            done();
+        }, 2000);
+    });
+    it('Legal page size', () => {
+        editor.viewer.selection.sectionFormat.pageWidth=612;
+        editor.viewer.selection.sectionFormat.pageHeight=1008;
+        (dialog as any).portrait.checked = true;
+        
+        dialog.loadPageSetupDialog();
+        
+        expect((dialog as any).paperSize.value).toBe('legal');
+        dialog.closePageSetupDialog();
+    });
+    it('tabloid page size', () => {
+        editor.viewer.selection.sectionFormat.pageWidth=792;
+        editor.viewer.selection.sectionFormat.pageHeight=1224;
+        (dialog as any).portrait.checked = true;
+        
+        dialog.loadPageSetupDialog();
+        
+        expect((dialog as any).paperSize.value).toBe('tabloid');
+        dialog.closePageSetupDialog();
+    });
+    it('a3 page size', () => {
+        editor.viewer.selection.sectionFormat.pageWidth=841.9;
+        editor.viewer.selection.sectionFormat.pageHeight=1190.55;
+        (dialog as any).portrait.checked = true;
+        
+        dialog.loadPageSetupDialog();
+        
+        expect((dialog as any).paperSize.value).toBe('a3');
+        dialog.closePageSetupDialog();
+    });
+});

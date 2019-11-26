@@ -135,6 +135,13 @@ export interface DialogModel extends ComponentModel{
     height?: string | number;
 
     /**
+     * Specify the min-height of the dialog component.
+     * @default ''
+     * @blazorType string
+     */
+    minHeight?: string | number;
+
+    /**
      * Specifies the width of the dialog. 
      * @default '100%'
      * @blazorType string

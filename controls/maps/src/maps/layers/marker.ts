@@ -1,7 +1,7 @@
 import { Maps } from '../../index';
 import {
     LayerSettings, MarkerSettings, IMarkerRenderingEventArgs, markerRendering,
-     convertTileLatLongToPoint, MapLocation, SameMarkerClusterData
+     convertTileLatLongToPoint, MapLocation, MarkerClusterData
 } from '../index';
 import { IMarkerClickEventArgs, markerClick, IMarkerMoveEventArgs, markerMouseMove,
     IMarkerClusterClickEventArgs, IMarkerClusterMoveEventArgs, markerClusterClick, markerClusterMouseMove,
@@ -24,7 +24,7 @@ export class Marker {
     /**
      * @private
      */
-    public sameMarkerData: SameMarkerClusterData[];
+    public sameMarkerData: MarkerClusterData[];
     constructor(maps: Maps) {
         this.maps = maps;
         this.trackElements = [];
@@ -34,6 +34,8 @@ export class Marker {
     /* tslint:disable:no-string-literal */
     public markerRender(layerElement: Element, layerIndex: number, factor: number, type: string): void {
         let templateFn: Function;
+        let markerCount: number = 0;
+        let markerTemplateCount : number = 0;
         let currentLayer: LayerSettings = <LayerSettings>this.maps.layersCollection[layerIndex];
         this.markerSVGObject = this.maps.renderer.createGroup({
             id: this.maps.element.id + '_Markers_Group',
@@ -69,8 +71,8 @@ export class Marker {
                     let text: string[] = [];
                     let j: number = 0;
                     for (let i: number = 0; i < Object.keys(data).length; i++) {
-                        if(Object.keys(data)[i].toLowerCase() !== 'latitude' && Object.keys(data)[i].toLowerCase() !== 'longitude' 
-                            && Object.keys(data)[i].toLowerCase() !== 'name') {
+                        if(Object.keys(data)[i].toLowerCase() !== 'latitude' && Object.keys(data)[i].toLowerCase() !== 'longitude' && Object.keys(data)[i].toLowerCase() !== 'name'
+                            && Object.keys(data)[i].toLowerCase() !== 'blazortemplateid' && Object.keys(data)[i].toLowerCase() !== 'text') {
                                 text[j] = data[Object.keys(data)[i].toLowerCase()];
                                 data1['text'] = text;
                                 j++;
@@ -92,35 +94,37 @@ export class Marker {
                         let scale: number = type === 'AddMarker' ? this.maps.scale : translate['scale'];
                         let transPoint: Point = type === 'AddMarker' ? this.maps.translatePoint : translate['location'] as Point;
                         if (eventArgs.template) {
+                            markerTemplateCount++;
                             markerTemplate(eventArgs, templateFn, markerID, data, markerIndex, markerTemplateEle, location,
                                 scale, offset, this.maps);
                         } else {
+                            markerCount++;
                             marker(eventArgs, markerSettings, markerData, dataIndex,
                                 location, transPoint, markerID, offset, scale, this.maps, this.markerSVGObject);
+                        }
+                    }
+                    markerTemplateCount += (eventArgs.cancel) ? 1 : 0;                        
+                    markerCount += (eventArgs.cancel) ? 1 : 0;                   
+                    if (this.markerSVGObject.childElementCount === (markerData.length - markerTemplateCount) && (type !== 'Template')) {
+                        layerElement.appendChild(this.markerSVGObject);
+                        if (currentLayer.markerClusterSettings.allowClustering) {
+                            this.maps.svgObject.appendChild(this.markerSVGObject);
+                            this.maps.element.appendChild(this.maps.svgObject);
+                            clusterTemplate(currentLayer, this.markerSVGObject,
+                                this.maps, layerIndex, this.markerSVGObject, layerElement, true);
+                        }
+                    }
+                    if (markerTemplateEle.childElementCount === (markerData.length - markerCount) && getElementByID(this.maps.element.id + '_Secondary_Element')) {
+                        getElementByID(this.maps.element.id + '_Secondary_Element').appendChild(markerTemplateEle);
+                        if (currentLayer.markerClusterSettings.allowClustering) {
+                            clusterTemplate(currentLayer, markerTemplateEle, this.maps,
+                                layerIndex, this.markerSVGObject, layerElement, false);
                         }
                     }
                 });
 
             });
         });
-        if (this.markerSVGObject.childElementCount > 0) {
-            layerElement.appendChild(this.markerSVGObject);
-            if (currentLayer.markerClusterSettings.allowClustering) {
-                this.maps.svgObject.appendChild(this.markerSVGObject);
-                this.maps.element.appendChild(this.maps.svgObject);
-                this.markerSVGObject = clusterTemplate(currentLayer, this.markerSVGObject,
-                    this.maps, layerIndex, this.markerSVGObject) as Element;
-                layerElement.appendChild(this.markerSVGObject);
-            }
-        }
-        if (markerTemplateEle.childElementCount > 0 && getElementByID(this.maps.element.id + '_Secondary_Element')) {
-            getElementByID(this.maps.element.id + '_Secondary_Element').appendChild(markerTemplateEle);
-            if (currentLayer.markerClusterSettings.allowClustering) {
-                markerTemplateEle = clusterTemplate(currentLayer, markerTemplateEle, this.maps,
-                    layerIndex, this.markerSVGObject) as HTMLElement;
-                getElementByID(this.maps.element.id + '_Secondary_Element').appendChild(markerTemplateEle);
-            }
-        }
     }
 
     /**
@@ -154,11 +158,10 @@ export class Marker {
         if (target.indexOf('_LayerIndex_') === -1  || target.indexOf('_cluster_') === -1) {
             return;
         }
-        let options: { marker: MarkerSettingsModel, data: object, clusterCollection: SameMarkerClusterData[] } = this.getMarker(target);
+        let options: { marker: MarkerSettingsModel, data: object, clusterCollection: MarkerClusterData[] } = this.getMarker(target);
         if (isNullOrUndefined(options)) {
             return;
         }
-        let textElement = document.getElementById(target.indexOf('_datalabel_') > -1 ? target : target + '_datalabel_' + target.split('_cluster_')[1]);
         if (options.clusterCollection.length > 0) {
             let textElement = document.getElementById(target.indexOf('_datalabel_') > -1 ? target : target + '_datalabel_' + target.split('_cluster_')[1]);
             if (+textElement.textContent === options.clusterCollection[0].data.length) {
@@ -167,8 +170,6 @@ export class Marker {
                 }
                 this.sameMarkerData = options.clusterCollection;
                 clusterSeparate(this.sameMarkerData, this.maps, this.markerSVGObject, true);
-            } else {
-                this.sameMarkerData = [];
             }
         }
         let eventArgs: IMarkerClusterClickEventArgs = {
@@ -185,12 +186,12 @@ export class Marker {
     /**
      * To get marker from target id
      */
-    private getMarker(target: string): { marker: MarkerSettingsModel, data: object, clusterCollection: SameMarkerClusterData[] } {
+    private getMarker(target: string): { marker: MarkerSettingsModel, data: object, clusterCollection: MarkerClusterData[] } {
         let id: string[] = target.split('_LayerIndex_');
         let index: number = parseInt(id[1].split('_')[0], 10);
         let layer: LayerSettings = <LayerSettings>this.maps.layers[index];
         let data: object;
-        let clusterCollection: SameMarkerClusterData[] = [];
+        let clusterCollection: MarkerClusterData[] = [];
         let marker: MarkerSettingsModel;
         if (target.indexOf('_MarkerIndex_') > -1) {
             let markerIndex: number = parseInt(id[1].split('_MarkerIndex_')[1].split('_')[0], 10);
@@ -198,15 +199,15 @@ export class Marker {
             marker = layer.markerSettings[markerIndex];
             if (!isNaN(markerIndex)) {
                 data = marker.dataSource[dataIndex];
-                let colo: Object[] = [];
+                let collection: Object[] = [];
                 if ((this.maps.layers[index].markerClusterSettings.allowClusterExpand) && target.indexOf('_cluster_') > -1) {
                     marker.dataSource.forEach((loc, index) => {
                         if (loc['latitude'] === data['latitude'] && loc['longitude'] === data['longitude']) {
-                            colo.push({ data: data, index: index });
+                            collection.push({ data: data, index: index });
                         }
                     });
-                    clusterCollection.push(<SameMarkerClusterData>{
-                        data: colo, layerIndex: index, markerIndex: markerIndex,
+                    clusterCollection.push(<MarkerClusterData>{
+                        data: collection, layerIndex: index, markerIndex: markerIndex,
                         targetClusterIndex: +(target.split('_cluster_')[1].indexOf('_datalabel_') > -1 ? target.split('_cluster_')[1].split('_datalabel_')[0] : target.split('_cluster_')[1])
                     });
                 }

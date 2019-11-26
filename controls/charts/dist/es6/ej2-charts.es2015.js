@@ -37309,36 +37309,18 @@ class SparklineRenderer {
                 maxX: maxX, minX: minX, maxY: max, minY: min, value: axis.value,
                 lineColor: color, lineWidth: axis.lineSettings.width
             };
-            if (this.sparkline.isBlazor) {
-                const blazoraxisArgs = __rest(eventArgs, []);
-                eventArgs = blazoraxisArgs;
+            model.trigger('axisRendering', eventArgs);
+            if (eventArgs.cancel) {
+                this.visiblePoints = [];
+                return;
             }
-            model.trigger('axisRendering', eventArgs, (args) => {
-                if (eventArgs.cancel) {
-                    this.visiblePoints = [];
-                    return;
-                }
-                maxX = eventArgs.maxX;
-                minX = eventArgs.minX;
-                max = eventArgs.maxY;
-                min = eventArgs.minY;
-                value = this.axisValue = eventArgs.value;
-                this.axisColor = eventArgs.lineColor;
-                this.axisWidth = eventArgs.lineWidth;
-                if (this.sparkline.isBlazor) {
-                    let xAxis = {
-                        'id': this.sparkline.element.id + '_Sparkline_XAxis',
-                        'x1': this.sparkline.padding.left, 'y1': height,
-                        'x2': this.sparkline.availableSize.width - this.sparkline.padding.right, 'y2': height,
-                        'stroke': this.axisColor,
-                        'opacity': this.sparkline.axisSettings.lineSettings.opacity,
-                        'stroke-dasharray': this.sparkline.axisSettings.lineSettings.dashArray,
-                        'stroke-width': this.axisWidth,
-                        'clip-path': 'url(#' + this.clipId + ')'
-                    };
-                    this.sparkline.svgObject.appendChild(this.sparkline.renderer.drawLine(xAxis));
-                }
-            });
+            maxX = eventArgs.maxX;
+            minX = eventArgs.minX;
+            max = eventArgs.maxY;
+            min = eventArgs.minY;
+            value = this.axisValue = eventArgs.value;
+            this.axisColor = eventArgs.lineColor;
+            this.axisWidth = eventArgs.lineWidth;
         }
         let unitX = maxX - minX;
         let unitY = max - min;

@@ -10,7 +10,7 @@ import { PointModel } from '../primitives/point-model';
 import { MouseEventArgs } from './event-handlers';
 import { PointPortModel } from '../objects/port-model';
 import { ConnectorModel, StraightSegmentModel, OrthogonalSegmentModel, BezierSegmentModel } from '../objects/connector-model';
-import { NodeModel, BpmnTransactionSubProcessModel, BpmnAnnotationModel, SwimLaneModel } from '../objects/node-model';
+import { NodeModel, BpmnTransactionSubProcessModel, BpmnAnnotationModel, SwimLaneModel, LaneModel } from '../objects/node-model';
 import { OrthogonalSegment } from '../objects/connector';
 import { Rect } from '../primitives/rect';
 import { Diagram } from '../../diagram/diagram';
@@ -55,7 +55,7 @@ import { MarginModel } from '../core/appearance-model';
 import { renderContainerHelper } from './container-interaction';
 import { checkChildNodeInContainer, checkParentAsContainer, addChildToContainer } from './container-interaction';
 import { renderStackHighlighter } from './container-interaction';
-import { getConnectors, updateConnectorsProperties, findLaneIndex } from './../utility/swim-lane-util';
+import { getConnectors, updateConnectorsProperties, canLaneInterchange, findLane } from './../utility/swim-lane-util';
 import { GridPanel } from '../core/containers/grid';
 import { swimLaneSelection, pasteSwimLane, gridSelection } from '../utility/swim-lane-util';
 
@@ -696,8 +696,8 @@ export class CommandHandler {
                 if (node && (node as Node).isLane) {
                     let childTable: {} = this.clipboardData.childTable;
                     let swimlane: NodeModel = this.diagram.getObject((node as Node).parentId);
-                    let laneIndex: number = findLaneIndex(swimlane, node as Node);
-                    childTable[node.id] = cloneObject((swimlane.shape as SwimLaneModel).lanes[laneIndex]);
+                    let lane: LaneModel = findLane(node as Node, this.diagram);
+                    childTable[node.id] = cloneObject(lane);
                     childTable[node.id].width = swimlane.wrapper.actualSize.width;
                 }
             }
@@ -1135,8 +1135,8 @@ export class CommandHandler {
         let cloneObject: Node | Connector;
         if (obj && obj.shape) {
             if (obj.shape.type === 'Text') {
-                (obj as Node).width =  (this.diagram.drawingObject as Node).width ? (this.diagram.drawingObject as Node).width : 50;
-                (obj as Node).height =  (this.diagram.drawingObject as Node).height ? (this.diagram.drawingObject as Node).height : 20;
+                (obj as Node).width = (this.diagram.drawingObject as Node).width ? (this.diagram.drawingObject as Node).width : 50;
+                (obj as Node).height = (this.diagram.drawingObject as Node).height ? (this.diagram.drawingObject as Node).height : 20;
             }
         }
         cloneObject = clone(this.diagram.drawingObject) as Node | Connector;
@@ -1971,7 +1971,9 @@ export class CommandHandler {
                     || (this.diagram.currentSymbol &&
                         (this.diagram.currentSymbol.shape as SwimLaneModel).orientation === node.container.orientation))) {
                 selectorModel = this.diagram.selectedItems;
-                canvas = gridSelection(this.diagram, selectorModel, (target as Node).id, symbolDrag);
+                if ((source.isLane && canLaneInterchange(source, this.diagram)) || !source.isLane) {
+                    canvas = gridSelection(this.diagram, selectorModel, (target as Node).id, symbolDrag);
+                }
             }
             let wrapper: DiagramElement = node.container.type === 'Stack' ? target.wrapper : canvas;
             if (wrapper) {
@@ -3262,7 +3264,11 @@ export class CommandHandler {
         obj = renderContainerHelper(this.diagram, obj) || obj;
         if (this.checkBoundaryConstraints(tx, ty)) {
             this.diagram.diagramActions = this.diagram.diagramActions | DiagramAction.PreventZIndexOnDragging;
-            this.diagram.drag(obj, tx, ty);
+            let actualObject: Node = this.diagram.selectedObject.actualObject as Node;
+            if ((actualObject && actualObject instanceof Node && actualObject.isLane &&
+                canLaneInterchange(actualObject, this.diagram)) || (!actualObject || !actualObject.isLane)) {
+                this.diagram.drag(obj, tx, ty);
+            }
             this.diagram.diagramActions = this.diagram.diagramActions & ~DiagramAction.PreventZIndexOnDragging;
             this.diagram.refreshCanvasLayers();
             return true;

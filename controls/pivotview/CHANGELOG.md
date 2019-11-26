@@ -2,6 +2,19 @@
 
 ## [Unreleased]
 
+## 17.3.29 (2019-11-26)
+
+### Pivot Table
+
+#### Bug Fixes
+
+- `#254586` - The conditional formatting will no longer be applied in empty cells.
+- The summarization text `of` in value buttons inside grouping bar and field list layout can be localized now.
+
+#### New Features
+
+- `#252636` - Provision provided to disable the scrollbars in pivot chart.
+
 ## 17.3.9-beta (2019-09-20)
 
 ### Pivot Table

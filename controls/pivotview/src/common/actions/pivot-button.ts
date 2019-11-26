@@ -233,7 +233,7 @@ export class PivotButton implements IAction {
                 title: axis === 'filters' ? (this.parent.dataType === 'olap' && engineModule.fieldList[field[i].name].type === 'CalculatedField') ?
                     text : (text + ' (' + filterMem + ')') : (this.parent.dataType === 'olap' ?
                         text : (((!this.parent.dataSourceSettings.showAggregationOnValueField || axis !== 'values' || aggregation === 'CalculatedField') ?
-                            text : this.parent.localeObj.getConstant(aggregation) + ' ' + 'of' + ' ' + text))),
+                            text : this.parent.localeObj.getConstant(aggregation) + ' ' + this.parent.localeObj.getConstant('of') + ' ' + text))),
                 'tabindex': '-1', 'aria-disabled': 'false', 'oncontextmenu': 'return false;',
                 'data-type': valuePos === i ? '' : aggregation
             },
@@ -242,7 +242,7 @@ export class PivotButton implements IAction {
             innerHTML: axis === 'filters' ? (this.parent.dataType === 'olap' && engineModule.fieldList[field[i].name].type === 'CalculatedField') ?
                 text : (text + ' (' + filterMem + ')') : (this.parent.dataType === 'olap' ?
                     text : (!this.parent.dataSourceSettings.showAggregationOnValueField || axis !== 'values' || aggregation === 'CalculatedField' ?
-                        text : this.parent.localeObj.getConstant(aggregation) + ' ' + 'of' + ' ' + text))
+                        text : this.parent.localeObj.getConstant(aggregation) + ' ' + this.parent.localeObj.getConstant('of') + ' ' + text))
         });
         return buttonText;
     }

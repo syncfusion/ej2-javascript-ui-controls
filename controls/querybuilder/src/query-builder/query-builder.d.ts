@@ -101,6 +101,11 @@ export declare class Rule extends ChildProperty<Rule> {
      * @default null
      */
     value: string[] | number[] | string | number | boolean;
+    /**
+     * Specifies whether not condition is true/false.
+     * @default false
+     */
+    not: boolean;
 }
 export declare class ShowButtons extends ChildProperty<ShowButtons> {
     /**
@@ -263,6 +268,11 @@ export declare class QueryBuilder extends Component<HTMLDivElement> implements I
      */
     immediateModeDelay: number;
     /**
+     * Enables/Disables the not group condition in query builder.
+     * @default false
+     */
+    enableNotCondition: boolean;
+    /**
      * Defines rules in the QueryBuilder.
      * Specifies the initial rule, which is JSON data.
      * @default {}
@@ -353,6 +363,9 @@ export declare class QueryBuilder extends Component<HTMLDivElement> implements I
     private renderSummary;
     private renderSummaryCollapse;
     private columnSort;
+    private onChangeNotGroup;
+    private notGroupRtl;
+    private checkNotGroup;
     onPropertyChanged(newProp: QueryBuilderModel, oldProp: QueryBuilderModel): void;
     protected preRender(): void;
     protected render(): void;
@@ -494,6 +507,7 @@ export interface ChangeEventArgs extends BaseEventArgs {
     selectedField?: string;
     cancel?: boolean;
     type?: string;
+    not?: boolean;
 }
 export interface RuleChangeEventArgs extends BaseEventArgs {
     previousRule?: RuleModel;

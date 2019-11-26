@@ -827,11 +827,13 @@ export class CheckBoxFilterBase {
                 let uid: string = getUid('cbox');
                 this.values[uid] = getValue('ejValue', data[i]);
                 let value: string | number = getValue(this.options.field, data[i]);
-                let args: { value: string | number, column: ColumnModel } = { value: value, column: this.options.column };
-                this.parent.notify(events.filterCboxValue, args);
-                if (value === args.value && this.options.formatFn) {
+                if (this.options.formatFn) {
                     value = this.valueFormatter.toView(value as number, this.options.formatFn) as string;
                 }
+                let args: { value: string | number, column: ColumnModel, data: Object }
+                            = { value: value, column: this.options.column, data: data[i] };
+                this.parent.notify(events.filterCboxValue, args);
+                value = args.value;
                 if ((value === '' || isNullOrUndefined(value))) {
                     if (isRndere) { continue; }
                     isRndere = true;

@@ -4,7 +4,7 @@ import { EmitType, cldrData, L10n, Component, getDefaultDateObject, rippleEffect
 import { createElement, remove, addClass, detach, removeClass, closest, append, attributes, setStyleAttribute } from '@syncfusion/ej2-base';
 import { isNullOrUndefined, formatUnit, getValue, setValue, extend, getUniqueID } from '@syncfusion/ej2-base';
 import { Popup } from '@syncfusion/ej2-popups';
-import { FocusEventArgs, BlurEventArgs } from '../calendar/calendar';
+import { FocusEventArgs, BlurEventArgs, ClearedEventArgs } from '../calendar/calendar';
 import { Input, InputObject, IInput, FloatLabelType } from '@syncfusion/ej2-inputs';
 import { ListBase, cssClass as ListBaseClasses, ListBaseOptions, createElementParams } from '@syncfusion/ej2-lists';
 import { TimePickerModel } from './timepicker-model';
@@ -438,6 +438,12 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
      */
     @Event()
     public close: EmitType<PopupEventArgs>;
+    /**
+     * Triggers when timepicker value is cleared using clear button.
+     * @event
+     */
+    @Event()
+    public cleared: EmitType<ClearedEventArgs>;
     /**
      * Triggers when the control loses the focus.
      * @event
@@ -1434,10 +1440,19 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
             EventHandler.add(this.inputWrapper.clearButton, 'mousedown', this.clearHandler, this);
         }
     }
+    private raiseClearedEvent(e: MouseEvent): void {
+        let clearedArgs: ClearedEventArgs = {
+            event: e
+        };
+        this.trigger('cleared', clearedArgs);
+    }
     protected clearHandler(e: MouseEvent): void {
         e.preventDefault();
         if (!isNullOrUndefined(this.value)) {
             this.clear(e);
+        } else {
+            this.resetState();
+            this.raiseClearedEvent(e);
         }
         if (this.popupWrapper) {
             this.popupWrapper.scrollTop = 0;
@@ -1447,6 +1462,7 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
         this.setProperties({ value: null }, true);
         this.initValue = null;
         this.resetState();
+        this.raiseClearedEvent(event);
         this.changeEvent(event);
     }
     protected setZIndex(): void {

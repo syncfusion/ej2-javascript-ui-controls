@@ -8,7 +8,7 @@
 
 #### Bug Fixes
 
-- #I252873 The issue with ` file search on pressing the enter key` has been fixed.
+- `#252873` - The issue with ` file search on pressing the enter key` has been fixed.
 
 ## 17.3.27 (2019-11-12)
 
@@ -16,7 +16,7 @@
 
 #### Bug Fixes
 
-- #F148827 New event `fileSelection` have been included to restrict the file selection in file manager.
+- `#148827` - New event `fileSelection` have been included to restrict the file selection in file manager.
 
 ## 17.3.26 (2019-11-05)
 
@@ -149,7 +149,7 @@
 
 #### New Features
 
-- #144270 - Added support to use the JWT tokens with `beforeSend` event’s Ajax settings.
+- `#144270` - Added support to use the JWT tokens with `beforeSend` event’s Ajax settings.
 
 ## 17.1.42 (2019-04-23)
 

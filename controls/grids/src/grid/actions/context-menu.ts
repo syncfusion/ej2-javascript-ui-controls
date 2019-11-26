@@ -315,8 +315,10 @@ export class ContextMenu implements IAction {
             this.targetColumn = this.getColumn(args.event);
             this.targetRowdata = this.parent.getRowInfo(args.event.target as Element);
             if ((isNullOrUndefined(args.parentItem)) && this.targetColumn) {
-                this.selectRow(args.event, ((args.event.target as Element).classList.contains('e-selectionbackground')
+                if (this.targetRowdata.cell) {
+                    this.selectRow(args.event, (this.targetRowdata.cell.classList.contains('e-selectionbackground')
                     && this.parent.selectionSettings.type === 'Multiple') ? false : true);
+                }
             }
             let hideSepItems: string[] = [];
             let showSepItems: string[] = [];

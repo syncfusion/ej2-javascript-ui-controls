@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 17.3.29 (2019-11-26)
+
+### Form Validator
+
+#### Bug Fixes
+
+- Now, validation works for newly added elements by calling the `refresh` method.
+
 ## 17.3.28 (2019-11-19)
 
 ### TextBox

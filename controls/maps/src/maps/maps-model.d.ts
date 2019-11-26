@@ -226,7 +226,6 @@ export interface MapsModel extends ComponentModel{
 
     /**
      * Triggers before the maps marker rendered.
-     * @deprecated
      * @event
      * @blazorProperty 'MarkerRendering'
      */
@@ -234,7 +233,6 @@ export interface MapsModel extends ComponentModel{
 
     /**
      * Triggers before the maps marker cluster rendered.
-     * @deprecated
      * @event
      */
     markerClusterRendering?: EmitType<IMarkerClusterRenderingEventArgs>;

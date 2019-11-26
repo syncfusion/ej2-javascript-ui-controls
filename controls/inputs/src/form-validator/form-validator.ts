@@ -337,6 +337,16 @@ export class FormValidator extends Base<HTMLFormElement> implements INotifyPrope
         this.localeFunc();
     }
 
+    /**
+     * Allows you to refresh the form validator base events to the elements inside the form.
+     * @return {void}
+     */
+    public refresh(): void {
+        this.unwireEvents();
+        this.inputElements = <HTMLInputElement[]>selectAll(this.selectQuery, this.element);
+        this.wireEvents();
+    }
+
 
     // Initializes the FormValidator 
     constructor(element: string | HTMLFormElement, options?: FormValidatorModel) {

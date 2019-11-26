@@ -1673,8 +1673,31 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
      */
     public getPersistData(): string {
         let keyEntity: string[] = ['dataSourceSettings', 'pivotValues', 'gridSettings', 'chartSettings', 'displayOption'];
-        // tslint:disable-next-line
+        /* tslint:disable */
         this.chartSettings['tooltipRender'] = undefined;
+        this.chartSettings['resized'] = undefined;
+        this.chartSettings['loaded'] = undefined;
+        this.chartSettings['beforePrint'] = undefined;
+        this.chartSettings['animationComplete'] = undefined;
+        this.chartSettings['load'] = undefined;
+        this.chartSettings['textRender'] = undefined;
+        this.chartSettings['legendRender'] = undefined;
+        this.chartSettings['seriesRender'] = undefined;
+        this.chartSettings['pointRender'] = undefined;
+        this.chartSettings['axisLabelRender'] = undefined;
+        this.chartSettings['chartMouseClick'] = undefined;
+        this.chartSettings['chartMouseMove'] = undefined;
+        this.chartSettings['pointMove'] = undefined;
+        this.chartSettings['pointClick'] = undefined;
+        this.chartSettings['chartMouseDown'] = undefined;
+        this.chartSettings['chartMouseLeave'] = undefined;
+        this.chartSettings['dragComplete'] = undefined;
+        this.chartSettings['chartMouseUp'] = undefined;
+        this.chartSettings['scrollStart'] = undefined;
+        this.chartSettings['zoomComplete'] = undefined;
+        this.chartSettings['scrollChanged'] = undefined;
+        this.chartSettings['scrollEnd'] = undefined;
+        /* tslint:enable */
         return this.addOnPersist(keyEntity);
     }
 
@@ -1795,8 +1818,10 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
                     if (newProp.dataSourceSettings && Object.keys(newProp.dataSourceSettings).length === 1
                         && Object.keys(newProp.dataSourceSettings)[0] === 'dataSource') {
                         this.engineModule.fieldList = null;
+                        this.refreshData();
+                    } else {
+                        this.notify(events.initialLoad, {});
                     }
-                    this.notify(events.initialLoad, {});
                     break;
                 case 'pivotValues':
                 case 'displayOption':
@@ -2224,7 +2249,7 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
             let drillArgs: DrillArgs = {
                 drillInfo: drilledItem,
                 pivotview: isBlazor() ? undefined : pivot
-            }
+            };
             pivot.trigger(events.drill, drillArgs, (observedArgs: DrillArgs) => {
                 if (pivot.enableVirtualization) {
                     pivot.engineModule.drilledMembers = pivot.dataSourceSettings.drilledMembers;
@@ -2235,7 +2260,7 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
                 pivot.setProperties({ pivotValues: pivot.engineModule.pivotValues }, true);
                 pivot.renderPivotGrid();
             });
-            
+
             //});
         } else {
             this.onOlapDrill(fieldName, axis, action, delimiter, target, chartDrillInfo);
@@ -3201,10 +3226,12 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
         if (this.displayOption.view !== 'Chart') {
             this.renderEmptyGrid();
         }
+        this.refreshData();
+    }
+
+    private refreshData(): void {
         showSpinner(this.element);
         let pivot: PivotView = this;
-        //setTimeout(() => {
-        /* tslint:disable */
         if (isBlazor()) {
             if (pivot.dataType === 'olap') {
                 if (pivot.dataSourceSettings.dataSource instanceof DataManager) {
@@ -3218,6 +3245,7 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
             } else if ((this.dataSourceSettings.url !== '' && this.dataType === 'olap') ||
                 (pivot.dataSourceSettings.dataSource as IDataSet[]).length > 0) {
                 if (pivot.dataType === 'pivot') {
+                    hideSpinner(pivot.element);
                     pivot.engineModule.data = pivot.dataSourceSettings.dataSource;
                 }
                 pivot.initEngine();
@@ -3227,8 +3255,6 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
         } else {
             hideSpinner(pivot.element);
         }
-        /* tslint:enable */
-        //});
     }
 
     private getValueCellInfo(aggregateObj: AggregateEventArgs): AggregateEventArgs {
@@ -3272,7 +3298,7 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
             }
             for (let i: number = 0; i < pivotValues.length; i++) {
                 for (let j: number = 1; (pivotValues[i] && j < pivotValues[i].length); j++) {
-                    if ((pivotValues[i][j] as IAxisSet).axis === 'value') {
+                    if ((pivotValues[i][j] as IAxisSet).axis === 'value' && (pivotValues[i][j] as IAxisSet).formattedText !== '') {
                         (pivotValues[i][j] as IAxisSet).style = undefined;
                         (pivotValues[i][j] as IAxisSet).cssClass = undefined;
                         let format: IConditionalFormatSettings[] = this.dataSourceSettings.conditionalFormatSettings;

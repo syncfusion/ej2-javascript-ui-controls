@@ -2177,8 +2177,9 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
                 if (!isNOU(this.getToolbarElement())) {
                     this.getToolbarElement().setAttribute('tabindex', '-1');
                     let items: NodeList = this.getToolbarElement().querySelectorAll('[tabindex="0"]');
-                    if (items.length !== 0) { items.forEach((element: Element) => {
-                        (element as HTMLElement).setAttribute('tabindex', '-1'); }); }
+                    for (let i: number = 0; i < items.length; i++) {
+                        (items[i] as HTMLElement).setAttribute('tabindex', '-1');
+                    }
                 }
             }
             this.preventDefaultResize(e);
@@ -2190,11 +2191,12 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
         }
         if (!isNOU(this.getToolbarElement())) {
             let toolbarItem: NodeList = this.getToolbarElement().querySelectorAll('input,select,button,a,[tabindex]');
-            toolbarItem.forEach((item: Element) => {
-                if (!item.hasAttribute('tabindex') || item.getAttribute('tabindex') !== '-1') {
-                    item.setAttribute('tabindex', '-1');
+            for (let i: number = 0; i < toolbarItem.length; i++) {
+                if (!(toolbarItem[i] as HTMLElement).hasAttribute('tabindex') ||
+                (toolbarItem[i] as HTMLElement).getAttribute('tabindex') !== '-1') {
+                    (toolbarItem[i] as HTMLElement).setAttribute('tabindex', '-1');
                 }
-            });
+            }
         }
     }
 

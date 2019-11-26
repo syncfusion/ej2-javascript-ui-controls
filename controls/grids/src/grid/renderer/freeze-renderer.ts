@@ -198,7 +198,9 @@ export class FreezeRender extends HeaderRender implements IRenderer {
             } else if (obj.case === 'refreshHeight') {
             this.setWrapHeight(cont.querySelector('.e-frozencontent').querySelectorAll('tr'),
                                cont.querySelector('.e-movablecontent').querySelectorAll('tr'), obj.isModeChg);
-            this.setWrapHeight(fHdr.querySelectorAll('tr'), mHdr.querySelectorAll('tr'), obj.isModeChg);
+            if (!this.parent.getHeaderContent().querySelectorAll('.e-stackedheadercell').length) {
+                this.setWrapHeight(fHdr.querySelectorAll('tr'), mHdr.querySelectorAll('tr'), obj.isModeChg);
+            }
             }
         }
     }

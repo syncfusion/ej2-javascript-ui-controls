@@ -1661,6 +1661,39 @@ client side. Customer easy to edit the contents and get the HTML content for
         });
     });
 
+    describe('Mouse Click for image testing when showOnRightClick enabled', () => {
+        let rteObj: RichTextEditor;
+        let controlId: string;
+        beforeEach((done: Function) => {
+            rteObj = renderRTE({
+                value: `<p>Hi image is<img id="image" alt="Logo" src="https://js.syncfusion.com/demos/web/content/images/accordion/baked-chicken-and-cheese.png" style="width: 300px;">`,
+                quickToolbarSettings: {
+                    enable: true,
+                    showOnRightClick: true
+                }
+            });
+            controlId = rteObj.element.id;
+            done();
+        });
+        afterEach((done: Function) => {
+            destroy(rteObj);
+            done();
+        });
+        it(" Test - for mouse click to focus image element", (done) => {
+            let target: HTMLElement = rteObj.element.querySelector("#image");
+            let clickEvent: any = document.createEvent("MouseEvents");
+            let eventsArg: any = { pageX: 50, pageY: 300, target: target, which: 1 };
+            clickEvent.initEvent("mousedown", false, true);
+            target.dispatchEvent(clickEvent);
+            (<any>rteObj).imageModule.editAreaClickHandler({ args: eventsArg });
+            setTimeout(() => {
+                let expectElem: HTMLElement[] = (rteObj as any).formatter.editorManager.nodeSelection.getSelectedNodes(document);
+                expect(expectElem[0].tagName === 'IMG').toBe(true);
+                done();
+            }, 100);
+        });
+    });
+
     describe(' quickToolbarSettings property - image quick toolbar - ', () => {
         let rteObj: RichTextEditor;
         let controlId: string;

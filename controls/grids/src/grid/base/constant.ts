@@ -112,6 +112,8 @@ export const filterBeforeOpen: string = 'filterbeforeopen';
 export const filterSearchBegin: string = 'filtersearchbegin';
 /** @hidden */
 export const commandClick: string = 'commandClick';
+/** @hidden */
+export const exportGroupCaption: string = 'exportGroupCaption';
 
 /**
  * Specifies grid internal events
