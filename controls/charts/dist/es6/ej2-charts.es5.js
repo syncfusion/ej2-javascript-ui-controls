@@ -12575,8 +12575,13 @@ var PolarRadarPanel = /** @__PURE__ @class */ (function (_super) {
      * @return {void}
      * @private
      */
+    //tslint:disable-next-line:max-func-body-length
     PolarRadarPanel.prototype.drawXAxisLabels = function (axis, index) {
         this.visibleAxisLabelRect = [];
+        var legendRect;
+        if (this.chart.legendModule) {
+            legendRect = this.chart.legendModule.legendBounds;
+        }
         var chart = this.chart;
         var pointX = 0;
         var pointY = 0;
@@ -12641,7 +12646,6 @@ var PolarRadarPanel = /** @__PURE__ @class */ (function (_super) {
                 lastLabelX += pointX;
                 labelText = (lastLabelX > firstLabelX) ? '' : labelText;
             }
-            options = new TextOption(chart.element.id + index + '_AxisLabel_' + i, pointX, pointY, textAnchor, labelText, '', 'central');
             // Label intersect action (Hide) perform here
             if (i !== 0 && intersectType === 'Hide') {
                 for (var j = i; j >= 0; j--) {
@@ -12656,6 +12660,17 @@ var PolarRadarPanel = /** @__PURE__ @class */ (function (_super) {
                     }
                 }
             }
+            if (!isIntersect && legendRect) {
+                isIntersect = isOverlap(labelRegions[i], legendRect);
+                if (isIntersect && intersectType === 'Trim') {
+                    var width = this.getAvailableSpaceToTrim(legendRect, labelRegions[i]);
+                    if (width > 0) {
+                        labelText = textTrim(width, axis.visibleLabels[i].originalText, axis.labelStyle);
+                        isIntersect = false;
+                    }
+                }
+            }
+            options = new TextOption(chart.element.id + index + '_AxisLabel_' + i, pointX, pointY, textAnchor, labelText, '', 'central');
             if (isIntersect) {
                 continue; // If the label is intersect, the label render is ignored.
             }
@@ -12663,6 +12678,28 @@ var PolarRadarPanel = /** @__PURE__ @class */ (function (_super) {
             textElement(chart.renderer, options, label.labelStyle, label.labelStyle.color || chart.themeStyle.axisLabel, labelElement, false, chart.redraw, true, true);
         }
         this.element.appendChild(labelElement);
+    };
+    /**
+     * To get available space to trim.
+     * @param legendRect
+     * @param labelRect
+     */
+    PolarRadarPanel.prototype.getAvailableSpaceToTrim = function (legendRect, labelRect) {
+        var legendX1 = legendRect.x;
+        var legendX2 = legendX1 + legendRect.width;
+        var labelX1 = labelRect.x;
+        var labelX2 = labelX1 + labelRect.width;
+        var width = 0;
+        if (labelX1 > legendX1 && labelX1 < legendX2 && labelX2 > legendX2) {
+            width = labelX2 - legendX2;
+        }
+        else if (labelX1 > legendX1 && labelX1 < legendX2 && labelX2 < legendX2) {
+            width = 0;
+        }
+        else if (labelX2 > legendX1 && labelX2 < legendX2 && labelX1 < legendX1) {
+            width = legendX1 - labelX1;
+        }
+        return width;
     };
     /**
      * Getting axis label bounds

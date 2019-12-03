@@ -286,18 +286,21 @@ export class ShapeAnnotation {
     public setAnnotationType(type: AnnotType): void {
         let date: Date = new Date();
         this.pdfViewerBase.disableTextSelectionMode();
+        let author: string = 'Guest';
         switch (type) {
             case 'Line':
                 this.currentAnnotationMode = 'Line';
                 // tslint:disable-next-line:max-line-length
                 let modifiedDateLine: string = this.pdfViewer.lineSettings.modifiedDate ? this.pdfViewer.lineSettings.modifiedDate : date.toLocaleString();
+                // tslint:disable-next-line:max-line-length
+                author = (this.pdfViewer.annotationSettings.author !== 'Guest') ? this.pdfViewer.annotationSettings.author : this.pdfViewer.lineSettings.author ? this.pdfViewer.lineSettings.author : 'Guest';
                 this.pdfViewer.drawingObject = {
                     // tslint:disable-next-line:max-line-length
                     shapeAnnotationType: this.setShapeType('Line'), fillColor: this.lineFillColor, notes: '', strokeColor: this.lineStrokeColor, opacity: this.lineOpacity,
                     thickness: this.lineThickness, modifiedDate: modifiedDateLine, borderDashArray: this.lineDashArray.toString(),
                     // tslint:disable-next-line:max-line-length
                     sourceDecoraterShapes: this.pdfViewer.annotation.getArrowType(this.lineStartHead.toString()), taregetDecoraterShapes: this.pdfViewer.annotation.getArrowType(this.lineEndHead.toString()),
-                    author: this.pdfViewer.lineSettings.author, subject: this.pdfViewer.lineSettings.subject, lineHeadStart: this.lineStartHead, lineHeadEnd: this.lineEndHead
+                    author: author, subject: this.pdfViewer.lineSettings.subject, lineHeadStart: this.lineStartHead, lineHeadEnd: this.lineEndHead
                 };
                 this.pdfViewer.tool = 'Line';
                 break;
@@ -305,6 +308,7 @@ export class ShapeAnnotation {
                 this.currentAnnotationMode = 'Arrow';
                 // tslint:disable-next-line:max-line-length
                 let modifiedDateArrow: string = this.pdfViewer.arrowSettings.modifiedDate ? this.pdfViewer.arrowSettings.modifiedDate : date.toLocaleString();
+                author = (this.pdfViewer.annotationSettings.author !== 'Guest') ? this.pdfViewer.annotationSettings.author : this.pdfViewer.arrowSettings.author ? this.pdfViewer.arrowSettings.author : 'Guest';
                 this.pdfViewer.drawingObject = {
                     shapeAnnotationType: this.setShapeType('Arrow'), opacity: this.arrowOpacity,
                     // tslint:disable-next-line:max-line-length
@@ -312,7 +316,7 @@ export class ShapeAnnotation {
                     taregetDecoraterShapes: this.pdfViewer.annotation.getArrowType(this.arrowEndHead.toString()),
                     // tslint:disable-next-line:max-line-length
                     fillColor: this.arrowFillColor, strokeColor: this.arrowStrokeColor, notes: '', thickness: this.arrowThickness,
-                    borderDashArray: this.arrowDashArray.toString(), author: this.pdfViewer.lineSettings.author, subject: this.pdfViewer.arrowSettings.subject,
+                    borderDashArray: this.arrowDashArray.toString(), author: author, subject: this.pdfViewer.arrowSettings.subject,
                     // tslint:disable-next-line:max-line-length
                     modifiedDate: modifiedDateArrow, lineHeadStart: this.arrowStartHead, lineHeadEnd: this.arrowEndHead
                 };
@@ -322,11 +326,13 @@ export class ShapeAnnotation {
                 this.currentAnnotationMode = 'Rectangle';
                 // tslint:disable-next-line:max-line-length
                 let modifiedDateRect: string = this.pdfViewer.rectangleSettings.modifiedDate ? this.pdfViewer.rectangleSettings.modifiedDate : date.toLocaleString();
+                // tslint:disable-next-line:max-line-length
+                author = (this.pdfViewer.annotationSettings.author !== 'Guest') ? this.pdfViewer.annotationSettings.author : this.pdfViewer.rectangleSettings.author ? this.pdfViewer.rectangleSettings.author : 'Guest';
                 this.pdfViewer.drawingObject = {
                     shapeAnnotationType: this.setShapeType('Rectangle'), strokeColor: this.rectangleStrokeColor,
                     fillColor: this.rectangleFillColor, opacity: this.rectangleOpacity, notes: '',
                     thickness: this.rectangleThickness, borderDashArray: '0', modifiedDate: modifiedDateRect,
-                    author: this.pdfViewer.lineSettings.author, subject: this.pdfViewer.rectangleSettings.subject
+                    author: author, subject: this.pdfViewer.rectangleSettings.subject
                 };
                 this.pdfViewer.tool = 'DrawTool';
                 break;
@@ -334,11 +340,13 @@ export class ShapeAnnotation {
                 this.currentAnnotationMode = 'Circle';
                 // tslint:disable-next-line:max-line-length
                 let modifiedDateCir: string = this.pdfViewer.circleSettings.modifiedDate ? this.pdfViewer.circleSettings.modifiedDate : date.toLocaleString();
+                // tslint:disable-next-line:max-line-length
+                author = (this.pdfViewer.annotationSettings.author !== 'Guest') ? this.pdfViewer.annotationSettings.author : this.pdfViewer.circleSettings.author ? this.pdfViewer.circleSettings.author : 'Guest';
                 this.pdfViewer.drawingObject = {
                     shapeAnnotationType: this.setShapeType('Circle'), strokeColor: this.circleStrokeColor,
                     fillColor: this.circleFillColor, opacity: this.circleOpacity, notes: '',
                     thickness: this.circleThickness, borderDashArray: '0', modifiedDate: modifiedDateCir,
-                    author: this.pdfViewer.lineSettings.author, subject: this.pdfViewer.circleSettings.subject
+                    author: author, subject: this.pdfViewer.circleSettings.subject
                 };
                 this.pdfViewer.tool = 'DrawTool';
                 break;
@@ -346,10 +354,12 @@ export class ShapeAnnotation {
                 this.currentAnnotationMode = 'Polygon';
                 // tslint:disable-next-line:max-line-length
                 let modifiedDatePolygon: string = this.pdfViewer.polygonSettings.modifiedDate ? this.pdfViewer.polygonSettings.modifiedDate : date.toLocaleString();
+                // tslint:disable-next-line:max-line-length
+                author = (this.pdfViewer.annotationSettings.author !== 'Guest') ? this.pdfViewer.annotationSettings.author : this.pdfViewer.polygonSettings.author ? this.pdfViewer.polygonSettings.author : 'Guest';
                 this.pdfViewer.drawingObject = {
                     strokeColor: this.polygonStrokeColor, fillColor: this.polygonFillColor,
                     opacity: this.polygonOpacity, thickness: this.polygonThickness, borderDashArray: '0',
-                    notes: '', author: this.pdfViewer.lineSettings.author, subject: this.pdfViewer.lineSettings.subject,
+                    notes: '', author: author, subject: this.pdfViewer.lineSettings.subject,
                     modifiedDate: modifiedDatePolygon, borderStyle: ''
                 };
                 this.pdfViewer.tool = 'Polygon';
@@ -556,7 +566,7 @@ export class ShapeAnnotation {
         for (let j: number = 0; j < this.pdfViewerBase.pageCount; j++) {
             annotations[j] = [];
         }
-        if (storeObject) {
+        if (storeObject && this.pdfViewer.annotationSettings.isDownload) {
             let annotationCollection: IPageAnnotations[] = JSON.parse(storeObject);
             for (let i: number = 0; i < annotationCollection.length; i++) {
                 let newArray: IShapeAnnotation[] = [];

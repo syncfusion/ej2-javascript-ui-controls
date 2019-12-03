@@ -567,7 +567,8 @@ export class DiagramScroller {
         if (this.diagram.scrollSettings.scrollLimit !== 'Infinity') {
             let bounds: Rect;
             if (this.diagram.scrollSettings.scrollLimit === 'Limited') {
-                bounds = this.diagram.scrollSettings.scrollableArea;
+                let scrollableBounds: Rect = this.diagram.scrollSettings.scrollableArea;
+                bounds = new Rect(scrollableBounds.x, scrollableBounds.y, scrollableBounds.width, scrollableBounds.height);
             }
             bounds = bounds || this.getPageBounds(true);
             bounds.x *= this.currentZoom;

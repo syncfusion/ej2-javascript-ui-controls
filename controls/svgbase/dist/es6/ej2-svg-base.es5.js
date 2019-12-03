@@ -1714,7 +1714,16 @@ var Tooltip = /** @__PURE__ @class */ (function (_super) {
                 this.updateDiv(element, tooltipRect.x, tooltipRect.y);
             }
             if (this.blazorTemplate) {
-                updateBlazorTemplate(this.element.id + 'parent_template' + '_blazorTemplate', this.blazorTemplate.name, this.blazorTemplate.parent);
+                //Customer issue - F149037  Call back function to handle the blazor tooltip alignment issues
+                var tooltipRendered = function () {
+                    var rect1 = getElement(thisObject_1.element.id).getBoundingClientRect();
+                    thisObject_1.elementSize = new Size(rect1.width, rect1.height);
+                    var tooltipRect1 = thisObject_1.tooltipLocation(areaBounds, location, new TooltipLocation(0, 0), new TooltipLocation(0, 0));
+                    thisObject_1.updateDiv(getElement(thisObject_1.element.id), tooltipRect1.x, tooltipRect1.y);
+                };
+                var thisObject_1 = this;
+                tooltipRendered.bind(thisObject_1, areaBounds, location);
+                updateBlazorTemplate(this.element.id + 'parent_template' + '_blazorTemplate', this.blazorTemplate.name, this.blazorTemplate.parent, undefined, tooltipRendered);
             }
         }
         else {

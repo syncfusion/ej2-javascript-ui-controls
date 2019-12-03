@@ -4,7 +4,7 @@ import { ConnectorModel } from '../connector-model';
 import { NodeModel } from '../node-model';
 import { Size } from '../../primitives/size';
 import { PointModel } from '../../primitives/point-model';
-import { EventState, ChangeType, State, DiagramAction } from '../../enum/enum';
+import { EventState, ChangeType, State, DiagramAction, HistoryChangeAction } from '../../enum/enum';
 import { SelectorModel } from '../../objects/node-model';
 import { DiagramModel } from '../../diagram-model';
 import { Connector } from '../../objects/connector';
@@ -151,6 +151,8 @@ export interface ICollectionChangeEventArgs {
     cancel: boolean;
     /** returns the lane index */
     laneIndex?: Number;
+    /** returns a parent node of the target node */
+    parentId?: string;
 }
 /**
  * IBlazorCollectionChangeEventArgs notifies while the node/connector are added or removed in the diagram
@@ -167,6 +169,8 @@ type: ChangeType;
 cancel: boolean;
 /** returns the selected element  */
 element?: DiagramEventObject;
+/** returns a parent node of the target node */
+parentId?: string;
 }
 /**
  * IBlazorSegmentCollectionChangeEventArgs notifies while the segment of the connectors changes
@@ -615,6 +619,8 @@ export interface IBlazorHistoryChangeArgs {
     cause: string;
     /** returns a collection of objects that are changed in the last undo/redo */
     source?: DiagramEventObjectCollection;
+    /** returns the event action */
+    action?: HistoryChangeAction;
 }
 /**
  * IHistoryChangeArgs notifies when the label of an element under goes editing
@@ -627,6 +633,8 @@ export interface IHistoryChangeArgs {
     change: SelectorModel;
     /** returns the cause of the event */
     cause: string;
+    /** returns the event action */
+    action?: HistoryChangeAction;
 }
 
 /**

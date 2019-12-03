@@ -359,7 +359,7 @@ export class UndoRedo {
         }
         diagram.diagramActions &= ~DiagramAction.UndoRedo;
         diagram.protectPropertyChange(false);
-        diagram.historyChangeTrigger(entry);
+        diagram.historyChangeTrigger(entry, 'Undo');
         if (nodeObject) {
             let object: NodeModel | ConnectorModel = this.checkNodeObject(nodeObject, diagram);
             if (object) {
@@ -1019,7 +1019,7 @@ export class UndoRedo {
         }
         diagram.protectPropertyChange(false);
         diagram.diagramActions &= ~DiagramAction.UndoRedo;
-        diagram.historyChangeTrigger(historyEntry);
+        diagram.historyChangeTrigger(historyEntry, 'Redo');
 
         if (redovalue) {
             let value: NodeModel | ConnectorModel = this.checkNodeObject(redovalue, diagram);

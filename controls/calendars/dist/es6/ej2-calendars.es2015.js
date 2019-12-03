@@ -4544,7 +4544,7 @@ let DateRangePicker = class DateRangePicker extends CalendarBase {
         this.setProperties({ startDate: this.startValue }, true);
         this.setProperties({ endDate: this.endValue }, true);
         this.setModelValue();
-        this.updateDataAttribute(false);
+        this.setDataAttribute(false);
         this.renderComplete();
     }
     /**
@@ -4741,20 +4741,20 @@ let DateRangePicker = class DateRangePicker extends CalendarBase {
         this.setRangeAllowEdit();
         this.bindEvents();
     }
-    updateDataAttribute(isDynamic) {
-        let attr = {};
+    setDataAttribute(isDynamic) {
+        let attributes$$1 = {};
         if (!isDynamic) {
-            for (let a = 0; a < this.element.attributes.length; a++) {
-                attr[this.element.attributes[a].name] = this.element.getAttribute(this.element.attributes[a].name);
+            for (let i = 0; i < this.element.attributes.length; i++) {
+                attributes$$1[this.element.attributes[i].name] = this.element.getAttribute(this.element.attributes[i].name);
             }
         }
         else {
-            attr = this.htmlAttributes;
+            attributes$$1 = this.htmlAttributes;
         }
-        for (let key of Object.keys(attr)) {
-            if (key.indexOf('data') === 0) {
-                this.firstHiddenChild.setAttribute(key, attr[key]);
-                this.secondHiddenChild.setAttribute(key, attr[key]);
+        for (let pro of Object.keys(attributes$$1)) {
+            if (pro.indexOf('data') === 0) {
+                this.firstHiddenChild.setAttribute(pro, attributes$$1[pro]);
+                this.secondHiddenChild.setAttribute(pro, attributes$$1[pro]);
             }
         }
     }
@@ -7139,7 +7139,7 @@ let DateRangePicker = class DateRangePicker extends CalendarBase {
                 this.renderCustomPopup();
             }
             else {
-                this.applyPresetRange(values);
+                this.applyPresetRange(values, event);
             }
         }
     }
@@ -7153,7 +7153,7 @@ let DateRangePicker = class DateRangePicker extends CalendarBase {
     setValue() {
         this.modelValue = [this.startValue, this.endValue];
     }
-    applyPresetRange(values) {
+    applyPresetRange(values, e) {
         this.hide(null);
         this.presetsItem[this.presetsItem.length - 1].start = null;
         this.presetsItem[this.presetsItem.length - 1].end = null;
@@ -7161,8 +7161,8 @@ let DateRangePicker = class DateRangePicker extends CalendarBase {
         this.endValue = values.end;
         this.setValue();
         this.refreshControl();
-        this.trigger('select', this.rangeArgs(null));
-        this.changeTrigger();
+        this.trigger('select', this.rangeArgs(e));
+        this.changeTrigger(e);
         this.previousEleValue = this.inputElement.value;
         this.isCustomRange = false;
         this.leftCalendar = this.rightCalendar = null;
@@ -8406,7 +8406,7 @@ let DateRangePicker = class DateRangePicker extends CalendarBase {
                 case 'htmlAttributes':
                     this.updateHtmlAttributeToElement();
                     this.updateHtmlAttributeToWrapper();
-                    this.updateDataAttribute(true);
+                    this.setDataAttribute(true);
                     this.checkHtmlAttributes(true);
                     break;
                 case 'showClearButton':

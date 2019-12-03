@@ -1350,7 +1350,7 @@ let DropDownList = class DropDownList extends DropDownBase {
     }
     resetHandler(e) {
         e.preventDefault();
-        this.clear(e);
+        this.clearAll(e);
     }
     resetFocusElement() {
         this.removeHover();
@@ -1364,7 +1364,7 @@ let DropDownList = class DropDownList extends DropDownBase {
             }
         }
     }
-    clear(e, properties) {
+    clearAll(e, properties) {
         if (isNullOrUndefined(properties) || (!isNullOrUndefined(properties) &&
             (isNullOrUndefined(properties.dataSource) ||
                 (!(properties.dataSource instanceof DataManager) && properties.dataSource.length === 0)))) {
@@ -3124,7 +3124,7 @@ let DropDownList = class DropDownList extends DropDownBase {
     updateDataSource(props) {
         if (this.inputElement.value !== '' || (!isNullOrUndefined(props) && (isNullOrUndefined(props.dataSource)
             || (!(props.dataSource instanceof DataManager) && props.dataSource.length === 0)))) {
-            this.clear(null, props);
+            this.clearAll(null, props);
         }
         if (!(!isNullOrUndefined(props) && (isNullOrUndefined(props.dataSource)
             || (!(props.dataSource instanceof DataManager) && props.dataSource.length === 0)))) {
@@ -3188,7 +3188,7 @@ let DropDownList = class DropDownList extends DropDownBase {
                     break;
                 case 'text':
                     if (newProp.text === null) {
-                        this.clear();
+                        this.clearAll();
                         break;
                     }
                     if (!this.list) {
@@ -3213,7 +3213,7 @@ let DropDownList = class DropDownList extends DropDownBase {
                     break;
                 case 'value':
                     if (newProp.value === null) {
-                        this.clear();
+                        this.clearAll();
                         break;
                     }
                     this.notify('beforeValueChange', { newProp: newProp }); // gird component value type change
@@ -3239,7 +3239,7 @@ let DropDownList = class DropDownList extends DropDownBase {
                     break;
                 case 'index':
                     if (newProp.index === null) {
-                        this.clear();
+                        this.clearAll();
                         break;
                     }
                     if (!this.list) {
@@ -3413,7 +3413,7 @@ let DropDownList = class DropDownList extends DropDownBase {
         if (this.inputElement.value.trim() === '' && !this.isInteracted && (this.isSelectCustom ||
             !isNullOrUndefined(this.selectedLI) && this.inputElement.value !== dataItem.text)) {
             this.isSelectCustom = false;
-            this.clear();
+            this.clearAll();
         }
     }
     /**
@@ -3501,6 +3501,13 @@ let DropDownList = class DropDownList extends DropDownBase {
             this.renderList();
         }
         return this.ulElement ? super.getItems() : [];
+    }
+    /**
+     * Allows you to clear the selected values from the component.
+     * @returns void.
+     */
+    clear() {
+        this.value = null;
     }
 };
 __decorate$1([
@@ -3914,9 +3921,9 @@ let ComboBox = class ComboBox extends DropDownList {
             return false;
         }
     }
-    clear(e, property) {
+    clearAll(e, property) {
         if (isNullOrUndefined(property) || (!isNullOrUndefined(property) && isNullOrUndefined(property.dataSource))) {
-            super.clear(e);
+            super.clearAll(e);
         }
     }
     isSelectFocusItem(element) {
@@ -4010,7 +4017,7 @@ let ComboBox = class ComboBox extends DropDownList {
             }
         }
         if (e.action === 'enter' && this.inputElement.value.trim() === '') {
-            this.clear(e);
+            this.clearAll(e);
         }
         else if (this.isTyped && !this.isSelected && isNullOrUndefined(li)) {
             this.customValue();
@@ -4388,9 +4395,9 @@ let AutoComplete = class AutoComplete extends ComboBox {
             this.hidePopup();
         }
     }
-    clear(e, property) {
+    clearAll(e, property) {
         if (isNullOrUndefined(property) || (!isNullOrUndefined(property) && isNullOrUndefined(property.dataSource))) {
-            super.clear(e);
+            super.clearAll(e);
         }
         if (this.beforePopupOpen) {
             this.hidePopup();
@@ -7938,6 +7945,14 @@ let MultiSelect = class MultiSelect extends DropDownBase {
     }
     ;
     /**
+     * Allows you to clear the selected values from the Multiselect component.
+     * @returns void
+     */
+    clear() {
+        this.selectAll(false);
+        this.setProperties({ value: null }, true);
+    }
+    /**
      * To Initialize the control rendering
      * @private
      */
@@ -8665,7 +8680,7 @@ class CheckBoxSelection {
         }
     }
     onDocumentClick(e) {
-        if (!this.parent.element.classList.contains('e-listbox')) {
+        if (!this.parent.element.classList.contains('e-listbox') && this.parent.element.tagName !== 'EJS-LISTBOX') {
             let target = e.target;
             if (!isNullOrUndefined(this.parent.popupObj) && closest(target, '#' + this.parent.popupObj.element.id)) {
                 e.preventDefault();

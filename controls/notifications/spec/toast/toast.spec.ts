@@ -1664,6 +1664,43 @@ describe("Toast Testing", () => {
         expect(memory).toBeLessThan(profile.samples[0] + 0.25);
     })
 });
+describe("cssClass Property", () => {
+        let toast: Toast;
+        beforeEach((): void => {
+            let ele: HTMLElement = document.createElement("div");
+            ele.id = "toast";
+            document.body.appendChild(ele);
+        });
+        afterEach((): void => {
+            if (toast) {
+                toast.destroy();
+            }
+            document.body.innerHTML = "";
+        });
+        it("empty string", () => {
+            let ele: HTMLElement = document.getElementById("toast");
+            toast = new Toast({ cssClass : ''
+            }, ele);
+            toast.show();
+            expect((toast as any).toastEle.className).toBe("e-toast");
+            
+        });
+        it("Toast icon  value testing", () => {
+            let ele: HTMLElement = document.getElementById("toast");
+            toast = new Toast({ cssClass : 'inner-toast'
+            }, ele);
+            toast.show();
+            expect((toast as any).toastEle.className).toBe("e-toast inner-toast");
+            
+        });
+        it("Toast icon  value testing", () => {
+            let ele: HTMLElement = document.getElementById("toast");
+            toast = new Toast({ cssClass : 'inner-toast outer-toast'
+            }, ele);
+            toast.show();
+            expect((toast as any).toastEle.className).toBe("e-toast inner-toast outer-toast");
+                });
+    });
 
 describe("Toast beforeOpen and Open and close event to find duplicate toast", () => {
     let toast: Toast;

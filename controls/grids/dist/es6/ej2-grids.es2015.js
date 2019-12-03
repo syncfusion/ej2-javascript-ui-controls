@@ -4983,8 +4983,8 @@ class FocusStrategy {
         if (this.parent.isDestroyed || Browser.isDevice || this.parent.enableVirtualization) {
             return;
         }
-        this.setActive(this.parent.frozenRows === 0, this.parent.frozenColumns !== 0);
-        if (!this.parent.getCurrentViewRecords().length && this.parent.isEdit) {
+        this.setActive(!this.parent.enableHeaderFocus && this.parent.frozenRows === 0, this.parent.frozenColumns !== 0);
+        if (!this.parent.enableHeaderFocus && !this.parent.getCurrentViewRecords().length) {
             this.getContent().matrix.
                 generate(this.rowModelGen.generateRows({ rows: [new Row({ isDataRow: true })] }), this.getContent().selector, false);
         }
@@ -5197,9 +5197,14 @@ class FocusStrategy {
                 cFocus.matrix.generate(rows, cFocus.selector, isRowTemplate);
             }
             cFocus.generateRows(updateRow, { matrix, handlerInstance: (e.args && e.args.isFrozen) ? this.fHeader : this.header });
-            if (!Browser.isDevice && !this.focusByClick && e && e.args && e.args.requestType === 'paging') {
-                this.skipFocus = false;
-                this.parent.element.focus();
+            if (!Browser.isDevice && e && e.args) {
+                if (!this.focusByClick && e.args.requestType === 'paging') {
+                    this.skipFocus = false;
+                    this.parent.element.focus();
+                }
+                if (e.args.requestType === 'grouping') {
+                    this.skipFocus = true;
+                }
             }
             if (e && e.args && e.args.requestType === 'virtualscroll') {
                 if (this.currentInfo.uid) {
@@ -5670,7 +5675,7 @@ class HeaderFocus extends ContentFocus {
         let enterFrozen = this.parent.frozenRows !== 0 && action === 'enter';
         return {
             swap: ((action === 'downArrow' || enterFrozen) && current[0] === this.matrix.matrix.length - 1) ||
-                frozenSwap,
+                frozenSwap || (action === 'tab' && current[1] === this.matrix.matrix[current[0]].lastIndexOf(1)),
             toHeader: frozenSwap,
             toFrozen: frozenSwap
         };
@@ -7052,6 +7057,14 @@ class Selection {
             this.hideBorders();
         }
     }
+    isLastCell(cell) {
+        let cells = [].slice.call(cell.parentElement.querySelectorAll('.e-rowcell:not(.e-hide)'));
+        return cells[cells.length - 1] === cell;
+    }
+    isLastRow(cell) {
+        let rows = [].slice.call(closest(cell, 'tbody').querySelectorAll('.e-row:not(.e-hiddenrow)'));
+        return cell.parentElement === rows[rows.length - 1];
+    }
     positionBorders() {
         this.updateStartEndCells();
         if (!this.startCell || !this.bdrLeft || !this.selectedRowCellIndexes.length) {
@@ -7060,19 +7073,21 @@ class Selection {
         this.showBorders();
         let stOff = this.startCell.getBoundingClientRect();
         let endOff = this.endCell.getBoundingClientRect();
+        let colWidth = this.isLastCell(this.endCell) ? 2 : 0;
+        let rowHeight = this.isLastRow(this.endCell) ? 2 : 0;
         let parentOff = this.startCell.offsetParent.getBoundingClientRect();
         this.bdrLeft.style.left = stOff.left - parentOff.left + 'px';
         this.bdrLeft.style.top = stOff.top - parentOff.top + 'px';
         this.bdrLeft.style.height = endOff.top - stOff.top > 0 ?
-            (endOff.top - parentOff.top + endOff.height + 1) - (stOff.top - parentOff.top) + 'px' : endOff.height + 'px';
-        this.bdrRight.style.left = endOff.left - parentOff.left + endOff.width + 'px';
+            (endOff.top - parentOff.top + endOff.height + 1) - (stOff.top - parentOff.top) - rowHeight + 'px' : endOff.height + 'px';
+        this.bdrRight.style.left = endOff.left - parentOff.left + endOff.width - colWidth + 'px';
         this.bdrRight.style.top = this.bdrLeft.style.top;
-        this.bdrRight.style.height = this.bdrLeft.style.height;
+        this.bdrRight.style.height = parseInt(this.bdrLeft.style.height, 10) - rowHeight + 'px';
         this.bdrTop.style.left = this.bdrLeft.style.left;
         this.bdrTop.style.top = this.bdrRight.style.top;
         this.bdrTop.style.width = parseInt(this.bdrRight.style.left, 10) - parseInt(this.bdrLeft.style.left, 10) + 1 + 'px';
         this.bdrBottom.style.left = this.bdrLeft.style.left;
-        this.bdrBottom.style.top = parseInt(this.bdrLeft.style.top, 10) + parseInt(this.bdrLeft.style.height, 10) + 'px';
+        this.bdrBottom.style.top = parseInt(this.bdrLeft.style.top, 10) + parseInt(this.bdrLeft.style.height, 10) - rowHeight + 'px';
         this.bdrBottom.style.width = this.bdrTop.style.width;
     }
     createBorders() {
@@ -7112,19 +7127,21 @@ class Selection {
         this.showBorders();
         let stOff = this.startAFCell.getBoundingClientRect();
         let endOff = this.endAFCell.getBoundingClientRect();
+        let colWidth = this.isLastCell(this.endAFCell) ? 2 : 0;
+        let rowHeight = this.isLastRow(this.endAFCell) ? 2 : 0;
         let parentOff = this.startAFCell.offsetParent.getBoundingClientRect();
         this.bdrAFLeft.style.left = stOff.left - parentOff.left + 'px';
         this.bdrAFLeft.style.top = stOff.top - parentOff.top + 'px';
         this.bdrAFLeft.style.height = endOff.top - stOff.top > 0 ?
-            (endOff.top - parentOff.top + endOff.height + 1) - (stOff.top - parentOff.top) + 'px' : endOff.height + 'px';
-        this.bdrAFRight.style.left = endOff.left - parentOff.left + endOff.width + 'px';
+            (endOff.top - parentOff.top + endOff.height + 1) - (stOff.top - parentOff.top) - rowHeight + 'px' : endOff.height + 'px';
+        this.bdrAFRight.style.left = endOff.left - parentOff.left + endOff.width - colWidth + 'px';
         this.bdrAFRight.style.top = this.bdrAFLeft.style.top;
-        this.bdrAFRight.style.height = this.bdrAFLeft.style.height;
+        this.bdrAFRight.style.height = parseInt(this.bdrAFLeft.style.height, 10) - rowHeight + 'px';
         this.bdrAFTop.style.left = this.bdrAFLeft.style.left;
         this.bdrAFTop.style.top = this.bdrAFRight.style.top;
         this.bdrAFTop.style.width = parseInt(this.bdrAFRight.style.left, 10) - parseInt(this.bdrAFLeft.style.left, 10) + 1 + 'px';
         this.bdrAFBottom.style.left = this.bdrAFLeft.style.left;
-        this.bdrAFBottom.style.top = parseInt(this.bdrAFLeft.style.top, 10) + parseInt(this.bdrAFLeft.style.height, 10) + 'px';
+        this.bdrAFBottom.style.top = parseInt(this.bdrAFLeft.style.top, 10) + parseInt(this.bdrAFLeft.style.height, 10) - rowHeight + 'px';
         this.bdrAFBottom.style.width = this.bdrAFTop.style.width;
     }
     createAFBorders() {
@@ -7290,7 +7307,8 @@ class Selection {
         this.updateAutoFillPosition();
         if (this.isAutoFillSel) {
             this.startAFCell = this.startCell;
-            this.endAFCell = parentsUntil(e.target, 'e-rowcell');
+            let lastCell = parentsUntil(e.target, 'e-rowcell');
+            this.endAFCell = lastCell ? lastCell : this.endAFCell;
             this.updateStartCellsIndex();
             this.selectLikeAutoFill(e, true);
             this.updateAutoFillPosition();
@@ -7315,14 +7333,18 @@ class Selection {
             && this.selectedRowCellIndexes.length) {
             let cells = [].slice.call(this.parent.getDataRows()[this.selectedRowCellIndexes[this.selectedRowCellIndexes.length - 1].rowIndex].querySelectorAll('.e-cellselectionbackground'));
             if (!this.parent.element.querySelector('#' + this.parent.element.id + '_autofill')) {
-                this.autofill = this.parent.getContentTable().parentElement.appendChild(createElement('div', { className: 'e-autofill', id: this.parent.element.id + '_autofill' }));
+                this.autofill = createElement('div', { className: 'e-autofill', id: this.parent.element.id + '_autofill' });
+                this.autofill.style.display = 'none';
+                this.parent.getContentTable().parentElement.appendChild(this.autofill);
             }
             let cell = cells[cells.length - 1];
             if (cell && cell.offsetParent) {
                 let clientRect = cell.getBoundingClientRect();
                 let parentOff = cell.offsetParent.getBoundingClientRect();
-                this.autofill.style.left = clientRect.left - parentOff.left + clientRect.width - 3 + 'px';
-                this.autofill.style.top = clientRect.top - parentOff.top + clientRect.height - 3 + 'px';
+                let colWidth = this.isLastCell(cell) ? 4 : 0;
+                let rowHeight = this.isLastRow(cell) ? 5 : 0;
+                this.autofill.style.left = clientRect.left - parentOff.left + clientRect.width - 4 - colWidth + 'px';
+                this.autofill.style.top = clientRect.top - parentOff.top + clientRect.height - 3 - rowHeight + 'px';
             }
             this.autofill.style.display = '';
         }
@@ -7360,7 +7382,7 @@ class Selection {
             }
         }
         this.updateStartEndCells();
-        if (target.classList.contains('e-autofill')) {
+        if (target.classList.contains('e-autofill') || target.classList.contains('e-xlsel')) {
             this.isCellDrag = true;
             this.isAutoFillSel = true;
             this.enableDrag(e);
@@ -7890,13 +7912,13 @@ class Selection {
     }
     keyDownHandler(e) {
         // Below are keyCode for command key in MAC OS. Safari/Chrome(91-Left command, 93-Right Command), Opera(17), FireFox(224)
-        if ((Browser.info.name === ('chrome' || 'safari') && (e.keyCode === 91 || e.keyCode === 93)) ||
+        if ((((Browser.info.name === 'chrome') || (Browser.info.name === 'safari')) && (e.keyCode === 91 || e.keyCode === 93)) ||
             (Browser.info.name === 'opera' && e.keyCode === 17) || (Browser.info.name === 'mozilla' && e.keyCode === 224)) {
             this.cmdKeyPressed = true;
         }
     }
     keyUpHandler(e) {
-        if ((Browser.info.name === ('chrome' || 'safari') && (e.keyCode === 91 || e.keyCode === 93)) ||
+        if ((((Browser.info.name === 'chrome') || (Browser.info.name === 'safari')) && (e.keyCode === 91 || e.keyCode === 93)) ||
             (Browser.info.name === 'opera' && e.keyCode === 17) || (Browser.info.name === 'mozilla' && e.keyCode === 224)) {
             this.cmdKeyPressed = false;
         }
@@ -12712,6 +12734,9 @@ __decorate$1([
     Property(false)
 ], Grid.prototype, "showColumnChooser", void 0);
 __decorate$1([
+    Property(false)
+], Grid.prototype, "enableHeaderFocus", void 0);
+__decorate$1([
     Property('auto')
 ], Grid.prototype, "height", void 0);
 __decorate$1([
@@ -13192,7 +13217,7 @@ class Print {
         return 'print';
     }
 }
-Print.printGridProp = [...getCloneProperties(), beforePrint, printComplete];
+Print.printGridProp = [...getCloneProperties(), beforePrint, printComplete, load];
 
 //https://typescript.codeplex.com/discussions/401501
 /**
@@ -14749,7 +14774,7 @@ class CheckBoxFilterBase {
         addClass([label], ['e-checkboxfiltertext']);
         if (this.options.template && data[this.options.column.field] !== this.getLocalizedLabel('SelectAll')) {
             label.innerHTML = '';
-            appendChildren(label, this.options.template({ column: this.options.column, rowData: data, parent: this.parent }, this.parent, 'filterItemTemplate'));
+            appendChildren(label, this.options.template({ column: this.options.column, data: data, parent: this.parent }, this.parent, 'filterItemTemplate'));
         }
         return elem;
     }
@@ -16016,7 +16041,8 @@ class Sort {
             this.removeSortColumn(field);
         }
         else {
-            this.sortColumn(field, direction, e.ctrlKey || this.enableSortMultiTouch);
+            this.sortColumn(field, direction, e.ctrlKey || this.enableSortMultiTouch ||
+                (navigator.userAgent.indexOf('Mac OS') !== -1 && e.metaKey));
         }
     }
     showPopUp(e) {

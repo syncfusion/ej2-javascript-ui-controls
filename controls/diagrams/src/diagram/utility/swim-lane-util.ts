@@ -140,7 +140,8 @@ export function phaseDefine(
     let phaseObject: NodeModel = {
         annotations: [{
             content: shape.phases[phaseIndex].header.annotation.content,
-            rotateAngle: orientation ? 0 : 270
+            rotateAngle: orientation ? 0 : 270,
+            style: shape.phases[phaseIndex].header.annotation.style
         }], maxWidth: maxWidth,
         id: object.id + shape.phases[phaseIndex].id + '_header',
         offsetX: object.offsetX, offsetY: object.offsetY,
@@ -181,10 +182,14 @@ export function laneCollection(
             laneNode = {
                 id: object.id + shape.lanes[laneIndex].id + '_' + l + '_header',
                 style: shape.lanes[laneIndex].header.style,
-                annotations: [{
-                    content: shape.lanes[laneIndex].header.annotation.content,
-                    rotateAngle: orientation ? 270 : 0
-                }],
+                annotations: [
+                    {
+                        id: shape.lanes[laneIndex].header.annotation.id,
+                        content: shape.lanes[laneIndex].header.annotation.content,
+                        rotateAngle: orientation ? 270 : 0,
+                        style: shape.lanes[laneIndex].header.annotation.style,
+                    }
+                ],
                 offsetX: object.offsetX, offsetY: object.offsetY,
                 rowIndex: rowValue, columnIndex: colValue,
                 container: { type: 'Canvas', orientation: orientation ? 'Horizontal' : 'Vertical' }

@@ -5113,4 +5113,25 @@ describe('DDList', () => {
             expect(listObj.value === 'list1').toBe(true);
         });
     });
+    describe('EJ2-33412', () => {
+        let listObj: any;
+        let element: HTMLInputElement;
+        let keyEventArgs: any = { preventDefault: (): void => { /** NO Code */ }, key: 'j', code: 'KeyJ', charCode: 106 };
+        beforeAll(() => {
+            element = <HTMLInputElement>createElement('input', { id: 'dropdownlist.list' });
+            document.body.appendChild(element);
+            listObj = new DropDownList({
+                dataSource: datasource,
+                fields: { text: "text", value: "id" },
+                value: 'list1'
+            });
+            listObj.appendTo(element);
+            listObj.showPopup();
+        });
+        it('clear public method testing', () => {
+            expect(listObj.value === 'list1').toBe(true);
+            listObj.clear();
+            expect(listObj.value === null).toBe(true);
+        });
+    });
 });

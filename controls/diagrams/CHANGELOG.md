@@ -2,6 +2,18 @@
 
 ## [Unreleased]
 
+## 17.3.30 (2019-12-03)
+
+### Diagram
+
+#### Bug Fixes
+
+- `#256513` - The issue "Not able to determine undo/redo action in the historyChange event" has been fixed.
+- `F148889` - The issue with the collectionChange event arguments that do not have parentId information in the element property has been fixed.
+- `F148889` - The issue with the TextAnnotation element size that grows on every move has been fixed.
+- `F148889` - Exception raises when we clear and change the text of TextAnnotation node and click to focus on other element has been fixed.
+- `F148889` - The issue with the Position change event that is not raised properly has been fixed.
+
 ## 17.3.29 (2019-11-26)
 
 ### Diagram
@@ -10,12 +22,13 @@
 
 - `#248460`,`#253930` - The support has been provided to restrict the movement of lane children beyond their boundaries.
 - `#254732` - The support has been provided to rearrange lanes within the swimlane.
-- `#255299` - Visibility issue while using image as content for user handle is now fixed.
 
 #### Bug Fixes
 
 - `F149060` - The issue "unable to remove the connector drawn at the run time" has been fixed.
 - `#227953` - The issue with updating line routing dynamically has been fixed.
+- `#254993` - The issue "Text Wrapping is not working for lane headers" has been fixed.
+- `#255299` - Visibility issue while using image as content for user handle is now fixed.
 
 ## 17.3.28 (2019-11-19)
 

@@ -195,7 +195,8 @@ export class FreeTextAnnotation {
         this.fontSize = this.pdfViewer.freeTextSettings.fontSize ? this.pdfViewer.freeTextSettings.fontSize : 16;
         this.opacity = this.pdfViewer.freeTextSettings.opacity ? this.pdfViewer.freeTextSettings.opacity : 1;
         this.fontColor = this.pdfViewer.freeTextSettings.fontColor ? this.pdfViewer.freeTextSettings.fontColor : '#000';
-        this.author = this.pdfViewer.freeTextSettings.author ? this.pdfViewer.freeTextSettings.author : 'Guest';
+        // tslint:disable-next-line:max-line-length
+        this.author = (this.pdfViewer.annotationSettings.author !== 'Guest') ? this.pdfViewer.annotationSettings.author : this.pdfViewer.freeTextSettings.author ? this.pdfViewer.freeTextSettings.author : 'Guest';
         this.fontFamily = this.pdfViewer.freeTextSettings.fontFamily ? this.pdfViewer.freeTextSettings.fontFamily : 'Helvetica';
         this.textAlign = this.pdfViewer.freeTextSettings.textAlignment ? this.pdfViewer.freeTextSettings.textAlignment : 'Left';
         this.defaultText = this.pdfViewer.freeTextSettings.defaultText ? this.pdfViewer.freeTextSettings.defaultText : 'Type here';
@@ -265,7 +266,7 @@ export class FreeTextAnnotation {
                         let annot: PdfAnnotationBaseModel;
                         // tslint:disable-next-line
                         annot = {
-                            author: this.author, modifiedDate: annotation.ModifiedDate, subject: annotation.Subject, id: 'freetext' + i,
+                            author: annotation.Author, modifiedDate: annotation.ModifiedDate, subject: annotation.Subject, id: 'freetext' + i,
                             rotateAngle: annotation.Rotate, dynamicText: annotation.MarkupText, strokeColor: annotation.StrokeColor,
                             thickness: annotation.Thickness, fillColor: annotation.FillColor,
                             bounds: {
@@ -275,7 +276,7 @@ export class FreeTextAnnotation {
                             }, annotName: annotation.AnnotName, shapeAnnotationType: 'FreeText',
                             // tslint:disable-next-line
                             pageIndex: pageNumber, opacity: annotation.Opacity, fontColor: annotation.FontColor, fontSize: annotation.FontSize,
-                            fontFamily: annotation.FontFamily, notes: annotation.MarkupText,
+                            fontFamily: annotation.FontFamily, notes: annotation.MarkupText, textAlign: annotation.TextAlign,
                             // tslint:disable-next-line
                             comments: this.pdfViewer.annotationModule.getAnnotationComments(annotation.Comments, annotation, annotation.Author),
                             review: { state: annotation.State, stateModel: annotation.StateModel, modifiedDate: annotation.ModifiedDate, author: annotation.Author },
@@ -420,7 +421,7 @@ export class FreeTextAnnotation {
         for (let j: number = 0; j < this.pdfViewerBase.pageCount; j++) {
             annotations[j] = [];
         }
-        if (storeObject) {
+        if (storeObject && this.pdfViewer.annotationSettings.isDownload) {
             let annotationCollection: IPageAnnotations[] = JSON.parse(storeObject);
             for (let i: number = 0; i < annotationCollection.length; i++) {
                 let newArray: IFreeTextAnnotation[] = [];

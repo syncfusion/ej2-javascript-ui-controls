@@ -309,6 +309,7 @@ export class SvgRenderer implements IRenderer {
             }
             let pivotX: number = options.x + options.width * options.pivotX;
             let pivotY: number = options.y + options.height * options.pivotY;
+            let childNodesHeight: number = 0;
             if (options.doWrap || options.textOverflow !== 'Wrap') {
                 let innerHtmlTextElement: HTMLElement = document.getElementById(options.id + '_text');
                 if (innerHtmlTextElement) {
@@ -331,17 +332,19 @@ export class SvgRenderer implements IRenderer {
                     offsetX = position.x + child.x - wrapBounds.x;
                     offsetY = position.y + child.dy * (i) + ((options.fontSize) * 0.8);
                     if ((options.textOverflow === 'Clip' || options.textOverflow === 'Ellipsis') && options.textWrapping === 'Wrap') {
-                        if (offsetY < parentNode.actualSize.height) {
+                        let size: number = (options.isHorizontalLane) ? parentNode.actualSize.width : parentNode.actualSize.height;
+                        if (offsetY < size) {
                             if (options.textOverflow === 'Ellipsis' && childNodes[i + 1]) {
                                 let temp: SubTextElement = childNodes[i + 1];
                                 let y: number = position.y + temp.dy * (i + 1) + ((options.fontSize) * 0.8);
-                                if (y > parentNode.actualSize.height) {
+                                if (y > size) {
                                     child.text = child.text.slice(0, child.text.length - 3);
                                     child.text = child.text.concat('...');
                                     textNode.data = child.text;
                                 }
                             }
                             this.setText(text, tspanElement, child, textNode, offsetX, offsetY);
+                            childNodesHeight += child.dy;
                         } else {
                             break;
                         }
@@ -350,6 +353,11 @@ export class SvgRenderer implements IRenderer {
                     }
 
                 }
+            }
+            if (childNodesHeight && options.isHorizontalLane) {
+                pivotX = options.parentOffsetX + options.pivotX;
+                pivotY = options.parentOffsetY + options.pivotY;
+                options.y = options.parentOffsetY - childNodesHeight * options.pivotY + 0.5;
             }
             if (options.textDecoration && options.textDecoration === 'LineThrough') {
                 options.textDecoration = wordBreakToString(options.textDecoration);

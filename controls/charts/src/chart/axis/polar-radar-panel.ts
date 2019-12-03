@@ -1,6 +1,6 @@
 import { Chart } from '../chart';
 import { Axis, Row, Column, VisibleRangeModel, VisibleLabels } from '../axis/axis';
-import { valueToCoefficient, inside, isOverlap } from '../../common/utils/helper';
+import { valueToCoefficient, inside, isOverlap, textTrim } from '../../common/utils/helper';
 import { appendChildElement } from '../../common/utils/helper';
 import { CircleOption } from '../../common/utils/helper';
 import { Size, measureText, TextOption, PathOption, Rect } from '@syncfusion/ej2-svg-base';
@@ -468,8 +468,13 @@ export class PolarRadarPanel extends LineBase {
      * @return {void}
      * @private
      */
+    //tslint:disable-next-line:max-func-body-length
     public drawXAxisLabels(axis: Axis, index: number): void {
         this.visibleAxisLabelRect = [];
+        let legendRect: Rect;
+        if (this.chart.legendModule) {
+            legendRect = this.chart.legendModule.legendBounds;
+        }
         let chart: Chart = this.chart;
         let pointX: number = 0;
         let pointY: number = 0;
@@ -535,7 +540,6 @@ export class PolarRadarPanel extends LineBase {
                 labelText = (lastLabelX > firstLabelX) ? '' : labelText;
             }
 
-            options = new TextOption(chart.element.id + index + '_AxisLabel_' + i, pointX, pointY, textAnchor, labelText, '', 'central');
             // Label intersect action (Hide) perform here
             if (i !== 0 && intersectType === 'Hide') {
                 for (let j: number = i; j >= 0; j--) {
@@ -549,6 +553,17 @@ export class PolarRadarPanel extends LineBase {
                     }
                 }
             }
+            if (!isIntersect && legendRect) {
+                isIntersect = isOverlap(labelRegions[i], legendRect);
+                if (isIntersect && intersectType === 'Trim') {
+                    let width: number = this.getAvailableSpaceToTrim(legendRect, labelRegions[i]);
+                    if (width > 0) {
+                        labelText = textTrim(width, axis.visibleLabels[i].originalText, axis.labelStyle);
+                        isIntersect = false;
+                    }
+                }
+            }
+            options = new TextOption(chart.element.id + index + '_AxisLabel_' + i, pointX, pointY, textAnchor, labelText, '', 'central');
             if (isIntersect) {
                 continue; // If the label is intersect, the label render is ignored.
             }
@@ -559,6 +574,26 @@ export class PolarRadarPanel extends LineBase {
             );
         }
         this.element.appendChild(labelElement);
+    }
+    /**
+     * To get available space to trim.
+     * @param legendRect 
+     * @param labelRect 
+     */
+    private getAvailableSpaceToTrim(legendRect: Rect, labelRect: Rect): number {
+        let legendX1: number = legendRect.x;
+        let legendX2: number = legendX1 + legendRect.width;
+        let labelX1: number = labelRect.x;
+        let labelX2: number = labelX1 + labelRect.width;
+        let width: number = 0;
+        if (labelX1 > legendX1 && labelX1 < legendX2 && labelX2 > legendX2) {
+            width = labelX2 - legendX2;
+        } else if (labelX1 > legendX1 && labelX1 < legendX2 && labelX2 < legendX2) {
+            width = 0;
+         } else if (labelX2 > legendX1 && labelX2 < legendX2 && labelX1 < legendX1) {
+            width = legendX1 - labelX1;
+         }
+        return width;
     }
 
     /**

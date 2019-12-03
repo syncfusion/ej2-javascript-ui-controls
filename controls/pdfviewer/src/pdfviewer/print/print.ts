@@ -95,50 +95,30 @@ export class Print {
             }
             if (printImage && printImage.uniqueId === proxy.pdfViewerBase.documentId) {
                 let annotationSource: string = '';
-                // tslint:disable-next-line
-                let annotationCollections: any = proxy.pdfViewerBase.documentAnnotationCollections;
-                if (annotationCollections && annotationCollections[printImage.pageNumber] && proxy.pdfViewerBase.isTextMarkupAnnotationModule()) {
+                if (proxy.pdfViewer.annotationSettings.isPrint) {
                     // tslint:disable-next-line
-                    let printCollection: any = annotationCollections[printImage.pageNumber];
-                    if (proxy.pdfViewerBase.isImportAction) {
-                        let importAnnotationList: number[] = proxy.pdfViewerBase.importedAnnotation;
+                    let annotationCollections: any = proxy.pdfViewerBase.documentAnnotationCollections;
+                    if (annotationCollections && annotationCollections[printImage.pageNumber] && proxy.pdfViewerBase.isTextMarkupAnnotationModule()) {
                         // tslint:disable-next-line
-                        let importAnnotation: any = importAnnotationList[printImage.pageNumber];
-                        let textMarkupAnnotation: number[] = printCollection.textMarkupAnnotation;
-                        let shapeAnnotation: number[] = printCollection.shapeAnnotation;
-                        let measureShapeAnnotation: number[] = printCollection.measureShapeAnnotation;
-                        let stampAnnotation: number[] = printCollection.stampAnnotations;
-                        // tslint:disable-next-line
-                        let stickyNoteAnnotation: any = printCollection.stickyNotesAnnotation;
-                        if (importAnnotation) {
-                            if (importAnnotation.textMarkupAnnotation.length !== 0) {
-                                textMarkupAnnotation = printCollection.textMarkupAnnotation.concat(importAnnotation.textMarkupAnnotation);
-                            }
-                            if (importAnnotation.shapeAnnotation.length !== 0) {
-                                shapeAnnotation = printCollection.shapeAnnotation.concat(importAnnotation.shapeAnnotation);
-                            }
-                            if (importAnnotation.measureShapeAnnotation.length !== 0) {
-                                // tslint:disable-next-line:max-line-length
-                                measureShapeAnnotation = printCollection.measureShapeAnnotation.concat(importAnnotation.measureShapeAnnotation);
-                            }
-                            if (importAnnotation.stampAnnotations.length !== 0) {
-                                stampAnnotation = printCollection.stampAnnotations.concat(importAnnotation.stampAnnotations);
-                            }
-                            if (importAnnotation.stickyNotesAnnotation.length !== 0) {
-                                // tslint:disable-next-line:max-line-length
-                                stickyNoteAnnotation = printCollection.stickyNotesAnnotation.concat(importAnnotation.stickyNotesAnnotation);
-                            }
+                        let printCollection: any = annotationCollections[printImage.pageNumber];
+                        if (proxy.pdfViewerBase.isImportAction) {
+                            let textMarkupAnnotation: number[] = printCollection.textMarkupAnnotation;
+                            let shapeAnnotation: number[] = printCollection.shapeAnnotation;
+                            let measureShapeAnnotation: number[] = printCollection.measureShapeAnnotation;
+                            let stampAnnotation: number[] = printCollection.stampAnnotations;
+                            // tslint:disable-next-line
+                            let stickyNoteAnnotation: any = printCollection.stickyNotesAnnotation;
+                            // tslint:disable-next-line:max-line-length
+                            annotationSource = proxy.pdfViewer.annotationModule.textMarkupAnnotationModule.printTextMarkupAnnotations(textMarkupAnnotation, pageIndex, stampAnnotation, shapeAnnotation, measureShapeAnnotation, stickyNoteAnnotation);
+                        } else {
+                            // tslint:disable-next-line:max-line-length
+                            annotationSource = proxy.pdfViewer.annotationModule.textMarkupAnnotationModule.printTextMarkupAnnotations(printCollection.textMarkupAnnotation, pageIndex, printCollection.stampAnnotations, printCollection.shapeAnnotation, printCollection.measureShapeAnnotation, printCollection.stickyNoteAnnotation);
                         }
-                        // tslint:disable-next-line:max-line-length
-                        annotationSource = proxy.pdfViewer.annotationModule.textMarkupAnnotationModule.printTextMarkupAnnotations(textMarkupAnnotation, pageIndex, stampAnnotation, shapeAnnotation, measureShapeAnnotation, stickyNoteAnnotation);
-                    } else {
-                        // tslint:disable-next-line:max-line-length
-                        annotationSource = proxy.pdfViewer.annotationModule.textMarkupAnnotationModule.printTextMarkupAnnotations(printCollection.textMarkupAnnotation, pageIndex, printCollection.stampAnnotations, printCollection.shapeAnnotation, printCollection.measureShapeAnnotation, printCollection.stickyNoteAnnotation);
                     }
-                }
-                if (proxy.pdfViewerBase.isAnnotationCollectionRemoved) {
-                    // tslint:disable-next-line:max-line-length
-                    annotationSource = proxy.pdfViewer.annotationModule.textMarkupAnnotationModule.printTextMarkupAnnotations(null, pageIndex, null, null, null, null);
+                    if (proxy.pdfViewerBase.isAnnotationCollectionRemoved) {
+                        // tslint:disable-next-line:max-line-length
+                        annotationSource = proxy.pdfViewer.annotationModule.textMarkupAnnotationModule.printTextMarkupAnnotations(null, pageIndex, null, null, null, null);
+                    }
                 }
                 let currentPageNumber: number = printImage.pageNumber;
                 // tslint:disable-next-line:max-line-length
@@ -211,8 +191,9 @@ export class Print {
                     // tslint:disable-next-line
                     let font: any = currentData['Font'];
                     this.applyPosition(inputField, bounds, font, heightRatio, widthRatio);
-                    if (currentData.IsSignatureField) {
-                        inputField.style.backgroundColor = 'transparent';
+                    inputField.style.backgroundColor = 'transparent';
+                    if (!currentData.IsSignatureField) {
+                        inputField.style.borderColor = 'transparent';
                     }
                     targetField.appendChild(inputField);
                 }
@@ -241,7 +222,7 @@ export class Print {
                 fontHeight = this.pdfViewer.formFieldsModule.ConvertPointToPixel(font.Size);
             }
             if (Browser.isIE) {
-                top = top - 6;
+                top = top - 1;
             }
             this.pdfViewer.formFieldsModule.setStyleToTextDiv(inputField, left, top, fontHeight, width, height, true);
         }
@@ -264,8 +245,8 @@ export class Print {
             this.frameDoc.document.write('<!DOCTYPE html>');
             // tslint: disable-next-line:max-line-length
             this.frameDoc.document.write('<html><head>'
-                + '<style>html, body { height: 99%; } img { height: 99%; width: 100%; }@media print { body { margin: 0cm; }'
-                + 'img { width:98%; max-width: 1048px; box-sizing: border-box; }br, button { display: none; } '
+                + '<style>html, body { height: 100%; } img { height: 100%; width: 100%; }@media print { body { margin: 0cm; }'
+                + 'img { width:100%; max-width: 1048px; box-sizing: border-box; }br, button { display: none; } '
                 // set default page Height and page Width for A4 size.
                 + 'div{ page-break-inside: avoid; }} @page{margin:0mm; size: 816px 1056px;}</style></head><body><center>');
         }

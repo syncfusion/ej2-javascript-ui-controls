@@ -220,12 +220,14 @@ export class StampAnnotation {
         let zoomFactor: number = this.pdfViewerBase.getZoomFactor();
         X = X / zoomFactor;
         Y = Y / zoomFactor;
+        // tslint:disable-next-line:max-line-length
+        let author : string = (this.pdfViewer.annotationSettings.author !== 'Guest') ? this.pdfViewer.annotationSettings.author : this.pdfViewer.stampSettings.author ? this.pdfViewer.stampSettings.author : 'Guest';
         if (this.pdfViewerBase.isDynamicStamp) {
             // tslint:disable-next-line
             let today: any = (new Date()).toString().split(' ').splice(1, 3).join(' ');
             // tslint:disable-next-line
             let time: any = (new Date()).toLocaleTimeString();
-            this.dynamicText = 'By ' + this.pdfViewer.stampSettings.author + ' at ' + time + ' , ' + today + '   ';
+            this.dynamicText = 'By ' + author + ' at ' + time + ' , ' + today + '   ';
         }
         let annot: PdfAnnotationBaseModel;
         // tslint:disable-next-line
@@ -325,12 +327,14 @@ export class StampAnnotation {
      */
     // tslint:disable-next-line
     public renderStamp(X: number, Y: number, width: number, height: number, pageIndex: number, opacity: number, rotation: any, canvass: any, existingAnnotation: any, isDynamic?: any): any {
+        // tslint:disable-next-line:max-line-length
+        let author: string = (this.pdfViewer.annotationSettings.author !== 'Guest') ? this.pdfViewer.annotationSettings.author : this.pdfViewer.stampSettings.author ? this.pdfViewer.stampSettings.author : 'Guest';
         if (this.pdfViewerBase.isDynamicStamp) {
             // tslint:disable-next-line
             let today: any = (new Date()).toString().split(' ').splice(1, 3).join(' ');
             // tslint:disable-next-line
             let time: any = (new Date()).toLocaleTimeString();
-            this.dynamicText = 'By ' + this.pdfViewer.stampSettings.author + ' at ' + time + ' , ' + today + ' ';
+            this.dynamicText = 'By ' + author + ' at ' + time + ' , ' + today + ' ';
         }
         if (isDynamic) {
             this.dynamicText += ' ';
@@ -350,9 +354,6 @@ export class StampAnnotation {
                 let annotationName: any = existingAnnotation['AnnotName'];
                 annotation.AnnotName = annotationName;
                 // tslint:disable-next-line
-                let annotationComments: any = existingAnnotation['Comments'];
-                annotation.Comments = this.pdfViewer.annotationModule.getAnnotationComments(annotationComments, existingAnnotation, this.pdfViewer.stampSettings.author);
-                // tslint:disable-next-line
                 let state: any = existingAnnotation['State'];
                 annotation.State = state;
                 // tslint:disable-next-line
@@ -368,8 +369,12 @@ export class StampAnnotation {
                 let author: any = existingAnnotation['Author'];
                 annotation.Author = author;
                 if (annotation.Author === null) {
-                    annotation.Author = this.pdfViewer.stampSettings.author;
+                    // tslint:disable-next-line:max-line-length
+                    annotation.Author = (this.pdfViewer.annotationSettings.author !== 'Guest') ? this.pdfViewer.annotationSettings.author : this.pdfViewer.stampSettings.author ? this.pdfViewer.stampSettings.author : 'Guest';
                 }
+                // tslint:disable-next-line
+                let annotationComments: any = existingAnnotation['Comments'];
+                annotation.Comments = this.pdfViewer.annotationModule.getAnnotationComments(annotationComments, existingAnnotation, author);
             } else {
                 let annotationName: string = this.pdfViewer.annotation.createGUID();
                 let commentsDivid: string = this.pdfViewer.annotation.stickyNotesAnnotationModule.addComments('stamp', pageIndex + 1);
@@ -384,7 +389,8 @@ export class StampAnnotation {
                 annotation.Opacity = 1;
                 annotation.RotateAngle = 0;
                 annotation.ModifiedDate = new Date().toLocaleString();
-                annotation.Author = this.pdfViewer.stampSettings.author;
+                // tslint:disable-next-line:max-line-length
+                annotation.Author = (this.pdfViewer.annotationSettings.author !== 'Guest') ? this.pdfViewer.annotationSettings.author : this.pdfViewer.stampSettings.author ? this.pdfViewer.stampSettings.author : 'Guest';
             }
             // tslint:disable-next-line
             let collectionData: any = processPathData(annotation.pathdata);
@@ -445,7 +451,8 @@ export class StampAnnotation {
         this.pdfViewerBase.isDocumentEdited = true;
         let annotationObject: IStampAnnotation = null;
         annotation.modifiedDate = new Date().toLocaleString();
-        annotation.author = this.pdfViewer.stampSettings.author;
+        // tslint:disable-next-line:max-line-length
+        annotation.author = (this.pdfViewer.annotationSettings.author !== 'Guest') ? this.pdfViewer.annotationSettings.author : this.pdfViewer.stampSettings.author ? this.pdfViewer.stampSettings.author : 'Guest';
         if (opacity) {
             let annotationName: string = this.pdfViewer.annotation.createGUID();
             let commentsDivid: string = this.pdfViewer.annotation.stickyNotesAnnotationModule.addComments('stamp', pageNumber + 1);
@@ -461,7 +468,8 @@ export class StampAnnotation {
             annotation.RotateAngle = 0;
         }
         if (annotation.shapeAnnotationType === 'Image') {
-            annotation.author = this.pdfViewer.customStampSettings.author;
+            // tslint:disable-next-line:max-line-length
+            annotation.Author = (this.pdfViewer.annotationSettings.author !== 'Guest') ? this.pdfViewer.annotationSettings.author : this.pdfViewer.customStampSettings.author ? this.pdfViewer.customStampSettings.author : 'Guest';
             annotationObject = {
                 // tslint:disable-next-line:max-line-length
                 stampAnnotationType: 'image', author: annotation.author, modifiedDate: annotation.modifiedDate, subject: '',
@@ -537,11 +545,13 @@ export class StampAnnotation {
             annotationName = annotation.AnnotName;
             author = annotation.Author;
             if (author === null) {
-                author = this.pdfViewer.customStampSettings.author;
+                // tslint:disable-next-line:max-line-length
+                author = (this.pdfViewer.annotationSettings.author !== 'Guest') ? this.pdfViewer.annotationSettings.author : this.pdfViewer.customStampSettings.author ? this.pdfViewer.customStampSettings.author : 'Guest';
             }
         } else {
             annotationName = this.pdfViewer.annotation.createGUID();
-            author = this.pdfViewer.customStampSettings.author;
+            // tslint:disable-next-line:max-line-length
+            author = (this.pdfViewer.annotationSettings.author !== 'Guest') ? this.pdfViewer.annotationSettings.author : this.pdfViewer.customStampSettings.author ? this.pdfViewer.customStampSettings.author : 'Guest';
         }
         annot = {
             // tslint:disable-next-line:max-line-length
@@ -858,7 +868,7 @@ export class StampAnnotation {
         for (let j: number = 0; j < this.pdfViewerBase.pageCount; j++) {
             annotations[j] = [];
         }
-        if (storeObject) {
+        if (storeObject && this.pdfViewer.annotationSettings.isDownload) {
             let annotationCollection: IPageAnnotations[] = JSON.parse(storeObject);
             for (let i: number = 0; i < annotationCollection.length; i++) {
                 let newArray: IStampAnnotation[] = [];

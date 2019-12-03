@@ -3023,4 +3023,50 @@ describe('Diagram Control', () => {
             done();
         });
     });
+    describe('event Action for history change event', () => {
+        let diagram: Diagram;
+        let ele: HTMLElement;
+
+        let mouseEvents: MouseEvents = new MouseEvents();
+
+        beforeAll((): void => {
+            ele = createElement('div', { id: 'diagram1234' });
+            document.body.appendChild(ele);
+            let selArray: (NodeModel | ConnectorModel)[] = [];
+            let node: NodeModel = { id: 'node1', width: 100, height: 100, offsetX: 100, offsetY: 100 };
+            let node1: NodeModel = { id: 'node2', width: 100, height: 100, offsetX: 300, offsetY: 100 };
+
+            let connector: ConnectorModel = { id: 'connector1', sourcePoint: { x: 200, y: 200 }, targetPoint: { x: 300, y: 300 } };
+
+            diagram = new Diagram({
+                width: '600', height: '530px', nodes: [node, node1],
+                connectors: [connector], snapSettings: { constraints: SnapConstraints.ShowLines },
+                updateSelection: (object: NodeModel, diagram: Diagram) => {
+                    let selArr = [];
+                    selArr.push(object)
+                    diagram.select(selArr);
+                },
+            });
+            diagram.appendTo('#diagram1234');
+        });
+
+        afterAll((): void => {
+            diagram.destroy();
+            ele.remove();
+        });
+
+        it('Checking historychange event for customAction', (done: Function) => {
+            diagram.select([diagram.nameTable['node2']]);
+            let node: NodeModel = diagram.nameTable['node2'].wrapper 
+            let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content'); 
+            diagram.historyChange = (args) => {
+                expect(args.action === 'CustomAction' || args.action === 'Undo' || args.action === 'Redo').toBe(true);
+                done();
+            };
+            mouseEvents.dragAndDropEvent(diagramCanvas, node.offsetX, node.offsetY, node.offsetX + 20, node.offsetY + 20); 
+            diagram.undo();
+            diagram.redo();
+            done();
+        });
+    });
 });

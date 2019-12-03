@@ -791,8 +791,18 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
                 this.updateDiv(<HTMLDivElement>element, tooltipRect.x, tooltipRect.y);
             }
             if (this.blazorTemplate) {
+                //Customer issue - F149037  Call back function to handle the blazor tooltip alignment issues
+                let tooltipRendered: Function = () => {
+                    let rect1: ClientRect = getElement(thisObject.element.id).getBoundingClientRect();
+                    thisObject.elementSize = new Size(rect1.width, rect1.height);
+                    let tooltipRect1: Rect = thisObject.tooltipLocation(areaBounds, location, new TooltipLocation(0, 0),
+                                                                        new TooltipLocation(0, 0));
+                    thisObject.updateDiv(getElement(thisObject.element.id) as HTMLDivElement, tooltipRect1.x, tooltipRect1.y);
+                };
+                let thisObject: Tooltip = this;
+                tooltipRendered.bind(thisObject, areaBounds, location);
                 updateBlazorTemplate(this.element.id + 'parent_template' + '_blazorTemplate',
-                                     this.blazorTemplate.name, this.blazorTemplate.parent);
+                                     this.blazorTemplate.name, this.blazorTemplate.parent, undefined, tooltipRendered);
             }
         } else {
             remove(getElement(this.element.id + '_tooltip'));

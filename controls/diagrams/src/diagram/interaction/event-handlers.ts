@@ -1229,7 +1229,7 @@ export class DiagramEventHandler {
                         if (!(this.diagram.diagramActions & DiagramAction.TextEdit)) {
                             let id: string = '';
                             if (((obj as Node).shape as BpmnShapeModel).shape === 'TextAnnotation') {
-                                id = (obj as Node).id.split('_textannotation_')[1];
+                                id = obj.wrapper.children[1].id.split('_')[1];
                             }
                             this.diagram.startTextEdit
                                 (obj, id || (annotation instanceof TextElement ?
@@ -1573,7 +1573,10 @@ export class DiagramEventHandler {
                         } else {
                             (obj as Node).offsetX = helperObject.offsetX; (obj as Node).offsetY = helperObject.offsetY;
                             if (obj && obj.shape && obj.shape.type !== 'UmlClassifier') {
-                                (obj as Node).width = helperObject.width; (obj as Node).height = helperObject.height;
+                                if (obj.shape.type !== 'Bpmn'  ||
+                                (obj.shape.type === 'Bpmn' && (obj.shape as BpmnShapeModel).shape !== 'TextAnnotation')) {
+                                    (obj as Node).width = helperObject.width; (obj as Node).height = helperObject.height;
+                                }
                             }
                             (obj as Node).rotateAngle = helperObject.rotateAngle;
                         }

@@ -693,7 +693,7 @@ export class DateRangePicker extends CalendarBase {
         this.setProperties({ startDate: this.startValue }, true);
         this.setProperties({ endDate: this.endValue }, true);
         this.setModelValue();
-        this.updateDataAttribute(false);
+        this.setDataAttribute(false);
         this.renderComplete();
     }
     /**
@@ -869,19 +869,19 @@ export class DateRangePicker extends CalendarBase {
         this.bindEvents();
     }
 
-    private updateDataAttribute(isDynamic: boolean) : void {
-        let attr: { [key: string]: string; } = {};
+    private setDataAttribute(isDynamic: boolean) : void {
+        let attributes: { [key: string]: string; } = {};
         if (!isDynamic) {
-            for (let a: number = 0; a < this.element.attributes.length; a++) {
-                attr[this.element.attributes[a].name] = this.element.getAttribute(this.element.attributes[a].name);
+            for (let i: number = 0; i < this.element.attributes.length; i++) {
+                attributes[this.element.attributes[i].name] = this.element.getAttribute(this.element.attributes[i].name);
             }
         } else {
-            attr = this.htmlAttributes;
+            attributes = this.htmlAttributes;
         }
-        for (let key of Object.keys(attr)) {
-            if (key.indexOf('data') === 0 ) {
-                this.firstHiddenChild.setAttribute(key, attr[key]);
-                this.secondHiddenChild.setAttribute(key, attr[key]);
+        for (let pro of Object.keys(attributes)) {
+            if (pro.indexOf('data') === 0 ) {
+                this.firstHiddenChild.setAttribute(pro, attributes[pro]);
+                this.secondHiddenChild.setAttribute(pro, attributes[pro]);
             }
         }
     }
@@ -1991,7 +1991,7 @@ export class DateRangePicker extends CalendarBase {
             }
         }
     }
-    private rangeArgs(e: MouseEvent | KeyboardEvent | TouchEvent): RangeEventArgs {
+    private rangeArgs(e: MouseEvent | KeyboardEvent | TouchEvent | KeyboardEventArgs): RangeEventArgs {
         let inputValue: string;
         let range: number;
         let startDate: string = !isNullOrUndefined(this.startValue) ?
@@ -3172,7 +3172,7 @@ export class DateRangePicker extends CalendarBase {
             if (values.id === 'custom_range') {
                 this.renderCustomPopup();
             } else {
-                this.applyPresetRange(values);
+                this.applyPresetRange(values, event);
             }
         }
     }
@@ -3186,7 +3186,7 @@ export class DateRangePicker extends CalendarBase {
     private setValue(): void {
         this.modelValue = [this.startValue, this.endValue];
     }
-    private applyPresetRange(values: { [key: string]: Object }): void {
+    private applyPresetRange(values: { [key: string]: Object }, e: MouseEvent | KeyboardEventArgs): void {
         this.hide(null);
         this.presetsItem[this.presetsItem.length - 1].start = null;
         this.presetsItem[this.presetsItem.length - 1].end = null;
@@ -3194,8 +3194,8 @@ export class DateRangePicker extends CalendarBase {
         this.endValue = <Date>values.end;
         this.setValue();
         this.refreshControl();
-        this.trigger('select', this.rangeArgs(null));
-        this.changeTrigger();
+        this.trigger('select', this.rangeArgs(e));
+        this.changeTrigger(e);
         this.previousEleValue = this.inputElement.value;
         this.isCustomRange = false;
         this.leftCalendar = this.rightCalendar = null;
@@ -3919,7 +3919,7 @@ export class DateRangePicker extends CalendarBase {
         this.firstHiddenChild.dispatchEvent(evt);
     }
 
-    private changeTrigger(e?: MouseEvent | KeyboardEvent): void {
+    private changeTrigger(e?: MouseEvent | KeyboardEvent | KeyboardEventArgs): void {
         if (+ this.initStartDate !== +this.startValue || +this.initEndDate !== +this.endValue) {
             this.setProperties({ endDate: this.checkDateValue(this.endValue) }, true);
             this.setProperties({ startDate: this.checkDateValue(this.startValue) }, true);
@@ -4405,7 +4405,7 @@ export class DateRangePicker extends CalendarBase {
                 case 'htmlAttributes':
                     this.updateHtmlAttributeToElement();
                     this.updateHtmlAttributeToWrapper();
-                    this.updateDataAttribute(true);
+                    this.setDataAttribute(true);
                     this.checkHtmlAttributes(true);
                     break;
                 case 'showClearButton':

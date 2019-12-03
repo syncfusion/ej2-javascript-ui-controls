@@ -3553,6 +3553,15 @@ export class MultiSelect extends DropDownBase implements IInput {
     public getModuleName(): string {
         return 'multiselect';
     };
+
+    /**
+     * Allows you to clear the selected values from the Multiselect component.
+     * @returns void
+     */
+    public clear(): void {
+       this.selectAll(false);
+       this.setProperties({value: null}, true);
+    }
     /**
      * To Initialize the control rendering
      * @private

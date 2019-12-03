@@ -190,9 +190,8 @@ export class CommandHandler {
             if (event === DiagramEvent.drop) {
                 (args as IDropEventArgs).source = this.diagram;
             }
-            if (this.diagram.currentDrawingObject) {
+            if (this.diagram.currentDrawingObject && event !== DiagramEvent.positionChange) {
                 return;
-
             }
         }
         this.diagram.triggerEvent(event, args);
@@ -1929,7 +1928,10 @@ export class CommandHandler {
             if (target && !((target as Node).isLane || (target as Node).isPhase || (target as Node).isHeader)) {
                 for (let i: number = 0; i < objects.length; i++) {
                     let laneNode: Node = this.diagram.nameTable[(objects[i] as NodeModel).id];
-                    if (laneNode.isLane || laneNode.isPhase || laneNode.isHeader) { target = laneNode; }
+                    if (laneNode.isLane || laneNode.isPhase || laneNode.isHeader) {
+                        target = laneNode;
+                        this.diagram.parentObject = target;
+                    }
                 }
             }
         }

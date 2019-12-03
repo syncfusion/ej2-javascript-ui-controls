@@ -4,7 +4,7 @@ import { ModuleDeclaration, isNullOrUndefined, Property, Event, EmitType } from 
 import { PdfViewerModel, HighlightSettingsModel, UnderlineSettingsModel, StrikethroughSettingsModel, LineSettingsModel, ArrowSettingsModel, RectangleSettingsModel, CircleSettingsModel, PolygonSettingsModel, StampSettingsModel, StickyNotesSettingsModel, CustomStampSettingsModel, VolumeSettingsModel, RadiusSettingsModel, AreaSettingsModel, PerimeterSettingsModel, DistanceSettingsModel, MeasurementSettingsModel, FreeTextSettingsModel, AnnotationSelectorSettingsModel, TextSearchColorSettingsModel } from './pdfviewer-model';
 import { ToolbarSettingsModel, AnnotationToolbarSettingsModel, ShapeLabelSettingsModel } from './pdfviewer-model';
 // tslint:disable-next-line:max-line-length
-import { ServerActionSettingsModel, AjaxRequestSettingsModel, CustomStampItemModel, HandWrittenSignatureSettingsModel } from './pdfviewer-model';
+import { ServerActionSettingsModel, AjaxRequestSettingsModel, CustomStampItemModel, HandWrittenSignatureSettingsModel, AnnotationSettingsModel } from './pdfviewer-model';
 import { PdfViewerBase } from './index';
 import { Navigation } from './index';
 import { Magnification } from './index';
@@ -22,8 +22,8 @@ import { FormFields } from './index';
 import { Print, CalibrationUnit } from './index';
 // tslint:disable-next-line:max-line-length
 import { UnloadEventArgs, LoadEventArgs, LoadFailedEventArgs, AjaxRequestFailureEventArgs, PageChangeEventArgs, PageClickEventArgs, ZoomChangeEventArgs, HyperlinkClickEventArgs, HyperlinkMouseOverArgs, ImportStartEventArgs, ImportSuccessEventArgs, ImportFailureEventArgs, ExportStartEventArgs, ExportSuccessEventArgs, ExportFailureEventArgs, AjaxRequestInitiateEventArgs } from './index';
-import { AnnotationAddEventArgs, AnnotationRemoveEventArgs, AnnotationPropertiesChangeEventArgs, AnnotationResizeEventArgs, AnnotationSelectEventArgs } from './index';
-import { TextSelectionStartEventArgs, TextSelectionEndEventArgs } from './index';
+import { AnnotationAddEventArgs, AnnotationRemoveEventArgs, AnnotationPropertiesChangeEventArgs, AnnotationResizeEventArgs, AnnotationSelectEventArgs, AnnotationMoveEventArgs } from './index';
+import { TextSelectionStartEventArgs, TextSelectionEndEventArgs, DownloadStartEventArgs, DownloadEndEventArgs } from './index';
 import { PdfAnnotationBase, ZOrderPageTable } from '../diagram/pdf-annotation';
 import { PdfAnnotationBaseModel } from '../diagram/pdf-annotation-model';
 import { Drawing, ClipBoardObject } from '../diagram/drawing';
@@ -1097,6 +1097,11 @@ export class FreeTextSettings extends ChildProperty<FreeTextSettings> {
     @Property('Left')
     public textAlignment: TextAlignment;
 
+    /**
+     * specifies the allow text only action of the free text annotation.
+     */
+    @Property(false)
+    public allowTextOnly: boolean;
 }
 
 /**
@@ -1208,6 +1213,59 @@ export class HandWrittenSignatureSettings extends ChildProperty<HandWrittenSigna
 }
 
 /**
+ * The `AnnotationSettings` module is used to provide the properties to annotations.
+ */
+export class AnnotationSettings extends ChildProperty<AnnotationSettings> {
+    /**
+     * specifies the author of the annotation.
+     */
+    @Property('Guest')
+    public author: string;
+
+    /**
+     * specifies the minHeight of the annotation.
+     */
+    @Property(0)
+    public minHeight: number;
+
+    /**
+     * specifies the minWidth of the annotation.
+     */
+    @Property(0)
+    public minWidth: number;
+
+    /**
+     * specifies the minHeight of the annotation.
+     */
+    @Property(0)
+    public maxHeight: number;
+
+    /**
+     * specifies the maxWidth of the annotation.
+     */
+    @Property(0)
+    public maxWidth: number;
+
+    /**
+     * specifies the locked action of the annotation.
+     */
+    @Property(false)
+    public isLock: boolean;
+
+    /**
+     * specifies whether the annotations are included or not in print actions.
+     */
+    @Property(true)
+    public isPrint: boolean;
+
+    /**
+     * specifies whether the annotations are included or not in download actions.
+     */
+    @Property(true)
+    public isDownload: boolean;
+}
+
+/**
  * Represents the PDF viewer component.
  * ```html
  * <div id="pdfViewer"></div>
@@ -1284,6 +1342,11 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
      * Gets or sets the export annotations JSON file name in the PdfViewer control.
      */
     public exportAnnotationFileName: string = null;
+
+    /**
+     * Gets or sets the download file name in the PdfViewer control.
+     */
+    public downloadFileName: string = null;
 
     /**
      * Defines the scrollable height of the PdfViewer control.
@@ -1657,7 +1720,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
      * Defines the settings of free text annotation.
      */
     // tslint:disable-next-line:max-line-length
-    @Property({ opacity: 1, fillColor: '#ffffff00', borderColor: '#ffffff00', author: 'Guest', subject: 'Text Box', modifiedDate: '', borderWidth: 1, width: 151, fontSize: 16, height: 24.6, fontColor: '#000', fontFamily: 'Helvetica', defaultText: 'Type Here', textAlignment: 'Left', fontStyle: FontStyle.None })
+    @Property({ opacity: 1, fillColor: '#ffffff00', borderColor: '#ffffff00', author: 'Guest', subject: 'Text Box', modifiedDate: '', borderWidth: 1, width: 151, fontSize: 16, height: 24.6, fontColor: '#000', fontFamily: 'Helvetica', defaultText: 'Type Here', textAlignment: 'Left', fontStyle: FontStyle.None, allowTextOnly: false })
     public freeTextSettings: FreeTextSettingsModel;
 
     /**
@@ -1684,6 +1747,13 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
      */
     @Property({ opacity: 1, strokeColor: '#000000', width: 100, height: 100, thickness: 1 })
     public handWrittenSignatureSettings: HandWrittenSignatureSettingsModel;
+
+    /**
+     * Defines the settings of the annotations.
+     */
+    // tslint:disable-next-line:max-line-length
+    @Property({ author: 'Guest', minHeight: 0, minWidth: 0, maxWidth: 0, maxHeight: 0, isLock: false, isPrint: true, isDownload: true })
+    public annotationSettings: AnnotationSettingsModel;
 
     /**
      * @private
@@ -1961,6 +2031,14 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
     public annotationSelect: EmitType<AnnotationSelectEventArgs>;
 
     /**
+     * Triggers when an annotation is moved over the page of the PDF document.
+     * @event
+     * @blazorProperty 'AnnotationMoved'
+     */
+    @Event()
+    public annotationMove: EmitType<AnnotationMoveEventArgs>;
+
+    /**
      * Triggers when an imported annotations started in the PDF document.
      * @event
      * @blazorProperty 'ImportStarted'
@@ -2031,6 +2109,22 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
      */
     @Event()
     public textSelectionEnd: EmitType<TextSelectionEndEventArgs>;
+
+    /**
+     * Triggers an event when the download action is started.
+     * @event
+     * @blazorProperty 'DownloadStart'
+     */
+    @Event()
+    public downloadStart: EmitType<DownloadStartEventArgs>;
+
+    /**
+     * Triggers an event when the download actions is finished.
+     * @event
+     * @blazorProperty 'DownloadEnd'
+     */
+    @Event()
+    public downloadEnd: EmitType<DownloadEndEventArgs>;
 
     /**
      * Triggers before the data send in to the server.
@@ -2470,9 +2564,6 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
      */
     public destroy(): void {
         super.destroy();
-        if (this.toolbarModule) {
-            this.toolbarModule.destroy();
-        }
         if (!isNullOrUndefined(this.element)) {
             this.element.classList.remove('e-pdfviewer');
             this.element.innerHTML = '';
@@ -2701,8 +2792,13 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
      * @private
      */
     // tslint:disable-next-line
-    public fireAnnotationSelect(id: string, pageNumber: number, annotation: any): void {
+    public fireAnnotationSelect(id: string, pageNumber: number, annotation: any, annotationCollection?: any ): void {
+        // tslint:disable-next-line:max-line-length
         let eventArgs: AnnotationSelectEventArgs = { name: 'annotationSelect', annotationId: id, pageIndex: pageNumber, annotation: annotation };
+        if (annotationCollection) {
+            // tslint:disable-next-line:max-line-length
+            eventArgs = { name: 'annotationSelect', annotationId: id, pageIndex: pageNumber, annotation: annotation, annotationCollection: annotationCollection };
+        }
         this.trigger('annotationSelect', eventArgs);
     }
 
@@ -2746,6 +2842,28 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
             eventArgs.textMarkupEndIndex = tmEndIndex;
         }
         this.trigger('annotationResize', eventArgs);
+    }
+    /**
+     * @private
+     */
+    // tslint:disable-next-line
+    public fireAnnotationMove(pageNumber: number, id: string, type: AnnotationType, annotationSettings: any ,previousPosition: object, currentPosition: object): void {
+        let eventArgs: AnnotationMoveEventArgs = { name: 'annotationMove', pageIndex: pageNumber, annotationId: id, annotationType: type, annotationSettings: annotationSettings, previousPosition: previousPosition, currentPosition: currentPosition };
+        this.trigger('annotationMove', eventArgs);
+    }
+    /**
+     * @private
+     */
+    public fireDownloadStart(fileName: string): void {
+        let eventArgs: DownloadStartEventArgs = { fileName: fileName };
+        this.trigger('downloadStart', eventArgs);
+    }
+    /**
+     * @private
+     */
+    public fireDownloadEnd(fileName: string, downloadData: string): void {
+        let eventArgs: DownloadEndEventArgs = { fileName: fileName, downloadDocument: downloadData };
+        this.trigger('downloadEnd', eventArgs);
     }
     /**
      * @private
@@ -2820,11 +2938,13 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
      * @private
      */
     public select(objArray: string[], multipleSelection?: boolean, preventUpdate?: boolean): void {
-        let annotationSelect: number = this.annotationModule.textMarkupAnnotationModule.selectTextMarkupCurrentPage;
-        if (annotationSelect) {
-            this.annotationModule.textMarkupAnnotationModule.clearCurrentAnnotationSelection(annotationSelect, true);
+        if (!this.annotationSettings.isLock || this.tool === 'Stamp') {
+            let annotationSelect: number = this.annotationModule.textMarkupAnnotationModule.selectTextMarkupCurrentPage;
+            if (annotationSelect) {
+                this.annotationModule.textMarkupAnnotationModule.clearCurrentAnnotationSelection(annotationSelect, true);
+            }
+            this.drawing.select(objArray, multipleSelection, preventUpdate);
         }
-        this.drawing.select(objArray, multipleSelection, preventUpdate);
     }
     /**
      * @private

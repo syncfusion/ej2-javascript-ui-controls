@@ -4611,7 +4611,7 @@ var DateRangePicker = /** @__PURE__ @class */ (function (_super) {
         this.setProperties({ startDate: this.startValue }, true);
         this.setProperties({ endDate: this.endValue }, true);
         this.setModelValue();
-        this.updateDataAttribute(false);
+        this.setDataAttribute(false);
         this.renderComplete();
     };
     /**
@@ -4808,21 +4808,21 @@ var DateRangePicker = /** @__PURE__ @class */ (function (_super) {
         this.setRangeAllowEdit();
         this.bindEvents();
     };
-    DateRangePicker.prototype.updateDataAttribute = function (isDynamic) {
-        var attr = {};
+    DateRangePicker.prototype.setDataAttribute = function (isDynamic) {
+        var attributes$$1 = {};
         if (!isDynamic) {
-            for (var a = 0; a < this.element.attributes.length; a++) {
-                attr[this.element.attributes[a].name] = this.element.getAttribute(this.element.attributes[a].name);
+            for (var i = 0; i < this.element.attributes.length; i++) {
+                attributes$$1[this.element.attributes[i].name] = this.element.getAttribute(this.element.attributes[i].name);
             }
         }
         else {
-            attr = this.htmlAttributes;
+            attributes$$1 = this.htmlAttributes;
         }
-        for (var _i = 0, _a = Object.keys(attr); _i < _a.length; _i++) {
-            var key = _a[_i];
-            if (key.indexOf('data') === 0) {
-                this.firstHiddenChild.setAttribute(key, attr[key]);
-                this.secondHiddenChild.setAttribute(key, attr[key]);
+        for (var _i = 0, _a = Object.keys(attributes$$1); _i < _a.length; _i++) {
+            var pro = _a[_i];
+            if (pro.indexOf('data') === 0) {
+                this.firstHiddenChild.setAttribute(pro, attributes$$1[pro]);
+                this.secondHiddenChild.setAttribute(pro, attributes$$1[pro]);
             }
         }
     };
@@ -7224,7 +7224,7 @@ var DateRangePicker = /** @__PURE__ @class */ (function (_super) {
                 this.renderCustomPopup();
             }
             else {
-                this.applyPresetRange(values);
+                this.applyPresetRange(values, event);
             }
         }
     };
@@ -7238,7 +7238,7 @@ var DateRangePicker = /** @__PURE__ @class */ (function (_super) {
     DateRangePicker.prototype.setValue = function () {
         this.modelValue = [this.startValue, this.endValue];
     };
-    DateRangePicker.prototype.applyPresetRange = function (values) {
+    DateRangePicker.prototype.applyPresetRange = function (values, e) {
         this.hide(null);
         this.presetsItem[this.presetsItem.length - 1].start = null;
         this.presetsItem[this.presetsItem.length - 1].end = null;
@@ -7246,8 +7246,8 @@ var DateRangePicker = /** @__PURE__ @class */ (function (_super) {
         this.endValue = values.end;
         this.setValue();
         this.refreshControl();
-        this.trigger('select', this.rangeArgs(null));
-        this.changeTrigger();
+        this.trigger('select', this.rangeArgs(e));
+        this.changeTrigger(e);
         this.previousEleValue = this.inputElement.value;
         this.isCustomRange = false;
         this.leftCalendar = this.rightCalendar = null;
@@ -8496,7 +8496,7 @@ var DateRangePicker = /** @__PURE__ @class */ (function (_super) {
                 case 'htmlAttributes':
                     this.updateHtmlAttributeToElement();
                     this.updateHtmlAttributeToWrapper();
-                    this.updateDataAttribute(true);
+                    this.setDataAttribute(true);
                     this.checkHtmlAttributes(true);
                     break;
                 case 'showClearButton':

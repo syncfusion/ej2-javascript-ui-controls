@@ -5287,8 +5287,8 @@ var FocusStrategy = /** @__PURE__ @class */ (function () {
         if (this.parent.isDestroyed || Browser.isDevice || this.parent.enableVirtualization) {
             return;
         }
-        this.setActive(this.parent.frozenRows === 0, this.parent.frozenColumns !== 0);
-        if (!this.parent.getCurrentViewRecords().length && this.parent.isEdit) {
+        this.setActive(!this.parent.enableHeaderFocus && this.parent.frozenRows === 0, this.parent.frozenColumns !== 0);
+        if (!this.parent.enableHeaderFocus && !this.parent.getCurrentViewRecords().length) {
             this.getContent().matrix.
                 generate(this.rowModelGen.generateRows({ rows: [new Row({ isDataRow: true })] }), this.getContent().selector, false);
         }
@@ -5503,9 +5503,14 @@ var FocusStrategy = /** @__PURE__ @class */ (function () {
                 cFocus.matrix.generate(rows, cFocus.selector, isRowTemplate);
             }
             cFocus.generateRows(updateRow, { matrix: matrix, handlerInstance: (e.args && e.args.isFrozen) ? _this.fHeader : _this.header });
-            if (!Browser.isDevice && !_this.focusByClick && e && e.args && e.args.requestType === 'paging') {
-                _this.skipFocus = false;
-                _this.parent.element.focus();
+            if (!Browser.isDevice && e && e.args) {
+                if (!_this.focusByClick && e.args.requestType === 'paging') {
+                    _this.skipFocus = false;
+                    _this.parent.element.focus();
+                }
+                if (e.args.requestType === 'grouping') {
+                    _this.skipFocus = true;
+                }
             }
             if (e && e.args && e.args.requestType === 'virtualscroll') {
                 if (_this.currentInfo.uid) {
@@ -5988,7 +5993,7 @@ var HeaderFocus = /** @__PURE__ @class */ (function (_super) {
         var enterFrozen = this.parent.frozenRows !== 0 && action === 'enter';
         return {
             swap: ((action === 'downArrow' || enterFrozen) && current[0] === this.matrix.matrix.length - 1) ||
-                frozenSwap,
+                frozenSwap || (action === 'tab' && current[1] === this.matrix.matrix[current[0]].lastIndexOf(1)),
             toHeader: frozenSwap,
             toFrozen: frozenSwap
         };
@@ -7427,6 +7432,14 @@ var Selection = /** @__PURE__ @class */ (function () {
             this.hideBorders();
         }
     };
+    Selection.prototype.isLastCell = function (cell) {
+        var cells = [].slice.call(cell.parentElement.querySelectorAll('.e-rowcell:not(.e-hide)'));
+        return cells[cells.length - 1] === cell;
+    };
+    Selection.prototype.isLastRow = function (cell) {
+        var rows = [].slice.call(closest(cell, 'tbody').querySelectorAll('.e-row:not(.e-hiddenrow)'));
+        return cell.parentElement === rows[rows.length - 1];
+    };
     Selection.prototype.positionBorders = function () {
         this.updateStartEndCells();
         if (!this.startCell || !this.bdrLeft || !this.selectedRowCellIndexes.length) {
@@ -7435,19 +7448,21 @@ var Selection = /** @__PURE__ @class */ (function () {
         this.showBorders();
         var stOff = this.startCell.getBoundingClientRect();
         var endOff = this.endCell.getBoundingClientRect();
+        var colWidth = this.isLastCell(this.endCell) ? 2 : 0;
+        var rowHeight = this.isLastRow(this.endCell) ? 2 : 0;
         var parentOff = this.startCell.offsetParent.getBoundingClientRect();
         this.bdrLeft.style.left = stOff.left - parentOff.left + 'px';
         this.bdrLeft.style.top = stOff.top - parentOff.top + 'px';
         this.bdrLeft.style.height = endOff.top - stOff.top > 0 ?
-            (endOff.top - parentOff.top + endOff.height + 1) - (stOff.top - parentOff.top) + 'px' : endOff.height + 'px';
-        this.bdrRight.style.left = endOff.left - parentOff.left + endOff.width + 'px';
+            (endOff.top - parentOff.top + endOff.height + 1) - (stOff.top - parentOff.top) - rowHeight + 'px' : endOff.height + 'px';
+        this.bdrRight.style.left = endOff.left - parentOff.left + endOff.width - colWidth + 'px';
         this.bdrRight.style.top = this.bdrLeft.style.top;
-        this.bdrRight.style.height = this.bdrLeft.style.height;
+        this.bdrRight.style.height = parseInt(this.bdrLeft.style.height, 10) - rowHeight + 'px';
         this.bdrTop.style.left = this.bdrLeft.style.left;
         this.bdrTop.style.top = this.bdrRight.style.top;
         this.bdrTop.style.width = parseInt(this.bdrRight.style.left, 10) - parseInt(this.bdrLeft.style.left, 10) + 1 + 'px';
         this.bdrBottom.style.left = this.bdrLeft.style.left;
-        this.bdrBottom.style.top = parseInt(this.bdrLeft.style.top, 10) + parseInt(this.bdrLeft.style.height, 10) + 'px';
+        this.bdrBottom.style.top = parseInt(this.bdrLeft.style.top, 10) + parseInt(this.bdrLeft.style.height, 10) - rowHeight + 'px';
         this.bdrBottom.style.width = this.bdrTop.style.width;
     };
     Selection.prototype.createBorders = function () {
@@ -7487,19 +7502,21 @@ var Selection = /** @__PURE__ @class */ (function () {
         this.showBorders();
         var stOff = this.startAFCell.getBoundingClientRect();
         var endOff = this.endAFCell.getBoundingClientRect();
+        var colWidth = this.isLastCell(this.endAFCell) ? 2 : 0;
+        var rowHeight = this.isLastRow(this.endAFCell) ? 2 : 0;
         var parentOff = this.startAFCell.offsetParent.getBoundingClientRect();
         this.bdrAFLeft.style.left = stOff.left - parentOff.left + 'px';
         this.bdrAFLeft.style.top = stOff.top - parentOff.top + 'px';
         this.bdrAFLeft.style.height = endOff.top - stOff.top > 0 ?
-            (endOff.top - parentOff.top + endOff.height + 1) - (stOff.top - parentOff.top) + 'px' : endOff.height + 'px';
-        this.bdrAFRight.style.left = endOff.left - parentOff.left + endOff.width + 'px';
+            (endOff.top - parentOff.top + endOff.height + 1) - (stOff.top - parentOff.top) - rowHeight + 'px' : endOff.height + 'px';
+        this.bdrAFRight.style.left = endOff.left - parentOff.left + endOff.width - colWidth + 'px';
         this.bdrAFRight.style.top = this.bdrAFLeft.style.top;
-        this.bdrAFRight.style.height = this.bdrAFLeft.style.height;
+        this.bdrAFRight.style.height = parseInt(this.bdrAFLeft.style.height, 10) - rowHeight + 'px';
         this.bdrAFTop.style.left = this.bdrAFLeft.style.left;
         this.bdrAFTop.style.top = this.bdrAFRight.style.top;
         this.bdrAFTop.style.width = parseInt(this.bdrAFRight.style.left, 10) - parseInt(this.bdrAFLeft.style.left, 10) + 1 + 'px';
         this.bdrAFBottom.style.left = this.bdrAFLeft.style.left;
-        this.bdrAFBottom.style.top = parseInt(this.bdrAFLeft.style.top, 10) + parseInt(this.bdrAFLeft.style.height, 10) + 'px';
+        this.bdrAFBottom.style.top = parseInt(this.bdrAFLeft.style.top, 10) + parseInt(this.bdrAFLeft.style.height, 10) - rowHeight + 'px';
         this.bdrAFBottom.style.width = this.bdrAFTop.style.width;
     };
     Selection.prototype.createAFBorders = function () {
@@ -7665,7 +7682,8 @@ var Selection = /** @__PURE__ @class */ (function () {
         this.updateAutoFillPosition();
         if (this.isAutoFillSel) {
             this.startAFCell = this.startCell;
-            this.endAFCell = parentsUntil(e.target, 'e-rowcell');
+            var lastCell = parentsUntil(e.target, 'e-rowcell');
+            this.endAFCell = lastCell ? lastCell : this.endAFCell;
             this.updateStartCellsIndex();
             this.selectLikeAutoFill(e, true);
             this.updateAutoFillPosition();
@@ -7690,14 +7708,18 @@ var Selection = /** @__PURE__ @class */ (function () {
             && this.selectedRowCellIndexes.length) {
             var cells = [].slice.call(this.parent.getDataRows()[this.selectedRowCellIndexes[this.selectedRowCellIndexes.length - 1].rowIndex].querySelectorAll('.e-cellselectionbackground'));
             if (!this.parent.element.querySelector('#' + this.parent.element.id + '_autofill')) {
-                this.autofill = this.parent.getContentTable().parentElement.appendChild(createElement('div', { className: 'e-autofill', id: this.parent.element.id + '_autofill' }));
+                this.autofill = createElement('div', { className: 'e-autofill', id: this.parent.element.id + '_autofill' });
+                this.autofill.style.display = 'none';
+                this.parent.getContentTable().parentElement.appendChild(this.autofill);
             }
             var cell = cells[cells.length - 1];
             if (cell && cell.offsetParent) {
                 var clientRect = cell.getBoundingClientRect();
                 var parentOff = cell.offsetParent.getBoundingClientRect();
-                this.autofill.style.left = clientRect.left - parentOff.left + clientRect.width - 3 + 'px';
-                this.autofill.style.top = clientRect.top - parentOff.top + clientRect.height - 3 + 'px';
+                var colWidth = this.isLastCell(cell) ? 4 : 0;
+                var rowHeight = this.isLastRow(cell) ? 5 : 0;
+                this.autofill.style.left = clientRect.left - parentOff.left + clientRect.width - 4 - colWidth + 'px';
+                this.autofill.style.top = clientRect.top - parentOff.top + clientRect.height - 3 - rowHeight + 'px';
             }
             this.autofill.style.display = '';
         }
@@ -7735,7 +7757,7 @@ var Selection = /** @__PURE__ @class */ (function () {
             }
         }
         this.updateStartEndCells();
-        if (target.classList.contains('e-autofill')) {
+        if (target.classList.contains('e-autofill') || target.classList.contains('e-xlsel')) {
             this.isCellDrag = true;
             this.isAutoFillSel = true;
             this.enableDrag(e);
@@ -8270,13 +8292,13 @@ var Selection = /** @__PURE__ @class */ (function () {
     };
     Selection.prototype.keyDownHandler = function (e) {
         // Below are keyCode for command key in MAC OS. Safari/Chrome(91-Left command, 93-Right Command), Opera(17), FireFox(224)
-        if ((Browser.info.name === ('chrome' || 'safari') && (e.keyCode === 91 || e.keyCode === 93)) ||
+        if ((((Browser.info.name === 'chrome') || (Browser.info.name === 'safari')) && (e.keyCode === 91 || e.keyCode === 93)) ||
             (Browser.info.name === 'opera' && e.keyCode === 17) || (Browser.info.name === 'mozilla' && e.keyCode === 224)) {
             this.cmdKeyPressed = true;
         }
     };
     Selection.prototype.keyUpHandler = function (e) {
-        if ((Browser.info.name === ('chrome' || 'safari') && (e.keyCode === 91 || e.keyCode === 93)) ||
+        if ((((Browser.info.name === 'chrome') || (Browser.info.name === 'safari')) && (e.keyCode === 91 || e.keyCode === 93)) ||
             (Browser.info.name === 'opera' && e.keyCode === 17) || (Browser.info.name === 'mozilla' && e.keyCode === 224)) {
             this.cmdKeyPressed = false;
         }
@@ -13223,6 +13245,9 @@ var Grid = /** @__PURE__ @class */ (function (_super) {
         Property(false)
     ], Grid.prototype, "showColumnChooser", void 0);
     __decorate$1([
+        Property(false)
+    ], Grid.prototype, "enableHeaderFocus", void 0);
+    __decorate$1([
         Property('auto')
     ], Grid.prototype, "height", void 0);
     __decorate$1([
@@ -13707,7 +13732,7 @@ var Print = /** @__PURE__ @class */ (function () {
     Print.prototype.getModuleName = function () {
         return 'print';
     };
-    Print.printGridProp = getCloneProperties().concat([beforePrint, printComplete]);
+    Print.printGridProp = getCloneProperties().concat([beforePrint, printComplete, load]);
     return Print;
 }());
 
@@ -15289,7 +15314,7 @@ var CheckBoxFilterBase = /** @__PURE__ @class */ (function () {
         addClass([label], ['e-checkboxfiltertext']);
         if (this.options.template && data[this.options.column.field] !== this.getLocalizedLabel('SelectAll')) {
             label.innerHTML = '';
-            appendChildren(label, this.options.template({ column: this.options.column, rowData: data, parent: this.parent }, this.parent, 'filterItemTemplate'));
+            appendChildren(label, this.options.template({ column: this.options.column, data: data, parent: this.parent }, this.parent, 'filterItemTemplate'));
         }
         return elem;
     };
@@ -16580,7 +16605,8 @@ var Sort = /** @__PURE__ @class */ (function () {
             this.removeSortColumn(field);
         }
         else {
-            this.sortColumn(field, direction, e.ctrlKey || this.enableSortMultiTouch);
+            this.sortColumn(field, direction, e.ctrlKey || this.enableSortMultiTouch ||
+                (navigator.userAgent.indexOf('Mac OS') !== -1 && e.metaKey));
         }
     };
     Sort.prototype.showPopUp = function (e) {

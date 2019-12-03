@@ -552,11 +552,12 @@ export class Toast extends Component<HTMLElement> implements INotifyPropertyChan
     }
 
     private setCSSClass(cssClass: string): void {
-      if (!isNOU (cssClass)) {
+      if (cssClass) {
         let split: string = cssClass.indexOf(',') !== -1 ? ',' : ' ';
         classList(this.toastEle , cssClass.split(split) , []);
       }
-    }
+  }
+
 
     private setWidthHeight(): void {
       if (this.width === '300px') {

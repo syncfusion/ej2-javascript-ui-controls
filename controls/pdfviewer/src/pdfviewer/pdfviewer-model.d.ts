@@ -1,4 +1,4 @@
-import { Component, INotifyPropertyChanged, NotifyPropertyChanges, ChildProperty, L10n, Collection, Complex } from '@syncfusion/ej2-base';import { ModuleDeclaration, isNullOrUndefined, Property, Event, EmitType } from '@syncfusion/ej2-base';import { PdfViewerBase } from './index';import { Navigation } from './index';import { Magnification } from './index';import { Toolbar } from './index';import { ToolbarItem } from './index';import { LinkTarget, InteractionMode, AnnotationType, AnnotationToolbarItem, LineHeadStyle, ContextMenuAction, FontStyle, TextAlignment, AnnotationResizerShape, AnnotationResizerLocation, ZoomMode } from './base/types';import { Annotation } from './index';import { LinkAnnotation } from './index';import { ThumbnailView } from './index';import { BookmarkView } from './index';import { TextSelection } from './index';import { TextSearch } from './index';import { FormFields } from './index';import { Print, CalibrationUnit } from './index';import { UnloadEventArgs, LoadEventArgs, LoadFailedEventArgs, AjaxRequestFailureEventArgs, PageChangeEventArgs, PageClickEventArgs, ZoomChangeEventArgs, HyperlinkClickEventArgs, HyperlinkMouseOverArgs, ImportStartEventArgs, ImportSuccessEventArgs, ImportFailureEventArgs, ExportStartEventArgs, ExportSuccessEventArgs, ExportFailureEventArgs, AjaxRequestInitiateEventArgs } from './index';import { AnnotationAddEventArgs, AnnotationRemoveEventArgs, AnnotationPropertiesChangeEventArgs, AnnotationResizeEventArgs, AnnotationSelectEventArgs } from './index';import { TextSelectionStartEventArgs, TextSelectionEndEventArgs } from './index';import { PdfAnnotationBase, ZOrderPageTable } from '../diagram/pdf-annotation';import { PdfAnnotationBaseModel } from '../diagram/pdf-annotation-model';import { Drawing, ClipBoardObject } from '../diagram/drawing';import { Selector } from '../diagram/selector';import { SelectorModel } from '../diagram/selector-model';import { PointModel, IElement, Rect } from '@syncfusion/ej2-drawings';import { renderAdornerLayer } from '../diagram/dom-util';import { ThumbnailClickEventArgs } from './index';
+import { Component, INotifyPropertyChanged, NotifyPropertyChanges, ChildProperty, L10n, Collection, Complex } from '@syncfusion/ej2-base';import { ModuleDeclaration, isNullOrUndefined, Property, Event, EmitType } from '@syncfusion/ej2-base';import { PdfViewerBase } from './index';import { Navigation } from './index';import { Magnification } from './index';import { Toolbar } from './index';import { ToolbarItem } from './index';import { LinkTarget, InteractionMode, AnnotationType, AnnotationToolbarItem, LineHeadStyle, ContextMenuAction, FontStyle, TextAlignment, AnnotationResizerShape, AnnotationResizerLocation, ZoomMode } from './base/types';import { Annotation } from './index';import { LinkAnnotation } from './index';import { ThumbnailView } from './index';import { BookmarkView } from './index';import { TextSelection } from './index';import { TextSearch } from './index';import { FormFields } from './index';import { Print, CalibrationUnit } from './index';import { UnloadEventArgs, LoadEventArgs, LoadFailedEventArgs, AjaxRequestFailureEventArgs, PageChangeEventArgs, PageClickEventArgs, ZoomChangeEventArgs, HyperlinkClickEventArgs, HyperlinkMouseOverArgs, ImportStartEventArgs, ImportSuccessEventArgs, ImportFailureEventArgs, ExportStartEventArgs, ExportSuccessEventArgs, ExportFailureEventArgs, AjaxRequestInitiateEventArgs } from './index';import { AnnotationAddEventArgs, AnnotationRemoveEventArgs, AnnotationPropertiesChangeEventArgs, AnnotationResizeEventArgs, AnnotationSelectEventArgs, AnnotationMoveEventArgs } from './index';import { TextSelectionStartEventArgs, TextSelectionEndEventArgs, DownloadStartEventArgs, DownloadEndEventArgs } from './index';import { PdfAnnotationBase, ZOrderPageTable } from '../diagram/pdf-annotation';import { PdfAnnotationBaseModel } from '../diagram/pdf-annotation-model';import { Drawing, ClipBoardObject } from '../diagram/drawing';import { Selector } from '../diagram/selector';import { SelectorModel } from '../diagram/selector-model';import { PointModel, IElement, Rect } from '@syncfusion/ej2-drawings';import { renderAdornerLayer } from '../diagram/dom-util';import { ThumbnailClickEventArgs } from './index';
 import {IAjaxHeaders} from "./pdfviewer";
 import {ComponentModel} from '@syncfusion/ej2-base';
 
@@ -948,6 +948,11 @@ export interface FreeTextSettingsModel {
      */
     textAlignment?: TextAlignment;
 
+    /**
+     * specifies the allow text only action of the free text annotation.
+     */
+    allowTextOnly?: boolean;
+
 }
 
 /**
@@ -1046,6 +1051,53 @@ export interface HandWrittenSignatureSettingsModel {
      * specified the height of the annotation.
      */
     height?: number;
+
+}
+
+/**
+ * Interface for a class AnnotationSettings
+ */
+export interface AnnotationSettingsModel {
+
+    /**
+     * specifies the author of the annotation.
+     */
+    author?: string;
+
+    /**
+     * specifies the minHeight of the annotation.
+     */
+    minHeight?: number;
+
+    /**
+     * specifies the minWidth of the annotation.
+     */
+    minWidth?: number;
+
+    /**
+     * specifies the minHeight of the annotation.
+     */
+    maxHeight?: number;
+
+    /**
+     * specifies the maxWidth of the annotation.
+     */
+    maxWidth?: number;
+
+    /**
+     * specifies the locked action of the annotation.
+     */
+    isLock?: boolean;
+
+    /**
+     * specifies whether the annotations are included or not in print actions.
+     */
+    isPrint?: boolean;
+
+    /**
+     * specifies whether the annotations are included or not in download actions.
+     */
+    isDownload?: boolean;
 
 }
 
@@ -1407,6 +1459,12 @@ export interface PdfViewerModel extends ComponentModel{
     handWrittenSignatureSettings?: HandWrittenSignatureSettingsModel;
 
     /**
+     * Defines the settings of the annotations.
+     */
+    // tslint:disable-next-line:max-line-length
+    annotationSettings?: AnnotationSettingsModel;
+
+    /**
      * Defines the collection of selected items, size and position of the selector
      * @default {}
      */
@@ -1511,6 +1569,13 @@ export interface PdfViewerModel extends ComponentModel{
     annotationSelect?: EmitType<AnnotationSelectEventArgs>;
 
     /**
+     * Triggers when an annotation is moved over the page of the PDF document.
+     * @event
+     * @blazorProperty 'AnnotationMoved'
+     */
+    annotationMove?: EmitType<AnnotationMoveEventArgs>;
+
+    /**
      * Triggers when an imported annotations started in the PDF document.
      * @event
      * @blazorProperty 'ImportStarted'
@@ -1572,6 +1637,20 @@ export interface PdfViewerModel extends ComponentModel{
      * @blazorProperty 'OnTextSelectionEnd'
      */
     textSelectionEnd?: EmitType<TextSelectionEndEventArgs>;
+
+    /**
+     * Triggers an event when the download action is started.
+     * @event
+     * @blazorProperty 'DownloadStart'
+     */
+    downloadStart?: EmitType<DownloadStartEventArgs>;
+
+    /**
+     * Triggers an event when the download actions is finished.
+     * @event
+     * @blazorProperty 'DownloadEnd'
+     */
+    downloadEnd?: EmitType<DownloadEndEventArgs>;
 
     /**
      * Triggers before the data send in to the server.

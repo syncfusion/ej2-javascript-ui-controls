@@ -447,7 +447,7 @@ export class DropDownList extends DropDownBase implements IInput {
 
     protected resetHandler(e: MouseEvent): void {
         e.preventDefault();
-        this.clear(e);
+        this.clearAll(e);
     }
 
     protected resetFocusElement(): void {
@@ -461,7 +461,7 @@ export class DropDownList extends DropDownBase implements IInput {
         }
     }
 
-    protected clear(e?: MouseEvent | KeyboardEventArgs, properties?: DropDownListModel): void {
+    protected clearAll(e?: MouseEvent | KeyboardEventArgs, properties?: DropDownListModel): void {
         if (isNullOrUndefined(properties) || (!isNullOrUndefined(properties) &&
             (isNullOrUndefined(properties.dataSource) ||
                 (!(properties.dataSource instanceof DataManager) && properties.dataSource.length === 0)))) {
@@ -2232,7 +2232,7 @@ export class DropDownList extends DropDownBase implements IInput {
     protected updateDataSource(props?: DropDownListModel): void {
         if (this.inputElement.value !== '' || (!isNullOrUndefined(props) && (isNullOrUndefined(props.dataSource)
         || (!(props.dataSource instanceof DataManager) && props.dataSource.length === 0)))) {
-             this.clear(null, props);
+             this.clearAll(null, props);
             }
         if (!(!isNullOrUndefined(props) && (isNullOrUndefined(props.dataSource)
             || (!(props.dataSource instanceof DataManager) && props.dataSource.length === 0)))) {
@@ -2280,7 +2280,7 @@ export class DropDownList extends DropDownBase implements IInput {
                 case 'cssClass': this.setCssClass(newProp, oldProp); break;
                 case 'enableRtl': this.setEnableRtl(); break;
                 case 'enabled': this.setEnable(); break;
-                case 'text': if (newProp.text === null) { this.clear(); break; }
+                case 'text': if (newProp.text === null) { this.clearAll(); break; }
                     if (!this.list) {
                         if (this.dataSource instanceof DataManager) { this.initRemoteRender = true; }
                         this.renderList();
@@ -2296,7 +2296,7 @@ export class DropDownList extends DropDownBase implements IInput {
                         this.updateInputFields();
                     }
                     break;
-                case 'value': if (newProp.value === null) { this.clear(); break; }
+                case 'value': if (newProp.value === null) { this.clearAll(); break; }
                     this.notify('beforeValueChange', { newProp: newProp }); // gird component value type change
                     if (!this.list) {
                         if (this.dataSource instanceof DataManager) { this.initRemoteRender = true; }
@@ -2313,7 +2313,7 @@ export class DropDownList extends DropDownBase implements IInput {
                         this.updateInputFields();
                     }
                     break;
-                case 'index': if (newProp.index === null) { this.clear(); break; }
+                case 'index': if (newProp.index === null) { this.clearAll(); break; }
                     if (!this.list) {
                         if (this.dataSource instanceof DataManager) { this.initRemoteRender = true; }
                         this.renderList();
@@ -2472,7 +2472,7 @@ export class DropDownList extends DropDownBase implements IInput {
         if (this.inputElement.value.trim() === '' && !this.isInteracted && (this.isSelectCustom ||
             !isNullOrUndefined(this.selectedLI) && this.inputElement.value !== dataItem.text)) {
             this.isSelectCustom = false;
-            this.clear();
+            this.clearAll();
         }
     }
     /**
@@ -2552,6 +2552,13 @@ export class DropDownList extends DropDownBase implements IInput {
             this.renderList();
         }
         return this.ulElement ? super.getItems() : [];
+    }
+    /**
+     * Allows you to clear the selected values from the component.
+     * @returns void.
+     */
+    public clear(): void {
+        this.value = null;
     }
 }
 export interface DropDownListClassList {

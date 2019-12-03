@@ -152,6 +152,14 @@ export class Drawing {
         let pathContent: PathElement;
         let basicElement: DrawingElement;
         let isStamp: boolean = false;
+        let annotationMaxHeight: number = this.pdfViewer.annotationSettings.maxHeight;
+        let annotationMaxWidth: number  = this.pdfViewer.annotationSettings.maxWidth;
+        let annotationMinHeight: number = this.pdfViewer.annotationSettings.minHeight;
+        let annotationMinWidth: number = this.pdfViewer.annotationSettings.minWidth;
+        let isAnnotationSet: boolean = false;
+        if (annotationMinHeight || annotationMinWidth || annotationMaxHeight || annotationMaxWidth) {
+            isAnnotationSet = true;
+        }
         switch (obj.shapeAnnotationType) {
             case 'Ellipse':
                 pathContent = new PathElement();
@@ -222,7 +230,15 @@ export class Drawing {
                     pathContent1.id = randomId() + '_stamp'
                     pathContent1.data = obj.data;
                     pathContent1.width = obj.bounds.width;
+                    if (isAnnotationSet && (obj.bounds.width > annotationMaxWidth)) {
+                        pathContent1.width = annotationMaxWidth;
+                        obj.bounds.width = annotationMaxWidth;
+                    }
                     pathContent1.height = obj.bounds.height / 2;
+                    if (isAnnotationSet && (obj.bounds.height > annotationMaxHeight)) {
+                        pathContent1.height = annotationMaxHeight / 2;
+                        obj.bounds.height = annotationMaxHeight/ 2;
+                    }
                     pathContent1.rotateValue = undefined;
 
                     pathContent1.margin.left = 10;
@@ -253,7 +269,15 @@ export class Drawing {
                     pathContent1.id = randomId() + '_stamp'
                     pathContent1.data = obj.data;
                     pathContent1.width = obj.bounds.width;
+                    if (isAnnotationSet && (obj.bounds.width > annotationMaxWidth)) {
+                        pathContent1.width = annotationMaxWidth;
+                        obj.bounds.width = annotationMaxWidth;
+                    }
                     pathContent1.height = obj.bounds.height;
+                    if (isAnnotationSet && (obj.bounds.height > annotationMaxHeight)) {
+                        pathContent1.height = annotationMaxHeight;
+                        obj.bounds.height = annotationMaxHeight;
+                    }
                     pathContent1.minWidth = pathContent1.width / 2;
                     pathContent1.minHeight = pathContent1.height / 2;
                     var content1 = pathContent1;
@@ -399,10 +423,30 @@ export class Drawing {
         if (!isStamp) {
             if (obj.bounds.width !== undefined) {
                 content.width = obj.bounds.width;
+                if (isAnnotationSet) {
+                    if ((content.width < annotationMinWidth) || (content.width > annotationMaxWidth)) {
+                       if (content.width < annotationMinWidth) {
+                            content.width = annotationMinWidth;
+                       }
+                       if (content.width > annotationMaxWidth) {
+                            content.width = annotationMaxWidth;
+                       }
+                    }
+                }
             }
             content.horizontalAlignment = 'Stretch';
             if (obj.bounds.height !== undefined) {
                 content.height = obj.bounds.height;
+                if (isAnnotationSet) {
+                    if ((content.height < annotationMinHeight) || (content.width > annotationMaxHeight)) {
+                       if (content.height < annotationMinHeight) {
+                            content.height = annotationMinHeight;
+                       }
+                       if (content.height > annotationMaxHeight) {
+                            content.height = annotationMaxHeight;
+                       }
+                    }
+                }
             }
             setElementStype(obj, content);
         }
@@ -731,7 +775,7 @@ export class Drawing {
                                         this.renderResizeHandle(
                                             node.wrapper.children[0], selectorElement, selectorModel.thumbsConstraints, zoom,
                                             // tslint:disable-next-line:max-line-length
-                                            undefined, undefined, undefined, node.shapeAnnotationType === 'Stamp', false, node.shapeAnnotationType === 'Path', (node.shapeAnnotationType === 'FreeText' || node.shapeAnnotationType === 'HandWrittenSignature'));
+                                            undefined, undefined, undefined, node.shapeAnnotationType === 'Stamp', false, node.shapeAnnotationType === 'Path', (node.shapeAnnotationType === 'FreeText' || node.shapeAnnotationType === 'HandWrittenSignature' || node.shapeAnnotationType === 'Image' ));
                                     }
                                 }
                             }
@@ -985,7 +1029,7 @@ export class Drawing {
         }
         let isNodeShape: boolean = false;
         // tslint:disable-next-line:max-line-length
-        if (this.pdfViewer.selectedItems.annotations[0] && (this.pdfViewer.selectedItems.annotations[0].shapeAnnotationType === 'Ellipse' || this.pdfViewer.selectedItems.annotations[0].shapeAnnotationType === 'Radius' || this.pdfViewer.selectedItems.annotations[0].shapeAnnotationType === 'Rectangle' || this.pdfViewer.selectedItems.annotations[0].shapeAnnotationType === 'Image')) {
+        if (this.pdfViewer.selectedItems.annotations[0] && (this.pdfViewer.selectedItems.annotations[0].shapeAnnotationType === 'Ellipse' || this.pdfViewer.selectedItems.annotations[0].shapeAnnotationType === 'Radius' || this.pdfViewer.selectedItems.annotations[0].shapeAnnotationType === 'Rectangle')) {
             isNodeShape = true;
         }
         if (!nodeConstraints && !isSticky && !isPath) {

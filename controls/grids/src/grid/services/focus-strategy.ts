@@ -42,10 +42,12 @@ export class FocusStrategy {
 
     protected onFocus(): void {
         if (this.parent.isDestroyed || Browser.isDevice || this.parent.enableVirtualization) { return; }
-        this.setActive(this.parent.frozenRows === 0, this.parent.frozenColumns !== 0);
-        if (!this.parent.getCurrentViewRecords().length && this.parent.isEdit) {
+        this.setActive(!this.parent.enableHeaderFocus && this.parent.frozenRows === 0, this.parent.frozenColumns !== 0);
+        if (!this.parent.enableHeaderFocus && !this.parent.getCurrentViewRecords().length) {
             this.getContent().matrix.
-                generate(this.rowModelGen.generateRows({rows: [new Row<Column>({ isDataRow: true})] }), this.getContent().selector, false);
+                generate(
+                    this.rowModelGen.generateRows({ rows: [new Row<Column>({ isDataRow: true })] }),
+                    this.getContent().selector, false);
         }
         let current: number[] = this.getContent().matrix.get(0, -1, [0, 1], null, this.getContent().validator());
         this.getContent().matrix.select(current[0], current[1]);
@@ -230,10 +232,15 @@ export class FocusStrategy {
                 cFocus.matrix.generate(rows, cFocus.selector, isRowTemplate);
             }
             cFocus.generateRows(updateRow, { matrix, handlerInstance: (e.args && e.args.isFrozen) ? this.fHeader : this.header });
-            if (!Browser.isDevice && !this.focusByClick && e && e.args && e.args.requestType === 'paging') {
-                this.skipFocus = false; this.parent.element.focus();
+            if (!Browser.isDevice && e && e.args) {
+                if (!this.focusByClick && e.args.requestType === 'paging') {
+                    this.skipFocus = false; this.parent.element.focus();
+                }
+                if (e.args.requestType === 'grouping') {
+                    this.skipFocus = true;
+                }
             }
-            if ( e && e.args && e.args.requestType === 'virtualscroll') {
+            if (e && e.args && e.args.requestType === 'virtualscroll') {
                 if (this.currentInfo.uid) {
                     let index: number;
                     let bool: boolean = e.rows.some((row: Row<Column>, i: number) => {
@@ -252,17 +259,17 @@ export class FocusStrategy {
                                     document.documentElement.clientWidth) &&
                                 cellPosition.bottom <= Math.min(gridPosition.bottom, window.innerHeight ||
                                     document.documentElement.clientHeight)) {
-                        this.focus();
+                                this.focus();
+                            }
+                        }
+                    }
+                } else if (e.args.focusElement && e.args.focusElement.classList.contains('e-filtertext')) {
+                    let focusElement: HTMLElement = <HTMLElement>this.parent.element.querySelector('#' + e.args.focusElement.id);
+                    if (focusElement) {
+                        focusElement.focus();
                     }
                 }
             }
-        } else if (e.args.focusElement && e.args.focusElement.classList.contains('e-filtertext')) {
-            let focusElement: HTMLElement = <HTMLElement>this.parent.element.querySelector('#' + e.args.focusElement.id);
-            if (focusElement) {
-                focusElement.focus();
-            }
-        }
-    }
         };
     }
 
@@ -419,7 +426,7 @@ export class Matrix {
         this.current = [rowIndex, columnIndex];
     }
 
-    public generate(rows: Row<Column>[], selector: Function, isRowTemplate?: boolean ): number[][] {
+    public generate(rows: Row<Column>[], selector: Function, isRowTemplate?: boolean): number[][] {
         this.rows = rows.length - 1; this.matrix = [];
         rows.forEach((row: Row<Column>, rIndex: number) => {
             let cells: Cell<Column>[] = row.cells.filter((c: Cell<Column>) => c.isSpanned !== true);
@@ -483,10 +490,10 @@ export class ContentFocus implements IFocus {
         if ((['tab', 'shiftTab'].indexOf(e.action) > -1 && this.matrix.current || []).toString() === current.toString()) {
             if (current.toString() === [this.matrix.rows, this.matrix.columns].toString() ||
                 current.toString() === [0, 0].toString() || (this.matrix.current[0] === this.matrix.rows &&
-                this.matrix.current.toString() === current.toString())) {
+                    this.matrix.current.toString() === current.toString())) {
                 return false;
             } else {
-            current = this.editNextRow(current[0], current[1], e.action);
+                current = this.editNextRow(current[0], current[1], e.action);
             }
         }
         this.matrix.select(current[0], current[1]);
@@ -498,17 +505,17 @@ export class ContentFocus implements IFocus {
         let visibleIndex: number = gObj.getColumnIndexByField(gObj.getVisibleColumns()[0].field);
         let cell: HTMLElement = this.getTable().rows[rowIndex].cells[cellIndex];
         if (action === 'tab' && editNextRow) {
-            rowIndex ++;
+            rowIndex++;
             let index: number = (this.getTable().rows[rowIndex].querySelectorAll('.e-indentcell').length +
-            this.getTable().rows[rowIndex].querySelectorAll('.e-detailrowcollapse').length);
+                this.getTable().rows[rowIndex].querySelectorAll('.e-detailrowcollapse').length);
             cellIndex = visibleIndex + index;
         }
         if (action === 'shiftTab' && editNextRow) {
-            rowIndex --;
+            rowIndex--;
             cellIndex = gObj.getColumnIndexByField(gObj.getVisibleColumns()[gObj.getVisibleColumns().length - 1].field);
         }
         return !cell.classList.contains('e-rowcell') && !cell.classList.contains('e-headercell') ?
-        this.editNextRow(rowIndex, cellIndex, action) : [rowIndex, cellIndex];
+            this.editNextRow(rowIndex, cellIndex, action) : [rowIndex, cellIndex];
     }
 
     public getCurrentFromAction(action: string, navigator: number[] = [0, 0], isPresent?: boolean, e?: KeyboardEventArgs): number[] {
@@ -544,7 +551,7 @@ export class ContentFocus implements IFocus {
             return info;
         }
         info.elementToFocus = !info.element.classList.contains('e-unboundcell') && !info.element.classList.contains('e-detailcell')
-             ? this.getFocusable(info.element) : info.element;
+            ? this.getFocusable(info.element) : info.element;
         info.outline = true;
         info.uid = info.element.parentElement.getAttribute('data-uid');
         return info;
@@ -702,7 +709,7 @@ export class HeaderFocus extends ContentFocus implements IFocus {
         let enterFrozen: boolean = this.parent.frozenRows !== 0 && action === 'enter';
         return {
             swap: ((action === 'downArrow' || enterFrozen) && current[0] === this.matrix.matrix.length - 1) ||
-                frozenSwap,
+                frozenSwap || (action === 'tab' && current[1] === this.matrix.matrix[current[0]].lastIndexOf(1)),
             toHeader: frozenSwap,
             toFrozen: frozenSwap
         };

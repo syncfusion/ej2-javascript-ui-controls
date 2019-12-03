@@ -780,6 +780,12 @@ export interface GridModel extends ComponentModel{
     showColumnChooser?: boolean;
 
     /**
+     * If `enableHeaderFocus` set to true, then header element will be focused when focus moves to grid.
+     * @default false    
+     */
+    enableHeaderFocus?: boolean;
+
+    /**
      * Defines the scrollable height of the grid content.    
      * @default 'auto'    
      */

@@ -1652,7 +1652,16 @@ let Tooltip = class Tooltip extends Component {
                 this.updateDiv(element, tooltipRect.x, tooltipRect.y);
             }
             if (this.blazorTemplate) {
-                updateBlazorTemplate(this.element.id + 'parent_template' + '_blazorTemplate', this.blazorTemplate.name, this.blazorTemplate.parent);
+                //Customer issue - F149037  Call back function to handle the blazor tooltip alignment issues
+                let tooltipRendered = () => {
+                    let rect1 = getElement(thisObject.element.id).getBoundingClientRect();
+                    thisObject.elementSize = new Size(rect1.width, rect1.height);
+                    let tooltipRect1 = thisObject.tooltipLocation(areaBounds, location, new TooltipLocation(0, 0), new TooltipLocation(0, 0));
+                    thisObject.updateDiv(getElement(thisObject.element.id), tooltipRect1.x, tooltipRect1.y);
+                };
+                let thisObject = this;
+                tooltipRendered.bind(thisObject, areaBounds, location);
+                updateBlazorTemplate(this.element.id + 'parent_template' + '_blazorTemplate', this.blazorTemplate.name, this.blazorTemplate.parent, undefined, tooltipRendered);
             }
         }
         else {

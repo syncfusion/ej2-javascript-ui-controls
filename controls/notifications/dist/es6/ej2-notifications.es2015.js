@@ -204,7 +204,7 @@ let Toast = class Toast extends Component {
         }
     }
     setCSSClass(cssClass) {
-        if (!isNullOrUndefined(cssClass)) {
+        if (cssClass) {
             let split = cssClass.indexOf(',') !== -1 ? ',' : ' ';
             classList(this.toastEle, cssClass.split(split), []);
         }

@@ -440,8 +440,10 @@ export class Toolbar {
                     this.toolbar.enableItems(this.commentItem.parentElement, true);
                 }
             }
-            if (this.pdfViewer.annotationToolbarSettings.annotationToolbarItem.length === 0 || !this.pdfViewer.annotationModule) {
-                this.enableToolbarItem(['AnnotationEditTool'], false);
+            if (this.pdfViewer.annotationToolbarSettings.annotationToolbarItem) {
+               if (this.pdfViewer.annotationToolbarSettings.annotationToolbarItem.length === 0 || !this.pdfViewer.annotationModule) {
+                    this.enableToolbarItem(['AnnotationEditTool'], false);
+                }
             }
             if (!this.pdfViewer.enableDownload) {
                 this.enableDownloadOption(false);
@@ -1207,6 +1209,7 @@ export class Toolbar {
         if (zoomText !== this.pdfViewer.localeObj.getConstant('Fit Width') && zoomText !== this.pdfViewer.localeObj.getConstant('Fit Page') && zoomText !== this.pdfViewer.localeObj.getConstant('Automatic')) {
             this.pdfViewer.magnificationModule.isAutoZoom = false;
             this.pdfViewer.magnificationModule.zoomTo(parseFloat(zoomText));
+            this.updateZoomPercentage(this.pdfViewer.magnificationModule.zoomFactor);
             this.zoomDropDown.focusOut();
         } else if (zoomText === this.pdfViewer.localeObj.getConstant('Fit Width')) {
             this.pdfViewer.magnificationModule.isAutoZoom = false;

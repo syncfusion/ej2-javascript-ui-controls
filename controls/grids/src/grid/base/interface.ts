@@ -443,6 +443,7 @@ export interface IGrid extends Component<HTMLElement> {
     invokedFromMedia?: boolean;
     isAutoGen?: boolean;
     pageTemplateChange?: boolean;
+    enableHeaderFocus?: boolean;
 
     //public methods
     getHeaderContent?(): Element;

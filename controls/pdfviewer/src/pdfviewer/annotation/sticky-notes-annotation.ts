@@ -161,11 +161,12 @@ export class StickyNotesAnnotation {
         image.onload = (): void => {
             let commentsDivid: string;
             let annotationName: string;
-            let author: string = this.pdfViewer.stickyNotesSettings.author;
+            // tslint:disable-next-line:max-line-length
+            let author: string = (this.pdfViewer.annotationSettings.author !== 'Guest') ? this.pdfViewer.annotationSettings.author : this.pdfViewer.stickyNotesSettings.author;
             if (annotation) {
                 annot = {
                     // tslint:disable-next-line:max-line-length
-                    author: author, modifiedDate: annotation.modifiedDate, annotName: annotation.annotName, data: image.src, bounds: { x: X, y: Y, width: width, height: height }, subject: annotation.subject,
+                    author: annotation.author, modifiedDate: annotation.modifiedDate, annotName: annotation.annotName, data: image.src, bounds: { x: X, y: Y, width: width, height: height }, subject: annotation.subject,
                     notes: annotation.notes, opacity: annotation.opacity, id: annotation.annotName, shapeAnnotationType: 'StickyNotes', strokeColor: 'transparent', stampStrokeColor: '', pageIndex: annotation.pageIndex,
                 };
             } else {
@@ -2470,7 +2471,7 @@ export class StickyNotesAnnotation {
         for (let j: number = 0; j < this.pdfViewerBase.pageCount; j++) {
             annotations[j] = [];
         }
-        if (storeObject) {
+        if (storeObject && this.pdfViewer.annotationSettings.isDownload) {
             let annotationCollection: IPageAnnotations[] = JSON.parse(storeObject);
             for (let i: number = 0; i < annotationCollection.length; i++) {
                 let newArray: IPopupAnnotation[] = [];
@@ -2687,7 +2688,10 @@ export class StickyNotesAnnotation {
     // tslint:disable-next-line
     public saveImportedStickyNotesAnnotations(annotation: any, pageNumber: number): any {
         let annotationObject: IPopupAnnotation = null;
-        annotation.Author = this.pdfViewer.stickyNotesSettings.author;
+        if (!annotation.Author) {
+            // tslint:disable-next-line:max-line-length
+            annotation.Author = (this.pdfViewer.annotationSettings.author !== 'Guest') ? this.pdfViewer.annotationSettings.author : this.pdfViewer.stickyNotesSettings.author;
+        }
         annotationObject = {
             // tslint:disable-next-line:max-line-length
             shapeAnnotationType: 'sticky', author: annotation.Author, modifiedDate: annotation.ModifiedDate, subject: annotation.Subject, note: annotation.Note, opacity: annotation.Opacity, state: annotation.State, stateModel: annotation.StateModel,
@@ -2706,7 +2710,10 @@ export class StickyNotesAnnotation {
     public updateStickyNotesAnnotationCollections(annotation: any, pageNumber: number): any {
         // tslint:disable-next-line
         let annotationObject: any = null;
-        annotation.Author = this.pdfViewer.stickyNotesSettings.author;
+        if (!annotation.Author) {
+            // tslint:disable-next-line:max-line-length
+            annotation.Author = (this.pdfViewer.annotationSettings.author !== 'Guest') ? this.pdfViewer.annotationSettings.author : this.pdfViewer.stickyNotesSettings.author;
+        }
         annotationObject = {
             // tslint:disable-next-line:max-line-length
             shapeAnnotationType: 'sticky', author: annotation.Author, modifiedDate: annotation.ModifiedDate, subject: annotation.Subject, note: annotation.Note, opacity: annotation.Opacity, state: annotation.State, stateModel: annotation.StateModel,
@@ -2736,7 +2743,8 @@ export class StickyNotesAnnotation {
         let accordionPages: any = document.querySelectorAll('.e-pv-accordion-page-container');
         if (accordionPages) {
             for (let j: number = 0; j < accordionPages.length; j++) {
-                accordionPages[j].remove();
+                // tslint:disable-next-line
+                (accordionPages[j] as any).remove();
             }
         }
     }

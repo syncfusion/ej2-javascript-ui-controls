@@ -20,7 +20,8 @@ import { EJ2Instance } from '@syncfusion/ej2-navigations';
 import { IElement, PointModel, NodeConstraints } from '../../../src/diagram/index';
 import { UndoRedo } from '../../../src/diagram/objects/undo-redo';
 import { profile, inMB, getMemoryProfile } from '../../../spec/common.spec';
-Diagram.Inject(UndoRedo);
+import { BpmnDiagrams } from '../../../src/diagram/objects/bpmn';
+Diagram.Inject(UndoRedo, BpmnDiagrams);
 
 let palette: SymbolPalette;
 
@@ -349,6 +350,139 @@ describe('Diagram Control', () => {
             done();
         });
 
+    });
+    describe('Swimlane Sample', () => {
+        let diagram: Diagram;
+        let ele: HTMLElement;
+        let mouseEvents = new MouseEvents();
+        let diagramCanvas: HTMLElement;
+        beforeAll((): void => {
+            ele = createElement('div', { id: 'diagramSwimlane26' });
+            document.body.appendChild(ele);
+
+            let pathData: string = 'M 120 24.9999 C 120 38.8072 109.642 50 96.8653 50 L 23.135' +
+                ' 50 C 10.3578 50 0 38.8072 0 24.9999 L 0 24.9999 C' +
+                '0 11.1928 10.3578 0 23.135 0 L 96.8653 0 C 109.642 0 120 11.1928 120 24.9999 Z';
+
+            let darkColor: string = '#C7D4DF';
+            let lightColor: string = '#f5f5f5';
+            let nodes: NodeModel[] = [
+                {
+                    //creating the swimlane and set its type as swimlane
+                    id: 'swimlane',
+                    shape: {
+                        orientation: 'Horizontal',
+                        type: 'SwimLane',
+                        //initialize swimlane header
+                        header: {
+                            annotation: { content: 'ONLINE PURCHASE STATUS' },
+                            height: 50, style: { fill: darkColor, fontSize: 11 },
+                        },
+                        lanes: [
+                            //initialize the lanes
+                            {
+                                id: 'stackCanvas1',
+                                //set the header properties
+                                header: {
+                                    annotation: { content: 'CUSTOMER' }, width: 50,
+                                    style: { fill: darkColor, fontSize: 11 }
+                                },
+                                style: { fill: lightColor },
+                                height: 120,
+                                //initialize the lane children
+                                children: [
+                                    {
+                                        id: 'Order',
+                                        shape: { type: 'Bpmn', shape: 'TextAnnotation' },
+                                        annotations: [
+                                            {
+                                                content: 'ORDER',
+                                                style: { fontSize: 11 }
+                                            }
+                                        ],
+                                        margin: { left: 60, top: 20 },
+                                        height: 40, width: 100
+                                    }
+                                ],
+                            },
+                            {
+                                id: 'stackCanvas2',
+                                header: {
+                                    annotation: { content: 'ONLINE' }, width: 50,
+                                    style: { fill: darkColor, fontSize: 11 }
+                                },
+                                style: { fill: lightColor }, height: 120,
+                                children: [
+                                    {
+                                        id: 'selectItemaddcart',
+                                        annotations: [{ content: 'Select item\nAdd cart' }],
+                                        margin: { left: 210, top: 20 },
+                                        height: 40, width: 100
+                                    },
+                                    {
+                                        id: 'paymentondebitcreditcard',
+                                        annotations: [{ content: 'Payment on\nDebit/Credit Card' }],
+                                        margin: { left: 350, top: 20 },
+                                        height: 40, width: 100
+                                    }
+                                ],
+                            },
+                        ],
+                        //creating the phases of the swimlane
+                        phases: [
+                            //set the properties of the phase
+                            {
+                                id: 'phase1', offset: 200,
+                                style: { strokeWidth: 1, strokeDashArray: '3,3', strokeColor: '#606060' },
+                                header: { annotation: { content: 'Phase' } }
+                            },
+                            {
+                                id: 'phase2', offset: 500,
+                                style: { strokeWidth: 1, strokeDashArray: '3,3', strokeColor: '#606060' },
+                                header: { annotation: { content: 'Phase' } }
+                            },
+                        ],
+                        phaseSize: 20,
+                    },
+                    offsetX: 350, offsetY: 290,
+                    height: 360, width: 650
+                },
+            ];
+            diagram = new Diagram({ width: 1000, height: 1000, nodes: nodes });
+            diagram.appendTo('#diagramSwimlane26');
+            diagramCanvas = document.getElementById(diagram.element.id + 'content');
+            mouseEvents.clickEvent(diagramCanvas, 10, 10);
+        });
+        afterAll((): void => {
+            diagram.destroy();
+            ele.remove();
+        });
+        it('Change node position to other grid cell', (done: Function) => {
+            setTimeout(function () {
+                let node = document.getElementById('Order');
+                let bounds1 = node.getBoundingClientRect();
+                let x1 = bounds1.left + bounds1.width / 2;
+                let y1 = bounds1.top + bounds1.height / 2;
+
+                let id = (diagram.nodes[0].wrapper.children[0] as GridPanel).rows[3].cells[1].children[0].id
+                let target = document.getElementById(id);
+                let bounds = target.getBoundingClientRect();
+
+                let x = bounds.left + bounds.width / 2;
+                let y = bounds.top + bounds.height / 2;
+
+                mouseEvents.clickEvent(diagramCanvas, x1 + diagram.element.offsetLeft, y1 + diagram.element.offsetTop);
+                mouseEvents.mouseDownEvent(diagramCanvas, x1 + diagram.element.offsetLeft + 10, y1 + diagram.element.offsetTop);
+                mouseEvents.mouseMoveEvent(diagramCanvas, x1 + diagram.element.offsetLeft + 20, y1 + diagram.element.offsetTop + 20);
+                mouseEvents.mouseMoveEvent(diagramCanvas, x + diagram.element.offsetLeft + 30, y + diagram.element.offsetTop + 20);
+                mouseEvents.mouseMoveEvent(diagramCanvas, x + diagram.element.offsetLeft, y + diagram.element.offsetTop);
+                mouseEvents.mouseUpEvent(diagramCanvas, x + diagram.element.offsetLeft, y + diagram.element.offsetTop);
+                node = document.getElementById('Order');
+                bounds = node.getBoundingClientRect();
+                expect(diagram.nameTable["Order"].parentId == "swimlanestackCanvas21").toBe(true);
+                done();
+            }, 1000);
+        });
     });
     describe('Vertical Swimlane without phase', () => {
         let diagram: Diagram;
@@ -1343,7 +1477,11 @@ describe('Diagram Control', () => {
         it('Checking Collection Change Event for adding lanes', (done: Function) => {
             let event: string = ''; 
             diagram.collectionChange = function (args) {
-                event += 'CollectionChange'
+                event += 'CollectionChange';
+                let obj: NodeModel = args.element as NodeModel;
+                if (obj instanceof Node) {
+                    console.log('Event: collectionChange', "id: [" + obj.id + "]", "parentId: [" + args.parentId + "]");
+                }
             } 
             let darkColor: string = '#C7D4DF';
             let lightColor: string = '#f5f5f5';
@@ -6627,6 +6765,73 @@ describe('Diagram Control', () => {
                     done();
                 }, 300);
             });
+        });
+    });
+    describe('Swimlane - TextWrapping not working for lane headers', () => {
+        let diagram: Diagram; let undoOffsetX: number; let undoOffsetY: number;
+        let ele: HTMLElement; let redoOffsetX: number; let redoOffsetY: number;
+        let mouseEvents = new MouseEvents();
+        let diagramCanvas: HTMLElement;
+        beforeAll((): void => {
+            ele = createElement('div', { styles: 'width:100%;height:500px;' });
+            ele.appendChild(createElement('div', { id: 'SwimlaneDiagram5', styles: 'width:74%;height:500px;float:left;' }));
+            document.body.appendChild(ele);
+
+            let pathData = 'M 120 24.9999 C 120 38.8072 109.642 50 96.8653 50 L 23.135' +
+                ' 50 C 10.3578 50 0 38.8072 0 24.9999 L 0 24.9999 C' +
+                '0 11.1928 10.3578 0 23.135 0 L 96.8653 0 C 109.642 0 120 11.1928 120 24.9999 Z';
+            let darkColor = '#C7D4DF';
+            let lightColor = '#f5f5f5';
+
+            function getConnectorDefaults(connector: ConnectorModel): ConnectorModel {
+                connector.type = 'Orthogonal'
+                return connector;
+            }
+            let nodes: NodeModel[] = [
+                {
+                    id: 'swimlane',
+                    shape: {
+                        type: 'SwimLane',
+                        lanes: [
+                            {
+                                id: 'stackCanvas1',
+                                header: {
+                                    annotation: { id: 'laneHeader', content: 'CUSTOMER VCDS DFGHJ ASDCV GHJUKIO HJMUIK,OL OIUJHG GHJ CUSTOMER VCDS DFGHJ ASDCV GHJUKIO HJMUIK,OL OIUJHG GHJ CUSTOMER VCDS DFGHJ ASDCV GHJUKIO HJMUIK,OL OIUJHG GHJCUSTOMER VCDS DFGHJ ASDCV GHJUKIO HJMUIK,OL OIUJHG GHJ CUSTOMER VCDS DFGHJ ASDCV GHJUKIO HJMUIK,OL OIUJHG GHJ CUSTOMER VCDS DFGHJ ASDCV GHJUKIO HJMUIK,OL OIUJHG GHJCUSTOMER VCDS DFGHJ ASDCV GHJUKIO HJMUIK,OL OIUJHG GHJ CUSTOMER VCDS DFGHJ ASDCV GHJUKIO HJMUIK,OL OIUJHG GHJ CUSTOMER VCDS DFGHJ ASDCV GHJUKIO HJMUIK,OL OIUJHG GHJ', style: { textOverflow: 'Ellipsis', textWrapping: 'Wrap' } }, width: 50,
+                                    style: { fontSize: 11 }
+                                },
+                                height: 100,
+                            }
+                        ],
+                        phaseSize: 0,
+                    },
+                    offsetX: 420, offsetY: 270,
+                    height: 100,
+                    width: 650
+                },
+            ];
+            diagram = new Diagram({
+                width: '70%',
+                height: '800px',
+                nodes: nodes,
+                getConnectorDefaults: getConnectorDefaults,
+            });
+            diagram.appendTo('#SwimlaneDiagram5');
+
+            diagramCanvas = document.getElementById(diagram.element.id + 'content');
+            mouseEvents.clickEvent(diagramCanvas, 10, 10);
+        });
+        afterAll((): void => {
+            diagram.destroy();
+            ele.remove();
+        });
+
+        it('Checking - TextWrapping for lane headers', function (done) {
+            setTimeout(function () {
+                debugger;
+                let collection = document.getElementById("swimlanestackCanvas1_0_header_laneHeader_groupElement").childNodes[1].childNodes;
+                expect(collection.length == 3).toBe(true);
+                done();
+            }, 300);
         });
     });
 });

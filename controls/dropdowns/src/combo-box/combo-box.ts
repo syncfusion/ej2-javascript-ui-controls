@@ -454,9 +454,9 @@ export class ComboBox extends DropDownList {
         }
     }
 
-    protected clear(e?: MouseEvent | KeyboardEventArgs, property?: ComboBoxModel): void {
+    protected clearAll(e?: MouseEvent | KeyboardEventArgs, property?: ComboBoxModel): void {
         if (isNullOrUndefined(property) || (!isNullOrUndefined(property) && isNullOrUndefined(property.dataSource))) {
-            super.clear(e);
+            super.clearAll(e);
         }
     }
 
@@ -552,7 +552,7 @@ export class ComboBox extends DropDownList {
             }
         }
         if (e.action === 'enter' && this.inputElement.value.trim() === '') {
-            this.clear(e);
+            this.clearAll(e);
         } else if (this.isTyped && !this.isSelected && isNullOrUndefined(li)) {
             this.customValue();
         }

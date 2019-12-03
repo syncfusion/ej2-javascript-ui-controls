@@ -355,66 +355,77 @@ export class MeasureAnnotation {
      */
     public setAnnotationType(type: AnnotType): void {
         let date: Date = new Date();
+        let author: string = 'Guest';
         this.pdfViewerBase.disableTextSelectionMode();
         switch (type) {
             case 'Distance':
                 this.currentAnnotationMode = 'Distance';
                 let modifiedDateDist: string = date.toLocaleString();
+                // tslint:disable-next-line:max-line-length
+                author = (this.pdfViewer.annotationSettings.author !== 'Guest') ? this.pdfViewer.annotationSettings.author : this.pdfViewer.distanceSettings.author ? this.pdfViewer.distanceSettings.author : 'Guest';
                 this.pdfViewer.drawingObject = {
                     sourceDecoraterShapes: this.pdfViewer.annotation.getArrowType(this.distanceStartHead),
                     taregetDecoraterShapes: this.pdfViewer.annotation.getArrowType(this.distanceEndHead), measureType: 'Distance',
                     fillColor: this.distanceFillColor, notes: '', strokeColor: this.distanceStrokeColor,
                     opacity: this.distanceOpacity, thickness: this.distanceThickness, borderDashArray: this.distanceDashArray.toString(),
                     // tslint:disable-next-line:max-line-length
-                    shapeAnnotationType: 'Distance', author: this.pdfViewer.distanceSettings.author, subject: this.pdfViewer.distanceSettings.subject
+                    shapeAnnotationType: 'Distance', author: author, subject: this.pdfViewer.distanceSettings.subject
                 };
                 this.pdfViewer.tool = 'Distance';
                 break;
             case 'Perimeter':
                 this.currentAnnotationMode = 'Perimeter';
                 let modifiedDatePeri: string = date.toLocaleString();
+                // tslint:disable-next-line:max-line-length
+                author = (this.pdfViewer.annotationSettings.author !== 'Guest') ? this.pdfViewer.annotationSettings.author : this.pdfViewer.perimeterSettings.author ? this.pdfViewer.perimeterSettings.author : 'Guest';
                 this.pdfViewer.drawingObject = {
                     // tslint:disable-next-line:max-line-length
                     shapeAnnotationType: 'LineWidthArrowHead', fillColor: this.perimeterFillColor, notes: '', strokeColor: this.perimeterStrokeColor, opacity: this.perimeterOpacity,
                     thickness: this.perimeterThickness, sourceDecoraterShapes: this.pdfViewer.annotation.getArrowType(this.perimeterStartHead),
                     // tslint:disable-next-line:max-line-length
                     taregetDecoraterShapes: this.pdfViewer.annotation.getArrowType(this.perimeterEndHead), measureType: 'Perimeter', borderDashArray: this.perimeterDashArray.toString(),
-                    author: this.pdfViewer.perimeterSettings.author, subject: this.pdfViewer.perimeterSettings.subject
+                    author: author, subject: this.pdfViewer.perimeterSettings.subject
                 };
                 this.pdfViewer.tool = 'Perimeter';
                 break;
             case 'Area':
                 this.currentAnnotationMode = 'Area';
                 let modifiedDateArea: string = date.toLocaleString();
+                // tslint:disable-next-line:max-line-length
+                author = (this.pdfViewer.annotationSettings.author !== 'Guest') ? this.pdfViewer.annotationSettings.author : this.pdfViewer.areaSettings.author ? this.pdfViewer.areaSettings.author : 'Guest';
                 this.pdfViewer.drawingObject = {
                     // tslint:disable-next-line:max-line-length
                     shapeAnnotationType: 'Polygon', fillColor: this.areaFillColor, notes: '', strokeColor: this.areaStrokeColor,
                     thickness: this.areaThickness, opacity: this.areaOpacity, measureType: 'Area',
                     modifiedDate: modifiedDateArea, borderStyle: '', borderDashArray: '0',
-                    author: this.pdfViewer.areaSettings.author, subject: this.pdfViewer.areaSettings.subject
+                    author: author, subject: this.pdfViewer.areaSettings.subject
                 };
                 this.pdfViewer.tool = 'Polygon';
                 break;
             case 'Radius':
                 this.currentAnnotationMode = 'Radius';
                 let modifiedDateRad: string = date.toLocaleString();
+                // tslint:disable-next-line:max-line-length
+                author = (this.pdfViewer.annotationSettings.author !== 'Guest') ? this.pdfViewer.annotationSettings.author : this.pdfViewer.radiusSettings.author ? this.pdfViewer.radiusSettings.author : 'Guest';
                 this.pdfViewer.drawingObject = {
                     // tslint:disable-next-line:max-line-length
                     shapeAnnotationType: 'Radius', fillColor: this.radiusFillColor, notes: '', strokeColor: this.radiusStrokeColor, opacity: this.radiusOpacity,
                     thickness: this.radiusThickness, measureType: 'Radius', modifiedDate: modifiedDateRad, borderStyle: '', borderDashArray: '0',
-                    author: this.pdfViewer.radiusSettings.author, subject: this.pdfViewer.radiusSettings.subject
+                    author: author, subject: this.pdfViewer.radiusSettings.subject
                 };
                 this.pdfViewer.tool = 'DrawTool';
                 break;
             case 'Volume':
                 this.currentAnnotationMode = 'Volume';
                 let modifiedDateVol: string = date.toLocaleString();
+                // tslint:disable-next-line:max-line-length
+                author = (this.pdfViewer.annotationSettings.author !== 'Guest') ? this.pdfViewer.annotationSettings.author : this.pdfViewer.volumeSettings.author ? this.pdfViewer.volumeSettings.author : 'Guest';
                 this.pdfViewer.drawingObject = {
                     // tslint:disable-next-line:max-line-length
                     shapeAnnotationType: 'Polygon', notes: '', fillColor: this.volumeFillColor, strokeColor: this.volumeStrokeColor,
                     opacity: this.volumeOpacity, thickness: this.volumeThickness, measureType: 'Volume',
                     modifiedDate: modifiedDateVol, borderStyle: '', borderDashArray: '0',
-                    author: this.pdfViewer.volumeSettings.author, subject: this.pdfViewer.volumeSettings.subject
+                    author: author, subject: this.pdfViewer.volumeSettings.subject
                 };
                 this.pdfViewer.tool = 'Polygon';
                 break;
@@ -592,7 +603,7 @@ export class MeasureAnnotation {
         for (let j: number = 0; j < this.pdfViewerBase.pageCount; j++) {
             annotations[j] = [];
         }
-        if (storeObject) {
+        if (storeObject && this.pdfViewer.annotationSettings.isDownload) {
             let annotationCollection: IPageAnnotations[] = JSON.parse(storeObject);
             for (let i: number = 0; i < annotationCollection.length; i++) {
                 let newArray: IMeasureShapeAnnotation[] = [];

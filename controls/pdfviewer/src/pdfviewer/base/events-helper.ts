@@ -327,6 +327,37 @@ export interface AnnotationResizeEventArgs extends BaseEventArgs {
 }
 
 /**
+ * This event arguments provides the necessary information about annotation move event.
+ */
+export interface AnnotationMoveEventArgs extends BaseEventArgs {
+    /**
+     * Defines the id of the annotation moved in the page of the PDF document.
+     */
+    annotationId: string;
+    /**
+     * Defines the page number in which the annotation is moved.
+     */
+    pageIndex: number;
+    /**
+     * Defines the type of the annotation moved in the page of the PDF document.
+     */
+    annotationType: AnnotationType;
+    /**
+     * Defines the settings of the annotation moved in the PDF document.
+     */
+    // tslint:disable-next-line
+    annotationSettings: any;
+    /**
+     * Previous position of annotations in the page text content.
+     */
+    previousPosition: object;
+    /**
+     * Current position of annotations in the page text content.
+     */
+    currentPosition: object;
+}
+
+/**
  * This event arguments provides the necessary information about annotation select event.
  */
 export interface AnnotationSelectEventArgs extends BaseEventArgs {
@@ -343,6 +374,11 @@ export interface AnnotationSelectEventArgs extends BaseEventArgs {
      */
     // tslint:disable-next-line
     annotation: any;
+    /**
+     * Defines the overlapped annotations of the selected annotation.
+     */
+    // tslint:disable-next-line
+    annotationCollection?: any;
 }
 
 /** 
@@ -471,4 +507,28 @@ export interface AjaxRequestInitiateEventArgs extends BaseEventArgs {
      */
     // tslint:disable-next-line
     JsonData: any;
+}
+
+/**
+ * This event arguments provide the necessary information about download start event.
+ */
+export interface DownloadStartEventArgs extends BaseEventArgs {
+    /**
+     * File name of the currently loaded PDF document in the PDF Viewer.
+     */
+    fileName: string;
+}
+
+/**
+ * This event arguments provide the necessary information about download end event.
+ */
+export interface DownloadEndEventArgs extends BaseEventArgs {
+    /**
+     * File name of the currently loaded PDF document in the PDF Viewer.
+     */
+    fileName: string;
+    /**
+     * Defines the base 64 string of the loaded PDF document data.
+     */
+    downloadDocument: string;
 }

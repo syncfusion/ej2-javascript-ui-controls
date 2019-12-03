@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 17.3.30 (2019-12-03)
+
+### Chart
+
+#### Bug Fixes
+
+- `#256664` - Polar and radar axis labels overlapping with legend issue fixed.
+
 ## 17.3.28 (2019-11-19)
 
 ### Chart

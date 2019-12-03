@@ -28,7 +28,7 @@ export class Print {
     private printWind: Window;
     private scrollModule: Scroll;
     private isAsyncPrint: boolean = false;
-    public static printGridProp: string[] = [...getCloneProperties(), events.beforePrint, events.printComplete];
+    public static printGridProp: string[] = [...getCloneProperties(), events.beforePrint, events.printComplete, events.load];
 
     private defered: Deferred = new Deferred();
 

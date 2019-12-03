@@ -6520,4 +6520,60 @@ describe('MultiSelect', () => {
             }, 100);
         });
     });
+    describe('EJ2-33412', () => {
+        let listObj: MultiSelect;
+        let divElement: HTMLElement = createElement('div', { id: 'divElement' });
+        divElement.style.height = '900px';
+        let element: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'multiselect', attrs: { 'type': 'text' } });
+        let empList: { [key: string]: Object }[] = [
+            { "Name": "Australia", "Code": "AU", "Start": "A" },
+            { "Name": "Bermuda", "Code": "BM", "Start": "B" },
+            { "Name": "Canada", "Code": "CA", "Start": "C" },
+            { "Name": "Cameroon", "Code": "CM", "Start": "C" },
+            { "Name": "Denmark", "Code": "DK", "Start": "D" },
+            { "Name": "France", "Code": "FR", "Start": "F" },
+            { "Name": "Finland", "Code": "FI", "Start": "F" },
+            { "Name": "Germany", "Code": "DE", "Start": "G" },
+            { "Name": "Greenland", "Code": "GL", "Start": "G" },
+            { "Name": "Hong Kong", "Code": "HK", "Start": "H" },
+            { "Name": "India", "Code": "IN", "Start": "I" },
+            { "Name": "Italy", "Code": "IT", "Start": "I" },
+            { "Name": "Japan", "Code": "JP", "Start": "J" },
+            { "Name": "Mexico", "Code": "MX", "Start": "M" },
+            { "Name": "Norway", "Code": "NO", "Start": "N" },
+            { "Name": "Poland", "Code": "PL", "Start": "P" },
+            { "Name": "Switzerland", "Code": "CH", "Start": "S" },
+            { "Name": "United Kingdom", "Code": "GB", "Start": "U" },
+            { "Name": "United States", "Code": "US", "Start": "U" }
+        ];
+        beforeAll(() => {
+            document.body.innerHTML = '';
+            document.body.appendChild(element);
+        });
+        afterAll(() => {
+            if (element) {
+                listObj.destroy();
+                element.remove();
+            }
+        });
+        it('Clear public method checking', () => {
+            let listObj: MultiSelect = new MultiSelect({
+                dataSource: empList,
+                fields: { text: 'Name', value: 'Name', groupBy: 'Start' },
+                showSelectAll: true,
+                mode : 'CheckBox',
+                width: '250px',
+                placeholder: 'Select an employee',
+                popupWidth: '250px',
+                popupHeight: '300px',
+                value: ['India'],
+                enableGroupCheckBox: true,
+            });
+            listObj.appendTo(element);
+            listObj.showPopup();
+            expect(listObj.value !== null).toBe(true);
+            listObj.clear();
+            expect(listObj.value === null).toBe(true);
+        });
+    });
 });

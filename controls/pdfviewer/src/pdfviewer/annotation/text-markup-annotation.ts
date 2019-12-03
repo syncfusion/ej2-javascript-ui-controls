@@ -5,6 +5,7 @@ import {
 } from '../index';
 import { createElement, Browser, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { ColorPicker, ChangeEventArgs } from '@syncfusion/ej2-inputs';
+import { cloneObject } from '../../diagram/drawing-util';
 
 /**
  * @hidden
@@ -118,6 +119,12 @@ export class TextMarkupAnnotation {
     private isSelectionMaintained: boolean = false;
     private isExtended: boolean = false;
     private isNewAnnotation: boolean = false;
+    private selectAnnotationCollection: ITextMarkupAnnotation[] = [];
+    private selectedAnnotation: ITextMarkupAnnotation;
+    /**
+     * @private
+     */
+    public isSelectedAnnotation: boolean = false;
 
     /**
      * @private
@@ -256,9 +263,14 @@ export class TextMarkupAnnotation {
             for (let n: number = 0; n < textDivs.length; n++) {
                 if (textDivs[n]) {
                     // tslint:disable-next-line
-                    let top: number = parseInt(textDivs[n].style.top);
+                    let rangebounds: any = textDivs[n].getBoundingClientRect();
+                    let top: number = this.getClientValueTop(rangebounds.top, annotation.pageNumber);
                     // tslint:disable-next-line
-                    if (top === parseInt(y.toString()) || (top + 1) === parseInt(y.toString()) || (top - 1) === parseInt(y.toString())) {
+                    let currentTop: number = parseInt(textDivs[n].style.top);
+                    // tslint:disable-next-line
+                    if (top === parseInt(y.toString()) || parseInt(top.toString()) === parseInt(y.toString()) || (top + 1) === parseInt(y.toString()) || (top - 1) === parseInt(y.toString())
+                        // tslint:disable-next-line
+                        || currentTop === parseInt(y.toString()) || currentTop === y) {
                         element = textDivs[n];
                         break;
                     }
@@ -499,30 +511,37 @@ export class TextMarkupAnnotation {
     private drawTextMarkups(type: string, bounds: IRectangle[], pageNumber: number, rect: any, factor: number, textContent: string, startIndex: number, endIndex: number): void {
         let annotation: ITextMarkupAnnotation = null;
         this.isNewAnnotation = false;
+        let author: string = 'Guest';
         let context: CanvasRenderingContext2D = this.getPageContext(pageNumber);
         if (context) {
             context.setLineDash([]);
             switch (type) {
                 case 'Highlight':
-                    // tslint:disable-next-line:max-line-length
                     this.isNewAnnotation = true;
-                    annotation = this.getAddedAnnotation(type, this.highlightColor, this.highlightOpacity, bounds, this.pdfViewer.highlightSettings.author, this.pdfViewer.highlightSettings.subject, this.pdfViewer.highlightSettings.modifiedDate, '', rect, pageNumber, textContent, startIndex, endIndex);
+                    // tslint:disable-next-line:max-line-length
+                    author = (this.pdfViewer.annotationSettings.author !== 'Guest') ? this.pdfViewer.annotationSettings.author : this.pdfViewer.highlightSettings.author;
+                    // tslint:disable-next-line:max-line-length
+                    annotation = this.getAddedAnnotation(type, this.highlightColor, this.highlightOpacity, bounds, author, this.pdfViewer.highlightSettings.subject, this.pdfViewer.highlightSettings.modifiedDate, '', rect, pageNumber, textContent, startIndex, endIndex);
                     if (annotation) {
                         this.renderHighlightAnnotation(annotation.bounds, annotation.opacity, annotation.color, context, factor);
                     }
                     break;
                 case 'Strikethrough':
-                    // tslint:disable-next-line:max-line-length
                     this.isNewAnnotation = true;
-                    annotation = this.getAddedAnnotation(type, this.strikethroughColor, this.strikethroughOpacity, bounds, this.pdfViewer.strikethroughSettings.author, this.pdfViewer.strikethroughSettings.subject, this.pdfViewer.strikethroughSettings.modifiedDate, '', rect, pageNumber, textContent, startIndex, endIndex);
+                    // tslint:disable-next-line:max-line-length
+                    author = (this.pdfViewer.annotationSettings.author !== 'Guest') ? this.pdfViewer.annotationSettings.author : this.pdfViewer.strikethroughSettings.author;
+                    // tslint:disable-next-line:max-line-length
+                    annotation = this.getAddedAnnotation(type, this.strikethroughColor, this.strikethroughOpacity, bounds, author, this.pdfViewer.strikethroughSettings.subject, this.pdfViewer.strikethroughSettings.modifiedDate, '', rect, pageNumber, textContent, startIndex, endIndex);
                     if (annotation) {
                         this.renderStrikeoutAnnotation(annotation.bounds, annotation.opacity, annotation.color, context, factor);
                     }
                     break;
                 case 'Underline':
-                    // tslint:disable-next-line:max-line-length
                     this.isNewAnnotation = true;
-                    annotation = this.getAddedAnnotation(type, this.underlineColor, this.underlineOpacity, bounds, this.pdfViewer.underlineSettings.author, this.pdfViewer.underlineSettings.subject, this.pdfViewer.underlineSettings.modifiedDate, '', rect, pageNumber, textContent, startIndex, endIndex);
+                    // tslint:disable-next-line:max-line-length
+                    author = (this.pdfViewer.annotationSettings.author !== 'Guest') ? this.pdfViewer.annotationSettings.author : this.pdfViewer.underlineSettings.author;
+                    // tslint:disable-next-line:max-line-length
+                    annotation = this.getAddedAnnotation(type, this.underlineColor, this.underlineOpacity, bounds, author, this.pdfViewer.underlineSettings.subject, this.pdfViewer.underlineSettings.modifiedDate, '', rect, pageNumber, textContent, startIndex, endIndex);
                     if (annotation) {
                         this.renderUnderlineAnnotation(annotation.bounds, annotation.opacity, annotation.color, context, factor);
                     }
@@ -669,7 +688,7 @@ export class TextMarkupAnnotation {
         for (let j: number = 0; j < this.pdfViewerBase.pageCount; j++) {
             textMarkupAnnotations[j] = [];
         }
-        if (storeTextMarkupObject) {
+        if (storeTextMarkupObject && this.pdfViewer.annotationSettings.isDownload) {
             let textMarkupAnnotationCollection: IPageAnnotations[] = JSON.parse(storeTextMarkupObject);
             for (let i: number = 0; i < textMarkupAnnotationCollection.length; i++) {
                 let newArray: ITextMarkupAnnotation[] = [];
@@ -718,6 +737,8 @@ export class TextMarkupAnnotation {
                 }
                 this.pdfViewer.annotationModule.updateAnnotationCollection(this.currentTextMarkupAnnotation);
                 this.manageAnnotations(pageAnnotations, this.selectTextMarkupCurrentPage);
+                // tslint:disable-next-line:max-line-length
+                this.pdfViewer.annotationModule.updateImportAnnotationCollection(this.currentTextMarkupAnnotation, this.currentTextMarkupAnnotation.pageNumber, 'textMarkupAnnotation');
                 let annotationId: string = this.currentTextMarkupAnnotation.annotName;
                 // tslint:disable-next-line
                 let annotationBounds: any = this.currentTextMarkupAnnotation.bounds;
@@ -1392,6 +1413,10 @@ export class TextMarkupAnnotation {
             annotation = this.retreiveTextIndex(annotation);
             this.currentTextMarkupAnnotation = annotation;
         }
+        if (this.isSelectedAnnotation) {
+            this.pdfViewerBase.isSelection = true;
+            this.updateAnnotationBounds();
+        }
         // tslint:disable-next-line
         let currentEvent: any = event;
         if (this.pdfViewer.enableTextMarkupResizer && annotation && currentEvent && !currentEvent.touches) {
@@ -1420,7 +1445,14 @@ export class TextMarkupAnnotation {
         }
         if (annotation.annotName !== '' && !this.isNewAnnotation) {
             if (isCurrentTextMarkup) {
-                this.pdfViewer.annotationModule.annotationSelect(annotation.annotName, this.selectTextMarkupCurrentPage, annotation);
+                // tslint:disable-next-line
+                let annotationCollection: any = this.getAnnotationsUnderClickPoint(annotation);
+                if (annotationCollection) {
+                    // tslint:disable-next-line:max-line-length
+                    this.pdfViewer.annotationModule.annotationSelect(annotation.annotName, this.selectTextMarkupCurrentPage, annotation, annotationCollection);
+                } else {
+                    this.pdfViewer.annotationModule.annotationSelect(annotation.annotName, this.selectTextMarkupCurrentPage, annotation);
+                }
             }
         }
         if (annotation && this.pdfViewer.enableTextMarkupResizer) {
@@ -1448,6 +1480,157 @@ export class TextMarkupAnnotation {
         context.lineWidth = isNullOrUndefined(this.pdfViewer.annotationSelectorSettings.selectionBorderThickness) ? 1 : this.pdfViewer.annotationSelectorSettings.selectionBorderThickness;
         context.stroke();
         context.save();
+    }
+
+    // tslint:disable-next-line
+    private getAnnotationsUnderClickPoint(selectAnnotation: any, isCheck?: boolean): any {
+        if (!isCheck) {
+            this.selectedAnnotation = selectAnnotation;
+            this.selectAnnotationCollection = [];
+        }
+        // Calculate the textmarkup annotation rectangular bounds.
+        // tslint:disable-next-line
+        let selectBounds: any = this.calculateAnnotationBounds(selectAnnotation);
+        // tslint:disable-next-line
+        let left: number = parseInt(selectBounds.left);
+        // tslint:disable-next-line
+        let top: number = parseInt(selectBounds.top);
+        // tslint:disable-next-line
+        let totalHeight: number = parseInt(selectBounds.top + selectBounds.height);
+        // tslint:disable-next-line
+        let totalWidth: number = parseInt(selectBounds.left + selectBounds.width);
+        // tslint:disable-next-line
+        let pageNumber: number = selectAnnotation.pageNumber;
+        let annotationList: ITextMarkupAnnotation[] = this.getAnnotations(pageNumber, null);
+        for (let i: number = 0; i < annotationList.length; i++) {
+            let annotation: ITextMarkupAnnotation = annotationList[i];
+            let isAdded: boolean = false;
+            if (isCheck) {
+                for (let i: number = 0; i < this.selectAnnotationCollection.length; i++) {
+                    if (annotation.annotName === this.selectAnnotationCollection[i].annotName) {
+                        isAdded = true;
+                    }
+                    if (annotation.annotName === this.selectedAnnotation.annotName) {
+                        isAdded = true;
+                    }
+                }
+            }
+            if (selectAnnotation.annotName !== annotation.annotName && !isAdded) {
+                // Calculate the textmarkup annotation rectangular bounds.
+                // tslint:disable-next-line
+                let annotationBounds: any = this.calculateAnnotationBounds(annotation);
+                // tslint:disable-next-line
+                if ((left >= parseInt(annotationBounds.left)) && (totalWidth <= parseInt(annotationBounds.left + annotationBounds.width + 2)) && (top >= parseInt(annotationBounds.top)) && (top <= parseInt(annotationBounds.top + annotationBounds.height))) {
+                    // tslint:disable-next-line
+                    left = parseInt(annotationBounds.left);
+                    // tslint:disable-next-line
+                    totalWidth = parseInt(annotationBounds.left + annotationBounds.width);
+                    // tslint:disable-next-line
+                    top = parseInt(annotationBounds.top);
+                    // tslint:disable-next-line
+                    totalHeight = parseInt(annotationBounds.top + annotationBounds.height);
+                    annotationBounds = selectBounds;
+                } else {
+                    // tslint:disable-next-line
+                    left = parseInt(selectBounds.left);
+                    // tslint:disable-next-line
+                    totalWidth = parseInt(selectBounds.left + selectBounds.width);
+                    // tslint:disable-next-line
+                    top = parseInt(selectBounds.top);
+                    // tslint:disable-next-line
+                    totalHeight = parseInt(selectBounds.top + selectBounds.height);
+                }
+                let isOverlap: boolean = false;
+                // To Check whether the annotations has same bounds or not.
+                // tslint:disable-next-line
+                if (left === parseInt(annotationBounds.left) && top === parseInt(annotationBounds.top)) {
+                    isOverlap = true;
+                }
+                // To check left and right positions of the annotations.
+                // tslint:disable-next-line 
+                if (((left <= parseInt(annotationBounds.left + 1)) && (totalWidth >= parseInt(annotationBounds.left))) || ((left <= parseInt(annotationBounds.left + annotationBounds.width)) && (totalWidth >= parseInt(annotationBounds.left + annotationBounds.width)))) {
+                    isOverlap = true;
+                }
+                if (isOverlap) {
+                    // To check top and bottom positions of the annotations. 
+                    // tslint:disable-next-line
+                    if (((top <= parseInt(annotationBounds.top)) && (totalHeight >= parseInt(annotationBounds.top))) || ((top <= parseInt(annotationBounds.top + annotationBounds.height)) && (totalHeight >= parseInt(annotationBounds.top + annotationBounds.height)))) {
+                        isOverlap = true;
+                        this.selectAnnotationCollection.push(annotation);
+                    }
+                } else {
+                    isOverlap = false;
+                }
+            }
+        }
+        if (this.selectAnnotationCollection.length !== 0) {
+            if (!isCheck) {
+                let annotCollection: ITextMarkupAnnotation[] = this.selectAnnotationCollection;
+                for (let i: number = 0; i < annotCollection.length; i++) {
+                    this.getAnnotationsUnderClickPoint(annotCollection[i], true);
+                }
+                return this.selectAnnotationCollection;
+            }
+        } else {
+            this.selectedAnnotation = null;
+            this.selectAnnotationCollection = [];
+            return null;
+        }
+    }
+
+    // tslint:disable-next-line
+    private calculateAnnotationBounds(annotation: any): any {
+        // tslint:disable-next-line
+        let textMarkupAnnotation: any = cloneObject(annotation);
+        // tslint:disable-next-line
+        let bounds: any = textMarkupAnnotation.bounds;
+        let left: number = 0;
+        let top: number = 0;
+        let width: number = 0;
+        let height: number = 0;
+        let prevTop: number = 0;
+        let prevLeft: number = 0;
+        let widthArray: number[] = [];
+        for (let i: number = 0; i < bounds.length; i++) {
+            if (bounds[i].X || bounds[i].Y) {
+                bounds[i].left = bounds[i].X;
+                bounds[i].top = bounds[i].Y;
+                bounds[i].height = bounds[i].Height;
+                bounds[i].width = bounds[i].Width;
+            }
+            if (!left && !top) {
+                left = bounds[i].left;
+                top = bounds[i].top;
+                height = bounds[i].height;
+                width = bounds[i].width;
+            } else {
+                if (prevTop !== bounds[i].top) {
+                    height = height + bounds[i].height;
+                    widthArray.push(width);
+                    width = 0;
+                }
+                if (prevLeft !== bounds[i].left) {
+                    width = width + bounds[i].width;
+                }
+                if (left > bounds[i].left) {
+                    left = bounds[i].left;
+                }
+                if (top > bounds[i].top) {
+                    top = bounds[i].top;
+                }
+            }
+            prevLeft = bounds[i].left;
+            prevTop = bounds[i].top;
+        }
+        for (let i: number = 0; i < widthArray.length; i++) {
+            if (width < widthArray[i]) {
+                width = widthArray[i];
+            }
+        }
+        if (bounds.length > 2) {
+            height = (bounds[bounds.length - 1].top - bounds[0].top) + bounds[bounds.length - 1].height;
+        }
+        return { left: left, top: top, width: width, height: height };
     }
 
     /**
@@ -1673,6 +1856,8 @@ export class TextMarkupAnnotation {
     public clear(): void {
         this.selectTextMarkupCurrentPage = null;
         this.currentTextMarkupAnnotation = null;
+        this.selectAnnotationCollection = [];
+        this.selectedAnnotation = null;
         window.sessionStorage.removeItem(this.pdfViewerBase.documentId + '_annotations_textMarkup');
     }
 }

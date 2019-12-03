@@ -70,7 +70,7 @@ describe('AutoComplete', () => {
         it('clear the value and text when click on clear icon', (done) => {
             atcObj.showPopup();
             setTimeout(() => {
-                atcObj.clear();
+                atcObj.clearAll();
                 expect(atcObj.value === null).toBe(true);
                 expect(atcObj.text === null).toBe(true);
                 done();

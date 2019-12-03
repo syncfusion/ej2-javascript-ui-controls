@@ -239,7 +239,7 @@ var Toast = /** @__PURE__ @class */ (function (_super) {
         }
     };
     Toast.prototype.setCSSClass = function (cssClass) {
-        if (!isNullOrUndefined(cssClass)) {
+        if (cssClass) {
             var split = cssClass.indexOf(',') !== -1 ? ',' : ' ';
             classList(this.toastEle, cssClass.split(split), []);
         }

@@ -11873,8 +11873,13 @@ class PolarRadarPanel extends LineBase {
      * @return {void}
      * @private
      */
+    //tslint:disable-next-line:max-func-body-length
     drawXAxisLabels(axis, index) {
         this.visibleAxisLabelRect = [];
+        let legendRect;
+        if (this.chart.legendModule) {
+            legendRect = this.chart.legendModule.legendBounds;
+        }
         let chart = this.chart;
         let pointX = 0;
         let pointY = 0;
@@ -11939,7 +11944,6 @@ class PolarRadarPanel extends LineBase {
                 lastLabelX += pointX;
                 labelText = (lastLabelX > firstLabelX) ? '' : labelText;
             }
-            options = new TextOption(chart.element.id + index + '_AxisLabel_' + i, pointX, pointY, textAnchor, labelText, '', 'central');
             // Label intersect action (Hide) perform here
             if (i !== 0 && intersectType === 'Hide') {
                 for (let j = i; j >= 0; j--) {
@@ -11954,6 +11958,17 @@ class PolarRadarPanel extends LineBase {
                     }
                 }
             }
+            if (!isIntersect && legendRect) {
+                isIntersect = isOverlap(labelRegions[i], legendRect);
+                if (isIntersect && intersectType === 'Trim') {
+                    let width = this.getAvailableSpaceToTrim(legendRect, labelRegions[i]);
+                    if (width > 0) {
+                        labelText = textTrim(width, axis.visibleLabels[i].originalText, axis.labelStyle);
+                        isIntersect = false;
+                    }
+                }
+            }
+            options = new TextOption(chart.element.id + index + '_AxisLabel_' + i, pointX, pointY, textAnchor, labelText, '', 'central');
             if (isIntersect) {
                 continue; // If the label is intersect, the label render is ignored.
             }
@@ -11961,6 +11976,28 @@ class PolarRadarPanel extends LineBase {
             textElement(chart.renderer, options, label.labelStyle, label.labelStyle.color || chart.themeStyle.axisLabel, labelElement, false, chart.redraw, true, true);
         }
         this.element.appendChild(labelElement);
+    }
+    /**
+     * To get available space to trim.
+     * @param legendRect
+     * @param labelRect
+     */
+    getAvailableSpaceToTrim(legendRect, labelRect) {
+        let legendX1 = legendRect.x;
+        let legendX2 = legendX1 + legendRect.width;
+        let labelX1 = labelRect.x;
+        let labelX2 = labelX1 + labelRect.width;
+        let width = 0;
+        if (labelX1 > legendX1 && labelX1 < legendX2 && labelX2 > legendX2) {
+            width = labelX2 - legendX2;
+        }
+        else if (labelX1 > legendX1 && labelX1 < legendX2 && labelX2 < legendX2) {
+            width = 0;
+        }
+        else if (labelX2 > legendX1 && labelX2 < legendX2 && labelX1 < legendX1) {
+            width = legendX1 - labelX1;
+        }
+        return width;
     }
     /**
      * Getting axis label bounds

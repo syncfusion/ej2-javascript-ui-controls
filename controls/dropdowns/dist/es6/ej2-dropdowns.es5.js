@@ -1394,7 +1394,7 @@ var DropDownList = /** @__PURE__ @class */ (function (_super) {
     };
     DropDownList.prototype.resetHandler = function (e) {
         e.preventDefault();
-        this.clear(e);
+        this.clearAll(e);
     };
     DropDownList.prototype.resetFocusElement = function () {
         this.removeHover();
@@ -1408,7 +1408,7 @@ var DropDownList = /** @__PURE__ @class */ (function (_super) {
             }
         }
     };
-    DropDownList.prototype.clear = function (e, properties) {
+    DropDownList.prototype.clearAll = function (e, properties) {
         if (isNullOrUndefined(properties) || (!isNullOrUndefined(properties) &&
             (isNullOrUndefined(properties.dataSource) ||
                 (!(properties.dataSource instanceof DataManager) && properties.dataSource.length === 0)))) {
@@ -3182,7 +3182,7 @@ var DropDownList = /** @__PURE__ @class */ (function (_super) {
     DropDownList.prototype.updateDataSource = function (props) {
         if (this.inputElement.value !== '' || (!isNullOrUndefined(props) && (isNullOrUndefined(props.dataSource)
             || (!(props.dataSource instanceof DataManager) && props.dataSource.length === 0)))) {
-            this.clear(null, props);
+            this.clearAll(null, props);
         }
         if (!(!isNullOrUndefined(props) && (isNullOrUndefined(props.dataSource)
             || (!(props.dataSource instanceof DataManager) && props.dataSource.length === 0)))) {
@@ -3247,7 +3247,7 @@ var DropDownList = /** @__PURE__ @class */ (function (_super) {
                     break;
                 case 'text':
                     if (newProp.text === null) {
-                        this.clear();
+                        this.clearAll();
                         break;
                     }
                     if (!this.list) {
@@ -3272,7 +3272,7 @@ var DropDownList = /** @__PURE__ @class */ (function (_super) {
                     break;
                 case 'value':
                     if (newProp.value === null) {
-                        this.clear();
+                        this.clearAll();
                         break;
                     }
                     this.notify('beforeValueChange', { newProp: newProp }); // gird component value type change
@@ -3298,7 +3298,7 @@ var DropDownList = /** @__PURE__ @class */ (function (_super) {
                     break;
                 case 'index':
                     if (newProp.index === null) {
-                        this.clear();
+                        this.clearAll();
                         break;
                     }
                     if (!this.list) {
@@ -3473,7 +3473,7 @@ var DropDownList = /** @__PURE__ @class */ (function (_super) {
         if (this.inputElement.value.trim() === '' && !this.isInteracted && (this.isSelectCustom ||
             !isNullOrUndefined(this.selectedLI) && this.inputElement.value !== dataItem.text)) {
             this.isSelectCustom = false;
-            this.clear();
+            this.clearAll();
         }
     };
     /**
@@ -3562,6 +3562,13 @@ var DropDownList = /** @__PURE__ @class */ (function (_super) {
             this.renderList();
         }
         return this.ulElement ? _super.prototype.getItems.call(this) : [];
+    };
+    /**
+     * Allows you to clear the selected values from the component.
+     * @returns void.
+     */
+    DropDownList.prototype.clear = function () {
+        this.value = null;
     };
     __decorate$1([
         Property(null)
@@ -3990,9 +3997,9 @@ var ComboBox = /** @__PURE__ @class */ (function (_super) {
             return false;
         }
     };
-    ComboBox.prototype.clear = function (e, property) {
+    ComboBox.prototype.clearAll = function (e, property) {
         if (isNullOrUndefined(property) || (!isNullOrUndefined(property) && isNullOrUndefined(property.dataSource))) {
-            _super.prototype.clear.call(this, e);
+            _super.prototype.clearAll.call(this, e);
         }
     };
     ComboBox.prototype.isSelectFocusItem = function (element) {
@@ -4086,7 +4093,7 @@ var ComboBox = /** @__PURE__ @class */ (function (_super) {
             }
         }
         if (e.action === 'enter' && this.inputElement.value.trim() === '') {
-            this.clear(e);
+            this.clearAll(e);
         }
         else if (this.isTyped && !this.isSelected && isNullOrUndefined(li)) {
             this.customValue();
@@ -4483,9 +4490,9 @@ var AutoComplete = /** @__PURE__ @class */ (function (_super) {
             this.hidePopup();
         }
     };
-    AutoComplete.prototype.clear = function (e, property) {
+    AutoComplete.prototype.clearAll = function (e, property) {
         if (isNullOrUndefined(property) || (!isNullOrUndefined(property) && isNullOrUndefined(property.dataSource))) {
-            _super.prototype.clear.call(this, e);
+            _super.prototype.clearAll.call(this, e);
         }
         if (this.beforePopupOpen) {
             this.hidePopup();
@@ -8064,6 +8071,14 @@ var MultiSelect = /** @__PURE__ @class */ (function (_super) {
     };
     
     /**
+     * Allows you to clear the selected values from the Multiselect component.
+     * @returns void
+     */
+    MultiSelect.prototype.clear = function () {
+        this.selectAll(false);
+        this.setProperties({ value: null }, true);
+    };
+    /**
      * To Initialize the control rendering
      * @private
      */
@@ -8794,7 +8809,7 @@ var CheckBoxSelection = /** @__PURE__ @class */ (function () {
         }
     };
     CheckBoxSelection.prototype.onDocumentClick = function (e) {
-        if (!this.parent.element.classList.contains('e-listbox')) {
+        if (!this.parent.element.classList.contains('e-listbox') && this.parent.element.tagName !== 'EJS-LISTBOX') {
             var target = e.target;
             if (!isNullOrUndefined(this.parent.popupObj) && closest(target, '#' + this.parent.popupObj.element.id)) {
                 e.preventDefault();

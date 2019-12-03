@@ -394,7 +394,8 @@ export class Sort implements IAction {
             && !(gObj.groupSettings.columns.indexOf(field) > -1)) {
             this.removeSortColumn(field);
         } else {
-            this.sortColumn(field, direction, e.ctrlKey || this.enableSortMultiTouch);
+            this.sortColumn(field, direction, e.ctrlKey || this.enableSortMultiTouch ||
+                 (navigator.userAgent.indexOf('Mac OS') !== -1 && e.metaKey));
         }
     }
 

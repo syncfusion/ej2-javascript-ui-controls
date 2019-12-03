@@ -1170,6 +1170,13 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     @Property(false)
     public showColumnChooser: boolean;
 
+    /**
+     * If `enableHeaderFocus` set to true, then header element will be focused when focus moves to grid.
+     * @default false    
+     */
+    @Property(false)
+    public enableHeaderFocus: boolean;
+
     /**    
      * Defines the scrollable height of the grid content.    
      * @default 'auto'    

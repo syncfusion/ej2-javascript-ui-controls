@@ -1633,103 +1633,105 @@ export class AnnotationToolbar {
         this.selectAnnotationDeleteItem(true);
     }
     private applyAnnotationToolbarSettings(): void {
-        if (this.pdfViewer.annotationToolbarSettings.annotationToolbarItem.indexOf('HighlightTool') !== -1) {
-            this.showHighlightTool(true);
-        } else {
-            this.showHighlightTool(false);
-        }
-        if (this.pdfViewer.annotationToolbarSettings.annotationToolbarItem.indexOf('UnderlineTool') !== -1) {
-            this.showUnderlineTool(true);
-        } else {
-            this.showUnderlineTool(false);
-        }
-        if (this.pdfViewer.annotationToolbarSettings.annotationToolbarItem.indexOf('StrikethroughTool') !== -1) {
-            this.showStrikethroughTool(true);
-        } else {
-            this.showStrikethroughTool(false);
-        }
-        if (this.pdfViewer.annotationToolbarSettings.annotationToolbarItem.indexOf('ShapeTool') !== -1) {
-            this.showShapeAnnotationTool(true);
-        } else {
-            this.showShapeAnnotationTool(false);
-        }
-        if (this.pdfViewer.annotationToolbarSettings.annotationToolbarItem.indexOf('CalibrateTool') !== -1) {
-            this.showCalibrateAnnotationTool(true);
-        } else {
-            this.showCalibrateAnnotationTool(false);
-        }
-        if (this.pdfViewer.annotationToolbarSettings.annotationToolbarItem.indexOf('ColorEditTool') !== -1) {
-            this.showColorEditTool(true);
-        } else {
-            this.showColorEditTool(false);
-        }
-        if (this.pdfViewer.annotationToolbarSettings.annotationToolbarItem.indexOf('StrokeColorEditTool') !== -1) {
-            this.showStrokeColorEditTool(true);
-        } else {
-            this.showStrokeColorEditTool(false);
-        }
-        if (this.pdfViewer.annotationToolbarSettings.annotationToolbarItem.indexOf('ThicknessEditTool') !== -1) {
-            this.showThicknessEditTool(true);
-        } else {
-            this.showThicknessEditTool(false);
-        }
-        if (this.pdfViewer.annotationToolbarSettings.annotationToolbarItem.indexOf('OpacityEditTool') !== -1) {
-            this.showOpacityEditTool(true);
-        } else {
-            this.showOpacityEditTool(false);
-        }
-        if (this.pdfViewer.annotationToolbarSettings.annotationToolbarItem.indexOf('AnnotationDeleteTool') !== -1) {
-            this.showAnnotationDeleteTool(true);
-        } else {
-            this.showAnnotationDeleteTool(false);
-        }
-        if (this.pdfViewer.annotationToolbarSettings.annotationToolbarItem.indexOf('StampAnnotationTool') !== -1) {
-            this.showStampAnnotationTool(true);
-        } else {
-            this.showStampAnnotationTool(false);
-        }
-        if (this.pdfViewer.annotationToolbarSettings.annotationToolbarItem.indexOf('HandWrittenSignatureTool') !== -1) {
-            this.showSignatureTool(true);
-        } else {
-            this.showSignatureTool(false);
-        }
-        if (this.pdfViewer.annotationToolbarSettings.annotationToolbarItem.indexOf('FreeTextAnnotationTool') !== -1) {
-            this.showFreeTextAnnotationTool(true);
-        } else {
-            this.showFreeTextAnnotationTool(false);
-        }
-        if (this.pdfViewer.annotationToolbarSettings.annotationToolbarItem.indexOf('FontFamilyAnnotationTool') !== -1) {
-            this.showFontFamilyAnnotationTool(true);
-        } else {
-            this.showFontFamilyAnnotationTool(false);
-        }
-        if (this.pdfViewer.annotationToolbarSettings.annotationToolbarItem.indexOf('FontSizeAnnotationTool') !== -1) {
-            this.showFontSizeAnnotationTool(true);
-        } else {
-            this.showFontSizeAnnotationTool(false);
-        }
-        if (this.pdfViewer.annotationToolbarSettings.annotationToolbarItem.indexOf('FontStylesAnnotationTool') !== -1) {
-            this.showFontStylesAnnotationTool(true);
-        } else {
-            this.showFontStylesAnnotationTool(false);
-        }
-        if (this.pdfViewer.annotationToolbarSettings.annotationToolbarItem.indexOf('FontAlignAnnotationTool') !== -1) {
-            this.showFontAlignAnnotationTool(true);
-        } else {
-            this.showFontAlignAnnotationTool(false);
-        }
-        if (this.pdfViewer.annotationToolbarSettings.annotationToolbarItem.indexOf('FontColorAnnotationTool') !== -1) {
-            this.showFontColorAnnotationTool(true);
-        } else {
-            this.showFontColorAnnotationTool(false);
-        }
-        if (this.pdfViewer.annotationToolbarSettings.annotationToolbarItem.indexOf('CommentPanelTool') !== -1) {
-            this.showCommentPanelTool(true);
-        } else {
-            this.showCommentPanelTool(false);
-        }
-        this.showSeparator();
+        if (this.pdfViewer.annotationToolbarSettings.annotationToolbarItem) {
+            if (this.pdfViewer.annotationToolbarSettings.annotationToolbarItem.indexOf('HighlightTool') !== -1) {
+                this.showHighlightTool(true);
+            } else {
+                this.showHighlightTool(false);
+            }
+            if (this.pdfViewer.annotationToolbarSettings.annotationToolbarItem.indexOf('UnderlineTool') !== -1) {
+                this.showUnderlineTool(true);
+            } else {
+                this.showUnderlineTool(false);
+            }
+            if (this.pdfViewer.annotationToolbarSettings.annotationToolbarItem.indexOf('StrikethroughTool') !== -1) {
+                this.showStrikethroughTool(true);
+            } else {
+                this.showStrikethroughTool(false);
+            }
+            if (this.pdfViewer.annotationToolbarSettings.annotationToolbarItem.indexOf('ShapeTool') !== -1) {
+                this.showShapeAnnotationTool(true);
+            } else {
+                this.showShapeAnnotationTool(false);
+            }
+            if (this.pdfViewer.annotationToolbarSettings.annotationToolbarItem.indexOf('CalibrateTool') !== -1) {
+                this.showCalibrateAnnotationTool(true);
+            } else {
+                this.showCalibrateAnnotationTool(false);
+            }
+            if (this.pdfViewer.annotationToolbarSettings.annotationToolbarItem.indexOf('ColorEditTool') !== -1) {
+                this.showColorEditTool(true);
+            } else {
+                this.showColorEditTool(false);
+            }
+            if (this.pdfViewer.annotationToolbarSettings.annotationToolbarItem.indexOf('StrokeColorEditTool') !== -1) {
+                this.showStrokeColorEditTool(true);
+            } else {
+                this.showStrokeColorEditTool(false);
+            }
+            if (this.pdfViewer.annotationToolbarSettings.annotationToolbarItem.indexOf('ThicknessEditTool') !== -1) {
+                this.showThicknessEditTool(true);
+            } else {
+                this.showThicknessEditTool(false);
+            }
+            if (this.pdfViewer.annotationToolbarSettings.annotationToolbarItem.indexOf('OpacityEditTool') !== -1) {
+                this.showOpacityEditTool(true);
+            } else {
+                this.showOpacityEditTool(false);
+            }
+            if (this.pdfViewer.annotationToolbarSettings.annotationToolbarItem.indexOf('AnnotationDeleteTool') !== -1) {
+                this.showAnnotationDeleteTool(true);
+            } else {
+                this.showAnnotationDeleteTool(false);
+            }
+            if (this.pdfViewer.annotationToolbarSettings.annotationToolbarItem.indexOf('StampAnnotationTool') !== -1) {
+                this.showStampAnnotationTool(true);
+            } else {
+                this.showStampAnnotationTool(false);
+            }
+            if (this.pdfViewer.annotationToolbarSettings.annotationToolbarItem.indexOf('HandWrittenSignatureTool') !== -1) {
+                this.showSignatureTool(true);
+            } else {
+                this.showSignatureTool(false);
+            }
+            if (this.pdfViewer.annotationToolbarSettings.annotationToolbarItem.indexOf('FreeTextAnnotationTool') !== -1) {
+                this.showFreeTextAnnotationTool(true);
+            } else {
+                this.showFreeTextAnnotationTool(false);
+            }
+            if (this.pdfViewer.annotationToolbarSettings.annotationToolbarItem.indexOf('FontFamilyAnnotationTool') !== -1) {
+                this.showFontFamilyAnnotationTool(true);
+            } else {
+                this.showFontFamilyAnnotationTool(false);
+            }
+            if (this.pdfViewer.annotationToolbarSettings.annotationToolbarItem.indexOf('FontSizeAnnotationTool') !== -1) {
+                this.showFontSizeAnnotationTool(true);
+            } else {
+                this.showFontSizeAnnotationTool(false);
+            }
+            if (this.pdfViewer.annotationToolbarSettings.annotationToolbarItem.indexOf('FontStylesAnnotationTool') !== -1) {
+                this.showFontStylesAnnotationTool(true);
+            } else {
+                this.showFontStylesAnnotationTool(false);
+            }
+            if (this.pdfViewer.annotationToolbarSettings.annotationToolbarItem.indexOf('FontAlignAnnotationTool') !== -1) {
+                this.showFontAlignAnnotationTool(true);
+            } else {
+                this.showFontAlignAnnotationTool(false);
+            }
+            if (this.pdfViewer.annotationToolbarSettings.annotationToolbarItem.indexOf('FontColorAnnotationTool') !== -1) {
+                this.showFontColorAnnotationTool(true);
+            } else {
+                this.showFontColorAnnotationTool(false);
+            }
+            if (this.pdfViewer.annotationToolbarSettings.annotationToolbarItem.indexOf('CommentPanelTool') !== -1) {
+                this.showCommentPanelTool(true);
+            } else {
+                this.showCommentPanelTool(false);
+            }
+            this.showSeparator();
     }
+}
 
     private showSeparator(): void {
         if ((!this.isHighlightBtnVisible && !this.isUnderlineBtnVisible && !this.isStrikethroughBtnVisible)
@@ -2294,6 +2296,8 @@ export class AnnotationToolbar {
         this.calibrateDropDown.destroy();
         this.toolbar.destroy();
         this.fontColorDropDown.destroy();
+        this.textAlignDropDown.destroy();
+        this.textPropertiesDropDown.destroy();
     }
 
     private getElementHeight(element: HTMLElement): number {

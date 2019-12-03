@@ -93,6 +93,11 @@ export interface TextAttributes extends BaseAttributes {
     doWrap: boolean;
     wrapBounds: TextBounds;
     childNodes: SubTextElement[];
+    isHorizontalLane: boolean;
+    parentOffsetX: number;
+    parentOffsetY: number;
+    parentWidth: number;
+    parentHeight: number;
 }
 /**
  * Defines the properties of sub text element

@@ -45,7 +45,7 @@ import { Size } from './primitives/size';
 import { Keys, KeyModifiers, DiagramTools, AlignmentMode, AnnotationConstraints, NodeConstraints, RendererAction } from './enum/enum';
 import { DiagramConstraints, BridgeDirection, AlignmentOptions, SelectorConstraints, PortVisibility, DiagramEvent } from './enum/enum';
 import { DistributeOptions, SizingOptions, RenderingMode, DiagramAction, ThumbsConstraints, NudgeDirection } from './enum/enum';
-import { RealAction, ElementAction, FlipDirection, Orientation, PortConstraints } from './enum/enum';
+import { RealAction, ElementAction, FlipDirection, Orientation, PortConstraints, HistoryChangeAction } from './enum/enum';
 import { PathElement } from './core/elements/path-element';
 import { TextElement } from './core/elements/text-element';
 import { updateStyle, removeItem, updateConnector, updateShape, setUMLActivityDefaults, findNodeByName } from './utility/diagram-util';
@@ -1271,6 +1271,8 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
     public preventUpdate: boolean;
     /** @private */
     public checkMenu: boolean = false;
+    /** @private */
+    public parentObject: NodeModel;
     /** @hidden */
     /** @private */
     public localeObj: L10n;
@@ -2630,13 +2632,13 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
             }
             this.undoRedoModule.addHistoryEntry(entry, this);
             if (entry.type !== 'StartGroup' && entry.type !== 'EndGroup') {
-                this.historyChangeTrigger(entry);
+                this.historyChangeTrigger(entry, 'CustomAction');
             }
         }
     }
 
     /** @private */
-    public historyChangeTrigger(entry: HistoryEntry): void {
+    public historyChangeTrigger(entry: HistoryEntry, action: HistoryChangeAction): void {
         let change: {} = {};
         let oldValue: string = 'oldValue';
         let newValue: string = 'newValue';
@@ -2693,13 +2695,14 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
             }
             let arg: IHistoryChangeArgs | IBlazorHistoryChangeArgs;
             arg = {
-                cause: entry.category, source: cloneBlazorObject(source) as NodeModel[], change: cloneBlazorObject(change)
+                cause: entry.category, source: cloneBlazorObject(source) as NodeModel[], change: cloneBlazorObject(change),
+                action: action
             };
             if (isBlazor()) {
 
                 arg = {
                     cause: entry.category, change: cloneBlazorObject(change),
-                    source: { connectors: undefined, nodes: undefined }
+                    source: { connectors: undefined, nodes: undefined }, action: action
                 } as IBlazorHistoryChangeArgs;
                 let sourceValue: DiagramEventObjectCollection = (arg as IBlazorHistoryChangeArgs).source;
                 sourceValue.connectors = [];
@@ -2991,6 +2994,9 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
             args = {
                 element: obj, cause: this.diagramActions, state: 'Changing', type: 'Addition', cancel: false
             };
+            if (this.parentObject) {
+                args.parentId = this.parentObject.id;
+            }
             if (isBlazor()) {
                 args = getCollectionChangeEventArguements(args as IBlazorCollectionChangeEventArgs, obj, 'Changing', 'Addition');
             }
@@ -3063,6 +3069,9 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                 args = {
                     element: newObj, cause: this.diagramActions, state: 'Changed', type: 'Addition', cancel: false
                 };
+                if (this.parentObject) {
+                    args.parentId = this.parentObject.id;
+                }
                 this.updateBlazorCollectionChange(newObj, true);
                 if (isBlazor()) {
                     args = getCollectionChangeEventArguements(args as IBlazorCollectionChangeEventArgs, obj, 'Changed', 'Addition');
@@ -3078,6 +3087,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                     };
                     this.addHistoryEntry(entry);
                 }
+                this.parentObject = undefined;
                 if (this.mode === 'SVG') {
                     this.updateSvgNodes(newObj as Node); this.updateTextElementValue(newObj); this.updateDiagramObject(newObj);
                     if ((newObj.shape as BpmnShape).activity && (newObj.shape as BpmnShape).activity.subProcess.processes &&

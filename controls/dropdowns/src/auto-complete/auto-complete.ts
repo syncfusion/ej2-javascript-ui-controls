@@ -308,9 +308,9 @@ export class AutoComplete extends ComboBox {
         }
     }
 
-    protected clear(e?: MouseEvent, property?: AutoCompleteModel): void {
+    protected clearAll(e?: MouseEvent, property?: AutoCompleteModel): void {
         if (isNullOrUndefined(property) || (!isNullOrUndefined(property) && isNullOrUndefined(property.dataSource))) {
-            super.clear(e);
+            super.clearAll(e);
         }
         if (this.beforePopupOpen) {
             this.hidePopup();

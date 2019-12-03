@@ -994,6 +994,13 @@ export class DiagramRenderer {
         (options as TextAttributes).doWrap = element.doWrap;
         (options as TextAttributes).wrapBounds = element.wrapBounds;
         (options as TextAttributes).childNodes = element.childNodes;
+        (options as TextAttributes).isHorizontalLane = element.isLaneOrientation;
+        if (element.isLaneOrientation) {
+            (options as TextAttributes).parentOffsetX = this.groupElement.offsetX;
+            (options as TextAttributes).parentOffsetY = this.groupElement.offsetY;
+            (options as TextAttributes).parentWidth = this.groupElement.actualSize.width;
+            (options as TextAttributes).parentHeight = this.groupElement.actualSize.height;
+        }
         options.dashArray = ''; options.strokeWidth = 0; options.fill = element.style.fill;
         let ariaLabel: Object = element.description ? element.description : element.content ? element.content : element.id;
         if (element.style.textWrapping === 'Wrap' && this.groupElement && options.height > this.groupElement.actualSize.height &&

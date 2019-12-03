@@ -377,7 +377,7 @@ export class CheckBoxSelection {
     }
     }
     protected onDocumentClick(e: MouseEvent): void {
-        if (!this.parent.element.classList.contains('e-listbox')) {
+        if (!this.parent.element.classList.contains('e-listbox') && this.parent.element.tagName !== 'EJS-LISTBOX') {
         let target: HTMLElement = <HTMLElement>e.target;
         if (!isNullOrUndefined(this.parent.popupObj) && closest(target, '#' + this.parent.popupObj.element.id)) {
             e.preventDefault();
