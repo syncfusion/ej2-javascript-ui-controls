@@ -1159,6 +1159,7 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
             this.l10n.setLocale(this.locale);
             let closeIconTitle: string = this.l10n.getConstant('close');
             this.closeIcon.setAttribute('title', closeIconTitle);
+            this.closeIcon.setAttribute('aria-label', closeIconTitle);
     }
 
     private setCSSClass(oldCSSClass?: string): void {

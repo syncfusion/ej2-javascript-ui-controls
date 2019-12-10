@@ -1549,7 +1549,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
      * Opens the annotation toolbar when the PDF document is loaded in the PDF Viewer control initially.
      * @default false
      */
-    @Property(false)
+    @Property(true)
     public enableAnnotationToolbar: boolean;
 
     /**
@@ -2242,7 +2242,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
                     this.height = newProp.height;
                     this.viewerBase.updateHeight();
                     this.viewerBase.onWindowResize();
-                    if (this.toolbar.annotationToolbarModule.isToolbarHidden) {
+                    if ( this.toolbar.annotationToolbarModule && this.toolbar.annotationToolbarModule.isToolbarHidden) {
                         this.toolbar.annotationToolbarModule.adjustViewer(false);
                     } else {
                         this.toolbar.annotationToolbarModule.adjustViewer(true);
@@ -2756,6 +2756,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
             eventArgs.textMarkupStartIndex = tmStartIndex;
             eventArgs.textMarkupEndIndex = tmEndIndex;
         }
+        this.viewerBase.isAnnotationSelect = false;
         this.trigger('annotationAdd', eventArgs);
     }
 
@@ -2986,6 +2987,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
             selectormodel.wrapper = null;
         }
         this.drawing.clearSelectorLayer(pageId);
+        this.viewerBase.isAnnotationSelect = false;
     }
     /**
      * @private

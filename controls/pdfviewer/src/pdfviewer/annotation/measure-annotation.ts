@@ -345,6 +345,7 @@ export class MeasureAnnotation {
             }
             } else if (shapeAnnotations.shapeAnnotationType) {
                 let annotationObject: IMeasureShapeAnnotation = this.createAnnotationObject(shapeAnnotations);
+                this.pdfViewer.annotationModule.triggerAnnotationAdd(shapeAnnotations);
                 this.pdfViewer.annotationModule.storeAnnotations(pageNumber, annotationObject, '_annotations_shape_measure');
             }
         }
@@ -826,7 +827,11 @@ export class MeasureAnnotation {
                 pageIndex = currentAnnot.pageIndex ? currentAnnot.pageIndex : this.pdfViewerBase.activeElements.activePageID;
                 currentAnnot = this.getCurrentObject(pageIndex, null, currentAnnot.annotName);
             }
-            values = this.getCurrentValues(currentAnnot.id, pageIndex);
+            if (currentAnnot) {
+                values = this.getCurrentValues(currentAnnot.id, pageIndex);
+            } else {
+                values = this.getCurrentValues();
+            }
         } else {
             values = this.getCurrentValues();
         }

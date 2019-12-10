@@ -7,10 +7,11 @@ import { createElement, remove, EmitType } from '@syncfusion/ej2-base';
 import { data } from '../base/datasource.spec';
 import { Freeze } from '../../../src/grid/actions/freeze';
 import { Aggregate } from '../../../src/grid/actions/aggregate';
+import { Edit } from '../../../src/grid/actions/edit';
 import { createGrid, destroy } from '../base/specutil.spec';
 import { profile, inMB, getMemoryProfile } from '../base/common.spec';
 
-Grid.Inject(Freeze, Aggregate);
+Grid.Inject(Freeze, Aggregate, Edit);
 
 describe('Freeze render module', () => {
     describe('Freeze Row and Column', () => {
@@ -338,4 +339,71 @@ describe('Freeze render module', () => {
         });
     });
 
+    describe('Ensure deleteRow and deleteRecord with batch editing', () => {
+        let gridObj: Grid;
+        let dBound: () => void;
+        let selectedRowIndex: number;
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: data,
+                    height: 400,
+                    frozenColumns: 2,
+                    frozenRows: 2,
+                    editSettings: { allowAdding: true, allowEditing: true, allowDeleting: true, mode: 'Batch', showConfirmDialog: false },
+                    columns: [
+                        { headerText: 'OrderID', field: 'OrderID', isPrimaryKey: true },
+                        { headerText: 'CustomerID', field: 'CustomerID', isFrozen: true },
+                        { headerText: 'EmployeeID', field: 'EmployeeID' },
+                        { headerText: 'ShipCountry', field: 'ShipCountry' },
+                        { headerText: 'ShipCity', field: 'ShipCity' },
+                    ]
+                }, done);
+        });
+        it('Before delete', () => {
+            gridObj.selectRow(4);
+        });
+        it('Enaure deleteRow method', (done: Function) => {
+            selectedRowIndex = parseInt(gridObj.getSelectedRows()[0].getAttribute('aria-rowindex'), 10);
+            let batchDelete = (args: Object) => {
+                expect(gridObj.getMovableRows()[3].classList.contains('e-hiddenrow')).toBeTruthy();
+                expect(gridObj.getFrozenDataRows().length).toBe(gridObj.currentViewData.length - 1);
+                expect(gridObj.getMovableDataRows().length).toBe(gridObj.currentViewData.length - 1);
+                selectedRowIndex = parseInt(gridObj.getSelectedRows()[0].getAttribute('aria-rowindex'), 10);
+                expect(selectedRowIndex).toBe(3);
+                gridObj.editModule.batchCancel();
+                gridObj.batchDelete = null;
+                done();
+            };
+            gridObj.batchDelete = batchDelete;
+            gridObj.deleteRow(gridObj.getMovableRows()[3] as HTMLTableRowElement);
+        });
+        it('Before delete', () => {
+            gridObj.selectRow(4);
+        });
+        it('Ensure deleteRecord mwthod', (done: Function) => {
+            selectedRowIndex = parseInt(gridObj.getSelectedRows()[0].getAttribute('aria-rowindex'), 10);
+            let batchDelete = (args: Object) => {
+                expect(gridObj.getMovableRows()[3].classList.contains('e-hiddenrow')).toBeTruthy();
+                expect(gridObj.getFrozenDataRows().length).toBe(gridObj.currentViewData.length - 1);
+                expect(gridObj.getMovableDataRows().length).toBe(gridObj.currentViewData.length - 1);
+                selectedRowIndex = parseInt(gridObj.getSelectedRows()[0].getAttribute('aria-rowindex'), 10);
+                expect(selectedRowIndex).toBe(3);
+                gridObj.editModule.batchCancel();
+                gridObj.batchDelete = null;
+                done();
+            };
+            gridObj.batchDelete = batchDelete;
+            gridObj.deleteRecord('OrderID', gridObj.currentViewData[3]);
+        });
+        it('Ensure getFrozenRowByIndex', () => {
+            let frozenRow: Element = gridObj.getFrozenRowByIndex(2);
+            let rowindex: number = parseInt(frozenRow.getAttribute('aria-rowindex'), 10);
+            expect(rowindex).toBe(2);
+        });
+        afterAll(() => {
+            gridObj['freezeModule'].destroy();
+            destroy(gridObj);
+        });
+    });
 });

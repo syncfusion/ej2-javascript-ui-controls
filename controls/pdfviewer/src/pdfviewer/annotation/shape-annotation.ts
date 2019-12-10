@@ -275,6 +275,7 @@ export class ShapeAnnotation {
             }
             } else if (shapeAnnotations.shapeAnnotationType) {
                 let annotationObject: IShapeAnnotation = this.createAnnotationObject(shapeAnnotations);
+                this.pdfViewer.annotationModule.triggerAnnotationAdd(shapeAnnotations);
                 this.pdfViewer.annotationModule.storeAnnotations(pageNumber, annotationObject, '_annotations_shape');
             }
         }

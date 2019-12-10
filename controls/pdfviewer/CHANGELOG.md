@@ -2,6 +2,23 @@
 
 ## [Unreleased]
 
+## 17.3.34 (2019-12-10)
+
+### PDF Viewer
+
+#### New Features
+
+- `#253745`, `#256518` – Exposed the event to notify the annotation object being moved.
+- `#254275` – Exposed the event to notify the download process in the PDF Viewer control.
+
+#### Bug Fixes
+
+- `#256220` – The context menu will now be shown/hidden properly if we disable the default toolbar.
+- `#256131` – The annotation toolbar will now be shown/hidden properly if we disable the annotation toolbar.
+- `#256932` - Errors will no longer occur while resizing the text markup annotations.
+- `#252805` – The annotationId value is now preserved properly for all annotation events.
+- `#255647` - The form fields contents are rendered properly in the printed document, which has been printed in IE browser.
+
 ## 17.3.30 (2019-12-03)
 
 ### PDF Viewer

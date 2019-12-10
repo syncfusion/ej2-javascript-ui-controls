@@ -4,6 +4,7 @@ import { ServiceLocator } from '../services/service-locator';
 import { ExcelFilterBase } from '../common/excel-filter-base';
 import { CheckBoxFilter } from './checkbox-filter';
 import { IXLFilter } from '../common/filter-interface';
+import * as events from '../base/constant';
 
 /**
  * @hidden
@@ -39,6 +40,7 @@ export class ExcelFilter extends CheckBoxFilter {
 
     public closeDialog(): void {
         this.excelFilterBase.closeDialog();
+        this.parent.notify(events.restoreFocus, {});
     }
 
     /* tslint:disable-next-line:max-line-length */

@@ -8,6 +8,8 @@
 
 #### Bug Fixes
 
+- Performance issue with true type font is fixed.
+
 - Preservation issue with PDF colour empty constructor is fixed.
 
 ## 17.3.9-beta (2019-09-20)

@@ -25,7 +25,7 @@ import { FormValidator } from '@syncfusion/ej2-inputs';
 import { Data } from '../actions/data';
 import { DatePickerModel, DateTimePickerModel, TimePickerModel } from '@syncfusion/ej2-calendars';
 import { PdfStandardFont, PdfTrueTypeFont, PdfGridCell } from '@syncfusion/ej2-pdf-export';
-import { Matrix } from '../services/focus-strategy';
+import { Matrix, FocusStrategy } from '../services/focus-strategy';
 import { CheckBoxFilterBase } from '../common/checkbox-filter-base';
 import {
     PdfPageSize, PageOrientation, ContentType, PdfPageNumberType, PdfDashStyle,
@@ -409,6 +409,8 @@ export interface IGrid extends Component<HTMLElement> {
 
     resizeModule: Resize;
 
+    focusModule?: FocusStrategy;
+
     mergeCells?: { [key: string]: number };
 
     checkAllRows?: CheckState;
@@ -461,6 +463,7 @@ export interface IGrid extends Component<HTMLElement> {
     setGridPager?(value: Element): void;
     getRowByIndex?(index: number): Element;
     getMovableRowByIndex?(index: number): Element;
+    getFrozenRowByIndex?(index: number): Element;
     getRowInfo?(target: Element): RowInfo;
     selectRow?(index: number, isToggle?: boolean): void;
     getColumnHeaderByIndex?(index: number): Element;
@@ -506,6 +509,7 @@ export interface IGrid extends Component<HTMLElement> {
     refreshHeader?(): void;
     getDataRows?(): Element[];
     getMovableDataRows?(): Element[];
+    getFrozenDataRows?(): Element[];
     addMovableRows?(fRows: HTMLElement[], mrows: HTMLElement[]): HTMLElement[];
     getPrimaryKeyFieldNames?(): string[];
     autoFitColumns(fieldNames?: string | string[]): void;
@@ -558,6 +562,7 @@ export interface IGrid extends Component<HTMLElement> {
     getMovableVirtualHeader?(): Element;
     getFrozenVirtualHeader?(): Element;
     getFilteredRecords(): Object[] | Promise<Object>;
+    getRowElementByUID?(uid: string): Element;
     // public Events
     dataStateChange?: EmitType<DataStateChangeEventArgs>;
     exportGroupCaption?: EmitType<ExportGroupCaptionEventArgs>;

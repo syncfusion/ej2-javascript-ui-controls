@@ -207,7 +207,6 @@ export class HScroll extends Component<HTMLElement> implements INotifyPropertyCh
         let navLeftItem: HTEle = this.createElement('div', { className: CLS_NAVLEFTARROW + ' ' + CLS_NAVARROW + ' e-icons' });
         navEle.appendChild(navLeftItem);
         nav.appendChild(navItem);
-        nav.setAttribute('tabindex', '0');
         element.appendChild(nav);
         element.insertBefore(navEle, element.firstChild);
         if (this.ieCheck ) {

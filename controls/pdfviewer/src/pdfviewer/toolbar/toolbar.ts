@@ -441,7 +441,8 @@ export class Toolbar {
                 }
             }
             if (this.pdfViewer.annotationToolbarSettings.annotationToolbarItem) {
-               if (this.pdfViewer.annotationToolbarSettings.annotationToolbarItem.length === 0 || !this.pdfViewer.annotationModule) {
+               // tslint:disable-next-line:max-line-length
+               if (this.pdfViewer.annotationToolbarSettings.annotationToolbarItem.length === 0 || !this.pdfViewer.annotationModule || !this.pdfViewer.enableAnnotationToolbar) {
                     this.enableToolbarItem(['AnnotationEditTool'], false);
                 }
             }
@@ -1287,7 +1288,7 @@ export class Toolbar {
     }
 
     private initiateAnnotationMode(): void {
-        if (this.annotationToolbarModule) {
+        if (this.annotationToolbarModule && this.pdfViewer.enableAnnotationToolbar) {
             this.annotationToolbarModule.showAnnotationToolbar(this.annotationItem);
         }
     }

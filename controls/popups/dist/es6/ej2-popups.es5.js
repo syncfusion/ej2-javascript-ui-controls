@@ -2223,6 +2223,7 @@ var Dialog = /** @__PURE__ @class */ (function (_super) {
         this.l10n.setLocale(this.locale);
         var closeIconTitle = this.l10n.getConstant('close');
         this.closeIcon.setAttribute('title', closeIconTitle);
+        this.closeIcon.setAttribute('aria-label', closeIconTitle);
     };
     Dialog.prototype.setCSSClass = function (oldCSSClass) {
         if (this.cssClass) {

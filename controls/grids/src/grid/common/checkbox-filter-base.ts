@@ -772,8 +772,7 @@ export class CheckBoxFilterBase {
         addClass([label], ['e-checkboxfiltertext']);
         if (this.options.template && data[this.options.column.field] !== this.getLocalizedLabel('SelectAll')) {
             label.innerHTML = '';
-            appendChildren(label, this.options.template({ column: this.options.column, data: data, parent: this.parent },
-                                                        this.parent, 'filterItemTemplate'));
+            appendChildren(label, this.options.template(data, this.parent, 'filterItemTemplate'));
         }
         return elem;
     }

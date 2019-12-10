@@ -145,7 +145,7 @@ export function findTargetShapeElement(container: Container, position: PointMode
         }
     }
 
-    if (container.bounds.containsPoint(position, padding) && container.style.fill !== 'none') {
+    if (container && container.bounds.containsPoint(position, padding) && container.style.fill !== 'none') {
         return container;
     }
     return null;

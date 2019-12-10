@@ -22,6 +22,10 @@ export class RowDragDropRenderer extends CellRenderer implements ICellRenderer<C
         nodeElement.appendChild(this.parent.createElement('div', {
             className: 'e-icons e-rowcelldrag e-dtdiagonalright e-icon-rowdragicon'
         }));
+        if (cell.isSelected) {
+            nodeElement.classList.add('e-selectionbackground');
+            nodeElement.classList.add('e-active');
+        }
         return nodeElement;
     }
 }

@@ -2768,4 +2768,28 @@ describe('Testing resizing option', () => {
             (window as any).browserDetails['isIE'] = false;
         });
     });
+// web accessibility
+    describe('EJ2-34370- web accessebility issue', () => {
+        let dialog: Dialog;
+        beforeEach((): void => {
+            dialog = undefined;
+            let ele: HTMLElement = createElement('div', { id: 'dialog' });
+            document.body.appendChild(ele);
+            dialog = new Dialog({
+                header:'Demo', content:'dialog content',
+                showCloseIcon: true
+            });            
+            dialog.appendTo('#dialog');
+        });
+ 
+        afterEach((): void => {
+            if (dialog) {
+                dialog.destroy();
+            }
+            document.body.innerHTML = '';
+        });
+        it('check aria-attribute', () => {
+            expect(document.querySelectorAll(".e-dlg-closeicon-btn")[0].getAttribute("aria-label")).toEqual("Close");
+        });
+    });
 });

@@ -2244,10 +2244,6 @@ export class AnnotationToolbar {
         this.updateToolbarItems();
         this.toolbarElement.style.display = 'none';
         this.isToolbarHidden = true;
-        if (this.pdfViewer.enableAnnotationToolbar) {
-            this.showAnnotationToolbar(this.primaryToolbar.annotationItem);
-            this.pdfViewer.enableAnnotationToolbar = false;
-        }
     }
 
     /**

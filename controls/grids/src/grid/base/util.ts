@@ -243,6 +243,10 @@ export function prepareColumns(columns: Column[] | string[] | ColumnModel[], aut
             column = <Column>columns[c];
         }
 
+        if (column.type && column.type.toLowerCase() === 'checkbox') {
+            column.allowReordering = false;
+        }
+
         column.headerText = isNullOrUndefined(column.headerText) ? column.foreignKeyValue || column.field || '' : column.headerText;
 
         column.foreignKeyField = column.foreignKeyField || column.field;

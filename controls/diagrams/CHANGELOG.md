@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 17.3.34 (2019-12-10)
+
+### Diagram
+
+#### Bug Fixes
+
+- `F149553` - The issue with the position of nodes in the layout that is not retained when we interact and serialize the diagram with the layout at runtime has been fixed.
+
 ## 17.3.30 (2019-12-03)
 
 ### Diagram

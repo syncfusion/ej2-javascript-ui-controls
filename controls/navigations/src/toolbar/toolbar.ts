@@ -888,8 +888,7 @@ export class Toolbar extends Component<HTMLElement> implements INotifyPropertyCh
                     this.add(this.element, 'e-toolpop');
                     if (this.tbarAlign) { this.removePositioning(); }
                     if (this.checkOverflow(ele, innerItems) || priorityCheck) {
-                        this.createPopupEle(ele, [].slice.call(selectAll('.' + CLS_ITEMS + ' .' + CLS_ITEM, ele)));
-                        this.element.querySelector('.' + CLS_TBARNAV).setAttribute('tabIndex', '0');
+                        this.setOverflowAttributes(ele);
                     }
                     this.toolbarAlign(innerItems);
                     break;
@@ -912,12 +911,17 @@ export class Toolbar extends Component<HTMLElement> implements INotifyPropertyCh
                         if (this.tbarAlign) {
                             this.removePositioning();
                         }
-                        this.createPopupEle(ele, [].slice.call(selectAll('.' + CLS_ITEMS + ' .' + CLS_ITEM, ele)));
-                        this.element.querySelector('.' + CLS_TBARNAV).setAttribute('tabIndex', '0');
+                        this.setOverflowAttributes(ele);
                     }
                     this.toolbarAlign(innerItems);
             }
         }
+    }
+
+    private setOverflowAttributes(ele: HTMLElement): void {
+        this.createPopupEle(ele, [].slice.call(selectAll('.' + CLS_ITEMS + ' .' + CLS_ITEM, ele)));
+        this.element.querySelector('.' + CLS_TBARNAV).setAttribute('tabIndex', '0');
+        this.element.querySelector('.' + CLS_TBARNAV).setAttribute('role', 'list');
     }
 
     private separator(): void {
@@ -1218,6 +1222,7 @@ export class Toolbar extends Component<HTMLElement> implements INotifyPropertyCh
         let navItem: HTEle = this.createElement('div', { className: CLS_POPUPDOWN + ' e-icons' });
         nav.appendChild(navItem);
         nav.setAttribute('tabindex', '0');
+        nav.setAttribute('role', 'list');
         element.appendChild(nav);
     }
 
@@ -1794,6 +1799,7 @@ export class Toolbar extends Component<HTMLElement> implements INotifyPropertyCh
                 case 'Button':
                     dom = this.buttonRendering(item, innerEle);
                     dom.setAttribute('tabindex', '-1');
+                    dom.setAttribute('aria-label', (item.text || item.tooltipText));
                     innerEle.appendChild(dom);
                     innerEle.addEventListener('click', this.itemClick.bind(this));
                     break;

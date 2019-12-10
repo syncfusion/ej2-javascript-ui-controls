@@ -3956,3 +3956,33 @@ describe('selectRow with virtualScrolling', () => {
         gridObj = null;
     });
 });
+
+describe('EJ2-33599 selection does not maintain while calling setrowdata method', () => {
+    let gridObj: Grid;
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: data,
+                allowRowDragAndDrop: true,
+                columns: [
+                    { headerText: 'OrderID', field: 'OrderID', isPrimaryKey: true },
+                    { headerText: 'CustomerID', field: 'CustomerID' },
+                    { headerText: 'EmployeeID', field: 'EmployeeID' },
+                    { headerText: 'ShipCountry', field: 'ShipCountry' },
+                    { headerText: 'ShipCity', field: 'ShipCity' },
+                ]
+            }, done);
+    });
+
+    it('selectrowdata', (done: Function) => {
+        gridObj.selectRow(0);
+        gridObj.setRowData(10248, { CustomerID: "aaa", Freight: 11 })
+        expect((<any>gridObj.getRows()[0]).cells[0].classList.contains('e-selectionbackground')).toBeTruthy();
+        done();
+    });
+
+    afterAll(() => {
+        destroy(gridObj);
+        gridObj = null;
+    });
+});

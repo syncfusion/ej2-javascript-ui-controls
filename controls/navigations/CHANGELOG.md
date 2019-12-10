@@ -2,6 +2,26 @@
 
 ## [Unreleased]
 
+## 17.3.34 (2019-12-10)
+
+### Tab
+
+#### Bug Fixes
+
+- Accessibility issues has been fixed.
+
+### Toolbar
+
+#### Bug Fixes
+
+- Accessibility issues has been fixed.
+
+### Accordion
+
+#### Bug Fixes
+
+- Accessibility issues has been fixed.
+
 ## 17.3.27 (2019-11-12)
 
 ### Tab

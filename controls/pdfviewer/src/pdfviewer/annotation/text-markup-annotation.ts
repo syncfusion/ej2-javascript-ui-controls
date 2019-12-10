@@ -121,6 +121,7 @@ export class TextMarkupAnnotation {
     private isNewAnnotation: boolean = false;
     private selectAnnotationCollection: ITextMarkupAnnotation[] = [];
     private selectedAnnotation: ITextMarkupAnnotation;
+    private selectedTextMarkup: ITextMarkupAnnotation = null;
     /**
      * @private
      */
@@ -206,7 +207,11 @@ export class TextMarkupAnnotation {
             let clientX: number = x;
             let clientY: number = y;
             if (target.classList.contains('e-pv-text')) {
-                this.pdfViewer.textSelectionModule.textSelectionOnDrag(target, clientX, clientY, false);
+                if ((clientY) >= leftElement.top && clientX > leftElement.left) {
+                    this.pdfViewer.textSelectionModule.textSelectionOnDrag(target, clientX, clientY, true);
+                } else {
+                    this.pdfViewer.textSelectionModule.textSelectionOnDrag(target, clientX, clientY, false);
+                }
                 this.updateLeftposition(clientX, clientY);
             }
         } else if (this.isRightDropletClicked) {
@@ -214,7 +219,7 @@ export class TextMarkupAnnotation {
             let clientX: number = x;
             let clientY: number = y;
             if (target.classList.contains('e-pv-text')) {
-                if (clientY >= leftElement.top) {
+                if ((clientY) >= leftElement.top && clientX > leftElement.left) {
                     this.pdfViewer.textSelectionModule.textSelectionOnDrag(target, clientX, clientY, true);
                 } else {
                     this.pdfViewer.textSelectionModule.textSelectionOnDrag(target, clientX, clientY, false);
@@ -265,12 +270,16 @@ export class TextMarkupAnnotation {
                     // tslint:disable-next-line
                     let rangebounds: any = textDivs[n].getBoundingClientRect();
                     let top: number = this.getClientValueTop(rangebounds.top, annotation.pageNumber);
+                    // tslint:disable-next-line:max-line-length
+                    let currentLeft: number = rangebounds.left - this.pdfViewerBase.getElement('_pageDiv_' + annotation.pageNumber).getBoundingClientRect().left;
+                    let totalLeft: number = currentLeft + rangebounds.width;
+                    // tslint:disable-next-line
+                    let textDiVLeft: number = parseInt(textDivs[n].style.left);
                     // tslint:disable-next-line
                     let currentTop: number = parseInt(textDivs[n].style.top);
-                    // tslint:disable-next-line
-                    if (top === parseInt(y.toString()) || parseInt(top.toString()) === parseInt(y.toString()) || (top + 1) === parseInt(y.toString()) || (top - 1) === parseInt(y.toString())
-                        // tslint:disable-next-line
-                        || currentTop === parseInt(y.toString()) || currentTop === y) {
+                    let isLeftBounds: boolean = this.checkLeftBounds(currentLeft, textDiVLeft, totalLeft, x);
+                    let isTopBounds: boolean = this.checkTopBounds(top, currentTop, y);
+                    if (isLeftBounds && isTopBounds) {
                         element = textDivs[n];
                         break;
                     }
@@ -286,6 +295,28 @@ export class TextMarkupAnnotation {
                 }
             }
         }
+    }
+    private checkLeftBounds(left: number, textDiVLeft: number, totalLeft: number, x: number): boolean {
+        let isExists: boolean = false;
+        // tslint:disable-next-line:max-line-length
+        // tslint:disable-next-line
+        if (left === parseInt(x.toString()) || parseInt(left.toString()) === parseInt(x.toString()) || (left + 1) === parseInt(x.toString()) || (left - 1) === parseInt(x.toString())
+        // tslint:disable-next-line    
+        || textDiVLeft === parseInt(x.toString()) || textDiVLeft === x || (totalLeft >= x && left <= x)) {
+            isExists = true;
+        }
+        return isExists;
+    }
+    private checkTopBounds(top: number, currentTop: number, y: number): boolean {
+        let isExists: boolean = false;
+        // tslint:disable-next-line:max-line-length
+        // tslint:disable-next-line
+        if ((top === parseInt(y.toString()) || parseInt(top.toString()) === parseInt(y.toString()) || parseInt((top + 1).toString()) === parseInt(y.toString()) || parseInt((top - 1).toString()) === parseInt(y.toString())
+            // tslint:disable-next-line
+            || currentTop === parseInt(y.toString()) || currentTop === y)) {
+                isExists = true;
+        }
+        return isExists;
     }
     /**
      * @private
@@ -1197,6 +1228,11 @@ export class TextMarkupAnnotation {
         let pageNumber: number = this.pdfViewer.annotationModule.getEventPageNumber(event);
         if (!isNullOrUndefined(pageNumber) && !isNaN(pageNumber)) {
             let canvas: HTMLElement = this.pdfViewerBase.getElement('_annotationCanvas_' + pageNumber);
+            if (this.currentTextMarkupAnnotation) {
+                this.selectedTextMarkup = this.currentTextMarkupAnnotation;
+            } else {
+                this.selectedTextMarkup = null;
+            }
             this.clearCurrentSelectedAnnotation();
             let currentAnnot: ITextMarkupAnnotation = this.getCurrentMarkupAnnotation(event.clientX, event.clientY, pageNumber, canvas);
             if (currentAnnot) {
@@ -1217,7 +1253,7 @@ export class TextMarkupAnnotation {
                         comments.firstChild.click();
                     }
                 }
-                if (this.pdfViewer.toolbarModule) {
+                if (this.pdfViewer.toolbarModule && this.pdfViewer.enableAnnotationToolbar) {
                     this.pdfViewer.toolbarModule.annotationToolbarModule.isToolbarHidden = true;
                     this.pdfViewer.toolbarModule.annotationToolbarModule.showAnnotationToolbar(this.pdfViewer.toolbarModule.annotationItem);
                 }
@@ -1239,6 +1275,11 @@ export class TextMarkupAnnotation {
     public onTextMarkupAnnotationTouchEnd(event: TouchEvent): void {
         let pageNumber: number = this.pdfViewer.annotationModule.getEventPageNumber(event);
         if (!isNullOrUndefined(pageNumber) && !isNaN(pageNumber)) {
+            if (this.currentTextMarkupAnnotation) {
+                this.selectedTextMarkup = this.currentTextMarkupAnnotation;
+            } else {
+                this.selectedTextMarkup = null;
+            }
             this.clearCurrentAnnotationSelection(pageNumber);
             let touchCanvas: HTMLElement = this.pdfViewerBase.getElement('_annotationCanvas_' + pageNumber);
             this.clearCurrentSelectedAnnotation();
@@ -1314,41 +1355,45 @@ export class TextMarkupAnnotation {
 
     private getCurrentMarkupAnnotation(clientX: number, clientY: number, pageNumber: number, canvas: HTMLElement): ITextMarkupAnnotation {
         let currentTextMarkupAnnotations: ITextMarkupAnnotation[] = [];
-        let canvasParentPosition: ClientRect = canvas.parentElement.getBoundingClientRect();
-        let leftClickPosition: number = clientX - canvasParentPosition.left;
-        let topClickPosition: number = clientY - canvasParentPosition.top;
-        let annotationList: ITextMarkupAnnotation[] = this.getAnnotations(pageNumber, null);
-        let isAnnotationGot: boolean = false;
-        if (annotationList) {
-            for (let i: number = 0; i < annotationList.length; i++) {
-                let annotation: ITextMarkupAnnotation = annotationList[i];
-                for (let j: number = 0; j < annotation.bounds.length; j++) {
-                    // tslint:disable-next-line
-                    let bound: any = annotation.bounds[j];
-                    let left: number = bound.left ? bound.left : bound.Left;
-                    let top: number = bound.top ? bound.top : bound.Top;
-                    let width: number = bound.width ? bound.width : bound.Width;
-                    let height: number = bound.height ? bound.height : bound.Height;
-                    // tslint:disable-next-line:max-line-length
-                    if (leftClickPosition >= this.getMagnifiedValue(left, this.pdfViewerBase.getZoomFactor()) && leftClickPosition <= this.getMagnifiedValue(left + width, this.pdfViewerBase.getZoomFactor()) && topClickPosition >= this.getMagnifiedValue(top, this.pdfViewerBase.getZoomFactor()) && topClickPosition <= this.getMagnifiedValue(top + height, this.pdfViewerBase.getZoomFactor())) {
-                        currentTextMarkupAnnotations.push(annotation);
-                        isAnnotationGot = true;
-                    } else {
-                        if (isAnnotationGot) {
-                            isAnnotationGot = false;
-                            break;
+        if (canvas) {
+            let canvasParentPosition: ClientRect = canvas.parentElement.getBoundingClientRect();
+            let leftClickPosition: number = clientX - canvasParentPosition.left;
+            let topClickPosition: number = clientY - canvasParentPosition.top;
+            let annotationList: ITextMarkupAnnotation[] = this.getAnnotations(pageNumber, null);
+            let isAnnotationGot: boolean = false;
+            if (annotationList) {
+                for (let i: number = 0; i < annotationList.length; i++) {
+                    let annotation: ITextMarkupAnnotation = annotationList[i];
+                    for (let j: number = 0; j < annotation.bounds.length; j++) {
+                        // tslint:disable-next-line
+                        let bound: any = annotation.bounds[j];
+                        let left: number = bound.left ? bound.left : bound.Left;
+                        let top: number = bound.top ? bound.top : bound.Top;
+                        let width: number = bound.width ? bound.width : bound.Width;
+                        let height: number = bound.height ? bound.height : bound.Height;
+                        // tslint:disable-next-line:max-line-length
+                        if (leftClickPosition >= this.getMagnifiedValue(left, this.pdfViewerBase.getZoomFactor()) && leftClickPosition <= this.getMagnifiedValue(left + width, this.pdfViewerBase.getZoomFactor()) && topClickPosition >= this.getMagnifiedValue(top, this.pdfViewerBase.getZoomFactor()) && topClickPosition <= this.getMagnifiedValue(top + height, this.pdfViewerBase.getZoomFactor())) {
+                            currentTextMarkupAnnotations.push(annotation);
+                            isAnnotationGot = true;
+                        } else {
+                            if (isAnnotationGot) {
+                                isAnnotationGot = false;
+                                break;
+                            }
                         }
                     }
                 }
             }
+            let currentAnnot: ITextMarkupAnnotation = null;
+            if (currentTextMarkupAnnotations.length > 1) {
+                currentAnnot = this.compareCurrentAnnotations(currentTextMarkupAnnotations);
+            } else if (currentTextMarkupAnnotations.length === 1) {
+                currentAnnot = currentTextMarkupAnnotations[0];
+            }
+            return currentAnnot;
+        } else {
+            return null;
         }
-        let currentAnnot: ITextMarkupAnnotation = null;
-        if (currentTextMarkupAnnotations.length > 1) {
-            currentAnnot = this.compareCurrentAnnotations(currentTextMarkupAnnotations);
-        } else if (currentTextMarkupAnnotations.length === 1) {
-            currentAnnot = currentTextMarkupAnnotations[0];
-        }
-        return currentAnnot;
     }
 
     private compareCurrentAnnotations(annotations: ITextMarkupAnnotation[]): ITextMarkupAnnotation {
@@ -1407,6 +1452,11 @@ export class TextMarkupAnnotation {
         if (!this.currentTextMarkupAnnotation) {
             isCurrentTextMarkup = true;
         }
+        if (this.selectedTextMarkup && annotation) {
+            if (this.selectedTextMarkup.annotName === annotation.annotName) {
+                isCurrentTextMarkup = false;
+            }
+        }
         if (!isNaN(pageNumber)) {
             this.selectTextMarkupCurrentPage = pageNumber;
             this.currentTextMarkupAnnotation = annotation;
@@ -1453,6 +1503,7 @@ export class TextMarkupAnnotation {
                 } else {
                     this.pdfViewer.annotationModule.annotationSelect(annotation.annotName, this.selectTextMarkupCurrentPage, annotation);
                 }
+                this.selectedTextMarkup = null;
             }
         }
         if (annotation && this.pdfViewer.enableTextMarkupResizer) {
@@ -1789,7 +1840,7 @@ export class TextMarkupAnnotation {
         let canvas: HTMLElement = this.pdfViewerBase.getElement('_annotationCanvas_' + pageNumber);
         this.selectAnnotation(annotation, canvas, pageNumber);
         if (this.pdfViewer.toolbarModule) {
-            if (this.pdfViewer.toolbarModule.annotationToolbarModule) {
+            if (this.pdfViewer.toolbarModule.annotationToolbarModule && this.pdfViewer.enableAnnotationToolbar) {
                 this.pdfViewer.toolbarModule.annotationToolbarModule.clearShapeMode();
                 this.pdfViewer.toolbarModule.annotationToolbarModule.clearMeasureMode();
                 this.pdfViewer.toolbarModule.annotationToolbarModule.enableTextMarkupAnnotationPropertiesTools(true);

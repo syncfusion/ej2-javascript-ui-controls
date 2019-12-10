@@ -10687,17 +10687,11 @@ var BigEndianWriter = /** @__PURE__ @class */ (function () {
         if (buff === null) {
             throw new Error('Argument Null Exception : buff');
         }
-        var result = [];
-        for (var i = 0; i < this.position; i++) {
-            result.push(this.buffer[i]);
-        }
+        var position = this.position;
         for (var i = 0; i < buff.length; i++) {
-            result.push(buff[i]);
+            this.buffer[position] = buff[i];
+            position++;
         }
-        for (var i = this.position; i < this.buffer.length; i++) {
-            result.push(this.buffer[i]);
-        }
-        this.buffer = result;
         this.internalPosition += buff.length;
     };
     return BigEndianWriter;

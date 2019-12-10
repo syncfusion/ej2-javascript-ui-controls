@@ -198,7 +198,7 @@ export class TextSelection {
                         selection.removeAllRanges();
                         selection.addRange(range);
                         selection.extend(targetElement, currentPosition);
-                    } else {
+                    } else if (selection.focusNode) {
                         range.setEnd(selection.focusNode, selection.focusOffset);
                         selection.removeAllRanges();
                         selection.addRange(range);

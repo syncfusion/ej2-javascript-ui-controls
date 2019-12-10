@@ -1,4 +1,4 @@
-import { Animation, Browser, ChildProperty, Collection, Complex, Component, Draggable, Droppable, Event, EventHandler, KeyboardEvents, L10n, NotifyPropertyChanges, Property, Touch, addClass, append, attributes, blazorTemplates, classList, closest, compile, createElement, detach, extend, formatUnit, getElement, getInstance, getUniqueID, getValue, isBlazor, isNullOrUndefined, isUndefined, isVisible, matches, remove, removeClass, resetBlazorTemplate, rippleEffect, select, selectAll, setStyleAttribute, setValue, updateBlazorTemplate } from '@syncfusion/ej2-base';
+import { Animation, Browser, ChildProperty, Collection, Complex, Component, Draggable, Droppable, Event, EventHandler, KeyboardEvents, L10n, NotifyPropertyChanges, Property, Touch, addClass, append, attributes, blazorTemplates, classList, closest, compile, createElement, detach, extend, formatUnit, getElement, getInstance, getRandomId, getUniqueID, getValue, isBlazor, isNullOrUndefined, isUndefined, isVisible, matches, remove, removeClass, resetBlazorTemplate, rippleEffect, select, selectAll, setStyleAttribute, setValue, updateBlazorTemplate } from '@syncfusion/ej2-base';
 import { ListBase } from '@syncfusion/ej2-lists';
 import { Popup, calculatePosition, createSpinner, fit, getScrollableParent, getZindexPartial, hideSpinner, isCollide, showSpinner } from '@syncfusion/ej2-popups';
 import { Button, createCheckBox, rippleMouseHandler } from '@syncfusion/ej2-buttons';
@@ -194,7 +194,6 @@ let HScroll = class HScroll extends Component {
         let navLeftItem = this.createElement('div', { className: CLS_NAVLEFTARROW + ' ' + CLS_NAVARROW + ' e-icons' });
         navEle.appendChild(navLeftItem);
         nav.appendChild(navItem);
-        nav.setAttribute('tabindex', '0');
         element.appendChild(nav);
         element.insertBefore(navEle, element.firstChild);
         if (this.ieCheck) {
@@ -3452,8 +3451,7 @@ let Toolbar = class Toolbar extends Component {
                         this.removePositioning();
                     }
                     if (this.checkOverflow(ele, innerItems) || priorityCheck) {
-                        this.createPopupEle(ele, [].slice.call(selectAll('.' + CLS_ITEMS + ' .' + CLS_ITEM, ele)));
-                        this.element.querySelector('.' + CLS_TBARNAV).setAttribute('tabIndex', '0');
+                        this.setOverflowAttributes(ele);
                     }
                     this.toolbarAlign(innerItems);
                     break;
@@ -3476,12 +3474,16 @@ let Toolbar = class Toolbar extends Component {
                         if (this.tbarAlign) {
                             this.removePositioning();
                         }
-                        this.createPopupEle(ele, [].slice.call(selectAll('.' + CLS_ITEMS + ' .' + CLS_ITEM, ele)));
-                        this.element.querySelector('.' + CLS_TBARNAV).setAttribute('tabIndex', '0');
+                        this.setOverflowAttributes(ele);
                     }
                     this.toolbarAlign(innerItems);
             }
         }
+    }
+    setOverflowAttributes(ele) {
+        this.createPopupEle(ele, [].slice.call(selectAll('.' + CLS_ITEMS + ' .' + CLS_ITEM, ele)));
+        this.element.querySelector('.' + CLS_TBARNAV).setAttribute('tabIndex', '0');
+        this.element.querySelector('.' + CLS_TBARNAV).setAttribute('role', 'list');
     }
     separator() {
         let element = this.element;
@@ -3820,6 +3822,7 @@ let Toolbar = class Toolbar extends Component {
         let navItem = this.createElement('div', { className: CLS_POPUPDOWN + ' e-icons' });
         nav.appendChild(navItem);
         nav.setAttribute('tabindex', '0');
+        nav.setAttribute('role', 'list');
         element.appendChild(nav);
     }
     tbarPriRef(inEle, indx, sepPri, el, des, elWid, wid, ig) {
@@ -4446,6 +4449,7 @@ let Toolbar = class Toolbar extends Component {
                 case 'Button':
                     dom = this.buttonRendering(item, innerEle);
                     dom.setAttribute('tabindex', '-1');
+                    dom.setAttribute('aria-label', (item.text || item.tooltipText));
                     innerEle.appendChild(dom);
                     innerEle.addEventListener('click', this.itemClick.bind(this));
                     break;
@@ -5257,7 +5261,7 @@ let Accordion = class Accordion extends Component {
         let header = this.createElement('div', { className: CLS_HEADER, id: getUniqueID('acrdn_header') });
         let items = this.getItems();
         let ariaAttr = {
-            'tabindex': '0', 'role': 'heading', 'aria-expanded': 'false', 'aria-selected': 'false',
+            'tabindex': '0', 'role': 'heading', 'aria-selected': 'false',
             'aria-disabled': 'false', 'aria-level': items.length.toString()
         };
         attributes(header, ariaAttr);
@@ -5267,6 +5271,7 @@ let Accordion = class Accordion extends Component {
         let innerEle;
         innerEle = this.createElement('div', { className: CLS_ITEM$1 });
         innerEle.id = getUniqueID('acrdn_item');
+        attributes(innerEle, { 'aria-expanded': 'false' });
         if (this.headerTemplate) {
             let ctnEle = this.headerEleGenerate();
             let hdrEle = this.createElement('div', { className: CLS_HEADERCTN });
@@ -5401,6 +5406,7 @@ let Accordion = class Accordion extends Component {
         let content = select('.' + CLS_CONTENT, itemEle);
         header.setAttribute('aria-controls', content.id);
         content.setAttribute('aria-labelledby', header.id);
+        content.setAttribute('role', 'definition');
     }
     contentRendering(index) {
         let itemcnt = this.createElement('div', { className: CLS_CONTENT + ' ' + CLS_CTNHIDE, id: getUniqueID('acrdn_panel') });
@@ -5493,7 +5499,8 @@ let Accordion = class Accordion extends Component {
         if (progress === 'end') {
             this.add(trgtItemEle, CLS_ACTIVE);
             trgt.setAttribute('aria-hidden', 'false');
-            attributes(trgt.previousElementSibling, { 'aria-selected': 'true', 'aria-expanded': 'true' });
+            attributes(trgtItemEle, { 'aria-expanded': 'true' });
+            attributes(trgt.previousElementSibling, { 'aria-selected': 'true' });
             icon.classList.remove(CLS_TOGANIMATE);
             this.trigger('expanded', eventArgs);
         }
@@ -5603,7 +5610,8 @@ let Accordion = class Accordion extends Component {
             icon.classList.remove(CLS_TOGANIMATE);
             this.remove(trgtItemEle, CLS_ACTIVE);
             trgt.setAttribute('aria-hidden', 'true');
-            attributes(trgt.previousElementSibling, { 'aria-selected': 'false', 'aria-expanded': 'false' });
+            attributes(trgtItemEle, { 'aria-expanded': 'false' });
+            attributes(trgt.previousElementSibling, { 'aria-selected': 'false' });
             this.trigger('expanded', eventArgs);
         }
     }
@@ -6531,6 +6539,7 @@ let Tab = class Tab extends Component {
      */
     render() {
         this.btnCls = this.createElement('span', { className: CLS_ICONS + ' ' + CLS_ICON_CLOSE, attrs: { title: this.title } });
+        this.tabId = this.element.id.length > 0 ? ('-' + this.element.id) : getRandomId();
         this.renderContainer();
         this.wireEvents();
         this.initRender = false;
@@ -6603,8 +6612,8 @@ let Tab = class Tab extends Component {
                 hdrItems.forEach((item, index) => {
                     this.lastIndex = index;
                     let attr = {
-                        className: CLS_ITEM$2, id: CLS_ITEM$2 + '_' + index,
-                        attrs: { role: 'tab', 'aria-controls': CLS_CONTENT$1 + '_' + index, 'aria-selected': 'false' }
+                        className: CLS_ITEM$2, id: CLS_ITEM$2 + this.tabId + '_' + index,
+                        attrs: { role: 'tab', 'aria-controls': CLS_CONTENT$1 + this.tabId + '_' + index, 'aria-selected': 'false' }
                     };
                     let txt = this.createElement('span', {
                         className: CLS_TEXT, innerHTML: item, attrs: { 'role': 'presentation' }
@@ -6629,6 +6638,7 @@ let Tab = class Tab extends Component {
         this.tbObj.isStringTemplate = true;
         this.tbObj.createElement = this.createElement;
         this.tbObj.appendTo(this.hdrEle);
+        attributes(this.hdrEle, { 'aria-label': 'tab-header' });
         for (let i = 0; i < this.items.length; i++) {
             let item = this.items[i];
             if (item.headerTemplate && isBlazor() && !this.isStringTemplate &&
@@ -6648,8 +6658,8 @@ let Tab = class Tab extends Component {
             for (let i = 0; i < hdrItem.length; i++) {
                 if (contents.length - 1 >= i) {
                     contents.item(i).className += CLS_ITEM$2;
-                    attributes(contents.item(i), { 'role': 'tabpanel', 'aria-labelledby': CLS_ITEM$2 + '_' + i });
-                    contents.item(i).id = CLS_CONTENT$1 + '_' + i;
+                    attributes(contents.item(i), { 'role': 'tabpanel', 'aria-labelledby': CLS_ITEM$2 + this.tabId + '_' + i });
+                    contents.item(i).id = CLS_CONTENT$1 + this.tabId + '_' + i;
                 }
             }
         }
@@ -6714,13 +6724,13 @@ let Tab = class Tab extends Component {
             let wrap = this.createElement('div', { className: CLS_WRAP, attrs: wrapAttrs });
             wrap.appendChild(tCont);
             if (this.itemIndexArray === []) {
-                this.itemIndexArray.push(CLS_ITEM$2 + '_' + this.lastIndex);
+                this.itemIndexArray.push(CLS_ITEM$2 + this.tabId + '_' + this.lastIndex);
             }
             else {
-                this.itemIndexArray.splice((index + i), 0, CLS_ITEM$2 + '_' + this.lastIndex);
+                this.itemIndexArray.splice((index + i), 0, CLS_ITEM$2 + this.tabId + '_' + this.lastIndex);
             }
             let attrObj = {
-                id: CLS_ITEM$2 + '_' + this.lastIndex, role: 'tab', 'aria-selected': 'false'
+                id: CLS_ITEM$2 + this.tabId + '_' + this.lastIndex, role: 'tab', 'aria-selected': 'false'
             };
             let tItem = { htmlAttributes: attrObj, template: wrap };
             tItem.cssClass = item.cssClass + ' ' + disabled + ' ' + ((css !== '') ? 'e-i' + pos : '') + ' ' + ((!txtEmpty) ? CLS_ICON : '');
@@ -6801,8 +6811,10 @@ let Tab = class Tab extends Component {
         let checkRTL = this.enableRtl || this.element.classList.contains(CLS_RTL$4);
         if (this.isPopup || prev <= current) {
             if (this.animation.previous.effect === 'SlideLeftIn') {
-                animation = { name: 'SlideLeftOut',
-                    duration: this.animation.previous.duration, timingFunction: this.animation.previous.easing };
+                animation = {
+                    name: 'SlideLeftOut',
+                    duration: this.animation.previous.duration, timingFunction: this.animation.previous.easing
+                };
             }
             else {
                 animation = null;
@@ -6810,8 +6822,10 @@ let Tab = class Tab extends Component {
         }
         else {
             if (this.animation.next.effect === 'SlideRightIn') {
-                animation = { name: 'SlideRightOut',
-                    duration: this.animation.next.duration, timingFunction: this.animation.next.easing };
+                animation = {
+                    name: 'SlideRightOut',
+                    duration: this.animation.next.duration, timingFunction: this.animation.next.easing
+                };
             }
             else {
                 animation = null;
@@ -6938,7 +6952,7 @@ let Tab = class Tab extends Component {
         return Array.prototype.indexOf.call(selectAll('.' + CLS_TB_ITEM, this.getTabHeader()), item);
     }
     extIndex(id) {
-        return id.replace(CLS_ITEM$2 + '_', '');
+        return id.replace(CLS_ITEM$2 + this.tabId + '_', '');
     }
     expTemplateContent() {
         this.templateEle.forEach((eleStr) => {
@@ -7022,10 +7036,10 @@ let Tab = class Tab extends Component {
     getTrgContent(cntEle, no) {
         let ele;
         if (this.element.classList.contains(CLS_NEST$1)) {
-            ele = select('.' + CLS_NEST$1 + '> .' + CLS_CONTENT$1 + ' > #' + CLS_CONTENT$1 + '_' + no, this.element);
+            ele = select('.' + CLS_NEST$1 + '> .' + CLS_CONTENT$1 + ' > #' + CLS_CONTENT$1 + this.tabId + '_' + no, this.element);
         }
         else {
-            ele = this.findEle(cntEle.children, CLS_CONTENT$1 + '_' + no);
+            ele = this.findEle(cntEle.children, CLS_CONTENT$1 + this.tabId + '_' + no);
         }
         return ele;
     }
@@ -7133,8 +7147,8 @@ let Tab = class Tab extends Component {
                 this.cntEle = select('.' + CLS_CONTENT$1, this.element);
                 if (val === true) {
                     this.cntEle.appendChild(this.createElement('div', {
-                        id: (CLS_CONTENT$1 + '_' + 0), className: CLS_ITEM$2 + ' ' + CLS_ACTIVE$1,
-                        attrs: { 'role': 'tabpanel', 'aria-labelledby': CLS_ITEM$2 + '_' + 0 }
+                        id: (CLS_CONTENT$1 + this.tabId + '_' + 0), className: CLS_ITEM$2 + ' ' + CLS_ACTIVE$1,
+                        attrs: { 'role': 'tabpanel', 'aria-labelledby': CLS_ITEM$2 + this.tabId + '_' + 0 }
                     }));
                 }
                 let ele = this.cntEle.children.item(0);
@@ -7218,7 +7232,7 @@ let Tab = class Tab extends Component {
             if (!isNullOrUndefined(prev)) {
                 prev.removeAttribute('aria-controls');
             }
-            attributes(trg, { 'aria-controls': CLS_CONTENT$1 + '_' + value });
+            attributes(trg, { 'aria-controls': CLS_CONTENT$1 + this.tabId + '_' + value });
         }
         let id = trg.id;
         this.removeActiveClass();
@@ -7226,12 +7240,12 @@ let Tab = class Tab extends Component {
         trg.setAttribute('aria-selected', 'true');
         let no = Number(this.extIndex(id));
         if (isNullOrUndefined(this.prevActiveEle)) {
-            this.prevActiveEle = CLS_CONTENT$1 + '_' + no;
+            this.prevActiveEle = CLS_CONTENT$1 + this.tabId + '_' + no;
         }
         attributes(this.element, { 'aria-activedescendant': id });
         if (this.isTemplate) {
             if (select('.' + CLS_CONTENT$1, this.element).children.length > 0) {
-                let trg = this.findEle(select('.' + CLS_CONTENT$1, this.element).children, CLS_CONTENT$1 + '_' + no);
+                let trg = this.findEle(select('.' + CLS_CONTENT$1, this.element).children, CLS_CONTENT$1 + this.tabId + '_' + no);
                 if (!isNullOrUndefined(trg)) {
                     trg.classList.add(CLS_ACTIVE$1);
                 }
@@ -7243,8 +7257,8 @@ let Tab = class Tab extends Component {
             let item = this.getTrgContent(this.cntEle, this.extIndex(id));
             if (isNullOrUndefined(item)) {
                 this.cntEle.appendChild(this.createElement('div', {
-                    id: CLS_CONTENT$1 + '_' + this.extIndex(id), className: CLS_ITEM$2 + ' ' + CLS_ACTIVE$1,
-                    attrs: { role: 'tabpanel', 'aria-labelledby': CLS_ITEM$2 + '_' + this.extIndex(id) }
+                    id: CLS_CONTENT$1 + this.tabId + '_' + this.extIndex(id), className: CLS_ITEM$2 + ' ' + CLS_ACTIVE$1,
+                    attrs: { role: 'tabpanel', 'aria-labelledby': CLS_ITEM$2 + this.tabId + '_' + this.extIndex(id) }
                 }));
                 let eleTrg = this.getTrgContent(this.cntEle, this.extIndex(id));
                 let itemIndex = Array.prototype.indexOf.call(this.itemIndexArray, trg.id);
@@ -7266,7 +7280,7 @@ let Tab = class Tab extends Component {
             previousIndex: this.prevIndex,
             selectedItem: trg,
             selectedIndex: value,
-            selectedContent: select('#' + CLS_CONTENT$1 + '_' + this.selectingID, this.content),
+            selectedContent: select('#' + CLS_CONTENT$1 + this.tabId + '_' + this.selectingID, this.content),
             isSwiped: this.isSwipeed
         };
         if (!this.initRender || this.selectedItem !== 0) {
@@ -7482,8 +7496,8 @@ let Tab = class Tab extends Component {
                 let property = Object.keys(newProp.items[index])[0];
                 let oldVal = Object(oldProp.items[index])[property];
                 let newVal = Object(newProp.items[index])[property];
-                let hdrItem = select('.' + CLS_TB_ITEMS + ' #' + CLS_ITEM$2 + '_' + index, this.element);
-                let cntItem = select('.' + CLS_CONTENT$1 + ' #' + CLS_CONTENT$1 + '_' + index, this.element);
+                let hdrItem = select('.' + CLS_TB_ITEMS + ' #' + CLS_ITEM$2 + this.tabId + '_' + index, this.element);
+                let cntItem = select('.' + CLS_CONTENT$1 + ' #' + CLS_CONTENT$1 + this.tabId + '_' + index, this.element);
                 if (property === 'header' || property === 'headerTemplate') {
                     let icon = (isNullOrUndefined(this.items[index].header) ||
                         isNullOrUndefined(this.items[index].header.iconCss)) ? '' : this.items[index].header.iconCss;
@@ -7659,7 +7673,8 @@ let Tab = class Tab extends Component {
                 if (this.isTemplate && !isNullOrUndefined(item.header) && !isNullOrUndefined(item.header.text)) {
                     let no = lastEleIndex + place;
                     let ele = this.createElement('div', {
-                        id: CLS_CONTENT$1 + '_' + no, className: CLS_ITEM$2, attrs: { role: 'tabpanel', 'aria-labelledby': CLS_ITEM$2 + '_' + no }
+                        id: CLS_CONTENT$1 + this.tabId + '_' + no, className: CLS_ITEM$2,
+                        attrs: { role: 'tabpanel', 'aria-labelledby': CLS_ITEM$2 + this.tabId + '_' + no }
                     });
                     this.cntEle.insertBefore(ele, this.cntEle.children[(index + place)]);
                     let eleTrg = this.getTrgContent(this.cntEle, no.toString());
@@ -7696,7 +7711,7 @@ let Tab = class Tab extends Component {
                 this.items.splice(index, 1);
                 this.itemIndexArray.splice(index, 1);
                 this.refreshActiveBorder();
-                let cntTrg = select('#' + CLS_CONTENT$1 + '_' + this.extIndex(trg.id), select('.' + CLS_CONTENT$1, this.element));
+                let cntTrg = select('#' + CLS_CONTENT$1 + this.tabId + '_' + this.extIndex(trg.id), select('.' + CLS_CONTENT$1, this.element));
                 if (!isNullOrUndefined(cntTrg)) {
                     detach(cntTrg);
                 }
@@ -7807,10 +7822,12 @@ let Tab = class Tab extends Component {
             previousIndex: this.prevIndex,
             selectedItem: this.tbItem[this.selectedItem],
             selectedIndex: this.selectedItem,
-            selectedContent: !isNullOrUndefined(this.content) ? select('#' + CLS_CONTENT$1 + '_' + this.selectedID, this.content) : null,
+            selectedContent: !isNullOrUndefined(this.content) ?
+                select('#' + CLS_CONTENT$1 + this.tabId + '_' + this.selectedID, this.content) : null,
             selectingItem: trg,
             selectingIndex: args,
-            selectingContent: !isNullOrUndefined(this.content) ? select('#' + CLS_CONTENT$1 + '_' + this.selectingID, this.content) : null,
+            selectingContent: !isNullOrUndefined(this.content) ?
+                select('#' + CLS_CONTENT$1 + this.tabId + '_' + this.selectingID, this.content) : null,
             isSwiped: this.isSwipeed,
             cancel: false
         };

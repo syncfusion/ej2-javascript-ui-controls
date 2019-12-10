@@ -12662,7 +12662,7 @@ var PolarRadarPanel = /** @__PURE__ @class */ (function (_super) {
             }
             if (!isIntersect && legendRect) {
                 isIntersect = isOverlap(labelRegions[i], legendRect);
-                if (isIntersect && intersectType === 'Trim') {
+                if (isIntersect) {
                     var width = this.getAvailableSpaceToTrim(legendRect, labelRegions[i]);
                     if (width > 0) {
                         labelText = textTrim(width, axis.visibleLabels[i].originalText, axis.labelStyle);

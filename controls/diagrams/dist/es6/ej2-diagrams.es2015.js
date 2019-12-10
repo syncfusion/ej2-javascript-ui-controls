@@ -13917,7 +13917,7 @@ function cloneBlazorObject(args) {
 }
 /** @private */
 function checkBrowserInfo() {
-    if (navigator.platform.indexOf('Mac') && Browser.info.name === 'Safari') {
+    if (navigator.platform.indexOf('Mac') >= 0 && Browser.info.name === 'safari') {
         return true;
     }
     return false;
@@ -31983,85 +31983,87 @@ class Diagram extends Component {
         this.protectPropertyChange(true);
         let nodes = this.removeChildrenFromLayout(this.nodes);
         let viewPort = { x: this.scroller.viewPortWidth, y: this.scroller.viewPortHeight };
-        if (this.organizationalChartModule) {
-            layout = this.organizationalChartModule.updateLayout(nodes, this.nameTable, this.layout, viewPort, this.dataSourceSettings.id, this.diagramActions);
-            update = true;
-            if (this.layoutAnimateModule && layout.rootNode && !this.diagramActions) {
-                this.updateNodeExpand(layout.rootNode, layout.rootNode.isExpanded);
-            }
-        }
-        else if (this.mindMapChartModule) {
-            this.mindMapChartModule.updateLayout(nodes, this.nameTable, this.layout, viewPort, this.dataSourceSettings.id, this.dataSourceSettings.root);
-            update = true;
-        }
-        else if (this.radialTreeModule) {
-            this.radialTreeModule.updateLayout(nodes, this.nameTable, this.layout, viewPort);
-            update = true;
-        }
-        else if (this.symmetricalLayoutModule) {
-            this.symmetricalLayoutModule.maxIteration = this.layout.maxIteration;
-            this.symmetricalLayoutModule.springLength = this.layout.springLength;
-            this.symmetricalLayoutModule.springFactor = this.layout.springFactor;
-            this.symmetricalLayoutModule.updateLayout(nodes, this.connectors, this.symmetricalLayoutModule, this.nameTable, this.layout, viewPort);
-            update = true;
-        }
-        else if (this.complexHierarchicalTreeModule) {
-            let nodes = this.complexHierarchicalTreeModule.getLayoutNodesCollection(this.nodes);
-            if (nodes.length > 0) {
-                this.complexHierarchicalTreeModule.doLayout(nodes, this.nameTable, this.layout, viewPort);
-            }
-            update = true;
-        }
-        if (update) {
-            this.preventUpdate = true;
-            let connectors = {};
-            let updatedNodes = nodes;
-            for (let obj of updatedNodes) {
-                let node = obj;
-                if (!this.preventNodesUpdate && (!this.diagramActions || !(this.diagramActions & DiagramAction.PreventIconsUpdate))) {
-                    this.updateIcon(node);
-                    this.updateDefaultLayoutIcons(node);
+        if (this.layout.type !== 'None') {
+            if (this.organizationalChartModule) {
+                layout = this.organizationalChartModule.updateLayout(nodes, this.nameTable, this.layout, viewPort, this.dataSourceSettings.id, this.diagramActions);
+                update = true;
+                if (this.layoutAnimateModule && layout.rootNode && !this.diagramActions) {
+                    this.updateNodeExpand(layout.rootNode, layout.rootNode.isExpanded);
                 }
-                this.preventNodesUpdate = true;
-                this.nodePropertyChange(node, {}, { offsetX: node.offsetX, offsetY: node.offsetY }, true);
-                this.preventNodesUpdate = false;
-                node.wrapper.measure(new Size(node.wrapper.width, node.wrapper.height));
-                node.wrapper.arrange(node.wrapper.desiredSize);
-                this.updateDiagramObject(node, true);
-                if (node.inEdges.length > 0) {
-                    for (let j = 0; j < node.inEdges.length; j++) {
-                        let connector = this.nameTable[node.inEdges[j]];
-                        connectors[connector.id] = connector;
+            }
+            else if (this.mindMapChartModule) {
+                this.mindMapChartModule.updateLayout(nodes, this.nameTable, this.layout, viewPort, this.dataSourceSettings.id, this.dataSourceSettings.root);
+                update = true;
+            }
+            else if (this.radialTreeModule) {
+                this.radialTreeModule.updateLayout(nodes, this.nameTable, this.layout, viewPort);
+                update = true;
+            }
+            else if (this.symmetricalLayoutModule) {
+                this.symmetricalLayoutModule.maxIteration = this.layout.maxIteration;
+                this.symmetricalLayoutModule.springLength = this.layout.springLength;
+                this.symmetricalLayoutModule.springFactor = this.layout.springFactor;
+                this.symmetricalLayoutModule.updateLayout(nodes, this.connectors, this.symmetricalLayoutModule, this.nameTable, this.layout, viewPort);
+                update = true;
+            }
+            else if (this.complexHierarchicalTreeModule) {
+                let nodes = this.complexHierarchicalTreeModule.getLayoutNodesCollection(this.nodes);
+                if (nodes.length > 0) {
+                    this.complexHierarchicalTreeModule.doLayout(nodes, this.nameTable, this.layout, viewPort);
+                }
+                update = true;
+            }
+            if (update) {
+                this.preventUpdate = true;
+                let connectors = {};
+                let updatedNodes = nodes;
+                for (let obj of updatedNodes) {
+                    let node = obj;
+                    if (!this.preventNodesUpdate && (!this.diagramActions || !(this.diagramActions & DiagramAction.PreventIconsUpdate))) {
+                        this.updateIcon(node);
+                        this.updateDefaultLayoutIcons(node);
+                    }
+                    this.preventNodesUpdate = true;
+                    this.nodePropertyChange(node, {}, { offsetX: node.offsetX, offsetY: node.offsetY }, true);
+                    this.preventNodesUpdate = false;
+                    node.wrapper.measure(new Size(node.wrapper.width, node.wrapper.height));
+                    node.wrapper.arrange(node.wrapper.desiredSize);
+                    this.updateDiagramObject(node, true);
+                    if (node.inEdges.length > 0) {
+                        for (let j = 0; j < node.inEdges.length; j++) {
+                            let connector = this.nameTable[node.inEdges[j]];
+                            connectors[connector.id] = connector;
+                        }
+                    }
+                    if (node.outEdges.length > 0) {
+                        for (let k = 0; k < node.outEdges.length; k++) {
+                            let connection = this.nameTable[node.outEdges[k]];
+                            connectors[connection.id] = connection;
+                        }
                     }
                 }
-                if (node.outEdges.length > 0) {
-                    for (let k = 0; k < node.outEdges.length; k++) {
-                        let connection = this.nameTable[node.outEdges[k]];
-                        connectors[connection.id] = connection;
+                for (let conn of Object.keys(connectors)) {
+                    let connector = connectors[conn];
+                    let points = this.getPoints(connector);
+                    updateConnector(connector, points);
+                    if (connector.shape.type === 'Bpmn' && connector.shape.sequence === 'Default') {
+                        this.commandHandler.updatePathElementOffset(connector);
                     }
+                    connector.wrapper.measure(new Size(undefined, undefined));
+                    connector.wrapper.arrange(connector.wrapper.desiredSize);
+                    this.updateConnectorAnnotation(connector);
+                    this.updateQuad(connector);
+                    this.updateDiagramObject(connector, true);
+                }
+                this.preventUpdate = false;
+                this.updatePage();
+                if ((!(this.diagramActions & DiagramAction.Render)) || this.mode === 'Canvas') {
+                    this.refreshDiagramLayer();
                 }
             }
-            for (let conn of Object.keys(connectors)) {
-                let connector = connectors[conn];
-                let points = this.getPoints(connector);
-                updateConnector(connector, points);
-                if (connector.shape.type === 'Bpmn' && connector.shape.sequence === 'Default') {
-                    this.commandHandler.updatePathElementOffset(connector);
-                }
-                connector.wrapper.measure(new Size(undefined, undefined));
-                connector.wrapper.arrange(connector.wrapper.desiredSize);
-                this.updateConnectorAnnotation(connector);
-                this.updateQuad(connector);
-                this.updateDiagramObject(connector, true);
+            if (!propChange) {
+                this.protectPropertyChange(propChange);
             }
-            this.preventUpdate = false;
-            this.updatePage();
-            if ((!(this.diagramActions & DiagramAction.Render)) || this.mode === 'Canvas') {
-                this.refreshDiagramLayer();
-            }
-        }
-        if (!propChange) {
-            this.protectPropertyChange(propChange);
         }
         return layout;
     }

@@ -2037,7 +2037,7 @@ export function cloneBlazorObject(args: object): Object {
 
 /** @private */
 export function checkBrowserInfo(): boolean {
-    if (navigator.platform.indexOf('Mac') && Browser.info.name === 'Safari') {
+    if (navigator.platform.indexOf('Mac') >= 0 && Browser.info.name === 'safari') {
         return true;
     }
     return false;

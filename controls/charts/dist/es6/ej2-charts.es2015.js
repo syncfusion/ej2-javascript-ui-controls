@@ -11960,7 +11960,7 @@ class PolarRadarPanel extends LineBase {
             }
             if (!isIntersect && legendRect) {
                 isIntersect = isOverlap(labelRegions[i], legendRect);
-                if (isIntersect && intersectType === 'Trim') {
+                if (isIntersect) {
                     let width = this.getAvailableSpaceToTrim(legendRect, labelRegions[i]);
                     if (width > 0) {
                         labelText = textTrim(width, axis.visibleLabels[i].originalText, axis.labelStyle);

@@ -386,6 +386,28 @@ export class PdfViewerBase {
      */
     // tslint:disable-next-line
     public downloadCollections: any = {};
+    /**
+     * @private
+     */
+    public isAnnotationAdded: boolean = false;
+    /**
+     * @private
+     */
+    // tslint:disable-next-line
+    public annotationEvent: any = null;
+    private isAnnotationDrawn: boolean = false;
+    /**
+     * @private
+     */
+    public isAnnotationSelect: boolean = false;
+    /**
+     * @private
+     */
+    public isAnnotationMouseDown: boolean = false;
+    /**
+     * @private
+     */
+    public isAnnotationMouseMove: boolean = false;
 
     constructor(viewer: PdfViewer) {
         this.pdfViewer = viewer;
@@ -1132,6 +1154,7 @@ export class PdfViewerBase {
         this.isStorageExceed = false;
         this.annotationStorage = {};
         this.downloadCollections = {};
+        this.annotationEvent = null;
         this.initiateTextSelectMode();
         if (!Browser.isDevice) {
             if (this.navigationPane.sideBarToolbar) {
@@ -2066,16 +2089,23 @@ export class PdfViewerBase {
             if (event.target && ((event.target as PdfAnnotationBaseModel).id.indexOf('_text') > -1 || (event.target as HTMLElement).classList.contains('e-pv-hyperlink')) && this.pdfViewer.annotation) {
                 let pageIndex: number = this.pdfViewer.annotation.getEventPageNumber(event);
                 let diagram: HTMLElement = document.getElementById(this.pdfViewer.element.id + '_annotationCanvas_' + pageIndex);
-                let canvas1: Rect = diagram.getBoundingClientRect() as Rect;
-                let left: number = canvas1.x ? canvas1.x : canvas1.left;
-                let top: number = canvas1.y ? canvas1.y : canvas1.top;
-                canvas = new Rect(left + 10, top + 10, canvas1.width - 10, canvas1.height - 10);
+                if (diagram) {
+                    let canvas1: Rect = diagram.getBoundingClientRect() as Rect;
+                    let left: number = canvas1.x ? canvas1.x : canvas1.left;
+                    let top: number = canvas1.y ? canvas1.y : canvas1.top;
+                    canvas = new Rect(left + 10, top + 10, canvas1.width - 10, canvas1.height - 10);
+                }
             }
             let stampModule: StampAnnotation = this.pdfViewer.annotationModule.stampAnnotationModule;
             if (canvas && canvas.containsPoint({ x: this.mouseX, y: this.mouseY }) && !stampModule.isStampAnnotSelected) {
                 this.diagramMouseMove(event);
+                this.annotationEvent = event;
             } else {
                 this.diagramMouseLeave(event);
+                if (this.isAnnotationDrawn) {
+                    this.diagramMouseUp(event);
+                    this.isAnnotationAdded = true;
+                }
             }
             if (this.pdfViewer.enableStampAnnotations) {
                 if (stampModule && stampModule.isStampAnnotSelected) {
@@ -2356,7 +2386,7 @@ export class PdfViewerBase {
                         // tslint:disable-next-line
                         let targetElement: any = event.target;
                         if (viewerElement && targetElement) {
-                            if (viewerElement.id === targetElement.id.split('_text_')[0]) {
+                            if (viewerElement.id.split('_')[0] === targetElement.id.split('_')[0]) {
                                 // tslint:disable-next-line:max-line-length
                                 this.pdfViewer.annotationModule.textMarkupAnnotationModule.drawTextMarkupAnnotations(this.pdfViewer.annotationModule.textMarkupAnnotationModule.currentTextMarkupAddMode);
                             }
@@ -2373,9 +2403,6 @@ export class PdfViewerBase {
                 if (this.pdfViewer.textSelectionModule && !this.isTextSelectionDisabled) {
                     this.pdfViewer.textSelectionModule.clear();
                     this.pdfViewer.textSelectionModule.selectionStartPage = null;
-                }
-                if (this.isShapeBasedAnnotationsEnabled()) {
-                    this.diagramMouseUp(event);
                 }
                 event.preventDefault();
                 event.stopPropagation();
@@ -2631,8 +2658,13 @@ export class PdfViewerBase {
         }
         if (canvas && canvas.containsPoint({ x: this.mouseX, y: this.mouseY })) {
             this.diagramMouseMove(event);
+            this.annotationEvent = event;
         } else {
             this.diagramMouseLeave(event);
+            if (this.isAnnotationDrawn) {
+                this.diagramMouseUp(event);
+                this.isAnnotationAdded = true;
+            }
         }
         touchPoints = null;
     }
@@ -4856,6 +4888,7 @@ export class PdfViewerBase {
                 this.eventArgs.info = info;
                 this.eventArgs.clickCount = evt.detail;
                 this.tool.mouseUp(this.eventArgs);
+                this.isAnnotationMouseDown = false;
                 // tslint:disable-next-line:max-line-length
                 if ((this.tool instanceof NodeDrawingTool || this.tool instanceof LineTool || this.tool instanceof PolygonDrawingTool) && !this.tool.dragging) {
                     this.inAction = false;
@@ -4865,6 +4898,7 @@ export class PdfViewerBase {
                 if (this.isShapeAnnotationModule() || this.isCalibrateAnnotationModule()) {
                     this.pdfViewer.annotation.onShapesMouseup(obj as PdfAnnotationBaseModel, evt);
                 }
+                this.isAnnotationDrawn = false;
             }
         }
         let target: HTMLElement = evt.target as HTMLElement;
@@ -4903,6 +4937,7 @@ export class PdfViewerBase {
         let touches: TouchList;
         touches = (<TouchEvent & PointerEvent>evt).touches;
         this.isMouseDown = true;
+        this.isAnnotationAdded = false;
         this.currentPosition = this.prevPosition = this.getMousePosition(evt);
         this.eventArgs = {};
         if (this.pdfViewer.tool === 'Stamp') {
@@ -4995,7 +5030,10 @@ export class PdfViewerBase {
         this.getMouseEventArgs(this.currentPosition, this.eventArgs, evt);
         this.eventArgs.position = this.currentPosition;
         if (this.tool) {
+            this.isAnnotationMouseDown = false;
+            this.isAnnotationMouseMove = false;
             this.tool.mouseDown(this.eventArgs);
+            this.isAnnotationDrawn = true;
         }
         if (this.pdfViewer.annotation) {
             this.pdfViewer.annotation.onAnnotationMouseDown();

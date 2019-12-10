@@ -690,7 +690,7 @@ export class Accordion extends Component<HTMLElement> implements INotifyProperty
       let header: HTEle = this.createElement('div', { className: CLS_HEADER, id: getUniqueID('acrdn_header') });
       let items: Object[] = this.getItems();
       let ariaAttr: { [key: string]: Str } = {
-        'tabindex': '0', 'role': 'heading', 'aria-expanded': 'false', 'aria-selected': 'false',
+        'tabindex': '0', 'role': 'heading', 'aria-selected': 'false',
          'aria-disabled': 'false', 'aria-level': items.length.toString()
       };
       attributes(header, ariaAttr);
@@ -700,6 +700,7 @@ export class Accordion extends Component<HTMLElement> implements INotifyProperty
       let innerEle: HTEle;
       innerEle = this.createElement('div', { className: CLS_ITEM });
       innerEle.id = getUniqueID('acrdn_item');
+      attributes(innerEle, { 'aria-expanded': 'false' });
       if (this.headerTemplate) {
         let ctnEle: HTEle = this.headerEleGenerate();
         let hdrEle: HTEle = this.createElement('div', { className: CLS_HEADERCTN });
@@ -826,6 +827,7 @@ export class Accordion extends Component<HTMLElement> implements INotifyProperty
       let content: Element = select('.' + CLS_CONTENT, itemEle);
       header.setAttribute('aria-controls', content.id);
       content.setAttribute('aria-labelledby', header.id);
+      content.setAttribute('role', 'definition');
     }
     private contentRendering(index: number): HTEle {
       let itemcnt: HTEle = this.createElement('div', { className: CLS_CONTENT + ' ' + CLS_CTNHIDE, id: getUniqueID('acrdn_panel') });
@@ -911,7 +913,8 @@ export class Accordion extends Component<HTMLElement> implements INotifyProperty
       if (progress === 'end') {
         this.add(trgtItemEle, CLS_ACTIVE);
         trgt.setAttribute('aria-hidden', 'false');
-        attributes (trgt.previousElementSibling, { 'aria-selected': 'true', 'aria-expanded': 'true'});
+        attributes (trgtItemEle, {'aria-expanded': 'true' });
+        attributes (trgt.previousElementSibling, { 'aria-selected': 'true'});
         icon.classList.remove(CLS_TOGANIMATE);
         this.trigger('expanded' , eventArgs);
       }
@@ -1011,7 +1014,8 @@ export class Accordion extends Component<HTMLElement> implements INotifyProperty
         icon.classList.remove(CLS_TOGANIMATE);
         this.remove(trgtItemEle, CLS_ACTIVE);
         trgt.setAttribute('aria-hidden', 'true');
-        attributes (trgt.previousElementSibling, { 'aria-selected': 'false', 'aria-expanded': 'false' });
+        attributes (trgtItemEle, {'aria-expanded': 'false' });
+        attributes (trgt.previousElementSibling, { 'aria-selected': 'false'});
         this.trigger('expanded' , eventArgs);
       }
     }

@@ -780,7 +780,11 @@ export class Drawing {
                                 }
                             }
                             if (node.annotName !== '') {
-                                this.pdfViewer.annotationModule.annotationSelect(node.annotName, node.pageIndex, node);
+                                // tslint:disable-next-line:max-line-length
+                                if (!this.pdfViewer.viewerBase.isAnnotationSelect && !this.pdfViewer.viewerBase.isAnnotationMouseDown && !this.pdfViewer.viewerBase.isAnnotationMouseMove) {
+                                    this.pdfViewer.viewerBase.isAnnotationSelect = true;
+                                    this.pdfViewer.annotationModule.annotationSelect(node.annotName, node.pageIndex, node);
+                                }
                             }
                         }
                     }

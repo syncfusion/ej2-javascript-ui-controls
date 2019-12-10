@@ -1,4 +1,4 @@
-import { EventHandler, L10n, isNullOrUndefined, extend, closest, getValue } from '@syncfusion/ej2-base';
+import { EventHandler, L10n, isNullOrUndefined, extend, closest, getValue, KeyboardEventArgs } from '@syncfusion/ej2-base';
 import { getActualPropFromColl, isActionPrevent, getColumnByForeignKeyValue } from '../base/util';
 import { remove, matches } from '@syncfusion/ej2-base';
 import { DataUtil, Predicate, Query, DataManager } from '@syncfusion/ej2-data';
@@ -627,7 +627,7 @@ export class Filter implements IAction {
     }
 
 
-    private keyUpHandler(e: KeyboardEvent): void {
+    private keyUpHandler(e: KeyboardEventArgs): void {
         let gObj: IGrid = this.parent;
         let target: HTMLInputElement = e.target as HTMLInputElement;
 
@@ -641,6 +641,21 @@ export class Filter implements IAction {
                 this.value = target.value.trim();
                 this.processFilter(e);
             }
+        }
+
+        if (e.action === 'altDownArrow' && this.filterSettings.type !== 'FilterBar') {
+            let element: HTMLElement = gObj.focusModule.currentInfo.element;
+            if (element && element.classList.contains('e-headercell')) {
+                let column: Column = gObj.getColumnByUid(element.firstElementChild.getAttribute('e-mappinguid'));
+                this.openMenuByField(column.field);
+                this.parent.focusModule.clearIndicator();
+            }
+        }
+
+        if (e.action === 'escape' && this.filterSettings.type === 'Menu') {
+            this.filterModule.closeDialog();
+            gObj.notify(events.restoreFocus, {});
+            gObj.focusModule.addOutline();
         }
     }
 
@@ -901,6 +916,22 @@ export class Filter implements IAction {
 
     };
 
+    /** @hidden */
+    public openMenuByField(field: string): void {
+        let gObj: IGrid = this.parent;
+        let column: Column = gObj.getColumnByField(field);
+        let header: Element = gObj.getColumnHeaderByField(field);
+        let target: Element = header.querySelector('.e-filtermenudiv');
+
+        if (!target) {
+            return;
+        }
+
+        let gClient: ClientRect = gObj.element.getBoundingClientRect();
+        let fClient: ClientRect = target.getBoundingClientRect();
+        this.filterDialogOpen(column, target, fClient.right - gClient.left, fClient.bottom - gClient.top);
+    }
+
     private filterIconClickHandler(e: MouseEvent): void {
         let target: Element = e.target as Element;
         if (target.classList.contains('e-filtermenudiv') && (this.parent.filterSettings.type === 'Menu' ||
@@ -908,8 +939,6 @@ export class Filter implements IAction {
             let gObj: IGrid = this.parent;
             let col: Column = gObj.getColumnByUid
                 (parentsUntil(target, 'e-headercell').firstElementChild.getAttribute('e-mappinguid'));
-            let gClient: ClientRect = gObj.element.getBoundingClientRect();
-            let fClient: ClientRect = target.getBoundingClientRect();
             this.column = col;
             if (this.fltrDlgDetails.field === col.field && this.fltrDlgDetails.isOpen) {
                 return;
@@ -918,7 +947,7 @@ export class Filter implements IAction {
                 this.filterModule.closeDialog();
             }
             this.fltrDlgDetails = { field: col.field, isOpen: true };
-            this.filterDialogOpen(this.column, target, fClient.right - gClient.left, fClient.bottom - gClient.top);
+            this.openMenuByField(col.field);
         }
     }
 

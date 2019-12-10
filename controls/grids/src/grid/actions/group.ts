@@ -201,7 +201,7 @@ export class Group implements IAction {
 
     private keyPressHandler(e: KeyboardEventArgs): void {
         let gObj: IGrid = this.parent;
-        if ((!this.groupSettings.columns.length ||
+        if (e.action !== 'ctrlSpace' && (!this.groupSettings.columns.length ||
             ['altDownArrow', 'altUpArrow', 'ctrlDownArrow', 'ctrlUpArrow', 'enter'].indexOf(e.action) === -1)) {
             return;
         }
@@ -236,6 +236,14 @@ export class Group implements IAction {
                 let row: Element = element ? element.parentElement.querySelector('[class^="e-record"]') : null;
                 if (!row) { break; }
                 this.expandCollapseRows(row);
+                break;
+            case 'ctrlSpace':
+                let elem: HTMLElement = gObj.focusModule.currentInfo.element;
+                if (elem && elem.classList.contains('e-headercell')) {
+                    let column: Column = gObj.getColumnByUid(elem.firstElementChild.getAttribute('e-mappinguid'));
+                    column.field && gObj.groupSettings.columns.indexOf(column.field) < 0 ?
+                        this.groupColumn(column.field) : this.ungroupColumn(column.field);
+                }
                 break;
         }
     }
@@ -606,9 +614,9 @@ export class Group implements IAction {
         if (this.groupSettings.showToggleButton) {
             childDiv.appendChild(this.parent.createElement(
                 'span', {
-                    className: 'e-togglegroupbutton e-icons e-icon-ungroup e-toggleungroup', innerHTML: '&nbsp;',
-                    attrs: { tabindex: '-1', 'aria-label': 'ungroup button' }
-                }));
+                className: 'e-togglegroupbutton e-icons e-icon-ungroup e-toggleungroup', innerHTML: '&nbsp;',
+                attrs: { tabindex: '-1', 'aria-label': 'ungroup button' }
+            }));
         }
 
         if (headerCell.querySelectorAll('.e-ascending,.e-descending').length) {
@@ -616,16 +624,16 @@ export class Group implements IAction {
         }
         childDiv.appendChild(this.parent.createElement(
             'span', {
-                className: 'e-groupsort e-icons ' +
-                    ('e-' + direction.toLowerCase() + ' e-icon-' + direction.toLowerCase()), innerHTML: '&nbsp;',
-                attrs: { tabindex: '-1', 'aria-label': 'sort the grouped column' }
-            }));
+            className: 'e-groupsort e-icons ' +
+                ('e-' + direction.toLowerCase() + ' e-icon-' + direction.toLowerCase()), innerHTML: '&nbsp;',
+            attrs: { tabindex: '-1', 'aria-label': 'sort the grouped column' }
+        }));
         childDiv.appendChild(this.parent.createElement(
             'span', {
-                className: 'e-ungroupbutton e-icons e-icon-hide', innerHTML: '&nbsp;',
-                attrs: { title: this.l10n.getConstant('UnGroup'), tabindex: '-1', 'aria-label': 'ungroup the grouped column' },
-                styles: this.groupSettings.showUngroupButton ? '' : 'display:none'
-            }));
+            className: 'e-ungroupbutton e-icons e-icon-hide', innerHTML: '&nbsp;',
+            attrs: { title: this.l10n.getConstant('UnGroup'), tabindex: '-1', 'aria-label': 'ungroup the grouped column' },
+            styles: this.groupSettings.showUngroupButton ? '' : 'display:none'
+        }));
 
         groupedColumn.appendChild(childDiv);
         this.element.appendChild(groupedColumn);
@@ -646,10 +654,10 @@ export class Group implements IAction {
                         if (!isRemove) {
                             headers[i].appendChild(this.parent.createElement(
                                 'span', {
-                                    className: 'e-grptogglebtn e-icons ' +
-                                        (this.groupSettings.columns.indexOf(column.field) > -1 ? 'e-toggleungroup e-icon-ungroup'
-                                            : 'e-togglegroup e-icon-group'), attrs: { tabindex: '-1', 'aria-label': 'Group button' }
-                                }));
+                                className: 'e-grptogglebtn e-icons ' +
+                                    (this.groupSettings.columns.indexOf(column.field) > -1 ? 'e-toggleungroup e-icon-ungroup'
+                                        : 'e-togglegroup e-icon-group'), attrs: { tabindex: '-1', 'aria-label': 'Group button' }
+                            }));
                         }
                     }
                 }

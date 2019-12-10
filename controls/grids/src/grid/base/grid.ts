@@ -909,7 +909,8 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     private loggerModule: ILogger;
     // enable/disable logger for MVC & Core
     private enableLogger: boolean = true;
-    private focusModule: FocusStrategy;
+    /** @hidden */
+    public focusModule: FocusStrategy;
 
     protected needsID: boolean = true;
 
@@ -2271,7 +2272,10 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
             shiftTab: 'shift+tab',
             space: 'space',
             ctrlPlusC: 'ctrl+C',
-            ctrlShiftPlusH: 'ctrl+shift+H'
+            ctrlShiftPlusH: 'ctrl+shift+H',
+            ctrlSpace: 'ctrl+space',
+            ctrlLeftArrow: 'ctrl+leftarrow',
+            ctrlRightArrow: 'ctrl+rightarrow'
         };
         /* tslint:enable */
     }
@@ -3003,6 +3007,15 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     }
 
     /**
+     * Gets a frozen tables row by index.
+     * @param  {number} index - Specifies the row index.
+     * @return {Element} 
+     */
+    public getFrozenRowByIndex(index: number): Element {
+        return this.getFrozenDataRows()[index];
+    }
+
+    /**
      * Gets all the data rows of the Grid.
      * @return {Element[]} 
      */
@@ -3097,6 +3110,22 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
         if (this.frozenRows) {
             let freezeRows: HTMLElement[] =
                 [].slice.call(this.getHeaderContent().querySelector('.e-movableheader').querySelector('tbody').children);
+            rows = this.addMovableRows(freezeRows, rows);
+        }
+        let dataRows: Element[] = this.generateDataRows(rows);
+        return dataRows;
+    }
+
+    /**
+     * Gets all the Grid's frozen table data rows.
+     * @return {Element[]} 
+     */
+    public getFrozenDataRows(): Element[] {
+        let rows: HTMLElement[] =
+            [].slice.call(this.getContent().querySelector('.e-frozencontent').querySelector('tbody').children);
+        if (this.frozenRows) {
+            let freezeRows: HTMLElement[] =
+                [].slice.call(this.getHeaderContent().querySelector('.e-frozenheader').querySelector('tbody').children);
             rows = this.addMovableRows(freezeRows, rows);
         }
         let dataRows: Element[] = this.generateDataRows(rows);
@@ -4415,6 +4444,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
         EventHandler.add(this.element, 'mousemove', this.mouseMoveHandler, this);
         EventHandler.add(this.element, 'mouseout', this.mouseMoveHandler, this);
         EventHandler.add(this.getContent(), 'touchstart', this.tapEvent, this);
+        EventHandler.add(document.body, 'keydown', this.keyDownHandler, this);
     }
 
     /**
@@ -4431,6 +4461,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
         EventHandler.remove(this.element, 'mouseout', this.mouseMoveHandler);
         EventHandler.remove(this.element, 'keydown', this.keyPressHandler);
         EventHandler.remove(this.getContent(), 'touchstart', this.tapEvent);
+        EventHandler.remove(document.body, 'keydown', this.keyDownHandler);
     }
     /**
      * @hidden
@@ -4674,6 +4705,17 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
         this.trigger("keyPressed", presskey);
         if (presskey.cancel === true) {
             e.stopImmediatePropagation();
+        }
+    }
+
+    private keyDownHandler(e: KeyboardEventArgs): void {
+        if (e.altKey) {
+            if (e.keyCode === 74) {//alt j
+                this.focusModule.focusHeader();
+            }
+            if (e.keyCode === 87) {//alt w
+                this.focusModule.focusContent();
+            }
         }
     }
 
@@ -5138,5 +5180,39 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      */
     public getFrozenVirtualHeader(): Element {
         return this.getHeaderContent().querySelector('.e-frozenheader');
+    }
+
+    /**
+     * @hidden
+     */
+    public getRowElementByUID(uid: string): Element {
+        let rowEle: Element;
+        let rows: Element[] = [];
+        if (this.getFrozenColumns()) {
+            let fRows: Element[] = [].slice.call(this.getFrozenVirtualContent().querySelector('tbody').children);
+            let mRows: Element[] = [].slice.call(this.getMovableVirtualContent().querySelector('tbody').children);
+            if (this.frozenRows) {
+                rows = [].slice.call(this.getFrozenVirtualHeader().querySelector('tbody').children);
+                rows = rows.concat([].slice.call(this.getMovableVirtualHeader().querySelector('tbody').children));
+                rows = rows.concat(fRows).concat(mRows);
+            } else {
+                rows = fRows.concat(mRows);
+            }
+        } else {
+            let cntRows: Element[] = [].slice.call(this.getContent().querySelector('tbody').children);
+            if (this.frozenRows) {
+                rows = [].slice.call(this.getHeaderContent().querySelector('tbody').children);
+                rows = rows.concat(cntRows);
+            } else {
+                rows = cntRows;
+            }
+        }
+        for (let row of rows) {
+            if (row.getAttribute('data-uid') === uid) {
+                rowEle = row;
+                break;
+            }
+        }
+        return rowEle;
     }
 }

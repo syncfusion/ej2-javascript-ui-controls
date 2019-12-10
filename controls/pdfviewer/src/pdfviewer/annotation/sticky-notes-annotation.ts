@@ -1745,7 +1745,7 @@ export class StickyNotesAnnotation {
                             this.pdfViewer.annotation.textMarkupAnnotationModule.currentTextMarkupAnnotation = pageCollections[i];
                             this.pdfViewer.annotation.textMarkupAnnotationModule.selectTextMarkupCurrentPage = pageNumber - 1;
                             this.pdfViewer.annotation.textMarkupAnnotationModule.enableAnnotationPropertiesTool(true);
-                            if (this.pdfViewer.toolbarModule) {
+                            if (this.pdfViewer.toolbarModule && this.pdfViewer.enableAnnotationToolbar) {
                                 this.pdfViewer.toolbarModule.annotationToolbarModule.isToolbarHidden = true;
                                 // tslint:disable-next-line:max-line-length
                                 this.pdfViewer.toolbarModule.annotationToolbarModule.showAnnotationToolbar(this.pdfViewer.toolbarModule.annotationItem);

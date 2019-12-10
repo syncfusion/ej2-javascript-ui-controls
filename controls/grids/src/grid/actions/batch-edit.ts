@@ -414,12 +414,10 @@ export class BatchEdit {
     }
 
 
+    // tslint:disable-next-line:max-func-body-length
     private bulkDelete(fieldname?: string, data?: Object): void {
         this.removeSelectedData = [];
         let gObj: IGrid = this.parent;
-        if (data) {
-            gObj.selectRow(this.getIndexFromData(data));
-        }
         let index: number = gObj.selectedRowIndex;
         let selectedRows: Element[] = gObj.getSelectedRows();
         let args: BeforeBatchDeleteArgs = {
@@ -429,7 +427,12 @@ export class BatchEdit {
             cancel: false
         };
         if (!isBlazor() || this.parent.isJsComponent) {
-            args.row = data ? gObj.getRows()[index] : selectedRows[0];
+            if (data) {
+                args.row = gObj.editModule.deleteRowUid ? gObj.getRowElementByUID(gObj.editModule.deleteRowUid)
+                    : gObj.getRows()[gObj.getCurrentViewRecords().indexOf(data)];
+            } else {
+                args.row = data ? gObj.getRows()[index] : selectedRows[0];
+            }
             if (!args.row) {
                 return;
             }
@@ -439,9 +442,44 @@ export class BatchEdit {
                 return;
             }
             beforeBatchDeleteArgs.row = beforeBatchDeleteArgs.row ?
-                                            beforeBatchDeleteArgs.row : data ? gObj.getRows()[index] : selectedRows[0];
-            if (this.parent.frozenColumns || selectedRows.length === 1) {
+                beforeBatchDeleteArgs.row : data ? gObj.getRows()[index] : selectedRows[0];
+            if (this.parent.getFrozenColumns()) {
+                if (data) {
+                    index = parseInt(beforeBatchDeleteArgs.row.getAttribute('aria-rowindex'), 10);
+                    selectedRows = [beforeBatchDeleteArgs.row];
+                    if (parentsUntil(beforeBatchDeleteArgs.row, 'e-frozencontent')
+                        || parentsUntil(beforeBatchDeleteArgs.row, 'e-frozenheader')) {
+                        selectedRows = selectedRows.concat(gObj.getMovableRowByIndex(index));
+                    } else if (parentsUntil(beforeBatchDeleteArgs.row, 'e-movablecontent')
+                        || (parentsUntil(beforeBatchDeleteArgs.row, 'e-movableheader'))) {
+                        selectedRows = selectedRows.concat(gObj.getFrozenRowByIndex(index));
+                    }
+                }
+                for (let i: number = 0; i < selectedRows.length; i++) {
+                    let uid: string = selectedRows[i].getAttribute('data-uid');
+                    if (selectedRows[i].classList.contains('e-insertedrow')) {
+                        this.removeRowObjectFromUID(uid);
+                        remove(selectedRows[i]);
+                    } else {
+                        let rowObj: Row<Column> = gObj.getRowObjectFromUID(uid);
+                        rowObj.isDirty = true;
+                        rowObj.edit = 'delete';
+                        classList(selectedRows[i], ['e-hiddenrow', 'e-updatedtd'], []);
+                        if (gObj.frozenRows && index < gObj.frozenRows && gObj.getMovableDataRows().length >= gObj.frozenRows) {
+                            gObj.getHeaderContent().querySelector('.e-movableheader').querySelector('tbody')
+                                .appendChild(gObj.getMovableRowByIndex(gObj.frozenRows - 1));
+                            gObj.getHeaderContent().querySelector('.e-frozenheader').querySelector('tbody')
+                                .appendChild(gObj.getRowByIndex(gObj.frozenRows - 1));
+                        }
+                        if (gObj.frozenRows && index < gObj.frozenRows && gObj.getDataRows().length >= gObj.frozenRows) {
+                            gObj.getHeaderContent().querySelector('tbody').appendChild(gObj.getRowByIndex(gObj.frozenRows - 1));
+                        }
+                    }
+                    delete selectedRows[i];
+                }
+            } else if (!this.parent.getFrozenColumns() && (selectedRows.length === 1 || data)) {
                 let uid: string = beforeBatchDeleteArgs.row.getAttribute('data-uid');
+                uid = data && this.parent.editModule.deleteRowUid ? uid = this.parent.editModule.deleteRowUid : uid;
                 if (beforeBatchDeleteArgs.row.classList.contains('e-insertedrow')) {
                     this.removeRowObjectFromUID(uid);
                     remove(beforeBatchDeleteArgs.row);
@@ -450,17 +488,6 @@ export class BatchEdit {
                     rowObj.isDirty = true;
                     rowObj.edit = 'delete';
                     classList(beforeBatchDeleteArgs.row as HTMLTableRowElement, ['e-hiddenrow', 'e-updatedtd'], []);
-                    if (gObj.getFrozenColumns()) {
-                        classList(data ? gObj.getMovableRows()[index] : selectedRows[1], ['e-hiddenrow', 'e-updatedtd'], []);
-                        if (gObj.frozenRows && index < gObj.frozenRows && gObj.getMovableDataRows().length >= gObj.frozenRows) {
-                            gObj.getHeaderContent().querySelector('.e-movableheader').querySelector('tbody')
-                                .appendChild(gObj.getMovableRowByIndex(gObj.frozenRows - 1));
-                            gObj.getHeaderContent().querySelector('.e-frozenheader').querySelector('tbody')
-                                .appendChild(gObj.getRowByIndex(gObj.frozenRows - 1));
-                        }
-                    } else if (gObj.frozenRows && index < gObj.frozenRows && gObj.getDataRows().length >= gObj.frozenRows) {
-                        gObj.getHeaderContent().querySelector('tbody').appendChild(gObj.getRowByIndex(gObj.frozenRows - 1));
-                    }
                 }
                 delete beforeBatchDeleteArgs.row;
             } else {
@@ -479,9 +506,17 @@ export class BatchEdit {
                 }
             }
             this.refreshRowIdx();
-            this.removeSelectedData =  gObj.getSelectedRecords();
-            gObj.clearSelection();
-            gObj.selectRow(index);
+            this.removeSelectedData = gObj.getSelectedRecords();
+            if (data) {
+                gObj.editModule.deleteRowUid = undefined;
+                if (gObj.getSelectedRows().length) {
+                    index = parseInt(gObj.getSelectedRows()[0].getAttribute('aria-rowindex'), 10);
+                }
+            }
+            if (gObj.getSelectedRows().length) {
+                gObj.clearSelection();
+                gObj.selectRow(index);
+            }
             gObj.trigger(events.batchDelete, beforeBatchDeleteArgs);
             gObj.notify(events.batchDelete, { rows: this.parent.getRowsObject() });
             gObj.notify(events.toolbarRefresh, {});

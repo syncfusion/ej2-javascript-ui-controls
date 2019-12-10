@@ -1,4 +1,4 @@
-import { Animation, Browser, ChildProperty, Collection, Complex, Component, Draggable, Droppable, Event, EventHandler, KeyboardEvents, L10n, NotifyPropertyChanges, Property, Touch, addClass, append, attributes, blazorTemplates, classList, closest, compile, createElement, detach, extend, formatUnit, getElement, getInstance, getUniqueID, getValue, isBlazor, isNullOrUndefined, isUndefined, isVisible, matches, remove, removeClass, resetBlazorTemplate, rippleEffect, select, selectAll, setStyleAttribute, setValue, updateBlazorTemplate } from '@syncfusion/ej2-base';
+import { Animation, Browser, ChildProperty, Collection, Complex, Component, Draggable, Droppable, Event, EventHandler, KeyboardEvents, L10n, NotifyPropertyChanges, Property, Touch, addClass, append, attributes, blazorTemplates, classList, closest, compile, createElement, detach, extend, formatUnit, getElement, getInstance, getRandomId, getUniqueID, getValue, isBlazor, isNullOrUndefined, isUndefined, isVisible, matches, remove, removeClass, resetBlazorTemplate, rippleEffect, select, selectAll, setStyleAttribute, setValue, updateBlazorTemplate } from '@syncfusion/ej2-base';
 import { ListBase } from '@syncfusion/ej2-lists';
 import { Popup, calculatePosition, createSpinner, fit, getScrollableParent, getZindexPartial, hideSpinner, isCollide, showSpinner } from '@syncfusion/ej2-popups';
 import { Button, createCheckBox, rippleMouseHandler } from '@syncfusion/ej2-buttons';
@@ -210,7 +210,6 @@ var HScroll = /** @__PURE__ @class */ (function (_super) {
         var navLeftItem = this.createElement('div', { className: CLS_NAVLEFTARROW + ' ' + CLS_NAVARROW + ' e-icons' });
         navEle.appendChild(navLeftItem);
         nav.appendChild(navItem);
-        nav.setAttribute('tabindex', '0');
         element.appendChild(nav);
         element.insertBefore(navEle, element.firstChild);
         if (this.ieCheck) {
@@ -3588,8 +3587,7 @@ var Toolbar = /** @__PURE__ @class */ (function (_super) {
                         this.removePositioning();
                     }
                     if (this.checkOverflow(ele, innerItems) || priorityCheck) {
-                        this.createPopupEle(ele, [].slice.call(selectAll('.' + CLS_ITEMS + ' .' + CLS_ITEM, ele)));
-                        this.element.querySelector('.' + CLS_TBARNAV).setAttribute('tabIndex', '0');
+                        this.setOverflowAttributes(ele);
                     }
                     this.toolbarAlign(innerItems);
                     break;
@@ -3612,12 +3610,16 @@ var Toolbar = /** @__PURE__ @class */ (function (_super) {
                         if (this.tbarAlign) {
                             this.removePositioning();
                         }
-                        this.createPopupEle(ele, [].slice.call(selectAll('.' + CLS_ITEMS + ' .' + CLS_ITEM, ele)));
-                        this.element.querySelector('.' + CLS_TBARNAV).setAttribute('tabIndex', '0');
+                        this.setOverflowAttributes(ele);
                     }
                     this.toolbarAlign(innerItems);
             }
         }
+    };
+    Toolbar.prototype.setOverflowAttributes = function (ele) {
+        this.createPopupEle(ele, [].slice.call(selectAll('.' + CLS_ITEMS + ' .' + CLS_ITEM, ele)));
+        this.element.querySelector('.' + CLS_TBARNAV).setAttribute('tabIndex', '0');
+        this.element.querySelector('.' + CLS_TBARNAV).setAttribute('role', 'list');
     };
     Toolbar.prototype.separator = function () {
         var element = this.element;
@@ -3956,6 +3958,7 @@ var Toolbar = /** @__PURE__ @class */ (function (_super) {
         var navItem = this.createElement('div', { className: CLS_POPUPDOWN + ' e-icons' });
         nav.appendChild(navItem);
         nav.setAttribute('tabindex', '0');
+        nav.setAttribute('role', 'list');
         element.appendChild(nav);
     };
     Toolbar.prototype.tbarPriRef = function (inEle, indx, sepPri, el, des, elWid, wid, ig) {
@@ -4594,6 +4597,7 @@ var Toolbar = /** @__PURE__ @class */ (function (_super) {
                 case 'Button':
                     dom = this.buttonRendering(item, innerEle);
                     dom.setAttribute('tabindex', '-1');
+                    dom.setAttribute('aria-label', (item.text || item.tooltipText));
                     innerEle.appendChild(dom);
                     innerEle.addEventListener('click', this.itemClick.bind(this));
                     break;
@@ -5441,7 +5445,7 @@ var Accordion = /** @__PURE__ @class */ (function (_super) {
         var header = this.createElement('div', { className: CLS_HEADER, id: getUniqueID('acrdn_header') });
         var items = this.getItems();
         var ariaAttr = {
-            'tabindex': '0', 'role': 'heading', 'aria-expanded': 'false', 'aria-selected': 'false',
+            'tabindex': '0', 'role': 'heading', 'aria-selected': 'false',
             'aria-disabled': 'false', 'aria-level': items.length.toString()
         };
         attributes(header, ariaAttr);
@@ -5451,6 +5455,7 @@ var Accordion = /** @__PURE__ @class */ (function (_super) {
         var innerEle;
         innerEle = this.createElement('div', { className: CLS_ITEM$1 });
         innerEle.id = getUniqueID('acrdn_item');
+        attributes(innerEle, { 'aria-expanded': 'false' });
         if (this.headerTemplate) {
             var ctnEle = this.headerEleGenerate();
             var hdrEle = this.createElement('div', { className: CLS_HEADERCTN });
@@ -5585,6 +5590,7 @@ var Accordion = /** @__PURE__ @class */ (function (_super) {
         var content = select('.' + CLS_CONTENT, itemEle);
         header.setAttribute('aria-controls', content.id);
         content.setAttribute('aria-labelledby', header.id);
+        content.setAttribute('role', 'definition');
     };
     Accordion.prototype.contentRendering = function (index) {
         var itemcnt = this.createElement('div', { className: CLS_CONTENT + ' ' + CLS_CTNHIDE, id: getUniqueID('acrdn_panel') });
@@ -5679,7 +5685,8 @@ var Accordion = /** @__PURE__ @class */ (function (_super) {
         if (progress === 'end') {
             this.add(trgtItemEle, CLS_ACTIVE);
             trgt.setAttribute('aria-hidden', 'false');
-            attributes(trgt.previousElementSibling, { 'aria-selected': 'true', 'aria-expanded': 'true' });
+            attributes(trgtItemEle, { 'aria-expanded': 'true' });
+            attributes(trgt.previousElementSibling, { 'aria-selected': 'true' });
             icon.classList.remove(CLS_TOGANIMATE);
             this.trigger('expanded', eventArgs);
         }
@@ -5791,7 +5798,8 @@ var Accordion = /** @__PURE__ @class */ (function (_super) {
             icon.classList.remove(CLS_TOGANIMATE);
             this.remove(trgtItemEle, CLS_ACTIVE);
             trgt.setAttribute('aria-hidden', 'true');
-            attributes(trgt.previousElementSibling, { 'aria-selected': 'false', 'aria-expanded': 'false' });
+            attributes(trgtItemEle, { 'aria-expanded': 'false' });
+            attributes(trgt.previousElementSibling, { 'aria-selected': 'false' });
             this.trigger('expanded', eventArgs);
         }
     };
@@ -6792,6 +6800,7 @@ var Tab = /** @__PURE__ @class */ (function (_super) {
      */
     Tab.prototype.render = function () {
         this.btnCls = this.createElement('span', { className: CLS_ICONS + ' ' + CLS_ICON_CLOSE, attrs: { title: this.title } });
+        this.tabId = this.element.id.length > 0 ? ('-' + this.element.id) : getRandomId();
         this.renderContainer();
         this.wireEvents();
         this.initRender = false;
@@ -6865,8 +6874,8 @@ var Tab = /** @__PURE__ @class */ (function (_super) {
                 hdrItems.forEach(function (item, index) {
                     _this.lastIndex = index;
                     var attr = {
-                        className: CLS_ITEM$2, id: CLS_ITEM$2 + '_' + index,
-                        attrs: { role: 'tab', 'aria-controls': CLS_CONTENT$1 + '_' + index, 'aria-selected': 'false' }
+                        className: CLS_ITEM$2, id: CLS_ITEM$2 + _this.tabId + '_' + index,
+                        attrs: { role: 'tab', 'aria-controls': CLS_CONTENT$1 + _this.tabId + '_' + index, 'aria-selected': 'false' }
                     };
                     var txt = _this.createElement('span', {
                         className: CLS_TEXT, innerHTML: item, attrs: { 'role': 'presentation' }
@@ -6891,6 +6900,7 @@ var Tab = /** @__PURE__ @class */ (function (_super) {
         this.tbObj.isStringTemplate = true;
         this.tbObj.createElement = this.createElement;
         this.tbObj.appendTo(this.hdrEle);
+        attributes(this.hdrEle, { 'aria-label': 'tab-header' });
         for (var i = 0; i < this.items.length; i++) {
             var item = this.items[i];
             if (item.headerTemplate && isBlazor() && !this.isStringTemplate &&
@@ -6910,8 +6920,8 @@ var Tab = /** @__PURE__ @class */ (function (_super) {
             for (var i = 0; i < hdrItem.length; i++) {
                 if (contents.length - 1 >= i) {
                     contents.item(i).className += CLS_ITEM$2;
-                    attributes(contents.item(i), { 'role': 'tabpanel', 'aria-labelledby': CLS_ITEM$2 + '_' + i });
-                    contents.item(i).id = CLS_CONTENT$1 + '_' + i;
+                    attributes(contents.item(i), { 'role': 'tabpanel', 'aria-labelledby': CLS_ITEM$2 + this.tabId + '_' + i });
+                    contents.item(i).id = CLS_CONTENT$1 + this.tabId + '_' + i;
                 }
             }
         }
@@ -6977,13 +6987,13 @@ var Tab = /** @__PURE__ @class */ (function (_super) {
             var wrap = _this.createElement('div', { className: CLS_WRAP, attrs: wrapAttrs });
             wrap.appendChild(tCont);
             if (_this.itemIndexArray === []) {
-                _this.itemIndexArray.push(CLS_ITEM$2 + '_' + _this.lastIndex);
+                _this.itemIndexArray.push(CLS_ITEM$2 + _this.tabId + '_' + _this.lastIndex);
             }
             else {
-                _this.itemIndexArray.splice((index + i), 0, CLS_ITEM$2 + '_' + _this.lastIndex);
+                _this.itemIndexArray.splice((index + i), 0, CLS_ITEM$2 + _this.tabId + '_' + _this.lastIndex);
             }
             var attrObj = {
-                id: CLS_ITEM$2 + '_' + _this.lastIndex, role: 'tab', 'aria-selected': 'false'
+                id: CLS_ITEM$2 + _this.tabId + '_' + _this.lastIndex, role: 'tab', 'aria-selected': 'false'
             };
             var tItem = { htmlAttributes: attrObj, template: wrap };
             tItem.cssClass = item.cssClass + ' ' + disabled + ' ' + ((css !== '') ? 'e-i' + pos : '') + ' ' + ((!txtEmpty) ? CLS_ICON : '');
@@ -7064,8 +7074,10 @@ var Tab = /** @__PURE__ @class */ (function (_super) {
         var checkRTL = this.enableRtl || this.element.classList.contains(CLS_RTL$4);
         if (this.isPopup || prev <= current) {
             if (this.animation.previous.effect === 'SlideLeftIn') {
-                animation = { name: 'SlideLeftOut',
-                    duration: this.animation.previous.duration, timingFunction: this.animation.previous.easing };
+                animation = {
+                    name: 'SlideLeftOut',
+                    duration: this.animation.previous.duration, timingFunction: this.animation.previous.easing
+                };
             }
             else {
                 animation = null;
@@ -7073,8 +7085,10 @@ var Tab = /** @__PURE__ @class */ (function (_super) {
         }
         else {
             if (this.animation.next.effect === 'SlideRightIn') {
-                animation = { name: 'SlideRightOut',
-                    duration: this.animation.next.duration, timingFunction: this.animation.next.easing };
+                animation = {
+                    name: 'SlideRightOut',
+                    duration: this.animation.next.duration, timingFunction: this.animation.next.easing
+                };
             }
             else {
                 animation = null;
@@ -7203,7 +7217,7 @@ var Tab = /** @__PURE__ @class */ (function (_super) {
         return Array.prototype.indexOf.call(selectAll('.' + CLS_TB_ITEM, this.getTabHeader()), item);
     };
     Tab.prototype.extIndex = function (id) {
-        return id.replace(CLS_ITEM$2 + '_', '');
+        return id.replace(CLS_ITEM$2 + this.tabId + '_', '');
     };
     Tab.prototype.expTemplateContent = function () {
         var _this = this;
@@ -7288,10 +7302,10 @@ var Tab = /** @__PURE__ @class */ (function (_super) {
     Tab.prototype.getTrgContent = function (cntEle, no) {
         var ele;
         if (this.element.classList.contains(CLS_NEST$1)) {
-            ele = select('.' + CLS_NEST$1 + '> .' + CLS_CONTENT$1 + ' > #' + CLS_CONTENT$1 + '_' + no, this.element);
+            ele = select('.' + CLS_NEST$1 + '> .' + CLS_CONTENT$1 + ' > #' + CLS_CONTENT$1 + this.tabId + '_' + no, this.element);
         }
         else {
-            ele = this.findEle(cntEle.children, CLS_CONTENT$1 + '_' + no);
+            ele = this.findEle(cntEle.children, CLS_CONTENT$1 + this.tabId + '_' + no);
         }
         return ele;
     };
@@ -7399,8 +7413,8 @@ var Tab = /** @__PURE__ @class */ (function (_super) {
                 this.cntEle = select('.' + CLS_CONTENT$1, this.element);
                 if (val === true) {
                     this.cntEle.appendChild(this.createElement('div', {
-                        id: (CLS_CONTENT$1 + '_' + 0), className: CLS_ITEM$2 + ' ' + CLS_ACTIVE$1,
-                        attrs: { 'role': 'tabpanel', 'aria-labelledby': CLS_ITEM$2 + '_' + 0 }
+                        id: (CLS_CONTENT$1 + this.tabId + '_' + 0), className: CLS_ITEM$2 + ' ' + CLS_ACTIVE$1,
+                        attrs: { 'role': 'tabpanel', 'aria-labelledby': CLS_ITEM$2 + this.tabId + '_' + 0 }
                     }));
                 }
                 var ele = this.cntEle.children.item(0);
@@ -7484,7 +7498,7 @@ var Tab = /** @__PURE__ @class */ (function (_super) {
             if (!isNullOrUndefined(prev)) {
                 prev.removeAttribute('aria-controls');
             }
-            attributes(trg, { 'aria-controls': CLS_CONTENT$1 + '_' + value });
+            attributes(trg, { 'aria-controls': CLS_CONTENT$1 + this.tabId + '_' + value });
         }
         var id = trg.id;
         this.removeActiveClass();
@@ -7492,12 +7506,12 @@ var Tab = /** @__PURE__ @class */ (function (_super) {
         trg.setAttribute('aria-selected', 'true');
         var no = Number(this.extIndex(id));
         if (isNullOrUndefined(this.prevActiveEle)) {
-            this.prevActiveEle = CLS_CONTENT$1 + '_' + no;
+            this.prevActiveEle = CLS_CONTENT$1 + this.tabId + '_' + no;
         }
         attributes(this.element, { 'aria-activedescendant': id });
         if (this.isTemplate) {
             if (select('.' + CLS_CONTENT$1, this.element).children.length > 0) {
-                var trg_1 = this.findEle(select('.' + CLS_CONTENT$1, this.element).children, CLS_CONTENT$1 + '_' + no);
+                var trg_1 = this.findEle(select('.' + CLS_CONTENT$1, this.element).children, CLS_CONTENT$1 + this.tabId + '_' + no);
                 if (!isNullOrUndefined(trg_1)) {
                     trg_1.classList.add(CLS_ACTIVE$1);
                 }
@@ -7509,8 +7523,8 @@ var Tab = /** @__PURE__ @class */ (function (_super) {
             var item = this.getTrgContent(this.cntEle, this.extIndex(id));
             if (isNullOrUndefined(item)) {
                 this.cntEle.appendChild(this.createElement('div', {
-                    id: CLS_CONTENT$1 + '_' + this.extIndex(id), className: CLS_ITEM$2 + ' ' + CLS_ACTIVE$1,
-                    attrs: { role: 'tabpanel', 'aria-labelledby': CLS_ITEM$2 + '_' + this.extIndex(id) }
+                    id: CLS_CONTENT$1 + this.tabId + '_' + this.extIndex(id), className: CLS_ITEM$2 + ' ' + CLS_ACTIVE$1,
+                    attrs: { role: 'tabpanel', 'aria-labelledby': CLS_ITEM$2 + this.tabId + '_' + this.extIndex(id) }
                 }));
                 var eleTrg = this.getTrgContent(this.cntEle, this.extIndex(id));
                 var itemIndex = Array.prototype.indexOf.call(this.itemIndexArray, trg.id);
@@ -7532,7 +7546,7 @@ var Tab = /** @__PURE__ @class */ (function (_super) {
             previousIndex: this.prevIndex,
             selectedItem: trg,
             selectedIndex: value,
-            selectedContent: select('#' + CLS_CONTENT$1 + '_' + this.selectingID, this.content),
+            selectedContent: select('#' + CLS_CONTENT$1 + this.tabId + '_' + this.selectingID, this.content),
             isSwiped: this.isSwipeed
         };
         if (!this.initRender || this.selectedItem !== 0) {
@@ -7748,8 +7762,8 @@ var Tab = /** @__PURE__ @class */ (function (_super) {
                 var property = Object.keys(newProp.items[index])[0];
                 var oldVal = Object(oldProp.items[index])[property];
                 var newVal = Object(newProp.items[index])[property];
-                var hdrItem = select('.' + CLS_TB_ITEMS + ' #' + CLS_ITEM$2 + '_' + index, this.element);
-                var cntItem = select('.' + CLS_CONTENT$1 + ' #' + CLS_CONTENT$1 + '_' + index, this.element);
+                var hdrItem = select('.' + CLS_TB_ITEMS + ' #' + CLS_ITEM$2 + this.tabId + '_' + index, this.element);
+                var cntItem = select('.' + CLS_CONTENT$1 + ' #' + CLS_CONTENT$1 + this.tabId + '_' + index, this.element);
                 if (property === 'header' || property === 'headerTemplate') {
                     var icon = (isNullOrUndefined(this.items[index].header) ||
                         isNullOrUndefined(this.items[index].header.iconCss)) ? '' : this.items[index].header.iconCss;
@@ -7927,7 +7941,8 @@ var Tab = /** @__PURE__ @class */ (function (_super) {
                 if (_this.isTemplate && !isNullOrUndefined(item.header) && !isNullOrUndefined(item.header.text)) {
                     var no = lastEleIndex + place;
                     var ele = _this.createElement('div', {
-                        id: CLS_CONTENT$1 + '_' + no, className: CLS_ITEM$2, attrs: { role: 'tabpanel', 'aria-labelledby': CLS_ITEM$2 + '_' + no }
+                        id: CLS_CONTENT$1 + _this.tabId + '_' + no, className: CLS_ITEM$2,
+                        attrs: { role: 'tabpanel', 'aria-labelledby': CLS_ITEM$2 + _this.tabId + '_' + no }
                     });
                     _this.cntEle.insertBefore(ele, _this.cntEle.children[(index + place)]);
                     var eleTrg = _this.getTrgContent(_this.cntEle, no.toString());
@@ -7965,7 +7980,7 @@ var Tab = /** @__PURE__ @class */ (function (_super) {
                 _this.items.splice(index, 1);
                 _this.itemIndexArray.splice(index, 1);
                 _this.refreshActiveBorder();
-                var cntTrg = select('#' + CLS_CONTENT$1 + '_' + _this.extIndex(trg.id), select('.' + CLS_CONTENT$1, _this.element));
+                var cntTrg = select('#' + CLS_CONTENT$1 + _this.tabId + '_' + _this.extIndex(trg.id), select('.' + CLS_CONTENT$1, _this.element));
                 if (!isNullOrUndefined(cntTrg)) {
                     detach(cntTrg);
                 }
@@ -8077,10 +8092,12 @@ var Tab = /** @__PURE__ @class */ (function (_super) {
             previousIndex: this.prevIndex,
             selectedItem: this.tbItem[this.selectedItem],
             selectedIndex: this.selectedItem,
-            selectedContent: !isNullOrUndefined(this.content) ? select('#' + CLS_CONTENT$1 + '_' + this.selectedID, this.content) : null,
+            selectedContent: !isNullOrUndefined(this.content) ?
+                select('#' + CLS_CONTENT$1 + this.tabId + '_' + this.selectedID, this.content) : null,
             selectingItem: trg,
             selectingIndex: args,
-            selectingContent: !isNullOrUndefined(this.content) ? select('#' + CLS_CONTENT$1 + '_' + this.selectingID, this.content) : null,
+            selectingContent: !isNullOrUndefined(this.content) ?
+                select('#' + CLS_CONTENT$1 + this.tabId + '_' + this.selectingID, this.content) : null,
             isSwiped: this.isSwipeed,
             cancel: false
         };

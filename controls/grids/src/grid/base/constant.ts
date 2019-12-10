@@ -368,3 +368,5 @@ export const beforeFltrcMenuOpen: string = 'before-filter-cmenu-open';
 export const valCustomPlacement: string = 'validation-custom-placement';
 /** @hidden */
 export const filterCboxValue: string = 'filter-cbox-value';
+/** @hidden */
+export const restoreFocus: string = 'restore-Focus';

@@ -2291,8 +2291,93 @@ describe('layout-info assistant support', () => {
     });
 
 });
+describe('layout-Type as none', () => {
+    let diagram: Diagram;
+    let ele: HTMLElement;
+    function nodeDefaults(node: any) {
+        node.annotations[0].style.color = "white";
+        node.width = 120;
+        node.height = 50;
+        node.expandIcon = { shape: 'Minus' };
+        node.collapseIcon = { shape: 'Plus' };
+        return node;
+    }
 
-
-
-
-
+    //The below method used to define the common settings for connectors.
+    function connectorDefaults(connector: any) {
+        connector.type = 'Orthogonal';
+        connector.targetDecorator = { shape: 'None' };
+        return connector;
+    }
+    beforeAll(() => {
+        ele = createElement('div', { id: 'diagramdataMaps' });
+        document.body.appendChild(ele);
+        let data: object[] = [
+            { 'Id': 'parent', 'Role': 'Board', 'color': '#71AF17' },
+            { 'Id': '1', 'Role': 'General Manager', 'Manager': 'parent', 'ChartType': 'right', 'color': '#71AF17' },
+            { 'Id': '11', 'Role': 'Assistant Manager', 'Manager': '1', 'color': '#71AF17' },
+            { 'Id': '110', 'Role': 'Assistant Manager1', 'Manager': '1', 'color': '#71AF17' },
+            { 'Id': '2', 'Role': 'Human Resource Manager', 'Manager': '1', 'ChartType': 'right', 'color': '#1859B7' },
+            { 'Id': '3', 'Role': 'Trainers', 'Manager': '2', 'color': '#2E95D8' },
+            { 'Id': '4', 'Role': 'Recruiting Team', 'Manager': '2', 'color': '#2E95D8' },
+            { 'Id': '5', 'Role': 'Finance Asst. Manager', 'Manager': '2', 'color': '#2E95D8' },
+            { 'Id': '6', 'Role': 'Design Manager', 'Manager': '1', 'ChartType': 'right', 'color': '#1859B7' },
+            { 'Id': '7', 'Role': 'Design Supervisor', 'Manager': '6', 'color': '#2E95D8' },
+            { 'Id': '8', 'Role': 'Development Supervisor', 'Manager': '6', 'color': '#2E95D8' },
+            { 'Id': '9', 'Role': 'Drafting Supervisor', 'Manager': '6', 'color': '#2E95D8' },
+            { 'Id': '10', 'Role': 'Operation Manager', 'Manager': '1', 'ChartType': 'right', 'color': '#1859B7' },
+            { 'Id': '11', 'Role': 'Statistic Department', 'Manager': '10', 'color': '#2E95D8' },
+            { 'Id': '12', 'Role': 'Logistic Department', 'Manager': '10', 'color': '#2E95D8' },
+            { 'Id': '16', 'Role': 'Marketing Manager', 'Manager': '1', 'ChartType': 'right', 'color': '#1859B7' },
+            { 'Id': '17', 'Role': 'Oversea sales Manager', 'Manager': '16', 'color': '#2E95D8' },
+            { 'Id': '18', 'Role': 'Petroleum Manager', 'Manager': '16', 'color': '#2E95D8' },
+            { 'Id': '20', 'Role': 'Service Dept. Manager', 'Manager': '16', 'color': '#2E95D8' },
+            { 'Id': '21', 'Role': 'Quality Department', 'Manager': '16', 'color': '#2E95D8' }
+        ];
+        
+        let items: DataManager = new DataManager(data as JSON[], new Query().take(7));
+        diagram = new Diagram({
+            width: '4000px', height: '2000px',
+            snapSettings: { constraints: 0 },
+            layout: {
+                type: 'HierarchicalTree',
+                layoutInfo: { getAssistantDetails: { root: "General Manager", assistants: ["Assistant Manager","Assistant Manager1"] } },
+            },
+            dataSourceSettings: {
+                id: 'Id', parentId: 'Manager', dataSource: items
+            },
+        
+            getNodeDefaults: (obj: Node, diagram: Diagram) => {
+                obj.width = 150;
+                obj.height = 50;
+                obj.style.fill = obj.data['color'];
+                obj.annotations = [{ content: obj.data['Role'], style: { color: 'white' } }];
+                return obj;
+            }, getConnectorDefaults: (connector: ConnectorModel, diagram: Diagram) => {
+                connector.targetDecorator.shape = 'None';
+                connector.type = 'Orthogonal';
+                return connector;
+            }
+        });
+        diagram.appendTo('#diagramdataMaps');
+    });
+    afterAll(() => {
+        diagram.destroy();
+        ele.remove();
+    });
+   
+    it('Checking hierarchical chart - save and load with layout type as none', (done: Function) => {
+        let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+        let obj: NodeModel = diagram.nodes[0];
+        diagram.drag(obj, 50, 50);
+        expect(diagram.nodes[0].offsetX === 1915 && diagram.nodes[0].offsetY === 125).toBe(true)
+        let saveloaddata: any = diagram.saveDiagram();
+        saveloaddata=  JSON.parse(saveloaddata);
+        saveloaddata.layout.type = "None";
+        saveloaddata= JSON.stringify(saveloaddata)
+        diagram.loadDiagram(saveloaddata);
+        expect(diagram.nodes[0].width == 150 && diagram.nodes[0].height == 50).toBe(true);
+        expect(diagram.nodes[0].offsetX === 1915 && diagram.nodes[0].offsetY === 125).toBe(true)
+        done();
+    });
+});

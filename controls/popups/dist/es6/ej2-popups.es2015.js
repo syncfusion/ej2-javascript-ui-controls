@@ -2161,6 +2161,7 @@ let Dialog = class Dialog extends Component {
         this.l10n.setLocale(this.locale);
         let closeIconTitle = this.l10n.getConstant('close');
         this.closeIcon.setAttribute('title', closeIconTitle);
+        this.closeIcon.setAttribute('aria-label', closeIconTitle);
     }
     setCSSClass(oldCSSClass) {
         if (this.cssClass) {

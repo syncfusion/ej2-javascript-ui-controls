@@ -98,6 +98,8 @@ export class Print {
         });
         document.body.appendChild(element);
         let printGrid: IGrid = new Grid(getPrintGridModel(gObj, gObj.hierarchyPrintMode) as Object);
+        /* tslint:disable:no-empty */
+        (printGrid as Grid).load = () => {};
         printGrid.query = gObj.getQuery().clone();
         (<{printGridObj?: IGrid}>window).printGridObj = printGrid;
         printGrid.isPrinting = true;

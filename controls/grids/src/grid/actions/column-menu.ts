@@ -1,4 +1,4 @@
-import { L10n, EventHandler, closest, Browser, isNullOrUndefined } from '@syncfusion/ej2-base';
+import { L10n, EventHandler, closest, Browser, isNullOrUndefined, KeyboardEventArgs } from '@syncfusion/ej2-base';
 import { remove } from '@syncfusion/ej2-base';
 import { ContextMenu as Menu, MenuEventArgs, OpenCloseMenuEventArgs } from '@syncfusion/ej2-navigations';
 import { IGrid, IAction, ColumnMenuItemModel, NotifyArgs, ColumnMenuOpenEventArgs, ColumnMenuClickEventArgs } from '../base/interface';
@@ -83,18 +83,24 @@ export class ColumnMenu implements IAction {
         if ((e.target as HTMLElement).classList.contains('e-columnmenu')) {
             this.columnMenu.items = this.getItems();
             this.columnMenu.dataBind();
-            if ((this.isOpen && this.headerCell !== this.getHeaderCell(e)) || document.querySelector('.e-grid-menu .e-menu-parent.e-ul')) {
+            if ((this.isOpen && this.headerCell !== this.getHeaderCell(
+                e as { target: EventTarget, preventDefault?: Function })) || document.querySelector('.e-grid-menu .e-menu-parent.e-ul')) {
                 this.columnMenu.close();
-                this.openColumnMenu(e);
+                this.openColumnMenu(e as { target: EventTarget, preventDefault?: Function });
             } else if (!this.isOpen) {
-                this.openColumnMenu(e);
+                this.openColumnMenu(e as { target: EventTarget, preventDefault?: Function });
             } else {
                 this.columnMenu.close();
             }
         }
     }
 
-    private openColumnMenu(e: Event): void {
+    /** @hidden */
+    public openColumnMenuByField(field: string): void {
+        this.openColumnMenu({ target: this.parent.getColumnHeaderByField(field).querySelector('.e-columnmenu') });
+    }
+
+    private openColumnMenu(e: { target: Element | EventTarget, preventDefault?: Function }): void {
         let pos: OffsetPosition = { top: 0, left: 0 };
         this.element.style.cssText = 'display:block;visibility:hidden';
         let elePos: ClientRect = this.element.getBoundingClientRect();
@@ -112,7 +118,9 @@ export class ColumnMenu implements IAction {
             }
         }
         this.columnMenu.open(pos.top, pos.left);
-        e.preventDefault();
+        if (e.preventDefault) {
+            e.preventDefault();
+        }
         applyBiggerTheme(this.parent.element, this.columnMenu.element.parentElement);
     }
 
@@ -136,6 +144,7 @@ export class ColumnMenu implements IAction {
             this.parent.on(events.filterDialogCreated, this.filterPosition, this);
         }
         this.parent.on(events.click, this.columnMenuHandlerClick, this);
+        this.parent.on(events.keyPressed, this.keyPressHandler, this);
     }
 
     /**
@@ -150,7 +159,20 @@ export class ColumnMenu implements IAction {
             this.parent.off(events.filterDialogCreated, this.filterPosition);
         }
         this.parent.off(events.click, this.columnMenuHandlerClick);
+        this.parent.off(events.keyPressed, this.keyPressHandler);
     }
+
+    private keyPressHandler(e: KeyboardEventArgs): void {
+        let gObj: IGrid = this.parent;
+        if (e.action === 'altDownArrow') {
+            let element: HTMLElement = gObj.focusModule.currentInfo.element;
+            if (element && element.classList.contains('e-headercell')) {
+                let column: Column = gObj.getColumnByUid(element.firstElementChild.getAttribute('e-mappinguid'));
+                this.openColumnMenuByField(column.field);
+            }
+        }
+    }
+
 
     private enableAfterRenderMenu(e: NotifyArgs): void {
         if (e.module === this.getModuleName() && e.enable) {
@@ -362,6 +384,7 @@ export class ColumnMenu implements IAction {
                 this.getFilter(args.element, args.element.id, true);
             }
         }
+        this.parent.notify(events.restoreFocus, {});
     }
 
     private getDefaultItems(): string[] {
@@ -450,7 +473,7 @@ export class ColumnMenu implements IAction {
         };
     }
 
-    private getHeaderCell(e: Event): HTMLElement {
+    private getHeaderCell(e: { target: Element | EventTarget }): HTMLElement {
         return <HTMLElement>closest(<HTMLElement>e.target, 'th.e-headercell');
     }
 
